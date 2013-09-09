@@ -23,16 +23,12 @@ package org.openiam.idm.srvc.synch.srcadapter;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.mule.api.MuleContext;
-import org.mule.api.context.MuleContextAware;
 import org.openiam.idm.srvc.synch.dto.SynchConfig;
 import org.openiam.idm.srvc.synch.service.SourceAdapter;
 import org.openiam.script.ScriptIntegration;
-import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
@@ -41,71 +37,60 @@ import java.io.IOException;
  * @author suneet
  *
  */
-public class AdapterFactory implements ApplicationContextAware, MuleContextAware {
+@Component
+public class AdapterFactory {
 
 	private static final Log log = LogFactory.getLog(AdapterFactory.class);
 
-	public static ApplicationContext applicationContext;
-
-    protected MuleContext muleContext;
-	
 	@Autowired
     @Qualifier("configurableGroovyScriptEngine")
     private ScriptIntegration scriptRunner;
 
-    @Override
-	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        this.applicationContext = applicationContext;
-	}
+    @Autowired
+    private CSVAdapter csvAdapter;
 
-    @Override
-    public void setMuleContext(MuleContext muleContext) {
-        this.muleContext = muleContext;
-    }
+    @Autowired
+    private RDBMSAdapter rdbmsAdapter;
+
+    @Autowired
+    private LdapAdapter ldapAdapter;
+
+    @Autowired
+    private WSAdapter wsAdapter;
+
+    @Autowired
+    private ActiveDirectoryAdapter activeDirectoryAdapter;
 
     public SourceAdapter create(SynchConfig config) throws ClassNotFoundException, IOException {
-		SourceAdapter adpt = null;
-		
+
 		String adapterType = config.getSynchAdapter();
 		String customScript = config.getCustomAdatperScript();
 		if (adapterType != null) {
-			try {
-				if (adapterType.equalsIgnoreCase("CUSTOM") && 
+				if (adapterType.equalsIgnoreCase("CUSTOM") &&
 					( adapterType  != null &&  adapterType.length() > 0)) {
 					// custom adapter- written groovy
-					adpt =  (SourceAdapter)scriptRunner.instantiateClass(null, customScript);
-	
+					return (SourceAdapter)scriptRunner.instantiateClass(null, customScript);
 				} else {
 					// using standard adapter
-					Class cls = null;
 					if (adapterType.equalsIgnoreCase("RDBMS")) {
-						return (SourceAdapter)applicationContext.getBean("rdbmsAdapter");
+						return rdbmsAdapter;
 					}
 					if (adapterType.equalsIgnoreCase("CSV")) {
-						return (SourceAdapter)applicationContext.getBean("csvAdapter");
+						return csvAdapter;
 					}				
 					if (adapterType.equalsIgnoreCase("LDAP")) {
-						return (SourceAdapter)applicationContext.getBean("ldapAdapter");
+						return ldapAdapter;
 					}
 					if (adapterType.equalsIgnoreCase("AD")) {
-						return (SourceAdapter)applicationContext.getBean("activeDirAdapter");
+						return activeDirectoryAdapter;
 					}
                     if (adapterType.equalsIgnoreCase("WS")) {
-						return (SourceAdapter)applicationContext.getBean("wsAdapter");
+						return wsAdapter;
 					}
-					adpt = (SourceAdapter)cls.newInstance();
 				}
 
-				return adpt;
-				
-			} catch(IllegalAccessException ia) {
-				log.error(ia.getMessage(),ia);
-				
-			} catch(InstantiationException ie) {
-				log.error(ie.getMessage(),ie);
-			}
 		}
-		
+
 		return null;
 	}
 

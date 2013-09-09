@@ -21,6 +21,8 @@
  */
 package org.openiam.idm.srvc.synch.srcadapter;
 
+import com.jcraft.jsch.JSchException;
+import com.jcraft.jsch.SftpException;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVStrategy;
 import org.apache.commons.logging.Log;
@@ -40,10 +42,13 @@ import org.openiam.idm.srvc.synch.service.TransformScript;
 import org.openiam.idm.srvc.synch.service.ValidationScript;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
+import org.openiam.idm.util.RemoteFileStorageManager;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.service.ProvisionService;
+import org.openiam.util.SpringContextProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.stereotype.Component;
 
 import java.io.*;
 import java.text.DateFormat;
@@ -59,9 +64,11 @@ import java.util.concurrent.TimeUnit;
  *
  * @author suneet
  */
+@Component
 public class CSVAdapter extends AbstractSrcAdapter {
 
     private static final Log log = LogFactory.getLog(CSVAdapter.class);
+    public static final String SYNC_DIR = "sync";
 
     // synchronization monitor
     private final Object mutex = new Object();
@@ -75,13 +82,19 @@ public class CSVAdapter extends AbstractSrcAdapter {
     @Value("${csvadapter.thread.delay.beforestart}")
     private int THREAD_DELAY_BEFORE_START;
 
+    @Value("${org.openiam.upload.remote.use}")
+    private Boolean useRemoteFilestorage;
+
+    @Autowired
+    private RemoteFileStorageManager remoteFileStorageManager;
+
     public SyncResponse startSynch(final SynchConfig config) {
         log.debug("CSV startSynch CALLED.^^^^^^^^");
         System.out.println("CSV startSynch CALLED.^^^^^^^^");
 
         Reader reader = null;
 
-        final ProvisionService provService = (ProvisionService) applicationContext.getBean("defaultProvision");
+        final ProvisionService provService = (ProvisionService) SpringContextProvider.getBean("defaultProvision");
 
         String requestId = UUIDGen.getUUID();
 
@@ -90,9 +103,16 @@ public class CSVAdapter extends AbstractSrcAdapter {
         final IdmAuditLog synchStartLog = auditHelper.logEvent(synchStartLog_);
 
         try {
-            File file = new File(uploadRoot +"/sync/"+ config.getFileName());
-            reader = new FileReader(file);
-            CSVParser parser = new CSVParser(reader, CSVStrategy.EXCEL_STRATEGY);
+            CSVParser parser;
+            String csvFileName = config.getFileName();
+            if(useRemoteFilestorage) {
+                InputStream is = remoteFileStorageManager.downloadFile(SYNC_DIR, csvFileName);
+                parser = new CSVParser(new InputStreamReader(is));
+            } else {
+                File file = new File(uploadRoot + File.separator + SYNC_DIR + File.separator + csvFileName);
+                reader = new FileReader(file);
+                parser = new CSVParser(reader, CSVStrategy.EXCEL_STRATEGY);
+            }
 
             String[][] rows = parser.getAllValues();
 
@@ -193,6 +213,24 @@ public class CSVAdapter extends AbstractSrcAdapter {
 
             SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
             resp.setErrorCode(ResponseCode.INTERRUPTED_EXCEPTION);
+        } catch (SftpException sftpe) {
+            log.error(sftpe);
+
+            synchStartLog.updateSynchAttributes("FAIL", ResponseCode.FILE_EXCEPTION.toString(), sftpe.toString());
+            auditHelper.logEvent(synchStartLog);
+
+            SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
+            resp.setErrorCode(ResponseCode.FILE_EXCEPTION);
+            sftpe.printStackTrace();
+        } catch (JSchException jsche) {
+            log.error(jsche);
+
+            synchStartLog.updateSynchAttributes("FAIL", ResponseCode.FILE_EXCEPTION.toString(), jsche.toString());
+            auditHelper.logEvent(synchStartLog);
+
+            SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
+            resp.setErrorCode(ResponseCode.FILE_EXCEPTION);
+            jsche.printStackTrace();
         } finally {
             if (reader != null) {
                 try {

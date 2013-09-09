@@ -57,7 +57,7 @@ import java.util.Map;
  * @author suneet
  *
  */
-
+@Component
 public class WSAdapter extends AbstractSrcAdapter { // implements SourceAdapter
 
 	protected LineObject rowHeader = new LineObject();

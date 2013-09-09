@@ -1,5 +1,6 @@
 package org.openiam.am.srvc.service;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.am.srvc.constants.AmAttributes;
@@ -24,7 +25,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 
 import java.lang.reflect.Field;
 import java.util.*;
@@ -118,27 +118,32 @@ public class AuthResourceAttributeServiceImpl implements AuthResourceAttributeSe
     @Override
     @Transactional
     public AuthResourceAttributeMapEntity saveAttributeMap(AuthResourceAttributeMapEntity attribute) throws Exception {
-        if (attribute == null)
+        if (attribute == null) {
             throw new NullPointerException("Attribute is null");
-        if (attribute.getProviderId() == null || attribute.getProviderId().trim().isEmpty())
+        }
+        if (StringUtils.isBlank(attribute.getProviderId())) {
             throw new NullPointerException("Provider is not set");
-        if (attribute.getTargetAttributeName() == null || attribute.getTargetAttributeName().trim().isEmpty())
+        }
+        if (StringUtils.isBlank(attribute.getTargetAttributeName())) {
             throw new NullPointerException("TargetAttributeName is not set");
-        if (attribute.getAttributeType() == null)
+        }
+        if (attribute.getAttributeType() == null) {
             throw new NullPointerException("Attribute type is not defined");
-        if ((attribute.getAmResAttributeId() == null || attribute.getAmResAttributeId().trim().isEmpty())
-            &&(attribute.getAttributeValue() == null || attribute.getAttributeValue().trim().isEmpty())
-            &&(attribute.getAmPolicyUrl() == null || attribute.getAmPolicyUrl().trim().isEmpty()))
+        }
+        if (StringUtils.isBlank(attribute.getAmResAttributeId())
+            &&(StringUtils.isBlank(attribute.getAttributeValue()))
+            &&(StringUtils.isBlank(attribute.getAmPolicyUrl()))) {
             throw new NullPointerException("Attribute map is not defined");
+        }
 
-        AuthResourceAttributeMapEntity example = new AuthResourceAttributeMapEntity();
+        final AuthResourceAttributeMapEntity example = new AuthResourceAttributeMapEntity();
         example.setProviderId(attribute.getProviderId());
         example.setTargetAttributeName(attribute.getTargetAttributeName());
-        List<AuthResourceAttributeMapEntity> attr = authResourceAttributeMapDao.getByExample(example, 0, 1);
+        final List<AuthResourceAttributeMapEntity> attr = authResourceAttributeMapDao.getByExample(example, 0, 1);
 
         attribute.setAmAttribute(null);
         if(attr!=null && !attr.isEmpty()){
-            AuthResourceAttributeMapEntity entity = attr.get(0);
+        	final AuthResourceAttributeMapEntity entity = attr.get(0);
             entity.setAmResAttributeId(attribute.getAmResAttributeId());
             entity.setAmPolicyUrl(attribute.getAmPolicyUrl());
             entity.setAttributeValue(attribute.getAttributeValue());

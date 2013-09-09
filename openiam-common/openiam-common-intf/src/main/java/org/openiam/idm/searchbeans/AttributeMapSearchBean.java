@@ -10,7 +10,7 @@ import java.io.Serializable;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "OrganizationSearchBean", propOrder = {
         "resourceId",
-        "synchConfigId",
+        "synchConfigId"
 })
 public class AttributeMapSearchBean extends AbstractSearchBean<AttributeMap, String> implements SearchBean<AttributeMap, String>,
         Serializable {

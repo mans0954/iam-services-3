@@ -851,6 +851,7 @@ public class UserEntity {
     		if(this.userAttributes == null) {
     			this.userAttributes = new HashMap<String, UserAttributeEntity>();
     		}
+    		entity.setUser(this);
     		this.userAttributes.put(entity.getName(), entity);
     	}
     }

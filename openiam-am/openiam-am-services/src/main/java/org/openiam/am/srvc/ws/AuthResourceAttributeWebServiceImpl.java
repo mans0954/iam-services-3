@@ -1,5 +1,6 @@
 package org.openiam.am.srvc.ws;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.am.srvc.domain.AuthResourceAMAttributeEntity;
@@ -112,21 +113,25 @@ public class AuthResourceAttributeWebServiceImpl implements AuthResourceAttribut
     public Response saveAttributeMap(AuthResourceAttributeMap attributeMap) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
-            if (attributeMap == null)
+            if (attributeMap == null) {
                 throw new BasicDataServiceException(ResponseCode.AUTH_RESOURCE_ATTRIBUTE_MAP_NOT_SET);
-            if (attributeMap.getProviderId() == null || attributeMap.getProviderId().trim().isEmpty())
+            }
+            if (StringUtils.isBlank(attributeMap.getProviderId())) {
                 throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_SET);
-            if (attributeMap.getTargetAttributeName() == null || attributeMap.getTargetAttributeName().trim().isEmpty())
+            }
+            if (StringUtils.isBlank(attributeMap.getTargetAttributeName())) {
                 throw new BasicDataServiceException(ResponseCode.AUTH_RESOURCE_TARGET_ATTRIBUTE_NOT_SET);
-            if (attributeMap.getAttributeType() == null)
+            }
+            if (attributeMap.getAttributeType() == null) {
                 throw new BasicDataServiceException(ResponseCode.AUTH_RESOURCE_ATTRIBUTE_TYPE_NOT_SET);
-            if ((attributeMap.getAmResAttributeId() == null || attributeMap.getAmResAttributeId().trim().isEmpty())
-                 &&(attributeMap.getAttributeValue() == null || attributeMap.getAttributeValue().trim().isEmpty())
-                 &&(attributeMap.getAmPolicyUrl() == null || attributeMap.getAmPolicyUrl().trim().isEmpty()))
+            }
+            if ((StringUtils.isBlank(attributeMap.getAmResAttributeId()))
+                 &&(StringUtils.isBlank(attributeMap.getAttributeValue()))
+                 &&(StringUtils.isBlank(attributeMap.getAmPolicyUrl()))) {
                 throw new BasicDataServiceException(ResponseCode.AUTH_RESOURCE_AM_ATTRIBUTE_NOT_SET);
+            }
 
-
-            AuthResourceAttributeMapEntity entity = authResourceAttributeService.saveAttributeMap(
+            final AuthResourceAttributeMapEntity entity = authResourceAttributeService.saveAttributeMap(
                     authResourceAttributeMapDozerConverter.convertToEntity(attributeMap, false));
             response.setResponseValue(authResourceAttributeMapDozerConverter.convertToDTO(entity, true));
 

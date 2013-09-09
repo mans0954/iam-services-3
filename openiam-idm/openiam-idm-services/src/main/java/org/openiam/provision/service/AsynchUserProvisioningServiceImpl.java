@@ -23,11 +23,12 @@ package org.openiam.provision.service;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.mule.api.MuleContext;
-import org.mule.api.context.MuleContextAware;
 import org.mule.module.client.MuleClient;
 import org.openiam.provision.dto.ProvisionUser;
+import org.openiam.util.MuleContextProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import javax.jws.WebService;
 import java.util.*;
@@ -39,12 +40,12 @@ import java.util.*;
         targetNamespace = "http://www.openiam.org/service/provision",
         portName = "DefaultProvisionControllerServicePort",
         serviceName = "AsynchUserProvisionService")
-public class AsynchUserProvisioningServiceImpl implements MuleContextAware, AsynchUserProvisionService {
+@Component("asynchProvisonWS")
+public class AsynchUserProvisioningServiceImpl {
 
     protected static final Log log = LogFactory.getLog(AsynchUserProvisioningServiceImpl.class);
-
+    @Autowired
     protected ProvisionService provisionService;
-    MuleContext muleContext;
 
     @Value("${openiam.service_base}")
     private String serviceHost;
@@ -66,7 +67,7 @@ public class AsynchUserProvisioningServiceImpl implements MuleContextAware, Asyn
 
 
 			//Create the client with the context
-			MuleClient client = new MuleClient(muleContext);
+			MuleClient client = new MuleClient(MuleContextProvider.getCtx());
 			client.sendAsync("vm://provisionServiceAddMessage", (ProvisionUser)user, msgPropMap);
 
 		}catch(Exception e) {
@@ -93,7 +94,7 @@ public class AsynchUserProvisioningServiceImpl implements MuleContextAware, Asyn
 
 
                 //Create the client with the context
-                MuleClient client = new MuleClient(muleContext);
+                MuleClient client = new MuleClient(MuleContextProvider.getCtx());
                 client.sendAsync("vm://provisionServiceModifyMessage", (ProvisionUser)user, msgPropMap);
 
             }catch(Exception e) {
@@ -105,22 +106,5 @@ public class AsynchUserProvisioningServiceImpl implements MuleContextAware, Asyn
 
 
     }
-
-
-
-    public ProvisionService getProvisionService() {
-        return provisionService;
-    }
-
-    public void setProvisionService(ProvisionService provisionService) {
-        this.provisionService = provisionService;
-    }
-
-    public void setMuleContext(MuleContext ctx) {
-        log.debug("AsynchUserProvisioningServiceImpl - setMuleContext called.");
-        muleContext = ctx;
-
-    }
-
 
 }

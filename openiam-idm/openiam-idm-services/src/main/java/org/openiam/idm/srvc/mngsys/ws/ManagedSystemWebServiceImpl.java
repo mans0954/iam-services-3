@@ -114,39 +114,48 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
             @WebParam(name = "searchBean", targetNamespace = "") ManagedSysSearchBean searchBean,
             @WebParam(name = "size", targetNamespace = "") Integer size,
             @WebParam(name = "from", targetNamespace = "") Integer from) {
-        List<ManagedSysDto> managedSysDtos = new LinkedList<ManagedSysDto>();
-        ManagedSysEntity managedSysEntity = managedSystemSearchBeanConverter
-                .convert(searchBean);
-        List<ManagedSysEntity> sysEntities = managedSystemService
-                .getManagedSystemsByExample(managedSysEntity, size, from);
-        if (sysEntities != null) {
-            managedSysDtos = managedSysDozerConverter.convertToDTOList(
-                    sysEntities, false);
-        }
-        return managedSysDtos;
+        final ManagedSysEntity managedSysEntity = managedSystemSearchBeanConverter.convert(searchBean);
+        final List<ManagedSysEntity> sysEntities = managedSystemService.getManagedSystemsByExample(managedSysEntity, from, size);
+        return managedSysDozerConverter.convertToDTOList(sysEntities, false);
     }
 
     @Override
-    public ManagedSysDto addManagedSystem(ManagedSysDto sys) {
-
-        if (sys == null) {
-            throw new NullPointerException("sys is null");
-        }
-
-        if (encrypt && sys.getPswd() != null) {
-            try {
-                sys.setPswd(cryptor.encrypt(keyManagementService.getUserKey(
-                        systemUserId, KeyName.password.name()), sys.getPswd()));
-            } catch (Exception e) {
-                log.error(e);
-            }
-        }
-
-        ManagedSysEntity entity = managedSysDozerConverter.convertToEntity(sys,
-                true);
-        managedSystemService.addManagedSys(entity);
-
-        return managedSysDozerConverter.convertToDTO(entity, true);
+    public Response saveManagedSystem(final ManagedSysDto sys) {
+    	final Response response = new Response(ResponseStatus.SUCCESS);
+    	try {
+    		if(sys == null) {
+    			throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+    		}
+    		
+    		if(StringUtils.isBlank(sys.getName())) {
+    			throw new BasicDataServiceException(ResponseCode.NO_NAME);
+    		}
+    		
+    		if(StringUtils.isBlank(sys.getConnectorId())) {
+    			throw new BasicDataServiceException(ResponseCode.CONNECTOR_REQUIRED);
+    		}
+    		
+    		if (encrypt && sys.getPswd() != null) {
+    			sys.setPswd(cryptor.encrypt(keyManagementService.getUserKey(systemUserId, KeyName.password.name()), sys.getPswd()));
+    		}
+    		
+    		final ManagedSysEntity entity = managedSysDozerConverter.convertToEntity(sys, true);
+    		if(StringUtils.isBlank(entity.getManagedSysId())) {
+    			managedSystemService.addManagedSys(entity);
+    		}  else {
+    			managedSystemService.updateManagedSys(entity);
+    		}
+    		response.setResponseValue(entity.getManagedSysId());
+    	} catch (BasicDataServiceException e) {
+			response.setErrorCode(e.getCode());
+			response.setStatus(ResponseStatus.FAILURE);
+		} catch (Throwable e) {
+			log.error("Can't remove managed system", e);
+			response.setErrorText(e.getMessage());
+			response.setStatus(ResponseStatus.FAILURE);
+		}
+        
+    	return response;
     }
 
     @Override
@@ -165,90 +174,35 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
                             keyManagementService.getUserKey(systemUserId,
                                     KeyName.password.name()), sys.getPswd()));
                 } catch (Exception e) {
-                    log.error(e);
+                    log.error("Can't decrypt", e);
                 }
             }
         }
         return sysDto;
     }
 
-    @Override
-    public ManagedSysDto[] getManagedSysByProvider(String providerId) {
-        if (providerId == null) {
-            throw new NullPointerException("providerId is null");
-        }
-        List<ManagedSysEntity> sysList = managedSystemService
-                .getManagedSysByConnectorId(providerId);
-        if (sysList == null) {
-            return null;
-        }
-        int size = sysList.size();
-        ManagedSysDto[] sysAry = new ManagedSysDto[size];
-        managedSysDozerConverter.convertToDTOList(sysList, true)
-                .toArray(sysAry);
-        return sysAry;
+    public List<ManagedSysDto> getAllManagedSys() {
+        final List<ManagedSysEntity> sysList = managedSystemService.getAllManagedSys();
+        return managedSysDozerConverter.convertToDTOList(sysList, true);
     }
 
-    /**
-     * Returns an array of ManagedSys object for a security domain.
-     * 
-     * @param domainId
-     * @return
-     */
-    @Override
-    public ManagedSysDto[] getManagedSysByDomain(String domainId) {
-        if (domainId == null) {
-            throw new NullPointerException("domainId is null");
-        }
-        List<ManagedSysEntity> sysList = managedSystemService
-                .getManagedSysByDomain(domainId);
-        if (sysList == null) {
-            return null;
-        }
-        int size = sysList.size();
-        ManagedSysDto[] sysAry = new ManagedSysDto[size];
-        managedSysDozerConverter.convertToDTOList(sysList, true)
-                .toArray(sysAry);
-        return sysAry;
-
-    }
-
-    public ManagedSysDto[] getAllManagedSys() {
-        List<ManagedSysEntity> sysList = managedSystemService
-                .getAllManagedSys();
-        if (sysList == null) {
-            return null;
-        }
-        int size = sysList.size();
-        ManagedSysDto[] sysAry = new ManagedSysDto[size];
-        managedSysDozerConverter.convertToDTOList(sysList, true)
-                .toArray(sysAry);
-        return sysAry;
-    }
-
-    public void removeManagedSystem(String sysId) {
-        if (sysId == null) {
-            throw new NullPointerException("sysId is null");
-        }
-
-        managedSystemService.removeManagedSysById(sysId);
-    }
-
-    public void updateManagedSystem(ManagedSysDto sys) {
-        if (sys == null) {
-            throw new NullPointerException("sys is null");
-        }
-        if (encrypt && sys.getPswd() != null) {
-            try {
-                sys.setPswd(cryptor.encrypt(keyManagementService.getUserKey(
-                        systemUserId, KeyName.password.name()), sys.getPswd()));
-            } catch (Exception e) {
-                log.error(e);
-            }
-        }
-        ManagedSysEntity managedSysEntity = managedSysDozerConverter
-                .convertToEntity(sys, true);
-        managedSystemService.updateManagedSys(managedSysEntity);
+    public Response removeManagedSystem(String sysId) {
+    	final Response response = new Response(ResponseStatus.SUCCESS);
+    	try {
+    		if(StringUtils.isBlank(sysId)) {
+    			throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+    		}
+    		
+    		managedSystemService.removeManagedSysById(sysId);
+    	} catch (BasicDataServiceException e) {
+			response.setErrorCode(e.getCode());
+			response.setStatus(ResponseStatus.FAILURE);
+		} catch (Throwable e) {
+			log.error("Can't remove managed system", e);
+			response.setErrorText(e.getMessage());
+			response.setStatus(ResponseStatus.FAILURE);
+		}
+    	return response;
     }
 
     /**
@@ -441,7 +395,7 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
             response.setErrorCode(e.getCode());
             response.setStatus(ResponseStatus.FAILURE);
         } catch (Throwable e) {
-            log.error(e);
+            log.error("Can't save", e);
             response.setStatus(ResponseStatus.FAILURE);
         }
         return response;
@@ -455,23 +409,27 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
      * (org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch)
      */
     @Override
-    public void addManagedSystemObjectMatch(ManagedSystemObjectMatch obj) {
-        managedSysObjectMatchDao.save(managedSystemObjectMatchDozerConverter
-                .convertToEntity(obj, false));
-    }
+    public Response saveManagedSystemObjectMatch(ManagedSystemObjectMatch obj) {
+    	final Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+            if (obj == null) {
+                throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+            }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService#
-     * updateManagedSystemObjectMatch
-     * (org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch)
-     */
-    public void updateManagedSystemObjectMatch(ManagedSystemObjectMatch obj) {
-        this.managedSysObjectMatchDao
-                .merge(managedSystemObjectMatchDozerConverter.convertToEntity(
-                        obj, false));
-
+            final ManagedSystemObjectMatchEntity entity = managedSystemObjectMatchDozerConverter.convertToEntity(obj, false);
+            if(StringUtils.isNotBlank(obj.getObjectSearchId())) {
+            	managedSysObjectMatchDao.update(entity);
+            } else {
+            	managedSysObjectMatchDao.save(entity);
+            }
+        } catch (BasicDataServiceException e) {
+            response.setErrorCode(e.getCode());
+            response.setStatus(ResponseStatus.FAILURE);
+        } catch (Throwable e) {
+            log.error("Can't save", e);
+            response.setStatus(ResponseStatus.FAILURE);
+        }
+        return response;
     }
 
     public void removeManagedSystemObjectMatch(ManagedSystemObjectMatch obj) {

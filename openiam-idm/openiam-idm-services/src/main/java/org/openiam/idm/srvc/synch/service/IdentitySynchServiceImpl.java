@@ -55,16 +55,18 @@ import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.dto.UserResourceAssociation;
 import org.openiam.provision.service.ProvisionService;
+import org.openiam.util.MuleContextProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @author suneet
  *
  */
-
-public class IdentitySynchServiceImpl implements IdentitySynchService, MuleContextAware {
+@Service
+public class IdentitySynchServiceImpl implements IdentitySynchService {
 
     @Autowired
     private SynchConfigDAO synchConfigDao;
@@ -73,7 +75,6 @@ public class IdentitySynchServiceImpl implements IdentitySynchService, MuleConte
     @Autowired
     private AdapterFactory adapterFactory;
 
-    private MuleContext muleContext;
     @Autowired
     private UserDataService userManager;
     @Autowired
@@ -82,8 +83,6 @@ public class IdentitySynchServiceImpl implements IdentitySynchService, MuleConte
     private UserDozerConverter userDozerConverter;
     @Autowired
     private SynchConfigDozerConverter synchConfigDozerConverter;
-    @Autowired
-    private ManagedSystemService managedSystemService;
 
     @Value("${openiam.service_base}")
     private String serviceHost;
@@ -348,7 +347,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService, MuleConte
             msgPropMap.put("SERVICE_CONTEXT", serviceContext);
 
             //Create the client with the context
-            MuleClient client = new MuleClient(muleContext);
+            MuleClient client = new MuleClient(MuleContextProvider.getCtx());
             client.sendAsync("vm://provisionServiceModifyMessage", pUser, msgPropMap);
 
         } catch (Exception e) {
@@ -477,8 +476,4 @@ public class IdentitySynchServiceImpl implements IdentitySynchService, MuleConte
         return attributeMapDAO.getByExample(searchBean);
     }
 
-    @Override
-    public void setMuleContext(MuleContext muleContext) {
-        this.muleContext = muleContext;
-    }
 }

@@ -48,6 +48,7 @@ import org.openiam.idm.srvc.meta.service.MetadataService;
 import org.openiam.idm.srvc.msg.dto.NotificationParam;
 import org.openiam.idm.srvc.msg.dto.NotificationRequest;
 import org.openiam.idm.srvc.msg.service.MailService;
+import org.openiam.idm.srvc.msg.service.MailTemplateParameters;
 import org.openiam.idm.srvc.user.domain.SupervisorEntity;
 import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
@@ -1287,9 +1288,9 @@ public class UserDataWebServiceImpl implements UserDataWebService{
         final NotificationRequest notificationRequest = new NotificationRequest();
         notificationRequest.setUserId(user.getUserId());
         notificationRequest.setNotificationType("NEW_USER_EMAIL");
-        notificationRequest.getParamList().add(new NotificationParam("IDENTITY", identity));
-        notificationRequest.getParamList().add(new NotificationParam("PSWD", password));
-        notificationRequest.getParamList().add(new NotificationParam("USER_ID", user.getUserId()));
+        notificationRequest.getParamList().add(new NotificationParam(MailTemplateParameters.IDENTITY.value(), identity));
+        notificationRequest.getParamList().add(new NotificationParam(MailTemplateParameters.PASSWORD.value(), password));
+        notificationRequest.getParamList().add(new NotificationParam(MailTemplateParameters.USER_ID.value(), user.getUserId()));
         final boolean sendEmailResult = mailService.sendNotification(notificationRequest);
         if (!sendEmailResult) {
             throw new BasicDataServiceException(ResponseCode.SEND_EMAIL_FAILED);
@@ -1371,9 +1372,9 @@ public class UserDataWebServiceImpl implements UserDataWebService{
             final NotificationRequest notificationRequest = new NotificationRequest();
             notificationRequest.setUserId(userId);
             notificationRequest.setNotificationType("NEW_USER_EMAIL");
-            notificationRequest.getParamList().add(new NotificationParam("IDENTITY", login));
-            notificationRequest.getParamList().add(new NotificationParam("PSWD", password));
-            notificationRequest.getParamList().add(new NotificationParam("USER_ID", userId));
+            notificationRequest.getParamList().add(new NotificationParam(MailTemplateParameters.IDENTITY.value(), login));
+            notificationRequest.getParamList().add(new NotificationParam(MailTemplateParameters.PASSWORD.value(), password));
+            notificationRequest.getParamList().add(new NotificationParam(MailTemplateParameters.USER_ID.value(), userId));
             final boolean sendEmailResult = mailService.sendNotification(notificationRequest);
             if (!sendEmailResult) {
                 throw new BasicDataServiceException(ResponseCode.SEND_EMAIL_FAILED);

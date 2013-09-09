@@ -23,13 +23,12 @@ package org.openiam.idm.srvc.synch.ws;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.mule.api.MuleContext;
-import org.mule.api.context.MuleContextAware;
 import org.mule.module.client.MuleClient;
-import org.openiam.idm.srvc.synch.dto.SyncResponse;
 import org.openiam.idm.srvc.synch.dto.SynchConfig;
-import org.openiam.idm.srvc.synch.service.generic.GenericObjectSynchService;
+import org.openiam.util.MuleContextProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import javax.jws.WebService;
 import java.util.HashMap;
@@ -44,10 +43,10 @@ import java.util.Map;
 		targetNamespace = "http://www.openiam.org/service/synch", 
 		portName = "AsynchGenericObjectSynchServicePort",
 		serviceName = "AsynchGenericObjectSynchService")
-public class AsynchGenericObjectSynchServiceImpl implements AsynchGenericObjectSynchService, MuleContextAware {
-
+@Component("asynchGenericObjSynchServiceWS")
+public class AsynchGenericObjectSynchServiceImpl implements AsynchGenericObjectSynchService {
+    @Autowired
 	protected GenericObjectSynchWebService synchService;
-    protected MuleContext muleContext;
 
     protected static final Log log = LogFactory.getLog(AsynchGenericObjectSynchServiceImpl.class);
 
@@ -69,7 +68,7 @@ public class AsynchGenericObjectSynchServiceImpl implements AsynchGenericObjectS
 
 
             //Create the client with the context
-            MuleClient client = new MuleClient(muleContext);
+            MuleClient client = new MuleClient(MuleContextProvider.getCtx());
             client.sendAsync("vm://genericObjectSynchronizationMessage", (SynchConfig) config, msgPropMap);
 
 
@@ -81,20 +80,4 @@ public class AsynchGenericObjectSynchServiceImpl implements AsynchGenericObjectS
         log.debug("A-START SYNCH END ---------------------");
     }
 
-
-    public void setMuleContext(MuleContext ctx) {
-
-        log.debug("** setMuleContext called. **");
-
-        muleContext = ctx;
-
-    }
-
-    public GenericObjectSynchWebService getSynchService() {
-        return synchService;
-    }
-
-    public void setSynchService(GenericObjectSynchWebService synchService) {
-        this.synchService = synchService;
-    }
 }

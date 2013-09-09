@@ -3,7 +3,9 @@ package org.openiam.idm.srvc.mngsys.service;
 // Generated Nov 3, 2008 12:14:44 AM by Hibernate Tools 3.2.2.GA
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.hibernate.Criteria;
+import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
 import org.openiam.core.dao.BaseDaoImpl;
@@ -22,7 +24,44 @@ import static org.hibernate.criterion.Example.create;
 @Repository("managedSysDAO")
 public class ManagedSysDAOImpl extends BaseDaoImpl<ManagedSysEntity, String> implements ManagedSysDAO {
 
-    @SuppressWarnings(value = "unchecked")
+	
+	
+    @Override
+	protected Criteria getExampleCriteria(ManagedSysEntity example) {
+		final Criteria criteria = getCriteria();
+		if(example != null) {
+			if(StringUtils.isNotBlank(example.getManagedSysId())) {
+				criteria.add(Restrictions.eq("managedSysId", example.getManagedSysId()));
+			} else {
+				if(StringUtils.isNotBlank(example.getName())) {
+					String name = example.getName();
+					MatchMode matchMode = null;
+					if (StringUtils.indexOf(name, "*") == 0) {
+						matchMode = MatchMode.END;
+						name = name.substring(1);
+					}
+					if (StringUtils.isNotEmpty(name) && StringUtils.indexOf(name, "*") == name.length() - 1) {
+						name = name.substring(0, name.length() - 1);
+						matchMode = (matchMode == MatchMode.END) ? MatchMode.ANYWHERE : MatchMode.START;
+					}
+
+					if (StringUtils.isNotEmpty(name)) {
+						if (matchMode != null) {
+							criteria.add(Restrictions.ilike("name", name, matchMode));
+						} else {
+							criteria.add(Restrictions.eq("name", name));
+						}
+					}
+				}
+				if(StringUtils.isNotBlank(example.getDomainId())) {
+					criteria.add(Restrictions.eq("domainId", example.getDomainId()));;
+				}
+			}
+		}
+		return criteria;
+	}
+
+	@SuppressWarnings(value = "unchecked")
 	public List<ManagedSysEntity> findbyConnectorId(String connectorId) {
 		Criteria criteria = getCriteria().add(Restrictions.eq("connectorId",connectorId)).addOrder(Order.asc("managedSysId"));
 		return (List<ManagedSysEntity>)criteria.list();

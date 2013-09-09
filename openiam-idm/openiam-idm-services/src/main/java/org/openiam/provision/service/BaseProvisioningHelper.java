@@ -33,36 +33,48 @@ import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.type.ExtensibleUser;
 import org.openiam.script.ScriptIntegration;
-import org.springframework.beans.BeansException;
+import org.openiam.util.MuleContextProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 
 /**
  * Base class that will be extended by all the helper classes that will be used by the DefaultProvisioningService
  */
-public class BaseProvisioningHelper implements ApplicationContextAware {
-
-    public static ApplicationContext ac;
+public class BaseProvisioningHelper {
+    @Autowired
     protected UserDataService userMgr;
+    @Autowired
     protected LoginDataService loginManager;
+    @Autowired
     protected LoginDAO loginDao;
     @Autowired
     protected IdmAuditLogDataService auditDataService;
+    @Autowired
     protected ManagedSystemWebService managedSysService;
+    @Autowired
     protected RoleDataService roleDataService;
+    @Autowired
     protected GroupDataService groupManager;
+    @Autowired
+    @Qualifier("connectorWsdl")
     protected String connectorWsdl;
+    @Autowired
+    @Qualifier("defaultProvisioningModel")
     protected String defaultProvisioningModel;
+    @Autowired
     protected SysConfiguration sysConfiguration;
+    @Autowired
     protected ResourceDataService resourceDataService;
+    @Autowired
     protected OrganizationDataService orgManager;
+    @Autowired
     protected PasswordService passwordDS;
     @Autowired
     protected AuditHelper auditHelper;
+    @Autowired
     protected ConnectorAdapter connectorAdapter;
+    @Autowired
     protected RemoteConnectorAdapter remoteConnectorAdapter;
 
     @Autowired
@@ -72,15 +84,8 @@ public class BaseProvisioningHelper implements ApplicationContextAware {
     @Autowired
     protected ProvisionConnectorWebService connectorService;
 
-    protected ValidateConnectionConfig validateConnection;
-    protected PasswordHistoryDAO passwordHistoryDao;
-    protected String preProcessor;
-    protected String postProcessor;
-
     @Autowired
     protected LoginDozerConverter loginDozerConverter;
-
-    protected MuleContext muleContext;
 
     @Value("${openiam.service_base}")
     private String serviceHost;
@@ -182,7 +187,7 @@ public class BaseProvisioningHelper implements ApplicationContextAware {
         reqType.setRequestID(requestId);
 
         ResponseType resp = connectorAdapter.deleteRequest(mSys, reqType,
-                muleContext);
+                MuleContextProvider.getCtx());
 
         String logid = null;
         String status = null;
@@ -228,7 +233,7 @@ public class BaseProvisioningHelper implements ApplicationContextAware {
 
         request.setScriptHandler(mSys.getDeleteHandler());
 
-        ObjectResponse resp = remoteConnectorAdapter.deleteRequest(mSys, request, connector, muleContext);
+        ObjectResponse resp = remoteConnectorAdapter.deleteRequest(mSys, request, connector, MuleContextProvider.getCtx());
 
         auditHelper.addLog("DELETE IDENTITY", auditLog.getDomainId(), auditLog.getPrincipal(),
                 "IDM SERVICE", user.getCreatedBy(), mLg.getManagedSysId(),
@@ -243,192 +248,4 @@ public class BaseProvisioningHelper implements ApplicationContextAware {
 
     }
 
-    public void setApplicationContext(ApplicationContext applicationContext)
-            throws BeansException {
-        ac = applicationContext;
-    }
-
-    public static ApplicationContext getAc() {
-        return ac;
-    }
-
-    public static void setAc(ApplicationContext ac) {
-        BaseProvisioningHelper.ac = ac;
-    }
-
-    public UserDataService getUserMgr() {
-        return userMgr;
-    }
-
-    public void setUserMgr(UserDataService userMgr) {
-        this.userMgr = userMgr;
-    }
-
-    public LoginDataService getLoginManager() {
-        return loginManager;
-    }
-
-    public void setLoginManager(LoginDataService loginManager) {
-        this.loginManager = loginManager;
-    }
-
-    public LoginDAO getLoginDao() {
-        return loginDao;
-    }
-
-    public void setLoginDao(LoginDAO loginDao) {
-        this.loginDao = loginDao;
-    }
-
-    public IdmAuditLogDataService getAuditDataService() {
-        return auditDataService;
-    }
-
-    public void setAuditDataService(IdmAuditLogDataService auditDataService) {
-        this.auditDataService = auditDataService;
-    }
-
-    public ManagedSystemWebService getManagedSysService() {
-        return managedSysService;
-    }
-
-    public void setManagedSysService(ManagedSystemWebService managedSysService) {
-        this.managedSysService = managedSysService;
-    }
-
-    public RoleDataService getRoleDataService() {
-        return roleDataService;
-    }
-
-    public void setRoleDataService(RoleDataService roleDataService) {
-        this.roleDataService = roleDataService;
-    }
-
-    public GroupDataService getGroupManager() {
-        return groupManager;
-    }
-
-    public void setGroupManager(GroupDataService groupManager) {
-        this.groupManager = groupManager;
-    }
-
-    public String getConnectorWsdl() {
-        return connectorWsdl;
-    }
-
-    public void setConnectorWsdl(String connectorWsdl) {
-        this.connectorWsdl = connectorWsdl;
-    }
-
-    public String getDefaultProvisioningModel() {
-        return defaultProvisioningModel;
-    }
-
-    public void setDefaultProvisioningModel(String defaultProvisioningModel) {
-        this.defaultProvisioningModel = defaultProvisioningModel;
-    }
-
-    public SysConfiguration getSysConfiguration() {
-        return sysConfiguration;
-    }
-
-    public void setSysConfiguration(SysConfiguration sysConfiguration) {
-        this.sysConfiguration = sysConfiguration;
-    }
-
-    public ResourceDataService getResourceDataService() {
-        return resourceDataService;
-    }
-
-    public void setResourceDataService(ResourceDataService resourceDataService) {
-        this.resourceDataService = resourceDataService;
-    }
-
-    public OrganizationDataService getOrgManager() {
-        return orgManager;
-    }
-
-    public void setOrgManager(OrganizationDataService orgManager) {
-        this.orgManager = orgManager;
-    }
-
-    public PasswordService getPasswordDS() {
-        return passwordDS;
-    }
-
-    public void setPasswordDS(PasswordService passwordDS) {
-        this.passwordDS = passwordDS;
-    }
-
-    public AuditHelper getAuditHelper() {
-        return auditHelper;
-    }
-
-    public void setAuditHelper(AuditHelper auditHelper) {
-        this.auditHelper = auditHelper;
-    }
-
-    public ConnectorAdapter getConnectorAdapter() {
-        return connectorAdapter;
-    }
-
-    public void setConnectorAdapter(ConnectorAdapter connectorAdapter) {
-        this.connectorAdapter = connectorAdapter;
-    }
-
-    public RemoteConnectorAdapter getRemoteConnectorAdapter() {
-        return remoteConnectorAdapter;
-    }
-
-    public void setRemoteConnectorAdapter(
-            RemoteConnectorAdapter remoteConnectorAdapter) {
-        this.remoteConnectorAdapter = remoteConnectorAdapter;
-    }
-
-    public ProvisionConnectorWebService getConnectorService() {
-        return connectorService;
-    }
-
-    public void setConnectorService(ProvisionConnectorWebService connectorService) {
-        this.connectorService = connectorService;
-    }
-
-    public ValidateConnectionConfig getValidateConnection() {
-        return validateConnection;
-    }
-
-    public void setValidateConnection(
-            ValidateConnectionConfig validateConnection) {
-        this.validateConnection = validateConnection;
-    }
-
-    public PasswordHistoryDAO getPasswordHistoryDao() {
-        return passwordHistoryDao;
-    }
-
-    public void setPasswordHistoryDao(PasswordHistoryDAO passwordHistoryDao) {
-        this.passwordHistoryDao = passwordHistoryDao;
-    }
-
-    public String getPreProcessor() {
-        return preProcessor;
-    }
-
-    public void setPreProcessor(String preProcessor) {
-        this.preProcessor = preProcessor;
-    }
-
-    public String getPostProcessor() {
-        return postProcessor;
-    }
-
-    public void setPostProcessor(String postProcessor) {
-        this.postProcessor = postProcessor;
-    }
-
-    public void setMuleContext(MuleContext ctx) {
-
-        muleContext = ctx;
-
-    }
 }

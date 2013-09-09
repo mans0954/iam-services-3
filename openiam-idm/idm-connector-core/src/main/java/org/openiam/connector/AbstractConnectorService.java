@@ -12,6 +12,7 @@ import org.openiam.connector.type.response.ResponseType;
 import org.openiam.connector.type.response.SearchResponse;
 import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
 import org.openiam.provision.type.ExtensibleObject;
+import org.openiam.provision.type.ExtensibleObjectType;
 import org.openiam.connector.common.constants.CommandType;
 import org.openiam.connector.common.constants.ConnectorType;
 import org.openiam.connector.common.command.ConnectorCommand;
@@ -123,11 +124,16 @@ public abstract class AbstractConnectorService implements ConnectorService,Appli
             log.error(e.getMessage(), e);
         }
         if(response!=null){
-            log.debug(String.format("%s request proceed in %s connector for %s object", commandType, connectorType, requestType.getExtensibleObject().getExtensibleObjectType()));
+            //log.debug(String.format("%s request proceed in %s connector for %s object", commandType, connectorType, requestType.getExtensibleObject().getExtensibleObjectType()));
             try {
-                ConnectorCommand cmd = connectorCommandFactory.getConnectorCommand(commandType, requestType.getExtensibleObject().getExtensibleObjectType(), this.connectorType);
+                ConnectorCommand cmd = null;
+                //in delete the object is null, setting USER as only USER is implemented now
+                //TODO needs to be fixed.
+                if (commandType ==CommandType.DELETE)
+                	cmd = connectorCommandFactory.getConnectorCommand(commandType, ExtensibleObjectType.USER, this.connectorType);
+                else
+                	cmd = connectorCommandFactory.getConnectorCommand(commandType, requestType.getExtensibleObject().getExtensibleObjectType(), this.connectorType);
                 response = (Response)cmd.execute(requestType);
-
             } catch (ConnectorDataException e) {
                 log.error(e.getMessage(), e);
                 response.setStatus(StatusCodeType.FAILURE);

@@ -1,10 +1,17 @@
 package org.openiam.idm.srvc.user.service;
 
+import java.util.Iterator;
+import java.util.List;
+
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.base.ws.ResponseCode;
+import org.openiam.dozer.converter.AddressDozerConverter;
+import org.openiam.dozer.converter.EmailAddressDozerConverter;
+import org.openiam.dozer.converter.LoginDozerConverter;
+import org.openiam.dozer.converter.PhoneDozerConverter;
+import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
-import org.openiam.dozer.converter.*;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.login.LoginDAO;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
@@ -21,11 +28,9 @@ import org.openiam.idm.srvc.user.dto.UserProfileRequestModel;
 import org.openiam.validator.EntityValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Iterator;
-import java.util.List;
 
 @Service("userProfileService")
 @Transactional
@@ -49,7 +54,7 @@ public class UserProfileServiceImpl implements UserProfileService {
     
     @Autowired
     private LoginDataService loginDataService;
-
+    
     @Autowired
     private EmailAddressDozerConverter emailAddressDozerConverter;
     
@@ -66,10 +71,18 @@ public class UserProfileServiceImpl implements UserProfileService {
     @Qualifier("entityValidator")
     private EntityValidator entityValidator;
 	
+    // @Autowired
+    // @Qualifier("sysConfiguration")
+    // protected SysConfiguration sysConfiguration;
+
+    @Value("${org.openiam.provision.service.flag}")
+    protected boolean provisionServiceFlag = true;
+
 	@Override
 	public void saveUserProfile(UserProfileRequestModel request) throws Exception {
 		final UserEntity userEntity = userDozerConverter.convertToEntity(request.getUser(), true);
 		entityValidator.isValid(userEntity);
+        pageTemplateService.validate(request);
 		
         final UserEntity dbEntity = userManager.getUser(request.getUser().getUserId());
         
@@ -186,6 +199,7 @@ public class UserProfileServiceImpl implements UserProfileService {
 		if(CollectionUtils.isEmpty(request.getEmails())) {
 			throw new BasicDataServiceException(ResponseCode.EMAIL_REQUIRED);
 		}
+        if (!provisionServiceFlag) {
 		if(CollectionUtils.isEmpty(request.getLoginList())) {
 			throw new BasicDataServiceException(ResponseCode.LOGIN_REQUIRED);
 		} 
@@ -198,80 +212,67 @@ public class UserProfileServiceImpl implements UserProfileService {
 				throw new BasicDataServiceException(ResponseCode.LOGIN_EXISTS);
 			}
 		}
-    
+        }
 		pageTemplateService.validate(request);
 	}
 
 	/*
-	@Override
-	public CreateUserToken createNewUserProfile(NewUserProfileRequestModel request)
-			throws Exception {
-        final UserEntity userEntity = userDozerConverter.convertToEntity(request.getUser(), true);
-        userEntity.setStatus(UserStatusEnum.PENDING_INITIAL_LOGIN);
-        if(StringUtils.isBlank(userEntity.getFirstName())) {
-        	throw new BasicDataServiceException(ResponseCode.FIRST_NAME_REQUIRED);
-        }
-        if(StringUtils.isBlank(userEntity.getLastName())) {
-        	throw new BasicDataServiceException(ResponseCode.LAST_NAME_REQUIRED);
-        }
-        if(CollectionUtils.isEmpty(request.getEmails())) {
-        	throw new BasicDataServiceException(ResponseCode.EMAIL_REQUIRED);
-        }
-        if(CollectionUtils.isEmpty(request.getLoginList())) {
-        	throw new BasicDataServiceException(ResponseCode.LOGIN_REQUIRED);
-        }    
-        
-        
-        final List<LoginEntity> principalList = loginDozerConverter.convertToEntityList(request.getLoginList(), true);
-        for(final LoginEntity loginEntity : principalList) {
-        	if(loginDataService.getLoginByManagedSys(loginEntity.getDomainId(), loginEntity.getLogin(), loginEntity.getManagedSysId()) != null) {
-        		throw new BasicDataServiceException(ResponseCode.LOGIN_EXISTS);
-        	}
-        }
-        
-        userManager.saveUserInfo(userEntity, null);
-        
-        final String plaintextPassword = PasswordGenerator.generatePassword(10);
-        final String encryptedPassword = loginDataService.encryptPassword(userEntity.getUserId(), plaintextPassword);
-        final String login = principalList.get(0).getLogin();
-        for(final LoginEntity loginEntity : principalList) {
-        	loginEntity.setUserId(userEntity.getUserId());
-        	loginEntity.setCreateDate(new Date());
-        	loginEntity.setFirstTimeLogin(1);
-        	loginEntity.setResetPassword(1);
-        	loginEntity.setPwdExp(new Date(0));
-        	loginEntity.setGracePeriod(new Date(0));
-        	loginEntity.setPassword(encryptedPassword);
-        	loginDAO.save(loginEntity);
-        }
-        
-        if(CollectionUtils.isNotEmpty(request.getRoleIds())) {
-        	for(final String roleId : request.getRoleIds()) {
-        		if(StringUtils.isNotBlank(roleId)) {
-        			final UserRoleEntity userRole = new UserRoleEntity();
-        			userRole.setRoleId(roleId);
-        			userRole.setUserId(userEntity.getUserId());
-        			userRoleDAO.save(userRole);
-        		}
-        	}
-        }
-        
-        //now set the user on the template
-        request.getUser().setUserId(userEntity.getUserId());
-        pageTemplateService.saveTemplate(request);
-        
-        final List<EmailAddressEntity> emailList = emailAddressDozerConverter.convertToEntityList(request.getEmails(), true);	 
-        final List<AddressEntity> addressList = addressDozerConverter.convertToEntityList(request.getAddresses(), true);
-        final List<PhoneEntity> phoneList = phoneDozerConverter.convertToEntityList(request.getPhones(), true);
-        saveEmails(userEntity, emailList);
-        saveAddresses(userEntity, addressList);
-        savePhones(userEntity, phoneList);
-        final CreateUserToken token = new CreateUserToken();
-        token.setUser(userEntity);
-        token.setPassword(plaintextPassword);
-        token.setLogin(login);
-        return token;
-	}
+     * @Override public CreateUserToken
+     * createNewUserProfile(NewUserProfileRequestModel request) throws Exception
+     * { final UserEntity userEntity =
+     * userDozerConverter.convertToEntity(request.getUser(), true);
+     * userEntity.setStatus(UserStatusEnum.PENDING_INITIAL_LOGIN);
+     * if(StringUtils.isBlank(userEntity.getFirstName())) { throw new
+     * BasicDataServiceException(ResponseCode.FIRST_NAME_REQUIRED); }
+     * if(StringUtils.isBlank(userEntity.getLastName())) { throw new
+     * BasicDataServiceException(ResponseCode.LAST_NAME_REQUIRED); }
+     * if(CollectionUtils.isEmpty(request.getEmails())) { throw new
+     * BasicDataServiceException(ResponseCode.EMAIL_REQUIRED); }
+     * if(CollectionUtils.isEmpty(request.getLoginList())) { throw new
+     * BasicDataServiceException(ResponseCode.LOGIN_REQUIRED); }
+     * 
+     * 
+     * final List<LoginEntity> principalList =
+     * loginDozerConverter.convertToEntityList(request.getLoginList(), true);
+     * for(final LoginEntity loginEntity : principalList) {
+     * if(loginDataService.getLoginByManagedSys(loginEntity.getDomainId(),
+     * loginEntity.getLogin(), loginEntity.getManagedSysId()) != null) { throw
+     * new BasicDataServiceException(ResponseCode.LOGIN_EXISTS); } }
+     * 
+     * userManager.saveUserInfo(userEntity, null);
+     * 
+     * final String plaintextPassword = PasswordGenerator.generatePassword(10);
+     * final String encryptedPassword =
+     * loginDataService.encryptPassword(userEntity.getUserId(),
+     * plaintextPassword); final String login = principalList.get(0).getLogin();
+     * for(final LoginEntity loginEntity : principalList) {
+     * loginEntity.setUserId(userEntity.getUserId());
+     * loginEntity.setCreateDate(new Date()); loginEntity.setFirstTimeLogin(1);
+     * loginEntity.setResetPassword(1); loginEntity.setPwdExp(new Date(0));
+     * loginEntity.setGracePeriod(new Date(0));
+     * loginEntity.setPassword(encryptedPassword); loginDAO.save(loginEntity); }
+     * 
+     * if(CollectionUtils.isNotEmpty(request.getRoleIds())) { for(final String
+     * roleId : request.getRoleIds()) { if(StringUtils.isNotBlank(roleId)) {
+     * final UserRoleEntity userRole = new UserRoleEntity();
+     * userRole.setRoleId(roleId); userRole.setUserId(userEntity.getUserId());
+     * userRoleDAO.save(userRole); } } }
+     * 
+     * //now set the user on the template
+     * request.getUser().setUserId(userEntity.getUserId());
+     * pageTemplateService.saveTemplate(request);
+     * 
+     * final List<EmailAddressEntity> emailList =
+     * emailAddressDozerConverter.convertToEntityList(request.getEmails(),
+     * true); final List<AddressEntity> addressList =
+     * addressDozerConverter.convertToEntityList(request.getAddresses(), true);
+     * final List<PhoneEntity> phoneList =
+     * phoneDozerConverter.convertToEntityList(request.getPhones(), true);
+     * saveEmails(userEntity, emailList); saveAddresses(userEntity,
+     * addressList); savePhones(userEntity, phoneList); final CreateUserToken
+     * token = new CreateUserToken(); token.setUser(userEntity);
+     * token.setPassword(plaintextPassword); token.setLogin(login); return
+     * token; }
 	*/
 
 	private void savePhones(final UserEntity userEntity, List<PhoneEntity> phoneList) {

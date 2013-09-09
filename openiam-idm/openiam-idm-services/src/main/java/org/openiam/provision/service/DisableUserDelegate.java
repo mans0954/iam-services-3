@@ -21,21 +21,28 @@ import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 /**
  * Class to handle the Disable User operation
  * @author suneet shah
  *
  */
+@Component("disableUser")
 public class DisableUserDelegate {
-
+    @Autowired
     protected UserDataService userMgr;
     @Autowired
     protected AuditHelper auditHelper;
+    @Autowired
     protected SysConfiguration sysConfiguration;
+    @Autowired
     protected LoginDataService loginManager;
+    @Autowired
     protected ManagedSystemWebService managedSysService;
+    @Autowired
     protected ConnectorAdapter connectorAdapter;
+    @Autowired
     protected RemoteConnectorAdapter remoteConnectorAdapter;
 
     protected static final Log log = LogFactory
@@ -174,62 +181,4 @@ public class DisableUserDelegate {
         return response;
 
     }
-
-    public UserDataService getUserMgr() {
-        return userMgr;
-    }
-
-    public void setUserMgr(UserDataService userMgr) {
-        this.userMgr = userMgr;
-    }
-
-    public AuditHelper getAuditHelper() {
-        return auditHelper;
-    }
-
-    public void setAuditHelper(AuditHelper auditHelper) {
-        this.auditHelper = auditHelper;
-    }
-
-    public SysConfiguration getSysConfiguration() {
-        return sysConfiguration;
-    }
-
-    public void setSysConfiguration(SysConfiguration sysConfiguration) {
-        this.sysConfiguration = sysConfiguration;
-    }
-
-    public LoginDataService getLoginManager() {
-        return loginManager;
-    }
-
-    public void setLoginManager(LoginDataService loginManager) {
-        this.loginManager = loginManager;
-    }
-
-    public ManagedSystemWebService getManagedSysService() {
-        return managedSysService;
-    }
-
-    public void setManagedSysService(ManagedSystemWebService managedSysService) {
-        this.managedSysService = managedSysService;
-    }
-
-    public ConnectorAdapter getConnectorAdapter() {
-        return connectorAdapter;
-    }
-
-    public void setConnectorAdapter(ConnectorAdapter connectorAdapter) {
-        this.connectorAdapter = connectorAdapter;
-    }
-
-    public RemoteConnectorAdapter getRemoteConnectorAdapter() {
-        return remoteConnectorAdapter;
-    }
-
-    public void setRemoteConnectorAdapter(
-            RemoteConnectorAdapter remoteConnectorAdapter) {
-        this.remoteConnectorAdapter = remoteConnectorAdapter;
-    }
-
 }

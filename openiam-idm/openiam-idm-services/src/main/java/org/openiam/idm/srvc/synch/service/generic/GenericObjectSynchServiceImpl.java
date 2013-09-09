@@ -10,7 +10,8 @@ import org.openiam.idm.srvc.synch.dto.SynchConfig;
 import org.openiam.idm.srvc.synch.service.SourceAdapter;
 import org.openiam.idm.srvc.synch.service.SynchConfigDAO;
 import org.openiam.idm.srvc.synch.service.SynchConfigDataMappingDAO;
-import org.openiam.idm.srvc.synch.service.generic.SourceAdapterFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
 
@@ -19,10 +20,13 @@ import java.sql.Timestamp;
  * Groups, Roles, Organizations and others. Synchronization for these activities is initiated from
  * startSynchronization()
  */
+@Service
 public class GenericObjectSynchServiceImpl implements GenericObjectSynchService {
-    protected MuleContext muleContext;
+    @Autowired
     protected SynchConfigDAO synchConfigDao;
+    @Autowired
     protected SynchConfigDataMappingDAO synchConfigMappingDao;
+    @Autowired
     protected SourceAdapterFactory adapterFactory;
 
     private static final Log log = LogFactory.getLog(GenericObjectSynchServiceImpl.class);
@@ -74,32 +78,4 @@ public class GenericObjectSynchServiceImpl implements GenericObjectSynchService 
         }
     }
 
-    public void setMuleContext(MuleContext ctx) {
-
-        muleContext = ctx;
-    }
-
-    public SynchConfigDAO getSynchConfigDao() {
-        return synchConfigDao;
-    }
-
-    public void setSynchConfigDao(SynchConfigDAO synchConfigDao) {
-        this.synchConfigDao = synchConfigDao;
-    }
-
-    public SynchConfigDataMappingDAO getSynchConfigMappingDao() {
-        return synchConfigMappingDao;
-    }
-
-    public void setSynchConfigMappingDao(SynchConfigDataMappingDAO synchConfigMappingDao) {
-        this.synchConfigMappingDao = synchConfigMappingDao;
-    }
-
-    public SourceAdapterFactory getAdapterFactory() {
-        return adapterFactory;
-    }
-
-    public void setAdapterFactory(SourceAdapterFactory adapterFactory) {
-        this.adapterFactory = adapterFactory;
-    }
 }
