@@ -603,7 +603,7 @@ public class ConnectorAdapter {
             }
             return type;
         } catch (Exception e) {
-            log.error(e);
+            log.error("Can't test connection", e);
 
             type.setError(ErrorCode.OTHER_ERROR);
             type.addErrorMessage(e.toString());
