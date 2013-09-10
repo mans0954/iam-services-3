@@ -25,10 +25,9 @@ public class UserResourceAssociation {
     private String managedSystemId;
 
     // default to ADD
-    private AttributeOperationEnum operation = AttributeOperationEnum.ADD;
+    private AttributeOperationEnum operation = AttributeOperationEnum.NO_CHANGE;
 
     public UserResourceAssociation() {
-
     }
 
     public UserResourceAssociation(String resourceId, AttributeOperationEnum operation) {
