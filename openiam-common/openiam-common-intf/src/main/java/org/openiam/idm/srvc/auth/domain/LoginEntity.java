@@ -2,6 +2,7 @@ package org.openiam.idm.srvc.auth.domain;
 // Generated Feb 18, 2008 3:56:06 PM by Hibernate Tools 3.2.0.b11
 
 
+import org.apache.commons.lang.StringUtils;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.Fetch;
@@ -384,6 +385,7 @@ public class LoginEntity implements java.io.Serializable {
 
 	public void setLogin(String login) {
 		this.login = login;
+        this.lowerCaseLogin = loginId.toLowerCase();
 	}
 
 	public String getManagedSysId() {
