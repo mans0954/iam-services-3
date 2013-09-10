@@ -288,8 +288,6 @@ public abstract class AbstractProvisioningService implements ProvisionService {
         if (connector.getConnectorInterface() != null &&
                 connector.getConnectorInterface().equalsIgnoreCase("REMOTE")) {
 
-
-
             SearchResponse lookupRespType = remoteConnectorAdapter.lookupRequest(mSys, reqType, connector, muleContext);
 
             if (lookupRespType != null && lookupRespType.getStatus() == StatusCodeType.SUCCESS) {
@@ -350,165 +348,165 @@ public abstract class AbstractProvisioningService implements ProvisionService {
 
         }
 */
-        protected void sendResetPasswordToUser(UserEntity user, String principal, String password) {
-            try {
-                MuleClient client = new MuleClient(MuleContextProvider.getCtx());
+    protected void sendResetPasswordToUser(UserEntity user, String principal, String password) {
+        try {
+            MuleClient client = new MuleClient(MuleContextProvider.getCtx());
 
-                List<NotificationParam> msgParams = new LinkedList<NotificationParam>();
-                msgParams.add(new NotificationParam(MailTemplateParameters.SERVICE_HOST.value(), serviceHost));
-                msgParams.add(new NotificationParam(MailTemplateParameters.SERVICE_CONTEXT.value(), serviceContext));
-                msgParams.add(new NotificationParam(MailTemplateParameters.USER_ID.value(), user.getUserId()));
-                msgParams.add(new NotificationParam(MailTemplateParameters.PASSWORD.value(), password));
-                msgParams.add(new NotificationParam(MailTemplateParameters.IDENTITY.value(), principal));
-                msgParams.add(new NotificationParam(MailTemplateParameters.FIRST_NAME.value(), user.getFirstName()));
-                msgParams.add(new NotificationParam(MailTemplateParameters.LAST_NAME.value(), user.getLastName()));
+            List<NotificationParam> msgParams = new LinkedList<NotificationParam>();
+            msgParams.add(new NotificationParam(MailTemplateParameters.SERVICE_HOST.value(), serviceHost));
+            msgParams.add(new NotificationParam(MailTemplateParameters.SERVICE_CONTEXT.value(), serviceContext));
+            msgParams.add(new NotificationParam(MailTemplateParameters.USER_ID.value(), user.getUserId()));
+            msgParams.add(new NotificationParam(MailTemplateParameters.PASSWORD.value(), password));
+            msgParams.add(new NotificationParam(MailTemplateParameters.IDENTITY.value(), principal));
+            msgParams.add(new NotificationParam(MailTemplateParameters.FIRST_NAME.value(), user.getFirstName()));
+            msgParams.add(new NotificationParam(MailTemplateParameters.LAST_NAME.value(), user.getLastName()));
 
-                Map<String, String> msgProp = new HashMap<String, String>();
-                msgProp.put("SERVICE_HOST", serviceHost);
-                msgProp.put("SERVICE_CONTEXT", serviceContext);
-                NotificationRequest  notificationRequest = new NotificationRequest();
-                notificationRequest.setUserId(user.getUserId());
-                notificationRequest.setParamList(msgParams);
-                notificationRequest.setNotificationType(PASSWORD_EMAIL_NOTIFICATION);
+            Map<String, String> msgProp = new HashMap<String, String>();
+            msgProp.put("SERVICE_HOST", serviceHost);
+            msgProp.put("SERVICE_CONTEXT", serviceContext);
+            NotificationRequest  notificationRequest = new NotificationRequest();
+            notificationRequest.setUserId(user.getUserId());
+            notificationRequest.setParamList(msgParams);
+            notificationRequest.setNotificationType(PASSWORD_EMAIL_NOTIFICATION);
 
 
-                client.sendAsync("vm://notifyUserByEmailMessage", notificationRequest, msgProp);
+            client.sendAsync("vm://notifyUserByEmailMessage", notificationRequest, msgProp);
 
-            } catch (MuleException me) {
-                log.error(me.toString());
-            }
-
+        } catch (MuleException me) {
+            log.error(me.toString());
         }
 
-        protected void sendCredentialsToUser(User user, String identity, String password) {
+    }
 
-            try {
-                MuleClient client = new MuleClient(MuleContextProvider.getCtx());
+    protected void sendCredentialsToUser(User user, String identity, String password) {
 
-                List<NotificationParam> msgParams = new LinkedList<NotificationParam>();
-                msgParams.add(new NotificationParam(MailTemplateParameters.SERVICE_HOST.value(), serviceHost));
-                msgParams.add(new NotificationParam(MailTemplateParameters.SERVICE_CONTEXT.value(), serviceContext));
-                msgParams.add(new NotificationParam(MailTemplateParameters.USER_ID.value(), user.getUserId()));
-                msgParams.add(new NotificationParam(MailTemplateParameters.IDENTITY.value(), identity));
-                msgParams.add(new NotificationParam(MailTemplateParameters.PASSWORD.value(), password));
-                msgParams.add(new NotificationParam(MailTemplateParameters.FIRST_NAME.value(), user.getFirstName()));
-                msgParams.add(new NotificationParam(MailTemplateParameters.LAST_NAME.value(), user.getLastName()));
+        try {
+            MuleClient client = new MuleClient(MuleContextProvider.getCtx());
 
-                Map<String, String> msgProp = new HashMap<String, String>();
-                msgProp.put("SERVICE_HOST", serviceHost);
-                msgProp.put("SERVICE_CONTEXT", serviceContext);
-                NotificationRequest  notificationRequest = new NotificationRequest();
-                notificationRequest.setUserId(user.getUserId());
-                notificationRequest.setParamList(msgParams);
-                notificationRequest.setNotificationType(NEW_USER_EMAIL_NOTIFICATION);
+            List<NotificationParam> msgParams = new LinkedList<NotificationParam>();
+            msgParams.add(new NotificationParam(MailTemplateParameters.SERVICE_HOST.value(), serviceHost));
+            msgParams.add(new NotificationParam(MailTemplateParameters.SERVICE_CONTEXT.value(), serviceContext));
+            msgParams.add(new NotificationParam(MailTemplateParameters.USER_ID.value(), user.getUserId()));
+            msgParams.add(new NotificationParam(MailTemplateParameters.IDENTITY.value(), identity));
+            msgParams.add(new NotificationParam(MailTemplateParameters.PASSWORD.value(), password));
+            msgParams.add(new NotificationParam(MailTemplateParameters.FIRST_NAME.value(), user.getFirstName()));
+            msgParams.add(new NotificationParam(MailTemplateParameters.LAST_NAME.value(), user.getLastName()));
 
-                client.sendAsync("vm://notifyUserByEmailMessage", notificationRequest, msgProp);
+            Map<String, String> msgProp = new HashMap<String, String>();
+            msgProp.put("SERVICE_HOST", serviceHost);
+            msgProp.put("SERVICE_CONTEXT", serviceContext);
+            NotificationRequest  notificationRequest = new NotificationRequest();
+            notificationRequest.setUserId(user.getUserId());
+            notificationRequest.setParamList(msgParams);
+            notificationRequest.setNotificationType(NEW_USER_EMAIL_NOTIFICATION);
 
-            } catch (MuleException me) {
-                log.error(me.toString());
-            }
+            client.sendAsync("vm://notifyUserByEmailMessage", notificationRequest, msgProp);
 
+        } catch (MuleException me) {
+            log.error(me.toString());
         }
 
-        protected void sendCredentialsToSupervisor(User user, String identity, String password, String name) {
+    }
 
-            try {
-                MuleClient client = new MuleClient(MuleContextProvider.getCtx());
+    protected void sendCredentialsToSupervisor(User user, String identity, String password, String name) {
 
-                List<NotificationParam> msgParams = new LinkedList<NotificationParam>();
-                msgParams.add(new NotificationParam(MailTemplateParameters.SERVICE_HOST.value(), serviceHost));
-                msgParams.add(new NotificationParam(MailTemplateParameters.SERVICE_CONTEXT.value(), serviceContext));
-                msgParams.add(new NotificationParam(MailTemplateParameters.USER_ID.value(), user.getUserId()));
-                msgParams.add(new NotificationParam(MailTemplateParameters.IDENTITY.value(), identity));
-                msgParams.add(new NotificationParam(MailTemplateParameters.PASSWORD.value(), password));
-                msgParams.add(new NotificationParam(MailTemplateParameters.USER_NAME.value(), name));
-                msgParams.add(new NotificationParam(MailTemplateParameters.FIRST_NAME.value(), user.getFirstName()));
-                msgParams.add(new NotificationParam(MailTemplateParameters.LAST_NAME.value(), user.getLastName()));
+        try {
+            MuleClient client = new MuleClient(MuleContextProvider.getCtx());
 
-                Map<String, String> msgProp = new HashMap<String, String>();
-                msgProp.put("SERVICE_HOST", serviceHost);
-                msgProp.put("SERVICE_CONTEXT", serviceContext);
-                NotificationRequest notificationRequest = new NotificationRequest();
-                notificationRequest.setUserId(user.getUserId());
-                notificationRequest.setNotificationType(NEW_USER_EMAIL_SUPERVISOR_NOTIFICATION);
-                notificationRequest.setParamList(msgParams);
-                client.sendAsync("vm://notifyUserByEmailMessage",notificationRequest, msgProp);
+            List<NotificationParam> msgParams = new LinkedList<NotificationParam>();
+            msgParams.add(new NotificationParam(MailTemplateParameters.SERVICE_HOST.value(), serviceHost));
+            msgParams.add(new NotificationParam(MailTemplateParameters.SERVICE_CONTEXT.value(), serviceContext));
+            msgParams.add(new NotificationParam(MailTemplateParameters.USER_ID.value(), user.getUserId()));
+            msgParams.add(new NotificationParam(MailTemplateParameters.IDENTITY.value(), identity));
+            msgParams.add(new NotificationParam(MailTemplateParameters.PASSWORD.value(), password));
+            msgParams.add(new NotificationParam(MailTemplateParameters.USER_NAME.value(), name));
+            msgParams.add(new NotificationParam(MailTemplateParameters.FIRST_NAME.value(), user.getFirstName()));
+            msgParams.add(new NotificationParam(MailTemplateParameters.LAST_NAME.value(), user.getLastName()));
 
-            } catch (MuleException me) {
-                log.error(me.toString());
-            }
+            Map<String, String> msgProp = new HashMap<String, String>();
+            msgProp.put("SERVICE_HOST", serviceHost);
+            msgProp.put("SERVICE_CONTEXT", serviceContext);
+            NotificationRequest notificationRequest = new NotificationRequest();
+            notificationRequest.setUserId(user.getUserId());
+            notificationRequest.setNotificationType(NEW_USER_EMAIL_SUPERVISOR_NOTIFICATION);
+            notificationRequest.setParamList(msgParams);
+            client.sendAsync("vm://notifyUserByEmailMessage",notificationRequest, msgProp);
 
+        } catch (MuleException me) {
+            log.error(me.toString());
         }
 
-        public ProvisionUserResponse createUser(ProvisionUser user, List<IdmAuditLog> logList) {
+    }
 
-            ProvisionUserResponse resp = new ProvisionUserResponse();
-            resp.setStatus(ResponseStatus.SUCCESS);
-            ResponseCode code;
+    public ProvisionUserResponse createUser(ProvisionUser pUser, List<IdmAuditLog> logList) {
 
-            User newUser = user.getUser();
-            UserEntity userEntity = userDozerConverter.convertToEntity(newUser, true);
-            if(MapUtils.isNotEmpty(userEntity.getUserAttributes())) {
-            	for(final UserAttributeEntity entity : userEntity.getUserAttributes().values()) {
-            		if(entity != null) {
-            			entity.setUser(userEntity);
-                        entity.getElement();
-            		}
-            	}
-            }
-            try {
-                userMgr.addUser(userEntity);
-                newUser.setUserId(userEntity.getUserId());
-            } catch (Exception e) {
-                log.error("Exception while creating user", e);
-                resp.setStatus(ResponseStatus.FAILURE);
-                resp.setErrorCode(ResponseCode.FAIL_OTHER);
-                return resp;
-            }
+        ProvisionUserResponse resp = new ProvisionUserResponse();
+        resp.setStatus(ResponseStatus.SUCCESS);
+        ResponseCode code;
 
-            if (newUser == null || newUser.getUserId() == null) {
-                resp.setStatus(ResponseStatus.FAILURE);
-                resp.setErrorCode(ResponseCode.INTERNAL_ERROR);
-                return resp;
+        UserEntity userEntity = userDozerConverter.convertToEntity(pUser.getUser(), true);
+        if(MapUtils.isNotEmpty(userEntity.getUserAttributes())) {
+            for(final UserAttributeEntity entity : userEntity.getUserAttributes().values()) {
+                if(entity != null) {
+                    entity.setUser(userEntity);
+                    entity.getElement();
+                }
             }
-            user.setUserId(newUser.getUserId());
-            log.debug("User id=" + newUser.getUserId() + " created in openiam repository");
-
-            code = addSupervisors(user);
-            if (code != ResponseCode.SUCCESS) {
-                resp.setStatus(ResponseStatus.FAILURE);
-                resp.setErrorCode(code);
-                return resp;
-            }
-
-            try {
-                addPrincipals(user, user.getUserId());
-            } catch(EncryptionException e) {
-                resp.setStatus(ResponseStatus.FAILURE);
-                resp.setErrorCode(ResponseCode.FAIL_ENCRYPTION);
-                return resp;
-            }
-            code = addGroups(user, newUser.getUserId(), logList);
-            if (code != ResponseCode.SUCCESS) {
-                resp.setStatus(ResponseStatus.FAILURE);
-                resp.setErrorCode(code);
-                return resp;
-            }
-            code = addRoles(user, userEntity, logList);
-            if (code != ResponseCode.SUCCESS) {
-                resp.setStatus(ResponseStatus.FAILURE);
-                resp.setErrorCode(code);
-                return resp;
-            }
-            code = addAffiliations(user, newUser.getUserId(), logList);
-            if (code != ResponseCode.SUCCESS) {
-                resp.setStatus(ResponseStatus.FAILURE);
-                resp.setErrorCode(code);
-                return resp;
-            }
-
+        }
+        try {
+            userMgr.addUser(userEntity);
+        } catch (Exception e) {
+            log.error("Exception while creating user", e);
+            resp.setStatus(ResponseStatus.FAILURE);
+            resp.setErrorCode(ResponseCode.FAIL_OTHER);
             return resp;
         }
+
+        if (userEntity.getUserId() == null) {
+            resp.setStatus(ResponseStatus.FAILURE);
+            resp.setErrorCode(ResponseCode.INTERNAL_ERROR);
+            return resp;
+        }
+        log.debug("User id=" + userEntity.getUserId() + " created in openiam repository");
+
+        code = addSupervisors(pUser, userEntity);
+        if (code != ResponseCode.SUCCESS) {
+            resp.setStatus(ResponseStatus.FAILURE);
+            resp.setErrorCode(code);
+            return resp;
+        }
+
+        try {
+            addPrincipals(userEntity);
+        } catch(EncryptionException e) {
+            resp.setStatus(ResponseStatus.FAILURE);
+            resp.setErrorCode(ResponseCode.FAIL_ENCRYPTION);
+            return resp;
+        }
+        code = addGroups(pUser, userEntity, logList);
+        if (code != ResponseCode.SUCCESS) {
+            resp.setStatus(ResponseStatus.FAILURE);
+            resp.setErrorCode(code);
+            return resp;
+        }
+        code = addRoles(pUser, userEntity, logList);
+        if (code != ResponseCode.SUCCESS) {
+            resp.setStatus(ResponseStatus.FAILURE);
+            resp.setErrorCode(code);
+            return resp;
+        }
+        code = addAffiliations(pUser, userEntity, logList);
+        if (code != ResponseCode.SUCCESS) {
+            resp.setStatus(ResponseStatus.FAILURE);
+            resp.setErrorCode(code);
+            return resp;
+        }
+        //TODO: add resources
+        userMgr.updateUser(userEntity);
+        ProvisionUser finalUser = new ProvisionUser(userMgr.getUserDto(userEntity.getUserId()));
+        resp.setUser(finalUser);
+        return resp;
+    }
 
     private boolean containsEmail(String name, Set<EmailAddress> emailAddressSet) {
 
@@ -542,12 +540,12 @@ public abstract class AbstractProvisioningService implements ProvisionService {
 
     }
 
-    private ResponseCode addSupervisors(ProvisionUser u) {
+    private ResponseCode addSupervisors(ProvisionUser u, UserEntity entity) {
         Set<User> superiors = u.getSuperiors();
         if (CollectionUtils.isNotEmpty(superiors)) {
             for (User s : superiors) {
                 try {
-                    userMgr.addSuperior(s.getUserId(), u.getUserId());
+                    userMgr.addSuperior(s.getUserId(), entity.getUserId());
                     log.info("created user supervisor");
 
                 } catch (Exception e) {
@@ -558,41 +556,40 @@ public abstract class AbstractProvisioningService implements ProvisionService {
         return ResponseCode.SUCCESS;
     }
 
-    private void addPrincipals(final ProvisionUser u, final String userId) throws EncryptionException {
-        List<Login> principalList = u.getPrincipalList();
-        if(CollectionUtils.isNotEmpty(principalList)) {
-            for (final Login lg: principalList) {
-                lg.setFirstTimeLogin(1);
-                lg.setIsLocked(0);
-                lg.setCreateDate(new Date(System.currentTimeMillis()));
-                lg.setUserId(userId);
-                lg.setStatus("ACTIVE");
+    private void addPrincipals(UserEntity entity) throws EncryptionException {
+        if(CollectionUtils.isNotEmpty(entity.getPrincipalList())) {
+            for (LoginEntity e: entity.getPrincipalList()) {
+                e.setFirstTimeLogin(1);
+                e.setIsLocked(0);
+                e.setCreateDate(new Date(System.currentTimeMillis()));
+                e.setStatus("ACTIVE");
+                e.setUserId(entity.getUserId());
                 // encrypt the password
-                if (lg.getPassword() != null) {
-                    final String pswd = lg.getPassword();
-                    lg.setPassword(loginManager.encryptPassword(userId, pswd));
-                }
-                loginManager.addLogin(loginDozerConverter.convertToEntity(lg, true));
+//                if (e.getPassword() != null) {
+//                    final String pswd = e.getPassword();
+//                    e.setPassword(loginManager.encryptPassword(entity.getUserId(), pswd));
+//                }
             }
         }
     }
 
-    private ResponseCode addGroups(ProvisionUser user, String newUserId, List<IdmAuditLog> logList) {
+    private ResponseCode addGroups(ProvisionUser user, UserEntity entity, List<IdmAuditLog> logList) {
         List<Group> groupList = user.getMemberOfGroups();
 
-        if (groupList != null) {
+        if (CollectionUtils.isNotEmpty(groupList)) {
             for ( Group g : groupList) {
                 // check if the group id is valid
                 if (g.getGrpId() == null) {
                     return ResponseCode.GROUP_ID_NULL;
                 }
-                if ( groupManager.getGroup(g.getGrpId()) == null)  {
-                    if (g.getGrpId() == null) {
-                        return ResponseCode.GROUP_ID_NULL;
-                    }
+                GroupEntity ge = null;
+                if (g.getGrpId() != null) {
+                    ge = groupManager.getGroup(g.getGrpId());
                 }
-                g.setOperation(AttributeOperationEnum.ADD);
-                userMgr.addUserToGroup(g.getGrpId(), newUserId);
+                if (ge == null) {
+                    return ResponseCode.GROUP_ID_NULL;
+                }
+                entity.getGroups().add(ge);
                 // add to audit log
                 logList.add( auditHelper.createLogObject("ADD GROUP",
                         user.getRequestorDomain(), user.getRequestorLogin(),
@@ -607,25 +604,24 @@ public abstract class AbstractProvisioningService implements ProvisionService {
         return ResponseCode.SUCCESS;
     }
 
-    private ResponseCode addRoles(ProvisionUser user, UserEntity userEntity, List<IdmAuditLog> logList) {
+    private ResponseCode addRoles(ProvisionUser user, UserEntity entity, List<IdmAuditLog> logList) {
         List<Role> roleList = user.getMemberOfRoles();
         log.debug("Role list = " + roleList);
-        if (roleList != null && roleList.size() > 0) {
+        if (CollectionUtils.isNotEmpty(roleList)) {
             for (Role r: roleList) {
                 if (r.getServiceId() == null){
                     r.setServiceId(sysConfiguration.getDefaultSecurityDomain());
                 }
                 // check if the roleId is valid
-                if (r.getRoleId() == null) {
+                RoleEntity re = null;
+                if (r.getRoleId() != null ) {
+                    re = roleDataService.getRole(r.getRoleId());
+                }
+                if (re == null) {
                     return ResponseCode.ROLE_ID_NULL;
                 }
-                if (roleDataService.getRole(r.getRoleId()) == null ) {
-                    return ResponseCode.ROLE_ID_INVALID;
-                }
-                RoleEntity re = roleDataService.getRole(r.getRoleId());
-                userEntity.getRoles().add(re);
-
-
+                entity.getRoles().add(re);
+                // add to audit log
                 logList.add( auditHelper.createLogObject("ADD ROLE",
                         user.getRequestorDomain(), user.getRequestorLogin(),
                         "IDM SERVICE", user.getCreatedBy(), "0", "USER", user.getUserId(),
@@ -639,17 +635,20 @@ public abstract class AbstractProvisioningService implements ProvisionService {
         return ResponseCode.SUCCESS;
     }
 
-    private ResponseCode addAffiliations(ProvisionUser user, String newUserId, List<IdmAuditLog> logList) {
+    private ResponseCode addAffiliations(ProvisionUser user, UserEntity entity, List<IdmAuditLog> logList) {
         List<Organization> affiliationList = user.getUserAffiliations();
         log.debug("addAffiliations:Affiliation List list = " + affiliationList);
-        if (affiliationList != null && affiliationList.size() > 0) {
+        if (CollectionUtils.isNotEmpty(affiliationList)) {
             for (Organization org: affiliationList) {
-                // check if the roleId is valid
-                if (org.getId() == null) {
+                // check if the organization Id is valid
+                OrganizationEntity oe = null;
+                if (org.getId() != null) {
+                    oe = organizationService.getOrganization(org.getId(), null);
+                }
+                if (oe == null) {
                     return ResponseCode.OBJECT_ID_INVALID;
                 }
-                orgManager.addUserToOrg(org.getId(), user.getUserId());
-
+                entity.getAffiliations().add(oe);
                 logList.add( auditHelper.createLogObject("ADD AFFILIATION",
                         user.getRequestorDomain(), user.getRequestorLogin(),
                         "IDM SERVICE", user.getCreatedBy(), "0", "USER", user.getUserId(),
@@ -1697,7 +1696,7 @@ public abstract class AbstractProvisioningService implements ProvisionService {
                     return;
 
                 } else if (operation == AttributeOperationEnum.ADD) {
-                    OrganizationEntity org = organizationService.getOrganization(o.getId(), origUser.getUserId());
+                    OrganizationEntity org = organizationService.getOrganization(o.getId(), null);
                     origUser.getAffiliations().add(org);
 
                 } else if (operation == AttributeOperationEnum.DELETE) {
