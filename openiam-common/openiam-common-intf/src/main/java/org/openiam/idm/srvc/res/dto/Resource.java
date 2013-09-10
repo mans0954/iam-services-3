@@ -36,7 +36,6 @@ import org.openiam.idm.srvc.user.dto.User;
         "roles",
         "resourceProps",
         "groups",
-        "users",
         "resOwnerUserId",
         "resOwnerGroupId",
         "childResources",
@@ -75,7 +74,6 @@ public class Resource extends BaseObject {
     private Set<ResourceProp> resourceProps = new HashSet<ResourceProp>(0); // defined as a Set in Hibernate map
 
     private Set<Group> groups = new HashSet<Group>(0);
-    private Set<User> users = new HashSet<User>(0);
     private String minAuthLevel;
     private String domain;
     private boolean isPublic = true;
@@ -266,14 +264,6 @@ public class Resource extends BaseObject {
 
     public void setGroups(Set<Group> groups) {
         this.groups = groups;
-    }
-
-    public Set<User> getUsers() {
-        return users;
-    }
-
-    public void setUsers(Set<User> users) {
-        this.users = users;
     }
 
     public String getResOwnerUserId() {

@@ -6,10 +6,7 @@ import org.apache.commons.lang.StringUtils;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.dozer.DozerDTOCorrespondence;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlSchemaType;
-import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.*;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.util.Date;
 import java.util.List;
@@ -53,7 +50,6 @@ import org.openiam.idm.srvc.user.dto.User;
         "operation",
         "parentOrganizations",
         "childOrganizations",
-        "users"
 })
 @DozerDTOCorrespondence(OrganizationEntity.class)
 public class Organization implements java.io.Serializable, Comparable<Organization> {
@@ -103,7 +99,6 @@ public class Organization implements java.io.Serializable, Comparable<Organizati
 
     private Set<Organization> parentOrganizations;
     private Set<Organization> childOrganizations;
-    private Set<User> users;
     /**
      * default constructor
      */
@@ -399,14 +394,6 @@ public class Organization implements java.io.Serializable, Comparable<Organizati
 	public void setOrganizationTypeName(String organizationTypeName) {
 		this.organizationTypeName = organizationTypeName;
 	}
-
-    public Set<User> getUsers() {
-        return users;
-    }
-
-    public void setUsers(Set<User> users) {
-        this.users = users;
-    }
 
     @Override
     public boolean equals(Object o) {

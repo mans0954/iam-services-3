@@ -36,7 +36,6 @@ import java.util.*;
         "parentGroups",
         "childGroups",
         "resources",
-        "users"
 })
 @XmlRootElement(name = "Group")
 @XmlSeeAlso({
@@ -74,8 +73,6 @@ public class Group implements java.io.Serializable {
     private Set<Group> childGroups;
 
     private Set<Resource> resources;
-    @XmlJavaTypeAdapter(UserSetAdapter.class)
-    private Set<User> users;
 
     @XmlJavaTypeAdapter(RoleSetAdapter.class)
     protected Set<Role> roles = new HashSet<Role>(0);
@@ -294,14 +291,6 @@ public class Group implements java.io.Serializable {
 
     public void setResources(Set<Resource> resources) {
         this.resources = resources;
-    }
-
-    public Set<User> getUsers() {
-        return users;
-    }
-
-    public void setUsers(Set<User> users) {
-        this.users = users;
     }
 
     @Override
