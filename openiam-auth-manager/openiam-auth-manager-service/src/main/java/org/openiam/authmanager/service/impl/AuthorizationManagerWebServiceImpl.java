@@ -58,6 +58,13 @@ public class AuthorizationManagerWebServiceImpl implements AuthorizationManagerW
 		}
 		return entitledResources;
 	}
+	
+	@Override
+	public boolean isUserEntitledToResource(String userId, String resourceId) {
+		final AuthorizationResource resource = new AuthorizationResource();
+		resource.setId(resourceId);
+		return authManagerService.isEntitled(userId, resource);
+	}
 
 	@Override
 	public AccessResponse isUserEntitledTo( final UserToResourceAccessRequest request) {

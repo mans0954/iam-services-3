@@ -113,6 +113,7 @@ public class AuthorizationManagerServiceImpl implements AuthorizationManagerServ
 	/* used to prevent reads when a cache refresh takes place */
 	//private ReentrantReadWriteLock readWriteLock = new ReentrantReadWriteLock();
 	
+	private Set<AuthorizationResource> publicResources;
 	private Map<String, AuthorizationGroup> groupIdCache;
 	private Map<String, AuthorizationResource> resourceIdCache;
 	private Map<String, AuthorizationRole> roleIdCache;
@@ -205,6 +206,7 @@ public class AuthorizationManagerServiceImpl implements AuthorizationManagerServ
 			final List<AuthorizationRole> tempRoleList = roleDAO.getList();
 			final List<AuthorizationResource> tempResourceList = resourceDAO.getList();
 			final List<AuthorizationGroup> tempGroupList = groupDAO.getList();
+			final Set<AuthorizationResource> tempPublicResources = new HashSet<AuthorizationResource>();
 			log.debug("Done fetching main objects");
 			
 			/* create Maps of the above objects for fast access.  Id->Object
@@ -239,6 +241,18 @@ public class AuthorizationManagerServiceImpl implements AuthorizationManagerServ
 				tempGroupIdMap.put(group.getId(), group);
 				group.setBitSetIdx(tempGroupBitSet++);
 			}
+			
+			/* NEW:  set public resources.  This makes sense in our model. */
+			/*
+			for(final AuthorizationResource resource : tempResourceList) {
+				if(resource.isPublic()) {
+					tempPublicResources.add(resource);
+					for(final AuthorizationUser user : tempUserList) {
+						user.addResource(resource);
+					}
+				}
+			}
+			*/
 			
 			/* set direct roles for Users */
 			final List<RoleUserXref> tempRole2UserXrefList = roleUserXrefDAO.getList();
@@ -447,6 +461,7 @@ public class AuthorizationManagerServiceImpl implements AuthorizationManagerServ
 				groupNameCache = tempGroupNameMap;
 				roleNameCache = tempRoleNameMap;
 				resourceNameCache = tempResourceNameMap;
+				publicResources = tempPublicResources;
 				
 				/* END CRITICAL SECTION */
 			}
@@ -569,6 +584,16 @@ public class AuthorizationManagerServiceImpl implements AuthorizationManagerServ
 					retVal.addResource(resourceIdCache.get(resourceId));
 				}
 			}
+			
+			//NEW:  public resources are really public
+			/*
+			if(CollectionUtils.isNotEmpty(publicResources)) {
+				for(final AuthorizationResource resource : publicResources) {
+					retVal.addResource(resource);
+				}
+			}
+			*/
+			
 			retVal.compile();
 			retVal.setBitSetIdx(userBitSet++);
 			userCache.put(new Element(retVal.getId(), retVal));
