@@ -21,11 +21,8 @@
  */
 package org.openiam.provision.dto;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Set;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -36,10 +33,8 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.idm.srvc.auth.dto.Login;
-import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.policy.dto.Policy;
-import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.user.dto.User;
 
 /**
@@ -48,7 +43,7 @@ import org.openiam.idm.srvc.user.dto.User;
  * @author suneet
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "ProvisionUser", propOrder = { "memberOfGroups", "requestId", "sessionId", "memberOfRoles", "userResourceList", "userAffiliations",
+@XmlType(name = "ProvisionUser", propOrder = { "requestId", "sessionId",
                                               "superiors", "srcSystemId", "provisionModel", "securityDomain", "notifyTargetSystems",
                                               "emailCredentialsToNewUsers", "emailCredentialsToSupervisor", "provisionOnStartDate",
                                               "addInitialPasswordToHistory", "passwordPolicy", "skipPreprocessor", "skipPostProcessor" })
@@ -58,12 +53,11 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
      */
     private static final long serialVersionUID = 6441635701870724194L;
     // protected List<Login> principalList;
-    protected List<Group> memberOfGroups;
-    protected List<Role> memberOfRoles;
-    protected List<Organization> userAffiliations;
+//    protected List<Group> memberOfGroups;
+//    protected List<Role> memberOfRoles;
+//    protected List<Organization> userAffiliations;
+//    protected List<UserResourceAssociation> userResourceList;
     protected Set<User> superiors;
-
-    protected List<UserResourceAssociation> userResourceList;
 
     public ProvisionModelEnum provisionModel;
     public String securityDomain;
@@ -97,9 +91,7 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
 
     protected Policy passwordPolicy = null;
 
-    public ProvisionUser() {
-
-    }
+    public ProvisionUser() {}
 
     public ProvisionUser(User user) {
         birthdate = user.getBirthdate();
@@ -108,7 +100,6 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         createdBy = user.getCreatedBy();
         employeeId = user.getEmployeeId();
         employeeType = user.getEmployeeType();
-
         firstName = user.getFirstName();
         jobCode = user.getJobCode();
         lastName = user.getLastName();
@@ -137,22 +128,18 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         this.email = user.getEmail();
         this.showInSearch = user.getShowInSearch();
         this.alternateContactId = user.getAlternateContactId();
-
         this.createdBy = user.getCreatedBy();
         this.startDate = user.getStartDate();
         this.lastDate = user.getLastDate();
-
         this.userOwnerId = user.getUserOwnerId();
         this.dateChallengeRespChanged = user.getDateChallengeRespChanged();
         this.datePasswordChanged = user.getDatePasswordChanged();
         this.dateITPolicyApproved = user.getDateITPolicyApproved();
-
         userNotes = user.getUserNotes();
         userAttributes = user.getUserAttributes();
         phones = user.getPhones();
         addresses = user.getAddresses();
         emailAddresses = user.getEmailAddresses();
-        // set the email address in a hibernate friendly manner
         principalList = user.getPrincipalList();
         roles = user.getRoles();
         groups = user.getGroups();
@@ -171,7 +158,6 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         user.setCreatedBy(createdBy);
         user.setEmployeeId(employeeId);
         user.setEmployeeType(employeeType);
-
         user.setFirstName(firstName);
         user.setJobCode(jobCode);
         user.setLastName(lastName);
@@ -245,7 +231,7 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
     public void setSrcSystemId(String srcSystemId) {
         this.srcSystemId = srcSystemId;
     }
-
+    /*
     public List<Group> getMemberOfGroups() {
         return memberOfGroups;
     }
@@ -274,7 +260,7 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
     public void setMemberOfRoles(List<Role> memberOfRoles) {
         this.memberOfRoles = memberOfRoles;
     }
-
+    */
     public Set<User> getSuperiors() {
         return superiors;
     }
@@ -335,8 +321,7 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
 
     @Override
     public String toString() {
-        return "ProvisionUser{" + "memberOfGroups=" + memberOfGroups + ", memberOfRoles=" + memberOfRoles + ", userAffiliations=" + userAffiliations
-               + ", userResourceList=" + userResourceList + ", superiors=" + superiors + ", provisionModel=" + provisionModel + ", securityDomain='"
+        return "ProvisionUser{ superiors=" + superiors + ", provisionModel=" + provisionModel + ", securityDomain='"
                + securityDomain + '\'' + ", emailCredentialsToNewUsers=" + emailCredentialsToNewUsers + ", emailCredentialsToSupervisor="
                + emailCredentialsToSupervisor + ", addInitialPasswordToHistory=" + addInitialPasswordToHistory + ", provisionOnStartDate="
                + provisionOnStartDate + ", requestId='" + requestId + '\'' + ", sessionId='" + sessionId + '\'' + ", skipPreprocessor="
@@ -359,7 +344,7 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
     public void setEmailCredentialsToSupervisor(boolean emailCredentialsToSupervisor) {
         this.emailCredentialsToSupervisor = emailCredentialsToSupervisor;
     }
-
+    /*
     public List<Organization> getUserAffiliations() {
         return userAffiliations;
     }
@@ -376,7 +361,7 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
     public void setUserAffiliations(List<Organization> userAffiliations) {
         this.userAffiliations = userAffiliations;
     }
-
+    */
     public boolean isProvisionOnStartDate() {
         return provisionOnStartDate;
     }
@@ -393,6 +378,7 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         this.addInitialPasswordToHistory = addInitialPasswordToHistory;
     }
 
+    /*
     public List<UserResourceAssociation> getUserResourceList() {
         return userResourceList;
     }
@@ -400,6 +386,7 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
     public void setUserResourceList(List<UserResourceAssociation> userResourceList) {
         this.userResourceList = userResourceList;
     }
+    */
 
     public Policy getPasswordPolicy() {
         return passwordPolicy;
@@ -425,13 +412,7 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         this.skipPostProcessor = skipPostProcessor;
     }
 
-    /**
-     * Its possible for the user to send service request which is missing most
-     * of the values that a User already has This can cause the provisioning
-     * scripts to fail
-     * 
-     * @param user
-     */
+    /*
     public void updateMissingUserAttributes(User user) {
 
         if (birthdate == null) {
@@ -559,7 +540,8 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
             dateITPolicyApproved = user.getDateITPolicyApproved();
         }
     }
-
+    */
+    /*
     public void addMemberGroup(final Group group) {
         if (group != null) {
             if (this.memberOfGroups == null) {
@@ -577,7 +559,8 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
             this.memberOfRoles.add(role);
         }
     }
-
+    */
+    /*
     public void addResourceUserAssociation(final UserResourceAssociation association) {
         if (association != null) {
             if (this.userResourceList == null) {
@@ -586,12 +569,13 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
             this.userResourceList.add(association);
         }
     }
+    */
 
     // HACK
     public Organization getPrimaryOrganization() {
         Organization retVal = null;
-        if (CollectionUtils.isNotEmpty(userAffiliations)) {
-            for (final Organization organization : userAffiliations) {
+        if (CollectionUtils.isNotEmpty(affiliations)) {
+            for (final Organization organization : affiliations) {
                 if (!AttributeOperationEnum.DELETE.equals(organization.getOperation())) {
                     if (organization.isOrganization()) {
                         retVal = organization;
@@ -605,8 +589,8 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
 
     public boolean isOrganizationMarkedAsDeleted(final String organizationId) {
         boolean retVal = false;
-        if (CollectionUtils.isNotEmpty(userAffiliations)) {
-            for (final Organization organization : userAffiliations) {
+        if (CollectionUtils.isNotEmpty(affiliations)) {
+            for (final Organization organization : affiliations) {
                 if (AttributeOperationEnum.DELETE.equals(organization.getOperation())) {
                     if (StringUtils.equalsIgnoreCase(organizationId, organization.getId())) {
                         retVal = true;

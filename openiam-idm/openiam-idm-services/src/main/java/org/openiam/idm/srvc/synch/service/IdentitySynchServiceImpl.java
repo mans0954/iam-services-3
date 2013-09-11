@@ -44,6 +44,7 @@ import org.openiam.idm.searchbeans.UserSearchBean;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.service.AttributeMapDAO;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
+import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.synch.domain.SynchConfigEntity;
 import org.openiam.idm.srvc.synch.dto.SyncResponse;
 import org.openiam.idm.srvc.synch.dto.BulkMigrationConfig;
@@ -292,42 +293,40 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
             if (config.getTargetRole() != null && !config.getTargetRole().isEmpty() ) {
 
                 Role r = parseRole(config.getTargetRole());
-                if ( pUser.getMemberOfRoles() == null ) {
-                    List<Role> roleList = new ArrayList<Role>();
-                    pUser.setMemberOfRoles(roleList);
+                if ( pUser.getRoles() == null ) {
+                    Set<Role> roleSet = new HashSet<Role>();
+                    pUser.setRoles(roleSet);
                 }
 
                 if ("ADD".equalsIgnoreCase(config.getOperation())) {
                     // add to role
                     r.setOperation(AttributeOperationEnum.ADD);
-
-                    pUser.getMemberOfRoles().add(r);
-
+                    pUser.getRoles().add(r);
                 } else {
                     // remove from role
                     r.setOperation(AttributeOperationEnum.DELETE);
-                    pUser.getMemberOfRoles().add(r);
+                    pUser.getRoles().add(r);
                 }
 
             } else if (config.getTargetResource() != null && !config.getTargetResource().isEmpty()) {
 
-                List<UserResourceAssociation> uraList = new ArrayList<UserResourceAssociation>();
+                Set<Resource> resourceSet = new HashSet<Resource>();
 
-                UserResourceAssociation ura = new UserResourceAssociation();
-                ura.setResourceId(config.getTargetResource());
+                Resource resource = new Resource();
+                resource.setResourceId(config.getTargetResource());
 
                 if ("ADD".equalsIgnoreCase(config.getOperation())) {
                     // add to resourceList
-                    ura.setOperation(AttributeOperationEnum.ADD);
-                    uraList.add(ura);
-                    pUser.setUserResourceList(uraList);
+                    resource.setOperation(AttributeOperationEnum.ADD);
+                    resourceSet.add(resource);
+                    pUser.setResources(resourceSet);
 
                 } else {
                     // remove from resource List
 
-                    ura.setOperation(AttributeOperationEnum.DELETE);
-                    uraList.add(ura);
-                    pUser.setUserResourceList(uraList);
+                    resource.setOperation(AttributeOperationEnum.DELETE);
+                    resourceSet.add(resource);
+                    pUser.setResources(resourceSet);
 
                 }
             }
@@ -427,15 +426,13 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
 
             ProvisionUser pUser = new ProvisionUser(user);
 
-            if (pUser.getMemberOfRoles() == null ) {
-                List<Role> rList = new ArrayList<Role>();
-                rList.add(rl);
-                pUser.setMemberOfRoles(rList);
+            if (pUser.getRoles() == null ) {
+                Set<Role> roles = new HashSet<Role>();
+                roles.add(rl);
+                pUser.setRoles(roles);
 
             }  else {
-
-                pUser.getMemberOfRoles().add(rl);
-
+                pUser.getRoles().add(rl);
             }
 
             provisionService.modifyUser(pUser);

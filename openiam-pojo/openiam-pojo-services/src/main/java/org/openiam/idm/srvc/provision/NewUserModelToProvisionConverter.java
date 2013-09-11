@@ -91,7 +91,7 @@ public class NewUserModelToProvisionConverter {
 				user.setPhones(new HashSet<Phone>(request.getPhones()));
 			}
 			
-			final List<Role> userRoles = new LinkedList<Role>();
+			final Set<Role> userRoles = new HashSet<Role>();
 			if(CollectionUtils.isNotEmpty(request.getRoleIds())) {
 				for(final String roleId : request.getRoleIds()) {
 					final RoleEntity entity = roleDataService.getRole(roleId);
@@ -105,9 +105,9 @@ public class NewUserModelToProvisionConverter {
 					*/
 				}
 			}
-			user.setMemberOfRoles(userRoles);
+			user.setRoles(userRoles);
 			
-			final List<Group> userGroups = new LinkedList<Group>();
+			final Set<Group> userGroups = new HashSet<Group>();
 			if(CollectionUtils.isNotEmpty(request.getGroupIds())) {
 				for(final String groupId : request.getGroupIds()) {
 					final GroupEntity entity = groupDataService.getGroup(groupId);
@@ -117,9 +117,9 @@ public class NewUserModelToProvisionConverter {
 					}
 				}
 			}
-			user.setMemberOfGroups(userGroups);
+			user.setGroups(userGroups);
 			
-			final List<Organization> userOrganizations = new LinkedList<Organization>();
+			final Set<Organization> userOrganizations = new HashSet<Organization>();
 			if(CollectionUtils.isNotEmpty(request.getOrganizationIds())) {
 				for(final String organizationId : request.getOrganizationIds()) {
 					final OrganizationEntity entity = organizationDataService.getOrganization(organizationId);
@@ -129,7 +129,7 @@ public class NewUserModelToProvisionConverter {
 					}
 				}
 			}
-			user.setUserAffiliations(userOrganizations);
+			user.setAffiliations(userOrganizations);
 			
 			final Set<User> userSupervisors = new HashSet<User>();
 			if(CollectionUtils.isNotEmpty(request.getSupervisorIds())) {

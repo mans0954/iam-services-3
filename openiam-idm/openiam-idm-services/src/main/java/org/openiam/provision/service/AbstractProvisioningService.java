@@ -84,9 +84,6 @@ import org.openiam.provision.type.ExtensibleUser;
 import org.openiam.script.ScriptIntegration;
 import org.openiam.util.MuleContextProvider;
 import org.openiam.util.encrypt.Cryptor;
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -127,19 +124,14 @@ public abstract class AbstractProvisioningService implements ProvisionService {
     private Cryptor cryptor;
     @Autowired
     private KeyManagementService keyManagementService;
-
     @Autowired
     protected ManagedSystemObjectMatchDozerConverter objectMatchDozerConverter;
-
 	@Autowired
 	protected ProvisionConnectorService connectorService;
-
     @Autowired
     protected ResourceService resourceService;
-    
     @Autowired
     protected ManagedSystemService managedSystemService;
-    
     @Autowired
     protected UserDataService userMgr;
     @Autowired
@@ -172,7 +164,6 @@ public abstract class AbstractProvisioningService implements ProvisionService {
     protected ValidateConnectionConfig validateConnectionConfig;
     @Autowired
     protected PasswordHistoryDAO passwordHistoryDao;
-
     @Autowired
     protected UserDozerConverter userDozerConverter;
     @Autowired
@@ -453,43 +444,13 @@ public abstract class AbstractProvisioningService implements ProvisionService {
                 }
             }
         }
-        try {
-            userMgr.addUser(userEntity);
-        } catch (Exception e) {
-            log.error("Exception while creating user", e);
-            resp.setStatus(ResponseStatus.FAILURE);
-            resp.setErrorCode(ResponseCode.FAIL_OTHER);
-            return resp;
-        }
-
-        if (userEntity.getUserId() == null) {
-            resp.setStatus(ResponseStatus.FAILURE);
-            resp.setErrorCode(ResponseCode.INTERNAL_ERROR);
-            return resp;
-        }
-        log.debug("User id=" + userEntity.getUserId() + " created in openiam repository");
-
-        code = addSupervisors(pUser, userEntity);
-        if (code != ResponseCode.SUCCESS) {
-            resp.setStatus(ResponseStatus.FAILURE);
-            resp.setErrorCode(code);
-            return resp;
-        }
-
-        try {
-            addPrincipals(userEntity);
-        } catch(EncryptionException e) {
-            resp.setStatus(ResponseStatus.FAILURE);
-            resp.setErrorCode(ResponseCode.FAIL_ENCRYPTION);
-            return resp;
-        }
         code = addGroups(pUser, userEntity, logList);
         if (code != ResponseCode.SUCCESS) {
             resp.setStatus(ResponseStatus.FAILURE);
             resp.setErrorCode(code);
             return resp;
         }
-        code = addRoles(pUser, userEntity, logList);
+        code = addRoles(pUser, userEntity, logList); //TODO: if we remove this code we can loose assigned collections (e.g. resources) for role, we need find a solution how to keep them
         if (code != ResponseCode.SUCCESS) {
             resp.setStatus(ResponseStatus.FAILURE);
             resp.setErrorCode(code);
@@ -502,42 +463,38 @@ public abstract class AbstractProvisioningService implements ProvisionService {
             return resp;
         }
         //TODO: add resources
+        try {
+            userMgr.addUser(userEntity);
+        } catch (Exception e) {
+            log.error("Exception while creating user", e);
+            resp.setStatus(ResponseStatus.FAILURE);
+            resp.setErrorCode(ResponseCode.FAIL_OTHER);
+            return resp;
+        }
+        code = addSupervisors(pUser, userEntity);
+        if (code != ResponseCode.SUCCESS) {
+            resp.setStatus(ResponseStatus.FAILURE);
+            resp.setErrorCode(code);
+            return resp;
+        }
+        try {
+            addPrincipals(userEntity);
+        } catch(EncryptionException e) {
+            resp.setStatus(ResponseStatus.FAILURE);
+            resp.setErrorCode(ResponseCode.FAIL_ENCRYPTION);
+            return resp;
+        }
+        if (userEntity.getUserId() == null) {
+            resp.setStatus(ResponseStatus.FAILURE);
+            resp.setErrorCode(ResponseCode.INTERNAL_ERROR);
+            return resp;
+        }
+        log.debug("User id=" + userEntity.getUserId() + " created in openiam repository");
+
         userMgr.updateUser(userEntity);
         ProvisionUser finalUser = new ProvisionUser(userMgr.getUserDto(userEntity.getUserId()));
         resp.setUser(finalUser);
         return resp;
-    }
-
-    private boolean containsEmail(String name, Set<EmailAddress> emailAddressSet) {
-
-        if (emailAddressSet == null || emailAddressSet.isEmpty()) {
-            return false;
-        }
-
-        for (EmailAddress e : emailAddressSet) {
-            if (e.getName() != null && e.getName().equalsIgnoreCase(name)) {
-                return true;
-            }
-
-        }
-        return false;
-
-    }
-
-    private boolean containsPhone(String name, Set<Phone> phoneSet) {
-
-        if (phoneSet == null || phoneSet.isEmpty()) {
-            return false;
-        }
-
-        for (Phone p : phoneSet) {
-            if (p.getName() != null && p.getName().equalsIgnoreCase(name)) {
-                return true;
-            }
-
-        }
-        return false;
-
     }
 
     private ResponseCode addSupervisors(ProvisionUser u, UserEntity entity) {
@@ -574,10 +531,10 @@ public abstract class AbstractProvisioningService implements ProvisionService {
     }
 
     private ResponseCode addGroups(ProvisionUser user, UserEntity entity, List<IdmAuditLog> logList) {
-        List<Group> groupList = user.getMemberOfGroups();
+        Set<Group> groupSet = user.getGroups();
 
-        if (CollectionUtils.isNotEmpty(groupList)) {
-            for ( Group g : groupList) {
+        if (CollectionUtils.isNotEmpty(groupSet)) {
+            for ( Group g : groupSet) {
                 // check if the group id is valid
                 if (g.getGrpId() == null) {
                     return ResponseCode.GROUP_ID_NULL;
@@ -605,10 +562,9 @@ public abstract class AbstractProvisioningService implements ProvisionService {
     }
 
     private ResponseCode addRoles(ProvisionUser user, UserEntity entity, List<IdmAuditLog> logList) {
-        List<Role> roleList = user.getMemberOfRoles();
-        log.debug("Role list = " + roleList);
-        if (CollectionUtils.isNotEmpty(roleList)) {
-            for (Role r: roleList) {
+        Set<Role> roleSet = user.getRoles();
+        if (CollectionUtils.isNotEmpty(roleSet)) {
+            for (Role r: roleSet) {
                 if (r.getServiceId() == null){
                     r.setServiceId(sysConfiguration.getDefaultSecurityDomain());
                 }
@@ -636,10 +592,9 @@ public abstract class AbstractProvisioningService implements ProvisionService {
     }
 
     private ResponseCode addAffiliations(ProvisionUser user, UserEntity entity, List<IdmAuditLog> logList) {
-        List<Organization> affiliationList = user.getUserAffiliations();
-        log.debug("addAffiliations:Affiliation List list = " + affiliationList);
-        if (CollectionUtils.isNotEmpty(affiliationList)) {
-            for (Organization org: affiliationList) {
+        Set<Organization> affiliationSet = user.getAffiliations();
+        if (CollectionUtils.isNotEmpty(affiliationSet)) {
+            for (Organization org: affiliationSet) {
                 // check if the organization Id is valid
                 OrganizationEntity oe = null;
                 if (org.getId() != null) {
@@ -865,34 +820,6 @@ public abstract class AbstractProvisioningService implements ProvisionService {
         return false;
     }
 
-    private void addIdentity(String secDomain, Login primaryIdentity) {
-        if ( loginManager.getLoginByManagedSys(secDomain,
-                primaryIdentity.getLogin(), primaryIdentity.getManagedSysId()) == null ){
-
-            Login newLg = new Login();
-
-            newLg.setDomainId(secDomain);
-            newLg.setLogin(primaryIdentity.getLogin());
-            newLg.setManagedSysId(primaryIdentity.getManagedSysId());
-            newLg.setAuthFailCount(0);
-            newLg.setFirstTimeLogin(primaryIdentity.getFirstTimeLogin());
-            newLg.setIsLocked(primaryIdentity.getIsLocked());
-            newLg.setLastAuthAttempt(primaryIdentity.getLastAuthAttempt());
-            newLg.setGracePeriod(primaryIdentity.getGracePeriod());
-            newLg.setPassword(primaryIdentity.getPassword());
-            newLg.setPasswordChangeCount(primaryIdentity.getPasswordChangeCount());
-            newLg.setStatus(primaryIdentity.getStatus());
-            newLg.setIsLocked(primaryIdentity.getIsLocked());
-            newLg.setOrigPrincipalName(primaryIdentity.getOrigPrincipalName());
-            newLg.setUserId(primaryIdentity.getUserId());
-            newLg.setResetPassword(primaryIdentity.getResetPassword());
-
-            log.debug("Adding identity = " + newLg);
-
-            loginManager.addLogin(loginDozerConverter.convertToEntity(newLg, true));
-        }
-    }
-
     protected int callPreProcessor(String operation, ProvisionUser pUser, Map<String, Object> bindingMap ) {
 
         ProvisionServicePreProcessor addPreProcessScript;
@@ -1036,7 +963,7 @@ public abstract class AbstractProvisioningService implements ProvisionService {
         return 0;
     }
 
-    public void updateUserEmails(UserEntity origUser, ProvisionUser pUser) {
+    public void updateEmails(UserEntity origUser, ProvisionUser pUser) {
         // Processing emails
         Set<EmailAddress> emailAddresses = pUser.getEmailAddresses();
         if (CollectionUtils.isNotEmpty(emailAddresses)) {
@@ -1162,146 +1089,6 @@ public abstract class AbstractProvisioningService implements ProvisionService {
         }
     }
 
-
-    private EmailAddress getEmailAddress(String id, Set<EmailAddress> emailSet) {
-        Iterator<EmailAddress> emailIt = emailSet.iterator();
-        while (emailIt.hasNext()) {
-            EmailAddress email = emailIt.next();
-            if (email.getEmailId() != null) {
-                if (email.getEmailId().equals(id) && (id != null && id.length() > 0)) {
-                    return email;
-                }
-            }
-        }
-        return null;
-
-    }
-
-    private Phone getPhone(String id, Set<Phone> phoneSet) {
-        Iterator<Phone> phoneIt = phoneSet.iterator();
-        while (phoneIt.hasNext()) {
-            Phone phone = phoneIt.next();
-            if (phone.getPhoneId() != null) {
-                if (phone.getPhoneId().equals(id) && (id != null && id.length() > 0)) {
-                    return phone;
-                }
-            }
-        }
-        return null;
-
-    }
-
-    private Address getAddress(String id, Set<Address> addressSet) {
-        Iterator<Address> addressIt = addressSet.iterator();
-        while (addressIt.hasNext()) {
-            Address adr = addressIt.next();
-            if (adr.getAddressId() != null  ) {
-                if (adr.getAddressId().equals(id) && (id != null && id.length() > 0)) {
-                    return adr;
-                }
-            }
-        }
-        return null;
-
-    }
-
-    protected void addMissingUserComponents(ProvisionUser user, User origUser) {
-
-        log.debug("addMissingUserComponents() called.");
-
-        // if the new object is empty, then restore the values that we currently have for the user.
-        // allow the scripts to function
-
-        user.updateMissingUserAttributes(origUser);
-
-        /*
-        // check addresses
-        Set<Address> addressSet = user.getAddresses();
-
-        if (addressSet == null || addressSet.isEmpty()) {
-
-            log.debug("- Adding original addressSet to the user object");
-
-            List<AddressEntity> addressList = userMgr.getAddressList(user.getUserId());
-            if (addressList != null && !addressList.isEmpty()) {
-
-                user.setAddresses(new HashSet<Address>(addressDozerConverter.convertToDTOList(addressList, false)));
-
-            }
-        }
-
-        // check email addresses
-        Set<EmailAddress> emailAddressSet =  user.getEmailAddresses();
-        if (emailAddressSet == null || emailAddressSet.isEmpty()) {
-
-            log.debug("- Adding original emailSet to the user object");
-
-            List<EmailAddressEntity> emailList =  userMgr.getEmailAddressList(user.getUserId());
-            if ( emailList != null && !emailList.isEmpty() ) {
-
-                user.setEmailAddresses( new HashSet<EmailAddress>(emailAddressDozerConverter.
-                        convertToDTOList(emailList, false)) );
-
-            }
-        }
-
-        // check the phone objects
-        Set<Phone> phoneSet = user.getPhones();
-        if (phoneSet == null || phoneSet.isEmpty()) {
-
-            log.debug("- Adding original phoneSet to the user object");
-
-            List<PhoneEntity> phoneList  = userMgr.getPhoneList(user.getUserId());
-            if ( phoneList != null && !phoneList.isEmpty()) {
-
-                user.setPhones(new HashSet<Phone>(phoneDozerConverter.convertToDTOList(phoneList, false)));
-
-            }
-        }
-        */
-
-        // check the user attributes
-        Map<String, UserAttribute> userAttrSet = user.getUserAttributes();
-        if (userAttrSet == null || userAttrSet.isEmpty() ) {
-
-            log.debug("- Adding original user attributes to the user object");
-
-            UserEntity u =  userMgr.getUser(user.getUserId());
-            if (  u.getUserAttributes() != null) {
-                HashMap<String, UserAttribute> userAttributeMap = new HashMap<String, UserAttribute>();
-                for(Map.Entry<String, UserAttributeEntity> entry : u.getUserAttributes().entrySet()) {
-                    userAttributeMap.put(entry.getKey(),
-                            userAttributeDozerConverter.convertToDTO(entry.getValue(), true));
-                }
-                user.setUserAttributes(userAttributeMap);
-            }
-
-        }
-
-
-        // the affiliations
-        List<Organization> affiliationList =  user.getUserAffiliations();
-        if (affiliationList == null || affiliationList.isEmpty()){
-
-            log.debug("- Adding original affiliationList to the user object");
-
-            List<Organization> userAffiliations = orgManager.getOrganizationsForUser(user.getUserId(), null, 0, Integer.MAX_VALUE);
-            if (userAffiliations != null && !userAffiliations.isEmpty())  {
-
-                user.setUserAffiliations(userAffiliations);
-            }
-
-        }
-
-        // add roles if not part of the request
-        List<Role> userRoleList = user.getMemberOfRoles();
-        if ( userRoleList == null || userRoleList.isEmpty()) {
-            List<RoleEntity> curRoles = roleDataService.getUserRoles(user.getUserId(), null, 0, Integer.MAX_VALUE);
-            user.setMemberOfRoles(roleDozerConverter.convertToDTOList(curRoles, false));
-        }
-
-    }
-
     public void updateUserProperties(UserEntity origUser, ProvisionUser pUser) {
         origUser.updateUser(userDozerConverter.convertToEntity(pUser.getUser(), false));
     }
@@ -1373,74 +1160,9 @@ public abstract class AbstractProvisioningService implements ProvisionService {
         }
     }
 
-    /*
-    public void updateSupervisors(ProvisionUser pUser) {
-
-        String userId = pUser.getUserId();
-        Set<User> superiors = pUser.getSuperiors();
-
-        if (superiors == null) {
-            return;
-        }
-
-        List<SupervisorEntity> supervisorList = userMgr.getSupervisors(userId);
-
-        if (CollectionUtils.isNotEmpty(superiors)) {
-            for (User u : superiors) {
-                if (userId.equals(u.getUserId())) {
-                    log.info("User can't be a superior for himself");
-                    continue;
-                }
-
-                boolean isToAdd = true;
-                for (SupervisorEntity s : supervisorList) {
-                    if (s.getSupervisor().getUserId().equals(u.getUserId())) {
-                        isToAdd = false; // already exists
-                        break;
-                    } else if (s.getEmployee().getUserId().equals(u.getUserId())) {
-                        isToAdd = false;
-                        log.info(String.format("User with id='%s' is a subordinate of User with id='%s'",
-                                u.getUserId(), s.getSupervisor().getUserId()));
-                        break;
-                    }
-                }
-                if (isToAdd) {
-                    try {
-                        userMgr.addSuperior(u.getUserId(), userId);
-                        log.info(String.format("Adding a supervisor user %s for user %s",
-                                u.getUserId(), userId));
-                    } catch (Exception e) {
-                        log.info(String.format("Can't add a supervisor user %s for user %s",
-                                u.getUserId(), userId));
-                    }
-                }
-            }
-        }
-
-        for (SupervisorEntity s : supervisorList) {
-            boolean isToRemove = true;
-            if (CollectionUtils.isNotEmpty(superiors)) {
-                for (User u : superiors) {
-                    if (s.getSupervisor().getUserId().equals(u.getUserId())) {
-                        if (u.getOperation() != AttributeOperationEnum.DELETE ) {
-                            isToRemove = false;
-                            break;
-                        }
-                    }
-                }
-            }
-            if (isToRemove) {
-                userMgr.removeSupervisor(s.getOrgStructureId());
-                log.info(String.format("Removed a supervisor user %s from user %s",
-                        s.getSupervisor().getUserId(), userId));
-            }
-        }
-    }
-    */
-
     public void updateGroups(UserEntity origUser, ProvisionUser pUser) {
-        if (CollectionUtils.isNotEmpty(pUser.getMemberOfGroups())) {
-            for (Group g: pUser.getMemberOfGroups()) {
+        if (CollectionUtils.isNotEmpty(pUser.getGroups())) {
+            for (Group g: pUser.getGroups()) {
                 AttributeOperationEnum operation = g.getOperation();
                 if (operation == null) {
                     return;
@@ -1462,8 +1184,8 @@ public abstract class AbstractProvisioningService implements ProvisionService {
 
     public void updateRoles(UserEntity origUser, ProvisionUser pUser,
             Set<Role> roleSet, Set<Role> deleteRoleSet) {
-        if (CollectionUtils.isNotEmpty(pUser.getMemberOfRoles())) {
-            for (Role r: pUser.getMemberOfRoles()) {
+        if (CollectionUtils.isNotEmpty(pUser.getRoles())) {
+            for (Role r: pUser.getRoles()) {
                 AttributeOperationEnum operation = r.getOperation();
                 if (operation == null) {
                     return;
@@ -1490,207 +1212,11 @@ public abstract class AbstractProvisioningService implements ProvisionService {
         }
     }
 
-    /* public void updateRoleAssociation(String userId, List<Role> origRoleList,
-                                      List<Role> newRoleList, List<IdmAuditLog> logList,
-                                      ProvisionUser pUser, Login primaryIdentity,
-                                      List<Role> activeRoleList, List<Role> deleteRoleList) {
-
-        log.debug("updateRoleAssociation():");
-        log.debug("-origRoleList =" + origRoleList);
-        log.debug("-newRoleList=" + newRoleList);
-
-
-        if ( (origRoleList == null || origRoleList.size() == 0 )  &&
-                (newRoleList == null || newRoleList.size() == 0 )) {
-            return;
-        }
-
-        // scneario where the original role list is empty but new roles are passed in on the request
-        if ( (origRoleList == null || origRoleList.size() == 0 )  &&
-                (newRoleList != null || newRoleList.size() > 0 )) {
-
-            log.debug("New Role list is not null");
-            origRoleList = new ArrayList<Role>();
-            origRoleList.addAll(newRoleList);
-            // update the instance variable so that it can passed to the connector with the right operation code
-            for (Role rl : newRoleList) {
-                rl.setOperation(AttributeOperationEnum.ADD);
-                activeRoleList.add(rl);
-
-                // roleDataService.assocUserToRole(userRoleDozerConverter.convertToEntity(ur, true));
-
-                logList.add( auditHelper.createLogObject("ADD ROLE",
-                        pUser.getRequestorDomain(),  pUser.getRequestorLogin(),
-                        "IDM SERVICE", pUser.getCreatedBy(), "0", "USER", pUser.getUserId(),
-                        null, "SUCCESS", null, "USER_STATUS",
-                        pUser.getStatus().toString(),
-                        "NA", null, null, null, r.getRoleId(),
-                        pUser.getRequestClientIP(), primaryIdentity.getLogin(), primaryIdentity.getDomainId()));
-
-                //roleDataService.addUserToRole(rl.getId().getServiceId(), rl.getId().getRoleId(), userId);
-            }
-            return;
-        }
-
-        // roles were originally assigned to this user, but this request does not have any roles.
-        // need to ensure that old roles are marked with the no-change operation code.
-        if ( (origRoleList != null && origRoleList.size() > 0 ) && (newRoleList == null || newRoleList.size() == 0 )) {
-            log.debug("orig Role list is not null and nothing was passed in for the newRoleList - ie no change");
-            for (Role r  : origRoleList) {
-                r.setOperation(AttributeOperationEnum.NO_CHANGE);
-                activeRoleList.add(r);
-            }
-            return;
-        }
-
-        // if in new roleList, but not in old, then add it with operation 1
-        // else add with operation 2
-        for (Role r : newRoleList) {
-            if (r.getOperation() == AttributeOperationEnum.DELETE) {
-
-                log.debug("removing Role :" + r.getRoleId() );
-
-                // get the email object from the original set of emails so that we can remove it
-                Role rl = getRole(r.getRoleId(), origRoleList);
-                if (rl != null) {
-                    roleDataService.removeUserFromRole(rl.getRoleId(), userId);
-
-                    logList.add( auditHelper.createLogObject("REMOVE ROLE",
-                            pUser.getRequestorDomain(), pUser.getRequestorLogin(),
-                            "IDM SERVICE", pUser.getCreatedBy(), "0", "USER", pUser.getUserId(),
-                            null, "SUCCESS", null, "USER_STATUS",
-                            pUser.getStatus().toString(),
-                            "NA", null, null, null, rl.getRoleId(),
-                            pUser.getRequestClientIP(), primaryIdentity.getLogin(), primaryIdentity.getDomainId()));
-
-                }
-                log.debug("Adding role to deleteRoleList =" + rl);
-                deleteRoleList.add(rl);
-
-                // need to pass on to connector that a role has been removed so that
-                // the connector can also take action on this event.
-
-                activeRoleList.add(r);
-
-            } else {
-                // check if this address is in the current list
-                // if it is - see if it has changed
-                // if it is not - add it.
-                log.debug("Evaluate Role: " + r.getRoleId());
-
-                Role origRole =  getRole(r.getRoleId(), origRoleList);
-
-                log.debug("OrigRole found=" + origRole);
-
-                if (origRole == null) {
-                    r.setOperation(AttributeOperationEnum.ADD);
-                    activeRoleList.add(r);
-
-                    UserRole ur = new UserRole(userId, r.getRoleId());
-
-                    if ( r.getStartDate() != null) {
-                        ur.setStartDate(r.getStartDate());
-                    }
-                    if ( r.getEndDate() != null ) {
-                        ur.setEndDate(r.getEndDate());
-                    }
-                    roleDataService.assocUserToRole(userRoleDozerConverter.convertToEntity(ur, true));
-
-                    logList.add( auditHelper.createLogObject("ADD ROLE", pUser.getRequestorDomain(), pUser.getRequestorLogin(),
-                            "IDM SERVICE", pUser.getCreatedBy(), "0", "USER", pUser.getUserId(),
-                            null, "SUCCESS", null, "USER_STATUS",
-                            pUser.getStatus().toString(),
-                            "NA", null, null, null, ur.getRoleId(),
-                            pUser.getRequestClientIP(), primaryIdentity.getLogin(), primaryIdentity.getDomainId()));
-
-                    //roleDataService.addUserToRole(r.getId().getServiceId(), r.getId().getRoleId(), userId);
-                } else {
-                    // get the user role object
-                    log.debug("checking if no_change or replace");
-                    //if (r.equals(origRole)) {
-                    //UserRole uRole = userRoleAttrEq(r, currentUserRole);
-                    if (r.getRoleId().equals(origRole.getRoleId()) && userRoleAttrEq(r, currentUserRole)  ) {
-                        // not changed
-                        log.debug("- no_change ");
-                        r.setOperation(AttributeOperationEnum.NO_CHANGE);
-                        activeRoleList.add(r);
-                    } else {
-                        log.debug("- Attr not eq - replace");
-                        r.setOperation(AttributeOperationEnum.REPLACE);
-                        activeRoleList.add(r);
-
-                        // object changed
-                        //UserRole ur = new UserRole(userId, r.getId().getServiceId(),
-                        //		r.getId().getRoleId());
-                        UserRole ur = getUserRole(r, currentUserRole);
-                        if ( ur != null) {
-                            if ( r.getStartDate() != null) {
-                                ur.setStartDate(r.getStartDate());
-                            }
-                            if ( r.getEndDate() != null ) {
-                                ur.setEndDate(r.getEndDate());
-                            }
-                            if ( r.getStatus() != null ) {
-                                ur.setStatus(r.getStatus());
-                            }
-                            roleDataService.updateUserRoleAssoc(userRoleDozerConverter.convertToEntity(ur, true));
-                        } else {
-                            UserRole usrRl = new UserRole(userId, r.getRoleId());
-                            roleDataService.assocUserToRole(userRoleDozerConverter.convertToEntity(usrRl, true));
-
-                        }
-                    }
-                }
-            }
-        }
-        // if a value is in original list and not in the new list - then add it on
-        for (Role rl : origRoleList) {
-            Role newRole =  getRole(rl.getRoleId(), newRoleList);
-            if (newRole == null) {
-                rl.setOperation(AttributeOperationEnum.NO_CHANGE);
-                activeRoleList.add(rl);
-            }
-        }
-    }*/
-
-    public List<Role> getActiveRoleList(List<Role> activeRoleList, List<Role> deleteRoleList ) {
-
-        List<Role> rList = new ArrayList<Role>();
-        // create a list of roles that are not in the deleted list
-        for ( Role r : activeRoleList) {
-
-            boolean found =false;
-
-            log.debug("- Evaluating Role=" + r);
-
-            if (deleteRoleList != null && !deleteRoleList.isEmpty()) {
-                for ( Role delRl : deleteRoleList) {
-
-                    log.debug("- Evaluating deleted Role = " + delRl);
-                    if ( delRl != null) {
-
-                        if (!found && r.getRoleId().equalsIgnoreCase(delRl.getRoleId())) {
-                            found = true;
-
-                            log.debug("- - Deleted Role found = " + delRl);
-                        }
-
-                    }
-                }
-            }
-            if (!found) {
-                log.debug("- Adding Role to Active Role List=" + r);
-                rList.add(r);
-            }
-        }
-        return rList;
-    }
-
     /* User Org Affiliation */
 
-    public void updateUserOrgAffiliations(UserEntity origUser, ProvisionUser pUser) {
-        if (CollectionUtils.isNotEmpty(pUser.getUserAffiliations())) {
-            for (Organization o : pUser.getUserAffiliations()) {
+    public void updateAffiliations(UserEntity origUser, ProvisionUser pUser) {
+        if (CollectionUtils.isNotEmpty(pUser.getAffiliations())) {
+            for (Organization o : pUser.getAffiliations()) {
                 AttributeOperationEnum operation = o.getOperation();
                 if (operation == null) {
                     return;
@@ -1715,45 +1241,17 @@ public abstract class AbstractProvisioningService implements ProvisionService {
         }
     }
 
-    public void updateUserOrgAffiliation(String userId, List<Organization> newOrgList) {
-
-        List<Organization>  currentOrgList = orgManager.getOrganizationsForUser(userId, null, 0, Integer.MAX_VALUE);
-
-        if (newOrgList == null) {
-            return;
-        }
-
-        for ( Organization o : newOrgList ) {
-
-            boolean inCurList = isCurrentOrgInNewList(o,currentOrgList);
-
-            if (o.getOperation() == null ||
-                    o.getOperation() == AttributeOperationEnum.ADD ||
-                    o.getOperation() == AttributeOperationEnum.NO_CHANGE) {
-
-                if (!inCurList) {
-                    orgManager.addUserToOrg(o.getId(),userId);
-                }
-
-            } else if ( o.getOperation() == AttributeOperationEnum.DELETE ) {
-                if (inCurList) {
-                    orgManager.removeUserFromOrg(o.getId(),userId);
-                }
-            }
-        }
-    }
-
     public void updateResources(UserEntity origUser, ProvisionUser pUser, Set<Resource> resourceSet, Set<Resource> deleteResourceSet) {
-        if (CollectionUtils.isNotEmpty(pUser.getUserResourceList())) {
-            for (UserResourceAssociation ura : pUser.getUserResourceList()) {
-                AttributeOperationEnum operation = ura.getOperation();
+        if (CollectionUtils.isNotEmpty(pUser.getResources())) {
+            for (Resource r : pUser.getResources()) {
+                AttributeOperationEnum operation = r.getOperation();
                 if (operation == null) {
                     return;
                 } else if (operation == AttributeOperationEnum.ADD) {
-                    ResourceEntity organizationEntity = resourceService.findResourceById(ura.getResourceId());
+                    ResourceEntity organizationEntity = resourceService.findResourceById(r.getResourceId());
                     origUser.getResources().add(organizationEntity);
                 } else if (operation == AttributeOperationEnum.DELETE) {
-                    ResourceEntity organizationEntity = resourceService.findResourceById(ura.getResourceId());
+                    ResourceEntity organizationEntity = resourceService.findResourceById(r.getResourceId());
                     origUser.getResources().remove(organizationEntity);
                 } else if (operation == AttributeOperationEnum.REPLACE) {
                     throw new UnsupportedOperationException("Operation 'REPLACE' is not supported for resources");
@@ -1766,37 +1264,6 @@ public abstract class AbstractProvisioningService implements ProvisionService {
         }
     }
 
-    private boolean isCurrentOrgInNewList(Organization newOrg, List<Organization> curOrgList) {
-        if (curOrgList != null) {
-            for ( Organization o : curOrgList) {
-                if (o.getId().equals(newOrg.getId())) {
-
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
-    private Group getGroup(String grpId, List<Group> origGroupList) {
-        for (Group g : origGroupList ) {
-            if (g.getGrpId().equalsIgnoreCase(grpId)) {
-                return g;
-            }
-        }
-        return null;
-    }
-
-    private Role getRole(String roleId, List<Role> roleList) {
-        for (Role rl : roleList ) {
-            if (rl.getRoleId().equals(roleId)) {
-                return rl;
-            }
-        }
-        return null;
-    }
-
     private Login getPrincipal(String logingId, List<Login> loginList) {
         for (Login lg : loginList ) {
             if (lg.getLoginId().equals(logingId)) {
@@ -1804,44 +1271,6 @@ public abstract class AbstractProvisioningService implements ProvisionService {
             }
         }
         return null;
-    }
-
-    private boolean notInDeleteResourceList(Login l, List<Resource> deleteResourceList) {
-        if (deleteResourceList == null) {
-            return true;
-        }
-        for ( Resource r : deleteResourceList) {
-            if (l.getManagedSysId().equalsIgnoreCase(r.getManagedSysId())) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private boolean userRoleAttrEq(Role r, Role origRole) {
-        //boolean retval = true;
-
-        if (origRole == null || r ==null) {
-            return false;
-        }
-
-
-        if (r.getStatus() != null) {
-            if ( !r.getStatus().equalsIgnoreCase(origRole.getStatus()) ) {
-                return false;
-            }
-        }
-        if (r.getStartDate() != null) {
-            if ( !r.getStartDate().equals(origRole.getStartDate()) ){
-                return false;
-            }
-        }
-        if (r.getEndDate() != null) {
-            if ( !r.getEndDate().equals(origRole.getEndDate()) ){
-                return false;
-            }
-        }
-        return true;
     }
 
     public void updatePrincipals(UserEntity origUser, ProvisionUser pUser) {
@@ -1889,168 +1318,6 @@ public abstract class AbstractProvisioningService implements ProvisionService {
         }
     }
 
-
-    /* Update Principal List */
-
-    public List<Login> updatePrincipalList(String userId, List<Login> origLoginList,
-                                    List<Login> newLoginList,
-                                    List<Resource> deleteResourceList) {
-
-        List<Login> principalList = new ArrayList<Login>();
-        log.debug("** updating Principals in modify User.");
-        log.debug("- origPrincpalList =" + origLoginList);
-        log.debug("- newPrincipalList=" + newLoginList);
-
-        if ( (origLoginList == null || origLoginList.size() == 0 )  &&
-                (newLoginList == null || newLoginList.size() == 0 )) {
-            return Collections.EMPTY_LIST;
-        }
-
-        if ( (origLoginList == null || origLoginList.size() == 0 )  &&
-                (newLoginList != null || newLoginList.size() > 0 )) {
-
-            log.debug("New Principal list is not null, but Original Principal List is null");
-            origLoginList = new ArrayList<Login>();
-            origLoginList.addAll(newLoginList);
-            // update the instance variable so that it can passed to the connector with the right operation code
-            for (Login lg : newLoginList) {
-                lg.setOperation(AttributeOperationEnum.ADD);
-                lg.setUserId(userId);
-                principalList.add(lg);
-                loginManager.addLogin(loginDozerConverter.convertToEntity(lg, true));
-            }
-            return principalList;
-        }
-
-        if ( (origLoginList != null && origLoginList.size() > 0 ) &&
-                (newLoginList == null || newLoginList.size() == 0 )) {
-            log.debug("orig Principal list is not null and nothing was passed in for the newPrincipal list - ie no change");
-            return origLoginList;
-        }
-
-        // if in new login, but not in old, then add it with operation 1
-        // else add with operation 2
-        log.debug("New Principal List is not null and OriginalList is not null - Compare the list of identities.");
-
-        for (Login l : newLoginList) {
-
-            if (l.getOperation() == AttributeOperationEnum.DELETE) {
-
-                log.debug("removing Login :" + l.getLoginId() );
-                // get the email object from the original set of emails so that we can remove it
-                Login lg = getPrincipal(l.getLoginId(), origLoginList);
-
-                if (lg != null) {
-                    lg.setStatus("INACTIVE");
-                    loginManager.updateLogin(loginDozerConverter.convertToEntity(lg, true));
-
-                    log.debug("Login updated with status of INACTIVE in IdM database.  ");
-                }
-                principalList.add(l);
-
-            } else {
-
-                // check if this login is in the current list
-                // if it is - see if it has changed
-                // if it is not - add it.
-                log.debug("evaluate Login");
-                Login origLogin =  getPrincipal(l.getLoginId(), origLoginList);
-                log.debug("OrigLogin found=" + origLogin);
-                if (origLogin == null) {
-                    l.setOperation(AttributeOperationEnum.ADD);
-                    l.setUserId(userId);
-                    principalList.add(l);
-                    loginManager.addLogin(loginDozerConverter.convertToEntity(l, true));
-
-                } else {
-                    if (l.getLoginId().equals(origLogin.getLoginId())) {
-                        // not changed
-                        log.debug("Identities are equal - No Change");
-                        log.debug("OrigLogin status=" + origLogin.getStatus());
-
-                        // if the request contains a password, then set the password
-                        // as part of the modify request
-
-                        if (l.getPassword() != null && !l.getPassword().equals(origLogin.getPassword())) {
-                            // update the password
-
-                            log.debug("Password change detected during synch process");
-
-                            Login newLg = loginDozerConverter.convertDTO(origLogin, true);
-                            try {
-                                newLg.setPassword(loginManager.encryptPassword(l.getUserId(), l.getPassword()));
-                            } catch (EncryptionException e) {
-                                log.error(e);
-                                e.printStackTrace();
-                            }
-                            loginManager.changeIdentityName(newLg.getLogin(), newLg.getPassword(),
-                                    newLg.getUserId(), newLg.getManagedSysId(), newLg.getDomainId());
-                            principalList.add(newLg);
-                        } else {
-                            log.debug("Updating Identity in IDM repository");
-                            if (l.getOperation() == AttributeOperationEnum.REPLACE) {
-                                // user set the replace flag
-                                loginManager.updateLogin(loginDozerConverter.convertToEntity(l, true));
-                                principalList.add(l);
-                            } else {
-
-                                log.debug("Flagged identity with NO_CHANGE attribute");
-
-                                l.setOperation(AttributeOperationEnum.NO_CHANGE);
-                                principalList.add(l);
-                            }
-                        }
-
-                    } else {
-                        log.debug("Identity changed - RENAME");
-
-
-                        // clone the object
-                        Login newLg = loginDozerConverter.convertDTO(origLogin, true);
-                        // add it back with the changed identity
-                        newLg.setOperation(AttributeOperationEnum.REPLACE);
-                        newLg.setLogin(l.getLogin());
-
-                        //encrypt the password and save it
-                        String newPassword = l.getPassword();
-                        if (newPassword == null) {
-                            newLg.setPassword(null);
-                        } else {
-                            try {
-                                newLg.setPassword(loginManager.encryptPassword(l.getUserId(), newPassword));
-                            }catch(EncryptionException e) {
-                                log.error(e);
-                                e.printStackTrace();
-                            }
-                        }
-                        loginManager.changeIdentityName(newLg.getLogin(), newLg.getPassword(),
-                                newLg.getUserId(), newLg.getManagedSysId(), newLg.getDomainId());
-                        //loginManager.addLogin(newLg);
-
-
-                        // we cannot send the encrypted password to the connector
-                        // set the password back
-                        newLg.setPassword(newPassword);
-                        // used the match up the
-                        newLg.setOrigPrincipalName(origLogin.getLogin());
-                        principalList.add(newLg);
-                    }
-                }
-            }
-        }
-        // if a value is in original list and not in the new list - then add it on
-        log.debug("Check if a value is in the original principal list but not in the new Principal List");
-        for (Login lg : origLoginList) {
-            Login newLogin =  getPrincipal(lg.getLoginId(), newLoginList);
-            if (newLogin == null) {
-                lg.setOperation(AttributeOperationEnum.NO_CHANGE);
-                principalList.add(lg);
-            }
-        }
-
-        return principalList;
-    }
-
     public LoginEntity getPrimaryIdentity(String managedSysId, List<LoginEntity> principalList) {
 
         log.debug("Getting identity for ManagedSysId");
@@ -2072,19 +1339,6 @@ public abstract class AbstractProvisioningService implements ProvisionService {
         }
         log.debug("getPrimaryIdentity() not found. returning null" );
         return null;
-    }
-
-    private boolean identityInDomain(String secDomain, String managedSysId,  List<LoginEntity> identityList) {
-
-        log.debug("IdentityinDomain =" + secDomain + "-" + managedSysId);
-
-        for (LoginEntity l : identityList) {
-            if ( l.getDomainId().equalsIgnoreCase(secDomain) &&
-                    l.getManagedSysId().equalsIgnoreCase(managedSysId)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     /**

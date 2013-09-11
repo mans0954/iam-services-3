@@ -26,7 +26,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.cxf.frontend.ClientProxyFactoryBean;
 import org.apache.cxf.jaxws.JaxWsProxyFactoryBean;
-import org.mule.api.MuleContext;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.Response;
@@ -285,10 +284,10 @@ public class ProvisionServiceImpl implements ProvisionService,
         }
 
         log.info("Associated a user to a group");
-        List<Group> groupList = provUser.getMemberOfGroups();
-        log.info("Group list = " + groupList);
-        if (groupList != null) {
-            for (Group g : groupList) {
+        Set<Group> groupSet = provUser.getGroups();
+        log.info("Group list = " + groupSet);
+        if (groupSet != null) {
+            for (Group g : groupSet) {
                 // check if the group id is valid
                 if (g.getGrpId() == null) {
                     ProvisionUserResponse resp = new ProvisionUserResponse();
@@ -309,10 +308,10 @@ public class ProvisionServiceImpl implements ProvisionService,
         }
 
         log.info("Associating users to a role");
-        List<Role> roleList = provUser.getMemberOfRoles();
-        log.info("Role list = " + roleList);
-        if (roleList != null && roleList.size() > 0) {
-            for (Role r : roleList) {
+        Set<Role> roleSet = provUser.getRoles();
+        log.info("Role list = " + roleSet);
+        if (roleSet != null && roleSet.size() > 0) {
+            for (Role r : roleSet) {
                 // check if the roleId is valid
                 if (r.getRoleId() == null) {
                     ProvisionUserResponse resp = new ProvisionUserResponse();
@@ -343,8 +342,8 @@ public class ProvisionServiceImpl implements ProvisionService,
         // ManagedSysAttributes sysAttribute = null;
 
         /* Start with 1 role first and build from there. */
-        if (roleList != null && roleList.size() > 0) {
-            List<Resource> roleResource = getResourcesForRole(roleList);
+        if (roleSet != null && roleSet.size() > 0) {
+            List<Resource> roleResource = getResourcesForRole(roleSet);
             // collect all the resources that belong to a managed system execute
             // their policies
             if (roleResource != null) {
@@ -570,16 +569,16 @@ public class ProvisionServiceImpl implements ProvisionService,
         return value;
     }
 
-    private List<Resource> getResourcesForRole(List<Role> roleList) {
+    private List<Resource> getResourcesForRole(Set<Role> roleSet) {
 
         log.info("GetResourcesForRole().....");
         // get the list of ids
         List<String> roleIdList = new ArrayList<String>();
 
-        if (roleList == null) {
+        if (roleSet == null) {
             return null;
         }
-        for (Role rl : roleList) {
+        for (Role rl : roleSet) {
             roleIdList.add(rl.getRoleId());
         }
 
@@ -831,11 +830,11 @@ public class ProvisionServiceImpl implements ProvisionService,
                 .getLogId();
 
         updateGroupAssociation(origUser.getUserId(),
-                provUser.getMemberOfGroups(), logId, requestId,
+                provUser.getGroups(), logId, requestId,
                 provUser.getLastUpdatedBy(), primaryId);
 
         updateRoleAssociation(origUser.getUserId(),
-                provUser.getMemberOfRoles(), logId, requestId,
+                provUser.getRoles(), logId, requestId,
                 provUser.getLastUpdatedBy(), primaryId);
 
         updateSuperiors(newUser, provUser.getSuperiors());
@@ -922,7 +921,7 @@ public class ProvisionServiceImpl implements ProvisionService,
         if (activeRoleList != null && activeRoleList.size() > 0) {
             log.info("Active role List= " + activeRoleList.size());
 
-            List<Resource> roleResource = getResourcesForRole(activeRoleList);
+            List<Resource> roleResource = getResourcesForRole(new HashSet(activeRoleList));
 
             // collect all the resources that belong to a managed system execute
             // their policies
@@ -1598,16 +1597,16 @@ public class ProvisionServiceImpl implements ProvisionService,
     }
 
     private void updateGroupAssociation(String userId,
-            List<Group> newGroupList, String logId, String requestId,
+            Set<Group> newGroupSet, String logId, String requestId,
             String updatedBy, String primaryId) {
         // loop through the new list
         // if its marked - delete then delete the user-group association
         // otherwise - check if the group is already linked to the user. iF its
         // not, then add it.
-        if (newGroupList == null) {
+        if (newGroupSet == null) {
             return;
         }
-        for (Group g : newGroupList) {
+        for (Group g : newGroupSet) {
             if (g.getOperation() == AttributeOperationEnum.DELETE) {
                 this.userMgr.removeUserFromGroup(g.getGrpId(), userId);
 
@@ -1631,12 +1630,12 @@ public class ProvisionServiceImpl implements ProvisionService,
         }
     }
 
-    private void updateRoleAssociation(String userId, List<Role> newRoleList,
+    private void updateRoleAssociation(String userId, Set<Role> newRoleSet,
             String logId, String requestId, String updatedBy, String primaryId) {
-        if (newRoleList == null) {
+        if (newRoleSet == null) {
             return;
         }
-        for (Role r : newRoleList) {
+        for (Role r : newRoleSet) {
             if (r.getOperation() == AttributeOperationEnum.DELETE) {
                 roleDataService.removeUserFromRole(r.getRoleId(), userId);
 

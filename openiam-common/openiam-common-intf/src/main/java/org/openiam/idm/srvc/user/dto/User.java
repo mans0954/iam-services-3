@@ -237,7 +237,6 @@ public class User extends org.openiam.base.BaseObject {
         this.userId = userId;
     }
 
-
     // Property accessors
     public String getUserId() {
         return this.userId;
@@ -451,7 +450,6 @@ public class User extends org.openiam.base.BaseObject {
     public void setLastDate(Date lastDate) {
         this.lastDate = lastDate;
     }
-
 
     public Set<UserNote> getUserNotes() {
         return userNotes;

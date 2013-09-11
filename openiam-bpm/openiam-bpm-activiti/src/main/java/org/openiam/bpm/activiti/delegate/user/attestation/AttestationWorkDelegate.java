@@ -97,7 +97,7 @@ public class AttestationWorkDelegate implements JavaDelegate {
 					if(groupEntity != null) {
 						final Group group = groupDozerConverter.convertToDTO(groupEntity, false);
 						group.setOperation(AttributeOperationEnum.DELETE);
-						provisionUser.addMemberGroup(group);
+						provisionUser.getGroups().add(group);
 					}
 				}
 			}
@@ -108,7 +108,7 @@ public class AttestationWorkDelegate implements JavaDelegate {
 					if(roleEntity != null) {
 						final Role role = roleDozerConverter.convertToDTO(roleEntity, false);
 						role.setOperation(AttributeOperationEnum.DELETE);
-						provisionUser.addMemberRole(role);
+						provisionUser.getRoles().add(role);
 					}
 				}
 			}
@@ -118,9 +118,8 @@ public class AttestationWorkDelegate implements JavaDelegate {
 					final ResourceEntity resourceEntity = resourceService.findResourceById(resourceId);
 					if(resourceEntity != null) {
 						final Resource resource = resourceDozerConverter.convertToDTO(resourceEntity, false);
-						final UserResourceAssociation association = new UserResourceAssociation(resource.getResourceId(), AttributeOperationEnum.DELETE);
-						association.setManagedSystemId(resource.getManagedSysId());
-						provisionUser.addResourceUserAssociation(association);
+                        resource.setOperation(AttributeOperationEnum.DELETE);
+						provisionUser.getResources().add(resource);
 					}
 				}
 			}

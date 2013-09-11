@@ -5,6 +5,7 @@ import org.openiam.base.AttributeOperationEnum;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.dozer.converter.ResourceDozerConverter;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
+import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.service.ResourceService;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.service.UserDataService;
@@ -28,6 +29,9 @@ public class DisentitleUserFromResource extends AbstractEntitlementsDelegate {
 	
 	@Autowired
 	private ResourceDozerConverter resourceDozerConverter;
+
+    @Autowired
+    private ResourceDozerConverter resourceDozerMapper;
 	
 	public DisentitleUserFromResource() {
 		super();
@@ -41,15 +45,11 @@ public class DisentitleUserFromResource extends AbstractEntitlementsDelegate {
 		User user = userDataService.getUserDto(userId);
 		final ResourceEntity entity = resourceService.findResourceById(resourceId);
 		if(user != null && entity != null) {
-			user = userDataService.getUserDto(userId);
-			final ProvisionUser pUser = new ProvisionUser(user);
-			final UserResourceAssociation association = new UserResourceAssociation();
-            association.setOperation(AttributeOperationEnum.DELETE);
-            association.setResourceId(resourceId);
-            association.setManagedSystemId(entity.getManagedSysId());
-            pUser.addResourceUserAssociation(association);
-			
-			provisionService.modifyUser(pUser);
+            final ProvisionUser pUser = new ProvisionUser(user);
+            Resource resource = resourceDozerMapper.convertToDTO(entity, true);
+            resource.setOperation(AttributeOperationEnum.ADD);
+            pUser.getResources().add(resource);
+            provisionService.modifyUser(pUser);
 		}
 		/*
 		final ResourceUserEntity entity = resourceUserDAO.getRecord(resourceId, userId);

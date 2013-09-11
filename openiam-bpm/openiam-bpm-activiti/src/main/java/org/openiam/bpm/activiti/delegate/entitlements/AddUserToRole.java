@@ -44,7 +44,7 @@ public class AddUserToRole extends AbstractEntitlementsDelegate {
 			final ProvisionUser pUser = new ProvisionUser(user);
 			final Role role = roleDozerConverter.convertToDTO(roleEntity, false);
 			role.setOperation(AttributeOperationEnum.ADD);
-			pUser.addMemberRole(role);
+            pUser.getRoles().add(role);
 			provisionService.modifyUser(pUser);
 			/*
 			final UserRoleEntity entity = new UserRoleEntity();

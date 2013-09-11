@@ -38,7 +38,7 @@ public class AddUserToOrganization extends AbstractEntitlementsDelegate {
 			entity.setOperation(AttributeOperationEnum.ADD);
 			final User user = userDataService.getUserDto(userId);
 			final ProvisionUser pUser = new ProvisionUser(user);
-			pUser.addUserAffiliation(entity);
+			pUser.getAffiliations().add(entity);
 			provisionService.modifyUser(pUser);
 		}
 	}

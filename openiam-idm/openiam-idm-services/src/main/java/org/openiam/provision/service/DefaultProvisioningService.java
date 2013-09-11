@@ -71,7 +71,6 @@ import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.provision.dto.AccountLockEnum;
 import org.openiam.provision.dto.PasswordSync;
 import org.openiam.provision.dto.ProvisionUser;
-import org.openiam.provision.dto.UserResourceAssociation;
 import org.openiam.provision.resp.LookupUserResponse;
 import org.openiam.provision.resp.PasswordResponse;
 import org.openiam.provision.resp.ProvisionUserResponse;
@@ -146,16 +145,11 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             user.setStatus(UserStatusEnum.PENDING_START_DATE);
         }
 
-        if (user.getPrimaryOrganization() != null) {
-            org = orgManager.getOrganization(user.getPrimaryOrganization()
-                    .getId(), null);
-        }
-
         // bind the objects to the scripting engine
 
         bindingMap.put("sysId", sysConfiguration.getDefaultManagedSysId());
         bindingMap.put("user", user);
-        bindingMap.put("org", org);
+        bindingMap.put("org", user.getPrimaryOrganization());
         bindingMap.put("operation", "ADD");
         bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS, null);
         bindingMap.put(TARGET_SYSTEM_IDENTITY, null);
@@ -390,19 +384,12 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         // provision the user into the systems that they should have access to.
         // get the list of resources for each role that user belongs too.
 
-        bindingMap.put("userRole", user.getMemberOfRoles());
+        bindingMap.put("userRole", user.getRoles());
 
         if (provInTargetSystemNow) {
-            Set<Role> resourceSet = (user.getMemberOfRoles() != null) ?
-                    new HashSet<Role>(user.getMemberOfRoles()) : new HashSet<Role>();
-            List<Resource> resourceList = new LinkedList<Resource>(getResourcesForRoles(resourceSet));
-
-            // update the resource list to include the resources that have been
-            // added directly
-            if (resourceList == null) {
-
-                resourceList = new ArrayList<Resource>();
-            }
+            Set<Role> roleSet = (user.getRoles() != null) ?
+                    new HashSet<Role>(user.getRoles()) : new HashSet<Role>();
+            List<Resource> resourceList = new LinkedList<Resource>(getResourcesForRoles(roleSet));
 
             addDirectResourceAssociation(user, resourceList);
 
@@ -1519,30 +1506,10 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         ProvisionUserResponse resp = new ProvisionUserResponse();
         String requestId = "R" + UUIDGen.getUUID();
 
-        Organization org = null;
-        if (pUser.getPrimaryOrganization() != null) {
-            org = orgManager.getOrganization(pUser.getPrimaryOrganization().getId(), null);
-        }
-
-        if (org == null) {
-            final List<Organization> organizationForCurrentUser = orgManager
-                    .getOrganizationsForUserByType(pUser.getUserId(), null,
-                            "ORGANIZATION");
-            if (CollectionUtils.isNotEmpty(organizationForCurrentUser)) {
-                for (final Organization organization : organizationForCurrentUser) {
-                    if (!pUser.isOrganizationMarkedAsDeleted(organization.getId())) {
-                        org = organization;
-                        break;
-                    }
-                }
-            }
-        }
-
         // bind the objects to the scripting engine
         Map<String, Object> bindingMap = new HashMap<String, Object>();
         bindingMap.put("sysId", sysConfiguration.getDefaultManagedSysId());
-        // bindingMap.put("user", pUser.getUser());
-        bindingMap.put("org", org);
+        bindingMap.put("org", pUser.getPrimaryOrganization());
         bindingMap.put("context", SpringContextProvider.getApplicationContext());
         bindingMap.put("operation", "MODIFY");
         bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS, null);
@@ -1601,7 +1568,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         updatePhones(origUser, pUser);
 
         // update emails
-        updateUserEmails(origUser, pUser);
+        updateEmails(origUser, pUser);
 
         // update supervisors
         updateSupervisors(pUser);
@@ -1617,7 +1584,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         bindingMap.put("userRole", roleSet);
 
         // update organization associations
-        updateUserOrgAffiliations(origUser, pUser);
+        updateAffiliations(origUser, pUser);
 
         // Set of resources that a person should have based on their active roles
         Set<Resource> resourceSet = getResourcesForRoles(roleSet);
@@ -1733,16 +1700,14 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             resp.setStatus(ResponseStatus.FAILURE);
             resp.setErrorCode(ResponseCode.FAIL_POSTPROCESSOR);
             return resp;
-                    }
+        }
 
         /* Response object */
         resp.setStatus(ResponseStatus.SUCCESS);
         resp.setUser(finalProvUser);
         return resp;
 
-                }
-
-
+    }
 
     private void updateResourceState(Set<Resource> resourceSet,
             List<LoginEntity> curPrincipalList) {
@@ -3142,7 +3107,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             }
             return resourceList;
         }
-
+    /*
     private List<Resource> adjustForOverlappingResource(
             List<Resource> resourceList, List<Resource> deleteResourceList) {
 
@@ -3176,72 +3141,20 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         }
         return newDelResList;
     }
-
-    private void applyResourceExceptions(ProvisionUser user,
-            List<Resource> addResourceList, List<Resource> deleteResourceList) {
-        List<UserResourceAssociation> userResAssocList = user
-                .getUserResourceList();
-
-        if (userResAssocList == null || userResAssocList.isEmpty()) {
-            return;
-        }
-
-        for (UserResourceAssociation ura : userResAssocList) {
-
-            if (ura.getOperation() == AttributeOperationEnum.DELETE) {
-
-                log.debug("Adding resource " + ura.getResourceId()
-                        + " to the delete list ");
-
-                // add this resource to the delete list
-                if (!resourceExists(ura.getResourceId(), deleteResourceList)) {
-
-                    if (ura.getManagedSystemId() == null) {
-
-                        Resource resObj = resourceDataService.getResource(ura
-                                .getResourceId());
-                        ura.setManagedSystemId(resObj.getManagedSysId());
-
-                    }
-
-                    log.debug(" - Adding to deleteResourceList " + ura);
-                    deleteResourceList.add(new Resource(ura.getResourceId(),
-                            ura.getManagedSystemId()));
-
-                }
-
-            } else if (ura.getOperation() == AttributeOperationEnum.ADD) {
-                // add this resource to the delete list
-                if (!resourceExists(ura.getResourceId(), addResourceList)) {
-
-                    if (ura.getManagedSystemId() == null) {
-
-                        Resource resObj = resourceDataService.getResource(ura
-                                .getResourceId());
-                        ura.setManagedSystemId(resObj.getManagedSysId());
-
-                    }
-
-                    addResourceList.add(new Resource(ura.getResourceId(), ura
-                            .getManagedSystemId()));
-                }
-            }
-        }
-    }
+    */
 
     private void addDirectResourceAssociation(ProvisionUser user,
             List<Resource> resourceList) {
 
         log.debug("addDirectResourceAssociation: Adding resources to list directly.");
 
-        List<UserResourceAssociation> userResAssocList = user
-                .getUserResourceList();
+        Set<Resource> userResAssocSet = user.getResources();
 
-        if (userResAssocList == null || userResAssocList.isEmpty()) {
+        if (userResAssocSet == null || userResAssocSet.isEmpty()) {
             return;
         }
 
-        for (UserResourceAssociation ura : userResAssocList) {
+        for (Resource ura : userResAssocSet) {
 
             if (resourceExists(ura.getResourceId(), resourceList)) {
 
@@ -3262,7 +3175,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 // resource is not current list
                 if (ura.getOperation() == AttributeOperationEnum.ADD) {
 
-                    if (ura.getManagedSystemId() == null) {
+                    if (ura.getManagedSysId() == null) {
 
                         log.debug("addDirectResourceAssociation: URA=" + ura);
 
@@ -3273,25 +3186,25 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
                             if (resObj != null) {
 
-                                ura.setManagedSystemId(resObj.getManagedSysId());
+                                ura.setManagedSysId(resObj.getManagedSysId());
 
                             }
                         }
                     }
 
                     if (ura.getResourceId() != null
-                            && ura.getManagedSystemId() != null) {
+                            && ura.getManagedSysId() != null) {
 
                         log.debug("addDirectResourceAssociation:: Adding resource to resource list - "
                                 + ura.getResourceId());
 
-                        resourceList.add(new Resource(ura.getResourceId(), ura
-                                .getManagedSystemId()));
+                        resourceList.add(new Resource(ura.getResourceId(), ura.getManagedSysId()));
                     }
                 }
             }
         }
     }
+
 
     private boolean resourceExists(String resId, List<Resource> resourceList) {
 

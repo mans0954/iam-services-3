@@ -44,7 +44,7 @@ public class RemoveUserFromGroup extends AbstractEntitlementsDelegate {
 			group.setOperation(AttributeOperationEnum.DELETE);
 			final User user = userDataService.getUserDto(userId);
 			final ProvisionUser pUser = new ProvisionUser(user);
-			pUser.addMemberGroup(group);
+			pUser.getGroups().add(group);
 			provisionService.modifyUser(pUser);
 		}
 	}

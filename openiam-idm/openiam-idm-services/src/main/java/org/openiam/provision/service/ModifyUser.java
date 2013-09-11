@@ -184,8 +184,8 @@ public class ModifyUser {
         }
 
         // the affiliations
-        List<Organization> affiliationList = user.getUserAffiliations();
-        if (affiliationList == null || affiliationList.isEmpty()) {
+        Set<Organization> affiliationSet = user.getAffiliations();
+        if (affiliationSet == null || affiliationSet.isEmpty()) {
 
             log.debug("- Adding original affiliationList to the user object");
 
@@ -193,7 +193,7 @@ public class ModifyUser {
                     .getOrganizationsForUser(user.getUserId(), null, 0,Integer.MAX_VALUE);
             if (userAffiliations != null && !userAffiliations.isEmpty()) {
 
-                user.setUserAffiliations(userAffiliations);
+                user.setAffiliations(new HashSet<Organization>(userAffiliations));
             }
 
         }

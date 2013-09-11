@@ -197,10 +197,10 @@ public class AddUser {
 
     private ResponseCode addGroups(ProvisionUser user, String newUserId,
             List<IdmAuditLog> logList) {
-        List<Group> groupList = user.getMemberOfGroups();
+        Set<Group> groupSet = user.getGroups();
 
-        if (groupList != null) {
-            for (Group g : groupList) {
+        if (groupSet != null) {
+            for (Group g : groupSet) {
                 // check if the group id is valid
                 if (g.getGrpId() == null) {
                     return ResponseCode.GROUP_ID_NULL;
@@ -226,10 +226,10 @@ public class AddUser {
 
     private ResponseCode addRoles(ProvisionUser user, String newUserId,
             List<IdmAuditLog> logList) {
-        List<Role> roleList = user.getMemberOfRoles();
-        log.debug("Role list = " + roleList);
-        if (roleList != null && roleList.size() > 0) {
-            for (Role r : roleList) {
+        Set<Role> roleSet = user.getRoles();
+        log.debug("Role list = " + roleSet);
+        if (roleSet != null && roleSet.size() > 0) {
+            for (Role r : roleSet) {
                 // check if the roleId is valid
                 if (r.getRoleId() == null) {
                     return ResponseCode.ROLE_ID_NULL;
@@ -254,10 +254,10 @@ public class AddUser {
 
     private ResponseCode addAffiliations(ProvisionUser user, String newUserId,
             List<IdmAuditLog> logList) {
-        List<Organization> affiliationList = user.getUserAffiliations();
-        log.debug("addAffiliations:Affiliation List list = " + affiliationList);
-        if (affiliationList != null && affiliationList.size() > 0) {
-            for (Organization org : affiliationList) {
+        Set<Organization> affiliationSet = user.getAffiliations();
+        log.debug("addAffiliations:Affiliation List list = " + affiliationSet);
+        if (affiliationSet != null && affiliationSet.size() > 0) {
+            for (Organization org : affiliationSet) {
                 // check if the roleId is valid
                 if (org.getId() == null) {
                     return ResponseCode.OBJECT_ID_INVALID;
