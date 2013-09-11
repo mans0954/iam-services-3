@@ -1328,14 +1328,34 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     final String managedSysId = userLogin.getManagedSysId();
                     final ManagedSysDto managedSys = managedSysService
                             .getManagedSys(managedSysId);
+                    ProvisionConnectorDto connector = provisionConnectorWebService
+                            .getProvisionConnector(managedSys.getConnectorId());
                     if (AccountLockEnum.LOCKED.equals(operation)
                             || AccountLockEnum.LOCKED_ADMIN.equals(operation)) {
                         final SuspendResumeRequest suspendCommand = new SuspendResumeRequest();
                         suspendCommand.setObjectIdentity(userLogin.getLogin());
                         suspendCommand.setTargetID(managedSysId);
                         suspendCommand.setRequestID("R" + System.currentTimeMillis());
-                        connectorAdapter.suspendRequest(managedSys,
-                                suspendCommand, MuleContextProvider.getCtx());
+                        suspendCommand.setScriptHandler(managedSys
+                                .getSuspendHandler());
+                        suspendCommand.setHostLoginId(managedSys.getUserId());
+                        String passwordDecoded = managedSys.getPswd();
+                        try {
+                            passwordDecoded = getDecryptedPassword(managedSys);
+                        } catch (ConnectorDataException e) {
+                            e.printStackTrace();
+                        }
+                        suspendCommand.setHostLoginPassword(passwordDecoded);
+                        suspendCommand.setHostUrl(managedSys.getHostUrl());
+                        if (connector.getConnectorInterface() != null
+                                && connector.getConnectorInterface()
+                                .equalsIgnoreCase("REMOTE")) {
+                            remoteConnectorAdapter.suspend(managedSys,
+                                suspendCommand, connector, MuleContextProvider.getCtx());
+                        } else {
+                            connectorAdapter.suspendRequest(managedSys,
+                                    suspendCommand, MuleContextProvider.getCtx());
+                        }
                     } else {
                         final SuspendResumeRequest resumeRequest = new SuspendResumeRequest();
                         resumeRequest.setObjectIdentity(userLogin.getLogin());
@@ -1343,8 +1363,27 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                         resumeRequest.setRequestID("R"
                                 + System.currentTimeMillis());
                         // responsetype = client.resume(resumeRequest);
-                        connectorAdapter.resumeRequest(managedSys,
-                                resumeRequest, MuleContextProvider.getCtx());
+                        resumeRequest.setScriptHandler(managedSys
+                                .getSuspendHandler());
+
+                        resumeRequest.setHostLoginId(managedSys.getUserId());
+                        String passwordDecoded = managedSys.getPswd();
+                        try {
+                            passwordDecoded = getDecryptedPassword(managedSys);
+                        } catch (ConnectorDataException e) {
+                            e.printStackTrace();
+                        }
+                        resumeRequest.setHostLoginPassword(passwordDecoded);
+                        resumeRequest.setHostUrl(managedSys.getHostUrl());
+                        if (connector.getConnectorInterface() != null
+                                && connector.getConnectorInterface()
+                                .equalsIgnoreCase("REMOTE")) {
+                            remoteConnectorAdapter.resumeRequest(managedSys,
+                                    resumeRequest, connector, MuleContextProvider.getCtx());
+                        } else {
+                            connectorAdapter.resumeRequest(managedSys,
+                                    resumeRequest, MuleContextProvider.getCtx());
+                        }
                     }
 
                     if (responsetype == null) {
@@ -1605,7 +1644,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         // update the group
         updateGroupAssociation(origUser.getUserId(), curGroupList,
                 pUser.getMemberOfGroups());
-
+        pUser.setMemberOfGroups(curGroupList);
         log.debug("Pending call to Update Role Association.  Roles passed in equal: "
                 + pUser.getMemberOfRoles());
 
@@ -2412,8 +2451,6 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
                             // check the sync flag
 
-                            if (syncAllowed(res)) {
-
                                 log.debug("Sync allowed for sys="
                                         + managedSysId);
                                 loginManager.resetPassword(lg.getDomainId(),
@@ -2444,7 +2481,6 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                             mSys, passwordSync);
 
                                 }
-                            }
                         }
                     }
                 }
