@@ -9,6 +9,8 @@ import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.RoleSearchBean;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.service.GroupDAO;
+import org.openiam.idm.srvc.res.domain.ResourceEntity;
+import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
 import org.openiam.idm.srvc.res.service.ResourceRoleDAO;
 import org.openiam.idm.srvc.role.domain.RoleAttributeEntity;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
@@ -214,9 +216,77 @@ public class RoleDataServiceImpl implements RoleDataService {
 			if(StringUtils.isBlank(role.getRoleId())) {
 				roleDao.save(role);
 			} else {
-				roleDao.update(role);
+				final RoleEntity dbRole = roleDao.findById(role.getRoleId());
+				if(dbRole != null) {
+					role.setChildRoles(dbRole.getChildRoles());
+					role.setGroups(dbRole.getGroups());
+					role.setParentRoles(dbRole.getParentRoles());
+					role.setResourceRoles(dbRole.getResourceRoles());
+					role.setRolePolicy(dbRole.getRolePolicy());
+					role.setUserRoles(dbRole.getUserRoles());
+					
+					mergeAttributes(role, dbRole);
+					roleDao.merge(role);
+				}
 			}
 		}
+	}
+	
+	private void mergeAttributes(final RoleEntity bean, final RoleEntity dbObject) {
+		final Set<RoleAttributeEntity> beanProps = (bean.getRoleAttributes() != null) ? bean.getRoleAttributes() : new HashSet<RoleAttributeEntity>();
+		final Set<RoleAttributeEntity> dbProps = (dbObject.getRoleAttributes() != null) ? dbObject.getRoleAttributes() : new HashSet<RoleAttributeEntity>();
+		
+		/* delete */
+		for(final Iterator<RoleAttributeEntity> dbIt = dbProps.iterator(); dbIt.hasNext();) {
+			final RoleAttributeEntity dbProp = dbIt.next();
+			
+			boolean contains = false;
+			for(final Iterator<RoleAttributeEntity> it = beanProps.iterator(); it.hasNext();) {
+			final RoleAttributeEntity beanProp = it.next();
+				if(StringUtils.equals(dbProp.getRoleAttrId(), beanProp.getRoleAttrId())) {
+					contains = true;
+					break;
+				}
+			}
+			
+			if(!contains) {
+				dbIt.remove();
+			}
+		}
+			
+		/* update */
+		for(final Iterator<RoleAttributeEntity> dbIt = dbProps.iterator(); dbIt.hasNext();) {
+			final RoleAttributeEntity dbProp = dbIt.next();
+			for(final Iterator<RoleAttributeEntity> it = beanProps.iterator(); it.hasNext();) {
+				final RoleAttributeEntity beanProp = it.next();
+				if(StringUtils.equals(dbProp.getRoleAttrId(), beanProp.getRoleAttrId())) {
+					dbProp.setAttrGroup(beanProp.getAttrGroup());
+					dbProp.setMetadataElementId(beanProp.getMetadataElementId());
+					dbProp.setName(beanProp.getName());
+					dbProp.setValue(beanProp.getValue());
+					break;
+				}
+			}
+		}
+		
+		/* add */
+		for(final Iterator<RoleAttributeEntity> it = beanProps.iterator(); it.hasNext();) {
+			boolean contains = false;
+			final RoleAttributeEntity beanProp = it.next();
+			for(final Iterator<RoleAttributeEntity> dbIt = dbProps.iterator(); dbIt.hasNext();) {
+				final RoleAttributeEntity dbProp = dbIt.next();
+				if(StringUtils.equals(dbProp.getRoleAttrId(), beanProp.getRoleAttrId())) {
+					contains = true;
+				}
+			}
+			
+			if(!contains) {
+				beanProp.setRoleId(bean.getRoleId());
+				dbProps.add(beanProp);
+			}
+		}
+		
+		bean.setRoleAttributes(dbProps);
 	}
 
 	@Override

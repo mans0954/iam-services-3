@@ -64,85 +64,79 @@ public class ResourceServiceImpl implements ResourceService {
 	public void save(ResourceEntity entity) {
 		if(StringUtils.isNotBlank(entity.getResourceId())) {
 			final ResourceEntity dbObject = resourceDao.findById(entity.getResourceId());
-			dbObject.setDescription(entity.getDescription());
-			dbObject.setDomain(entity.getDomain());
-			dbObject.setIsPublic(entity.getIsPublic());
-			//dbObject.setIsSSL(entity.getIsSSL());
-			dbObject.setManagedSysId(entity.getManagedSysId());
-			dbObject.setName(entity.getName());
-			dbObject.setURL(entity.getURL());
-			if(entity.getResourceType() != null) {
-				dbObject.setResourceType(resourceTypeDao.findById(entity.getResourceType().getResourceTypeId()));
-			}
-			
-			Set<ResourcePropEntity> beanProps = (entity.getResourceProps() != null) ? entity.getResourceProps() : new HashSet<ResourcePropEntity>();
-			Set<ResourcePropEntity> dbProps = (dbObject.getResourceProps() != null) ? dbObject.getResourceProps() : new HashSet<ResourcePropEntity>();
-			
-			/* delete */
-			for(final Iterator<ResourcePropEntity> dbIt = dbProps.iterator(); dbIt.hasNext();) {
-				final ResourcePropEntity dbProp = dbIt.next();
-				
-				boolean contains = false;
-				for(final Iterator<ResourcePropEntity> it = beanProps.iterator(); it.hasNext();) {
-				final ResourcePropEntity beanProp = it.next();
-					if(StringUtils.equals(dbProp.getResourcePropId(), beanProp.getResourcePropId())) {
-						contains = true;
-						break;
-					}
-				}
-				
-				if(!contains) {
-					dbIt.remove();
-				}
-			}
-				
-			/* update */
-			for(final Iterator<ResourcePropEntity> dbIt = dbProps.iterator(); dbIt.hasNext();) {
-				final ResourcePropEntity dbProp = dbIt.next();
-				for(final Iterator<ResourcePropEntity> it = beanProps.iterator(); it.hasNext();) {
-					final ResourcePropEntity beanProp = it.next();
-					if(StringUtils.equals(dbProp.getResourcePropId(), beanProp.getResourcePropId())) {
-						dbProp.setPropValue(beanProp.getPropValue());
-						dbProp.setMetadataId(beanProp.getMetadataId());
-						dbProp.setName(beanProp.getName());
-						dbProp.setResourceId(beanProp.getResourceId());
-						break;
-					}
-				}
-			}
-			
-			/* add */
-			for(final Iterator<ResourcePropEntity> it = beanProps.iterator(); it.hasNext();) {
-				boolean contains = false;
-				final ResourcePropEntity beanProp = it.next();
-				for(final Iterator<ResourcePropEntity> dbIt = dbProps.iterator(); dbIt.hasNext();) {
-					final ResourcePropEntity dbProp = dbIt.next();
-					if(StringUtils.equals(dbProp.getResourcePropId(), beanProp.getResourcePropId())) {
-						contains = true;
-					}
-				}
-				
-				if(!contains) {
-					beanProp.setResourceId(entity.getResourceId());
-					dbProps.add(beanProp);
-				}
-			}
-			
-			dbObject.setResourceProps(dbProps);
-			
-			/*
 			entity.setChildResources(dbObject.getChildResources());
-			entity.setParentResources(dbObject.getParentResources());
 			entity.setResourceGroups(dbObject.getResourceGroups());
-			entity.setResourceProps(dbObject.getResourceProps());
-			entity.setResourceUsers(dbObject.getResourceUsers());
+			entity.setParentResources(dbObject.getParentResources());
 			entity.setResourceRoles(dbObject.getResourceRoles());
-			*/
+			entity.setResourceUsers(dbObject.getResourceUsers());
 			
-			resourceDao.update(dbObject);
+			if(entity.getResourceType() != null) {
+				entity.setResourceType(resourceTypeDao.findById(entity.getResourceType().getResourceTypeId()));
+			}
+			
+			mergeAttribute(entity, dbObject);
+			
+			resourceDao.merge(entity);
 		} else {
 			resourceDao.save(entity);
 		}
+	}
+	
+	private void mergeAttribute(final ResourceEntity bean, final ResourceEntity dbObject) {
+		Set<ResourcePropEntity> beanProps = (bean.getResourceProps() != null) ? bean.getResourceProps() : new HashSet<ResourcePropEntity>();
+		Set<ResourcePropEntity> dbProps = (dbObject.getResourceProps() != null) ? dbObject.getResourceProps() : new HashSet<ResourcePropEntity>();
+		
+		/* delete */
+		for(final Iterator<ResourcePropEntity> dbIt = dbProps.iterator(); dbIt.hasNext();) {
+			final ResourcePropEntity dbProp = dbIt.next();
+			
+			boolean contains = false;
+			for(final Iterator<ResourcePropEntity> it = beanProps.iterator(); it.hasNext();) {
+			final ResourcePropEntity beanProp = it.next();
+				if(StringUtils.equals(dbProp.getResourcePropId(), beanProp.getResourcePropId())) {
+					contains = true;
+					break;
+				}
+			}
+			
+			if(!contains) {
+				dbIt.remove();
+			}
+		}
+			
+		/* update */
+		for(final Iterator<ResourcePropEntity> dbIt = dbProps.iterator(); dbIt.hasNext();) {
+			final ResourcePropEntity dbProp = dbIt.next();
+			for(final Iterator<ResourcePropEntity> it = beanProps.iterator(); it.hasNext();) {
+				final ResourcePropEntity beanProp = it.next();
+				if(StringUtils.equals(dbProp.getResourcePropId(), beanProp.getResourcePropId())) {
+					dbProp.setPropValue(beanProp.getPropValue());
+					dbProp.setMetadataId(beanProp.getMetadataId());
+					dbProp.setName(beanProp.getName());
+					dbProp.setResourceId(beanProp.getResourceId());
+					break;
+				}
+			}
+		}
+		
+		/* add */
+		for(final Iterator<ResourcePropEntity> it = beanProps.iterator(); it.hasNext();) {
+			boolean contains = false;
+			final ResourcePropEntity beanProp = it.next();
+			for(final Iterator<ResourcePropEntity> dbIt = dbProps.iterator(); dbIt.hasNext();) {
+				final ResourcePropEntity dbProp = dbIt.next();
+				if(StringUtils.equals(dbProp.getResourcePropId(), beanProp.getResourcePropId())) {
+					contains = true;
+				}
+			}
+			
+			if(!contains) {
+				beanProp.setResourceId(bean.getResourceId());
+				dbProps.add(beanProp);
+			}
+		}
+		
+		bean.setResourceProps(dbProps);
 	}
 
 	@Override
