@@ -25,6 +25,7 @@ import org.openiam.connector.type.response.ResponseType;
 import org.openiam.connector.type.response.SearchResponse;
 import org.openiam.dozer.converter.*;
 import org.openiam.exception.EncryptionException;
+import org.openiam.exception.ObjectNotFoundException;
 import org.openiam.exception.ScriptEngineException;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.service.AuditHelper;
@@ -60,6 +61,9 @@ import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.service.OrganizationDataService;
 import org.openiam.idm.srvc.org.service.OrganizationService;
+import org.openiam.idm.srvc.policy.dto.Policy;
+import org.openiam.idm.srvc.pswd.dto.Password;
+import org.openiam.idm.srvc.pswd.dto.PasswordValidationCode;
 import org.openiam.idm.srvc.pswd.service.PasswordHistoryDAO;
 import org.openiam.idm.srvc.pswd.service.PasswordService;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
@@ -435,7 +439,15 @@ public abstract class AbstractProvisioningService implements ProvisionService {
         resp.setStatus(ResponseStatus.SUCCESS);
         ResponseCode code;
 
-        UserEntity userEntity = userDozerConverter.convertToEntity(pUser.getUser(), true);
+        UserEntity userEntity = userDozerConverter.convertToEntity(pUser.getUser(), false);
+        try {
+            userMgr.addUser(userEntity);
+        } catch (Exception e) {
+            log.error("Exception while creating user", e);
+            resp.setStatus(ResponseStatus.FAILURE);
+            resp.setErrorCode(ResponseCode.FAIL_OTHER);
+            return resp;
+        }
         if(MapUtils.isNotEmpty(userEntity.getUserAttributes())) {
             for(final UserAttributeEntity entity : userEntity.getUserAttributes().values()) {
                 if(entity != null) {
@@ -444,6 +456,7 @@ public abstract class AbstractProvisioningService implements ProvisionService {
                 }
             }
         }
+        /*
         code = addGroups(pUser, userEntity, logList);
         if (code != ResponseCode.SUCCESS) {
             resp.setStatus(ResponseStatus.FAILURE);
@@ -462,15 +475,9 @@ public abstract class AbstractProvisioningService implements ProvisionService {
             resp.setErrorCode(code);
             return resp;
         }
+        */
         //TODO: add resources
-        try {
-            userMgr.addUser(userEntity);
-        } catch (Exception e) {
-            log.error("Exception while creating user", e);
-            resp.setStatus(ResponseStatus.FAILURE);
-            resp.setErrorCode(ResponseCode.FAIL_OTHER);
-            return resp;
-        }
+
         code = addSupervisors(pUser, userEntity);
         if (code != ResponseCode.SUCCESS) {
             resp.setStatus(ResponseStatus.FAILURE);
@@ -629,7 +636,6 @@ public abstract class AbstractProvisioningService implements ProvisionService {
             log.debug("- policyAttrMap IS NOT null");
 
             Login primaryIdentity = new Login();
-            EmailAddress primaryEmail = new EmailAddress();
 
             // init values
             primaryIdentity.setDomainId(sysConfiguration.getDefaultSecurityDomain());
@@ -651,10 +657,6 @@ public abstract class AbstractProvisioningService implements ProvisionService {
                             if (attr.getAttributeName().equalsIgnoreCase("DOMAIN")) {
                                 primaryIdentity.setDomainId(output);
                             }
-                        }
-                        if (objectType.equals("EMAIL")) {
-                            primaryEmail.setEmailAddress(output);
-                            primaryEmail.setIsDefault(true);
                         }
                     }
                 }
@@ -691,7 +693,6 @@ public abstract class AbstractProvisioningService implements ProvisionService {
             log.debug("- policyAttrMap IS NOT null");
 
             Login primaryIdentity = new Login();
-            EmailAddress primaryEmail = new EmailAddress();
 
             // init values
             primaryIdentity.setDomainId(sysConfiguration.getDefaultSecurityDomain());
@@ -714,10 +715,6 @@ public abstract class AbstractProvisioningService implements ProvisionService {
                                 primaryIdentity.setDomainId(output);
                             }
                         }
-                        if (objectType.equals("EMAIL")) {
-                            primaryEmail.setEmailAddress(output);
-                            primaryEmail.setIsDefault(true);
-                        }
                     }
                 }
             } catch(Exception e) {
@@ -725,8 +722,6 @@ public abstract class AbstractProvisioningService implements ProvisionService {
             }
             principalList.add(primaryIdentity);
             user.setPrincipalList(principalList);
-
-           // user.getEmailAddress().add(primaryEmail);
 
         } else {
             log.debug("- policyAttrMap IS null");
@@ -758,13 +753,31 @@ public abstract class AbstractProvisioningService implements ProvisionService {
         return null;
     }
 
-    /**
-     * when a request already contains an identity and password has not been setup, this method generates a password
-     * based on our rules.
-     * @param user
-     * @param bindingMap
-     * @param se
-     */
+    protected void buildPrimaryIDPassword(Login primaryIdentity, Map<String, Object> bindingMap,
+                                                 ScriptIntegration se) {
+        log.debug("setPrimaryIDPassword() ");
+        List<AttributeMap> policyAttrMap = managedSysService.getResourceAttributeMaps(sysConfiguration.getDefaultManagedSysId());
+        if (policyAttrMap != null) {
+            log.debug("- policyAttrMap IS NOT null");
+            try {
+                for (AttributeMap attr : policyAttrMap) {
+                    String output = (String)ProvisionServiceUtil.getOutputFromAttrMap(attr, bindingMap, se);
+                    String objectType = attr.getMapForObjectType();
+                    if (objectType != null) {
+                        if (objectType.equalsIgnoreCase("PRINCIPAL")) {
+                            if (attr.getAttributeName().equalsIgnoreCase("PASSWORD")) {
+                                primaryIdentity.setPassword(output);
+                            }
+                        }
+                    }
+                }
+            } catch(Exception e) {
+                log.error(e);
+            }
+        } else {
+            log.debug("- policyAttrMap IS null");
+        }
+    }
 
     protected void setPrimaryIDPassword( ProvisionUser user,
                                       Map<String, Object> bindingMap,
@@ -798,7 +811,7 @@ public abstract class AbstractProvisioningService implements ProvisionService {
                         }
                     }
                 }
-            }catch(Exception e) {
+            } catch(Exception e) {
                 log.error(e);
             }
             //primaryIdentity.setId(primaryID);
@@ -1126,9 +1139,9 @@ public abstract class AbstractProvisioningService implements ProvisionService {
         }
     }
 
-    public void updateSupervisors(ProvisionUser pUser) {
+    public void updateSupervisors(UserEntity userEntity, ProvisionUser pUser) {
         // Processing supervisors
-        String userId = pUser.getUserId();
+        String userId = userEntity.getUserId();
         Set<User> superiors = pUser.getSuperiors();
 
         if (CollectionUtils.isNotEmpty(superiors)) {
@@ -1198,7 +1211,10 @@ public abstract class AbstractProvisioningService implements ProvisionService {
                     origUser.getRoles().add(roleEntity);
 
                 } else if (operation == AttributeOperationEnum.DELETE) {
-                    origUser.getRoles().remove(roleDataService.getRole(r.getRoleId()));
+                    RoleEntity re = roleDataService.getRole(r.getRoleId());
+                    origUser.getRoles().remove(re);
+                    deleteRoleSet.add(roleDozerConverter.convertToDTO(re, true));
+
                 } else if (operation == AttributeOperationEnum.REPLACE) {
                     throw new UnsupportedOperationException("Operation 'REPLACE' is not supported for roles");
                 }
@@ -1250,9 +1266,12 @@ public abstract class AbstractProvisioningService implements ProvisionService {
                 } else if (operation == AttributeOperationEnum.ADD) {
                     ResourceEntity organizationEntity = resourceService.findResourceById(r.getResourceId());
                     origUser.getResources().add(organizationEntity);
+
                 } else if (operation == AttributeOperationEnum.DELETE) {
-                    ResourceEntity organizationEntity = resourceService.findResourceById(r.getResourceId());
-                    origUser.getResources().remove(organizationEntity);
+                    ResourceEntity re = resourceService.findResourceById(r.getResourceId());
+                    origUser.getResources().remove(re);
+                    deleteResourceSet.add(resourceDozerConverter.convertToDTO(re, true));
+
                 } else if (operation == AttributeOperationEnum.REPLACE) {
                     throw new UnsupportedOperationException("Operation 'REPLACE' is not supported for resources");
                 }
@@ -1293,7 +1312,8 @@ public abstract class AbstractProvisioningService implements ProvisionService {
                 } else if (e.getOperation().equals(AttributeOperationEnum.ADD)) {
                     LoginEntity entity = loginDozerConverter.convertToEntity(e, false);
                     try {
-                        entity.setPassword(loginManager.encryptPassword(e.getUserId(), e.getPassword()));
+                        entity.setUserId(origUser.getUserId());
+                        entity.setPassword(loginManager.encryptPassword(origUser.getUserId(), e.getPassword()));
                         origUser.getPrincipalList().add(entity);
                     } catch (EncryptionException ee) {
                         log.error(ee);
@@ -1801,6 +1821,64 @@ public abstract class AbstractProvisioningService implements ProvisionService {
                 requestId, respType.getErrorCodeAsStr(), null, respType.getErrorMsgAsStr(),
                 passwordSync.getRequestClientIP(), login.getLogin(), login.getDomainId());
         return respType;
+    }
+
+    protected ProvisionUserResponse validatePassword(Login primaryLogin, ProvisionUser user, String requestId) {
+
+        ProvisionUserResponse resp = new ProvisionUserResponse();
+
+        Password password = new Password();
+        password.setDomainId(primaryLogin.getDomainId());
+        password.setManagedSysId(primaryLogin.getManagedSysId());
+        password.setPassword(primaryLogin.getPassword());
+        password.setPrincipal(primaryLogin.getLogin());
+
+        Policy passwordPolicy = user.getPasswordPolicy();
+        if (passwordPolicy == null) {
+            passwordPolicy = passwordManager.getPasswordPolicyByUser(primaryLogin.getDomainId(),
+                    userDozerConverter.convertToEntity(user.getUser(), true));
+        }
+
+        try {
+            PasswordValidationCode valCode = passwordManager.isPasswordValidForUserAndPolicy(
+                    password, userDozerConverter.convertToEntity(
+                    user.getUser(), true),
+                    loginDozerConverter.convertToEntity(
+                            primaryLogin, true), passwordPolicy);
+            if (valCode == null
+                    || valCode != PasswordValidationCode.SUCCESS) {
+                auditHelper.addLog("CREATE", user.getRequestorDomain(),
+                        user.getRequestorLogin(), "IDM SERVICE",
+                        user.getCreatedBy(), "0", "USER", user.getUserId(),
+                        null, "FAIL", null, "USER_STATUS", user.getUser()
+                        .getStatus().toString(), requestId,
+                        ResponseCode.FAIL_DECRYPTION.toString(),
+                        user.getSessionId(), "Password validation failed",
+                        user.getRequestClientIP(), primaryLogin.getLogin(),
+                        primaryLogin.getDomainId());
+
+                resp.setStatus(ResponseStatus.FAILURE);
+                resp.setErrorCode(ResponseCode.FAIL_NEQ_PASSWORD);
+                return resp;
+            }
+        } catch (ObjectNotFoundException e) {
+            auditHelper.addLog("CREATE", user.getRequestorDomain(),
+                    user.getRequestorLogin(), "IDM SERVICE",
+                    user.getCreatedBy(), "0", "USER", user.getUserId(),
+                    null, "FAIL", null, "USER_STATUS", user.getUser()
+                    .getStatus().toString(), requestId,
+                    ResponseCode.FAIL_DECRYPTION.toString(),
+                    user.getSessionId(), e.toString(),
+                    user.getRequestClientIP(), primaryLogin.getLogin(),
+                    primaryLogin.getDomainId());
+
+            resp.setStatus(ResponseStatus.FAILURE);
+            resp.setErrorCode(ResponseCode.FAIL_NEQ_PASSWORD);
+            return resp;
+        }
+
+        resp.setStatus(ResponseStatus.SUCCESS);
+        return resp;
     }
 
 }

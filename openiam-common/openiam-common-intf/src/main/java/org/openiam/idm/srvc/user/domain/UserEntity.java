@@ -251,7 +251,7 @@ public class UserEntity {
     @JoinTable(name = "USER_GRP", joinColumns = { @JoinColumn(name = "USER_ID") }, inverseJoinColumns = { @JoinColumn(name = "GRP_ID") })
     private Set<GroupEntity> groups = new HashSet<GroupEntity>(0);
 
-    @ManyToMany(cascade = CascadeType.ALL)
+    @ManyToMany(cascade = CascadeType.ALL, fetch=FetchType.LAZY)
     @JoinTable(name = "USER_ROLE", joinColumns = { @JoinColumn(name = "USER_ID") }, inverseJoinColumns = { @JoinColumn(name = "ROLE_ID") })
     private Set<RoleEntity> roles = new HashSet<RoleEntity>(0);
     
