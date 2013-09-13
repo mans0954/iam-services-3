@@ -2,6 +2,7 @@ package org.openiam.idm.srvc.user.service;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 import org.openiam.core.dao.BaseDao;
 import org.openiam.idm.searchbeans.DelegationFilterSearchBean;
@@ -56,5 +57,12 @@ public interface UserDAO extends BaseDao<UserEntity, String> {
     public List<String> getAllAttachedSupSubIds(String userId);
 
     public List<UserEntity> getUsersForOrganization(final String organizationId, DelegationFilterSearchBean delegationFilter, final int from, final int size);
+    
+    public List<String> getUserIdsForRoles(final Set<String> roleIds, final int from, final int size);
+    
+    public List<String> getUserIdsForGroups(final Set<String> groupIds, final int from, final int size);
 
+    public List<String> getUserIdsForOrganizations(final Set<String> organizationIds, final int from, final int size);
+    
+    public List<String> getUserIdsForResources(final Set<String> resourceIds, final int from, final int size);
 }

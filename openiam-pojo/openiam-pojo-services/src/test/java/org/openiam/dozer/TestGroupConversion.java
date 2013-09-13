@@ -157,7 +157,7 @@ public class TestGroupConversion extends AbstractTestNGSpringContextTests {
 		roleAttribute.setMetadataElementId(rs(2));
 		roleAttribute.setName(rs(2));
 		roleAttribute.setRoleAttrId(rs(2));
-		roleAttribute.setRoleId(rs(2));
+		//roleAttribute.setRoleId(rs(2));
 		roleAttribute.setValue(rs(2));
 		return roleAttribute;
 	}

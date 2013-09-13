@@ -504,4 +504,81 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
         return criteria.list();
     }
 
+	@Override
+	public List<String> getUserIdsForRoles(final Set<String> roleIds, final int from, final int size) {
+		List<String> retVal = null;
+		if(CollectionUtils.isNotEmpty(roleIds)) {
+			final Criteria criteria = getCriteria().createAlias("roles", "role")
+							 			  		   .add(Restrictions.in("role.roleId", roleIds))
+							 			  		   .setProjection(Projections.property("userId"));
+			if(from > -1) {
+				criteria.setFirstResult(from);
+			}
+			
+			if(size > -1) {
+				criteria.setFetchSize(size);
+			}
+			retVal = criteria.list();
+		}
+		return (retVal != null) ? retVal : Collections.EMPTY_LIST;
+	}
+
+	@Override
+	public List<String> getUserIdsForGroups(final Set<String> groupIds, final int from, final int size) {
+		List<String> retVal = null;
+		if(CollectionUtils.isNotEmpty(groupIds)) {
+			final Criteria criteria = getCriteria().createAlias("groups", "group")
+							 			  		   .add(Restrictions.in("group.grpId", groupIds))
+							 			  		   .setProjection(Projections.property("userId"));
+			if(from > -1) {
+				criteria.setFirstResult(from);
+			}
+			
+			if(size > -1) {
+				criteria.setFetchSize(size);
+			}
+			retVal = criteria.list();
+		}
+		return (retVal != null) ? retVal : Collections.EMPTY_LIST;
+	}
+
+	@Override
+	public List<String> getUserIdsForOrganizations(final Set<String> organizationIds, final int from, final int size) {
+		List<String> retVal = null;
+		if(CollectionUtils.isNotEmpty(organizationIds)) {
+			final Criteria criteria = getCriteria().createAlias("affiliations", "af")
+							 			  		   .add(Restrictions.in("af.id", organizationIds))
+							 			  		   .setProjection(Projections.property("userId"));
+			if(from > -1) {
+				criteria.setFirstResult(from);
+			}
+			
+			if(size > -1) {
+				criteria.setFetchSize(size);
+			}
+			retVal = criteria.list();
+		}
+		return (retVal != null) ? retVal : Collections.EMPTY_LIST;
+	}
+
+	@Override
+	public List<String> getUserIdsForResources(final Set<String> resourceIds, final int from, final int size) {
+		List<String> retVal = null;
+		if(CollectionUtils.isNotEmpty(resourceIds)) {
+			final Criteria criteria = getCriteria().createAlias("resources", "resource")
+							 			  		   .add(Restrictions.in("resource.resourceId", resourceIds))
+							 			  		   .setProjection(Projections.property("userId"));
+			if(from > -1) {
+				criteria.setFirstResult(from);
+			}
+			
+			if(size > -1) {
+				criteria.setFetchSize(size);
+			}
+			retVal = criteria.list();
+		}
+		return (retVal != null) ? retVal : Collections.EMPTY_LIST;
+	}
+
+	
 }

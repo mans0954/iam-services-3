@@ -67,15 +67,13 @@ public class UserEntity {
     private String createdBy;
 
     @Column(name = "EMPLOYEE_ID", length = 32)
-    @Fields ({
-            @Field(index = Index.TOKENIZED),
-            @Field(name = "employeeId", index = Index.TOKENIZED, store = Store.YES)
-    })
+    @Field(index=Index.UN_TOKENIZED, name="employeeId", store=Store.YES)
     @Size(max = 32, message = "validator.user.employee.id.toolong")
     private String employeeId;
 
     @Column(name = "EMPLOYEE_TYPE", length = 20)
     @Size(max = 20, message = "validator.user.employee.type.toolong")
+    @Field(index=Index.UN_TOKENIZED, name="employeeType", store=Store.YES)
     private String employeeType;
 
     @Column(name = "FIRST_NAME", length = 50)

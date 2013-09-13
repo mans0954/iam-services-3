@@ -526,6 +526,22 @@ public class UserMgr implements UserDataService {
         if (CollectionUtils.isNotEmpty(idList) || (CollectionUtils.isEmpty(idList) && (isOrgFilterSet))) {
             nonEmptyListOfLists.add(idList);
         }
+        
+        if (CollectionUtils.isNotEmpty(searchBean.getRoleIdSet())) {
+            nonEmptyListOfLists.add(userDao.getUserIdsForRoles(searchBean.getRoleIdSet(), 0, MAX_USER_SEARCH_RESULTS));
+        }
+
+        if (CollectionUtils.isNotEmpty(searchBean.getOrganizationIdList())) {
+            nonEmptyListOfLists.add(userDao.getUserIdsForOrganizations(searchBean.getOrganizationIdList(), 0, MAX_USER_SEARCH_RESULTS));
+        }
+
+        if (CollectionUtils.isNotEmpty(searchBean.getGroupIdSet())) {
+            nonEmptyListOfLists.add(userDao.getUserIdsForGroups(searchBean.getGroupIdSet(), 0, MAX_USER_SEARCH_RESULTS));
+        }
+        
+        if(CollectionUtils.isNotEmpty(searchBean.getResourceIdSet())) {
+        	nonEmptyListOfLists.add(userDao.getUserIdsForResources(searchBean.getResourceIdSet(), 0, MAX_USER_SEARCH_RESULTS));
+        }
 
         if (StringUtils.isNotBlank(searchBean.getPrincipal())) {
             final LoginSearchBean loginSearchBean = new LoginSearchBean();
