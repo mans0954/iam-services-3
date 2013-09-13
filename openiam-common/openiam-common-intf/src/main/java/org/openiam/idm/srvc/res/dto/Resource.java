@@ -210,11 +210,11 @@ public class Resource extends BaseObject {
 
     public AttributeOperationEnum getOperation() {
         return operation;
-    }
+	}
 
     public void setOperation(AttributeOperationEnum operation) {
         this.operation = operation;
-    }
+	}
 
 	@Override
     public String toString() {

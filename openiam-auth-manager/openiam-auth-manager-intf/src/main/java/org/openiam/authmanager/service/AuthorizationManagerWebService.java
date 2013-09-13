@@ -30,6 +30,12 @@ public interface AuthorizationManagerWebService {
 			@WebParam(name = "resourceIdList", targetNamespace = "") final List<String> resourceIdList
 			);
 	
+	@WebMethod
+	public boolean isUserEntitledToResource(
+			@WebParam(name = "userId", targetNamespace = "") final String userId,
+			@WebParam(name = "resourceId", targetNamespace = "") final String resourceId
+			);
+	
 	/**
 	 * @param request 
 	 * @return - answers the question "Is User A entitled to resource B, either directly or through recursive membership to other entities

@@ -25,8 +25,10 @@ import java.util.*;
         "phoneAreaCd",
         "phoneNbr",
         "employeeId",
+        "employeeType",
         "groupIdSet",
         "roleIdSet",
+        "resourceIdSet",
         "emailAddress",
         "principal",
         "attributeName",
@@ -60,9 +62,11 @@ public class UserSearchBean extends AbstractSearchBean<User, String> implements 
     protected String userStatus = null;
     protected String phoneAreaCd = null;
     protected String phoneNbr = null;
+    protected String employeeType = null;
     protected String employeeId = null;
     protected Set<String> groupIdSet = null;
     protected Set<String> roleIdSet = null;
+    protected Set<String> resourceIdSet = null;
     protected String emailAddress = null;
     protected String principal;
     protected String attributeName;
@@ -391,5 +395,28 @@ public class UserSearchBean extends AbstractSearchBean<User, String> implements 
         this.attributeList = attributeList;
     }
 
+	public String getEmployeeType() {
+		return employeeType;
+	}
 
+	public void setEmployeeType(String employeeType) {
+		this.employeeType = employeeType;
+	}
+
+	public Set<String> getResourceIdSet() {
+		return resourceIdSet;
+	}
+
+	public void setResourceIdSet(Set<String> resourceIdSet) {
+		this.resourceIdSet = resourceIdSet;
+	}
+
+	public void addResourceId(final String resourceId) {
+		if(resourceId != null) {
+			if(this.resourceIdSet == null) {
+				this.resourceIdSet = new HashSet<String>();
+			}
+			this.resourceIdSet.add(resourceId);
+		}
+	}
 }

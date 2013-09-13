@@ -173,7 +173,7 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 		if(roleId != null) {
 			final RoleEntity entity = roleDataService.getRole(roleId, requesterId);
 			if(entity != null) {
-				retVal = roleDozerConverter.convertToDTO(entity, false);
+				retVal = roleDozerConverter.convertToDTO(entity, true);
 			}
 		}
 		return retVal;
@@ -322,7 +322,7 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
 			}
 			
-			RoleEntity entity = roleDozerConverter.convertToEntity(role, false);
+			RoleEntity entity = roleDozerConverter.convertToEntity(role, true);
 			if(StringUtils.isBlank(entity.getRoleName())) {
 				throw new BasicDataServiceException(ResponseCode.NO_NAME);
 			}
@@ -341,22 +341,6 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 			
 			if(securityDomainDAO.findById(entity.getServiceId()) == null) {
 				throw new BasicDataServiceException(ResponseCode.INVALID_ROLE_DOMAIN);
-			}
-			
-			if(StringUtils.isNotBlank(entity.getRoleId())) {
-				final RoleEntity dbObject = roleDataService.getRole(entity.getRoleId(), null);
-				if(dbObject == null) {
-					throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
-				}
-				
-				/* merge */
-				dbObject.setRoleName(entity.getRoleName());
-				dbObject.setDescription(entity.getDescription());
-				dbObject.setServiceId(entity.getServiceId());
-				dbObject.setStatus(entity.getStatus());
-				dbObject.setMetadataTypeId(entity.getMetadataTypeId());
-				dbObject.setInternalRoleId(entity.getInternalRoleId());
-				entity = dbObject;
 			}
 			
 			roleDataService.saveRole(entity);

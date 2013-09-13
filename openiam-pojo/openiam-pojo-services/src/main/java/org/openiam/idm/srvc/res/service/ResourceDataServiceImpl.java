@@ -37,11 +37,14 @@ public class ResourceDataServiceImpl implements ResourceDataService {
 
 	@Autowired
     private UserDataService userDataService;
-    @Autowired
+	@Autowired
     private ResourceService resourceService;
 
 	@Autowired
 	private ResourceTypeDozerConverter resourceTypeConverter;
+
+	@Autowired
+	private ResourceGroupDAO resourceGroupDAO;
 
 	private static final Log log = LogFactory
 			.getLog(ResourceDataServiceImpl.class);
@@ -75,36 +78,32 @@ public class ResourceDataServiceImpl implements ResourceDataService {
 		return resourceConverter.convertToDTOList(resultsEntities, DozerMappingType.DEEP.equals(mappingType));
 	}
 
+	/*
 	public Response addResource(Resource resource) {
 		return saveOrUpdateResource(resource);
 	}
+	*/
 
-	public Response updateResource(Resource resource) {
-		return saveOrUpdateResource(resource);
-	}
-
-	private Response saveOrUpdateResource(final Resource resource) {
+	@Override
+	public Response saveResource(Resource resource) {
 		final Response response = new Response(ResponseStatus.SUCCESS);
 		try {
 			if (resource == null) {
-				throw new BasicDataServiceException(
-						ResponseCode.OBJECT_NOT_FOUND);
+				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
 			}
 
-			ResourceEntity entity = resourceConverter.convertToEntity(resource,
-					true);
+			ResourceEntity entity = resourceConverter.convertToEntity(resource, true);
 			if (StringUtils.isEmpty(entity.getName())) {
 				throw new BasicDataServiceException(ResponseCode.NO_NAME);
 			}
 
 			/* duplicate name check */
-			final ResourceEntity nameCheck = resourceService.findResourceByName(entity
+			final ResourceEntity nameCheck = resourceDao.findByName(entity
 					.getName());
 			if (nameCheck != null) {
 				if (StringUtils.isBlank(entity.getResourceId())) {
 					throw new BasicDataServiceException(ResponseCode.NAME_TAKEN);
-				} else if (!nameCheck.getResourceId().equals(
-						entity.getResourceId())) {
+				} else if (!nameCheck.getResourceId().equals(entity.getResourceId())) {
 					throw new BasicDataServiceException(ResponseCode.NAME_TAKEN);
 				}
 			}
@@ -116,7 +115,7 @@ public class ResourceDataServiceImpl implements ResourceDataService {
 
 			/* merge */
 			if (StringUtils.isNotBlank(entity.getResourceId())) {
-				final ResourceEntity dbObject = resourceService.findResourceById(resource
+				final ResourceEntity dbObject = resourceDao.findById(resource
 						.getResourceId());
 				if (dbObject == null) {
 					throw new BasicDataServiceException(
@@ -131,11 +130,12 @@ public class ResourceDataServiceImpl implements ResourceDataService {
 				dbObject.setManagedSysId(entity.getManagedSysId());
 				dbObject.setName(entity.getName());
 				dbObject.setURL(entity.getURL());
-                resourceService.save(dbObject);
+				resourceDao.update(dbObject);
 			} else {
-                resourceService.save(entity);
+				resourceDao.save(entity);
 			}
 
+			resourceService.save(entity);
 			response.setResponseValue(entity.getResourceId());
 		} catch (BasicDataServiceException e) {
 			response.setErrorCode(e.getCode());
@@ -147,6 +147,7 @@ public class ResourceDataServiceImpl implements ResourceDataService {
 		}
 		return response;
 	}
+
 
 	public Response addResourceType(ResourceType val) {
 		final Response response = new Response(ResponseStatus.SUCCESS);
@@ -174,8 +175,8 @@ public class ResourceDataServiceImpl implements ResourceDataService {
 	public ResourceType getResourceType(String resourceTypeId) {
 		ResourceType retVal = null;
 		if (resourceTypeId != null) {
-			final ResourceTypeEntity entity = resourceService
-					.findResourceTypeById(resourceTypeId);
+			final ResourceTypeEntity entity = resourceTypeDao
+					.findById(resourceTypeId);
 			if (entity != null) {
 				retVal = resourceTypeConverter.convertToDTO(entity, false);
 			}

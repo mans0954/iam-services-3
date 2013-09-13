@@ -15,10 +15,10 @@
             <a>resourceAttributeMap</a>
             <b>resourceAttributeMap</b>
         </field-exclude>
-        <field-exclude>
+        <field>
             <a>resource.resourceId</a>
             <b>resourceId</b>
-        </field-exclude>
+        </field>
     </mapping>
 
     <mapping>
