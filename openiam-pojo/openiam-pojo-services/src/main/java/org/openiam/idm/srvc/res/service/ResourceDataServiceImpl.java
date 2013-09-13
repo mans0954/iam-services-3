@@ -43,9 +43,6 @@ public class ResourceDataServiceImpl implements ResourceDataService {
 	@Autowired
 	private ResourceTypeDozerConverter resourceTypeConverter;
 
-	@Autowired
-	private ResourceGroupDAO resourceGroupDAO;
-
 	private static final Log log = LogFactory
 			.getLog(ResourceDataServiceImpl.class);
 
@@ -98,7 +95,7 @@ public class ResourceDataServiceImpl implements ResourceDataService {
 			}
 
 			/* duplicate name check */
-			final ResourceEntity nameCheck = resourceDao.findByName(entity
+			final ResourceEntity nameCheck = resourceService.findResourceByName(entity
 					.getName());
 			if (nameCheck != null) {
 				if (StringUtils.isBlank(entity.getResourceId())) {
@@ -115,7 +112,7 @@ public class ResourceDataServiceImpl implements ResourceDataService {
 
 			/* merge */
 			if (StringUtils.isNotBlank(entity.getResourceId())) {
-				final ResourceEntity dbObject = resourceDao.findById(resource
+				final ResourceEntity dbObject = resourceService.findResourceById(resource
 						.getResourceId());
 				if (dbObject == null) {
 					throw new BasicDataServiceException(
@@ -126,13 +123,13 @@ public class ResourceDataServiceImpl implements ResourceDataService {
 				dbObject.setDescription(entity.getDescription());
 				dbObject.setDomain(entity.getDomain());
 				dbObject.setIsPublic(entity.getIsPublic());
-				dbObject.setIsSSL(entity.getIsSSL());
+//				dbObject.setIsSSL(entity.getIsSSL());
 				dbObject.setManagedSysId(entity.getManagedSysId());
 				dbObject.setName(entity.getName());
 				dbObject.setURL(entity.getURL());
-				resourceDao.update(dbObject);
+                resourceService.save(dbObject);
 			} else {
-				resourceDao.save(entity);
+                resourceService.save(entity);
 			}
 
 			resourceService.save(entity);
@@ -175,8 +172,8 @@ public class ResourceDataServiceImpl implements ResourceDataService {
 	public ResourceType getResourceType(String resourceTypeId) {
 		ResourceType retVal = null;
 		if (resourceTypeId != null) {
-			final ResourceTypeEntity entity = resourceTypeDao
-					.findById(resourceTypeId);
+			final ResourceTypeEntity entity = resourceService
+					.findResourceTypeById(resourceTypeId);
 			if (entity != null) {
 				retVal = resourceTypeConverter.convertToDTO(entity, false);
 			}

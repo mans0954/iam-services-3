@@ -9,7 +9,6 @@ import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.RoleSearchBean;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.service.GroupDAO;
-import org.openiam.idm.srvc.res.service.ResourceRoleDAO;
 import org.openiam.idm.srvc.role.domain.RoleAttributeEntity;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.domain.RolePolicyEntity;
@@ -202,9 +201,9 @@ public class RoleDataServiceImpl implements RoleDataService {
 					role.setChildRoles(dbRole.getChildRoles());
 					role.setGroups(dbRole.getGroups());
 					role.setParentRoles(dbRole.getParentRoles());
-					role.setResourceRoles(dbRole.getResourceRoles());
+					role.setResources(dbRole.getResources());
 					role.setRolePolicy(dbRole.getRolePolicy());
-					role.setUserRoles(dbRole.getUserRoles());
+					role.setUsers(dbRole.getUsers());
 					
 					mergeAttributes(role, dbRole);
 					roleDao.merge(role);

@@ -43,7 +43,7 @@ import org.openiam.idm.srvc.user.dto.User;
         "minAuthLevel",
         "domain",
         "isPublic",
-        "isSSL",
+        //"isSSL",
         "operation"
 })
 @XmlSeeAlso({
@@ -77,7 +77,7 @@ public class Resource extends BaseObject {
     private String minAuthLevel;
     private String domain;
     private boolean isPublic = true;
-    private boolean isSSL = false;
+    //private boolean isSSL = false;
 
     protected AttributeOperationEnum operation = AttributeOperationEnum.NO_CHANGE;
 
@@ -200,13 +200,15 @@ public class Resource extends BaseObject {
 		this.isPublic = isPublic;
 	}
 	
-	public boolean getIsSSL() {
+	/*
+    public boolean getIsSSL() {
 		return this.isSSL;
 	}
-	
+
 	public void setIsSSL(final boolean isSSL) {
 		this.isSSL = isSSL;
 	}
+	*/
 
     public AttributeOperationEnum getOperation() {
         return operation;

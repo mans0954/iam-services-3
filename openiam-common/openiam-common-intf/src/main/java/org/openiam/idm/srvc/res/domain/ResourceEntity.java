@@ -386,7 +386,7 @@ public class ResourceEntity {
         ResourceEntity that = (ResourceEntity) o;
 
         if (isPublic != that.isPublic) return false;
-        if (isSSL != that.isSSL) return false;
+        //if (isSSL != that.isSSL) return false;
         if (URL != null ? !URL.equals(that.URL) : that.URL != null) return false;
         if (branchId != null ? !branchId.equals(that.branchId) : that.branchId != null) return false;
         if (categoryId != null ? !categoryId.equals(that.categoryId) : that.categoryId != null) return false;
@@ -407,7 +407,7 @@ public class ResourceEntity {
         result = 31 * result + (managedSysId != null ? managedSysId.hashCode() : 0);
         result = 31 * result + (domain != null ? domain.hashCode() : 0);
         result = 31 * result + (isPublic ? 1 : 0);
-        result = 31 * result + (isSSL ? 1 : 0);
+        //result = 31 * result + (isSSL ? 1 : 0)
         return result;
     }
 }
