@@ -261,7 +261,7 @@ public class RoleDataServiceImpl implements RoleDataService {
 			}
 			
 			if(!contains) {
-				beanProp.setRoleId(bean.getRoleId());
+				beanProp.setRole(bean);
 				dbProps.add(beanProp);
 			}
 		}

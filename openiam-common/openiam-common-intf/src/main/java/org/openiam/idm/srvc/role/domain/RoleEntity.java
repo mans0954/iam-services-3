@@ -76,9 +76,9 @@ public class RoleEntity implements Serializable {
 	@Fetch(FetchMode.SUBSELECT)
     private Set<GroupEntity> groups;
 	
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy="role", orphanRemoval=true)
     @OrderBy("name asc")
-    @JoinColumn(name = "ROLE_ID")
+    //@JoinColumn(name = "ROLE_ID")
     @Fetch(FetchMode.SUBSELECT)
 	private Set<RoleAttributeEntity> roleAttributes;
 	
@@ -101,11 +101,11 @@ public class RoleEntity implements Serializable {
     @Fetch(FetchMode.SUBSELECT)
     private Set<RoleEntity> childRoles;
 
-    @ManyToMany(cascade = CascadeType.ALL)
+    @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinTable(name = "RESOURCE_ROLE", joinColumns = { @JoinColumn(name = "ROLE_ID") }, inverseJoinColumns = { @JoinColumn(name = "RESOURCE_ID") })
     private Set<ResourceEntity> resources;
 
-    @ManyToMany(cascade = CascadeType.ALL)
+    @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinTable(name = "USER_ROLE", joinColumns = { @JoinColumn(name = "ROLE_ID") }, inverseJoinColumns = { @JoinColumn(name = "USER_ID") })
     private Set<UserEntity> users = new HashSet<UserEntity>(0);
 

@@ -56,7 +56,9 @@ public class ResourceServiceImpl implements ResourceService {
 			final ResourceEntity dbObject = resourceDao.findById(entity.getResourceId());
 			entity.setChildResources(dbObject.getChildResources());
 			entity.setParentResources(dbObject.getParentResources());
-			entity.setResourceProps(dbObject.getResourceProps());
+			entity.setUsers(dbObject.getUsers());
+			entity.setGroups(dbObject.getGroups());
+			entity.setRoles(dbObject.getRoles());
 			if(entity.getResourceType() != null) {
 				entity.setResourceType(resourceTypeDao.findById(entity.getResourceType().getResourceTypeId()));
 			}
@@ -79,7 +81,7 @@ public class ResourceServiceImpl implements ResourceService {
 			
 			boolean contains = false;
 			for(final Iterator<ResourcePropEntity> it = beanProps.iterator(); it.hasNext();) {
-			final ResourcePropEntity beanProp = it.next();
+				final ResourcePropEntity beanProp = it.next();
 				if(StringUtils.equals(dbProp.getResourcePropId(), beanProp.getResourcePropId())) {
 					contains = true;
 					break;
@@ -92,33 +94,28 @@ public class ResourceServiceImpl implements ResourceService {
 		}
 			
 		/* update */
-		for(final Iterator<ResourcePropEntity> dbIt = dbProps.iterator(); dbIt.hasNext();) {
-			final ResourcePropEntity dbProp = dbIt.next();
-			for(final Iterator<ResourcePropEntity> it = beanProps.iterator(); it.hasNext();) {
-				final ResourcePropEntity beanProp = it.next();
+		for(ResourcePropEntity dbProp : dbProps) {
+			for(final ResourcePropEntity beanProp : beanProps) {
 				if(StringUtils.equals(dbProp.getResourcePropId(), beanProp.getResourcePropId())) {
 					dbProp.setPropValue(beanProp.getPropValue());
 					dbProp.setMetadataId(beanProp.getMetadataId());
 					dbProp.setName(beanProp.getName());
-					dbProp.setResourceId(beanProp.getResourceId());
 					break;
 				}
 			}
 		}
 		
 		/* add */
-		for(final Iterator<ResourcePropEntity> it = beanProps.iterator(); it.hasNext();) {
+		for(final ResourcePropEntity beanProp : beanProps) {
 			boolean contains = false;
-			final ResourcePropEntity beanProp = it.next();
-			for(final Iterator<ResourcePropEntity> dbIt = dbProps.iterator(); dbIt.hasNext();) {
-				final ResourcePropEntity dbProp = dbIt.next();
+			for(ResourcePropEntity dbProp : dbProps) {
 				if(StringUtils.equals(dbProp.getResourcePropId(), beanProp.getResourcePropId())) {
 					contains = true;
 				}
 			}
 			
 			if(!contains) {
-				beanProp.setResourceId(bean.getResourceId());
+				beanProp.setResource(bean);
 				dbProps.add(beanProp);
 			}
 		}

@@ -2,14 +2,18 @@ package org.openiam.idm.srvc.role.domain;
 
 import java.io.Serializable;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.role.dto.RoleAttribute;
 
 @Entity
@@ -23,8 +27,9 @@ public class RoleAttributeEntity implements Serializable {
     @Column(name="ROLE_ATTR_ID", length=32)
     private String roleAttrId;
     
-    @Column(name="ROLE_ID", length=32)
-    private String roleId;
+    @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+    @JoinColumn(name = "ROLE_ID", referencedColumnName = "ROLE_ID", insertable = true, updatable = false)
+    private RoleEntity role;
     
     @Column(name="METADATA_ID",length=20)
     private String metadataElementId;
@@ -46,12 +51,12 @@ public class RoleAttributeEntity implements Serializable {
 		this.roleAttrId = roleAttrId;
 	}
 
-	public String getRoleId() {
-		return roleId;
+	public RoleEntity getRole() {
+		return role;
 	}
 
-	public void setRoleId(String roleId) {
-		this.roleId = roleId;
+	public void setRole(RoleEntity role) {
+		this.role = role;
 	}
 
 	public String getMetadataElementId() {
@@ -97,9 +102,9 @@ public class RoleAttributeEntity implements Serializable {
 				+ ((metadataElementId == null) ? 0 : metadataElementId
 						.hashCode());
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		result = prime * result + ((role == null) ? 0 : role.hashCode());
 		result = prime * result
 				+ ((roleAttrId == null) ? 0 : roleAttrId.hashCode());
-		result = prime * result + ((roleId == null) ? 0 : roleId.hashCode());
 		result = prime * result + ((value == null) ? 0 : value.hashCode());
 		return result;
 	}
@@ -128,15 +133,15 @@ public class RoleAttributeEntity implements Serializable {
 				return false;
 		} else if (!name.equals(other.name))
 			return false;
+		if (role == null) {
+			if (other.role != null)
+				return false;
+		} else if (!role.equals(other.role))
+			return false;
 		if (roleAttrId == null) {
 			if (other.roleAttrId != null)
 				return false;
 		} else if (!roleAttrId.equals(other.roleAttrId))
-			return false;
-		if (roleId == null) {
-			if (other.roleId != null)
-				return false;
-		} else if (!roleId.equals(other.roleId))
 			return false;
 		if (value == null) {
 			if (other.value != null)
@@ -148,11 +153,10 @@ public class RoleAttributeEntity implements Serializable {
 
 	@Override
 	public String toString() {
-		return String
-				.format("RoleAttributeEntity [roleAttrId=%s, roleId=%s, metadataElementId=%s, name=%s, value=%s, attrGroup=%s]",
-						roleAttrId, roleId, metadataElementId, name, value,
-						attrGroup);
+		return "RoleAttributeEntity [roleAttrId=" + roleAttrId + ", role="
+				+ role + ", metadataElementId=" + metadataElementId + ", name="
+				+ name + ", value=" + value + ", attrGroup=" + attrGroup + "]";
 	}
-    
-    
+
+	
 }

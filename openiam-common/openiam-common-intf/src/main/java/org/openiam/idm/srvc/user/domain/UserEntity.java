@@ -205,30 +205,13 @@ public class UserEntity {
     private Map<String, UserAttributeEntity> userAttributes = new HashMap<String, UserAttributeEntity>(0);
 
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "parent", fetch = FetchType.LAZY)
-    /*
-    @Filter(
-            name = "parentTypeFilter",
-            condition = ":parentFilter = PARENT_TYPE"
-    )
-    */
     private Set<AddressEntity> addresses = new HashSet<AddressEntity>(0);
 
+    
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "parent", fetch = FetchType.LAZY)
-    /*
-    @Filter(
-            name = "parentTypeFilter",
-            condition = ":parentFilter = PARENT_TYPE"
-    )
-    */
     private Set<PhoneEntity> phones = new HashSet<PhoneEntity>(0);
 
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "parent", fetch = FetchType.LAZY)
-    /*
-    @Filter(
-            name = "parentTypeFilter",
-            condition = ":parentFilter = PARENT_TYPE"
-    )
-    */
     private Set<EmailAddressEntity> emailAddresses = new HashSet<EmailAddressEntity>(0);
 
     @Column(name = "SYSTEM_FLAG",length = 1)
@@ -245,22 +228,22 @@ public class UserEntity {
     @Fetch(FetchMode.SUBSELECT)
     protected Set<UserKey> userKeys = new HashSet<UserKey>(0);
 
-    @ManyToMany(cascade = CascadeType.ALL,fetch=FetchType.LAZY)
+    @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
     @JoinTable(name = "USER_GRP", joinColumns = { @JoinColumn(name = "USER_ID") }, inverseJoinColumns = { @JoinColumn(name = "GRP_ID") })
     @Fetch(FetchMode.SUBSELECT)
     private Set<GroupEntity> groups = new HashSet<GroupEntity>(0);
 
-    @ManyToMany(cascade = CascadeType.ALL, fetch=FetchType.LAZY)
+    @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch=FetchType.LAZY)
     @JoinTable(name = "USER_ROLE", joinColumns = { @JoinColumn(name = "USER_ID") }, inverseJoinColumns = { @JoinColumn(name = "ROLE_ID") })
     @Fetch(FetchMode.SUBSELECT)
     private Set<RoleEntity> roles = new HashSet<RoleEntity>(0);
     
-    @ManyToMany(cascade = CascadeType.ALL,fetch=FetchType.LAZY)
+    @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
     @JoinTable(name = "USER_AFFILIATION", joinColumns = { @JoinColumn(name = "USER_ID") }, inverseJoinColumns = { @JoinColumn(name = "COMPANY_ID") })
     @Fetch(FetchMode.SUBSELECT)
 	private Set<OrganizationEntity> affiliations = new HashSet<OrganizationEntity>(0);
 
-    @ManyToMany(cascade = CascadeType.ALL,fetch=FetchType.LAZY)
+    @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
     @JoinTable(name = "RESOURCE_USER", joinColumns = { @JoinColumn(name = "USER_ID") }, inverseJoinColumns = { @JoinColumn(name = "RESOURCE_ID") })
     @Fetch(FetchMode.SUBSELECT)
     private Set<ResourceEntity> resources = new HashSet<ResourceEntity>(0);

@@ -110,28 +110,6 @@ public class ResourceDataServiceImpl implements ResourceDataService {
 						ResponseCode.INVALID_RESOURCE_TYPE);
 			}
 
-			/* merge */
-			if (StringUtils.isNotBlank(entity.getResourceId())) {
-				final ResourceEntity dbObject = resourceService.findResourceById(resource
-						.getResourceId());
-				if (dbObject == null) {
-					throw new BasicDataServiceException(
-							ResponseCode.OBJECT_NOT_FOUND);
-				}
-				// TODO: extend this merge
-				dbObject.setResourceType(entity.getResourceType());
-				dbObject.setDescription(entity.getDescription());
-				dbObject.setDomain(entity.getDomain());
-				dbObject.setIsPublic(entity.getIsPublic());
-//				dbObject.setIsSSL(entity.getIsSSL());
-				dbObject.setManagedSysId(entity.getManagedSysId());
-				dbObject.setName(entity.getName());
-				dbObject.setURL(entity.getURL());
-                resourceService.save(dbObject);
-			} else {
-                resourceService.save(entity);
-			}
-
 			resourceService.save(entity);
 			response.setResponseValue(entity.getResourceId());
 		} catch (BasicDataServiceException e) {
@@ -246,7 +224,7 @@ public class ResourceDataServiceImpl implements ResourceDataService {
 						ResponseCode.RESOURCE_PROP_VALUE_MISSING);
 			}
 
-			if (StringUtils.isBlank(entity.getResourceId())) {
+			if (entity == null || StringUtils.isBlank(entity.getResource().getResourceId())) {
 				throw new BasicDataServiceException(
 						ResponseCode.RESOURCE_PROP_RESOURCE_ID_MISSING);
 			}

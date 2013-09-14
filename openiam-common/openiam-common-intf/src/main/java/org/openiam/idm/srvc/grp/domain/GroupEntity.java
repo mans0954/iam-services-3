@@ -86,7 +86,7 @@ public class GroupEntity {
     @Column(name = "INTERNAL_GROUP_ID", length = 32)
     private String internalGroupId;
 
-    @ManyToMany(cascade = CascadeType.ALL)
+    @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinTable(name = "RESOURCE_GROUP", joinColumns = { @JoinColumn(name = "GRP_ID") }, inverseJoinColumns = { @JoinColumn(name = "RESOURCE_ID") })
     private Set<ResourceEntity> resources;
 
@@ -115,7 +115,7 @@ public class GroupEntity {
     @Fetch(FetchMode.SUBSELECT)
     private Set<RoleEntity> roles;
 
-    @ManyToMany(cascade = CascadeType.ALL)
+    @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinTable(name = "USER_GRP", joinColumns = { @JoinColumn(name = "GRP_ID") }, inverseJoinColumns = { @JoinColumn(name = "USER_ID") })
     private Set<UserEntity> users = new HashSet<UserEntity>(0);
 

@@ -6,6 +6,19 @@
 	<mapping>
 		<class-a>org.openiam.idm.srvc.res.domain.ResourcePropEntity</class-a>
 		<class-b>org.openiam.idm.srvc.res.dto.ResourceProp</class-b>
+		<field>
+			<a>resource.resourceId</a>
+			<b>resourceId</b>
+		</field>
+	</mapping>
+	
+	<mapping>
+		<class-a>org.openiam.idm.srvc.role.domain.RoleAttributeEntity</class-a>
+		<class-b>org.openiam.idm.srvc.role.dto.RoleAttribute</class-b>
+		<field>
+			<a>role.roleId</a>
+			<b>roleId</b>
+		</field>
 	</mapping>
 
 	<mapping>
