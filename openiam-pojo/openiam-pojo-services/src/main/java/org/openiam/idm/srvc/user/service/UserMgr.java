@@ -161,7 +161,7 @@ public class UserMgr implements UserDataService {
 
     @Value("${org.openiam.user.search.max.results}")
     private int MAX_USER_SEARCH_RESULTS;
-
+    
     private static final Log log = LogFactory.getLog(UserMgr.class);
 
     @Override
@@ -616,7 +616,7 @@ public class UserMgr implements UserDataService {
     @Override
     @Transactional(readOnly = true)
     public int count(UserSearchBean searchBean) {
-        return userDao.findByIds(getUserIds(searchBean)).size();
+        return getUserIds(searchBean).size();
     }
 
     @Override
