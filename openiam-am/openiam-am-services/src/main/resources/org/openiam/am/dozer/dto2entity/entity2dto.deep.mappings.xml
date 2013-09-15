@@ -25,46 +25,6 @@
 		</field>
 	</mapping>
 
-
-	<mapping>
-		<class-a>org.openiam.idm.srvc.res.domain.ResourceEntity</class-a>
-		<class-b>org.openiam.idm.srvc.res.dto.Resource</class-b>
-		<field
-			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
-			custom-converter-param="amDto2entityShallowDozerMapper">
-			<a>parentResources</a>
-			<b>parentResources</b>
-		</field>
-		<field
-			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
-			custom-converter-param="amDto2entityShallowDozerMapper">
-			<a>childResources</a>
-			<b>childResources</b>
-		</field>
-		<field
-			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
-			custom-converter-param="amDto2entityShallowDozerMapper">
-			<a>roles</a>
-			<b>roles</b>
-		</field>
-		<field
-			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
-			custom-converter-param="amDto2entityShallowDozerMapper">
-			<a>resourceProps</a>
-			<b>resourceProps</b>
-		</field>
-		<field
-			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
-			custom-converter-param="amDto2entityShallowDozerMapper">
-			<a>groups</a>
-			<b>groups</b>
-		</field>
-		<field-exclude>
-			<a>users</a>
-			<b>users</b>
-		</field-exclude>
-	</mapping>
-
 	<mapping>
 		<class-a>org.openiam.am.srvc.domain.ContentProviderEntity</class-a>
 		<class-b>org.openiam.am.srvc.dto.ContentProvider</class-b>
