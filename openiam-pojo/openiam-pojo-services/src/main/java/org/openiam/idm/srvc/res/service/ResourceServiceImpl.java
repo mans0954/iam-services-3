@@ -72,10 +72,13 @@ public class ResourceServiceImpl implements ResourceService {
 	}
 
 	private void mergeAttribute(final ResourceEntity bean, final ResourceEntity dbObject) {
+		final Set<ResourcePropEntity> renewedProperties = new HashSet<ResourcePropEntity>();
+		
 		Set<ResourcePropEntity> beanProps = (bean.getResourceProps() != null) ? bean.getResourceProps() : new HashSet<ResourcePropEntity>();
 		Set<ResourcePropEntity> dbProps = (dbObject.getResourceProps() != null) ? dbObject.getResourceProps() : new HashSet<ResourcePropEntity>();
 		
 		/* delete */
+		/*
 		for(final Iterator<ResourcePropEntity> dbIt = dbProps.iterator(); dbIt.hasNext();) {
 			final ResourcePropEntity dbProp = dbIt.next();
 			
@@ -92,6 +95,7 @@ public class ResourceServiceImpl implements ResourceService {
 				dbIt.remove();
 			}
 		}
+		*/
 			
 		/* update */
 		for(ResourcePropEntity dbProp : dbProps) {
@@ -100,6 +104,7 @@ public class ResourceServiceImpl implements ResourceService {
 					dbProp.setPropValue(beanProp.getPropValue());
 					dbProp.setMetadataId(beanProp.getMetadataId());
 					dbProp.setName(beanProp.getName());
+					renewedProperties.add(dbProp);
 					break;
 				}
 			}
@@ -116,11 +121,12 @@ public class ResourceServiceImpl implements ResourceService {
 			
 			if(!contains) {
 				beanProp.setResource(bean);
-				dbProps.add(beanProp);
+				//dbProps.add(beanProp);
+				renewedProperties.add(beanProp);
 			}
 		}
 		
-		bean.setResourceProps(dbProps);
+		bean.setResourceProps(renewedProperties);
 	}
 
 	@Override
