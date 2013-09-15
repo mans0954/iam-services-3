@@ -52,14 +52,14 @@ public interface RoleDataService {
      *
      * @param attribute
      */
-    public void saveAttribute(RoleAttributeEntity attribute);
+    //public void saveAttribute(RoleAttributeEntity attribute);
 
     /**
      * Removes a RoleAttribute specified by the attribute.
      *
      * @param roleAttributeId
      */
-    public void removeAttribute(final String roleAttributeId);
+    //public void removeAttribute(final String roleAttributeId);
 
     /** * Role-Group Methods ****** */
 

@@ -56,25 +56,30 @@ public interface RoleDataWebService {
      *
      * @param attribute
      */
+    /*
     @WebMethod
     RoleAttributeResponse addAttribute(@WebParam(name = "attribute", targetNamespace = "") RoleAttribute attribute);
+	*/
 
     /**
      * Update an attribute to the Role object.
      *
      * @param attribute
      */
+    /*
     @WebMethod
     Response updateAttribute(@WebParam(name = "attribute", targetNamespace = "") RoleAttribute attribute);
+	*/
 
     /**
      * Removes a RoleAttribute specified by the attribute.
      *
      * @param attributeId
      */
+    /*
     @WebMethod
     Response removeAttribute(final @WebParam(name = "attributeId", targetNamespace = "") String attributeId);
-
+	*/
 
     /** * Role-Group Methods ****** */
 

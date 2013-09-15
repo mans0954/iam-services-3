@@ -86,6 +86,7 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
     @Autowired
     private SecurityDomainDAO securityDomainDAO;
 
+    /*
 	@Override
 	public RoleAttributeResponse addAttribute(RoleAttribute attribute) {
 		final RoleAttributeResponse response = new RoleAttributeResponse(ResponseStatus.SUCCESS);
@@ -116,6 +117,7 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 		}
 		return response;
 	}
+	*/
 
 	@Override
 	public Response addGroupToRole(String roleId, String groupId) {
@@ -196,7 +198,7 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 		return roleDataService.getNumOfRolesForUser(userId, requesterId);
 	}
 
-
+	/*
 	@Override
 	public Response removeAttribute(final String attributeId) {
 		final Response response = new Response(ResponseStatus.SUCCESS);
@@ -209,6 +211,7 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 		}
 		return response;
 	}
+	*/
 
 	@Override
 	public Response removeGroupFromRole(String roleId, String groupId) {
@@ -293,6 +296,7 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 		return response;
 	}
 
+	/*
 	@Override
 	public Response updateAttribute(RoleAttribute attribute) {
 		final Response response = new Response(ResponseStatus.SUCCESS);
@@ -313,6 +317,7 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 		}
 		return response;
 	}
+	*/
 
 	@Override
 	public Response saveRole(Role role) {

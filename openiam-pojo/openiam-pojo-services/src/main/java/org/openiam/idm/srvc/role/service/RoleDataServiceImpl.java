@@ -75,7 +75,7 @@ public class RoleDataServiceImpl implements RoleDataService {
 		if(roleId != null) {
 			final RoleEntity roleEntity = roleDao.findById(roleId);
 			if(roleEntity != null) {
-				roleAttributeDAO.deleteByRoleId(roleId);
+				//roleAttributeDAO.deleteByRoleId(roleId);
 				roleDao.delete(roleEntity);
 			}
 		}
@@ -213,10 +213,14 @@ public class RoleDataServiceImpl implements RoleDataService {
 	}
 	
 	private void mergeAttributes(final RoleEntity bean, final RoleEntity dbObject) {
+		
+		final Set<RoleAttributeEntity> renewedSet = new HashSet<RoleAttributeEntity>();
+		
 		final Set<RoleAttributeEntity> beanProps = (bean.getRoleAttributes() != null) ? bean.getRoleAttributes() : new HashSet<RoleAttributeEntity>();
 		final Set<RoleAttributeEntity> dbProps = (dbObject.getRoleAttributes() != null) ? dbObject.getRoleAttributes() : new HashSet<RoleAttributeEntity>();
 		
 		/* delete */
+		/*
 		for(final Iterator<RoleAttributeEntity> dbIt = dbProps.iterator(); dbIt.hasNext();) {
 			final RoleAttributeEntity dbProp = dbIt.next();
 			
@@ -233,6 +237,7 @@ public class RoleDataServiceImpl implements RoleDataService {
 				dbIt.remove();
 			}
 		}
+		*/
 			
 		/* update */
 		for(final Iterator<RoleAttributeEntity> dbIt = dbProps.iterator(); dbIt.hasNext();) {
@@ -244,6 +249,7 @@ public class RoleDataServiceImpl implements RoleDataService {
 					dbProp.setMetadataElementId(beanProp.getMetadataElementId());
 					dbProp.setName(beanProp.getName());
 					dbProp.setValue(beanProp.getValue());
+					renewedSet.add(dbProp);
 					break;
 				}
 			}
@@ -262,11 +268,12 @@ public class RoleDataServiceImpl implements RoleDataService {
 			
 			if(!contains) {
 				beanProp.setRole(bean);
-				dbProps.add(beanProp);
+				//dbProps.add(beanProp);
+				renewedSet.add(beanProp);
 			}
 		}
 		
-		bean.setRoleAttributes(dbProps);
+		bean.setRoleAttributes(renewedSet);
 	}
 
 	@Override
@@ -292,6 +299,7 @@ public class RoleDataServiceImpl implements RoleDataService {
 		}
 	}
 
+	/*
 	@Override
     @Transactional
 	public void saveAttribute(RoleAttributeEntity attribute) {
@@ -303,7 +311,9 @@ public class RoleDataServiceImpl implements RoleDataService {
 			}
 		}
 	}
+	*/
 
+	/*
 	@Override
     @Transactional
 	public void removeAttribute(final String roleAttributeId) {
@@ -314,6 +324,7 @@ public class RoleDataServiceImpl implements RoleDataService {
 			}
 		}
 	}
+	*/
 
 	@Override
     @Transactional(readOnly = true)
