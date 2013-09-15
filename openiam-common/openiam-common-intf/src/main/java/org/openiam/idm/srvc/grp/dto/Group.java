@@ -77,7 +77,7 @@ public class Group implements java.io.Serializable {
     @XmlJavaTypeAdapter(RoleSetAdapter.class)
     protected Set<Role> roles = new HashSet<Role>(0);
 
-    @XmlJavaTypeAdapter(GroupAttributeMapAdapter.class)
+    //@XmlJavaTypeAdapter(GroupAttributeMapAdapter.class)
     protected Map<String, GroupAttribute> attributes = new HashMap<String, GroupAttribute>(0);
 
     public Group() {

@@ -4,7 +4,6 @@ import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.BaseObject;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.grp.dto.Group;
-import org.openiam.idm.srvc.grp.dto.GroupSetAdapter;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.user.dto.User;
@@ -86,7 +85,7 @@ public class Role extends BaseObject implements Comparable<Role> {
     protected Date createDate;
     protected String createdBy;
     protected String description;
-    @XmlJavaTypeAdapter(GroupSetAdapter.class)
+    //@XmlJavaTypeAdapter(GroupSetAdapter.class)
     protected Set<Group> groups = new HashSet<Group>(0);
     protected String roleId;
     @XmlJavaTypeAdapter(RoleAttributeSetAdapter.class)
