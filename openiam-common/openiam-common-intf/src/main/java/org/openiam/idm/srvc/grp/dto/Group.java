@@ -35,7 +35,7 @@ import java.util.*;
         "operation",
         "parentGroups",
         "childGroups",
-        "resources",
+        "resources"
 })
 @XmlRootElement(name = "Group")
 @XmlSeeAlso({

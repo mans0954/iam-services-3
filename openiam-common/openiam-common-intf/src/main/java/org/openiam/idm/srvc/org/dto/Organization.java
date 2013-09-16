@@ -49,7 +49,7 @@ import org.openiam.idm.srvc.user.dto.User;
         "selected",
         "operation",
         "parentOrganizations",
-        "childOrganizations",
+        "childOrganizations"
 })
 @DozerDTOCorrespondence(OrganizationEntity.class)
 public class Organization implements java.io.Serializable, Comparable<Organization> {
