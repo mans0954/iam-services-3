@@ -778,6 +778,29 @@ public class User extends org.openiam.base.BaseObject {
     public List<Login> getPrincipalList() {
         return principalList;
     }
+    
+    public boolean containsLogin(final String loginId) {
+    	boolean retVal = false;
+    	if(login != null) {
+    		if(principalList != null) {
+    			for(final Login login : principalList) {
+    				if(StringUtils.equals(loginId, login.getLoginId())) {
+    					retVal = true;
+    				}
+    			}
+    		}
+    	}
+    	return retVal;
+    }
+    
+    public void addPrincipal(final Login login) {
+    	if(login != null) {
+    		if(this.principalList == null) {
+    			this.principalList = new LinkedList<Login>();
+    		}
+    		this.principalList.add(login);
+    	}
+    }
 
     public void setPrincipalList(List<Login> principalList) {
         this.principalList = principalList;
