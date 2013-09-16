@@ -104,11 +104,11 @@ public class GroupEntity {
     @Fetch(FetchMode.SUBSELECT)
     private Set<GroupEntity> childGroups;
 
-    @OneToMany(fetch = FetchType.LAZY, orphanRemoval = true, cascade = { CascadeType.ALL })
-    @JoinColumn(name = "GRP_ID", referencedColumnName = "GRP_ID")
+    @OneToMany(fetch = FetchType.LAZY, orphanRemoval = true, cascade = { CascadeType.ALL }, mappedBy="group")
+    //@JoinColumn(name = "GRP_ID", referencedColumnName = "GRP_ID")
     @MapKeyColumn(name = "name")
     @Fetch(FetchMode.SUBSELECT)
-    private Map<String, GroupAttributeEntity> attributes;
+    private Set<GroupAttributeEntity> attributes;
 
     @ManyToMany(cascade = { CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH }, fetch = FetchType.LAZY)
     @JoinTable(name = "GRP_ROLE", joinColumns = { @JoinColumn(name = "GRP_ID") }, inverseJoinColumns = { @JoinColumn(name = "ROLE_ID") })
@@ -285,15 +285,15 @@ public class GroupEntity {
         this.childGroups = childGroups;
     }
 
-    public Map<String, GroupAttributeEntity> getAttributes() {
-        return attributes;
-    }
+    public Set<GroupAttributeEntity> getAttributes() {
+		return attributes;
+	}
 
-    public void setAttributes(Map<String, GroupAttributeEntity> attributes) {
-        this.attributes = attributes;
-    }
+	public void setAttributes(Set<GroupAttributeEntity> attributes) {
+		this.attributes = attributes;
+	}
 
-    public Set<ResourceEntity> getResources() {
+	public Set<ResourceEntity> getResources() {
         return resources;
     }
 

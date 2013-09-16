@@ -1,14 +1,18 @@
 package org.openiam.idm.srvc.grp.domain;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.grp.dto.GroupAttribute;
+import org.openiam.idm.srvc.role.domain.RoleEntity;
 
 @Entity
 @Table(name="GRP_ATTRIBUTES")
@@ -30,8 +34,14 @@ public class GroupAttributeEntity {
     @Column(name="METADATA_ID",length=20)
     private String metadataElementId;
     
+    /*
     @Column(name="GRP_ID",length=32)
     private String groupId;
+    */
+    
+    @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+    @JoinColumn(name = "GRP_ID", referencedColumnName = "GRP_ID", insertable = true, updatable = false)
+    private GroupEntity group;
 
 	public String getId() {
 		return id;
@@ -65,19 +75,19 @@ public class GroupAttributeEntity {
 		this.metadataElementId = metadataElementId;
 	}
 
-	public String getGroupId() {
-		return groupId;
+	public GroupEntity getGroup() {
+		return group;
 	}
 
-	public void setGroupId(String groupId) {
-		this.groupId = groupId;
+	public void setGroup(GroupEntity group) {
+		this.group = group;
 	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((groupId == null) ? 0 : groupId.hashCode());
+		result = prime * result + ((group == null) ? 0 : group.hashCode());
 		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		result = prime
 				* result
@@ -97,10 +107,10 @@ public class GroupAttributeEntity {
 		if (getClass() != obj.getClass())
 			return false;
 		GroupAttributeEntity other = (GroupAttributeEntity) obj;
-		if (groupId == null) {
-			if (other.groupId != null)
+		if (group == null) {
+			if (other.group != null)
 				return false;
-		} else if (!groupId.equals(other.groupId))
+		} else if (!group.equals(other.group))
 			return false;
 		if (id == null) {
 			if (other.id != null)
@@ -127,10 +137,11 @@ public class GroupAttributeEntity {
 
 	@Override
 	public String toString() {
-		return String
-				.format("GroupAttributeEntity [id=%s, name=%s, value=%s, metadataElementId=%s, groupId=%s]",
-						id, name, value, metadataElementId, groupId);
+		return "GroupAttributeEntity [id=" + id + ", name=" + name + ", value="
+				+ value + ", metadataElementId=" + metadataElementId
+				+ ", group=" + group + "]";
 	}
-    
+
+	    
     
 }

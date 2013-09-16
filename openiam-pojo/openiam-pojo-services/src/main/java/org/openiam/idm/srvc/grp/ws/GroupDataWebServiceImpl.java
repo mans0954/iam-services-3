@@ -88,7 +88,7 @@ public class GroupDataWebServiceImpl implements GroupDataWebService {
 				}
 			}
 			
-			GroupEntity entity = groupDozerConverter.convertToEntity(group, false);
+			GroupEntity entity = groupDozerConverter.convertToEntity(group, true);
 			groupManager.saveGroup(entity);
 			response.setResponseValue(entity.getGrpId());
 		} catch(BasicDataServiceException e) {

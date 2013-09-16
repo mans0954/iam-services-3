@@ -10,6 +10,8 @@ import org.openiam.idm.searchbeans.GroupSearchBean;
 import org.openiam.idm.srvc.grp.domain.GroupAttributeEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.dto.Group;
+import org.openiam.idm.srvc.res.domain.ResourceEntity;
+import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.srvc.user.util.DelegationFilterHelper;
 import org.openiam.validator.EntityValidator;
@@ -183,7 +185,8 @@ public class GroupDataServiceImpl implements GroupDataService {
 			if(StringUtils.isNotBlank(group.getGrpId())) {
 				final GroupEntity dbGroup = groupDao.findById(group.getGrpId());
 				if(dbGroup != null) {
-					group.setAttributes(dbGroup.getAttributes());
+					//group.setAttributes(dbGroup.getAttributes());
+					mergeAttribute(group, dbGroup);
 					group.setChildGroups(dbGroup.getChildGroups());
 					group.setParentGroups(dbGroup.getParentGroups());
 					group.setResources(dbGroup.getResources());
@@ -196,13 +199,52 @@ public class GroupDataServiceImpl implements GroupDataService {
 			}
 		}
 	}
+	
+	private void mergeAttribute(final GroupEntity bean, final GroupEntity dbObject) {
+		final Set<GroupAttributeEntity> renewedProperties = new HashSet<GroupAttributeEntity>();
+		
+		Set<GroupAttributeEntity> beanProps = (bean.getAttributes() != null) ? bean.getAttributes() : new HashSet<GroupAttributeEntity>();
+		Set<GroupAttributeEntity> dbProps = (dbObject.getAttributes() != null) ? dbObject.getAttributes() : new HashSet<GroupAttributeEntity>();
+		
+		/* update */
+		for(GroupAttributeEntity dbProp : dbProps) {
+			for(final GroupAttributeEntity beanProp : beanProps) {
+				if(StringUtils.equals(dbProp.getId(), beanProp.getId())) {
+					dbProp.setMetadataElementId(beanProp.getMetadataElementId());
+					dbProp.setName(beanProp.getName());
+					dbProp.setValue(beanProp.getValue());
+					renewedProperties.add(dbProp);
+					break;
+				}
+			}
+		}
+		
+		/* add */
+		for(final GroupAttributeEntity beanProp : beanProps) {
+			boolean contains = false;
+			for(GroupAttributeEntity dbProp : dbProps) {
+				if(StringUtils.equals(dbProp.getId(), beanProp.getId())) {
+					contains = true;
+				}
+			}
+			
+			if(!contains) {
+				beanProp.setGroup(bean);
+				//dbProps.add(beanProp);
+				renewedProperties.add(beanProp);
+			}
+		}
+		
+		bean.setAttributes(renewedProperties);
+		//bean.setResourceProps(renewedProperties);
+	}
 
 	@Override
 	@Transactional
 	public void deleteGroup(String groupId) {
 		final GroupEntity entity = groupDao.findById(groupId);
 		if(entity != null) {
-			groupAttrDao.deleteByGroupId(groupId);
+			//groupAttrDao.deleteByGroupId(groupId);
 			groupDao.delete(entity);
 		}
 	}

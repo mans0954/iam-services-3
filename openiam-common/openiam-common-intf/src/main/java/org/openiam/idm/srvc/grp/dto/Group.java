@@ -78,7 +78,7 @@ public class Group implements java.io.Serializable {
     protected Set<Role> roles = new HashSet<Role>(0);
 
     //@XmlJavaTypeAdapter(GroupAttributeMapAdapter.class)
-    protected Map<String, GroupAttribute> attributes = new HashMap<String, GroupAttribute>(0);
+    protected Set<GroupAttribute> attributes = new HashSet<GroupAttribute>();
 
     public Group() {
     }
@@ -151,24 +151,16 @@ public class Group implements java.io.Serializable {
         this.roles = roles;
     }
 
-    public Map<String, GroupAttribute> getAttributes() {
-        return attributes;
-    }
+    public Set<GroupAttribute> getAttributes() {
+		return attributes;
+	}
 
-    public void setAttributes(Map<String, GroupAttribute> attributes) {
-        this.attributes = attributes;
-    }
-
-    public void saveAttribute(GroupAttribute attr) {
-        attributes.put(attr.getName(), attr);
-    }
+	public void setAttributes(Set<GroupAttribute> attributes) {
+		this.attributes = attributes;
+	}
 
     public void removeAttributes(GroupAttribute attr) {
         attributes.remove(attr.getName());
-    }
-
-    public GroupAttribute getAttribute(String name) {
-        return attributes.get(name);
     }
 
     public String getDescription() {

@@ -201,7 +201,7 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
 			final int from, final int size) {
 		final Criteria criteria = getCriteria()
 				.createAlias("groups", "rg")
-				.add(Restrictions.eq("rg.groupId", groupId))
+				.add(Restrictions.eq("rg.grpId", groupId))
 				.addOrder(Order.asc("managedSysId"))
 				.addOrder(Order.asc("name"));
 
@@ -222,7 +222,7 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
 	public int getNumOfResourcesForGroup(final String groupId) {
 		final Criteria criteria = getCriteria()
 				.createAlias("groups", "rg")
-				.add(Restrictions.eq("rg.groupId", groupId))
+				.add(Restrictions.eq("rg.grpId", groupId))
 				.setProjection(rowCount());
 
 		return ((Number) criteria.uniqueResult()).intValue();

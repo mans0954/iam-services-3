@@ -82,14 +82,6 @@ public class TestGroupConversion extends AbstractTestNGSpringContextTests {
 	private GroupEntity createGroupWithNoSubgroups() {
 		final GroupEntity group = createSimpleGroup();
 		
-		final Map<String, GroupAttributeEntity> groupAttributeMap = new HashMap<String, GroupAttributeEntity>();
-		groupAttributeMap.put(rs(2), createGroupAttribute());
-		groupAttributeMap.put(rs(2), createGroupAttribute());
-		groupAttributeMap.put(rs(2), createGroupAttribute());
-		groupAttributeMap.put(rs(2), createGroupAttribute());
-		groupAttributeMap.put(rs(2), createGroupAttribute());
-		group.setAttributes(groupAttributeMap);
-		
 		return group;
 	}
 	
@@ -113,7 +105,7 @@ public class TestGroupConversion extends AbstractTestNGSpringContextTests {
 	
 	private GroupAttributeEntity createGroupAttribute() {
 		final GroupAttributeEntity groupAttribute = new GroupAttributeEntity();
-		groupAttribute.setGroupId(rs(2));
+		//groupAttribute.setGroupId(rs(2));
 		groupAttribute.setId(rs(2));
 		groupAttribute.setMetadataElementId(rs(2));
 		groupAttribute.setName(rs(2));

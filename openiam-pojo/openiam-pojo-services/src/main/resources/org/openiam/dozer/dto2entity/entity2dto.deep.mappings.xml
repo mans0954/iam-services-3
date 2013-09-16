@@ -170,7 +170,7 @@
 			<b>childGroups</b>
 		</field>
 		<field
-			custom-converter="org.openiam.dozer.crossentity.CrossEntityMapConverterWithKeyString"
+			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
 			custom-converter-param="dto2entityShallowDozerMapper">
 			<a>attributes</a>
 			<b>attributes</b>
