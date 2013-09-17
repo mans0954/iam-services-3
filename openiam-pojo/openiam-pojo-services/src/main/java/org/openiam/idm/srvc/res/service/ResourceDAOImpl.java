@@ -16,11 +16,16 @@ import org.hibernate.criterion.Order;
 
 import org.hibernate.criterion.Restrictions;
 
+import org.openiam.base.Tuple;
 import org.openiam.core.dao.BaseDaoImpl;
+import org.openiam.idm.searchbeans.ResourceSearchBean;
+import org.openiam.idm.searchbeans.SearchBean;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.domain.ResourceTypeEntity;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.role.service.RoleDAO;
+import org.openiam.idm.srvc.searchbean.converter.ResourceSearchBeanConverter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -31,6 +36,37 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
 		implements ResourceDAO {
 
 	private static final Log log = LogFactory.getLog(ResourceDAOImpl.class);
+	
+	@Autowired
+    private ResourceSearchBeanConverter resourceSearchBeanConverter;
+
+	@Override
+	protected Criteria getExampleCriteria(SearchBean searchBean) {
+		Criteria criteria = getCriteria();
+		if(searchBean != null && searchBean instanceof ResourceSearchBean) {
+			final ResourceSearchBean resourceSearchBean = (ResourceSearchBean)searchBean;
+			criteria = getExampleCriteria(resourceSearchBeanConverter.convert(resourceSearchBean));
+			
+			if(Boolean.TRUE.equals(resourceSearchBean.getRootsOnly())) {
+				criteria.add(Restrictions.isEmpty("parentResources"));
+			}
+			
+			if(CollectionUtils.isNotEmpty(resourceSearchBean.getAttributes())) {
+				criteria.createAlias("resourceProps", "prop");
+				for(final Tuple<String, String> attribute : resourceSearchBean.getAttributes()) {
+					if(StringUtils.isNotBlank(attribute.getKey()) && StringUtils.isNotBlank(attribute.getValue())) {
+						criteria.add(Restrictions.and(Restrictions.eq("prop.name", attribute.getKey()), 
+								Restrictions.eq("prop.propValue", attribute.getValue())));
+					} else if(StringUtils.isNotBlank(attribute.getKey())) {
+						criteria.add(Restrictions.eq("prop.name", attribute.getKey()));
+					} else if(StringUtils.isNotBlank(attribute.getValue())) {
+						criteria.add(Restrictions.eq("prop.propValue", attribute.getValue()));
+					}
+				}
+			}
+		}
+		return criteria;
+	}
 
 	@Override
 	protected Criteria getExampleCriteria(final ResourceEntity resource) {
@@ -109,6 +145,7 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
 		return criteria;
 	}
 
+	/*
 	@Override
 	public List<ResourceEntity> getRootResources(ResourceEntity resource,
 			int startAt, int size) {
@@ -126,6 +163,7 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
 
 		return (List<ResourceEntity>) criteria.list();
 	}
+	*/
 
 	@Override
 	public ResourceEntity findByName(String name) {

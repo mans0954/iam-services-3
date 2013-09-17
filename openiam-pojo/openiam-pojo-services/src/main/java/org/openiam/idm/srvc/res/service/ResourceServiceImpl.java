@@ -138,20 +138,20 @@ public class ResourceServiceImpl implements ResourceService {
 	@Override
     @Transactional(readOnly = true)
 	public int count(ResourceSearchBean searchBean) {
-		final ResourceEntity entity = resourceSearchBeanConverter.convert(searchBean);
-    	return resourceDao.count(entity);
+		//final ResourceEntity entity = resourceSearchBeanConverter.convert(searchBean);
+    	return resourceDao.count(searchBean);
 	}
 
 	@Override
     @Transactional(readOnly = true)
 	public List<ResourceEntity> findBeans(final ResourceSearchBean searchBean, final int from, final int size) {
-		final ResourceEntity resource = resourceSearchBeanConverter.convert(searchBean);
+		//final ResourceEntity resource = resourceSearchBeanConverter.convert(searchBean);
 		List<ResourceEntity> resultsEntities = null;
-		if (Boolean.TRUE.equals(searchBean.getRootsOnly())) {
-			resultsEntities = resourceDao.getRootResources(resource, from, size);
-		} else {
-			resultsEntities = resourceDao.getByExample(resource, from, size);
-		}
+		//if (Boolean.TRUE.equals(searchBean.getRootsOnly())) {
+		//	resultsEntities = resourceDao.getRootResources(resource, from, size);
+		//} else {
+			resultsEntities = resourceDao.getByExample(searchBean, from, size);
+		//}
 		return resultsEntities;
 	        
 	}

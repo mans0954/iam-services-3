@@ -71,7 +71,7 @@ public class ResourceDataServiceImpl implements ResourceDataService {
 	public List<Resource> findBeans(final ResourceSearchBean searchBean,
 			final int from, final int size) {
 		final DozerMappingType mappingType = (searchBean.isDeepCopy()) ? DozerMappingType.DEEP : DozerMappingType.SHALLOW;
-        final List<ResourceEntity> resultsEntities = resourceService.findBeans(searchBean, 0, Integer.MAX_VALUE);
+        final List<ResourceEntity> resultsEntities = resourceService.findBeans(searchBean, from, size);
 		return resourceConverter.convertToDTOList(resultsEntities, DozerMappingType.DEEP.equals(mappingType));
 	}
 
