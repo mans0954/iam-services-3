@@ -8,6 +8,8 @@ import org.openiam.idm.srvc.mngsys.domain.DefaultReconciliationAttributeMapEntit
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysRuleEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
+import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
+import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 
 public interface ManagedSystemService {
 
@@ -16,7 +18,7 @@ public interface ManagedSystemService {
 
     Integer getManagedSystemsCountByExample(ManagedSysEntity example);
 
-    void addManagedSys(ManagedSysEntity entity);
+    void addManagedSys(ManagedSysDto entity);
 
     ManagedSysEntity getManagedSysById(String id);
 
@@ -28,7 +30,7 @@ public interface ManagedSystemService {
 
     void removeManagedSysById(String id);
 
-    void updateManagedSys(ManagedSysEntity entity);
+    void updateManagedSys(ManagedSysDto entity);
 
     ManagedSysEntity getManagedSysByResource(String id, String status);
 
@@ -66,4 +68,10 @@ public interface ManagedSystemService {
             String synchConfigId) throws Exception;
 
     void deleteAttributesMapList(List<String> ids) throws Exception;
+
+    void saveManagedSystemObjectMatch(ManagedSystemObjectMatch objectMatch);
+
+    void updateManagedSystemObjectMatch(ManagedSystemObjectMatch objectMatch);
+
+    void deleteManagedSystemObjectMatch(String objectMatchId);
 }

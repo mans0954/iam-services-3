@@ -3,16 +3,17 @@ package org.openiam.idm.srvc.mngsys.service;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
+import org.openiam.dozer.converter.ManagedSysDozerConverter;
+import org.openiam.dozer.converter.ManagedSystemObjectMatchDozerConverter;
 import org.openiam.idm.searchbeans.AttributeMapSearchBean;
-import org.openiam.idm.searchbeans.SearchBean;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.DefaultReconciliationAttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysRuleEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
 import org.openiam.idm.srvc.mngsys.domain.ReconciliationResourceAttributeMapEntity;
+import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
+import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.idm.srvc.policy.service.PolicyDAO;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.service.ResourceDAO;
@@ -46,7 +47,13 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
     
     @Autowired
     private ResourceDAO resourceDAO;
-    
+
+    @Autowired
+    private ManagedSysDozerConverter managedSysDozerConverter;
+
+    @Autowired
+    private ManagedSystemObjectMatchDozerConverter managedSystemObjectMatchDozerConverter;
+
     private static final String resourceTypeId="MANAGED_SYS";
 
     @Override
@@ -102,50 +109,59 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
     
     @Override
     @Transactional
-    public void addManagedSys(ManagedSysEntity entity) {
-    	//if(org.apache.commons.lang.StringUtils.isBlank(entity.getResourceId())) {
+    public void addManagedSys(ManagedSysDto sys) {
+        final ManagedSysEntity entity = managedSysDozerConverter.convertToEntity(sys, true);
+
     	final ResourceEntity resource = new ResourceEntity();
     	resource.setName(String.format("%s_%S", entity.getName(), System.currentTimeMillis()));
     	resource.setResourceType(resourceTypeDAO.findById(resourceTypeId));
     	resource.setIsPublic(false);
+
     	resourceDAO.save(resource);
     	entity.setResourceId(resource.getResourceId());
-    	//}
+
         managedSysDAO.save(entity);
-        //resource.setManagedSysId(entity.getManagedSysId());
-        //resourceDAO.update(resource);
-        //saveManagedSysCollections(entity);
+        resource.setManagedSysId(entity.getManagedSysId());
+        sys.setManagedSysId(entity.getManagedSysId());
     }
 
     @Override
     @Transactional
-    public void updateManagedSys(ManagedSysEntity entity) {
+    public void updateManagedSys(ManagedSysDto sys) {
+        final ManagedSysEntity entity = managedSysDozerConverter.convertToEntity(sys, true);
     	ResourceEntity resource = null;
     	if(org.apache.commons.lang.StringUtils.isEmpty(entity.getResourceId())) {
     		resource = new ResourceEntity();
     		resource.setName(String.format("%s_%S", entity.getName(), System.currentTimeMillis()));
     		resource.setResourceType(resourceTypeDAO.findById(resourceTypeId));
     		resource.setIsPublic(false);
-    		//resource.setManagedSysId(entity.getManagedSysId());
     		resourceDAO.save(resource);
     		entity.setResourceId(resource.getResourceId());
+            resource.setManagedSysId(sys.getManagedSysId());
     	}
         managedSysDAO.merge(entity);
-        //saveManagedSysCollections(entity);
+
     }
-    
-    private void saveManagedSysCollections(final ManagedSysEntity entity) {
-    	if(entity != null) {
-    		if(CollectionUtils.isNotEmpty(entity.getMngSysObjectMatchs())) {
-    			for(final ManagedSystemObjectMatchEntity match : entity.getMngSysObjectMatchs()) {
-    				if(StringUtils.isNotBlank(match.getObjectSearchId())) {
-    					matchDAO.update(match);
-    				} else {
-    					matchDAO.save(match);
-    				}
-    			}
-    		}
-    	}
+
+    @Override
+    @Transactional
+    public void saveManagedSystemObjectMatch(ManagedSystemObjectMatch objectMatch) {
+        ManagedSystemObjectMatchEntity entity = managedSystemObjectMatchDozerConverter.convertToEntity(objectMatch, false);
+        matchDAO.save(entity);
+    }
+
+    @Override
+    @Transactional
+    public void updateManagedSystemObjectMatch(ManagedSystemObjectMatch objectMatch) {
+        ManagedSystemObjectMatchEntity entity = managedSystemObjectMatchDozerConverter.convertToEntity(objectMatch, false);
+        matchDAO.update(entity);
+    }
+
+    @Override
+    @Transactional
+    public void deleteManagedSystemObjectMatch(String objectMatchId) {
+        ManagedSystemObjectMatchEntity entity = matchDAO.findById(objectMatchId);
+        matchDAO.delete(entity);
     }
 
     @Override

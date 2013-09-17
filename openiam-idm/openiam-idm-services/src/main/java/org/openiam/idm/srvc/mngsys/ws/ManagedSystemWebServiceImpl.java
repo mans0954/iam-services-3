@@ -60,9 +60,6 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
     private ManagedSystemService managedSystemService;
 
     @Autowired
-    private ManagedSystemObjectMatchDAO managedSysObjectMatchDao;
-
-    @Autowired
     private ApproverAssociationDAO approverAssociationDao;
 
     @Autowired
@@ -138,14 +135,14 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
     		if (encrypt && sys.getPswd() != null) {
     			sys.setPswd(cryptor.encrypt(keyManagementService.getUserKey(systemUserId, KeyName.password.name()), sys.getPswd()));
     		}
-    		
-    		final ManagedSysEntity entity = managedSysDozerConverter.convertToEntity(sys, true);
-    		if(StringUtils.isBlank(entity.getManagedSysId())) {
-    			managedSystemService.addManagedSys(entity);
+
+
+    		if(StringUtils.isBlank(sys.getManagedSysId())) {
+    			managedSystemService.addManagedSys(sys);
     		}  else {
-    			managedSystemService.updateManagedSys(entity);
+    			managedSystemService.updateManagedSys(sys);
     		}
-    		response.setResponseValue(entity.getManagedSysId());
+    		response.setResponseValue(sys.getManagedSysId());
     	} catch (BasicDataServiceException e) {
 			response.setErrorCode(e.getCode());
 			response.setStatus(ResponseStatus.FAILURE);
@@ -414,11 +411,10 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
                 throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
             }
 
-            final ManagedSystemObjectMatchEntity entity = managedSystemObjectMatchDozerConverter.convertToEntity(obj, false);
             if(StringUtils.isNotBlank(obj.getObjectSearchId())) {
-            	managedSysObjectMatchDao.update(entity);
+            	managedSystemService.updateManagedSystemObjectMatch(obj);
             } else {
-            	managedSysObjectMatchDao.save(entity);
+            	managedSystemService.saveManagedSystemObjectMatch(obj);
             }
         } catch (BasicDataServiceException e) {
             response.setErrorCode(e.getCode());
@@ -431,9 +427,7 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
     }
 
     public void removeManagedSystemObjectMatch(ManagedSystemObjectMatch obj) {
-        this.managedSysObjectMatchDao
-                .delete(managedSystemObjectMatchDozerConverter.convertToEntity(
-                        obj, false));
+        this.managedSystemService.deleteManagedSystemObjectMatch(obj.getObjectSearchId());
     }
 
     public AttributeMap getAttributeMap(String attributeMapId) {
