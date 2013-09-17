@@ -109,7 +109,7 @@ public class OrganizationEntity {
     @Fetch(FetchMode.SUBSELECT)
     private Set<OrganizationEntity> childOrganizations;
 
-    @ManyToMany(cascade = CascadeType.ALL)
+	@ManyToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
     @JoinTable(name = "USER_AFFILIATION", joinColumns = { @JoinColumn(name = "COMPANY_ID") }, inverseJoinColumns = { @JoinColumn(name = "USER_ID") })
 	private Set<UserEntity> users;
 
