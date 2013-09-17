@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.org.service;
 
+import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.OrganizationSearchBean;
 import org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
@@ -31,4 +32,6 @@ public interface OrganizationService {
 	public void removeChildOrganization(final String organizationId, final String childOrganizationId);
 	public void addChildOrganization(final String organizationId, final String childOrganizationId);
 	public void deleteOrganization(final String orgId);
+	
+	public void validateOrg2OrgAddition(String parentId, String memberId) throws BasicDataServiceException;
 }

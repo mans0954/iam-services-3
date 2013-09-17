@@ -6,7 +6,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.openiam.base.ws.ResponseCode;
+import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.ResourceSearchBean;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.service.GroupDAO;
@@ -349,4 +352,52 @@ public class ResourceServiceImpl implements ResourceService {
     public List<ResourceEntity> getResourcesForManagedSys(String mngSysId, int from, int size) {
         return resourceDao.getResourcesForManagedSys(mngSysId, from, size);
     }
+
+	@Override
+	@Transactional
+	public void validateResource2ResourceAddition(final String parentId, final String memberId) throws BasicDataServiceException {
+		final ResourceEntity parent = resourceDao.findById(parentId);
+		final ResourceEntity child = resourceDao.findById(memberId);
+		
+		if(parent == null || child == null) {
+			throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+		}
+		
+		if(causesCircularDependency(parent, child, new HashSet<ResourceEntity>())) {
+			throw new BasicDataServiceException(ResponseCode.CIRCULAR_DEPENDENCY);
+		}
+		
+		if(parent.hasChildResoruce(child)) {
+			throw new BasicDataServiceException(ResponseCode.RELATIONSHIP_EXISTS);
+		}
+		
+		if(StringUtils.equals(parentId, memberId)) {
+			throw new BasicDataServiceException(ResponseCode.CANT_ADD_YOURSELF_AS_CHILD);
+		}
+		
+		if(parent.getResourceType() != null && child.getResourceType() != null &&
+		  !parent.getResourceType().equals(child.getResourceType())) {
+			throw new BasicDataServiceException(ResponseCode.RESOURCE_TYPES_NOT_EQUAL);
+		}
+	}
+	
+	private boolean causesCircularDependency(final ResourceEntity parent, final ResourceEntity child, final Set<ResourceEntity> visitedSet) {
+		boolean retval = false;
+		if (parent != null && child != null) {
+			if (!visitedSet.contains(child)) {
+				visitedSet.add(child);
+				if (CollectionUtils.isNotEmpty(parent.getParentResources())) {
+					for (final ResourceEntity entity : parent.getParentResources()) {
+						retval = entity.getResourceId().equals(
+								child.getResourceId());
+						if (retval) {
+							break;
+						}
+						causesCircularDependency(parent, entity, visitedSet);
+					}
+				}
+			}
+		}
+		return retval;
+	}
 }

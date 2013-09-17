@@ -4,6 +4,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.base.ws.ResponseCode;
 import org.openiam.dozer.converter.GroupDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.GroupSearchBean;
@@ -313,4 +314,46 @@ public class GroupDataServiceImpl implements GroupDataService {
         }
         return filterData;
     }
+
+	@Override
+	@Transactional
+	public void validateGroup2GroupAddition(String parentId, String memberId) throws BasicDataServiceException {
+		final GroupEntity parent = groupDao.findById(parentId);
+		final GroupEntity child = groupDao.findById(memberId);
+		
+		if(parent == null || child == null) {
+			throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+		}
+		
+		if(causesCircularDependency(parent, child, new HashSet<GroupEntity>())) {
+			throw new BasicDataServiceException(ResponseCode.CIRCULAR_DEPENDENCY);
+		}
+		
+		if(parent.hasChildGroup(child.getGrpId())) {
+			throw new BasicDataServiceException(ResponseCode.RELATIONSHIP_EXISTS);
+		}
+		
+		if(StringUtils.equals(parentId, memberId)) {
+			throw new BasicDataServiceException(ResponseCode.CANT_ADD_YOURSELF_AS_CHILD);
+		}
+	}
+	
+	private boolean causesCircularDependency(final GroupEntity parent, final GroupEntity child, final Set<GroupEntity> visitedSet) {
+		boolean retval = false;
+		if(parent != null && child != null) {
+			if(!visitedSet.contains(child)) {
+				visitedSet.add(child);
+				if(CollectionUtils.isNotEmpty(parent.getParentGroups())) {
+					for(final GroupEntity entity : parent.getParentGroups()) {
+						retval = entity.getGrpId().equals(child.getGrpId());
+						if(retval) {
+							break;
+						}
+						causesCircularDependency(parent, entity, visitedSet);
+					}
+				}
+			}
+		}
+		return retval;
+	}
 }

@@ -285,26 +285,7 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
             if (organizationId == null || childOrganizationId == null) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
             }
-
-            final OrganizationEntity parent = organizationService.getOrganization(organizationId, null);
-            final OrganizationEntity child = organizationService.getOrganization(childOrganizationId, null);
-
-            if (parent == null || child == null) {
-                throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
-            }
-
-            if (parent.hasChildOrganization(childOrganizationId)) {
-                throw new BasicDataServiceException(ResponseCode.RELATIONSHIP_EXISTS);
-            }
-
-            if (causesCircularDependency(parent, child, new HashSet<OrganizationEntity>())) {
-                throw new BasicDataServiceException(ResponseCode.CIRCULAR_DEPENDENCY);
-            }
-
-            if (organizationId.equals(childOrganizationId)) {
-                throw new BasicDataServiceException(ResponseCode.CANT_ADD_YOURSELF_AS_CHILD);
-            }
-
+            organizationService.validateOrg2OrgAddition(organizationId, childOrganizationId);
             organizationService.addChildOrganization(organizationId, childOrganizationId);
         } catch (BasicDataServiceException e) {
             response.setStatus(ResponseStatus.FAILURE);
@@ -315,25 +296,6 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
             response.setErrorText(e.getMessage());
         }
         return response;
-    }
-
-    private boolean causesCircularDependency(final OrganizationEntity parent, final OrganizationEntity child, final Set<OrganizationEntity> visitedSet) {
-        boolean retval = false;
-        if (parent != null && child != null) {
-            if (!visitedSet.contains(child)) {
-                visitedSet.add(child);
-                if (CollectionUtils.isNotEmpty(parent.getParentOrganizations())) {
-                    for (final OrganizationEntity entity : parent.getParentOrganizations()) {
-                        retval = entity.getId().equals(child.getId());
-                        if (retval) {
-                            break;
-                        }
-                        causesCircularDependency(parent, entity, visitedSet);
-                    }
-                }
-            }
-        }
-        return retval;
     }
 
     @Override

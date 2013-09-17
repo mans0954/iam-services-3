@@ -1,12 +1,17 @@
 package org.openiam.idm.srvc.org.service;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.openiam.base.ws.ResponseCode;
+import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.OrganizationTypeSearchBean;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationTypeEntity;
+import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -94,5 +99,47 @@ public class OrganizationTypeServiceImpl implements OrganizationTypeService {
 				organizationTypeDAO.update(entity);
 			}
 		}
+	}
+
+	@Override
+	public void validateRole2RoleAddition(String parentId, String memberId)
+			throws BasicDataServiceException {
+		final OrganizationTypeEntity parent = organizationTypeDAO.findById(parentId);
+		final OrganizationTypeEntity child = organizationTypeDAO.findById(memberId);
+		
+		if(parent == null || child == null) {
+			throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+		}
+		
+		if(causesCircularDependency(parent, child, new HashSet<OrganizationTypeEntity>())) {
+			throw new BasicDataServiceException(ResponseCode.CIRCULAR_DEPENDENCY);
+		}
+		
+		if(parent.hasChildType(child.getId())) {
+			throw new BasicDataServiceException(ResponseCode.RELATIONSHIP_EXISTS);
+		}
+		
+		if(StringUtils.equals(parentId, memberId)) {
+			throw new BasicDataServiceException(ResponseCode.CANT_ADD_YOURSELF_AS_CHILD);
+		}
+	}
+	
+	private boolean causesCircularDependency(final OrganizationTypeEntity parent, final OrganizationTypeEntity child, final Set<OrganizationTypeEntity> visitedSet) {
+		boolean retval = false;
+		if(parent != null && child != null) {
+			if(!visitedSet.contains(child)) {
+				visitedSet.add(child);
+				if(CollectionUtils.isNotEmpty(parent.getParentTypes())) {
+					for(final OrganizationTypeEntity entity : parent.getParentTypes()) {
+						retval = entity.getId().equals(child.getId());
+						if(retval) {
+							break;
+						}
+						causesCircularDependency(parent, entity, visitedSet);
+					}
+				}
+			}
+		}
+		return retval;
 	}
 }

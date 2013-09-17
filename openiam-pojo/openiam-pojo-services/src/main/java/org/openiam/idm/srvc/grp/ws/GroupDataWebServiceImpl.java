@@ -314,25 +314,13 @@ public class GroupDataWebServiceImpl implements GroupDataWebService {
 				throw new BasicDataServiceException(ResponseCode.CANT_ADD_YOURSELF_AS_CHILD);
 			}
 			
-			final GroupEntity group = groupManager.getGroup(groupId, null);
-			final GroupEntity child = groupManager.getGroup(childGroupId, null);
-			if(group == null || child == null) {
-				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
-			}
-			
-			if(group.hasChildGroup(childGroupId)) {
-				throw new BasicDataServiceException(ResponseCode.RELATIONSHIP_EXISTS);
-			}
-			
-			if(causesCircularDependency(group, child, new HashSet<GroupEntity>())) {
-				throw new BasicDataServiceException(ResponseCode.CIRCULAR_DEPENDENCY);
-			}
-			
+			groupManager.validateGroup2GroupAddition(groupId, childGroupId);
 			groupManager.addChildGroup(groupId, childGroupId);
 		} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
 		} catch(Throwable e) {
+			log.error("can't add child group", e);
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorText(e.getMessage());
 		}
@@ -357,26 +345,6 @@ public class GroupDataWebServiceImpl implements GroupDataWebService {
 			response.setErrorText(e.getMessage());
 		}
 		return response;
-	}
-
-	
-	private boolean causesCircularDependency(final GroupEntity parent, final GroupEntity child, final Set<GroupEntity> visitedSet) {
-		boolean retval = false;
-		if(parent != null && child != null) {
-			if(!visitedSet.contains(child)) {
-				visitedSet.add(child);
-				if(CollectionUtils.isNotEmpty(parent.getParentGroups())) {
-					for(final GroupEntity entity : parent.getParentGroups()) {
-						retval = entity.getGrpId().equals(child.getGrpId());
-						if(retval) {
-							break;
-						}
-						causesCircularDependency(parent, entity, visitedSet);
-					}
-				}
-			}
-		}
-		return retval;
 	}
 
 	@Override

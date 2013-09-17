@@ -5,6 +5,7 @@ import java.util.*;
 import javax.jws.WebMethod;
 import javax.jws.WebService;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -296,11 +297,12 @@ public class ResourceDataServiceImpl implements ResourceDataService {
 			}
 
 			userDataService.addUserToResource(userId, resourceId);
-
-
-		} catch (BasicDataServiceException e) {
-			response.setStatus(ResponseStatus.FAILURE);
+		} catch(BasicDataServiceException e) {
 			response.setErrorCode(e.getCode());
+			response.setStatus(ResponseStatus.FAILURE);
+		} catch (Throwable e) {
+			log.error("Can't add user to resource", e);
+			response.setStatus(ResponseStatus.FAILURE);
 		}
 		return response;
 	}
@@ -309,8 +311,15 @@ public class ResourceDataServiceImpl implements ResourceDataService {
 	public Response deleteResource(final String resourceId) {
 		final Response response = new Response(ResponseStatus.SUCCESS);
 		try {
+			if(resourceId == null) {
+				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+			}
+			
 			resourceService.deleteResource(resourceId);
 
+		} catch(BasicDataServiceException e) {
+			response.setErrorCode(e.getCode());
+			response.setStatus(ResponseStatus.FAILURE);
 		} catch (Throwable e) {
 			log.error("Can't delete resource", e);
 			response.setStatus(ResponseStatus.FAILURE);
@@ -354,10 +363,12 @@ public class ResourceDataServiceImpl implements ResourceDataService {
 				throw new BasicDataServiceException(
 						ResponseCode.INVALID_ARGUMENTS);
 			}
-
+			resourceService.validateResource2ResourceAddition(parentResourceId, childResourceId);
 			resourceService.addChildResource(parentResourceId, childResourceId);
 
-
+		} catch(BasicDataServiceException e) {
+			response.setErrorCode(e.getCode());
+			response.setStatus(ResponseStatus.FAILURE);
 		} catch (Throwable e) {
 			log.error("Can't delete resource", e);
 			response.setStatus(ResponseStatus.FAILURE);
@@ -365,42 +376,19 @@ public class ResourceDataServiceImpl implements ResourceDataService {
 		}
 		return response;
 	}
-
-	/*private boolean causesCircularDependency(final ResourceEntity parent,
-			final ResourceEntity child, final Set<ResourceEntity> visitedSet) {
-		boolean retval = false;
-		if (parent != null && child != null) {
-			if (!visitedSet.contains(child)) {
-				visitedSet.add(child);
-				if (CollectionUtils.isNotEmpty(parent.getParentResources())) {
-					for (final ResourceEntity entity : parent
-							.getParentResources()) {
-						retval = entity.getResourceId().equals(
-								child.getResourceId());
-						if (retval) {
-							break;
-						}
-						causesCircularDependency(parent, entity, visitedSet);
-					}
-				}
-			}
-		}
-		return retval;
-	}
-*/
 	@Override
 	public Response deleteChildResource(final String resourceId,
 			final String memberResourceId) {
 		final Response response = new Response(ResponseStatus.SUCCESS);
 		try {
-			if (StringUtils.isBlank(resourceId)
-					|| StringUtils.isBlank(memberResourceId)) {
-				throw new BasicDataServiceException(
-						ResponseCode.INVALID_ARGUMENTS);
+			if (StringUtils.isBlank(resourceId) || StringUtils.isBlank(memberResourceId)) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
 			}
 
 			resourceService.deleteChildResource(resourceId, memberResourceId);
-
+		} catch(BasicDataServiceException e) {
+			response.setErrorCode(e.getCode());
+			response.setStatus(ResponseStatus.FAILURE);
 		} catch (Throwable e) {
 			log.error("Can't delete resource", e);
 			response.setStatus(ResponseStatus.FAILURE);
@@ -415,13 +403,14 @@ public class ResourceDataServiceImpl implements ResourceDataService {
 		final Response response = new Response(ResponseStatus.SUCCESS);
 		try {
 			if (StringUtils.isBlank(resourceId) || StringUtils.isBlank(groupId)) {
-				throw new BasicDataServiceException(
-						ResponseCode.INVALID_ARGUMENTS);
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
 			}
 
 			resourceService.addResourceGroup(resourceId, groupId);
 
-
+		} catch(BasicDataServiceException e) {
+			response.setErrorCode(e.getCode());
+			response.setStatus(ResponseStatus.FAILURE);
 		} catch (Throwable e) {
 			log.error("Can't delete resource", e);
 			response.setStatus(ResponseStatus.FAILURE);
@@ -436,12 +425,14 @@ public class ResourceDataServiceImpl implements ResourceDataService {
 		final Response response = new Response(ResponseStatus.SUCCESS);
 		try {
 			if (StringUtils.isBlank(resourceId) || StringUtils.isBlank(groupId)) {
-				throw new BasicDataServiceException(
-						ResponseCode.INVALID_ARGUMENTS);
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
 			}
 
 			resourceService.deleteResourceGroup(resourceId, groupId);
 
+		} catch(BasicDataServiceException e) {
+			response.setErrorCode(e.getCode());
+			response.setStatus(ResponseStatus.FAILURE);
 		} catch (Throwable e) {
 			log.error("Can't delete resource", e);
 			response.setStatus(ResponseStatus.FAILURE);
@@ -456,13 +447,14 @@ public class ResourceDataServiceImpl implements ResourceDataService {
 		final Response response = new Response(ResponseStatus.SUCCESS);
 		try {
 			if (StringUtils.isBlank(resourceId) || StringUtils.isBlank(roleId)) {
-				throw new BasicDataServiceException(
-						ResponseCode.INVALID_ARGUMENTS);
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
 			}
 
 			resourceService.addResourceToRole(resourceId, roleId);
 
-
+		} catch(BasicDataServiceException e) {
+			response.setErrorCode(e.getCode());
+			response.setStatus(ResponseStatus.FAILURE);
 		} catch (Throwable e) {
 			log.error("Can't delete resource", e);
 			response.setStatus(ResponseStatus.FAILURE);
@@ -477,11 +469,13 @@ public class ResourceDataServiceImpl implements ResourceDataService {
 		final Response response = new Response(ResponseStatus.SUCCESS);
 		try {
 			if (StringUtils.isBlank(resourceId) || StringUtils.isBlank(roleId)) {
-				throw new BasicDataServiceException(
-						ResponseCode.INVALID_ARGUMENTS);
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
 			}
 			resourceService.deleteResourceRole(resourceId, roleId);
 
+		} catch(BasicDataServiceException e) {
+			response.setErrorCode(e.getCode());
+			response.setStatus(ResponseStatus.FAILURE);
 		} catch (Throwable e) {
 			log.error("Can't delete resource", e);
 			response.setStatus(ResponseStatus.FAILURE);
@@ -557,6 +551,9 @@ public class ResourceDataServiceImpl implements ResourceDataService {
 				throw new BasicDataServiceException(ResponseCode.RELATIONSHIP_EXISTS);
 			}
 
+		} catch(BasicDataServiceException e) {
+			response.setErrorCode(e.getCode());
+			response.setStatus(ResponseStatus.FAILURE);
 		} catch (Throwable e) {
 			log.error("Can't delete resource", e);
 			response.setStatus(ResponseStatus.FAILURE);

@@ -3,6 +3,7 @@ package org.openiam.idm.srvc.res.service;
 import java.util.Collection;
 import java.util.List;
 
+import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.ResourceSearchBean;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
@@ -47,4 +48,6 @@ public interface ResourceService {
 	public void deleteResourceRole(final String resourceId, final String roleId);
 	public int getNumOfResourcesForRole(final String roleId);
     public void addResourceToRole(final String resourceId, final String roleId);
+    
+    public void validateResource2ResourceAddition(final String parentId, final String memberId) throws BasicDataServiceException;
 }

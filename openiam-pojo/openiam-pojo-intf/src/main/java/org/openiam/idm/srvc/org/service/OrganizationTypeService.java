@@ -2,6 +2,7 @@ package org.openiam.idm.srvc.org.service;
 
 import java.util.List;
 
+import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.OrganizationTypeSearchBean;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationTypeEntity;
@@ -24,4 +25,6 @@ public interface OrganizationTypeService {
 	public void addChild(final String id, final String childId);
 	
 	public void removeChild(final String id, final String childId);
+	
+	public void validateRole2RoleAddition(String parentId, String memberId) throws BasicDataServiceException;
 }

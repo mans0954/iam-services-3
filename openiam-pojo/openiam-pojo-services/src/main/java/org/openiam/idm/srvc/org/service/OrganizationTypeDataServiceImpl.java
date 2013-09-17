@@ -130,20 +130,7 @@ public class OrganizationTypeDataServiceImpl implements OrganizationTypeDataServ
 				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
 			}
 			
-			final OrganizationTypeEntity parent = organizationTypeService.findById(id);
-			final OrganizationTypeEntity child = organizationTypeService.findById(childId);
-			if(parent == null || child == null) {
-				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
-			}
-			
-			if(parent.containsChild(child.getId())) {
-				throw new BasicDataServiceException(ResponseCode.RELATIONSHIP_EXISTS);
-			}
-			
-			if(causesCircularDependency(parent, child, new HashSet<OrganizationTypeEntity>())) {
-				throw new BasicDataServiceException(ResponseCode.CIRCULAR_DEPENDENCY);
-			}
-			
+			organizationTypeService.validateRole2RoleAddition(id, childId);
 			organizationTypeService.addChild(id, childId);
 		} catch (BasicDataServiceException e) {
             response.setStatus(ResponseStatus.FAILURE);
@@ -154,27 +141,6 @@ public class OrganizationTypeDataServiceImpl implements OrganizationTypeDataServ
             response.setErrorText(e.getMessage());
         }
         return response;
-	}
-	
-	private boolean causesCircularDependency(final OrganizationTypeEntity parent,
-											 final OrganizationTypeEntity child, 
-											 final Set<OrganizationTypeEntity> visitedSet) {
-		boolean retval = false;
-		if (parent != null && child != null) {
-			if (!visitedSet.contains(child)) {
-				visitedSet.add(child);
-				if (CollectionUtils.isNotEmpty(parent.getParentTypes())) {
-					for (final OrganizationTypeEntity entity : parent.getParentTypes()) {
-						retval = StringUtils.equals(entity.getId(), child.getId());//entity.getResourceId().equals(child.getResourceId());
-						if (retval) {
-							break;
-						}
-						causesCircularDependency(parent, entity, visitedSet);
-					}
-				}
-			}
-		}
-		return retval;
 	}
 
 	@Override

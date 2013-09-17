@@ -498,24 +498,7 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 			if(roleId == null || childRoleId == null) {
 				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
 			}
-			final RoleEntity parent = roleDataService.getRole(roleId, null);
-			final RoleEntity child = roleDataService.getRole(childRoleId, null);
-			if(parent == null || child == null) {
-				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
-			}
-			
-			if(parent.hasChildRole(child.getRoleId())) {
-				throw new BasicDataServiceException(ResponseCode.RELATIONSHIP_EXISTS);
-			}
-			
-			if(roleId.equals(childRoleId)) {
-				throw new BasicDataServiceException(ResponseCode.CANT_ADD_YOURSELF_AS_CHILD);
-			}
-			
-			if(causesCircularDependency(parent, child, new HashSet<RoleEntity>())) {
-				throw new BasicDataServiceException(ResponseCode.CIRCULAR_DEPENDENCY);
-			}
-			
+			roleDataService.validateRole2RoleAddition(roleId, childRoleId);
 			roleDataService.addChildRole(roleId, childRoleId);
 		} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
@@ -526,25 +509,6 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 			response.setErrorText(e.getMessage());
 		}
 		return response;
-	}
-	
-	private boolean causesCircularDependency(final RoleEntity parent, final RoleEntity child, final Set<RoleEntity> visitedSet) {
-		boolean retval = false;
-		if(parent != null && child != null) {
-			if(!visitedSet.contains(child)) {
-				visitedSet.add(child);
-				if(CollectionUtils.isNotEmpty(parent.getParentRoles())) {
-					for(final RoleEntity entity : parent.getParentRoles()) {
-						retval = entity.getRoleId().equals(child.getRoleId());
-						if(retval) {
-							break;
-						}
-						causesCircularDependency(parent, entity, visitedSet);
-					}
-				}
-			}
-		}
-		return retval;
 	}
 
 	@Override
