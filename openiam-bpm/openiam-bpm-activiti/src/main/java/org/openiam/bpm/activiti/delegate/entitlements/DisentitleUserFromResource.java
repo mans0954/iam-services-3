@@ -46,8 +46,8 @@ public class DisentitleUserFromResource extends AbstractEntitlementsDelegate {
 		final ResourceEntity entity = resourceService.findResourceById(resourceId);
 		if(user != null && entity != null) {
             final ProvisionUser pUser = new ProvisionUser(user);
-            Resource resource = resourceDozerMapper.convertToDTO(entity, true);
-            resource.setOperation(AttributeOperationEnum.ADD);
+            final Resource resource = resourceService.getResourceDTO(resourceId);
+            resource.setOperation(AttributeOperationEnum.DELETE);
             pUser.getResources().add(resource);
             provisionService.modifyUser(pUser);
 		}

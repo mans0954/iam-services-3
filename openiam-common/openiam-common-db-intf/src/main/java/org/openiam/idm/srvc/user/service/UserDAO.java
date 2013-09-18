@@ -65,4 +65,12 @@ public interface UserDAO extends BaseDao<UserEntity, String> {
     public List<String> getUserIdsForOrganizations(final Set<String> organizationIds, final int from, final int size);
     
     public List<String> getUserIdsForResources(final Set<String> resourceIds, final int from, final int size);
+    
+    public boolean isUserInGroup(final String userId, final String groupId);
+    
+    public boolean isUserInRole(final String userId, final String roleId);
+    
+    public boolean isUserInOrg(final String userId, final String orgId);
+    
+    public boolean isUserEntitledToResoruce(final String userId, final String resourceId);
 }

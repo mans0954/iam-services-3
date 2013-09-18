@@ -2103,22 +2103,25 @@ public class UserMgr implements UserDataService {
     @Override
     @Transactional(readOnly = true)
     public boolean isHasGroup(String userId, String groupId) {
-        DelegationFilterSearchBean delegationFilter = this.getDelegationFilterForUserSearch(null);
-        return userDao.getUsersForGroup(groupId,delegationFilter, 0, Integer.MAX_VALUE) != null;
+        //DelegationFilterSearchBean delegationFilter = this.getDelegationFilterForUserSearch(null);
+        return userDao.isUserInGroup(userId, groupId);
+        //return CollectionUtils.isNotEmpty(userDao.getUsersForGroup(groupId,delegationFilter, 0, Integer.MAX_VALUE));
     }
 
     @Override
     @Transactional(readOnly = true)
     public boolean isHasResource(String userId, String resourceId) {
-        DelegationFilterSearchBean delegationFilter = this.getDelegationFilterForUserSearch(null);
-        return userDao.getUsersForResource(resourceId, delegationFilter, 0, Integer.MAX_VALUE) != null;
+        //DelegationFilterSearchBean delegationFilter = this.getDelegationFilterForUserSearch(null);
+        return userDao.isUserEntitledToResoruce(userId, resourceId);
+        //return CollectionUtils.isNotEmpty(userDao.getUsersForResource(resourceId, delegationFilter, 0, Integer.MAX_VALUE));
     }
 
     @Override
     @Transactional(readOnly = true)
     public boolean isHasOrganization(String userId, String organizationId) {
-        DelegationFilterSearchBean delegationFilter = this.getDelegationFilterForUserSearch(null);
-        return userDao.getUsersForOrganization(organizationId, delegationFilter, 0, Integer.MAX_VALUE) != null;
+        //DelegationFilterSearchBean delegationFilter = this.getDelegationFilterForUserSearch(null);
+        //return CollectionUtils.isNotEmpty(userDao.getUsersForOrganization(organizationId, delegationFilter, 0, Integer.MAX_VALUE));
+        return userDao.isUserInOrg(userId, organizationId);
     }
 
     @Override

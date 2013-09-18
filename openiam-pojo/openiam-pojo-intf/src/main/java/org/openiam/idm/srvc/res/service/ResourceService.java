@@ -8,6 +8,7 @@ import org.openiam.idm.searchbeans.ResourceSearchBean;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
 import org.openiam.idm.srvc.res.domain.ResourceTypeEntity;
+import org.openiam.idm.srvc.res.dto.Resource;
 
 public interface ResourceService {
 
@@ -50,4 +51,6 @@ public interface ResourceService {
     public void addResourceToRole(final String resourceId, final String roleId);
     
     public void validateResource2ResourceAddition(final String parentId, final String memberId) throws BasicDataServiceException;
+    
+    public Resource getResourceDTO(final String resourceId);
 }

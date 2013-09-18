@@ -16,6 +16,7 @@ import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.DelegationFilterSearch;
 import org.openiam.idm.srvc.user.dto.SearchAttribute;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
+import org.openiam.idm.srvc.user.util.DelegationFilterHelper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
@@ -578,6 +579,36 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
 			retVal = criteria.list();
 		}
 		return (retVal != null) ? retVal : Collections.EMPTY_LIST;
+	}
+
+	@Override
+	public boolean isUserInGroup(String userId, String groupId) {
+		final Criteria criteria = getUsersEntitlementCriteria(groupId, null, null, null);
+		criteria.add(Restrictions.eq(getPKfieldName(), userId));
+		return (((Number) criteria.setProjection(rowCount()).uniqueResult()).intValue() > 0);
+	}
+
+	@Override
+	public boolean isUserInRole(String userId, String roleId) {
+		final Criteria criteria = getUsersEntitlementCriteria(null, roleId, null, null);
+		criteria.add(Restrictions.eq(getPKfieldName(), userId));
+		return (((Number) criteria.setProjection(rowCount()).uniqueResult()).intValue() > 0);
+	}
+
+	@Override
+	public boolean isUserInOrg(String userId, String orgId) {
+		final DelegationFilterSearchBean searchBean = new DelegationFilterSearchBean();
+		searchBean.addOranizationId(orgId);
+		final Criteria criteria = getUsersEntitlementCriteria(null, null, null, searchBean);
+		criteria.add(Restrictions.eq(getPKfieldName(), userId));
+		return (((Number) criteria.setProjection(rowCount()).uniqueResult()).intValue() > 0);
+	}
+
+	@Override
+	public boolean isUserEntitledToResoruce(String userId, String resourceId) {
+		final Criteria criteria = getUsersEntitlementCriteria(null, null, resourceId, null);
+		criteria.add(Restrictions.eq(getPKfieldName(), userId));
+		return (((Number) criteria.setProjection(rowCount()).uniqueResult()).intValue() > 0);
 	}
 
 	

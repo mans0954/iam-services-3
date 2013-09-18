@@ -9,6 +9,7 @@ import java.util.Set;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.base.ws.ResponseCode;
+import org.openiam.dozer.converter.ResourceDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.ResourceSearchBean;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
@@ -16,6 +17,7 @@ import org.openiam.idm.srvc.grp.service.GroupDAO;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
 import org.openiam.idm.srvc.res.domain.ResourceTypeEntity;
+import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.service.RoleDAO;
 import org.openiam.idm.srvc.searchbean.converter.ResourceSearchBeanConverter;
@@ -39,7 +41,7 @@ public class ResourceServiceImpl implements ResourceService {
     private ResourcePropDAO resourcePropDao;
 	
 	@Autowired
-    private ResourceSearchBeanConverter resourceSearchBeanConverter;
+  	private ResourceDozerConverter dozerConverter;
 
 	@Override
     @Transactional
@@ -399,5 +401,10 @@ public class ResourceServiceImpl implements ResourceService {
 			}
 		}
 		return retval;
+	}
+
+	@Override
+	public Resource getResourceDTO(String resourceId) {
+		return dozerConverter.convertToDTO(resourceDao.findById(resourceId), true);
 	}
 }
