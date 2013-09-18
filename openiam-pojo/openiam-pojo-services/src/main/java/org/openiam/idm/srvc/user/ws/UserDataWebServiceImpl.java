@@ -66,6 +66,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.jws.WebService;
 
@@ -108,22 +109,10 @@ public class UserDataWebServiceImpl implements UserDataWebService{
     private PhoneDozerConverter phoneDozerConverter;
 
     @Autowired
-    private MetadataService metadataService;
-
-    @Autowired
-    private MetaDataTypeDozerConverter metaDataTypeDozerConverter;
-
-    @Autowired
     private MailService mailService;
 
     @Autowired
     private UserProfileService userProfileService;
-
-
-    @Value("${openiam.service_base}")
-    private String serviceHost;
-    @Value("${openiam.idm.ws.path}")
-    private String serviceContext;
 
     @Override
     public Response addAddress(final Address val) {
@@ -428,123 +417,144 @@ public class UserDataWebServiceImpl implements UserDataWebService{
     }
 
     @Override
+    @Transactional(readOnly=true)
     public List<User> findUserByOrganization(final String orgId) {
         final List<UserEntity> entityList = userManager.findUserByOrganization(orgId);
         return userDozerConverter.convertToDTOList(entityList, false);
     }
 
     @Override
+    @Transactional(readOnly=true)
     public List<User> findUsersByLastUpdateRange(final Date startDate, final Date endDate) {
         final List<UserEntity> entityList = userManager.findUsersByLastUpdateRange(startDate, endDate);
         return userDozerConverter.convertToDTOList(entityList, false);
     }
 
     @Override
+    @Transactional(readOnly=true)
     public List<User> findUsersByStatus(String status) {
         final List<UserEntity> entityList = userManager.findUsersByStatus(UserStatusEnum.valueOf(status));
         return userDozerConverter.convertToDTOList(entityList, false);
     }
 
     @Override
+    @Transactional(readOnly=true)
     public Address getAddressById(String addressId) {
         final AddressEntity adr = userManager.getAddressById(addressId);
         return addressDozerConverter.convertToDTO(adr, false);
     }
 
     @Override
+    @Transactional(readOnly=true)
     public List<Address> getAddressList(String userId) {
         return this.getAddressListByPage(userId, Integer.MAX_VALUE, 0);
     }
 
     @Override
+    @Transactional(readOnly=true)
     public List<Address> getAddressListByPage(String userId, Integer size, Integer from) {
         final List<AddressEntity> adrList = userManager.getAddressList(userId, size, from);
         return addressDozerConverter.convertToDTOList(adrList, false);
     }
 
     @Override
+    @Transactional(readOnly=true)
     public List<UserNote> getAllNotes(String userId) {
         final List<UserNoteEntity> entityList = userManager.getAllNotes(userId);
         return userNoteDozerConverter.convertToDTOList(entityList, false);
     }
 
     @Override
+    @Transactional(readOnly=true)
     public UserAttribute getAttribute(String attrId) {
         final UserAttributeEntity userAttr = userManager.getAttribute(attrId);
         return userAttributeDozerConverter.convertToDTO(userAttr, false);
     }
 
     @Override
+    @Transactional(readOnly=true)
     public EmailAddress getEmailAddressById(String addressId) {
         final EmailAddressEntity adr = userManager.getEmailAddressById(addressId);
         return emailAddressDozerConverter.convertToDTO(adr, false);
     }
 
     @Override
+    @Transactional(readOnly=true)
     public List<EmailAddress> getEmailAddressList(String userId) {
         return this.getEmailAddressListByPage(userId, Integer.MAX_VALUE, 0);
     }
 
     @Override
+    @Transactional(readOnly=true)
     public List<EmailAddress> getEmailAddressListByPage(String userId, Integer size, Integer from) {
         final List<EmailAddressEntity> adr = userManager.getEmailAddressList(userId, size, from);
         return emailAddressDozerConverter.convertToDTOList(adr, false);
     }
 
     @Override
+    @Transactional(readOnly=true)
     public List<Supervisor> getEmployees(String supervisorId) {
         final List<SupervisorEntity> sup = userManager.getEmployees(supervisorId);
         return supervisorDozerConverter.convertToDTOList(sup, false);
     }
 
     @Override
+    @Transactional(readOnly=true)
     public UserNote getNote(String noteId) {
         final UserNoteEntity note = userManager.getNote(noteId);
         return userNoteDozerConverter.convertToDTO(note, false);
     }
 
     @Override
+    @Transactional(readOnly=true)
     public Phone getPhoneById(String addressId) {
         final PhoneEntity ph = userManager.getPhoneById(addressId);
         return phoneDozerConverter.convertToDTO(ph, false);
     }
 
     @Override
+    @Transactional(readOnly=true)
     public List<Phone> getPhoneList(String userId) {
         return getPhoneListByPage(userId, Integer.MAX_VALUE, 0);
     }
 
     @Override
+    @Transactional(readOnly=true)
     public List<Phone> getPhoneListByPage(String userId, Integer size, Integer from) {
         final List<PhoneEntity> phoneList = userManager.getPhoneList(userId, size, from);
         return phoneDozerConverter.convertToDTOList(phoneList, false);
     }
 
     @Override
+    @Transactional(readOnly=true)
     public Supervisor getPrimarySupervisor(String employeeId) {
         final SupervisorEntity sup = userManager.getPrimarySupervisor(employeeId);
         return supervisorDozerConverter.convertToDTO(sup, false);
     }
 
     @Override
+    @Transactional(readOnly=true)
     public Supervisor getSupervisor(String supervisorObjId) {
         final SupervisorEntity sup = userManager.getSupervisor(supervisorObjId);
         return supervisorDozerConverter.convertToDTO(sup, false);
     }
 
     @Override
+    @Transactional(readOnly=true)
     public List<Supervisor> getSupervisors(String employeeId) {
         final List<SupervisorEntity> sup = userManager.getSupervisors(employeeId);
         return supervisorDozerConverter.convertToDTOList(sup, true);
     }
 
     @Override
+    @Transactional(readOnly=true)
     public Supervisor findSupervisor(String superiorId, String subordinateId) {
         return supervisorDozerConverter.convertToDTO(
                 userManager.findSupervisor(superiorId, subordinateId), true);
     }
 
     @Override
+    @Transactional(readOnly=true)
     public List<User> getSuperiors(String userId, Integer from, Integer size) {
         final List<UserEntity> superiors = userManager.getSuperiors(userId, from, size);
         return userDozerConverter.convertToDTOList(superiors, true);
@@ -556,6 +566,7 @@ public class UserDataWebServiceImpl implements UserDataWebService{
     }
 
     @Override
+    @Transactional(readOnly=true)
     public List<User> getSubordinates(String userId, Integer from, Integer size) {
         final List<UserEntity> subordinates = userManager.getSubordinates(userId, from, size);
         return userDozerConverter.convertToDTOList(subordinates, true);
@@ -567,6 +578,7 @@ public class UserDataWebServiceImpl implements UserDataWebService{
     }
 
     @Override
+    @Transactional(readOnly=true)
     public List<User> findPotentialSupSubs(UserSearchBean userSearchBean, Integer from, Integer size) {
         return userDozerConverter.convertToDTOList(userManager.findPotentialSupSubs(userSearchBean, from, size), true);
     }
@@ -633,18 +645,21 @@ public class UserDataWebServiceImpl implements UserDataWebService{
     }
 
     @Override
+    @Transactional(readOnly=true)
     public User getUserByName(String firstName, String lastName) {
         final UserEntity user = userManager.getUserByName(firstName, lastName);
         return userDozerConverter.convertToDTO(user, false);
     }
 
     @Override
+    @Transactional(readOnly=true)
     public User getUserWithDependent(String id, String requestorId, boolean dependants) {
         final UserEntity user = userManager.getUser(id, requestorId);
         return userDozerConverter.convertToDTO(user, dependants);
     }
 
     @Override
+    @Transactional(readOnly=true)
     public User getUserByPrincipal(String securityDomain, String principal, String managedSysId, boolean dependants) {
         final UserEntity user = userManager.getUserByPrincipal(securityDomain, principal, managedSysId, dependants);
         return userDozerConverter.convertToDTO(user, dependants);
@@ -883,6 +898,7 @@ public class UserDataWebServiceImpl implements UserDataWebService{
     }
 
     @Override
+    @Transactional(readOnly=true)
     public List<User> searchByDelegationProperties(final DelegationFilterSearch search) {
         final List<UserEntity> userList = userManager.searchByDelegationProperties(search);
         return userDozerConverter.convertToDTOList(userList, false);
@@ -890,6 +906,7 @@ public class UserDataWebServiceImpl implements UserDataWebService{
     }
 
     @Override
+    @Transactional(readOnly=true)
     public List<User> findBeans(UserSearchBean userSearchBean, int from, int size) {
         final List<UserEntity> userList = userManager.findBeans(userSearchBean, from, size);
         return userDozerConverter.convertToDTOList(userList, userSearchBean.isDeepCopy());
@@ -1117,10 +1134,10 @@ public class UserDataWebServiceImpl implements UserDataWebService{
     }
 
     @Override
+    @Transactional(readOnly=true)
     public List<User> getUsersForResource(final String resourceId, String requesterId, final int from, final int size) {
         final List<UserEntity> entityList = userManager.getUsersForResource(resourceId, requesterId, from, size);
-        final List<User> userList = userDozerConverter.convertToDTOList(entityList, false);
-        return userList;
+        return userDozerConverter.convertToDTOList(entityList, false);
     }
 
     @Override
@@ -1129,10 +1146,10 @@ public class UserDataWebServiceImpl implements UserDataWebService{
     }
 
     @Override
+    @Transactional(readOnly=true)
     public List<User> getUsersForGroup(final String groupId, String requesterId, final int from, final int size) {
         final List<UserEntity> entityList = userManager.getUsersForGroup(groupId, requesterId, from, size);
-        final List<User> userList = userDozerConverter.convertToDTOList(entityList, false);
-        return userList;
+        return userDozerConverter.convertToDTOList(entityList, false);
     }
 
     @Override
@@ -1141,10 +1158,10 @@ public class UserDataWebServiceImpl implements UserDataWebService{
     }
 
     @Override
+    @Transactional(readOnly=true)
     public List<User> getUsersForRole(final String roleId, String requesterId, final int from, final int size) {
         final List<UserEntity> entityList = userManager.getUsersForRole(roleId, requesterId, from, size);
-        final List<User> userList = userDozerConverter.convertToDTOList(entityList, false);
-        return userList;
+        return userDozerConverter.convertToDTOList(entityList, false);
     }
 
     @Override
@@ -1299,11 +1316,12 @@ public class UserDataWebServiceImpl implements UserDataWebService{
     }
 
     @Override
+    @Transactional(readOnly=true)
     public List<UserAttribute> getUserAttributes(final String userId) {
         final UserEntity user = userManager.getUser(userId, null);
         final List<UserAttributeEntity> attributes = (user != null && user.getUserAttributes() != null) ? new ArrayList<UserAttributeEntity>(user
                         .getUserAttributes().values()) : null;
-        return (attributes != null) ? userAttributeDozerConverter.convertToDTOList(attributes, true) : null;
+        return userAttributeDozerConverter.convertToDTOList(attributes, true);
     }
 
     @Override
@@ -1391,9 +1409,10 @@ public class UserDataWebServiceImpl implements UserDataWebService{
     }
 
     @Override
+    @Transactional(readOnly=true)
     public List<User> getByManagedSystem(String mSysId) {
         List<UserEntity> result = userManager.getUsersForMSys(mSysId);
-        return result == null ? new ArrayList<User>() : userDozerConverter.convertToDTOList(result, true);
+        return userDozerConverter.convertToDTOList(result, true);
     }
 
     @Override
