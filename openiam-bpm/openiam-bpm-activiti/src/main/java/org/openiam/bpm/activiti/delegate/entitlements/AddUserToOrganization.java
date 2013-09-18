@@ -5,6 +5,7 @@ import org.openiam.base.AttributeOperationEnum;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.service.OrganizationDataService;
+import org.openiam.idm.srvc.org.service.OrganizationService;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.dto.ProvisionUser;
@@ -15,14 +16,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 public class AddUserToOrganization extends AbstractEntitlementsDelegate {
 
 	@Autowired
-	private OrganizationDataService organizationDataService;
-	
-	@Autowired
-	@Qualifier("defaultProvision")
-	private ProvisionService provisionService;
-	
-	@Autowired
-	private UserDataService userDataService;
+	private OrganizationService organizationService;
 	
 	public AddUserToOrganization() {
 		super();
@@ -33,12 +27,12 @@ public class AddUserToOrganization extends AbstractEntitlementsDelegate {
 		final String organizationId = (String)execution.getVariable(ActivitiConstants.ASSOCIATION_ID);
 		final String userId = (String)execution.getVariable(ActivitiConstants.MEMBER_ASSOCIATION_ID);
 
-		final Organization entity = organizationDataService.getOrganization(organizationId, null);
+		final Organization entity = organizationService.getOrganizationDTO(organizationId);
 		if(entity != null) {
-			entity.setOperation(AttributeOperationEnum.ADD);
-			final User user = userDataService.getUserDto(userId);
+			//entity.setOperation(AttributeOperationEnum.ADD);
+			final User user = getUser(userId);
 			final ProvisionUser pUser = new ProvisionUser(user);
-			pUser.getAffiliations().add(entity);
+			pUser.addAffiliation(entity);
 			provisionService.modifyUser(pUser);
 		}
 	}

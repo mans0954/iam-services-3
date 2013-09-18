@@ -5,6 +5,8 @@ import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
+import org.openiam.idm.srvc.user.dto.User;
+import org.openiam.provision.dto.ProvisionUser;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public class SaveLogin extends AbstractEntitlementsDelegate {
@@ -26,22 +28,28 @@ public class SaveLogin extends AbstractEntitlementsDelegate {
 		if(execution.hasVariable(ActivitiConstants.LOGIN_ID)) {
 			loginId = (String)execution.getVariable(ActivitiConstants.LOGIN_ID);
 		}
-		LoginEntity loginEntity = null;
+		Login loginDTO = null;
 		if(loginId != null) {
-			loginEntity = loginDataService.getLoginDetails(loginId);
+			loginDTO = loginDataService.getLoginDTO(loginId);
 		} else {
-			loginEntity = new LoginEntity();
-			loginEntity.setUserId(userId);
+			loginDTO = new Login();
+			loginDTO.setUserId(userId);
 		}
-		loginEntity.setLogin(login);
-		loginEntity.setManagedSysId(managedSysId);
-		loginEntity.setDomainId(domainId);
+		loginDTO.setLogin(login);
+		loginDTO.setManagedSysId(managedSysId);
+		loginDTO.setDomainId(domainId);
 		
+		final User user = getUser(userId);
+		ProvisionUser pUser = new ProvisionUser(user);
+		pUser.addPrincipal(loginDTO);
+		provisionService.modifyUser(pUser);
+		/*
 		if(loginId == null) {
 			loginDataService.addLogin(loginEntity);
 		} else {
 			loginDataService.updateLogin(loginEntity);
 		}
+		*/
 	}
 	
 	@Override

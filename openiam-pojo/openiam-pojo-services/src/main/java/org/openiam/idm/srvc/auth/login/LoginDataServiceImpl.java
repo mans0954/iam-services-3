@@ -14,6 +14,7 @@ import org.openiam.dozer.converter.LoginDozerConverter;
 import org.openiam.exception.EncryptionException;
 import org.openiam.idm.searchbeans.LoginSearchBean;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
+import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.login.lucene.LoginSearchDAO;
 import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
@@ -45,9 +46,6 @@ public class LoginDataServiceImpl implements LoginDataService {
     
 	@Autowired
 	protected LoginAttributeDAO loginAttrDao;
-	
-	@Autowired
-	private SecurityDomainDAO secDomainDAO;
     
 	@Autowired
 	protected SecurityDomainDataService secDomainService;
@@ -590,4 +588,8 @@ public class LoginDataServiceImpl implements LoginDataService {
     public void evict(LoginEntity entity) {
         loginDao.evict(entity);
     }
+	@Override
+	public Login getLoginDTO(String loginId) {
+		return loginDozerConverter.convertToDTO(loginDao.findById(loginId), true);
+	}
 }

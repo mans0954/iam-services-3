@@ -356,4 +356,9 @@ public class GroupDataServiceImpl implements GroupDataService {
 		}
 		return retval;
 	}
+
+	@Override
+	public Group getGroupDTO(String groupId) {
+		return groupDozerConverter.convertToDTO(groupDao.findById(groupId), true);
+	}
 }

@@ -12,7 +12,6 @@ import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
 import org.openiam.idm.srvc.grp.dto.Group;
-import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.role.dto.Role;
@@ -293,6 +292,29 @@ public class User extends org.openiam.base.BaseObject {
 
     public Set<Organization> getAffiliations() {
         return affiliations;
+    }
+    
+    public void addAffiliation(final Organization org) {
+    	if(org != null) {
+    		if(affiliations == null) {
+    			affiliations = new HashSet<Organization>();
+    		}
+    		org.setOperation(AttributeOperationEnum.ADD);
+    		affiliations.add(org);
+    	}
+    }
+    
+    public void markAffiliateAsDeleted(final String id) {
+    	if(id != null) {
+    		if(affiliations != null) {
+    			for(final Organization organization : affiliations) {
+    				if(StringUtils.equals(organization.getId(), id)) {
+    					organization.setOperation(AttributeOperationEnum.DELETE);
+    					break;
+    				}
+    			}
+    		}
+    	}
     }
 
     public void setAffiliations(Set<Organization> affiliations) {
@@ -650,7 +672,7 @@ public class User extends org.openiam.base.BaseObject {
     /*
      public Set<Phone> getPhones() {
          return phones;
-     }
+     }f
 
      public void setPhones(Set<Phone> phones) {
          this.phones = phones;
@@ -669,6 +691,29 @@ public class User extends org.openiam.base.BaseObject {
     public Set<Role> getRoles() {
         return roles;
     }
+    
+    public void markRoleAsDeleted(final String id) {
+    	if(id != null) {
+    		if(roles != null) {
+    			for(final Role role : roles) {
+    				if(StringUtils.equals(role.getRoleId(), id)) {
+    					role.setOperation(AttributeOperationEnum.DELETE);
+    					break;
+    				}
+    			}
+    		}
+    	}
+    }
+    
+    public void addRole(final Role role) {
+    	if(role != null) {
+    		if(roles == null) {
+    			roles = new HashSet<Role>();
+    		}
+    		role.setOperation(AttributeOperationEnum.ADD);
+    		roles.add(role);
+    	}
+    }
 
     public void setRoles(Set<Role> roles) {
         this.roles = roles;
@@ -677,6 +722,29 @@ public class User extends org.openiam.base.BaseObject {
     public Set<Group> getGroups() {
         return groups;
     }
+    
+    public void addGroup(final Group group) {
+    	if(group != null) {
+    		if(groups == null) {
+    			groups = new HashSet<Group>();
+    		}
+    		group.setOperation(AttributeOperationEnum.ADD);
+    		groups.add(group);
+    	}
+    }
+    
+    public void markGroupAsDeleted(final String groupId) {
+    	if(groupId != null) {
+    		if(groups != null) {
+    			for(final Group group : groups) {
+    				if(StringUtils.equals(group.getGrpId(), groupId)) {
+    					group.setOperation(AttributeOperationEnum.DELETE);
+    					break;
+    				}
+    			}
+    		}
+    	}
+    }
 
     public void setGroups(Set<Group> groups) {
         this.groups = groups;
@@ -684,6 +752,29 @@ public class User extends org.openiam.base.BaseObject {
 
     public Set<Resource> getResources() {
         return resources;
+    }
+    
+    public void markResourceAsDeleted(final String resourceId) {
+    	if(resourceId != null) {
+    		if(resources != null) {
+    			for(final Resource resource : resources) {
+    				if(StringUtils.equals(resource.getResourceId(), resourceId)) {
+    					resource.setOperation(AttributeOperationEnum.DELETE);
+    					break;
+    				}
+    			}
+    		}
+    	}
+    }
+    
+    public void addResource(final Resource resource) {
+    	if(resource != null) {
+    		if(resources == null) {
+    			resources = new HashSet<Resource>();
+    		}
+    		resource.setOperation(AttributeOperationEnum.ADD);
+    		resources.add(resource);
+    	}
     }
 
     public void setResources(Set<Resource> resources) {
@@ -798,6 +889,7 @@ public class User extends org.openiam.base.BaseObject {
     		if(this.principalList == null) {
     			this.principalList = new LinkedList<Login>();
     		}
+    		login.setOperation(AttributeOperationEnum.ADD);
     		this.principalList.add(login);
     	}
     }

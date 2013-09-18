@@ -78,5 +78,7 @@ public interface GroupDataService {
     public void removeChildGroup(final String groupId, final String childGroupId);
     
     public void validateGroup2GroupAddition(final String parentId, final String memberId) throws BasicDataServiceException;
+    
+    public Group getGroupDTO(final String groupId);
 
 }

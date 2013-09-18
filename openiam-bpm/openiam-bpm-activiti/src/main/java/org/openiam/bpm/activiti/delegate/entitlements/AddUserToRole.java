@@ -18,16 +18,6 @@ public class AddUserToRole extends AbstractEntitlementsDelegate {
 	
 	@Autowired
 	private RoleDataService roleDataService;
-	
-	@Autowired
-	private UserDataService userDataService;
-	
-	@Autowired
-	@Qualifier("defaultProvision")
-	private ProvisionService provisionService;
-	
-	@Autowired
-	private RoleDozerConverter roleDozerConverter;
 
 	public AddUserToRole() {
 		super();
@@ -38,13 +28,13 @@ public class AddUserToRole extends AbstractEntitlementsDelegate {
 		final String roleId = (String)execution.getVariable(ActivitiConstants.ASSOCIATION_ID);
 		final String userId = (String)execution.getVariable(ActivitiConstants.MEMBER_ASSOCIATION_ID);
 		final RoleEntity roleEntity = roleDataService.getRole(roleId);
-		final User user = userDataService.getUserDto(userId);
+		final User user = getUser(userId);
 		
 		if(roleEntity != null && user != null ) {
 			final ProvisionUser pUser = new ProvisionUser(user);
-			final Role role = roleDozerConverter.convertToDTO(roleEntity, false);
-			role.setOperation(AttributeOperationEnum.ADD);
-            pUser.getRoles().add(role);
+			final Role role = roleDataService.getRoleDTO(roleId);
+			//role.setOperation(AttributeOperationEnum.ADD);
+            pUser.addRole(role);
 			provisionService.modifyUser(pUser);
 			/*
 			final UserRoleEntity entity = new UserRoleEntity();

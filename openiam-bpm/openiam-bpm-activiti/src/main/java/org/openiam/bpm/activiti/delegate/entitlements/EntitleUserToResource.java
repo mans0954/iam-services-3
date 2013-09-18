@@ -16,19 +16,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
 public class EntitleUserToResource extends AbstractEntitlementsDelegate {
-
-	@Autowired
-	@Qualifier("defaultProvision")
-	private ProvisionService provisionService;
-	
-	@Autowired
-	private UserDataService userDataService;
 	
 	@Autowired
 	private ResourceService resourceService;
-
-    @Autowired
-    private ResourceDozerConverter resourceDozerMapper;
 
 	public EntitleUserToResource() {
 		super();
@@ -39,13 +29,14 @@ public class EntitleUserToResource extends AbstractEntitlementsDelegate {
 		final String resourceId = (String)execution.getVariable(ActivitiConstants.ASSOCIATION_ID);
 		final String userId = (String)execution.getVariable(ActivitiConstants.MEMBER_ASSOCIATION_ID);	
 		
-		User user = userDataService.getUserDto(userId);
+		final User user = getUser(userId);
 		final ResourceEntity entity = resourceService.findResourceById(resourceId);
 		if(user != null && entity != null) {
 			final ProvisionUser pUser = new ProvisionUser(user);
             final Resource resource = resourceService.getResourceDTO(resourceId);
-            resource.setOperation(AttributeOperationEnum.ADD);
-            pUser.getResources().add(resource);
+            //resource.setOperation(AttributeOperationEnum.ADD);
+            pUser.addResource(resource);
+            //pUser.getResources().add(resource);
 			provisionService.modifyUser(pUser);
 		}
 	}

@@ -16,22 +16,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
 public class DisentitleUserFromResource extends AbstractEntitlementsDelegate {
-
-	@Autowired
-	@Qualifier("defaultProvision")
-	private ProvisionService provisionService;
-	
-	@Autowired
-	private UserDataService userDataService;
 	
 	@Autowired
 	private ResourceService resourceService;
-	
-	@Autowired
-	private ResourceDozerConverter resourceDozerConverter;
-
-    @Autowired
-    private ResourceDozerConverter resourceDozerMapper;
 	
 	public DisentitleUserFromResource() {
 		super();
@@ -42,13 +29,12 @@ public class DisentitleUserFromResource extends AbstractEntitlementsDelegate {
 		final String resourceId = (String)execution.getVariable(ActivitiConstants.ASSOCIATION_ID);
 		final String userId = (String)execution.getVariable(ActivitiConstants.MEMBER_ASSOCIATION_ID);
 		
-		User user = userDataService.getUserDto(userId);
-		final ResourceEntity entity = resourceService.findResourceById(resourceId);
-		if(user != null && entity != null) {
+		final User user = getUser(userId);
+		//final Resource entity = resourceService.getResourceDTO(resourceId);
+		if(user != null/* && entity != null*/) {
             final ProvisionUser pUser = new ProvisionUser(user);
-            final Resource resource = resourceService.getResourceDTO(resourceId);
-            resource.setOperation(AttributeOperationEnum.DELETE);
-            pUser.getResources().add(resource);
+            //final Resource resource = resourceService.getResourceDTO(resourceId);
+            pUser.markResourceAsDeleted(resourceId);
             provisionService.modifyUser(pUser);
 		}
 		/*

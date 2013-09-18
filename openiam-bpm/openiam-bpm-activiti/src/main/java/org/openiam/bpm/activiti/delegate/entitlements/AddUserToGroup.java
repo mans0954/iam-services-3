@@ -19,16 +19,6 @@ public class AddUserToGroup extends AbstractEntitlementsDelegate {
 	@Autowired
 	private GroupDataService groupDataService;
 	
-	@Autowired
-	@Qualifier("defaultProvision")
-	private ProvisionService provisionService;
-	
-	@Autowired
-	private UserDataService userDataService;
-	
-	@Autowired
-	private GroupDozerConverter groupDozerConverter;
-	
 	public AddUserToGroup() {
 		super();
 	}
@@ -41,11 +31,11 @@ public class AddUserToGroup extends AbstractEntitlementsDelegate {
 		
 		final GroupEntity entity = groupDataService.getGroup(groupId);
 		if(entity != null) {
-			final Group group = groupDozerConverter.convertToDTO(entity, false);
-			group.setOperation(AttributeOperationEnum.ADD);
-			final User user = userDataService.getUserDto(userId);
+			final Group group = groupDataService.getGroupDTO(groupId);
+			//group.setOperation(AttributeOperationEnum.ADD);
+			final User user = getUser(userId);
 			final ProvisionUser pUser = new ProvisionUser(user);
-			pUser.getGroups().add(group);
+			pUser.addGroup(group);
 			provisionService.modifyUser(pUser);
 		}
 	}

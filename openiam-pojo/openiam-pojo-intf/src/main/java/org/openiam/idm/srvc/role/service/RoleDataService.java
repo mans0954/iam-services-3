@@ -167,4 +167,6 @@ public interface RoleDataService {
     public int getNumOfParentRoles(final String roleId, final String requesterId);
 
     public void validateRole2RoleAddition(final String parentId, final String memberId) throws BasicDataServiceException;
+    
+    public Role getRoleDTO(final String roleId);
 }

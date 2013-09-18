@@ -520,4 +520,9 @@ public class RoleDataServiceImpl implements RoleDataService {
 		}
 		return retval;
 	}
+	
+	@Override
+	public Role getRoleDTO(String roleId) {
+		return roleDozerConverter.convertToDTO(roleDao.findById(roleId), true);
+	}
 }
