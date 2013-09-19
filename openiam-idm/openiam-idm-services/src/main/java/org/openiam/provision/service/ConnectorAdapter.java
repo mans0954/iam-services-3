@@ -38,6 +38,7 @@ import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorDto;
 import org.openiam.idm.srvc.mngsys.ws.ProvisionConnectorWebService;
 import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
+import org.openiam.provision.type.ExtensibleUser;
 import org.openiam.connector.ConnectorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -587,8 +588,10 @@ public class ConnectorAdapter {
             if (connector != null
                     && (connector.getServiceUrl() != null && connector
                             .getServiceUrl().length() > 0)) {
-
-                MuleMessage msg = getService(connector, managedSys,
+                RequestType<ExtensibleUser> rt = new RequestType<ExtensibleUser>();
+                rt.setExtensibleObject(new ExtensibleUser());
+                rt.setTargetID(managedSys.getManagedSysId());
+                MuleMessage msg = getService(connector, rt,
                         connector.getServiceUrl(), "testConnection",
                         muleContext);
 
@@ -682,7 +685,7 @@ public class ConnectorAdapter {
 
         if (operation.equalsIgnoreCase("testConnection")) {
             msg = client.send("vm://dispatchConnectorMsgTestConnection",
-                    (ManagedSysDto) reqType, msgPropMap);
+                    (RequestType<ExtensibleUser>) reqType, msgPropMap);
         }
 
         if (operation.equalsIgnoreCase("lookupAttributes")) {
