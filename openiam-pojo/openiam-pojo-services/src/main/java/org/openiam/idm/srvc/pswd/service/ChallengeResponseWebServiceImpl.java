@@ -125,6 +125,7 @@ public class ChallengeResponseWebServiceImpl implements
 								found.get(0).getId())) {
 					throw new BasicDataServiceException(ResponseCode.IDENTICAL_QUESTIONS);
 				}
+								
 			}
 
 			IdentityQuestionEntity entity = questionDozerConverter
@@ -239,11 +240,21 @@ public class ChallengeResponseWebServiceImpl implements
 					throw new BasicDataServiceException(
 							ResponseCode.IDENTICAL_QUESTIONS);
 				}
+				if(StringUtils.isBlank(answer.getQuestionId())){
+					throw new BasicDataServiceException(
+							ResponseCode.QUEST_NOT_SELECTED);
+				}
+				
+				if(StringUtils.isBlank(answer.getQuestionAnswer())){
+					throw new BasicDataServiceException(
+							ResponseCode.ANSWER_NOT_TAKEN);
+				}
 				questionIdSet.add(answer.getQuestionId());
 			}
 
 			final List<UserIdentityAnswerEntity> answerEntityList = new LinkedList<UserIdentityAnswerEntity>();
 			for (final UserIdentityAnswer answer : answerList) {
+				
 				final UserIdentityAnswerEntity entity = answerDozerConverter
 						.convertToEntity(answer, true);
 				answerEntityList.add(entity);
