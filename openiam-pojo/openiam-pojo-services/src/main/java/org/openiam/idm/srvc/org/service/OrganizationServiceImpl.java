@@ -2,6 +2,7 @@ package org.openiam.idm.srvc.org.service;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -16,6 +17,8 @@ import org.openiam.idm.srvc.meta.service.MetadataElementDAO;
 import org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.dto.Organization;
+import org.openiam.idm.srvc.role.domain.RoleAttributeEntity;
+import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
 import org.openiam.idm.srvc.user.service.UserDAO;
@@ -49,6 +52,9 @@ public class OrganizationServiceImpl implements OrganizationService {
     
     @Autowired
     private OrganizationDozerConverter organizationDozerConverter;
+    
+    @Autowired
+    private MetadataElementDAO metadataElementDAO;
 
     @Override
     public OrganizationEntity getOrganization(String orgId) {
@@ -165,7 +171,8 @@ public class OrganizationServiceImpl implements OrganizationService {
         if (StringUtils.isNotBlank(entity.getId())) {
             final OrganizationEntity dbOrg = orgDao.findById(entity.getId());
             if (dbOrg != null) {
-                entity.setAttributes(dbOrg.getAttributes());
+                //entity.setAttributes(dbOrg.getAttributes());
+            	mergeAttributes(entity, dbOrg);
                 entity.setChildOrganizations(dbOrg.getChildOrganizations());
                 entity.setParentOrganizations(dbOrg.getParentOrganizations());
                 entity.setUsers(dbOrg.getUsers());
@@ -174,6 +181,58 @@ public class OrganizationServiceImpl implements OrganizationService {
         } else {
             orgDao.save(entity);
         }
+    }
+    
+    private void mergeAttributes(final OrganizationEntity bean, final OrganizationEntity dbObject) {
+		
+		final Set<OrganizationAttributeEntity> renewedSet = new HashSet<OrganizationAttributeEntity>();
+		
+		final Set<OrganizationAttributeEntity> beanProps = (bean.getAttributes() != null) ? bean.getAttributes() : new HashSet<OrganizationAttributeEntity>();
+		final Set<OrganizationAttributeEntity> dbProps = (dbObject.getAttributes() != null) ? dbObject.getAttributes() : new HashSet<OrganizationAttributeEntity>();
+			
+		/* update */
+		for(final Iterator<OrganizationAttributeEntity> dbIt = dbProps.iterator(); dbIt.hasNext();) {
+			final OrganizationAttributeEntity dbProp = dbIt.next();
+			for(final Iterator<OrganizationAttributeEntity> it = beanProps.iterator(); it.hasNext();) {
+				final OrganizationAttributeEntity beanProp = it.next();
+				if(StringUtils.equals(dbProp.getId(), beanProp.getId())) {
+					setMetadataTypeOnOrgAttribute(dbProp);
+					dbProp.setName(beanProp.getName());
+					dbProp.setValue(beanProp.getValue());
+					renewedSet.add(dbProp);
+					break;
+				}
+			}
+		}
+		
+		/* add */
+		for(final Iterator<OrganizationAttributeEntity> it = beanProps.iterator(); it.hasNext();) {
+			boolean contains = false;
+			final OrganizationAttributeEntity beanProp = it.next();
+			for(final Iterator<OrganizationAttributeEntity> dbIt = dbProps.iterator(); dbIt.hasNext();) {
+				final OrganizationAttributeEntity dbProp = dbIt.next();
+				if(StringUtils.equals(dbProp.getId(), beanProp.getId())) {
+					contains = true;
+				}
+			}
+			
+			if(!contains) {
+				beanProp.setOrganization(bean);
+				setMetadataTypeOnOrgAttribute(beanProp);
+				//dbProps.add(beanProp);
+				renewedSet.add(beanProp);
+			}
+		}
+		
+		bean.setAttributes(renewedSet);
+	}
+    
+    private void setMetadataTypeOnOrgAttribute(final OrganizationAttributeEntity bean) {
+    	if(bean.getElement() != null && bean.getElement().getId() != null) {
+    		bean.setElement(metadataElementDAO.findById(bean.getElement().getId()));
+		} else {
+			bean.setElement(null);
+		}
     }
 
     @Override

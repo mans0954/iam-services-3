@@ -69,7 +69,7 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
     @Override
     public Organization getOrganization(final String orgId, String requesterId) {
         final OrganizationEntity entity = organizationService.getOrganization(orgId, requesterId);
-        return organizationDozerConverter.convertToDTO(entity, false);
+        return organizationDozerConverter.convertToDTO(entity, true);
     }
     
     @Override
@@ -215,14 +215,14 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
                 throw new BasicDataServiceException(ResponseCode.CLASSIFICATION_NOT_SET);
             }
 
-            final OrganizationEntity entity = organizationDozerConverter.convertToEntity(organization, false);
+            final OrganizationEntity entity = organizationDozerConverter.convertToEntity(organization, true);
             organizationService.save(entity);
             response.setResponseValue(entity.getId());
         } catch (BasicDataServiceException e) {
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(e.getCode());
         } catch (Throwable e) {
-            log.error("Can't save resource type", e);
+            log.error("Can't save organization", e);
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorText(e.getMessage());
         }

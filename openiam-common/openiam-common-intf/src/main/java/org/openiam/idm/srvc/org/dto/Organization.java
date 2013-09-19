@@ -9,6 +9,7 @@ import org.openiam.dozer.DozerDTOCorrespondence;
 import javax.xml.bind.annotation.*;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -60,8 +61,7 @@ public class Organization implements java.io.Serializable, Comparable<Organizati
 
     protected String alias;
 
-    @XmlJavaTypeAdapter(OrganizationAttributeMapAdapter.class)
-    protected Map<String, OrganizationAttribute> attributes = new HashMap<String, OrganizationAttribute>(0);
+    protected Set<OrganizationAttribute> attributes = new HashSet<OrganizationAttribute>();
 
     protected String createdBy;
 
@@ -128,7 +128,7 @@ public class Organization implements java.io.Serializable, Comparable<Organizati
      *
      * @return possible object is {@link org.openiam.idm.srvc.org.dto.OrganizationAttribute }
      */
-    public Map<String, OrganizationAttribute> getAttributes() {
+    public Set<OrganizationAttribute> getAttributes() {
         return attributes;
     }
 
@@ -137,7 +137,7 @@ public class Organization implements java.io.Serializable, Comparable<Organizati
      *
      * @param attributes allowed object is {@link org.openiam.idm.srvc.org.dto.OrganizationAttribute }
      */
-    public void setAttributes(Map<String, OrganizationAttribute> attributes) {
+    public void setAttributes(Set<OrganizationAttribute> attributes) {
         this.attributes = attributes;
     }
 

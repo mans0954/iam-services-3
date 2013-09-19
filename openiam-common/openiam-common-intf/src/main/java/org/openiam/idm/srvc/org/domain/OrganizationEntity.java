@@ -2,6 +2,7 @@ package org.openiam.idm.srvc.org.domain;
 
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -22,6 +23,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.MapKey;
 import javax.persistence.MapKeyColumn;
 import javax.persistence.OneToMany;
+import javax.persistence.OrderBy;
 import javax.persistence.Table;
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.dozer.DozerDTOCorrespondence;
@@ -51,9 +53,9 @@ public class OrganizationEntity {
     private String alias;
 
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "organization", fetch = FetchType.LAZY)
-    @MapKeyColumn(name="name")
+    @OrderBy("name asc")
     @Fetch(FetchMode.SUBSELECT)
-    private Map<String, OrganizationAttributeEntity> attributes = new HashMap<String, OrganizationAttributeEntity>(0);
+    private Set<OrganizationAttributeEntity> attributes;
 
     @Column(name="CREATE_DATE", length=19)
     private Date createDate;
@@ -132,11 +134,11 @@ public class OrganizationEntity {
         this.alias = alias;
     }
 
-    public Map<String, OrganizationAttributeEntity> getAttributes() {
+    public Set<OrganizationAttributeEntity> getAttributes() {
         return attributes;
     }
 
-    public void setAttributes(Map<String, OrganizationAttributeEntity> attributes) {
+    public void setAttributes(Set<OrganizationAttributeEntity> attributes) {
         this.attributes = attributes;
     }
 
