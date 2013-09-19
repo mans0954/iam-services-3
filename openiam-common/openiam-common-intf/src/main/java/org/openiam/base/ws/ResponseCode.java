@@ -69,6 +69,12 @@ public enum ResponseCode {
     @XmlEnumValue("objectNotFound")
     OBJECT_NOT_FOUND("objectNotFound"),
     
+    @XmlEnumValue("questNotSelected")
+    QUEST_NOT_SELECTED("questNotSelected"),
+    
+    @XmlEnumValue("answerNotTaken")
+    ANSWER_NOT_TAKEN("answerNotTaken"),
+    
     @XmlEnumValue("hangingChildRoles")
     ROLE_HANGING_CHILD_ROLES("hangingChildRoles"),
     
