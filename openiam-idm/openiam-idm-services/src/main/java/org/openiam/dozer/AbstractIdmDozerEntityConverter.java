@@ -34,13 +34,13 @@ public abstract class AbstractIdmDozerEntityConverter<DTO, Entity> {
     public abstract List<DTO> convertToDTOList(final List<Entity> list, final boolean isDeep);
 
     public <T> T convert(final Object entity, final boolean isDeep, final Class<T> clazz) {
-        final Mapper mapper = (isDeep) ? deepDozerMapper : shallowDozerMapper;
-        return mapper.map(entity, clazz);
+    	final Mapper mapper = (isDeep) ? deepDozerMapper : shallowDozerMapper;
+    	return (entity != null) ? mapper.map(entity, clazz) : null;
     }
 
     public <T> T convertToCrossEntity(final Object object, final boolean isDeep, final Class<T> clazz) {
-        final Mapper mapper = (isDeep) ? dto2entityDeepDozerMapper : dto2entityShallowDozerMapper;
-        return mapper.map(object, clazz);
+    	final Mapper mapper = (isDeep) ? dto2entityDeepDozerMapper : dto2entityShallowDozerMapper;
+    	return (object != null) ? mapper.map(object, clazz) : null;
     }
 
     public <T> List<T> convertListToCrossEntity(final List fromList, final boolean isDeep, final Class<T> clazz) {
