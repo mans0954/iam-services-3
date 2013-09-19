@@ -545,16 +545,12 @@ public class PasswordServiceImpl implements PasswordService {
 			return resp;
 		}
 
-		PolicyAttribute expirationTime = pl
-				.getAttribute("PWD_EXPIRATION_ON_RESET");
-		if (expirationTime != null) {
-			if (expirationTime.getValue1() != null) {
-				expirationDays = Integer.parseInt(expirationTime.getValue1());
-			} else {
-				// default to expiration time if the policy has not been
-				// defined.
-				expirationDays = 3;
-			}
+		final PolicyAttribute expirationTime = pl.getAttribute("PWD_EXPIRATION_ON_RESET");
+		try {
+			expirationDays = Integer.parseInt(expirationTime.getValue1());
+		} catch(Throwable e) {
+			log.warn("Can't parse the '' policy attribute.  Either it's not an integer, or it doesn't exist.  Defaulting...", e);
+			expirationDays = 3;
 		}
 
 		LoginEntity l = loginManager.getLoginByManagedSys(
