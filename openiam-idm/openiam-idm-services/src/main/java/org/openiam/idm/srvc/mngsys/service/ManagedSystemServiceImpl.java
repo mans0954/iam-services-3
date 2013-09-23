@@ -3,9 +3,12 @@ package org.openiam.idm.srvc.mngsys.service;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.openiam.dozer.converter.ManagedSysDozerConverter;
 import org.openiam.dozer.converter.ManagedSystemObjectMatchDozerConverter;
 import org.openiam.idm.searchbeans.AttributeMapSearchBean;
+import org.openiam.idm.srvc.grp.domain.GroupEntity;
+import org.openiam.idm.srvc.grp.service.GroupDAO;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.DefaultReconciliationAttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
@@ -50,6 +53,9 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
 
     @Autowired
     private ManagedSysDozerConverter managedSysDozerConverter;
+    
+    @Autowired
+    private GroupDAO groupDAO;
 
     @Autowired
     private ManagedSystemObjectMatchDozerConverter managedSystemObjectMatchDozerConverter;
@@ -103,6 +109,12 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
         }
         for (ManagedSysRuleEntity ruleEntity : sysEntity.getRules()) {
             managedSysRuleDAO.delete(ruleEntity);
+        }
+        if(CollectionUtils.isNotEmpty(sysEntity.getGroups())) {
+        	for(final GroupEntity group : sysEntity.getGroups()) {
+        		group.setManagedSystem(null);
+        		groupDAO.update(group);
+        	}
         }
         managedSysDAO.delete(sysEntity);
     }

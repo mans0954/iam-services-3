@@ -187,6 +187,14 @@
 			<a>roles</a>
 			<b>roles</b>
 		</field>
+		<field>
+			<a>managedSystem.managedSysId</a>
+			<b>managedSysId</b>
+		</field>
+		<field>
+			<a>managedSystem.name</a>
+			<b>managedSysName</b>
+		</field>
 	</mapping>
 
 	<mapping>
@@ -557,6 +565,10 @@
 			<a>rules</a>
 			<b>rules</b>
 		</field>
+		<field-exclude>
+			<a>groups</a>
+			<b>groups</b>
+		</field-exclude>
 	</mapping>
 
 

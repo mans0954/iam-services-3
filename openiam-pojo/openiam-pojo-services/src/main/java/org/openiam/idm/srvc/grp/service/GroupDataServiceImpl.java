@@ -11,6 +11,7 @@ import org.openiam.idm.searchbeans.GroupSearchBean;
 import org.openiam.idm.srvc.grp.domain.GroupAttributeEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.dto.Group;
+import org.openiam.idm.srvc.mngsys.service.ManagedSysDAO;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
 import org.openiam.idm.srvc.user.service.UserDataService;
@@ -55,6 +56,9 @@ public class GroupDataServiceImpl implements GroupDataService {
     @Autowired
     @Qualifier("entityValidator")
     private EntityValidator entityValidator;
+    
+    @Autowired
+    private ManagedSysDAO managedSysDAO;
 	
 	private static final Log log = LogFactory.getLog(GroupDataServiceImpl.class);
 
@@ -182,6 +186,12 @@ public class GroupDataServiceImpl implements GroupDataService {
 	@Override
 	public void saveGroup(final GroupEntity group) throws BasicDataServiceException {
 		if(group != null && entityValidator.isValid(group)) {
+			
+			if(group.getManagedSystem() != null && group.getManagedSystem().getManagedSysId() != null) {
+				group.setManagedSystem(managedSysDAO.findById(group.getManagedSystem().getManagedSysId()));
+			} else {
+				group.setManagedSystem(null);
+			}
 
 			if(StringUtils.isNotBlank(group.getGrpId())) {
 				final GroupEntity dbGroup = groupDao.findById(group.getGrpId());
