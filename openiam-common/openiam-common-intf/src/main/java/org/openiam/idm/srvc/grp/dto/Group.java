@@ -18,6 +18,8 @@ import java.util.*;
 @XmlType(name = "Group", propOrder = {
         "roles",
         "attributes",
+        "managedSysId",
+        "managedSysName",
         "companyId",
         "createDate",
         "createdBy",
@@ -26,12 +28,12 @@ import java.util.*;
         "grpName",
         "lastUpdate",
         "lastUpdatedBy",
-        "provisionMethod",
-        "provisionObjName",
+        //"provisionMethod",
+        //"provisionObjName",
         "status",
-        "metadataTypeId",
-        "ownerId",
-        "internalGroupId",
+        //"metadataTypeId",
+        //"ownerId",
+        //"internalGroupId",
         "operation",
         "parentGroups",
         "childGroups",
@@ -51,23 +53,29 @@ public class Group implements java.io.Serializable {
 
     protected AttributeOperationEnum operation = AttributeOperationEnum.NO_CHANGE;
 
+    private String managedSysId;
+    private String managedSysName;
     protected String grpId;
     protected String grpName;
     @XmlSchemaType(name = "dateTime")
     protected Date createDate;
     protected String createdBy;
     protected String companyId;
+    /*
     protected String ownerId;
     protected String provisionMethod;
     protected String provisionObjName;
+    */
     protected String description;
 
     protected String status;
     @XmlSchemaType(name = "dateTime")
     protected Date lastUpdate;
     protected String lastUpdatedBy;
+    /*
     protected String metadataTypeId;
     protected String internalGroupId = null;
+    */
     
     private Set<Group> parentGroups;
     private Set<Group> childGroups;
@@ -127,6 +135,7 @@ public class Group implements java.io.Serializable {
         this.companyId = companyId;
     }
 
+    /*
     public String getProvisionMethod() {
         return this.provisionMethod;
     }
@@ -142,6 +151,7 @@ public class Group implements java.io.Serializable {
     public void setProvisionObjName(String provisionObjName) {
         this.provisionObjName = provisionObjName;
     }
+    */
 
     public Set<Role> getRoles() {
         return this.roles;
@@ -187,6 +197,7 @@ public class Group implements java.io.Serializable {
         this.lastUpdatedBy = lastUpdatedBy;
     }
 
+    /*
     public String getMetadataTypeId() {
         return metadataTypeId;
     }
@@ -194,18 +205,9 @@ public class Group implements java.io.Serializable {
     public void setMetadataTypeId(String metadataTypeId) {
         this.metadataTypeId = metadataTypeId;
     }
+	*/
 
-
-    public String toString() {
-        String str = "grpId=" + grpId +
-                " grpName=" + grpName +
-                " status=" + status +
-                " description=" + description +
-                " attributes=" + attributes;
-
-        return str;
-    }
-
+    /*
     public String getOwnerId() {
         return ownerId;
     }
@@ -213,7 +215,7 @@ public class Group implements java.io.Serializable {
     public void setOwnerId(String ownerId) {
         this.ownerId = ownerId;
     }
-
+	*/
 
     public void setGroupStatus(GroupStatus status) {
         this.status = status.toString();
@@ -227,6 +229,7 @@ public class Group implements java.io.Serializable {
         this.status = status;
     }
 
+    /*
     public String getInternalGroupId() {
         return internalGroupId;
     }
@@ -234,6 +237,7 @@ public class Group implements java.io.Serializable {
     public void setInternalGroupId(String internalGroupId) {
         this.internalGroupId = internalGroupId;
     }
+    */
 
     public AttributeOperationEnum getOperation() {
         return operation;
@@ -285,32 +289,128 @@ public class Group implements java.io.Serializable {
         this.resources = resources;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+	public String getManagedSysId() {
+		return managedSysId;
+	}
 
-        Group group = (Group) o;
+	public void setManagedSysId(String managedSysId) {
+		this.managedSysId = managedSysId;
+	}
 
-        if (companyId != null ? !companyId.equals(group.companyId) : group.companyId != null) return false;
-        if (createDate != null ? !createDate.equals(group.createDate) : group.createDate != null) return false;
-        if (createdBy != null ? !createdBy.equals(group.createdBy) : group.createdBy != null) return false;
-        if (grpId != null ? !grpId.equals(group.grpId) : group.grpId != null) return false;
-        if (grpName != null ? !grpName.equals(group.grpName) : group.grpName != null) return false;
-        if (ownerId != null ? !ownerId.equals(group.ownerId) : group.ownerId != null) return false;
+	public String getManagedSysName() {
+		return managedSysName;
+	}
 
-        return true;
-    }
+	public void setManagedSysName(String managedSysName) {
+		this.managedSysName = managedSysName;
+	}
 
-    @Override
-    public int hashCode() {
-        int result = grpId != null ? grpId.hashCode() : 0;
-        result = 31 * result + (grpName != null ? grpName.hashCode() : 0);
-        result = 31 * result + (createDate != null ? createDate.hashCode() : 0);
-        result = 31 * result + (createdBy != null ? createdBy.hashCode() : 0);
-        result = 31 * result + (companyId != null ? companyId.hashCode() : 0);
-        result = 31 * result + (ownerId != null ? ownerId.hashCode() : 0);
-        return result;
-    }
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result
+				+ ((createDate == null) ? 0 : createDate.hashCode());
+		result = prime * result
+				+ ((createdBy == null) ? 0 : createdBy.hashCode());
+		result = prime * result
+				+ ((description == null) ? 0 : description.hashCode());
+		result = prime * result + ((grpId == null) ? 0 : grpId.hashCode());
+		result = prime * result + ((grpName == null) ? 0 : grpName.hashCode());
+		result = prime * result
+				+ ((lastUpdate == null) ? 0 : lastUpdate.hashCode());
+		result = prime * result
+				+ ((lastUpdatedBy == null) ? 0 : lastUpdatedBy.hashCode());
+		result = prime * result
+				+ ((managedSysId == null) ? 0 : managedSysId.hashCode());
+		result = prime * result
+				+ ((companyId == null) ? 0 : companyId.hashCode());
+		result = prime * result
+				+ ((managedSysName == null) ? 0 : managedSysName.hashCode());
+		result = prime * result
+				+ ((operation == null) ? 0 : operation.hashCode());
+		result = prime * result + ((status == null) ? 0 : status.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Group other = (Group) obj;
+		if (createDate == null) {
+			if (other.createDate != null)
+				return false;
+		} else if (!createDate.equals(other.createDate))
+			return false;
+		if (createdBy == null) {
+			if (other.createdBy != null)
+				return false;
+		} else if (!createdBy.equals(other.createdBy))
+			return false;
+		if (description == null) {
+			if (other.description != null)
+				return false;
+		} else if (!description.equals(other.description))
+			return false;
+		if (grpId == null) {
+			if (other.grpId != null)
+				return false;
+		} else if (!grpId.equals(other.grpId))
+			return false;
+		if (grpName == null) {
+			if (other.grpName != null)
+				return false;
+		} else if (!grpName.equals(other.grpName))
+			return false;
+		if (lastUpdate == null) {
+			if (other.lastUpdate != null)
+				return false;
+		} else if (!lastUpdate.equals(other.lastUpdate))
+			return false;
+		if (lastUpdatedBy == null) {
+			if (other.lastUpdatedBy != null)
+				return false;
+		} else if (!lastUpdatedBy.equals(other.lastUpdatedBy))
+			return false;
+		if (managedSysId == null) {
+			if (other.managedSysId != null)
+				return false;
+		} else if (!managedSysId.equals(other.managedSysId))
+			return false;
+		if (managedSysName == null) {
+			if (other.managedSysName != null)
+				return false;
+		} else if (!managedSysName.equals(other.managedSysName))
+			return false;
+		if (companyId == null) {
+			if (other.companyId != null)
+				return false;
+		} else if (!companyId.equals(other.companyId))
+			return false;
+		if (operation != other.operation)
+			return false;
+		if (status == null) {
+			if (other.status != null)
+				return false;
+		} else if (!status.equals(other.status))
+			return false;
+		return true;
+	}
+
+	@Override
+	public String toString() {
+		return String
+				.format("Group [operation=%s, managedSysId=%s, managedSysName=%s, grpId=%s, grpName=%s, createDate=%s, createdBy=%s, description=%s, status=%s, lastUpdate=%s, lastUpdatedBy=%s]",
+						operation, managedSysId, managedSysName, grpId,
+						grpName, createDate, createdBy, description, status,
+						lastUpdate, lastUpdatedBy);
+	}
+
+	
 }
 

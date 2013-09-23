@@ -17,6 +17,7 @@ import org.openiam.idm.srvc.user.dto.DelegationFilterSearch;
 import org.openiam.idm.srvc.user.dto.SearchAttribute;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.idm.srvc.user.util.DelegationFilterHelper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
@@ -41,10 +42,7 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
     @Override
     public UserEntity findByIdDelFlt(String userId, DelegationFilterSearchBean delegationFilter) {
         Criteria criteria = getCriteria();
-        Disjunction disjunction = Restrictions.disjunction();
-        disjunction.add(Restrictions.isNull("systemFlag")).add(Restrictions.ne("systemFlag", "1"));
-        criteria.add(disjunction);
-
+        
         if(delegationFilter != null) {
             if (CollectionUtils.isNotEmpty(delegationFilter.getOrganizationIdSet())) {
                 criteria.createAlias("affiliations", "aff").add(
@@ -80,10 +78,7 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
 
     public List<UserEntity> findByDelegationProperties(DelegationFilterSearch search) {
         final Criteria criteria = getCriteria();
-        // check systemFlag
-        Disjunction disjunction = Restrictions.disjunction();
-        disjunction.add(Restrictions.isNotNull("systemFlag")).add(Restrictions.ne("systemFlag", "1"));
-        criteria.add(disjunction);
+        
         if (StringUtils.isNotEmpty(search.getRole())) {
             criteria.createAlias("roles", "r");
             criteria.add(Restrictions.eq("r.roleId", search.getRole()));
@@ -162,10 +157,6 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
         if (StringUtils.isNotBlank(searchBean.getKey())) {
             criteria.add(Restrictions.eq(getPKfieldName(), searchBean.getKey()));
         } else {
-            // check systemFlag
-            Disjunction disjunction = Restrictions.disjunction();
-            disjunction.add(Restrictions.isNull("systemFlag")).add(Restrictions.ne("systemFlag", "1"));
-            criteria.add(disjunction);
             if (searchBean.getShowInSearch() != null) {
                 criteria.add(Restrictions.eq("showInSearch", searchBean.getShowInSearch()));
             }
@@ -224,7 +215,7 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
             }
             if (StringUtils.isNotEmpty(searchBean.getEmailAddress())) {
                 criteria.createAlias("emailAddresses", "em");
-                disjunction = Restrictions.disjunction();
+                final Disjunction disjunction = Restrictions.disjunction();
                 disjunction.add(getStringCriterion("em.emailAddress", searchBean.getEmailAddress(), ORACLE_INSENSITIVE))
                         .add(getStringCriterion("email", searchBean.getEmailAddress(), ORACLE_INSENSITIVE));
                 criteria.add(disjunction);
@@ -495,9 +486,8 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
         disjunction.add(Subqueries.propertyIn("userId", superiors)); // exclude existing superiors
         disjunction.add(Subqueries.propertyIn("userId", subordinates)); // exclude existing subordinates
         disjunction.add(Restrictions.eq("userId", userId)); // exclude itself
-        disjunction.add(Restrictions.eq("systemFlag", "1")); // exclude system users
 
-        Criteria criteria = getSession().createCriteria(UserEntity.class)
+        final Criteria criteria = getCriteria()
                 .setProjection(Projections.property("userId"))
                 .add(disjunction)
                 .setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY);
@@ -611,5 +601,12 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
 		return (((Number) criteria.setProjection(rowCount()).uniqueResult()).intValue() > 0);
 	}
 
-	
+	@Override
+	protected Criteria getCriteria() {
+		final Criteria criteria = super.getCriteria();
+		final Disjunction disjunction = Restrictions.disjunction();
+        disjunction.add(Restrictions.isNull("systemFlag")).add(Restrictions.ne("systemFlag", "1"));
+        criteria.add(disjunction);
+        return criteria;
+	}
 }

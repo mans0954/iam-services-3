@@ -2448,9 +2448,9 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
     /* ********* Helper Methods --------------- */
 
     private boolean syncAllowed(final ResourceEntity resource) {
-        boolean retVal = false;
+        boolean retVal = true;
         if (resource != null) {
-            retVal = StringUtils.equalsIgnoreCase(
+            retVal = !StringUtils.equalsIgnoreCase(
                     getResourceProperty(resource, "INCLUDE_IN_PASSWORD_SYNC"),
                     "N");
         }

@@ -16,6 +16,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
 import javax.persistence.MapKeyColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
@@ -28,6 +29,7 @@ import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.grp.dto.Group;
+import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
@@ -54,10 +56,15 @@ public class GroupEntity {
 
     @Column(name = "CREATED_BY", length = 20)
     private String createdBy;
+    
+    @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+    @JoinColumn(name = "MANAGED_SYS_ID", referencedColumnName = "MANAGED_SYS_ID", insertable = true, updatable = true, nullable=true)
+    private ManagedSysEntity managedSystem;
 
-    @Column(name = "COMPANY_ID", length = 20)
+    @Column(name = "COMPANY_ID", length = 32)
     private String companyId;
 
+    /*
     @Column(name = "OWNER_ID", length = 20)
     private String ownerId;
 
@@ -66,6 +73,7 @@ public class GroupEntity {
 
     @Column(name = "PROVISION_OBJ_NAME", length = 80)
     private String provisionObjName;
+    */
 
     @Column(name = "GROUP_DESC", length = 80)
     @Size(max = 80, message = "group.description.too.long")
@@ -80,11 +88,13 @@ public class GroupEntity {
     @Column(name = "LAST_UPDATED_BY", length = 20)
     private String lastUpdatedBy;
 
+    /*
     @Column(name = "TYPE_ID", length = 20)
     private String metadataTypeId;
 
     @Column(name = "INTERNAL_GROUP_ID", length = 32)
     private String internalGroupId;
+	*/
 
     @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinTable(name = "RESOURCE_GROUP", joinColumns = { @JoinColumn(name = "GRP_ID") }, inverseJoinColumns = { @JoinColumn(name = "RESOURCE_ID") })
@@ -159,6 +169,7 @@ public class GroupEntity {
         this.companyId = companyId;
     }
 
+    /*
     public String getOwnerId() {
         return ownerId;
     }
@@ -182,6 +193,7 @@ public class GroupEntity {
     public void setProvisionObjName(String provisionObjName) {
         this.provisionObjName = provisionObjName;
     }
+    */
 
     public String getDescription() {
         return description;
@@ -215,6 +227,7 @@ public class GroupEntity {
         this.lastUpdatedBy = lastUpdatedBy;
     }
 
+    /*
     public String getMetadataTypeId() {
         return metadataTypeId;
     }
@@ -230,6 +243,7 @@ public class GroupEntity {
     public void setInternalGroupId(String internalGroupId) {
         this.internalGroupId = internalGroupId;
     }
+    */
 
     public Set<GroupEntity> getParentGroups() {
         return parentGroups;
@@ -317,39 +331,108 @@ public class GroupEntity {
         this.users = users;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+	public ManagedSysEntity getManagedSystem() {
+		return managedSystem;
+	}
 
-        GroupEntity that = (GroupEntity) o;
+	public void setManagedSystem(ManagedSysEntity managedSystem) {
+		this.managedSystem = managedSystem;
+	}
 
-        if (companyId != null ? !companyId.equals(that.companyId) : that.companyId != null) return false;
-        if (createDate != null ? !createDate.equals(that.createDate) : that.createDate != null) return false;
-        if (createdBy != null ? !createdBy.equals(that.createdBy) : that.createdBy != null) return false;
-        if (grpId != null ? !grpId.equals(that.grpId) : that.grpId != null) return false;
-        if (grpName != null ? !grpName.equals(that.grpName) : that.grpName != null) return false;
-        if (ownerId != null ? !ownerId.equals(that.ownerId) : that.ownerId != null) return false;
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result
+				+ ((createDate == null) ? 0 : createDate.hashCode());
+		result = prime * result
+				+ ((createdBy == null) ? 0 : createdBy.hashCode());
+		result = prime * result
+				+ ((description == null) ? 0 : description.hashCode());
+		result = prime * result + ((grpId == null) ? 0 : grpId.hashCode());
+		result = prime * result + ((grpName == null) ? 0 : grpName.hashCode());
+		result = prime * result
+				+ ((lastUpdate == null) ? 0 : lastUpdate.hashCode());
+		result = prime * result
+				+ ((lastUpdatedBy == null) ? 0 : lastUpdatedBy.hashCode());
+		result = prime * result
+				+ ((managedSystem == null) ? 0 : managedSystem.hashCode());
+		result = prime * result + ((status == null) ? 0 : status.hashCode());
+		
+		result = prime * result
+				+ ((companyId == null) ? 0 : companyId.hashCode());
+		return result;
+	}
 
-        return true;
-    }
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		GroupEntity other = (GroupEntity) obj;
+		if (createDate == null) {
+			if (other.createDate != null)
+				return false;
+		} else if (!createDate.equals(other.createDate))
+			return false;
+		if (createdBy == null) {
+			if (other.createdBy != null)
+				return false;
+		} else if (!createdBy.equals(other.createdBy))
+			return false;
+		if (description == null) {
+			if (other.description != null)
+				return false;
+		} else if (!description.equals(other.description))
+			return false;
+		if (grpId == null) {
+			if (other.grpId != null)
+				return false;
+		} else if (!grpId.equals(other.grpId))
+			return false;
+		if (grpName == null) {
+			if (other.grpName != null)
+				return false;
+		} else if (!grpName.equals(other.grpName))
+			return false;
+		if (lastUpdate == null) {
+			if (other.lastUpdate != null)
+				return false;
+		} else if (!lastUpdate.equals(other.lastUpdate))
+			return false;
+		if (lastUpdatedBy == null) {
+			if (other.lastUpdatedBy != null)
+				return false;
+		} else if (!lastUpdatedBy.equals(other.lastUpdatedBy))
+			return false;
+		if (managedSystem == null) {
+			if (other.managedSystem != null)
+				return false;
+		} else if (!managedSystem.equals(other.managedSystem))
+			return false;
+		if (status == null) {
+			if (other.status != null)
+				return false;
+		} else if (!status.equals(other.status))
+			return false;
+		if (companyId == null) {
+			if (other.companyId != null)
+				return false;
+		} else if (!companyId.equals(other.companyId))
+			return false;
+		return true;
+	}
 
-    @Override
-    public int hashCode() {
-        int result = grpId != null ? grpId.hashCode() : 0;
-        result = 31 * result + (grpName != null ? grpName.hashCode() : 0);
-        result = 31 * result + (createDate != null ? createDate.hashCode() : 0);
-        result = 31 * result + (createdBy != null ? createdBy.hashCode() : 0);
-        result = 31 * result + (companyId != null ? companyId.hashCode() : 0);
-        result = 31 * result + (ownerId != null ? ownerId.hashCode() : 0);
-        return result;
-    }
+	@Override
+	public String toString() {
+		return String
+				.format("GroupEntity [grpId=%s, grpName=%s, createDate=%s, createdBy=%s, managedSystem=%s, description=%s, status=%s, lastUpdate=%s, lastUpdatedBy=%s]",
+						grpId, grpName, createDate, createdBy, managedSystem,
+						description, status, lastUpdate, lastUpdatedBy);
+	}
 
-    @Override
-    public String toString() {
-        return String.format("GroupEntity [grpId=%s, grpName=%s, createDate=%s, createdBy=%s, companyId=%s, ownerId=%s, provisionMethod=%s, provisionObjName=%s, description=%s, status=%s, lastUpdate=%s, lastUpdatedBy=%s, metadataTypeId=%s, internalGroupId=%s]",
-                             grpId, grpName, createDate, createdBy, companyId, ownerId, provisionMethod, provisionObjName, description, status,
-                             lastUpdate, lastUpdatedBy, metadataTypeId, internalGroupId);
-    }
-
+    
 }

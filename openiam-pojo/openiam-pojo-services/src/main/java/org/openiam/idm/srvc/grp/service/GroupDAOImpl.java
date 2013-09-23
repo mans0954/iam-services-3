@@ -78,6 +78,7 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
                 }
             }
 			
+			/*
 			if(StringUtils.isNotBlank(group.getOwnerId())) {
 				criteria.add(Restrictions.eq("ownerId", group.getOwnerId()));
 			}
@@ -85,6 +86,7 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
 			if(StringUtils.isNotBlank(group.getInternalGroupId())) {
 				criteria.add(Restrictions.eq("internalGroupId", group.getInternalGroupId()));
 			}
+			*/
             
             if(CollectionUtils.isNotEmpty(group.getResources())) {
             	final Set<String> resourceIds = new HashSet<String>();

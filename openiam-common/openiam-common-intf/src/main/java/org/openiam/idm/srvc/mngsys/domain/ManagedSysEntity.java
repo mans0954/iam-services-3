@@ -4,9 +4,12 @@ import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
+import org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity;
 
 import javax.persistence.*;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -92,6 +95,9 @@ public class ManagedSysEntity implements Serializable {
     @JoinColumn(name = "MANAGED_SYS_ID", referencedColumnName = "MANAGED_SYS_ID")
     private List<ManagedSysRuleEntity> rules = new ArrayList<ManagedSysRuleEntity>(
             0);
+    
+    @OneToMany(orphanRemoval = false, cascade = {CascadeType.DETACH, CascadeType.REFRESH}, mappedBy = "managedSystem", fetch = FetchType.LAZY)
+    private Set<GroupEntity> groups;
 
     public List<ManagedSysRuleEntity> getRules() {
         return rules;
@@ -342,7 +348,15 @@ public class ManagedSysEntity implements Serializable {
         this.mngSysObjectMatchs = mngSysObjectMatchs;
     }
 
-    @Override
+    public Set<GroupEntity> getGroups() {
+		return groups;
+	}
+
+	public void setGroups(Set<GroupEntity> groups) {
+		this.groups = groups;
+	}
+
+	@Override
     public boolean equals(Object o) {
         if (this == o)
             return true;
