@@ -872,15 +872,13 @@ public class User extends org.openiam.base.BaseObject {
     
     public boolean containsLogin(final String loginId) {
     	boolean retVal = false;
-    	if(login != null) {
-    		if(principalList != null) {
-    			for(final Login login : principalList) {
-    				if(StringUtils.equals(loginId, login.getLoginId())) {
-    					retVal = true;
-    				}
-    			}
-    		}
-    	}
+        if(principalList != null) {
+            for(final Login login : principalList) {
+                if(StringUtils.equals(loginId, login.getLoginId())) {
+                    retVal = true;
+                }
+            }
+        }
     	return retVal;
     }
     
