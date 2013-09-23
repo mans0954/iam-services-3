@@ -359,19 +359,36 @@ public class CSVAdapter extends AbstractSrcAdapter {
     }
 
     public Response testConnection(SynchConfig config) {
-        File file = new File(config.getFileName());
-        FileReader reader = null;
+        Reader reader = null;
         try {
-            reader = new FileReader(file);
+            String csvFileName = config.getFileName();
+            if (useRemoteFilestorage) {
+                InputStream is = remoteFileStorageManager.downloadFile(SYNC_DIR, csvFileName);
+                reader = new InputStreamReader(is);
+            } else {
+                File file = new File(uploadRoot + File.separator + SYNC_DIR + File.separator + csvFileName);
+                reader = new FileReader(file);
+            }
+
         } catch (FileNotFoundException fe) {
             fe.printStackTrace();
-
             log.error(fe);
-
             Response resp = new Response(ResponseStatus.FAILURE);
             resp.setErrorCode(ResponseCode.FILE_EXCEPTION);
             resp.setErrorText(fe.getMessage());
             return resp;
+
+        } catch (SftpException sftpe) {
+            log.error(sftpe);
+            SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
+            resp.setErrorCode(ResponseCode.FILE_EXCEPTION);
+            sftpe.printStackTrace();
+
+        } catch (JSchException jsche) {
+            log.error(jsche);
+            SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
+            resp.setErrorCode(ResponseCode.FILE_EXCEPTION);
+            jsche.printStackTrace();
 
         } finally {
             if (reader != null) {
