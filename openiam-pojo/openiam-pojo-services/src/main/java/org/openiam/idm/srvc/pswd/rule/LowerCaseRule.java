@@ -22,6 +22,7 @@
 package org.openiam.idm.srvc.pswd.rule;
 
 
+import org.apache.commons.lang.StringUtils;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
 import org.openiam.idm.srvc.pswd.dto.PasswordValidationCode;
 
@@ -41,10 +42,11 @@ public class LowerCaseRule extends AbstractPasswordRule {
 				
 		PolicyAttribute attribute = policy.getAttribute("LOWERCASE_CHARS");
 		
-		if (attribute.getValue1() != null && attribute.getValue1().length() > 0 ) {
+		if (attribute != null && StringUtils.isNotBlank(attribute.getValue1())) {
 			minChar = Integer.parseInt(attribute.getValue1());
 		}
-		if (attribute.getValue2() != null && attribute.getValue2().length() > 0) {
+		
+		if (attribute != null && StringUtils.isNotBlank(attribute.getValue2())) {
 			maxChar = Integer.parseInt(attribute.getValue2()  );
 		}
 		// count the number of characters in the password

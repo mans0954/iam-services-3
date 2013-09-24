@@ -24,6 +24,7 @@ package org.openiam.idm.srvc.pswd.rule;
 
 import java.util.StringTokenizer;
 
+import org.apache.commons.lang.StringUtils;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
 import org.openiam.idm.srvc.pswd.dto.PasswordValidationCode;
 
@@ -41,7 +42,7 @@ public class PassphraseMinWordsRule extends AbstractPasswordRule {
 		int minWords = 0;
 				
 		PolicyAttribute attribute = policy.getAttribute("MIN_WORDS_PASSPHRASE");
-		if (attribute.getValue1() != null && attribute.getValue1().length() > 0 )  {
+		if (attribute != null && StringUtils.isNotBlank(attribute.getValue1())) {
 			minWords = Integer.parseInt(attribute.getValue1());
 		}
 		if (password == null) {

@@ -22,6 +22,7 @@
 package org.openiam.idm.srvc.pswd.rule;
 
 
+import org.apache.commons.lang.StringUtils;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
 import org.openiam.idm.srvc.pswd.dto.PasswordValidationCode;
 
@@ -39,7 +40,7 @@ public class PasswordNotPrincipalRule extends AbstractPasswordRule {
 		boolean enabled = false;
 				
 		PolicyAttribute attribute = policy.getAttribute("PWD_LOGIN");
-		if (attribute.getValue1() != null && attribute.getValue1().length() > 0 ) {
+		if (attribute != null && StringUtils.isNotBlank(attribute.getValue1())) {
 			enabled = Boolean.parseBoolean(attribute.getValue1());
 
 		}

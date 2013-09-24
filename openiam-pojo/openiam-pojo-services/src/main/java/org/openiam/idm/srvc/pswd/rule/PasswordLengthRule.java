@@ -22,6 +22,7 @@
 package org.openiam.idm.srvc.pswd.rule;
 
 
+import org.apache.commons.lang.StringUtils;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
 import org.openiam.idm.srvc.pswd.dto.PasswordValidationCode;
 
@@ -39,10 +40,10 @@ public class PasswordLengthRule extends AbstractPasswordRule {
 		int maxlen = 0;
 				
 		PolicyAttribute attribute = policy.getAttribute("PWD_LEN");
-		if (attribute.getValue1() != null && attribute.getValue1().length() > 0 )  {
+		if (attribute != null && StringUtils.isNotBlank(attribute.getValue1())) {
 			minlen = Integer.parseInt(attribute.getValue1());
 		}
-		if (attribute.getValue2() != null && attribute.getValue2().length() > 0) {
+		if (attribute != null && StringUtils.isNotBlank(attribute.getValue2())) {
 			maxlen = Integer.parseInt(attribute.getValue2());
 		}
 		if (password == null) {

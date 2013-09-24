@@ -286,7 +286,7 @@ public class LoginDataServiceImpl implements LoginDataService {
         Policy plcy = passwordManager.getPasswordPolicy(domainId, login, sysId);
 
         String pswdExpValue = getPolicyAttribute(plcy.getPolicyAttributes(),
-                "PWD_EXPIRATION_ON_RESET");
+                "NUM_DAYS_FORGOT_PASSWORD_TOKEN_VALID");
         // String changePswdOnReset = getPolicyAttribute(
         // plcy.getPolicyAttributes(), "CHNG_PSWD_ON_RESET");
         String gracePeriod = getPolicyAttribute(plcy.getPolicyAttributes(),

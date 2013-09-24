@@ -24,6 +24,7 @@ package org.openiam.idm.srvc.pswd.rule;
 
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.exception.EncryptionException;
@@ -59,7 +60,7 @@ public class PasswordHistoryRule extends AbstractPasswordRule {
 		boolean enabled = false;
 						
 		PolicyAttribute attribute = policy.getAttribute("PWD_HIST_VER");
-		if (attribute.getValue1() != null && attribute.getValue1().length() > 0) {
+		if (attribute != null && StringUtils.isNotBlank(attribute.getValue1())) {
 			enabled = true;
 
 		}
