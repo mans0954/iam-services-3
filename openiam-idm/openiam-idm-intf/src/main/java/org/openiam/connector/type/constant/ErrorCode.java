@@ -138,7 +138,10 @@ public enum ErrorCode {
     CONTAINER_NOT_EMPTY("containerNotEmpty"),
 
     @XmlEnumValue("csv error")
-    CSV_ERROR("csv error");
+    CSV_ERROR("csv error"),
+
+    @XmlEnumValue("ldap error")
+    LDAP_ERROR("ldap error");
 
     private final String value;
 
