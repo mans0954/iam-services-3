@@ -21,8 +21,9 @@
  */
 package org.openiam.idm.srvc.pswd.rule;
 
+import org.apache.commons.lang.StringUtils;
+import org.openiam.base.ws.ResponseCode;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
-import org.openiam.idm.srvc.pswd.dto.PasswordValidationCode;
 
 /**
  * Validates a password to ensure that a character in password does not repeat
@@ -33,39 +34,40 @@ import org.openiam.idm.srvc.pswd.dto.PasswordValidationCode;
  */
 public class LimitNumberRepeatCharRule extends AbstractPasswordRule {
 
-	public PasswordValidationCode isValid() {
-		PasswordValidationCode retval = PasswordValidationCode.SUCCESS;
+	@Override
+	public void validate() throws PasswordRuleException {
 		int numberOfRepeatingChar = 0;
 
 		PolicyAttribute attribute = policy
 				.getAttribute("LIMIT_NUM_REPEAT_CHAR");
 
-		if (attribute.getValue1() != null && attribute.getValue1().length() > 0) {
+		if (attribute != null && StringUtils.isNotBlank(attribute.getValue1())) {
 			numberOfRepeatingChar = Integer.parseInt(attribute.getValue1());
 		}
 
 		// check for every char
 		if (password == null) {
-			return PasswordValidationCode.FAIL_LIMIT_NUM_REPEAT_CHAR;
+			throw new PasswordRuleException(ResponseCode.FAIL_LIMIT_NUM_REPEAT_CHAR);
 		}
 
 		char charAtPosition;
 
-		for (int counter = 0; counter < password.length(); counter++) {
-			charAtPosition = password.charAt(counter);
-			int count = 0;
-			for (int i = counter; i < password.length(); i++) {
-				if (charAtPosition == password.charAt(i))
-					count++;
+		if(numberOfRepeatingChar > 0) {
+			for (int counter = 0; counter < password.length(); counter++) {
+				charAtPosition = password.charAt(counter);
+				int count = 0;
+				for (int i = counter; i < password.length(); i++) {
+					if (charAtPosition == password.charAt(i)) {
+						count++;
+						if (count > numberOfRepeatingChar) {
+							throw new PasswordRuleException(ResponseCode.FAIL_LIMIT_NUM_REPEAT_CHAR);
+						}
+					} else {
+						count = 0;
+					}
+				}
 			}
-
-			if (count > numberOfRepeatingChar) {
-				return PasswordValidationCode.FAIL_LIMIT_NUM_REPEAT_CHAR;
-			}
-
 		}
-
-		return retval;
 	}
 
 }

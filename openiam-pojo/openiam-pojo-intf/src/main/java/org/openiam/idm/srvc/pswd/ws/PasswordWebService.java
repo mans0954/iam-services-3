@@ -28,6 +28,7 @@ import org.openiam.idm.srvc.policy.ws.PolicyResponse;
 import org.openiam.idm.srvc.pswd.dto.Password;
 import org.openiam.idm.srvc.pswd.dto.PasswordResetTokenRequest;
 import org.openiam.idm.srvc.pswd.dto.PasswordResetTokenResponse;
+import org.openiam.idm.srvc.pswd.dto.PasswordValidationResponse;
 import org.openiam.idm.srvc.pswd.dto.ValidatePasswordResetTokenResponse;
 
 import javax.jws.WebMethod;
@@ -48,7 +49,7 @@ public interface PasswordWebService {
 	 * @return
 	 */
 	@WebMethod
-	Response isPasswordValid(
+	PasswordValidationResponse isPasswordValid(
 			@WebParam(name = "pswd", targetNamespace = "") Password pswd)
 			throws ObjectNotFoundException;
 

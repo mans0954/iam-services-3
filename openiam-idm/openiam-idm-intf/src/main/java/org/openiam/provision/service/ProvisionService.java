@@ -31,6 +31,7 @@ import org.mule.api.MuleContext;
 import org.openiam.base.ws.Response;
 import org.openiam.connector.type.request.LookupRequest;
 
+import org.openiam.idm.srvc.pswd.dto.PasswordValidationResponse;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.provision.dto.AccountLockEnum;
 import org.openiam.provision.dto.PasswordSync;
@@ -109,7 +110,7 @@ public interface ProvisionService {
      * @return
      */
     @WebMethod
-    public Response setPassword(
+    public PasswordValidationResponse setPassword(
             @WebParam(name = "passwordSync", targetNamespace = "") PasswordSync passwordSync);
 
     public Response syncPasswordFromSrc(

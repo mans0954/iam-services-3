@@ -31,6 +31,7 @@ import org.openiam.base.ws.ResponseStatus;
 import org.openiam.dozer.converter.LoginDozerConverter;
 import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.exception.ObjectNotFoundException;
+import org.openiam.exception.PasswordException;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
@@ -50,8 +51,9 @@ import org.openiam.idm.srvc.pswd.dto.Password;
 import org.openiam.idm.srvc.pswd.dto.PasswordHistory;
 import org.openiam.idm.srvc.pswd.dto.PasswordResetTokenRequest;
 import org.openiam.idm.srvc.pswd.dto.PasswordResetTokenResponse;
-import org.openiam.idm.srvc.pswd.dto.PasswordValidationCode;
+import org.openiam.idm.srvc.pswd.dto.PasswordValidationResponse;
 import org.openiam.idm.srvc.pswd.dto.ValidatePasswordResetTokenResponse;
+import org.openiam.idm.srvc.pswd.rule.PasswordRuleException;
 import org.openiam.idm.srvc.pswd.rule.PasswordValidator;
 import org.openiam.idm.srvc.secdomain.service.SecurityDomainDataService;
 import org.openiam.idm.srvc.user.domain.UserEntity;
@@ -125,73 +127,94 @@ public class PasswordServiceImpl implements PasswordService {
 	 * org.openiam.idm.srvc.policy.pswd.PasswordService#isPasswordValid(org.
 	 * openiam.idm.srvc.policy.dto.Password)
 	 */
-	public PasswordValidationCode isPasswordValid(Password pswd)
+	public PasswordValidationResponse isPasswordValid(Password pswd)
 			throws ObjectNotFoundException {
-
+		PasswordValidationResponse retVal = new PasswordValidationResponse(ResponseStatus.SUCCESS);
+		
 		Policy pswdPolicy = getPasswordPolicy(pswd.getDomainId(),
 				pswd.getPrincipal(), pswd.getManagedSysId());
 
 		if (pswdPolicy == null) {
-			return PasswordValidationCode.PASSWORD_POLICY_NOT_FOUND;
+			retVal.setErrorCode(ResponseCode.PASSWORD_POLICY_NOT_FOUND);
+			retVal.fail();
+			return retVal;
 		}
-		log.info("Selected Password policy=" + pswdPolicy.getPolicyId());
+		log.info(String.format("Selected Password policy=%s", pswdPolicy.getPolicyId()));
 
-		PasswordValidationCode retVal = null;
 		try {
-			retVal = passwordValidator.validate(pswdPolicy, pswd);
-		} catch (IOException io) {
-			log.error(io);
-			retVal = PasswordValidationCode.FAIL_OTHER;
+			passwordValidator.validate(pswdPolicy, pswd);
+		} catch(PasswordRuleException e) {
+			retVal.setErrorCode(e.getCode());
+			retVal.setResponseValues(e.getResponseValues());
+			retVal.fail();
+		} catch (Throwable io) {
+			log.error("Can't validate password", io);
+			retVal.setErrorCode(ResponseCode.FAIL_OTHER);
+			retVal.fail();
+			return retVal;
 		}
 		return retVal;
 	}
 
 	@Override
-	public PasswordValidationCode isPasswordValidForUser(Password pswd,
+	public PasswordValidationResponse isPasswordValidForUser(Password pswd,
 			UserEntity user, LoginEntity lg) throws ObjectNotFoundException {
-
+		PasswordValidationResponse retVal = new PasswordValidationResponse(ResponseStatus.SUCCESS);
+		
 		Policy pswdPolicy = getPasswordPolicyByUser(pswd.getDomainId(), user);
 
 		if (pswdPolicy == null) {
-			return PasswordValidationCode.PASSWORD_POLICY_NOT_FOUND;
+			retVal.setErrorCode(ResponseCode.PASSWORD_POLICY_NOT_FOUND);
+			retVal.fail();
+			return retVal;
 		}
 		log.info("Selected Password policy=" + pswdPolicy.getPolicyId());
 
-		PasswordValidationCode retVal = null;
 		try {
-			retVal = passwordValidator.validateForUser(pswdPolicy, pswd, user,
+			passwordValidator.validateForUser(pswdPolicy, pswd, user,
 					lg);
-		} catch (IOException io) {
-			log.error(io);
-			retVal = PasswordValidationCode.FAIL_OTHER;
+		} catch(PasswordRuleException e) {
+			retVal.setErrorCode(e.getCode());
+			retVal.setResponseValues(e.getResponseValues());
+			retVal.fail();
+		} catch (Throwable io) {
+			log.error("Can't validate password", io);
+			retVal.setErrorCode(ResponseCode.FAIL_OTHER);
+			retVal.fail();
+			return retVal;
 		}
 		return retVal;
 	}
 
 	@Override
-	public PasswordValidationCode isPasswordValidForUserAndPolicy(
+	public PasswordValidationResponse isPasswordValidForUserAndPolicy(
 			Password pswd, UserEntity user, LoginEntity lg, Policy policy)
 			throws ObjectNotFoundException {
-
+		final PasswordValidationResponse retVal = new PasswordValidationResponse(ResponseStatus.SUCCESS);
 		Policy pswdPolicy = policy;
 		if (pswdPolicy == null) {
 			pswdPolicy = getPasswordPolicyByUser(pswd.getDomainId(), user);
 		}
 
 		if (pswdPolicy == null) {
-			return PasswordValidationCode.PASSWORD_POLICY_NOT_FOUND;
+			retVal.setErrorCode(ResponseCode.PASSWORD_POLICY_NOT_FOUND);
+			retVal.fail();
+			return retVal;
 		}
-		log.info("Selected Password policy=" + pswdPolicy.getPolicyId());
+		log.info(String.format("Selected Password policy=%s",pswdPolicy.getPolicyId()));
 
 		try {
-
-			return passwordValidator
-					.validateForUser(pswdPolicy, pswd, user, lg);
-
-		} catch (IOException io) {
-			log.error(io);
-			return PasswordValidationCode.FAIL_OTHER;
+			passwordValidator.validateForUser(pswdPolicy, pswd, user, lg);
+		} catch(PasswordRuleException e) {
+			retVal.setErrorCode(e.getCode());
+			retVal.setResponseValues(e.getResponseValues());
+			retVal.fail();
+		} catch (final Throwable io) {
+			log.error("Unknown exception", io);
+			retVal.setErrorCode(ResponseCode.FAIL_OTHER);
+			retVal.fail();
 		}
+		return retVal;
 	}
 
 	/*
@@ -545,7 +568,7 @@ public class PasswordServiceImpl implements PasswordService {
 			return resp;
 		}
 
-		final PolicyAttribute expirationTime = pl.getAttribute("PWD_EXPIRATION_ON_RESET");
+		final PolicyAttribute expirationTime = pl.getAttribute("NUM_DAYS_FORGOT_PASSWORD_TOKEN_VALID");
 		try {
 			expirationDays = Integer.parseInt(expirationTime.getValue1());
 		} catch(Throwable e) {

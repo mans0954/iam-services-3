@@ -63,7 +63,7 @@ import org.openiam.idm.srvc.org.service.OrganizationDataService;
 import org.openiam.idm.srvc.org.service.OrganizationService;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.pswd.dto.Password;
-import org.openiam.idm.srvc.pswd.dto.PasswordValidationCode;
+import org.openiam.idm.srvc.pswd.dto.PasswordValidationResponse;
 import org.openiam.idm.srvc.pswd.service.PasswordHistoryDAO;
 import org.openiam.idm.srvc.pswd.service.PasswordService;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
@@ -1572,13 +1572,12 @@ public abstract class AbstractProvisioningService implements ProvisionService {
         }
 
         try {
-            PasswordValidationCode valCode = passwordManager.isPasswordValidForUserAndPolicy(
+        	PasswordValidationResponse valCode = passwordManager.isPasswordValidForUserAndPolicy(
                     password, userDozerConverter.convertToEntity(
                     user.getUser(), true),
                     loginDozerConverter.convertToEntity(
                             primaryLogin, true), passwordPolicy);
-            if (valCode == null
-                    || valCode != PasswordValidationCode.SUCCESS) {
+            if (valCode == null || !valCode.isSuccess()) {
                 auditHelper.addLog("CREATE", user.getRequestorDomain(),
                         user.getRequestorLogin(), "IDM SERVICE",
                         user.getCreatedBy(), "0", "USER", user.getUserId(),

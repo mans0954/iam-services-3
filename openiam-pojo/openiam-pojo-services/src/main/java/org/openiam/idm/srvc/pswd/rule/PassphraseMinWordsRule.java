@@ -24,8 +24,9 @@ package org.openiam.idm.srvc.pswd.rule;
 
 import java.util.StringTokenizer;
 
+import org.apache.commons.lang.StringUtils;
+import org.openiam.base.ws.ResponseCode;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
-import org.openiam.idm.srvc.pswd.dto.PasswordValidationCode;
 
 /**
  * Validates a password to ensure that there are minimum words in passphrase as
@@ -36,29 +37,24 @@ import org.openiam.idm.srvc.pswd.dto.PasswordValidationCode;
 public class PassphraseMinWordsRule extends AbstractPasswordRule {
 
 
-	public PasswordValidationCode isValid() {
-		PasswordValidationCode retval = PasswordValidationCode.SUCCESS;
+	@Override
+	public void validate() throws PasswordRuleException {
 		int minWords = 0;
 				
 		PolicyAttribute attribute = policy.getAttribute("MIN_WORDS_PASSPHRASE");
-		if (attribute.getValue1() != null && attribute.getValue1().length() > 0 )  {
+		if (attribute != null && StringUtils.isNotBlank(attribute.getValue1())) {
 			minWords = Integer.parseInt(attribute.getValue1());
 		}
 		if (password == null) {
-			return PasswordValidationCode.FAIL_MIN_WORDS_PASSPHRASE_RULE;
+			throw new PasswordRuleException(ResponseCode.FAIL_MIN_WORDS_PASSPHRASE_RULE);
 		}
 		
 		if (minWords > 0 ) {
 			StringTokenizer tokenizer = new StringTokenizer(password);
 			
 			if (tokenizer.countTokens() < minWords) {
-				retval = PasswordValidationCode.FAIL_MIN_WORDS_PASSPHRASE_RULE;
+				throw new PasswordRuleException(ResponseCode.FAIL_MIN_WORDS_PASSPHRASE_RULE);
 			}
 		}
-		return retval;
-	}
-	
-
-	
-	
+	}	
 }

@@ -54,7 +54,7 @@ import org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorDto;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
 import org.openiam.idm.srvc.pswd.dto.Password;
-import org.openiam.idm.srvc.pswd.dto.PasswordValidationCode;
+import org.openiam.idm.srvc.pswd.dto.PasswordValidationResponse;
 import org.openiam.idm.srvc.pswd.service.PasswordGenerator;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
@@ -428,12 +428,6 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     try {
                         if (l.getStatus() != null
                                 && !l.getStatus().equalsIgnoreCase("INACTIVE")) {
-                            l.setStatus("INACTIVE");
-                            l.setAuthFailCount(0);
-                            l.setPasswordChangeCount(0);
-                            l.setIsLocked(0);
-                            loginManager.updateLogin(l);
-
                             // only add the connectors if its a secondary identity.
                             if (!l.getManagedSysId().equalsIgnoreCase(
                                     this.sysConfiguration.getDefaultManagedSysId())) {
@@ -516,6 +510,12 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                     if (resp.getStatus() == StatusCodeType.SUCCESS) {
                                         connectorSuccess = true;
                                     }
+                                }
+                                if (connectorSuccess) {
+                                    l.setStatus("INACTIVE");
+                                    l.setAuthFailCount(0);
+                                    l.setPasswordChangeCount(0);
+                                    l.setIsLocked(0);
                                 }
                                 // SET POST ATTRIBUTES FOR TARGET SYS SCRIPT
                                 bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS, null);
@@ -1229,6 +1229,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             // what the new object will look like
             // Provision user that goes to the target system. Derived from userEntity after all changes
             ProvisionUser targetSysProvUser = new ProvisionUser(userDozerConverter.convertToDTO(userEntity, true));
+            targetSysProvUser.setStatus(pUser.getStatus()); // copying user status (need to define enable/disable status)
 
             bindingMap.put(TARGET_SYS_RES_ID, res.getResourceId());
             bindingMap.put(TARGET_SYS_MANAGED_SYS_ID, managedSysId);
@@ -1922,14 +1923,14 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
      */
     @Override
     @Transactional
-    public Response setPassword(PasswordSync passwordSync) {
+    public PasswordValidationResponse setPassword(PasswordSync passwordSync) {
         log.debug("----setPassword called.------");
 
-        final Response response = new Response(ResponseStatus.SUCCESS);
+        PasswordValidationResponse response = new PasswordValidationResponse(ResponseStatus.SUCCESS);
         final Map<String, Object> bindingMap = new HashMap<String, Object>();
 
         if (callPreProcessor("SET_PASSWORD", null, bindingMap) != ProvisioningConstants.SUCCESS) {
-            response.setStatus(ResponseStatus.FAILURE);
+            response.fail();
             response.setErrorCode(ResponseCode.FAIL_PREPROCESSOR);
             return response;
         }
@@ -1951,14 +1952,14 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     passwordSync.getPrincipal(),
                     passwordSync.getSecurityDomain());
 
-            response.setStatus(ResponseStatus.FAILURE);
+            response.fail();
             response.setErrorCode(ResponseCode.PRINCIPAL_NOT_FOUND);
             return response;
         }
         // check if the user active
         final String userId = login.getUserId();
         if (userId == null) {
-            response.setStatus(ResponseStatus.FAILURE);
+        	response.fail();
             response.setErrorCode(ResponseCode.USER_NOT_FOUND);
             return response;
         }
@@ -1974,7 +1975,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     passwordSync.getPrincipal(),
                     passwordSync.getSecurityDomain());
 
-            response.setStatus(ResponseStatus.FAILURE);
+            response.fail();
             response.setErrorCode(ResponseCode.USER_NOT_FOUND);
             return response;
         }
@@ -1987,10 +1988,9 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         pswd.setPassword(passwordSync.getPassword());
 
         try {
-            final PasswordValidationCode rtVal = passwordManager
-                    .isPasswordValid(pswd);
-            if (rtVal != PasswordValidationCode.SUCCESS) {
-
+            response = passwordManager.isPasswordValid(pswd);
+            if (response.isFailure()) {
+            	/*
                 auditHelper.addLog("SET PASSWORD",
                         passwordSync.getRequestorDomain(),
                         passwordSync.getRequestorLogin(), "IDM SERVICE",
@@ -2000,9 +2000,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                         passwordSync.getRequestClientIP(),
                         passwordSync.getPrincipal(),
                         passwordSync.getSecurityDomain());
-
-                response.setStatus(ResponseStatus.FAILURE);
-                response.setErrorCode(ResponseCode.valueOf(rtVal.getValue()));
+				*/
                 return response;
             }
 
@@ -2015,7 +2013,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             encPassword = loginManager.encryptPassword(usr.getUserId(),
                     passwordSync.getPassword());
         } catch (EncryptionException e) {
-            response.setStatus(ResponseStatus.FAILURE);
+            response.fail();
             response.setErrorCode(ResponseCode.FAIL_ENCRYPTION);
             return response;
         }

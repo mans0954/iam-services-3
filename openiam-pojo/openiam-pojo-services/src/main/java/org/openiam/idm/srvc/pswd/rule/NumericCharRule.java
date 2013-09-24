@@ -22,8 +22,9 @@
 package org.openiam.idm.srvc.pswd.rule;
 
 
+import org.apache.commons.lang.StringUtils;
+import org.openiam.base.ws.ResponseCode;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
-import org.openiam.idm.srvc.pswd.dto.PasswordValidationCode;
 
 /**
  * Validates a password to ensure that it contains the appropriate number of numeric characters in 
@@ -34,22 +35,22 @@ import org.openiam.idm.srvc.pswd.dto.PasswordValidationCode;
 public class NumericCharRule extends AbstractPasswordRule {
 
 
-	public PasswordValidationCode isValid() {
-		PasswordValidationCode retval = PasswordValidationCode.SUCCESS;
+	@Override
+	public void validate() throws PasswordRuleException {
 		
 		int minChar = 0;
 		int maxChar = 0;
 				
 		PolicyAttribute attribute = policy.getAttribute("NUMERIC_CHARS");
-		if (attribute.getValue1() != null && attribute.getValue1().length() > 0 ) {
+		if (attribute != null && StringUtils.isNotBlank(attribute.getValue1())) {
 			minChar = Integer.parseInt(attribute.getValue1());
 		}
-		if (attribute.getValue2() != null && attribute.getValue2().length() >0) {
+		if (attribute != null && StringUtils.isNotBlank(attribute.getValue2())) {
 			maxChar = Integer.parseInt(attribute.getValue2());
 		}
 		// count the number of characters in the password
 		if (password == null) {
-			return PasswordValidationCode.FAIL_NUMERIC_CHAR_RULE;
+			throw new PasswordRuleException(ResponseCode.FAIL_NUMERIC_CHAR_RULE);
 		}
 		int charCtr = 0;
 		for (int i=0; i < password.length(); i++) {
@@ -61,20 +62,13 @@ public class NumericCharRule extends AbstractPasswordRule {
 		
 		if (minChar > 0 ) {
 			if (charCtr  < minChar) {
-				retval = PasswordValidationCode.FAIL_NUMERIC_CHAR_RULE;;
+				throw new PasswordRuleException(ResponseCode.FAIL_NUMERIC_CHAR_RULE);
 			}
 		}
 		if (maxChar > 0 ) {
 			if (charCtr > maxChar ) {
-				retval = PasswordValidationCode.FAIL_NUMERIC_CHAR_RULE;;
+				throw new PasswordRuleException(ResponseCode.FAIL_NUMERIC_CHAR_RULE);
 			}
 		}
-		
-		
-		return retval;
-	}
-	
-
-	
-	
+	}	
 }

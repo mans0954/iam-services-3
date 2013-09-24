@@ -59,7 +59,7 @@ import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.idm.srvc.mngsys.ws.ProvisionConnectorWebService;
 import org.openiam.idm.srvc.org.service.OrganizationDataService;
 import org.openiam.idm.srvc.pswd.dto.Password;
-import org.openiam.idm.srvc.pswd.dto.PasswordValidationCode;
+import org.openiam.idm.srvc.pswd.dto.PasswordValidationResponse;
 import org.openiam.idm.srvc.pswd.service.PasswordGenerator;
 import org.openiam.idm.srvc.pswd.service.PasswordService;
 import org.openiam.idm.srvc.res.dto.Resource;
@@ -2051,10 +2051,10 @@ public class ProvisionServiceImpl implements ProvisionService,
      * org.openiam.provision.service.ProvisionService#setPassword(java.lang.
      * String, java.lang.String, java.lang.String, java.lang.String)
      */
-    public Response setPassword(PasswordSync passwordSync) {
+    public PasswordValidationResponse setPassword(PasswordSync passwordSync) {
         log.info("setPassword called.");
 
-        Response response = new Response(ResponseStatus.SUCCESS);
+        PasswordValidationResponse response = new PasswordValidationResponse(ResponseStatus.SUCCESS);
 
         String primaryLogId = null;
 
@@ -2098,10 +2098,8 @@ public class ProvisionServiceImpl implements ProvisionService,
         pswd.setSkipPasswordFrequencyCheck(passwordSync
                 .isPreventChangeCountIncrement());
         try {
-            PasswordValidationCode rtVal = passwordDS.isPasswordValid(pswd);
-            if (rtVal != PasswordValidationCode.SUCCESS) {
-                response.setStatus(ResponseStatus.FAILURE);
-                response.setErrorCode(ResponseCode.valueOf(rtVal.getValue()));
+        	response = passwordDS.isPasswordValid(pswd);
+            if (response.isFailure()) {
                 return response;
             }
 
@@ -2119,10 +2117,9 @@ public class ProvisionServiceImpl implements ProvisionService,
                 encPassword = loginManager.encryptPassword(userId,
                         passwordSync.getPassword());
             } catch (Exception e) {
-                PasswordResponse resp = new PasswordResponse();
-                resp.setStatus(ResponseStatus.FAILURE);
-                resp.setErrorCode(ResponseCode.FAIL_ENCRYPTION);
-                return resp;
+            	response.fail();
+            	response.setErrorCode(ResponseCode.FAIL_ENCRYPTION);
+            	return response;
             }
 
             boolean retval = loginManager.setPassword(
@@ -2218,10 +2215,8 @@ public class ProvisionServiceImpl implements ProvisionService,
                 encPassword = loginManager.encryptPassword(userId,
                         passwordSync.getPassword());
             } catch (Exception e) {
-                PasswordResponse resp = new PasswordResponse();
-                resp.setStatus(ResponseStatus.FAILURE);
-                resp.setErrorCode(ResponseCode.FAIL_ENCRYPTION);
-                return resp;
+            	response.fail();
+            	response.setErrorCode(ResponseCode.FAIL_ENCRYPTION);
             }
             boolean retval = loginManager.setPassword(
                     passwordSync.getSecurityDomain(),
@@ -2252,9 +2247,9 @@ public class ProvisionServiceImpl implements ProvisionService,
                 // audit log the failure and stop the process
                 // logEvent(passwordSync, login,"PASSWORD", "FAILURE", null);
 
-                Response resp = new Response();
-                resp.setStatus(ResponseStatus.FAILURE);
-                resp.setErrorCode(ResponseCode.PRINCIPAL_NOT_FOUND);
+                //Response resp = new Response();
+            	//resp.setStatus(ResponseStatus.FAILURE);
+            	//resp.setErrorCode(ResponseCode.PRINCIPAL_NOT_FOUND);
             }
 
             // update the connected systems

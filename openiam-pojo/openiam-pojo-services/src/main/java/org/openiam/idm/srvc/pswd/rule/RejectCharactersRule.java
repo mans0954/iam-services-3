@@ -22,9 +22,9 @@
 package org.openiam.idm.srvc.pswd.rule;
 
 
+import org.apache.commons.lang.StringUtils;
+import org.openiam.base.ws.ResponseCode;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
-import org.openiam.idm.srvc.pswd.dto.PasswordValidationCode;
-
 /**
  * Validates a password to ensure that it does not contain the characters defined in the rule
  * the password.
@@ -34,23 +34,23 @@ import org.openiam.idm.srvc.pswd.dto.PasswordValidationCode;
 public class RejectCharactersRule extends AbstractPasswordRule {
 
 
-	public PasswordValidationCode isValid() {
-		PasswordValidationCode retval = PasswordValidationCode.SUCCESS;
+	@Override
+	public void validate() throws PasswordRuleException {
 		String excludeCharList=null;
 
 				
 		PolicyAttribute attribute = policy.getAttribute("REJECT_CHARS_IN_PSWD");
-		if (attribute.getValue1() != null && attribute.getValue1().length() > 0 ) {
+		if (attribute != null && StringUtils.isNotBlank(attribute.getValue1())) {
 			excludeCharList = attribute.getValue1();
 		}
 		
 		if ( excludeCharList == null) {
-			return retval;
+			return;
 		}
 
 		// count the number of characters in the password
 		if (password == null) {
-			return PasswordValidationCode.FAIL_REJECT_CHARS_IN_PSWD;
+			throw new PasswordRuleException(ResponseCode.FAIL_REJECT_CHARS_IN_PSWD);
 		}
 		
 		// check the password for each of these characters.
@@ -62,12 +62,12 @@ public class RejectCharactersRule extends AbstractPasswordRule {
 			for ( int x=0; x < pswdSize; x++ ) {
 				int pswdCh = password.charAt(x);
 				if ( pswdCh == ch ) {
-					return PasswordValidationCode.FAIL_REJECT_CHARS_IN_PSWD;
+					final PasswordRuleException ex = new PasswordRuleException(ResponseCode.FAIL_REJECT_CHARS_IN_PSWD);
+					ex.addResponseValues(pswdCh, x);
+					throw ex;
 				}
 			}
 		}
-			
-		return retval;
 	}
 	
 
