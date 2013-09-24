@@ -23,8 +23,8 @@ package org.openiam.idm.srvc.pswd.rule;
 
 
 import org.apache.commons.lang.StringUtils;
+import org.openiam.base.ws.ResponseCode;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
-import org.openiam.idm.srvc.pswd.dto.PasswordValidationCode;
 
 /**
  * Validates a password to ensure the password is not equal to the principal
@@ -34,9 +34,8 @@ import org.openiam.idm.srvc.pswd.dto.PasswordValidationCode;
 public class PasswordChangeAllowedRule extends AbstractPasswordRule {
 
 
-	public PasswordValidationCode isValid() {
-			
-		PasswordValidationCode retval = PasswordValidationCode.SUCCESS;
+	@Override
+	public void validate() throws PasswordRuleException {
 		boolean enabled = false;
 				
 		PolicyAttribute attribute = policy.getAttribute("PASSWORD_CHANGE_ALLOWED");
@@ -49,14 +48,11 @@ public class PasswordChangeAllowedRule extends AbstractPasswordRule {
 			int changesAllowed =  Integer.parseInt(attribute.getValue1());
 
 			if (changeCount >= changesAllowed) {
-				return PasswordValidationCode.FAIL_PASSWORD_CHANGE_FREQUENCY;
+				final PasswordRuleException ex = new PasswordRuleException(ResponseCode.FAIL_PASSWORD_CHANGE_FREQUENCY);
+				ex.addResponseValue(changesAllowed);
+				throw ex;
 			}
-
-
-			
 		}
-			
-		return retval;
 	}
 
 	

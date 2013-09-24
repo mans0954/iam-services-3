@@ -23,8 +23,8 @@ package org.openiam.idm.srvc.pswd.rule;
 
 
 import org.apache.commons.lang.StringUtils;
+import org.openiam.base.ws.ResponseCode;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
-import org.openiam.idm.srvc.pswd.dto.PasswordValidationCode;
 
 /**
  * Validates a password to ensure the password is not equal to the principal
@@ -34,10 +34,9 @@ import org.openiam.idm.srvc.pswd.dto.PasswordValidationCode;
 public class ChangePasswordByUserRule extends AbstractPasswordRule {
 
 
-	public PasswordValidationCode isValid() {
+	@Override
+	public void validate() throws PasswordRuleException {
 		System.out.println("ChangePasswordByUserRule");
-			
-		PasswordValidationCode retval = PasswordValidationCode.SUCCESS;
 		boolean enabled = false;
 				
 		PolicyAttribute attribute = policy.getAttribute("PWD_EQ_PWD");
@@ -48,15 +47,8 @@ public class ChangePasswordByUserRule extends AbstractPasswordRule {
 		System.out.println("Passwor NEQ Password enabled=" + enabled);
 		if (enabled) {
 			if (password.equalsIgnoreCase("password")) {
-				return PasswordValidationCode.FAIL_NEQ_PASSWORD;
+				throw new PasswordRuleException(ResponseCode.FAIL_NEQ_PASSWORD);
 			}
-			
 		}
-			
-		return retval;
-	}
-	
-
-	
-	
+	}	
 }

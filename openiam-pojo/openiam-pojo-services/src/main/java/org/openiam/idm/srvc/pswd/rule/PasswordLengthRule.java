@@ -23,8 +23,8 @@ package org.openiam.idm.srvc.pswd.rule;
 
 
 import org.apache.commons.lang.StringUtils;
+import org.openiam.base.ws.ResponseCode;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
-import org.openiam.idm.srvc.pswd.dto.PasswordValidationCode;
 
 /**
  * Validates a password to ensure the lenght is consistent with the lenght defined in the password policy
@@ -34,8 +34,8 @@ import org.openiam.idm.srvc.pswd.dto.PasswordValidationCode;
 public class PasswordLengthRule extends AbstractPasswordRule {
 
 
-	public PasswordValidationCode isValid() {
-		PasswordValidationCode retval = PasswordValidationCode.SUCCESS;
+	@Override
+	public void validate() throws PasswordRuleException {
 		int minlen = 0;
 		int maxlen = 0;
 				
@@ -47,25 +47,18 @@ public class PasswordLengthRule extends AbstractPasswordRule {
 			maxlen = Integer.parseInt(attribute.getValue2());
 		}
 		if (password == null) {
-			return PasswordValidationCode.FAIL_LENGTH_RULE;
+			throw new PasswordRuleException(ResponseCode.FAIL_LENGTH_RULE);
 		}
 		
 		if (minlen > 0 ) {
 			if (password.length() < minlen) {
-				retval = PasswordValidationCode.FAIL_LENGTH_RULE;
+				throw new PasswordRuleException(ResponseCode.FAIL_LENGTH_RULE);
 			}
 		}
 		if (maxlen > 0 ) {
 			if (password.length() > maxlen ) {
-				retval = PasswordValidationCode.FAIL_LENGTH_RULE;
+				throw new PasswordRuleException(ResponseCode.FAIL_LENGTH_RULE);
 			}
 		}
-		
-		
-		return retval;
 	}
-	
-
-	
-	
 }

@@ -22,8 +22,8 @@
 package org.openiam.idm.srvc.pswd.rule;
 
 import org.apache.commons.lang.StringUtils;
+import org.openiam.base.ws.ResponseCode;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
-import org.openiam.idm.srvc.pswd.dto.PasswordValidationCode;
 
 /**
  * Validates a password to ensure that a character in password does not repeat
@@ -34,8 +34,8 @@ import org.openiam.idm.srvc.pswd.dto.PasswordValidationCode;
  */
 public class LimitNumberRepeatCharRule extends AbstractPasswordRule {
 
-	public PasswordValidationCode isValid() {
-		PasswordValidationCode retval = PasswordValidationCode.SUCCESS;
+	@Override
+	public void validate() throws PasswordRuleException {
 		int numberOfRepeatingChar = 0;
 
 		PolicyAttribute attribute = policy
@@ -47,7 +47,7 @@ public class LimitNumberRepeatCharRule extends AbstractPasswordRule {
 
 		// check for every char
 		if (password == null) {
-			return PasswordValidationCode.FAIL_LIMIT_NUM_REPEAT_CHAR;
+			throw new PasswordRuleException(ResponseCode.FAIL_LIMIT_NUM_REPEAT_CHAR);
 		}
 
 		char charAtPosition;
@@ -60,7 +60,7 @@ public class LimitNumberRepeatCharRule extends AbstractPasswordRule {
 					if (charAtPosition == password.charAt(i)) {
 						count++;
 						if (count > numberOfRepeatingChar) {
-							return PasswordValidationCode.FAIL_LIMIT_NUM_REPEAT_CHAR;
+							throw new PasswordRuleException(ResponseCode.FAIL_LIMIT_NUM_REPEAT_CHAR);
 						}
 					} else {
 						count = 0;
@@ -68,7 +68,6 @@ public class LimitNumberRepeatCharRule extends AbstractPasswordRule {
 				}
 			}
 		}
-		return retval;
 	}
 
 }

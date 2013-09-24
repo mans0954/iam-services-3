@@ -27,17 +27,16 @@ import java.util.List;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.base.ws.ResponseCode;
 import org.openiam.exception.EncryptionException;
 import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
 import org.openiam.idm.srvc.pswd.domain.PasswordHistoryEntity;
 import org.openiam.idm.srvc.pswd.dto.Password;
 import org.openiam.idm.srvc.pswd.dto.PasswordHistory;
-import org.openiam.idm.srvc.pswd.dto.PasswordValidationCode;
 import org.openiam.idm.srvc.pswd.service.PasswordService;
 import org.openiam.idm.srvc.service.service.ServiceDAOImpl;
 import org.springframework.beans.factory.BeanFactory;
-import org.springframework.beans.factory.xml.XmlBeanFactory;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
@@ -52,11 +51,11 @@ public class PasswordHistoryRule extends AbstractPasswordRule {
 
 	private static final Log log = LogFactory.getLog(PasswordHistoryRule.class);
 
-	public PasswordValidationCode isValid() {
+	@Override
+	public void validate() throws PasswordRuleException {
 		
 		log.info("PasswordHistoryRule called.");
 		
-		PasswordValidationCode retval = PasswordValidationCode.SUCCESS;
 		boolean enabled = false;
 						
 		PolicyAttribute attribute = policy.getAttribute("PWD_HIST_VER");
@@ -77,7 +76,7 @@ public class PasswordHistoryRule extends AbstractPasswordRule {
 			List<PasswordHistoryEntity> historyList = passwordHistoryDao.getPasswordHistoryByLoginId(lg.getLoginId(), 0, version);
 			if (historyList == null || historyList.isEmpty()) {
 				// no history
-				return retval;
+				return;
 			}
 			// check the list.
             String userId = (user==null)?lg.getUserId():user.getUserId();
@@ -88,24 +87,15 @@ public class PasswordHistoryRule extends AbstractPasswordRule {
 				String decrypt = null;
 				try {
 					decrypt =  cryptor.decrypt(keyManagementService.getUserKey(userId, KeyName.password.name()), pwd);
-				}catch(Exception e) {
+				}catch(Throwable e) {
 					log.error("PasswordHistoryRule failed due to decrption error. ", e);
-					return PasswordValidationCode.FAIL_HISTORY_RULE;
+					throw new PasswordRuleException(ResponseCode.FAIL_HISTORY_RULE);
 				}
 				if (pswd.getPassword().equals(decrypt)) {
 					log.info("matching password found.");
-					return PasswordValidationCode.FAIL_HISTORY_RULE;
+					throw new PasswordRuleException(ResponseCode.FAIL_HISTORY_RULE);
 				}
 			}
-
-			
 		}	
-		
-		return retval;		
-		
 	}
-	
-
-	
-	
 }
