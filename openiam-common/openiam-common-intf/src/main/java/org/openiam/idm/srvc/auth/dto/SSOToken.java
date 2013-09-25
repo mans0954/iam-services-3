@@ -53,7 +53,9 @@ public class SSOToken {
         this.tokenType = tokenType;
     }
 
-
+    /**
+     * @return the token type
+     */
     public String getTokenType() {
         return tokenType;
     }
@@ -62,6 +64,10 @@ public class SSOToken {
         this.tokenType = tokenType;
     }
 
+    /**
+     * 
+     * @return the actual token
+     */
     public String getToken() {
         return token;
     }
@@ -70,6 +76,7 @@ public class SSOToken {
         this.token = token;
     }
 
+    
     public String getAuthLevel() {
         return authLevel;
     }
@@ -94,6 +101,10 @@ public class SSOToken {
         this.clientIP = clientIP;
     }
 
+    /**
+     * 
+     * @return the user's principal (login)
+     */
     public String getPrincipal() {
         return principal;
     }
@@ -110,6 +121,10 @@ public class SSOToken {
         this.maxIdleTime = maxIdleTime;
     }
 
+    /**
+     * 
+     * @return the time this token expires in milliseconds
+     */
     public Date getExpirationTime() {
         return expirationTime;
     }
@@ -118,6 +133,10 @@ public class SSOToken {
         this.expirationTime = expirationTime;
     }
 
+    /**
+     * 
+     * @return the Date when this token was created
+     */
     public Date getCreateTime() {
         return createTime;
     }
@@ -126,6 +145,10 @@ public class SSOToken {
         this.createTime = createTime;
     }
 
+    /**
+     * 
+     * @return the internal user ID that this token belongs to
+     */
 	public String getUserId() {
 		return userId;
 	}

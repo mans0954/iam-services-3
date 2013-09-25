@@ -42,60 +42,27 @@ public interface AuthenticationService {
             @WebParam(name = "userId", targetNamespace = "")
             String userId) throws LogoutException;
 
-    /*
-    @WebMethod
-    AuthenticationResponse passwordAuth(
-            @WebParam(name = "domainId", targetNamespace = "")
-            String domainId,
-            @WebParam(name = "principal", targetNamespace = "")
-            String principal,
-            @WebParam(name = "password", targetNamespace = "")
-            String password) throws Exception;
-	*/
-
+    /**
+     * This method logs in a user.  It updates his Login record to reflect this fact.  Unsuccessful logins attempts are counted.  If the user
+     * unsuccessfully logins in N number of times in a row, his account is locked.  'N' is defined in the Password Policy.
+     * @param request - authentication request specific to the user logging in.
+     * @return - an <code>AuthenticationResponse</code> object containing the user's token, principal, and internal user ID.  If the login attempt was successful, 
+     * 			 <p>AuthenticationResponse.getStatus()</p> returns ResponseCode.SUCCESS.  Otherwise, it is set to ResponseCode.FAILURE
+     */
     @WebMethod
     AuthenticationResponse login(
             @WebParam(name = "request", targetNamespace = "")
             AuthenticationRequest request);
 
+  
     /**
-     * For Single Sign On, takes the token and type of token and authenticates the user based on the token.
-     * If authentication is successful returns a Subject which has principals,
-     * userGroups userId, authenticating authority, credentials, token and
-     * expiration time. If not successful, a null is returned.
-     * <p/>
-     * For example:
-     * <p/>
-     * <code>
-     * SSOSubject sub =  authenticationService.authenticateByToken(token, tokenType);<br>
-     * </code>
-     *
-     * @param token     - An encoded string unique for each login incidence
-     * @param tokenType - Constant indicating the type of token that being passed.
-     * @return SSOSubject which holds user information.
+     * Attempts to renew the SSO Token for this user.   
+     * @param principal - the user's login
+     * @param token - the current token
+     * @param tokenType - the token type
+     * @return a <code>Response</code> object.  If successful, <p>Response.getStatus()</p> returns ResponseCode.SUCCESS.  Otherwise, it returns ResponseCode.FAILURE.
+     * 		   If renewal is successful Response.getResponseValue() will contains an <code>SSOToken</code> Object.
      */
-    /*
-    @WebMethod
-    Subject authenticateByToken(
-            @WebParam(name = "userId", targetNamespace = "")
-            String userId,
-            @WebParam(name = "token", targetNamespace = "")
-            String token,
-            @WebParam(name = "tokenType", targetNamespace = "")
-            String tokenType) throws Exception;
-	*/
-
-    /*
-    @WebMethod
-    BooleanResponse validateToken(
-            @WebParam(name = "principal", targetNamespace = "")
-            String principal,
-            @WebParam(name = "token", targetNamespace = "")
-            String token,
-            @WebParam(name = "tokenType", targetNamespace = "")
-            String tokenType) throws Exception;
-	*/
-
     @WebMethod
     Response renewToken(
             @WebParam(name = "principal", targetNamespace = "")
@@ -104,15 +71,4 @@ public interface AuthenticationService {
             String token,
             @WebParam(name = "tokenType", targetNamespace = "")
             String tokenType);
-
-    /*
-    @WebMethod
-    BooleanResponse validateTokenByUser(
-            @WebParam(name = "userId", targetNamespace = "")
-            String userId,
-            @WebParam(name = "token", targetNamespace = "")
-            String token,
-            @WebParam(name = "tokenType", targetNamespace = "")
-            String tokenType) throws Exception;
-	*/
 }
