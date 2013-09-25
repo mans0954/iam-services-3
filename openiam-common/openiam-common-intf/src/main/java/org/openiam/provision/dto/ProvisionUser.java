@@ -205,11 +205,11 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
     }
 
     public Login getPrimaryPrincipal(String managedSysId) {
-        if (principalList == null) {
+        if (principalList == null || managedSysId == null) {
             return null;
         }
         for (Login l : principalList) {
-            if (l.getManagedSysId().equals(managedSysId)) {
+            if (managedSysId.equals(l.getManagedSysId())) {
                 return l;
             }
         }

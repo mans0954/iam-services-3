@@ -175,7 +175,7 @@ public class TransformActiveDirRecord extends AbstractTransformScript {
                 lg.operation = AttributeOperationEnum.ADD
                 lg.domainId = DOMAIN
                 lg.login = attrVal.value
-                lg.domainId = "0"
+                lg.managedSysId = "0"
                 pUser.principalList.add(lg)
 
                 /*  AD target system identity  */
@@ -183,7 +183,7 @@ public class TransformActiveDirRecord extends AbstractTransformScript {
                 lg2.operation = AttributeOperationEnum.ADD
                 lg2.domainId = DOMAIN
                 lg2.login = attrVal.value
-                lg2.domainId = AD_MANAGED_SYS_ID
+                lg2.managedSysId = AD_MANAGED_SYS_ID
                 pUser.principalList.add(lg2)
             }
         }
