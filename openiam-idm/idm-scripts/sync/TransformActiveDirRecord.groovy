@@ -1,339 +1,281 @@
+import org.openiam.base.AttributeOperationEnum
+import org.openiam.dozer.converter.OrganizationDozerConverter
+import org.openiam.dozer.converter.RoleDozerConverter
+import org.openiam.idm.searchbeans.OrganizationSearchBean
+import org.openiam.idm.srvc.continfo.dto.Address
+import org.openiam.idm.srvc.org.service.OrganizationService
+import org.openiam.idm.srvc.role.service.RoleDataService
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Map;
-import java.util.List;
-import java.util.ArrayList;
-
-import org.openiam.idm.srvc.synch.dto.Attribute;
-import org.openiam.idm.srvc.synch.dto.LineObject;
-import org.openiam.idm.srvc.synch.service.AbstractTransformScript;
-import org.openiam.idm.srvc.synch.service.TransformScript;
-import org.openiam.idm.srvc.user.dto.UserAttribute;
-import org.openiam.idm.srvc.user.dto.User;
-import org.openiam.provision.dto.ProvisionUser;
+import org.openiam.idm.srvc.synch.dto.Attribute
+import org.openiam.idm.srvc.synch.dto.LineObject
+import org.openiam.idm.srvc.synch.service.AbstractTransformScript
+import org.openiam.idm.srvc.synch.service.TransformScript
+import org.openiam.idm.srvc.user.dto.UserAttribute
+import org.openiam.provision.dto.ProvisionUser
 import org.openiam.idm.srvc.user.dto.UserStatusEnum
-import org.openiam.idm.srvc.role.dto.Role;
-import org.openiam.idm.srvc.role.dto.RoleId;
-import org.openiam.idm.srvc.auth.dto.Login;
-import org.openiam.idm.srvc.auth.dto.LoginId;
-import org.openiam.idm.srvc.org.dto.Organization;
-import org.openiam.idm.srvc.org.service.OrganizationDataService;
-import org.openiam.idm.srvc.continfo.dto.Phone;
-import org.openiam.idm.srvc.continfo.dto.EmailAddress;
-import org.openiam.idm.srvc.continfo.dto.ContactConstants;
-import javax.xml.ws.Service;
-import javax.xml.namespace.QName;
-import javax.xml.ws.soap.SOAPBinding;
+import org.openiam.idm.srvc.auth.dto.Login
+import org.openiam.idm.srvc.continfo.dto.Phone
+import org.openiam.idm.srvc.continfo.dto.EmailAddress
 
 
 public class TransformActiveDirRecord extends AbstractTransformScript {
 
+    @Override
+    void init() {}
+
     /* constants - maps to a managed sys id*/
-    static String BASE_URL= "http://localhost:8080/idmsrvc";
-    String DOMAIN = "USR_SEC_DOMAIN";
-    String AD_MANAGED_SYS_ID = "110";
+    String DOMAIN = "USR_SEC_DOMAIN"
+    String AD_MANAGED_SYS_ID = "110"
     
-    String defaultRole = "END_USER";
-    boolean assignDefaultRole = false;
+    String defaultRole = "End User"
+    boolean assignDefaultRole = false
     
-    boolean KEEP_AD_ID = true;
+    boolean KEEP_AD_ID = true
    
-    String IDENTITY_ATTRIBUTE = "sAMAccountName";
+    String IDENTITY_ATTRIBUTE = "sAMAccountName"
    
-   //String IDENTITY_ATTRIBUTE = "userPrincipalName";
-   //String IDENTITY_ATTRIBUTE = "distinguishedName";
+   //String IDENTITY_ATTRIBUTE = "userPrincipalName"
+   //String IDENTITY_ATTRIBUTE = "distinguishedName"
 
 	public int execute(LineObject rowObj, ProvisionUser pUser) {
 
-     	println("Is New User:" + isNewUser)
-	    println("User Object:" + user)
-		println("PrincipalList: " + principalList)
-		println("User Roles:" + userRoleList)
+        println("Is New User: " + isNewUser)
+        if (!isNewUser) {
+            println("User Object:" + user)
+            println("PrincipalList: " + principalList)
+            println("User Roles:" + userRoleList)
+        } else {
+            pUser.userId = null
+        }
 
+		populateObject(rowObj, pUser)
 
-        println("---------------------------------");
-        println("Synching object for: " + rowObj );
-        println("");
-
-		populateObject(rowObj, pUser);
-
-
-		pUser.setStatus(UserStatusEnum.ACTIVE);
+		pUser.setStatus(UserStatusEnum.ACTIVE)
 		pUser.securityDomain = "0"
-
-
-
 		// Add default role
 		if (assignDefaultRole) {
-	    
-	    if(userRoleList == null) {
-	        userRoleList = new LinkedList<Role>();
-	    }
-			RoleId id = new RoleId(DOMAIN, defaultRole);
-			Role r = new Role();
-			r.setId(id);
-	    userRoleList.add(r);
-
-			pUser.setMemberOfRoles(userRoleList);
-
+            addRole(pUser, defaultRole)
 		}
-		return TransformScript.NO_DELETE;
+		return TransformScript.NO_DELETE
 	}
 
-	private void populateObject(LineObject rowObj, ProvisionUser pUser) {
-		Attribute attrVal = null;
-		DateFormat df =  new SimpleDateFormat("MM-dd-yyyy");
-        List<Login> principalList = new ArrayList<Login>();
+    private void populateObject(LineObject rowObj, ProvisionUser pUser) {
 
-		Map<String,Attribute> columnMap =  rowObj.getColumnMap();
-        
-        def OrganizationDataService orgService = orgService();
-        
-        String sAMAccountName = null;
+        def attrVal
+        Map<String, Attribute> columnMap = rowObj.columnMap
 
-        if (isNewUser) {
-            pUser.setUserId(null);
+        attrVal = columnMap.get(IDENTITY_ATTRIBUTE)
+        if (attrVal) {
+            addAttribute(pUser, attrVal)
         }
 
-
-
-        attrVal = columnMap.get("sAMAccountName");
-        if (attrVal != null && attrVal.value != null) {
-            addAttribute(pUser, attrVal);
-            sAMAccountName = attrVal.value;
-        }
-
-        attrVal = columnMap.get("company");
-            if (attrVal != null && attrVal.value != null) {
-                String orgName = attrVal.value;
-                List<Organization> orgList = orgService.search(orgName, null, null, null);
-                if (orgList != null && orgList.size() > 0) {
-                    Organization o = orgList.get(0);
-                    pUser.companyId = o.orgId;
-                }
+        attrVal = columnMap.get("company")
+        if (attrVal) {
+            String orgName = attrVal.value
+            if (orgName) {
+                addOrganization(pUser, orgName, "ORGANIZATION")
             }
-        attrVal = columnMap.get("department");
-            if (attrVal != null && attrVal.value != null) {
-                String orgName = attrVal.value;
-                List<Organization> orgList = orgService.search(orgName, null, null, null);
-                if (orgList != null && orgList.size() > 0) {
-                    Organization o = orgList.get(0);
-                    pUser.deptCd = o.orgId;
-                }
+        }
+
+        attrVal = columnMap.get("department")
+        if (attrVal) {
+            String orgName = attrVal.value
+            if (orgName) {
+                addOrganization(pUser, orgName, "DEPARTMENT")
             }
-
-
-
-		attrVal = columnMap.get("givenName");
-		if (attrVal != null && attrVal.value != null) {
-			pUser.setFirstName(attrVal.getValue());
-		}
-
-		attrVal = columnMap.get("sn");
-		if (attrVal != null && attrVal.value != null) {
-			pUser.setLastName(attrVal.getValue());
-		}
-
-
-
-		attrVal = columnMap.get("mail");
-		if (attrVal != null && attrVal.value != null ) {
-          // check if we already have a value for EMAIL1
-          addEmailAddress(attrVal, pUser, user);
-          pUser.email = attrVal.value;
-
-		}
-
-
-
-		attrVal = columnMap.get("street");
-		if (attrVal != null && attrVal.value != null) {
-			pUser.address1 = attrVal.getValue();
-		}
-
-        attrVal = columnMap.get("l");
-        if (attrVal != null && attrVal.value != null) {
-            pUser.city = attrVal.getValue();
         }
-        attrVal = columnMap.get("postalCode");
-        if (attrVal != null && attrVal.value != null) {
-            pUser.postalCd = attrVal.getValue();
+
+		attrVal = columnMap.get("givenName")
+		if (attrVal) {
+			pUser.firstName = attrVal.value
+		}
+
+		attrVal = columnMap.get("sn")
+        if (attrVal) {
+            pUser.lastName = attrVal.value
         }
-        attrVal = columnMap.get("st");
+
+        attrVal = columnMap.get("title")
+        if (attrVal) {
+            pUser.title = attrVal.value
+        }
+
+        attrVal = columnMap.get("employeeID")
+        if (attrVal) {
+            pUser.employeeId = attrVal.value
+        }
+
+        attrVal = columnMap.get("ou")
         if (attrVal != null) {
-            pUser.state = attrVal.getValue();
+            addAttribute(pUser, attrVal)
         }
 
-        attrVal = columnMap.get("ou");
-        if (attrVal != null) {
-            addAttribute(pUser, attrVal);
+        attrVal = columnMap.get("mail")
+        if (attrVal) {
+            // Processing email address
+            def emailAddress = new EmailAddress()
+            emailAddress.name = "PRIMARY_EMAIL"
+            emailAddress.isDefault = true
+            emailAddress.isActive = true
+            emailAddress.emailAddress = attrVal.value
+            emailAddress.metadataTypeId = "PRIMARY_EMAIL"
+            addEmailAddress(pUser, emailAddress)
+
+        }	else {
+            println("mail attribute was not found")
         }
 
-        println(" - Processing Phone objects: ");
+        // Processing address
+        def address = new Address()
+        address.name = "PRIMARY_LOCATION"
+        address.address1 = columnMap.get("street")?.value
+        address.city = columnMap.get("l")?.value
+        address.postalCd = columnMap.get("postalCode")?.value
+        address.state = columnMap.get("st")?.value
+        address.metadataTypeId = "PRIMARY_LOCATION"
+        addAddress(pUser, address)
 
-        attrVal = columnMap.get("mobile");
-        if (attrVal != null && attrVal.getValue() != null) {
+        println(" - Processing Phone objects: ")
 
-            addPhone("CELL PHONE", attrVal, pUser, user);
-
-
+        attrVal = columnMap.get("mobile")
+        if (attrVal) {
+            def phone = new Phone()
+            phone.name = "CELL_PHONE"
+            phone.phoneNbr = attrVal.value
+            phone.metadataTypeId = "CELL_PHONE"
+            addPhone(pUser, phone)
         }
 
-        attrVal = columnMap.get("telephoneNumber");
-        if (attrVal != null && attrVal.getValue() != null) {
-
-            addPhone("DESK PHONE", attrVal, pUser, user);
-
+        attrVal = columnMap.get("telephoneNumber")
+        if (attrVal) {
+            def phone = new Phone()
+            phone.name = "DESK_PHONE"
+            phone.phoneNbr = attrVal.value
+            phone.metadataTypeId = "DESK_PHONE"
+            addPhone(pUser, phone)
         }
 
-        attrVal = columnMap.get("facsimileTelephoneNumber");
-        if (attrVal != null && attrVal.getValue() != null) {
-
-            addPhone("FAX", attrVal, pUser, user);
-
+        attrVal = columnMap.get("facsimileTelephoneNumber")
+        if (attrVal) {
+            def phone = new Phone()
+            phone.name = "FAX"
+            phone.phoneNbr = attrVal.value
+            phone.metadataTypeId = "FAX"
+            addPhone(pUser, phone)
         }
 
-        attrVal = columnMap.get("title");
-        if (attrVal != null && attrVal.getValue() != null) {
-
-            pUser.title = attrVal.getValue();
-
-        }
-        attrVal = columnMap.get("employeeID");
-        if (attrVal != null && attrVal.getValue() != null) {
-
-            pUser.employeeId = attrVal.getValue();
-
-        }
-
-
-        if (KEEP_AD_ID) {
-
-            println(" - Processing PrincipalName and DN");
-
-            attrVal = columnMap.get(IDENTITY_ATTRIBUTE);
-            if (attrVal != null && attrVal.value != null) {
-
+        if (KEEP_AD_ID && isNewUser) {
+            println(" - Processing PrincipalName and DN")
+            attrVal = columnMap.get(IDENTITY_ATTRIBUTE)
+            if (attrVal) {
                 // PRE-POPULATE THE USER LOGIN. IN SOME CASES THE COMPANY WANTS TO KEEP THE LOGIN THAT THEY HAVE
                 // THIS SHOWS HOW WE CAN DO THAT
+                /*  AD primary identity  */
+                def lg = new Login()
+                lg.operation = AttributeOperationEnum.ADD
+                lg.domainId = DOMAIN
+                lg.login = attrVal.value
+                lg.domainId = "0"
+                pUser.principalList.add(lg)
 
-                if (isNewUser) {
-                    Login lg = new Login();
-                    lg.id = new LoginId(DOMAIN, attrVal.value, "0");
-                    principalList.add(lg);
-
-                    /*  AD target system identity  */
-                    Login lg2 = new Login();
-                    lg2.id = new LoginId(DOMAIN, attrVal.value, AD_MANAGED_SYS_ID);
-                    principalList.add(lg2);
-
-                    pUser.principalList = principalList;
-                }
-
-
+                /*  AD target system identity  */
+                Login lg2 = new Login()
+                lg2.operation = AttributeOperationEnum.ADD
+                lg2.domainId = DOMAIN
+                lg2.login = attrVal.value
+                lg2.domainId = AD_MANAGED_SYS_ID
+                pUser.principalList.add(lg2)
             }
-
-
         }
-
-        if (!principalList.isEmpty()) {
-            pUser.principalList = principalList;
-        }
-
-
-
     }
 
-    private void addEmailAddress(Attribute attr, ProvisionUser pUser, User origUser) {
-
-        // if there are existing email addresses with this user, then update them and add it to provision user
-        // object to avoid duplication
-        if (origUser != null) {
-            Set<EmailAddress> existingEmailList = origUser.getEmailAddresses();
-
-            for (EmailAddress e :  existingEmailList) {
-                if ("EMAIL1".equalsIgnoreCase(e.getName())) {
-                    e.setEmailAddress(attr.value)
-                    pUser.getEmailAddresses().add(e);
-                    return;
-
+    def addEmailAddress(ProvisionUser pUser, EmailAddress emailAddress) {
+        if (!isNewUser) {
+            for (EmailAddress e : pUser.emailAddresses) {
+                if (emailAddress.metadataTypeId.equalsIgnoreCase(e.metadataTypeId)) {
+                    e.updateEmailAddress(emailAddress)
+                    e.setOperation(AttributeOperationEnum.REPLACE)
+                    return
                 }
-
             }
         }
-        EmailAddress email1 = new EmailAddress();
-        email1.setEmailAddress(attr.value);
-        email1.setName("EMAIL1");
-        email1.setParentType(ContactConstants.PARENT_TYPE_USER);
-        pUser.getEmailAddresses().add(email1);
-
-
-
+        emailAddress.setOperation(AttributeOperationEnum.ADD)
+        pUser.emailAddresses.add(emailAddress)
     }
 
-    private void addPhone(String name, Attribute attr, ProvisionUser pUser, User origUser) {
-
-        String phoneString = attr.getValue();
-
-        // if there are existing email addresses with this user, then update them and add it to provision user
-        // object to avoid duplication
-        if (origUser != null) {
-            Set<Phone> existingPhoneList = origUser.getPhones();
-
-            for (Phone p :  existingPhoneList) {
-                if (name.equalsIgnoreCase(p.getName())) {
-
-                    // assumes phone format is:  xxx-xxx-xxxx
-                    if(phoneString.length()>4) {
-                        p.setAreaCd(phoneString.substring(0,3));
-                        p.setPhoneNbr(phoneString.substring(4));
-                    } else {
-                        p.setPhoneNbr(phoneString);
-                    }
-                    pUser.getPhones().add(p);
-                    return;
-
+    def addPhone(ProvisionUser pUser, Phone phone) {
+        if (!isNewUser) {
+            for (Phone p : pUser.phones) {
+                if (phone.metadataTypeId.equalsIgnoreCase(p.metadataTypeId)) {
+                    p.updatePhone(phone)
+                    p.setOperation(AttributeOperationEnum.REPLACE)
+                    return
                 }
-
             }
         }
-        Phone newPhone = new Phone();
+        phone.setOperation(AttributeOperationEnum.ADD)
+        pUser.phones.add(phone)
+    }
 
-        if(phoneString.length()>4) {
-            p.setAreaCd(phoneString.substring(0,3));
-            p.setPhoneNbr(phoneString.substring(4));
+    def addAddress(ProvisionUser pUser, Address address) {
+        if (!isNewUser) {
+            for (Address a : pUser.addresses) {
+                if (address.metadataTypeId.equalsIgnoreCase(a.metadataTypeId)) {
+                    a.updateAddress(address)
+                    a.setOperation(AttributeOperationEnum.REPLACE)
+                    return
+                }
+            }
+        }
+        address.setOperation(AttributeOperationEnum.ADD)
+        pUser.addresses.add(address)
+    }
+
+    def addOrganization(ProvisionUser pUser, String orgName, String orgType) {
+        if (!isNewUser) {
+            def foundOrg = pUser.affiliations.find { a-> a.organizationName == orgName && a.organizationTypeId == orgType }
+            if (foundOrg) {
+                return
+            }
+        }
+
+        def organizationService = context?.getBean("organizationService") as OrganizationService
+        def organizationDozerConverter = context?.getBean("organizationDozerConverter") as OrganizationDozerConverter
+
+        def orgSearchBean = new OrganizationSearchBean()
+        orgSearchBean.organizationName = orgName
+        orgSearchBean.organizationTypeId = orgType
+        def orgList = organizationService.findBeans(orgSearchBean, null, 0, 1)
+        if (orgList) {
+            def organization = organizationDozerConverter?.convertToDTO(orgList.get(0), false)
+            organization.operation = AttributeOperationEnum.ADD
+            pUser.affiliations.add(organization)
+        }
+    }
+
+    static def addAttribute(ProvisionUser user, Attribute attr) {
+        if (attr?.name) {
+            UserAttribute userAttr = new UserAttribute(attr.name, attr.value)
+            user.userAttributes.put(attr.name, userAttr)
+            println("Attribute '" + attr.name + "' added to the user object.")
+        }
+    }
+
+    def addRole(ProvisionUser pUser, String roleName) {
+        if (!isNewUser) {
+            def foundRole = pUser.roles.find { r-> r.roleName == roleName }
+            if (foundRole) {
+                return
+            }
+        }
+        def roleDataService = context?.getBean("roleDataService") as RoleDataService
+        def roleDozerConverter = context?.getBean("roleDozerConverter") as RoleDozerConverter
+        def role = roleDozerConverter?.convertToDTO(roleDataService?.getRoleByName(roleName, null), false)
+        if (role) {
+            role.operation = AttributeOperationEnum.ADD
+            pUser.roles.add(role)
         } else {
-            p.setPhoneNbr(phoneString);
+            println "Role with name " + roleName + " was not found"
         }
-        newPhone.setParentType(ContactConstants.PARENT_TYPE_USER);
-        newPhone.setName(name);
-        pUser.getPhones().add(newPhone);
-
     }
-
-    private void addAttribute(ProvisionUser user, Attribute attr) {
-
-		if (attr != null && attr.getName() != null && attr.getName().length() > 0) {
-			UserAttribute userAttr = new UserAttribute(attr.getName(), attr.getValue());
-			user.getUserAttributes().put(attr.getName(), userAttr);
-		}
-	}
-
-   
-	 static OrganizationDataService orgService() {
-        String serviceUrl = BASE_URL + "/OrganizationDataService"
-        String port ="OrganizationDataWebServicePort"
-        String nameSpace = "urn:idm.openiam.org/srvc/org/service"
-
-        Service service = Service.create(QName.valueOf(serviceUrl))
-
-        service.addPort(new QName(nameSpace,port),
-                SOAPBinding.SOAP11HTTP_BINDING,	serviceUrl)
-
-        return service.getPort(new QName(nameSpace,	port),
-                OrganizationDataService.class);
-    }
-
-
 }

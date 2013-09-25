@@ -1,7 +1,3 @@
-/*if (user.postalCd != null) { 
-output=user.postalCd
-}else {
-output=null
-}
-*/
-output=null
+
+output = user.addresses?.iterator()?.next()?.postalCd
+

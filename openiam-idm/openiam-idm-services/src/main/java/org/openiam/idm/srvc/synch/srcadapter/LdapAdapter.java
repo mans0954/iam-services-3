@@ -164,7 +164,6 @@ public class LdapAdapter extends AbstractSrcAdapter { // implements SourceAdapte
                 SearchResult sr = (SearchResult) results.next();
                 Attributes attrs = sr.getAttributes();
 
-                pUser = new ProvisionUser();
                 LineObject rowObj = new LineObject();
 
                 log.debug("-New Row to Synchronize --" + ctr++);
@@ -241,17 +240,19 @@ public class LdapAdapter extends AbstractSrcAdapter { // implements SourceAdapte
                         for (TransformScript transformScript : transformScripts) {
                             // initialize the transform script
                             if (usr != null) {
+                                User u = userDozerConverter.convertToDTO(userManager.getUser(usr.getUserId()), true);
+                                pUser = new ProvisionUser(u);
                                 transformScript.setNewUser(false);
-                                transformScript.setUser(userDozerConverter.convertToDTO(userManager.getUser(usr.getUserId()), true));
+                                transformScript.setUser(u);
                                 transformScript.setPrincipalList(loginDozerConverter.convertToDTOList(loginManager.getLoginByUser(usr.getUserId()), true));
                                 transformScript.setUserRoleList(roleDataService.getUserRolesAsFlatList(usr.getUserId()));
 
                             } else {
+                                pUser = new ProvisionUser();
                                 transformScript.setNewUser(true);
                             }
 
                             retval = transformScript.execute(rowObj, pUser);
-
                             log.debug("Transform result=" + retval);
                         }
 
@@ -445,8 +446,7 @@ public class LdapAdapter extends AbstractSrcAdapter { // implements SourceAdapte
         envDC.put(Context.SECURITY_PRINCIPAL, config.getSrcLoginId());  //"administrator@diamelle.local"
         envDC.put(Context.SECURITY_CREDENTIALS, config.getSrcPassword());
 
-        if (hostUrl.contains("ldaps")) {
-
+        if (hostUrl.toLowerCase().contains("ldaps")) {
             envDC.put(Context.SECURITY_PROTOCOL, "SSL");
         }
 

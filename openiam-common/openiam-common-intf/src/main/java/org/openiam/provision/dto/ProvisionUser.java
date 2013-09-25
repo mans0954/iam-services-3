@@ -57,7 +57,7 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
 //    protected List<Role> memberOfRoles;
 //    protected List<Organization> userAffiliations;
 //    protected List<UserResourceAssociation> userResourceList;
-    protected Set<User> superiors;
+    protected Set<User> superiors = new HashSet<User>(0);
 
     public ProvisionModelEnum provisionModel;
     public String securityDomain;
