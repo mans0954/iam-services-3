@@ -556,6 +556,9 @@ public class AuthenticationServiceImpl implements AuthenticationService, Applica
                 case AuthenticationConstants.RESULT_SUCCESS_PASSWORD_EXP:
                 	authResp.setAuthErrorCode(AuthenticationConstants.RESULT_SUCCESS_PASSWORD_EXP);
                 	break;
+                case AuthenticationConstants.RESULT_PASSWORD_CHANGE_AFTER_RESET:
+                    authResp.setAuthErrorCode(AuthenticationConstants.RESULT_PASSWORD_CHANGE_AFTER_RESET);
+                    break;
                 default:
                     authResp.setAuthErrorCode(AuthenticationConstants.INTERNAL_ERROR);
                 }

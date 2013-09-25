@@ -214,6 +214,13 @@ public class DefaultLoginModule extends AbstractLoginModule {
             if (daysToExp > -1) {
                 sub.setDaysToPwdExp(daysToExp);
             }
+            // check password policy if it is necessary to change it after reset
+            Policy pwdPlcy = passwordManager.getPasswordPolicy(domainId, lg.getLogin(), lg.getManagedSysId());
+            String chngPwdAttr = getPolicyAttribute(pwdPlcy.getPolicyAttributes(),"CHNG_PSWD_ON_RESET");
+            if(lg.getResetPassword()>0 && StringUtils.isNotBlank(chngPwdAttr)){
+                throw new AuthenticationException(
+                        AuthenticationConstants.RESULT_PASSWORD_CHANGE_AFTER_RESET);
+            }
 
             log.debug("-login successful");
             // good login - reset the counters
@@ -251,6 +258,8 @@ public class DefaultLoginModule extends AbstractLoginModule {
         sub.setSsoToken(token(lg.getUserId(), tokenParam));
         sub.setDomainId(domainId);
         setResultCode(lg, sub, curDate);
+
+
 
         // send message into to audit log
 
