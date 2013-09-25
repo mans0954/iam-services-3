@@ -456,15 +456,11 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                 String resourceId = mSys.getResourceId();
 
                                 // SET PRE ATTRIBUTES FOR TARGET SYS SCRIPT
-                                bindingMap
-                                        .put(TARGET_SYSTEM_IDENTITY, l.getLogin());
-                                bindingMap.put(TARGET_SYS_MANAGED_SYS_ID,
-                                        mSys.getManagedSysId());
+                                bindingMap.put(TARGET_SYSTEM_IDENTITY, l.getLogin());
+                                bindingMap.put(TARGET_SYS_MANAGED_SYS_ID, mSys.getManagedSysId());
                                 bindingMap.put(TARGET_SYS_RES_ID, resourceId);
-                                bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS,
-                                        IDENTITY_EXIST);
-                                bindingMap.put(TARGET_SYS_SECURITY_DOMAIN,
-                                        l.getDomainId());
+                                bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS, IDENTITY_EXIST);
+                                bindingMap.put(TARGET_SYS_SECURITY_DOMAIN, l.getDomainId());
 
                                 if (resourceId != null) {
                                     resource = resourceDataService
@@ -496,7 +492,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                         && connector.getConnectorInterface()
                                                 .equalsIgnoreCase("REMOTE")) {
                                     ObjectResponse resp = remoteDelete(
-                                            loginDozerConverter.convertToDTO(login,
+                                            loginDozerConverter.convertToDTO(l,
                                                     true), requestId, mSys,
                                             connector, matchObj, pUser, auditLog);
                                     if (resp.getStatus() == StatusCodeType.SUCCESS) {
@@ -504,7 +500,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                     }
 
                                 } else {
-                                    ResponseType resp = localDelete(loginDozerConverter.convertToDTO(login, true),
+                                    ResponseType resp = localDelete(loginDozerConverter.convertToDTO(l, true),
                                             requestId, mSys, auditLog);
 
                                     if (resp.getStatus() == StatusCodeType.SUCCESS) {
@@ -1350,7 +1346,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     // build the request
                     CrudRequest<ExtensibleUser> addReqType = new CrudRequest<ExtensibleUser>();
                     addReqType.setObjectIdentity(targetSysLogin.getLogin());
-                                addReqType.setRequestID(requestId);
+                    addReqType.setRequestID(requestId);
                     addReqType.setTargetID(targetSysLogin.getManagedSysId());
                                 addReqType.setExtensibleObject(extUser);
                     log.debug("Creating identity in target system:" + targetSysLogin.getLoginId());
@@ -1422,7 +1418,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
                     CrudRequest<ExtensibleUser> userReq = new CrudRequest<ExtensibleUser>();
                     userReq.setObjectIdentity(targetSysLogin.getLogin());
-                                userReq.setRequestID(requestId);
+                    userReq.setRequestID(requestId);
                     userReq.setTargetID(targetSysLogin.getManagedSysId());
                     userReq.setHostLoginId(mSys.getUserId());
                     String passwordDecoded = mSys.getPswd();

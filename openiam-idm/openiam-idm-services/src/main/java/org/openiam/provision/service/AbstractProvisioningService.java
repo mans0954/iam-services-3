@@ -275,8 +275,9 @@ public abstract class AbstractProvisioningService implements ProvisionService {
         }
         reqType.setHostLoginPassword(passwordDecoded);
         reqType.setHostUrl(mSys.getHostUrl());
-        if (matchObj != null)
+        if (matchObj != null) {
         	reqType.setBaseDN(matchObj.getBaseDn());
+        }
         reqType.setExtensibleObject(extUser);
         reqType.setScriptHandler(mSys.getLookupHandler());
 
@@ -1369,8 +1370,28 @@ public abstract class AbstractProvisioningService implements ProvisionService {
         log.debug("Local delete for=" + l);
 
         CrudRequest<ExtensibleUser> reqType = new CrudRequest<ExtensibleUser>();
+
+        ManagedSystemObjectMatch matchObj = null;
+        ManagedSystemObjectMatch[] matchObjAry = managedSysService.managedSysObjectParam(mSys.getManagedSysId(), "USER");
+        if (matchObjAry != null && matchObjAry.length > 0) {
+            matchObj = matchObjAry[0];
+            if (matchObj != null) {
+                reqType.setBaseDN(matchObj.getBaseDn());
+            }
+        }
+
         reqType.setRequestID(requestId);
         reqType.setObjectIdentity(l.getLogin());
+        reqType.setTargetID(mSys.getManagedSysId());
+        reqType.setHostLoginId(mSys.getUserId());
+        String passwordDecoded = mSys.getPswd();
+        try {
+            passwordDecoded = getDecryptedPassword(mSys);
+        } catch (ConnectorDataException e) {
+            e.printStackTrace();
+        }
+        reqType.setHostLoginPassword(passwordDecoded);
+        reqType.setHostUrl(mSys.getHostUrl());
 
         ResponseType resp = connectorAdapter.deleteRequest(mSys, reqType, MuleContextProvider.getCtx());
 

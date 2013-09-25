@@ -1,5 +1,6 @@
 package org.openiam.connector.ldap.command.base;
 
+import org.apache.commons.lang.StringUtils;
 import org.openiam.base.BaseAttribute;
 import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.connector.type.constant.ErrorCode;
@@ -223,7 +224,9 @@ public abstract class AbstractLdapCommand<Request extends RequestType, Response 
 
         String searchFilter = matchObj.getSearchFilter();
         // replace the place holder in the search filter
-        searchFilter = searchFilter.replace("?", searchValue);
+        if (StringUtils.isNotBlank(searchFilter)) {
+            searchFilter = searchFilter.replace("?", searchValue);
+        }
 
         if (objectBaseDN == null) {
             objectBaseDN = matchObj.getSearchBaseDn();
