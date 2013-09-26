@@ -1,2 +1,3 @@
 
-output = user.addresses?.iterator().next()?.city
+def it = user.addresses?.iterator()
+output = it?.hasNext() ? it.next()?.city : null
