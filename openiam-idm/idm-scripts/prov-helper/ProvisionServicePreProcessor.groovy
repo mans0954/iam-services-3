@@ -30,10 +30,10 @@ public class ProvisionServicePreProcessor extends AbstractPreProcessor {
 
 		// context to look up spring beans - commonly used beans. Included to help development
 
-   OrganizationDataService orgManager = (OrganizationDataService)context.getBean("orgManager");
-   RoleDataService roleDataService = (RoleDataService)context.getBean("roleDataService");
-	 LoginDataService loginService = (LoginDataService)context.getBean("loginManager");
-	 ResourceDataService resourceDataService = (ResourceDataService)context.getBean("resourceDataService");
+//   OrganizationDataService orgManager = (OrganizationDataService)context.getBean("orgManager");
+//   RoleDataService roleDataService = (RoleDataService)context.getBean("roleDataService");
+//	 LoginDataService loginService = (LoginDataService)context.getBean("loginManager");
+//	 ResourceDataService resourceDataService = (ResourceDataService)context.getBean("resourceDataService");
 	 
 		
 		println("ProvisionServicePreProcessor: AddUser called.");
