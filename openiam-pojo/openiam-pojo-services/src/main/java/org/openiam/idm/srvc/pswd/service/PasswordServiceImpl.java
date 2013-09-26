@@ -146,6 +146,8 @@ public class PasswordServiceImpl implements PasswordService {
 		} catch(PasswordRuleException e) {
 			retVal.setErrorCode(e.getCode());
 			retVal.setResponseValues(e.getResponseValues());
+			retVal.setMinBound(e.getMinBound());
+			retVal.setMaxBound(e.getMaxBound());
 			retVal.fail();
 		} catch (Throwable io) {
 			log.error("Can't validate password", io);
@@ -175,6 +177,8 @@ public class PasswordServiceImpl implements PasswordService {
 					lg);
 		} catch(PasswordRuleException e) {
 			retVal.setErrorCode(e.getCode());
+			retVal.setMinBound(e.getMinBound());
+			retVal.setMaxBound(e.getMaxBound());
 			retVal.setResponseValues(e.getResponseValues());
 			retVal.fail();
 		} catch (Throwable io) {
@@ -208,6 +212,8 @@ public class PasswordServiceImpl implements PasswordService {
 		} catch(PasswordRuleException e) {
 			retVal.setErrorCode(e.getCode());
 			retVal.setResponseValues(e.getResponseValues());
+			retVal.setMinBound(e.getMinBound());
+			retVal.setMaxBound(e.getMaxBound());
 			retVal.fail();
 		} catch (final Throwable io) {
 			log.error("Unknown exception", io);

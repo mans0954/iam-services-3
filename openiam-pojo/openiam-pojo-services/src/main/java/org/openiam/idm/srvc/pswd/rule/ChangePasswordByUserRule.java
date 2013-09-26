@@ -34,9 +34,10 @@ import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
 public class ChangePasswordByUserRule extends AbstractPasswordRule {
 
 
+	private static final String PASSWORD = "password";
+	
 	@Override
 	public void validate() throws PasswordRuleException {
-		System.out.println("ChangePasswordByUserRule");
 		boolean enabled = false;
 				
 		PolicyAttribute attribute = policy.getAttribute("PWD_EQ_PWD");
@@ -44,10 +45,9 @@ public class ChangePasswordByUserRule extends AbstractPasswordRule {
 			enabled = Boolean.getBoolean(attribute.getValue1());
 
 		}
-		System.out.println("Passwor NEQ Password enabled=" + enabled);
 		if (enabled) {
-			if (password.equalsIgnoreCase("password")) {
-				throw new PasswordRuleException(ResponseCode.FAIL_NEQ_PASSWORD);
+			if(StringUtils.equalsIgnoreCase(password, PASSWORD)) {
+				throw new PasswordRuleException(ResponseCode.FAIL_NEQ_PASSWORD, new Object[] {PASSWORD});
 			}
 		}
 	}	

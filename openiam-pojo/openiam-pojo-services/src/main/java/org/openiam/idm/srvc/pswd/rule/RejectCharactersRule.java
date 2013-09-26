@@ -47,10 +47,12 @@ public class RejectCharactersRule extends AbstractPasswordRule {
 		if ( excludeCharList == null) {
 			return;
 		}
+		
+		final PasswordRuleException ex = new PasswordRuleException(ResponseCode.FAIL_REJECT_CHARS_IN_PSWD, new Object[] {excludeCharList});
 
 		// count the number of characters in the password
 		if (password == null) {
-			throw new PasswordRuleException(ResponseCode.FAIL_REJECT_CHARS_IN_PSWD);
+			throw ex;
 		}
 		
 		// check the password for each of these characters.
@@ -62,8 +64,6 @@ public class RejectCharactersRule extends AbstractPasswordRule {
 			for ( int x=0; x < pswdSize; x++ ) {
 				int pswdCh = password.charAt(x);
 				if ( pswdCh == ch ) {
-					final PasswordRuleException ex = new PasswordRuleException(ResponseCode.FAIL_REJECT_CHARS_IN_PSWD);
-					ex.addResponseValues(pswdCh, x);
 					throw ex;
 				}
 			}

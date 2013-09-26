@@ -33,6 +33,7 @@ import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
  */
 public class PasswordNotPasswordRule extends AbstractPasswordRule {
 
+	private static final String PASSWORD = "password";
 
 	@Override
 	public void validate() throws PasswordRuleException {
@@ -45,8 +46,8 @@ public class PasswordNotPasswordRule extends AbstractPasswordRule {
 		}
 		if (enabled) {
 			String pswd = password.toLowerCase();
-			if (pswd.contains("password")) {
-				throw new PasswordRuleException(ResponseCode.FAIL_NEQ_PASSWORD);
+			if (pswd.contains(PASSWORD)) {
+				throw new PasswordRuleException(ResponseCode.FAIL_NEQ_PASSWORD, new Object[] {PASSWORD});
 			}
 		}
 	}

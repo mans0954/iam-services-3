@@ -6,14 +6,36 @@ import java.util.List;
 import org.openiam.base.ws.ResponseCode;
 
 public class PasswordRuleException extends Exception {
+	private Object minBound;
+	private Object maxBound;
+	private ResponseCode code;
+	private List<Object> responseValues;
 	
 	public PasswordRuleException(final ResponseCode code) {
 		this.code = code;
 	}
-
-	private ResponseCode code;
-	private List<Object> responseValues;
 	
+	public PasswordRuleException(final ResponseCode code, final Object[] args) {
+		this.code = code;
+		addResponseValues(args);
+	}
+	
+	public Object getMinBound() {
+		return minBound;
+	}
+
+	public void setMinBound(Object minBound) {
+		this.minBound = minBound;
+	}
+
+	public Object getMaxBound() {
+		return maxBound;
+	}
+
+	public void setMaxBound(Object maxBound) {
+		this.maxBound = maxBound;
+	}
+
 	public List<Object> getResponseValues() {
 		return responseValues;
 	}

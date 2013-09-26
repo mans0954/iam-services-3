@@ -48,6 +48,9 @@ public class NumericCharRule extends AbstractPasswordRule {
 		if (attribute != null && StringUtils.isNotBlank(attribute.getValue2())) {
 			maxChar = Integer.parseInt(attribute.getValue2());
 		}
+		
+		final PasswordRuleException ex = createException(ResponseCode.FAIL_NUMERIC_CHAR_RULE, minChar, maxChar);
+		
 		// count the number of characters in the password
 		if (password == null) {
 			throw new PasswordRuleException(ResponseCode.FAIL_NUMERIC_CHAR_RULE);
@@ -62,12 +65,12 @@ public class NumericCharRule extends AbstractPasswordRule {
 		
 		if (minChar > 0 ) {
 			if (charCtr  < minChar) {
-				throw new PasswordRuleException(ResponseCode.FAIL_NUMERIC_CHAR_RULE);
+				throw ex;
 			}
 		}
 		if (maxChar > 0 ) {
 			if (charCtr > maxChar ) {
-				throw new PasswordRuleException(ResponseCode.FAIL_NUMERIC_CHAR_RULE);
+				throw ex;
 			}
 		}
 	}	

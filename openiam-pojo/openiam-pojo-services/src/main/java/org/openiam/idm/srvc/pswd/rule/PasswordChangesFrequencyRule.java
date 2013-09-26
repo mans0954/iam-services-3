@@ -47,7 +47,7 @@ public class PasswordChangesFrequencyRule extends AbstractPasswordRule {
 			int changesAllowed =  Integer.parseInt(attribute.getValue1()); 
 			
 			if (changeCount >= changesAllowed) {
-				throw new PasswordRuleException(ResponseCode.FAIL_PASSWORD_CHANGE_FREQUENCY);
+				throw new PasswordRuleException(ResponseCode.FAIL_PASSWORD_CHANGE_FREQUENCY, new Object[] {changesAllowed});
 			}
 		}
 	}	

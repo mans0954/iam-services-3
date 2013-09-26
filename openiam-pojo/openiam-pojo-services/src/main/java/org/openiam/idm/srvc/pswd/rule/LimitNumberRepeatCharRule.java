@@ -60,7 +60,7 @@ public class LimitNumberRepeatCharRule extends AbstractPasswordRule {
 					if (charAtPosition == password.charAt(i)) {
 						count++;
 						if (count > numberOfRepeatingChar) {
-							throw new PasswordRuleException(ResponseCode.FAIL_LIMIT_NUM_REPEAT_CHAR);
+							throw new PasswordRuleException(ResponseCode.FAIL_LIMIT_NUM_REPEAT_CHAR, new Object[] {numberOfRepeatingChar});
 						}
 					} else {
 						count = 0;

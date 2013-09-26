@@ -46,19 +46,23 @@ public class PasswordLengthRule extends AbstractPasswordRule {
 		if (attribute != null && StringUtils.isNotBlank(attribute.getValue2())) {
 			maxlen = Integer.parseInt(attribute.getValue2());
 		}
+		
+		final PasswordRuleException ex = createException(ResponseCode.FAIL_LENGTH_RULE, minlen, maxlen);
+		
 		if (password == null) {
-			throw new PasswordRuleException(ResponseCode.FAIL_LENGTH_RULE);
+			throw ex;
 		}
 		
 		if (minlen > 0 ) {
 			if (password.length() < minlen) {
-				throw new PasswordRuleException(ResponseCode.FAIL_LENGTH_RULE);
+				throw ex;
 			}
 		}
 		if (maxlen > 0 ) {
 			if (password.length() > maxlen ) {
-				throw new PasswordRuleException(ResponseCode.FAIL_LENGTH_RULE);
+				throw ex;
 			}
 		}
+		
 	}
 }

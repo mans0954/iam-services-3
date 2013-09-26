@@ -13,7 +13,9 @@ import org.openiam.base.ws.ResponseStatus;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "PasswordValidationResponse", propOrder = {
-        "responseValues"
+        "responseValues",
+        "minBound",
+        "maxBound"
 })
 public class PasswordValidationResponse extends Response {
 	
@@ -23,6 +25,8 @@ public class PasswordValidationResponse extends Response {
 		super(status);
 	}
 
+	private Object minBound;
+	private Object maxBound;
 	private List<Object> responseValues;
 	
 	public void addResponseValue(final Object obj) {
@@ -50,5 +54,29 @@ public class PasswordValidationResponse extends Response {
 			}
 		}
 		return retVal;
+	}
+
+	public Object getMinBound() {
+		return minBound;
+	}
+
+	public void setMinBound(Object minBound) {
+		this.minBound = minBound;
+	}
+
+	public Object getMaxBound() {
+		return maxBound;
+	}
+
+	public void setMaxBound(Object maxBound) {
+		this.maxBound = maxBound;
+	}
+	
+	public boolean hasMinBound() {
+		return (minBound != null);
+	}
+	
+	public boolean hasMaxBound() {
+		return (maxBound != null);
 	}
 }
