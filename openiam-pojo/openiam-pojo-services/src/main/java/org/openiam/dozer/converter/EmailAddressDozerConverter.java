@@ -5,6 +5,7 @@ import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by: Alexander Duckardt
@@ -40,5 +41,15 @@ public class EmailAddressDozerConverter extends AbstractDozerEntityConverter<Ema
     @Override
     public List<EmailAddress> convertToDTOList(List<EmailAddressEntity> list, boolean isDeep) {
         return convertListToCrossEntity(list, isDeep, EmailAddress.class);
+    }
+
+    @Override
+    public Set<EmailAddressEntity> convertToEntitySet(Set<EmailAddress> set, boolean isDeep) {
+        return convertSetToCrossEntity(set, isDeep, EmailAddressEntity.class);
+    }
+
+    @Override
+    public Set<EmailAddress> convertToDTOSet(Set<EmailAddressEntity> set, boolean isDeep) {
+        return convertSetToCrossEntity(set, isDeep, EmailAddress.class);
     }
 }

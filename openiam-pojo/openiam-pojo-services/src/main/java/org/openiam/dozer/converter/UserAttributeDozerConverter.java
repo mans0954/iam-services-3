@@ -5,6 +5,7 @@ import org.openiam.idm.srvc.user.dto.UserAttribute;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by: Alexander Duckardt
@@ -44,5 +45,15 @@ public class UserAttributeDozerConverter extends AbstractDozerEntityConverter<Us
     @Override
     public List<UserAttribute> convertToDTOList(List<UserAttributeEntity> list, boolean isDeep) {
         return convertListToCrossEntity(list, isDeep, UserAttribute.class);
+    }
+
+    @Override
+    public Set<UserAttributeEntity> convertToEntitySet(Set<UserAttribute> set, boolean isDeep) {
+        return convertSetToCrossEntity(set, isDeep, UserAttributeEntity.class);
+    }
+
+    @Override
+    public Set<UserAttribute> convertToDTOSet(Set<UserAttributeEntity> set, boolean isDeep) {
+        return convertSetToCrossEntity(set, isDeep, UserAttribute.class);
     }
 }

@@ -1,6 +1,7 @@
 package org.openiam.dozer.converter;
 
 import java.util.List;
+import java.util.Set;
 
 import org.openiam.idm.srvc.recon.domain.ReconciliationSituationEntity;
 import org.openiam.idm.srvc.recon.dto.ReconciliationSituation;
@@ -47,6 +48,20 @@ public class ReconciliationSituationDozerConverter
     public List<ReconciliationSituation> convertToDTOList(
             List<ReconciliationSituationEntity> list, boolean isDeep) {
         return convertListToCrossEntity(list, isDeep,
+                ReconciliationSituation.class);
+    }
+
+    @Override
+    public Set<ReconciliationSituationEntity> convertToEntitySet(
+            Set<ReconciliationSituation> set, boolean isDeep) {
+        return convertSetToCrossEntity(set, isDeep,
+                ReconciliationSituationEntity.class);
+    }
+
+    @Override
+    public Set<ReconciliationSituation> convertToDTOSet(
+            Set<ReconciliationSituationEntity> set, boolean isDeep) {
+        return convertSetToCrossEntity(set, isDeep,
                 ReconciliationSituation.class);
     }
 

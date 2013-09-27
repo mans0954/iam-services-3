@@ -5,6 +5,7 @@ import org.openiam.idm.srvc.report.dto.ReportSubscriptionDto;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Set;
 
 @Component("reportSubscriptionDozerMapper")
 public class ReportSubscriptionDozerConverter extends AbstractDozerEntityConverter<ReportSubscriptionDto, ReportSubscriptionEntity>{
@@ -38,4 +39,13 @@ public class ReportSubscriptionDozerConverter extends AbstractDozerEntityConvert
         return convertListToCrossEntity(list, isDeep, ReportSubscriptionDto.class);
     }
 
+    @Override
+    public Set<ReportSubscriptionEntity> convertToEntitySet(Set<ReportSubscriptionDto> set, boolean isDeep) {
+        return convertSetToCrossEntity(set, isDeep, ReportSubscriptionEntity.class);
+    }
+
+    @Override
+    public Set<ReportSubscriptionDto> convertToDTOSet(Set<ReportSubscriptionEntity> set, boolean isDeep) {
+        return convertSetToCrossEntity(set, isDeep, ReportSubscriptionDto.class);
+    }
 }

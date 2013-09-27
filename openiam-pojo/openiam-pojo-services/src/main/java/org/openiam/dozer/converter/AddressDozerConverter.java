@@ -5,6 +5,7 @@ import org.openiam.idm.srvc.continfo.dto.Address;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by: Alexander Duckardt
@@ -40,5 +41,15 @@ public class AddressDozerConverter extends AbstractDozerEntityConverter<Address,
     @Override
     public List<Address> convertToDTOList(List<AddressEntity> list, boolean isDeep) {
         return convertListToCrossEntity(list, isDeep, Address.class);
+    }
+
+    @Override
+    public Set<AddressEntity> convertToEntitySet(Set<Address> set, boolean isDeep) {
+        return convertSetToCrossEntity(set, isDeep, AddressEntity.class);
+    }
+
+    @Override
+    public Set<Address> convertToDTOSet(Set<AddressEntity> set, boolean isDeep) {
+        return convertSetToCrossEntity(set, isDeep, Address.class);
     }
 }

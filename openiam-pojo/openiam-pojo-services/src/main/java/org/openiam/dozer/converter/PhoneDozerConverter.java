@@ -5,6 +5,7 @@ import org.openiam.idm.srvc.continfo.dto.Phone;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by: Alexander Duckardt
@@ -40,5 +41,15 @@ public class PhoneDozerConverter  extends AbstractDozerEntityConverter<Phone, Ph
     @Override
     public List<Phone> convertToDTOList(List<PhoneEntity> list, boolean isDeep) {
         return convertListToCrossEntity(list, isDeep, Phone.class);
+    }
+
+    @Override
+    public Set<PhoneEntity> convertToEntitySet(Set<Phone> set, boolean isDeep) {
+        return convertSetToCrossEntity(set, isDeep, PhoneEntity.class);
+    }
+
+    @Override
+    public Set<Phone> convertToDTOSet(Set<PhoneEntity> set, boolean isDeep) {
+        return convertSetToCrossEntity(set, isDeep, Phone.class);
     }
 }

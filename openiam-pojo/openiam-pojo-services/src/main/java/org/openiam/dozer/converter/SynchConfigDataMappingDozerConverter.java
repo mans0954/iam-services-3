@@ -5,6 +5,7 @@ import org.openiam.idm.srvc.synch.dto.SynchConfigDataMapping;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Set;
 
 @Component("synchConfigDataMappingDozerConverter")
 public class SynchConfigDataMappingDozerConverter extends AbstractDozerEntityConverter<SynchConfigDataMapping, SynchConfigDataMappingEntity> {
@@ -36,6 +37,16 @@ public class SynchConfigDataMappingDozerConverter extends AbstractDozerEntityCon
     @Override
     public List<SynchConfigDataMapping> convertToDTOList(List<SynchConfigDataMappingEntity> list, boolean isDeep) {
         return convertListToCrossEntity(list, isDeep, SynchConfigDataMapping.class);
+    }
+
+    @Override
+    public Set<SynchConfigDataMappingEntity> convertToEntitySet(Set<SynchConfigDataMapping> set, boolean isDeep) {
+        return convertSetToCrossEntity(set, isDeep, SynchConfigDataMappingEntity.class);
+    }
+
+    @Override
+    public Set<SynchConfigDataMapping> convertToDTOSet(Set<SynchConfigDataMappingEntity> set, boolean isDeep) {
+        return convertSetToCrossEntity(set, isDeep, SynchConfigDataMapping.class);
     }
 }
 

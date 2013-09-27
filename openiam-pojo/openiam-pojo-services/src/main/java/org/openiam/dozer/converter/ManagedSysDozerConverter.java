@@ -7,6 +7,7 @@ import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Set;
 
 @Component("managedSysDozerConverter")
 public class ManagedSysDozerConverter extends AbstractDozerEntityConverter<ManagedSysDto, ManagedSysEntity> {
@@ -42,5 +43,15 @@ public class ManagedSysDozerConverter extends AbstractDozerEntityConverter<Manag
     @Override
     public List<ManagedSysDto> convertToDTOList(List<ManagedSysEntity> list, boolean isDeep) {
         return convertListToCrossEntity(list, isDeep, ManagedSysDto.class);
+    }
+
+    @Override
+    public Set<ManagedSysEntity> convertToEntitySet(Set<ManagedSysDto> set, boolean isDeep) {
+        return convertSetToCrossEntity(set, isDeep, ManagedSysEntity.class);
+    }
+
+    @Override
+    public Set<ManagedSysDto> convertToDTOSet(Set<ManagedSysEntity> set, boolean isDeep) {
+        return convertSetToCrossEntity(set, isDeep, ManagedSysDto.class);
     }
 }

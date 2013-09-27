@@ -1,6 +1,7 @@
 package org.openiam.dozer.converter;
 
 import java.util.List;
+import java.util.Set;
 
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.dto.Organization;
@@ -39,4 +40,13 @@ public class OrganizationDozerConverter extends AbstractDozerEntityConverter<Org
 		return convertListToCrossEntity(list, isDeep, Organization.class);
 	}
 
+    @Override
+    public Set<OrganizationEntity> convertToEntitySet(Set<Organization> set, boolean isDeep) {
+        return convertSetToCrossEntity(set, isDeep, OrganizationEntity.class);
+    }
+
+    @Override
+    public Set<Organization> convertToDTOSet(Set<OrganizationEntity> set, boolean isDeep) {
+        return convertSetToCrossEntity(set, isDeep, Organization.class);
+    }
 }

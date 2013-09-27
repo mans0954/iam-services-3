@@ -1,6 +1,7 @@
 package org.openiam.dozer.converter;
 
 import java.util.List;
+import java.util.Set;
 
 import org.openiam.idm.srvc.continfo.domain.AddressEntity;
 import org.openiam.idm.srvc.continfo.dto.Address;
@@ -45,4 +46,13 @@ public class MetadataTemplateTypeFieldDozerConverter extends AbstractDozerEntity
 		return convertListToCrossEntity(list, isDeep, MetadataTemplateTypeField.class);
 	}
 
+    @Override
+    public Set<MetadataTemplateTypeFieldEntity> convertToEntitySet(Set<MetadataTemplateTypeField> set, boolean isDeep) {
+        return convertSetToCrossEntity(set, isDeep, MetadataTemplateTypeFieldEntity.class);
+    }
+
+    @Override
+    public Set<MetadataTemplateTypeField> convertToDTOSet(Set<MetadataTemplateTypeFieldEntity> set, boolean isDeep) {
+        return convertSetToCrossEntity(set, isDeep, MetadataTemplateTypeField.class);
+    }
 }

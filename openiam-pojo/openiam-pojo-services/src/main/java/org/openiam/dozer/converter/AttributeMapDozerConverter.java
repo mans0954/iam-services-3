@@ -1,6 +1,7 @@
 package org.openiam.dozer.converter;
 
 import java.util.List;
+import java.util.Set;
 
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
@@ -43,4 +44,16 @@ public class AttributeMapDozerConverter extends
 			boolean isDeep) {
 		return convertListToCrossEntity(list, isDeep, AttributeMap.class);
 	}
+
+    @Override
+    public Set<AttributeMapEntity> convertToEntitySet(
+            Set<AttributeMap> set, boolean isDeep) {
+        return convertSetToCrossEntity(set, isDeep, AttributeMapEntity.class);
+    }
+
+    @Override
+    public Set<AttributeMap> convertToDTOSet(Set<AttributeMapEntity> set,
+                                               boolean isDeep) {
+        return convertSetToCrossEntity(set, isDeep, AttributeMap.class);
+    }
 }

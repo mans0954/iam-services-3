@@ -1,6 +1,8 @@
 package org.openiam.dozer.converter;
 
 import java.util.List;
+import java.util.Set;
+
 import org.openiam.idm.srvc.cat.domain.CategoryTypeEntity;
 import org.openiam.idm.srvc.cat.dto.CategoryType;
 import org.springframework.stereotype.Component;
@@ -50,4 +52,13 @@ public class CategoryTypeDozerConverter extends
         return convertListToCrossEntity(list, isDeep, CategoryType.class);
     }
 
+    @Override
+    public Set<CategoryTypeEntity> convertToEntitySet(Set<CategoryType> set, boolean isDeep) {
+        return convertSetToCrossEntity(set, isDeep, CategoryTypeEntity.class);
+    }
+
+    @Override
+    public Set<CategoryType> convertToDTOSet(Set<CategoryTypeEntity> set, boolean isDeep) {
+        return convertSetToCrossEntity(set, isDeep, CategoryType.class);
+    }
 }

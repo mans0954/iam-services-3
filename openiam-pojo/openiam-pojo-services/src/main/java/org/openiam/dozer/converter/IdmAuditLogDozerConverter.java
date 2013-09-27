@@ -1,6 +1,8 @@
 package org.openiam.dozer.converter;
 
 import java.util.List;
+import java.util.Set;
+
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.springframework.stereotype.Component;
@@ -40,6 +42,18 @@ public class IdmAuditLogDozerConverter extends
     public List<IdmAuditLog> convertToDTOList(List<IdmAuditLogEntity> list,
             boolean isDeep) {
         return convertListToCrossEntity(list, isDeep, IdmAuditLog.class);
+    }
+
+    @Override
+    public Set<IdmAuditLogEntity> convertToEntitySet(Set<IdmAuditLog> set,
+                                                       boolean isDeep) {
+        return convertSetToCrossEntity(set, isDeep, IdmAuditLogEntity.class);
+    }
+
+    @Override
+    public Set<IdmAuditLog> convertToDTOSet(Set<IdmAuditLogEntity> set,
+                                              boolean isDeep) {
+        return convertSetToCrossEntity(set, isDeep, IdmAuditLog.class);
     }
 
 }

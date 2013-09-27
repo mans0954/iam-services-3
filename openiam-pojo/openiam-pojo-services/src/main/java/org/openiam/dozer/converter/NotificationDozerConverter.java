@@ -5,6 +5,7 @@ import org.openiam.idm.srvc.msg.dto.NotificationDto;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Set;
 
 @Component("sysMessageDozerConverter")
 public class NotificationDozerConverter extends AbstractDozerEntityConverter<NotificationDto, NotificationEntity> {
@@ -37,6 +38,16 @@ public class NotificationDozerConverter extends AbstractDozerEntityConverter<Not
     @Override
     public List<NotificationDto> convertToDTOList(List<NotificationEntity> list, boolean isDeep) {
         return convertListToCrossEntity(list, isDeep, NotificationDto.class);
+    }
+
+    @Override
+    public Set<NotificationEntity> convertToEntitySet(Set<NotificationDto> set, boolean isDeep) {
+        return convertSetToCrossEntity(set, isDeep, NotificationEntity.class);
+    }
+
+    @Override
+    public Set<NotificationDto> convertToDTOSet(Set<NotificationEntity> set, boolean isDeep) {
+        return convertSetToCrossEntity(set, isDeep, NotificationDto.class);
     }
 
 }

@@ -1,6 +1,8 @@
 package org.openiam.dozer.converter;
 
 import java.util.List;
+import java.util.Set;
+
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 import org.openiam.idm.srvc.meta.dto.MetadataElement;
 import org.springframework.stereotype.Component;
@@ -43,6 +45,19 @@ public class MetaDataElementDozerConverter extends
     public List<MetadataElement> convertToDTOList(
             List<MetadataElementEntity> list, boolean isDeep) {
         return convertListToCrossEntity(list, isDeep, MetadataElement.class);
+    }
+
+    @Override
+    public Set<MetadataElementEntity> convertToEntitySet(
+            Set<MetadataElement> set, boolean isDeep) {
+        return convertSetToCrossEntity(set, isDeep,
+                MetadataElementEntity.class);
+    }
+
+    @Override
+    public Set<MetadataElement> convertToDTOSet(
+            Set<MetadataElementEntity> set, boolean isDeep) {
+        return convertSetToCrossEntity(set, isDeep, MetadataElement.class);
     }
 
 }

@@ -1,6 +1,7 @@
 package org.openiam.dozer.converter;
 
 import java.util.List;
+import java.util.Set;
 
 import org.openiam.idm.srvc.grp.domain.GroupAttributeEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
@@ -41,4 +42,13 @@ public class GroupAttributeDozerConverter  extends AbstractDozerEntityConverter<
 		return convertListToCrossEntity(list, isDeep, GroupAttribute.class);
 	}
 
+    @Override
+    public Set<GroupAttributeEntity> convertToEntitySet(Set<GroupAttribute> set, boolean isDeep) {
+        return convertSetToCrossEntity(set, isDeep, GroupAttributeEntity.class);
+    }
+
+    @Override
+    public Set<GroupAttribute> convertToDTOSet(Set<GroupAttributeEntity> set, boolean isDeep) {
+        return convertSetToCrossEntity(set, isDeep, GroupAttribute.class);
+    }
 }

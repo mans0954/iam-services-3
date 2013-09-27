@@ -5,6 +5,7 @@ import org.openiam.idm.srvc.msg.dto.MailTemplateDto;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Set;
 
 @Component("mailTemplateDozerConverter")
 public class MailTemplateDozerConverter extends AbstractDozerEntityConverter<MailTemplateDto, MailTemplateEntity> {
@@ -37,5 +38,15 @@ public class MailTemplateDozerConverter extends AbstractDozerEntityConverter<Mai
     @Override
     public List<MailTemplateDto> convertToDTOList(List<MailTemplateEntity> list, boolean isDeep) {
         return convertListToCrossEntity(list, isDeep, MailTemplateDto.class);
+    }
+
+    @Override
+    public Set<MailTemplateEntity> convertToEntitySet(Set<MailTemplateDto> set, boolean isDeep) {
+        return convertSetToCrossEntity(set, isDeep, MailTemplateEntity.class);
+    }
+
+    @Override
+    public Set<MailTemplateDto> convertToDTOSet(Set<MailTemplateEntity> set, boolean isDeep) {
+        return convertSetToCrossEntity(set, isDeep, MailTemplateDto.class);
     }
 }

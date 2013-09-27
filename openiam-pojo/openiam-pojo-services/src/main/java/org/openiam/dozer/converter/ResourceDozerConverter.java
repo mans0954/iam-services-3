@@ -2,6 +2,7 @@ package org.openiam.dozer.converter;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.dozer.Mapper;
@@ -44,4 +45,13 @@ public class ResourceDozerConverter extends AbstractDozerEntityConverter<Resourc
 		return convertListToCrossEntity(list, isDeep, Resource.class);
 	}
 
+    @Override
+    public Set<ResourceEntity> convertToEntitySet(Set<Resource> set, boolean isDeep) {
+        return convertSetToCrossEntity(set, isDeep, ResourceEntity.class);
+    }
+
+    @Override
+    public Set<Resource> convertToDTOSet(Set<ResourceEntity> set, boolean isDeep) {
+        return convertSetToCrossEntity(set, isDeep, Resource.class);
+    }
 }

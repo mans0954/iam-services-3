@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by: Alexander Duckardt
@@ -75,5 +76,15 @@ public class UserDozerConverter  extends AbstractDozerEntityConverter<User, User
     @Override
     public List<User> convertToDTOList(List<UserEntity> list, boolean isDeep) {
         return convertListToCrossEntity(list, isDeep, User.class);
+    }
+
+    @Override
+    public Set<UserEntity> convertToEntitySet(Set<User> set, boolean isDeep) {
+        return convertSetToCrossEntity(set, isDeep, UserEntity.class);
+    }
+
+    @Override
+    public Set<User> convertToDTOSet(Set<UserEntity> set, boolean isDeep) {
+        return convertSetToCrossEntity(set, isDeep, User.class);
     }
 }

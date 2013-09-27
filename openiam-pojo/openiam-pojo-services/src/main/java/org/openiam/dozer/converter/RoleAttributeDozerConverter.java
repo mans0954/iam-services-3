@@ -1,6 +1,7 @@
 package org.openiam.dozer.converter;
 
 import java.util.List;
+import java.util.Set;
 
 import org.openiam.idm.srvc.role.domain.RoleAttributeEntity;
 import org.openiam.idm.srvc.role.dto.RoleAttribute;
@@ -38,5 +39,15 @@ public class RoleAttributeDozerConverter extends AbstractDozerEntityConverter<Ro
 	public List<RoleAttribute> convertToDTOList(List<RoleAttributeEntity> list, boolean isDeep) {
 		return convertListToCrossEntity(list, isDeep, RoleAttribute.class);
 	}
+
+    @Override
+    public Set<RoleAttributeEntity> convertToEntitySet(Set<RoleAttribute> set, boolean isDeep) {
+        return convertSetToCrossEntity(set, isDeep, RoleAttributeEntity.class);
+    }
+
+    @Override
+    public Set<RoleAttribute> convertToDTOSet(Set<RoleAttributeEntity> set, boolean isDeep) {
+        return convertSetToCrossEntity(set, isDeep, RoleAttribute.class);
+    }
 
 }
