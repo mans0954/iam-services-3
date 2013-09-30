@@ -1,12 +1,15 @@
 package org.openiam.idm.srvc.mngsys.ws;
 
+
 import org.openiam.idm.srvc.meta.dto.MetadataType;
 import org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorDto;
 import org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorSearchBean;
-
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebService;
+import org.openiam.base.ws.Response;
+
+
 import java.util.List;
 
 /**
@@ -61,7 +64,7 @@ public interface ProvisionConnectorWebService {
      * @param conId
      */
     @WebMethod
-    void removeProvisionConnector(
+    Response removeProvisionConnector(
             @WebParam(name = "conId", targetNamespace = "")
             String conId);
     /**
