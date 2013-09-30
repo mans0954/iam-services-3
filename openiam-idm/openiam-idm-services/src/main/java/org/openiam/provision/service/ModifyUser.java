@@ -18,8 +18,6 @@ import org.openiam.dozer.converter.PhoneDozerConverter;
 import org.openiam.dozer.converter.SupervisorDozerConverter;
 import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.exception.EncryptionException;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
-import org.openiam.idm.srvc.audit.service.AuditHelper;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
@@ -61,8 +59,6 @@ public class ModifyUser {
     private UserDataService userMgr;
     @Autowired
     private LoginDataService loginManager;
-    @Autowired
-    private AuditHelper auditHelper;
     @Autowired
     private OrganizationDataService orgManager;
     
@@ -913,8 +909,7 @@ public class ModifyUser {
     /* Role Association */
 
     public void updateRoleAssociation(String userId, List<Role> origRoleList,
-            List<Role> newRoleList, List<IdmAuditLog> logList,
-            ProvisionUser pUser, Login primaryIdentity) {
+            List<Role> newRoleList, ProvisionUser pUser, Login primaryIdentity) {
 
         log.debug("updateRoleAssociation():");
         log.debug("-origRoleList =" + origRoleList);
@@ -946,7 +941,8 @@ public class ModifyUser {
                 roleList.add(rl);
 
                 roleDataService.addUserToRole(rl.getRoleId(), userId);
-
+                
+                /*
                 logList.add(auditHelper.createLogObject("ADD ROLE", pUser
                         .getRequestorDomain(), pUser.getRequestorLogin(),
                         "IDM SERVICE", user.getCreatedBy(), "0", "USER", user
@@ -955,7 +951,7 @@ public class ModifyUser {
                         null, null, rl.getRoleId(), pUser.getRequestClientIP(),
                         primaryIdentity.getLogin(), primaryIdentity
                                 .getDomainId()));
-
+				*/
                 // roleDataService.addUserToRole(rl.getServiceId(),
                 // rl.getRoleId(), userId);
             }
@@ -985,7 +981,7 @@ public class ModifyUser {
                 Role rl = getRole(r.getRoleId(), origRoleList);
                 if (rl != null) {
                     roleDataService.removeUserFromRole(rl.getRoleId(), userId);
-
+                    /*
                     logList.add(auditHelper.createLogObject("REMOVE ROLE",
                             pUser.getRequestorDomain(), pUser.getUser()
                                     .getRequestorLogin(), "IDM SERVICE", user
@@ -996,7 +992,7 @@ public class ModifyUser {
                                     .getRequestClientIP(), primaryIdentity
                                     .getLogin(), primaryIdentity
                                     .getDomainId()));
-
+					*/
                 }
                 log.debug("Adding role to deleteRoleList =" + rl);
                 this.deleteRoleList.add(rl);
@@ -1019,7 +1015,7 @@ public class ModifyUser {
                     r.setOperation(AttributeOperationEnum.ADD);
                     roleList.add(r);
                     roleDataService.addUserToRole(r.getRoleId(), userId);
-
+                    /*
                     logList.add(auditHelper.createLogObject("ADD ROLE", pUser.getUser()
                             .getRequestorDomain(), pUser.getRequestorLogin(),
                             "IDM SERVICE", user.getCreatedBy(), "0", "USER",
@@ -1029,7 +1025,7 @@ public class ModifyUser {
                                     .getRequestClientIP(), primaryIdentity
                                     .getLogin(), primaryIdentity
                                     .getDomainId()));
-
+					*/
                     // roleDataService.addUserToRole(r.getServiceId(),
                     // r.getRoleId(), userId);
                 } else {
@@ -1232,6 +1228,7 @@ public class ModifyUser {
         this.loginManager = loginManager;
     }
 
+    /*
     public AuditHelper getAuditHelper() {
         return auditHelper;
     }
@@ -1239,7 +1236,8 @@ public class ModifyUser {
     public void setAuditHelper(AuditHelper auditHelper) {
         this.auditHelper = auditHelper;
     }
-
+	*/
+    
     public Set<EmailAddress> getEmailSet() {
         return emailSet;
     }

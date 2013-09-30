@@ -17,7 +17,6 @@ import org.apache.commons.logging.LogFactory;
 import org.mule.api.MuleContext;
 import org.mule.api.context.MuleContextAware;
 import org.mule.module.client.MuleClient;
-import org.openiam.idm.srvc.audit.service.AuditHelper;
 import org.openiam.idm.srvc.batch.domain.BatchTaskEntity;
 import org.openiam.idm.srvc.batch.service.BatchService;
 import org.openiam.script.ScriptIntegration;
@@ -45,9 +44,6 @@ public class BatchTaskScheduler implements ApplicationContextAware, Initializing
 	
 	@Autowired
 	private BatchService batchService;
-    
-    @Autowired
-    private AuditHelper auditHelper;
     
     @Autowired
     @Qualifier("batchTaskInternalScheduler")

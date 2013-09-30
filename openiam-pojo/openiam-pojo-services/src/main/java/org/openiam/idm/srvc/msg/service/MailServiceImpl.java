@@ -11,7 +11,6 @@ import javax.jws.WebService;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openiam.idm.srvc.audit.service.AuditHelper;
 import org.openiam.idm.srvc.msg.dto.NotificationRequest;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.service.UserDataService;
@@ -51,9 +50,6 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
 
 	@Autowired
 	protected UserDataService userManager;
-
-	@Autowired
-	protected AuditHelper auditHelper;
 
 	@Autowired
 	@Qualifier("configurableGroovyScriptEngine")

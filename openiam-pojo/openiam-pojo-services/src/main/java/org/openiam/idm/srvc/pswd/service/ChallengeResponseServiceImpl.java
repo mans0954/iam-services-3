@@ -6,7 +6,6 @@ import java.util.List;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.idm.searchbeans.IdentityAnswerSearchBean;
 import org.openiam.idm.searchbeans.IdentityQuestionSearchBean;
-import org.openiam.idm.srvc.audit.service.AuditHelper;
 import org.openiam.idm.srvc.policy.domain.PolicyAttributeEntity;
 import org.openiam.idm.srvc.policy.domain.PolicyEntity;
 import org.openiam.idm.srvc.policy.dto.Policy;
@@ -42,9 +41,6 @@ public class ChallengeResponseServiceImpl implements ChallengeResponseService {
     
     @Autowired
     private UserDAO userDAO;
-    
-    @Autowired
-    private AuditHelper auditHelper;
     
     @Autowired
     private PasswordService passwordMgr;

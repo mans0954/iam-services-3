@@ -1,13 +1,5 @@
 package org.openiam.idm.srvc.authz.ws;
-
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
-import org.openiam.idm.srvc.authz.dto.AuthzRequest;
-import org.openiam.idm.srvc.authz.dto.AuthzResponse;
-
-import javax.jws.WebMethod;
-import javax.jws.WebParam;
 import javax.jws.WebService;
-import java.util.List;
 
 /**
  * Interface for  <code>IdmAuditLogDataService</code>. All audit logging activities 

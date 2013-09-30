@@ -29,7 +29,6 @@ import org.apache.commons.logging.LogFactory;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.idm.srvc.audit.service.AuditHelper;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.synch.dto.LineObject;
@@ -59,8 +58,6 @@ public class LdapAdapterForGenericObject implements SourceAdapter {
     protected LoginDataService loginManager;
     @Autowired
     protected RoleDataService roleDataService;
-    @Autowired
-    protected AuditHelper auditHelper;
     @Autowired
     protected MatchRuleFactory matchRuleFactory;
 

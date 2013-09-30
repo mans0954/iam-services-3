@@ -40,7 +40,6 @@ import org.openiam.connector.type.response.*;
 import org.openiam.exception.EncryptionException;
 import org.openiam.exception.ObjectNotFoundException;
 import org.openiam.exception.ScriptEngineException;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.grp.dto.Group;
@@ -251,8 +250,6 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             String requestorId) {
         log.debug("----deleteUser called.------");
 
-        IdmAuditLog auditLog = null;
-
         ProvisionUserResponse response = new ProvisionUserResponse(
                 ResponseStatus.SUCCESS);
         Map<String, Object> bindingMap = new HashMap<String, Object>();
@@ -366,14 +363,14 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 ObjectResponse resp = remoteDelete(
                         loginDozerConverter.convertToDTO(login, true),
                         requestId, mSys, connector, matchObj,
-                        new ProvisionUser(usr), auditLog);
+                        new ProvisionUser(usr));
                 if (resp.getStatus() == StatusCodeType.SUCCESS) {
                     connectorSuccess = true;
                 }
             } else {
 
                 ResponseType resp = localDelete(loginDozerConverter.convertToDTO(login, true),
-                        requestId, mSys, auditLog);
+                        requestId, mSys);
 
                 if (resp.getStatus() == StatusCodeType.SUCCESS) {
                     connectorSuccess = true;
@@ -405,7 +402,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             LoginEntity lTargetUser = loginManager.getPrimaryIdentity(userId);
 
             if (lRequestor != null && lTargetUser != null) {
-
+            	/*
                 auditLog = auditHelper.addLog("DELETE",
                         lRequestor.getDomainId(), lRequestor.getLogin(),
                         "IDM SERVICE", usr.getCreatedBy(), "0", "USER",
@@ -413,6 +410,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                         usr.getStatus().toString(), requestId, null, null,
                         null, null, lTargetUser.getLogin(),
                         lTargetUser.getDomainId());
+				*/
             } else {
                 log.debug("Unable to log disable operation. Of of the following is null:");
                 log.debug("Requestor identity=" + lRequestor);
@@ -494,14 +492,14 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                     ObjectResponse resp = remoteDelete(
                                             loginDozerConverter.convertToDTO(l,
                                                     true), requestId, mSys,
-                                            connector, matchObj, pUser, auditLog);
+                                            connector, matchObj, pUser);
                                     if (resp.getStatus() == StatusCodeType.SUCCESS) {
                                         connectorSuccess = true;
                                     }
 
                                 } else {
                                     ResponseType resp = localDelete(loginDozerConverter.convertToDTO(l, true),
-                                            requestId, mSys, auditLog);
+                                            requestId, mSys);
 
                                     if (resp.getStatus() == StatusCodeType.SUCCESS) {
                                         connectorSuccess = true;
@@ -664,12 +662,12 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 : null;
         final String logUserId = (user != null && user.getUserId() != null) ? user
                 .getUserId() : null;
-
+        /*
         auditHelper.addLog(auditReason, logDomainId, logLoginId, "IDM SERVICE",
                 requestorId, "USER", "USER", logUserId, null, "SUCCESS", null,
                 null, null, requestId, auditReason, null, null, null, login,
                 domain);
-
+		*/
         final List<LoginEntity> loginList = loginManager.getLoginByUser(userId);
         for (final LoginEntity userLogin : loginList) {
             if (userLogin != null) {
@@ -959,6 +957,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
             if (dupPrincipal != null) {
                 // identity exists
+            	/*
                 auditHelper.addLog("CREATE", pUser.getRequestorDomain(),
                         pUser.getRequestorLogin(), "IDM SERVICE",
                         pUser.getCreatedBy(), "0", "USER", pUser.getUserId(), null,
@@ -969,7 +968,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                         + primaryLogin.getLogin(),
                         pUser.getRequestClientIP(), primaryLogin.getLogin(),
                         primaryLogin.getDomainId());
-
+				*/
                 resp.setStatus(ResponseStatus.FAILURE);
                 resp.setErrorCode(ResponseCode.DUPLICATE_PRINCIPAL);
                 return resp;
@@ -1595,6 +1594,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 passwordSync.getSecurityDomain(), passwordSync.getPrincipal(),
                 passwordSync.getManagedSystemId());
         if (login == null) {
+        	/*
             auditHelper.addLog("RESET PASSWORD",
                     passwordSync.getRequestorDomain(),
                     passwordSync.getRequestorLogin(), "IDM SERVICE",
@@ -1602,7 +1602,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     null, null, "FAILURE", null, null, null, requestId,
                     ResponseCode.PRINCIPAL_NOT_FOUND.toString(), null,
                     "Principal not found: " + passwordSync.getPrincipal());
-
+			*/
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(ResponseCode.PRINCIPAL_NOT_FOUND);
             return response;
@@ -1616,6 +1616,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         }
         final UserEntity usr = userMgr.getUser(userId);
         if (usr == null) {
+        	/*
             auditHelper.addLog("RESET PASSWORD",
                     passwordSync.getRequestorDomain(),
                     passwordSync.getRequestorLogin(), "IDM SERVICE",
@@ -1626,7 +1627,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     passwordSync.getRequestClientIP(),
                     passwordSync.getSecurityDomain(),
                     passwordSync.getPrincipal());
-
+			*/
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(ResponseCode.USER_NOT_FOUND);
             return response;
@@ -1641,6 +1642,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         try {
             encPassword = loginManager.encryptPassword(userId, password);
         } catch (EncryptionException e) {
+        	/*
             auditHelper
                     .addLog("RESET PASSWORD",
                             passwordSync.getRequestorDomain(),
@@ -1650,7 +1652,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                             userId, null, "FAILURE", null, null, null,
                             requestId, ResponseCode.FAIL_ENCRYPTION.toString(),
                             null, e.toString());
-
+			*/
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(ResponseCode.FAIL_ENCRYPTION);
             return response;
@@ -1662,7 +1664,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         if (retval) {
             log.debug("-Password changed in openiam repository for user:"
                     + passwordSync.getPrincipal());
-
+            /*
             auditHelper.addLog("RESET PASSWORD",
                     passwordSync.getRequestorDomain(),
                     passwordSync.getRequestorLogin(), "IDM SERVICE",
@@ -1672,7 +1674,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     null, passwordSync.getRequestClientIP(),
                     passwordSync.getPrincipal(),
                     passwordSync.getSecurityDomain());
-
+			*/
             /*
              * came with merge from v2.3 //check if password should be sent to
              * the user. if (passwordSync.isSendPasswordToUser()) { //
@@ -1684,6 +1686,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             }
 
         } else {
+        	/*
             auditHelper.addLog("RESET PASSWORD",
                     passwordSync.getRequestorDomain(),
                     passwordSync.getRequestorLogin(), "IDM SERVICE",
@@ -1692,7 +1695,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     "FAILURE", null, null, null, requestId,
                     ResponseCode.PRINCIPAL_NOT_FOUND.toString(), null,
                     "Principal not found: " + passwordSync.getPrincipal());
-
+			*/
             Response resp = new Response();
             resp.setStatus(ResponseStatus.FAILURE);
             resp.setErrorCode(ResponseCode.PRINCIPAL_NOT_FOUND);
@@ -1938,6 +1941,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 passwordSync.getSecurityDomain(), passwordSync.getPrincipal(),
                 passwordSync.getManagedSystemId());
         if (login == null) {
+        	/*
             auditHelper.addLog("SET PASSWORD",
                     passwordSync.getRequestorDomain(),
                     passwordSync.getRequestorLogin(), "IDM SERVICE",
@@ -1947,7 +1951,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     passwordSync.getRequestClientIP(),
                     passwordSync.getPrincipal(),
                     passwordSync.getSecurityDomain());
-
+			*/
             response.fail();
             response.setErrorCode(ResponseCode.PRINCIPAL_NOT_FOUND);
             return response;
@@ -1961,6 +1965,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         }
         final UserEntity usr = userMgr.getUser(userId);
         if (usr == null) {
+        	/*
             auditHelper.addLog("SET PASSWORD",
                     passwordSync.getRequestorDomain(),
                     passwordSync.getRequestorLogin(), "IDM SERVICE",
@@ -1970,7 +1975,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     passwordSync.getRequestClientIP(),
                     passwordSync.getPrincipal(),
                     passwordSync.getSecurityDomain());
-
+			*/
             response.fail();
             response.setErrorCode(ResponseCode.USER_NOT_FOUND);
             return response;
@@ -2032,7 +2037,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 if (retval) {
                     log.debug("-Password changed in openiam repository for user:"
                             + passwordSync.getPrincipal());
-
+                    /*
                     auditHelper.addLog("SET PASSWORD",
                             passwordSync.getRequestorDomain(),
                             passwordSync.getRequestorLogin(), "IDM SERVICE",
@@ -2041,7 +2046,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                             null, null, requestId, null, null, null,
                             passwordSync.getRequestClientIP(), l.getLogin(),
                             l.getDomainId());
-
+					*/
                     // update the user object that the password was changed
                     usr.setDatePasswordChanged(new Date(System
                             .currentTimeMillis()));
@@ -2049,6 +2054,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     userMgr.updateUserWithDependent(usr, false);
 
                 } else {
+                	/*
                     auditHelper.addLog("SET PASSWORD",
                             passwordSync.getRequestorDomain(),
                             passwordSync.getRequestorLogin(), "IDM SERVICE",
@@ -2057,6 +2063,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                             null, null, requestId, null, null, null,
                             passwordSync.getRequestClientIP(), l.getLogin(),
                             l.getDomainId());
+					*/
                     response.setStatus(ResponseStatus.FAILURE);
                     response.setErrorCode(ResponseCode.PRINCIPAL_NOT_FOUND);
                 }
@@ -2273,6 +2280,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 passwordSync.getSecurityDomain(), passwordSync.getPrincipal(),
                 passwordSync.getManagedSystemId());
         if (login == null) {
+        	/*
             auditHelper.addLog("SET PASSWORD",
                     passwordSync.getRequestorDomain(),
                     passwordSync.getRequestorLogin(), "IDM SERVICE",
@@ -2282,7 +2290,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     passwordSync.getRequestClientIP(),
                     passwordSync.getPrincipal(),
                     passwordSync.getSecurityDomain());
-
+			*/
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(ResponseCode.PRINCIPAL_NOT_FOUND);
             return response;
@@ -2297,6 +2305,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
         final UserEntity usr = userMgr.getUser(userId);
         if (usr == null) {
+        	/*
             auditHelper.addLog("SET PASSWORD",
                     passwordSync.getRequestorDomain(),
                     passwordSync.getRequestorLogin(), "IDM SERVICE",
@@ -2306,7 +2315,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     passwordSync.getRequestClientIP(),
                     passwordSync.getPrincipal(),
                     passwordSync.getSecurityDomain());
-
+			*/
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(ResponseCode.USER_NOT_FOUND);
             return response;
@@ -2349,7 +2358,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 if (retval) {
                     log.debug("-Password changed in openiam repository for user:"
                             + passwordSync.getPrincipal());
-
+                    /*
                     auditHelper.addLog("SET PASSWORD",
                             passwordSync.getRequestorDomain(),
                             passwordSync.getRequestorLogin(), "IDM SERVICE",
@@ -2358,7 +2367,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                             null, null, requestId, null, null, null,
                             passwordSync.getRequestClientIP(), l.getLogin(),
                             l.getDomainId());
-
+					*/
                     // update the user object that the password was changed
                     usr.setDatePasswordChanged(new Date(curTime));
                     // reset any locks that may be in place
@@ -2367,6 +2376,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     }
                     userMgr.updateUserWithDependent(usr, false);
                 } else {
+                	/*
                     auditHelper.addLog("SET PASSWORD",
                             passwordSync.getRequestorDomain(),
                             passwordSync.getRequestorLogin(), "IDM SERVICE",
@@ -2375,6 +2385,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                             null, null, requestId, null, null, null,
                             passwordSync.getRequestClientIP(), l.getLogin(),
                             l.getDomainId());
+					*/
                     response.setStatus(ResponseStatus.FAILURE);
                     response.setErrorCode(ResponseCode.PRINCIPAL_NOT_FOUND);
                 }

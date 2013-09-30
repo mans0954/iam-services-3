@@ -43,6 +43,7 @@
 			</service>
 		</model>
 
+		<!--
         <model name="asynchAuditServiceModel">
 			<service name="asynchAuditService">
 				<inbound>
@@ -55,7 +56,7 @@
 				</component>
 			</service>
 		</model>
-
+		-->
 
 		<model name="policyServiceModel">
 			<service name="policyService">

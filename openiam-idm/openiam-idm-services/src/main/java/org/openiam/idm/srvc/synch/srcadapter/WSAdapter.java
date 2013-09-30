@@ -27,7 +27,6 @@ import org.openiam.base.id.UUIDGen;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.synch.dto.Attribute;
 import org.openiam.idm.srvc.synch.dto.LineObject;
 import org.openiam.idm.srvc.synch.dto.SyncResponse;
@@ -77,24 +76,24 @@ public class WSAdapter extends AbstractSrcAdapter { // implements SourceAdapter
 		MatchObjectRule matchRule = null;
 		String changeLog = null;
 		Date mostRecentRecord = null;
-		IdmAuditLog synchUserStartLog = null;
 
 		log.debug("WS SYNCH STARTED ^^^^^^^^");
 
         String requestId = UUIDGen.getUUID();
 
+        /*
         IdmAuditLog synchStartLog = new IdmAuditLog();
         synchStartLog.setSynchAttributes("SYNCH_USER", config.getSynchConfigId(), "START", "SYSTEM", requestId);
         synchStartLog = auditHelper.logEvent(synchStartLog);
-
+		*/
 		try {
 			matchRule = matchRuleFactory.create(config);
 		} catch(ClassNotFoundException cnfe) {
 			log.error(cnfe);
-
+			/*
             synchStartLog.updateSynchAttributes("FAIL",ResponseCode.CLASS_NOT_FOUND.toString() , cnfe.toString());
             auditHelper.logEvent(synchStartLog);
-
+			*/
             SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
             resp.setErrorCode(ResponseCode.CLASS_NOT_FOUND);
             return resp;
@@ -194,9 +193,9 @@ public class WSAdapter extends AbstractSrcAdapter { // implements SourceAdapter
                         log.debug("- User After Transformation =" + pUser);
                         log.debug("- User = " + pUser.getUserId() + "-" + pUser.getFirstName() + " " + pUser.getLastName());
                         log.debug("- User Attributes = " + pUser.getUserAttributes());
-
+                        /*
 						pUser.setSessionId(synchStartLog.getSessionId());
-
+						*/
 						if (retval == TransformScript.DELETE && usr != null) {
 							log.debug("deleting record - " + usr.getUserId());
 							ProvisionUserResponse userResp = provService.deleteByUserId( new ProvisionUser( usr ), UserStatusEnum.DELETED, systemAccount);
@@ -226,10 +225,10 @@ public class WSAdapter extends AbstractSrcAdapter { // implements SourceAdapter
 
 				} catch(ClassNotFoundException cnfe) {
 					log.error(cnfe);
-
+					/*
                     synchStartLog.updateSynchAttributes("FAIL",ResponseCode.CLASS_NOT_FOUND.toString() , cnfe.toString());
                     auditHelper.logEvent(synchStartLog);
-
+					*/
 					SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
 					resp.setErrorCode(ResponseCode.CLASS_NOT_FOUND);
                     resp.setErrorText(cnfe.toString());
@@ -239,10 +238,10 @@ public class WSAdapter extends AbstractSrcAdapter { // implements SourceAdapter
 				} catch (IOException fe ) {
 
                     log.error(fe);
-
+                    /*
                     synchStartLog.updateSynchAttributes("FAIL",ResponseCode.FILE_EXCEPTION.toString() , fe.toString());
                     auditHelper.logEvent(synchStartLog);
-
+					*/
                     SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
                     resp.setErrorCode(ResponseCode.FILE_EXCEPTION);
                     resp.setErrorText(fe.toString());
@@ -253,19 +252,21 @@ public class WSAdapter extends AbstractSrcAdapter { // implements SourceAdapter
 						
 		} catch(Exception se) {
 			log.error(se);
-
+			/*
             synchStartLog.updateSynchAttributes("FAIL",ResponseCode.SYNCHRONIZATION_EXCEPTION.toString() , se.toString());
             auditHelper.logEvent(synchStartLog);
-
+			*/
 			SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
 			resp.setErrorCode(ResponseCode.SQL_EXCEPTION);
 			resp.setErrorText(se.toString());
 			return resp;
 		} finally {
 			// mark the end of the synch
+			/*
 			IdmAuditLog synchEndLog = new IdmAuditLog();
 			synchEndLog.setSynchAttributes("SYNCH_USER", config.getSynchConfigId(), "END", "SYSTEM", synchStartLog.getSessionId());
-			auditHelper.logEvent(synchEndLog);			
+			auditHelper.logEvent(synchEndLog);
+			*/			
 		}
 		
 		log.debug("WS SYNCH COMPLETE.^^^^^^^^");

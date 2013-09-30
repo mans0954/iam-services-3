@@ -385,7 +385,11 @@ public class LoginEntity implements java.io.Serializable {
 
 	public void setLogin(String login) {
 		this.login = login;
-        this.lowerCaseLogin = login.toLowerCase();
+		if(login != null) {
+			this.lowerCaseLogin = login.toLowerCase();
+		} else {
+			this.lowerCaseLogin = null;
+		}
 	}
 
 	public String getManagedSysId() {

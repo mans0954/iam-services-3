@@ -31,8 +31,6 @@ import org.openiam.dozer.converter.SupervisorDozerConverter;
 import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.exception.EncryptionException;
 import org.openiam.exception.ScriptEngineException;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
-import org.openiam.idm.srvc.audit.service.AuditHelper;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
@@ -83,8 +81,6 @@ public class AddUser {
     @Autowired
     protected ManagedSystemWebService managedSysService;
     @Autowired
-    protected AuditHelper auditHelper;
-    @Autowired
     protected OrganizationDataService orgManager;
 
     @Autowired
@@ -96,8 +92,7 @@ public class AddUser {
     @Autowired
     private SupervisorDozerConverter supervisorDozerConverter;
 
-    public ProvisionUserResponse createUser(ProvisionUser user,
-            List<IdmAuditLog> logList) {
+    public ProvisionUserResponse createUser(ProvisionUser user) {
 
         ProvisionUserResponse resp = new ProvisionUserResponse();
         resp.setStatus(ResponseStatus.SUCCESS);
@@ -135,19 +130,19 @@ public class AddUser {
             resp.setErrorCode(ResponseCode.FAIL_ENCRYPTION);
             return resp;
         }
-        code = addGroups(user, newUser.getUserId(), logList);
+        code = addGroups(user, newUser.getUserId());
         if (code != ResponseCode.SUCCESS) {
             resp.setStatus(ResponseStatus.FAILURE);
             resp.setErrorCode(code);
             return resp;
         }
-        code = addRoles(user, newUser.getUserId(), logList);
+        code = addRoles(user, newUser.getUserId());
         if (code != ResponseCode.SUCCESS) {
             resp.setStatus(ResponseStatus.FAILURE);
             resp.setErrorCode(code);
             return resp;
         }
-        code = addAffiliations(user, newUser.getUserId(), logList);
+        code = addAffiliations(user, newUser.getUserId());
         if (code != ResponseCode.SUCCESS) {
             resp.setStatus(ResponseStatus.FAILURE);
             resp.setErrorCode(code);
@@ -195,8 +190,7 @@ public class AddUser {
 
     }
 
-    private ResponseCode addGroups(ProvisionUser user, String newUserId,
-            List<IdmAuditLog> logList) {
+    private ResponseCode addGroups(ProvisionUser user, String newUserId) {
         Set<Group> groupSet = user.getGroups();
 
         if (groupSet != null) {
@@ -211,6 +205,7 @@ public class AddUser {
                     }
                 }
                 // add to audit log
+                /*
                 logList.add(auditHelper.createLogObject("ADD GROUP",
                         user.getRequestorDomain(), user.getRequestorLogin(),
                         "IDM SERVICE", user.getCreatedBy(), "0", "USER",
@@ -218,14 +213,13 @@ public class AddUser {
                         user.getStatus().toString(), null, null,
                         user.getSessionId(), null, g.getGrpName(),
                         user.getRequestClientIP(), null, null));
-
+				*/
             }
         }
         return ResponseCode.SUCCESS;
     }
 
-    private ResponseCode addRoles(ProvisionUser user, String newUserId,
-            List<IdmAuditLog> logList) {
+    private ResponseCode addRoles(ProvisionUser user, String newUserId) {
         Set<Role> roleSet = user.getRoles();
         log.debug("Role list = " + roleSet);
         if (roleSet != null && roleSet.size() > 0) {
@@ -238,7 +232,7 @@ public class AddUser {
                     return ResponseCode.ROLE_ID_INVALID;
                 }
                 roleDataService.addUserToRole(r.getRoleId(), newUserId);
-
+                /*
                 logList.add(auditHelper.createLogObject("ADD ROLE",
                         user.getRequestorDomain(), user.getRequestorLogin(),
                         "IDM SERVICE", user.getCreatedBy(), "0", "USER",
@@ -246,14 +240,13 @@ public class AddUser {
                         user.getStatus().toString(), "NA", null,
                         user.getSessionId(), null, r.getRoleId(),
                         user.getRequestClientIP(), null, null));
-
+				*/
             }
         }
         return ResponseCode.SUCCESS;
     }
 
-    private ResponseCode addAffiliations(ProvisionUser user, String newUserId,
-            List<IdmAuditLog> logList) {
+    private ResponseCode addAffiliations(ProvisionUser user, String newUserId) {
         Set<Organization> affiliationSet = user.getAffiliations();
         log.debug("addAffiliations:Affiliation List list = " + affiliationSet);
         if (affiliationSet != null && affiliationSet.size() > 0) {
@@ -263,7 +256,7 @@ public class AddUser {
                     return ResponseCode.OBJECT_ID_INVALID;
                 }
                 orgManager.addUserToOrg(org.getId(), user.getUserId());
-
+                /*
                 logList.add(auditHelper.createLogObject("ADD AFFILIATION",
                         user.getRequestorDomain(), user.getRequestorLogin(),
                         "IDM SERVICE", user.getCreatedBy(), "0", "USER",
@@ -271,7 +264,7 @@ public class AddUser {
                         user.getStatus().toString(), "NA", null,
                         user.getSessionId(), null, org.getOrganizationName(),
                         user.getRequestClientIP(), null, null));
-
+				*/
             }
         }
         return ResponseCode.SUCCESS;

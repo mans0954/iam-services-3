@@ -25,8 +25,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.exception.AuthenticationException;
 import org.openiam.exception.EncryptionException;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
-import org.openiam.idm.srvc.audit.service.AuditLogUtil;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.dto.Subject;
@@ -67,9 +65,6 @@ public abstract class AbstractLoginModule implements LoginModule {
     @Autowired
     @Qualifier("cryptor")
     protected Cryptor cryptor;
-    
-    @Autowired
-    protected AuditLogUtil auditLogUtil;
     
     @Autowired
     protected ResourceDataService resourceService;
@@ -192,6 +187,7 @@ public abstract class AbstractLoginModule implements LoginModule {
     public void log(String objectTypeId, String actionId, String actionStatus,
             String reason, String domainId, String userId, String principal,
             String linkedLogId, String clientId, String clientIP, String nodeIP) {
+    	/*
         IdmAuditLog log = new IdmAuditLog(objectTypeId, actionId, actionStatus,
                 reason, domainId, userId, principal, linkedLogId, clientId);
 
@@ -199,6 +195,7 @@ public abstract class AbstractLoginModule implements LoginModule {
         log.setNodeIP(nodeIP);
 
         auditLogUtil.log(log);
+        */
     }
 
     public void setUser(UserEntity user) {

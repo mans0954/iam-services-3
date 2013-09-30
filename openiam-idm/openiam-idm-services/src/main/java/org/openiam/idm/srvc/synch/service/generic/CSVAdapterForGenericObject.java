@@ -39,8 +39,6 @@ import org.openiam.base.id.UUIDGen;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
-import org.openiam.idm.srvc.audit.service.AuditHelper;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.synch.dto.Attribute;
@@ -73,8 +71,6 @@ public class CSVAdapterForGenericObject implements SourceAdapter {
     @Autowired
     protected RoleDataService roleDataService;
     @Autowired
-    protected AuditHelper auditHelper;
-    @Autowired
     protected UserDataService userMgr;
     @Autowired
     @Qualifier("systemAccount")
@@ -92,12 +88,12 @@ public class CSVAdapterForGenericObject implements SourceAdapter {
         Reader reader = null;
 
         String requestId = UUIDGen.getUUID();
-
+        /*
         IdmAuditLog synchStartLog = new IdmAuditLog();
         synchStartLog.setSynchAttributes("SYNCH_GENERIC_OBJECT",
                 config.getSynchConfigId(), "START", "SYSTEM", requestId);
         synchStartLog = auditHelper.logEvent(synchStartLog);
-
+		*/
         /*
          * MatchObjectRule matchRule = null; provService =
          * (ProvisionService)ac.getBean("defaultProvision");
@@ -122,11 +118,11 @@ public class CSVAdapterForGenericObject implements SourceAdapter {
             fe.printStackTrace();
 
             log.error(fe);
-
+            /*
             synchStartLog.updateSynchAttributes("FAIL",
                     ResponseCode.FILE_EXCEPTION.toString(), fe.toString());
             auditHelper.logEvent(synchStartLog);
-
+			*/
             SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
             resp.setErrorCode(ResponseCode.FILE_EXCEPTION);
             return resp;
@@ -181,12 +177,12 @@ public class CSVAdapterForGenericObject implements SourceAdapter {
 
                     } catch (ClassNotFoundException cnfe) {
                         log.error(cnfe);
-
+                        /*
                         synchStartLog.updateSynchAttributes("FAIL",
                                 ResponseCode.CLASS_NOT_FOUND.toString(),
                                 cnfe.toString());
                         auditHelper.logEvent(synchStartLog);
-
+						*/
                         SyncResponse resp = new SyncResponse(
                                 ResponseStatus.FAILURE);
                         resp.setErrorCode(ResponseCode.CLASS_NOT_FOUND);
@@ -200,11 +196,11 @@ public class CSVAdapterForGenericObject implements SourceAdapter {
         } catch (IOException io) {
 
             io.printStackTrace();
-
+            /*
             synchStartLog.updateSynchAttributes("FAIL",
                     ResponseCode.IO_EXCEPTION.toString(), io.toString());
             auditHelper.logEvent(synchStartLog);
-
+			*/
             SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
             resp.setErrorCode(ResponseCode.IO_EXCEPTION);
             return resp;

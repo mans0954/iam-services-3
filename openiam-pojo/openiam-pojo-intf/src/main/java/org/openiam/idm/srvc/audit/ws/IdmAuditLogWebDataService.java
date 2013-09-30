@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.audit.ws;
 
+import org.openiam.base.ws.Response;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.dto.SearchAudit;
 
@@ -19,28 +20,15 @@ public interface IdmAuditLogWebDataService {
      * @param log
      * @return
      */
-    public IdmAuditLogResponse addLog(IdmAuditLog log);
+    public Response addLog(IdmAuditLog log);
 
-    public IdmAuditLogListResponse getCompleteLog();
-
-    public IdmAuditLogListResponse getPasswordChangeLog();
-
-    /**
-     * Returns a collection of audit log entries based on the search parameters.
-     *
-     * @param search
-     * @return
-     */
-    public IdmAuditLogListResponse search(SearchAudit search);
+    /*
     public IdmAuditLogListResponse searchEvents(SearchAudit search, Integer from, Integer size);
     public Integer countEvents(SearchAudit search);
-
-    public void updateLog(IdmAuditLog log);
 
     IdmAuditLogListResponse eventsAboutUser(String principal, Date startDate);
     public IdmAuditLogListResponse searchEventsAboutUser(String principal, Date startDate, Date endDate, Integer from, Integer size);
 
     public Integer countEventsAboutUser(String principal, Date startDate, Date endDate);
-
-
+	*/
 }

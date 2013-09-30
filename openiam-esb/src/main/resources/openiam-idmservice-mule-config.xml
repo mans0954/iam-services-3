@@ -145,6 +145,7 @@
 		</service>
 	</model>
 
+	<!--
 	<model name="publishAuditEventModel">
 		<service name="publishAuditEventService">
 			<inbound>
@@ -158,6 +159,7 @@
 			</component>
 		</service>
 	</model>
+	-->
 
 	<!-- Synchronization Objects -->
 

@@ -1,5 +1,7 @@
 package org.openiam.idm.srvc.audit.dto;
 
+import java.util.Set;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
@@ -11,163 +13,101 @@ import org.openiam.idm.srvc.audit.domain.IdmAuditLogCustomEntity;
  * @author zaporozhec
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "IdmAuditLogCustom", propOrder = { "customIdmAuditLogId",
-        "logId", "customName", "customValue", "dispayOrder", "type" })
+@XmlType(name = "IdmAuditLogCustom", propOrder = { 
+	"id",
+	"logId",
+	"key",
+	"value"
+})
 @DozerDTOCorrespondence(IdmAuditLogCustomEntity.class)
 public class IdmAuditLogCustom implements java.io.Serializable {
-    private static final long serialVersionUID = 1L;
-    private String customIdmAuditLogId;
-    private String logId;
-    private String customName;
-    private String customValue;
-    private int dispayOrder;
-    private CustomIdmAuditLogType type;
+    
+	private String id;
+	private String logId;
+	private String key;
+	private String value;
+	
+	public String getId() {
+		return id;
+	}
 
-    /**
-     * @return the customIdmAuditLogId
-     */
-    public String getCustomIdmAuditLogId() {
-        return customIdmAuditLogId;
-    }
+	public void setId(String id) {
+		this.id = id;
+	}
 
-    /**
-     * @param customIdmAuditLogId the customIdmAuditLogId to set
-     */
-    public void setCustomIdmAuditLogId(String customIdmAuditLogId) {
-        this.customIdmAuditLogId = customIdmAuditLogId;
-    }
+	public String getLogId() {
+		return logId;
+	}
 
-    /**
-     * @return the logId
-     */
-    public String getLogId() {
-        return logId;
-    }
+	public void setLogId(String logId) {
+		this.logId = logId;
+	}
 
-    /**
-     * @param logId the logId to set
-     */
-    public void setLogId(String logId) {
-        this.logId = logId;
-    }
+	public String getKey() {
+		return key;
+	}
 
-    /**
-     * @return the customName
-     */
-    public String getCustomName() {
-        return customName;
-    }
+	public void setKey(String key) {
+		this.key = key;
+	}
 
-    /**
-     * @param customName the customName to set
-     */
-    public void setCustomName(String customName) {
-        this.customName = customName;
-    }
+	public String getValue() {
+		return value;
+	}
 
-    /**
-     * @return the customValue
-     */
-    public String getCustomValue() {
-        return customValue;
-    }
+	public void setValue(String value) {
+		this.value = value;
+	}
 
-    /**
-     * @param customValue the customValue to set
-     */
-    public void setCustomValue(String customValue) {
-        this.customValue = customValue;
-    }
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		result = prime * result + ((key == null) ? 0 : key.hashCode());
+		result = prime * result + ((logId == null) ? 0 : logId.hashCode());
+		result = prime * result + ((value == null) ? 0 : value.hashCode());
+		return result;
+	}
 
-    /**
-     * @return the dispayOrder
-     */
-    public int getDispayOrder() {
-        return dispayOrder;
-    }
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		IdmAuditLogCustom other = (IdmAuditLogCustom) obj;
+		if (id == null) {
+			if (other.id != null)
+				return false;
+		} else if (!id.equals(other.id))
+			return false;
+		if (key == null) {
+			if (other.key != null)
+				return false;
+		} else if (!key.equals(other.key))
+			return false;
+		if (logId == null) {
+			if (other.logId != null)
+				return false;
+		} else if (!logId.equals(other.logId))
+			return false;
+		if (value == null) {
+			if (other.value != null)
+				return false;
+		} else if (!value.equals(other.value))
+			return false;
+		return true;
+	}
 
-    /**
-     * @param dispayOrder the dispayOrder to set
-     */
-    public void setDispayOrder(int dispayOrder) {
-        this.dispayOrder = dispayOrder;
-    }
+	@Override
+	public String toString() {
+		return String.format(
+				"IdmAuditLogCustom [id=%s, logId=%s, key=%s, value=%s]",
+				id, logId, key, value);
+	}
 
-    /**
-     * @return the type
-     */
-    public CustomIdmAuditLogType getType() {
-        return type;
-    }
-
-    /**
-     * @param type the type to set
-     */
-    public void setType(CustomIdmAuditLogType type) {
-        this.type = type;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see java.lang.Object#hashCode()
-     */
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime
-                * result
-                + ((customIdmAuditLogId == null) ? 0 : customIdmAuditLogId
-                        .hashCode());
-        result = prime * result
-                + ((customName == null) ? 0 : customName.hashCode());
-        result = prime * result
-                + ((customValue == null) ? 0 : customValue.hashCode());
-        result = prime * result + dispayOrder;
-        result = prime * result + ((logId == null) ? 0 : logId.hashCode());
-        result = prime * result + ((type == null) ? 0 : type.hashCode());
-        return result;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see java.lang.Object#equals(java.lang.Object)
-     */
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        IdmAuditLogCustom other = (IdmAuditLogCustom) obj;
-        if (customIdmAuditLogId == null) {
-            if (other.customIdmAuditLogId != null)
-                return false;
-        } else if (!customIdmAuditLogId.equals(other.customIdmAuditLogId))
-            return false;
-        if (customName == null) {
-            if (other.customName != null)
-                return false;
-        } else if (!customName.equals(other.customName))
-            return false;
-        if (customValue == null) {
-            if (other.customValue != null)
-                return false;
-        } else if (!customValue.equals(other.customValue))
-            return false;
-        if (dispayOrder != other.dispayOrder)
-            return false;
-        if (logId == null) {
-            if (other.logId != null)
-                return false;
-        } else if (!logId.equals(other.logId))
-            return false;
-        if (type != other.type)
-            return false;
-        return true;
-    }
+    
 }

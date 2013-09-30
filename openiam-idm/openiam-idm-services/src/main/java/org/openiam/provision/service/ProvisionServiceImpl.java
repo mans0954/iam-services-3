@@ -41,8 +41,6 @@ import org.openiam.dozer.converter.SupervisorDozerConverter;
 import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.exception.ObjectNotFoundException;
 import org.openiam.exception.ScriptEngineException;
-import org.openiam.idm.srvc.audit.service.AuditHelper;
-import org.openiam.idm.srvc.audit.service.IdmAuditLogDataService;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.login.LoginDAO;
@@ -113,9 +111,7 @@ public class ProvisionServiceImpl implements ProvisionService,
     protected UserDataService userMgr;
     protected LoginDataService loginManager;
     protected LoginDAO loginDao;
-    @Autowired
-    protected IdmAuditLogDataService auditDataService;
-
+   
     @Autowired
     private ProvisionConnectorWebService connectorService;
 
@@ -136,8 +132,6 @@ public class ProvisionServiceImpl implements ProvisionService,
     protected String scriptEngine;
     protected OrganizationDataService orgManager;
     protected PasswordService passwordDS;
-    @Autowired
-    protected AuditHelper auditHelper;
     @Autowired
     private LoginDozerConverter loginDozerConverter;
 
@@ -529,13 +523,13 @@ public class ProvisionServiceImpl implements ProvisionService,
             }
 
         }
-
+        /*
         auditHelper.addLog("NEW USER", provUser.getSecurityDomain(),
                 primaryLogin.getLogin(), "IDM SERVICE",
                 provUser.getCreatedBy(), "0", "USER", newUser.getUserId(),
                 null, "SUCCESS", null, "USER_STATUS", provUser.getUser()
                         .getStatus().toString(), requestId, null, null, null);
-
+		*/
         /*
          * String action,String domainId, String principal, String srcSystem,
          * String userId, String targetSystem, String objectType, String
@@ -822,19 +816,20 @@ public class ProvisionServiceImpl implements ProvisionService,
         log.info("Primary id=" + primaryId);
 
         log.info("logging primary modify user");
+        /*
         String logId = auditHelper.addLog("MODIFY USER",
                 provUser.getSecurityDomain(), primaryId, "IDM SERVICE",
                 provUser.getLastUpdatedBy(), "0", "USER", provUser.getUserId(),
                 null, "SUCCESS", null, "USER_STATUS",
                 provUser.getStatus().toString(), requestId, null, null, null)
-                .getLogId();
-
+                .getId();
+		*/
         updateGroupAssociation(origUser.getUserId(),
-                provUser.getGroups(), logId, requestId,
+                provUser.getGroups(), requestId,
                 provUser.getLastUpdatedBy(), primaryId);
 
         updateRoleAssociation(origUser.getUserId(),
-                provUser.getRoles(), logId, requestId,
+                provUser.getRoles(), requestId,
                 provUser.getLastUpdatedBy(), primaryId);
 
         updateSuperiors(newUser, provUser.getSuperiors());
@@ -980,7 +975,7 @@ public class ProvisionServiceImpl implements ProvisionService,
                             inactiveResourceList = removeFromInactiveResList(
                                     gmLg.getManagedSysId(),
                                     inactiveResourceList);
-
+                            /*
                             auditHelper.addLog("MODIFY USER", provUser
                                     .getSecurityDomain(), primaryId,
                                     "IDM SERVICE", provUser.getUser()
@@ -988,7 +983,7 @@ public class ProvisionServiceImpl implements ProvisionService,
                                     provUser.getUserId(), null, "SUCCESS",
                                     logId, "NEW IDENTITY", res.getName(),
                                     requestId, null, null, null);
-
+							*/
                         }
                         if (res.getName().equalsIgnoreCase("NETWORX")) {
                             LoginEntity networxLg = new LoginEntity();
@@ -1000,6 +995,7 @@ public class ProvisionServiceImpl implements ProvisionService,
                             networxLg.setAuthFailCount(0);
                             networxLg.setStatus("ACTIVE");
                             rolePrincipalList.add(networxLg);
+                            /*
                             auditHelper.addLog("MODIFY USER", provUser
                                     .getSecurityDomain(), primaryId,
                                     "IDM SERVICE", provUser.getUser()
@@ -1007,6 +1003,7 @@ public class ProvisionServiceImpl implements ProvisionService,
                                     provUser.getUserId(), null, "SUCCESS",
                                     logId, "NEW IDENTITY", res.getName(),
                                     requestId, null, null, null);
+							*/
                         }
                     }
                 }
@@ -1037,13 +1034,14 @@ public class ProvisionServiceImpl implements ProvisionService,
                 if (!found) {
                     curLg.setStatus("INACTIVE");
                     rolePrincipalList.add(curLg);
-
+                    /*
                     auditHelper.addLog("MODIFY USER",
                             provUser.getSecurityDomain(), primaryId,
                             "IDM SERVICE", provUser.getLastUpdatedBy(), "0",
                             "USER", provUser.getUserId(), null, "SUCCESS",
                             logId, "DISABLE IDENTITY", curLg.getLogin(),
                             requestId, null, null, null);
+					*/
                 }
             }
 
@@ -1597,7 +1595,7 @@ public class ProvisionServiceImpl implements ProvisionService,
     }
 
     private void updateGroupAssociation(String userId,
-            Set<Group> newGroupSet, String logId, String requestId,
+            Set<Group> newGroupSet, String requestId,
             String updatedBy, String primaryId) {
         // loop through the new list
         // if its marked - delete then delete the user-group association
@@ -1609,48 +1607,49 @@ public class ProvisionServiceImpl implements ProvisionService,
         for (Group g : newGroupSet) {
             if (g.getOperation() == AttributeOperationEnum.DELETE) {
                 this.userMgr.removeUserFromGroup(g.getGrpId(), userId);
-
+                /*
                 auditHelper.addLog("MODIFY USER", null, primaryId,
                         "IDM SERVICE", updatedBy, "0", "USER", userId, null,
                         "SUCCESS", logId, "REMOVE GROUP", g.getGrpId(),
                         requestId, null, null, null);
-
+				*/
             } else {
                 if (!groupManager.isUserInCompiledGroupList(g.getGrpId(),
                         userId)) {
                     userMgr.addUserToGroup(g.getGrpId(), userId);
-
+                    /*
                     auditHelper.addLog("MODIFY USER", null, primaryId,
                             "IDM SERVICE", updatedBy, "0", "USER", userId,
                             null, "SUCCESS", logId, "ADD GROUP", g.getGrpId(),
                             requestId, null, null, null);
-
+					*/
                 }
             }
         }
     }
 
     private void updateRoleAssociation(String userId, Set<Role> newRoleSet,
-            String logId, String requestId, String updatedBy, String primaryId) {
+            String requestId, String updatedBy, String primaryId) {
         if (newRoleSet == null) {
             return;
         }
         for (Role r : newRoleSet) {
             if (r.getOperation() == AttributeOperationEnum.DELETE) {
                 roleDataService.removeUserFromRole(r.getRoleId(), userId);
-
+                /*
                 auditHelper.addLog("MODIFY USER", null, primaryId,
                         "IDM SERVICE", updatedBy, "0", "USER", userId, null,
                         "SUCCESS", logId, "REMOVE ROLE", r.getRoleName(),
                         requestId, null, null, null);
-
+				*/
             } else {
                 roleDataService.addUserToRole(r.getRoleId(), userId);
-
+                /*
                 auditHelper.addLog("MODIFY USER", null, primaryId,
                         "IDM SERVICE", updatedBy, "0", "USER", userId, null,
                         "SUCCESS", logId, "ADD ROLE", r.getRoleName(),
                         requestId, null, null, null);
+				*/
             }
         }
     }
@@ -1879,14 +1878,14 @@ public class ProvisionServiceImpl implements ProvisionService,
                         passwordSync.getSecurityDomain(),
                         passwordSync.getPrincipal(),
                         passwordSync.getManagedSystemId());
-
+                /*
                 auditHelper.addLog("RESET PASSWORD",
                         passwordSync.getSecurityDomain(),
                         passwordSync.getPrincipal(), "IDM SERVICE",
                         requestorId, "PASSWORD", "PASSWORD", l.getUserId(),
                         null, "SUCCESS", null, null, null, requestId, null,
                         null, null);
-
+				*/
                 /*
                  * String action,String domainId, String principal, String
                  * srcSystem, String userId, String targetSystem, String
@@ -2129,14 +2128,14 @@ public class ProvisionServiceImpl implements ProvisionService,
                     passwordSync.isPreventChangeCountIncrement());
             log.info("Setting password for principal = "
                     + passwordSync.getPrincipal());
-
+            /*
             auditHelper.addLog("SET PASSWORD",
                     passwordSync.getSecurityDomain(),
                     passwordSync.getPrincipal(), "IDM SERVICE",
                     passwordSync.getRequestorId(), "PASSWORD",
                     login.getLogin(), null, null, "SUCCESS", null, null, null,
                     requestId, null, null, null);
-
+			*/
             ManagedSysDto managedSys = managedSysService
                     .getManagedSys(passwordSync.getManagedSystemId());
             if (managedSys != null) {
@@ -2231,14 +2230,14 @@ public class ProvisionServiceImpl implements ProvisionService,
                         passwordSync.getSecurityDomain(),
                         passwordSync.getPrincipal(),
                         passwordSync.getManagedSystemId());
-
+                /*
                 auditHelper.addLog("SET PASSWORD",
                         passwordSync.getSecurityDomain(),
                         passwordSync.getPrincipal(), "IDM SERVICE",
                         passwordSync.getRequestorId(), "PASSWORD", "PASSWORD",
                         l.getUserId(), null, "SUCCESS", null, null, null,
                         requestId, null, null, null);
-
+				*/
                 // audit log the success
                 // primaryLogId = logEvent(passwordSync, login,"PASSWORD",
                 // "SUCCESS", null);
@@ -2487,12 +2486,12 @@ public class ProvisionServiceImpl implements ProvisionService,
         userMgr.updateUserWithDependent(user, false);
 
         String requestId = "R" + System.currentTimeMillis();
-
+        /*
         auditHelper.addLog("LOCK USER", lg.getDomainId(), lg.getLogin(),
                 "IDM SERVICE", requestorId, "USER", "USER", user.getUserId(),
                 null, "SUCCESS", null, null, null, requestId, auditReason,
                 null, null);
-
+		*/
         Response resp = new Response();
         resp.setStatus(ResponseStatus.SUCCESS);
         return resp;
@@ -2542,14 +2541,6 @@ public class ProvisionServiceImpl implements ProvisionService,
 
     public void setLoginManager(LoginDataService loginManager) {
         this.loginManager = loginManager;
-    }
-
-    public IdmAuditLogDataService getAuditDataService() {
-        return auditDataService;
-    }
-
-    public void setAuditDataService(IdmAuditLogDataService auditDataService) {
-        this.auditDataService = auditDataService;
     }
 
     public ProvisionConnectorWebService getConnectorService() {
@@ -2653,15 +2644,7 @@ public class ProvisionServiceImpl implements ProvisionService,
             throws BeansException {
         ac = applicationContext;
     }
-
-    public AuditHelper getAuditHelper() {
-        return auditHelper;
-    }
-
-    public void setAuditHelper(AuditHelper auditHelper) {
-        this.auditHelper = auditHelper;
-    }
-
+    
     public ProvisionUserResponse deleteByUserId(String userId,
             UserStatusEnum status, String requestorId) {
         // TODO Auto-generated method stub

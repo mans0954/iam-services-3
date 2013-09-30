@@ -23,7 +23,6 @@ import static org.hibernate.criterion.Projections.rowCount;
 
 /**
  * RDMBS implementation the DAO for IdmAudit
- * @see org.openiam.idm.srvc.audit.dto.IdmAuditLog
  * @author Suneet Shah 
  */
 @Repository("idmAuditLogDAO")

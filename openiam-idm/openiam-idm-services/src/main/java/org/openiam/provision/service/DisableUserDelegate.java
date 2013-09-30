@@ -14,7 +14,6 @@ import org.openiam.base.ws.ResponseStatus;
 import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.connector.type.constant.ErrorCode;
 import org.openiam.connector.type.request.SuspendResumeRequest;
-import org.openiam.idm.srvc.audit.service.AuditHelper;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.key.constant.KeyName;
@@ -42,8 +41,6 @@ import org.springframework.stereotype.Component;
 public class DisableUserDelegate {
     @Autowired
     protected UserDataService userMgr;
-    @Autowired
-    protected AuditHelper auditHelper;
     @Autowired
     protected SysConfiguration sysConfiguration;
     @Autowired
@@ -97,11 +94,12 @@ public class DisableUserDelegate {
         UserEntity usr = this.userMgr.getUser(userId);
 
         if (usr == null) {
+        	/*
             auditHelper.addLog((operation) ? "DISABLE" : "ENABLE",
                     sysConfiguration.getDefaultSecurityDomain(), null,
                     "IDM SERVICE", requestorId, "IDM", "USER", userId, null,
                     "FAILURE", null, null, null, requestId, null, null, null);
-
+			*/
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(ResponseCode.USER_NOT_FOUND);
             return response;
@@ -121,12 +119,13 @@ public class DisableUserDelegate {
         LoginEntity lTargetUser = loginManager.getPrimaryIdentity(userId);
 
         if (lRequestor != null && lTargetUser != null) {
-
+        	/*
             auditHelper.addLog(strOperation, lRequestor.getDomainId(),
                     lRequestor.getLogin(), "IDM SERVICE", requestorId,
                     "IDM", "USER", usr.getUserId(), null, "SUCCESS", null,
                     null, null, requestId, null, null, null, null, lTargetUser
                             .getLogin(), lTargetUser.getDomainId());
+			*/
         } else {
             if (log.isDebugEnabled()) {
                 log.debug(String
@@ -236,11 +235,12 @@ public class DisableUserDelegate {
                         domainId = lRequestor.getDomainId();
                         loginId = lRequestor.getLogin();
                     }
-
+                    /*
                     auditHelper.addLog(strOperation + " IDENTITY", domainId,
                             loginId, "IDM SERVICE", requestorId, "IDM", "USER",
                             null, null, "SUCCESS", requestId, null, null,
                             requestId, null, null, null, null, lg.getLogin(), lg.getDomainId());
+					*/
                 } else {
                     lg.setAuthFailCount(0);
                     lg.setIsLocked(0);

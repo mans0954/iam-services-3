@@ -7,7 +7,6 @@ import org.openiam.connector.type.response.ObjectResponse;
 import org.openiam.connector.type.response.ResponseType;
 import org.openiam.connector.type.constant.StatusCodeType;
 import org.openiam.dozer.converter.UserDozerConverter;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
@@ -35,8 +34,6 @@ public class DeprovisionSelectedResourceHelper extends BaseProvisioningHelper {
     public ProvisionUserResponse deprovisionSelectedResources( String userId, String requestorUserId, List<String> resourceList)  {
 
         log.debug("deprovisionSelectedResources().....for userId=" + userId);
-
-        IdmAuditLog auditLog = null;
 
         ProvisionUserResponse response = new ProvisionUserResponse(ResponseStatus.SUCCESS);
         Map<String, Object> bindingMap = new HashMap<String, Object>();
@@ -67,13 +64,14 @@ public class DeprovisionSelectedResourceHelper extends BaseProvisioningHelper {
         LoginEntity lTargetUser = loginManager.getPrimaryIdentity(userId);
 
         if (lRequestor != null && lTargetUser != null) {
-
+        	/*
             auditLog = auditHelper.addLog("DEPROVISION RESOURCE", lRequestor.getDomainId(), lRequestor.getLogin(),
                     "IDM SERVICE", usr.getCreatedBy(), "0", "USER", usr.getUserId(),
                     null, "SUCCESS", null, "USER_STATUS",
                     usr.getStatus().toString(),
                     requestId, null, null, null,
                     null, lTargetUser.getLogin(), lTargetUser.getDomainId());
+			*/
         }
 
 
@@ -130,13 +128,13 @@ public class DeprovisionSelectedResourceHelper extends BaseProvisioningHelper {
 
                         if (connector.getConnectorInterface() != null &&
                                 connector.getConnectorInterface().equalsIgnoreCase("REMOTE")) {
-                            ObjectResponse resp = remoteDelete(loginDozerConverter.convertToDTO(l, true), requestId, mSys, connector, matchObj, pUser, auditLog);
+                            ObjectResponse resp = remoteDelete(loginDozerConverter.convertToDTO(l, true), requestId, mSys, connector, matchObj, pUser);
                             if (resp.getStatus() == StatusCodeType.SUCCESS) {
                                 connectorSuccess = true;
                             }
 
                         } else {
-                            ResponseType resp = localDelete(loginDozerConverter.convertToDTO(l, true), requestId, mSys, pUser, auditLog);
+                            ResponseType resp = localDelete(loginDozerConverter.convertToDTO(l, true), requestId, mSys, pUser);
 
                             if (resp.getStatus() == StatusCodeType.SUCCESS) {
                                 connectorSuccess = true;

@@ -164,9 +164,8 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
         		sysDto = managedSysDozerConverter.convertToDTO(sys, true);
         		if (sysDto != null && sysDto.getPswd() != null) {
         			try {
-        				sysDto.setDecryptPassword(cryptor.decrypt(
-                            keyManagementService.getUserKey(systemUserId,
-                                    KeyName.password.name()), sys.getPswd()));
+        				final byte[] bytes = keyManagementService.getUserKey(systemUserId, KeyName.password.name());
+        				sysDto.setDecryptPassword(cryptor.decrypt(bytes, sys.getPswd()));
         			} catch (Exception e) {
         				log.error("Can't decrypt", e);
         			}

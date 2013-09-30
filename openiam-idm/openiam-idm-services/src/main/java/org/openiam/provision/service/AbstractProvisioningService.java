@@ -27,8 +27,6 @@ import org.openiam.dozer.converter.*;
 import org.openiam.exception.EncryptionException;
 import org.openiam.exception.ObjectNotFoundException;
 import org.openiam.exception.ScriptEngineException;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
-import org.openiam.idm.srvc.audit.service.AuditHelper;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
@@ -157,8 +155,6 @@ public abstract class AbstractProvisioningService implements ProvisionService {
     @Autowired
     protected PasswordService passwordManager;
     @Autowired
-    protected AuditHelper auditHelper;
-    @Autowired
     protected ConnectorAdapter connectorAdapter;
     @Autowired
     protected RemoteConnectorAdapter remoteConnectorAdapter;
@@ -222,14 +218,14 @@ public abstract class AbstractProvisioningService implements ProvisionService {
     protected boolean callConnector(Login mLg, String requestId, ManagedSysDto mSys,
                                     ManagedSystemObjectMatch matchObj, ExtensibleUser extUser,
                                     ProvisionConnectorDto connector,
-                                    ProvisionUser user, IdmAuditLog idmAuditLog) {
+                                    ProvisionUser user) {
 
         if (connector.getConnectorInterface() != null &&
                 connector.getConnectorInterface().equalsIgnoreCase("REMOTE")) {
 
             return remoteAdd(mLg, requestId, mSys, matchObj, extUser, connector);
         }
-        return localAdd(mLg, requestId, mSys, matchObj, extUser, user, idmAuditLog);
+        return localAdd(mLg, requestId, mSys, matchObj, extUser, user);
     }
 
     protected String getDecryptedPassword(ManagedSysDto managedSys) throws ConnectorDataException {
@@ -1261,7 +1257,7 @@ public abstract class AbstractProvisioningService implements ProvisionService {
 
     protected boolean localAdd(Login mLg, String requestId, ManagedSysDto mSys,
                              ManagedSystemObjectMatch matchObj, ExtensibleUser extUser,
-                             ProvisionUser user, IdmAuditLog idmAuditLog) {
+                             ProvisionUser user) {
 
         CrudRequest<ExtensibleUser> addReqType = new CrudRequest<ExtensibleUser>();
 
@@ -1325,8 +1321,7 @@ public abstract class AbstractProvisioningService implements ProvisionService {
             ManagedSysDto mSys,
             ProvisionConnectorDto connector,
             ManagedSystemObjectMatch matchObj,
-            ProvisionUser user,
-            IdmAuditLog auditLog
+            ProvisionUser user
     ) {
 
         CrudRequest<ExtensibleUser> request = new CrudRequest<ExtensibleUser>();
@@ -1351,7 +1346,7 @@ public abstract class AbstractProvisioningService implements ProvisionService {
         request.setScriptHandler(mSys.getDeleteHandler());
 
         ObjectResponse resp = remoteConnectorAdapter.deleteRequest(mSys, request, connector, MuleContextProvider.getCtx());
-
+        /*
         auditHelper.addLog("DELETE IDENTITY", auditLog.getDomainId(), auditLog.getPrincipal(),
                 "IDM SERVICE", user.getCreatedBy(), mLg.getManagedSysId(),
                 "IDENTITY", user.getUserId(),
@@ -1359,13 +1354,12 @@ public abstract class AbstractProvisioningService implements ProvisionService {
                 "DELETED",
                 requestId, resp.getErrorCodeAsStr(), user.getSessionId(), resp.getErrorMsgAsStr(),
                 user.getRequestClientIP(), mLg.getLogin(), mLg.getDomainId());
-
+		*/
         return resp;
     }
 
     protected ResponseType localDelete(Login l, String requestId,
-                                     ManagedSysDto mSys,
-                                     IdmAuditLog auditLog) {
+                                     ManagedSysDto mSys) {
 
         log.debug("Local delete for=" + l);
 
@@ -1402,6 +1396,7 @@ public abstract class AbstractProvisioningService implements ProvisionService {
             status = resp.getStatus().toString();
         }
 
+        /*
         if (auditLog != null) {
             logid = auditLog.getLogId();
         }
@@ -1413,7 +1408,7 @@ public abstract class AbstractProvisioningService implements ProvisionService {
                 "IDENTITY_STATUS", "DELETED",
                 requestId, resp.getErrorCodeAsStr(), "", resp.getErrorMsgAsStr(),
                 l.getLastLoginIP(), l.getLogin(), l.getDomainId());
-
+		*/
         return resp;
     }
     
@@ -1438,12 +1433,13 @@ public abstract class AbstractProvisioningService implements ProvisionService {
         pswdReqType.setRequestID(requestId);
         pswdReqType.setPassword(password);
         ResponseType respType = connectorAdapter.setPasswordRequest(mSys, pswdReqType, MuleContextProvider.getCtx());
-
+        /*
         auditHelper.addLog("RESET PASSWORD IDENTITY", passwordSync.getRequestorDomain(), passwordSync.getRequestorLogin(),
                 "IDM SERVICE", null, mSys.getManagedSysId(), "PASSWORD", null, null, respType.getStatus().toString(), "NA", null,
                 null,
                 requestId, respType.getErrorCodeAsStr(), null, respType.getErrorMsgAsStr(),
                 null, login.getLogin(), login.getDomainId());
+		*/
     }
     
     protected void remoteResetPassword(final String requestId, 
@@ -1487,12 +1483,13 @@ public abstract class AbstractProvisioningService implements ProvisionService {
         req.setScriptHandler(mSys.getPasswordHandler());
 
         ResponseType respType = remoteConnectorAdapter.resetPasswordRequest(mSys, req, connector, MuleContextProvider.getCtx());
-
+        /*
         auditHelper.addLog("RESET PASSWORD IDENTITY", passwordSync.getRequestorDomain(), passwordSync.getRequestorLogin(),
                 "IDM SERVICE", null, mSys.getManagedSysId(), "PASSWORD", null, null, respType.getStatus().toString(), "NA", null,
                 null,
                 requestId, respType.getErrorCodeAsStr(), null, respType.getErrorMsgAsStr(),
                 passwordSync.getRequestClientIP(), login.getLogin(), login.getDomainId());
+		*/
     }
     
     protected ResponseType remoteSetPassword(String requestId,
@@ -1534,13 +1531,13 @@ public abstract class AbstractProvisioningService implements ProvisionService {
         ResponseType respType = remoteConnectorAdapter.setPasswordRequest(mSys, req, connector, MuleContextProvider.getCtx());
 
         req.setScriptHandler(mSys.getPasswordHandler());
-
+        /*
         auditHelper.addLog("SET PASSWORD IDENTITY", passwordSync.getRequestorDomain(), passwordSync.getRequestorLogin(),
                 "IDM SERVICE", null, "PASSWORD", "PASSWORD", null, null, respType.getStatus().toString(), "NA", null,
                 null,
                 requestId, respType.getErrorCodeAsStr(), null, respType.getErrorMsgAsStr(),
                 passwordSync.getRequestClientIP(), login.getLogin(), login.getDomainId());
-
+		*/
         return respType;
 
     }
@@ -1567,12 +1564,13 @@ public abstract class AbstractProvisioningService implements ProvisionService {
         // add the extensible attributes is they exist
 
         ResponseType respType = connectorAdapter.setPasswordRequest(mSys, pswdReqType, MuleContextProvider.getCtx());
-
+        /*
         auditHelper.addLog("SET PASSWORD IDENTITY", passwordSync.getRequestorDomain(), passwordSync.getRequestorLogin(),
                 "IDM SERVICE", null, "PASSWORD", "PASSWORD", null, null, respType.getStatus().toString(), "NA", null,
                 null,
                 requestId, respType.getErrorCodeAsStr(), null, respType.getErrorMsgAsStr(),
                 passwordSync.getRequestClientIP(), login.getLogin(), login.getDomainId());
+		*/
         return respType;
     }
 
@@ -1599,6 +1597,7 @@ public abstract class AbstractProvisioningService implements ProvisionService {
                     loginDozerConverter.convertToEntity(
                             primaryLogin, true), passwordPolicy);
             if (valCode == null || !valCode.isSuccess()) {
+            	/*
                 auditHelper.addLog("CREATE", user.getRequestorDomain(),
                         user.getRequestorLogin(), "IDM SERVICE",
                         user.getCreatedBy(), "0", "USER", user.getUserId(),
@@ -1608,12 +1607,13 @@ public abstract class AbstractProvisioningService implements ProvisionService {
                         user.getSessionId(), "Password validation failed",
                         user.getRequestClientIP(), primaryLogin.getLogin(),
                         primaryLogin.getDomainId());
-
+				*/
                 resp.setStatus(ResponseStatus.FAILURE);
                 resp.setErrorCode(ResponseCode.FAIL_NEQ_PASSWORD);
                 return resp;
             }
         } catch (ObjectNotFoundException e) {
+        	/*
             auditHelper.addLog("CREATE", user.getRequestorDomain(),
                     user.getRequestorLogin(), "IDM SERVICE",
                     user.getCreatedBy(), "0", "USER", user.getUserId(),
@@ -1623,7 +1623,7 @@ public abstract class AbstractProvisioningService implements ProvisionService {
                     user.getSessionId(), e.toString(),
                     user.getRequestClientIP(), primaryLogin.getLogin(),
                     primaryLogin.getDomainId());
-
+			*/
             resp.setStatus(ResponseStatus.FAILURE);
             resp.setErrorCode(ResponseCode.FAIL_NEQ_PASSWORD);
             return resp;

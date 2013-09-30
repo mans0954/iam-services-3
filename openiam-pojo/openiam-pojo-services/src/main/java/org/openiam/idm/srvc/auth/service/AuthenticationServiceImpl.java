@@ -42,8 +42,6 @@ import org.openiam.dozer.converter.RoleDozerConverter;
 import org.openiam.exception.AuthenticationException;
 import org.openiam.exception.LogoutException;
 import org.openiam.exception.ScriptEngineException;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
-import org.openiam.idm.srvc.audit.service.AuditLogUtil;
 import org.openiam.idm.srvc.auth.context.AuthContextFactory;
 import org.openiam.idm.srvc.auth.context.AuthenticationContext;
 import org.openiam.idm.srvc.auth.context.PasswordCredential;
@@ -140,9 +138,6 @@ public class AuthenticationServiceImpl implements AuthenticationService, Applica
     @Autowired
     @Qualifier("cryptor")
     private Cryptor cryptor;
-
-    @Autowired
-    private AuditLogUtil auditLogUtil;
     
     @Autowired
     private SysConfiguration sysConfiguration;
@@ -1090,12 +1085,13 @@ public class AuthenticationServiceImpl implements AuthenticationService, Applica
     public void log(String objectTypeId, String actionId, String actionStatus,
             String reason, String domainId, String userId, String principal,
             String linkedLogId, String clientId, String clientIP, String nodeIP) {
-
+    	/*
         IdmAuditLog log = new IdmAuditLog(objectTypeId, actionId, actionStatus,
                 reason, domainId, userId, principal, linkedLogId, clientId);
         log.setHost(clientIP);
         log.setNodeIP(nodeIP);
         auditLogUtil.log(log);
+        */
     }
 
 	@Override
