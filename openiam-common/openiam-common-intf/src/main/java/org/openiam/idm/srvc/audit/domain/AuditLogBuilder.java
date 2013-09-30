@@ -8,6 +8,7 @@ public class AuditLogBuilder {
 	
 	public AuditLogBuilder() {
 		entity = new IdmAuditLogEntity();
+		entity.setTimestamp(new Date());
 	}
 
 	public AuditLogBuilder setUserId(String userId) {
@@ -15,10 +16,12 @@ public class AuditLogBuilder {
 		return this;
 	}
 
+	/*
 	public AuditLogBuilder setTimestamp(Date timestamp) {
 		entity.setTimestamp(timestamp);
 		return this;
 	}
+	*/
 
 	public AuditLogBuilder setSource(String source) {
 		entity.setSource(source);
@@ -50,13 +53,27 @@ public class AuditLogBuilder {
 		return this;
 	}
 	
-	public AuditLogBuilder setLoginId(String loginId) {
-		entity.setLoginId(loginId);
+	public AuditLogBuilder setPrincipal(String principal) {
+		entity.setPrincipal(principal);
 		return this;
 	}
 	
+	public AuditLogBuilder setManagedSysId(String managedSysId) {
+		entity.setManagedSysId(managedSysId);
+		return this;
+	}
+	
+	/*
 	public AuditLogBuilder setSessionID(final String sessionID) {
 		entity.setSessionID(sessionID);
+		return this;
+	}
+	*/
+	
+	public AuditLogBuilder addChild(final AuditLogBuilder builder) {
+		if(builder != null) {
+			entity.addChild(builder.getEntity());
+		}
 		return this;
 	}
 	

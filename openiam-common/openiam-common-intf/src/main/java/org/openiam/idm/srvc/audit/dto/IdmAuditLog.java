@@ -30,7 +30,8 @@ import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "IdmAuditLog", propOrder = {
 	"id",
-	"loginId",
+	"principal",
+	"managedSysId",
 	"userId",
 	"timestamp",
 	"source",
@@ -50,7 +51,8 @@ public class IdmAuditLog implements Serializable {
 	
     private String id;
     private String userId;
-    private String loginId;
+    private String principal;
+    private String managedSysId;
     private Date timestamp;
     private String source;
     private String clientIP;
@@ -152,12 +154,20 @@ public class IdmAuditLog implements Serializable {
 		this.hash = hash;
 	}
 
-	public String getLoginId() {
-		return loginId;
+	public String getPrincipal() {
+		return principal;
 	}
 
-	public void setLoginId(String loginId) {
-		this.loginId = loginId;
+	public void setPrincipal(String principal) {
+		this.principal = principal;
+	}
+
+	public String getManagedSysId() {
+		return managedSysId;
+	}
+
+	public void setManagedSysId(String managedSysId) {
+		this.managedSysId = managedSysId;
 	}
 	
 	public String getSessionID() {
@@ -169,7 +179,7 @@ public class IdmAuditLog implements Serializable {
 	}
 	
 	public String concat() {
-		return String.format("%s-%s-%s-%s-%s-%s-%s-%s-%s-%s-%s", action, clientIP, loginId, nodeIP, objectID, objectType, result, source, timestamp, userId, sessionID);
+		return String.format("%s-%s-%s-%s-%s-%s-%s-%s-%s-%s-%s-%s", action, clientIP, principal, nodeIP, objectID, objectType, result, source, timestamp, userId, sessionID, managedSysId);
 	}
 	
 	public Set<IdmAuditLogCustom> getCustomRecords() {
@@ -208,7 +218,8 @@ public class IdmAuditLog implements Serializable {
 		result = prime * result
 				+ ((timestamp == null) ? 0 : timestamp.hashCode());
 		result = prime * result + ((userId == null) ? 0 : userId.hashCode());
-		result = prime * result + ((loginId == null) ? 0 : loginId.hashCode());
+		result = prime * result + ((principal == null) ? 0 : principal.hashCode());
+		result = prime * result + ((managedSysId == null) ? 0 : managedSysId.hashCode());
 		result = prime * result + ((sessionID == null) ? 0 : sessionID.hashCode());
 		return result;
 	}
@@ -277,10 +288,10 @@ public class IdmAuditLog implements Serializable {
 				return false;
 		} else if (!userId.equals(other.userId))
 			return false;
-		if (loginId == null) {
-			if (other.loginId != null)
+		if (principal == null) {
+			if (other.principal != null)
 				return false;
-		} else if (!loginId.equals(other.loginId))
+		} else if (!principal.equals(other.principal))
 			return false;
 		
 		if (sessionID == null) {
@@ -288,14 +299,20 @@ public class IdmAuditLog implements Serializable {
 				return false;
 		} else if (!sessionID.equals(other.sessionID))
 			return false;
+		
+		if (managedSysId == null) {
+			if (other.managedSysId != null)
+				return false;
+		} else if (!managedSysId.equals(other.managedSysId))
+			return false;
 		return true;
 	}
 
 	@Override
 	public String toString() {
 		return String
-				.format("IdmAuditLog [id=%s, userId=%s, loginId=%s, timestamp=%s, source=%s, clientIP=%s, nodeIP=%s, action=%s, result=%s, objectID=%s, objectType=%s, hash=%s]",
-						id, userId, loginId, timestamp, source, clientIP,
+				.format("IdmAuditLog [id=%s, userId=%s, principal=%s, timestamp=%s, source=%s, clientIP=%s, nodeIP=%s, action=%s, result=%s, objectID=%s, objectType=%s, hash=%s]",
+						id, userId, principal, timestamp, source, clientIP,
 						nodeIP, action, result, objectID, objectType, hash);
 	}
 

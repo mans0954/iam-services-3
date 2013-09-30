@@ -41,8 +41,11 @@ public class IdmAuditLogEntity implements Serializable {
     @Column(name="USER_ID", length=32)
     private String userId;
     
-    @Column(name="LOGIN_ID", length=32)
-    private String loginId;
+    @Column(name="PRINCIPAL", length=320)
+    private String principal;
+    
+    @Column(name="MANAGED_SYS_ID", length=32)
+    private String managedSysId;
     
     @Column(name="CREATED_DATETIME")
     private Date timestamp;
@@ -85,6 +88,15 @@ public class IdmAuditLogEntity implements Serializable {
             inverseJoinColumns = {@JoinColumn(name = "OPENIAM_MEMBER_LOG_ID")})
     @Fetch(FetchMode.SUBSELECT)
     private Set<IdmAuditLogEntity> childLogs;
+    
+    public void addChild(final IdmAuditLogEntity entity) {
+    	if(entity != null) {
+    		if(this.childLogs == null) {
+    			this.childLogs = new HashSet<IdmAuditLogEntity>();
+    		}
+    		this.childLogs.add(entity);
+    	}
+    }
     
     public void addCustomRecord(final String key, final String value) {
     	if(key != null && value != null) {
@@ -186,12 +198,20 @@ public class IdmAuditLogEntity implements Serializable {
 		this.hash = hash;
 	}
 
-	public String getLoginId() {
-		return loginId;
+	public String getPrincipal() {
+		return principal;
 	}
 
-	public void setLoginId(String loginId) {
-		this.loginId = loginId;
+	public void setPrincipal(String principal) {
+		this.principal = principal;
+	}
+
+	public String getManagedSysId() {
+		return managedSysId;
+	}
+
+	public void setManagedSysId(String managedSysId) {
+		this.managedSysId = managedSysId;
 	}
 	
 	public String getSessionID() {
@@ -210,8 +230,6 @@ public class IdmAuditLogEntity implements Serializable {
 		this.customRecords = customRecords;
 	}
 	
-	
-
 	public Set<IdmAuditLogEntity> getChildLogs() {
 		return childLogs;
 	}
@@ -221,7 +239,7 @@ public class IdmAuditLogEntity implements Serializable {
 	}
 
 	public String concat() {
-		return String.format("%s-%s-%s-%s-%s-%s-%s-%s-%s-%s-%s", action, clientIP, loginId, nodeIP, objectID, objectType, result, source, timestamp, userId, sessionID);
+		return String.format("%s-%s-%s-%s-%s-%s-%s-%s-%s-%s-%s-%s", action, clientIP, principal, nodeIP, objectID, objectType, result, source, timestamp, userId, sessionID, managedSysId);
 	}
 
 	@Override
@@ -244,7 +262,8 @@ public class IdmAuditLogEntity implements Serializable {
 		result = prime * result
 				+ ((timestamp == null) ? 0 : timestamp.hashCode());
 		result = prime * result + ((userId == null) ? 0 : userId.hashCode());
-		result = prime * result + ((loginId == null) ? 0 : loginId.hashCode());
+		result = prime * result + ((principal == null) ? 0 : principal.hashCode());
+		result = prime * result + ((managedSysId == null) ? 0 : managedSysId.hashCode());
 		result = prime * result + ((sessionID == null) ? 0 : sessionID.hashCode());
 		return result;
 	}
@@ -313,10 +332,10 @@ public class IdmAuditLogEntity implements Serializable {
 				return false;
 		} else if (!userId.equals(other.userId))
 			return false;
-		if (loginId == null) {
-			if (other.loginId != null)
+		if (principal == null) {
+			if (other.principal != null)
 				return false;
-		} else if (!loginId.equals(other.loginId))
+		} else if (!principal.equals(other.principal))
 			return false;
 		
 		if (sessionID == null) {
@@ -324,14 +343,20 @@ public class IdmAuditLogEntity implements Serializable {
 				return false;
 		} else if (!sessionID.equals(other.sessionID))
 			return false;
+		
+		if (managedSysId == null) {
+			if (other.managedSysId != null)
+				return false;
+		} else if (!managedSysId.equals(other.managedSysId))
+			return false;
 		return true;
 	}
 
 	@Override
 	public String toString() {
 		return String
-				.format("IdmAuditLogEntity [id=%s, userId=%s, loginId=%s, timestamp=%s, source=%s, clientIP=%s, nodeIP=%s, action=%s, result=%s, objectID=%s, objectType=%s, hash=%s]",
-						id, userId, loginId, timestamp, source, clientIP,
+				.format("IdmAuditLogEntity [id=%s, userId=%s, principal=%s, timestamp=%s, source=%s, clientIP=%s, nodeIP=%s, action=%s, result=%s, objectID=%s, objectType=%s, hash=%s]",
+						id, userId, principal, timestamp, source, clientIP,
 						nodeIP, action, result, objectID, objectType, hash);
 	}
 
