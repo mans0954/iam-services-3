@@ -22,6 +22,7 @@
 package org.openiam.idm.srvc.recon.service;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -128,8 +129,9 @@ public class ReconciliationServiceImpl implements ReconciliationService {
     private ProvisionConnectorWebService connectorService;
     @Autowired
     private LoginDozerConverter loginDozerConverter;
-
+    @Autowired
     protected ConnectorAdapter connectorAdapter;
+    @Autowired
     protected RemoteConnectorAdapter remoteConnectorAdapter;
 
     @Autowired
@@ -280,9 +282,8 @@ public class ReconciliationServiceImpl implements ReconciliationService {
             // have situations
             Map<String, ReconciliationCommand> situations = new HashMap<String, ReconciliationCommand>();
             for (ReconciliationSituation situation : config.getSituationSet()) {
-                situations.put(situation.getSituation().trim(),
-                        commandFactory.createCommand(
-                                situation.getSituationResp(), situation,
+                situations.put(situation.getSituation().trim(), commandFactory
+                        .createCommand(situation.getSituationResp(), situation,
                                 managedSysId));
                 log.debug("Created Command for: " + situation.getSituation());
             }
@@ -741,10 +742,12 @@ public class ReconciliationServiceImpl implements ReconciliationService {
         for (ReconciliationResultField field : headerRow.getFields()) {
             ReconciliationResultField value = user
                     .get(field.getValues().get(0));
-            if (value == null)
-                continue;
+
             ReconciliationResultField newField = new ReconciliationResultField();
-            newField.setValues(value.getValues());
+            if (value == null)
+                newField.setValues(Arrays.asList(""));
+            else
+                newField.setValues(value.getValues());
             fieldList.add(newField);
         }
         return fieldList;
