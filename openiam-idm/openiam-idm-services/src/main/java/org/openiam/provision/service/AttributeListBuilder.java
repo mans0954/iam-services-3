@@ -105,7 +105,7 @@ public class AttributeListBuilder {
                             extUser.setPrincipalFieldName(attr
                                     .getAttributeName());
                             extUser.setPrincipalFieldDataType(attr
-                                    .getDataType());
+                                    .getDataType().getValue());
 
                         }
 
@@ -127,7 +127,7 @@ public class AttributeListBuilder {
                                         new ExtensibleAttribute(attr
                                                 .getAttributeName(),
                                                 (String) output, 1, attr
-                                                        .getDataType()));
+                                                        .getDataType().getValue()));
 
                             } else if (output instanceof Date) {
                                 final Date d = (Date) output;
@@ -138,7 +138,7 @@ public class AttributeListBuilder {
                                         new ExtensibleAttribute(attr
                                                 .getAttributeName(), sdf
                                                 .format(d), 1, attr
-                                                .getDataType()));
+                                                .getDataType().getValue()));
 
                             } else if (output instanceof BaseAttributeContainer) {
 
@@ -148,7 +148,7 @@ public class AttributeListBuilder {
                                 ExtensibleAttribute newAttr = new ExtensibleAttribute(
                                         attr.getAttributeName(),
                                         (BaseAttributeContainer) output, 1,
-                                        attr.getDataType());
+                                        attr.getDataType().getValue());
                                 newAttr.setObjectType(objectType);
                                 extUser.getAttributes().add(newAttr);
 
@@ -157,7 +157,7 @@ public class AttributeListBuilder {
                                         new ExtensibleAttribute(attr
                                                 .getAttributeName(),
                                                 (List) output, 1, attr
-                                                        .getDataType()));
+                                                        .getDataType().getValue()));
                             }
                         }
 
@@ -167,7 +167,7 @@ public class AttributeListBuilder {
                     extUser.getAttributes().add(
                             new ExtensibleAttribute(attr.getAttributeName(),
                                     attr.getDefaultValue(), 1, attr
-                                            .getDataType()));
+                                            .getDataType().getValue()));
                 }
 
             }
@@ -285,7 +285,7 @@ public class AttributeListBuilder {
                                     newAttr = new ExtensibleAttribute(
                                             attr.getAttributeName(),
                                             (String) output, 1,
-                                            attr.getDataType());
+                                            attr.getDataType().getValue());
                                     newAttr.setObjectType(objectType);
                                     extUser.getAttributes().add(newAttr);
 
@@ -299,7 +299,7 @@ public class AttributeListBuilder {
                                     newAttr = new ExtensibleAttribute(
                                             attr.getAttributeName(),
                                             sdf.format(d), 1,
-                                            attr.getDataType());
+                                            attr.getDataType().getValue());
                                     newAttr.setObjectType(objectType);
 
                                     extUser.getAttributes().add(newAttr);
@@ -309,7 +309,7 @@ public class AttributeListBuilder {
                                     newAttr = new ExtensibleAttribute(
                                             attr.getAttributeName(),
                                             (BaseAttributeContainer) output, 1,
-                                            attr.getDataType());
+                                            attr.getDataType().getValue());
                                     newAttr.setObjectType(objectType);
                                     extUser.getAttributes().add(newAttr);
 
@@ -318,7 +318,7 @@ public class AttributeListBuilder {
                                     newAttr = new ExtensibleAttribute(
                                             attr.getAttributeName(),
                                             (List) output, 1,
-                                            attr.getDataType());
+                                            attr.getDataType().getValue());
                                     newAttr.setObjectType(objectType);
 
                                     extUser.getAttributes().add(newAttr);
@@ -332,7 +332,7 @@ public class AttributeListBuilder {
                                 extUser.setPrincipalFieldName(attr
                                         .getAttributeName());
                                 extUser.setPrincipalFieldDataType(attr
-                                        .getDataType());
+                                        .getDataType().getValue());
 
                             }
                         }

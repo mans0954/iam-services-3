@@ -5,6 +5,7 @@ import org.openiam.connector.type.constant.ErrorCode;
 import org.openiam.connector.type.request.RequestType;
 import org.openiam.connector.type.response.ResponseType;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
+import org.openiam.idm.srvc.mngsys.dto.PolicyMapDataTypeOptions;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
@@ -124,18 +125,18 @@ public abstract class AbstractAppTableCommand<Request extends RequestType, Respo
         String principalFieldDataType = null;
         for (final AttributeMapEntity atr : attrMap) {
             if (atr.getDataType() == null) {
-                atr.setDataType("String");
+                atr.setDataType(PolicyMapDataTypeOptions.STRING);
             }
 
             final String objectType = atr.getMapForObjectType();
             if(StringUtils.equalsIgnoreCase(objectType, "password")) {
                 colName = atr.getAttributeName();
-                colDataType = atr.getDataType();
+                colDataType = atr.getDataType().getValue();
             }
 
             if(StringUtils.equalsIgnoreCase(objectType, "principal")) {
                 principalFieldName = atr.getAttributeName();
-                principalFieldDataType = atr.getDataType();
+                principalFieldDataType = atr.getDataType().getValue();
 
             }
         }

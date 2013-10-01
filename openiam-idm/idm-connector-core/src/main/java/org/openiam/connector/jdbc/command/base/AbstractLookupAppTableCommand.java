@@ -83,7 +83,7 @@ public abstract class AbstractLookupAppTableCommand<ExtObject extends Extensible
                 final String objectType = atr.getMapForObjectType();
                 if(compareObjectTypeWithId(objectType)) {
                     principalFieldName = atr.getAttributeName();
-                    principalFieldDataType = atr.getDataType();
+                    principalFieldDataType = atr.getDataType().getValue();
                 } else if (compareObjectTypeWithObject(objectType)) {
                     if (colCount > 0) {
                         columnList.append(",");

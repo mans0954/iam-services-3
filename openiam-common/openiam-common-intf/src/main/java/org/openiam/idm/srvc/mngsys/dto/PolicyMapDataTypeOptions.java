@@ -1,0 +1,34 @@
+package org.openiam.idm.srvc.mngsys.dto;
+
+import javax.xml.bind.annotation.XmlEnum;
+import javax.xml.bind.annotation.XmlEnumValue;
+import javax.xml.bind.annotation.XmlType;
+
+@XmlType(name = "PolicyMapDataTypeOptions")
+@XmlEnum
+public enum PolicyMapDataTypeOptions {
+    @XmlEnumValue("string")
+    STRING("string"),
+    @XmlEnumValue("date")
+    DATE("date"),
+    @XmlEnumValue("int")
+    INT("int"),
+    @XmlEnumValue("long")
+    LONG("long"),
+    @XmlEnumValue("timestamp")
+    TIMESTAMP("timestamp"),
+    @XmlEnumValue("memberOf")
+    MEMBER_OF("memberOf"),
+    @XmlEnumValue("byteArray")
+    BYTE_ARRAY("byteArray");
+
+    private String value;
+
+    public String getValue() {
+        return value;
+    }
+
+    private PolicyMapDataTypeOptions(String value) {
+        this.value = value;
+    }
+}
