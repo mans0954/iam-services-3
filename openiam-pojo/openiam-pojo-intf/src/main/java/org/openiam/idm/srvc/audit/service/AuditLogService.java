@@ -2,6 +2,7 @@ package org.openiam.idm.srvc.audit.service;
 
 import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.Response;
+import org.openiam.idm.srvc.audit.domain.AuditLogBuilder;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.audit.dto.SearchAudit;
 
@@ -14,6 +15,5 @@ import java.util.List;
  */
 public interface AuditLogService {
 
-    public void save(final IdmAuditLogEntity log);
-    public void enqueue(final IdmAuditLogEntity log);
+    public void enqueue(final AuditLogBuilder builder);
 }

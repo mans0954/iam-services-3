@@ -6,12 +6,16 @@ public class AuditLogBuilder {
 	
 	private IdmAuditLogEntity entity;
 	
+	public AuditLogBuilder(final IdmAuditLogEntity entity) {
+		this.entity = entity;
+	}
+	
 	public AuditLogBuilder() {
 		entity = new IdmAuditLogEntity();
 		entity.setTimestamp(new Date());
 	}
 
-	public AuditLogBuilder setUserId(String userId) {
+	public AuditLogBuilder setSourceUserId(String userId) {
 		entity.setUserId(userId);
 		return this;
 	}
@@ -43,6 +47,25 @@ public class AuditLogBuilder {
 		return this;
 	}
 
+	public AuditLogBuilder setTargetUser(final String userId) {
+		entity.setObjectType("USER");
+		entity.setObjectID(userId);
+		return this;
+	}
+	
+	public AuditLogBuilder setTargetRole(final String roleId) {
+		entity.setObjectType("ROLE");
+		entity.setObjectID(roleId);
+		return this;
+	}
+	
+	public AuditLogBuilder setTargetGroup(final String groupId) {
+		entity.setObjectType("GROUP");
+		entity.setObjectID(groupId);
+		return this;
+	}
+	
+	/*
 	public AuditLogBuilder setObjectID(String objectID) {
 		entity.setObjectID(objectID);
 		return this;
@@ -52,8 +75,9 @@ public class AuditLogBuilder {
 		entity.setObjectType(objectType);
 		return this;
 	}
+	*/
 	
-	public AuditLogBuilder setPrincipal(String principal) {
+	public AuditLogBuilder setSourcePrincipal(String principal) {
 		entity.setPrincipal(principal);
 		return this;
 	}

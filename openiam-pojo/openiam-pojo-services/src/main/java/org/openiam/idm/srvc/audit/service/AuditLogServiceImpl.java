@@ -4,17 +4,23 @@ import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.SysConfiguration;
+import org.openiam.base.id.UUIDGen;
+import org.openiam.idm.srvc.audit.domain.AuditLogBuilder;
+import org.openiam.idm.srvc.audit.domain.IdmAuditLogCustomEntity;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.util.encrypt.HashDigest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,19 +32,10 @@ import org.springframework.transaction.annotation.Transactional;
 public class AuditLogServiceImpl implements AuditLogService {
     
 	@Autowired
-    private IdmAuditLogDAO logDAO;
-    
-	@Autowired
-    private IdmAuditLogCustomDAO logAttributeDAO;
+	private AuditLogSender auditLogSender;
 	
 	@Autowired
     private HashDigest hash;
-	
-    @Autowired
-    private LoginDataService loginManager;
-    
-    @Autowired
-    private SysConfiguration sysConfiguration;
     
     private static final Log LOG = LogFactory.getLog(AuditLogServiceImpl.class);
     
@@ -53,27 +50,33 @@ public class AuditLogServiceImpl implements AuditLogService {
     	}
     }
     
-    @Override
-    @Transactional
-    public void save(final IdmAuditLogEntity log) {
+    private void prepare(final IdmAuditLogEntity log, final String sessionID) {
     	if(log != null) {
-    		if(StringUtils.isBlank(log.getId())) {
-    			prepare(log);
-    			//logDAO.save(log);
+    		final String id = UUIDGen.getUUID();
+    		log.setId(id);
+    		log.setHash(hash.HexEncodedHash(log.concat()));
+    		log.setNodeIP(nodeIP);
+    		log.setSessionID(sessionID);
+    		if(CollectionUtils.isNotEmpty(log.getChildLogs())) {
+    			for(final IdmAuditLogEntity entity : log.getChildLogs()) {
+    				prepare(entity, sessionID);
+    			}
+    		}
+    		
+    		if(CollectionUtils.isNotEmpty(log.getCustomRecords())) {
+    			for(final IdmAuditLogCustomEntity attribute : log.getCustomRecords()) {
+    				attribute.setLogId(id);
+    				attribute.setId(UUIDGen.getUUID());
+    			}
     		}
     	}
-    }
-    
-    private void prepare(final IdmAuditLogEntity log) {
-    	log.setHash(hash.HexEncodedHash(log.concat()));
-    	log.setTimestamp(new Date());
-    	log.setNodeIP(nodeIP);
     }
 
     //TODO:  put on JMS queue
 	@Override
-	public void enqueue(IdmAuditLogEntity log) {
-		// TODO Auto-generated method stub
-		
+	public void enqueue(final AuditLogBuilder builder) {
+		final IdmAuditLogEntity log = builder.getEntity();
+		prepare(log, UUIDGen.getUUID());
+		auditLogSender.send(log);
 	}
 }

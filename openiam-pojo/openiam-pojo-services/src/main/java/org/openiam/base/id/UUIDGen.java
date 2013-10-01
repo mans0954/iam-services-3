@@ -30,12 +30,9 @@ import java.util.UUID;
  */
 public class UUIDGen {
 
-	public static String getUUID() {
-		
+	public static synchronized String getUUID() {
 		String uuidStr = UUID.randomUUID().toString();
 		return  uuidStr.replaceAll("-", "");
-		
-		
 	}
 	
 	public static void main(String[] args) {

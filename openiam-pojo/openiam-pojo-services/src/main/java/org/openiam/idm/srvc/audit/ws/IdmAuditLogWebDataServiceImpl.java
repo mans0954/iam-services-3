@@ -26,6 +26,7 @@ import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.dozer.converter.IdmAuditLogDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
+import org.openiam.idm.srvc.audit.domain.AuditLogBuilder;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.dto.SearchAudit;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
@@ -62,7 +63,7 @@ public class IdmAuditLogWebDataServiceImpl implements IdmAuditLogWebDataService 
     			throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
     		}
     		
-    		auditLogService.enqueue(converter.convertToEntity(log, true));
+    		auditLogService.enqueue(new AuditLogBuilder(converter.convertToEntity(log, true)));
     	} catch(BasicDataServiceException e) {
     		resp.fail();
     		resp.setErrorCode(e.getCode());
