@@ -110,8 +110,7 @@ public class ModifyUserLdapCommand extends AbstractCrudLdapCommand<ExtensibleUse
                         if (groupMembershipEnabled) {
                             buildMembershipList(att, targetMembershipList);
                         }
-                    }
-                    if (att.getDataType().equalsIgnoreCase("byteArray")) {
+                    } else if (att.getDataType().equalsIgnoreCase("byteArray")) {
 
                         modItemList.add(new ModificationItem(att.getOperation(), new BasicAttribute(att.getName(), att.getValueAsByteArray())));
                     } else if (att.getOperation() != 0 && att.getName() != null) {
