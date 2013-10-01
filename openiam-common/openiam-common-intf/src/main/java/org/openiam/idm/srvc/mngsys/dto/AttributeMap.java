@@ -47,7 +47,7 @@ public class AttributeMap implements java.io.Serializable {
     private Integer storeInIamdb;
     private Boolean selected = new Boolean(false);
     /* Data type of the attribute */
-    private String dataType;
+    private PolicyMapDataTypeOptions dataType;
     private String defaultValue;
 
     public AttributeMap() {
@@ -189,11 +189,11 @@ public class AttributeMap implements java.io.Serializable {
         this.selected = selected;
     }
 
-    public String getDataType() {
+    public PolicyMapDataTypeOptions getDataType() {
         return dataType;
     }
 
-    public void setDataType(String dataType) {
+    public void setDataType(PolicyMapDataTypeOptions dataType) {
         this.dataType = dataType;
     }
 

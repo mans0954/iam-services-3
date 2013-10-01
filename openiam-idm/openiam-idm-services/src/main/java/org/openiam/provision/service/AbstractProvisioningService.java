@@ -1194,7 +1194,7 @@ public abstract class AbstractProvisioningService implements ProvisionService {
                                 // the connectors can detect a delete if an attribute is not in the list
 
                                 newAttr = new ExtensibleAttribute(attr.getAttributeName(),
-                                        (String) output, 1, attr.getDataType());
+                                        (String) output, 1, attr.getDataType().getValue());
                                 newAttr.setObjectType(objectType);
                                 extUser.getAttributes().add(newAttr);
 
@@ -1205,17 +1205,19 @@ public abstract class AbstractProvisioningService implements ProvisionService {
                                 String DATE_FORMAT = "MM/dd/yyyy";
                                 SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT);
 
-                                newAttr = new ExtensibleAttribute(attr.getAttributeName(), sdf.format(d), 1, attr.getDataType());
+                                newAttr = new ExtensibleAttribute(attr.getAttributeName(),
+                                        sdf.format(d), 1, attr.getDataType().getValue());
                                 newAttr.setObjectType(objectType);
 
                                 extUser.getAttributes().add(newAttr);
                             }  else if (output instanceof byte[]) {
-                                extUser.getAttributes().add(new ExtensibleAttribute(attr.getAttributeName(), (byte[])output, 1, attr.getDataType()));
+                                extUser.getAttributes().add(new ExtensibleAttribute(attr.getAttributeName(),
+                                        (byte[])output, 1, attr.getDataType().getValue()));
 
                             } else if (output instanceof BaseAttributeContainer) {
                                 // process a complex object which can be passed to the connector
                                 newAttr = new ExtensibleAttribute(attr.getAttributeName(),
-                                        (BaseAttributeContainer) output, 1, attr.getDataType());
+                                        (BaseAttributeContainer) output, 1, attr.getDataType().getValue());
                                 newAttr.setObjectType(objectType);
                                 extUser.getAttributes().add(newAttr);
 
@@ -1223,7 +1225,7 @@ public abstract class AbstractProvisioningService implements ProvisionService {
                                 // process a list - multi-valued object
 
                                 newAttr = new ExtensibleAttribute(attr.getAttributeName(),
-                                        (List) output, 1, attr.getDataType());
+                                        (List) output, 1, attr.getDataType().getValue());
                                 newAttr.setObjectType(objectType);
 
                                 extUser.getAttributes().add(newAttr);
@@ -1234,7 +1236,7 @@ public abstract class AbstractProvisioningService implements ProvisionService {
                         } else if (objectType.equalsIgnoreCase("PRINCIPAL")) {
 
                             extUser.setPrincipalFieldName(attr.getAttributeName());
-                            extUser.setPrincipalFieldDataType(attr.getDataType());
+                            extUser.setPrincipalFieldDataType(attr.getDataType().getValue());
 
                         }
                 }

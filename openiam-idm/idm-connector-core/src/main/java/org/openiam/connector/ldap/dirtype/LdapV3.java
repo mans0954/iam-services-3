@@ -160,7 +160,7 @@ public class LdapV3 implements Directory{
                 String groupName =  ba.getName();
                 boolean exists = isMemberOf(currentMembershipList, groupName);
 
-                if ( ba.getOperationEnum() == AttributeOperationEnum.DELETE) {
+                if (ba.getOperationEnum() == AttributeOperationEnum.DELETE) {
                     if (exists) {
                         // remove the group membership
                         try {
@@ -172,8 +172,7 @@ public class LdapV3 implements Directory{
                             log.error(ne);
                         }
                     }
-                }
-                if (    ba.getOperationEnum() == null
+                } else if (ba.getOperationEnum() == null
                         || ba.getOperationEnum() == AttributeOperationEnum.ADD
                         || ba.getOperationEnum() == AttributeOperationEnum.NO_CHANGE) {
                     if (!exists) {
