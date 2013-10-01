@@ -6,13 +6,14 @@ import org.openiam.idm.srvc.grp.dto.Group
 import org.openiam.idm.srvc.role.dto.Role
 import org.openiam.idm.srvc.role.service.RoleDataService
 
+def groupBaseDN = "," + matchParam.baseDn
 
-def groupBaseDN = ",OU=idm-test,DC=ad,DC=openiamdemo,DC=info"
-
-def oldGroupSet = userBeforeModify.groups as Set
+def oldGroupSet = (binding.hasVariable("userBeforeModify")) ? userBeforeModify.groups : []
 def groupSet = user.groups as Set
 
-oldGroupSet.addAll(getGroupsFromRoles(userBeforeModify.roles))
+if (binding.hasVariable("userBeforeModify")) {
+    oldGroupSet.addAll(getGroupsFromRoles(userBeforeModify.roles))
+}
 groupSet.addAll(getGroupsFromRoles(user.roles))
 
 def attributeContainer = new BaseAttributeContainer()
@@ -24,6 +25,14 @@ groupSet?.each { Group g->
     println("Adding group id  " + g.grpId + " --> " + (g.grpName + groupBaseDN))
     def qualifiedGroupName = "cn=" + g.grpName + groupBaseDN
     attributeContainer.attributeList.add(new BaseAttribute(qualifiedGroupName, qualifiedGroupName, g.operation))
+}
+oldGroupSet?.each { Group g->
+    if (!(g in groupSet)) {
+        g.operation = AttributeOperationEnum.DELETE
+        println("Deleting group id  " + g.grpId + " --> " + (g.grpName + groupBaseDN))
+        def qualifiedGroupName = "cn=" + g.grpName + groupBaseDN
+        attributeContainer.attributeList.add(new BaseAttribute(qualifiedGroupName, qualifiedGroupName, g.operation))
+    }
 }
 if (attributeContainer.attributeList) {
     output = attributeContainer

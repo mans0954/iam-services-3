@@ -151,7 +151,7 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
     		entity.setResourceId(resource.getResourceId());
             resource.setManagedSysId(sys.getManagedSysId());
     	}
-        managedSysDAO.merge(entity);
+        managedSysDAO.save(entity);
 
     }
 
