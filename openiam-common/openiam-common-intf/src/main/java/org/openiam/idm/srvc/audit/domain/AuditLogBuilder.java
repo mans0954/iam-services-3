@@ -87,12 +87,10 @@ public class AuditLogBuilder {
 		return this;
 	}
 	
-	/*
 	public AuditLogBuilder setSessionID(final String sessionID) {
 		entity.setSessionID(sessionID);
 		return this;
 	}
-	*/
 	
 	public AuditLogBuilder addChild(final AuditLogBuilder builder) {
 		if(builder != null) {

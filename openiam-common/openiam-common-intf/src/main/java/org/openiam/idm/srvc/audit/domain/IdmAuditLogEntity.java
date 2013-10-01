@@ -77,6 +77,9 @@ public class IdmAuditLogEntity implements Serializable {
     @Column(name="SESSION_ID", length=100)
     private String sessionID;
     
+    @Column(name="CORRELATION_ID", length=32)
+    private String coorelationId;
+    
     @OneToMany(cascade={CascadeType.PERSIST},fetch=FetchType.LAZY)
     @JoinColumn(name="OPENIAM_LOG_ID", referencedColumnName="OPENIAM_LOG_ID")
     @Fetch(FetchMode.SUBSELECT)
@@ -238,8 +241,16 @@ public class IdmAuditLogEntity implements Serializable {
 		this.childLogs = childLogs;
 	}
 
+	public String getCoorelationId() {
+		return coorelationId;
+	}
+
+	public void setCoorelationId(String coorelationId) {
+		this.coorelationId = coorelationId;
+	}
+
 	public String concat() {
-		return String.format("%s-%s-%s-%s-%s-%s-%s-%s-%s-%s-%s-%s", action, clientIP, principal, nodeIP, objectID, objectType, result, source, timestamp, userId, sessionID, managedSysId);
+		return String.format("%s-%s-%s-%s-%s-%s-%s-%s-%s-%s-%s-%s-%s", action, clientIP, principal, nodeIP, objectID, objectType, result, source, timestamp, userId, sessionID, managedSysId, coorelationId);
 	}
 
 	@Override
@@ -265,6 +276,7 @@ public class IdmAuditLogEntity implements Serializable {
 		result = prime * result + ((principal == null) ? 0 : principal.hashCode());
 		result = prime * result + ((managedSysId == null) ? 0 : managedSysId.hashCode());
 		result = prime * result + ((sessionID == null) ? 0 : sessionID.hashCode());
+		result = prime * result + ((coorelationId == null) ? 0 : coorelationId.hashCode());
 		return result;
 	}
 
@@ -348,6 +360,12 @@ public class IdmAuditLogEntity implements Serializable {
 			if (other.managedSysId != null)
 				return false;
 		} else if (!managedSysId.equals(other.managedSysId))
+			return false;
+		
+		if (coorelationId == null) {
+			if (other.coorelationId != null)
+				return false;
+		} else if (!coorelationId.equals(other.coorelationId))
 			return false;
 		return true;
 	}

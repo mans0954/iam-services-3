@@ -50,16 +50,16 @@ public class AuditLogServiceImpl implements AuditLogService {
     	}
     }
     
-    private void prepare(final IdmAuditLogEntity log, final String sessionID) {
+    private void prepare(final IdmAuditLogEntity log, final String coorelationId) {
     	if(log != null) {
     		final String id = UUIDGen.getUUID();
     		log.setId(id);
     		log.setHash(hash.HexEncodedHash(log.concat()));
     		log.setNodeIP(nodeIP);
-    		log.setSessionID(sessionID);
+    		log.setCoorelationId(coorelationId);
     		if(CollectionUtils.isNotEmpty(log.getChildLogs())) {
     			for(final IdmAuditLogEntity entity : log.getChildLogs()) {
-    				prepare(entity, sessionID);
+    				prepare(entity, coorelationId);
     			}
     		}
     		

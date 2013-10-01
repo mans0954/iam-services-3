@@ -44,7 +44,8 @@ import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 	"hash",
 	"sessionID",
 	"customRecords",
-	"childLogs"
+	"childLogs",
+	"coorelationId"
 })
 @DozerDTOCorrespondence(IdmAuditLogEntity.class)
 public class IdmAuditLog implements Serializable {
@@ -63,6 +64,7 @@ public class IdmAuditLog implements Serializable {
     private String objectType;
     private String hash;
     private String sessionID;
+    private String coorelationId;
     private Set<IdmAuditLogCustom> customRecords;
     private Set<IdmAuditLog> childLogs;
 
@@ -178,8 +180,16 @@ public class IdmAuditLog implements Serializable {
 		this.sessionID = sessionID;
 	}
 	
+	public String getCoorelationId() {
+		return coorelationId;
+	}
+
+	public void setCoorelationId(String coorelationId) {
+		this.coorelationId = coorelationId;
+	}
+	
 	public String concat() {
-		return String.format("%s-%s-%s-%s-%s-%s-%s-%s-%s-%s-%s-%s", action, clientIP, principal, nodeIP, objectID, objectType, result, source, timestamp, userId, sessionID, managedSysId);
+		return String.format("%s-%s-%s-%s-%s-%s-%s-%s-%s-%s-%s-%s-%s", action, clientIP, principal, nodeIP, objectID, objectType, result, source, timestamp, userId, sessionID, managedSysId, coorelationId);
 	}
 	
 	public Set<IdmAuditLogCustom> getCustomRecords() {
@@ -221,6 +231,7 @@ public class IdmAuditLog implements Serializable {
 		result = prime * result + ((principal == null) ? 0 : principal.hashCode());
 		result = prime * result + ((managedSysId == null) ? 0 : managedSysId.hashCode());
 		result = prime * result + ((sessionID == null) ? 0 : sessionID.hashCode());
+		result = prime * result + ((coorelationId == null) ? 0 : coorelationId.hashCode());
 		return result;
 	}
 
@@ -304,6 +315,12 @@ public class IdmAuditLog implements Serializable {
 			if (other.managedSysId != null)
 				return false;
 		} else if (!managedSysId.equals(other.managedSysId))
+			return false;
+		
+		if (coorelationId == null) {
+			if (other.coorelationId != null)
+				return false;
+		} else if (!coorelationId.equals(other.coorelationId))
 			return false;
 		return true;
 	}
