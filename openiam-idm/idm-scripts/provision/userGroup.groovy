@@ -26,16 +26,24 @@ groupSet?.each { Group g->
     }
     def group = groupManager.getGroup(g.getGrpId())
     def qualifiedGroupName = group.attributes?.find{it.name == "LDAP_DN"}?.value
-    println("Adding group id " + g.grpId + " --> " + qualifiedGroupName)
-    attributeContainer.attributeList.add(new BaseAttribute(qualifiedGroupName, qualifiedGroupName, g.operation))
+    if (qualifiedGroupName) {
+        println("Adding group id " + g.grpId + " --> " + qualifiedGroupName)
+        attributeContainer.attributeList.add(new BaseAttribute(qualifiedGroupName, qualifiedGroupName, g.operation))
+    } else {
+        println("Adding group id " + g.grpId + " failed, attribute LDAP_DN is not set")
+    }
 }
 oldGroupSet?.each { Group g->
     if (!(g in groupSet)) {
         g.operation = AttributeOperationEnum.DELETE
         def group = groupManager.getGroup(g.getGrpId())
         def qualifiedGroupName = group.attributes?.find{it.name == "LDAP_DN"}?.value
-        println("Deleting group id " + g.grpId + " --> " + qualifiedGroupName)
-        attributeContainer.attributeList.add(new BaseAttribute(qualifiedGroupName, qualifiedGroupName, g.operation))
+        if (qualifiedGroupName) {
+            println("Deleting group id " + g.grpId + " --> " + qualifiedGroupName)
+            attributeContainer.attributeList.add(new BaseAttribute(qualifiedGroupName, qualifiedGroupName, g.operation))
+        } else {
+            println("Deleting group id " + g.grpId + " failed, attribute LDAP_DN is not set")
+        }
     }
 }
 if (attributeContainer.attributeList) {
