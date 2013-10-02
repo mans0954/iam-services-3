@@ -37,11 +37,12 @@ public class AuditLogDispatcher implements SessionAwareMessageListener, Sweepabl
 	}
 
 	@Override
+	@Transactional
 	public void sweep() {
 		final List<List<IdmAuditLogEntity>> batchList = new LinkedList<List<IdmAuditLogEntity>>();
 		List<IdmAuditLogEntity> list = new ArrayList<IdmAuditLogEntity>(100);
-		for(final Iterator<IdmAuditLogEntity> it = queue.iterator(); it.hasNext();) {
-			final IdmAuditLogEntity next = it.next();
+		while(queue.peek() != null) {
+			final IdmAuditLogEntity next = queue.poll();
 			if(list.size() == 100) {
 				batchList.add(list);
 				list = new ArrayList<IdmAuditLogEntity>(100);
@@ -58,7 +59,6 @@ public class AuditLogDispatcher implements SessionAwareMessageListener, Sweepabl
 		}
 	}
 
-	@Transactional
 	public void batchInsert(final List<IdmAuditLogEntity> entityList) {
 		if(CollectionUtils.isNotEmpty(entityList)) {
 			auditLogDAO.save(entityList);

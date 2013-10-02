@@ -21,6 +21,8 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.GenericGenerator;
@@ -31,6 +33,7 @@ import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 @Entity
 @Table(name = "OPENIAM_LOG")
 @DozerDTOCorrespondence(IdmAuditLog.class)
+@Cache(usage=CacheConcurrencyStrategy.NONE)
 public class IdmAuditLogEntity implements Serializable {
     @Id
     @GeneratedValue(generator = "system-uuid")
@@ -80,7 +83,7 @@ public class IdmAuditLogEntity implements Serializable {
     @Column(name="CORRELATION_ID", length=32)
     private String coorelationId;
     
-    @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "log", fetch = FetchType.LAZY)
+    @OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL, mappedBy = "log")
     private Set<IdmAuditLogCustomEntity> customRecords;
     
     @ManyToMany(cascade=CascadeType.ALL,fetch=FetchType.LAZY)
@@ -107,6 +110,7 @@ public class IdmAuditLogEntity implements Serializable {
     		final IdmAuditLogCustomEntity entity = new IdmAuditLogCustomEntity();
     		entity.setKey(key);
     		entity.setValue(value);
+    		entity.setLog(this);
     		customRecords.add(entity);
     	}
     }

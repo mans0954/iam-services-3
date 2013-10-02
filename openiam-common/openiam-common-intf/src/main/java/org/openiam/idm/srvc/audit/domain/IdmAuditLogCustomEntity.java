@@ -7,11 +7,15 @@ import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.audit.constant.CustomIdmAuditLogType;
@@ -23,6 +27,7 @@ import org.openiam.idm.srvc.audit.dto.IdmAuditLogCustom;
 @Entity
 @Table(name = "OPENIAM_LOG_ATTRIBUTE")
 @DozerDTOCorrespondence(IdmAuditLogCustom.class)
+@Cache(usage=CacheConcurrencyStrategy.NONE)
 public class IdmAuditLogCustomEntity implements Serializable {
 
 
@@ -32,8 +37,8 @@ public class IdmAuditLogCustomEntity implements Serializable {
     @Column(name = "OPENIAM_LOG_ATTRIBUTE_ID")
     private String id;
     
-    @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
-    @JoinColumn(name = "OPENIAM_LOG_ID", referencedColumnName = "OPENIAM_LOG_ID", insertable = true, updatable = false)
+    @ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+    @JoinColumn(name="OPENIAM_LOG_ID", referencedColumnName = "OPENIAM_LOG_ID", insertable = true, updatable = false)
     private IdmAuditLogEntity log;
     
     @Column(name = "NAME", length = 100)

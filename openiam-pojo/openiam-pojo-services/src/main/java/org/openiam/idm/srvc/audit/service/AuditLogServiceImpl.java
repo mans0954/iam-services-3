@@ -60,13 +60,6 @@ public class AuditLogServiceImpl implements AuditLogService {
     				prepare(entity, coorelationId);
     			}
     		}
-    		
-    		if(CollectionUtils.isNotEmpty(log.getCustomRecords())) {
-    			for(final IdmAuditLogCustomEntity attribute : log.getCustomRecords()) {
-    				attribute.setId(UUIDGen.getUUID());
-    				attribute.setLog(log);
-    			}
-    		}
     	}
     }
 
