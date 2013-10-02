@@ -31,4 +31,13 @@ public enum PolicyMapDataTypeOptions {
     private PolicyMapDataTypeOptions(String value) {
         this.value = value;
     }
+
+    public static PolicyMapDataTypeOptions fromString(final String val) {
+        for(final PolicyMapDataTypeOptions e : PolicyMapDataTypeOptions.values()) {
+            if(e.getValue().equals(val)) {
+                return e;
+            }
+        }
+        return null;
+    }
 }
