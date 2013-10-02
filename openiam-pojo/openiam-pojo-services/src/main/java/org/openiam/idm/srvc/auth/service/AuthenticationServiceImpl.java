@@ -42,6 +42,11 @@ import org.openiam.dozer.converter.RoleDozerConverter;
 import org.openiam.exception.AuthenticationException;
 import org.openiam.exception.LogoutException;
 import org.openiam.exception.ScriptEngineException;
+import org.openiam.idm.srvc.audit.constant.AuditAction;
+import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
+import org.openiam.idm.srvc.audit.constant.AuditResult;
+import org.openiam.idm.srvc.audit.domain.AuditLogBuilder;
+import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.idm.srvc.auth.context.AuthContextFactory;
 import org.openiam.idm.srvc.auth.context.AuthenticationContext;
 import org.openiam.idm.srvc.auth.context.PasswordCredential;
@@ -59,6 +64,7 @@ import org.openiam.idm.srvc.auth.spi.LoginModule;
 import org.openiam.idm.srvc.auth.sso.SSOTokenFactory;
 import org.openiam.idm.srvc.auth.sso.SSOTokenModule;
 import org.openiam.idm.srvc.auth.ws.AuthenticationResponse;
+import org.openiam.idm.srvc.base.AbstractBaseService;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.service.GroupDataService;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
@@ -108,7 +114,7 @@ import org.springframework.transaction.annotation.Transactional;
 @WebService(endpointInterface = "org.openiam.idm.srvc.auth.service.AuthenticationService", targetNamespace = "urn:idm.openiam.org/srvc/auth/service", portName = "AuthenticationServicePort", serviceName = "AuthenticationService")
 @ManagedResource(objectName = "openiam:name=authenticationService", description = "Authentication Service")
 @Transactional
-public class AuthenticationServiceImpl implements AuthenticationService, ApplicationContextAware, BeanFactoryAware {
+public class AuthenticationServiceImpl extends AbstractBaseService implements AuthenticationService, ApplicationContextAware, BeanFactoryAware {
 
 	@Autowired
     private AuthStateDAO authStateDao;
@@ -328,21 +334,36 @@ public class AuthenticationServiceImpl implements AuthenticationService, Applica
 
     @Override
     @ManagedAttribute
-    public void globalLogout(String userId) throws LogoutException {
-        if (userId == null) {
-            throw new NullPointerException("UserId is null");
+    public void globalLogout(String userId) throws Throwable {
+        AuditLogBuilder auditBuilder=null;
+        try{
+            auditBuilder = auditLogProvider.getAuditLogBuilder();
+            auditBuilder.setSourceUserId(userId).setTargetUser(userId).setAction(AuditAction.LOGOUT);
+
+            if (userId == null) {
+                auditBuilder.setResult(AuditResult.FAILURE).addAttribute(AuditAttributeName.FAILURE_REASON,"Target User object not passed");
+                throw new NullPointerException("UserId is null");
+            }
+
+            AuthStateEntity authSt = authStateDao.findById(userId);
+            if (authSt == null) {
+                auditBuilder.setResult(AuditResult.FAILURE).addAttribute(AuditAttributeName.FAILURE_REASON, String.format("Cannot find AuthState object for User: %s",userId));
+                log.error("AuthState not found for userId=" + userId);
+                throw new LogoutException();
+            }
+
+            authSt.setAuthState(new BigDecimal(0));
+            authSt.setToken("LOGOUT");
+            authStateDao.saveAuthState(authSt);
+            auditBuilder.setResult(AuditResult.SUCCESS);
+        } catch (Throwable ex){
+           if(!AuditResult.FAILURE.value().equals(auditBuilder.getEntity().getResult()))
+               auditBuilder.setResult(AuditResult.FAILURE).addAttribute(AuditAttributeName.FAILURE_REASON, ex.getMessage());
+
+           throw ex;
+        }finally {
+            auditLogService.enqueue(auditBuilder);
         }
-
-        AuthStateEntity authSt = authStateDao.findById(userId);
-        if (authSt == null) {
-            log.error("AuthState not found for userId=" + userId);
-            throw new LogoutException();
-        }
-
-        authSt.setAuthState(new BigDecimal(0));
-        authSt.setToken("LOGOUT");
-        authStateDao.saveAuthState(authSt);
-
     }
 
     @Override

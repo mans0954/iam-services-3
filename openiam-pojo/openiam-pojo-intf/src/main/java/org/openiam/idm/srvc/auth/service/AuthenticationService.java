@@ -40,7 +40,7 @@ public interface AuthenticationService {
     @WebMethod
     void globalLogout(
             @WebParam(name = "userId", targetNamespace = "")
-            String userId) throws LogoutException;
+            String userId) throws Throwable;
 
     /**
      * This method logs in a user.  It updates his Login record to reflect this fact.  Unsuccessful logins attempts are counted.  If the user

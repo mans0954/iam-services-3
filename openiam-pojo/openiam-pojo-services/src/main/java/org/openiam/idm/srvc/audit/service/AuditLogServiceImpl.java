@@ -73,8 +73,10 @@ public class AuditLogServiceImpl implements AuditLogService {
     //TODO:  put on JMS queue
 	@Override
 	public void enqueue(final AuditLogBuilder builder) {
-		final IdmAuditLogEntity log = builder.getEntity();
-		prepare(log, UUIDGen.getUUID());
-		auditLogSender.send(log);
+        if(builder!=null){
+		    final IdmAuditLogEntity log = builder.getEntity();
+		    prepare(log, UUIDGen.getUUID());
+		    auditLogSender.send(log);
+        }
 	}
 }

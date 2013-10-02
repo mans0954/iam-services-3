@@ -415,5 +415,30 @@
 
 		</tx:attributes>
 	</tx:advice>
+
+
+
+
+    <bean id="auditCacheManager" class="org.springframework.cache.ehcache.EhCacheManagerFactoryBean">
+        <property name="configLocation">
+            <value>classpath:audit.ehcache.xml</value>
+        </property>
+
+        <property name="shared" value="true"/>
+    </bean>
+    <bean id="auditLogBuilderCache" class="org.springframework.cache.ehcache.EhCacheFactoryBean">
+        <property name="cacheManager">
+            <ref local="auditCacheManager"/>
+        </property>
+        <property name="cacheName">
+            <value>AuditLogBuilderCache</value>
+        </property>
+    </bean>
+
+
+
+
+
+
 </beans>
 
