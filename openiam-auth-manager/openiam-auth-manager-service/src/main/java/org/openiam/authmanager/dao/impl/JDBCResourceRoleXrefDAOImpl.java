@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.openiam.authmanager.common.xref.ResourceRoleXref;
 import org.openiam.authmanager.dao.ResourceRoleXrefDAO;
+import org.openiam.core.dao.AbstractJDBCDao;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 

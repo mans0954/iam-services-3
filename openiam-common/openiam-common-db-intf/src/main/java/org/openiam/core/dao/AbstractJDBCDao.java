@@ -1,4 +1,4 @@
-package org.openiam.authmanager.dao.impl;
+package org.openiam.core.dao;
 
 import java.sql.SQLException;
 

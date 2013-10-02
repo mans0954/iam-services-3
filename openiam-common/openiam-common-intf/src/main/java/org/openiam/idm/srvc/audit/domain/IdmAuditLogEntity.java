@@ -80,12 +80,10 @@ public class IdmAuditLogEntity implements Serializable {
     @Column(name="CORRELATION_ID", length=32)
     private String coorelationId;
     
-    @OneToMany(cascade={CascadeType.PERSIST},fetch=FetchType.LAZY)
-    @JoinColumn(name="OPENIAM_LOG_ID", referencedColumnName="OPENIAM_LOG_ID")
-    @Fetch(FetchMode.SUBSELECT)
+    @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "log", fetch = FetchType.LAZY)
     private Set<IdmAuditLogCustomEntity> customRecords;
     
-    @ManyToMany(cascade={CascadeType.PERSIST},fetch=FetchType.LAZY)
+    @ManyToMany(cascade=CascadeType.ALL,fetch=FetchType.LAZY)
     @JoinTable(name = "OPENIAM_LOG_LOG_MEMBERSHIP",
             joinColumns = {@JoinColumn(name = "OPENIAM_LOG_ID")},
             inverseJoinColumns = {@JoinColumn(name = "OPENIAM_MEMBER_LOG_ID")})

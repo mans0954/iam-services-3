@@ -131,14 +131,36 @@
 
 	<!-- Thread Scheduling - not using annotations since the interval must be 
 		configurable -->
-	<!-- <bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean"> 
-		<property name="triggers"> <list> <bean class="org.springframework.scheduling.quartz.SimpleTriggerBean"> 
-		<property name="startDelay" value="${org.openiam.lucene.reindex.threadsweep}" 
-		/> <property name="repeatInterval" value="${org.openiam.lucene.reindex.threadsweep}" 
-		/> <property name="jobDetail"> <bean class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean"> 
-		<property name="targetObject" ref="luceneReindexService" /> <property name="targetMethod" 
-		value="sweep" /> <property name="concurrent" value="false" /> </bean> </property> 
-		</bean> </list> </property> </bean> -->
+	<bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean"> 
+		<property name="triggers"> 
+			<list>
+				<!--  
+				<bean class="org.springframework.scheduling.quartz.SimpleTriggerBean"> 
+					<property name="startDelay" value="${org.openiam.lucene.reindex.threadsweep}" /> 
+					<property name="repeatInterval" value="${org.openiam.lucene.reindex.threadsweep}" /> 
+					<property name="jobDetail"> 
+						<bean class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean"> 
+							<property name="targetObject" ref="luceneReindexService" /> 
+							<property name="targetMethod" value="sweep" /> 
+							<property name="concurrent" value="false" /> 
+						</bean> 
+					</property> 
+				</bean>
+				-->
+				<bean class="org.springframework.scheduling.quartz.SimpleTriggerBean">
+					<property name="startDelay" value="${org.openiam.audit.threadsweep}" /> 
+					<property name="repeatInterval" value="${org.openiam.audit.threadsweep}" /> 
+					<property name="jobDetail"> 
+						<bean class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean"> 
+							<property name="targetObject" ref="auditLogDispatcher" /> 
+							<property name="targetMethod" value="sweep" /> 
+							<property name="concurrent" value="false" /> 
+						</bean> 
+					</property>
+				</bean> 
+			</list> 
+		</property> 
+	</bean> 
 
 	<bean id="seqGenDAO" class="org.openiam.base.id.SequenceGenDAOImpl">
 		<property name="sessionFactory" ref="sessionFactory"></property>

@@ -1,12 +1,16 @@
 package org.openiam.idm.srvc.audit.domain;
 
+import java.io.Serializable;
 import java.util.Set;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.dozer.DozerDTOCorrespondence;
@@ -19,7 +23,7 @@ import org.openiam.idm.srvc.audit.dto.IdmAuditLogCustom;
 @Entity
 @Table(name = "IDM_AUDIT_LOG_CUSTOM")
 @DozerDTOCorrespondence(IdmAuditLogCustom.class)
-public class IdmAuditLogCustomEntity implements java.io.Serializable {
+public class IdmAuditLogCustomEntity implements Serializable {
 
 
     @Id
@@ -28,8 +32,9 @@ public class IdmAuditLogCustomEntity implements java.io.Serializable {
     @Column(name = "OPENIAM_LOG_ATTRIBUTE_ID")
     private String id;
     
-    @Column(name = "OPENIAM_LOG_ID", length = 32, nullable = false)
-    private String logId;
+    @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+    @JoinColumn(name = "OPENIAM_LOG_ID", referencedColumnName = "OPENIAM_LOG_ID", insertable = true, updatable = false)
+    private IdmAuditLogEntity log;
     
     @Column(name = "NAME", length = 100)
     private String key;
@@ -45,12 +50,12 @@ public class IdmAuditLogCustomEntity implements java.io.Serializable {
 		this.id = id;
 	}
 
-	public String getLogId() {
-		return logId;
+	public IdmAuditLogEntity getLog() {
+		return log;
 	}
 
-	public void setLogId(String logId) {
-		this.logId = logId;
+	public void setLog(IdmAuditLogEntity log) {
+		this.log = log;
 	}
 
 	public String getKey() {
@@ -75,7 +80,7 @@ public class IdmAuditLogCustomEntity implements java.io.Serializable {
 		int result = 1;
 		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		result = prime * result + ((key == null) ? 0 : key.hashCode());
-		result = prime * result + ((logId == null) ? 0 : logId.hashCode());
+		result = prime * result + ((log == null) ? 0 : log.hashCode());
 		result = prime * result + ((value == null) ? 0 : value.hashCode());
 		return result;
 	}
@@ -99,10 +104,10 @@ public class IdmAuditLogCustomEntity implements java.io.Serializable {
 				return false;
 		} else if (!key.equals(other.key))
 			return false;
-		if (logId == null) {
-			if (other.logId != null)
+		if (log == null) {
+			if (other.log != null)
 				return false;
-		} else if (!logId.equals(other.logId))
+		} else if (!log.equals(other.log))
 			return false;
 		if (value == null) {
 			if (other.value != null)
@@ -115,9 +120,9 @@ public class IdmAuditLogCustomEntity implements java.io.Serializable {
 	@Override
 	public String toString() {
 		return String.format(
-				"IdmAuditLogCustomEntity [id=%s, logId=%s, key=%s, value=%s]",
-				id, logId, key, value);
+				"IdmAuditLogCustomEntity [id=%s, log=%s, key=%s, value=%s]",
+				id, log, key, value);
 	}
 
-    
+	
 }

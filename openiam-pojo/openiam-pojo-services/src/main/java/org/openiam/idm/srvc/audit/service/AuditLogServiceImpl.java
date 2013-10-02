@@ -52,8 +52,6 @@ public class AuditLogServiceImpl implements AuditLogService {
     
     private void prepare(final IdmAuditLogEntity log, final String coorelationId) {
     	if(log != null) {
-    		final String id = UUIDGen.getUUID();
-    		log.setId(id);
     		log.setHash(hash.HexEncodedHash(log.concat()));
     		log.setNodeIP(nodeIP);
     		log.setCoorelationId(coorelationId);
@@ -65,8 +63,8 @@ public class AuditLogServiceImpl implements AuditLogService {
     		
     		if(CollectionUtils.isNotEmpty(log.getCustomRecords())) {
     			for(final IdmAuditLogCustomEntity attribute : log.getCustomRecords()) {
-    				attribute.setLogId(id);
     				attribute.setId(UUIDGen.getUUID());
+    				attribute.setLog(log);
     			}
     		}
     	}

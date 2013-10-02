@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.audit.dto;
 
+import java.io.Serializable;
 import java.util.Set;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -20,7 +21,7 @@ import org.openiam.idm.srvc.audit.domain.IdmAuditLogCustomEntity;
 	"value"
 })
 @DozerDTOCorrespondence(IdmAuditLogCustomEntity.class)
-public class IdmAuditLogCustom implements java.io.Serializable {
+public class IdmAuditLogCustom implements Serializable {
     
 	private String id;
 	private String logId;
