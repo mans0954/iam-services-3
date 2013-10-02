@@ -21,7 +21,7 @@ import org.openiam.idm.srvc.audit.dto.IdmAuditLogCustom;
  * @author zaporozhec
  */
 @Entity
-@Table(name = "IDM_AUDIT_LOG_CUSTOM")
+@Table(name = "OPENIAM_LOG_ATTRIBUTE")
 @DozerDTOCorrespondence(IdmAuditLogCustom.class)
 public class IdmAuditLogCustomEntity implements Serializable {
 
