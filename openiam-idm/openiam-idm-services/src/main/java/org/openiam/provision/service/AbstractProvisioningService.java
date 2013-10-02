@@ -41,6 +41,7 @@ import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.service.GroupDataService;
 import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
+import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
 import org.openiam.idm.srvc.mngsys.domain.ProvisionConnectorEntity;
@@ -199,6 +200,8 @@ public abstract class AbstractProvisioningService implements ProvisionService {
     protected String preProcessor;
     @Autowired
     protected String postProcessor;
+    @Autowired
+    private AttributeMapDozerConverter attributeMapDozerConverter;
 
     protected void checkAuditingAttributes(ProvisionUser pUser) {
         if ( pUser.getRequestClientIP() == null || pUser.getRequestClientIP().isEmpty() ) {
@@ -465,8 +468,8 @@ public abstract class AbstractProvisioningService implements ProvisionService {
 
     protected Login buildPrimaryPrincipal(Map<String, Object> bindingMap, ScriptIntegration se) {
 
-        List<AttributeMap> policyAttrMap = managedSysService.
-                getResourceAttributeMaps(sysConfiguration.getDefaultManagedSysId());
+        List<AttributeMapEntity> amEList = managedSystemService.getResourceAttributeMaps(sysConfiguration.getDefaultManagedSysId()); // TODO: managedSysId confused with resourceId??
+        List<AttributeMap> policyAttrMap = (amEList == null) ? null : attributeMapDozerConverter.convertToDTOList(amEList, true);
 
         log.debug("Building primary identity. ");
 
@@ -512,8 +515,8 @@ public abstract class AbstractProvisioningService implements ProvisionService {
     }
 
     protected String parseUserPrincipal(List<ExtensibleAttribute> extensibleAttributes) {
-        List<AttributeMap> policyAttrMap = managedSysService.
-                getResourceAttributeMaps(sysConfiguration.getDefaultManagedSysId());
+        List<AttributeMapEntity> amEList = managedSystemService.getResourceAttributeMaps(sysConfiguration.getDefaultManagedSysId()); // TODO: managedSysId confused with resourceId??
+        List<AttributeMap> policyAttrMap = (amEList == null) ? null : attributeMapDozerConverter.convertToDTOList(amEList, true);
         String principalAttributeName = null;
         for (AttributeMap attr : policyAttrMap) {
             String objectType = attr.getMapForObjectType();
@@ -539,7 +542,9 @@ public abstract class AbstractProvisioningService implements ProvisionService {
     protected void buildPrimaryIDPassword(Login primaryIdentity, Map<String, Object> bindingMap,
                                                  ScriptIntegration se) {
         log.debug("setPrimaryIDPassword() ");
-        List<AttributeMap> policyAttrMap = managedSysService.getResourceAttributeMaps(sysConfiguration.getDefaultManagedSysId());
+
+        List<AttributeMapEntity> amEList = managedSystemService.getResourceAttributeMaps(sysConfiguration.getDefaultManagedSysId()); // TODO: managedSysId confused with resourceId??
+        List<AttributeMap> policyAttrMap = (amEList == null) ? null : attributeMapDozerConverter.convertToDTOList(amEList, true);
         if (policyAttrMap != null) {
             log.debug("- policyAttrMap IS NOT null");
             try {
@@ -852,16 +857,18 @@ public abstract class AbstractProvisioningService implements ProvisionService {
                     if (userEntity.getUserAttributes().containsKey(entry.getKey())) {
                         throw new IllegalArgumentException("Attribute with this name alreday exists");
                     }
-                    userEntity.getUserAttributes().put(entry.getKey(),
-                            userAttributeDozerConverter.convertToEntity(entry.getValue(), false));
+                    UserAttributeEntity e = userAttributeDozerConverter.convertToEntity(entry.getValue(), true);
+                    e.setUser(userEntity); // TODO: Maybe it's better to refactor mappings for UserAttributeEntity
+                    userEntity.getUserAttributes().put(entry.getKey(), e);
 
                 } else if (operation == AttributeOperationEnum.REPLACE) {
                     UserAttributeEntity entity = userEntity.getUserAttributes().get(entry.getKey());
                     if (entity != null) {
                         userEntity.getUserAttributes().remove(entry.getKey());
                         userMgr.evict(entity);
-                        userEntity.getUserAttributes().put(entry.getKey(),
-                                userAttributeDozerConverter.convertToEntity(entry.getValue(), true));
+                        UserAttributeEntity e = userAttributeDozerConverter.convertToEntity(entry.getValue(), true);
+                        e.setUser(userEntity);
+                        userEntity.getUserAttributes().put(entry.getKey(), e);
                     }
                 }
             }
