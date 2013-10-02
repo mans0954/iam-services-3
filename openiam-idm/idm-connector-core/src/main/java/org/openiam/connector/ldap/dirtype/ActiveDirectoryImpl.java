@@ -133,7 +133,6 @@ public class ActiveDirectoryImpl implements Directory {
                 }catch (NamingException ne ) {
                     log.error(ne);
                 }
-
             }
         }
 
@@ -168,11 +167,7 @@ public class ActiveDirectoryImpl implements Directory {
                             log.error(ne);
                         }
                     }
-
                 }
-
-
-
             }
         }
     }
@@ -186,8 +181,6 @@ public class ActiveDirectoryImpl implements Directory {
         }
         return null;
     }
-
-
 
     public void setAttributes(String name, Object obj) {
 
@@ -207,15 +200,12 @@ public class ActiveDirectoryImpl implements Directory {
 
     }
 
-
     protected List<String> userMembershipList(String samAccountName,  ManagedSystemObjectMatch matchObj, LdapContext ldapctx) {
 
         List<String> currentMembershipList = new ArrayList<String>();
 
-
         String userSearchFilter = "(&(objectclass=*)(sAMAccountName=" + samAccountName + "))";
         String searchBase = matchObj.getSearchBaseDn();
-
 
         try {
 
@@ -242,29 +232,23 @@ public class ActiveDirectoryImpl implements Directory {
                             for (NamingEnumeration e = attr.getAll();e.hasMore();totalResults++) {
                                 currentMembershipList.add ((String)e.next());
                             }
-
                         }
-
                     }
                     catch (NamingException e)	{
                         log.error("Problem listing membership: " + e.toString());
                     }
-
                 }
-
-
             }
 
-        }catch (Exception e) {
+        } catch (Exception e) {
             log.error(e.toString());
         }
 
         if (currentMembershipList.isEmpty()) {
             return null;
         }
+
         return currentMembershipList;
-
-
     }
 
 }

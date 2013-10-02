@@ -32,7 +32,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * Implements directory specific extensions for standard LDAP v3
  * User: suneetshah
  */
-public class LdapV3 implements Directory{
+public class LdapV3 implements Directory {
 	
 	@Autowired
 	private PasswordGenerator passwordGenerator;
@@ -82,12 +82,10 @@ public class LdapV3 implements Directory{
             ModificationItem[] mods = new ModificationItem[1];
             mods[0] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute("userPassword", decPassword));
             return mods;
-        }catch(EncryptionException e) {
+        } catch(EncryptionException e) {
             log.error(e.toString());
             return null;
-
         }
-
     }
 
     public void delete(CrudRequest reqType, LdapContext ldapctx, String ldapName, String onDelete) throws NamingException{
@@ -110,6 +108,7 @@ public class LdapV3 implements Directory{
     /* Group membership functions */
 
     public void removeAccountMemberships( String ldapName, ManagedSystemObjectMatch matchObj,  LdapContext ldapctx ) {
+
         List<String> currentMembershipList =  userMembershipList(ldapName, matchObj,   ldapctx);
 
         log.debug("Current ldap role membership:" + currentMembershipList);
@@ -118,7 +117,6 @@ public class LdapV3 implements Directory{
         // remove membership
         if (currentMembershipList != null) {
             for (String s : currentMembershipList) {
-
                 try {
                     ModificationItem mods[] = new ModificationItem[1];
                     mods[0] = new ModificationItem(DirContext.REMOVE_ATTRIBUTE, new BasicAttribute("uniqueMember", ldapName));
@@ -128,14 +126,13 @@ public class LdapV3 implements Directory{
                 }
             }
         }
-
     }
 
     public void updateAccountMembership(List<BaseAttribute> targetMembershipList, String ldapName,
                                         ManagedSystemObjectMatch matchObj,  LdapContext ldapctx,
                                         ExtensibleObject obj) {
 
-        List<String> currentMembershipList = userMembershipList(ldapName, matchObj,   ldapctx);
+        List<String> currentMembershipList = userMembershipList(ldapName, matchObj, ldapctx);
 
         log.debug("Current ldap role membership:" + currentMembershipList);
 
@@ -181,28 +178,19 @@ public class LdapV3 implements Directory{
                             ModificationItem mods[] = new ModificationItem[1];
                             mods[0] = new ModificationItem(DirContext.ADD_ATTRIBUTE, new BasicAttribute("uniqueMember", ldapName));
                             ldapctx.modifyAttributes(groupName, mods);
-                        }catch (NamingException ne ) {
+                        } catch (NamingException ne ) {
                             log.error(ne);
                         }
                     }
 
                 }
-
-
-
             }
         }
-
-
-
-
     }
 
     public void setAttributes(String name, Object obj) {
         objectMap.put(name,obj);
     }
-
-
 
     protected boolean isMemberOf(List<String> membershipList, String objectName)  {
 
@@ -215,10 +203,7 @@ public class LdapV3 implements Directory{
             }
         }
         return false;
-
     }
-
-
 
     protected List<String> userMembershipList(String userDN,  ManagedSystemObjectMatch matchObj, LdapContext ldapctx) {
 
@@ -228,10 +213,8 @@ public class LdapV3 implements Directory{
         log.debug(" - userDN =" + userDN);
         log.debug(" - MembershipObjectDN=" + matchObj.getSearchBaseDn());
 
-        String userSearchFilter = "(&(objectclass=*)(uniqueMember=" + userDN + "))";
+        String userSearchFilter = "(&(objectClass=groupOfUniqueNames)(uniqueMember=" + userDN + "))";
         String searchBase = matchObj.getSearchBaseDn();
-
-
 
         try {
 
@@ -243,22 +226,16 @@ public class LdapV3 implements Directory{
 
             NamingEnumeration answer = ldapctx.search(searchBase, userSearchFilter, ctls);
 
-
             //Loop through the search results
             while (answer.hasMoreElements()) {
                 SearchResult sr = (SearchResult)answer.next();
 
-                String objectName = sr.getName();
-                if (!objectName.contains(matchObj.getBaseDn()))  {
-                    objectName = objectName + "," + matchObj.getBaseDn();
-                }
-
+                String objectName = sr.getNameInNamespace();
                 log.debug("Adding to current membership list " + objectName);
                 currentMembershipList.add(objectName);
-
             }
 
-        }catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
 
         }
@@ -266,9 +243,8 @@ public class LdapV3 implements Directory{
         if (currentMembershipList.isEmpty()) {
             return null;
         }
+
         return currentMembershipList;
-
-
     }
 
 }

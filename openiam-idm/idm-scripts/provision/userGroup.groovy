@@ -3,10 +3,11 @@ import org.openiam.base.BaseAttribute
 import org.openiam.base.BaseAttributeContainer
 import org.openiam.dozer.converter.GroupDozerConverter
 import org.openiam.idm.srvc.grp.dto.Group
+import org.openiam.idm.srvc.grp.service.GroupDataService
 import org.openiam.idm.srvc.role.dto.Role
 import org.openiam.idm.srvc.role.service.RoleDataService
 
-def groupBaseDN = "," + matchParam.baseDn
+def groupManager = context.getBean("groupManager") as GroupDataService
 
 def oldGroupSet = (binding.hasVariable("userBeforeModify")) ? userBeforeModify.groups : [] as Set
 def groupSet = user.groups as Set
@@ -18,19 +19,22 @@ groupSet.addAll(getGroupsFromRoles(user.roles))
 
 def attributeContainer = new BaseAttributeContainer()
 output = null
+
 groupSet?.each { Group g->
     if (!(g in oldGroupSet)) {
         g.operation = AttributeOperationEnum.ADD
     }
-    println("Adding group id  " + g.grpId + " --> " + (g.grpName + groupBaseDN))
-    def qualifiedGroupName = "cn=" + g.grpName + groupBaseDN
+    def group = groupManager.getGroup(g.getGrpId())
+    def qualifiedGroupName = group.attributes?.find{it.name == "LDAP_DN"}?.value
+    println("Adding group id " + g.grpId + " --> " + qualifiedGroupName)
     attributeContainer.attributeList.add(new BaseAttribute(qualifiedGroupName, qualifiedGroupName, g.operation))
 }
 oldGroupSet?.each { Group g->
     if (!(g in groupSet)) {
         g.operation = AttributeOperationEnum.DELETE
-        println("Deleting group id  " + g.grpId + " --> " + (g.grpName + groupBaseDN))
-        def qualifiedGroupName = "cn=" + g.grpName + groupBaseDN
+        def group = groupManager.getGroup(g.getGrpId())
+        def qualifiedGroupName = group.attributes?.find{it.name == "LDAP_DN"}?.value
+        println("Deleting group id " + g.grpId + " --> " + qualifiedGroupName)
         attributeContainer.attributeList.add(new BaseAttribute(qualifiedGroupName, qualifiedGroupName, g.operation))
     }
 }

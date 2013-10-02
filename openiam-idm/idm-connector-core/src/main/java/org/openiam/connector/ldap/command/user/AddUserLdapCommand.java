@@ -94,7 +94,7 @@ public class AddUserLdapCommand extends AbstractCrudLdapCommand<ExtensibleUser> 
             Context result = ldapctx.createSubcontext(identityDN, basicAttr);
 
             if (groupMembershipEnabled) {
-                dirSpecificImp.updateAccountMembership(targetMembershipList,identity,  matchObj, ldapctx, addRequestType.getExtensibleObject());
+                dirSpecificImp.updateAccountMembership(targetMembershipList, identityDN, matchObj, ldapctx, addRequestType.getExtensibleObject());
             }
         } catch (NamingException e) {
            log.error(e.getMessage(), e);
