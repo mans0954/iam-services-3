@@ -49,6 +49,10 @@ public class AuditLogDispatcher implements SessionAwareMessageListener, Sweepabl
 			list.add(next);
 		}
 		
+		if(list.size() > 0) {
+			batchList.add(list);
+		}
+		
 		for(final List<IdmAuditLogEntity> entityList : batchList) {
 			batchInsert(entityList);
 		}
