@@ -31,6 +31,7 @@ import javax.jws.WebMethod;
 import javax.jws.WebService;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.SysConfiguration;
@@ -458,7 +459,7 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
 	
 	            if (lg == null) {
 	            	auditBuilder.setResult(AuditResult.FAILURE).addAttribute(AuditAttributeName.FAILURE_REASON, 
-	            			String.format("Cannot find loginc for security domain '%s', principal '%s' and managedSystem '%s'", 
+	            			String.format("Cannot find login for security domain '%s', principal '%s' and managedSystem '%s'", 
 	            					secDomainId, principal, secDomain.getAuthSysId()));
 	            	/*
 	                log("AUTHENTICATION", "AUTHENTICATION", "FAIL",
@@ -532,7 +533,7 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
 	            log.error(ie.getMessage(), ie);
 	            // throw (new
 	            // AuthenticationException(AuthenticationConstants.INTERNAL_ERROR,ie.getMessage(),ie));
-	            auditBuilder.setResult(AuditResult.FAILURE).addAttribute(AuditAttributeName.FAILURE_REASON, ie.toString());
+	            auditBuilder.setResult(AuditResult.FAILURE).addAttribute(AuditAttributeName.FAILURE_REASON, ExceptionUtils.getStackTrace(ie));
 	            authResp.setAuthErrorCode(AuthenticationConstants.INTERNAL_ERROR);
 	            return authResp;
 	        }
@@ -555,9 +556,9 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
 	                sub = loginModule.login(ctx);
 	
 	            } catch (AuthenticationException ae) {
-	
-	                log.debug("Authentication error " + ae.toString());
-	                auditBuilder.setResult(AuditResult.FAILURE).addAttribute(AuditAttributeName.FAILURE_REASON, Integer.valueOf(ae.getErrorCode()).toString());
+	            	final String erroCodeAsString = Integer.valueOf(ae.getErrorCode()).toString();
+	                auditBuilder.setResult(AuditResult.FAILURE).addAttribute(AuditAttributeName.FAILURE_REASON, erroCodeAsString);
+	                auditBuilder.setResult(AuditResult.FAILURE).addAttribute(AuditAttributeName.LOGIN_ERROR_CODE, erroCodeAsString);
 	                int errCode = ae.getErrorCode();
 	                switch (errCode) {
 		                case AuthenticationConstants.RESULT_INVALID_DOMAIN:
@@ -600,7 +601,7 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
 	                return authResp;
 	            } catch (Throwable e) {
 	            	log.error("Unknown Exception", e);
-	            	auditBuilder.setResult(AuditResult.FAILURE).addAttribute(AuditAttributeName.FAILURE_REASON, e.toString());
+	            	auditBuilder.setResult(AuditResult.FAILURE).addAttribute(AuditAttributeName.FAILURE_REASON, ExceptionUtils.getStackTrace(e));
 	                authResp.setStatus(ResponseStatus.FAILURE);
 	                authResp.setAuthErrorCode(AuthenticationConstants.INTERNAL_ERROR);
 	                authResp.setAuthErrorMessage(e.getMessage());
