@@ -1271,11 +1271,16 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
             Map<String, String> currentValueMap = new HashMap<String, String>();
             boolean isMngSysIdentityExistsInOpeniam = (mLg != null);
+            bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS, isMngSysIdentityExistsInOpeniam ? IDENTITY_EXIST : IDENTITY_NEW );
 
             if (!isMngSysIdentityExistsInOpeniam) {
                 try {
                     log.debug(" - Building principal Name for: " + managedSysId);
                     String newPrincipalName = ProvisionServiceUtil.buildPrincipalName(attrMap, scriptRunner, bindingMap);
+                    if (StringUtils.isBlank(newPrincipalName)) {
+                        log.debug("Principal name for managed sys " + managedSysId + " is blank.");
+                        return;
+                    }
                     log.debug(" - New principalName = " + newPrincipalName);
 
                     mLg = new LoginEntity();
@@ -1299,7 +1304,6 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 }
             }
 
-            bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS, isMngSysIdentityExistsInOpeniam ? IDENTITY_NEW : IDENTITY_EXIST);
             bindingMap.put(TARGET_SYSTEM_ATTRIBUTES, null);
             bindingMap.put(TARGET_SYSTEM_IDENTITY, isMngSysIdentityExistsInOpeniam ? mLg.getLogin() : null);
             bindingMap.put( TARGET_SYS_SECURITY_DOMAIN, isMngSysIdentityExistsInOpeniam ? mLg.getDomainId() : null);

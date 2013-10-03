@@ -19,19 +19,27 @@ groupSet.addAll(getGroupsFromRoles(user.roles))
 def attributeContainer = new BaseAttributeContainer()
 output = null
 groupSet?.each { Group g->
-    if (!(g in oldGroupSet)) {
-        g.operation = AttributeOperationEnum.ADD
+    if (!g.managedSysId || (binding.hasVariable("managedSysId") && (g.managedSysId == managedSysId))) { // filter by managed sys
+        if (!g.companyId || (binding.hasVariable("org") && (g.companyId == org?.id))) { // filter by organization
+            if (!(g in oldGroupSet)) {
+                g.operation = AttributeOperationEnum.ADD
+            }
+            println("Adding group id  " + g.grpId + " --> " + (g.grpName + groupBaseDN))
+            def qualifiedGroupName = "cn=" + g.grpName + groupBaseDN
+            attributeContainer.attributeList.add(new BaseAttribute(qualifiedGroupName, qualifiedGroupName, g.operation))
+        }
     }
-    println("Adding group id  " + g.grpId + " --> " + (g.grpName + groupBaseDN))
-    def qualifiedGroupName = "cn=" + g.grpName + groupBaseDN
-    attributeContainer.attributeList.add(new BaseAttribute(qualifiedGroupName, qualifiedGroupName, g.operation))
 }
 oldGroupSet?.each { Group g->
-    if (!(g in groupSet)) {
-        g.operation = AttributeOperationEnum.DELETE
-        println("Deleting group id  " + g.grpId + " --> " + (g.grpName + groupBaseDN))
-        def qualifiedGroupName = "cn=" + g.grpName + groupBaseDN
-        attributeContainer.attributeList.add(new BaseAttribute(qualifiedGroupName, qualifiedGroupName, g.operation))
+    if (!g.managedSysId || (binding.hasVariable("managedSysId") && (g.managedSysId == managedSysId))) { // filter by managed sys
+        if (!g.companyId || (binding.hasVariable("org") && (g.companyId == org?.id))) { // filter by organization
+            if (!(g in groupSet)) {
+                g.operation = AttributeOperationEnum.DELETE
+                println("Deleting group id  " + g.grpId + " --> " + (g.grpName + groupBaseDN))
+                def qualifiedGroupName = "cn=" + g.grpName + groupBaseDN
+                attributeContainer.attributeList.add(new BaseAttribute(qualifiedGroupName, qualifiedGroupName, g.operation))
+            }
+        }
     }
 }
 if (attributeContainer.attributeList) {

@@ -1,6 +1,8 @@
+
+output = null
+
 if("EXIST" == targetSystemIdentityStatus) {
-        output = null
-    return output
+    return
 }
 def attr = user.getUserAttributes().get("sAMAccountName")
 if (attr?.value) {

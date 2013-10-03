@@ -21,28 +21,36 @@ def attributeContainer = new BaseAttributeContainer()
 output = null
 
 groupSet?.each { Group g->
-    if (!(g in oldGroupSet)) {
-        g.operation = AttributeOperationEnum.ADD
-    }
-    def group = groupManager.getGroup(g.getGrpId())
-    def qualifiedGroupName = group.attributes?.find{it.name == "LDAP_DN"}?.value
-    if (qualifiedGroupName) {
-        println("Adding group id " + g.grpId + " --> " + qualifiedGroupName)
-        attributeContainer.attributeList.add(new BaseAttribute(qualifiedGroupName, qualifiedGroupName, g.operation))
-    } else {
-        println("Adding group id " + g.grpId + " failed, attribute LDAP_DN is not set")
+    if (!g.managedSysId || (binding.hasVariable("managedSysId") && (g.managedSysId == managedSysId))) { // filter by managed sys
+        if (!g.companyId || (binding.hasVariable("org") && (g.companyId == org?.id))) { // filter by organization
+            if (!(g in oldGroupSet)) {
+                g.operation = AttributeOperationEnum.ADD
+            }
+            def group = groupManager.getGroup(g.getGrpId())
+            def qualifiedGroupName = group.attributes?.find{it.name == "LDAP_DN"}?.value
+            if (qualifiedGroupName) {
+                println("Adding group id " + g.grpId + " --> " + qualifiedGroupName)
+                attributeContainer.attributeList.add(new BaseAttribute(qualifiedGroupName, qualifiedGroupName, g.operation))
+            } else {
+                println("Adding group id " + g.grpId + " failed, attribute LDAP_DN is not set")
+            }
+        }
     }
 }
 oldGroupSet?.each { Group g->
-    if (!(g in groupSet)) {
-        g.operation = AttributeOperationEnum.DELETE
-        def group = groupManager.getGroup(g.getGrpId())
-        def qualifiedGroupName = group.attributes?.find{it.name == "LDAP_DN"}?.value
-        if (qualifiedGroupName) {
-            println("Deleting group id " + g.grpId + " --> " + qualifiedGroupName)
-            attributeContainer.attributeList.add(new BaseAttribute(qualifiedGroupName, qualifiedGroupName, g.operation))
-        } else {
-            println("Deleting group id " + g.grpId + " failed, attribute LDAP_DN is not set")
+    if (!g.managedSysId || (binding.hasVariable("managedSysId") && (g.managedSysId == managedSysId))) { // filter by managed sys
+        if (!g.companyId || (binding.hasVariable("org") && (g.companyId == org?.id))) { // filter by organization
+            if (!(g in groupSet)) {
+                g.operation = AttributeOperationEnum.DELETE
+                def group = groupManager.getGroup(g.getGrpId())
+                def qualifiedGroupName = group.attributes?.find{it.name == "LDAP_DN"}?.value
+                if (qualifiedGroupName) {
+                    println("Deleting group id " + g.grpId + " --> " + qualifiedGroupName)
+                    attributeContainer.attributeList.add(new BaseAttribute(qualifiedGroupName, qualifiedGroupName, g.operation))
+                } else {
+                    println("Deleting group id " + g.grpId + " failed, attribute LDAP_DN is not set")
+                }
+            }
         }
     }
 }
@@ -54,7 +62,7 @@ Set<Group> getGroupsFromRoles(Set<Role> roles) {
     def roleDataService = context?.getBean("roleDataService") as RoleDataService
     def groupDozerConverter = context?.getBean("groupDozerConverter") as GroupDozerConverter
     def groups = [] as Set
-    roles.each {Role r->
+    roles.each { Role r->
         groups.addAll(groupDozerConverter.convertToDTOSet(roleDataService.getRole(r.roleId).groups, false))
     }
     return groups
