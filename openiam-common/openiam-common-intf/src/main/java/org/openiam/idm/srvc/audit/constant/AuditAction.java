@@ -9,7 +9,8 @@ package org.openiam.idm.srvc.audit.constant;
  */
 public enum AuditAction {
     AUTHENTICATION("AUTHENTICATION"),
-    LOGOUT("LOGOUT");
+    LOGOUT("LOGOUT"),
+    LOGIN("LOGIN");
 
     private String value;
 
