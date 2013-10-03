@@ -115,20 +115,20 @@ public interface PasswordService {
      */
     Policy getPasswordPolicy(String domainId, String principal, String managedSysId);
 
-    /**
-     * Returns the global password policy
-     *
-     * @return
-     */
-    Policy getGlobalPasswordPolicy();
+//    /**
+//     * Returns the global password policy
+//     *
+//     * @return
+//     */
+//    Policy getGlobalPasswordPolicy();
 
-    /**
-     * Gets the password policy based on the User object
-     * @param domainId
-     * @param user
-     * @return
-     */
-    Policy getPasswordPolicyByUser(String domainId, UserEntity user);
+//    /**
+//     * Gets the password policy based on the User object
+//     * @param domainId
+//     * @param user
+//     * @return
+//     */
+//    Policy getPasswordPolicyByUser(String domainId, UserEntity user);
     
     /**
      * This method exists to REPLACE <b>getPasswordPolicyByUser</b>.  The functionality is the same.

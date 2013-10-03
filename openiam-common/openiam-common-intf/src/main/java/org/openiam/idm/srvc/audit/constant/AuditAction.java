@@ -10,7 +10,12 @@ package org.openiam.idm.srvc.audit.constant;
 public enum AuditAction {
     AUTHENTICATION("AUTHENTICATION"),
     LOGOUT("LOGOUT"),
-    LOGIN("LOGIN");
+	LOGIN("LOGIN"),
+    SAVE_GROUP("SAVE GROUP"),
+    ADD_GROUP("CREATE GROUP"),
+    GET_GROUP("GET GROUP"),
+    DELETE_GROUP("DELETE GROUP"),
+    GET_CHILD_GROUP_NUM("GET NUMBER OF CHILD GROUPS");
 
     private String value;
 

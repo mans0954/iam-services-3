@@ -23,6 +23,7 @@ import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
 import org.openiam.idm.srvc.policy.service.PolicyDataService;
 import org.openiam.idm.srvc.pswd.domain.PasswordHistoryEntity;
 import org.openiam.idm.srvc.pswd.service.PasswordHistoryDAO;
+import org.openiam.idm.srvc.pswd.service.PasswordPolicyProvider;
 import org.openiam.idm.srvc.pswd.service.PasswordService;
 import org.openiam.idm.srvc.secdomain.dto.SecurityDomain;
 import org.openiam.idm.srvc.secdomain.service.SecurityDomainDAO;
@@ -57,7 +58,7 @@ public class LoginDataServiceImpl implements LoginDataService {
     private PolicyDataService policyDataService;
 
 	@Autowired
-    protected PasswordService passwordManager;
+    protected PasswordPolicyProvider passwordPolicyProvider;
     
 	@Autowired
 	protected PasswordHistoryDAO passwordHistoryDao;
@@ -213,12 +214,14 @@ public class LoginDataServiceImpl implements LoginDataService {
             String password, boolean preventChangeCountIncrement) {
         Calendar cal = Calendar.getInstance();
         Calendar expCal = Calendar.getInstance();
+        LoginEntity lg = getLoginByManagedSys(domainId, login, sysId);
 
         // SecurityDomain securityDomain =
         // secDomainService.getSecurityDomain(domainId);
         // Policy plcy =
         // policyDao.findById(securityDomain.getPasswordPolicyId());
-        Policy plcy = passwordManager.getPasswordPolicy(domainId, login, sysId);
+//        Policy plcy = passwordPolicyProvider.getPasswordPolicy(domainId, login, sysId);
+        Policy plcy = passwordPolicyProvider.getPasswordPolicyByUser(domainId, lg.getUserId());
 
         String pswdExpValue = getPolicyAttribute(plcy.getPolicyAttributes(),
                 "PWD_EXPIRATION");
@@ -227,7 +230,7 @@ public class LoginDataServiceImpl implements LoginDataService {
         String gracePeriod = getPolicyAttribute(plcy.getPolicyAttributes(),
                 "PWD_EXP_GRACE");
 
-        LoginEntity lg = getLoginByManagedSys(domainId, login, sysId);
+
         lg.setPassword(password);
         lg.setPwdChanged(cal.getTime());
 
@@ -283,7 +286,12 @@ public class LoginDataServiceImpl implements LoginDataService {
         // Policy plcy =
         // policyDao.findById(securityDomain.getPasswordPolicyId());
 
-        Policy plcy = passwordManager.getPasswordPolicy(domainId, login, sysId);
+        LoginEntity lg = getLoginByManagedSys(domainId, login, sysId);
+        UserEntity user = userDao.findById(lg.getUserId());
+
+
+//        Policy plcy = passwordPolicyProvider.getPasswordPolicy(domainId, login, sysId);
+        Policy plcy = passwordPolicyProvider.getPasswordPolicyByUser(domainId, user);
 
         String pswdExpValue = getPolicyAttribute(plcy.getPolicyAttributes(),
                 "NUM_DAYS_FORGOT_PASSWORD_TOKEN_VALID");
@@ -292,8 +300,8 @@ public class LoginDataServiceImpl implements LoginDataService {
         String gracePeriod = getPolicyAttribute(plcy.getPolicyAttributes(),
                 "PWD_EXP_GRACE");
 
-        LoginEntity lg = getLoginByManagedSys(domainId, login, sysId);
-        UserEntity user = userDao.findById(lg.getUserId());
+//        LoginEntity lg = getLoginByManagedSys(domainId, login, sysId);
+//        UserEntity user = userDao.findById(lg.getUserId());
         user.setSecondaryStatus(null);
         userDao.update(user);
 
@@ -508,7 +516,7 @@ public class LoginDataServiceImpl implements LoginDataService {
      */
     @Transactional(readOnly = true)
     public List<LoginEntity> getUsersNearPswdExpiration() {
-        Policy plcy =passwordManager.getGlobalPasswordPolicy();
+        Policy plcy =passwordPolicyProvider.getGlobalPasswordPolicy();
         int daysToExpiration = 5;
         String pswdExpValue = getPolicyAttribute(plcy.getPolicyAttributes(),
                 "PWD_EXP_WARN");

@@ -418,6 +418,8 @@
 
 
 
+    <!--<aop:aspectj-autoproxy  proxy-target-class="true"/>-->
+    <!--<bean class="org.springframework.aop.aspectj.annotation.AnnotationAwareAspectJAutoProxyCreator" />-->
 
     <bean id="auditCacheManager" class="org.springframework.cache.ehcache.EhCacheManagerFactoryBean">
         <property name="configLocation">

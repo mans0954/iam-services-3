@@ -43,6 +43,7 @@ import org.openiam.dozer.converter.RoleDozerConverter;
 import org.openiam.exception.AuthenticationException;
 import org.openiam.exception.LogoutException;
 import org.openiam.exception.ScriptEngineException;
+import org.openiam.idm.srvc.audit.annotation.AuditLoggable;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
 import org.openiam.idm.srvc.audit.constant.AuditResult;
@@ -363,9 +364,10 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
                auditBuilder.setResult(AuditResult.FAILURE).addAttribute(AuditAttributeName.FAILURE_REASON, ex.getMessage());
 
            throw ex;
-        }finally {
-            auditLogService.enqueue(auditBuilder);
         }
+//        finally {
+//            auditLogService.enqueue(auditBuilder);
+//        }
     }
 
     @Override

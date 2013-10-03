@@ -2,6 +2,7 @@ package org.openiam.idm.srvc.grp.dto;
 
 
 import org.openiam.base.AttributeOperationEnum;
+import org.openiam.base.BaseObject;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.res.dto.Resource;
@@ -47,7 +48,7 @@ import java.util.*;
         User.class
 })
 @DozerDTOCorrespondence(GroupEntity.class)
-public class Group implements java.io.Serializable {
+public class Group extends BaseObject implements java.io.Serializable {
 
     private static final long serialVersionUID = 7657568959406790313L;
 

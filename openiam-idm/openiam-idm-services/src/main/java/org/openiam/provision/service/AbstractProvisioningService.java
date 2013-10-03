@@ -64,6 +64,7 @@ import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.pswd.dto.Password;
 import org.openiam.idm.srvc.pswd.dto.PasswordValidationResponse;
 import org.openiam.idm.srvc.pswd.service.PasswordHistoryDAO;
+import org.openiam.idm.srvc.pswd.service.PasswordPolicyProvider;
 import org.openiam.idm.srvc.pswd.service.PasswordService;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.dto.Resource;
@@ -155,6 +156,8 @@ public abstract class AbstractProvisioningService implements ProvisionService {
     protected OrganizationService organizationService;
     @Autowired
     protected PasswordService passwordManager;
+    @Autowired
+    protected PasswordPolicyProvider passwordPolicyProvider;
     @Autowired
     protected ConnectorAdapter connectorAdapter;
     @Autowired
@@ -1595,7 +1598,7 @@ public abstract class AbstractProvisioningService implements ProvisionService {
 
         Policy passwordPolicy = user.getPasswordPolicy();
         if (passwordPolicy == null) {
-            passwordPolicy = passwordManager.getPasswordPolicyByUser(primaryLogin.getDomainId(),
+            passwordPolicy = passwordPolicyProvider.getPasswordPolicyByUser(primaryLogin.getDomainId(),
                     userDozerConverter.convertToEntity(user.getUser(), true));
         }
 
