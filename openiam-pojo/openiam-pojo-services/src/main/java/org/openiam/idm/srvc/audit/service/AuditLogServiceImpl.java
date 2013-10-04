@@ -7,6 +7,9 @@ import java.util.List;
 import java.util.UUID;
 
 import javax.annotation.PostConstruct;
+import javax.jms.JMSException;
+import javax.jms.Queue;
+import javax.jms.Session;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -21,6 +24,8 @@ import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.util.encrypt.HashDigest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.jms.core.JmsTemplate;
+import org.springframework.jms.core.MessageCreator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,7 +37,11 @@ import org.springframework.transaction.annotation.Transactional;
 public class AuditLogServiceImpl implements AuditLogService {
     
 	@Autowired
-	private AuditLogSender auditLogSender;
+    private JmsTemplate jmsTemplate;
+	
+	@Autowired
+    @Qualifier(value = "logQueue")
+    private Queue queue;
 	
 	@Autowired
     private HashDigest hash;
@@ -69,7 +78,16 @@ public class AuditLogServiceImpl implements AuditLogService {
         if(builder!=null){
 		    final IdmAuditLogEntity log = builder.getEntity();
 		    prepare(log, UUIDGen.getUUID());
-		    auditLogSender.send(log);
+		    send(log);
         }
 	}
+	
+	 private void send(final IdmAuditLogEntity log) {
+		 jmsTemplate.send(queue, new MessageCreator() {
+			 public javax.jms.Message createMessage(Session session) throws JMSException {
+				 javax.jms.Message message = session.createObjectMessage(log);
+				 return message;
+			 }
+		 });
+	 }
 }

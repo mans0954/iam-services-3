@@ -9,5 +9,6 @@ package org.openiam.idm.srvc.audit.constant;
  */
 public enum AuditAttributeName {
     FAILURE_REASON,
-    LOGIN_ERROR_CODE;
+    LOGIN_ERROR_CODE,
+    EXCEPTION;
 }

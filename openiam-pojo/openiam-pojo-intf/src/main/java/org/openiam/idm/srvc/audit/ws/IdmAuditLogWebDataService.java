@@ -1,11 +1,14 @@
 package org.openiam.idm.srvc.audit.ws;
 
 import org.openiam.base.ws.Response;
+import org.openiam.idm.srvc.audit.domain.AuditLogBuilder;
+import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.dto.SearchAudit;
 
 import javax.jws.WebService;
 import java.util.Date;
+import java.util.List;
 
 /**
  * Interface for  <code>IdmAuditLogDataService</code>. All audit logging activities
@@ -21,6 +24,8 @@ public interface IdmAuditLogWebDataService {
      * @return
      */
     public Response addLog(IdmAuditLog log);
+    
+    public Response addLogs(final List<AuditLogBuilder> logList);
 
     /*
     public IdmAuditLogListResponse searchEvents(SearchAudit search, Integer from, Integer size);
