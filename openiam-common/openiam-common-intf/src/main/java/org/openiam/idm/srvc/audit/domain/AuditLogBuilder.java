@@ -1,5 +1,7 @@
 package org.openiam.idm.srvc.audit.domain;
 
+import org.apache.commons.lang.exception.ExceptionUtils;
+import org.openiam.base.BaseObject;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
@@ -42,6 +44,14 @@ public class AuditLogBuilder implements Serializable {
 	public AuditLogBuilder setAction(AuditAction action) {
 		entity.setAction((action!=null)?action.value():null);
 		return this;
+	}
+	
+	public AuditLogBuilder fail() {
+		return setResult(AuditResult.FAILURE);
+	}
+	
+	public AuditLogBuilder succeed() {
+		return setResult(AuditResult.SUCCESS);
 	}
 
 	public AuditLogBuilder setResult(AuditResult result) {
@@ -91,6 +101,22 @@ public class AuditLogBuilder implements Serializable {
 	
 	public AuditLogBuilder addAttribute(final AuditAttributeName key, final String value) {
 		entity.addCustomRecord(key.name(), value);
+		return this;
+	}
+	
+	public AuditLogBuilder setFailureReason(final String value) {
+		return addAttribute(AuditAttributeName.FAILURE_REASON, value);
+	}
+	
+	public AuditLogBuilder setException(final Throwable e) {
+		return addAttribute(AuditAttributeName.EXCEPTION, ExceptionUtils.getStackTrace(e));
+	}
+	
+	public AuditLogBuilder setBaseObject(final BaseObject baseObject) {
+		setClientIP(baseObject.getRequestClientIP());
+		setSessionID(baseObject.getRequestorSessionID());
+		setSourcePrincipal(baseObject.getRequestorLogin());
+		setSourceUserId(baseObject.getRequestorUserId());
 		return this;
 	}
 	

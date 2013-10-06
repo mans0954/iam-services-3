@@ -76,8 +76,6 @@ public class TestDozerConversion extends AbstractTestNGSpringContextTests {
 		final List<Login> principalList = new LinkedList<Login>();
 		user.setPrincipalList(principalList);
 		user.setRequestClientIP(rs(2));
-		user.setRequestorDomain(rs(2));
-		user.setRequestorLogin(rs(2));
 		user.setSecondaryStatus(UserStatusEnum.ACTIVE);
 		user.setSecurityDomain(rs(2));
 		user.setSex(rs(2));

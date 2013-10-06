@@ -18,8 +18,8 @@ import javax.xml.bind.annotation.XmlType;
         "objectState",
         "requestorUserId",
         "requestorLogin",
-        "requestorDomain",
-        "requestClientIP"
+        "requestClientIP",
+        "requestorSessionID"
 })
 public class BaseObject implements Serializable {
 
@@ -35,9 +35,9 @@ public class BaseObject implements Serializable {
     protected String objectState = NEW;
 
     // track the source of the request
+    protected String requestorSessionID;
     protected String requestorUserId;
     protected String requestorLogin;
-    protected String requestorDomain;
     protected String requestClientIP;
 
 
@@ -53,24 +53,12 @@ public class BaseObject implements Serializable {
         this.objectState = objectState;
     }
 
-    @Deprecated
     public String getRequestorLogin() {
         return requestorLogin;
     }
 
-    @Deprecated
     public void setRequestorLogin(String requestorLogin) {
         this.requestorLogin = requestorLogin;
-    }
-
-    @Deprecated
-    public String getRequestorDomain() {
-        return requestorDomain;
-    }
-
-    @Deprecated
-    public void setRequestorDomain(String requestorDomain) {
-        this.requestorDomain = requestorDomain;
     }
 
     public String getRequestClientIP() {
@@ -91,6 +79,11 @@ public class BaseObject implements Serializable {
 		this.requestorUserId = requestorUserId;
 	}
 
+	public String getRequestorSessionID() {
+		return requestorSessionID;
+	}
 
-    
+	public void setRequestorSessionID(String requestorSessionID) {
+		this.requestorSessionID = requestorSessionID;
+	}
 }

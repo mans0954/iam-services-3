@@ -30,6 +30,7 @@ import org.openiam.exception.ScriptEngineException;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
+import org.openiam.idm.srvc.base.AbstractBaseService;
 import org.openiam.idm.srvc.continfo.domain.AddressEntity;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
 import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
@@ -99,7 +100,7 @@ import org.springframework.beans.factory.annotation.Value;
  * Base class for the provisioning service
  * User: suneetshah
  */
-public abstract class AbstractProvisioningService implements ProvisionService {
+public abstract class AbstractProvisioningService extends AbstractBaseService implements ProvisionService {
 
     protected static final Log log = LogFactory.getLog(AbstractProvisioningService.class);
 
@@ -213,9 +214,9 @@ public abstract class AbstractProvisioningService implements ProvisionService {
         if ( pUser.getRequestorLogin() == null || pUser.getRequestorLogin().isEmpty() ) {
             pUser.setRequestorLogin("NA");
         }
-        if ( pUser.getRequestorDomain() == null || pUser.getRequestorDomain().isEmpty() ) {
-            pUser.setRequestorDomain("NA");
-        }
+        //if ( pUser.getRequestorDomain() == null || pUser.getRequestorDomain().isEmpty() ) {
+        //    pUser.setRequestorDomain("NA");
+        //}
         if ( pUser.getCreatedBy() == null || pUser.getCreatedBy().isEmpty() ) {
             pUser.setCreatedBy("NA");
         }
