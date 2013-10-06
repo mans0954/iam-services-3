@@ -5,6 +5,7 @@ package org.openiam.idm.srvc.audit.dto;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -207,6 +208,27 @@ public class IdmAuditLog implements Serializable {
 	public void setChildLogs(Set<IdmAuditLog> childLogs) {
 		this.childLogs = childLogs;
 	}
+	
+    public void addChild(final IdmAuditLog entity) {
+    	if(entity != null) {
+    		if(this.childLogs == null) {
+    			this.childLogs = new HashSet<IdmAuditLog>();
+    		}
+    		this.childLogs.add(entity);
+    	}
+    }
+    
+    public void addCustomRecord(final String key, final String value) {
+    	if(key != null && value != null) {
+    		if(customRecords == null) {
+    			customRecords = new HashSet<IdmAuditLogCustom>();
+    		}
+    		final IdmAuditLogCustom entity = new IdmAuditLogCustom();
+    		entity.setKey(key);
+    		entity.setValue(value);
+    		customRecords.add(entity);
+    	}
+    }
 
 	@Override
 	public int hashCode() {

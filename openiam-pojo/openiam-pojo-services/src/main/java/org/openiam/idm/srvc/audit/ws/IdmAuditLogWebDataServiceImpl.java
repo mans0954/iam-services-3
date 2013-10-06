@@ -24,10 +24,12 @@ import org.apache.log4j.Logger;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
+import org.openiam.dozer.converter.AuditLogBuilderDozerConverter;
 import org.openiam.dozer.converter.IdmAuditLogDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.srvc.audit.domain.AuditLogBuilder;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
+import org.openiam.idm.srvc.audit.dto.AuditLogBuilderDto;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.dto.SearchAudit;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
@@ -54,6 +56,9 @@ public class IdmAuditLogWebDataServiceImpl implements IdmAuditLogWebDataService 
     @Autowired
     private IdmAuditLogDozerConverter converter;
     
+    @Autowired
+    private AuditLogBuilderDozerConverter auditBuilderConverter;
+    
     private static Logger LOG = Logger.getLogger(IdmAuditLogWebDataServiceImpl.class);
 
     @Override
@@ -77,15 +82,15 @@ public class IdmAuditLogWebDataServiceImpl implements IdmAuditLogWebDataService 
     }
 
 	@Override
-	public Response addLogs(List<AuditLogBuilder> logList) {
+	public Response addLogs(List<AuditLogBuilderDto> logList) {
 		final Response resp = new Response(ResponseStatus.SUCCESS);
     	try {
     		if(logList == null) {
     			throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
     		}
     		
-    		for(final AuditLogBuilder log : logList) {
-    			auditLogService.enqueue(log);
+    		for(final AuditLogBuilderDto log : logList) {
+    			auditLogService.enqueue(auditBuilderConverter.convertToEntity(log, true));
     		}
     	} catch(BasicDataServiceException e) {
     		resp.fail();

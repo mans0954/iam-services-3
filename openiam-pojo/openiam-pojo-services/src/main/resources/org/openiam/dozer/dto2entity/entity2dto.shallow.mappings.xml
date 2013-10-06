@@ -430,6 +430,10 @@
 			<a>customRecords</a>
 			<b>customRecords</b>
 		</field-exclude>
+		<field-exclude>
+			<a>childLogs</a>
+			<b>childLogs</b>
+		</field-exclude>
 	</mapping>
     <mapping>
         <class-a>org.openiam.idm.srvc.auth.domain.LoginEntity</class-a>

@@ -3,6 +3,7 @@ package org.openiam.idm.srvc.audit.ws;
 import org.openiam.base.ws.Response;
 import org.openiam.idm.srvc.audit.domain.AuditLogBuilder;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
+import org.openiam.idm.srvc.audit.dto.AuditLogBuilderDto;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.dto.SearchAudit;
 
@@ -23,9 +24,10 @@ public interface IdmAuditLogWebDataService {
      * @param log
      * @return
      */
+	@Deprecated
     public Response addLog(IdmAuditLog log);
     
-    public Response addLogs(final List<AuditLogBuilder> logList);
+    public Response addLogs(final List<AuditLogBuilderDto> logList);
 
     /*
     public IdmAuditLogListResponse searchEvents(SearchAudit search, Integer from, Integer size);
