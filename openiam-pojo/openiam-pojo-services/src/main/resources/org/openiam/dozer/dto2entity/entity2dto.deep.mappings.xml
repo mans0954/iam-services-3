@@ -545,13 +545,13 @@
 		<class-a>org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity</class-a>
 		<class-b>org.openiam.idm.srvc.audit.dto.IdmAuditLog</class-b>
 		<field
-			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentListConverter"
+			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
 			custom-converter-param="dto2entityShallowDozerMapper">
 			<a>customRecords</a>
 			<b>customRecords</b>
 		</field>
 		<field
-			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentListConverter"
+			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
 			custom-converter-param="dto2entityShallowDozerMapper">
 			<a>childLogs</a>
 			<b>childLogs</b>

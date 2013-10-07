@@ -3,6 +3,7 @@ package org.openiam.idm.srvc.audit.dto;
 import java.io.Serializable;
 import java.util.Date;
 
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
@@ -90,9 +91,20 @@ public class AuditLogBuilderDto implements Serializable {
 		return this;
 	}
 	
+	public AuditLogBuilderDto fail() {
+		return setResult(AuditResult.FAILURE);
+	}
+	
+	public AuditLogBuilderDto succeed() {
+		return setResult(AuditResult.SUCCESS);
+	}
+	
+	public AuditLogBuilderDto setException(final Throwable e) {
+		return addAttribute(AuditAttributeName.EXCEPTION, ExceptionUtils.getStackTrace(e));
+	}
+	
 	public AuditLogBuilderDto setFailureReason(final String reason) {
-		entity.addCustomRecord(AuditAttributeName.FAILURE_REASON.name(), reason);
-		return this;
+		return addAttribute(AuditAttributeName.FAILURE_REASON, reason);
 	}
 	
 	public AuditLogBuilderDto addAttribute(final AuditAttributeName key, final String value) {

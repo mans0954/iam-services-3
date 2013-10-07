@@ -69,6 +69,13 @@ public class AuditLogServiceImpl implements AuditLogService {
     				prepare(entity, coorelationId);
     			}
     		}
+    		
+    		//required - the UI sends a transient instance to the service, so fix it here
+    		if(CollectionUtils.isNotEmpty(log.getCustomRecords())) {
+    			for(final IdmAuditLogCustomEntity entity : log.getCustomRecords()) {
+    				entity.setLog(log);
+    			}
+    		}
     	}
     }
 

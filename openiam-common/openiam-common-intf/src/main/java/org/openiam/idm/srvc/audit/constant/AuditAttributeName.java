@@ -10,5 +10,8 @@ package org.openiam.idm.srvc.audit.constant;
 public enum AuditAttributeName {
     FAILURE_REASON,
     LOGIN_ERROR_CODE,
-    EXCEPTION;
+    EXCEPTION,
+    RELAY_STATE,
+    SAML_PROVIDER,
+    SAML_RESPONSE_XML;
 }
