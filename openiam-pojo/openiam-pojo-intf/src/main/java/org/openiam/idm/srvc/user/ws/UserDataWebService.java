@@ -38,75 +38,42 @@ import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 @WebService(targetNamespace = "urn:idm.openiam.org/srvc/user/service", name = "UserDataService")
 public interface UserDataWebService {
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.openiam.idm.srvc.user.service.UserDataService#getUser(java.lang.String
-     * , boolean)
-     */
+	/**
+	 * Get's a user based on his internal ID
+	 * @param id - the internal user ID of the user being requested
+	 * @param requestorId - the user ID of the person making this call
+	 * @param dependants - if set to true, the User is returned with all of his collections
+	 * @return - a User object, or null if not found
+	 */
     @WebMethod
     public User getUserWithDependent(@WebParam(name = "id", targetNamespace = "") String id,
                                      @WebParam(name = "requestorId", targetNamespace = "") String requestorId,
                                      @WebParam(name = "dependants", targetNamespace = "") boolean dependants);
 
+    /**
+     * Find a User based on his principal, security domain, and the managed system
+     * @param securityDomain - the security domain ID
+     * @param principal - the user's principal (login)
+     * @param managedSysId - the ID of the managed system to which the principal belongs to
+     * @param dependants - if set to true, the User is returned with all of his collections
+     * @return - a User object, or null if not found
+     */
     @WebMethod
     public User getUserByPrincipal(@WebParam(name = "securityDomain", targetNamespace = "") String securityDomain,
                                    @WebParam(name = "principal", targetNamespace = "") String principal,
                                    @WebParam(name = "managedSysId", targetNamespace = "") String managedSysId,
                                    @WebParam(name = "dependants", targetNamespace = "") boolean dependants);
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.openiam.idm.srvc.user.service.UserDataService#addUser(org.openiam
-     * .idm.srvc.user.dto.User)
-     */
-    @WebMethod
-    public Response addUser(@WebParam(name = "user", targetNamespace = "") User user) throws Exception;
-
-
-    @WebMethod
-    public Response updateUser(User user);
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.openiam.idm.srvc.user.service.UserDataService#updateUser(org.openiam
-     * .idm.srvc.user.dto.User, boolean)
-     */
-    @WebMethod
-    public Response updateUserWithDependent(@WebParam(name = "user", targetNamespace = "") User user,
-                                            @WebParam(name = "dependency", targetNamespace = "") boolean dependency);
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.openiam.idm.srvc.user.service.UserDataService#removeUser(java.lang
-     * .String)
+    /**
+     * Delete a User from the Openiam database
+     * @param id - the ID of the user
+     * @return a Response Object, containing the result of this operation
      */
     @WebMethod
     public Response removeUser(@WebParam(name = "id", targetNamespace = "") String id);
 
     @WebMethod
-    public User getUserByName(@WebParam(name = "firstName", targetNamespace = "") String firstName,
-                              @WebParam(name = "lastName", targetNamespace = "") String lastName);
-
-    @WebMethod
-    public List<User> findUsersByLastUpdateRange(@WebParam(name = "startDate", targetNamespace = "") Date startDate,
-                                                 @WebParam(name = "endDate", targetNamespace = "") Date endDate);
-
-    @WebMethod
     public List<User> findUserByOrganization(@WebParam(name = "orgId", targetNamespace = "") String orgId);
-
-    @WebMethod
-    public List<User> findUsersByStatus(@WebParam(name = "status", targetNamespace = "") String status);
-
-    @WebMethod
-    public List<User> searchByDelegationProperties(@WebParam(name = "search", targetNamespace = "") DelegationFilterSearch search);
 
     @WebMethod
     List<User> findBeans(@WebParam(name = "searchBean", targetNamespace = "") UserSearchBean userSearchBean,
@@ -115,200 +82,126 @@ public interface UserDataWebService {
     @WebMethod
     int count(UserSearchBean userSearchBean);
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.openiam.idm.srvc.user.service.UserDataService#addAttribute(org.openiam
-     * .idm.srvc.user.dto.UserAttribute)
+    /**
+     * Add a UserAttribute to this User
+     * @param attribute - the UserAttribute
+     * @return a Response Object, containing the result of this operation
      */
     @WebMethod
     public Response addAttribute(@WebParam(name = "attribute", targetNamespace = "") UserAttribute attribute);
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.openiam.idm.srvc.user.service.UserDataService#updateAttribute(org
-     * .openiam.idm.srvc.user.dto.UserAttribute)
+    /**
+     * Update a UserAttribute to this User
+     * @param attribute - the UserAttribute
+     * @return a Response Object, containing the result of this operation
      */
     @WebMethod
     public Response updateAttribute(@WebParam(name = "attribute", targetNamespace = "") UserAttribute attribute);
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.openiam.idm.srvc.user.service.UserDataService#getAttribute(java.lang
-     * .String)
+    /**
+     * Get a UserAttribute by the id
+     * @param id - the id of this UserAttribute
+     * @return a UserAttribute object, or null if not found
      */
     @WebMethod
     public UserAttribute getAttribute(@WebParam(name = "id", targetNamespace = "") String attrId);
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.openiam.idm.srvc.user.service.UserDataService#removeAttribute(org
-     * .openiam.idm.srvc.user.dto.UserAttribute)
+    /**
+     * Removes a UserAttribute with the specified ID
+     * @param id - the id of this UserAttribute
+     * @return a Response Object, containing the result of this operation
      */
     @WebMethod
     public Response removeAttribute(@WebParam(name = "attr", targetNamespace = "") String attrId);
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.openiam.idm.srvc.user.service.UserDataService#removeAllAttributes
-     * (java.lang.String)
+    /**
+     * gets all UserAttributes associated with this User
+     * @param userId - the id of this User
+     * @return a List of UserAttributes associated with this user
      */
-    @WebMethod
-    public Response removeAllAttributes(@WebParam(name = "userId", targetNamespace = "") String userId);
-
     @WebMethod
     public List<UserAttribute> getUserAttributes(@WebParam(name = "userId", targetNamespace = "") String userId);
 
     /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.openiam.idm.srvc.user.service.UserDataService#addNote(org.openiam
-     * .idm.srvc.user.dto.UserNote)
-     */
     @WebMethod
     public Response addNote(@WebParam(name = "note", targetNamespace = "") UserNote note);
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.openiam.idm.srvc.user.service.UserDataService#updateNote(org.openiam
-     * .idm.srvc.user.dto.UserNote)
-     */
     @WebMethod
     public Response updateNote(@WebParam(name = "note", targetNamespace = "") UserNote note);
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.openiam.idm.srvc.user.service.UserDataService#getAllNotes(java.lang
-     * .String)
-     */
     @WebMethod
     public List<UserNote> getAllNotes(@WebParam(name = "userId", targetNamespace = "") String userId);
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.openiam.idm.srvc.user.service.UserDataService#getNote(java.lang.String
-     * )
-     */
     @WebMethod
     public UserNote getNote(@WebParam(name = "noteId", targetNamespace = "") java.lang.String noteId);
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.openiam.idm.srvc.user.service.UserDataService#removeNote(org.openiam
-     * .idm.srvc.user.dto.UserNote)
-     */
     @WebMethod
     public Response removeNote(@WebParam(name = "note", targetNamespace = "") String noteId);
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.openiam.idm.srvc.user.service.UserDataService#removeAllNotes(java
-     * .lang.String)
-     */
     @WebMethod
     public Response removeAllNotes(@WebParam(name = "userId", targetNamespace = "") String userId);
+	*/
 
-    /* ----------- Address Methods ------- */
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.openiam.idm.srvc.user.service.UserDataService#addAddress(org.openiam
-     * .idm.srvc.continfo.dto.Address)
+    /**
+     * Add an Address to a User
+     * @param address - an Address Object
+     * @return a Response Object, containing the result of this operation
      */
     @WebMethod
     public Response addAddress(@WebParam(name = "address", targetNamespace = "") Address address);
 
-    @WebMethod
-    public Response addAddressSet(@WebParam(name = "addressSet", targetNamespace = "") Set<Address> addressSet);
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.openiam.idm.srvc.user.service.UserDataService#updateAddress(org.openiam
-     * .idm.srvc.continfo.dto.Address)
+    /**
+     * Updates an Address for a User
+     * @param address - an Address Object
+     * @return a Response Object, containing the result of this operation
      */
     @WebMethod
     public Response updateAddress(@WebParam(name = "address", targetNamespace = "") Address address);
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.openiam.idm.srvc.user.service.UserDataService#removeAddress(org.openiam
-     * .idm.srvc.continfo.dto.Address)
+    /**
+     * Remove an Address specified by the parameter
+     * @param addressId - the ID of the address Object
+     * @return a Response Object, containing the result of this operation
      */
     @WebMethod
     public Response removeAddress(@WebParam(name = "address", targetNamespace = "") String addressId);
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.openiam.idm.srvc.user.service.UserDataService#removeAllAddresses(
-     * java.lang.String)
-     */
-    @WebMethod
-    public Response removeAllAddresses(@WebParam(name = "userId", targetNamespace = "") String userId);
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.openiam.idm.srvc.user.service.UserDataService#getAddressById(java
-     * .lang.String)
+    /**
+     * find an Address record by the given id
+     * @param addressId - the ID of the Address
+     * @return an Address record
      */
     @WebMethod
     public Address getAddressById(@WebParam(name = "addressId", targetNamespace = "") String addressId);
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.openiam.idm.srvc.user.service.UserDataService#getAddressList(java
-     * .lang.String)
+    /**
+     * Gets all Address objects associated with the given userId
+     * @param userId - the ID of the User
+     * @return the Address objects associated with this user
      */
     @WebMethod
     public List<Address> getAddressList(@WebParam(name = "userId", targetNamespace = "") String userId);
 
+    /**
+     * returns to Address Objects associated with this user, based on the size and from parameters
+     * @param userId - the user ID to which the Address records belong to
+     * @param size - the number of records to return
+     * @param from - where to start
+     * @return the Address objects associated with this user
+     */
     @WebMethod
     public List<Address> getAddressListByPage(@WebParam(name = "userId", targetNamespace = "") String userId,
                                               @WebParam(name = "size", targetNamespace = "") Integer size,
                                               @WebParam(name = "from", targetNamespace = "") Integer from);
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.openiam.idm.srvc.user.service.UserDataService#addPhone(org.openiam
-     * .idm.srvc.continfo.dto.Phone)
+    /**
+     * Add a Phone to this User
+     * @param phone - the Phone record
+     * @return a Response Object, containing the result of this operation
      */
     @WebMethod
     public Response addPhone(@WebParam(name = "phone", targetNamespace = "") Phone phone);
-
-    @WebMethod
-    public Response addPhoneSet(Set<Phone> phoneList);
 
     /*
      * (non-Javadoc)

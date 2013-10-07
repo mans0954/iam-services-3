@@ -148,45 +148,6 @@ public class UserDataWebServiceImpl implements UserDataWebService{
     }
 
     @Override
-    public Response addAddressSet(Set<Address> adrList) {
-        final Response response = new Response(ResponseStatus.SUCCESS);
-        try {
-            if (CollectionUtils.isEmpty(adrList)) {
-                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
-            }
-
-            HashSet<String> types = new HashSet<String>();
-            for(Address address: adrList){
-                if(StringUtils.isBlank(address.getMetadataTypeId())){
-                    throw new BasicDataServiceException(ResponseCode.ADDRESS_TYPE_REQUIRED);
-                }
-                if(types.contains(address.getMetadataTypeId()))
-                    throw new BasicDataServiceException(ResponseCode.ADDRESS_TYPE_DUPLICATED);
-                else
-                    types.add(address.getMetadataTypeId());
-            }
-
-
-            String parentId = adrList.iterator().next().getParentId();
-            final List<AddressEntity> entityList = addressDozerConverter.convertToEntityList(new ArrayList<Address>(adrList), true);
-            for (AddressEntity entity : entityList) {
-                UserEntity user = new UserEntity();
-                user.setUserId(parentId);
-                entity.setParent(user);
-            }
-            userManager.addAddressSet(entityList);
-        } catch (BasicDataServiceException e) {
-            response.setErrorCode(e.getCode());
-            response.setStatus(ResponseStatus.FAILURE);
-        } catch (Throwable e) {
-            log.error("Can't perform operation", e);
-            response.setErrorText(e.getMessage());
-            response.setStatus(ResponseStatus.FAILURE);
-        }
-        return response;
-    }
-
-    @Override
     public Response addAttribute(final UserAttribute attribute) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
@@ -282,6 +243,7 @@ public class UserDataWebServiceImpl implements UserDataWebService{
         return response;
     }
 
+    /*
     @Override
     public Response addNote(final UserNote note) {
         final Response response = new Response(ResponseStatus.SUCCESS);
@@ -302,6 +264,7 @@ public class UserDataWebServiceImpl implements UserDataWebService{
         }
         return response;
     }
+    */
 
     @Override
     public Response addPhone(Phone val) {
@@ -337,44 +300,6 @@ public class UserDataWebServiceImpl implements UserDataWebService{
     }
 
     @Override
-    public Response addPhoneSet(final Set<Phone> phoneList) {
-        final Response response = new Response(ResponseStatus.SUCCESS);
-        try {
-            if (CollectionUtils.isEmpty(phoneList)) {
-                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
-            }
-            HashSet<String> types = new HashSet<String>();
-            for(Phone phone: phoneList){
-                if(StringUtils.isBlank(phone.getMetadataTypeId())){
-                    throw new BasicDataServiceException(ResponseCode.PHONE_TYPE_REQUIRED);
-                }
-                if(types.contains(phone.getMetadataTypeId()))
-                    throw new BasicDataServiceException(ResponseCode.PHONE_TYPE_DUPLICATED);
-                else
-                    types.add(phone.getMetadataTypeId());
-            }
-
-            String parentId = phoneList.iterator().next().getParentId();
-            final List<PhoneEntity> entityList = phoneDozerConverter.convertToEntityList(new ArrayList<Phone>(phoneList), true);
-
-            for (PhoneEntity e : entityList) {
-                UserEntity user = new UserEntity();
-                user.setUserId(parentId);
-                e.setParent(user);
-            }
-            userManager.addPhoneSet(entityList);
-        } catch (BasicDataServiceException e) {
-            response.setErrorCode(e.getCode());
-            response.setStatus(ResponseStatus.FAILURE);
-        } catch (Throwable e) {
-            log.error("Can't perform operation", e);
-            response.setErrorText(e.getMessage());
-            response.setStatus(ResponseStatus.FAILURE);
-        }
-        return response;
-    }
-
-    @Override
     public Response addSupervisor(final Supervisor supervisor) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
@@ -396,44 +321,9 @@ public class UserDataWebServiceImpl implements UserDataWebService{
     }
 
     @Override
-    public Response addUser(User user) throws Exception {
-        final Response response = new Response(ResponseStatus.SUCCESS);
-        try {
-            if (user == null) {
-                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
-            }
-
-            final UserEntity entity = userDozerConverter.convertToEntity(user, true);
-            userManager.addUser(entity);
-        } catch (BasicDataServiceException e) {
-            response.setErrorCode(e.getCode());
-            response.setStatus(ResponseStatus.FAILURE);
-        } catch (Throwable e) {
-            log.error("Can't perform operation", e);
-            response.setErrorText(e.getMessage());
-            response.setStatus(ResponseStatus.FAILURE);
-        }
-        return response;
-    }
-
-    @Override
     @Transactional(readOnly=true)
     public List<User> findUserByOrganization(final String orgId) {
         final List<UserEntity> entityList = userManager.findUserByOrganization(orgId);
-        return userDozerConverter.convertToDTOList(entityList, false);
-    }
-
-    @Override
-    @Transactional(readOnly=true)
-    public List<User> findUsersByLastUpdateRange(final Date startDate, final Date endDate) {
-        final List<UserEntity> entityList = userManager.findUsersByLastUpdateRange(startDate, endDate);
-        return userDozerConverter.convertToDTOList(entityList, false);
-    }
-
-    @Override
-    @Transactional(readOnly=true)
-    public List<User> findUsersByStatus(String status) {
-        final List<UserEntity> entityList = userManager.findUsersByStatus(UserStatusEnum.valueOf(status));
         return userDozerConverter.convertToDTOList(entityList, false);
     }
 
@@ -457,12 +347,14 @@ public class UserDataWebServiceImpl implements UserDataWebService{
         return addressDozerConverter.convertToDTOList(adrList, false);
     }
 
+    /*
     @Override
     @Transactional(readOnly=true)
     public List<UserNote> getAllNotes(String userId) {
         final List<UserNoteEntity> entityList = userManager.getAllNotes(userId);
         return userNoteDozerConverter.convertToDTOList(entityList, false);
     }
+    */
 
     @Override
     @Transactional(readOnly=true)
@@ -498,12 +390,14 @@ public class UserDataWebServiceImpl implements UserDataWebService{
         return supervisorDozerConverter.convertToDTOList(sup, false);
     }
 
+    /*
     @Override
     @Transactional(readOnly=true)
     public UserNote getNote(String noteId) {
         final UserNoteEntity note = userManager.getNote(noteId);
         return userNoteDozerConverter.convertToDTO(note, false);
     }
+    */
 
     @Override
     @Transactional(readOnly=true)
@@ -646,13 +540,6 @@ public class UserDataWebServiceImpl implements UserDataWebService{
 
     @Override
     @Transactional(readOnly=true)
-    public User getUserByName(String firstName, String lastName) {
-        final UserEntity user = userManager.getUserByName(firstName, lastName);
-        return userDozerConverter.convertToDTO(user, false);
-    }
-
-    @Override
-    @Transactional(readOnly=true)
     public User getUserWithDependent(String id, String requestorId, boolean dependants) {
         final UserEntity user = userManager.getUser(id, requestorId);
         return userDozerConverter.convertToDTO(user, dependants);
@@ -686,46 +573,6 @@ public class UserDataWebServiceImpl implements UserDataWebService{
     }
 
     @Override
-    public Response removeAllAddresses(String userId) {
-        final Response response = new Response(ResponseStatus.SUCCESS);
-        try {
-            if (userId == null) {
-                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
-            }
-
-            userManager.removeAllAddresses(userId);
-        } catch (BasicDataServiceException e) {
-            response.setErrorCode(e.getCode());
-            response.setStatus(ResponseStatus.FAILURE);
-        } catch (Throwable e) {
-            log.error("Can't perform operation", e);
-            response.setErrorText(e.getMessage());
-            response.setStatus(ResponseStatus.FAILURE);
-        }
-        return response;
-    }
-
-    @Override
-    public Response removeAllAttributes(String userId) {
-        final Response response = new Response(ResponseStatus.SUCCESS);
-        try {
-            if (userId == null) {
-                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
-            }
-
-            userManager.removeAllAttributes(userId);
-        } catch (BasicDataServiceException e) {
-            response.setErrorCode(e.getCode());
-            response.setStatus(ResponseStatus.FAILURE);
-        } catch (Throwable e) {
-            log.error("Can't perform operation", e);
-            response.setErrorText(e.getMessage());
-            response.setStatus(ResponseStatus.FAILURE);
-        }
-        return response;
-    }
-
-    @Override
     public Response removeAllEmailAddresses(String userId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
@@ -745,6 +592,7 @@ public class UserDataWebServiceImpl implements UserDataWebService{
         return response;
     }
 
+    /*
     @Override
     public Response removeAllNotes(String userId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
@@ -763,6 +611,7 @@ public class UserDataWebServiceImpl implements UserDataWebService{
         }
         return response;
     }
+    */
 
     @Override
     public Response removeAllPhones(String userId) {
@@ -821,6 +670,7 @@ public class UserDataWebServiceImpl implements UserDataWebService{
         return response;
     }
 
+    /*
     @Override
     public Response removeNote(String noteId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
@@ -839,6 +689,7 @@ public class UserDataWebServiceImpl implements UserDataWebService{
         }
         return response;
     }
+    */
 
     @Override
     public Response removePhone(String phoneId) {
@@ -895,14 +746,6 @@ public class UserDataWebServiceImpl implements UserDataWebService{
             response.setStatus(ResponseStatus.FAILURE);
         }
         return response;
-    }
-
-    @Override
-    @Transactional(readOnly=true)
-    public List<User> searchByDelegationProperties(final DelegationFilterSearch search) {
-        final List<UserEntity> userList = userManager.searchByDelegationProperties(search);
-        return userDozerConverter.convertToDTOList(userList, false);
-
     }
 
     @Override
@@ -1013,6 +856,7 @@ public class UserDataWebServiceImpl implements UserDataWebService{
         return response;
     }
 
+    /*
     @Override
     public Response updateNote(UserNote note) {
         final Response response = new Response(ResponseStatus.SUCCESS);
@@ -1033,6 +877,7 @@ public class UserDataWebServiceImpl implements UserDataWebService{
         }
         return response;
     }
+    */
 
     @Override
     public Response updatePhone(Phone val) {
@@ -1080,48 +925,6 @@ public class UserDataWebServiceImpl implements UserDataWebService{
 
             final SupervisorEntity entity = supervisorDozerConverter.convertToEntity(supervisor, true);
             userManager.updateSupervisor(entity);
-        } catch (BasicDataServiceException e) {
-            response.setErrorCode(e.getCode());
-            response.setStatus(ResponseStatus.FAILURE);
-        } catch (Throwable e) {
-            log.error("Can't perform operation", e);
-            response.setErrorText(e.getMessage());
-            response.setStatus(ResponseStatus.FAILURE);
-        }
-        return response;
-    }
-
-    @Override
-    public Response updateUser(User user) {
-        final Response response = new Response(ResponseStatus.SUCCESS);
-        try {
-            if (user == null) {
-                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
-            }
-
-            final UserEntity entity = userDozerConverter.convertToEntity(user, true);
-            userManager.updateUser(entity);
-        } catch (BasicDataServiceException e) {
-            response.setErrorCode(e.getCode());
-            response.setStatus(ResponseStatus.FAILURE);
-        } catch (Throwable e) {
-            log.error("Can't perform operation", e);
-            response.setErrorText(e.getMessage());
-            response.setStatus(ResponseStatus.FAILURE);
-        }
-        return response;
-    }
-
-    @Override
-    public Response updateUserWithDependent(User user, boolean dependency) {
-        final Response response = new Response(ResponseStatus.SUCCESS);
-        try {
-            if (user == null) {
-                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
-            }
-
-            final UserEntity entity = userDozerConverter.convertToEntity(user, dependency);
-            userManager.updateUserWithDependent(entity, dependency);
         } catch (BasicDataServiceException e) {
             response.setErrorCode(e.getCode());
             response.setStatus(ResponseStatus.FAILURE);

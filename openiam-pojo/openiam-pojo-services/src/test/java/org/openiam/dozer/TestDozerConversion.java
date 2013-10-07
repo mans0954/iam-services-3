@@ -272,7 +272,7 @@ public class TestDozerConversion extends AbstractTestNGSpringContextTests {
 			Assert.assertTrue(CollectionUtils.isEmpty(copy.getPrincipalList()));
 		}
 		Assert.assertEquals(original.getRequestClientIP(), copy.getRequestClientIP());
-		Assert.assertEquals(original.getRequestorDomain(), copy.getRequestorDomain());
+		//Assert.assertEquals(original.getRequestorDomain(), copy.getRequestorDomain());
 		Assert.assertEquals(original.getRequestorLogin(), copy.getRequestorLogin());
 		Assert.assertEquals(original.getSecondaryStatus(), copy.getSecondaryStatus());
 		Assert.assertEquals(original.getSecurityDomain(), copy.getSecurityDomain());
