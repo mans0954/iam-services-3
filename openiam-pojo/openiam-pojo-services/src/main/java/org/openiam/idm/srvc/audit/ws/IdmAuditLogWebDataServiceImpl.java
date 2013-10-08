@@ -27,6 +27,7 @@ import org.openiam.base.ws.ResponseStatus;
 import org.openiam.dozer.converter.AuditLogBuilderDozerConverter;
 import org.openiam.dozer.converter.IdmAuditLogDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
+import org.openiam.idm.searchbeans.AuditLogSearchBean;
 import org.openiam.idm.srvc.audit.domain.AuditLogBuilder;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.audit.dto.AuditLogBuilderDto;
@@ -47,7 +48,6 @@ import java.util.List;
  */
 @WebService(endpointInterface = "org.openiam.idm.srvc.audit.ws.IdmAuditLogWebDataService", targetNamespace = "urn:idm.openiam.org/srvc/audit/service", portName = "AuditWebServicePort", serviceName = "AuditService")
 @Service("auditWS")
-@Transactional
 public class IdmAuditLogWebDataServiceImpl implements IdmAuditLogWebDataService {
 	
 	@Autowired
@@ -60,26 +60,6 @@ public class IdmAuditLogWebDataServiceImpl implements IdmAuditLogWebDataService 
     private AuditLogBuilderDozerConverter auditBuilderConverter;
     
     private static Logger LOG = Logger.getLogger(IdmAuditLogWebDataServiceImpl.class);
-
-    @Override
-    public Response addLog(IdmAuditLog log) {
-    	final Response resp = new Response(ResponseStatus.SUCCESS);
-    	try {
-    		if(log == null) {
-    			throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
-    		}
-    		
-    		auditLogService.enqueue(new AuditLogBuilder(converter.convertToEntity(log, true)));
-    	} catch(BasicDataServiceException e) {
-    		resp.fail();
-    		resp.setErrorCode(e.getCode());
-    		
-    	} catch(Throwable e) {
-    		LOG.error("Can't add log", e);
-    		resp.fail();
-    	}
-        return resp;
-    }
 
 	@Override
 	public Response addLogs(List<AuditLogBuilderDto> logList) {
@@ -101,6 +81,18 @@ public class IdmAuditLogWebDataServiceImpl implements IdmAuditLogWebDataService 
     		resp.fail();
     	}
         return resp;
+	}
+
+	@Override
+	@Transactional(readOnly=true)
+	public List<IdmAuditLog> findBeans(final AuditLogSearchBean searchBean, final int from, final int size) {
+		final List<IdmAuditLogEntity> entityList = auditLogService.findBeans(searchBean, from, size);
+		return converter.convertToDTOList(entityList, searchBean.isDeepCopy());
+	}
+
+	@Override
+	public int count(final AuditLogSearchBean searchBean) {
+		return auditLogService.count(searchBean);
 	}
 
     /*
