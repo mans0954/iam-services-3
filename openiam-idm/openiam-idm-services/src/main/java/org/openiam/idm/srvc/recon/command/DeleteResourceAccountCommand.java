@@ -15,7 +15,6 @@ import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.service.ConnectorAdapter;
 import org.openiam.provision.service.ProvisionService;
-import org.openiam.provision.service.RemoteConnectorAdapter;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleUser;
 
@@ -33,7 +32,6 @@ public class DeleteResourceAccountCommand implements ReconciliationCommand {
     private static final Log log = LogFactory.getLog(DeleteResourceAccountCommand.class);
     private ManagedSystemWebService managedSysService;
     private ProvisionConnectorWebService connectorService;
-    private RemoteConnectorAdapter remoteConnectorAdapter;
     private MuleContext muleContext;
     private String managedSysId;
     private ConnectorAdapter connectorAdapter;
@@ -41,14 +39,12 @@ public class DeleteResourceAccountCommand implements ReconciliationCommand {
     public DeleteResourceAccountCommand(ProvisionService provisionService,
                                         ManagedSystemWebService managedSysService,
                                         ProvisionConnectorWebService connectorService,
-                                        RemoteConnectorAdapter remoteConnectorAdapter,
                                         MuleContext muleContext,
                                         String managedSysId,
                                         ConnectorAdapter connectorAdapter) {
         this.provisionService = provisionService;
         this.managedSysService = managedSysService;
         this.connectorService = connectorService;
-        this.remoteConnectorAdapter = remoteConnectorAdapter;
         this.muleContext = muleContext;
         this.managedSysId = managedSysId;
         this.connectorAdapter = connectorAdapter;
@@ -58,27 +54,18 @@ public class DeleteResourceAccountCommand implements ReconciliationCommand {
         log.debug("Entering DeleteResourceAccountCommand");
         if(user == null) {
             ManagedSysDto mSys = managedSysService.getManagedSys(managedSysId);
-            ProvisionConnectorDto connector = connectorService.getProvisionConnector(mSys.getConnectorId());
 
-            if (connector.getConnectorInterface() != null &&
-                    connector.getConnectorInterface().equalsIgnoreCase("REMOTE")) {
+            log.debug("Calling delete with Remote connector");
+            CrudRequest<ExtensibleUser> request = new CrudRequest<ExtensibleUser>();
+            request.setObjectIdentity(login.getLogin());
+            request.setTargetID(login.getManagedSysId());
+            request.setHostLoginId(mSys.getUserId());
+            request.setHostLoginPassword(mSys.getDecryptPassword());
+            request.setHostUrl(mSys.getHostUrl());
+            request.setScriptHandler(mSys.getDeleteHandler());
+            log.debug("Calling delete local connector");
+            connectorAdapter.deleteRequest(mSys, request, muleContext);
 
-                log.debug("Calling delete with Remote connector");
-                CrudRequest<ExtensibleUser> request = new CrudRequest<ExtensibleUser>();
-                request.setObjectIdentity(login.getLogin());
-                request.setTargetID(login.getManagedSysId());
-                request.setHostLoginId(mSys.getUserId());
-                request.setHostLoginPassword(mSys.getDecryptPassword());
-                request.setHostUrl(mSys.getHostUrl());
-                request.setScriptHandler(mSys.getDeleteHandler());
-                remoteConnectorAdapter.deleteRequest(mSys, request, connector, muleContext);
-            } else {
-                CrudRequest<ExtensibleUser>  reqType = new CrudRequest<ExtensibleUser>();
-                reqType.setObjectIdentity(login.getLogin());
-                reqType.setTargetID(managedSysId);
-                log.debug("Calling delete local connector");
-                connectorAdapter.deleteRequest(mSys, reqType, muleContext);
-            }
             return true;
         }
         List<Login> principleList = user.getPrincipalList();
@@ -93,6 +80,6 @@ public class DeleteResourceAccountCommand implements ReconciliationCommand {
         pUser.setPrincipalList(principleList);
 
         provisionService.modifyUser(pUser);
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
+        return false;
     }
 }

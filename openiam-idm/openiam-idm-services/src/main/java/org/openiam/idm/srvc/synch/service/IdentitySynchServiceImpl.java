@@ -54,7 +54,6 @@ import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.provision.dto.ProvisionUser;
-import org.openiam.provision.dto.UserResourceAssociation;
 import org.openiam.provision.service.ProvisionService;
 import org.openiam.util.MuleContextProvider;
 import org.springframework.beans.factory.annotation.Autowired;

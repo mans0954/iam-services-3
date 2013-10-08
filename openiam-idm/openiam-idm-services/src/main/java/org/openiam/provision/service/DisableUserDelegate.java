@@ -50,8 +50,6 @@ public class DisableUserDelegate {
     @Autowired
     protected ConnectorAdapter connectorAdapter;
     @Autowired
-    protected RemoteConnectorAdapter remoteConnectorAdapter;
-    @Autowired
     protected ProvisionConnectorWebService provisionConnectorWebService;
     @Value("${org.openiam.idm.system.user.id}")
     private String systemUserId;
@@ -181,15 +179,7 @@ public class DisableUserDelegate {
                         suspendReq.setHostLoginPassword(passwordDecoded);
                         suspendReq.setHostUrl(mSys.getHostUrl());
 
-                        if (connector.getConnectorInterface() != null
-                                && connector.getConnectorInterface()
-                                .equalsIgnoreCase("REMOTE")) {
-                            remoteConnectorAdapter.suspend(mSys,
-                                    suspendReq, connector, MuleContextProvider.getCtx());
-                        } else {
-                            connectorAdapter.suspendRequest(mSys,
-                                    suspendReq, MuleContextProvider.getCtx());
-                        }
+
                         connectorAdapter.suspendRequest(mSys, suspendReq,
                                 muleContext);
 
@@ -218,15 +208,10 @@ public class DisableUserDelegate {
                         }
                         resumeReq.setHostLoginPassword(passwordDecoded);
                         resumeReq.setHostUrl(mSys.getHostUrl());
-                        if (connector.getConnectorInterface() != null
-                                && connector.getConnectorInterface()
-                                .equalsIgnoreCase("REMOTE")) {
-                            remoteConnectorAdapter.resumeRequest(mSys,
-                                    resumeReq, connector, MuleContextProvider.getCtx());
-                        } else {
-                            connectorAdapter.resumeRequest(mSys,
-                                    resumeReq, MuleContextProvider.getCtx());
-                        }
+
+                        connectorAdapter.resumeRequest(mSys,
+                                resumeReq, MuleContextProvider.getCtx());
+
                     }
 
                     String domainId = null;

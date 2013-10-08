@@ -7,9 +7,7 @@ import org.openiam.base.ws.Response;
 import org.openiam.connector.type.response.ResponseType;
 import org.openiam.connector.type.constant.StatusCodeType;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
-import org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorDto;
 import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
-import org.openiam.idm.srvc.mngsys.ws.ProvisionConnectorWebService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -27,66 +25,25 @@ public class ValidateConnectionConfig {
     @Autowired
     protected ConnectorAdapter connectorAdapter;
     @Autowired
-    protected RemoteConnectorAdapter remoteConnectorAdapter;
-    @Autowired
     protected ManagedSystemWebService managedSysService;
-
-    @Autowired
-    private ProvisionConnectorWebService connectorService;
-
 
     Response testConnection(String managedSysId, MuleContext muleContext) {
         Response resp = new Response(org.openiam.base.ws.ResponseStatus.SUCCESS);
 
         ManagedSysDto mSys = managedSysService.getManagedSys(managedSysId);
-        ProvisionConnectorDto connector = connectorService.getProvisionConnector(mSys.getConnectorId());
 
-        if (connector.getConnectorInterface() != null &&
-                connector.getConnectorInterface().equalsIgnoreCase("REMOTE")) {
+        log.debug("Testing connection with localConnector");
 
-            log.debug("Testing connection with remoteConnector");
+        ResponseType localResp = connectorAdapter.testConnection(mSys, muleContext);
+        if (localResp.getStatus() == StatusCodeType.FAILURE) {
 
-            ResponseType remoteResp = remoteTestConnection(mSys, connector, muleContext);
-            if (remoteResp.getStatus() == StatusCodeType.FAILURE) {
+            log.debug("Test connection failed.");
 
-                log.debug("Test connection failed.");
-
-                resp.setStatus(org.openiam.base.ws.ResponseStatus.FAILURE);
-                resp.setErrorText(remoteResp.getErrorMsgAsStr());
-
-            }
-        } else {
-
-            log.debug("Testing connection with localConnector");
-
-            ResponseType localResp = localTestConnection(mSys, muleContext);
-            if (localResp.getStatus() == StatusCodeType.FAILURE) {
-
-                log.debug("Test connection failed.");
-
-                resp.setStatus(org.openiam.base.ws.ResponseStatus.FAILURE);
-                resp.setErrorText(localResp.getErrorMsgAsStr());
-            }
-
+            resp.setStatus(org.openiam.base.ws.ResponseStatus.FAILURE);
+            resp.setErrorText(localResp.getErrorMsgAsStr());
         }
 
         return resp;
-
-    }
-
-    private ResponseType localTestConnection(ManagedSysDto mSys, MuleContext muleContext) {
-
-
-        return connectorAdapter.testConnection(mSys, muleContext);
-
-    }
-
-    private ResponseType remoteTestConnection(ManagedSysDto mSys, ProvisionConnectorDto connector,
-                                                                         MuleContext muleContext) {
-
-
-        return remoteConnectorAdapter.testConnection(mSys, connector, muleContext);
-
     }
 
 }
