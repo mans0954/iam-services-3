@@ -1,12 +1,15 @@
 package org.openiam.idm.srvc.audit.ws;
 
 import org.openiam.base.ws.Response;
+import org.openiam.idm.searchbeans.AuditLogSearchBean;
 import org.openiam.idm.srvc.audit.domain.AuditLogBuilder;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.audit.dto.AuditLogBuilderDto;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.dto.SearchAudit;
 
+import javax.jws.WebMethod;
+import javax.jws.WebParam;
 import javax.jws.WebService;
 import java.util.Date;
 import java.util.List;
@@ -17,17 +20,17 @@ import java.util.List;
  */
 @WebService(targetNamespace = "urn:idm.openiam.org/srvc/audit/service", name = "AuditDataService")
 public interface IdmAuditLogWebDataService {
-
-    /**
-     * Creates a new audit log entry. The returned object contains the
-     *
-     * @param log
-     * @return
-     */
-	@Deprecated
-    public Response addLog(IdmAuditLog log);
     
+	@WebMethod
     public Response addLogs(final List<AuditLogBuilderDto> logList);
+    
+	@WebMethod
+    public List<IdmAuditLog> findBeans(final @WebParam(name = "searchBean", targetNamespace = "") AuditLogSearchBean searchBean,
+    								   final @WebParam(name = "from", targetNamespace = "") int from,
+    								   final @WebParam(name = "size", targetNamespace = "") int size);
+	
+	@WebMethod
+	public int count(final @WebParam(name = "searchBean", targetNamespace = "") AuditLogSearchBean searchBean);
 
     /*
     public IdmAuditLogListResponse searchEvents(SearchAudit search, Integer from, Integer size);

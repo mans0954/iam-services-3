@@ -15,17 +15,4 @@ import java.util.List;
  */
 public interface IdmAuditLogDAO extends BaseDao<IdmAuditLogEntity, String> {
 
-    List<IdmAuditLogEntity> findPasswordEvents() throws DataException;
-
-    List<IdmAuditLogEntity> search(SearchAudit search) throws DataException;
-    List<IdmAuditLogEntity> search(SearchAudit search, Integer from, Integer size) throws DataException;
-    Integer countEvents(SearchAudit search);
-
-    List<IdmAuditLogEntity> findEventsAboutUser(String principal, Date startDate);
-
-    List<IdmAuditLogEntity> findEventsAboutIdentityList(List<String> principal, Date startDate);
-    List<IdmAuditLogEntity> findEventsAboutIdentityList(List<String> principalList, Date startDate, Date endDate);
-    List<IdmAuditLogEntity> findEventsAboutIdentityList(List<String> principalList, Date startDate, Date endDate, Integer from, Integer size);
-    Integer countEventsAboutIdentity(List<String> principal, Date startDate);
-    Integer countEventsAboutIdentity(List<String> principal, Date startDate, Date endDate);
 }
