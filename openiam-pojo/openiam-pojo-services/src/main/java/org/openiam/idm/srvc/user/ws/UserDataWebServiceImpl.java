@@ -206,43 +206,6 @@ public class UserDataWebServiceImpl implements UserDataWebService{
         return response;
     }
 
-    @Override
-    public Response addEmailAddressSet(final Set<EmailAddress> adrList) {
-        final Response response = new Response(ResponseStatus.SUCCESS);
-        try {
-            if (CollectionUtils.isEmpty(adrList)) {
-                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
-            }
-            HashSet<String> types = new HashSet<String>();
-            for(EmailAddress email: adrList){
-                if(StringUtils.isBlank(email.getMetadataTypeId())){
-                    throw new BasicDataServiceException(ResponseCode.EMAIL_ADDRESS_TYPE_REQUIRED);
-                }
-                if(types.contains(email.getMetadataTypeId()))
-                    throw new BasicDataServiceException(ResponseCode.EMAIL_ADDRESS_TYPE_DUPLICATED);
-                else
-                    types.add(email.getMetadataTypeId());
-            }
-
-            String parentId = adrList.iterator().next().getParentId();
-            final List<EmailAddressEntity> entityList = emailAddressDozerConverter.convertToEntityList(new ArrayList<EmailAddress>(adrList), true);
-            for (EmailAddressEntity e : entityList) {
-                UserEntity user = new UserEntity();
-                user.setUserId(parentId);
-                e.setParent(user);
-            }
-            userManager.addEmailAddressSet(entityList);
-        } catch (BasicDataServiceException e) {
-            response.setErrorCode(e.getCode());
-            response.setStatus(ResponseStatus.FAILURE);
-        } catch (Throwable e) {
-            log.error("Can't perform operation", e);
-            response.setErrorText(e.getMessage());
-            response.setStatus(ResponseStatus.FAILURE);
-        }
-        return response;
-    }
-
     /*
     @Override
     public Response addNote(final UserNote note) {
@@ -572,26 +535,6 @@ public class UserDataWebServiceImpl implements UserDataWebService{
         return response;
     }
 
-    @Override
-    public Response removeAllEmailAddresses(String userId) {
-        final Response response = new Response(ResponseStatus.SUCCESS);
-        try {
-            if (userId == null) {
-                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
-            }
-
-            userManager.removeAllEmailAddresses(userId);
-        } catch (BasicDataServiceException e) {
-            response.setErrorCode(e.getCode());
-            response.setStatus(ResponseStatus.FAILURE);
-        } catch (Throwable e) {
-            log.error("Can't perform operation", e);
-            response.setErrorText(e.getMessage());
-            response.setStatus(ResponseStatus.FAILURE);
-        }
-        return response;
-    }
-
     /*
     @Override
     public Response removeAllNotes(String userId) {
@@ -612,25 +555,6 @@ public class UserDataWebServiceImpl implements UserDataWebService{
         return response;
     }
     */
-
-    @Override
-    public Response removeAllPhones(String userId) {
-        final Response response = new Response(ResponseStatus.SUCCESS);
-        try {
-            if (userId == null) {
-                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
-            }
-            userManager.removeAllPhones(userId);
-        } catch (BasicDataServiceException e) {
-            response.setErrorCode(e.getCode());
-            response.setStatus(ResponseStatus.FAILURE);
-        } catch (Throwable e) {
-            log.error("Can't perform operation", e);
-            response.setErrorText(e.getMessage());
-            response.setStatus(ResponseStatus.FAILURE);
-        }
-        return response;
-    }
 
     @Override
     public Response removeAttribute(String attrId) {
@@ -1052,13 +976,13 @@ public class UserDataWebServiceImpl implements UserDataWebService{
     }
 
     @Override
-    public Response enableDisableUser(final String userId, final UserStatusEnum secondaryStatus) {
+    public Response setSecondaryStatus(final String userId, final UserStatusEnum secondaryStatus) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
             if (userId == null) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
             }
-            userManager.enableDisableUser(userId, secondaryStatus);
+            userManager.setSecondaryStatus(userId, secondaryStatus);
         } catch (BasicDataServiceException e) {
             response.setErrorCode(e.getCode());
             response.setStatus(ResponseStatus.FAILURE);
@@ -1089,17 +1013,17 @@ public class UserDataWebServiceImpl implements UserDataWebService{
     }
 
     @Override
-    public Integer getNumOfEmailsForUser(String userId) {
+    public int getNumOfEmailsForUser(String userId) {
         return userManager.getNumOfEmailsForUser(userId);
     }
 
     @Override
-    public Integer getNumOfAddressesForUser(String userId) {
+    public int getNumOfAddressesForUser(String userId) {
         return userManager.getNumOfAddressesForUser(userId);
     }
 
     @Override
-    public Integer getNumOfPhonesForUser(String userId) {
+    public int getNumOfPhonesForUser(String userId) {
         return userManager.getNumOfPhonesForUser(userId);
     }
 
@@ -1185,38 +1109,6 @@ public class UserDataWebServiceImpl implements UserDataWebService{
         return response;
     }
     */
-
-    @Override
-    public Response sendNewUserEmail(final String userId, final String password, final String login) {
-        final Response response = new Response(ResponseStatus.SUCCESS);
-        try {
-            final NotificationRequest notificationRequest = new NotificationRequest();
-            notificationRequest.setUserId(userId);
-            notificationRequest.setNotificationType("NEW_USER_EMAIL");
-            notificationRequest.getParamList().add(new NotificationParam(MailTemplateParameters.IDENTITY.value(), login));
-            notificationRequest.getParamList().add(new NotificationParam(MailTemplateParameters.PASSWORD.value(), password));
-            notificationRequest.getParamList().add(new NotificationParam(MailTemplateParameters.USER_ID.value(), userId));
-            final boolean sendEmailResult = mailService.sendNotification(notificationRequest);
-            if (!sendEmailResult) {
-                throw new BasicDataServiceException(ResponseCode.SEND_EMAIL_FAILED);
-            }
-        } catch (BasicDataServiceException e) {
-            response.setErrorCode(e.getCode());
-            response.setStatus(ResponseStatus.FAILURE);
-        } catch (Throwable e) {
-            log.error("Can't perform operation", e);
-            response.setErrorText(e.getMessage());
-            response.setStatus(ResponseStatus.FAILURE);
-        }
-        return response;
-    }
-
-    @Override
-    @Transactional(readOnly=true)
-    public List<User> getByManagedSystem(String mSysId) {
-        List<UserEntity> result = userManager.getUsersForMSys(mSysId);
-        return userDozerConverter.convertToDTOList(result, true);
-    }
 
     @Override
     public Response acceptITPolicy(final String userId) {

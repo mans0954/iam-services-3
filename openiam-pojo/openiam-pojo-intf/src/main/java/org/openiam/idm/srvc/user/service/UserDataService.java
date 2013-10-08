@@ -239,15 +239,15 @@ public interface UserDataService {
 
     public void deleteUser(String userId);
 
-    public void enableDisableUser(String userId, UserStatusEnum secondaryStatus);
+    public void setSecondaryStatus(String userId, UserStatusEnum secondaryStatus);
 
     public void activateUser(String userId);
 
-    public Integer getNumOfEmailsForUser(String userId);
+    public int getNumOfEmailsForUser(String userId);
 
-    public Integer getNumOfAddressesForUser(String userId);
+    public int getNumOfAddressesForUser(String userId);
 
-    public Integer getNumOfPhonesForUser(String userId);
+    public int getNumOfPhonesForUser(String userId);
 
     public void mergeUserFields(UserEntity origUserEntity, UserEntity newUserEntity);
 

@@ -1602,7 +1602,7 @@ public class UserMgr implements UserDataService {
     }
 
     @Transactional
-    public void enableDisableUser(String userId, UserStatusEnum secondaryStatus) {
+    public void setSecondaryStatus(String userId, UserStatusEnum secondaryStatus) {
         UserEntity user = this.getUser(userId, null);
         if (user == null) {
             log.error("UserId " + userId + " not found");
@@ -1649,7 +1649,7 @@ public class UserMgr implements UserDataService {
     }
 
     @Transactional(readOnly = true)
-    public Integer getNumOfEmailsForUser(String userId) {
+    public int getNumOfEmailsForUser(String userId) {
         EmailSearchBean searchBean = new EmailSearchBean();
         searchBean.setParentId(userId);
         // searchBean.setParentType(ContactConstants.PARENT_TYPE_USER);
@@ -1657,7 +1657,7 @@ public class UserMgr implements UserDataService {
     }
 
     @Transactional(readOnly = true)
-    public Integer getNumOfAddressesForUser(String userId) {
+    public int getNumOfAddressesForUser(String userId) {
         AddressSearchBean searchBean = new AddressSearchBean();
         searchBean.setParentId(userId);
         // searchBean.setParentType(ContactConstants.PARENT_TYPE_USER);
@@ -1665,7 +1665,7 @@ public class UserMgr implements UserDataService {
     }
 
     @Transactional(readOnly = true)
-    public Integer getNumOfPhonesForUser(String userId) {
+    public int getNumOfPhonesForUser(String userId) {
         PhoneSearchBean searchBean = new PhoneSearchBean();
         searchBean.setParentId(userId);
         // searchBean.setParentType(ContactConstants.PARENT_TYPE_USER);
