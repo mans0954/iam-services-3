@@ -148,19 +148,30 @@
 				</bean>
 				-->
 				<bean class="org.springframework.scheduling.quartz.SimpleTriggerBean">
-					<property name="startDelay" value="${org.openiam.audit.threadsweep}" /> 
-					<property name="repeatInterval" value="${org.openiam.audit.threadsweep}" /> 
-					<property name="jobDetail"> 
-						<bean class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean"> 
-							<property name="targetObject" ref="auditLogDispatcher" /> 
-							<property name="targetMethod" value="sweep" /> 
-							<property name="concurrent" value="false" /> 
-						</bean> 
+					<property name="startDelay" value="${org.openiam.audit.threadsweep}" />
+					<property name="repeatInterval" value="${org.openiam.audit.threadsweep}" />
+					<property name="jobDetail">
+						<bean class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+							<property name="targetObject" ref="auditLogDispatcher" />
+							<property name="targetMethod" value="sweep" />
+							<property name="concurrent" value="false" />
+						</bean>
 					</property>
-				</bean> 
+				</bean>
+                <bean class="org.springframework.scheduling.quartz.SimpleTriggerBean">
+                    <property name="startDelay" value="${org.openiam.prov.threadsweep}" />
+                    <property name="repeatInterval" value="${org.openiam.prov.threadsweep}" />
+                    <property name="jobDetail">
+                        <bean class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+                            <property name="targetObject" ref="provDispatcher" />
+                            <property name="targetMethod" value="sweep" />
+                            <property name="concurrent" value="false" />
+                        </bean>
+                    </property>
+                </bean>
 			</list> 
 		</property> 
-	</bean> 
+	</bean>
 
 	<bean id="seqGenDAO" class="org.openiam.base.id.SequenceGenDAOImpl">
 		<property name="sessionFactory" ref="sessionFactory"></property>

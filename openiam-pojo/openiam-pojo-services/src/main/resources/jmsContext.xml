@@ -49,4 +49,6 @@
         <property name="transactionManager" ref="jtaTransactionManager" />
         <property name="errorHandler" ref="auditLogErrorHandler"/>
     </bean>
+
+    <jee:jndi-lookup id="provQueue" jndi-name="queue/prov" expected-type="javax.jms.Queue" />
 </beans>

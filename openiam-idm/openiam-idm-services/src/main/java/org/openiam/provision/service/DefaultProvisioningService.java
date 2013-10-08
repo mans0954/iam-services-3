@@ -1216,6 +1216,11 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
     private void provisionResource(boolean isAdd, Resource res, UserEntity userEntity, ProvisionUser pUser,
             Map<String, Object> bindingMap, Login primaryIdentity, String requestId) {
+
+        ProvisionDataContainer data = new ProvisionDataContainer();
+        data.setOperation(AttributeOperationEnum.ADD);
+        provQueueService.enqueue(data);
+
         String managedSysId = res.getManagedSysId();
         if (managedSysId != null) {
             if (pUser.getSrcSystemId() != null) {

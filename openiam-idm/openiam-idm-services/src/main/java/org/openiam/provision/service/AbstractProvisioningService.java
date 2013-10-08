@@ -205,7 +205,9 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
     @Autowired
     protected String postProcessor;
     @Autowired
-    private AttributeMapDozerConverter attributeMapDozerConverter;
+    protected AttributeMapDozerConverter attributeMapDozerConverter;
+    @Autowired
+    protected ProvisionQueueService provQueueService;
 
     protected void checkAuditingAttributes(ProvisionUser pUser) {
         if ( pUser.getRequestClientIP() == null || pUser.getRequestClientIP().isEmpty() ) {
