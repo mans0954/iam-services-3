@@ -76,6 +76,11 @@ public class AuditLogBuilder implements Serializable {
 		entity.setObjectID(groupId);
 		return this;
 	}
+    public AuditLogBuilder setTargetResource(final String resourceId) {
+        entity.setObjectType("RESOURCE");
+        entity.setObjectID(resourceId);
+        return this;
+    }
 
 	public AuditLogBuilder setSourcePrincipal(String principal) {
 		entity.setPrincipal(principal);
@@ -103,6 +108,10 @@ public class AuditLogBuilder implements Serializable {
 		entity.addCustomRecord(key.name(), value);
 		return this;
 	}
+
+    public AuditLogBuilder setAuditDescription(final String value) {
+        return addAttribute(AuditAttributeName.DESCRIPTION, value);
+    }
 	
 	public AuditLogBuilder setFailureReason(final String value) {
 		return addAttribute(AuditAttributeName.FAILURE_REASON, value);

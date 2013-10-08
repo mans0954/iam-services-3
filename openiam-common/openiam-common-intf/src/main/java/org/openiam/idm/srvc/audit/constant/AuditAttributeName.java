@@ -13,5 +13,6 @@ public enum AuditAttributeName {
     EXCEPTION,
     RELAY_STATE,
     SAML_PROVIDER,
-    SAML_RESPONSE_XML;
+    SAML_RESPONSE_XML,
+    DESCRIPTION;
 }
