@@ -34,8 +34,6 @@ import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.mule.api.MuleContext;
-import org.mule.api.context.MuleContextAware;
 import org.openiam.base.id.UUIDGen;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.connector.type.ObjectValue;
@@ -89,7 +87,6 @@ import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.resp.LookupUserResponse;
 import org.openiam.provision.service.ConnectorAdapter;
 import org.openiam.provision.service.ProvisionService;
-import org.openiam.provision.service.RemoteConnectorAdapter;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleUser;
 import org.openiam.script.ScriptIntegration;
@@ -131,8 +128,6 @@ public class ReconciliationServiceImpl implements ReconciliationService {
     private LoginDozerConverter loginDozerConverter;
     @Autowired
     protected ConnectorAdapter connectorAdapter;
-    @Autowired
-    protected RemoteConnectorAdapter remoteConnectorAdapter;
 
     @Autowired
     protected RoleDataService roleDataService;
@@ -387,17 +382,10 @@ public class ReconciliationServiceImpl implements ReconciliationService {
         searchRequest.setExtensibleObject(new ExtensibleUser());
         SearchResponse searchResponse;
 
-        if (connector.getConnectorInterface() != null
-                && connector.getConnectorInterface().equalsIgnoreCase("REMOTE")) {
-            log.debug("Calling reconcileResource with Remote connector");
-            searchResponse = remoteConnectorAdapter.search(searchRequest,
-                    connector, MuleContextProvider.getCtx());
+        log.debug("Calling reconcileResource with Local connector");
+        searchResponse = connectorAdapter.search(searchRequest, connector,
+                MuleContextProvider.getCtx());
 
-        } else {
-            log.debug("Calling reconcileResource with Local connector");
-            searchResponse = connectorAdapter.search(searchRequest, connector,
-                    MuleContextProvider.getCtx());
-        }
         if (searchResponse != null
                 && searchResponse.getStatus() == StatusCodeType.SUCCESS) {
             List<ObjectValue> usersFromRemoteSys = searchResponse
@@ -667,11 +655,6 @@ public class ReconciliationServiceImpl implements ReconciliationService {
 
     public void setConnectorAdapter(ConnectorAdapter connectorAdapter) {
         this.connectorAdapter = connectorAdapter;
-    }
-
-    public void setRemoteConnectorAdapter(
-            RemoteConnectorAdapter remoteConnectorAdapter) {
-        this.remoteConnectorAdapter = remoteConnectorAdapter;
     }
 
     private User getUserFromIDM(List<ReconciliationResultField> header,

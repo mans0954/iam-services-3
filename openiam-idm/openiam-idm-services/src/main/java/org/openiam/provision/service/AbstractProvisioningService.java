@@ -162,8 +162,6 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
     @Autowired
     protected ConnectorAdapter connectorAdapter;
     @Autowired
-    protected RemoteConnectorAdapter remoteConnectorAdapter;
-    @Autowired
     protected ProvisionConnectorWebService provisionConnectorWebService;
     @Autowired
     protected ValidateConnectionConfig validateConnectionConfig;
@@ -227,12 +225,9 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                                     ProvisionConnectorDto connector,
                                     ProvisionUser user) {
 
-        if (connector.getConnectorInterface() != null &&
-                connector.getConnectorInterface().equalsIgnoreCase("REMOTE")) {
 
-            return remoteAdd(mLg, requestId, mSys, matchObj, extUser, connector);
-        }
-        return localAdd(mLg, requestId, mSys, matchObj, extUser, user);
+            return add(mLg, requestId, mSys, matchObj, extUser);
+
     }
 
     protected String getDecryptedPassword(ManagedSysDto managedSys) throws ConnectorDataException {
@@ -249,7 +244,6 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
     }
 
     protected boolean getCurrentObjectAtTargetSystem(Login mLg, ExtensibleUser extUser, ManagedSysDto mSys,
-                                                                 ProvisionConnectorDto connector,
                                                                  ManagedSystemObjectMatch matchObj,
                                                                  Map<String, String> curValueMap ) {
 
@@ -284,69 +278,26 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         reqType.setExtensibleObject(extUser);
         reqType.setScriptHandler(mSys.getLookupHandler());
 
-        if (connector.getConnectorInterface() != null &&
-                connector.getConnectorInterface().equalsIgnoreCase("REMOTE")) {
 
-            SearchResponse lookupRespType = remoteConnectorAdapter.lookupRequest(mSys, reqType, connector, muleContext);
+        SearchResponse lookupSearchResponse = connectorAdapter.lookupRequest(mSys, reqType, muleContext);
+        if (lookupSearchResponse.getStatus() == StatusCodeType.SUCCESS) {
+            List<ExtensibleAttribute> extAttrList = lookupSearchResponse.getObjectList().size() > 0 ? lookupSearchResponse.getObjectList().get(0).getAttributeList() : new LinkedList<ExtensibleAttribute>();
 
-            if (lookupRespType != null && lookupRespType.getStatus() == StatusCodeType.SUCCESS) {
-                return true;
-
-            } else {
-                log.debug("Attribute lookup did not find a match.");
-                return false;
-            }
-
-        } else {
-
-            SearchResponse lookupSearchResponse = connectorAdapter.lookupRequest(mSys, reqType, muleContext);
-            if(lookupSearchResponse.getStatus() == StatusCodeType.SUCCESS) {
-                List<ExtensibleAttribute> extAttrList = lookupSearchResponse.getObjectList().size() > 0 ? lookupSearchResponse.getObjectList().get(0).getAttributeList() : new LinkedList<ExtensibleAttribute>();
-
-                if (extAttrList != null) {
-                    for (ExtensibleAttribute obj : extAttrList) {
-                        String name = obj.getName();
-                        String value = obj.getValue();
-                        curValueMap.put(name, value);
-                    }
-                } else {
-                    log.debug(" - NO attributes found in target system lookup ");
+            if (extAttrList != null) {
+                for (ExtensibleAttribute obj : extAttrList) {
+                    String name = obj.getName();
+                    String value = obj.getValue();
+                    curValueMap.put(name, value);
                 }
+            } else {
+                log.debug(" - NO attributes found in target system lookup ");
             }
+            return true;
         }
 
-        if (curValueMap.size() == 0) {
-            return false;
-        }
-        return true;
-
+        return false;
     }
 
-/* came with merge from v2.3
-        protected void sendPasswordToUser(User user, String password) {
-
-            try {
-                MuleClient client = new MuleClient(muleContext);
-
-                HashMap<String, String> msgParamsMap = new HashMap<String, String>();
-                msgParamsMap.put(MailTemplateParameters.SERVICE_HOST.value(), serviceHost);
-                msgParamsMap.put(MailTemplateParameters.SERVICE_CONTEXT.value(), serviceContext);
-                msgParamsMap.put(MailTemplateParameters.USER_ID.value(), user.getUserId());
-                msgParamsMap.put(MailTemplateParameters.PASSWORD.value(), password);
-                msgParamsMap.put(MailTemplateParameters.FIRST_NAME.value(), user.getFirstName());
-                msgParamsMap.put(MailTemplateParameters.LAST_NAME.value(), user.getLastName());
-
-                Map<String, String> msgProp = new HashMap<String, String>();
-                msgProp.put("SERVICE_HOST", serviceHost);
-                msgProp.put("SERVICE_CONTEXT", serviceContext);
-                client.sendAsync("vm://notifyUserByEmailMessage", new NotificationRequest(PASSWORD_EMAIL_NOTIFICATION, msgParamsMap), msgProp);
-
-            } catch (MuleException me) {
-                log.error(me.toString());
-            }
-
-        }
-*/
     protected void sendResetPasswordToUser(UserEntity user, String principal, String password) {
         try {
             MuleClient client = new MuleClient(MuleContextProvider.getCtx());
@@ -435,39 +386,6 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
             log.error(me.toString());
         }
 
-    }
-
-    private ResponseCode addSupervisors(ProvisionUser u, UserEntity entity) {
-        Set<User> superiors = u.getSuperiors();
-        if (CollectionUtils.isNotEmpty(superiors)) {
-            for (User s : superiors) {
-                try {
-                    userMgr.addSuperior(s.getUserId(), entity.getUserId());
-                    log.info("created user supervisor");
-
-                } catch (Exception e) {
-                    return ResponseCode.SUPERVISOR_ERROR;
-                }
-            }
-        }
-        return ResponseCode.SUCCESS;
-    }
-
-    private void addPrincipals(UserEntity entity) throws EncryptionException {
-        if(CollectionUtils.isNotEmpty(entity.getPrincipalList())) {
-            for (LoginEntity e: entity.getPrincipalList()) {
-                e.setFirstTimeLogin(1);
-                e.setIsLocked(0);
-                e.setCreateDate(new Date(System.currentTimeMillis()));
-                e.setStatus("ACTIVE");
-                e.setUserId(entity.getUserId());
-                // encrypt the password
-//                if (e.getPassword() != null) {
-//                    final String pswd = e.getPassword();
-//                    e.setPassword(loginManager.encryptPassword(entity.getUserId(), pswd));
-//                }
-            }
-        }
     }
 
     protected Login buildPrimaryPrincipal(Map<String, Object> bindingMap, ScriptIntegration se) {
@@ -1266,37 +1184,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         return extUser;
     }
 
-    /* REMOTE VS LOCAL CONNECTORS */
-
-    protected boolean localAdd(Login mLg, String requestId, ManagedSysDto mSys,
-                             ManagedSystemObjectMatch matchObj, ExtensibleUser extUser,
-                             ProvisionUser user) {
-
-        CrudRequest<ExtensibleUser> addReqType = new CrudRequest<ExtensibleUser>();
-
-        addReqType.setObjectIdentity(mLg.getLogin());
-        addReqType.setRequestID(requestId);
-        addReqType.setTargetID(mLg.getManagedSysId());
-        addReqType.setExtensibleObject(extUser);
-        log.debug("Local connector - Creating identity in target system:" + mLg.getLoginId());
-        ObjectResponse resp = connectorAdapter.addRequest(mSys, addReqType, MuleContextProvider.getCtx());
-
-        /*auditHelper.addLog("ADD IDENTITY", user.getRequestorDomain(), user.getRequestorLogin(),
-                "IDM SERVICE", user.getCreatedBy(), mLg.getManagedSysId(),
-                "USER", user.getUserId(),
-                idmAuditLog.getLogId(), resp.getStatus().toString(), idmAuditLog.getLogId(), "IDENTITY_STATUS",
-                "SUCCESS",
-                requestId, resp.getErrorCodeAsStr(), user.getSessionId(), resp.getErrorMsgAsStr(),
-                user.getRequestorLogin(), mLg.getLogin(), mLg.getDomainId());*/
-
-        return resp.getStatus() != StatusCodeType.FAILURE;
-    }
-
-    protected boolean remoteAdd(Login mLg, String requestId, ManagedSysDto mSys,
-                                ManagedSystemObjectMatch matchObj, ExtensibleUser extUser,
-                                ProvisionConnectorDto connector) {
-
-        log.debug("Calling remote connector " + connector.getName());
+    protected boolean add(Login mLg, String requestId, ManagedSysDto mSys,
+                                ManagedSystemObjectMatch matchObj, ExtensibleUser extUser) {
 
         CrudRequest<ExtensibleUser> userReq = new CrudRequest<ExtensibleUser>();
         userReq.setObjectIdentity(mLg.getLogin());
@@ -1319,23 +1208,25 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
 
         userReq.setScriptHandler(mSys.getAddHandler());
 
-        ObjectResponse resp = remoteConnectorAdapter.addRequest(mSys, userReq, connector, MuleContextProvider.getCtx());
+        ObjectResponse resp =connectorAdapter.addRequest(mSys, userReq, MuleContextProvider.getCtx());
 
-        if (resp.getStatus() == StatusCodeType.FAILURE) {
-            return false;
-        }
+            /*auditHelper.addLog("ADD IDENTITY", user.getRequestorDomain(), user.getRequestorLogin(),
+                "IDM SERVICE", user.getCreatedBy(), mLg.getManagedSysId(),
+                "USER", user.getUserId(),
+                idmAuditLog.getLogId(), resp.getStatus().toString(), idmAuditLog.getLogId(), "IDENTITY_STATUS",
+                "SUCCESS",
+                requestId, resp.getErrorCodeAsStr(), user.getSessionId(), resp.getErrorMsgAsStr(),
+                user.getRequestorLogin(), mLg.getLogin(), mLg.getDomainId());*/
 
-        return true;
+
+        return resp.getStatus() != StatusCodeType.FAILURE;
     }
 
-    protected ObjectResponse remoteDelete(
+    protected ObjectResponse delete(
             Login mLg,
             String requestId,
             ManagedSysDto mSys,
-            ProvisionConnectorDto connector,
-            ManagedSystemObjectMatch matchObj,
-            ProvisionUser user
-    ) {
+            ManagedSystemObjectMatch matchObj) {
 
         CrudRequest<ExtensibleUser> request = new CrudRequest<ExtensibleUser>();
 
@@ -1358,7 +1249,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
 
         request.setScriptHandler(mSys.getDeleteHandler());
 
-        ObjectResponse resp = remoteConnectorAdapter.deleteRequest(mSys, request, connector, MuleContextProvider.getCtx());
+        ObjectResponse resp = connectorAdapter.deleteRequest(mSys, request, MuleContextProvider.getCtx());
         /*
         auditHelper.addLog("DELETE IDENTITY", auditLog.getDomainId(), auditLog.getPrincipal(),
                 "IDM SERVICE", user.getCreatedBy(), mLg.getManagedSysId(),
@@ -1371,110 +1262,9 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         return resp;
     }
 
-    protected ResponseType localDelete(Login l, String requestId,
-                                     ManagedSysDto mSys) {
-
-        log.debug("Local delete for=" + l);
-
-        CrudRequest<ExtensibleUser> reqType = new CrudRequest<ExtensibleUser>();
-
-        ManagedSystemObjectMatch matchObj = null;
-        ManagedSystemObjectMatch[] matchObjAry = managedSysService.managedSysObjectParam(mSys.getManagedSysId(), "USER");
-        if (matchObjAry != null && matchObjAry.length > 0) {
-            matchObj = matchObjAry[0];
-            if (matchObj != null) {
-                reqType.setBaseDN(matchObj.getBaseDn());
-            }
-        }
-
-        reqType.setRequestID(requestId);
-        reqType.setObjectIdentity(l.getLogin());
-        reqType.setTargetID(mSys.getManagedSysId());
-        reqType.setHostLoginId(mSys.getUserId());
-        String passwordDecoded = mSys.getPswd();
-        try {
-            passwordDecoded = getDecryptedPassword(mSys);
-        } catch (ConnectorDataException e) {
-            e.printStackTrace();
-        }
-        reqType.setHostLoginPassword(passwordDecoded);
-        reqType.setHostUrl(mSys.getHostUrl());
-
-        ResponseType resp = connectorAdapter.deleteRequest(mSys, reqType, MuleContextProvider.getCtx());
-
-        String logid = null;
-        String status = null;
-
-        if (resp.getStatus() != null) {
-            status = resp.getStatus().toString();
-        }
-
-        /*
-        if (auditLog != null) {
-            logid = auditLog.getLogId();
-        }
-
-        auditHelper.addLog("DELETE IDENTITY", l.getDomainId(), l.getLogin(),
-                "IDM SERVICE", l.getCreatedBy(), l.getManagedSysId(),
-                "IDENTITY", l.getUserId(),
-                logid, status, logid,
-                "IDENTITY_STATUS", "DELETED",
-                requestId, resp.getErrorCodeAsStr(), "", resp.getErrorMsgAsStr(),
-                l.getLastLoginIP(), l.getLogin(), l.getDomainId());
-		*/
-        return resp;
-    }
-    
-    protected void localResetPassword(final String requestId, 
-    								  final LoginEntity login,
-    								  final String password, 
-    								  final ManagedSysEntity mSys, 
-    								  PasswordSync passwordSync) {
-    	localResetPassword(requestId, 
-    					   loginDozerConverter.convertToDTO(login, true), 
-    					   password, 
-    					   managedSysDozerConverter.convertToDTO(mSys, true), 
-    					   passwordSync);
-    }
-
-    protected void localResetPassword(String requestId, Login login,
-            String password, ManagedSysDto mSys, PasswordSync passwordSync) {
-
-        PasswordRequest pswdReqType = new PasswordRequest();
-        pswdReqType.setObjectIdentity(login.getLogin());
-        pswdReqType.setTargetID(mSys.getManagedSysId());
-        pswdReqType.setRequestID(requestId);
-        pswdReqType.setPassword(password);
-        ResponseType respType = connectorAdapter.setPasswordRequest(mSys, pswdReqType, MuleContextProvider.getCtx());
-        /*
-        auditHelper.addLog("RESET PASSWORD IDENTITY", passwordSync.getRequestorDomain(), passwordSync.getRequestorLogin(),
-                "IDM SERVICE", null, mSys.getManagedSysId(), "PASSWORD", null, null, respType.getStatus().toString(), "NA", null,
-                null,
-                requestId, respType.getErrorCodeAsStr(), null, respType.getErrorMsgAsStr(),
-                null, login.getLogin(), login.getDomainId());
-		*/
-    }
-    
-    protected void remoteResetPassword(final String requestId, 
-    								   final LoginEntity login,
-    								   final String password, 
-    								   final ManagedSysEntity mSys,
-    								   final ManagedSystemObjectMatchEntity matchObj, 
-    								   ProvisionConnectorEntity connector,
-    								   PasswordSync passwordSync) {
-    	remoteResetPassword(requestId, 
-    						loginDozerConverter.convertToDTO(login, true),
-    						password, 
-    						managedSysDozerConverter.convertToDTO(mSys, true), 
-    						objectMatchDozerConverter.convertToDTO(matchObj, true),
-    						provisionConnectorConverter.convertToDTO(connector, true), 
-    						passwordSync);
-    }
-
-    protected void remoteResetPassword(String requestId, Login login,
+    protected void resetPassword(String requestId, Login login,
             String password, ManagedSysDto mSys,
-            ManagedSystemObjectMatch matchObj, ProvisionConnectorDto connector,
-            PasswordSync passwordSync) {
+            ManagedSystemObjectMatch matchObj) {
 
         PasswordRequest req = new PasswordRequest();
         req.setObjectIdentity(login.getLogin());
@@ -1495,7 +1285,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
 
         req.setScriptHandler(mSys.getPasswordHandler());
 
-        ResponseType respType = remoteConnectorAdapter.resetPasswordRequest(mSys, req, connector, MuleContextProvider.getCtx());
+        ResponseType respType = connectorAdapter.resetPasswordRequest(mSys, req, MuleContextProvider.getCtx());
         /*
         auditHelper.addLog("RESET PASSWORD IDENTITY", passwordSync.getRequestorDomain(), passwordSync.getRequestorLogin(),
                 "IDM SERVICE", null, mSys.getManagedSysId(), "PASSWORD", null, null, respType.getStatus().toString(), "NA", null,
@@ -1505,24 +1295,10 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
 		*/
     }
     
-    protected ResponseType remoteSetPassword(String requestId,
-    																	LoginEntity login,
-            															PasswordSync passwordSync,
-            															ManagedSysEntity mSys,
-            															ManagedSystemObjectMatchEntity matchObj,
-            															ProvisionConnectorEntity connector) {
-    	return remoteSetPassword(requestId,
-    			loginDozerConverter.convertToDTO(login, true),
-                passwordSync, 
-                managedSysDozerConverter.convertToDTO(mSys, true),
-                objectMatchDozerConverter.convertToDTO(matchObj, true),
-                provisionConnectorConverter.convertToDTO(connector, true));
-    }
-    protected ResponseType remoteSetPassword(String requestId, Login login,
-                                                                      PasswordSync passwordSync,
+    protected ResponseType setPassword(String requestId, Login login,
+                                                                      String newPasswordSync,
                                                                       ManagedSysDto mSys,
-                                                                      ManagedSystemObjectMatch matchObj,
-                                                                      ProvisionConnectorDto connector) {
+                                                                      ManagedSystemObjectMatch matchObj) {
 
         PasswordRequest req = new PasswordRequest();
         req.setObjectIdentity(login.getLogin());
@@ -1539,9 +1315,9 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         req.setHostUrl(mSys.getHostUrl());
         req.setBaseDN(matchObj.getBaseDn());
         req.setOperation("SET_PASSWORD");
-        req.setPassword(passwordSync.getPassword());
+        req.setPassword(newPasswordSync);
 
-        ResponseType respType = remoteConnectorAdapter.setPasswordRequest(mSys, req, connector, MuleContextProvider.getCtx());
+        ResponseType respType = connectorAdapter.setPasswordRequest(mSys, req, MuleContextProvider.getCtx());
 
         req.setScriptHandler(mSys.getPasswordHandler());
         /*
@@ -1553,38 +1329,6 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
 		*/
         return respType;
 
-    }
-    
-    protected ResponseType localSetPassword(String requestId, LoginEntity login,
-            PasswordSync passwordSync,
-            ManagedSysEntity mSys) {
-    	return localSetPassword(requestId,
-                loginDozerConverter.convertToDTO(login, true), 
-                passwordSync, 
-                managedSysDozerConverter.convertToDTO(mSys, true));
-    }
-
-    protected ResponseType localSetPassword(String requestId, Login login,
-                                          PasswordSync passwordSync,
-                                          ManagedSysDto mSys) {
-
-        PasswordRequest pswdReqType = new PasswordRequest();
-        pswdReqType.setObjectIdentity(login.getLogin());
-        pswdReqType.setTargetID(mSys.getManagedSysId());
-        pswdReqType.setRequestID(requestId);
-        pswdReqType.setPassword(passwordSync.getPassword());
-
-        // add the extensible attributes is they exist
-
-        ResponseType respType = connectorAdapter.setPasswordRequest(mSys, pswdReqType, MuleContextProvider.getCtx());
-        /*
-        auditHelper.addLog("SET PASSWORD IDENTITY", passwordSync.getRequestorDomain(), passwordSync.getRequestorLogin(),
-                "IDM SERVICE", null, "PASSWORD", "PASSWORD", null, null, respType.getStatus().toString(), "NA", null,
-                null,
-                requestId, respType.getErrorCodeAsStr(), null, respType.getErrorMsgAsStr(),
-                passwordSync.getRequestClientIP(), login.getLogin(), login.getDomainId());
-		*/
-        return respType;
     }
 
     protected ProvisionUserResponse validatePassword(Login primaryLogin, ProvisionUser user, String requestId) {

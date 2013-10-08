@@ -4,13 +4,11 @@ import org.openiam.base.id.UUIDGen;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.connector.type.response.ObjectResponse;
-import org.openiam.connector.type.response.ResponseType;
 import org.openiam.connector.type.constant.StatusCodeType;
 import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
-import org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorDto;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.provision.dto.ProvisionUser;
@@ -116,29 +114,19 @@ public class DeprovisionSelectedResourceHelper extends BaseProvisioningHelper {
 
                         ManagedSysDto mSys = managedSysService.getManagedSys(l.getManagedSysId());
 
-                        ProvisionConnectorDto connector = connectorService.getProvisionConnector(mSys.getConnectorId());
-
                         ManagedSystemObjectMatch matchObj = null;
                         ManagedSystemObjectMatch[] matchObjAry = managedSysService.managedSysObjectParam(mSys.getManagedSysId(), "USER");
-
+                        if (matchObjAry != null && matchObjAry.length > 0) {
+                            matchObj = matchObjAry[0];
+                        }
                         log.debug("Deleting id=" + l.getLogin());
                         log.debug("- delete using managed sys id=" + mSys.getManagedSysId());
 
                         boolean connectorSuccess = false;
 
-                        if (connector.getConnectorInterface() != null &&
-                                connector.getConnectorInterface().equalsIgnoreCase("REMOTE")) {
-                            ObjectResponse resp = remoteDelete(loginDozerConverter.convertToDTO(l, true), requestId, mSys, connector, matchObj, pUser);
-                            if (resp.getStatus() == StatusCodeType.SUCCESS) {
-                                connectorSuccess = true;
-                            }
-
-                        } else {
-                            ResponseType resp = localDelete(loginDozerConverter.convertToDTO(l, true), requestId, mSys, pUser);
-
-                            if (resp.getStatus() == StatusCodeType.SUCCESS) {
-                                connectorSuccess = true;
-                            }
+                        ObjectResponse resp = delete(loginDozerConverter.convertToDTO(l, true), requestId, mSys, matchObj);
+                        if (resp.getStatus() == StatusCodeType.SUCCESS) {
+                            connectorSuccess = true;
                         }
 
                         String postProcessScript = getResProperty(res.getResourceProps(), "POST_PROCESS");
@@ -154,22 +142,7 @@ public class DeprovisionSelectedResourceHelper extends BaseProvisioningHelper {
                 }
             }
 
-
-
-
         }
-
-
-
-
-
-
-
-
-
-
-
-
 
         response.setStatus(ResponseStatus.SUCCESS);
         return response;

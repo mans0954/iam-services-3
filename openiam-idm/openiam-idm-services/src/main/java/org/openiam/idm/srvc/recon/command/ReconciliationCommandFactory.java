@@ -6,7 +6,6 @@ import org.openiam.idm.srvc.recon.dto.ReconciliationSituation;
 import org.openiam.idm.srvc.recon.service.ReconciliationCommand;
 import org.openiam.provision.service.ConnectorAdapter;
 import org.openiam.provision.service.ProvisionService;
-import org.openiam.provision.service.RemoteConnectorAdapter;
 import org.openiam.util.MuleContextProvider;
 import org.openiam.util.SpringContextProvider;
 import org.springframework.context.ApplicationContext;
@@ -31,8 +30,7 @@ public class ReconciliationCommandFactory {
             reconCommand = new DeleteResourceAccountCommand((ProvisionService) applicationContext.getBean("defaultProvision"),
                     (ManagedSystemWebService)applicationContext.getBean("managedSysService"),
                     (ProvisionConnectorWebService)applicationContext.getBean("connectorService"),
-                    (RemoteConnectorAdapter)applicationContext.getBean("remoteConnectorAdapter"),
-                    MuleContextProvider.getCtx(),
+                     MuleContextProvider.getCtx(),
                     managedSysId,
                     (ConnectorAdapter)applicationContext.getBean("connectorAdapter"));
         } else if(name.equalsIgnoreCase("DEL_IDM_ACCOUNT")){
