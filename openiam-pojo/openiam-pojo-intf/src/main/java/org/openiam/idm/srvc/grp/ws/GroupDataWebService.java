@@ -46,6 +46,7 @@ public interface GroupDataWebService {
      *
      * @param groupId - the Group ID
      * @param requesterId - the User ID who request this operation. This param is required if delegation filter is set
+     * @return - a Group Object if it is found, otherwise null will be returned.
      */
     @WebMethod
     public Group getGroup(final @WebParam(name = "groupId", targetNamespace = "") String groupId,
@@ -71,13 +72,13 @@ public interface GroupDataWebService {
                                    final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
     /**
-     * Returns all child groups that are are direct members of this Group
+     * Returns a paged List of child groups that are are direct members of this Group
      *
      * @param groupId - the Group ID
      * @param requesterId - the User ID who request this operation.  This param is required if delegation filter is set
      * @param from - where to start in the list
      * @param size - how many to return
-     * @return List of Group objects. Returns null if no groups are found.
+     * @return a paged List of Group objects. Returns null if no groups are found.
      */
     @WebMethod
     public List<Group> getChildGroups(final @WebParam(name = "groupId", targetNamespace = "") String groupId,
@@ -95,13 +96,13 @@ public interface GroupDataWebService {
                                     final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
     /**
-     * Returns all groups that are direct parents of this Group
+     * Returns a paged List of groups that are direct parents of this Group
      *
      * @param groupId - the Group ID
      * @param requesterId - the User ID who request this operation.  This param is required if delegation filter is set
      * @param from - where to start in the list
      * @param size - how many to return
-     * @return List of Group objects. Returns null if no groups are found.
+     * @return a paged List of of Group objects. Returns null if no groups are found.
      */
     @WebMethod
     public List<Group> getParentGroups(final @WebParam(name = "groupId", targetNamespace = "") String groupId,
@@ -260,7 +261,7 @@ public interface GroupDataWebService {
     /**
      * Makes Group specified by childGroupId a child of Group specified by groupId
      * @param groupId - the Group ID to which another group specified by childGroupId will be added
-     * @param childGroupId - - the Group ID which will be added to the group specified by groupId
+     * @param childGroupId - the Group ID which will be added to the group specified by groupId
      * @return a Response Object, containing the status of this operation.
      */
     @WebMethod
@@ -271,7 +272,7 @@ public interface GroupDataWebService {
     /**
      * Remove Group specified by childGroupId from the membership list of Group specified by groupId
      * @param groupId - the Group ID from which another group specified by childGroupId will be deleted
-     * @param childGroupId - - the Group ID which will be deleted from the group specified by groupId
+     * @param childGroupId - the Group ID which will be deleted from the group specified by groupId
      * @return a Response Object, containing the status of this operation.
      */
     @WebMethod
@@ -281,7 +282,7 @@ public interface GroupDataWebService {
     /**
      * Checks if User specified by userId can be added to the Group specified by groupId as a member
      * @param userId - the User ID
-     * @param groupId - - the Group ID
+     * @param groupId - the Group ID
      * @return a Response Object, containing the status of this operation. if status is SUCCESS then the User can be added to this Croup
      */
     @WebMethod
@@ -291,8 +292,8 @@ public interface GroupDataWebService {
     /**
      * Checks if User specified by userId can be removed from the Group specified by groupId as a member
      * @param userId - the User ID
-     * @param groupId - - the Group ID
-     * @return a Response Object, containing the status of this operation. if status is SUCCESS then the User can be removed from this Croup
+     * @param groupId - the Group ID
+     * @return a Response Object, containing the status of this operation. if status is SUCCESS then the User can be removed from this Group
      */
 	@WebMethod
 	public Response canRemoveUserFromGroup(final @WebParam(name = "userId", targetNamespace = "")  String userId, 
