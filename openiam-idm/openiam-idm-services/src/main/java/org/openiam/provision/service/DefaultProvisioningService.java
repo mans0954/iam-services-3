@@ -80,6 +80,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.orm.hibernate3.HibernateTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.jws.WebService;
@@ -120,9 +121,13 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
      * .dto.ProvisionUser)
      */
     @Override
-    @Transactional
-    public ProvisionUserResponse addUser(ProvisionUser user) {
-          return addModifyUser(user, true);
+    public ProvisionUserResponse addUser(ProvisionUser pUser) {
+        List<ProvisionDataContainer> dataList = new LinkedList<ProvisionDataContainer>();
+        ProvisionUserResponse res = addModifyUser(pUser, true, dataList);
+        if (res.isSuccess()) {
+            provQueueService.enqueue(dataList);
+        }
+        return res;
     }
 
     /**
@@ -829,8 +834,8 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         return response;
     }
 
-    @Transactional
-    public ProvisionUserResponse addModifyUser(ProvisionUser pUser, boolean isAdd) {
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public ProvisionUserResponse addModifyUser(ProvisionUser pUser, boolean isAdd, List<ProvisionDataContainer> dataList) {
 
         if (isAdd) {
             log.debug("--- DEFAULT PROVISIONING SERVICE: addUser called ---");
@@ -1122,7 +1127,10 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             if (CollectionUtils.isNotEmpty(deleteResourceSet)) {
                 for (Resource res : deleteResourceSet) {
                     try { // Protects other resources if one resource failed
-                        deprovisionResource(res, userEntity, requestId);
+                        ProvisionDataContainer data = deprovisionResource(res, userEntity, requestId);
+                        if (data != null) {
+                            dataList.add(data);
+                        }
                     } catch (Throwable tw) {
                         log.error(res, tw);
                     }
@@ -1135,7 +1143,10 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             if (CollectionUtils.isNotEmpty(resourceSet)) {
                 for (Resource res : resourceSet) {
                     try { // Protects other resources if one resource failed
-                        provisionResource(isAdd, res, userEntity, pUser, bindingMap, primaryIdentity, requestId);
+                        ProvisionDataContainer data = provisionResource(isAdd, res, userEntity, pUser, bindingMap, primaryIdentity, requestId);
+                        if (data != null) {
+                            dataList.add(data);
+                        }
                     } catch (Throwable tw) {
                         log.error(res, tw);
                     }
@@ -1192,40 +1203,23 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
      * .provision.dto.ProvisionUser)
      */
     @Override
-    @Transactional
     public ProvisionUserResponse modifyUser(ProvisionUser pUser) {
-        return addModifyUser(pUser, false);
-    }
-
-    private void updateResourceState(Set<Resource> resourceSet,
-            List<LoginEntity> curPrincipalList) {
-        if (CollectionUtils.isNotEmpty(resourceSet)) {
-            for (Resource r : resourceSet) {
-                r.setObjectState(BaseObject.NEW);
-                for (LoginEntity l : curPrincipalList) {
-                    if (r.getManagedSysId() != null) {
-                        if (r.getManagedSysId().equalsIgnoreCase(l.getManagedSysId())) {
-                            r.setObjectState(BaseObject.UPDATE);
-                            break;
-                        }
-                    }
-                }
-            }
+        List<ProvisionDataContainer> dataList = new LinkedList<ProvisionDataContainer>();
+        ProvisionUserResponse res = addModifyUser(pUser, false, dataList);
+        if (res.isSuccess()) {
+            provQueueService.enqueue(dataList);
         }
+        return res;
     }
 
-    private void provisionResource(boolean isAdd, Resource res, UserEntity userEntity, ProvisionUser pUser,
+    private ProvisionDataContainer provisionResource(boolean isAdd, Resource res, UserEntity userEntity, ProvisionUser pUser,
             Map<String, Object> bindingMap, Login primaryIdentity, String requestId) {
-
-        ProvisionDataContainer data = new ProvisionDataContainer();
-        data.setOperation(AttributeOperationEnum.ADD);
-        provQueueService.enqueue(data);
 
         String managedSysId = res.getManagedSysId();
         if (managedSysId != null) {
             if (pUser.getSrcSystemId() != null) {
                 if (res.getResourceId().equalsIgnoreCase(pUser.getSrcSystemId())) { //TODO: ask why???
-                    return;
+                    return null;
                 }
             }
             // what the new object will look like
@@ -1240,11 +1234,11 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             List<AttributeMap> attrMap = managedSysService.getResourceAttributeMaps(res.getResourceId());
             ManagedSysDto mSys = managedSysService.getManagedSys(managedSysId);
             if (mSys == null || mSys.getConnectorId() == null) {
-                return;
+                return null;
             }
             ProvisionConnectorEntity connectorEntity = connectorService.getProvisionConnectorsById(mSys.getConnectorId());
             if (connectorEntity == null) {
-                return;
+                return null;
             }
             ProvisionConnectorDto connector = provisionConnectorConverter.convertToDTO(connectorEntity, true);
 
@@ -1259,7 +1253,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             LoginEntity mLg = getPrincipalForManagedSys(managedSysId, userEntity.getPrincipalList());
             if (mLg != null && "INACTIVE".equalsIgnoreCase(mLg.getStatus())) { // Identity for resource is disabled
                 log.debug("PROCESSING IDENTITY " + mLg + " SKIPPED ('INACTIVE')");
-                return;
+                return null;
             }
             // determine if this identity exists in IDM or not
             // if not, do an ADD otherwise, do an UPDATE
@@ -1286,7 +1280,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     String newPrincipalName = ProvisionServiceUtil.buildPrincipalName(attrMap, scriptRunner, bindingMap);
                     if (StringUtils.isBlank(newPrincipalName)) {
                         log.debug("Principal name for managed sys " + managedSysId + " is blank.");
-                        return;
+                        return null;
                     }
                     log.debug(" - New principalName = " + newPrincipalName);
 
@@ -1344,7 +1338,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     PreProcessor ppScript = createPreProcessScript(preProcessScript, bindingMap);
                     if (ppScript != null) {
                         if (executePreProcess(ppScript, bindingMap, targetSysProvUser, "ADD") == ProvisioningConstants.FAIL) {
-                            return;
+                            return null;
                         }
                     }
                 }
@@ -1374,7 +1368,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                         }
                     }
                     if (!connectorSuccess) {
-                        return;
+                        return null;
                     }
 
                     /* TODO: Fix all audit messages
@@ -1407,7 +1401,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     if (ppScript != null) {
                         if (executePreProcess(ppScript, bindingMap, pUser, "MODIFY")
                                 == ProvisioningConstants.FAIL) {
-                            return;
+                            return null;
                         }
                     }
                 }
@@ -1490,17 +1484,20 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 }
             }
             bindingMap.remove(MATCH_PARAM);
-
         }
+
+        ProvisionDataContainer data = new ProvisionDataContainer();
+        data.setOperation(AttributeOperationEnum.ADD);
+        return data;
     }
 
-    private void deprovisionResource(Resource res, UserEntity userEntity, String requestId) {
+    private ProvisionDataContainer deprovisionResource(Resource res, UserEntity userEntity, String requestId) {
         String managedSysId = res.getManagedSysId();
         log.debug("Deleting identity for managedSys=" + managedSysId);
 
         ManagedSysDto mSys = managedSysService.getManagedSys(managedSysId);
         if (mSys == null || mSys.getConnectorId() == null) {
-            return;
+            return null;
             }
 
         LoginEntity mLg = getPrincipalForManagedSys(managedSysId, userEntity.getPrincipalList());
@@ -1509,7 +1506,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
             ProvisionConnectorEntity connectorEntity = connectorService.getProvisionConnectorsById(mSys.getConnectorId());
             if (connectorEntity == null) {
-                return;
+                return null;
             }
             ProvisionConnectorDto connector = provisionConnectorConverter.convertToDTO(connectorEntity, true);
 
@@ -1581,6 +1578,10 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                      */
             }
         }
+
+        ProvisionDataContainer data = new ProvisionDataContainer();
+        data.setOperation(AttributeOperationEnum.DELETE);
+        return data;
     }
 
     /*

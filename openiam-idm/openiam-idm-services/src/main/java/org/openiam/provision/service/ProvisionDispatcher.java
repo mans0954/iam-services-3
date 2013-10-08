@@ -50,6 +50,8 @@ public class ProvisionDispatcher implements Sweepable {
     }
 
     private void provision(ProvisionDataContainer data) {
+        Thread t = Thread.currentThread();
+        System.out.println(t);
         System.out.println("Processing " + data);
     }
 
