@@ -23,7 +23,7 @@ import java.util.List;
 public interface GroupDataWebService {
    
 	/**
-     * This method creates a new group For example:
+     * This method creates a new group or update existed one. For example:
      * <p/>
      * <code>
      * Group grp = new Group();
@@ -33,10 +33,10 @@ public interface GroupDataWebService {
      * grpManager.addGroup(grpValue);<br>
      * </code>
      *
-     * @param group
-     * @return - Number of records created. 0 if add failed to add any records
+     * @param group - the Group object, which should be created or updated
+     * @return - a Response Object. If operation succeed then Response object contains the primary key of saved group
+     * otherwise it contains error code.
      */
-
     @WebMethod
     public Response saveGroup(final @WebParam(name = "group", targetNamespace = "") Group group);
 
@@ -44,40 +44,39 @@ public interface GroupDataWebService {
      * This method retrieves an existing group object. Dependent objects such as
      * users are not retrieved. Null is returned if the groupId is not found.
      *
-     * @param groupId
+     * @param groupId - the Group ID
+     * @param requesterId - the User ID who request this operation. This param is required if delegation filter is set
      */
     @WebMethod
     public Group getGroup(final @WebParam(name = "groupId", targetNamespace = "") String groupId,
                           final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
     /**
-     * This method removes group for a particular grpId. If the group has sub
-     * groups they will be deleted as well. For example:
-     * <p/>
-     * <code>
-     * grpManager.removeGroup(grpId);<br>
-     * </code>
+     * This method removes group from openIAM database for a particular groupId.
      *
      * @param groupId The grpId to be removed.
-     * @return - Returns the number of records removed. 0 if no records were removed.
+     * @return - a Response Object which contains operation status.
      */
     @WebMethod
     public Response deleteGroup(final @WebParam(name = "groupId", targetNamespace = "") String groupId);
-    
-    
+
+    /**
+     * Gets the number of child groups that are direct members of this Group
+     * @param groupId - the Group ID
+     * @param requesterId - the User ID who request this operation.  This param is required if delegation filter is set
+     * @return Integer, total number of groups that are direct members of this Group
+     */
     @WebMethod
     public int getNumOfChildGroups(final @WebParam(name = "groupId", targetNamespace = "") String groupId,
                                    final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
     /**
-     * Returns all the groups that are the immediate children of the parent
-     * group. For example:
-     * <p/>
-     * <code>
-     * List allGrp = grpManager.getChildGroups(parentGroupId, true);<br>
-     * </code>
+     * Returns all child groups that are are direct members of this Group
      *
-     * @param searchBean
+     * @param groupId - the Group ID
+     * @param requesterId - the User ID who request this operation.  This param is required if delegation filter is set
+     * @param from - where to start in the list
+     * @param size - how many to return
      * @return List of Group objects. Returns null if no groups are found.
      */
     @WebMethod
@@ -85,17 +84,24 @@ public interface GroupDataWebService {
                                       final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
     								  final @WebParam(name = "from", targetNamespace = "") int from,
     								  final @WebParam(name = "size", targetNamespace = "") int size);
-
+    /**
+     * Gets the number of groups that are direct parents of this Group
+     * @param groupId - the Group ID
+     * @param requesterId - the User ID who request this operation.  This param is required if delegation filter is set
+     * @return - Integer, total number of groups that are direct parents of this Group
+     */
     @WebMethod
     public int getNumOfParentGroups(final @WebParam(name = "groupId", targetNamespace = "") String groupId,
                                     final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
-    
+
     /**
-     * Returns the parent Group object for the groupId that is passed in. If no
-     * parent group is found, the system return null.
+     * Returns all groups that are direct parents of this Group
      *
-     * @param searchBean
-     * @return
+     * @param groupId - the Group ID
+     * @param requesterId - the User ID who request this operation.  This param is required if delegation filter is set
+     * @param from - where to start in the list
+     * @param size - how many to return
+     * @return List of Group objects. Returns null if no groups are found.
      */
     @WebMethod
     public List<Group> getParentGroups(final @WebParam(name = "groupId", targetNamespace = "") String groupId,
@@ -104,14 +110,12 @@ public interface GroupDataWebService {
     								   final @WebParam(name = "size", targetNamespace = "") int size);
 
     /**
-     * Returns true or false depending on whether a user belongs to a particular
-     * group or not. If a group has been marked as "Inherits from Parent", then
-     * the system will check to see if the user belongs to one of the parent
-     * group objects.
+     * Checks if a user belongs to a particular group or not. If a group has been marked as "Inherits from Parent", then
+     * the system will check to see if the user belongs to one of the parent group objects.
      *
      * @param groupId
      * @param userId
-     * @return
+     * @return   a Response Object which contains result of checking: true or false and operation status.
      */
     @WebMethod
     public Response isUserInGroup( @WebParam(name = "groupId", targetNamespace = "") String groupId,
@@ -120,14 +124,10 @@ public interface GroupDataWebService {
    
     /**
      * This method adds the user to a group .<br>
-     * For example:
-     * <p/>
-     * <code>
-     * grpManager.addUserToGroup(groupId,userId);<br>
-     * </code>
      *
-     * @param userId User to be added to group.
-     * @param groupId  Group to which user will be added .
+     * @param userId UserID to be added to group.
+     * @param groupId  GroupID to which user will be added.
+     * @return   a Response Object which contains an operation status.
      */
     @WebMethod
     public Response addUserToGroup(@WebParam(name = "groupId", targetNamespace = "") String groupId,
@@ -136,14 +136,10 @@ public interface GroupDataWebService {
 
     /**
      * This method removes user from a group .<br>
-     * For example:
-     * <p/>
-     * <code>
-     * grpManager.removeUserGroup(groupId,userId);<br>
-     * </code>
      *
-     * @param groupId  Group from where user would be removed .
-     * @param userId User which is to be removed from group .
+     * @param groupId  Group ID from where user would be removed .
+     * @param userId User ID which is to be removed from group .
+     * @return   a Response Object which contains an operation status.
      */
     @WebMethod
     public Response removeUserFromGroup(@WebParam(name = "groupId", targetNamespace = "") String groupId,
@@ -152,7 +148,8 @@ public interface GroupDataWebService {
     /**
      * Adds an attribute to the Group object.
      *
-     * @param attribute
+     * @param attribute - GroupAttribute object, which should be added
+     * @return   a Response Object which contains an operation status and GroupAttribute ID.
      */
     @WebMethod
     public Response addAttribute(@WebParam(name = "attribute", targetNamespace = "") GroupAttribute attribute);
@@ -160,67 +157,143 @@ public interface GroupDataWebService {
     /**
      * Removes a GroupAttribute specified by the attribute.
      *
-     * @param attributeId
+     * @param attributeId - GroupAttribute ID
+     * @return   a Response Object which contains an operation status.
      */
     @WebMethod
     public Response removeAttribute(@WebParam(name = "attributeId", targetNamespace = "") String attributeId);
-    
-    
+
+    /**
+     * Return a paged List of Groups based on parameters, which are specified in GroupSearchBean object
+     * @param searchBean -  GroupSearchBean object
+     * @param requesterId - the User ID who request this operation.  This param is required if delegation filter is set
+     * @param from - where to start in the list
+     * @param size - how many to return
+     * @return List of Group objects. Returns null if no groups are found.
+     */
     @WebMethod
     public List<Group> findBeans(final @WebParam(name = "searchBean") GroupSearchBean searchBean,
                                  final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
     							 final @WebParam(name = "from", targetNamespace = "") int from,
     							 final @WebParam(name = "size", targetNamespace = "") int size);
-    
+    /**
+     * Returns total number of Groups based on parameters, which are specified in GroupSearchBean object
+     * @param searchBean -  GroupSearchBean object
+     * @param requesterId - the User ID who request this operation.  This param is required if delegation filter is set
+     * @return - Integer, total number of groups based on parameters, which are specified in GroupSearchBean object
+     */
     @WebMethod
     public int countBeans(final @WebParam(name = "searchBean") GroupSearchBean searchBean,
                           final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
+    /**
+     * Gets a paged List of Groups directly entitled to the User specified by the userId
+     * @param userId - the User ID
+     * @param requesterId -  the User ID who request this operation.  This param is required if delegation filter is set
+     * @param from - where to start in the paged list
+     * @param size - how many to return
+     * @return a paged List of Groups directly entitled to the User specified by the userId
+     */
     @WebMethod
     public List<Group> getGroupsForUser(@WebParam(name = "userId", targetNamespace = "") String userId,
                                         @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
                                         @WebParam(name = "from") int from,
                                         @WebParam(name = "size") int size);
-
+    /**
+     * Gets the number of Groups directly entitled to this User specified by the userId
+     * @param userId - the User ID
+     * @param requesterId - the User ID who request this operation.  This param is required if delegation filter is set
+     * @return the number of Groups directly entitled to this User specified by the userId
+     */
     public int getNumOfGroupsForUser(final @WebParam(name = "userId", targetNamespace = "") String userId,
                                      final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
+    /**
+     * Gets a paged List of Groups directly entitled to the Resource specified by the resourceId
+     * @param resourceId - the Resource ID
+     * @param requesterId -  the User ID who request this operation.  This param is required if delegation filter is set
+     * @param from - where to start in the paged list
+     * @param size - how many to return
+     * @return a paged List of Groups directly entitled to the Resource specified by the resourceId
+     */
     @WebMethod
     public List<Group> getGroupsForResource(final @WebParam(name = "resourceId") String resourceId,
                                             final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
     										final @WebParam(name = "from", targetNamespace = "") int from,
     										final @WebParam(name = "size", targetNamespace = "") int size);
 
+    /**
+     * Gets the number of Groups directly entitled to this Resource specified by the resourceId
+     * @param resourceId - the Resource ID
+     * @param requesterId - the User ID who request this operation.  This param is required if delegation filter is set
+     * @return the number of Groups directly entitled to this Resource specified by the resourceId
+     */
     @WebMethod
     public int getNumOfGroupsforResource(final @WebParam(name = "resourceId") String resourceId,
                                          final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
+    /**
+     * Gets a paged List of Groups directly entitled to the Role specified by the roleId
+     * @param roleId - the Role ID
+     * @param requesterId -  the User ID who request this operation.  This param is required if delegation filter is set
+     * @param from - where to start in the paged list
+     * @param size - how many to return
+     * @return a paged List of Groups directly entitled to the Role specified by the roleId
+     */
     @WebMethod
     public List<Group> getGroupsForRole(final @WebParam(name = "roleId") String roleId,
                                         final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
     									final @WebParam(name = "from", targetNamespace = "") int from,
     									final @WebParam(name = "size", targetNamespace = "") int size);
 
+    /**
+     * Gets the number of Groups directly entitled to this Role specified by the roleId
+     * @param roleId - the Role ID
+     * @param requesterId - the User ID who request this operation.  This param is required if delegation filter is set
+     * @return the number of Groups directly entitled to this Role specified by the roleId
+     */
     @WebMethod
     public int getNumOfGroupsForRole(final @WebParam(name = "roleId") String roleId,
                                      final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
 
-    
+    /**
+     * Makes Group specified by childGroupId a child of Group specified by groupId
+     * @param groupId - the Group ID to which another group specified by childGroupId will be added
+     * @param childGroupId - - the Group ID which will be added to the group specified by groupId
+     * @return a Response Object, containing the status of this operation.
+     */
     @WebMethod
     public Response addChildGroup(final @WebParam(name = "groupId") String groupId, 
     							  final @WebParam(name = "childGroupId") String childGroupId);
-    
-    
+
+
+    /**
+     * Remove Group specified by childGroupId from the membership list of Group specified by groupId
+     * @param groupId - the Group ID from which another group specified by childGroupId will be deleted
+     * @param childGroupId - - the Group ID which will be deleted from the group specified by groupId
+     * @return a Response Object, containing the status of this operation.
+     */
     @WebMethod
     public Response removeChildGroup(final @WebParam(name = "groupId") String groupId, 
     							 	 final @WebParam(name = "childGroupId") String childGroupId);
-    
-    
+
+    /**
+     * Checks if User specified by userId can be added to the Group specified by groupId as a member
+     * @param userId - the User ID
+     * @param groupId - - the Group ID
+     * @return a Response Object, containing the status of this operation. if status is SUCCESS then the User can be added to this Croup
+     */
     @WebMethod
 	public Response canAddUserToGroup(final @WebParam(name = "userId", targetNamespace = "")  String userId, 
 									  final @WebParam(name = "groupId", targetNamespace = "") String groupId);
-	
+
+    /**
+     * Checks if User specified by userId can be removed from the Group specified by groupId as a member
+     * @param userId - the User ID
+     * @param groupId - - the Group ID
+     * @return a Response Object, containing the status of this operation. if status is SUCCESS then the User can be removed from this Croup
+     */
 	@WebMethod
 	public Response canRemoveUserFromGroup(final @WebParam(name = "userId", targetNamespace = "")  String userId, 
 										   final @WebParam(name = "groupId", targetNamespace = "") String groupId);
