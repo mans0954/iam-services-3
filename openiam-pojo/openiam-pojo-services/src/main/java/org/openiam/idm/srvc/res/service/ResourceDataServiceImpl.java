@@ -807,7 +807,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
 	public Response canRemoveUserFromResource(String userId, String resourceId) {
 		final Response response = new Response(ResponseStatus.SUCCESS);
         AuditLogBuilder auditBuilder = auditLogProvider.getAuditLogBuilder();
-        auditBuilder.setAction(AuditAction.CAN_REMOVE_USER_FROM_ROLE).setTargetUser(userId).setAuditDescription(String.format("Check if user can be removed from resource: %s", resourceId));
+        auditBuilder.setAction(AuditAction.CAN_REMOVE_USER_FROM_RESOURCE).setTargetUser(userId).setAuditDescription(String.format("Check if user can be removed from resource: %s", resourceId));
 		try {
 			if (resourceId == null || userId == null) {
 				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "ResourceId or UserId  is null");
