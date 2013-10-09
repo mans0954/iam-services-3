@@ -44,6 +44,7 @@ public class IdmAuditLogDAOImpl extends BaseDaoImpl<IdmAuditLogEntity, String> i
     			criteria.add(Restrictions.eq(getPKfieldName(), entity.getId()));
     		}
     	}
+    	criteria.addOrder(Order.desc("timestamp"));
     	return criteria;
 	}
 
@@ -53,6 +54,14 @@ public class IdmAuditLogDAOImpl extends BaseDaoImpl<IdmAuditLogEntity, String> i
 		if(searchBean != null && (searchBean instanceof AuditLogSearchBean)) {
 			final AuditLogSearchBean auditSearch = (AuditLogSearchBean)searchBean;
 			criteria = getExampleCriteria(converter.convert(auditSearch));
+			
+			if(auditSearch.getFrom() != null && auditSearch.getTo() != null) {
+				criteria.add(Restrictions.between("timestamp", auditSearch.getFrom(), auditSearch.getTo()));
+			} else if(auditSearch.getFrom() != null) {
+				criteria.add(Restrictions.gt("timestamp", auditSearch.getFrom()));
+			} else if(auditSearch.getTo() != null) {
+				criteria.add(Restrictions.lt("timestamp", auditSearch.getTo()));
+			}
 		}
 		return criteria;
 	}
