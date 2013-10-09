@@ -75,6 +75,11 @@ public class AuditLogBuilderDto implements Serializable {
         return this;
     }
 	
+    public AuditLogBuilderDto setTargetManagedSys(final String managedSysId) {
+    	entity.addTarget(managedSysId, "MANAGED_SYS");
+        return this;
+    }
+	
 	public AuditLogBuilderDto setManagedSysId(String managedSysId) {
 		entity.setManagedSysId(managedSysId);
 		return this;
