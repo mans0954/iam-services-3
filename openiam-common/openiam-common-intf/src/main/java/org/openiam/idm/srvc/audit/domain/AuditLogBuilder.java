@@ -81,6 +81,11 @@ public class AuditLogBuilder implements Serializable {
         entity.setObjectID(resourceId);
         return this;
     }
+    public AuditLogBuilder setTargetManagedSys(final String managedSysId) {
+        entity.setObjectType("MANAGED_SYS");
+        entity.setObjectID(managedSysId);
+        return this;
+    }
 
 	public AuditLogBuilder setSourcePrincipal(String principal) {
 		entity.setPrincipal(principal);

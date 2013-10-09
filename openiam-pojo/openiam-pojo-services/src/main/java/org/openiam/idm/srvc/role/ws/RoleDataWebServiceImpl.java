@@ -410,7 +410,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 			if(role == null) {
 				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Role object is null");
 			}
-            auditBuilder.setSourceUserId(role.getRequestorUserId()).setTargetGroup(role.getRoleId());
+            auditBuilder.setSourceUserId(role.getRequestorUserId()).setTargetRole(role.getRoleId());
             if(StringUtils.isBlank(role.getRoleId())) {
                 auditBuilder.setAction(AuditAction.ADD_ROLE);
             }
@@ -784,7 +784,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 			}
 
 			if(userDataService.isRoleInUser(userId, roleId)) {
-				throw new BasicDataServiceException(ResponseCode.RELATIONSHIP_EXISTS,String.format("User %s has already been added to role: %s", userId, roleId));
+				throw new BasicDataServiceException(ResponseCode.RELATIONSHIP_EXISTS, String.format("User %s has already been added to role: %s", userId, roleId));
 			}
             auditBuilder.succeed();
 		} catch(BasicDataServiceException e) {
