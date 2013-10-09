@@ -143,6 +143,17 @@
 			<b>logId</b>
 		</field>
 	</mapping>
+	
+	<mapping>
+		<class-a>org.openiam.idm.srvc.audit.domain.AuditLogTargetEntity
+		</class-a>
+		<class-b>org.openiam.idm.srvc.audit.dto.AuditLogTarget</class-b>
+		<field>
+			<a>log.id</a>
+			<b>logId</b>
+		</field>
+	</mapping>
+	
 	<mapping>
 		<class-a>org.openiam.idm.srvc.mngsys.domain.ManagedSysRuleEntity
 		</class-a>

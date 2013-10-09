@@ -79,7 +79,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
 			if(group == null) {
 				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
 			}
-            auditBuilder.setSourceUserId(group.getRequestorUserId()).setTargetGroup(group.getGrpId());
+            auditBuilder.setRequestorUserId(group.getRequestorUserId()).setTargetGroup(group.getGrpId());
             if(StringUtils.isBlank(group.getGrpId())) {
                 auditBuilder.setAction(AuditAction.ADD_GROUP);
             }
@@ -125,7 +125,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
 	public Group getGroup(final String groupId, final String requesterId) {
 		Group retVal = null;
         AuditLogBuilder auditBuilder = auditLogProvider.getAuditLogBuilder();
-        auditBuilder.setAction(AuditAction.GET_GROUP).setSourceUserId(requesterId).setTargetGroup(groupId);
+        auditBuilder.setAction(AuditAction.GET_GROUP).setRequestorUserId(requesterId).setTargetGroup(groupId);
         try{
             if(StringUtils.isNotBlank(groupId)) {
                 final GroupEntity entity = groupManager.getGroup(groupId, requesterId);
@@ -171,7 +171,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
 	public int getNumOfChildGroups(final String groupId, final String requesterId) {
         int count =0;
         AuditLogBuilder auditBuilder = auditLogProvider.getAuditLogBuilder();
-        auditBuilder.setAction(AuditAction.GET_CHILD_GROUP_NUM).setSourceUserId(requesterId).setTargetGroup(groupId);
+        auditBuilder.setAction(AuditAction.GET_CHILD_GROUP_NUM).setRequestorUserId(requesterId).setTargetGroup(groupId);
         try{
             count = groupManager.getNumOfChildGroups(groupId, requesterId);
             auditBuilder.succeed();
@@ -187,7 +187,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
 	public List<Group> getChildGroups(final  String groupId, final String requesterId, final int from, final int size) {
         List<Group> groupList = null;
         AuditLogBuilder auditBuilder = auditLogProvider.getAuditLogBuilder();
-        auditBuilder.setAction(AuditAction.GET_CHILD_GROUP).setSourceUserId(requesterId).setTargetGroup(groupId);
+        auditBuilder.setAction(AuditAction.GET_CHILD_GROUP).setRequestorUserId(requesterId).setTargetGroup(groupId);
         try{
             final List<GroupEntity> groupEntityList = groupManager.getChildGroups(groupId, requesterId, from, size);
             groupList = groupDozerConverter.convertToDTOList(groupEntityList, false);
@@ -204,7 +204,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
 	public int getNumOfParentGroups(final  String groupId, final String requesterId) {
         int count =0;
         AuditLogBuilder auditBuilder = auditLogProvider.getAuditLogBuilder();
-        auditBuilder.setAction(AuditAction.GET_PARENT_GROUP_NUM).setSourceUserId(requesterId).setTargetGroup(groupId);
+        auditBuilder.setAction(AuditAction.GET_PARENT_GROUP_NUM).setRequestorUserId(requesterId).setTargetGroup(groupId);
         try{
             count = groupManager.getNumOfParentGroups(groupId, requesterId);
             auditBuilder.succeed();
@@ -220,7 +220,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
 	public List<Group> getParentGroups(final  String groupId, final String requesterId, final int from, final int size) {
         List<Group> groupList = null;
         AuditLogBuilder auditBuilder = auditLogProvider.getAuditLogBuilder();
-        auditBuilder.setAction(AuditAction.GET_PARENT_GROUP).setSourceUserId(requesterId).setTargetGroup(groupId);
+        auditBuilder.setAction(AuditAction.GET_PARENT_GROUP).setRequestorUserId(requesterId).setTargetGroup(groupId);
         try{
             final List<GroupEntity> groupEntityList = groupManager.getParentGroups(groupId, requesterId, from, size);
             groupList = groupDozerConverter.convertToDTOList(groupEntityList, false);
@@ -377,7 +377,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
 	public List<Group> findBeans(final GroupSearchBean searchBean, final String requesterId, final int from, final int size) {
         List<Group> groupList = null;
         AuditLogBuilder auditBuilder = auditLogProvider.getAuditLogBuilder();
-        auditBuilder.setAction(AuditAction.SEARCH_GROUP).setSourceUserId(requesterId);
+        auditBuilder.setAction(AuditAction.SEARCH_GROUP).setRequestorUserId(requesterId);
         try{
             final List<GroupEntity> groupEntityList =  groupManager.findBeans(searchBean, requesterId, from, size);
             groupList = groupDozerConverter.convertToDTOList(groupEntityList, (searchBean.isDeepCopy()));
@@ -394,7 +394,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
 	public int countBeans(final GroupSearchBean searchBean, final String requesterId) {
         int count =0;
         AuditLogBuilder auditBuilder = auditLogProvider.getAuditLogBuilder();
-        auditBuilder.setAction(AuditAction.GET_GROUP_NUM).setSourceUserId(requesterId);
+        auditBuilder.setAction(AuditAction.GET_GROUP_NUM).setRequestorUserId(requesterId);
         try{
             count = groupManager.countBeans(searchBean, requesterId);
             auditBuilder.succeed();
@@ -410,7 +410,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
     public List<Group> getGroupsForUser(final String userId, final String requesterId, final int from, final int size) {
         List<Group> groupList = null;
         AuditLogBuilder auditBuilder = auditLogProvider.getAuditLogBuilder();
-        auditBuilder.setAction(AuditAction.GET_GROUP_FOR_USER).setSourceUserId(requesterId).setTargetUser(userId);
+        auditBuilder.setAction(AuditAction.GET_GROUP_FOR_USER).setRequestorUserId(requesterId).setTargetUser(userId);
         try{
             final List<GroupEntity> groupEntityList =  groupManager.getGroupsForUser(userId,requesterId, from, size);
             groupList = groupDozerConverter.convertToDTOList(groupEntityList, false);
@@ -427,7 +427,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
     public int getNumOfGroupsForUser(final String userId, final String requesterId) {
         int count =0;
         AuditLogBuilder auditBuilder = auditLogProvider.getAuditLogBuilder();
-        auditBuilder.setAction(AuditAction.GET_GROUP_NUM_FOR_USER).setSourceUserId(requesterId).setTargetUser(userId);
+        auditBuilder.setAction(AuditAction.GET_GROUP_NUM_FOR_USER).setRequestorUserId(requesterId).setTargetUser(userId);
         try{
             count = groupManager.getNumOfGroupsForUser(userId,requesterId);
             auditBuilder.succeed();
@@ -443,7 +443,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
 	public List<Group> getGroupsForResource(final String resourceId, final String requesterId, final int from, final int size) {
         List<Group> groupList = null;
         AuditLogBuilder auditBuilder = auditLogProvider.getAuditLogBuilder();
-        auditBuilder.setAction(AuditAction.GET_GROUP_FOR_RESOURCE).setSourceUserId(requesterId).setTargetResource(resourceId);
+        auditBuilder.setAction(AuditAction.GET_GROUP_FOR_RESOURCE).setRequestorUserId(requesterId).setTargetResource(resourceId);
         try{
             final List<GroupEntity> groupEntityList =  groupManager.getGroupsForResource(resourceId,requesterId, from, size);
             groupList = groupDozerConverter.convertToDTOList(groupEntityList, false);
@@ -460,7 +460,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
 	public int getNumOfGroupsforResource(final String resourceId, final String requesterId) {
         int count =0;
         AuditLogBuilder auditBuilder = auditLogProvider.getAuditLogBuilder();
-        auditBuilder.setAction(AuditAction.GET_GROUP_NUM_FOR_RESOURCE).setSourceUserId(requesterId).setTargetResource(resourceId);
+        auditBuilder.setAction(AuditAction.GET_GROUP_NUM_FOR_RESOURCE).setRequestorUserId(requesterId).setTargetResource(resourceId);
         try{
             count = groupManager.getNumOfGroupsForResource(resourceId, requesterId);
             auditBuilder.succeed();
@@ -476,7 +476,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
 	public List<Group> getGroupsForRole(final String roleId, final String requesterId, final int from, final int size) {
         List<Group> groupList = null;
         AuditLogBuilder auditBuilder = auditLogProvider.getAuditLogBuilder();
-        auditBuilder.setAction(AuditAction.GET_GROUP_FOR_ROLE).setSourceUserId(requesterId).setTargetRole(roleId);
+        auditBuilder.setAction(AuditAction.GET_GROUP_FOR_ROLE).setRequestorUserId(requesterId).setTargetRole(roleId);
         try{
             final List<GroupEntity> groupEntityList =  groupManager.getGroupsForRole(roleId,requesterId, from, size);
             groupList = groupDozerConverter.convertToDTOList(groupEntityList, false);
@@ -493,7 +493,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
 	public int getNumOfGroupsForRole(final String roleId, final String requesterId) {
         int count =0;
         AuditLogBuilder auditBuilder = auditLogProvider.getAuditLogBuilder();
-        auditBuilder.setAction(AuditAction.GET_GROUP_NUM_FOR_ROLE).setSourceUserId(requesterId).setTargetRole(roleId);
+        auditBuilder.setAction(AuditAction.GET_GROUP_NUM_FOR_ROLE).setRequestorUserId(requesterId).setTargetRole(roleId);
         try{
             count = groupManager.getNumOfGroupsForRole(roleId, requesterId);
             auditBuilder.succeed();

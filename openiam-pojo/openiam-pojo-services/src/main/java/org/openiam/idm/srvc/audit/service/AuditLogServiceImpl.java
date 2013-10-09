@@ -19,6 +19,7 @@ import org.openiam.base.SysConfiguration;
 import org.openiam.base.id.UUIDGen;
 import org.openiam.idm.searchbeans.AuditLogSearchBean;
 import org.openiam.idm.srvc.audit.domain.AuditLogBuilder;
+import org.openiam.idm.srvc.audit.domain.AuditLogTargetEntity;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogCustomEntity;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
@@ -77,6 +78,12 @@ public class AuditLogServiceImpl implements AuditLogService {
     		//required - the UI sends a transient instance to the service, so fix it here
     		if(CollectionUtils.isNotEmpty(log.getCustomRecords())) {
     			for(final IdmAuditLogCustomEntity entity : log.getCustomRecords()) {
+    				entity.setLog(log);
+    			}
+    		}
+    		
+    		if(CollectionUtils.isNotEmpty(log.getTargets())) {
+    			for(final AuditLogTargetEntity entity : log.getTargets()) {
     				entity.setLog(log);
     			}
     		}

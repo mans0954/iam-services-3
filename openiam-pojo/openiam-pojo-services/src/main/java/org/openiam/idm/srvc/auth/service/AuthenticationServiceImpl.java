@@ -174,7 +174,7 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
     public void globalLogout(String userId) throws Throwable {
         final AuditLogBuilder auditBuilder=auditLogProvider.getAuditLogBuilder();
         try{
-            auditBuilder.setSourceUserId(userId).setTargetUser(userId).setAction(AuditAction.LOGOUT);
+            auditBuilder.setRequestorUserId(userId).setTargetUser(userId).setAction(AuditAction.LOGOUT);
 
             if (userId == null) {
                 auditBuilder.setResult(AuditResult.FAILURE).addAttribute(AuditAttributeName.FAILURE_REASON,"Target User object not passed");
@@ -220,7 +220,7 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
 	        final String clientIP = request.getClientIP();
 	        final String nodeIP = request.getNodeIP();
 	
-	        auditBuilder.setClientIP(clientIP).setSourcePrincipal(principal);
+	        auditBuilder.setClientIP(clientIP).setRequestorPrincipal(principal);
 	        
 	        AuthenticationContext ctx = null;
 	        AbstractLoginModule loginModule = null;
@@ -312,7 +312,7 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
 	
 	            // check the user status - move to the abstract class for reuse
 	            userId = lg.getUserId();
-	            auditBuilder.setSourceUserId(userId);
+	            auditBuilder.setRequestorUserId(userId);
 	            
 	            user = userManager.getUser(userId);
 	        }

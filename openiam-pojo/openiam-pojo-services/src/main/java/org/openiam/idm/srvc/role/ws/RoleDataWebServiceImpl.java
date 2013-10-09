@@ -191,7 +191,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 	public Role getRole(String roleId, String requesterId) {
 		Role retVal = null;
         AuditLogBuilder auditBuilder = auditLogProvider.getAuditLogBuilder();
-        auditBuilder.setAction(AuditAction.GET_ROLE).setSourceUserId(requesterId).setTargetRole(roleId);
+        auditBuilder.setAction(AuditAction.GET_ROLE).setRequestorUserId(requesterId).setTargetRole(roleId);
         try{
             if(roleId != null) {
                 final RoleEntity entity = roleDataService.getRole(roleId, requesterId);
@@ -213,7 +213,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 	public List<Role> getRolesInGroup(final String groupId, String requesterId, final int from, final int size) {
         List<Role> roleList = null;
         AuditLogBuilder auditBuilder = auditLogProvider.getAuditLogBuilder();
-        auditBuilder.setAction(AuditAction.GET_ROLE_IN_GROUP).setSourceUserId(requesterId).setTargetGroup(groupId);
+        auditBuilder.setAction(AuditAction.GET_ROLE_IN_GROUP).setRequestorUserId(requesterId).setTargetGroup(groupId);
         try{
             final List<RoleEntity> entityList = roleDataService.getRolesInGroup(groupId, requesterId, from, size);
             roleList = roleDozerConverter.convertToDTOList(entityList, false);
@@ -230,7 +230,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 	public List<Role> getRolesForUser(final String userId, String requesterId, final int from, final int size) {
         List<Role> roleList = null;
         AuditLogBuilder auditBuilder = auditLogProvider.getAuditLogBuilder();
-        auditBuilder.setAction(AuditAction.GET_ROLE_FOR_USER).setSourceUserId(requesterId).setTargetUser(userId);
+        auditBuilder.setAction(AuditAction.GET_ROLE_FOR_USER).setRequestorUserId(requesterId).setTargetUser(userId);
         try{
             final List<RoleEntity> entityList = roleDataService.getRolesForUser(userId, requesterId, from, size);
             roleList = roleDozerConverter.convertToDTOList(entityList, false);
@@ -247,7 +247,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 	public int getNumOfRolesForUser(final String userId, String requesterId) {
         int count =0;
         AuditLogBuilder auditBuilder = auditLogProvider.getAuditLogBuilder();
-        auditBuilder.setAction(AuditAction.GET_ROLE_NUM_FOR_USER).setSourceUserId(requesterId).setTargetUser(userId);
+        auditBuilder.setAction(AuditAction.GET_ROLE_NUM_FOR_USER).setRequestorUserId(requesterId).setTargetUser(userId);
         try{
             count = roleDataService.getNumOfRolesForUser(userId, requesterId);
             auditBuilder.succeed();
@@ -410,7 +410,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 			if(role == null) {
 				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Role object is null");
 			}
-            auditBuilder.setSourceUserId(role.getRequestorUserId()).setTargetGroup(role.getRoleId());
+            auditBuilder.setRequestorUserId(role.getRequestorUserId()).setTargetGroup(role.getRoleId());
             if(StringUtils.isBlank(role.getRoleId())) {
                 auditBuilder.setAction(AuditAction.ADD_ROLE);
             }
@@ -565,7 +565,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 	public List<Role> findBeans(final RoleSearchBean searchBean, String requesterId, final int from, final int size) {
         List<Role> roleList = null;
         AuditLogBuilder auditBuilder = auditLogProvider.getAuditLogBuilder();
-        auditBuilder.setAction(AuditAction.SEARCH_ROLE).setSourceUserId(requesterId);
+        auditBuilder.setAction(AuditAction.SEARCH_ROLE).setRequestorUserId(requesterId);
         try{
             final List<RoleEntity> found = roleDataService.findBeans(searchBean, requesterId, from, size);
             roleList = roleDozerConverter.convertToDTOList(found, (searchBean.isDeepCopy()));
@@ -583,7 +583,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 	public int countBeans(final RoleSearchBean searchBean, String requesterId) {
         int count =0;
         AuditLogBuilder auditBuilder = auditLogProvider.getAuditLogBuilder();
-        auditBuilder.setAction(AuditAction.GET_ROLE_NUM).setSourceUserId(requesterId);
+        auditBuilder.setAction(AuditAction.GET_ROLE_NUM).setRequestorUserId(requesterId);
         try{
             count = roleDataService.countBeans(searchBean, requesterId);
             auditBuilder.succeed();
@@ -599,7 +599,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 	public List<Role> getRolesForResource(final String resourceId, String requesterId, final int from, final int size) {
         List<Role> roleList = null;
         AuditLogBuilder auditBuilder = auditLogProvider.getAuditLogBuilder();
-        auditBuilder.setAction(AuditAction.GET_ROLE_FOR_RESOURCE).setSourceUserId(requesterId).setTargetResource(resourceId);
+        auditBuilder.setAction(AuditAction.GET_ROLE_FOR_RESOURCE).setRequestorUserId(requesterId).setTargetResource(resourceId);
         try{
             final List<RoleEntity> entityList = roleDataService.getRolesForResource(resourceId, requesterId, from, size);
             roleList = roleDozerConverter.convertToDTOList(entityList, false);
@@ -616,7 +616,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 	public int getNumOfRolesForResource(final String resourceId, String requesterId) {
         int count =0;
         AuditLogBuilder auditBuilder = auditLogProvider.getAuditLogBuilder();
-        auditBuilder.setAction(AuditAction.GET_ROLE_NUM_FOR_RESOURCE).setSourceUserId(requesterId).setTargetResource(resourceId);
+        auditBuilder.setAction(AuditAction.GET_ROLE_NUM_FOR_RESOURCE).setRequestorUserId(requesterId).setTargetResource(resourceId);
         try{
             count = roleDataService.getNumOfRolesForResource(resourceId, requesterId);
             auditBuilder.succeed();
@@ -632,7 +632,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 	public List<Role> getChildRoles(final String roleId, String requesterId, final  int from, final int size) {
         List<Role> roleList = null;
         AuditLogBuilder auditBuilder = auditLogProvider.getAuditLogBuilder();
-        auditBuilder.setAction(AuditAction.GET_CHILD_ROLE).setSourceUserId(requesterId).setTargetRole(roleId);
+        auditBuilder.setAction(AuditAction.GET_CHILD_ROLE).setRequestorUserId(requesterId).setTargetRole(roleId);
         try{
             final List<RoleEntity> entityList = roleDataService.getChildRoles(roleId, requesterId, from, size);
             roleList = roleDozerConverter.convertToDTOList(entityList, false);
@@ -650,7 +650,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 	public int getNumOfChildRoles(final String roleId, String requesterId) {
         int count =0;
         AuditLogBuilder auditBuilder = auditLogProvider.getAuditLogBuilder();
-        auditBuilder.setAction(AuditAction.GET_CHILD_ROLE_NUM).setSourceUserId(requesterId).setTargetRole(roleId);
+        auditBuilder.setAction(AuditAction.GET_CHILD_ROLE_NUM).setRequestorUserId(requesterId).setTargetRole(roleId);
         try{
             count = roleDataService.getNumOfChildRoles(roleId, requesterId);
             auditBuilder.succeed();
@@ -667,7 +667,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 	public List<Role> getParentRoles(final String roleId, String requesterId, final int from, final int size) {
         List<Role> roleList = null;
         AuditLogBuilder auditBuilder = auditLogProvider.getAuditLogBuilder();
-        auditBuilder.setAction(AuditAction.GET_PARENT_ROLE).setSourceUserId(requesterId).setTargetRole(roleId);
+        auditBuilder.setAction(AuditAction.GET_PARENT_ROLE).setRequestorUserId(requesterId).setTargetRole(roleId);
         try{
             final List<RoleEntity> entityList = roleDataService.getParentRoles(roleId, requesterId, from, size);
             roleList = roleDozerConverter.convertToDTOList(entityList, false);
@@ -685,7 +685,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 	public int getNumOfParentRoles(final String roleId, String requesterId) {
         int count =0;
         AuditLogBuilder auditBuilder = auditLogProvider.getAuditLogBuilder();
-        auditBuilder.setAction(AuditAction.GET_PARENT_ROLE_NUM).setSourceUserId(requesterId).setTargetRole(roleId);
+        auditBuilder.setAction(AuditAction.GET_PARENT_ROLE_NUM).setRequestorUserId(requesterId).setTargetRole(roleId);
         try{
             count = roleDataService.getNumOfParentRoles(roleId, requesterId);
             auditBuilder.succeed();
@@ -761,7 +761,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 	public int getNumOfRolesForGroup(final String groupId, String requesterId) {
         int count =0;
         AuditLogBuilder auditBuilder = auditLogProvider.getAuditLogBuilder();
-        auditBuilder.setAction(AuditAction.GET_ROLE_NUM_FOR_GROUP).setSourceUserId(requesterId).setTargetGroup(groupId);
+        auditBuilder.setAction(AuditAction.GET_ROLE_NUM_FOR_GROUP).setRequestorUserId(requesterId).setTargetGroup(groupId);
         try{
             count = roleDataService.getNumOfRolesForGroup(groupId, requesterId);
             auditBuilder.succeed();
