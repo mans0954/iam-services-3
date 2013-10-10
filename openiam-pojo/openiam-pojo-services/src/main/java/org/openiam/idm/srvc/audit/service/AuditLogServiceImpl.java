@@ -110,14 +110,21 @@ public class AuditLogServiceImpl implements AuditLogService {
 	 }
 
 	@Override
-	@Transactional
+	@Transactional(readOnly=true)
 	public List<IdmAuditLogEntity> findBeans(AuditLogSearchBean searchBean,
 			int from, int size) {
 		return logDAO.getByExample(searchBean, from, size);
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public int count(AuditLogSearchBean searchBean) {
 		return logDAO.count(searchBean);
+	}
+
+	@Override
+	@Transactional(readOnly=true)
+	public IdmAuditLogEntity findById(String id) {
+		return logDAO.findById(id);
 	}
 }

@@ -84,6 +84,13 @@ public class IdmAuditLogEntity implements Serializable {
     @OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL, mappedBy = "log")
     private Set<AuditLogTargetEntity> targets;
     
+    @ManyToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
+    @JoinTable(name = "OPENIAM_LOG_LOG_MEMBERSHIP",
+            joinColumns = {@JoinColumn(name = "OPENIAM_MEMBER_LOG_ID")},
+            inverseJoinColumns = {@JoinColumn(name = "OPENIAM_LOG_ID")})
+    @Fetch(FetchMode.SUBSELECT)
+    private Set<IdmAuditLogEntity> parentLogs;
+    
     @ManyToMany(cascade=CascadeType.ALL,fetch=FetchType.LAZY)
     @JoinTable(name = "OPENIAM_LOG_LOG_MEMBERSHIP",
             joinColumns = {@JoinColumn(name = "OPENIAM_LOG_ID")},
@@ -241,6 +248,14 @@ public class IdmAuditLogEntity implements Serializable {
 		this.targets = targets;
 	}
 	
+	public Set<IdmAuditLogEntity> getParentLogs() {
+		return parentLogs;
+	}
+
+	public void setParentLogs(Set<IdmAuditLogEntity> parentLogs) {
+		this.parentLogs = parentLogs;
+	}
+
 	public void addTarget(final String targetId, final String targetType) {
 		if(targetId != null && targetType != null) {
 			if(this.targets == null) {

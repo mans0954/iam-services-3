@@ -45,7 +45,8 @@ import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 	"customRecords",
 	"childLogs",
 	"coorelationId",
-	"targets"
+	"targets",
+	"parentLogs"
 })
 @DozerDTOCorrespondence(IdmAuditLogEntity.class)
 public class IdmAuditLog implements Serializable {
@@ -66,6 +67,7 @@ public class IdmAuditLog implements Serializable {
     private Set<IdmAuditLogCustom> customRecords;
     private Set<AuditLogTarget> targets;
     private Set<IdmAuditLog> childLogs;
+    private Set<IdmAuditLog> parentLogs;
 
 	public String getId() {
 		return id;
@@ -199,6 +201,14 @@ public class IdmAuditLog implements Serializable {
 		this.targets = targets;
 	}
 	
+	public Set<IdmAuditLog> getParentLogs() {
+		return parentLogs;
+	}
+
+	public void setParentLogs(Set<IdmAuditLog> parentLogs) {
+		this.parentLogs = parentLogs;
+	}
+
 	public void addTarget(final String targetId, final String targetType) {
 		if(targetId != null && targetType != null) {
 			if(this.targets == null) {

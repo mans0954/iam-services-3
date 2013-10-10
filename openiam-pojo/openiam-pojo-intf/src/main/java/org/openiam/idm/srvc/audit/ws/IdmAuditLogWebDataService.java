@@ -22,6 +22,9 @@ import java.util.List;
 public interface IdmAuditLogWebDataService {
     
 	@WebMethod
+	public IdmAuditLog getLogRecord(final @WebParam(name = "id", targetNamespace = "") String id);
+	
+	@WebMethod
     public Response addLogs(final List<AuditLogBuilderDto> logList);
     
 	@WebMethod
