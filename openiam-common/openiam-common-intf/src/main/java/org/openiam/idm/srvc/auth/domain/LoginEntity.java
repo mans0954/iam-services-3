@@ -18,6 +18,7 @@ import org.openiam.core.dao.lucene.LuceneId;
 import org.openiam.core.dao.lucene.LuceneLastUpdate;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.auth.dto.Login;
+import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
 import org.openiam.idm.srvc.auth.dto.SSOToken;
 import org.openiam.idm.srvc.auth.dto.Subject;
 
@@ -87,8 +88,9 @@ public class LoginEntity implements java.io.Serializable {
     @Column(name="IS_LOCKED",nullable = false)
     protected int isLocked;
 
+    @Enumerated(EnumType.STRING)
     @Column(name="STATUS",length = 20)
-    protected String status;
+    protected LoginStatusEnum status;
 
     @Column(name="GRACE_PERIOD",length=19)
     @Temporal(TemporalType.TIMESTAMP)
@@ -221,11 +223,11 @@ public class LoginEntity implements java.io.Serializable {
         this.isLocked = isLocked;
     }
 
-    public String getStatus() {
+    public LoginStatusEnum getStatus() {
         return this.status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(LoginStatusEnum status) {
         this.status = status;
     }
 

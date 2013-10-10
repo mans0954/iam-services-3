@@ -203,7 +203,9 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
     @Autowired
     protected String postProcessor;
     @Autowired
-    private AttributeMapDozerConverter attributeMapDozerConverter;
+    protected AttributeMapDozerConverter attributeMapDozerConverter;
+    @Autowired
+    protected ProvisionQueueService provQueueService;
 
     protected void checkAuditingAttributes(ProvisionUser pUser) {
         if ( pUser.getRequestClientIP() == null || pUser.getRequestClientIP().isEmpty() ) {
@@ -241,61 +243,6 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
             }
         }
         return result;
-    }
-
-    protected boolean getCurrentObjectAtTargetSystem(Login mLg, ExtensibleUser extUser, ManagedSysDto mSys,
-                                                                 ManagedSystemObjectMatch matchObj,
-                                                                 Map<String, String> curValueMap ) {
-
-        String identity = mLg.getLogin();
-        MuleContext muleContext = MuleContextProvider.getCtx();
-        log.debug("Getting the current attributes in the target system for =" + identity);
-
-        log.debug("- IsRename: " + mLg.getOrigPrincipalName());
-
-        if (mLg.getOrigPrincipalName() != null && !mLg.getOrigPrincipalName().isEmpty()) {
-            identity = mLg.getOrigPrincipalName();
-        }
-
-        LookupRequest<ExtensibleUser> reqType = new LookupRequest<ExtensibleUser>();
-        String requestId = "R" + UUIDGen.getUUID();
-        reqType.setRequestID(requestId);
-        reqType.setSearchValue(identity);
-
-        reqType.setTargetID(mLg.getManagedSysId());
-        reqType.setHostLoginId(mSys.getUserId());
-        String passwordDecoded = mSys.getPswd();
-        try {
-            passwordDecoded = getDecryptedPassword(mSys);
-        } catch (ConnectorDataException e) {
-            e.printStackTrace();
-        }
-        reqType.setHostLoginPassword(passwordDecoded);
-        reqType.setHostUrl(mSys.getHostUrl());
-        if (matchObj != null) {
-        	reqType.setBaseDN(matchObj.getBaseDn());
-        }
-        reqType.setExtensibleObject(extUser);
-        reqType.setScriptHandler(mSys.getLookupHandler());
-
-
-        SearchResponse lookupSearchResponse = connectorAdapter.lookupRequest(mSys, reqType, muleContext);
-        if (lookupSearchResponse.getStatus() == StatusCodeType.SUCCESS) {
-            List<ExtensibleAttribute> extAttrList = lookupSearchResponse.getObjectList().size() > 0 ? lookupSearchResponse.getObjectList().get(0).getAttributeList() : new LinkedList<ExtensibleAttribute>();
-
-            if (extAttrList != null) {
-                for (ExtensibleAttribute obj : extAttrList) {
-                    String name = obj.getName();
-                    String value = obj.getValue();
-                    curValueMap.put(name, value);
-                }
-            } else {
-                log.debug(" - NO attributes found in target system lookup ");
-            }
-            return true;
-        }
-
-        return false;
     }
 
     protected void sendResetPasswordToUser(UserEntity user, String principal, String password) {
@@ -628,7 +575,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         if ("SET_PASSWORD".equalsIgnoreCase(operation)) {
             return ppScript.setPassword(bindingMap, success);
         }
-        
+
         return 0;
     }
 
@@ -1080,109 +1027,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         return extUser;
     }
 
-    public ExtensibleUser buildFromRules(ProvisionUser pUser,
-                                         Login currentIdentity,
-                                         List<AttributeMap> attrMap, ScriptIntegration se,
-                                         Map<String, Object> bindingMap) {
 
-        ExtensibleUser extUser = new ExtensibleUser();
-
-        if (attrMap != null) {
-
-            log.debug("buildFromRules: attrMap IS NOT null");
-
-            for (AttributeMap attr : attrMap) {
-
-                if ("INACTIVE".equalsIgnoreCase(attr.getStatus())) {
-                    continue;
-                }
-
-                Object output = "";
-                try {
-                    output = ProvisionServiceUtil.getOutputFromAttrMap(attr,
-                            bindingMap, se);
-                } catch (ScriptEngineException see) {
-                    log.error("Error in script = '", see);
-                    continue;
-                }
-
-
-                    String objectType = attr.getMapForObjectType();
-                    if (objectType != null) {
-
-                        log.debug("buildFromRules: OBJECTTYPE="
-                                + objectType + " SCRIPT OUTPUT=" + output
-                                + " attribute name=" + attr.getAttributeName());
-
-                        if (objectType.equalsIgnoreCase("USER") || objectType.equalsIgnoreCase("PASSWORD")) {
-                            if (output != null) {
-                            ExtensibleAttribute newAttr;
-                            if (output instanceof String) {
-
-                                // if its memberOf object than dont add it to the list
-                                // the connectors can detect a delete if an attribute is not in the list
-
-                                newAttr = new ExtensibleAttribute(attr.getAttributeName(),
-                                        (String) output, 1, attr.getDataType().getValue());
-                                newAttr.setObjectType(objectType);
-                                extUser.getAttributes().add(newAttr);
-
-
-                            } else if (output instanceof Date) {
-                                // date
-                                Date d = (Date) output;
-                                String DATE_FORMAT = "MM/dd/yyyy";
-                                SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT);
-
-                                newAttr = new ExtensibleAttribute(attr.getAttributeName(),
-                                        sdf.format(d), 1, attr.getDataType().getValue());
-                                newAttr.setObjectType(objectType);
-
-                                extUser.getAttributes().add(newAttr);
-                            }  else if (output instanceof byte[]) {
-                                extUser.getAttributes().add(new ExtensibleAttribute(attr.getAttributeName(),
-                                        (byte[])output, 1, attr.getDataType().getValue()));
-
-                            } else if (output instanceof BaseAttributeContainer) {
-                                // process a complex object which can be passed to the connector
-                                newAttr = new ExtensibleAttribute(attr.getAttributeName(),
-                                        (BaseAttributeContainer) output, 1, attr.getDataType().getValue());
-                                newAttr.setObjectType(objectType);
-                                extUser.getAttributes().add(newAttr);
-
-                            } else {
-                                // process a list - multi-valued object
-
-                                newAttr = new ExtensibleAttribute(attr.getAttributeName(),
-                                        (List) output, 1, attr.getDataType().getValue());
-                                newAttr.setObjectType(objectType);
-
-                                extUser.getAttributes().add(newAttr);
-
-                                log.debug("buildFromRules: added attribute to extUser:" + attr.getAttributeName());
-                            }
-                            }
-                        } else if (objectType.equalsIgnoreCase("PRINCIPAL")) {
-
-                            extUser.setPrincipalFieldName(attr.getAttributeName());
-                            extUser.setPrincipalFieldDataType(attr.getDataType().getValue());
-
-                        }
-                }
-            }
-
-            if (pUser.getPrincipalList() == null) {
-                List<Login> principalList = new ArrayList<Login>();
-                principalList.add(currentIdentity);
-                pUser.setPrincipalList(principalList);
-            } else {
-                pUser.getPrincipalList().add(currentIdentity);
-            }
-
-        }
-
-        return extUser;
-    }
 
     protected boolean add(Login mLg, String requestId, ManagedSysDto mSys,
                                 ManagedSystemObjectMatch matchObj, ExtensibleUser extUser) {
@@ -1208,7 +1053,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
 
         userReq.setScriptHandler(mSys.getAddHandler());
 
-        ObjectResponse resp =connectorAdapter.addRequest(mSys, userReq, MuleContextProvider.getCtx());
+        ObjectResponse resp = connectorAdapter.addRequest(mSys, userReq, MuleContextProvider.getCtx());
 
             /*auditHelper.addLog("ADD IDENTITY", user.getRequestorDomain(), user.getRequestorLogin(),
                 "IDM SERVICE", user.getCreatedBy(), mLg.getManagedSysId(),

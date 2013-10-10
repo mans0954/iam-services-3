@@ -15,6 +15,7 @@ import org.openiam.exception.EncryptionException;
 import org.openiam.idm.searchbeans.LoginSearchBean;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
+import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
 import org.openiam.idm.srvc.auth.login.lucene.LoginSearchDAO;
 import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
@@ -585,7 +586,7 @@ public class LoginDataServiceImpl implements LoginDataService {
 		}
 	}
     @Transactional
-    public void activateDeactivateLogin(String loginId, String status){
+    public void activateDeactivateLogin(String loginId, LoginStatusEnum status){
         final LoginEntity entity = loginDao.findById(loginId);
         if(entity != null) {
             entity.setStatus(status);

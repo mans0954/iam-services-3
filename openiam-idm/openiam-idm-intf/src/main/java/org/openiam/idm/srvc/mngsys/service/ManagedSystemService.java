@@ -48,6 +48,8 @@ public interface ManagedSystemService {
 
     List<AttributeMapEntity> getResourceAttributeMaps(String resourceId);
 
+    List<AttributeMapEntity> getAttributeMapsByManagedSysId(String managedSysId);
+
     List<AttributeMapEntity> getResourceAttributeMaps(AttributeMapSearchBean searchBean);
 
     List<AttributeMapEntity> getAllAttributeMaps();

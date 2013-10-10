@@ -33,6 +33,7 @@ import org.openiam.exception.EncryptionException;
 import org.openiam.exception.ScriptEngineException;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
+import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.grp.dto.Group;
@@ -176,7 +177,7 @@ public class AddUser {
                 lg.setIsLocked(0);
                 lg.setCreateDate(new Date(System.currentTimeMillis()));
                 lg.setUserId(u.getUserId());
-                lg.setStatus("ACTIVE");
+                lg.setStatus(LoginStatusEnum.ACTIVE);
                 // encrypt the password
                 if (lg.getPassword() != null) {
                     String pswd = lg.getPassword();

@@ -120,11 +120,11 @@ public class UserAttributeHelper {
 					if (lg.getManagedSysId().equalsIgnoreCase("0")) {
 						extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY.PRINCIPAL.", lg.getLogin()));
 						extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY_PSWD.PRINCIPAL", lg.getPassword()));
-						extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY_STATUS.PRINCIPAL", lg.getStatus()));
+						extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY_STATUS.PRINCIPAL", lg.getStatus().name()));
 					}else {
 						extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY." + lg.getManagedSysId(), lg.getLogin()));
 						extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY_PSWD."+lg.getManagedSysId(), lg.getPassword()));
-						extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY_STATUS."+lg.getManagedSysId(), lg.getStatus()));
+						extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY_STATUS."+lg.getManagedSysId(), lg.getStatus().name()));
 
 					}
 				}catch(Exception e) {
@@ -298,7 +298,7 @@ public class UserAttributeHelper {
 					}else {
 						extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY_PSWD.PRINCIPAL", p ,0, "String"));
 					}
-					extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY_STATUS.PRINCIPAL", lg.getStatus()));
+					extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY_STATUS.PRINCIPAL", lg.getStatus().name()));
 				}else {
 					extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY." + lg.getManagedSysId(), lg.getLogin(),0, "String"));
 					String p = lg.getPassword();
@@ -309,7 +309,7 @@ public class UserAttributeHelper {
 						extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY_PSWD."+lg.getManagedSysId(), p,0, "String"));
 					}
 					//extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY_PSWD."+lg.getManagedSysId(), lg.getPassword(),0));
-					extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY_STATUS."+lg.getManagedSysId(), lg.getStatus()));
+					extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY_STATUS."+lg.getManagedSysId(), lg.getStatus().name()));
 				}
 			}catch(Exception e) {
 				log.error(e);

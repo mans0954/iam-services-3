@@ -6,6 +6,7 @@ import org.openiam.base.AttributeOperationEnum;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
+import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.provision.dto.ProvisionUser;
@@ -31,7 +32,7 @@ public class DeleteLogin extends AbstractEntitlementsDelegate {
 				if (CollectionUtils.isNotEmpty(pUser.getPrincipalList())) {
                     for (final Login l : pUser.getPrincipalList()) {
                         if (l.getLoginId().equals(login.getLoginId())) {
-                            l.setStatus("INACTIVE");
+                            l.setStatus(LoginStatusEnum.INACTIVE);
                             l.setOperation(AttributeOperationEnum.REPLACE);
                             break;
                         }

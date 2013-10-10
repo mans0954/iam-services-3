@@ -90,7 +90,6 @@ public class ConnectorAdapter {
                     return (ObjectResponse) msg.getPayload();
                 }
 
-
             }
             return resp;
 
@@ -359,8 +358,6 @@ public class ConnectorAdapter {
 
                 if (msg.getPayload() != null
                         && msg.getPayload() instanceof ObjectResponse) {
-                    ((ObjectResponse)msg).setStatus(StatusCodeType.SUCCESS);
-
                     return (ObjectResponse) msg.getPayload();
                 }
 

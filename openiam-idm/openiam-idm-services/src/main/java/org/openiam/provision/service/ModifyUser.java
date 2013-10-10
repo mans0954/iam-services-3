@@ -20,6 +20,7 @@ import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.exception.EncryptionException;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
+import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
 import org.openiam.idm.srvc.continfo.dto.Address;
@@ -686,7 +687,7 @@ public class ModifyUser {
             for (Login l : origLoginList) {
                 l.setOperation(AttributeOperationEnum.NO_CHANGE);
                 if (notInDeleteResourceList(l, deleteResourceList)) {
-                    l.setStatus("ACTIVE");
+                    l.setStatus(LoginStatusEnum.ACTIVE);
                     l.setAuthFailCount(0);
                     l.setIsLocked(0);
                     l.setPasswordChangeCount(0);
@@ -722,7 +723,7 @@ public class ModifyUser {
                 Login lg = getPrincipal(l, origLoginList);
 
                 if (lg != null) {
-                    lg.setStatus("INACTIVE");
+                    lg.setStatus(LoginStatusEnum.INACTIVE);
                     final LoginEntity entity = loginDozerConverter.convertToEntity(l, true);
                     loginManager.updateLogin(entity);
 
@@ -1350,7 +1351,7 @@ public class ModifyUser {
                         // primary identity - do not delete. Just disable its
                         // status
                         log.debug("Primary identity - chagne its status");
-                        l.setStatus("INACTIVE");
+                        l.setStatus(LoginStatusEnum.INACTIVE);
                         loginManager.updateLogin(l);
 
                     } else {

@@ -26,6 +26,7 @@ import org.apache.commons.logging.LogFactory;
 import org.mule.util.StringUtils;
 import org.openiam.exception.ScriptEngineException;
 import org.openiam.idm.srvc.auth.dto.Login;
+import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
 import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.type.ExtensibleAttribute;
@@ -176,7 +177,7 @@ public class AttributeListBuilder {
             identity.setCreatedBy(createdBy);
             identity.setIsLocked(0);
             identity.setFirstTimeLogin(1);
-            identity.setStatus("ACTIVE");
+            identity.setStatus(LoginStatusEnum.ACTIVE);
             if (pUser.getPrincipalList() == null) {
                 List<Login> idList = new ArrayList<Login>();
                 idList.add(identity);
@@ -236,7 +237,7 @@ public class AttributeListBuilder {
         newIdentity.setCreateDate(new Date(System.currentTimeMillis()));
         newIdentity.setFirstTimeLogin(0);
         newIdentity.setIsLocked(0);
-        newIdentity.setStatus("ACTIVE");
+        newIdentity.setStatus(LoginStatusEnum.ACTIVE);
         newIdentity.setCreatedBy(createdBy);
         return newIdentity;
 

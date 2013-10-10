@@ -33,6 +33,7 @@ public abstract class AbstractLookupLdapCommand<ExtObject extends ExtensibleObje
             } else {
                 respType.setStatus(StatusCodeType.FAILURE);
                 log.debug("LOOKUP successful without results.");
+                throw new ConnectorDataException(ErrorCode.NO_RESULTS_RETURNED);
             }
 
         } finally {
