@@ -34,6 +34,8 @@ public interface ScriptIntegration {
     public Object execute(Map<String, Object> bindingMap, String scriptName) throws ScriptEngineException;
 
     public Object instantiateClass(Map<String, Object> bindingMap, String scriptName) throws IOException;
-    
+
+    public Object instantiateClass(Map<String, Object> bindingMap, String storageDirectory, String scriptName) throws IOException;
+
     public boolean scriptExists(final String scriptName);
 }

@@ -99,11 +99,11 @@ public class GroovyScriptEngineIntegration implements ScriptIntegration, Applica
     }
 
     @Override
-    public Object instantiateClass(Map<String, Object> bindingMap, String scriptName) throws IOException {
+    public Object instantiateClass(Map<String, Object> bindingMap, String storageDirectory, String scriptName) throws IOException {
         log.info("instantiateClass called.");
 
         try {
-            String fullPath = scriptRoot + scriptName;
+            String fullPath = storageDirectory + scriptName;
             Class cl = gse.loadScriptByName(fullPath);
             Object instance = cl.newInstance();
 
@@ -135,6 +135,11 @@ public class GroovyScriptEngineIntegration implements ScriptIntegration, Applica
             log.error("Instantiation problems when instantiating class " + scriptName, ia);
         }
         return null;
+    }
+
+    @Override
+    public Object instantiateClass(Map<String, Object> bindingMap, String scriptName) throws IOException {
+         return instantiateClass(bindingMap, scriptRoot, scriptName);
     }
 
     @Override

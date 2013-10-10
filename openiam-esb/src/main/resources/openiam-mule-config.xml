@@ -137,6 +137,19 @@
 			</service>
 		</model>
 
+        <model name="reportWSServiceModel">
+            <service name="reportWSService">
+                <inbound>
+                    <inbound-endpoint address="${webservice.path}ReportWebService" 		exchange-pattern="request-response">
+                        <cxf:jaxws-service />
+                    </inbound-endpoint>
+                </inbound>
+                <component>
+                    <spring-object bean="reportWS" />
+                </component>
+            </service>
+        </model>
+
 		<model name="queryServiceModel">
 			<service name="queryService">
 				<inbound>

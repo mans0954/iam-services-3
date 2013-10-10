@@ -2,7 +2,6 @@ package org.openiam.idm.srvc.report.service;
 
 import java.io.IOException;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -16,10 +15,11 @@ import org.openiam.idm.srvc.report.domain.ReportSubscriptionEntity;
 import org.openiam.exception.ScriptEngineException;
 import org.openiam.idm.srvc.report.domain.ReportParamTypeEntity;
 import org.openiam.idm.srvc.report.dto.ReportDataDto;
-import org.openiam.idm.srvc.report.ws.WebReportServiceImpl;
 import org.openiam.script.ScriptFactory;
 import org.openiam.script.ScriptIntegration;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,8 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Service
 public class ReportDataServiceImpl implements ReportDataService {
- 
-    private static final String scriptEngine = "org.openiam.script.GroovyScriptEngineIntegration";
+
     private static final Log log = LogFactory
 	.getLog(ReportDataServiceImpl.class);
     @Autowired
@@ -44,6 +43,11 @@ public class ReportDataServiceImpl implements ReportDataService {
     private ReportSubCriteriaParamDao subCriteriaParamDao;
     @Autowired
     private ReportParamTypeDao reportParamTypeDao;
+    @Autowired
+    @Qualifier("configurableGroovyScriptEngine")
+    protected ScriptIntegration scriptRunner;
+    @Value("${org.openiam.upload.root}")
+    private String uploadRoot;
     @Override
     @Transactional(readOnly = true)
     public ReportDataDto getReportData(final String reportName, final Map<String, String> reportParams) throws ClassNotFoundException, ScriptEngineException, IOException {
@@ -52,8 +56,8 @@ public class ReportDataServiceImpl implements ReportDataService {
             throw new IllegalArgumentException("Invalid parameter list: report with name=" + reportName + " was not found in Database");
         }
 
-        ScriptIntegration se = ScriptFactory.createModule(scriptEngine);
-        ReportDataSetBuilder dataSourceBuilder = (ReportDataSetBuilder) se.instantiateClass(Collections.EMPTY_MAP, "/reports/" + reportInfo.getReportDataSource());
+
+        ReportDataSetBuilder dataSourceBuilder = (ReportDataSetBuilder) scriptRunner.instantiateClass(Collections.EMPTY_MAP, uploadRoot+"/report/", reportInfo.getReportDataSource());
 
         return dataSourceBuilder.getReportData(reportParams);
     }

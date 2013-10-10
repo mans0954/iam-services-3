@@ -12,13 +12,15 @@ import org.openiam.idm.srvc.continfo.dto.Address;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "AuditLogSearchBean", propOrder = {
 	"from",
-	"to"
+	"to",
+    "action"
 })
 public class AuditLogSearchBean extends AbstractSearchBean<IdmAuditLog, String> implements SearchBean<IdmAuditLog, String> {
 
 	private Date from;
 	private Date to;
-	
+	private String action;
+
 	public Date getFrom() {
 		return from;
 	}
@@ -31,6 +33,12 @@ public class AuditLogSearchBean extends AbstractSearchBean<IdmAuditLog, String> 
 	public void setTo(Date to) {
 		this.to = to;
 	}
-	
-	
+
+    public String getAction() {
+        return action;
+    }
+
+    public void setAction(String action) {
+        this.action = action;
+    }
 }

@@ -4,19 +4,12 @@ package org.openiam.idm.srvc.audit.service;
 
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.Criteria;
-import org.hibernate.FetchMode;
-import org.hibernate.HibernateException;
-import org.hibernate.criterion.Criterion;
-import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
 import org.openiam.core.dao.BaseDaoImpl;
-import org.openiam.exception.data.DataException;
 import org.openiam.idm.searchbeans.AuditLogSearchBean;
 import org.openiam.idm.searchbeans.SearchBean;
-import org.openiam.idm.srvc.audit.constant.CustomIdmAuditLogType;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
-import org.openiam.idm.srvc.audit.dto.SearchAudit;
 import org.openiam.idm.srvc.searchbean.converter.AuditLogSearchBeanConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -43,6 +36,9 @@ public class IdmAuditLogDAOImpl extends BaseDaoImpl<IdmAuditLogEntity, String> i
     		if(StringUtils.isNotBlank(entity.getId())) {
     			criteria.add(Restrictions.eq(getPKfieldName(), entity.getId()));
     		}
+            if(StringUtils.isNotBlank(entity.getAction())) {
+                criteria.add(Restrictions.eq("action",entity.getAction()));
+            }
     	}
     	criteria.addOrder(Order.desc("timestamp"));
     	return criteria;
