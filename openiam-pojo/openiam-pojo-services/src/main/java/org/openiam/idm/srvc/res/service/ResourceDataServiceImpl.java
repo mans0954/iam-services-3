@@ -170,85 +170,6 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
 		return response;
 	}
 
-
-	public Response addResourceType(ResourceType val) {
-		final Response response = new Response(ResponseStatus.SUCCESS);
-        AuditLogBuilder auditBuilder = auditLogProvider.getAuditLogBuilder();
-        auditBuilder.setAction(AuditAction.ADD_RESOURCE_TYPE);
-		try {
-			if (val == null) {
-				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND, "Resource type is null");
-			}
-
-			final ResourceTypeEntity entity = resourceTypeConverter.convertToEntity(val, true);
-            resourceService.save(entity);
-			response.setResponseValue(entity.getResourceTypeId());
-            auditBuilder.succeed();
-		} catch (BasicDataServiceException e) {
-			response.setStatus(ResponseStatus.FAILURE);
-			response.setErrorCode(e.getCode());
-            auditBuilder.fail().setFailureReason(e.getResponseValue());
-		} catch (Throwable e) {
-			log.error("Can't save resource type", e);
-			response.setStatus(ResponseStatus.FAILURE);
-			response.setErrorText(e.getMessage());
-            auditBuilder.fail().setException(e);
-        }finally {
-            auditLogService.enqueue(auditBuilder);
-        }
-		return response;
-	}
-
-	public ResourceType getResourceType(String resourceTypeId) {
-		ResourceType retVal = null;
-        AuditLogBuilder auditBuilder = auditLogProvider.getAuditLogBuilder();
-        auditBuilder.setAction(AuditAction.GET_RESOURCE_TYPE);
-        try {
-            if (resourceTypeId != null) {
-                final ResourceTypeEntity entity = resourceService
-                        .findResourceTypeById(resourceTypeId);
-                if (entity != null) {
-                    retVal = resourceTypeConverter.convertToDTO(entity, false);
-                }
-            }
-            auditBuilder.succeed();
-        } catch (Throwable e) {
-            log.error("Can't get resource type", e);
-            auditBuilder.fail().setException(e);
-        }finally {
-            auditLogService.enqueue(auditBuilder);
-        }
-		return retVal;
-	}
-
-	public Response updateResourceType(ResourceType resourceType) {
-		final Response response = new Response(ResponseStatus.SUCCESS);
-        AuditLogBuilder auditBuilder = auditLogProvider.getAuditLogBuilder();
-        auditBuilder.setAction(AuditAction.UPDATE_RESOURCE_TYPE);
-		try {
-			if (resourceType == null) {
-				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND, "Resource type is null");
-			}
-
-			final ResourceTypeEntity entity = resourceTypeConverter.convertToEntity(resourceType, false);
-            resourceService.save(entity);
-
-            auditBuilder.succeed();
-		} catch (BasicDataServiceException e) {
-			response.setStatus(ResponseStatus.FAILURE);
-			response.setErrorCode(e.getCode());
-            auditBuilder.fail().setFailureReason(e.getResponseValue());
-		} catch (Throwable e) {
-			log.error("Can't save resource type", e);
-			response.setStatus(ResponseStatus.FAILURE);
-			response.setErrorText(e.getMessage());
-            auditBuilder.fail().setException(e);
-        }finally {
-            auditLogService.enqueue(auditBuilder);
-        }
-		return response;
-	}
-
 	public List<ResourceType> getAllResourceTypes() {
         List<ResourceType> resourceTypeList = null;
         AuditLogBuilder auditBuilder = auditLogProvider.getAuditLogBuilder();
@@ -694,21 +615,6 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
         return resourceList;
 	}
 
-	@Override
-	public List<Resource> getResourcesForManagedSys(final String mngSysId, final int from, final int size) {
-        List<Resource> resourceList = null;
-        AuditLogBuilder auditBuilder = auditLogProvider.getAuditLogBuilder();
-        auditBuilder.setAction(AuditAction.GET_RESOURCE_FOR_MANAGED_SYS).setTargetManagedSys(mngSysId);
-        try{
-            final List<ResourceEntity> entityList = resourceService.getResourcesForManagedSys(mngSysId, from, size);
-            resourceList = resourceConverter.convertToDTOList(entityList, false);
-        } catch(Throwable e) {
-            auditBuilder.fail().setException(e);
-        }finally {
-            auditLogService.enqueue(auditBuilder);
-        }
-        return resourceList;
-	}
 
 	@Override
 	public int getNumOfResourceForGroup(final String groupId) {
