@@ -20,4 +20,5 @@ public interface AuditLogService {
     
     public List<IdmAuditLogEntity> findBeans(final AuditLogSearchBean searchBean, final int from, final int size);
     public int count(final AuditLogSearchBean searchBean);
+    public IdmAuditLogEntity findById(final String id);
 }

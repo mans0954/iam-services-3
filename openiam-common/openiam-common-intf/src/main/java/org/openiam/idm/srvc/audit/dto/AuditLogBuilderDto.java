@@ -26,8 +26,13 @@ public class AuditLogBuilderDto implements Serializable {
 		entity.setTimestamp(new Date());
 	}
 	
-	public AuditLogBuilderDto setSourceUserId(String userId) {
+	public AuditLogBuilderDto setRequestorUserId(String userId) {
 		entity.setUserId(userId);
+		return this;
+	}
+	
+	public AuditLogBuilderDto setRequestorPrincipal(String principal) {
+		entity.setPrincipal(principal);
 		return this;
 	}
 
@@ -52,27 +57,28 @@ public class AuditLogBuilderDto implements Serializable {
 	}
 
 	public AuditLogBuilderDto setTargetUser(final String userId) {
-		entity.setObjectType("USER");
-		entity.setObjectID(userId);
+		entity.addTarget(userId, "USER");
 		return this;
 	}
 	
 	public AuditLogBuilderDto setTargetRole(final String roleId) {
-		entity.setObjectType("ROLE");
-		entity.setObjectID(roleId);
+		entity.addTarget(roleId, "ROLE");
 		return this;
 	}
 	
 	public AuditLogBuilderDto setTargetGroup(final String groupId) {
-		entity.setObjectType("GROUP");
-		entity.setObjectID(groupId);
+		entity.addTarget(groupId, "GROUP");
 		return this;
 	}
-
-	public AuditLogBuilderDto setSourcePrincipal(String principal) {
-		entity.setPrincipal(principal);
-		return this;
-	}
+	public AuditLogBuilderDto setTargetResource(final String resourceId) {
+    	entity.addTarget(resourceId, "RESOURCE");
+        return this;
+    }
+	
+    public AuditLogBuilderDto setTargetManagedSys(final String managedSysId) {
+    	entity.addTarget(managedSysId, "MANAGED_SYS");
+        return this;
+    }
 	
 	public AuditLogBuilderDto setManagedSysId(String managedSysId) {
 		entity.setManagedSysId(managedSysId);

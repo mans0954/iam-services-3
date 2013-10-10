@@ -28,6 +28,7 @@ import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.audit.constant.CustomIdmAuditLogType;
+import org.openiam.idm.srvc.audit.dto.AuditLogTarget;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 
 @Entity
@@ -68,12 +69,6 @@ public class IdmAuditLogEntity implements Serializable {
     @Column(name="RESULT", length=50)
     private String result;
     
-    @Column(name="OBJECT_ID", length=32)
-    private String objectID;
-    
-    @Column(name="OBJECT_TYPE", length=70)
-    private String objectType;
-    
     @Column(name="HASH", length=100)
     private String hash;
     
@@ -85,6 +80,16 @@ public class IdmAuditLogEntity implements Serializable {
     
     @OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL, mappedBy = "log")
     private Set<IdmAuditLogCustomEntity> customRecords;
+    
+    @OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL, mappedBy = "log")
+    private Set<AuditLogTargetEntity> targets;
+    
+    @ManyToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
+    @JoinTable(name = "OPENIAM_LOG_LOG_MEMBERSHIP",
+            joinColumns = {@JoinColumn(name = "OPENIAM_MEMBER_LOG_ID")},
+            inverseJoinColumns = {@JoinColumn(name = "OPENIAM_LOG_ID")})
+    @Fetch(FetchMode.SUBSELECT)
+    private Set<IdmAuditLogEntity> parentLogs;
     
     @ManyToMany(cascade=CascadeType.ALL,fetch=FetchType.LAZY)
     @JoinTable(name = "OPENIAM_LOG_LOG_MEMBERSHIP",
@@ -179,22 +184,6 @@ public class IdmAuditLogEntity implements Serializable {
 		this.result = result;
 	}
 
-	public String getObjectID() {
-		return objectID;
-	}
-
-	public void setObjectID(String objectID) {
-		this.objectID = objectID;
-	}
-
-	public String getObjectType() {
-		return objectType;
-	}
-
-	public void setObjectType(String objectType) {
-		this.objectType = objectType;
-	}
-
 	public String getHash() {
 		return hash;
 	}
@@ -251,8 +240,38 @@ public class IdmAuditLogEntity implements Serializable {
 		this.coorelationId = coorelationId;
 	}
 
+	public Set<AuditLogTargetEntity> getTargets() {
+		return targets;
+	}
+
+	public void setTargets(Set<AuditLogTargetEntity> targets) {
+		this.targets = targets;
+	}
+	
+	public Set<IdmAuditLogEntity> getParentLogs() {
+		return parentLogs;
+	}
+
+	public void setParentLogs(Set<IdmAuditLogEntity> parentLogs) {
+		this.parentLogs = parentLogs;
+	}
+
+	public void addTarget(final String targetId, final String targetType) {
+		if(targetId != null && targetType != null) {
+			if(this.targets == null) {
+				this.targets = new HashSet<AuditLogTargetEntity>();
+			}
+			final AuditLogTargetEntity target = new AuditLogTargetEntity();
+			target.setTargetId(targetId);
+			target.setTargetType(targetType);
+			target.setLog(this);
+			this.targets.add(target);
+		}
+	}
+
+
 	public String concat() {
-		return String.format("%s-%s-%s-%s-%s-%s-%s-%s-%s-%s-%s-%s-%s", action, clientIP, principal, nodeIP, objectID, objectType, result, source, timestamp, userId, sessionID, managedSysId, coorelationId);
+		return String.format("%s-%s-%s-%s-%s-%s-%s-%s-%s-%s-%s", action, clientIP, principal, nodeIP, result, source, timestamp, userId, sessionID, managedSysId, coorelationId);
 	}
 
 	@Override
@@ -265,10 +284,6 @@ public class IdmAuditLogEntity implements Serializable {
 		result = prime * result + ((hash == null) ? 0 : hash.hashCode());
 		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		result = prime * result + ((nodeIP == null) ? 0 : nodeIP.hashCode());
-		result = prime * result
-				+ ((objectID == null) ? 0 : objectID.hashCode());
-		result = prime * result
-				+ ((objectType == null) ? 0 : objectType.hashCode());
 		result = prime * result
 				+ ((this.result == null) ? 0 : this.result.hashCode());
 		result = prime * result + ((source == null) ? 0 : source.hashCode());
@@ -315,16 +330,6 @@ public class IdmAuditLogEntity implements Serializable {
 			if (other.nodeIP != null)
 				return false;
 		} else if (!nodeIP.equals(other.nodeIP))
-			return false;
-		if (objectID == null) {
-			if (other.objectID != null)
-				return false;
-		} else if (!objectID.equals(other.objectID))
-			return false;
-		if (objectType == null) {
-			if (other.objectType != null)
-				return false;
-		} else if (!objectType.equals(other.objectType))
 			return false;
 		if (result == null) {
 			if (other.result != null)
@@ -375,9 +380,9 @@ public class IdmAuditLogEntity implements Serializable {
 	@Override
 	public String toString() {
 		return String
-				.format("IdmAuditLogEntity [id=%s, userId=%s, principal=%s, timestamp=%s, source=%s, clientIP=%s, nodeIP=%s, action=%s, result=%s, objectID=%s, objectType=%s, hash=%s]",
+				.format("IdmAuditLogEntity [id=%s, userId=%s, principal=%s, timestamp=%s, source=%s, clientIP=%s, nodeIP=%s, action=%s, result=%s, hash=%s]",
 						id, userId, principal, timestamp, source, clientIP,
-						nodeIP, action, result, objectID, objectType, hash);
+						nodeIP, action, result, hash);
 	}
 
 

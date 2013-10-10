@@ -156,8 +156,7 @@ public class DisableUserDelegate {
                     // update the target system
                     ManagedSysDto mSys = managedSysService
                             .getManagedSys(managedSysId);
-                    ProvisionConnectorDto connector = provisionConnectorWebService
-                            .getProvisionConnector(mSys.getConnectorId());
+
                     if (operation) {
                         // suspend
                         log.debug("preparing suspendRequest object");

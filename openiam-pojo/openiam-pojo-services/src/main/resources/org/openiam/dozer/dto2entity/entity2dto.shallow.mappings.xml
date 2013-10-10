@@ -434,6 +434,14 @@
 			<a>childLogs</a>
 			<b>childLogs</b>
 		</field-exclude>
+		<field-exclude>
+			<a>parentLogs</a>
+			<b>parentLogs</b>
+		</field-exclude>
+		<field-exclude>
+			<a>targets</a>
+			<b>targets</b>
+		</field-exclude>
 	</mapping>
     <mapping>
         <class-a>org.openiam.idm.srvc.auth.domain.LoginEntity</class-a>

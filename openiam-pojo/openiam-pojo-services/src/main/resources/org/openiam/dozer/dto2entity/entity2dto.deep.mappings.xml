@@ -556,6 +556,18 @@
 			<a>childLogs</a>
 			<b>childLogs</b>
 		</field>
+		<field
+			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
+			custom-converter-param="dto2entityShallowDozerMapper">
+			<a>parentLogs</a>
+			<b>parentLogs</b>
+		</field>
+		<field
+			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
+			custom-converter-param="dto2entityShallowDozerMapper">
+			<a>targets</a>
+			<b>targets</b>
+		</field>
 	</mapping>
 	<mapping>
 		<class-a>org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity</class-a>

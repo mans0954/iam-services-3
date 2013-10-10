@@ -19,6 +19,7 @@ import org.openiam.base.SysConfiguration;
 import org.openiam.base.id.UUIDGen;
 import org.openiam.idm.searchbeans.AuditLogSearchBean;
 import org.openiam.idm.srvc.audit.domain.AuditLogBuilder;
+import org.openiam.idm.srvc.audit.domain.AuditLogTargetEntity;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogCustomEntity;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
@@ -80,6 +81,12 @@ public class AuditLogServiceImpl implements AuditLogService {
     				entity.setLog(log);
     			}
     		}
+    		
+    		if(CollectionUtils.isNotEmpty(log.getTargets())) {
+    			for(final AuditLogTargetEntity entity : log.getTargets()) {
+    				entity.setLog(log);
+    			}
+    		}
     	}
     }
 
@@ -103,14 +110,21 @@ public class AuditLogServiceImpl implements AuditLogService {
 	 }
 
 	@Override
-	@Transactional
+	@Transactional(readOnly=true)
 	public List<IdmAuditLogEntity> findBeans(AuditLogSearchBean searchBean,
 			int from, int size) {
 		return logDAO.getByExample(searchBean, from, size);
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public int count(AuditLogSearchBean searchBean) {
 		return logDAO.count(searchBean);
+	}
+
+	@Override
+	@Transactional(readOnly=true)
+	public IdmAuditLogEntity findById(String id) {
+		return logDAO.findById(id);
 	}
 }

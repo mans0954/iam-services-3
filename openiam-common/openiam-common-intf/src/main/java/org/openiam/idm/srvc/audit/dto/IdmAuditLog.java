@@ -40,13 +40,13 @@ import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 	"nodeIP",
 	"action",
 	"result",
-	"objectID",
-	"objectType",
 	"hash",
 	"sessionID",
 	"customRecords",
 	"childLogs",
-	"coorelationId"
+	"coorelationId",
+	"targets",
+	"parentLogs"
 })
 @DozerDTOCorrespondence(IdmAuditLogEntity.class)
 public class IdmAuditLog implements Serializable {
@@ -61,13 +61,13 @@ public class IdmAuditLog implements Serializable {
     private String nodeIP;
     private String action;
     private String result;
-    private String objectID;
-    private String objectType;
     private String hash;
     private String sessionID;
     private String coorelationId;
     private Set<IdmAuditLogCustom> customRecords;
+    private Set<AuditLogTarget> targets;
     private Set<IdmAuditLog> childLogs;
+    private Set<IdmAuditLog> parentLogs;
 
 	public String getId() {
 		return id;
@@ -133,22 +133,6 @@ public class IdmAuditLog implements Serializable {
 		this.result = result;
 	}
 
-	public String getObjectID() {
-		return objectID;
-	}
-
-	public void setObjectID(String objectID) {
-		this.objectID = objectID;
-	}
-
-	public String getObjectType() {
-		return objectType;
-	}
-
-	public void setObjectType(String objectType) {
-		this.objectType = objectType;
-	}
-
 	public String getHash() {
 		return hash;
 	}
@@ -190,7 +174,7 @@ public class IdmAuditLog implements Serializable {
 	}
 	
 	public String concat() {
-		return String.format("%s-%s-%s-%s-%s-%s-%s-%s-%s-%s-%s-%s-%s", action, clientIP, principal, nodeIP, objectID, objectType, result, source, timestamp, userId, sessionID, managedSysId, coorelationId);
+		return String.format("%s-%s-%s-%s-%s-%s-%s-%s-%s-%s-%s", action, clientIP, principal, nodeIP, result, source, timestamp, userId, sessionID, managedSysId, coorelationId);
 	}
 	
 	public Set<IdmAuditLogCustom> getCustomRecords() {
@@ -209,7 +193,36 @@ public class IdmAuditLog implements Serializable {
 		this.childLogs = childLogs;
 	}
 	
-    public void addChild(final IdmAuditLog entity) {
+    public Set<AuditLogTarget> getTargets() {
+		return targets;
+	}
+
+	public void setTargets(Set<AuditLogTarget> targets) {
+		this.targets = targets;
+	}
+	
+	public Set<IdmAuditLog> getParentLogs() {
+		return parentLogs;
+	}
+
+	public void setParentLogs(Set<IdmAuditLog> parentLogs) {
+		this.parentLogs = parentLogs;
+	}
+
+	public void addTarget(final String targetId, final String targetType) {
+		if(targetId != null && targetType != null) {
+			if(this.targets == null) {
+				this.targets = new HashSet<AuditLogTarget>();
+			}
+			final AuditLogTarget target = new AuditLogTarget();
+			target.setTargetId(targetId);
+			target.setTargetType(targetType);
+			target.setLogId(id);
+			this.targets.add(target);
+		}
+	}
+
+	public void addChild(final IdmAuditLog entity) {
     	if(entity != null) {
     		if(this.childLogs == null) {
     			this.childLogs = new HashSet<IdmAuditLog>();
@@ -240,10 +253,6 @@ public class IdmAuditLog implements Serializable {
 		result = prime * result + ((hash == null) ? 0 : hash.hashCode());
 		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		result = prime * result + ((nodeIP == null) ? 0 : nodeIP.hashCode());
-		result = prime * result
-				+ ((objectID == null) ? 0 : objectID.hashCode());
-		result = prime * result
-				+ ((objectType == null) ? 0 : objectType.hashCode());
 		result = prime * result
 				+ ((this.result == null) ? 0 : this.result.hashCode());
 		result = prime * result + ((source == null) ? 0 : source.hashCode());
@@ -290,16 +299,6 @@ public class IdmAuditLog implements Serializable {
 			if (other.nodeIP != null)
 				return false;
 		} else if (!nodeIP.equals(other.nodeIP))
-			return false;
-		if (objectID == null) {
-			if (other.objectID != null)
-				return false;
-		} else if (!objectID.equals(other.objectID))
-			return false;
-		if (objectType == null) {
-			if (other.objectType != null)
-				return false;
-		} else if (!objectType.equals(other.objectType))
 			return false;
 		if (result == null) {
 			if (other.result != null)
@@ -350,9 +349,9 @@ public class IdmAuditLog implements Serializable {
 	@Override
 	public String toString() {
 		return String
-				.format("IdmAuditLog [id=%s, userId=%s, principal=%s, timestamp=%s, source=%s, clientIP=%s, nodeIP=%s, action=%s, result=%s, objectID=%s, objectType=%s, hash=%s]",
+				.format("IdmAuditLog [id=%s, userId=%s, principal=%s, timestamp=%s, source=%s, clientIP=%s, nodeIP=%s, action=%s, result=%s, hash=%s]",
 						id, userId, principal, timestamp, source, clientIP,
-						nodeIP, action, result, objectID, objectType, hash);
+						nodeIP, action, result, hash);
 	}
 
 	

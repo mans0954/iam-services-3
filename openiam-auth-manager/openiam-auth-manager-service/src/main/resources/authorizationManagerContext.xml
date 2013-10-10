@@ -49,6 +49,7 @@
 		<property name="configLocation">
 	  		<value>classpath:authorization.manager.ehcache.xml</value>
 	  	</property>
+	  	<property name="shared" value="true"/>
   	</bean>
   	
   	<bean id="authManagerUserCache" class="org.springframework.cache.ehcache.EhCacheFactoryBean">

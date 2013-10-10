@@ -17,7 +17,6 @@ public abstract class AbstractLookupLdapCommand<ExtObject extends ExtensibleObje
         log.debug("LOOKUP operation called.");
         boolean found = false;
         SearchResponse respType = new SearchResponse();
-        respType.setStatus(StatusCodeType.SUCCESS);
 
         if (lookupRequest == null) {
             throw new ConnectorDataException(ErrorCode.MALFORMED_REQUEST);
@@ -29,8 +28,10 @@ public abstract class AbstractLookupLdapCommand<ExtObject extends ExtensibleObje
             found = this.lookup(config.getManagedSys(), lookupRequest, respType, ldapctx);
             log.debug("LOOKUP successful");
             if (found) {
+                respType.setStatus(StatusCodeType.SUCCESS);
                 log.debug("LOOKUP successful with results.");
             } else {
+                respType.setStatus(StatusCodeType.FAILURE);
                 log.debug("LOOKUP successful without results.");
                 throw new ConnectorDataException(ErrorCode.NO_RESULTS_RETURNED);
             }

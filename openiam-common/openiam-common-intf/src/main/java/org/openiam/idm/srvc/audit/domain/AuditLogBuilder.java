@@ -26,8 +26,13 @@ public class AuditLogBuilder implements Serializable {
 		entity.setTimestamp(new Date());
 	}
 
-	public AuditLogBuilder setSourceUserId(String userId) {
+	public AuditLogBuilder setRequestorUserId(String userId) {
 		entity.setUserId(userId);
+		return this;
+	}
+	
+	public AuditLogBuilder setRequestorPrincipal(String principal) {
+		entity.setPrincipal(principal);
 		return this;
 	}
 
@@ -60,22 +65,28 @@ public class AuditLogBuilder implements Serializable {
 	}
 
 	public AuditLogBuilder setTargetUser(final String userId) {
-		entity.setObjectType("USER");
-		entity.setObjectID(userId);
+		entity.addTarget(userId, "USER");
 		return this;
 	}
 	
 	public AuditLogBuilder setTargetRole(final String roleId) {
-		entity.setObjectType("ROLE");
-		entity.setObjectID(roleId);
+		entity.addTarget(roleId, "ROLE");
 		return this;
 	}
 	
 	public AuditLogBuilder setTargetGroup(final String groupId) {
-		entity.setObjectType("GROUP");
-		entity.setObjectID(groupId);
+		entity.addTarget(groupId, "GROUP");
 		return this;
 	}
+    public AuditLogBuilder setTargetResource(final String resourceId) {
+    	entity.addTarget(resourceId, "RESOURCE");
+        return this;
+    }
+
+    public AuditLogBuilder setTargetManagedSys(final String managedSysId) {
+    	entity.addTarget(managedSysId, "MANAGED_SYS");
+        return this;
+    }
 
 	public AuditLogBuilder setSourcePrincipal(String principal) {
 		entity.setPrincipal(principal);
@@ -103,6 +114,10 @@ public class AuditLogBuilder implements Serializable {
 		entity.addCustomRecord(key.name(), value);
 		return this;
 	}
+
+    public AuditLogBuilder setAuditDescription(final String value) {
+        return addAttribute(AuditAttributeName.DESCRIPTION, value);
+    }
 	
 	public AuditLogBuilder setFailureReason(final String value) {
 		return addAttribute(AuditAttributeName.FAILURE_REASON, value);
@@ -115,8 +130,8 @@ public class AuditLogBuilder implements Serializable {
 	public AuditLogBuilder setBaseObject(final BaseObject baseObject) {
 		setClientIP(baseObject.getRequestClientIP());
 		setSessionID(baseObject.getRequestorSessionID());
-		setSourcePrincipal(baseObject.getRequestorLogin());
-		setSourceUserId(baseObject.getRequestorUserId());
+		setRequestorPrincipal(baseObject.getRequestorLogin());
+		setRequestorUserId(baseObject.getRequestorUserId());
 		return this;
 	}
 	

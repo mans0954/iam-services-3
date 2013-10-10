@@ -95,6 +95,13 @@ public class IdmAuditLogWebDataServiceImpl implements IdmAuditLogWebDataService 
 		return auditLogService.count(searchBean);
 	}
 
+	@Override
+	@Transactional(readOnly=true)
+	public IdmAuditLog getLogRecord(final String id) {
+		final IdmAuditLogEntity entity = auditLogService.findById(id);
+		return (entity != null) ? converter.convertToDTO(entity, true) : null;
+	}
+
     /*
     @Override
     public IdmAuditLogListResponse searchEvents(SearchAudit search, Integer from, Integer size){
