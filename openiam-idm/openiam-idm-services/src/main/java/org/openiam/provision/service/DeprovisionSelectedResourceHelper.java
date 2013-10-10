@@ -7,6 +7,7 @@ import org.openiam.connector.type.response.ObjectResponse;
 import org.openiam.connector.type.constant.StatusCodeType;
 import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
+import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.idm.srvc.res.dto.Resource;
@@ -106,7 +107,7 @@ public class DeprovisionSelectedResourceHelper extends BaseProvisioningHelper {
 
                     if (l != null) {
 
-                        l.setStatus("INACTIVE");
+                        l.setStatus(LoginStatusEnum.INACTIVE);
                         l.setAuthFailCount(0);
                         l.setPasswordChangeCount(0);
                         l.setIsLocked(0);

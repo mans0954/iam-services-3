@@ -33,6 +33,7 @@ import org.openiam.idm.searchbeans.LoginSearchBean;
 import org.openiam.idm.searchbeans.PhoneSearchBean;
 import org.openiam.idm.searchbeans.UserSearchBean;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
+import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
 import org.openiam.idm.srvc.auth.login.LoginDAO;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.auth.login.lucene.LoginSearchDAO;
@@ -1545,7 +1546,7 @@ public class UserMgr implements UserDataService {
                 lg.setIsLocked(0);
                 lg.setCreateDate(new Date(System.currentTimeMillis()));
                 lg.setUserId(newUserEntity.getUserId());
-                lg.setStatus("ACTIVE");
+                lg.setStatus(LoginStatusEnum.ACTIVE);
                 // encrypt the password
                 if (lg.getPassword() != null) {
                     String pswd = lg.getPassword();
@@ -1590,7 +1591,7 @@ public class UserMgr implements UserDataService {
         }
         for (LoginEntity login : loginList) {
             // change the status on the identity
-            login.setStatus("INACTIVE");
+            login.setStatus(LoginStatusEnum.INACTIVE);
             loginDao.update(login);
         }
         // Turning off the primary identity - change the status on the user

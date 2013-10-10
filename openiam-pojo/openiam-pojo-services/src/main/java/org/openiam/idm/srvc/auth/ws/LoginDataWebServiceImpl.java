@@ -11,6 +11,7 @@ import org.openiam.dozer.converter.LoginDozerConverter;
 import org.openiam.idm.searchbeans.LoginSearchBean;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
+import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.msg.dto.NotificationParam;
 import org.openiam.idm.srvc.msg.dto.NotificationRequest;
@@ -263,7 +264,7 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
             }
 
-            loginDS.activateDeactivateLogin(loginId, "ACTIVE");
+            loginDS.activateDeactivateLogin(loginId, LoginStatusEnum.ACTIVE);
         } catch(BasicDataServiceException e) {
             log.warn(String.format("Error while activating login: %s", e.getMessage()));
             resp.setErrorCode(e.getCode());
@@ -283,7 +284,7 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
             }
 
-            loginDS.activateDeactivateLogin(loginId,  "INACTIVE");
+            loginDS.activateDeactivateLogin(loginId, LoginStatusEnum.INACTIVE);
         } catch(BasicDataServiceException e) {
             log.warn(String.format("Error while deactivating login: %s", e.getMessage()));
             resp.setErrorCode(e.getCode());

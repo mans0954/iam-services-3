@@ -43,6 +43,7 @@ import org.openiam.exception.ObjectNotFoundException;
 import org.openiam.exception.ScriptEngineException;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
+import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
 import org.openiam.idm.srvc.auth.login.LoginDAO;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.continfo.dto.Address;
@@ -350,7 +351,7 @@ public class ProvisionServiceImpl implements ProvisionService,
                         gmLg.setDomainId(secDomain);
                         gmLg.setLogin(globalManagerId);
                         gmLg.setManagedSysId("2");
-                        gmLg.setStatus("ACTIVE");
+                        gmLg.setStatus(LoginStatusEnum.ACTIVE);
                         principalList.add(gmLg);
 
                     }
@@ -360,7 +361,7 @@ public class ProvisionServiceImpl implements ProvisionService,
                         networxLg.setLogin(networxId);
                         networxLg.setManagedSysId("1");
                         networxLg.setPassword(password);
-                        networxLg.setStatus("ACTIVE");
+                        networxLg.setStatus(LoginStatusEnum.ACTIVE);
                         principalList.add(networxLg);
                     }
 
@@ -380,7 +381,7 @@ public class ProvisionServiceImpl implements ProvisionService,
                 newLg.setManagedSysId(lg.getManagedSysId());
                 newLg.setUserId(newUser.getUserId());
                 newLg.setFirstTimeLogin(1);
-                newLg.setStatus("ACTIVE");
+                newLg.setStatus(LoginStatusEnum.ACTIVE);
 
                 String pswd = lg.getPassword();
                 if (pswd != null) {
@@ -620,7 +621,7 @@ public class ProvisionServiceImpl implements ProvisionService,
             return resp;
         }
         // change the status on the identity
-        login.setStatus("INACTIVE");
+        login.setStatus(LoginStatusEnum.INACTIVE);
         loginManager.updateLogin(login);
 
         if (login.getManagedSysId().equals("0")) {
@@ -857,8 +858,7 @@ public class ProvisionServiceImpl implements ProvisionService,
                 // rolePrincipalList.add(lg);
             }
             // build the active-inactive list of resources
-            if (lg.getStatus() != null
-                    && lg.getStatus().equalsIgnoreCase("INACTIVE")) {
+            if (LoginStatusEnum.INACTIVE.equals(lg.getStatus())) {
                 inactiveResourceList.add(lg.getManagedSysId());
             }
         }
@@ -939,7 +939,7 @@ public class ProvisionServiceImpl implements ProvisionService,
                             log.info("-Match for resource found. Setting status to active.");
                             l.setPasswordChangeCount(0);
                             l.setAuthFailCount(0);
-                            l.setStatus("ACTIVE");
+                            l.setStatus(LoginStatusEnum.ACTIVE);
                             found = true;
                             rolePrincipalList.add(l);
                             // remove from the inactive list
@@ -965,7 +965,7 @@ public class ProvisionServiceImpl implements ProvisionService,
                             gmLg.setManagedSysId("2");
                             gmLg.setPasswordChangeCount(0);
                             gmLg.setAuthFailCount(0);
-                            gmLg.setStatus("ACTIVE");
+                            gmLg.setStatus(LoginStatusEnum.ACTIVE);
                             rolePrincipalList.add(gmLg);
 
                             log.info("GM made active....");
@@ -993,7 +993,7 @@ public class ProvisionServiceImpl implements ProvisionService,
                             networxLg.setPassword(password);
                             networxLg.setPasswordChangeCount(0);
                             networxLg.setAuthFailCount(0);
-                            networxLg.setStatus("ACTIVE");
+                            networxLg.setStatus(LoginStatusEnum.ACTIVE);
                             rolePrincipalList.add(networxLg);
                             /*
                             auditHelper.addLog("MODIFY USER", provUser
@@ -1032,7 +1032,7 @@ public class ProvisionServiceImpl implements ProvisionService,
                     }
                 }
                 if (!found) {
-                    curLg.setStatus("INACTIVE");
+                    curLg.setStatus(LoginStatusEnum.INACTIVE);
                     rolePrincipalList.add(curLg);
                     /*
                     auditHelper.addLog("MODIFY USER",
@@ -1062,7 +1062,7 @@ public class ProvisionServiceImpl implements ProvisionService,
         if (isTerminate(newUser)) {
             log.info("--Status has been changed to terminate.");
             for (LoginEntity lg : rolePrincipalList) {
-                lg.setStatus("INACTIVE");
+                lg.setStatus(LoginStatusEnum.INACTIVE);
                 loginManager.updateLogin(lg);
 
             }
@@ -1070,7 +1070,7 @@ public class ProvisionServiceImpl implements ProvisionService,
             log.info("-- Status is not TERMINATE.");
             for (LoginEntity lg : rolePrincipalList) {
                 if (lg.getManagedSysId().equalsIgnoreCase("0")) {
-                    lg.setStatus("ACTIVE");
+                    lg.setStatus(LoginStatusEnum.ACTIVE);
                     lg.setPasswordChangeCount(0);
                     lg.setAuthFailCount(0);
                     loginManager.updateLogin(lg);

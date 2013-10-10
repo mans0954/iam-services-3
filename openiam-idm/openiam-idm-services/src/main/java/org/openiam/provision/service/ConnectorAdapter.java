@@ -361,8 +361,6 @@ public class ConnectorAdapter {
 
                 if (msg.getPayload() != null
                         && msg.getPayload() instanceof ObjectResponse) {
-                    ((ObjectResponse)msg).setStatus(StatusCodeType.SUCCESS);
-
                     return (ObjectResponse) msg.getPayload();
                 }
 

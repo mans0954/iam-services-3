@@ -7,6 +7,7 @@ import org.dozer.Mapper;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.dto.LoginAttribute;
+import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
 import org.openiam.idm.srvc.user.dto.*;
@@ -144,7 +145,7 @@ public class TestDozerConversion extends AbstractTestNGSpringContextTests {
 		login.setPwdExp(new Date());
 		login.setResetPassword(4);
 		login.setSelected(true);
-		login.setStatus(rs(2));
+		login.setStatus(LoginStatusEnum.ACTIVE);
 		login.setUserId(rs(2));
 		
 		final Login deepCopy = deepDozerMapper.map(login, Login.class);

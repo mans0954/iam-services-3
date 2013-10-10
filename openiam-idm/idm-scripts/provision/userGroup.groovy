@@ -20,7 +20,7 @@ groupSet.addAll(getGroupsFromRoles(user.roles))
 def attributeContainer = new BaseAttributeContainer()
 output = null
 
-groupSet?.each { Group g->
+groupSet?.each { g->
     if (!g.managedSysId || (binding.hasVariable("managedSysId") && (g.managedSysId == managedSysId))) { // filter by managed sys
         if (!g.companyId || (binding.hasVariable("org") && (g.companyId == org?.id))) { // filter by organization
             if (!(g in oldGroupSet)) {
@@ -37,7 +37,7 @@ groupSet?.each { Group g->
         }
     }
 }
-oldGroupSet?.each { Group g->
+oldGroupSet?.each { g->
     if (!g.managedSysId || (binding.hasVariable("managedSysId") && (g.managedSysId == managedSysId))) { // filter by managed sys
         if (!g.companyId || (binding.hasVariable("org") && (g.companyId == org?.id))) { // filter by organization
             if (!(g in groupSet)) {

@@ -86,7 +86,7 @@ public class Login implements java.io.Serializable {
 
     protected int isLocked;
 
-    protected String status;
+    protected LoginStatusEnum status;
 
     @XmlSchemaType(name = "dateTime")
     private Date gracePeriod;
@@ -206,11 +206,11 @@ public class Login implements java.io.Serializable {
         this.isLocked = isLocked;
     }
 
-    public String getStatus() {
+    public LoginStatusEnum getStatus() {
         return this.status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(LoginStatusEnum status) {
         this.status = status;
     }
 

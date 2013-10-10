@@ -30,11 +30,7 @@ public class ProvisionQueueService {
 
     public void enqueue(final List<ProvisionDataContainer> dataList) {
         for (final ProvisionDataContainer data : dataList) {
-            jmsTemplate.send(queue, new MessageCreator() {
-                public javax.jms.Message createMessage(Session session) throws JMSException {
-                    return session.createObjectMessage(data);
-                }
-            });
+            enqueue(data);
         }
     }
 }

@@ -237,6 +237,12 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
 
     @Override
     @Transactional(readOnly = true)
+    public List<AttributeMapEntity> getAttributeMapsByManagedSysId(String managedSysId) {
+        return attributeMapDAO.findByManagedSysId(managedSysId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<AttributeMapEntity> getResourceAttributeMaps(AttributeMapSearchBean searchBean) {
         return attributeMapDAO.getByExample(searchBean);
     }
