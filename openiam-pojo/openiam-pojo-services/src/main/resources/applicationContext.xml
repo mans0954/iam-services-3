@@ -425,9 +425,7 @@
         <property name="configLocation">
             <value>classpath:audit.ehcache.xml</value>
         </property>
-		<!--
         <property name="shared" value="true"/>
-        -->
     </bean>
     <bean id="auditLogBuilderCache" class="org.springframework.cache.ehcache.EhCacheFactoryBean">
         <property name="cacheManager">
