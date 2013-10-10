@@ -196,33 +196,6 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
     }
 
-    private PolicyAttribute getPolicyAttribute(String attributeName,
-            Policy policy) {
-        if (policy == null) {
-            return null;
-        }
-        PolicyAttribute attribute = policy.getAttribute(attributeName);
-        if (attribute == null || attribute.getValue1() == null
-                || attribute.getValue1().length() == 0) {
-            return null;
-        }
-        return attribute;
-    }
-
-    private LoginEntity getPrincipalForManagedSys(String mSys, List<LoginEntity> principalList) {
-        if (CollectionUtils.isEmpty(principalList)) {
-            return null;
-        }
-        for (LoginEntity l : principalList) {
-            if (mSys != null) {
-                if (l.getManagedSysId().equalsIgnoreCase(mSys)) {
-                    return l;
-                }
-            }
-        }
-        return null;
-    }
-
     @Override
     @Transactional
     public ProvisionUserResponse deleteByUserId(ProvisionUser user,
