@@ -15,6 +15,7 @@ import org.openiam.connector.ldap.command.base.AbstractLookupLdapCommand;
 import org.openiam.provision.type.ExtensibleUser;
 import org.springframework.stereotype.Service;
 
+import javax.naming.NameNotFoundException;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.Attribute;
@@ -67,9 +68,13 @@ public class LookupUserLdapCommand extends AbstractLookupLdapCommand<ExtensibleU
                 log.debug("Attribute array=" + attrAry);
 
                 NamingEnumeration results = null;
-
-                results = lookupSearch(matchObj, ldapctx, identity, attrAry, objectBaseDN);
-
+                try {
+                    results = lookupSearch(matchObj, ldapctx, identity, attrAry, objectBaseDN);
+                } catch (NameNotFoundException nnfe) {
+                    log.debug("results=NULL");
+                    log.debug(" results has more elements=0");
+                    return false;
+                }
 
                 log.debug("results=" + results);
                 log.debug(" results has more elements=" + results.hasMoreElements());
