@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.openiam.am.srvc.dao.AuthProviderDao;
+import org.openiam.am.srvc.domain.AuthProviderEntity;
 import org.openiam.dozer.converter.ManagedSysDozerConverter;
 import org.openiam.dozer.converter.ManagedSystemObjectMatchDozerConverter;
 import org.openiam.idm.searchbeans.AttributeMapSearchBean;
@@ -59,6 +61,9 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
 
     @Autowired
     private ManagedSystemObjectMatchDozerConverter managedSystemObjectMatchDozerConverter;
+
+    @Autowired
+    private AuthProviderDao authProviderDao;
 
     private static final String resourceTypeId="MANAGED_SYS";
 
@@ -343,5 +348,10 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
     public List<ManagedSystemObjectMatchEntity> managedSysObjectParam(
             String managedSystemId, String objectType) {
         return matchDAO.findBySystemId(managedSystemId, objectType);
+    }
+
+    @Transactional(readOnly = true)
+    public List<AuthProviderEntity> findAuthProvidersByManagedSysId(String managedSysId) {
+        return authProviderDao.getByManagedSysId(managedSysId);
     }
 }
