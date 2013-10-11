@@ -198,12 +198,12 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
     @Override
     @Transactional
-    public ProvisionUserResponse deleteByUserId(ProvisionUser user,
+    public ProvisionUserResponse deleteByUserId(String userId,
             UserStatusEnum status, String requestorId) {
 
         log.debug("----deleteByUserId called.------");
 
-        List<LoginEntity> loginEntityList = loginManager.getLoginByUser(user.getUserId());
+        List<LoginEntity> loginEntityList = loginManager.getLoginByUser(userId);
         LoginEntity primaryIdentity = getPrimaryIdentity(
                 this.sysConfiguration.getDefaultManagedSysId(),
                 loginDozerConverter.convertToEntityList(loginDozerConverter.convertToDTOList(loginEntityList,false), false));
@@ -714,69 +714,6 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                             log.info(String.format("Response status=%s",
                                     response.getStatus()));
 
-                            // TODO: process the result of the WS call to
-                            // resume/suspend of teh connector
-                            /*
-                             * if(StringUtils.isNotBlank(managedSys.getConnectorId
-                             * ())) { final ProvisionConnector connector =
-                             * provisionConnectorWebService
-                             * .getConnector(managedSys.getConnectorId());
-                             * if(connector != null) { final
-                             * ClientProxyFactoryBean factory = new
-                             * JaxWsProxyFactoryBean();
-                             * factory.setServiceClass(ConnectorService.class);
-                             * 
-                             * log.info("Service endpoint : " +
-                             * connector.getServiceUrl() );
-                             * 
-                             * factory.setAddress(connector.getServiceUrl());
-                             * javax.xml.namespace.QName qname =
-                             * javax.xml.namespace
-                             * .QName.valueOf(connector.getServiceNameSpace());
-                             * factory.setEndpointName(qname); final
-                             * ConnectorService client = (ConnectorService)
-                             * factory.create();
-                             * 
-                             * log.info("connector service client " + client);
-                             * 
-                             * ResponseType responsetype = null; final
-                             * PSOIdentifierType psoIdentifierType = new
-                             * PSOIdentifierType(lg.getId().getLogin(),null,
-                             * lg.getId().getManagedSysId());
-                             * 
-                             * if(AccountLockEnum.LOCKED.equals(operation) ||
-                             * AccountLockEnum.LOCKED_ADMIN.equals(operation)) {
-                             * final SuspendRequestType suspendCommand = new
-                             * SuspendRequestType();
-                             * suspendCommand.setPsoID(psoIdentifierType);
-                             * suspendCommand.setRequestID("R" +
-                             * System.currentTimeMillis());
-                             * connectorAdapter.suspendRequest(managedSys,
-                             * suspendCommand, muleContext); } else { final
-                             * ResumeRequestType resumeRequest = new
-                             * ResumeRequestType();
-                             * resumeRequest.setPsoID(psoIdentifierType);
-                             * resumeRequest.setRequestID("R" +
-                             * System.currentTimeMillis()); //responsetype =
-                             * client.resume(resumeRequest);
-                             * connectorAdapter.resumeRequest(managedSys,
-                             * resumeRequest, muleContext); }
-                             * 
-                             * if (responsetype == null) {
-                             * log.info("Response object from set password is null"
-                             * ); response.setStatus(ResponseStatus.FAILURE);
-                             * return response; }
-                             * 
-                             * if (responsetype.getStatus() == null) {
-                             * log.info("Response status is null");
-                             * response.setStatus(ResponseStatus.FAILURE);
-                             * return response; }
-                             * log.info(String.format("Response status=%s",
-                             * response.getStatus()));
-                             * 
-                             * //TODO: process the result of the WS call to
-                             * resume/suspend of teh connector } }
-                             */
                         }
                     }
                 }
@@ -1582,30 +1519,6 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
         // response.setPrincipalName(parseUserPrincipal(attributes));
         return response;
-    }
-
-    @Override
-    @Transactional
-    public LookupUserResponse getTargetSystemUserWithUserId(String userId,
-            String managedSysId) {
-
-        // get the principalName for this managedSysId
-
-        List<LoginEntity> principalList = loginManager.getLoginByUser(userId);
-
-        for (LoginEntity l : principalList) {
-
-            if (l.getManagedSysId().equalsIgnoreCase(managedSysId)) {
-                return getTargetSystemUser(l.getLogin(), managedSysId);
-            }
-
-        }
-
-        LookupUserResponse response = new LookupUserResponse(
-                ResponseStatus.FAILURE);
-        response.setErrorCode(ResponseCode.PRINCIPAL_NOT_FOUND);
-        return response;
-
     }
 
     /*

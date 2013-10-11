@@ -30,11 +30,7 @@ public class DeleteIdmUserExcludeTargetCommand implements ReconciliationCommand 
     public boolean execute(Login login, User user, List<ExtensibleAttribute> attributes) {
         log.debug("Entering DeleteIdmUserExcludeTargetCommand");
         log.debug("Delete  user :" + login.getUserId());
-
-        ProvisionUser pUser = new ProvisionUser();
-        pUser.setUserId(login.getUserId());
-        pUser.setNotifyTargetSystems(false);
-        provisionService.deleteByUserId( pUser, UserStatusEnum.DELETED,"3000");
+        provisionService.deleteByUserId( login.getUserId(), UserStatusEnum.DELETED,"3000");
         return false;  //To change body of implemented methods use File | Settings | File Templates.
     }
 }

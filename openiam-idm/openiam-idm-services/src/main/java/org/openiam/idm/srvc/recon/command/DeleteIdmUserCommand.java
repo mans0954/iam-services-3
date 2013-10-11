@@ -31,10 +31,7 @@ public class DeleteIdmUserCommand implements ReconciliationCommand {
         log.debug("Entering DeleteIdmUserCommand");
         log.debug("Delete  user :" + login.getUserId());
 
-        ProvisionUser pUser = new ProvisionUser();
-        pUser.setUserId(login.getUserId());
-        pUser.setNotifyTargetSystems(true);
-        provisionService.deleteByUserId( pUser, UserStatusEnum.DELETED,"3000");
+        provisionService.deleteByUserId(login.getUserId(), UserStatusEnum.DELETED,"3000");
         return false;  //To change body of implemented methods use File | Settings | File Templates.
     }
 }
