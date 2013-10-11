@@ -1653,6 +1653,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 	            response.setErrorCode(ResponseCode.USER_NOT_FOUND);
 	            return response;
 	        }
+	        
 	        final UserEntity usr = userMgr.getUser(userId);
 	        if (usr == null) {
 	        	auditLog.fail().setFailureReason(ResponseCode.USER_NOT_FOUND.name());
@@ -1660,7 +1661,8 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 	            response.setErrorCode(ResponseCode.USER_NOT_FOUND);
 	            return response;
 	        }
-	
+	        auditLog.setTargetUser(userId);
+	        
 	        // validate the password against password policy
 	        final Password pswd = new Password();
 	        pswd.setDomainId(passwordSync.getSecurityDomain());
