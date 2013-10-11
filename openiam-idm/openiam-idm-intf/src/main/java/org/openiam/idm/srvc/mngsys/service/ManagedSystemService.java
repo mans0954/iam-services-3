@@ -2,6 +2,7 @@ package org.openiam.idm.srvc.mngsys.service;
 
 import java.util.List;
 
+import org.openiam.am.srvc.domain.AuthProviderEntity;
 import org.openiam.idm.searchbeans.AttributeMapSearchBean;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.DefaultReconciliationAttributeMapEntity;
@@ -76,4 +77,6 @@ public interface ManagedSystemService {
     void updateManagedSystemObjectMatch(ManagedSystemObjectMatch objectMatch);
 
     void deleteManagedSystemObjectMatch(String objectMatchId);
+
+    List<AuthProviderEntity> findAuthProvidersByManagedSysId(String managedSysId);
 }
