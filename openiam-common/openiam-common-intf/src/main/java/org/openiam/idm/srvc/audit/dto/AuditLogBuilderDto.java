@@ -17,10 +17,6 @@ public class AuditLogBuilderDto implements Serializable {
 
 	private IdmAuditLog entity;
 	
-	public AuditLogBuilderDto(final IdmAuditLog entity) {
-		this.entity = entity;
-	}
-	
 	public AuditLogBuilderDto() {
 		entity = new IdmAuditLog();
 		entity.setTimestamp(new Date());
@@ -51,7 +47,7 @@ public class AuditLogBuilderDto implements Serializable {
 		return this;
 	}
 
-	public AuditLogBuilderDto setResult(AuditResult result) {
+	private AuditLogBuilderDto setResult(AuditResult result) {
 		entity.setResult((result!=null)?result.value():null);
 		return this;
 	}
