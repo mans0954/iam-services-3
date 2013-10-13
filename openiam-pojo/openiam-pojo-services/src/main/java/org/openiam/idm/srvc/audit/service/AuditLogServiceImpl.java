@@ -90,7 +90,6 @@ public class AuditLogServiceImpl implements AuditLogService {
     	}
     }
 
-    //TODO:  put on JMS queue
 	@Override
 	public void enqueue(final AuditLogBuilder builder) {
         if(builder!=null){
