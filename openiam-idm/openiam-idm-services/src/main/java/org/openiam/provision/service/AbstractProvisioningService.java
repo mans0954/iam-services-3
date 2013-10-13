@@ -88,6 +88,7 @@ import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleUser;
 import org.openiam.script.ScriptIntegration;
 import org.openiam.util.MuleContextProvider;
+import org.openiam.util.SpringContextProvider;
 import org.openiam.util.encrypt.Cryptor;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -443,6 +444,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
             if (!pUser.isSkipPreprocessor() &&
                     (addPreProcessScript = createProvPreProcessScript(preProcessor, bindingMap)) != null) {
                 addPreProcessScript.setMuleContext(MuleContextProvider.getCtx());
+                addPreProcessScript.setApplicationContext(SpringContextProvider.getApplicationContext());
                 return executeProvisionPreProcess(addPreProcessScript, bindingMap, pUser, null, operation);
 
             }
@@ -460,6 +462,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
             if (!pUser.isSkipPostProcessor() &&
                     (addPostProcessScript = createProvPostProcessScript(postProcessor, bindingMap)) != null) {
                 addPostProcessScript.setMuleContext(MuleContextProvider.getCtx());
+                addPostProcessScript.setApplicationContext(SpringContextProvider.getApplicationContext());
                 return executeProvisionPostProcess(addPostProcessScript, bindingMap, pUser, null, operation);
 
             }
