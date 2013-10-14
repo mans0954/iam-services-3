@@ -355,7 +355,7 @@ public class RDBMSAdapter extends AbstractSrcAdapter {
                 if (retval != -1) {
                     if (retval == TransformScript.DELETE && usr != null) {
                         log.debug("deleting record - " + usr.getUserId());
-                        provService.deleteByUserId(new ProvisionUser(usr), UserStatusEnum.DELETED, systemAccount);
+                        provService.deleteByUserId(usr.getUserId(), UserStatusEnum.DELETED, systemAccount);
 
                     } else {
                         // call synch

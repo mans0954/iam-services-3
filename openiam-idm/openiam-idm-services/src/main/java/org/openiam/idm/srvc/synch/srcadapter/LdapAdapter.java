@@ -258,7 +258,7 @@ public class LdapAdapter extends AbstractSrcAdapter { // implements SourceAdapte
 						*/
                         if (retval == TransformScript.DELETE && usr != null) {
                             log.debug("deleting record - " + usr.getUserId());
-                            ProvisionUserResponse userResp = provService.deleteByUserId(new ProvisionUser(usr), UserStatusEnum.DELETED, systemAccount);
+                            ProvisionUserResponse userResp = provService.deleteByUserId(usr.getUserId(), UserStatusEnum.DELETED, systemAccount);
 
                         } else {
                             // call synch

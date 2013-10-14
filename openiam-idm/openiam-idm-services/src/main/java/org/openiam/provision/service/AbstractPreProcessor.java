@@ -41,6 +41,10 @@ public abstract class AbstractPreProcessor implements ProvisionServicePreProcess
         muleContext = ctx;
     }
 
+    public void setApplicationContext(ApplicationContext context) {
+        this.context = context;
+    }
+
     public void sendEmailNotification( NotificationRequest request) {
         try {
 
