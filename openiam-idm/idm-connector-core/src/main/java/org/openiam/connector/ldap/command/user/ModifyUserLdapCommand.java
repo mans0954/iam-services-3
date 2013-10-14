@@ -34,8 +34,10 @@ public class ModifyUserLdapCommand extends AbstractCrudLdapCommand<ExtensibleUse
     protected void performObjectOperation(ManagedSysEntity managedSys, CrudRequest<ExtensibleUser> crudRequest, LdapContext ldapctx) throws ConnectorDataException {
         ManagedSystemObjectMatch matchObj = getMatchObject(crudRequest.getTargetID(), "USER");
         boolean groupMembershipEnabled = false;
+        boolean supervisorMembershipEnabled = false;
 
         List<BaseAttribute> targetMembershipList = new ArrayList<BaseAttribute>();
+        List<BaseAttribute> supervisorMembershipList = new ArrayList<BaseAttribute>();
         try {
             String identity = crudRequest.getObjectIdentity();
             //Check identity on CN format or not
@@ -76,8 +78,10 @@ public class ModifyUserLdapCommand extends AbstractCrudLdapCommand<ExtensibleUse
             ResourceProp rpGroupMembership = getResourceAttr(rpSet, "GROUP_MEMBERSHIP_ENABLED");
 
             // BY DEFAULT - we want to enable group membership
-            if (rpGroupMembership == null || rpGroupMembership.getPropValue() == null || "Y".equalsIgnoreCase(rpGroupMembership.getPropValue())) {
+            if (rpGroupMembership == null || rpGroupMembership.getPropValue() == null
+                    || "Y".equalsIgnoreCase(rpGroupMembership.getPropValue())) {
                 groupMembershipEnabled = true;
+
             } else if (rpGroupMembership.getPropValue() != null) {
 
                 if ("N".equalsIgnoreCase(rpGroupMembership.getPropValue())) {
@@ -85,9 +89,19 @@ public class ModifyUserLdapCommand extends AbstractCrudLdapCommand<ExtensibleUse
                 }
             }
 
+            ResourceProp rpSupervisorMembership = getResourceAttr(rpSet, "SUPERVISOR_MEMBERSHIP_ENABLED");
+            // BY DEFAULT - we want to enable supervisor membership
+            if (rpSupervisorMembership == null || rpSupervisorMembership.getPropValue() == null
+                    || "Y".equalsIgnoreCase(rpSupervisorMembership.getPropValue())) {
+                groupMembershipEnabled = true;
+
+            } else if (rpSupervisorMembership.getPropValue() != null) {
+                if ("N".equalsIgnoreCase(rpSupervisorMembership.getPropValue())) {
+                    supervisorMembershipEnabled = false;
+                }
+            }
+
             Directory dirSpecificImp = DirectorySpecificImplFactory.create(managedSys.getHandler5());
-
-
 
                 ExtensibleObject obj = crudRequest.getExtensibleObject();
 
@@ -106,7 +120,11 @@ public class ModifyUserLdapCommand extends AbstractCrudLdapCommand<ExtensibleUse
                         continue;
                     }
 
-                    if (att.getDataType().equalsIgnoreCase("memberOf")) {
+                    if (att.getDataType().equalsIgnoreCase("directReports")) {
+                        if (supervisorMembershipEnabled) {
+                            buildSupervisorMembershipList(att, supervisorMembershipList);
+                        }
+                    } else if (att.getDataType().equalsIgnoreCase("memberOf")) {
                         if (groupMembershipEnabled) {
                             buildMembershipList(att, targetMembershipList);
                         }
@@ -117,19 +135,16 @@ public class ModifyUserLdapCommand extends AbstractCrudLdapCommand<ExtensibleUse
 
                         // set an attribute to null
                         if ((att.getValue() == null || att.getValue().contains("null")) && (att.getValueList() == null || att.getValueList().size() == 0)) {
-
-
                             modItemList.add(new ModificationItem(att.getOperation(), new BasicAttribute(att.getName(), null)));
+
                         } else {
                             // valid value
 
-                            //  if (!att.getDataType().equalsIgnoreCase("memberOf")) {
                             if ("unicodePwd".equalsIgnoreCase(att.getName())) {
                                 Attribute a = generateActiveDirectoryPassword(att.getValue());
                                 modItemList.add(new ModificationItem(DirContext.REPLACE_ATTRIBUTE, a));
                             } else if (!"userPassword".equalsIgnoreCase(att.getName()) &&
                                     !"ORIG_IDENTITY".equalsIgnoreCase(att.getName())) {
-
 
                                 Attribute a = null;
                                 if (att.isMultivalued()) {
@@ -144,12 +159,9 @@ public class ModifyUserLdapCommand extends AbstractCrudLdapCommand<ExtensibleUse
                                             }
                                             ctr++;
                                         }
-
                                     }
-
                                 } else {
                                     a = new BasicAttribute(att.getName(), att.getValue());
-
                                 }
                                 modItemList.add(new ModificationItem(att.getOperation(), a));
                                 //modItemList.add( new ModificationItem(att.getOperation(), new BasicAttribute(att.getName(), att.getValue())));
@@ -170,6 +182,11 @@ public class ModifyUserLdapCommand extends AbstractCrudLdapCommand<ExtensibleUse
             if (groupMembershipEnabled) {
                 dirSpecificImp.updateAccountMembership(targetMembershipList, identityDN, matchObj, ldapctx, crudRequest.getExtensibleObject());
             }
+
+            if (supervisorMembershipEnabled) {
+                dirSpecificImp.updateAccountMembership(targetMembershipList, identityDN, matchObj, ldapctx, crudRequest.getExtensibleObject());
+            }
+
         } catch (NamingException ne) {
            log.error(ne.getMessage(),ne);
             throw new ConnectorDataException(ErrorCode.DIRECTORY_ERROR, ne.getMessage());

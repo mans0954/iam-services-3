@@ -77,7 +77,7 @@ public class ActiveDirectoryImpl implements Directory {
 
             ldapctx.destroySubcontext(ldapName);
 
-        }else if ( "DISABLE".equalsIgnoreCase(onDelete)) {
+        } else if ( "DISABLE".equalsIgnoreCase(onDelete)) {
 
             ModificationItem[] mods = new ModificationItem[1];
 
@@ -92,8 +92,7 @@ public class ActiveDirectoryImpl implements Directory {
 
     public void removeAccountMemberships( String ldapName, ManagedSystemObjectMatch matchObj,  LdapContext ldapctx ) {
 
-        List<String> currentMembershipList =  userMembershipList(ldapName, matchObj,   ldapctx);
-
+        List<String> currentMembershipList = userMembershipList(ldapName, matchObj,   ldapctx);
 
         // remove membership
         if (currentMembershipList != null) {
@@ -103,7 +102,7 @@ public class ActiveDirectoryImpl implements Directory {
                     ModificationItem mods[] = new ModificationItem[1];
                     mods[0] = new ModificationItem(DirContext.REMOVE_ATTRIBUTE, new BasicAttribute("uniqueMember", ldapName));
                     ldapctx.modifyAttributes(s, mods);
-                }catch (NamingException ne ) {
+                } catch (NamingException ne ) {
                     log.error(ne);
                 }
             }
@@ -114,7 +113,6 @@ public class ActiveDirectoryImpl implements Directory {
     public void updateAccountMembership(List<BaseAttribute> targetMembershipList, String ldapName,
                                         ManagedSystemObjectMatch matchObj,  LdapContext ldapctx,
                                         ExtensibleObject obj) {
-
 
         String samAccountName = getSamAccountName(obj);
 
@@ -130,7 +128,7 @@ public class ActiveDirectoryImpl implements Directory {
                     ModificationItem mods[] = new ModificationItem[1];
                     mods[0] = new ModificationItem(DirContext.REMOVE_ATTRIBUTE, new BasicAttribute("uniqueMember", ldapName));
                     ldapctx.modifyAttributes(s, mods);
-                }catch (NamingException ne ) {
+                } catch (NamingException ne ) {
                     log.error(ne);
                 }
             }
@@ -163,7 +161,7 @@ public class ActiveDirectoryImpl implements Directory {
                             ModificationItem mods[] = new ModificationItem[1];
                             mods[0] = new ModificationItem(DirContext.ADD_ATTRIBUTE, new BasicAttribute("member", ldapName));
                             ldapctx.modifyAttributes(groupName, mods);
-                        }catch (NamingException ne ) {
+                        } catch (NamingException ne ) {
                             log.error(ne);
                         }
                     }

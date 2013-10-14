@@ -123,11 +123,19 @@ public abstract class AbstractLdapCommand<Request extends RequestType, Response 
         }
     }
 
-    protected void buildMembershipList( ExtensibleAttribute att ,List<BaseAttribute>targetMembershipList) {
+    protected void buildMembershipList(ExtensibleAttribute att, List<BaseAttribute>targetMembershipList) {
         if (att == null)
             return;
         if (att.getAttributeContainer() != null) {
             targetMembershipList.addAll( att.getAttributeContainer().getAttributeList() );
+        }
+    }
+
+    protected void buildSupervisorMembershipList(ExtensibleAttribute att, List<BaseAttribute>supervisorMembershipList) {
+        if (att == null)
+            return;
+        if (att.getAttributeContainer() != null) {
+            supervisorMembershipList.addAll( att.getAttributeContainer().getAttributeList() );
         }
     }
 
