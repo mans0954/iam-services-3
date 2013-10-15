@@ -1,8 +1,10 @@
 package org.openiam.idm.searchbeans;
 
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -17,7 +19,8 @@ import org.openiam.idm.srvc.res.dto.Resource;
         "name",
         "resourceTypeId",
         "rootsOnly",
-        "attributes"
+        "attributes",
+        "excludeResourceTypes"
 })
 public class ResourceSearchBean extends AbstractSearchBean<Resource, String> implements SearchBean<Resource, String>, Serializable {
 
@@ -27,6 +30,7 @@ public class ResourceSearchBean extends AbstractSearchBean<Resource, String> imp
 	private String resourceTypeId;
 	private Boolean rootsOnly;
 	private List<Tuple<String, String>> attributes;
+	private Set<String> excludeResourceTypes;
 	
 	public String getName() {
 		return name;
@@ -68,5 +72,22 @@ public class ResourceSearchBean extends AbstractSearchBean<Resource, String> imp
 
 	public void setAttributes(List<Tuple<String, String>> attributes) {
 		this.attributes = attributes;
+	}
+
+	public Set<String> getExcludeResourceTypes() {
+		return excludeResourceTypes;
+	}
+
+	public void setExcludeResourceTypes(Set<String> excludeResourceTypes) {
+		this.excludeResourceTypes = excludeResourceTypes;
+	}
+	
+	public void addExcludeResourceType(final String excludeResourceType) {
+		if(StringUtils.isNotBlank(excludeResourceType)) {
+			if(this.excludeResourceTypes == null) {
+				this.excludeResourceTypes = new HashSet<String>();
+			}
+			this.excludeResourceTypes.add(excludeResourceType);
+		}
 	}
 }

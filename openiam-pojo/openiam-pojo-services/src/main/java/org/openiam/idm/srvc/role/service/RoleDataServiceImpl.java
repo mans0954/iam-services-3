@@ -10,6 +10,7 @@ import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.RoleSearchBean;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.service.GroupDAO;
+import org.openiam.idm.srvc.mngsys.service.ManagedSysDAO;
 import org.openiam.idm.srvc.role.domain.RoleAttributeEntity;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.domain.RolePolicyEntity;
@@ -54,6 +55,8 @@ public class RoleDataServiceImpl implements RoleDataService {
     @Qualifier("entityValidator")
     private EntityValidator entityValidator;
 	
+    @Autowired
+    private ManagedSysDAO managedSysDAO;
 
 	private static final Log log = LogFactory.getLog(RoleDataServiceImpl.class);
 
@@ -194,6 +197,12 @@ public class RoleDataServiceImpl implements RoleDataService {
     @Transactional
 	public void saveRole(final RoleEntity role) throws BasicDataServiceException {
 		if(role != null && entityValidator.isValid(role)) {
+			if(role.getManagedSystem() != null && role.getManagedSystem().getManagedSysId() != null) {
+				role.setManagedSystem(managedSysDAO.findById(role.getManagedSystem().getManagedSysId()));
+			} else {
+				role.setManagedSystem(null);
+			}
+			
 			if(StringUtils.isBlank(role.getRoleId())) {
 				roleDao.save(role);
 			} else {

@@ -51,6 +51,10 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
 				criteria.add(Restrictions.isEmpty("parentResources"));
 			}
 			
+			if(CollectionUtils.isNotEmpty(resourceSearchBean.getExcludeResourceTypes())) {
+				criteria.add(Restrictions.not(Restrictions.in("resourceType.resourceTypeId", resourceSearchBean.getExcludeResourceTypes())));
+			}
+			
 			if(CollectionUtils.isNotEmpty(resourceSearchBean.getAttributes())) {
 				criteria.createAlias("resourceProps", "prop");
 				for(final Tuple<String, String> attribute : resourceSearchBean.getAttributes()) {
@@ -82,19 +86,14 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
 					matchMode = MatchMode.END;
 					resourceName = resourceName.substring(1);
 				}
-				if (StringUtils.isNotEmpty(resourceName)
-						&& StringUtils.indexOf(resourceName, "*") == resourceName
-								.length() - 1) {
-					resourceName = resourceName.substring(0,
-							resourceName.length() - 1);
-					matchMode = (matchMode == MatchMode.END) ? MatchMode.ANYWHERE
-							: MatchMode.START;
+				if (StringUtils.isNotEmpty(resourceName) && StringUtils.indexOf(resourceName, "*") == resourceName.length() - 1) {
+					resourceName = resourceName.substring(0, resourceName.length() - 1);
+					matchMode = (matchMode == MatchMode.END) ? MatchMode.ANYWHERE : MatchMode.START;
 				}
 
 				if (StringUtils.isNotEmpty(resourceName)) {
 					if (matchMode != null) {
-						criteria.add(Restrictions.ilike("name", resourceName,
-								matchMode));
+						criteria.add(Restrictions.ilike("name", resourceName, matchMode));
 					} else {
 						criteria.add(Restrictions.eq("name", resourceName));
 					}

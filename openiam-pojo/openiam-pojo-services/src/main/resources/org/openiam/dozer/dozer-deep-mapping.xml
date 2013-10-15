@@ -128,6 +128,10 @@
             <a>resources</a>
             <b>resources</b>
         </field>
+        <field custom-converter="org.openiam.dozer.PersistentObjectConverter" custom-converter-param="shallowDozerMapper">
+			<a>managedSystem</a>
+			<b>managedSystem</b>
+		</field>
 	</mapping>
 	<mapping>
 		<class-a>org.openiam.idm.srvc.res.dto.Resource</class-a>
