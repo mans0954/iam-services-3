@@ -94,9 +94,9 @@ public class LdapV3 implements Directory {
 
             ldapctx.destroySubcontext(ldapName);
 
-        }else if ( "DISABLE".equalsIgnoreCase(onDelete)) {
+        } else if ( "DISABLE".equalsIgnoreCase(onDelete)) {
 
-            String scrambledPswd =	passwordGenerator.generatePassword(10);
+            String scrambledPswd = passwordGenerator.generatePassword(10);
 
             ModificationItem[] mods = new ModificationItem[1];
             mods[0] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute("userPassword", scrambledPswd));
@@ -113,7 +113,6 @@ public class LdapV3 implements Directory {
 
         log.debug("Current ldap role membership:" + currentMembershipList);
 
-
         // remove membership
         if (currentMembershipList != null) {
             for (String s : currentMembershipList) {
@@ -121,7 +120,7 @@ public class LdapV3 implements Directory {
                     ModificationItem mods[] = new ModificationItem[1];
                     mods[0] = new ModificationItem(DirContext.REMOVE_ATTRIBUTE, new BasicAttribute("uniqueMember", ldapName));
                     ldapctx.modifyAttributes(s, mods);
-                }catch (NamingException ne ) {
+                } catch (NamingException ne ) {
                     log.error(ne);
                 }
             }
@@ -144,10 +143,9 @@ public class LdapV3 implements Directory {
                     ModificationItem mods[] = new ModificationItem[1];
                     mods[0] = new ModificationItem(DirContext.REMOVE_ATTRIBUTE, new BasicAttribute("uniqueMember", ldapName));
                     ldapctx.modifyAttributes(s, mods);
-                }catch (NamingException ne ) {
+                } catch (NamingException ne ) {
                     log.error(ne);
                 }
-
             }
         }
         //
@@ -182,7 +180,64 @@ public class LdapV3 implements Directory {
                             log.error(ne);
                         }
                     }
+                }
+            }
+        }
+    }
 
+    public void updateSupervisorMembership(List<BaseAttribute> supervisorMembershipList, String identity,
+                                           ManagedSystemObjectMatch matchObj, LdapContext ldapctx, ExtensibleObject obj) {
+
+        List<String> currentSupervisorMembershipList = userSupervisorMembershipList(identity, matchObj, ldapctx);
+
+        log.debug("Current ldap supervisor membership:" + currentSupervisorMembershipList);
+
+        if (supervisorMembershipList == null && currentSupervisorMembershipList != null) {
+            // remove all associations
+            for (String s : currentSupervisorMembershipList) {
+                try {
+                    log.debug("Removing supervisor: " + s + " from " + identity);
+                    ModificationItem mods[] = new ModificationItem[1];
+                    mods[0] = new ModificationItem(DirContext.REMOVE_ATTRIBUTE, new BasicAttribute("manager", identity));
+                    ldapctx.modifyAttributes(s, mods);
+                } catch (NamingException ne ) {
+                    log.error(ne);
+                }
+            }
+        }
+        if (supervisorMembershipList != null) {
+
+            String identityDN = matchObj.getKeyField() + "=" + identity + "," + matchObj.getBaseDn();
+
+            for (BaseAttribute ba : supervisorMembershipList) {
+
+                String supervisorName =  ba.getName();
+                boolean exists = isMemberOf(currentSupervisorMembershipList, supervisorName);
+
+                if (ba.getOperationEnum() == AttributeOperationEnum.DELETE) {
+                    if (exists) {
+                        // remove the supervisor membership
+                        try {
+                            ModificationItem mods[] = new ModificationItem[1];
+                            mods[0] = new ModificationItem(DirContext.REMOVE_ATTRIBUTE, new BasicAttribute("manager", supervisorName));
+                            ldapctx.modifyAttributes(identityDN, mods);
+                        } catch (NamingException ne ) {
+                            log.error(ne);
+                        }
+                    }
+                } else if (ba.getOperationEnum() == null
+                        || ba.getOperationEnum() == AttributeOperationEnum.ADD
+                        || ba.getOperationEnum() == AttributeOperationEnum.NO_CHANGE) {
+                    if (!exists) {
+                        // add the user to the group
+                        try {
+                            ModificationItem mods[] = new ModificationItem[1];
+                            mods[0] = new ModificationItem(DirContext.ADD_ATTRIBUTE, new BasicAttribute("manager", supervisorName));
+                            ldapctx.modifyAttributes(identityDN, mods);
+                        } catch (NamingException ne ) {
+                            log.error(ne);
+                        }
+                    }
                 }
             }
         }
@@ -237,7 +292,6 @@ public class LdapV3 implements Directory {
 
         } catch (Exception e) {
             e.printStackTrace();
-
         }
 
         if (currentMembershipList.isEmpty()) {
@@ -245,6 +299,62 @@ public class LdapV3 implements Directory {
         }
 
         return currentMembershipList;
+    }
+
+    protected List<String> userSupervisorMembershipList(
+            String userDN, ManagedSystemObjectMatch matchObj, LdapContext ldapctx) {
+
+        List<String> currentSupervisorMembershipList = new ArrayList<String>();
+
+        log.debug("isManager()...");
+        log.debug(" - userDN =" + userDN);
+        log.debug(" - MembershipObjectDN=" + matchObj.getSearchBaseDn());
+
+        String userSearchFilter = "(&(objectClass=inetOrgPerson)(" + matchObj.getKeyField() + "=" + userDN + "))";
+        String searchBase = matchObj.getSearchBaseDn();
+
+        try {
+
+            SearchControls ctls = new SearchControls();
+
+            String userReturnedAtts[]={"manager"};
+            ctls.setReturningAttributes(userReturnedAtts);
+            ctls.setSearchScope(SearchControls.SUBTREE_SCOPE); // Search object only
+
+            NamingEnumeration answer = ldapctx.search(searchBase, userSearchFilter, ctls);
+
+            //Loop through the search results
+            while (answer.hasMoreElements()) {
+                SearchResult sr = (SearchResult)answer.next();
+
+                Attributes attrs = sr.getAttributes();
+                if (attrs != null) {
+
+                    try {
+                        for (NamingEnumeration ae = attrs.getAll();ae.hasMore();) {
+                            Attribute attr = (Attribute)ae.next();
+
+                            for (NamingEnumeration e = attr.getAll();e.hasMore();) {
+                                currentSupervisorMembershipList.add ((String)e.next());
+                            }
+                        }
+                    }
+                    catch (NamingException e)	{
+                        log.error("Problem listing membership: " + e.toString());
+                    }
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        if (currentSupervisorMembershipList.isEmpty()) {
+            return null;
+        }
+
+        return currentSupervisorMembershipList;
+
     }
 
 }

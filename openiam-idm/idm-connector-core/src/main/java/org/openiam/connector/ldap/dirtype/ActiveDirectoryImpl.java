@@ -126,7 +126,7 @@ public class ActiveDirectoryImpl implements Directory {
             for (String s : currentMembershipList) {
                 try {
                     ModificationItem mods[] = new ModificationItem[1];
-                    mods[0] = new ModificationItem(DirContext.REMOVE_ATTRIBUTE, new BasicAttribute("uniqueMember", ldapName));
+                    mods[0] = new ModificationItem(DirContext.REMOVE_ATTRIBUTE, new BasicAttribute("member", ldapName));
                     ldapctx.modifyAttributes(s, mods);
                 } catch (NamingException ne ) {
                     log.error(ne);
@@ -170,6 +170,63 @@ public class ActiveDirectoryImpl implements Directory {
         }
     }
 
+    public void updateSupervisorMembership(List<BaseAttribute> supervisorMembershipList, String identity,
+                                      ManagedSystemObjectMatch matchObj, LdapContext ldapctx, ExtensibleObject obj) {
+
+        List<String> currentSupervisorMembershipList = userSupervisorMembershipList(identity, matchObj, ldapctx);
+
+        log.debug("Current ldap supervisor membership:" + currentSupervisorMembershipList);
+
+        if (supervisorMembershipList == null && currentSupervisorMembershipList != null) {
+            // remove all associations
+            for (String s : currentSupervisorMembershipList) {
+                try {
+                    log.debug("Removing supervisor: " + s + " from " + identity);
+                    ModificationItem mods[] = new ModificationItem[1];
+                    mods[0] = new ModificationItem(DirContext.REMOVE_ATTRIBUTE, new BasicAttribute("manager", identity));
+                    ldapctx.modifyAttributes(s, mods);
+                } catch (NamingException ne ) {
+                    log.error(ne);
+                }
+            }
+        }
+        if (supervisorMembershipList != null) {
+
+            String identityDN = matchObj.getKeyField() + "=" + identity + "," + matchObj.getBaseDn();
+
+            BaseAttribute ba = supervisorMembershipList.get(0); // 1 manager is allowed for AD
+
+            String supervisorName =  ba.getName();
+            boolean exists = isMemberOf(currentSupervisorMembershipList, supervisorName);
+
+            if (ba.getOperationEnum() == AttributeOperationEnum.DELETE) {
+                if (exists) {
+                    // remove the supervisor membership
+                    try {
+                        ModificationItem mods[] = new ModificationItem[1];
+                        mods[0] = new ModificationItem(DirContext.REMOVE_ATTRIBUTE, new BasicAttribute("manager", supervisorName));
+                        ldapctx.modifyAttributes(identityDN, mods);
+                    } catch (NamingException ne ) {
+                        log.error(ne);
+                    }
+                }
+            } else if (ba.getOperationEnum() == null
+                    || ba.getOperationEnum() == AttributeOperationEnum.ADD
+                    || ba.getOperationEnum() == AttributeOperationEnum.NO_CHANGE) {
+                if (!exists) {
+                    // add the user to the group
+                    try {
+                        ModificationItem mods[] = new ModificationItem[1];
+                        mods[0] = new ModificationItem(DirContext.ADD_ATTRIBUTE, new BasicAttribute("manager", supervisorName));
+                        ldapctx.modifyAttributes(identityDN, mods);
+                    } catch (NamingException ne ) {
+                        log.error(ne);
+                    }
+                }
+            }
+        }
+    }
+
     private String getSamAccountName(ExtensibleObject obj) {
         List<ExtensibleAttribute> attrList = obj.getAttributes();
         for (ExtensibleAttribute att : attrList) {
@@ -202,12 +259,10 @@ public class ActiveDirectoryImpl implements Directory {
 
         List<String> currentMembershipList = new ArrayList<String>();
 
-        String userSearchFilter = "(&(objectclass=*)(sAMAccountName=" + samAccountName + "))";
+        String userSearchFilter = "(&(objectclass=user)(sAMAccountName=" + samAccountName + "))";
         String searchBase = matchObj.getSearchBaseDn();
 
         try {
-
-            int totalResults = 0;
 
             SearchControls ctls = new SearchControls();
 
@@ -227,7 +282,7 @@ public class ActiveDirectoryImpl implements Directory {
                         for (NamingEnumeration ae = attrs.getAll();ae.hasMore();) {
                             Attribute attr = (Attribute)ae.next();
 
-                            for (NamingEnumeration e = attr.getAll();e.hasMore();totalResults++) {
+                            for (NamingEnumeration e = attr.getAll();e.hasMore();) {
                                 currentMembershipList.add ((String)e.next());
                             }
                         }
@@ -247,6 +302,57 @@ public class ActiveDirectoryImpl implements Directory {
         }
 
         return currentMembershipList;
+    }
+
+    protected List<String> userSupervisorMembershipList(
+            String samAccountName,  ManagedSystemObjectMatch matchObj, LdapContext ldapctx) {
+
+        List<String> currentMembershipList = new ArrayList<String>();
+
+        String userSearchFilter = "(&(objectclass=user)(sAMAccountName=" + samAccountName + "))";
+        String searchBase = matchObj.getSearchBaseDn();
+
+        try {
+
+            SearchControls ctls = new SearchControls();
+
+            String userReturnedAtts[]={"manager"};
+            ctls.setReturningAttributes(userReturnedAtts);
+            ctls.setSearchScope(SearchControls.SUBTREE_SCOPE); // Search object only
+
+            NamingEnumeration answer = ldapctx.search(searchBase, userSearchFilter, ctls);
+
+            while (answer.hasMoreElements()) {
+                SearchResult sr = (SearchResult)answer.next();
+
+                Attributes attrs = sr.getAttributes();
+                if (attrs != null) {
+
+                    try {
+                        for (NamingEnumeration ae = attrs.getAll();ae.hasMore();) {
+                            Attribute attr = (Attribute)ae.next();
+
+                            for (NamingEnumeration e = attr.getAll();e.hasMore();) {
+                                currentMembershipList.add ((String)e.next());
+                            }
+                        }
+                    }
+                    catch (NamingException e)	{
+                        log.error("Problem listing membership: " + e.toString());
+                    }
+                }
+            }
+
+        } catch (Exception e) {
+            log.error(e.toString());
+        }
+
+        if (currentMembershipList.isEmpty()) {
+            return null;
+        }
+
+        return currentMembershipList;
+
     }
 
 }
