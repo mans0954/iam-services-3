@@ -46,6 +46,8 @@ public interface Directory {
 
     void removeAccountMemberships( String ldapName, ManagedSystemObjectMatch matchObj,  LdapContext ldapctx);
 
+    void removeSupervisorMemberships( String ldapName, ManagedSystemObjectMatch matchObj,  LdapContext ldapctx);
+
     void updateAccountMembership(List<BaseAttribute> targetMembershipList, String ldapName,
                                  ManagedSystemObjectMatch matchObj,  LdapContext ldapctx, ExtensibleObject obj);
 

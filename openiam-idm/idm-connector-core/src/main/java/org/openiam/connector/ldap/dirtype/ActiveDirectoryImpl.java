@@ -110,13 +110,33 @@ public class ActiveDirectoryImpl implements Directory {
 
     }
 
+    public void removeSupervisorMemberships( String ldapName, ManagedSystemObjectMatch matchObj, LdapContext ldapctx ) {
+
+        List<String> currentSupervisorMembershipList = userSupervisorMembershipList(ldapName, matchObj, ldapctx);
+
+        // remove membership
+        if (currentSupervisorMembershipList != null) {
+            for (String s : currentSupervisorMembershipList) {
+                try {
+                    log.debug("Removing supervisor: " + s + " from " + ldapName);
+                    ModificationItem mods[] = new ModificationItem[1];
+                    mods[0] = new ModificationItem(DirContext.REMOVE_ATTRIBUTE, new BasicAttribute("manager", ldapName));
+                    ldapctx.modifyAttributes(s, mods);
+                } catch (NamingException ne ) {
+                    log.error(ne);
+                }
+            }
+        }
+
+    }
+
     public void updateAccountMembership(List<BaseAttribute> targetMembershipList, String ldapName,
-                                        ManagedSystemObjectMatch matchObj,  LdapContext ldapctx,
+                                        ManagedSystemObjectMatch matchObj, LdapContext ldapctx,
                                         ExtensibleObject obj) {
 
         String samAccountName = getSamAccountName(obj);
 
-        List<String> currentMembershipList = userMembershipList(samAccountName, matchObj,   ldapctx);
+        List<String> currentMembershipList = userMembershipList(samAccountName, matchObj, ldapctx);
 
         log.debug("- Current Active Dir group membership:" + currentMembershipList);
         log.debug("- Target Active Dir group membership:"  + targetMembershipList);
