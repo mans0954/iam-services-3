@@ -130,7 +130,7 @@ public class OrganizationTypeDataServiceImpl implements OrganizationTypeDataServ
 				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
 			}
 			
-			organizationTypeService.validateRole2RoleAddition(id, childId);
+			organizationTypeService.validateOrgType2OrgTypeAddition(id, childId);
 			organizationTypeService.addChild(id, childId);
 		} catch (BasicDataServiceException e) {
             response.setStatus(ResponseStatus.FAILURE);

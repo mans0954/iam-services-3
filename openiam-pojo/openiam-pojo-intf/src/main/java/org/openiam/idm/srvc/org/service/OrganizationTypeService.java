@@ -26,5 +26,5 @@ public interface OrganizationTypeService {
 	
 	public void removeChild(final String id, final String childId);
 	
-	public void validateRole2RoleAddition(String parentId, String memberId) throws BasicDataServiceException;
+	public void validateOrgType2OrgTypeAddition(String parentId, String memberId) throws BasicDataServiceException;
 }
