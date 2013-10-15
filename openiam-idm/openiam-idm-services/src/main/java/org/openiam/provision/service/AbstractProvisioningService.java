@@ -1238,4 +1238,14 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         return resp;
     }
 
+    protected void setCurrentSuperiors(ProvisionUser pUser) {
+        if (StringUtils.isNotEmpty(pUser.getUserId())) {
+            List<UserEntity> entities = userMgr.getSuperiors(pUser.getUserId(), -1, -1);
+            List<User> superiors = userDozerConverter.convertToDTOList(entities, true);
+            if (CollectionUtils.isNotEmpty(superiors)) {
+                pUser.setSuperiors(new HashSet<User>(superiors));
+            }
+        }
+    }
+
 }

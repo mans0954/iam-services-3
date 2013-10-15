@@ -50,19 +50,17 @@ import java.util.*;
         "roleAttributes",
         "roleName",
         "userAssociationMethod",
-        "metadataTypeId",
-        "ownerId",
         "status",
         "childRoles",
         "selected",
-        "internalRoleId",
         "operation",
         "startDate",
         "endDate",
         "rolePolicy",
         "parentRoles",
-        "resources"
-
+        "resources",
+        "managedSysId",
+        "managedSysName"
 })
 @XmlRootElement(name = "Role")
 @XmlSeeAlso({
@@ -99,14 +97,13 @@ public class Role extends BaseObject implements Comparable<Role> {
     protected String status;
     protected Boolean selected = new Boolean(false);
 
-    protected String metadataTypeId;
-
-    protected String ownerId;
-    protected String internalRoleId;
     private String serviceId;
 
     private Set<Role> parentRoles;
     private Set<Role> childRoles;
+    
+    private String managedSysId;
+    private String managedSysName;
     
     private Set<Resource> resources;
 
@@ -195,24 +192,6 @@ public class Role extends BaseObject implements Comparable<Role> {
         this.userAssociationMethod = value;
     }
 
-    public String getMetadataTypeId() {
-        return metadataTypeId;
-    }
-
-
-    public void setMetadataTypeId(String metadataTypeId) {
-        this.metadataTypeId = metadataTypeId;
-    }
-
-    public String getOwnerId() {
-        return ownerId;
-    }
-
-
-    public void setOwnerId(String ownerId) {
-        this.ownerId = ownerId;
-    }
-    
     public void addParentRole(final Role role) {
     	if(role != null) {
     		if(parentRoles == null) {
@@ -248,18 +227,6 @@ public class Role extends BaseObject implements Comparable<Role> {
 		this.childRoles = childRoles;
 	}
 
-
-	public String toString() {
-        String str = "id=" + roleId +
-                " name=" + roleName +
-                " metadataTypeId=" + metadataTypeId +
-                " ownerId=" + ownerId +
-                " startDate=" + startDate +
-                " endDate=" + endDate;
-        return str;
-
-    }
-
     public String getStatus() {
         return status;
     }
@@ -271,15 +238,6 @@ public class Role extends BaseObject implements Comparable<Role> {
 
     public void setRoleStatus(RoleStatus status) {
         this.status = status.toString();
-    }
-
-    public String getInternalRoleId() {
-        return internalRoleId;
-    }
-
-
-    public void setInternalRoleId(String internalRoleId) {
-        this.internalRoleId = internalRoleId;
     }
 
     public Boolean getSelected() {
@@ -339,6 +297,22 @@ public class Role extends BaseObject implements Comparable<Role> {
     public void setResources(Set<Resource> resources) {
         this.resources = resources;
     }
+    
+    public String getManagedSysId() {
+		return managedSysId;
+	}
+
+	public void setManagedSysId(String managedSysId) {
+		this.managedSysId = managedSysId;
+	}
+
+	public String getManagedSysName() {
+		return managedSysName;
+	}
+
+	public void setManagedSysName(String managedSysName) {
+		this.managedSysName = managedSysName;
+	}
 
     @Override
     public boolean equals(Object o) {
@@ -349,13 +323,13 @@ public class Role extends BaseObject implements Comparable<Role> {
 
         if (createDate != null ? !createDate.equals(role.createDate) : role.createDate != null) return false;
         if (description != null ? !description.equals(role.description) : role.description != null) return false;
-        if (ownerId != null ? !ownerId.equals(role.ownerId) : role.ownerId != null) return false;
         if (roleId != null ? !roleId.equals(role.roleId) : role.roleId != null) return false;
         if (roleName != null ? !roleName.equals(role.roleName) : role.roleName != null) return false;
         if (selected != null ? !selected.equals(role.selected) : role.selected != null) return false;
         if (serviceId != null ? !serviceId.equals(role.serviceId) : role.serviceId != null) return false;
         if (status != null ? !status.equals(role.status) : role.status != null) return false;
-
+        if (managedSysId != null ? !managedSysId.equals(role.managedSysId) : role.managedSysId != null) return false;
+        if (managedSysName != null ? !managedSysName.equals(role.managedSysName) : role.managedSysName != null) return false;
         return true;
     }
 
@@ -367,8 +341,9 @@ public class Role extends BaseObject implements Comparable<Role> {
         result = 31 * result + (roleName != null ? roleName.hashCode() : 0);
         result = 31 * result + (status != null ? status.hashCode() : 0);
         result = 31 * result + (selected != null ? selected.hashCode() : 0);
-        result = 31 * result + (ownerId != null ? ownerId.hashCode() : 0);
         result = 31 * result + (serviceId != null ? serviceId.hashCode() : 0);
+        result = 31 * result + (managedSysId != null ? managedSysId.hashCode() : 0);
+        result = 31 * result + (managedSysName != null ? managedSysName.hashCode() : 0);
         return result;
     }
 }

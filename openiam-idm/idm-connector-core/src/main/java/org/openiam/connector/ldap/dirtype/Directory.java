@@ -42,12 +42,15 @@ public interface Directory {
     
     void setAttributes(String name, Object obj);
 
-    void delete(CrudRequest reqType, LdapContext ldapctx, String ldapName, String onDelete ) throws NamingException;
+    void delete(CrudRequest reqType, LdapContext ldapctx, String ldapName, String onDelete) throws NamingException;
 
-    void removeAccountMemberships( String ldapName, ManagedSystemObjectMatch matchObj,  LdapContext ldapctx );
+    void removeAccountMemberships( String ldapName, ManagedSystemObjectMatch matchObj,  LdapContext ldapctx);
+
+    void removeSupervisorMemberships( String ldapName, ManagedSystemObjectMatch matchObj,  LdapContext ldapctx);
 
     void updateAccountMembership(List<BaseAttribute> targetMembershipList, String ldapName,
-                                 ManagedSystemObjectMatch matchObj,  LdapContext ldapctx, ExtensibleObject obj );
+                                 ManagedSystemObjectMatch matchObj,  LdapContext ldapctx, ExtensibleObject obj);
 
-    
+    void updateSupervisorMembership(List<BaseAttribute> supervisorMembershipList, String identity,
+                                    ManagedSystemObjectMatch matchObj,  LdapContext ldapctx, ExtensibleObject obj);
 }

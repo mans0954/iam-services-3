@@ -237,6 +237,14 @@
 			<a>resources</a>
 			<b>resources</b>
 		</field>
+		<field>
+			<a>managedSystem.managedSysId</a>
+			<b>managedSysId</b>
+		</field>
+		<field>
+			<a>managedSystem.name</a>
+			<b>managedSysName</b>
+		</field>
 	</mapping>
 	<mapping>
 		<class-a>org.openiam.idm.srvc.report.domain.ReportCriteriaParamEntity

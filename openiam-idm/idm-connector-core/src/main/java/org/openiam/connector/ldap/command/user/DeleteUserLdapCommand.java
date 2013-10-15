@@ -25,32 +25,23 @@ import java.util.regex.Pattern;
 public class DeleteUserLdapCommand extends AbstractCrudLdapCommand<ExtensibleUser> {
     @Override
     protected void performObjectOperation(ManagedSysEntity managedSys, CrudRequest<ExtensibleUser> deleteRequestType,  LdapContext ldapctx) throws ConnectorDataException {
-        boolean groupMembershipEnabled = true;
         String delete = "DELETE";
         ManagedSystemObjectMatch matchObj = getMatchObject(deleteRequestType.getTargetID(), "USER");
         try {
             Set<ResourceProp> rpSet = getResourceAttributes(managedSys.getResourceId());
             ResourceProp rpOnDelete = getResourceAttr(rpSet,"ON_DELETE");
-            ResourceProp rpGroupMembership = getResourceAttr(rpSet,"GROUP_MEMBERSHIP_ENABLED");
 
             if (rpOnDelete == null || rpOnDelete.getPropValue() == null || "DELETE".equalsIgnoreCase(rpOnDelete.getPropValue())) {
                 delete = "DELETE";
-            }else if (rpOnDelete.getPropValue() != null) {
-
+            } else if (rpOnDelete.getPropValue() != null) {
                 if ("DISABLE".equalsIgnoreCase(rpOnDelete.getPropValue())) {
                     delete = "DISABLE";
                 }
             }
 
             // BY DEFAULT - we want to enable group membership
-            if (rpGroupMembership == null || rpGroupMembership.getPropValue() == null || "Y".equalsIgnoreCase(rpGroupMembership.getPropValue())) {
-                groupMembershipEnabled = true;
-            }else if (rpGroupMembership.getPropValue() != null) {
-
-                if ("N".equalsIgnoreCase(rpGroupMembership.getPropValue())) {
-                    groupMembershipEnabled = false;
-                }
-            }
+            boolean groupMembershipEnabled = isMembershipEnabled(rpSet, "GROUP_MEMBERSHIP_ENABLED");
+            boolean supervisorMembershipEnabled = isMembershipEnabled(rpSet, "SUPERVISOR_MEMBERSHIP_ENABLED");
 
             Directory dirSpecificImp  = DirectorySpecificImplFactory.create(managedSys.getHandler5());
             String identity = deleteRequestType.getObjectIdentity();
@@ -77,6 +68,9 @@ public class DeleteUserLdapCommand extends AbstractCrudLdapCommand<ExtensibleUse
             log.debug("Deleting.. users in ldap.." + identityDN);
             if (groupMembershipEnabled) {
                 dirSpecificImp.removeAccountMemberships(identityDN, matchObj, ldapctx);
+            }
+            if (supervisorMembershipEnabled) {
+                dirSpecificImp.removeSupervisorMemberships(identityDN, matchObj, ldapctx);
             }
             dirSpecificImp.delete(deleteRequestType, ldapctx, identityDN, delete);
         } catch (NamingException e) {

@@ -96,6 +96,7 @@ public class AuthProviderDaoImpl extends BaseDaoImpl<AuthProviderEntity, String>
         final ManagedSysEntity managedSysEntity = new ManagedSysEntity();
         managedSysEntity.setManagedSysId(managedSysId);
         entity.setManagedSys(managedSysEntity);
+        entity.setManagedSysId(managedSysId);
         return getByExample(entity);
     }
 

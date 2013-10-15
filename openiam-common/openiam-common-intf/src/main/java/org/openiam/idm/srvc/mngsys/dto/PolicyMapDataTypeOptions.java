@@ -19,6 +19,8 @@ public enum PolicyMapDataTypeOptions {
     TIMESTAMP("timestamp"),
     @XmlEnumValue("memberOf")
     MEMBER_OF("memberOf"),
+    @XmlEnumValue("manager")
+    MANAGER("manager"),
     @XmlEnumValue("byteArray")
     BYTE_ARRAY("byteArray");
 

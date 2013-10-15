@@ -23,6 +23,8 @@ import org.openiam.idm.srvc.policy.service.PolicyDAO;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.service.ResourceDAO;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
+import org.openiam.idm.srvc.role.domain.RoleEntity;
+import org.openiam.idm.srvc.role.service.RoleDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -64,6 +66,9 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
 
     @Autowired
     private AuthProviderDao authProviderDao;
+    
+    @Autowired
+    RoleDAO roleDAO;
 
     private static final String resourceTypeId="MANAGED_SYS";
 
@@ -121,6 +126,14 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
         		groupDAO.update(group);
         	}
         }
+        
+        if(CollectionUtils.isNotEmpty(sysEntity.getRoles())) {
+        	for(final RoleEntity role : sysEntity.getRoles()) {
+        		role.setManagedSystem(null);
+        		roleDAO.update(role);
+        	}
+        }
+        
         managedSysDAO.delete(sysEntity);
     }
     

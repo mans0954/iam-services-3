@@ -65,6 +65,7 @@ import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.user.domain.UserEntity;
+import org.openiam.idm.srvc.user.dto.Supervisor;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.provision.dto.AccountLockEnum;
@@ -762,7 +763,9 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS, null);
         bindingMap.put(TARGET_SYSTEM_IDENTITY, null);
         if (!isAdd) {
-            bindingMap.put("userBeforeModify", new ProvisionUser(userDozerConverter.convertToDTO(userEntity, true)));
+            ProvisionUser u = new ProvisionUser(userDozerConverter.convertToDTO(userEntity, true));
+            setCurrentSuperiors(u); // TODO: Consider the possibility to add and update superiors by cascade from UserEntity
+            bindingMap.put("userBeforeModify", u);
         }
         if (callPreProcessor(isAdd ? "ADD" : "MODIFY", pUser, bindingMap) != ProvisioningConstants.SUCCESS) {
             resp.setStatus(ResponseStatus.FAILURE);
@@ -1115,6 +1118,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             // what the new object will look like
             // Provision user that goes to the target system. Derived from userEntity after all changes
             ProvisionUser targetSysProvUser = new ProvisionUser(userDozerConverter.convertToDTO(userEntity, true));
+            setCurrentSuperiors(targetSysProvUser); // TODO: Consider the possibility to add and update superiors by cascade from UserEntity
             targetSysProvUser.setStatus(pUser.getStatus()); // copying user status (need to define enable/disable status)
 
             bindingMap.put(TARGET_SYS_RES_ID, res.getResourceId());

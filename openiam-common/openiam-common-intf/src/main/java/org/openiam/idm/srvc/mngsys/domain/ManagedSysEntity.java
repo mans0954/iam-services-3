@@ -7,6 +7,7 @@ import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity;
+import org.openiam.idm.srvc.role.domain.RoleEntity;
 
 import javax.persistence.*;
 
@@ -99,6 +100,9 @@ public class ManagedSysEntity implements Serializable {
     @OneToMany(orphanRemoval = false, cascade = {CascadeType.DETACH, CascadeType.REFRESH}, mappedBy = "managedSystem", fetch = FetchType.LAZY)
     private Set<GroupEntity> groups;
 
+    @OneToMany(orphanRemoval = false, cascade = {CascadeType.DETACH, CascadeType.REFRESH}, mappedBy = "managedSystem", fetch = FetchType.LAZY)
+    private Set<RoleEntity> roles;
+    
     public List<ManagedSysRuleEntity> getRules() {
         return rules;
     }
@@ -354,6 +358,14 @@ public class ManagedSysEntity implements Serializable {
 
 	public void setGroups(Set<GroupEntity> groups) {
 		this.groups = groups;
+	}
+	
+	public Set<RoleEntity> getRoles() {
+		return roles;
+	}
+
+	public void setRoles(Set<RoleEntity> roles) {
+		this.roles = roles;
 	}
 
 	@Override

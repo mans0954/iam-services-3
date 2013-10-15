@@ -5,6 +5,7 @@ import java.util.List;
 import javax.jws.WebParam;
 import javax.jws.WebService;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -46,7 +47,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 
 @Service("managedSysService")
 @WebService(endpointInterface = "org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService", targetNamespace = "urn:idm.openiam.org/srvc/mngsys/service", portName = "ManagedSystemWebServicePort", serviceName = "ManagedSystemWebService")
@@ -186,7 +186,7 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
     			throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
     		}
             List<AuthProviderEntity> authProviderEntities = managedSystemService.findAuthProvidersByManagedSysId(sysId);
-            if (!CollectionUtils.isEmpty(authProviderEntities)) {
+            if (CollectionUtils.isNotEmpty(authProviderEntities)) {
                 throw new BasicDataServiceException(ResponseCode.LINKED_TO_AUTHENTICATION_PROVIDER, authProviderEntities.get(0).getName());
             }
     		managedSystemService.removeManagedSysById(sysId);
