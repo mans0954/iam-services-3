@@ -665,7 +665,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
         searchBean.setShowInSearch(0);
         searchBean.setMaxResultSize(1);
         List<org.openiam.idm.srvc.user.domain.UserEntity> idmUsers = userManager
-                .getByExample(searchBean);
+                .getByExample(searchBean, 0, Integer.MAX_VALUE);
         if (CollectionUtils.isEmpty(idmUsers)) {
             return null;
         } else {

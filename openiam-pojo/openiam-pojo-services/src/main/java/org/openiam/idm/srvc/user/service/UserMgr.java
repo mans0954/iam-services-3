@@ -2081,8 +2081,8 @@ public class UserMgr implements UserDataService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<UserEntity> getByExample(UserSearchBean searchBean) {
-        return userDao.getByExample(searchBean);
+    public List<UserEntity> getByExample(UserSearchBean searchBean, int start, int size) {
+        return userDao.getByExample(searchBean, start, size);
     }
 
     @Override

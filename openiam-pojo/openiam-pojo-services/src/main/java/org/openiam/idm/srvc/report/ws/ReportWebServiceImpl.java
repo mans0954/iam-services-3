@@ -72,6 +72,7 @@ public class ReportWebServiceImpl implements ReportWebService {
 
 				response.setReportDataDto(reportDataDto);
 			} catch (Throwable ex) {
+                log.error(ex);
 				response.setErrorCode(ResponseCode.INVALID_ARGUMENTS);
 				response.setErrorText(ex.getMessage());
 				response.setStatus(ResponseStatus.FAILURE);
