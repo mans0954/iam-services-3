@@ -1434,7 +1434,7 @@ public class UserMgr implements UserDataService {
         } else {
             userIds = getUserIds(searchBean);
         }
-        userIds.removeAll(userDao.getAllAttachedSupSubIds(searchBean.getRequesterId()));
+        userIds.removeAll(userDao.getAllAttachedSupSubIds(searchBean.getKey()));
         return userDao.findByIds(userIds);
     }
 

@@ -82,6 +82,14 @@
             <a>affiliations</a>
             <b>affiliations</b>
         </field-exclude>
+        <field-exclude>
+            <a>supervisorsSet</a>
+            <b>supervisorsSet</b>
+        </field-exclude>
+        <field-exclude>
+            <a>subordinatesSet</a>
+            <b>subordinatesSet</b>
+        </field-exclude>
 	</mapping>
 
 	<mapping>

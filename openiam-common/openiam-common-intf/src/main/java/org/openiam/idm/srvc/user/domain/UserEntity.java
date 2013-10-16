@@ -248,6 +248,21 @@ public class UserEntity {
     @Fetch(FetchMode.SUBSELECT)
     private Set<ResourceEntity> resources = new HashSet<ResourceEntity>(0);
 
+
+    @ManyToMany(cascade = { CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH }, fetch = FetchType.LAZY)
+    @JoinTable(name = "ORG_STRUCTURE",
+            joinColumns = { @JoinColumn(name = "SUPERVISOR_ID") },
+            inverseJoinColumns = { @JoinColumn(name = "STAFF_ID") })
+    @Fetch(FetchMode.SUBSELECT)
+    private Set<UserEntity> supervisorsSet;
+
+    @ManyToMany(cascade = { CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH }, fetch = FetchType.LAZY)
+    @JoinTable(name = "ORG_STRUCTURE",
+            joinColumns = { @JoinColumn(name = "STAFF_ID") },
+            inverseJoinColumns = { @JoinColumn(name = "SUPERVISOR_ID") })
+    @Fetch(FetchMode.SUBSELECT)
+    private Set<UserEntity> subordinatesSet;
+
     public UserEntity() {
     }
 
@@ -511,117 +526,6 @@ public class UserEntity {
     	return displayName;
     }
 
-//    public String getCountry() {
-//        return country;
-//    }
-//
-//    public void setCountry(String country) {
-//        this.country = country;
-//    }
-//
-//    public String getBldgNum() {
-//        return bldgNum;
-//    }
-//
-//    public void setBldgNum(String bldgNum) {
-//        this.bldgNum = bldgNum;
-//    }
-//
-//    public String getStreetDirection() {
-//        return streetDirection;
-//    }
-//
-//    public void setStreetDirection(String streetDirection) {
-//        this.streetDirection = streetDirection;
-//    }
-//
-//    public String getSuite() {
-//        return suite;
-//    }
-//
-//    public void setSuite(String suite) {
-//        this.suite = suite;
-//    }
-//
-//    public String getAddress1() {
-//        return address1;
-//    }
-//
-//    public void setAddress1(String address1) {
-//        this.address1 = address1;
-//    }
-//
-//    public String getAddress2() {
-//        return address2;
-//    }
-//
-//    public void setAddress2(String address2) {
-//        this.address2 = address2;
-//    }
-//
-//    public String getAddress3() {
-//        return address3;
-//    }
-//
-//    public void setAddress3(String address3) {
-//        this.address3 = address3;
-//    }
-//
-//    public String getAddress4() {
-//        return address4;
-//    }
-//
-//    public void setAddress4(String address4) {
-//        this.address4 = address4;
-//    }
-//
-//    public String getAddress5() {
-//        return address5;
-//    }
-//
-//    public void setAddress5(String address5) {
-//        this.address5 = address5;
-//    }
-//
-//    public String getAddress6() {
-//        return address6;
-//    }
-//
-//    public void setAddress6(String address6) {
-//        this.address6 = address6;
-//    }
-//
-//    public String getAddress7() {
-//        return address7;
-//    }
-//
-//    public void setAddress7(String address7) {
-//        this.address7 = address7;
-//    }
-//
-//    public String getCity() {
-//        return city;
-//    }
-//
-//    public void setCity(String city) {
-//        this.city = city;
-//    }
-//
-//    public String getState() {
-//        return state;
-//    }
-//
-//    public void setState(String state) {
-//        this.state = state;
-//    }
-//
-//    public String getPostalCd() {
-//        return postalCd;
-//    }
-//
-//    public void setPostalCd(String postalCd) {
-//        this.postalCd = postalCd;
-//    }
     @Deprecated
     public String getEmail() {
         String defaultEmail = null;
@@ -635,42 +539,6 @@ public class UserEntity {
         }
         return defaultEmail;
     }
-
-//    public void setEmail(String email) {
-//        this.email = email;
-//    }
-//
-//    public String getAreaCd() {
-//        return areaCd;
-//    }
-//
-//    public void setAreaCd(String areaCd) {
-//        this.areaCd = areaCd;
-//    }
-//
-//    public String getCountryCd() {
-//        return countryCd;
-//    }
-//
-//    public void setCountryCd(String countryCd) {
-//        this.countryCd = countryCd;
-//    }
-//
-//    public String getPhoneNbr() {
-//        return phoneNbr;
-//    }
-//
-//    public void setPhoneNbr(String phoneNbr) {
-//        this.phoneNbr = phoneNbr;
-//    }
-//
-//    public String getPhoneExt() {
-//        return phoneExt;
-//    }
-//
-//    public void setPhoneExt(String phoneExt) {
-//        this.phoneExt = phoneExt;
-//    }
 
     public Integer getShowInSearch() {
         return showInSearch;
@@ -1077,6 +945,22 @@ public class UserEntity {
         }
 	
 	}
+
+    public Set<UserEntity> getSupervisorsSet() {
+        return supervisorsSet;
+    }
+
+    public void setSupervisorsSet(Set<UserEntity> supervisorsSet) {
+        this.supervisorsSet = supervisorsSet;
+    }
+
+    public Set<UserEntity> getSubordinatesSet() {
+        return subordinatesSet;
+    }
+
+    public void setSubordinatesSet(Set<UserEntity> subordinatesSet) {
+        this.subordinatesSet = subordinatesSet;
+    }
 
     @Override
     public boolean equals(Object o) {

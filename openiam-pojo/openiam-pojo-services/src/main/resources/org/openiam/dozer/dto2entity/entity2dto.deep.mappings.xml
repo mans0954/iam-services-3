@@ -115,6 +115,16 @@
             <a>affiliations</a>
             <b>affiliations</b>
         </field>
+        <field custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
+               custom-converter-param="dto2entityShallowDozerMapper">
+            <a>supervisorsSet</a>
+            <b>supervisorsSet</b>
+        </field>
+        <field custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
+               custom-converter-param="dto2entityShallowDozerMapper">
+            <a>subordinatesSet</a>
+            <b>subordinatesSet</b>
+        </field>
 	</mapping>
 
 	<mapping>
