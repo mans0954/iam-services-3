@@ -39,9 +39,6 @@ import org.springframework.stereotype.Repository;
 public class ProvisionRequestDAOImpl extends BaseDaoImpl<ProvisionRequestEntity, String> implements ProvisionRequestDAO {
 
 	private static final Log log = LogFactory.getLog(ProvisionRequestDAOImpl.class);
-
-	@Value("${fetch.size}")
-	private int maxResultSetSize;
 	
 	@Override
 	protected Criteria getExampleCriteria(ProvisionRequestEntity entity) {
@@ -73,8 +70,7 @@ public class ProvisionRequestDAOImpl extends BaseDaoImpl<ProvisionRequestEntity,
 		return getByExample(example);	
 	}
 
-
-	
+	/*
 	public List<ProvisionRequestEntity> search(SearchRequest search) {
 		Session session = getSession();
 		Criteria crit = session.createCriteria(org.openiam.idm.srvc.prov.request.dto.ProvisionRequest.class);
@@ -135,6 +131,7 @@ public class ProvisionRequestDAOImpl extends BaseDaoImpl<ProvisionRequestEntity,
 		List<ProvisionRequestEntity> results = (List<ProvisionRequestEntity>)crit.list();
 		return results;		
 	}
+	*/
 
 	@Override
 	protected String getPKfieldName() {

@@ -48,6 +48,7 @@ import org.springframework.stereotype.Service;
 @Service("provRequestWS")
 public class RequestWebServiceImpl implements RequestWebService {
 
+	/*
 	@Autowired
 	private RequestDataService provRequestService;
 	
@@ -110,4 +111,5 @@ public class RequestWebServiceImpl implements RequestWebService {
 		}
 		return resp;
 	}
+	*/
 }

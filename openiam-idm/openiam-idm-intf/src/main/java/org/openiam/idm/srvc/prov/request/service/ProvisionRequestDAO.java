@@ -13,7 +13,7 @@ import org.openiam.idm.srvc.prov.request.dto.SearchRequest;
  *
  */
 public interface ProvisionRequestDAO extends BaseDao<ProvisionRequestEntity, String> {
-	List<ProvisionRequestEntity> search(SearchRequest search);
+	//List<ProvisionRequestEntity> search(SearchRequest search);
 	
 	List<ProvisionRequestEntity> findRequestByApprover(String approverId, String status);
 }
