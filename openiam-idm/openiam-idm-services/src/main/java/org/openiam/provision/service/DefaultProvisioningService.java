@@ -392,7 +392,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 for (LoginEntity l : principalList) {
                     // this try-catch block for protection other operations and other resources if one resource was fall with error
                     try {
-                        if (LoginStatusEnum.INACTIVE.equals(l.getStatus())) {
+                        if (!LoginStatusEnum.INACTIVE.equals(l.getStatus())) {
                             // only add the connectors if its a secondary identity.
                             if (!l.getManagedSysId().equalsIgnoreCase(
                                     this.sysConfiguration.getDefaultManagedSysId())) {

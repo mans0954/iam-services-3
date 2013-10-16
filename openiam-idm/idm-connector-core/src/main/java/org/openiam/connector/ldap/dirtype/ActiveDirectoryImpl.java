@@ -1,5 +1,6 @@
 package org.openiam.connector.ldap.dirtype;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.AttributeOperationEnum;
@@ -90,17 +91,19 @@ public class ActiveDirectoryImpl implements Directory {
 
     }
 
-    public void removeAccountMemberships( String ldapName, ManagedSystemObjectMatch matchObj,  LdapContext ldapctx ) {
+    public void removeAccountMemberships( String identity, ManagedSystemObjectMatch matchObj, LdapContext ldapctx ) {
 
-        List<String> currentMembershipList = userMembershipList(ldapName, matchObj,   ldapctx);
+        List<String> currentMembershipList = userMembershipList(identity, matchObj, ldapctx);
 
         // remove membership
         if (currentMembershipList != null) {
-            for (String s : currentMembershipList) {
 
+            String identityDN = matchObj.getKeyField() + "=" + identity + "," + matchObj.getBaseDn();
+
+            for (String s : currentMembershipList) {
                 try {
                     ModificationItem mods[] = new ModificationItem[1];
-                    mods[0] = new ModificationItem(DirContext.REMOVE_ATTRIBUTE, new BasicAttribute("uniqueMember", ldapName));
+                    mods[0] = new ModificationItem(DirContext.REMOVE_ATTRIBUTE, new BasicAttribute("member", identityDN));
                     ldapctx.modifyAttributes(s, mods);
                 } catch (NamingException ne ) {
                     log.error(ne);
@@ -110,18 +113,21 @@ public class ActiveDirectoryImpl implements Directory {
 
     }
 
-    public void removeSupervisorMemberships( String ldapName, ManagedSystemObjectMatch matchObj, LdapContext ldapctx ) {
+    public void removeSupervisorMemberships( String identity, ManagedSystemObjectMatch matchObj, LdapContext ldapctx ) {
 
-        List<String> currentSupervisorMembershipList = userSupervisorMembershipList(ldapName, matchObj, ldapctx);
+        List<String> currentSupervisorMembershipList = userSupervisorMembershipList(identity, matchObj, ldapctx);
 
         // remove membership
         if (currentSupervisorMembershipList != null) {
+
+            String identityDN = matchObj.getKeyField() + "=" + identity + "," + matchObj.getBaseDn();
+
             for (String s : currentSupervisorMembershipList) {
                 try {
-                    log.debug("Removing supervisor: " + s + " from " + ldapName);
+                    log.debug("Removing supervisor: " + s + " from " + identity);
                     ModificationItem mods[] = new ModificationItem[1];
-                    mods[0] = new ModificationItem(DirContext.REMOVE_ATTRIBUTE, new BasicAttribute("manager", ldapName));
-                    ldapctx.modifyAttributes(s, mods);
+                    mods[0] = new ModificationItem(DirContext.REMOVE_ATTRIBUTE, new BasicAttribute("manager", s));
+                    ldapctx.modifyAttributes(identityDN, mods);
                 } catch (NamingException ne ) {
                     log.error(ne);
                 }
@@ -143,10 +149,12 @@ public class ActiveDirectoryImpl implements Directory {
 
         if (targetMembershipList == null && currentMembershipList != null) {
             // remove all associations
+            String identityDN = matchObj.getKeyField() + "=" + ldapName + "," + matchObj.getBaseDn();
+
             for (String s : currentMembershipList) {
                 try {
                     ModificationItem mods[] = new ModificationItem[1];
-                    mods[0] = new ModificationItem(DirContext.REMOVE_ATTRIBUTE, new BasicAttribute("member", ldapName));
+                    mods[0] = new ModificationItem(DirContext.REMOVE_ATTRIBUTE, new BasicAttribute("member", identityDN));
                     ldapctx.modifyAttributes(s, mods);
                 } catch (NamingException ne ) {
                     log.error(ne);
@@ -198,19 +206,21 @@ public class ActiveDirectoryImpl implements Directory {
         log.debug("Current ldap supervisor membership:" + currentSupervisorMembershipList);
 
         if (supervisorMembershipList == null && currentSupervisorMembershipList != null) {
-            // remove all associations
+
+            String identityDN = matchObj.getKeyField() + "=" + identity + "," + matchObj.getBaseDn();
+
             for (String s : currentSupervisorMembershipList) {
                 try {
                     log.debug("Removing supervisor: " + s + " from " + identity);
                     ModificationItem mods[] = new ModificationItem[1];
-                    mods[0] = new ModificationItem(DirContext.REMOVE_ATTRIBUTE, new BasicAttribute("manager", identity));
-                    ldapctx.modifyAttributes(s, mods);
+                    mods[0] = new ModificationItem(DirContext.REMOVE_ATTRIBUTE, new BasicAttribute("manager", s));
+                    ldapctx.modifyAttributes(identityDN, mods);
                 } catch (NamingException ne ) {
                     log.error(ne);
                 }
             }
         }
-        if (supervisorMembershipList != null) {
+        if (CollectionUtils.isNotEmpty(supervisorMembershipList)) {
 
             String identityDN = matchObj.getKeyField() + "=" + identity + "," + matchObj.getBaseDn();
 
@@ -275,7 +285,7 @@ public class ActiveDirectoryImpl implements Directory {
 
     }
 
-    protected List<String> userMembershipList(String samAccountName,  ManagedSystemObjectMatch matchObj, LdapContext ldapctx) {
+    protected List<String> userMembershipList(String samAccountName, ManagedSystemObjectMatch matchObj, LdapContext ldapctx) {
 
         List<String> currentMembershipList = new ArrayList<String>();
 

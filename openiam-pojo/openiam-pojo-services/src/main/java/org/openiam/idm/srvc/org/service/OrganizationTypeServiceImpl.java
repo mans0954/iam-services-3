@@ -102,7 +102,7 @@ public class OrganizationTypeServiceImpl implements OrganizationTypeService {
 	}
 
 	@Override
-	public void validateRole2RoleAddition(String parentId, String memberId)
+	public void validateOrgType2OrgTypeAddition(String parentId, String memberId)
 			throws BasicDataServiceException {
 		final OrganizationTypeEntity parent = organizationTypeDAO.findById(parentId);
 		final OrganizationTypeEntity child = organizationTypeDAO.findById(memberId);
@@ -119,9 +119,11 @@ public class OrganizationTypeServiceImpl implements OrganizationTypeService {
 			throw new BasicDataServiceException(ResponseCode.RELATIONSHIP_EXISTS);
 		}
 		
+		/*
 		if(StringUtils.equals(parentId, memberId)) {
 			throw new BasicDataServiceException(ResponseCode.CANT_ADD_YOURSELF_AS_CHILD);
 		}
+		*/
 	}
 	
 	private boolean causesCircularDependency(final OrganizationTypeEntity parent, final OrganizationTypeEntity child, final Set<OrganizationTypeEntity> visitedSet) {
