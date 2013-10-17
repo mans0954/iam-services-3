@@ -76,14 +76,16 @@ public class AddUserLdapCommand extends AbstractCrudLdapCommand<ExtensibleUser> 
             //Important!!! For add new record in LDAP we must to create identity in DN format
             String identityDN = matchObj.getKeyField() + "=" + identity + "," + objectBaseDN;
             log.debug("Creating users in ldap.." + identityDN);
-            Context result = ldapctx.createSubcontext(identityDN, basicAttr);
+            ldapctx.createSubcontext(identityDN, basicAttr);
 
             if (groupMembershipEnabled) {
-                dirSpecificImp.updateAccountMembership(targetMembershipList, identityDN, matchObj, ldapctx, addRequestType.getExtensibleObject());
+                dirSpecificImp.updateAccountMembership(targetMembershipList, identity, identityDN,
+                        matchObj, ldapctx, addRequestType.getExtensibleObject());
             }
 
             if (supervisorMembershipEnabled) {
-                dirSpecificImp.updateSupervisorMembership(supervisorMembershipList, identity, matchObj, ldapctx, addRequestType.getExtensibleObject());
+                dirSpecificImp.updateSupervisorMembership(supervisorMembershipList, identity, identityDN,
+                        matchObj, ldapctx, addRequestType.getExtensibleObject());
             }
 
         } catch (NamingException e) {
