@@ -14,6 +14,7 @@ import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
 import org.openiam.idm.srvc.meta.dto.SaveTemplateProfileResponse;
+import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.DelegationFilterSearch;
 import org.openiam.idm.srvc.user.dto.NewUserProfileRequestModel;
 import org.openiam.idm.srvc.user.dto.Supervisor;
@@ -312,24 +313,25 @@ public interface UserDataWebService {
      * @param supervisor - the Supervisor record
      * @return a Response Object, containing the result of this operation 
      */
-    @WebMethod
-    public Response updateSupervisor(@WebParam(name = "supervisor", targetNamespace = "") Supervisor supervisor);
+//    @WebMethod
+//    public Response updateSupervisor(@WebParam(name = "supervisor", targetNamespace = "") Supervisor supervisor);
 
     /**
      * Delete a Supervisor record
      * @param supervisorId - the Supervisor ID
+     * @param employeeId - the Employee ID
      * @return a Response Object, containing the result of this operation
      */
     @WebMethod
-    public Response removeSupervisor(@WebParam(name = "supervisor", targetNamespace = "") String supervisorId);
+    public Response removeSupervisor(@WebParam(name = "supervisor", targetNamespace = "") String supervisorId, @WebParam(name = "employeeId", targetNamespace = "") String employeeId);
 
     /**
      * Get a Supervisor Object by ID
      * @param id - the Supervisor ID
      * @return a Supervisor Object, or null if not found
      */
-    @WebMethod
-    public Supervisor getSupervisor(@WebParam(name = "id", targetNamespace = "") String id);
+//    @WebMethod
+//    public Supervisor getSupervisor(@WebParam(name = "id", targetNamespace = "") String id);
 
     /**
      * Returns a List of supervisor objects that represents the supervisors for
@@ -338,8 +340,8 @@ public interface UserDataWebService {
      * @param employeeId
      * @return
      */
-    @WebMethod
-    public List<Supervisor> getSupervisors(@WebParam(name = "employeeId", targetNamespace = "") String employeeId);
+//    @WebMethod
+//    public List<Supervisor> getSupervisors(@WebParam(name = "employeeId", targetNamespace = "") String employeeId);
 
     /**
      * gets a supervisor Object based on the Superior ID and Subordinate ID
@@ -358,8 +360,8 @@ public interface UserDataWebService {
      * @param supervisorId
      * @return
      */
-    @WebMethod
-    public List<Supervisor> getEmployees(@WebParam(name = "supervisorId", targetNamespace = "") String supervisorId);
+//    @WebMethod
+//    public List<Supervisor> getEmployees(@WebParam(name = "supervisorId", targetNamespace = "") String supervisorId);
 
     /**
      * Returns the primary supervisor for this employee. Null if no primary is
@@ -369,7 +371,7 @@ public interface UserDataWebService {
      * @return
      */
     @WebMethod
-    public Supervisor getPrimarySupervisor(@WebParam(name = "employeeId", targetNamespace = "") String employeeId);
+    public User getPrimarySupervisor(@WebParam(name = "employeeId", targetNamespace = "") String employeeId);
 
     /**
      * returns a paged List of Supervisors for this User

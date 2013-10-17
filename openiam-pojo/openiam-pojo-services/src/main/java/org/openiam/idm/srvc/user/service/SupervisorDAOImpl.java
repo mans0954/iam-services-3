@@ -20,6 +20,7 @@ import org.hibernate.criterion.Restrictions;
 import org.openiam.core.dao.BaseDao;
 import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.idm.srvc.user.domain.SupervisorEntity;
+import org.openiam.idm.srvc.user.domain.SupervisorIDEntity;
 import org.springframework.stereotype.Repository;
 
 import static org.hibernate.criterion.Example.create;
@@ -29,10 +30,10 @@ import static org.hibernate.criterion.Example.create;
  * @see org.openiam.idm.srvc.user.dto.Supervisor
  */
 @Repository("supervisorDAO")
-public class SupervisorDAOImpl extends BaseDaoImpl<SupervisorEntity, String> implements SupervisorDAO  {
+public class SupervisorDAOImpl extends BaseDaoImpl<SupervisorEntity, SupervisorIDEntity> implements SupervisorDAO  {
     @Override
     protected String getPKfieldName() {
-        return "orgStructureId";
+        return "id";
     }
 
     /**
@@ -114,7 +115,7 @@ public class SupervisorDAOImpl extends BaseDaoImpl<SupervisorEntity, String> imp
         return supr;
     }
 
-	@Override
+//	@Override
 	public Set<String> getUniqueEmployeeIds() {
 		final List<String> list = getCriteria().setProjection(Projections.property("employee.userId")).list();
 		return (list != null) ? new HashSet<String>(list) : Collections.EMPTY_SET;

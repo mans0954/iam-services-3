@@ -59,11 +59,11 @@ public abstract class AbstractDelegate implements JavaDelegate {
 					break;
 				case SUPERVISOR:
 					if(StringUtils.isNotBlank(targetUserId)) {
-						final List<SupervisorEntity> supervisors = userManager.getSupervisors(targetUserId);
+						final List<UserEntity> supervisors = userManager.getSuperiors(targetUserId, 0, Integer.MAX_VALUE);
 		                if(CollectionUtils.isNotEmpty(supervisors)) {
-		                	for(final SupervisorEntity supervisor : supervisors) {
-		                		if(supervisor.getSupervisor() != null) {
-		                			userIds.add(supervisor.getSupervisor().getUserId());
+		                	for(final UserEntity supervisor : supervisors) {
+		                		if(supervisor != null) {
+		                			userIds.add(supervisor.getUserId());
 		                		}
 		                	}
 		                }

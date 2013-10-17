@@ -249,19 +249,13 @@ public class UserEntity {
     private Set<ResourceEntity> resources = new HashSet<ResourceEntity>(0);
 
 
-    @ManyToMany(cascade = { CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH }, fetch = FetchType.LAZY)
-    @JoinTable(name = "ORG_STRUCTURE",
-            joinColumns = { @JoinColumn(name = "SUPERVISOR_ID") },
-            inverseJoinColumns = { @JoinColumn(name = "STAFF_ID") })
+    @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "employee", fetch = FetchType.LAZY)
     @Fetch(FetchMode.SUBSELECT)
-    private Set<UserEntity> supervisorsSet;
+    private Set<SupervisorEntity> supervisors;
 
-    @ManyToMany(cascade = { CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH }, fetch = FetchType.LAZY)
-    @JoinTable(name = "ORG_STRUCTURE",
-            joinColumns = { @JoinColumn(name = "STAFF_ID") },
-            inverseJoinColumns = { @JoinColumn(name = "SUPERVISOR_ID") })
+    @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "supervisor", fetch = FetchType.LAZY)
     @Fetch(FetchMode.SUBSELECT)
-    private Set<UserEntity> subordinatesSet;
+    private Set<SupervisorEntity> subordinates;
 
     public UserEntity() {
     }
@@ -946,20 +940,20 @@ public class UserEntity {
 	
 	}
 
-    public Set<UserEntity> getSupervisorsSet() {
-        return supervisorsSet;
+    public Set<SupervisorEntity> getSupervisors() {
+        return supervisors;
     }
 
-    public void setSupervisorsSet(Set<UserEntity> supervisorsSet) {
-        this.supervisorsSet = supervisorsSet;
+    public void setSupervisors(Set<SupervisorEntity> supervisorsSet) {
+        this.supervisors = supervisorsSet;
     }
 
-    public Set<UserEntity> getSubordinatesSet() {
-        return subordinatesSet;
+    public Set<SupervisorEntity> getSubordinates() {
+        return subordinates;
     }
 
-    public void setSubordinatesSet(Set<UserEntity> subordinatesSet) {
-        this.subordinatesSet = subordinatesSet;
+    public void setSubordinates(Set<SupervisorEntity> subordinatesSet) {
+        this.subordinates = subordinatesSet;
     }
 
     @Override

@@ -463,6 +463,14 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
         return ((Number) getSubordinatesCriteria(userId).setProjection(rowCount()).uniqueResult()).intValue();
     }
 
+    public UserEntity findPrimarySupervisor(String employeeId){
+        Criteria criteria = getCriteria().createAlias("supervisors","s")
+                .add(Restrictions.eq("userId",employeeId))
+                .add(Restrictions.eq("s.isPrimarySuper",true)).setProjection(Projections.property("s.supervisor"));
+
+        return  (UserEntity)criteria.uniqueResult();
+    }
+
     private Criteria getSuperiorsCriteria(String userId) {
         Criteria criteria = getSession().createCriteria(SupervisorEntity.class).setProjection(Projections.property("supervisor"))
                         .createAlias("employee", "employee").add(Restrictions.eq("employee.userId", userId));
@@ -474,6 +482,8 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
                         .createAlias("supervisor", "supervisor").add(Restrictions.eq("supervisor.userId", userId));
         return criteria;
     }
+
+
 
     public List<String> getAllAttachedSupSubIds(String userId) {
 

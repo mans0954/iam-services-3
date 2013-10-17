@@ -346,12 +346,12 @@ public class UserDataWebServiceImpl implements UserDataWebService{
         return emailAddressDozerConverter.convertToDTOList(adr, false);
     }
 
-    @Override
-    @Transactional(readOnly=true)
-    public List<Supervisor> getEmployees(String supervisorId) {
-        final List<SupervisorEntity> sup = userManager.getEmployees(supervisorId);
-        return supervisorDozerConverter.convertToDTOList(sup, false);
-    }
+//    @Override
+//    @Transactional(readOnly=true)
+//    public List<Supervisor> getEmployees(String supervisorId) {
+//        final List<SupervisorEntity> sup = userManager.getEmployees(supervisorId);
+//        return supervisorDozerConverter.convertToDTOList(sup, false);
+//    }
 
     /*
     @Override
@@ -384,24 +384,24 @@ public class UserDataWebServiceImpl implements UserDataWebService{
 
     @Override
     @Transactional(readOnly=true)
-    public Supervisor getPrimarySupervisor(String employeeId) {
-        final SupervisorEntity sup = userManager.getPrimarySupervisor(employeeId);
-        return supervisorDozerConverter.convertToDTO(sup, false);
+    public User getPrimarySupervisor(String employeeId) {
+        final UserEntity sup = userManager.getPrimarySupervisor(employeeId);
+        return userDozerConverter.convertToDTO(sup, false);
     }
 
-    @Override
-    @Transactional(readOnly=true)
-    public Supervisor getSupervisor(String supervisorObjId) {
-        final SupervisorEntity sup = userManager.getSupervisor(supervisorObjId);
-        return supervisorDozerConverter.convertToDTO(sup, false);
-    }
+//    @Override
+//    @Transactional(readOnly=true)
+//    public Supervisor getSupervisor(String supervisorObjId) {
+//        final SupervisorEntity sup = userManager.getSupervisor(supervisorObjId);
+//        return supervisorDozerConverter.convertToDTO(sup, false);
+//    }
 
-    @Override
-    @Transactional(readOnly=true)
-    public List<Supervisor> getSupervisors(String employeeId) {
-        final List<SupervisorEntity> sup = userManager.getSupervisors(employeeId);
-        return supervisorDozerConverter.convertToDTOList(sup, true);
-    }
+//    @Override
+//    @Transactional(readOnly=true)
+//    public List<Supervisor> getSupervisors(String employeeId) {
+//        final List<SupervisorEntity> sup = userManager.getSupervisors(employeeId);
+//        return supervisorDozerConverter.convertToDTOList(sup, true);
+//    }
 
     @Override
     @Transactional(readOnly=true)
@@ -480,15 +480,15 @@ public class UserDataWebServiceImpl implements UserDataWebService{
     }
 
     @Override
-    public Response removeSuperior(String requesterId, String userId) {
+    public Response removeSuperior(String userId, String employeeId) {
 
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
-            SupervisorEntity supervisor = userManager.findSupervisor(userId, requesterId);
+            SupervisorEntity supervisor = userManager.findSupervisor(userId, employeeId);
             if (supervisor == null) {
                 throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
             }
-            userManager.removeSupervisor(supervisor.getOrgStructureId());
+            userManager.removeSupervisor(userId, employeeId);
 
         } catch (BasicDataServiceException e) {
             response.setErrorCode(e.getCode());
@@ -635,13 +635,13 @@ public class UserDataWebServiceImpl implements UserDataWebService{
     }
 
     @Override
-    public Response removeSupervisor(String supervisorId) {
+    public Response removeSupervisor(String supervisorId, String employeeId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
             if (supervisorId == null) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
             }
-            userManager.removeSupervisor(supervisorId);
+            userManager.removeSupervisor(supervisorId, employeeId);
         } catch (BasicDataServiceException e) {
             response.setErrorCode(e.getCode());
             response.setStatus(ResponseStatus.FAILURE);
@@ -839,26 +839,26 @@ public class UserDataWebServiceImpl implements UserDataWebService{
         return response;
     }
 
-    @Override
-    public Response updateSupervisor(Supervisor supervisor) {
-        final Response response = new Response(ResponseStatus.SUCCESS);
-        try {
-            if (supervisor == null) {
-                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
-            }
-
-            final SupervisorEntity entity = supervisorDozerConverter.convertToEntity(supervisor, true);
-            userManager.updateSupervisor(entity);
-        } catch (BasicDataServiceException e) {
-            response.setErrorCode(e.getCode());
-            response.setStatus(ResponseStatus.FAILURE);
-        } catch (Throwable e) {
-            log.error("Can't perform operation", e);
-            response.setErrorText(e.getMessage());
-            response.setStatus(ResponseStatus.FAILURE);
-        }
-        return response;
-    }
+//    @Override
+//    public Response updateSupervisor(Supervisor supervisor) {
+//        final Response response = new Response(ResponseStatus.SUCCESS);
+//        try {
+//            if (supervisor == null) {
+//                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+//            }
+//
+//            final SupervisorEntity entity = supervisorDozerConverter.convertToEntity(supervisor, true);
+//            userManager.updateSupervisor(entity);
+//        } catch (BasicDataServiceException e) {
+//            response.setErrorCode(e.getCode());
+//            response.setStatus(ResponseStatus.FAILURE);
+//        } catch (Throwable e) {
+//            log.error("Can't perform operation", e);
+//            response.setErrorText(e.getMessage());
+//            response.setStatus(ResponseStatus.FAILURE);
+//        }
+//        return response;
+//    }
 
     @Override
     @Transactional(readOnly=true)

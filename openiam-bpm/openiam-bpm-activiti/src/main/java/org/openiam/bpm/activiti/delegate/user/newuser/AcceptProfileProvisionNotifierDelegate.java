@@ -95,11 +95,11 @@ public class AcceptProfileProvisionNotifierDelegate implements JavaDelegate {
 						}
 	            		break;
 	            	case SUPERVISOR:
-	            		final List<SupervisorEntity> supervisors = userManager.getSupervisors(newUserId);
+	            		final List<UserEntity> supervisors = userManager.getSuperiors(newUserId, 0, Integer.MAX_VALUE);
 	                    if (CollectionUtils.isNotEmpty(supervisors)) {
-	                    	for(final SupervisorEntity supervisorEntity : supervisors) {
-	                    		if(supervisorEntity != null && supervisorEntity.getSupervisor() != null) {
-	                    			final String notifyUserId = supervisorEntity.getSupervisor().getUserId();
+	                    	for(final UserEntity supervisorEntity : supervisors) {
+	                    		if(supervisorEntity != null ) {
+	                    			final String notifyUserId = supervisorEntity.getUserId();
 	                    			if(notifyUserId != null) {
 	                    				userIds.add(notifyUserId);
 	                    			}

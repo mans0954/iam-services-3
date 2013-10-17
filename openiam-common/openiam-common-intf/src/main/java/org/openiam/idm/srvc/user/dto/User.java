@@ -84,8 +84,8 @@ import java.util.*;
         "resources",
         "groups",
         "affiliations",
-        "supervisorsSet",
-        "subordinatesSet"
+        "supervisors",
+        "subordinates"
 })
 @XmlSeeAlso({
         Login.class,
@@ -223,9 +223,9 @@ public class User extends org.openiam.base.BaseObject {
     private String password;
     private Boolean notifyUserViaEmail=true;
 
-    private Set<User> supervisorsSet;
+    private Set<Supervisor> supervisors;
 
-    private Set<User> subordinatesSet;
+    private Set<Supervisor> subordinates;
 
     // Constructors
 
@@ -1232,20 +1232,20 @@ public class User extends org.openiam.base.BaseObject {
         this.notifyUserViaEmail = notifyUserViaEmail;
     }
 
-    public Set<User> getSupervisorsSet() {
-        return supervisorsSet;
+    public Set<Supervisor> getSupervisors() {
+        return supervisors;
     }
 
-    public void setSupervisorsSet(Set<User> supervisorsSet) {
-        this.supervisorsSet = supervisorsSet;
+    public void setSupervisors(Set<Supervisor> supervisorsSet) {
+        this.supervisors = supervisorsSet;
     }
 
-    public Set<User> getSubordinatesSet() {
-        return subordinatesSet;
+    public Set<Supervisor> getSubordinates() {
+        return subordinates;
     }
 
-    public void setSubordinatesSet(Set<User> subordinatesSet) {
-        this.subordinatesSet = subordinatesSet;
+    public void setSubordinates(Set<Supervisor> subordinatesSet) {
+        this.subordinates = subordinatesSet;
     }
 
 

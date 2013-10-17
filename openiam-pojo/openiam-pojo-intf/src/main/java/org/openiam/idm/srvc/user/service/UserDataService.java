@@ -166,11 +166,11 @@ public interface UserDataService {
 
     public void addSuperior(String supervisorId, String subordinateId);
 
-    public void updateSupervisor(SupervisorEntity supervisor);
+//    public void updateSupervisor(SupervisorEntity supervisor);
 
-    public void removeSupervisor(String supervisorId);
+    public void removeSupervisor(String supervisorId, final String employeeId);
 
-    public SupervisorEntity getSupervisor(String supervisorObjId);
+//    public SupervisorEntity getSupervisor(String supervisorObjId);
 
     public void evict(Object object);
 
@@ -181,7 +181,7 @@ public interface UserDataService {
      * @param employeeId
      * @return
      */
-    public List<SupervisorEntity> getSupervisors(String employeeId);
+//    public List<UserEntity> getSupervisors(String employeeId);
 
     public SupervisorEntity findSupervisor(String superiorId, String subordinateId);
 
@@ -204,7 +204,7 @@ public interface UserDataService {
      * @param supervisorId
      * @return
      */
-    public List<SupervisorEntity> getEmployees(String supervisorId);
+//    public List<SupervisorEntity> getEmployees(String supervisorId);
 
     /**
      * Returns the primary supervisor for this employee. Null if no primary is
@@ -213,7 +213,7 @@ public interface UserDataService {
      * @param employeeId
      * @return
      */
-    public SupervisorEntity getPrimarySupervisor(String employeeId);
+    public UserEntity getPrimarySupervisor(String employeeId);
 
     public UserEntity getUser(String id);
 
