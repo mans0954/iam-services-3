@@ -119,7 +119,6 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
      * .dto.ProvisionUser)
      */
     @Override
-    @Transactional
     public ProvisionUserResponse addUser(ProvisionUser pUser) {
         List<ProvisionDataContainer> dataList = new LinkedList<ProvisionDataContainer>();
         ProvisionUserResponse res = addModifyUser(pUser, true, dataList);
@@ -1097,7 +1096,6 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
      * .provision.dto.ProvisionUser)
      */
     @Override
-    @Transactional
     public ProvisionUserResponse modifyUser(ProvisionUser pUser) {
         List<ProvisionDataContainer> dataList = new LinkedList<ProvisionDataContainer>();
         ProvisionUserResponse res = addModifyUser(pUser, false, dataList);
