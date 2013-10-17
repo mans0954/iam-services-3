@@ -106,13 +106,90 @@ public class UserProfileRequestModel extends BaseObject {
 	}
 
 	@Override
-	public String toString() {
-		return "UserProfileRequestModel [emails=" + emails + ", phones="
-				+ phones + ", addresses=" + addresses + ", user=" + user
-				+ ", pageTemplate=" + pageTemplate + ", languageCode="
-				+ languageCode + ", locale=" + locale + ", languageId="
-				+ languageId + "]";
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime
+				* result
+				+ ((activitiRequestType == null) ? 0 : activitiRequestType
+						.hashCode());
+		result = prime * result
+				+ ((addresses == null) ? 0 : addresses.hashCode());
+		result = prime * result + ((emails == null) ? 0 : emails.hashCode());
+		result = prime * result
+				+ ((languageCode == null) ? 0 : languageCode.hashCode());
+		result = prime * result
+				+ ((languageId == null) ? 0 : languageId.hashCode());
+		result = prime * result + ((locale == null) ? 0 : locale.hashCode());
+		result = prime * result
+				+ ((pageTemplate == null) ? 0 : pageTemplate.hashCode());
+		result = prime * result + ((phones == null) ? 0 : phones.hashCode());
+		result = prime * result + ((user == null) ? 0 : user.hashCode());
+		return result;
 	}
 
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		UserProfileRequestModel other = (UserProfileRequestModel) obj;
+		if (activitiRequestType != other.activitiRequestType)
+			return false;
+		if (addresses == null) {
+			if (other.addresses != null)
+				return false;
+		} else if (!addresses.equals(other.addresses))
+			return false;
+		if (emails == null) {
+			if (other.emails != null)
+				return false;
+		} else if (!emails.equals(other.emails))
+			return false;
+		if (languageCode == null) {
+			if (other.languageCode != null)
+				return false;
+		} else if (!languageCode.equals(other.languageCode))
+			return false;
+		if (languageId == null) {
+			if (other.languageId != null)
+				return false;
+		} else if (!languageId.equals(other.languageId))
+			return false;
+		if (locale == null) {
+			if (other.locale != null)
+				return false;
+		} else if (!locale.equals(other.locale))
+			return false;
+		if (pageTemplate == null) {
+			if (other.pageTemplate != null)
+				return false;
+		} else if (!pageTemplate.equals(other.pageTemplate))
+			return false;
+		if (phones == null) {
+			if (other.phones != null)
+				return false;
+		} else if (!phones.equals(other.phones))
+			return false;
+		if (user == null) {
+			if (other.user != null)
+				return false;
+		} else if (!user.equals(other.user))
+			return false;
+		return true;
+	}
+
+	@Override
+	public String toString() {
+		return String
+				.format("UserProfileRequestModel [activitiRequestType=%s, emails=%s, phones=%s, addresses=%s, user=%s, pageTemplate=%s, languageCode=%s, locale=%s, languageId=%s]",
+						activitiRequestType, emails, phones, addresses, user,
+						pageTemplate, languageCode, locale, languageId);
+	}
+
+	
 	
 }

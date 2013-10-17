@@ -148,7 +148,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 		} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
-            auditBuilder.fail().setFailureReason(e.getResponseValue());
+			auditBuilder.fail().setFailureReason(e.getCode()).setException(e);
 		} catch(Throwable e) {
 			LOG.error("Exception", e);
 			response.setStatus(ResponseStatus.FAILURE);
@@ -175,7 +175,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 		} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
-            auditBuilder.fail().setFailureReason(e.getResponseValue());
+			auditBuilder.fail().setFailureReason(e.getCode()).setException(e);
 		} catch(Throwable e) {
 			LOG.error("Exception", e);
 			response.setStatus(ResponseStatus.FAILURE);
@@ -289,7 +289,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 		} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
-            auditBuilder.fail().setFailureReason(e.getResponseValue());
+			auditBuilder.fail().setFailureReason(e.getCode()).setException(e);
 		} catch(Throwable e) {
 			LOG.error("Exception", e);
 			response.setStatus(ResponseStatus.FAILURE);
@@ -339,7 +339,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 		} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
-            auditBuilder.fail().setFailureReason(e.getResponseValue());
+			auditBuilder.fail().setFailureReason(e.getCode()).setException(e);
 		} catch(Throwable e) {
 			LOG.error("Exception", e);
 			response.setStatus(ResponseStatus.FAILURE);
@@ -366,7 +366,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 		} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
-            auditBuilder.fail().setFailureReason(e.getResponseValue());
+			auditBuilder.fail().setFailureReason(e.getCode()).setException(e);
 		} catch(Throwable e) {
 			LOG.error("Exception", e);
 			response.setStatus(ResponseStatus.FAILURE);
@@ -443,7 +443,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
             response.setErrorTokenList(e.getErrorTokenList());
-            auditBuilder.fail().setFailureReason(e.getResponseValue());
+            auditBuilder.fail().setFailureReason(e.getCode()).setException(e);
 		} catch(Throwable e) {
 			LOG.error("Exception", e);
 			response.setStatus(ResponseStatus.FAILURE);
@@ -473,7 +473,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 		} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
-            auditBuilder.fail().setFailureReason(e.getResponseValue());
+			auditBuilder.fail().setFailureReason(e.getCode()).setException(e);
 		} catch(Throwable e) {
 			LOG.error("Exception", e);
 			response.setStatus(ResponseStatus.FAILURE);
@@ -503,7 +503,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 		} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
-            auditBuilder.fail().setFailureReason(e.getResponseValue());
+			auditBuilder.fail().setFailureReason(e.getCode()).setException(e);
 		} catch(Throwable e) {
 			LOG.error("Exception", e);
 			response.setStatus(ResponseStatus.FAILURE);
@@ -531,7 +531,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 		} catch(BasicDataServiceException e) {
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(e.getCode());
-            auditBuilder.fail().setFailureReason(e.getResponseValue());
+            auditBuilder.fail().setFailureReason(e.getCode()).setException(e);
         } catch(Throwable e) {
             LOG.error("Exception", e);
             response.setStatus(ResponseStatus.FAILURE);
@@ -712,7 +712,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 		} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
-            auditBuilder.fail().setFailureReason(e.getResponseValue());
+			auditBuilder.fail().setFailureReason(e.getCode()).setException(e);
 		} catch(Throwable e) {
 			LOG.error("Can't add child role", e);
 			response.setStatus(ResponseStatus.FAILURE);
@@ -744,7 +744,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 		} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
-            auditBuilder.fail().setFailureReason(e.getResponseValue());
+			auditBuilder.fail().setFailureReason(e.getCode()).setException(e);
 		} catch(Throwable e) {
 			LOG.error("Can't remove child role", e);
 			response.setStatus(ResponseStatus.FAILURE);
@@ -790,7 +790,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 		} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
-            auditBuilder.fail().setFailureReason(e.getResponseValue());
+			auditBuilder.fail().setFailureReason(e.getCode()).setException(e);
 		} catch(Throwable e) {
 			LOG.error("Exception", e);
 			response.setStatus(ResponseStatus.FAILURE);
@@ -815,7 +815,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 		} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
-            auditBuilder.fail().setFailureReason(e.getResponseValue());
+			auditBuilder.fail().setFailureReason(e.getCode()).setException(e);
 		} catch(Throwable e) {
 			LOG.error("Exception", e);
 			response.setStatus(ResponseStatus.FAILURE);

@@ -81,5 +81,66 @@ public class NewUserProfileRequestModel extends UserProfileRequestModel implemen
 		this.organizationIds = organizationIds;
 	}
 
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result
+				+ ((groupIds == null) ? 0 : groupIds.hashCode());
+		result = prime * result
+				+ ((loginList == null) ? 0 : loginList.hashCode());
+		result = prime * result
+				+ ((organizationIds == null) ? 0 : organizationIds.hashCode());
+		result = prime * result + ((roleIds == null) ? 0 : roleIds.hashCode());
+		result = prime * result
+				+ ((supervisorIds == null) ? 0 : supervisorIds.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		NewUserProfileRequestModel other = (NewUserProfileRequestModel) obj;
+		if (groupIds == null) {
+			if (other.groupIds != null)
+				return false;
+		} else if (!groupIds.equals(other.groupIds))
+			return false;
+		if (loginList == null) {
+			if (other.loginList != null)
+				return false;
+		} else if (!loginList.equals(other.loginList))
+			return false;
+		if (organizationIds == null) {
+			if (other.organizationIds != null)
+				return false;
+		} else if (!organizationIds.equals(other.organizationIds))
+			return false;
+		if (roleIds == null) {
+			if (other.roleIds != null)
+				return false;
+		} else if (!roleIds.equals(other.roleIds))
+			return false;
+		if (supervisorIds == null) {
+			if (other.supervisorIds != null)
+				return false;
+		} else if (!supervisorIds.equals(other.supervisorIds))
+			return false;
+		return true;
+	}
+
+	@Override
+	public String toString() {
+		return String
+				.format("NewUserProfileRequestModel [loginList=%s, roleIds=%s, groupIds=%s, supervisorIds=%s, organizationIds=%s]",
+						loginList, roleIds, groupIds, supervisorIds,
+						organizationIds);
+	}
+
 	
 }

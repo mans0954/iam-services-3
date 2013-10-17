@@ -28,6 +28,8 @@
 
 	<bean id="springContextProvider" class="org.openiam.util.SpringContextProvider" />
 
+	<bean id="customJacksonMapper" class="org.openiam.idm.util.CustomJacksonMapper" />
+
 	<bean id="deepDozerMapper" class="org.dozer.DozerBeanMapper">
 		<property name="mappingFiles">
 			<list>

@@ -108,7 +108,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
             response.setErrorTokenList(e.getErrorTokenList());
-            auditBuilder.fail().setFailureReason(e.getResponseValue());
+            auditBuilder.fail().setFailureReason(e.getCode()).setException(e);
 		} catch(Throwable e) {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorText(e.getMessage());
@@ -155,7 +155,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
 		} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
-            auditBuilder.fail().setFailureReason(e.getResponseValue());
+			auditBuilder.fail().setFailureReason(e.getCode()).setException(e);
 		} catch(Throwable e) {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorText(e.getMessage());
@@ -248,7 +248,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
 		} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
-            auditBuilder.fail().setFailureReason(e.getResponseValue());
+			auditBuilder.fail().setFailureReason(e.getCode()).setException(e);
 		} catch(Throwable e) {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorText(e.getMessage());
@@ -274,7 +274,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
 		} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
-            auditBuilder.fail().setFailureReason(e.getResponseValue());
+			auditBuilder.fail().setFailureReason(e.getCode()).setException(e);
 		} catch(Throwable e) {
 			log.error("Error while adding user to group", e);
 			response.setStatus(ResponseStatus.FAILURE);
@@ -301,7 +301,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
 		} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
-            auditBuilder.fail().setFailureReason(e.getResponseValue());
+			auditBuilder.fail().setFailureReason(e.getCode()).setException(e);
 		} catch(Throwable e) {
 			log.error("Error while remove user from group", e);
 			response.setStatus(ResponseStatus.FAILURE);
@@ -336,7 +336,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
 		} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
-            auditBuilder.fail().setFailureReason(e.getResponseValue());
+			auditBuilder.fail().setFailureReason(e.getCode()).setException(e);
 		} catch(Throwable e) {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorText(e.getMessage());
@@ -362,7 +362,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
 		} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
-            auditBuilder.fail().setFailureReason(e.getResponseValue());
+			auditBuilder.fail().setFailureReason(e.getCode()).setException(e);
 		} catch(Throwable e) {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorText(e.getMessage());
@@ -526,7 +526,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
 		} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
-            auditBuilder.fail().setFailureReason(e.getResponseValue());
+			auditBuilder.fail().setFailureReason(e.getCode()).setException(e);
 		} catch(Throwable e) {
 			log.error("can't add child group", e);
 			response.setStatus(ResponseStatus.FAILURE);
@@ -555,7 +555,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
 		} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
-            auditBuilder.fail().setFailureReason(e.getResponseValue());
+			auditBuilder.fail().setFailureReason(e.getCode()).setException(e);
 		} catch(Throwable e) {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorText(e.getMessage());
@@ -585,7 +585,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
 		} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
-            auditBuilder.fail().setFailureReason(e.getResponseValue());
+			auditBuilder.fail().setFailureReason(e.getCode()).setException(e);
 		} catch(Throwable e) {
 			log.error("Error while adding user to group", e);
 			response.setStatus(ResponseStatus.FAILURE);
@@ -611,7 +611,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
 		} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
-            auditBuilder.fail().setFailureReason(e.getResponseValue());
+			auditBuilder.fail().setFailureReason(e.getCode()).setException(e);
 		} catch(Throwable e) {
 			log.error("Error while remove user from group", e);
 			response.setStatus(ResponseStatus.FAILURE);
