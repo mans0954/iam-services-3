@@ -49,9 +49,11 @@ public class RequestDataServiceImpl implements RequestDataService {
 
 	}
 
+	/*
 	public List<ProvisionRequestEntity> search(SearchRequest search) {
 		return requestDao.search(search);
 	}
+	*/
 	
 	public List<ProvisionRequestEntity> requestByApprover(String approverId, String status) {
 		return requestDao.findRequestByApprover(approverId, status);

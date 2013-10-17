@@ -28,6 +28,8 @@
 
 	<bean id="springContextProvider" class="org.openiam.util.SpringContextProvider" />
 
+	<bean id="customJacksonMapper" class="org.openiam.idm.util.CustomJacksonMapper" />
+
 	<bean id="deepDozerMapper" class="org.dozer.DozerBeanMapper">
 		<property name="mappingFiles">
 			<list>
@@ -378,7 +380,7 @@
 		<prop key="hibernate.cache.use_query_cache">${openiam.hibernate.query.cache.enabled}</prop>
 		<prop key="hibernate.use_sql_comments">${openiam.hibernate.sql.comments.enabled}</prop>
 		<prop key="hibernate.connection.autoReconnect">${openiam.hibernate.auto.connect.enabled}</prop>
-		<prop key="hibernate.validationQuery">${openiam.hibernate.validationQuery}</prop>
+		<!--<prop key="hibernate.validationQuery">${openiam.hibernate.validationQuery}</prop>-->
 	</util:properties>
 
 	<bean id="hibernateTemplate" class="org.springframework.orm.hibernate3.HibernateTemplate">

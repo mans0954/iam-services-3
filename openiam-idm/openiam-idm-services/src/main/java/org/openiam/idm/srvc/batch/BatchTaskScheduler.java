@@ -52,11 +52,6 @@ public class BatchTaskScheduler implements ApplicationContextAware, Initializing
     @Value("${IS_PRIMARY}")
     private boolean isPrimary;
     
-    @Value("${PRIMARY_HOST}")
-    private String serviceHost;
-    
-    @Value("${openiam.idm.ws.path}")
-    private String serviceContext;
     private ApplicationContext ctx;
     
     private Date lastRun = null;

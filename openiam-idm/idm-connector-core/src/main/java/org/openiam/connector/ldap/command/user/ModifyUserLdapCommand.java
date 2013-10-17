@@ -160,11 +160,13 @@ public class ModifyUserLdapCommand extends AbstractCrudLdapCommand<ExtensibleUse
             ldapctx.modifyAttributes(identityDN, mods);
 
             if (groupMembershipEnabled) {
-                dirSpecificImp.updateAccountMembership(targetMembershipList, identityDN, matchObj, ldapctx, crudRequest.getExtensibleObject());
+                dirSpecificImp.updateAccountMembership(targetMembershipList, identity, identityDN,
+                        matchObj, ldapctx, crudRequest.getExtensibleObject());
             }
 
             if (supervisorMembershipEnabled) {
-                dirSpecificImp.updateSupervisorMembership(supervisorMembershipList, identity, matchObj, ldapctx, crudRequest.getExtensibleObject());
+                dirSpecificImp.updateSupervisorMembership(supervisorMembershipList, identity, identityDN,
+                        matchObj, ldapctx, crudRequest.getExtensibleObject());
             }
 
         } catch (NamingException ne) {

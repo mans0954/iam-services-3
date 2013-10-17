@@ -67,10 +67,10 @@ public class DeleteUserLdapCommand extends AbstractCrudLdapCommand<ExtensibleUse
             String identityDN = matchObj.getKeyField() + "=" + identity+","+objectBaseDN;
             log.debug("Deleting.. users in ldap.." + identityDN);
             if (groupMembershipEnabled) {
-                dirSpecificImp.removeAccountMemberships(identity, matchObj, ldapctx);
+                dirSpecificImp.removeAccountMemberships(identity, identityDN, matchObj, ldapctx);
             }
             if (supervisorMembershipEnabled) {
-                dirSpecificImp.removeSupervisorMemberships(identity, matchObj, ldapctx);
+                dirSpecificImp.removeSupervisorMemberships(identity, identityDN, matchObj, ldapctx);
             }
             dirSpecificImp.delete(deleteRequestType, ldapctx, identityDN, delete);
         } catch (NamingException e) {

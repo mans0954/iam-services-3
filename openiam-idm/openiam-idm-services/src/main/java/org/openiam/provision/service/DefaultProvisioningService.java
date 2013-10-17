@@ -1546,7 +1546,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 	        if (callPreProcessor("SET_PASSWORD", null, bindingMap) != ProvisioningConstants.SUCCESS) {
 	            response.fail();
 	            response.setErrorCode(ResponseCode.FAIL_PREPROCESSOR);
-	            auditLog.fail().setFailureReason(ResponseCode.FAIL_PREPROCESSOR.name());
+	            auditLog.fail().setFailureReason(ResponseCode.FAIL_PREPROCESSOR);
 	            return response;
 	        }
 	
@@ -1557,7 +1557,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 	                passwordSync.getSecurityDomain(), passwordSync.getPrincipal(),
 	                passwordSync.getManagedSystemId());
 	        if (login == null) {
-	        	auditLog.fail().setFailureReason(ResponseCode.PRINCIPAL_NOT_FOUND.name());
+	        	auditLog.fail().setFailureReason(ResponseCode.PRINCIPAL_NOT_FOUND);
 	            response.fail();
 	            response.setErrorCode(ResponseCode.PRINCIPAL_NOT_FOUND);
 	            return response;
@@ -1566,14 +1566,14 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 	        final String userId = login.getUserId();
 	        if (userId == null) {
 	        	response.fail();
-	        	auditLog.fail().setFailureReason(ResponseCode.USER_NOT_FOUND.name());
+	        	auditLog.fail().setFailureReason(ResponseCode.USER_NOT_FOUND);
 	            response.setErrorCode(ResponseCode.USER_NOT_FOUND);
 	            return response;
 	        }
 	        
 	        final UserEntity usr = userMgr.getUser(userId);
 	        if (usr == null) {
-	        	auditLog.fail().setFailureReason(ResponseCode.USER_NOT_FOUND.name());
+	        	auditLog.fail().setFailureReason(ResponseCode.USER_NOT_FOUND);
 	            response.fail();
 	            response.setErrorCode(ResponseCode.USER_NOT_FOUND);
 	            return response;
@@ -1615,7 +1615,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 	            encPassword = loginManager.encryptPassword(usr.getUserId(),
 	                    passwordSync.getPassword());
 	        } catch (EncryptionException e) {
-	        	auditLog.setException(e).fail().setFailureReason(ResponseCode.FAIL_ENCRYPTION.name());
+	        	auditLog.setException(e).fail().setFailureReason(ResponseCode.FAIL_ENCRYPTION);
 	            response.fail();
 	            response.setErrorCode(ResponseCode.FAIL_ENCRYPTION);
 	            return response;
@@ -1647,7 +1647,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 	                    userMgr.updateUserWithDependent(usr, false);
 	
 	                } else {
-	                	auditLog.fail().setFailureReason(ResponseCode.PRINCIPAL_NOT_FOUND.name());
+	                	auditLog.fail().setFailureReason(ResponseCode.PRINCIPAL_NOT_FOUND);
 	                    response.setStatus(ResponseStatus.FAILURE);
 	                    response.setErrorCode(ResponseCode.PRINCIPAL_NOT_FOUND);
 	                }

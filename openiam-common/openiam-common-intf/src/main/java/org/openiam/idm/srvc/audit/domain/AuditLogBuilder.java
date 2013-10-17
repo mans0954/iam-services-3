@@ -2,12 +2,14 @@ package org.openiam.idm.srvc.audit.domain;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.openiam.base.BaseObject;
+import org.openiam.base.ws.ResponseCode;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
 import org.openiam.idm.srvc.audit.constant.AuditResult;
 import org.openiam.idm.srvc.audit.constant.AuditSource;
 import org.openiam.idm.srvc.audit.dto.AuditLogBuilderDto;
+import org.openiam.idm.util.CustomJacksonMapper;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -175,6 +177,13 @@ public class AuditLogBuilder implements Serializable {
 		return this;
 	}
 	
+	public AuditLogBuilder addAttributeAsJson(final AuditAttributeName key, final Object o, final CustomJacksonMapper mapper) {
+		if(mapper != null) {
+			entity.addCustomRecord(key.name(), mapper.mapToStringQuietly(o));
+		}
+		return this;
+	}
+	
 	/**
 	 * Adds an attribute
 	 * @param key - the key
@@ -193,6 +202,17 @@ public class AuditLogBuilder implements Serializable {
 	 */
     public AuditLogBuilder setAuditDescription(final String value) {
         return addAttribute(AuditAttributeName.DESCRIPTION, value);
+    }
+    
+    public AuditLogBuilder addWarning(final String warning) {
+    	return addAttribute(AuditAttributeName.WARNING, warning);
+    }
+    
+    public AuditLogBuilder setFailureReason(final ResponseCode code) {
+    	if(code != null) {
+    		setFailureReason(code.name());
+    	}
+    	return this;
     }
 	
     /**

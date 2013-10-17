@@ -158,7 +158,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
 		} catch (BasicDataServiceException e) {
 			response.setErrorCode(e.getCode());
 			response.setStatus(ResponseStatus.FAILURE);
-            auditBuilder.fail().setFailureReason(e.getResponseValue());
+			auditBuilder.fail().setFailureReason(e.getCode()).setException(e);
 		} catch (Throwable e) {
 			log.error("Can't save or update resource", e);
 			response.setErrorText(e.getMessage());
@@ -232,7 +232,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
 		} catch (BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
-            auditBuilder.fail().setFailureReason(e.getResponseValue());
+			auditBuilder.fail().setFailureReason(e.getCode()).setException(e);
 		} catch (Throwable e) {
 			log.error("Can't save or update resource property", e);
 			response.setStatus(ResponseStatus.FAILURE);
@@ -258,7 +258,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
 		} catch (BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
-            auditBuilder.fail().setFailureReason(e.getResponseValue());
+			auditBuilder.fail().setFailureReason(e.getCode()).setException(e);
 		} catch (Throwable e) {
 			log.error("Can't delete resource property", e);
 			response.setStatus(ResponseStatus.FAILURE);
@@ -283,7 +283,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
 		} catch (BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
-            auditBuilder.fail().setFailureReason(e.getResponseValue());
+			auditBuilder.fail().setFailureReason(e.getCode()).setException(e);
 		} catch (Throwable e) {
 			log.error("Can't delete resource", e);
 			response.setStatus(ResponseStatus.FAILURE);
@@ -311,7 +311,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
 		} catch(BasicDataServiceException e) {
 			response.setErrorCode(e.getCode());
 			response.setStatus(ResponseStatus.FAILURE);
-            auditBuilder.fail().setFailureReason(e.getResponseValue());
+			auditBuilder.fail().setFailureReason(e.getCode()).setException(e);
 		} catch (Throwable e) {
 			log.error("Can't add user to resource", e);
 			response.setStatus(ResponseStatus.FAILURE);
@@ -336,7 +336,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
 		} catch(BasicDataServiceException e) {
 			response.setErrorCode(e.getCode());
 			response.setStatus(ResponseStatus.FAILURE);
-            auditBuilder.fail().setFailureReason(e.getResponseValue());
+			auditBuilder.fail().setFailureReason(e.getCode()).setException(e);
 		} catch (Throwable e) {
 			log.error("Can't delete resource", e);
 			response.setStatus(ResponseStatus.FAILURE);
@@ -431,7 +431,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
 		} catch(BasicDataServiceException e) {
 			response.setErrorCode(e.getCode());
 			response.setStatus(ResponseStatus.FAILURE);
-            auditBuilder.fail().setFailureReason(e.getResponseValue());
+			auditBuilder.fail().setFailureReason(e.getCode()).setException(e);
 		} catch (Throwable e) {
 			log.error("Can't add child resource", e);
 			response.setStatus(ResponseStatus.FAILURE);
@@ -459,7 +459,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
 		} catch(BasicDataServiceException e) {
 			response.setErrorCode(e.getCode());
 			response.setStatus(ResponseStatus.FAILURE);
-            auditBuilder.fail().setFailureReason(e.getResponseValue());
+			auditBuilder.fail().setFailureReason(e.getCode()).setException(e);
 		} catch (Throwable e) {
 			log.error("Can't delete resource", e);
 			response.setStatus(ResponseStatus.FAILURE);
@@ -487,7 +487,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
 		} catch(BasicDataServiceException e) {
 			response.setErrorCode(e.getCode());
 			response.setStatus(ResponseStatus.FAILURE);
-            auditBuilder.fail().setFailureReason(e.getResponseValue());
+			auditBuilder.fail().setFailureReason(e.getCode()).setException(e);
 		} catch (Throwable e) {
 			log.error("Can't add group to resource resource", e);
 			response.setStatus(ResponseStatus.FAILURE);
@@ -516,7 +516,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
 		} catch(BasicDataServiceException e) {
 			response.setErrorCode(e.getCode());
 			response.setStatus(ResponseStatus.FAILURE);
-            auditBuilder.fail().setFailureReason(e.getResponseValue());
+			auditBuilder.fail().setFailureReason(e.getCode()).setException(e);
 		} catch (Throwable e) {
 			log.error("Can't delete group from resource", e);
 			response.setStatus(ResponseStatus.FAILURE);
@@ -544,7 +544,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
 		} catch(BasicDataServiceException e) {
 			response.setErrorCode(e.getCode());
 			response.setStatus(ResponseStatus.FAILURE);
-            auditBuilder.fail().setFailureReason(e.getResponseValue());
+			auditBuilder.fail().setFailureReason(e.getCode()).setException(e);
 		} catch (Throwable e) {
 			log.error("Can't add role to  resource", e);
 			response.setStatus(ResponseStatus.FAILURE);
@@ -571,7 +571,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
 		} catch(BasicDataServiceException e) {
 			response.setErrorCode(e.getCode());
 			response.setStatus(ResponseStatus.FAILURE);
-            auditBuilder.fail().setFailureReason(e.getResponseValue());
+			auditBuilder.fail().setFailureReason(e.getCode()).setException(e);
 		} catch (Throwable e) {
 			log.error("Can't delete resource", e);
 			response.setStatus(ResponseStatus.FAILURE);
@@ -697,7 +697,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
 		} catch(BasicDataServiceException e) {
 			response.setErrorCode(e.getCode());
 			response.setStatus(ResponseStatus.FAILURE);
-            auditBuilder.fail().setFailureReason(e.getResponseValue());
+			auditBuilder.fail().setFailureReason(e.getCode()).setException(e);
 		} catch (Throwable e) {
 			log.error("Exception", e);
 			response.setStatus(ResponseStatus.FAILURE);
@@ -722,7 +722,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
 		} catch (BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
-            auditBuilder.fail().setFailureReason(e.getResponseValue());
+			auditBuilder.fail().setFailureReason(e.getCode()).setException(e);
 		} catch (Throwable e) {
 			log.error("Exception", e);
 			response.setStatus(ResponseStatus.FAILURE);
