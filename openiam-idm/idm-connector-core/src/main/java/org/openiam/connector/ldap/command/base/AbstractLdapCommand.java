@@ -230,9 +230,10 @@ public abstract class AbstractLdapCommand<Request extends RequestType, Response 
                         Attribute a = generateActiveDirectoryPassword(att.getValue());
                         attrs.put(a);
 
-                    } else if (!"userPassword".equalsIgnoreCase(att.getName()) &&
-                            !"ORIG_IDENTITY".equalsIgnoreCase(att.getName())) {
+                    } else if ("userPassword".equalsIgnoreCase(att.getName())) {
+                        attrs.put(new BasicAttribute(att.getName(), att.getValue()));
 
+                    } else {
                         Attribute a = null;
                         if (att.isMultivalued()) {
                             List<String> valList = att.getValueList();

@@ -60,6 +60,8 @@ public class LdapCommandFactory extends AbstractCommandFactory {
                     return resumeLdapCommand;
                 case SET_PASSWORD:
                     return setPasswordLdapCommand;
+                case RESET_PASSWORD:
+                    return setPasswordLdapCommand;
                 case SUSPEND:
                     return suspendLdapCommand;
                 case TEST:

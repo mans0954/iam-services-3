@@ -33,7 +33,6 @@ import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.connector.type.constant.StatusCodeType;
-import org.openiam.connector.type.request.CrudRequest;
 import org.openiam.connector.type.request.LookupRequest;
 import org.openiam.connector.type.request.SuspendResumeRequest;
 import org.openiam.connector.type.response.*;
@@ -65,7 +64,6 @@ import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.user.domain.UserEntity;
-import org.openiam.idm.srvc.user.dto.Supervisor;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.provision.dto.AccountLockEnum;
@@ -77,12 +75,14 @@ import org.openiam.provision.resp.ProvisionUserResponse;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleUser;
 import org.openiam.util.MuleContextProvider;
-import org.openiam.util.SpringContextProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.jws.WebService;
 import java.util.*;
@@ -101,7 +101,12 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
     private DeprovisionSelectedResourceHelper deprovisionSelectedResource;
     @Autowired
     @Qualifier("disableUser")
+
     private DisableUserDelegate disableUser;
+
+    @Autowired
+    @Qualifier("transactionManager")
+    private PlatformTransactionManager platformTransactionManager;
 
     private static final Log log = LogFactory
             .getLog(DefaultProvisioningService.class);
@@ -119,10 +124,17 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
      * .dto.ProvisionUser)
      */
     @Override
-    public ProvisionUserResponse addUser(ProvisionUser pUser) {
-        List<ProvisionDataContainer> dataList = new LinkedList<ProvisionDataContainer>();
-        ProvisionUserResponse res = addModifyUser(pUser, true, dataList);
-        if (res.isSuccess()) {
+    public ProvisionUserResponse addUser(final ProvisionUser pUser) {
+        final List<ProvisionDataContainer> dataList = new LinkedList<ProvisionDataContainer>();
+        final TransactionTemplate transactionTemplate = new TransactionTemplate(platformTransactionManager);
+        ProvisionUserResponse res = transactionTemplate.execute(new TransactionCallback<ProvisionUserResponse>() {
+            @Override
+            public ProvisionUserResponse doInTransaction(TransactionStatus status) {
+                return addModifyUser(pUser, true, dataList);
+            }
+        });
+
+        if (res != null && res.isSuccess()) {
             provQueueService.enqueue(dataList);
         }
         return res;
@@ -724,8 +736,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         return response;
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public ProvisionUserResponse addModifyUser(ProvisionUser pUser, boolean isAdd, List<ProvisionDataContainer> dataList) {
+    private ProvisionUserResponse addModifyUser(ProvisionUser pUser, boolean isAdd, List<ProvisionDataContainer> dataList) {
 
         if (isAdd) {
             log.debug("--- DEFAULT PROVISIONING SERVICE: addUser called ---");
@@ -1096,10 +1107,17 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
      * .provision.dto.ProvisionUser)
      */
     @Override
-    public ProvisionUserResponse modifyUser(ProvisionUser pUser) {
-        List<ProvisionDataContainer> dataList = new LinkedList<ProvisionDataContainer>();
-        ProvisionUserResponse res = addModifyUser(pUser, false, dataList);
-        if (res.isSuccess()) {
+    public ProvisionUserResponse modifyUser(final ProvisionUser pUser) {
+        final List<ProvisionDataContainer> dataList = new LinkedList<ProvisionDataContainer>();
+        final TransactionTemplate transactionTemplate = new TransactionTemplate(platformTransactionManager);
+        ProvisionUserResponse res = transactionTemplate.execute(new TransactionCallback<ProvisionUserResponse>() {
+            @Override
+            public ProvisionUserResponse doInTransaction(TransactionStatus status) {
+                return addModifyUser(pUser, false, dataList);
+            }
+        });
+
+        if (res != null && res.isSuccess()) {
             provQueueService.enqueue(dataList);
         }
         return res;
@@ -1436,7 +1454,6 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
                                 resetPassword(requestId, loginDozerConverter.convertToDTO(lg,false), password,
                                         managedSysDozerConverter.convertToDTO(mSys,false), objectMatchDozerConverter.convertToDTO(matchObj, false));
-
 
                             }
                         }
