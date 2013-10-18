@@ -1,6 +1,7 @@
 package org.openiam.connector.ldap.dirtype;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.AttributeOperationEnum;
@@ -275,12 +276,18 @@ public class ActiveDirectoryImpl implements Directory {
 
     }
 
-    protected List<String> userMembershipList(String samAccountName, ManagedSystemObjectMatch matchObj, LdapContext ldapctx) {
+    protected List<String> userMembershipList(String identityDN, ManagedSystemObjectMatch matchObj, LdapContext ldapctx) {
 
         List<String> currentMembershipList = new ArrayList<String>();
 
-        String userSearchFilter = "(&(objectclass=user)(sAMAccountName=" + samAccountName + "))";
         String searchBase = matchObj.getSearchBaseDn();
+        String userSearchFilter = matchObj.getSearchFilter();
+        // replace the place holder in the search filter
+        if (StringUtils.isNotBlank(userSearchFilter)) {
+            userSearchFilter = userSearchFilter.replace("?", identityDN);
+        } else {
+            userSearchFilter = "(&(objectclass=user)(sAMAccountName=" + identityDN + "))";
+        }
 
         try {
 
@@ -325,12 +332,18 @@ public class ActiveDirectoryImpl implements Directory {
     }
 
     protected List<String> userSupervisorMembershipList(
-            String samAccountName,  ManagedSystemObjectMatch matchObj, LdapContext ldapctx) {
+            String identityDN,  ManagedSystemObjectMatch matchObj, LdapContext ldapctx) {
 
         List<String> currentMembershipList = new ArrayList<String>();
 
-        String userSearchFilter = "(&(objectclass=user)(sAMAccountName=" + samAccountName + "))";
         String searchBase = matchObj.getSearchBaseDn();
+        String userSearchFilter = matchObj.getSearchFilter();
+        // replace the place holder in the search filter
+        if (StringUtils.isNotBlank(userSearchFilter)) {
+            userSearchFilter = userSearchFilter.replace("?", identityDN);
+        } else {
+            userSearchFilter = "(&(objectclass=user)(sAMAccountName=" + identityDN + "))";
+        }
 
         try {
 

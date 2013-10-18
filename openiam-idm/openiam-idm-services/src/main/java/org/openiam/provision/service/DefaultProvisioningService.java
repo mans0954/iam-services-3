@@ -1455,7 +1455,6 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                 resetPassword(requestId, loginDozerConverter.convertToDTO(lg,false), password,
                                         managedSysDozerConverter.convertToDTO(mSys,false), objectMatchDozerConverter.convertToDTO(matchObj, false));
 
-
                             }
                         }
                     }
