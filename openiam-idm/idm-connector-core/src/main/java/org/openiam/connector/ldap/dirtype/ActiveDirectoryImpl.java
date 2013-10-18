@@ -91,14 +91,12 @@ public class ActiveDirectoryImpl implements Directory {
 
     }
 
-    public void removeAccountMemberships( String identity, ManagedSystemObjectMatch matchObj, LdapContext ldapctx ) {
+    public void removeAccountMemberships( String identity, String identityDN, ManagedSystemObjectMatch matchObj, LdapContext ldapctx ) {
 
         List<String> currentMembershipList = userMembershipList(identity, matchObj, ldapctx);
 
         // remove membership
         if (currentMembershipList != null) {
-
-            String identityDN = matchObj.getKeyField() + "=" + identity + "," + matchObj.getBaseDn();
 
             for (String s : currentMembershipList) {
                 try {
@@ -113,14 +111,12 @@ public class ActiveDirectoryImpl implements Directory {
 
     }
 
-    public void removeSupervisorMemberships( String identity, ManagedSystemObjectMatch matchObj, LdapContext ldapctx ) {
+    public void removeSupervisorMemberships( String identity, String identityDN, ManagedSystemObjectMatch matchObj, LdapContext ldapctx ) {
 
         List<String> currentSupervisorMembershipList = userSupervisorMembershipList(identity, matchObj, ldapctx);
 
         // remove membership
         if (currentSupervisorMembershipList != null) {
-
-            String identityDN = matchObj.getKeyField() + "=" + identity + "," + matchObj.getBaseDn();
 
             for (String s : currentSupervisorMembershipList) {
                 try {
@@ -136,7 +132,7 @@ public class ActiveDirectoryImpl implements Directory {
 
     }
 
-    public void updateAccountMembership(List<BaseAttribute> targetMembershipList, String ldapName,
+    public void updateAccountMembership(List<BaseAttribute> targetMembershipList, String identity, String identityDN,
                                         ManagedSystemObjectMatch matchObj, LdapContext ldapctx,
                                         ExtensibleObject obj) {
 
@@ -149,8 +145,6 @@ public class ActiveDirectoryImpl implements Directory {
 
         if (targetMembershipList == null && currentMembershipList != null) {
             // remove all associations
-            String identityDN = matchObj.getKeyField() + "=" + ldapName + "," + matchObj.getBaseDn();
-
             for (String s : currentMembershipList) {
                 try {
                     ModificationItem mods[] = new ModificationItem[1];
@@ -174,7 +168,7 @@ public class ActiveDirectoryImpl implements Directory {
                         try {
 
                             ModificationItem mods[] = new ModificationItem[1];
-                            mods[0] = new ModificationItem(DirContext.REMOVE_ATTRIBUTE, new BasicAttribute("member", ldapName));
+                            mods[0] = new ModificationItem(DirContext.REMOVE_ATTRIBUTE, new BasicAttribute("member", identityDN));
                             ldapctx.modifyAttributes(groupName, mods);
                         }catch (NamingException ne ) {
                             log.error(ne);
@@ -187,7 +181,7 @@ public class ActiveDirectoryImpl implements Directory {
                         // add the user to the group
                         try {
                             ModificationItem mods[] = new ModificationItem[1];
-                            mods[0] = new ModificationItem(DirContext.ADD_ATTRIBUTE, new BasicAttribute("member", ldapName));
+                            mods[0] = new ModificationItem(DirContext.ADD_ATTRIBUTE, new BasicAttribute("member", identityDN));
                             ldapctx.modifyAttributes(groupName, mods);
                         } catch (NamingException ne ) {
                             log.error(ne);
@@ -198,7 +192,7 @@ public class ActiveDirectoryImpl implements Directory {
         }
     }
 
-    public void updateSupervisorMembership(List<BaseAttribute> supervisorMembershipList, String identity,
+    public void updateSupervisorMembership(List<BaseAttribute> supervisorMembershipList, String identity, String identityDN,
                                       ManagedSystemObjectMatch matchObj, LdapContext ldapctx, ExtensibleObject obj) {
 
         List<String> currentSupervisorMembershipList = userSupervisorMembershipList(identity, matchObj, ldapctx);
@@ -206,8 +200,6 @@ public class ActiveDirectoryImpl implements Directory {
         log.debug("Current ldap supervisor membership:" + currentSupervisorMembershipList);
 
         if (supervisorMembershipList == null && currentSupervisorMembershipList != null) {
-
-            String identityDN = matchObj.getKeyField() + "=" + identity + "," + matchObj.getBaseDn();
 
             for (String s : currentSupervisorMembershipList) {
                 try {
@@ -221,8 +213,6 @@ public class ActiveDirectoryImpl implements Directory {
             }
         }
         if (CollectionUtils.isNotEmpty(supervisorMembershipList)) {
-
-            String identityDN = matchObj.getKeyField() + "=" + identity + "," + matchObj.getBaseDn();
 
             BaseAttribute ba = supervisorMembershipList.get(0); // 1 manager is allowed for AD
 
