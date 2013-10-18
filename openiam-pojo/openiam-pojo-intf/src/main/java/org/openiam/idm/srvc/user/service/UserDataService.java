@@ -8,6 +8,7 @@ import java.util.Map;
 import org.openiam.idm.searchbeans.AddressSearchBean;
 import org.openiam.idm.searchbeans.EmailSearchBean;
 import org.openiam.idm.searchbeans.PhoneSearchBean;
+import org.openiam.idm.searchbeans.PotentialSupSubSearchBean;
 import org.openiam.idm.searchbeans.UserSearchBean;
 import org.openiam.idm.srvc.continfo.domain.AddressEntity;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
@@ -166,11 +167,11 @@ public interface UserDataService {
 
     public void addSuperior(String supervisorId, String subordinateId);
 
-//    public void updateSupervisor(SupervisorEntity supervisor);
+    // public void updateSupervisor(SupervisorEntity supervisor);
 
     public void removeSupervisor(String supervisorId, final String employeeId);
 
-//    public SupervisorEntity getSupervisor(String supervisorObjId);
+    // public SupervisorEntity getSupervisor(String supervisorObjId);
 
     public void evict(Object object);
 
@@ -181,7 +182,7 @@ public interface UserDataService {
      * @param employeeId
      * @return
      */
-//    public List<UserEntity> getSupervisors(String employeeId);
+    // public List<UserEntity> getSupervisors(String employeeId);
 
     public SupervisorEntity findSupervisor(String superiorId, String subordinateId);
 
@@ -193,9 +194,9 @@ public interface UserDataService {
 
     public int getSubordinatesCount(String userId);
 
-    public List<UserEntity> findPotentialSupSubs(UserSearchBean searchBean, Integer from, Integer size);
+    public List<UserEntity> findPotentialSupSubs(PotentialSupSubSearchBean searchBean, Integer from, Integer size);
 
-    public int findPotentialSupSubsCount(UserSearchBean searchBean);
+    public int findPotentialSupSubsCount(PotentialSupSubSearchBean searchBean);
 
     /**
      * Returns a list of Supervisor objects that represents the employees or
@@ -204,7 +205,7 @@ public interface UserDataService {
      * @param supervisorId
      * @return
      */
-//    public List<SupervisorEntity> getEmployees(String supervisorId);
+    // public List<SupervisorEntity> getEmployees(String supervisorId);
 
     /**
      * Returns the primary supervisor for this employee. Null if no primary is
@@ -235,7 +236,7 @@ public interface UserDataService {
 
     public int getNumOfUsersForRole(final String roleId, String requesterId);
 
-    public String saveUserInfo(UserEntity userEntity, SupervisorEntity supervisorEntity) throws Exception;
+    public String saveUserInfo(UserEntity userEntity, String supervisorId) throws Exception;
 
     public void deleteUser(String userId);
 

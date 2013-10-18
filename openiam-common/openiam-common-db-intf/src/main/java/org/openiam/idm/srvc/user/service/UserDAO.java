@@ -54,7 +54,7 @@ public interface UserDAO extends BaseDao<UserEntity, String> {
 
     public int getSubordinatesCount(String userId);
 
-    public List<String> getAllAttachedSupSubIds(String userId);
+    public List<String> getAllAttachedSupSubIds(List<String> userIds);
 
     public List<UserEntity> getUsersForOrganization(final String organizationId, DelegationFilterSearchBean delegationFilter, final int from,
                                                     final int size);
@@ -74,7 +74,6 @@ public interface UserDAO extends BaseDao<UserEntity, String> {
     public boolean isUserInOrg(final String userId, final String orgId);
 
     public boolean isUserEntitledToResoruce(final String userId, final String resourceId);
-
 
     public UserEntity findPrimarySupervisor(String employeeId);
 }

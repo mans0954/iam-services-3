@@ -83,12 +83,12 @@
             <b>affiliations</b>
         </field-exclude>
         <field-exclude>
-            <a>supervisorsSet</a>
-            <b>supervisorsSet</b>
+            <a>supervisors</a>
+            <b>supervisors</b>
         </field-exclude>
         <field-exclude>
-            <a>subordinatesSet</a>
-            <b>subordinatesSet</b>
+            <a>subordinates</a>
+            <b>subordinates</b>
         </field-exclude>
 	</mapping>
 

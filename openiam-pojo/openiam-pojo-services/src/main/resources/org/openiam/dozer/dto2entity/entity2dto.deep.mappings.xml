@@ -117,13 +117,13 @@
         </field>
         <field custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
                custom-converter-param="dto2entityShallowDozerMapper">
-            <a>supervisorsSet</a>
-            <b>supervisorsSet</b>
+            <a>supervisors</a>
+            <b>supervisors</b>
         </field>
         <field custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
                custom-converter-param="dto2entityShallowDozerMapper">
-            <a>subordinatesSet</a>
-            <b>subordinatesSet</b>
+            <a>subordinates</a>
+            <b>subordinates</b>
         </field>
 	</mapping>
 
