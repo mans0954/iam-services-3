@@ -268,10 +268,10 @@ public class ReconciliationServiceImpl implements ReconciliationService {
             // have resource
             Resource res = resourceDataService.getResource(config
                     .getResourceId());
-            String managedSysId = res.getManagedSysId();
+            //String managedSysId = res.getManagedSysId();
 
-            ManagedSysEntity mSys = managedSysService
-                    .getManagedSysById(managedSysId);
+            ManagedSysEntity mSys = managedSysService.getManagedSysByResource(res.getResourceId(), "ACTIVE");
+            String managedSysId = (mSys != null) ? mSys.getManagedSysId() : null;
             log.debug("ManagedSysId = " + managedSysId);
             log.debug("Getting identities for managedSys");
             // have situations

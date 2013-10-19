@@ -1,5 +1,6 @@
 package org.openiam.connector.ldap.dirtype;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.AttributeOperationEnum;
@@ -326,8 +327,14 @@ public class LdapV3 implements Directory {
         log.debug(" - userDN =" + userDN);
         log.debug(" - MembershipObjectDN=" + matchObj.getSearchBaseDn());
 
-        String userSearchFilter = "(&(objectClass=inetOrgPerson)(" + matchObj.getKeyField() + "=" + userDN + "))";
         String searchBase = matchObj.getSearchBaseDn();
+        String userSearchFilter = matchObj.getSearchFilter();
+        // replace the place holder in the search filter
+        if (StringUtils.isNotBlank(userSearchFilter)) {
+            userSearchFilter = userSearchFilter.replace("?", userDN);
+        } else {
+            userSearchFilter = "(&(objectclass=inetOrgPerson)(" + matchObj.getKeyField() + "=" + userDN + "))";
+        }
 
         try {
 

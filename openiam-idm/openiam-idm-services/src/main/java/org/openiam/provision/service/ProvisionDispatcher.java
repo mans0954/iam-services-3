@@ -194,9 +194,8 @@ public class ProvisionDispatcher implements Sweepable {
         Login targetSysLogin = data.getIdentity();
         ResourceEntity resEntity = resourceService.findResourceById(data.getResourceId());
         Resource res = resourceDozerConverter.convertToDTO(resEntity, true);
-        String managedSysId = res.getManagedSysId();
         ManagedSysDto mSys = managedSysDozerConverter.convertToDTO(
-                managedSystemService.getManagedSysById(managedSysId), true);
+                managedSystemService.getManagedSysByResource(res.getResourceId(), "ACTIVE"), true);
         ProvisionConnectorEntity connectorEntity = connectorService.getProvisionConnectorsById(mSys.getConnectorId());
         if (connectorEntity == null) {
             return null;
@@ -229,9 +228,9 @@ public class ProvisionDispatcher implements Sweepable {
 
         ResourceEntity resEntity = resourceService.findResourceById(data.getResourceId());
         Resource res = resourceDozerConverter.convertToDTO(resEntity, true);
-        String managedSysId = res.getManagedSysId();
         ManagedSysDto mSys = managedSysDozerConverter.convertToDTO(
-                managedSystemService.getManagedSysById(managedSysId), true);
+                managedSystemService.getManagedSysByResource(res.getResourceId(), "ACTIVE"), true);
+        String managedSysId = (mSys != null) ? mSys.getManagedSysId() : null;
         ProvisionUser targetSysProvUser = data.getProvUser();
         Login targetSysLogin = data.getIdentity();
         Map<String, Object> bindingMap = data.getBindingMap();
