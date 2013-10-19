@@ -31,7 +31,6 @@ import org.openiam.idm.srvc.user.dto.User;
         "branchId",
         "categoryId",
         "displayOrder",
-        "managedSysId",
         "URL",
         "roles",
         "resourceProps",
@@ -60,7 +59,6 @@ public class Resource extends BaseObject {
     private String branchId;
     private String categoryId;
     private Integer displayOrder;
-    private String managedSysId;
     private String URL;
 
     private String resOwnerUserId;
@@ -82,15 +80,6 @@ public class Resource extends BaseObject {
     protected AttributeOperationEnum operation = AttributeOperationEnum.NO_CHANGE;
 
     public Resource() {
-    }
-
-    public Resource(String resourceId) {
-        this.resourceId = resourceId;
-    }
-
-    public Resource(String resourceId, String managedSysId) {
-        this.resourceId = resourceId;
-        this.managedSysId = managedSysId;
     }
 
     public String getResourceId() {
@@ -228,20 +217,11 @@ public class Resource extends BaseObject {
                 ", branchId='" + branchId + '\'' +
                 ", categoryId='" + categoryId + '\'' +
                 ", displayOrder=" + displayOrder +
-                ", managedSysId='" + managedSysId + '\'' +
                 ", URL='" + URL + '\'' +
                 ", resOwnerUserId='" + resOwnerUserId + '\'' +
                 ", resOwnerGroupId='" + resOwnerGroupId + '\'' +
                 /*", entitlements=" + entitlements +*/
                 '}';
-    }
-
-    public String getManagedSysId() {
-        return managedSysId;
-    }
-
-    public void setManagedSysId(String managedSysId) {
-        this.managedSysId = managedSysId;
     }
 
     public String getURL() {

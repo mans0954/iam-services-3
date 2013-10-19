@@ -8,12 +8,17 @@ import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.openiam.am.srvc.dao.AuthProviderDao;
+import org.openiam.am.srvc.dao.ContentProviderDao;
+import org.openiam.am.srvc.dao.URIPatternDao;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.dozer.converter.ResourceDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.ResourceSearchBean;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.service.GroupDAO;
+import org.openiam.idm.srvc.meta.service.MetadataElementDAO;
+import org.openiam.idm.srvc.meta.service.MetadataElementPageTemplateDAO;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
 import org.openiam.idm.srvc.res.domain.ResourceTypeEntity;
@@ -42,6 +47,21 @@ public class ResourceServiceImpl implements ResourceService {
 	
 	@Autowired
   	private ResourceDozerConverter dozerConverter;
+	
+	@Autowired
+	private AuthProviderDao authProviderDAO;
+	
+	@Autowired
+	private ContentProviderDao contentProviderDAO;
+	
+	@Autowired
+	private URIPatternDao uriPatternDAO;
+	
+	@Autowired
+	private MetadataElementDAO elementDAO;
+	
+	@Autowired
+	private MetadataElementPageTemplateDAO templateDAO;
 
 	@Override
     @Transactional
@@ -380,6 +400,31 @@ public class ResourceServiceImpl implements ResourceService {
 		if(parent.getResourceType() != null && child.getResourceType() != null &&
 		  !parent.getResourceType().equals(child.getResourceType())) {
 			throw new BasicDataServiceException(ResponseCode.RESOURCE_TYPES_NOT_EQUAL);
+		}
+	}
+	
+	@Override
+	@Transactional
+	public void validateResourceDeletion(final String resourceId) throws BasicDataServiceException {
+		final ResourceEntity entity = resourceDao.findById(resourceId);
+		if(entity != null) {
+			/*
+					case LINKED_TO_AUTHENTICATION_PROVIDER:
+				 		token = new ErrorToken(Errors.RESOURCE_LINKED_TO_AUTHENTICATION_PROVIDER, responseValue);
+				 		break;
+				 	case LINKED_TO_CONTENT_PROVIDER:
+				 		token = new ErrorToken(Errors.RESOURCE_LINKED_TO_CONTENT_PROVIDER, responseValue);
+				 		break;
+				 	case LINKED_TO_METADATA_ELEMENT:
+				 		token = new ErrorToken(Errors.RESOURCE_LINKED_TO_METADATA_ELEMENT, responseValue);
+				 		break;
+				 	case LINKED_TO_PAGE_TEMPLATE:
+				 		token = new ErrorToken(Errors.RESOURCE_LINKED_TO_PAGE_TEMPLATE, responseValue);
+				 		break;
+				 	case LINKED_TO_URI_PATTERN:
+				 		token = new ErrorToken(Errors.RESOURCE_LINKED_TO_URI_PATTERN, responseValue);
+				 		break;
+			 */
 		}
 	}
 	

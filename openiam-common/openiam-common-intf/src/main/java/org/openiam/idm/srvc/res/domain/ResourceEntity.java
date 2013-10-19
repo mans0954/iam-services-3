@@ -63,9 +63,6 @@ public class ResourceEntity {
     @Column(name = "DISPLAY_ORDER")
     private Integer displayOrder;
 
-    @Column(name = "MANAGED_SYS_ID")
-    private String managedSysId;
-
     @Column(name = "URL", length = 255)
     private String URL;
 
@@ -188,14 +185,6 @@ public class ResourceEntity {
 
     public void setDisplayOrder(Integer displayOrder) {
         this.displayOrder = displayOrder;
-    }
-
-    public String getManagedSysId() {
-        return managedSysId;
-    }
-
-    public void setManagedSysId(String managedSysId) {
-        this.managedSysId = managedSysId;
     }
 
     public String getURL() {
@@ -371,7 +360,6 @@ public class ResourceEntity {
                 ", branchId='" + branchId + '\'' +
                 ", categoryId='" + categoryId + '\'' +
                 ", displayOrder=" + displayOrder +
-                ", managedSysId='" + managedSysId + '\'' +
                 ", URL='" + URL + '\'' +
                 ", resOwnerUserId='" + resOwnerUserId + '\'' +
                 ", resOwnerGroupId='" + resOwnerGroupId + '\'' +
@@ -391,7 +379,6 @@ public class ResourceEntity {
         if (branchId != null ? !branchId.equals(that.branchId) : that.branchId != null) return false;
         if (categoryId != null ? !categoryId.equals(that.categoryId) : that.categoryId != null) return false;
         if (domain != null ? !domain.equals(that.domain) : that.domain != null) return false;
-        if (managedSysId != null ? !managedSysId.equals(that.managedSysId) : that.managedSysId != null) return false;
         if (name != null ? !name.equals(that.name) : that.name != null) return false;
         if (resourceId != null ? !resourceId.equals(that.resourceId) : that.resourceId != null) return false;
 
@@ -404,7 +391,6 @@ public class ResourceEntity {
         result = 31 * result + (name != null ? name.hashCode() : 0);
         result = 31 * result + (branchId != null ? branchId.hashCode() : 0);
         result = 31 * result + (categoryId != null ? categoryId.hashCode() : 0);
-        result = 31 * result + (managedSysId != null ? managedSysId.hashCode() : 0);
         result = 31 * result + (domain != null ? domain.hashCode() : 0);
         result = 31 * result + (isPublic ? 1 : 0);
         //result = 31 * result + (isSSL ? 1 : 0)

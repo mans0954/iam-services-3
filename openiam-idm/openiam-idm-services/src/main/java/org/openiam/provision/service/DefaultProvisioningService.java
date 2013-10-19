@@ -696,8 +696,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                 Integer.MAX_VALUE);
                 if (CollectionUtils.isNotEmpty(resourceList)) {
                     for (final Resource resource : resourceList) {
-                        final ManagedSysDto managedSys = managedSysService
-                                .getManagedSys(resource.getManagedSysId());
+                        ManagedSysDto managedSys = managedSysService.getManagedSysByResource(resource.getResourceId());
                         if (managedSys != null) {
                             ResponseType responsetype = null;
                             if(AccountLockEnum.LOCKED.equals(operation) || AccountLockEnum.LOCKED_ADMIN.equals(operation)) {
@@ -1126,7 +1125,8 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
     private ProvisionDataContainer provisionResource(boolean isAdd, Resource res, UserEntity userEntity, ProvisionUser pUser,
             Map<String, Object> bindingMap, Login primaryIdentity, String requestId) {
 
-        String managedSysId = res.getManagedSysId();
+        ManagedSysDto managedSys = managedSysService.getManagedSysByResource(res.getResourceId());
+        String managedSysId = (managedSys != null) ? managedSys.getManagedSysId() : null;
         if (managedSysId != null) {
             if (pUser.getSrcSystemId() != null) {
                 if (res.getResourceId().equalsIgnoreCase(pUser.getSrcSystemId())) { //TODO: ask why???
@@ -1247,10 +1247,10 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
     }
 
     private ProvisionDataContainer deprovisionResource(Resource res, UserEntity userEntity, String requestId) {
-        String managedSysId = res.getManagedSysId();
-        log.debug("Deleting identity for managedSys=" + managedSysId);
 
-        ManagedSysDto mSys = managedSysService.getManagedSys(managedSysId);
+        //ManagedSysDto mSys = managedSysService.getManagedSys(managedSysId);
+        ManagedSysDto mSys = managedSysService.getManagedSysByResource(res.getResourceId());
+        String managedSysId = (mSys != null) ? mSys.getManagedSysId() : null;
         if (mSys == null || mSys.getConnectorId() == null) {
             return null;
         }

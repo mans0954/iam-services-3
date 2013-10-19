@@ -7,6 +7,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.AttributeOperationEnum;
@@ -28,6 +30,9 @@ import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.service.GroupDataService;
+import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
+import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
+import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.service.OrganizationDataService;
 import org.openiam.idm.srvc.res.dto.Resource;
@@ -80,6 +85,9 @@ public class ModifyUser {
     
     @Autowired
     private SupervisorDozerConverter supervisorDozerConverter;
+    
+    @Autowired
+    private ManagedSystemService managedSysService;
 
     private static final Log log = LogFactory.getLog(ModifyUser.class);
 
@@ -852,8 +860,9 @@ public class ModifyUser {
             return true;
         }
         for (Resource r : deleteResourceList) {
-            if (l.getManagedSysId()
-                    .equalsIgnoreCase(r.getManagedSysId())) {
+        	final ManagedSysEntity mSys = managedSysService.getManagedSysByResource(r.getResourceId(), "ACTIVE");
+            final String mSysId = (mSys != null) ? mSys.getManagedSysId() : null;
+            if(StringUtils.equalsIgnoreCase(l.getManagedSysId(), mSysId)) {
                 return false;
             }
         }
