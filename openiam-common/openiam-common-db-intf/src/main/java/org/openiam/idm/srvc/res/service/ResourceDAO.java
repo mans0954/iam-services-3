@@ -30,6 +30,4 @@ public interface ResourceDAO extends BaseDao<ResourceEntity, String> {
     public List<ResourceEntity> getResourcesForUser(final String userId, final int from, final int size);
     public int getNumOfResourcesForUser(final String userId);
 
-	List<ResourceEntity> getResourcesForManagedSys(String mngSysId, int from,
-			int size);
 }

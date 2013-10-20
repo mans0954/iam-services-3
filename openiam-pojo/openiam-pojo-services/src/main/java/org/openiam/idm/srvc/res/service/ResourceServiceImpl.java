@@ -369,12 +369,6 @@ public class ResourceServiceImpl implements ResourceService {
 		return resourceDao.findByIds(resourceIdCollection);
 	}
 
-    @Override
-    @Transactional(readOnly = true)
-    public List<ResourceEntity> getResourcesForManagedSys(String mngSysId, int from, int size) {
-        return resourceDao.getResourcesForManagedSys(mngSysId, from, size);
-    }
-
 	@Override
 	@Transactional
 	public void validateResource2ResourceAddition(final String parentId, final String memberId) throws BasicDataServiceException {

@@ -182,28 +182,7 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
 		final Criteria criteria = getCriteria()
 				.createAlias("roles", "rr")
 				.add(Restrictions.eq("rr.roleId", roleId))
-				.addOrder(Order.asc("managedSysId"))
 				.addOrder(Order.asc("name"));
-
-		if (from > -1) {
-			criteria.setFirstResult(from);
-		}
-
-		if (size > -1) {
-			criteria.setMaxResults(size);
-		}
-
-		final List<ResourceEntity> retVal = (List<ResourceEntity>) criteria
-				.list();
-		return retVal;
-	}
-
-	@Override
-	public List<ResourceEntity> getResourcesForManagedSys(
-			final String mngSysId, final int from, final int size) {
-		final Criteria criteria = getCriteria().add(
-				Restrictions.eq("managedSysId", mngSysId)).addOrder(
-				Order.asc("name"));
 
 		if (from > -1) {
 			criteria.setFirstResult(from);
@@ -239,7 +218,6 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
 		final Criteria criteria = getCriteria()
 				.createAlias("groups", "rg")
 				.add(Restrictions.eq("rg.grpId", groupId))
-				.addOrder(Order.asc("managedSysId"))
 				.addOrder(Order.asc("name"));
 
 		if (from > -1) {
