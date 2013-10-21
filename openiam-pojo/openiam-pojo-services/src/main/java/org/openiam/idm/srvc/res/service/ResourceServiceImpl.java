@@ -11,14 +11,21 @@ import org.apache.commons.lang.StringUtils;
 import org.openiam.am.srvc.dao.AuthProviderDao;
 import org.openiam.am.srvc.dao.ContentProviderDao;
 import org.openiam.am.srvc.dao.URIPatternDao;
+import org.openiam.am.srvc.domain.AuthProviderEntity;
+import org.openiam.am.srvc.domain.ContentProviderEntity;
+import org.openiam.am.srvc.domain.URIPatternEntity;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.dozer.converter.ResourceDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.ResourceSearchBean;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.service.GroupDAO;
+import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
+import org.openiam.idm.srvc.meta.domain.MetadataElementPageTemplateEntity;
 import org.openiam.idm.srvc.meta.service.MetadataElementDAO;
 import org.openiam.idm.srvc.meta.service.MetadataElementPageTemplateDAO;
+import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
+import org.openiam.idm.srvc.mngsys.service.ManagedSysDAO;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
 import org.openiam.idm.srvc.res.domain.ResourceTypeEntity;
@@ -59,6 +66,9 @@ public class ResourceServiceImpl implements ResourceService {
 	
 	@Autowired
 	private MetadataElementDAO elementDAO;
+	
+	@Autowired
+	private ManagedSysDAO managedSysDAO;
 	
 	@Autowired
 	private MetadataElementPageTemplateDAO templateDAO;
@@ -402,23 +412,36 @@ public class ResourceServiceImpl implements ResourceService {
 	public void validateResourceDeletion(final String resourceId) throws BasicDataServiceException {
 		final ResourceEntity entity = resourceDao.findById(resourceId);
 		if(entity != null) {
-			/*
-					case LINKED_TO_AUTHENTICATION_PROVIDER:
-				 		token = new ErrorToken(Errors.RESOURCE_LINKED_TO_AUTHENTICATION_PROVIDER, responseValue);
-				 		break;
-				 	case LINKED_TO_CONTENT_PROVIDER:
-				 		token = new ErrorToken(Errors.RESOURCE_LINKED_TO_CONTENT_PROVIDER, responseValue);
-				 		break;
-				 	case LINKED_TO_METADATA_ELEMENT:
-				 		token = new ErrorToken(Errors.RESOURCE_LINKED_TO_METADATA_ELEMENT, responseValue);
-				 		break;
-				 	case LINKED_TO_PAGE_TEMPLATE:
-				 		token = new ErrorToken(Errors.RESOURCE_LINKED_TO_PAGE_TEMPLATE, responseValue);
-				 		break;
-				 	case LINKED_TO_URI_PATTERN:
-				 		token = new ErrorToken(Errors.RESOURCE_LINKED_TO_URI_PATTERN, responseValue);
-				 		break;
-			 */
+			
+			final List<ManagedSysEntity> managedSystems = managedSysDAO.findByResource(resourceId);
+			if(CollectionUtils.isNotEmpty(managedSystems)) {
+				throw new BasicDataServiceException(ResponseCode.LINKED_TO_MANAGED_SYSTEM, managedSystems.get(0).getName());
+			}
+			
+			final List<ContentProviderEntity> contentProviders = contentProviderDAO.getByResourceId(resourceId);
+			if(CollectionUtils.isNotEmpty(contentProviders)) {
+				throw new BasicDataServiceException(ResponseCode.LINKED_TO_CONTENT_PROVIDER, contentProviders.get(0).getName());
+			}
+			
+			final List<URIPatternEntity> uriPatterns = uriPatternDAO.getByResourceId(resourceId);
+			if(CollectionUtils.isNotEmpty(uriPatterns)) {
+				throw new BasicDataServiceException(ResponseCode.LINKED_TO_URI_PATTERN, uriPatterns.get(0).getPattern());
+			}
+			
+			final List<AuthProviderEntity> authProviders = authProviderDAO.getByResourceId(resourceId);
+			if(CollectionUtils.isNotEmpty(authProviders)) {
+				throw new BasicDataServiceException(ResponseCode.LINKED_TO_AUTHENTICATION_PROVIDER, authProviders.get(0).getName());
+			}
+			
+			final List<MetadataElementEntity> metadataElements = elementDAO.getByResourceId(resourceId);
+			if(CollectionUtils.isNotEmpty(metadataElements)) {
+				throw new BasicDataServiceException(ResponseCode.LINKED_TO_METADATA_ELEMENT, metadataElements.get(0).getAttributeName());
+			}
+			
+			final List<MetadataElementPageTemplateEntity> pageTemplates = templateDAO.getByResourceId(resourceId);
+			if(CollectionUtils.isNotEmpty(pageTemplates)) {
+				throw new BasicDataServiceException(ResponseCode.LINKED_TO_PAGE_TEMPLATE, pageTemplates.get(0).getName());
+			}
 		}
 	}
 	

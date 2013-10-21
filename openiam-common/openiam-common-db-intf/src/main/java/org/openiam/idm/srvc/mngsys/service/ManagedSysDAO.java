@@ -34,4 +34,6 @@ public interface ManagedSysDAO extends BaseDao<ManagedSysEntity, String> {
 	 * @return
 	 */
     ManagedSysEntity findByResource(String resourceId, String status);
+    
+    List<ManagedSysEntity> findByResource(String resourceId);
 }

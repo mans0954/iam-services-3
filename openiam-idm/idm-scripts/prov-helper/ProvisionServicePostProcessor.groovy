@@ -27,16 +27,16 @@ import org.openiam.idm.srvc.msg.dto.NotificationParam;
 import org.openiam.idm.srvc.msg.dto.NotificationRequest;
 
 /**
- * Post-processor script that is used with the Provisioning service.
- */
+* Post-processor script that is used with the Provisioning service.
+*/
 public class ProvisionServicePostProcessor extends AbstractPostProcessor {
     private String ORGANIZATION_ADMIN_ROLEID = "8a4a92c641c017e00141c32e69e002c7";
 
-    public int addUser(ProvisionUser user, Map<String, Object> bindingMap) {
-        // context to look up spring beans
+	public int addUser(ProvisionUser user, Map<String, Object> bindingMap) {
+		// context to look up spring beans
 
-        println("ProvisionServicePostProcessor: AddUser called.");
-        println("ProvisionServicePostProcessor: User=" + user.toString());
+		println("ProvisionServicePostProcessor: AddUser called.");
+		println("ProvisionServicePostProcessor: User=" + user.toString());
 
         ManagedSystemWebService managedSystemWebService = (ManagedSystemWebService)context.getBean("managedSysService");
 
@@ -57,72 +57,72 @@ public class ProvisionServicePostProcessor extends AbstractPostProcessor {
             }
         }
 
-
-        return ProvisioningConstants.SUCCESS;
-    }
-
+        
+		return ProvisioningConstants.SUCCESS;
+	}
+	
     public int modifyUser(ProvisionUser user, Map<String, Object> bindingMap){
+    
+    	// context to look up spring beans
 
-        // context to look up spring beans
-
-
-        println("ProvisionServicePostProcessor: ModifyUser called.");
-        println("ProvisionServicePostProcessor: User=" + user.toString());
-
-
-        // if the status is active, then set the flag for sending emails
-        User origUser = (User)bindingMap.get("userBeforeModify");
-
-        showBindingMap(bindingMap);
-
-        return ProvisioningConstants.SUCCESS;
-
-    }
-
-
-
+    	
+    	println("ProvisionServicePostProcessor: ModifyUser called.");
+			println("ProvisionServicePostProcessor: User=" + user.toString());
+		
+	
+		// if the status is active, then set the flag for sending emails
+		User origUser = (User)bindingMap.get("userBeforeModify");
+		
+		showBindingMap(bindingMap);
+		
+     	return ProvisioningConstants.SUCCESS;
+    
+	}
+	
+	
+	
     public int deleteUser(ProvisionUser user, Map<String, Object> bindingMap){
+    
+    	// context to look up spring beans
 
-        // context to look up spring beans
+      println("ProvisionServicePostProcessor: DeleteUser called.");
+			println("ProvisionServicePostProcessor: User=" + user.toString());
+			
+			showBindingMap(bindingMap);
 
-        println("ProvisionServicePostProcessor: DeleteUser called.");
-        println("ProvisionServicePostProcessor: User=" + user.toString());
-
-        showBindingMap(bindingMap);
-
-
-        return ProvisioningConstants.SUCCESS;
-    }
-
+    
+    	return ProvisioningConstants.SUCCESS;
+	}
+	
     public int setPassword( PasswordSync passwordSync, Map<String, Object> bindingMap){
+    
 
+     	println("ProvisionServicePostProcessor: SetPassword called.");
+     	
+     	showBindingMap(bindingMap);
+     	
+    
+    	return ProvisioningConstants.SUCCESS;
+    
+	}
+	
+	 private void showBindingMap( Map<String, Object> bindingMap){
+    
+    	// context to look up spring beans
+		
+    	
+		println("Show binding map");
+		
+		for (Map.Entry<String, Object> entry : bindingMap.entrySet()) {
+    			String key = entry.getKey();
+    			Object value = entry.getValue();
+				println("- Key=" + key + "  value=" + value.toString() );
+		}
+	
+    
+	}
+	
+	
 
-        println("ProvisionServicePostProcessor: SetPassword called.");
-
-        showBindingMap(bindingMap);
-
-
-        return ProvisioningConstants.SUCCESS;
-
-    }
-
-    private void showBindingMap( Map<String, Object> bindingMap){
-
-        // context to look up spring beans
-
-
-        println("Show binding map");
-
-        for (Map.Entry<String, Object> entry : bindingMap.entrySet()) {
-            String key = entry.getKey();
-            Object value = entry.getValue();
-            println("- Key=" + key + "  value=" + value.toString() );
-        }
-
-
-    }
-
-
-
-
+    
 }
