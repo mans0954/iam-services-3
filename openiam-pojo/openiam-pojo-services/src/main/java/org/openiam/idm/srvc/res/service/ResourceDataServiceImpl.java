@@ -338,6 +338,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
 		} catch(BasicDataServiceException e) {
 			response.setErrorCode(e.getCode());
 			response.setStatus(ResponseStatus.FAILURE);
+			response.setResponseValue(e.getResponseValue());
 			auditBuilder.fail().setFailureReason(e.getCode()).setException(e);
 		} catch (Throwable e) {
 			log.error("Can't delete resource", e);
