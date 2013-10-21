@@ -11,6 +11,7 @@ public class DelegationFilterHelper {
     public static final String DLG_FLT_GRP="DLG_FLT_GRP";
     public static final String DLG_FLT_ORG="DLG_FLT_ORG";
     public static final String DLG_FLT_ROLE="DLG_FLT_ROLE";
+    public static final String DLG_FLT_MNG_RPT="DLG_FLT_MNG_RPT";
 
     private static final String DLG_FLT_SEPARATOR=",";
 
@@ -48,6 +49,16 @@ public class DelegationFilterHelper {
         return isFilerSet(attrMap, DLG_FLT_APP);
     }
 
+
+    public static List<String> getMngRptFromString(Map<String, UserAttribute> attrMap) {
+        return getFilterListFromString(attrMap, DLG_FLT_MNG_RPT);
+    }
+
+    public static boolean isMngRptFilterSet(Map<String, UserAttribute> attrMap) {
+        return isFilerSet(attrMap, DLG_FLT_MNG_RPT);
+    }
+
+
     public static String getValueFromList(List<String> values){
         if(values==null)
             return null;
@@ -72,7 +83,8 @@ public class DelegationFilterHelper {
                             */
                             DelegationFilterHelper.DLG_FLT_GRP,
                             DelegationFilterHelper.DLG_FLT_ROLE,
-                            DelegationFilterHelper.DLG_FLT_ORG};
+                            DelegationFilterHelper.DLG_FLT_ORG,
+                            DelegationFilterHelper.DLG_FLT_MNG_RPT};
     }
 
     private static boolean isFilerSet(Map<String, UserAttribute> attrMap, String key){
