@@ -23,7 +23,7 @@ import org.openiam.idm.srvc.res.service.ResourceDataService;
  */
 public class ProvisionServicePreProcessor extends AbstractPreProcessor {
     private String ORGANIZATION_ADMIN_ROLEID = "8a4a92c641c017e00141c32e69e002c7";
-    private String DEFAULT_ROLEID = "2";
+    private String DEFAULT_ROLEID = "1";
     private String SYS_USER_ID = "3000";
 
     public int addUser(ProvisionUser user, Map<String, Object> bindingMap) {
