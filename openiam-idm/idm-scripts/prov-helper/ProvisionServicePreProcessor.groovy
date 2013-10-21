@@ -21,7 +21,7 @@ import org.openiam.idm.srvc.res.service.ResourceDataService;
  * Pre-processor script that is used with the Provisioning service.
  */
 public class ProvisionServicePreProcessor extends AbstractPreProcessor {
-    private String ORGANIZATION_ADMIN_ROLEID = "4028818341d1319b0141d20fff360048";
+    private String ORGANIZATION_ADMIN_ROLEID = "8a4a92c641c017e00141c32e69e002c7";
 
     public int addUser(ProvisionUser user, Map<String, Object> bindingMap) {
 
