@@ -14,20 +14,7 @@ public class AddGroupLinuxCommand extends
         AbstractCrudLinuxCommand<ExtensibleUser> {
 
     @Override
-    protected void performObjectOperation(
-            CrudRequest<ExtensibleUser> crudRequest, SSHAgent ssh)
-            throws ConnectorDataException {
-        LinuxGroup group = this.objectToLinuxGroup(crudRequest
-                .getObjectIdentity());
-        if (group != null) {
-            try {
-                // add group
-                ssh.executeCommand(group.getAddGroupCommand());
-            } catch (Exception e) {
-                log.error(e.getMessage(), e);
-                throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR,
-                        e.getMessage());
-            }
-        }
+    protected String getCommandScriptHandler(String id) {
+        return managedSysService.getManagedSysById(id).getAddHandler();
     }
 }
