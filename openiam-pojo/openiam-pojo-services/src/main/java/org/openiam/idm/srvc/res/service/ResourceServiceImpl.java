@@ -8,12 +8,24 @@ import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.openiam.am.srvc.dao.AuthProviderDao;
+import org.openiam.am.srvc.dao.ContentProviderDao;
+import org.openiam.am.srvc.dao.URIPatternDao;
+import org.openiam.am.srvc.domain.AuthProviderEntity;
+import org.openiam.am.srvc.domain.ContentProviderEntity;
+import org.openiam.am.srvc.domain.URIPatternEntity;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.dozer.converter.ResourceDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.ResourceSearchBean;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.service.GroupDAO;
+import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
+import org.openiam.idm.srvc.meta.domain.MetadataElementPageTemplateEntity;
+import org.openiam.idm.srvc.meta.service.MetadataElementDAO;
+import org.openiam.idm.srvc.meta.service.MetadataElementPageTemplateDAO;
+import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
+import org.openiam.idm.srvc.mngsys.service.ManagedSysDAO;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
 import org.openiam.idm.srvc.res.domain.ResourceTypeEntity;
@@ -42,6 +54,24 @@ public class ResourceServiceImpl implements ResourceService {
 	
 	@Autowired
   	private ResourceDozerConverter dozerConverter;
+	
+	@Autowired
+	private AuthProviderDao authProviderDAO;
+	
+	@Autowired
+	private ContentProviderDao contentProviderDAO;
+	
+	@Autowired
+	private URIPatternDao uriPatternDAO;
+	
+	@Autowired
+	private MetadataElementDAO elementDAO;
+	
+	@Autowired
+	private ManagedSysDAO managedSysDAO;
+	
+	@Autowired
+	private MetadataElementPageTemplateDAO templateDAO;
 
 	@Override
     @Transactional
@@ -349,12 +379,6 @@ public class ResourceServiceImpl implements ResourceService {
 		return resourceDao.findByIds(resourceIdCollection);
 	}
 
-    @Override
-    @Transactional(readOnly = true)
-    public List<ResourceEntity> getResourcesForManagedSys(String mngSysId, int from, int size) {
-        return resourceDao.getResourcesForManagedSys(mngSysId, from, size);
-    }
-
 	@Override
 	@Transactional
 	public void validateResource2ResourceAddition(final String parentId, final String memberId) throws BasicDataServiceException {
@@ -380,6 +404,44 @@ public class ResourceServiceImpl implements ResourceService {
 		if(parent.getResourceType() != null && child.getResourceType() != null &&
 		  !parent.getResourceType().equals(child.getResourceType())) {
 			throw new BasicDataServiceException(ResponseCode.RESOURCE_TYPES_NOT_EQUAL);
+		}
+	}
+	
+	@Override
+	@Transactional
+	public void validateResourceDeletion(final String resourceId) throws BasicDataServiceException {
+		final ResourceEntity entity = resourceDao.findById(resourceId);
+		if(entity != null) {
+			
+			final List<ManagedSysEntity> managedSystems = managedSysDAO.findByResource(resourceId);
+			if(CollectionUtils.isNotEmpty(managedSystems)) {
+				throw new BasicDataServiceException(ResponseCode.LINKED_TO_MANAGED_SYSTEM, managedSystems.get(0).getName());
+			}
+			
+			final List<ContentProviderEntity> contentProviders = contentProviderDAO.getByResourceId(resourceId);
+			if(CollectionUtils.isNotEmpty(contentProviders)) {
+				throw new BasicDataServiceException(ResponseCode.LINKED_TO_CONTENT_PROVIDER, contentProviders.get(0).getName());
+			}
+			
+			final List<URIPatternEntity> uriPatterns = uriPatternDAO.getByResourceId(resourceId);
+			if(CollectionUtils.isNotEmpty(uriPatterns)) {
+				throw new BasicDataServiceException(ResponseCode.LINKED_TO_URI_PATTERN, uriPatterns.get(0).getPattern());
+			}
+			
+			final List<AuthProviderEntity> authProviders = authProviderDAO.getByResourceId(resourceId);
+			if(CollectionUtils.isNotEmpty(authProviders)) {
+				throw new BasicDataServiceException(ResponseCode.LINKED_TO_AUTHENTICATION_PROVIDER, authProviders.get(0).getName());
+			}
+			
+			final List<MetadataElementEntity> metadataElements = elementDAO.getByResourceId(resourceId);
+			if(CollectionUtils.isNotEmpty(metadataElements)) {
+				throw new BasicDataServiceException(ResponseCode.LINKED_TO_METADATA_ELEMENT, metadataElements.get(0).getAttributeName());
+			}
+			
+			final List<MetadataElementPageTemplateEntity> pageTemplates = templateDAO.getByResourceId(resourceId);
+			if(CollectionUtils.isNotEmpty(pageTemplates)) {
+				throw new BasicDataServiceException(ResponseCode.LINKED_TO_PAGE_TEMPLATE, pageTemplates.get(0).getName());
+			}
 		}
 	}
 	

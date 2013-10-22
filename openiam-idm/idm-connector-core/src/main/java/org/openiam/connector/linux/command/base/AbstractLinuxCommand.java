@@ -3,6 +3,8 @@ package org.openiam.connector.linux.command.base;
 import java.util.Arrays;
 import java.util.HashMap;
 
+import org.apache.solr.update.processor.MD5Signature;
+import org.bouncycastle.jcajce.provider.asymmetric.rsa.ISOSignatureSpi.MD5WithRSAEncryption;
 import org.openiam.connector.common.command.AbstractCommand;
 import org.openiam.connector.linux.data.LinuxGroup;
 import org.openiam.connector.linux.data.LinuxGroups;
@@ -17,7 +19,10 @@ import org.openiam.connector.type.response.ResponseType;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.StringUtils;
+
+import ch.ethz.ssh2.crypto.digest.MD5;
 
 public abstract class AbstractLinuxCommand<Request extends RequestType, Response extends ResponseType>
         extends AbstractCommand<Request, Response> {
@@ -26,6 +31,11 @@ public abstract class AbstractLinuxCommand<Request extends RequestType, Response
     protected static final String NOBODY_LINUX_USER = "nobody\n";
     protected static final String searchGroupQuery = "awk -F: \'$3 >= 500 {print $1}\' /etc/group";
     protected static final String NOGROUP_LINUX_GROUP = "nogroup\n";
+
+    @Value("${remote.linux.command.directory}")
+    protected String remoteDirectory;
+    @Value("${local.linux.command.directory}")
+    protected String localDirectory;
 
     protected SSHAgent getSSHAgent(String targetId)
             throws ConnectorDataException {
@@ -74,21 +84,12 @@ public abstract class AbstractLinuxCommand<Request extends RequestType, Response
         sshAgent.executeCommand(user.getUserSetPasswordCommand(), doubledPass);
     }
 
-    /**
-     * Extracts a LinuxUser from the given list of Extensible Objects,
-     * 
-     * @param login
-     *            Login name of new user
-     * @param obj
-     *            List containing attributes
-     * @return A LinuxUser with the relevant fields populated
-     */
-    protected LinuxUser objectToLinuxUser(String login, ExtensibleObject obj) {
-        LinuxUser user = null;
-
+    protected HashMap<String, String> objectToAttributes(String login,
+            ExtensibleObject obj) {
+        HashMap<String, String> attributes = new HashMap<String, String>();
         if (StringUtils.hasText(login)) {
             // Extract attribues into a map. Also save groups
-            HashMap<String, String> attributes = new HashMap<String, String>();
+
             attributes.put("login", login);
             if (obj == null) {
                 log.debug("Object: not provided, just identity, seems it is delete operation");
@@ -102,13 +103,27 @@ public abstract class AbstractLinuxCommand<Request extends RequestType, Response
                     }
                 }
             }
-            try {
-                user = new LinuxUser(attributes);
-            } catch (Exception ex) {
-                log.error(ex.getMessage());
-            }
         } else {
             log.error("Login name for Linux user not specified");
+        }
+        return attributes;
+    }
+
+    /**
+     * Extracts a LinuxUser from the given list of Extensible Objects,
+     * 
+     * @param login
+     *            Login name of new user
+     * @param obj
+     *            List containing attributes
+     * @return A LinuxUser with the relevant fields populated
+     */
+    protected LinuxUser objectToLinuxUser(String login, ExtensibleObject obj) {
+        LinuxUser user = null;
+        try {
+            user = new LinuxUser(this.objectToAttributes(login, obj));
+        } catch (Exception ex) {
+            log.error(ex.getMessage());
         }
         return user;
     }

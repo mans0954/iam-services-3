@@ -193,6 +193,7 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 	@WebMethod
 	@Transactional
 	public SaveTemplateProfileResponse initiateNewHireRequest(final NewUserProfileRequestModel request) {
+		log.info("Initializing workflow");
 		final SaveTemplateProfileResponse response = new SaveTemplateProfileResponse();
 		final AuditLogBuilder builder = auditLogProvider.getAuditLogBuilder();
 		builder.setAction(AuditAction.NEW_USER_WORKFLOW);
@@ -342,6 +343,7 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 			response.setErrorCode(ResponseCode.USER_STATUS);
 			response.setErrorText(e.getMessage());
 		} finally {
+			log.info("Persisting activiti log..");
 			auditLogService.enqueue(builder);
 		}
 		return response;

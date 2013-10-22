@@ -64,19 +64,14 @@ public class TestCrossEntityConversion extends AbstractTestNGSpringContextTests 
 	}
 	
 	private void confirmSimple(final Resource resource, final ResourceEntity entity) {
-		Assert.assertEquals(resource.getBranchId(), entity.getBranchId());
-		Assert.assertEquals(resource.getCategoryId(), entity.getCategoryId());
 		Assert.assertEquals(resource.getDescription(), entity.getDescription());
 		Assert.assertEquals(resource.getDisplayOrder(), entity.getDisplayOrder());
 		Assert.assertEquals(resource.getDomain(), entity.getDomain());
 		Assert.assertEquals(resource.getIsPublic(), entity.getIsPublic());
 		//Assert.assertEquals(resource.getIsSSL(), entity.getIsSSL());
-		Assert.assertEquals(resource.getManagedSysId(), entity.getManagedSysId());
 		Assert.assertEquals(resource.getMinAuthLevel(), entity.getMinAuthLevel());
 		Assert.assertEquals(resource.getName(), entity.getName());
 		Assert.assertEquals(resource.getResourceId(), entity.getResourceId());
-		Assert.assertEquals(resource.getResOwnerGroupId(), entity.getResOwnerGroupId());
-		Assert.assertEquals(resource.getResOwnerUserId(), entity.getResOwnerUserId());
 		Assert.assertEquals(resource.getURL(), entity.getURL());
 		confirm(resource.getResourceType(), entity.getResourceType());
 	}
@@ -132,20 +127,15 @@ public class TestCrossEntityConversion extends AbstractTestNGSpringContextTests 
 
 	private ResourceEntity createSimpleResourceEntity() {
 		final ResourceEntity entity = new ResourceEntity();
-		entity.setBranchId(rs(2));
-		entity.setCategoryId(rs(2));
 		entity.setDescription(rs(2));
 		entity.setDisplayOrder(3);
 		entity.setDomain(rs(2));
 		entity.setIsPublic(true);
 		//entity.setIsSSL(true);
-		entity.setManagedSysId(rs(2));
 		entity.setMinAuthLevel(rs(2));
 		entity.setName(rs(2));
 		entity.setResourceId(rs(2));
 		entity.setResourceType(createResourceTypeEntity());
-		entity.setResOwnerGroupId(rs(2));
-		entity.setResOwnerUserId(rs(2));
 		entity.setURL(rs(2));
 		return entity;
 	}

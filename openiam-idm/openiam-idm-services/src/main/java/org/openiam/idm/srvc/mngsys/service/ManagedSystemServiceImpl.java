@@ -22,6 +22,7 @@ import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.idm.srvc.policy.service.PolicyDAO;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.service.ResourceDAO;
+import org.openiam.idm.srvc.res.service.ResourceService;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.service.RoleDAO;
@@ -68,7 +69,10 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
     private AuthProviderDao authProviderDao;
     
     @Autowired
-    RoleDAO roleDAO;
+    private RoleDAO roleDAO;
+    
+    @Autowired
+    private ResourceService resourceService;
 
     private static final String resourceTypeId="MANAGED_SYS";
 
@@ -135,6 +139,7 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
         }
         
         managedSysDAO.delete(sysEntity);
+        resourceService.deleteResource(sysEntity.getResourceId());
     }
     
     @Override
@@ -151,7 +156,10 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
     	entity.setResourceId(resource.getResourceId());
 
         managedSysDAO.save(entity);
+        
+        /*
         resource.setManagedSysId(entity.getManagedSysId());
+        */
         sys.setManagedSysId(entity.getManagedSysId());
     }
 
@@ -167,7 +175,7 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
     		resource.setIsPublic(false);
     		resourceDAO.save(resource);
     		entity.setResourceId(resource.getResourceId());
-            resource.setManagedSysId(sys.getManagedSysId());
+            //resource.setManagedSysId(sys.getManagedSysId());
     	}
         managedSysDAO.save(entity);
 

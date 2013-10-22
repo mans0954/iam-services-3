@@ -730,7 +730,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                         throw new IllegalArgumentException("Attribute with this name alreday exists");
                     }
                     UserAttributeEntity e = userAttributeDozerConverter.convertToEntity(entry.getValue(), true);
-                    e.setUser(userEntity); // TODO: Maybe it's better to refactor mappings for UserAttributeEntity
+                    e.setUser(userEntity);
                     userEntity.getUserAttributes().put(entry.getKey(), e);
 
                 } else if (operation == AttributeOperationEnum.REPLACE) {
@@ -830,8 +830,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         }
         if (CollectionUtils.isNotEmpty(userEntity.getRoles())) {
             for (RoleEntity ure : userEntity.getRoles()) {
-                roleSet.add(roleDozerConverter.convertToDTO(roleDataService.getRole(ure.getRoleId(),
-                        userEntity.getUserId()), false));
+                roleSet.add(roleDozerConverter.convertToDTO(ure, false));
             }
         }
     }
