@@ -16,7 +16,8 @@ output = null
 def primaryLogin = lg.login
 
 def ldapDN
-def organizationId = user.affiliations?.iterator()?.next()?.id
+def it = user.affiliations?.iterator()
+def organizationId = it?.hasNext()? it.next()?.id : null
 if (organizationId) {
     def organizationService = context.getBean("organizationService")
     ldapDN = organizationService?.getOrganization(organizationId)?.attributes?.find { it.name == 'LDAP_DN' }?.value
