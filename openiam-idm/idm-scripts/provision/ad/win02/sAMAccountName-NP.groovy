@@ -6,6 +6,6 @@ if (attr?.value) {
     if (value) {
        output = value
     } else {
-       output = user.firstName + "." + user.lastName as String
+       output = lg.login
     }
 }
