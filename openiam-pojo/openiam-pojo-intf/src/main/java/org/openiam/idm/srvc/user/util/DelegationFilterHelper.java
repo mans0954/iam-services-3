@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.user.util;
 
+import org.apache.commons.lang.StringUtils;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
 
 import java.util.*;
@@ -50,12 +51,17 @@ public class DelegationFilterHelper {
     }
 
 
-    public static List<String> getMngRptFromString(Map<String, UserAttribute> attrMap) {
-        return getFilterListFromString(attrMap, DLG_FLT_MNG_RPT);
-    }
+//    public static List<String> getMngRptFromString(Map<String, UserAttribute> attrMap) {
+//        return getFilterListFromString(attrMap, DLG_FLT_MNG_RPT);
+//    }
 
     public static boolean isMngRptFilterSet(Map<String, UserAttribute> attrMap) {
-        return isFilerSet(attrMap, DLG_FLT_MNG_RPT);
+        String filterValue = getFilterValue(attrMap, DLG_FLT_MNG_RPT);
+        boolean isFilterSet = false;
+        if(StringUtils.isNotEmpty(filterValue)) {
+            isFilterSet = new Boolean(filterValue);
+        }
+        return isFilterSet;
     }
 
 
@@ -101,17 +107,23 @@ public class DelegationFilterHelper {
 
     private static  List<String> getFilterListFromString(Map<String, UserAttribute> attrMap, String key){
         List<String> filterLst = new ArrayList<String>();
-        if(attrMap!=null){
-            if (attrMap.get(key) != null)  {
-                String filter =  attrMap.get(key).getValue();
-                if (filter != null && !filter.trim().isEmpty()) {
-                    StringTokenizer tokenizer = new StringTokenizer(filter, DLG_FLT_SEPARATOR);
-                    while ( tokenizer.hasMoreTokens()) {
-                        filterLst.add(tokenizer.nextToken());
-                    }
-                }
+        String filter = getFilterValue(attrMap, key);
+        if(StringUtils.isNotEmpty(filter)) {
+            StringTokenizer tokenizer = new StringTokenizer(filter, DLG_FLT_SEPARATOR);
+            while ( tokenizer.hasMoreTokens()) {
+                filterLst.add(tokenizer.nextToken());
             }
         }
         return filterLst;
+    }
+
+    private static String getFilterValue(Map<String, UserAttribute> attrMap, String key){
+        String value = null;
+        if(attrMap!=null){
+            if (attrMap.get(key) != null)  {
+                value =  attrMap.get(key).getValue();
+            }
+        }
+        return value;
     }
 }

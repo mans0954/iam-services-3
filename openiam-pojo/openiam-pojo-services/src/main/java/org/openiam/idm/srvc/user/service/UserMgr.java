@@ -504,6 +504,7 @@ public class UserMgr implements UserDataService {
         boolean isOrgFilterSet = false;
         boolean isGroupFilterSet = false;
         boolean isRoleFilterSet = false;
+        boolean isMngReportFilterSet = false;
 
         if (StringUtils.isNotBlank(searchBean.getRequesterId())) {
             // check and add delegation filter if necessary
@@ -512,6 +513,7 @@ public class UserMgr implements UserDataService {
             isOrgFilterSet = DelegationFilterHelper.isOrgFilterSet(requesterAttributes);
             isGroupFilterSet = DelegationFilterHelper.isGroupFilterSet(requesterAttributes);
             isRoleFilterSet = DelegationFilterHelper.isRoleFilterSet(requesterAttributes);
+            isMngReportFilterSet = DelegationFilterHelper.isMngRptFilterSet(requesterAttributes);
 
             if (isOrgFilterSet) {
                 if (CollectionUtils.isEmpty(searchBean.getOrganizationIdList())) {
@@ -527,8 +529,12 @@ public class UserMgr implements UserDataService {
                 searchBean.setRoleIdSet(new HashSet<String>(DelegationFilterHelper.getRoleFilterFromString(requesterAttributes)));
             }
         }
-
-        List<String> idList = userSearchDAO.findIds(0, MAX_USER_SEARCH_RESULTS, null, searchBean);
+        List<String> idList = null;
+        if(isMngReportFilterSet){
+            idList = userDao.getSubordinatesIds(searchBean.getRequesterId());
+        } else {
+            idList = userSearchDAO.findIds(0, MAX_USER_SEARCH_RESULTS, null, searchBean);
+        }
 
         if (CollectionUtils.isNotEmpty(idList) || (CollectionUtils.isEmpty(idList) && (isOrgFilterSet))) {
             nonEmptyListOfLists.add(idList);
