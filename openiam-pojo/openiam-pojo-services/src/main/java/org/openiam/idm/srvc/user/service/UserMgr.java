@@ -31,6 +31,7 @@ import org.openiam.idm.searchbeans.DelegationFilterSearchBean;
 import org.openiam.idm.searchbeans.EmailSearchBean;
 import org.openiam.idm.searchbeans.LoginSearchBean;
 import org.openiam.idm.searchbeans.PhoneSearchBean;
+import org.openiam.idm.searchbeans.PotentialSupSubSearchBean;
 import org.openiam.idm.searchbeans.UserSearchBean;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
@@ -65,6 +66,7 @@ import org.openiam.idm.srvc.searchbean.converter.EmailAddressSearchBeanConverter
 import org.openiam.idm.srvc.searchbean.converter.PhoneSearchBeanConverter;
 import org.openiam.idm.srvc.user.dao.UserSearchDAO;
 import org.openiam.idm.srvc.user.domain.SupervisorEntity;
+import org.openiam.idm.srvc.user.domain.SupervisorIDEntity;
 import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.domain.UserNoteEntity;
@@ -502,6 +504,7 @@ public class UserMgr implements UserDataService {
         boolean isOrgFilterSet = false;
         boolean isGroupFilterSet = false;
         boolean isRoleFilterSet = false;
+        boolean isMngReportFilterSet = false;
 
         if (StringUtils.isNotBlank(searchBean.getRequesterId())) {
             // check and add delegation filter if necessary
@@ -510,6 +513,7 @@ public class UserMgr implements UserDataService {
             isOrgFilterSet = DelegationFilterHelper.isOrgFilterSet(requesterAttributes);
             isGroupFilterSet = DelegationFilterHelper.isGroupFilterSet(requesterAttributes);
             isRoleFilterSet = DelegationFilterHelper.isRoleFilterSet(requesterAttributes);
+            isMngReportFilterSet = DelegationFilterHelper.isMngRptFilterSet(requesterAttributes);
 
             if (isOrgFilterSet) {
                 if (CollectionUtils.isEmpty(searchBean.getOrganizationIdList())) {
@@ -525,8 +529,12 @@ public class UserMgr implements UserDataService {
                 searchBean.setRoleIdSet(new HashSet<String>(DelegationFilterHelper.getRoleFilterFromString(requesterAttributes)));
             }
         }
-
-        List<String> idList = userSearchDAO.findIds(0, MAX_USER_SEARCH_RESULTS, null, searchBean);
+        List<String> idList = null;
+        if(isMngReportFilterSet){
+            idList = userDao.getSubordinatesIds(searchBean.getRequesterId());
+        } else {
+            idList = userSearchDAO.findIds(0, MAX_USER_SEARCH_RESULTS, null, searchBean);
+        }
 
         if (CollectionUtils.isNotEmpty(idList) || (CollectionUtils.isEmpty(idList) && (isOrgFilterSet))) {
             nonEmptyListOfLists.add(idList);
@@ -1285,42 +1293,55 @@ public class UserMgr implements UserDataService {
     @Override
     @Transactional
     public void addSupervisor(SupervisorEntity supervisor) {
+        if (supervisorDao.findById(supervisor.getId()) != null)
+            return;
+        if (supervisor.getId() != null && getPrimarySupervisor(supervisor.getId().getEmployeeId()) == null) {
+            supervisor.setIsPrimarySuper(true);
+        }
         supervisorDao.save(supervisor);
     }
 
     @Override
     @Transactional
     public void addSuperior(String supervisorId, String subordinateId) {
-        UserEntity supervisor = getUser(supervisorId, subordinateId);
-        UserEntity subordinate = getUser(subordinateId, supervisorId);
-        addSupervisor(new SupervisorEntity(supervisor, subordinate));
+        SupervisorEntity supervisorEntity = new SupervisorEntity();
+        SupervisorIDEntity id = new SupervisorIDEntity();
+        id.setSupervisorId(supervisorId);
+        id.setEmployeeId(subordinateId);
+        supervisorEntity.setId(id);
+
+        addSupervisor(supervisorEntity);
     }
+
+    // @Override
+    // @Transactional
+    // public void updateSupervisor(SupervisorEntity supervisor) {
+    // if (supervisor == null)
+    // throw new NullPointerException("supervisor is null");
+    // supervisorDao.update(supervisor);
+    // }
 
     @Override
     @Transactional
-    public void updateSupervisor(SupervisorEntity supervisor) {
-        if (supervisor == null)
-            throw new NullPointerException("supervisor is null");
-        supervisorDao.update(supervisor);
-    }
-
-    @Override
-    @Transactional
-    public void removeSupervisor(final String supervisorId) {
+    public void removeSupervisor(final String supervisorId, final String employeeId) {
         if (supervisorId == null)
             throw new NullPointerException("supervisor is null");
 
-        final SupervisorEntity entity = supervisorDao.findById(supervisorId);
+        SupervisorIDEntity id = new SupervisorIDEntity();
+        id.setSupervisorId(supervisorId);
+        id.setEmployeeId(employeeId);
+
+        final SupervisorEntity entity = supervisorDao.findById(id);
         supervisorDao.delete(entity);
     }
 
-    @Override
-    @Transactional(readOnly = true)
-    public SupervisorEntity getSupervisor(String supervisorObjId) {
-        if (supervisorObjId == null)
-            throw new NullPointerException("supervisorObjId is null");
-        return supervisorDao.findById(supervisorObjId);
-    }
+    // @Override
+    // @Transactional(readOnly = true)
+    // public SupervisorEntity getSupervisor(String supervisorObjId) {
+    // if (supervisorObjId == null)
+    // throw new NullPointerException("supervisorObjId is null");
+    // return supervisorDao.findById(supervisorObjId);
+    // }
 
     @Override
     public void evict(Object object) {
@@ -1337,28 +1358,28 @@ public class UserMgr implements UserDataService {
         }
     }
 
-    @Override
-    @Transactional(readOnly = true)
-    public List<SupervisorEntity> getSupervisors(String employeeId) {
-        if (employeeId == null)
-            throw new NullPointerException("employeeId is null");
-        return supervisorDao.findSupervisors(employeeId);
-    }
+    // @Override
+    // @Transactional(readOnly = true)
+    // public List<UserEntity> getSupervisors(String employeeId) {
+    // if (employeeId == null)
+    // throw new NullPointerException("employeeId is null");
+    // return userDao.findSupervisors(employeeId);
+    // }
+
+    // @Override
+    // @Transactional(readOnly = true)
+    // public List<SupervisorEntity> getEmployees(String supervisorId) {
+    // if (supervisorId == null)
+    // throw new NullPointerException("employeeId is null");
+    // return supervisorDao.findEmployees(supervisorId);
+    // }
 
     @Override
     @Transactional(readOnly = true)
-    public List<SupervisorEntity> getEmployees(String supervisorId) {
-        if (supervisorId == null)
-            throw new NullPointerException("employeeId is null");
-        return supervisorDao.findEmployees(supervisorId);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public SupervisorEntity getPrimarySupervisor(String employeeId) {
+    public UserEntity getPrimarySupervisor(String employeeId) {
         if (employeeId == null)
             throw new NullPointerException("employeeId is null");
-        return supervisorDao.findPrimarySupervisor(employeeId);
+        return userDao.findPrimarySupervisor(employeeId);
     }
 
     @Override
@@ -1368,7 +1389,11 @@ public class UserMgr implements UserDataService {
             throw new NullPointerException("superiorId is null");
         if (superiorId == null)
             throw new NullPointerException("subordinateId is null");
-        return supervisorDao.findSupervisor(superiorId, subordinateId);
+        SupervisorIDEntity id = new SupervisorIDEntity();
+        id.setSupervisorId(superiorId);
+        id.setEmployeeId(subordinateId);
+
+        return supervisorDao.findById(id);
     }
 
     @Override
@@ -1405,7 +1430,7 @@ public class UserMgr implements UserDataService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<UserEntity> findPotentialSupSubs(UserSearchBean searchBean, Integer from, Integer size) {
+    public List<UserEntity> findPotentialSupSubs(PotentialSupSubSearchBean searchBean, Integer from, Integer size) {
         List<UserEntity> entityList = findAllPotentialSupSubs(searchBean);
 
         if (entityList != null && entityList.size() >= from) {
@@ -1421,12 +1446,12 @@ public class UserMgr implements UserDataService {
 
     @Override
     @Transactional(readOnly = true)
-    public int findPotentialSupSubsCount(UserSearchBean searchBean) {
+    public int findPotentialSupSubsCount(PotentialSupSubSearchBean searchBean) {
         return findAllPotentialSupSubs(searchBean).size();
     }
 
     @Transactional(readOnly = true)
-    private List<UserEntity> findAllPotentialSupSubs(UserSearchBean searchBean) {
+    private List<UserEntity> findAllPotentialSupSubs(PotentialSupSubSearchBean searchBean) {
         List<String> userIds = null;
         if (StringUtils.isNotBlank(searchBean.getKey())) {
             userIds = new ArrayList<String>(1);
@@ -1434,7 +1459,7 @@ public class UserMgr implements UserDataService {
         } else {
             userIds = getUserIds(searchBean);
         }
-        userIds.removeAll(userDao.getAllAttachedSupSubIds(searchBean.getRequesterId()));
+        userIds.removeAll(userDao.getAllAttachedSupSubIds(searchBean.getTargetUserIds()));
         return userDao.findByIds(userIds);
     }
 
@@ -1494,7 +1519,7 @@ public class UserMgr implements UserDataService {
 
     @Override
     @Transactional
-    public String saveUserInfo(UserEntity newUserEntity, SupervisorEntity supervisorEntity) throws Exception {
+    public String saveUserInfo(UserEntity newUserEntity, String supervisorId) throws Exception {
         String userId = newUserEntity.getUserId();
         if (newUserEntity.getUserId() != null) {
             // update, need to merge user objects
@@ -1504,20 +1529,18 @@ public class UserMgr implements UserDataService {
         } else {
             userId = createNewUser(newUserEntity);
         }
-        if (supervisorEntity != null) {
+        if (supervisorId != null) {
             // update supervisor
-            List<SupervisorEntity> supervisorList = this.getSupervisors(newUserEntity.getUserId());
-            for (SupervisorEntity s : supervisorList) {
-                log.debug("looking to match supervisor ids = " + s.getSupervisor().getUserId() + " " + supervisorEntity.getSupervisor().getUserId());
-                if (s.getSupervisor().getUserId().equalsIgnoreCase(supervisorEntity.getSupervisor().getUserId())) {
+            List<UserEntity> supervisorList = this.getSuperiors(newUserEntity.getUserId(), 0, Integer.MAX_VALUE);
+            for (UserEntity s : supervisorList) {
+                log.debug("looking to match supervisor ids = " + s.getUserId() + " " + supervisorId);
+                if (s.getUserId().equalsIgnoreCase(supervisorId)) {
                     break;
                 }
-                this.removeSupervisor(s.getOrgStructureId());
+                // this.removeSupervisor(s.getOrgStructureId());
             }
-            log.debug("adding supervisor: " + supervisorEntity.getSupervisor().getUserId());
-            supervisorEntity.setEmployee(newUserEntity);
-
-            this.addSupervisor(supervisorEntity);
+            log.debug("adding supervisor: " + supervisorId);
+            this.addSuperior(supervisorId, newUserEntity.getUserId());
         }
         return userId;
     }

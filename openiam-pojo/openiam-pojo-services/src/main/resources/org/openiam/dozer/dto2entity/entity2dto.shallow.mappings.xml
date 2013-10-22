@@ -82,6 +82,14 @@
             <a>affiliations</a>
             <b>affiliations</b>
         </field-exclude>
+        <field-exclude>
+            <a>supervisors</a>
+            <b>supervisors</b>
+        </field-exclude>
+        <field-exclude>
+            <a>subordinates</a>
+            <b>subordinates</b>
+        </field-exclude>
 	</mapping>
 
 	<mapping>

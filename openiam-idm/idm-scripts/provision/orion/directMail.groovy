@@ -2,7 +2,8 @@
 println(">>>>>> directMail.groovy called.")
 output = null
 
-def organizationId = user.affiliations?.iterator()?.next()?.id
+def it = user.affiliations?.iterator()
+def organizationId = it?.hasNext()? it.next()?.id : null
 def primaryLogin = lg.login
 
 if (organizationId) {

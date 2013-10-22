@@ -758,11 +758,11 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     continue;
                 }
                 if (e.getOperation().equals(AttributeOperationEnum.DELETE)) {
-                    List<SupervisorEntity> supervisorList = userMgr.getSupervisors(userId);
+                    List<UserEntity> supervisorList = userMgr.getSuperiors(userId, 0, Integer.MAX_VALUE);
                     if (CollectionUtils.isNotEmpty(supervisorList)) {
-                        for (SupervisorEntity se : supervisorList) {
-                            if (se.getSupervisor().getUserId().equals(e.getUserId())) {
-                                userMgr.removeSupervisor(se.getOrgStructureId());
+                        for (UserEntity se : supervisorList) {
+                            if (se.getUserId().equals(e.getUserId())) {
+                                userMgr.removeSupervisor(se.getUserId(), userId);
                                 log.info(String.format("Removed a supervisor user %s from user %s",
                                         e.getUserId(), userId));
                             }

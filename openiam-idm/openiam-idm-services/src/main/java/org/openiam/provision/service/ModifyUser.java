@@ -1123,16 +1123,16 @@ public class ModifyUser {
         }
         // check the current supervisor - if different - remove it and add the
         // new one.
-        List<SupervisorEntity> supervisorList = userMgr.getSupervisors(user.getUserId());
-        for (SupervisorEntity s : supervisorList) {
+        List<UserEntity> supervisorList = userMgr.getSuperiors(user.getUserId(), 0, Integer.MAX_VALUE);
+        for (UserEntity s : supervisorList) {
             log.debug("looking to match supervisor ids = "
-                    + s.getSupervisor().getUserId() + " "
+                    + s.getUserId() + " "
                     + supervisor.getSupervisor().getUserId());
-            if (s.getSupervisor().getUserId()
+            if (s.getUserId()
                     .equalsIgnoreCase(supervisor.getSupervisor().getUserId())) {
                 return;
             }
-            userMgr.removeSupervisor(s.getOrgStructureId());
+            userMgr.removeSupervisor(s.getUserId(), user.getUserId());
         }
         log.debug("adding supervisor: "
                 + supervisor.getSupervisor().getUserId());

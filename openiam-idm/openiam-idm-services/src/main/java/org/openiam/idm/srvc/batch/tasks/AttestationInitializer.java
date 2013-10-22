@@ -58,16 +58,16 @@ public class AttestationInitializer {
 		if(CollectionUtils.isNotEmpty(employeeIds)) {
 			for(final String employeeId : employeeIds) {
 				final UserEntity user = userService.getUser(employeeId);
-				final List<SupervisorEntity> supervisords = userService.getSupervisors(employeeId);
+				final List<UserEntity> supervisords = userService.getSuperiors(employeeId, 0, Integer.MAX_VALUE);
 				final Set<String> supervisorIds = new HashSet<String>();
 				if(CollectionUtils.isEmpty(supervisords)) {
 					LOG.info(String.format("Employee %s has no supervisor", employeeId));
 					continue;
 				}
 				
-				for(final SupervisorEntity supevisor : supervisords) {
-					if(supevisor != null && supevisor.getSupervisor() != null && supevisor.getSupervisor().getUserId() != null) {
-						supervisorIds.add(supevisor.getSupervisor().getUserId());
+				for(final UserEntity supevisor : supervisords) {
+					if(supevisor != null && supevisor.getUserId() != null) {
+						supervisorIds.add(supevisor.getUserId());
 					}
 				}
 				

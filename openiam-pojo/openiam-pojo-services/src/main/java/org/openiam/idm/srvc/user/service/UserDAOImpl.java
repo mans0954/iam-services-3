@@ -463,6 +463,19 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
         return ((Number) getSubordinatesCriteria(userId).setProjection(rowCount()).uniqueResult()).intValue();
     }
 
+    public List<String> getSubordinatesIds(String userId){
+        Criteria criteria = getSession().createCriteria(SupervisorEntity.class).setProjection(Projections.property("id.employeeId"))
+                .add(Restrictions.eq("id.supervisorId", userId));
+        return criteria.list();
+    }
+
+    public UserEntity findPrimarySupervisor(String employeeId) {
+        Criteria criteria = getCriteria().createAlias("supervisors", "s").add(Restrictions.eq("userId", employeeId))
+                        .add(Restrictions.eq("s.isPrimarySuper", true)).setProjection(Projections.property("s.supervisor"));
+
+        return (UserEntity) criteria.uniqueResult();
+    }
+
     private Criteria getSuperiorsCriteria(String userId) {
         Criteria criteria = getSession().createCriteria(SupervisorEntity.class).setProjection(Projections.property("supervisor"))
                         .createAlias("employee", "employee").add(Restrictions.eq("employee.userId", userId));
@@ -475,13 +488,15 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
         return criteria;
     }
 
-    public List<String> getAllAttachedSupSubIds(String userId) {
+    public List<String> getAllAttachedSupSubIds(List<String> userIds) {
+        if(CollectionUtils.isEmpty(userIds)){
+            return Collections.EMPTY_LIST;
+        }
+        DetachedCriteria superiors = DetachedCriteria.forClass(SupervisorEntity.class).setProjection(Projections.property("id.supervisorId"))
+                        .add(Restrictions.in("id.employeeId", userIds));
 
-        DetachedCriteria superiors = DetachedCriteria.forClass(SupervisorEntity.class).setProjection(Projections.property("supervisor.userId"))
-                        .add(Restrictions.eq("employee.userId", userId));
-
-        DetachedCriteria subordinates = DetachedCriteria.forClass(SupervisorEntity.class).setProjection(Projections.property("employee.userId"))
-                        .add(Restrictions.eq("supervisor.userId", userId));
+        DetachedCriteria subordinates = DetachedCriteria.forClass(SupervisorEntity.class).setProjection(Projections.property("id.employeeId"))
+                        .add(Restrictions.in("id.supervisorId", userIds));
 
         Disjunction disjunction = Restrictions.disjunction();
         disjunction.add(Subqueries.propertyIn("userId", superiors)); // exclude
@@ -490,7 +505,7 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
         disjunction.add(Subqueries.propertyIn("userId", subordinates)); // exclude
                                                                         // existing
                                                                         // subordinates
-        disjunction.add(Restrictions.eq("userId", userId)); // exclude itself
+        disjunction.add(Restrictions.in("userId", userIds)); // exclude itself
 
         final Criteria criteria = getCriteria().setProjection(Projections.property("userId")).add(disjunction)
                         .setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY);
