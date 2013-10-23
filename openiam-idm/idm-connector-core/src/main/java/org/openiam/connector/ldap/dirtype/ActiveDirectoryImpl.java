@@ -121,7 +121,7 @@ public class ActiveDirectoryImpl implements Directory {
 
             for (String s : currentSupervisorMembershipList) {
                 try {
-                    log.debug("Removing supervisor: " + s + " from " + identity);
+                    log.debug("Removing supervisor: " + s + " from " + identityDN);
                     ModificationItem mods[] = new ModificationItem[1];
                     mods[0] = new ModificationItem(DirContext.REMOVE_ATTRIBUTE, new BasicAttribute("manager", s));
                     ldapctx.modifyAttributes(identityDN, mods);
@@ -137,9 +137,7 @@ public class ActiveDirectoryImpl implements Directory {
                                         ManagedSystemObjectMatch matchObj, LdapContext ldapctx,
                                         ExtensibleObject obj) {
 
-        String samAccountName = getSamAccountName(obj);
-
-        List<String> currentMembershipList = userMembershipList(samAccountName, matchObj, ldapctx);
+        List<String> currentMembershipList = userMembershipList(identity, matchObj, ldapctx);
 
         log.debug("- Current Active Dir group membership:" + currentMembershipList);
         log.debug("- Target Active Dir group membership:"  + targetMembershipList);
@@ -204,7 +202,7 @@ public class ActiveDirectoryImpl implements Directory {
 
             for (String s : currentSupervisorMembershipList) {
                 try {
-                    log.debug("Removing supervisor: " + s + " from " + identity);
+                    log.debug("Removing supervisor: " + s + " from " + identityDN);
                     ModificationItem mods[] = new ModificationItem[1];
                     mods[0] = new ModificationItem(DirContext.REMOVE_ATTRIBUTE, new BasicAttribute("manager", s));
                     ldapctx.modifyAttributes(identityDN, mods);
@@ -248,16 +246,6 @@ public class ActiveDirectoryImpl implements Directory {
         }
     }
 
-    private String getSamAccountName(ExtensibleObject obj) {
-        List<ExtensibleAttribute> attrList = obj.getAttributes();
-        for (ExtensibleAttribute att : attrList) {
-            if ("sAMAccountName".equalsIgnoreCase(att.getName())) {
-                return att.getValue();
-            }
-        }
-        return null;
-    }
-
     public void setAttributes(String name, Object obj) {
 
     }
@@ -276,7 +264,7 @@ public class ActiveDirectoryImpl implements Directory {
 
     }
 
-    protected List<String> userMembershipList(String identityDN, ManagedSystemObjectMatch matchObj, LdapContext ldapctx) {
+    protected List<String> userMembershipList(String identity, ManagedSystemObjectMatch matchObj, LdapContext ldapctx) {
 
         List<String> currentMembershipList = new ArrayList<String>();
 
@@ -284,9 +272,7 @@ public class ActiveDirectoryImpl implements Directory {
         String userSearchFilter = matchObj.getSearchFilter();
         // replace the place holder in the search filter
         if (StringUtils.isNotBlank(userSearchFilter)) {
-            userSearchFilter = userSearchFilter.replace("?", identityDN);
-        } else {
-            userSearchFilter = "(&(objectclass=user)(sAMAccountName=" + identityDN + "))";
+            userSearchFilter = userSearchFilter.replace("?", identity);
         }
 
         try {
@@ -332,7 +318,7 @@ public class ActiveDirectoryImpl implements Directory {
     }
 
     protected List<String> userSupervisorMembershipList(
-            String identityDN,  ManagedSystemObjectMatch matchObj, LdapContext ldapctx) {
+            String identity, ManagedSystemObjectMatch matchObj, LdapContext ldapctx) {
 
         List<String> currentMembershipList = new ArrayList<String>();
 
@@ -340,9 +326,7 @@ public class ActiveDirectoryImpl implements Directory {
         String userSearchFilter = matchObj.getSearchFilter();
         // replace the place holder in the search filter
         if (StringUtils.isNotBlank(userSearchFilter)) {
-            userSearchFilter = userSearchFilter.replace("?", identityDN);
-        } else {
-            userSearchFilter = "(&(objectclass=user)(sAMAccountName=" + identityDN + "))";
+            userSearchFilter = userSearchFilter.replace("?", identity);
         }
 
         try {
