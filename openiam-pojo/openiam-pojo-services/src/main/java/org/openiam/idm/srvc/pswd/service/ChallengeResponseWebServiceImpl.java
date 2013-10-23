@@ -279,4 +279,9 @@ public class ChallengeResponseWebServiceImpl implements
 				entityList);
 
 	}
+
+	@Override
+	public boolean isUserAnsweredSecurityQuestions(final String userId, final String domainId) {
+		return challengeResponseService.isUserAnsweredSecurityQuestions(userId, domainId);
+	}
 }

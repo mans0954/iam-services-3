@@ -24,6 +24,7 @@ package org.openiam.idm.srvc.pswd.service;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -35,14 +36,20 @@ import org.openiam.idm.searchbeans.IdentityAnswerSearchBean;
 import org.openiam.idm.searchbeans.IdentityQuestionSearchBean;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
+import org.openiam.idm.srvc.policy.domain.PolicyAttributeEntity;
+import org.openiam.idm.srvc.policy.domain.PolicyEntity;
+import org.openiam.idm.srvc.policy.service.PolicyDAO;
 import org.openiam.idm.srvc.pswd.domain.IdentityQuestionEntity;
 import org.openiam.idm.srvc.pswd.domain.UserIdentityAnswerEntity;
 import org.openiam.idm.srvc.searchbean.converter.IdentityAnswerSearchBeanConverter;
 import org.openiam.idm.srvc.searchbean.converter.IdentityQuestionSearchBeanConverter;
+import org.openiam.idm.srvc.secdomain.domain.SecurityDomainEntity;
+import org.openiam.idm.srvc.secdomain.service.SecurityDomainDAO;
+import org.openiam.idm.srvc.user.domain.UserEntity;
+import org.openiam.idm.srvc.user.service.UserDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
 
 /**
  * Default implementation of the challenge response validator. This implementation uses the information stored in the OpenIAM repository
@@ -69,6 +76,18 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
     
     @Autowired
     private IdentityQuestionSearchBeanConverter questionSearchBeanConverter;
+    
+    @Autowired
+    private UserDAO userDAO;
+    
+    @Autowired
+    private PasswordService policyService;
+    
+    @Autowired
+    private PolicyDAO policyDAO;
+    
+    @Autowired
+    private SecurityDomainDAO securityDomainDAO;
 	
 	private static final Log log = LogFactory.getLog(DefaultChallengeResponseValidator.class);
 	
@@ -79,7 +98,49 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
 			return true;
 		}
 		return false;
+	}
+	
+	@Override
+	public Integer getNumOfRequiredQuestions(final String userId, final String domainId) {
+		PolicyEntity passwordPolicy = null;
+		if(StringUtils.isNotBlank(userId)) {
+			final UserEntity user = userDAO.findById(userId);
+			passwordPolicy = policyService.getPasswordPolicyForUser(domainId, user);
+		}
+		if(passwordPolicy == null) {
+			final SecurityDomainEntity securityDomainEntity = securityDomainDAO.findById(domainId);
+			if(securityDomainEntity != null) {
+				passwordPolicy = policyDAO.findById(securityDomainEntity.getPasswordPolicyId());
+			}
+		}
 		
+		Integer count = null;
+		if(passwordPolicy != null) {
+			PolicyAttributeEntity countAttr = passwordPolicy.getAttribute("QUEST_COUNT");
+			try {
+				count = Integer.valueOf(countAttr.getValue1());
+			} catch(Throwable e) {
+				
+			}
+		}
+		return count;
+	}
+	
+	@Override
+	public boolean isUserAnsweredSecurityQuestions(final String userId, final String domainId) {
+		final Integer numOfRequiredQuestions = getNumOfRequiredQuestions(userId, domainId);
+		final List<UserIdentityAnswerEntity> answerList = answersByUser(userId);
+		
+		boolean retVal = false;
+		if(numOfRequiredQuestions == null) {
+			retVal = true;
+		} else if(CollectionUtils.isNotEmpty(answerList)) {
+			if(answerList.size() >= numOfRequiredQuestions.intValue()) {
+				retVal = true;
+			}
+		}
+		
+		return retVal;
 	}
 
 	private int getNumOfCorrectAnswers(final String userId, final List<UserIdentityAnswerEntity> newAnswerList) {
