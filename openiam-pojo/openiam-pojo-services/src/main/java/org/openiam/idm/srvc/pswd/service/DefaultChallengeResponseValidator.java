@@ -134,8 +134,6 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
 		final Integer numOfRequiredQuestions = getNumOfRequiredQuestions(userId, domainId);
 		final List<UserIdentityAnswerEntity> answerList = answersByUser(userId);
 		
-		LOG.info(String.format("Debug info - did user answer all security questions?  UserId=%s, domainId=%s, numOfRequiredQuestions=%s, answerList=%s", 
-				userId, domainId, numOfRequiredQuestions, answerList));
 		
 		boolean retVal = false;
 		if(numOfRequiredQuestions == null) {
@@ -146,7 +144,6 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
 			}
 		}
 		
-		LOG.info(String.format("Quesitons answered correctly: userId: %s, domainId: %s, result: %s", userId, domainId, retVal));
 		return retVal;
 	}
 
