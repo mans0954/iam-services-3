@@ -28,6 +28,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.log4j.Logger;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.exception.data.IdentityAnswerNotFoundException;
@@ -58,6 +59,8 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Service("challengeResponseValidator")
 public class DefaultChallengeResponseValidator implements ChallengeResponseValidator {
+	
+	private static Logger LOG = Logger.getLogger(DefaultChallengeResponseValidator.class);
 	
 	@Autowired
 	private LoginDataService loginManager;
@@ -131,6 +134,9 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
 		final Integer numOfRequiredQuestions = getNumOfRequiredQuestions(userId, domainId);
 		final List<UserIdentityAnswerEntity> answerList = answersByUser(userId);
 		
+		LOG.debug(String.format("Debug info - did user answer all security questions?  UserId=%s, domainId=%s, numOfRequiredQuestions=%s, answerList=%s", 
+				userId, domainId, numOfRequiredQuestions, answerList));
+		
 		boolean retVal = false;
 		if(numOfRequiredQuestions == null) {
 			retVal = true;
@@ -140,6 +146,7 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
 			}
 		}
 		
+		LOG.debug(String.format("Quesitons answered correctly: userId: %s, domainId: %s, result: %s", userId, domainId, retVal));
 		return retVal;
 	}
 
