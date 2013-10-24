@@ -70,9 +70,6 @@ public class LdapAdapter extends AbstractSrcAdapter { // implements SourceAdapte
      */
     private static Set<String> runningTask = Collections.newSetFromMap(new ConcurrentHashMap());
 
-    protected LineObject rowHeader = new LineObject();
-    protected ProvisionUser pUser = new ProvisionUser();
-    
     @Value("${KEYSTORE}")
     private String keystore;
 
@@ -232,24 +229,33 @@ public class LdapAdapter extends AbstractSrcAdapter { // implements SourceAdapte
 
                     // transform
                     int retval = -1;
+                    ProvisionUser pUser = new ProvisionUser();
                     List<TransformScript> transformScripts = SynchScriptFactory.createTransformationScript(config);
                     if (transformScripts != null && transformScripts.size() > 0) {
-
                         for (TransformScript transformScript : transformScripts) {
+                            transformScript.init();
+                            pUser = new ProvisionUser();
                             // initialize the transform script
                             if (usr != null) {
-                                User u = userDozerConverter.convertToDTO(userManager.getUser(usr.getUserId()), true);
-                                pUser = new ProvisionUser(u);
                                 transformScript.setNewUser(false);
+                                User u = userManager.getUserDto(usr.getUserId());
+                                pUser = new ProvisionUser(u);
                                 transformScript.setUser(u);
-                                transformScript.setPrincipalList(loginDozerConverter.convertToDTOList(loginManager.getLoginByUser(usr.getUserId()), true));
+                                transformScript.setPrincipalList(loginDozerConverter.convertToDTOList(loginManager.getLoginByUser(usr.getUserId()), false));
                                 transformScript.setUserRoleList(roleDataService.getUserRolesAsFlatList(usr.getUserId()));
 
                             } else {
-                                pUser = new ProvisionUser();
                                 transformScript.setNewUser(true);
+                                transformScript.setUser(null);
+                                transformScript.setPrincipalList(null);
+                                transformScript.setUserRoleList(null);
                             }
 
+                            log.info(" - Execute transform script");
+
+                            //Disable PRE and POST processors/performance optimizations
+                            pUser.setSkipPreprocessor(true);
+                            pUser.setSkipPostProcessor(true);
                             retval = transformScript.execute(rowObj, pUser);
                             log.debug("Transform result=" + retval);
                         }

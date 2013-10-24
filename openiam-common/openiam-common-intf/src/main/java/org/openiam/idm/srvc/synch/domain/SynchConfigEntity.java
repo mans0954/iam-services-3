@@ -90,7 +90,7 @@ public class SynchConfigEntity implements Serializable {
     private String customAdatperScript;
     @Column(name="CUSTOM_MATCH_ATTR",length=40)
     private String customMatchAttr;
-    @Column(name="BASE_DN",length=40)
+    @Column(name="BASE_DN",length=50)
     private String baseDn;
     @Column(name="WS_URL",length=100)
     private String wsUrl;

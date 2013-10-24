@@ -1,5 +1,8 @@
 package org.openiam.idm.srvc.synch.dto;
 
+import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.idm.srvc.synch.domain.SynchConfigEntity;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlSchemaType;
@@ -46,6 +49,7 @@ import javax.xml.bind.annotation.XmlType;
 /**
  * Object containing the configuration for a synchronization task
  */
+@DozerDTOCorrespondence(SynchConfigEntity.class)
 public class SynchConfig implements java.io.Serializable {
 
 	private String synchConfigId;

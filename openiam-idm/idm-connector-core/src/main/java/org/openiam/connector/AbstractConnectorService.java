@@ -138,7 +138,6 @@ public abstract class AbstractConnectorService implements ConnectorService,Appli
                 }
                 response = (Response)cmd.execute(requestType);
             } catch (ConnectorDataException e) {
-                log.error(e.getMessage(), e);
                 response.setStatus(StatusCodeType.FAILURE);
                 response.setError(e.getCode());
                 response.addErrorMessage(e.getMessage());

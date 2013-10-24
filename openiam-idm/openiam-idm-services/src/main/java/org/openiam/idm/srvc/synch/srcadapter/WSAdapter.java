@@ -59,9 +59,6 @@ import java.util.Map;
 @Component
 public class WSAdapter extends AbstractSrcAdapter { // implements SourceAdapter
 
-	protected LineObject rowHeader = new LineObject();
-	protected ProvisionUser pUser = new ProvisionUser();
-
 	@Autowired
     @Qualifier("configurableGroovyScriptEngine")
     private ScriptIntegration scriptRunner;
@@ -122,8 +119,7 @@ public class WSAdapter extends AbstractSrcAdapter { // implements SourceAdapter
 			//while ( rs.next()) {
                 log.debug("-SYNCHRONIZING NEW RECORD ---" );
 				// make sure we have a new object for each row
-				pUser = new ProvisionUser();
-				
+
 			//	LineObject rowObj = rowHeader.copy();
 			//	DatabaseUtil.populateRowObject(rowObj, rs, changeLog);
 				
@@ -166,6 +162,7 @@ public class WSAdapter extends AbstractSrcAdapter { // implements SourceAdapter
 
 					// transform
                     int retval = -1;
+                    ProvisionUser pUser = new ProvisionUser();
                     List<TransformScript> transformScripts =  SynchScriptFactory.createTransformationScript(config);
                     if (transformScripts != null && transformScripts.size() > 0) {
 
@@ -173,8 +170,10 @@ public class WSAdapter extends AbstractSrcAdapter { // implements SourceAdapter
                             // initialize the transform script
                             if (usr != null) {
                                 transformScript.setNewUser(false);
-                                transformScript.setUser(userDozerConverter.convertToDTO(userManager.getUser(usr.getUserId()), true));
-                                transformScript.setPrincipalList(loginDozerConverter.convertToDTOList(loginManager.getLoginByUser(usr.getUserId()), true));
+                                User u = userManager.getUserDto(usr.getUserId());
+                                pUser = new ProvisionUser(u);
+                                transformScript.setUser(u);
+                                transformScript.setPrincipalList(loginDozerConverter.convertToDTOList(loginManager.getLoginByUser(usr.getUserId()), false));
                                 transformScript.setUserRoleList(roleDataService.getUserRolesAsFlatList(usr.getUserId()));
 
                             } else {
@@ -183,7 +182,8 @@ public class WSAdapter extends AbstractSrcAdapter { // implements SourceAdapter
                                 transformScript.setPrincipalList(null);
                                 transformScript.setUserRoleList(null);
                             }
-
+                            pUser.setSkipPreprocessor(true);
+                            pUser.setSkipPostProcessor(true);
                             retval = transformScript.execute(rowObj, pUser);
 
                             log.debug("- Transform result=" + retval);

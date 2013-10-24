@@ -272,11 +272,6 @@ public class RDBMSAdapter extends AbstractSrcAdapter {
         Timestamp mostRecentRecord = null;
         for (LineObject rowObj : part) {
             log.debug("-RDBMS ADAPTER: SYNCHRONIZING  RECORD # ---" + ctr++);
-            // make sure we have a new object for each row
-            ProvisionUser pUser = new ProvisionUser();
-            // this configure the loading Pre/Post groovy scrips, should be switch off for performance
-            pUser.setSkipPostProcessor(true);
-            pUser.setSkipPreprocessor(true);
 
             log.debug(" - Record update time=" + rowObj.getLastUpdate());
 
@@ -319,6 +314,7 @@ public class RDBMSAdapter extends AbstractSrcAdapter {
 
             // transform
             int retval = -1;
+            ProvisionUser pUser = new ProvisionUser();
             if (transformScripts != null && transformScripts.size() > 0) {
 
                 for (TransformScript transformScript : transformScripts) {
@@ -326,10 +322,13 @@ public class RDBMSAdapter extends AbstractSrcAdapter {
                         // initialize the transform script
                         transformScript.init();
 
+                        // initialize the transform script
                         if (usr != null) {
                             transformScript.setNewUser(false);
-                            transformScript.setUser(userDozerConverter.convertToDTO(userManager.getUser(usr.getUserId()), true));
-                            transformScript.setPrincipalList(loginDozerConverter.convertToDTOList(loginManager.getLoginByUser(usr.getUserId()), true));
+                            User u = userManager.getUserDto(usr.getUserId());
+                            pUser = new ProvisionUser(u);
+                            transformScript.setUser(u);
+                            transformScript.setPrincipalList(loginDozerConverter.convertToDTOList(loginManager.getLoginByUser(usr.getUserId()), false));
                             transformScript.setUserRoleList(roleDataService.getUserRolesAsFlatList(usr.getUserId()));
 
                         } else {
@@ -339,14 +338,13 @@ public class RDBMSAdapter extends AbstractSrcAdapter {
                             transformScript.setUserRoleList(null);
                         }
 
+                        log.info(" - Execute transform script");
+
+                        //Disable PRE and POST processors/performance optimizations
+                        pUser.setSkipPreprocessor(true);
+                        pUser.setSkipPostProcessor(true);
                         retval = transformScript.execute(rowObj, pUser);
-
-                        log.debug("- Transform result=" + retval);
-
-                        // show the user object
-                        log.debug("- User After Transformation =" + pUser);
-                        log.debug("- User = " + pUser.getUserId() + "-" + pUser.getFirstName() + " " + pUser.getLastName());
-                        log.debug("- User Attributes = " + pUser.getUserAttributes());
+                        log.debug("Transform result=" + retval);
                     }
                 }
                 /*
