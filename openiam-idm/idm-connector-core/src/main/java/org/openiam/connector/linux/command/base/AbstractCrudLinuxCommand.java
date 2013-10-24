@@ -74,10 +74,13 @@ public abstract class AbstractCrudLinuxCommand<ExtObject extends ExtensibleObjec
             String[] args = commandHandler.trim().split(" ");
             if (args != null && args.length > 1) {
                 for (int i = 1; i < args.length; i++) {
-                    if (user.get(args[i]) == null)
+                    if (user.get(args[i]) == null) {
                         sb.append("\"\"");
-                    else
+                    } else {
+                        sb.append("\"");
                         sb.append(user.get(args[i]));
+                        sb.append("\" ");
+                    }
                     sb.append(" ");
                 }
             }
