@@ -1160,7 +1160,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         }
         req.setHostLoginPassword(passwordDecoded);
         req.setHostUrl(mSys.getHostUrl());
-        req.setBaseDN(matchObj.getBaseDn());
+        req.setBaseDN((matchObj != null) ? matchObj.getBaseDn() : null);
         req.setOperation("SET_PASSWORD");
         req.setPassword(newPasswordSync);
 

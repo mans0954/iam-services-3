@@ -952,7 +952,11 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 						break;
 					case SUPERVISOR:
 						if(CollectionUtils.isNotEmpty(request.getSupervisorIds())) {
-							requestApproverIds.addAll(request.getSupervisorIds());
+							for(final String id : request.getSupervisorIds()) {
+								if(StringUtils.isNotBlank(id)) {
+									requestApproverIds.add(id);
+								}
+							}
 						}
 						break;
 					default:

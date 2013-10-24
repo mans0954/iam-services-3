@@ -136,7 +136,7 @@ public class LdapV3 implements Directory {
 
             for (String s : currentSupervisorMembershipList) {
                 try {
-                    log.debug("Removing supervisor: " + s + " from " + identity);
+                    log.debug("Removing supervisor: " + s + " from " + identityDN);
                     ModificationItem mods[] = new ModificationItem[1];
                     mods[0] = new ModificationItem(DirContext.REMOVE_ATTRIBUTE, new BasicAttribute("manager", s));
                     ldapctx.modifyAttributes(identityDN, mods);
@@ -215,7 +215,7 @@ public class LdapV3 implements Directory {
 
             for (String s : currentSupervisorMembershipList) {
                 try {
-                    log.debug("Removing supervisor: " + s + " from " + identity);
+                    log.debug("Removing supervisor: " + s + " from " + identityDN);
                     ModificationItem mods[] = new ModificationItem[1];
                     mods[0] = new ModificationItem(DirContext.REMOVE_ATTRIBUTE, new BasicAttribute("manager", s));
                     ldapctx.modifyAttributes(identityDN, mods);
@@ -332,8 +332,6 @@ public class LdapV3 implements Directory {
         // replace the place holder in the search filter
         if (StringUtils.isNotBlank(userSearchFilter)) {
             userSearchFilter = userSearchFilter.replace("?", userDN);
-        } else {
-            userSearchFilter = "(&(objectclass=inetOrgPerson)(" + matchObj.getKeyField() + "=" + userDN + "))";
         }
 
         try {

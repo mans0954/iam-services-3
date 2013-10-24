@@ -44,40 +44,10 @@ public class ChallengeResponseServiceImpl implements ChallengeResponseService {
     
     @Autowired
     private PasswordService passwordMgr;
-    
-    @Autowired
-    private PasswordService policyService;
-    
-    @Autowired
-    private PolicyDAO policyDAO;
-    
-    @Autowired
-    private SecurityDomainDAO securityDomainDAO;
 	
 	@Override
 	public Integer getNumOfRequiredQuestions(String userId, String domainId) {
-		PolicyEntity passwordPolicy = null;
-		if(StringUtils.isNotBlank(userId)) {
-			final UserEntity user = userDAO.findById(userId);
-			passwordPolicy = policyService.getPasswordPolicyForUser(domainId, user);
-		}
-		if(passwordPolicy == null) {
-			final SecurityDomainEntity securityDomainEntity = securityDomainDAO.findById(domainId);
-			if(securityDomainEntity != null) {
-				passwordPolicy = policyDAO.findById(securityDomainEntity.getPasswordPolicyId());
-			}
-		}
-		
-		Integer count = null;
-		if(passwordPolicy != null) {
-			PolicyAttributeEntity countAttr = passwordPolicy.getAttribute("QUEST_COUNT");
-			try {
-				count = Integer.valueOf(countAttr.getValue1());
-			} catch(Throwable e) {
-				
-			}
-		}
-		return count;
+		return getResponseValidator().getNumOfRequiredQuestions(userId, domainId);
 	}
 
 	@Override
@@ -162,4 +132,9 @@ public class ChallengeResponseServiceImpl implements ChallengeResponseService {
 	 private ChallengeResponseValidator getResponseValidator() {
 		 return respValidatorFactory.createValidator(respValidatorObjName, respValidatorObjType);
 	 }
+
+	@Override
+	public boolean isUserAnsweredSecurityQuestions(final String userId, final String domainId) {
+		return getResponseValidator().isUserAnsweredSecurityQuestions(userId, domainId);
+	}
 }

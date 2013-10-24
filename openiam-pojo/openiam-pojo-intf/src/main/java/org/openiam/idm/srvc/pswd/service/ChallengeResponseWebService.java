@@ -88,6 +88,10 @@ public interface ChallengeResponseWebService {
      * @return
      * @throws RemoteException
      */
+	@WebMethod
     boolean isResponseValid(String domainId, String userId, List<UserIdentityAnswer> answerList);
+    
+	@WebMethod
+    public boolean isUserAnsweredSecurityQuestions(final String userId, final String domainId);
 
 }
