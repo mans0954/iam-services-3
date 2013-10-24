@@ -128,7 +128,7 @@ public class TransformActiveDirRecord extends AbstractTransformScript {
         // Processing address
         def address = new Address()
         address.name = "PRIMARY_LOCATION"
-        address.address1 = columnMap.get("street")?.value
+        address.address1 = columnMap.get("street")?.value?: columnMap.get("streetAddress")?.value
         address.city = columnMap.get("l")?.value
         address.postalCd = columnMap.get("postalCode")?.value
         address.state = columnMap.get("st")?.value

@@ -53,7 +53,6 @@ public class TransformCapsCSVRecord extends AbstractTransformScript {
         def attrVal
         def df =  new SimpleDateFormat("MM/dd/yy")
         def columnMap =  rowObj.columnMap
-        def orgService = orgService()
 
         if (isNewUser) {
             pUser.userId = null
