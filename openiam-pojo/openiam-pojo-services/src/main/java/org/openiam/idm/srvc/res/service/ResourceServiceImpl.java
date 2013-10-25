@@ -474,7 +474,14 @@ public class ResourceServiceImpl implements ResourceService {
 			searchBean.setAdminResource(new ResourceEntity(resourceId));
 			final List<ResourceEntity> adminOfResources = resourceDao.getByExample(searchBean);
 			if(CollectionUtils.isNotEmpty(adminOfResources)) {
-				throw new BasicDataServiceException(ResponseCode.RESOURCE_IS_AN_ADMIN, adminOfResources.get(0).getName());
+				throw new BasicDataServiceException(ResponseCode.RESOURCE_IS_AN_ADMIN_OF_RESOURCE, adminOfResources.get(0).getName());
+			}
+			
+			final RoleEntity roleSearchBean = new RoleEntity();
+			roleSearchBean.setAdminResource(new ResourceEntity(resourceId));
+			final List<RoleEntity> adminOfRoles = roleDao.getByExample(roleSearchBean);
+			if(CollectionUtils.isNotEmpty(adminOfRoles)) {
+				throw new BasicDataServiceException(ResponseCode.RESOURCE_IS_AN_ADMIN_OF_ROLE, adminOfRoles.get(0).getName());
 			}
 		}
 	}
