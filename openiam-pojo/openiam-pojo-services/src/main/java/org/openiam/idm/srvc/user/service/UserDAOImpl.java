@@ -67,7 +67,7 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
 
             if (CollectionUtils.isNotEmpty(delegationFilter.getRoleIdSet())) {
                 criteria.createAlias("roles", "r");
-                criteria.add(Restrictions.in("r.roleId", delegationFilter.getRoleIdSet()));
+                criteria.add(Restrictions.in("r.id", delegationFilter.getRoleIdSet()));
             }
         }
 
@@ -92,7 +92,7 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
 
         if (StringUtils.isNotEmpty(search.getRole())) {
             criteria.createAlias("roles", "r");
-            criteria.add(Restrictions.eq("r.roleId", search.getRole()));
+            criteria.add(Restrictions.eq("r.id", search.getRole()));
         }
 
         if (search.isDelAdmin()) {
@@ -239,7 +239,7 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
             }
             if (CollectionUtils.isNotEmpty(searchBean.getRoleIdSet())) {
                 criteria.createAlias("roles", "urv");
-                criteria.add(Restrictions.in("r.roleId", searchBean.getRoleIdSet()));
+                criteria.add(Restrictions.in("r.id", searchBean.getRoleIdSet()));
             }
 
             if (StringUtils.isNotEmpty(searchBean.getAttributeName()) || StringUtils.isNotEmpty(searchBean.getAttributeValue())
@@ -365,12 +365,6 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
         return ((Number) criteria.uniqueResult()).intValue();
     }
 
-    // private Criteria getUsersForRoleCriteria(final String roleId,
-    // DelegationFilterSearchBean delegationFilter) {
-    // return getCriteria().createAlias("userRoles",
-    // "ur").add(Restrictions.eq("ur.roleId", roleId));
-    // }
-
     @Override
     public List<UserEntity> getUsersForRole(final String roleId, DelegationFilterSearchBean delegationFilter, final int from, final int size) {
         final Criteria criteria = getUsersEntitlementCriteria(null, roleId, null, delegationFilter);
@@ -406,10 +400,10 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
 
         if (StringUtils.isNotEmpty(roleId)) {
             criteria.createAlias("roles", "r");
-            criteria.add(Restrictions.eq("r.roleId", roleId));
+            criteria.add(Restrictions.eq("r.id", roleId));
         } else if (delegationFilter != null && CollectionUtils.isNotEmpty(delegationFilter.getRoleIdSet())) {
             criteria.createAlias("roles", "r");
-            criteria.add(Restrictions.in("r.roleId", delegationFilter.getRoleIdSet()));
+            criteria.add(Restrictions.in("r.id", delegationFilter.getRoleIdSet()));
         }
 
         if (StringUtils.isNotEmpty(resourceId)) {
@@ -517,7 +511,7 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
     public List<String> getUserIdsForRoles(final Set<String> roleIds, final int from, final int size) {
         List<String> retVal = null;
         if (CollectionUtils.isNotEmpty(roleIds)) {
-            final Criteria criteria = getCriteria().createAlias("roles", "role").add(Restrictions.in("role.roleId", roleIds))
+            final Criteria criteria = getCriteria().createAlias("roles", "role").add(Restrictions.in("role.id", roleIds))
                             .setProjection(Projections.property("userId"));
             if (from > -1) {
                 criteria.setFirstResult(from);

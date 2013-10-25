@@ -103,7 +103,7 @@ public class ResourceEntity {
     private boolean isPublic = true;
     
 	@ManyToOne(fetch = FetchType.EAGER,cascade={CascadeType.ALL})
-    @JoinColumn(name="ADMIN_RESOURCE_ID", referencedColumnName = "RESOURCE_ID", insertable = true, updatable = false, nullable=true)
+    @JoinColumn(name="ADMIN_RESOURCE_ID", referencedColumnName = "RESOURCE_ID", insertable = true, updatable = true, nullable=true)
 	private ResourceEntity adminResource;
 
     public ResourceEntity() {

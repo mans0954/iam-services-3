@@ -27,7 +27,7 @@
 		<class-a>org.openiam.idm.srvc.role.domain.RoleAttributeEntity</class-a>
 		<class-b>org.openiam.idm.srvc.role.dto.RoleAttribute</class-b>
 		<field>
-			<a>role.roleId</a>
+			<a>role.id</a>
 			<b>roleId</b>
 		</field>
 	</mapping>

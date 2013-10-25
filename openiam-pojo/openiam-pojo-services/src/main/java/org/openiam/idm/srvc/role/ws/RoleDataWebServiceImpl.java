@@ -410,20 +410,20 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 			if(role == null) {
 				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Role object is null");
 			}
-            auditBuilder.setRequestorUserId(role.getRequestorUserId()).setTargetRole(role.getRoleId());
-            if(StringUtils.isBlank(role.getRoleId())) {
+            auditBuilder.setRequestorUserId(role.getRequestorUserId()).setTargetRole(role.getId());
+            if(StringUtils.isBlank(role.getId())) {
                 auditBuilder.setAction(AuditAction.ADD_ROLE);
             }
 			
 			RoleEntity entity = roleDozerConverter.convertToEntity(role, true);
-			if(StringUtils.isBlank(entity.getRoleName())) {
+			if(StringUtils.isBlank(entity.getName())) {
 				throw new BasicDataServiceException(ResponseCode.NO_NAME, "Role Name is null or empty");
 			}
 			
 			/* check if the name is taken by another entity */
-			final RoleEntity nameEntity = roleDataService.getRoleByName(role.getRoleName(), null);
+			final RoleEntity nameEntity = roleDataService.getRoleByName(role.getName(), null);
 			if(nameEntity != null) {
-				if(StringUtils.isBlank(entity.getRoleId()) || !entity.getRoleId().equals(nameEntity.getRoleId())) {
+				if(StringUtils.isBlank(entity.getId()) || !entity.getId().equals(nameEntity.getId())) {
 					throw new BasicDataServiceException(ResponseCode.NAME_TAKEN, "Role Name is already exists");
 				}
 			}
@@ -437,7 +437,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 			}
 			
 			roleDataService.saveRole(entity);
-			response.setResponseValue(entity.getRoleId());
+			response.setResponseValue(entity.getId());
             auditBuilder.succeed();
 		} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);

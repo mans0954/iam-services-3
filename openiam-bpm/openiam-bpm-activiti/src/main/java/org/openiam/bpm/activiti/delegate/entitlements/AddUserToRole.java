@@ -33,15 +33,8 @@ public class AddUserToRole extends AbstractEntitlementsDelegate {
 		if(roleEntity != null && user != null ) {
 			final ProvisionUser pUser = new ProvisionUser(user);
 			final Role role = roleDataService.getRoleDTO(roleId);
-			//role.setOperation(AttributeOperationEnum.ADD);
             pUser.addRole(role);
 			provisionService.modifyUser(pUser);
-			/*
-			final UserRoleEntity entity = new UserRoleEntity();
-			entity.setUserId(userId);
-			entity.setRoleId(roleId);
-			userRoleDAO.add(entity);
-			*/
 		}
 	}
 

@@ -219,6 +219,14 @@
 	<mapping>
 		<class-a>org.openiam.idm.srvc.role.domain.RoleEntity</class-a>
 		<class-b>org.openiam.idm.srvc.role.dto.Role</class-b>
+		<field>
+			<a>adminResource.resourceId</a>
+			<b>adminResourceId</b>
+		</field>
+		<field>
+			<a>adminResource.name</a>
+			<b>adminResourceName</b>
+		</field>
 		<field
 			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
 			custom-converter-param="dto2entityShallowDozerMapper">

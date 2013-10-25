@@ -118,7 +118,7 @@ public class TestGroupConversion extends AbstractTestNGSpringContextTests {
 		role.setCreateDate(new Date());
 		role.setCreatedBy(rs(2));
 		role.setDescription(rs(2));
-		role.setRoleName(rs(2));
+		role.setName(rs(2));
 		role.setStatus(rs(2));
 		final Set<RolePolicyEntity> rolePolicySet = new HashSet<RolePolicyEntity>();
 		rolePolicySet.add(createRolePolicy());
@@ -188,7 +188,7 @@ public class TestGroupConversion extends AbstractTestNGSpringContextTests {
 	private void compareRole(final RoleEntity original, final RoleEntity copy, final boolean isDeep) {
 		Assert.assertEquals(original.getCreatedBy(), copy.getCreatedBy());
 		Assert.assertEquals(original.getDescription(), copy.getDescription());
-		Assert.assertEquals(original.getRoleName(), copy.getRoleName());
+		Assert.assertEquals(original.getName(), copy.getName());
 		Assert.assertEquals(original.getStatus(), copy.getStatus());
 		
 		if(isDeep) {

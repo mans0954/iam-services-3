@@ -142,6 +142,10 @@
 		<class-a>org.openiam.idm.srvc.role.domain.RoleEntity</class-a>
 		<class-b>org.openiam.idm.srvc.role.domain.RoleEntity</class-b>
 		<field-exclude>
+			<a>adminResource</a>
+			<b>adminResource</b>
+		</field-exclude>
+		<field-exclude>
 			<a>groups</a>
 			<b>groups</b>
 		</field-exclude>

@@ -386,7 +386,7 @@ public class UserAttributeHelper {
 				if (curRoleList != null) {
 					boolean found = false;
 					for (Role cRl : curRoleList) {
-						if (cRl.getRoleId().equals(rl.getRoleId())) {
+						if (cRl.getId().equals(rl.getId())) {
 							found = true;
 						}
 					}
@@ -408,7 +408,7 @@ public class UserAttributeHelper {
 			if (roleSet != null) {
 				boolean found = false;
 				for (Role newRole : roleSet) {
-					if (rl.getRoleId().equalsIgnoreCase(newRole.getRoleId())) {
+					if (rl.getId().equalsIgnoreCase(newRole.getId())) {
 						found = true;
 					}
 				}

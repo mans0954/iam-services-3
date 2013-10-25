@@ -96,7 +96,9 @@ public class ResourceServiceImpl implements ResourceService {
 			final ResourceEntity dbObject = resourceDao.findById(entity.getResourceId());
 			entity.setAdminResource(dbObject.getAdminResource());
 			if(entity.getAdminResource() == null) {
-				entity.setAdminResource(getNewAdminResource(entity));
+				final ResourceEntity adminResource = getNewAdminResource(entity);
+				//resourceDao.save(adminResource);
+				entity.setAdminResource(adminResource);
 			}
 			entity.setChildResources(dbObject.getChildResources());
 			entity.setParentResources(dbObject.getParentResources());
@@ -118,7 +120,7 @@ public class ResourceServiceImpl implements ResourceService {
 	
 	private ResourceEntity getNewAdminResource(final ResourceEntity entity) {
 		final ResourceEntity adminResource = new ResourceEntity();
-		adminResource.setName(String.format("ADMIN_%s_%s", entity.getName(), RandomStringUtils.randomAlphanumeric(2)));
+		adminResource.setName(String.format("RES_ADMIN_%s_%s", entity.getName(), RandomStringUtils.randomAlphanumeric(2)));
 		adminResource.setResourceType(resourceTypeDao.findById(systemActionId));
 		return adminResource;
 	}

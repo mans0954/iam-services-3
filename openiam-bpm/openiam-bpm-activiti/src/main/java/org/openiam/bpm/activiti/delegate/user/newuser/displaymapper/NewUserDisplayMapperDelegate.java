@@ -79,7 +79,7 @@ public class NewUserDisplayMapperDelegate extends AbstractUserDisplayMapper impl
 				if(StringUtils.isNotBlank(roleId)) {
 					final RoleEntity role = roleDataService.getRole(roleId);
 					if(role != null) {
-						metadataMap.put(String.format("Role %s", idx), role.getRoleName());
+						metadataMap.put(String.format("Role %s", idx), role.getName());
 						idx++;
 					}
 				}

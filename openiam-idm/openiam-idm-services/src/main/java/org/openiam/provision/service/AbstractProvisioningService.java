@@ -812,14 +812,14 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     return;
 
                 } else if (operation == AttributeOperationEnum.ADD) {
-                    RoleEntity roleEntity = roleDataService.getRole(r.getRoleId());
+                    RoleEntity roleEntity = roleDataService.getRole(r.getId());
                     if (userEntity.getRoles().contains(roleEntity)) {
                         throw new IllegalArgumentException("Role with this name alreday exists");
                     }
                     userEntity.getRoles().add(roleEntity);
 
                 } else if (operation == AttributeOperationEnum.DELETE) {
-                    RoleEntity re = roleDataService.getRole(r.getRoleId());
+                    RoleEntity re = roleDataService.getRole(r.getId());
                     userEntity.getRoles().remove(re);
                     deleteRoleSet.add(roleDozerConverter.convertToDTO(re, true));
 

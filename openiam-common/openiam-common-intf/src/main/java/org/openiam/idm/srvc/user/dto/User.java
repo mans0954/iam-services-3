@@ -683,7 +683,7 @@ public class User extends org.openiam.base.BaseObject {
     	if(id != null) {
     		if(roles != null) {
     			for(final Role role : roles) {
-    				if(StringUtils.equals(role.getRoleId(), id)) {
+    				if(StringUtils.equals(role.getId(), id)) {
     					role.setOperation(AttributeOperationEnum.DELETE);
     					break;
     				}

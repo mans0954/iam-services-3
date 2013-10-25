@@ -226,13 +226,13 @@ public class AddUser {
         if (roleSet != null && roleSet.size() > 0) {
             for (Role r : roleSet) {
                 // check if the roleId is valid
-                if (r.getRoleId() == null) {
+                if (r.getId() == null) {
                     return ResponseCode.ROLE_ID_NULL;
                 }
-                if (roleDataService.getRole(r.getRoleId()) == null) {
+                if (roleDataService.getRole(r.getId()) == null) {
                     return ResponseCode.ROLE_ID_INVALID;
                 }
-                roleDataService.addUserToRole(r.getRoleId(), newUserId);
+                roleDataService.addUserToRole(r.getId(), newUserId);
                 /*
                 logList.add(auditHelper.createLogObject("ADD ROLE",
                         user.getRequestorDomain(), user.getRequestorLogin(),

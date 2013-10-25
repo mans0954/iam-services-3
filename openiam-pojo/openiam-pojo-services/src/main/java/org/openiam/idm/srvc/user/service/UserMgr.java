@@ -1665,7 +1665,7 @@ public class UserMgr implements UserDataService {
         boolean isExists = false;
         UserEntity userEntity = userDao.findById(userId);
         for (RoleEntity r : userEntity.getRoles()) {
-            if (r.getRoleId().equals(roleId)) {
+            if (r.getId().equals(roleId)) {
                 return true;
             }
         }

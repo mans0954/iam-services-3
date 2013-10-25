@@ -184,7 +184,7 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
 			final int from, final int size) {
 		final Criteria criteria = getCriteria()
 				.createAlias("roles", "rr")
-				.add(Restrictions.eq("rr.roleId", roleId))
+				.add(Restrictions.eq("rr.id", roleId))
 				.addOrder(Order.asc("name"));
 
 		if (from > -1) {
@@ -204,7 +204,7 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
 	public int getNumOfResourcesForRole(String roleId) {
 		final Criteria criteria = getCriteria()
 				.createAlias("roles", "rr")
-				.add(Restrictions.eq("rr.roleId", roleId))
+				.add(Restrictions.eq("rr.id", roleId))
 				.setProjection(rowCount());
 
 		return ((Number) criteria.uniqueResult()).intValue();

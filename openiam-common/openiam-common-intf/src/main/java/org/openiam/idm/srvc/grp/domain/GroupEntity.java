@@ -64,17 +64,6 @@ public class GroupEntity {
     @Column(name = "COMPANY_ID", length = 32)
     private String companyId;
 
-    /*
-    @Column(name = "OWNER_ID", length = 20)
-    private String ownerId;
-
-    @Column(name = "PROVISION_METHOD", length = 20)
-    private String provisionMethod;
-
-    @Column(name = "PROVISION_OBJ_NAME", length = 80)
-    private String provisionObjName;
-    */
-
     @Column(name = "GROUP_DESC", length = 80)
     @Size(max = 80, message = "group.description.too.long")
     private String description;
@@ -87,14 +76,6 @@ public class GroupEntity {
 
     @Column(name = "LAST_UPDATED_BY", length = 20)
     private String lastUpdatedBy;
-
-    /*
-    @Column(name = "TYPE_ID", length = 20)
-    private String metadataTypeId;
-
-    @Column(name = "INTERNAL_GROUP_ID", length = 32)
-    private String internalGroupId;
-	*/
 
     @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinTable(name = "RESOURCE_GROUP", joinColumns = { @JoinColumn(name = "GRP_ID") }, inverseJoinColumns = { @JoinColumn(name = "RESOURCE_ID") })

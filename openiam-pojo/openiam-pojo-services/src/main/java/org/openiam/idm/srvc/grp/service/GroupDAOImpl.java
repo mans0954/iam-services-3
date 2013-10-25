@@ -195,7 +195,7 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
         }
 
         if(StringUtils.isNotBlank(roleId)){
-            criteria.createAlias("roles", "roles").add( Restrictions.eq("roles.roleId", roleId));
+            criteria.createAlias("roles", "roles").add( Restrictions.eq("roles.id", roleId));
         }
 
         if(StringUtils.isNotBlank(resourceId)){

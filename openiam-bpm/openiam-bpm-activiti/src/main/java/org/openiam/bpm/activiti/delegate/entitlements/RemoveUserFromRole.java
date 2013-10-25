@@ -28,23 +28,11 @@ public class RemoveUserFromRole extends AbstractEntitlementsDelegate {
 		final String roleId = (String)execution.getVariable(ActivitiConstants.ASSOCIATION_ID);
 		final String userId = (String)execution.getVariable(ActivitiConstants.MEMBER_ASSOCIATION_ID);
 		
-		//final RoleEntity roleEntity = roleDataService.getRole(roleId);
 		final User user = getUser(userId);
 		
-		//if(roleEntity != null && user != null) {
-			final ProvisionUser pUser = new ProvisionUser(user);
-			//final Role role = roleDozerConverter.convertToDTO(roleEntity, false);
-			//role.setOperation(AttributeOperationEnum.DELETE);
-			//pUser.getRoles().add(role);
-			pUser.markRoleAsDeleted(roleId);
-			provisionService.modifyUser(pUser);
-		//}
-		/*
-		final UserRoleEntity entity = userRoleDAO.getRecord(userId, roleId);
-		if(entity != null) {
-			userRoleDAO.delete(entity);
-		}
-		*/
+		final ProvisionUser pUser = new ProvisionUser(user);
+		pUser.markRoleAsDeleted(roleId);
+		provisionService.modifyUser(pUser);
 	}
 
 	@Override
