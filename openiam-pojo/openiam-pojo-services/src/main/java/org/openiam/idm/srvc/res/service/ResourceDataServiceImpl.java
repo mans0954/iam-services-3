@@ -432,6 +432,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
 			resourceService.addChildResource(parentResourceId, childResourceId);
             auditBuilder.succeed();
 		} catch(BasicDataServiceException e) {
+			response.setResponseValue(e.getResponseValue());
 			response.setErrorCode(e.getCode());
 			response.setStatus(ResponseStatus.FAILURE);
 			auditBuilder.fail().setFailureReason(e.getCode()).setException(e);

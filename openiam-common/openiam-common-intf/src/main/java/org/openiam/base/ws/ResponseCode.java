@@ -63,6 +63,9 @@ public enum ResponseCode {
     @XmlEnumValue("cantAddYourselfAsChild")
     CANT_ADD_YOURSELF_AS_CHILD("cantAddYourselfAsChild"),
     
+    @XmlEnumValue("RESOURCE_TYPE_NOT_SUPPORTS_HIERARCHY")
+	RESOURCE_TYPE_NOT_SUPPORTS_HIERARCHY("RESOURCE_TYPE_NOT_SUPPORTS_HIERARCHY"),
+    
     @XmlEnumValue("circularDependency")
     CIRCULAR_DEPENDENCY("circularDependency"),
 	

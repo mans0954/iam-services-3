@@ -422,6 +422,14 @@ public class ResourceServiceImpl implements ResourceService {
 		  !parent.getResourceType().equals(child.getResourceType())) {
 			throw new BasicDataServiceException(ResponseCode.RESOURCE_TYPES_NOT_EQUAL);
 		}
+		
+		if(parent.getResourceType() != null && !parent.getResourceType().isSupportsHierarchy()) {
+			throw new BasicDataServiceException(ResponseCode.RESOURCE_TYPE_NOT_SUPPORTS_HIERARCHY, parent.getResourceType().getDescription());
+		}
+		
+		if(child.getResourceType() != null && !child.getResourceType().isSupportsHierarchy()) {
+			throw new BasicDataServiceException(ResponseCode.RESOURCE_TYPE_NOT_SUPPORTS_HIERARCHY, child.getResourceType().getDescription());
+		}
 	}
 	
 	@Override
