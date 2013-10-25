@@ -21,14 +21,14 @@ public class UserKeyImpl extends BaseDaoImpl<UserKey, String> implements UserKey
     @Override
     @Transactional
     public void deleteByUserId(String userId) throws Exception {
-        getSession().createQuery("delete from " + this.domainClass.getName() + " obj where obj.userId=?")
+        getSession().createQuery("delete from " + this.domainClass.getName() + " obj where obj.user.userId=?")
                     .setParameter(0, userId).executeUpdate();
     }
 
     @Override
     public UserKey getByUserIdKeyName(String userId, String keyName) throws Exception {
         List<UserKey> result = (List<UserKey>) getSession().createQuery(
-                "select obj from " + this.domainClass.getName() + " obj where obj.userId=:userId and obj.name=:keyName")
+                "select obj from " + this.domainClass.getName() + " obj where obj.user.userId=:userId and obj.name=:keyName")
                                                              .setParameter("userId", userId).setParameter("keyName", keyName).list();
 
         if(result == null || result.isEmpty()) {
@@ -40,7 +40,7 @@ public class UserKeyImpl extends BaseDaoImpl<UserKey, String> implements UserKey
     @Override
     public List<UserKey> getByUserId(String userId)throws Exception {
         return (List<UserKey>) getSession().createQuery(
-                "select obj from " + this.domainClass.getName() + " obj where obj.userId=:userId")
+                "select obj from " + this.domainClass.getName() + " obj where obj.user.userId=:userId")
                                                              .setParameter("userId", userId).list();
     }
 

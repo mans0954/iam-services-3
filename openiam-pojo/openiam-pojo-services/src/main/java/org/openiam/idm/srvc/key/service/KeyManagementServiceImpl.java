@@ -260,13 +260,13 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         UserKey uk = new UserKey();
         uk.setKey(cryptor.encrypt(masterKey, jksManager.encodeKey(pwdKey)));
         uk.setName(KeyName.password.name());
-        uk.setUserId(userSecurityWrapper.getUserId());
+        uk.setUser(userDAO.findById(userSecurityWrapper.getUserId()));
         newUserKeyList.add(uk);
 
         uk = new UserKey();
         uk.setKey(cryptor.encrypt(masterKey, jksManager.encodeKey(tokenKey)));
         uk.setName(KeyName.token.name());
-        uk.setUserId(userSecurityWrapper.getUserId());
+        uk.setUser(userDAO.findById(userSecurityWrapper.getUserId()));
         newUserKeyList.add(uk);
 
         // log.warn("NEW USER KEYS ARE: [USER_ID: " + user.getUserId() +
@@ -465,10 +465,10 @@ public class KeyManagementServiceImpl implements KeyManagementService {
             } while (fetchedDataCount < keyCount);
 
             for (UserKey key : keyList) {
-                if (!keyMap.containsKey(key.getUserId())) {
-                    keyMap.put(key.getUserId(), new ArrayList<UserKey>());
+                if (!keyMap.containsKey(key.getUser().getUserId())) {
+                    keyMap.put(key.getUser().getUserId(), new ArrayList<UserKey>());
                 }
-                keyMap.get(key.getUserId()).add(key);
+                keyMap.get(key.getUser().getUserId()).add(key);
             }
         }
         return keyMap;
