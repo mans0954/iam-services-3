@@ -52,7 +52,7 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
 			}
 			
 			if(CollectionUtils.isNotEmpty(resourceSearchBean.getExcludeResourceTypes())) {
-				criteria.add(Restrictions.not(Restrictions.in("resourceType.resourceTypeId", resourceSearchBean.getExcludeResourceTypes())));
+				criteria.add(Restrictions.not(Restrictions.in("resourceType.id", resourceSearchBean.getExcludeResourceTypes())));
 			}
 			
 			if(CollectionUtils.isNotEmpty(resourceSearchBean.getAttributes())) {
@@ -99,12 +99,15 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
 					}
 				}
 			}
+			
+			if(resource.getAdminResource() != null && StringUtils.isNotBlank(resource.getAdminResource().getResourceId())) {
+				criteria.add(Restrictions.eq("adminResource.resourceId", resource.getAdminResource().getResourceId()));
+			}
 
 			if (resource.getResourceType() != null) {
 				final ResourceTypeEntity type = resource.getResourceType();
-				if (StringUtils.isNotBlank(type.getResourceTypeId())) {
-					criteria.add(Restrictions.eq("resourceType.resourceTypeId",
-							type.getResourceTypeId()));
+				if (StringUtils.isNotBlank(type.getId())) {
+					criteria.add(Restrictions.eq("resourceType.id", type.getId()));
 				}
 			}
 
@@ -170,9 +173,9 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
 		return (ResourceEntity) criteria.uniqueResult();
 	}
 
-	public List<ResourceEntity> getResourcesByType(String resourceTypeId) {
+	public List<ResourceEntity> getResourcesByType(String id) {
 		Criteria criteria = getCriteria().createAlias("resourceType", "rt")
-				.add(Restrictions.eq("rt.resourceTypeId", resourceTypeId))
+				.add(Restrictions.eq("rt.id", id))
 				.addOrder(Order.asc("displayOrder"));
 		return (List<ResourceEntity>) criteria.list();
 	}

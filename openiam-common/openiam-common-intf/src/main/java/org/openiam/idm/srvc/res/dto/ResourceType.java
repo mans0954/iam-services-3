@@ -5,6 +5,8 @@ package org.openiam.idm.srvc.res.dto;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
+
+import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.res.domain.ResourceTypeEntity;
 
 /**
@@ -12,33 +14,32 @@ import org.openiam.idm.srvc.res.domain.ResourceTypeEntity;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "ResourceType", propOrder = {
-        "resourceTypeId",
+        "id",
         "description",
         "metadataTypeId",
         "provisionResource",
-        "processName"
+        "processName",
+        "supportsHierarchy"
 })
+@DozerDTOCorrespondence(ResourceTypeEntity.class)
 public class ResourceType implements java.io.Serializable {
 
-    private String resourceTypeId;
+    private String id;
     private String description;
     private String metadataTypeId;
     private Integer provisionResource;
     private String processName;
+    private boolean supportsHierarchy;
 
     public ResourceType() {
     }
 
-    public ResourceType(String resourceTypeId) {
-        this.resourceTypeId = resourceTypeId;
+    public String getId() {
+        return this.id;
     }
 
-    public String getResourceTypeId() {
-        return this.resourceTypeId;
-    }
-
-    public void setResourceTypeId(String resourceTypeId) {
-        this.resourceTypeId = resourceTypeId;
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getDescription() {
@@ -72,11 +73,19 @@ public class ResourceType implements java.io.Serializable {
     public void setProcessName(String processName) {
         this.processName = processName;
     }
+    
+    public boolean isSupportsHierarchy() {
+		return supportsHierarchy;
+	}
+
+	public void setSupportsHierarchy(boolean supportsHierarchy) {
+		this.supportsHierarchy = supportsHierarchy;
+	}
 
     @Override
     public String toString() {
         return "ResourceType{" +
-                "resourceTypeId='" + resourceTypeId + '\'' +
+                "id='" + id + '\'' +
                 ", description='" + description + '\'' +
                 ", metadataTypeId='" + metadataTypeId + '\'' +
                 ", provisionResource=" + provisionResource +

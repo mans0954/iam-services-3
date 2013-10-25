@@ -28,22 +28,19 @@ import org.openiam.idm.srvc.user.dto.User;
         "resourceId",
         "name",
         "description",
-        "branchId",
-        "categoryId",
         "displayOrder",
         "URL",
         "roles",
         "resourceProps",
         "groups",
-        "resOwnerUserId",
-        "resOwnerGroupId",
         "childResources",
         "parentResources",
         "minAuthLevel",
         "domain",
         "isPublic",
-        //"isSSL",
-        "operation"
+        "operation",
+        "adminResourceId",
+        "adminResourceName"
 })
 @XmlSeeAlso({
         Role.class,
@@ -56,13 +53,10 @@ public class Resource extends BaseObject {
     private ResourceType resourceType;
     private String name;
     private String description;
-    private String branchId;
-    private String categoryId;
     private Integer displayOrder;
     private String URL;
-
-    private String resOwnerUserId;
-    private String resOwnerGroupId;
+    private String adminResourceId;
+    private String adminResourceName;
 
     private Set<Resource> parentResources = new HashSet<Resource>(0);
     private Set<Resource> childResources = new HashSet<Resource>(0);
@@ -112,22 +106,6 @@ public class Resource extends BaseObject {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public String getBranchId() {
-        return this.branchId;
-    }
-
-    public void setBranchId(String branchId) {
-        this.branchId = branchId;
-    }
-
-    public String getCategoryId() {
-        return this.categoryId;
-    }
-
-    public void setCategoryId(String categoryId) {
-        this.categoryId = categoryId;
     }
 
     public Integer getDisplayOrder() {
@@ -188,18 +166,24 @@ public class Resource extends BaseObject {
 	public void setIsPublic(boolean isPublic) {
 		this.isPublic = isPublic;
 	}
-	
-	/*
-    public boolean getIsSSL() {
-		return this.isSSL;
+
+    public String getAdminResourceId() {
+		return adminResourceId;
 	}
 
-	public void setIsSSL(final boolean isSSL) {
-		this.isSSL = isSSL;
+	public void setAdminResourceId(String adminResourceId) {
+		this.adminResourceId = adminResourceId;
 	}
-	*/
 
-    public AttributeOperationEnum getOperation() {
+	public String getAdminResourceName() {
+		return adminResourceName;
+	}
+
+	public void setAdminResourceName(String adminResourceName) {
+		this.adminResourceName = adminResourceName;
+	}
+
+	public AttributeOperationEnum getOperation() {
         return operation;
 	}
 
@@ -214,13 +198,8 @@ public class Resource extends BaseObject {
                 ", resourceType=" + resourceType +
                 ", name='" + name + '\'' +
                 ", description='" + description + '\'' +
-                ", branchId='" + branchId + '\'' +
-                ", categoryId='" + categoryId + '\'' +
                 ", displayOrder=" + displayOrder +
                 ", URL='" + URL + '\'' +
-                ", resOwnerUserId='" + resOwnerUserId + '\'' +
-                ", resOwnerGroupId='" + resOwnerGroupId + '\'' +
-                /*", entitlements=" + entitlements +*/
                 '}';
     }
 
@@ -247,32 +226,6 @@ public class Resource extends BaseObject {
     public void setGroups(Set<Group> groups) {
         this.groups = groups;
     }
-
-    public String getResOwnerUserId() {
-        return resOwnerUserId;
-    }
-
-    public void setResOwnerUserId(String resOwnerUserId) {
-        this.resOwnerUserId = resOwnerUserId;
-    }
-
-    public String getResOwnerGroupId() {
-        return resOwnerGroupId;
-    }
-
-    public void setResOwnerGroupId(String resOwnerGroupId) {
-        this.resOwnerGroupId = resOwnerGroupId;
-    }
-
-    /*
-    public Set<ResourcePrivilege> getEntitlements() {
-        return entitlements;
-    }
-
-    public void setEntitlements(Set<ResourcePrivilege> entitlements) {
-        this.entitlements = entitlements;
-    }
-    */
 
 	public Set<Resource> getParentResources() {
 		return parentResources;

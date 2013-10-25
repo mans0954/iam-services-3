@@ -6,17 +6,20 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Type;
+import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.res.dto.ResourceType;
 
 @Entity
 @Table(name = "RESOURCE_TYPE")
+@DozerDTOCorrespondence(ResourceType.class)
 public class ResourceTypeEntity {
 
     @Id
     @GeneratedValue(generator = "system-uuid")
     @GenericGenerator(name = "system-uuid", strategy = "uuid")
     @Column(name = "RESOURCE_TYPE_ID", length = 32)
-    private String resourceTypeId;
+    private String id;
 
     @Column(name = "DESCRIPTION", length = 100)
     private String description;
@@ -29,16 +32,20 @@ public class ResourceTypeEntity {
 
     @Column(name = "PROCESS_NAME", length = 80)
     private String processName;
+    
+    @Column(name="SUPPORTS_HIERARCHY")
+    @Type(type = "yes_no")
+    private boolean supportsHierarchy = true;
 
     public ResourceTypeEntity() {
     }
 
-    public String getResourceTypeId() {
-        return resourceTypeId;
+    public String getId() {
+        return id;
     }
 
-    public void setResourceTypeId(String resourceTypeId) {
-        this.resourceTypeId = resourceTypeId;
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getDescription() {
@@ -73,7 +80,15 @@ public class ResourceTypeEntity {
         this.processName = processName;
     }
 
-    @Override
+    public boolean isSupportsHierarchy() {
+		return supportsHierarchy;
+	}
+
+	public void setSupportsHierarchy(boolean supportsHierarchy) {
+		this.supportsHierarchy = supportsHierarchy;
+	}
+
+	@Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
@@ -86,7 +101,7 @@ public class ResourceTypeEntity {
         if (processName != null ? !processName.equals(that.processName) : that.processName != null) return false;
         if (provisionResource != null ? !provisionResource.equals(that.provisionResource) : that.provisionResource != null)
             return false;
-        if (resourceTypeId != null ? !resourceTypeId.equals(that.resourceTypeId) : that.resourceTypeId != null)
+        if (id != null ? !id.equals(that.id) : that.id != null)
             return false;
 
         return true;
@@ -94,7 +109,7 @@ public class ResourceTypeEntity {
 
     @Override
     public int hashCode() {
-        int result = resourceTypeId != null ? resourceTypeId.hashCode() : 0;
+        int result = id != null ? id.hashCode() : 0;
         result = 31 * result + (description != null ? description.hashCode() : 0);
         result = 31 * result + (metadataTypeId != null ? metadataTypeId.hashCode() : 0);
         result = 31 * result + (provisionResource != null ? provisionResource.hashCode() : 0);

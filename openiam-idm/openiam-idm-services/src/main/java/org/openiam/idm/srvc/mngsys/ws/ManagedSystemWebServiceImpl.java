@@ -231,68 +231,23 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
     }
 
     public ManagedSysDto getManagedSysByResource(String resourceId) {
-        if (resourceId == null) {
-            throw new NullPointerException("resourceId is null");
-        }
-        ManagedSysEntity sys = managedSystemService.getManagedSysByResource(
-                resourceId, "ACTIVE");
-        ManagedSysDto sysDto = null;
-        if (sys != null) {
-            sysDto = managedSysDozerConverter.convertToDTO(sys, true);
-            if (sysDto != null && sysDto.getPswd() != null) {
-                try {
-                    sysDto.setDecryptPassword(cryptor.decrypt(
+    	ManagedSysDto sysDto = null;
+        if(resourceId != null) {
+        	ManagedSysEntity sys = managedSystemService.getManagedSysByResource(resourceId, "ACTIVE");
+        	if (sys != null) {
+        		sysDto = managedSysDozerConverter.convertToDTO(sys, true);
+        		if (sysDto != null && sysDto.getPswd() != null) {
+        			try {
+        				sysDto.setDecryptPassword(cryptor.decrypt(
                             keyManagementService.getUserKey(systemUserId,
                                     KeyName.password.name()), sys.getPswd()));
-                } catch (Exception e) {
-                    log.error(e);
-                }
-            }
+        			} catch (Exception e) {
+        				log.error(e);
+        			}
+        		}
+        	}
         }
-
         return sysDto;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService#getApproversByAction
-     * (java.lang.String, java.lang.String, int)
-     */
-    /*
-     * public List<ApproverAssociation> getApproversByAction(String
-     * managedSysId, String action, int level) { if ( managedSysId == null) {
-     * throw new NullPointerException("managedSysId is null"); } return
-     * resourceApproverDao.findApproversByAction(managedSysId, action, level); }
-     */
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService#getApproversByResource
-     * (java.lang.String)
-     */
-    /*
-     * public List<ApproverAssociation> getApproversByResource(String
-     * managedSysId) { if ( managedSysId == null) { throw new
-     * NullPointerException("managedSysId is null"); } return
-     * resourceApproverDao.findApproversByResource(managedSysId); }
-     */
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService#getManagedSysByName
-     * (java.lang.String)
-     */
-    public ManagedSysDto getManagedSysByName(String name) {
-        if (name == null) {
-            throw new NullPointerException(
-                    "Parameter Managed system name is null");
-        }
-        return managedSysDozerConverter.convertToDTO(
-                managedSystemService.getManagedSysByName(name), true);
     }
 
     // Approver Association

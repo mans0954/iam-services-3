@@ -19,7 +19,7 @@ public class ResourceSearchBeanConverter implements SearchBeanConverter<Resource
 		
 		if(searchBean.getResourceTypeId() != null && searchBean.getResourceTypeId().trim().length() > 0) {
 			final ResourceTypeEntity type = new ResourceTypeEntity();
-			type.setResourceTypeId(searchBean.getResourceTypeId());
+			type.setId(searchBean.getResourceTypeId());
 			resource.setResourceType(type);
 		}
 		return resource;

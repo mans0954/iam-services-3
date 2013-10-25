@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.am.srvc.dao.AuthProviderDao;
 import org.openiam.am.srvc.dao.ContentProviderDao;
@@ -34,6 +35,7 @@ import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.service.RoleDAO;
 import org.openiam.idm.srvc.searchbean.converter.ResourceSearchBeanConverter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -72,6 +74,9 @@ public class ResourceServiceImpl implements ResourceService {
 	
 	@Autowired
 	private MetadataElementPageTemplateDAO templateDAO;
+	
+	@Value("${org.openiam.resource.system.action.id}")
+	private String systemActionId;
 
 	@Override
     @Transactional
@@ -89,21 +94,33 @@ public class ResourceServiceImpl implements ResourceService {
 	public void save(ResourceEntity entity) {
 		if(StringUtils.isNotBlank(entity.getResourceId())) {
 			final ResourceEntity dbObject = resourceDao.findById(entity.getResourceId());
+			entity.setAdminResource(dbObject.getAdminResource());
+			if(entity.getAdminResource() == null) {
+				entity.setAdminResource(getNewAdminResource(entity));
+			}
 			entity.setChildResources(dbObject.getChildResources());
 			entity.setParentResources(dbObject.getParentResources());
 			entity.setUsers(dbObject.getUsers());
 			entity.setGroups(dbObject.getGroups());
 			entity.setRoles(dbObject.getRoles());
 			if(entity.getResourceType() != null) {
-				entity.setResourceType(resourceTypeDao.findById(entity.getResourceType().getResourceTypeId()));
+				entity.setResourceType(resourceTypeDao.findById(entity.getResourceType().getId()));
 			}
 			
 			mergeAttribute(entity, dbObject);
 			
 			resourceDao.merge(entity);
 		} else {
+			entity.setAdminResource(getNewAdminResource(entity));
 			resourceDao.save(entity);
 		}
+	}
+	
+	private ResourceEntity getNewAdminResource(final ResourceEntity entity) {
+		final ResourceEntity adminResource = new ResourceEntity();
+		adminResource.setName(String.format("ADMIN_%s_%s", entity.getName(), RandomStringUtils.randomAlphanumeric(2)));
+		adminResource.setResourceType(resourceTypeDao.findById(systemActionId));
+		return adminResource;
 	}
 
 	private void mergeAttribute(final ResourceEntity bean, final ResourceEntity dbObject) {
@@ -206,7 +223,7 @@ public class ResourceServiceImpl implements ResourceService {
 	@Override
     @Transactional
 	public void save(ResourceTypeEntity entity) {
-		if(StringUtils.isBlank(entity.getResourceTypeId())) {
+		if(StringUtils.isBlank(entity.getId())) {
 			resourceTypeDao.save(entity);
 		} else {
 			resourceTypeDao.merge(entity);
@@ -441,6 +458,13 @@ public class ResourceServiceImpl implements ResourceService {
 			final List<MetadataElementPageTemplateEntity> pageTemplates = templateDAO.getByResourceId(resourceId);
 			if(CollectionUtils.isNotEmpty(pageTemplates)) {
 				throw new BasicDataServiceException(ResponseCode.LINKED_TO_PAGE_TEMPLATE, pageTemplates.get(0).getName());
+			}
+			
+			final ResourceEntity searchBean = new ResourceEntity();
+			searchBean.setAdminResource(new ResourceEntity(resourceId));
+			final List<ResourceEntity> adminOfResources = resourceDao.getByExample(searchBean);
+			if(CollectionUtils.isNotEmpty(adminOfResources)) {
+				throw new BasicDataServiceException(ResponseCode.RESOURCE_IS_AN_ADMIN, adminOfResources.get(0).getName());
 			}
 		}
 	}

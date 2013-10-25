@@ -80,7 +80,7 @@ public class TestCrossEntityConversion extends AbstractTestNGSpringContextTests 
 		Assert.assertEquals(resourceType.getDescription(), entity.getDescription());
 		Assert.assertEquals(resourceType.getMetadataTypeId(), entity.getMetadataTypeId());
 		Assert.assertEquals(resourceType.getProcessName(), entity.getProcessName());
-		Assert.assertEquals(resourceType.getResourceTypeId(), entity.getResourceTypeId());
+		Assert.assertEquals(resourceType.getId(), entity.getId());
 		Assert.assertEquals(resourceType.getProvisionResource(), entity.getProvisionResource());
 	}
 	
@@ -146,7 +146,7 @@ public class TestCrossEntityConversion extends AbstractTestNGSpringContextTests 
 		entity.setMetadataTypeId(rs(2));
 		entity.setProcessName(rs(2));
 		entity.setProvisionResource(2);
-		entity.setResourceTypeId(rs(2));
+		entity.setId(rs(2));
 		return entity;
 	}
 	

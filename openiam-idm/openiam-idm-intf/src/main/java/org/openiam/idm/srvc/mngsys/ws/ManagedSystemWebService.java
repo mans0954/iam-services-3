@@ -50,18 +50,7 @@ public interface ManagedSystemWebService {
     ManagedSysDto getManagedSys(
             @WebParam(name = "sysId", targetNamespace = "") String sysId);
 
-    /**
-     * Returns a ManagedSys object for the specified name. The name is the value
-     * in the name field in the ManagedSys object.
-     * 
-     * @param name
-     *            the name
-     * @return the managed sys by name
-     */
-    @WebMethod
-    ManagedSysDto getManagedSysByName(
-            @WebParam(name = "name", targetNamespace = "") String name);
-
+    
     @WebMethod
     List<ManagedSysDto> getAllManagedSys();
 
