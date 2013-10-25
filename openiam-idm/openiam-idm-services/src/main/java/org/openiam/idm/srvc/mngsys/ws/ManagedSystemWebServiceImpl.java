@@ -231,25 +231,22 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
     }
 
     public ManagedSysDto getManagedSysByResource(String resourceId) {
-        if (resourceId == null) {
-            throw new NullPointerException("resourceId is null");
-        }
-        ManagedSysEntity sys = managedSystemService.getManagedSysByResource(
-                resourceId, "ACTIVE");
-        ManagedSysDto sysDto = null;
-        if (sys != null) {
-            sysDto = managedSysDozerConverter.convertToDTO(sys, true);
-            if (sysDto != null && sysDto.getPswd() != null) {
-                try {
-                    sysDto.setDecryptPassword(cryptor.decrypt(
+    	ManagedSysDto sysDto = null;
+        if(resourceId != null) {
+        	ManagedSysEntity sys = managedSystemService.getManagedSysByResource(resourceId, "ACTIVE");
+        	if (sys != null) {
+        		sysDto = managedSysDozerConverter.convertToDTO(sys, true);
+        		if (sysDto != null && sysDto.getPswd() != null) {
+        			try {
+        				sysDto.setDecryptPassword(cryptor.decrypt(
                             keyManagementService.getUserKey(systemUserId,
                                     KeyName.password.name()), sys.getPswd()));
-                } catch (Exception e) {
-                    log.error(e);
-                }
-            }
+        			} catch (Exception e) {
+        				log.error(e);
+        			}
+        		}
+        	}
         }
-
         return sysDto;
     }
 

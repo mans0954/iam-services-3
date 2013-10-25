@@ -1,8 +1,9 @@
 package org.openiam.connector.linux.command.base;
 
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-import org.openiam.connector.linux.data.LinuxUser;
 import org.openiam.connector.linux.ssh.SSHAgent;
 import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.connector.type.constant.ErrorCode;
@@ -10,8 +11,15 @@ import org.openiam.connector.type.constant.StatusCodeType;
 import org.openiam.connector.type.request.CrudRequest;
 import org.openiam.connector.type.response.ObjectResponse;
 import org.openiam.connector.util.connect.FileUtil;
+import org.openiam.exception.ScriptEngineException;
+import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
+import org.openiam.idm.srvc.mngsys.domain.AttributeMapUtil;
+import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.type.ExtensibleObject;
-import org.openiam.provision.type.ExtensibleUser;
+import org.openiam.script.GroovyScriptEngineIntegration;
+import org.openiam.script.ScriptIntegration;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.util.StringUtils;
 
 /**
@@ -20,6 +28,11 @@ import org.springframework.util.StringUtils;
  */
 public abstract class AbstractCrudLinuxCommand<ExtObject extends ExtensibleObject>
         extends AbstractLinuxCommand<CrudRequest<ExtObject>, ObjectResponse> {
+
+    @Autowired
+    @Qualifier("configurableGroovyScriptEngine")
+    private ScriptIntegration scriptRunner;
+
     @Override
     public ObjectResponse execute(CrudRequest<ExtObject> crudRequest)
             throws ConnectorDataException {
@@ -54,19 +67,27 @@ public abstract class AbstractCrudLinuxCommand<ExtObject extends ExtensibleObjec
         return name;
     }
 
-    protected String getArgs(String commandHandler) {
-        String name = "";
+    protected String getArgs(String commandHandler, Map<String, String> user)
+            throws Exception {
+        StringBuilder sb = new StringBuilder();
         if (StringUtils.hasText(commandHandler)) {
             String[] args = commandHandler.trim().split(" ");
-            if (args != null) {
-                if (args[0] != null)
-                    name = args[0];
+            if (args != null && args.length > 1) {
+                for (int i = 1; i < args.length; i++) {
+                    if (user.get(args[i]) == null) {
+                        sb.append("\"\"");
+                    } else {
+                        sb.append("\"");
+                        sb.append(user.get(args[i]));
+                        sb.append("\" ");
+                    }
+                    sb.append(" ");
+                }
             }
         } else {
             log.info("Handler not founded");
-            return "";
         }
-        return commandHandler.replace(name, "").trim();
+        return sb.toString();
     }
 
     protected abstract String getCommandScriptHandler(String id);
@@ -92,21 +113,25 @@ public abstract class AbstractCrudLinuxCommand<ExtObject extends ExtensibleObjec
                 crudRequest.getExtensibleObject());
         if (user != null) {
             try {
-                String sudoPassword = this.getPassword(crudRequest
-                        .getTargetID());
+                String msysId = crudRequest.getTargetID();
+                if (!StringUtils.hasText(msysId)) {
+                    log.error("msysId not defined in request");
+                    return;
+                }
+
+                String sudoPassword = this.getPassword(msysId);
                 ssh.connect();
                 String commandHandler = this
                         .getCommandScriptHandler(crudRequest.getTargetID());
                 String scriptName = this.getScriptName(commandHandler);
-                String argsName = this.getArgs(commandHandler);
-                String argsValues = this.userAttributesToFormatString(argsName,
-                        user);
+                String argsName = this.getArgs(commandHandler, user);
+
                 this.copyFile(ssh, scriptName);
                 StringBuilder command = new StringBuilder("sudo -S sh ");
                 command.append(remoteDirectory);
                 command.append(scriptName);
                 command.append(" ");
-                command.append(argsValues);
+                command.append(argsName);
                 log.info(ssh.executeCommand(command.toString(), sudoPassword));
                 log.info(command.toString());
             } catch (Exception e) {
