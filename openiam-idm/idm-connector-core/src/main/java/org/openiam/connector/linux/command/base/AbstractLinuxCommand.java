@@ -99,7 +99,8 @@ public abstract class AbstractLinuxCommand<Request extends RequestType, Response
                 // Extract attributes
                 for (ExtensibleAttribute att : obj.getAttributes()) {
                     if (att != null) {
-                        attributes.put(att.getName(), att.getValue());
+                        attributes.put(att.getName().toLowerCase(),
+                                att.getValue());
                     }
                 }
             }

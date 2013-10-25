@@ -33,11 +33,13 @@ public class ProvisionServiceUtil {
      * @throws ScriptEngineException
      */
     public static String buildPrincipalName(List<AttributeMap> attrMap,
-            ScriptIntegration se, Map<String, Object> bindingMap) throws ScriptEngineException {
+            ScriptIntegration se, Map<String, Object> bindingMap)
+            throws ScriptEngineException {
         for (AttributeMap attr : attrMap) {
-            if ("PRINCIPAL".equalsIgnoreCase(attr.getMapForObjectType()) &&
-                    !"INACTIVE".equalsIgnoreCase(attr.getStatus())) {
-                return (String)ProvisionServiceUtil.getOutputFromAttrMap(attr, bindingMap, se);
+            if ("PRINCIPAL".equalsIgnoreCase(attr.getMapForObjectType())
+                    && !"INACTIVE".equalsIgnoreCase(attr.getStatus())) {
+                return (String) ProvisionServiceUtil.getOutputFromAttrMap(attr,
+                        bindingMap, se);
             }
         }
         return null;
