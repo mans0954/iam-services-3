@@ -240,7 +240,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
     }
 
     @Override
-   // @Transactional
+    @Transactional
     public ProvisionUserResponse deleteByUserId(String userId,
             UserStatusEnum status, String requestorId) {
 
@@ -277,7 +277,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
      * , java.lang.String, java.lang.String)
      */
     @Override
-   // @Transactional
+    @Transactional
     public ProvisionUserResponse deleteUser(String securityDomain,
             String managedSystemId, String principal, UserStatusEnum status,
             String requestorId) {
