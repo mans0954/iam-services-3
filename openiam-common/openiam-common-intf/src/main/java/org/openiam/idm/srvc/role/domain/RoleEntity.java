@@ -160,7 +160,7 @@ public class RoleEntity implements Serializable {
 		boolean retVal = false;
 		if(groups != null) {
 			for(final GroupEntity entity : groups) {
-				if(entity.getGrpId().equals(groupId)) {
+				if(entity.getId().equals(groupId)) {
 					retVal = true;
 					break;
 				}
@@ -191,7 +191,7 @@ public class RoleEntity implements Serializable {
 			if(groups != null) {
 				for(final Iterator<GroupEntity> it = groups.iterator(); it.hasNext();) {
 					final GroupEntity entity = it.next();
-					if(entity.getGrpId().equals(groupId)) {
+					if(entity.getId().equals(groupId)) {
 						it.remove();
 						break;
 					}

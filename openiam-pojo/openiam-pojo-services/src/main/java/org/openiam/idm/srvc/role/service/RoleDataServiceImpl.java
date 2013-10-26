@@ -112,7 +112,7 @@ public class RoleDataServiceImpl implements RoleDataService {
 			final RoleEntity role = roleDao.findById(roleId);
 			final GroupEntity group = groupDAO.findById(groupId);
 			if(role != null && group != null) {
-				role.removeGroup(group.getGrpId());
+				role.removeGroup(group.getId());
 				roleDao.save(role);
 			}
 		}

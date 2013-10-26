@@ -139,7 +139,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND, "No Group or Role objects  are found");
 			}
 			
-			if(role.hasGroup(group.getGrpId())) {
+			if(role.hasGroup(group.getId())) {
 				throw new BasicDataServiceException(ResponseCode.RELATIONSHIP_EXISTS, String.format("Group %s has already been added to role: %s", groupId, roleId));
 			}
 			

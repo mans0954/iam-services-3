@@ -789,11 +789,11 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     return;
 
                 } else if (operation == AttributeOperationEnum.ADD) {
-                    GroupEntity groupEntity = groupManager.getGroup(g.getGrpId());
+                    GroupEntity groupEntity = groupManager.getGroup(g.getId());
                     userEntity.getGroups().add(groupEntity);
 
                 } else if (operation == AttributeOperationEnum.DELETE) {
-                    GroupEntity groupEntity = groupManager.getGroup(g.getGrpId());
+                    GroupEntity groupEntity = groupManager.getGroup(g.getId());
                     userEntity.getGroups().remove(groupEntity);
 
                 } else if (operation == AttributeOperationEnum.REPLACE) {

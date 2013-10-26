@@ -62,7 +62,7 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
 
             if (CollectionUtils.isNotEmpty(delegationFilter.getGroupIdSet())) {
                 criteria.createAlias("groups", "g");
-                criteria.add(Restrictions.in("g.grpId", delegationFilter.getGroupIdSet()));
+                criteria.add(Restrictions.in("g.id", delegationFilter.getGroupIdSet()));
             }
 
             if (CollectionUtils.isNotEmpty(delegationFilter.getRoleIdSet())) {
@@ -232,7 +232,7 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
             }
             if (CollectionUtils.isNotEmpty(searchBean.getGroupIdSet())) {
                 criteria.createAlias("groups", "g");
-                criteria.add(Restrictions.in("g.grpId", searchBean.getGroupIdSet()));
+                criteria.add(Restrictions.in("g.id", searchBean.getGroupIdSet()));
             }
             if (StringUtils.isNotEmpty(searchBean.getEmployeeId())) {
                 criteria.add(Restrictions.eq("employeeId", searchBean.getEmployeeId()));
@@ -392,10 +392,10 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
 
         if (StringUtils.isNotEmpty(groupId)) {
             criteria.createAlias("groups", "g");
-            criteria.add(Restrictions.eq("g.grpId", groupId));
+            criteria.add(Restrictions.eq("g.id", groupId));
         } else if (delegationFilter != null && CollectionUtils.isNotEmpty(delegationFilter.getGroupIdSet())) {
             criteria.createAlias("groups", "g");
-            criteria.add(Restrictions.in("g.grpId", delegationFilter.getGroupIdSet()));
+            criteria.add(Restrictions.in("g.id", delegationFilter.getGroupIdSet()));
         }
 
         if (StringUtils.isNotEmpty(roleId)) {
@@ -529,7 +529,7 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
     public List<String> getUserIdsForGroups(final Set<String> groupIds, final int from, final int size) {
         List<String> retVal = null;
         if (CollectionUtils.isNotEmpty(groupIds)) {
-            final Criteria criteria = getCriteria().createAlias("groups", "group").add(Restrictions.in("group.grpId", groupIds))
+            final Criteria criteria = getCriteria().createAlias("groups", "group").add(Restrictions.in("group.id", groupIds))
                             .setProjection(Projections.property("userId"));
             if (from > -1) {
                 criteria.setFirstResult(from);

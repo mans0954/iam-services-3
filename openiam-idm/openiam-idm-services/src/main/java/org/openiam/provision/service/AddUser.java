@@ -197,11 +197,11 @@ public class AddUser {
         if (groupSet != null) {
             for (Group g : groupSet) {
                 // check if the group id is valid
-                if (g.getGrpId() == null) {
+                if (g.getId() == null) {
                     return ResponseCode.GROUP_ID_NULL;
                 }
-                if (groupManager.getGroup(g.getGrpId()) == null) {
-                    if (g.getGrpId() == null) {
+                if (groupManager.getGroup(g.getId()) == null) {
+                    if (g.getId() == null) {
                         return ResponseCode.GROUP_ID_NULL;
                     }
                 }

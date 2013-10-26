@@ -90,8 +90,8 @@ public class TestGroupConversion extends AbstractTestNGSpringContextTests {
 		group.setCreateDate(new Date());
 		group.setCreatedBy(rs(2));
 		group.setDescription(rs(2));
-		group.setGrpId(rs(2));
-		group.setGrpName(rs(2));
+		group.setId(rs(2));
+		group.setName(rs(2));
 		//group.setInternalGroupId(rs(2));
 		group.setLastUpdate(new Date());
 		group.setLastUpdatedBy(rs(2));
@@ -173,8 +173,8 @@ public class TestGroupConversion extends AbstractTestNGSpringContextTests {
 	private void compareGroup(final GroupEntity original, final GroupEntity copy, final boolean isDeep) {
 		Assert.assertEquals(original.getCreatedBy(), copy.getCreatedBy());
 		Assert.assertEquals(original.getDescription(), copy.getDescription());
-		Assert.assertEquals(original.getGrpId(), copy.getGrpId());
-		Assert.assertEquals(original.getGrpName(), copy.getGrpName());
+		Assert.assertEquals(original.getId(), copy.getId());
+		Assert.assertEquals(original.getName(), copy.getName());
 		//Assert.assertEquals(original.getInternalGroupId(), copy.getInternalGroupId());
 		Assert.assertEquals(original.getLastUpdatedBy(), copy.getLastUpdatedBy());
 		Assert.assertEquals(original.getLastUpdate(), copy.getLastUpdate());

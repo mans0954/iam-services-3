@@ -92,7 +92,7 @@ public class NewUserDisplayMapperDelegate extends AbstractUserDisplayMapper impl
 			for(final String groupId : groupIds) {
 				final GroupEntity group = groupDataService.getGroup(groupId);
 				if(group != null) {
-					metadataMap.put(String.format("Group %s", idx), group.getGrpName());
+					metadataMap.put(String.format("Group %s", idx), group.getName());
 					idx++;
 				}
 			}

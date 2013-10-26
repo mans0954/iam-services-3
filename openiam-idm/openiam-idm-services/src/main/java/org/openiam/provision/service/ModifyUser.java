@@ -367,9 +367,9 @@ public class ModifyUser {
 
     }
 
-    private Group getGroup(String grpId, List<Group> origGroupList) {
+    private Group getGroup(String id, List<Group> origGroupList) {
         for (Group g : origGroupList) {
-            if (g.getGrpId().equalsIgnoreCase(grpId)) {
+            if (g.getId().equalsIgnoreCase(id)) {
                 return g;
             }
         }
@@ -598,7 +598,7 @@ public class ModifyUser {
             for (Group g : newGroupList) {
                 g.setOperation(AttributeOperationEnum.ADD);
                 groupList.add(g);
-                this.userMgr.addUserToGroup(g.getGrpId(), userId);
+                this.userMgr.addUserToGroup(g.getId(), userId);
             }
             return;
         }
@@ -617,12 +617,12 @@ public class ModifyUser {
         // else add with operation 2
         for (Group g : newGroupList) {
             if (g.getOperation() == AttributeOperationEnum.DELETE) {
-                log.debug("removing Group :" + g.getGrpId());
+                log.debug("removing Group :" + g.getId());
                 // get the email object from the original set of emails so that
                 // we can remove it
-                Group grp = getGroup(g.getGrpId(), origGroupList);
+                Group grp = getGroup(g.getId(), origGroupList);
                 if (grp != null) {
-                    this.userMgr.removeUserFromGroup(grp.getGrpId(),
+                    this.userMgr.removeUserFromGroup(grp.getId(),
                             userId);
                 }
                 groupList.add(grp);
@@ -631,13 +631,13 @@ public class ModifyUser {
                 // if it is - see if it has changed
                 // if it is not - add it.
                 log.debug("evaluate Group");
-                Group origGroup = getGroup(g.getGrpId(), origGroupList);
+                Group origGroup = getGroup(g.getId(), origGroupList);
                 if (origGroup == null) {
                     g.setOperation(AttributeOperationEnum.ADD);
                     groupList.add(g);
-                    userMgr.addUserToGroup(g.getGrpId(), userId);
+                    userMgr.addUserToGroup(g.getId(), userId);
                 } else {
-                    if (g.getGrpId().equals(origGroup.getGrpId())) {
+                    if (g.getId().equals(origGroup.getId())) {
                         // not changed
                         g.setOperation(AttributeOperationEnum.NO_CHANGE);
                         groupList.add(g);
@@ -648,7 +648,7 @@ public class ModifyUser {
         // if a value is in original list and not in the new list - then add it
         // on
         for (Group g : origGroupList) {
-            Group newGroup = getGroup(g.getGrpId(), newGroupList);
+            Group newGroup = getGroup(g.getId(), newGroupList);
             if (newGroup == null) {
                 g.setOperation(AttributeOperationEnum.NO_CHANGE);
                 groupList.add(g);

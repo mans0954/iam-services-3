@@ -66,13 +66,13 @@ public class GroupDataServiceImpl implements GroupDataService {
 
 	}
 
-    public GroupEntity getGroup(final String grpId) {
-        return getGroup(grpId, null);
+    public GroupEntity getGroup(final String id) {
+        return getGroup(id, null);
     }
 
-	public GroupEntity getGroup(final String grpId, final String requesterId) {
-        if(DelegationFilterHelper.isAllowed(grpId, getDelegationFilter(requesterId))){
-            return groupDao.findById(grpId);
+	public GroupEntity getGroup(final String id, final String requesterId) {
+        if(DelegationFilterHelper.isAllowed(id, getDelegationFilter(requesterId))){
+            return groupDao.findById(id);
         }
         return null;
 	}
@@ -173,7 +173,7 @@ public class GroupDataServiceImpl implements GroupDataService {
 			final List<Group> userGroupList =  getCompiledGroupsForUser(userId);
 			if(CollectionUtils.isNotEmpty(userGroupList)) {
 				for (Group grp : userGroupList) {
-					if (grp.getGrpId().equalsIgnoreCase(groupId)) {
+					if (grp.getId().equalsIgnoreCase(groupId)) {
 						return true;
 					}
 				}
@@ -193,8 +193,8 @@ public class GroupDataServiceImpl implements GroupDataService {
 				group.setManagedSystem(null);
 			}
 
-			if(StringUtils.isNotBlank(group.getGrpId())) {
-				final GroupEntity dbGroup = groupDao.findById(group.getGrpId());
+			if(StringUtils.isNotBlank(group.getId())) {
+				final GroupEntity dbGroup = groupDao.findById(group.getId());
 				if(dbGroup != null) {
 					//group.setAttributes(dbGroup.getAttributes());
 					mergeAttribute(group, dbGroup);
@@ -339,7 +339,7 @@ public class GroupDataServiceImpl implements GroupDataService {
 			throw new BasicDataServiceException(ResponseCode.CIRCULAR_DEPENDENCY);
 		}
 		
-		if(parent.hasChildGroup(child.getGrpId())) {
+		if(parent.hasChildGroup(child.getId())) {
 			throw new BasicDataServiceException(ResponseCode.RELATIONSHIP_EXISTS);
 		}
 		
@@ -355,7 +355,7 @@ public class GroupDataServiceImpl implements GroupDataService {
 				visitedSet.add(child);
 				if(CollectionUtils.isNotEmpty(parent.getParentGroups())) {
 					for(final GroupEntity entity : parent.getParentGroups()) {
-						retval = entity.getGrpId().equals(child.getGrpId());
+						retval = entity.getId().equals(child.getId());
 						if(retval) {
 							break;
 						}

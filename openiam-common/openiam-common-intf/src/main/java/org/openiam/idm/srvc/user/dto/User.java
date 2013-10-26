@@ -724,7 +724,7 @@ public class User extends org.openiam.base.BaseObject {
     	if(groupId != null) {
     		if(groups != null) {
     			for(final Group group : groups) {
-    				if(StringUtils.equals(group.getGrpId(), groupId)) {
+    				if(StringUtils.equals(group.getId(), groupId)) {
     					group.setOperation(AttributeOperationEnum.DELETE);
     					break;
     				}

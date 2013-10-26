@@ -157,7 +157,7 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
         }
 
         if(StringUtils.isNotBlank(groupId)){
-            criteria.createAlias("groups", "groups").add( Restrictions.eq("groups.grpId", groupId));
+            criteria.createAlias("groups", "groups").add( Restrictions.eq("groups.id", groupId));
         }
 
         if(StringUtils.isNotBlank(resourceId)){

@@ -25,8 +25,8 @@ import java.util.*;
         "createDate",
         "createdBy",
         "description",
-        "grpId",
-        "grpName",
+        "id",
+        "name",
         "lastUpdate",
         "lastUpdatedBy",
         //"provisionMethod",
@@ -56,8 +56,8 @@ public class Group extends BaseObject implements java.io.Serializable {
 
     private String managedSysId;
     private String managedSysName;
-    protected String grpId;
-    protected String grpName;
+    protected String id;
+    protected String name;
     @XmlSchemaType(name = "dateTime")
     protected Date createDate;
     protected String createdBy;
@@ -92,24 +92,24 @@ public class Group extends BaseObject implements java.io.Serializable {
     public Group() {
     }
 
-    public Group(String grpId) {
-        this.grpId = grpId;
+    public Group(String id) {
+        this.id = id;
     }
 
-    public String getGrpId() {
-        return this.grpId;
+    public String getId() {
+        return this.id;
     }
 
-    public void setGrpId(String grpId) {
-        this.grpId = grpId;
+    public void setId(String id) {
+        this.id = id;
     }
 
-    public String getGrpName() {
-        return this.grpName;
+    public String getName() {
+        return this.name;
     }
 
-    public void setGrpName(String grpName) {
-        this.grpName = grpName;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public Date getCreateDate() {
@@ -316,8 +316,8 @@ public class Group extends BaseObject implements java.io.Serializable {
 				+ ((createdBy == null) ? 0 : createdBy.hashCode());
 		result = prime * result
 				+ ((description == null) ? 0 : description.hashCode());
-		result = prime * result + ((grpId == null) ? 0 : grpId.hashCode());
-		result = prime * result + ((grpName == null) ? 0 : grpName.hashCode());
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result
 				+ ((lastUpdate == null) ? 0 : lastUpdate.hashCode());
 		result = prime * result
@@ -358,15 +358,15 @@ public class Group extends BaseObject implements java.io.Serializable {
 				return false;
 		} else if (!description.equals(other.description))
 			return false;
-		if (grpId == null) {
-			if (other.grpId != null)
+		if (id == null) {
+			if (other.id != null)
 				return false;
-		} else if (!grpId.equals(other.grpId))
+		} else if (!id.equals(other.id))
 			return false;
-		if (grpName == null) {
-			if (other.grpName != null)
+		if (name == null) {
+			if (other.name != null)
 				return false;
-		} else if (!grpName.equals(other.grpName))
+		} else if (!name.equals(other.name))
 			return false;
 		if (lastUpdate == null) {
 			if (other.lastUpdate != null)
@@ -406,9 +406,9 @@ public class Group extends BaseObject implements java.io.Serializable {
 	@Override
 	public String toString() {
 		return String
-				.format("Group [operation=%s, managedSysId=%s, managedSysName=%s, grpId=%s, grpName=%s, createDate=%s, createdBy=%s, description=%s, status=%s, lastUpdate=%s, lastUpdatedBy=%s]",
-						operation, managedSysId, managedSysName, grpId,
-						grpName, createDate, createdBy, description, status,
+				.format("Group [operation=%s, managedSysId=%s, managedSysName=%s, id=%s, name=%s, createDate=%s, createdBy=%s, description=%s, status=%s, lastUpdate=%s, lastUpdatedBy=%s]",
+						operation, managedSysId, managedSysName, id,
+						name, createDate, createdBy, description, status,
 						lastUpdate, lastUpdatedBy);
 	}
 

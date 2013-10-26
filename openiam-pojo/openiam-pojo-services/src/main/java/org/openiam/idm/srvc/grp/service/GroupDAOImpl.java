@@ -29,7 +29,7 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
 
     @Override
     protected String getPKfieldName() {
-        return "grpId";
+        return "id";
     }
 
     @Override
@@ -39,7 +39,6 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
             final GroupSearchBean groupSearchBean = (GroupSearchBean)searchBean;
 
             final GroupEntity exampleEnity = groupSearchBeanConverter.convert(groupSearchBean);
-            exampleEnity.setGrpId(null);
             criteria = this.getExampleCriteria(exampleEnity);
 
             if(groupSearchBean.hasMultipleKeys()) {
@@ -54,11 +53,11 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
 	@Override
 	protected Criteria getExampleCriteria(GroupEntity group) {
 		final Criteria criteria = getCriteria();
-		if(StringUtils.isNotBlank(group.getGrpId())) {
-			criteria.add(Restrictions.eq("grpId", group.getGrpId()));
+		if(StringUtils.isNotBlank(group.getId())) {
+			criteria.add(Restrictions.eq(getPKfieldName(), group.getId()));
 		} else {
-			if (StringUtils.isNotEmpty(group.getGrpName())) {
-                String groupName = group.getGrpName();
+			if (StringUtils.isNotEmpty(group.getName())) {
+                String groupName = group.getName();
                 MatchMode matchMode = null;
                 if (StringUtils.indexOf(groupName, "*") == 0) {
                     matchMode = MatchMode.END;
@@ -71,9 +70,9 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
 
                 if (StringUtils.isNotEmpty(groupName)) {
                     if (matchMode != null) {
-                        criteria.add(Restrictions.ilike("grpName", groupName, matchMode));
+                        criteria.add(Restrictions.ilike("name", groupName, matchMode));
                     } else {
-                        criteria.add(Restrictions.eq("grpName", groupName));
+                        criteria.add(Restrictions.eq("name", groupName));
                     }
                 }
             }
@@ -211,7 +210,7 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
 
 
     private Criteria getParentGroupsCriteria(final String groupId, Set<String> filter) {
-        final Criteria criteria = getCriteria().createAlias("childGroups", "group").add( Restrictions.eq("group.grpId", groupId));
+        final Criteria criteria = getCriteria().createAlias("childGroups", "group").add( Restrictions.eq("group.id", groupId));
         if(filter!=null && !filter.isEmpty()){
             criteria.add( Restrictions.in(getPKfieldName(), filter));
         }
@@ -219,7 +218,7 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
     }
 
     private Criteria getChildGroupsCriteria(final String groupId, Set<String> filter) {
-        final Criteria criteria = getCriteria().createAlias("parentGroups", "group").add( Restrictions.eq("group.grpId", groupId));
+        final Criteria criteria = getCriteria().createAlias("parentGroups", "group").add( Restrictions.eq("group.id", groupId));
         if(filter!=null && !filter.isEmpty()){
             criteria.add( Restrictions.in(getPKfieldName(), filter));
         }
