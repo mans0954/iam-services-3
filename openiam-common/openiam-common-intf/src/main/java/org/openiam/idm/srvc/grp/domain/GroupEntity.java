@@ -109,6 +109,10 @@ public class GroupEntity {
     @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinTable(name = "USER_GRP", joinColumns = { @JoinColumn(name = "GRP_ID") }, inverseJoinColumns = { @JoinColumn(name = "USER_ID") })
     private Set<UserEntity> users = new HashSet<UserEntity>(0);
+    
+	@ManyToOne(fetch = FetchType.EAGER,cascade={CascadeType.ALL})
+    @JoinColumn(name="ADMIN_RESOURCE_ID", referencedColumnName = "RESOURCE_ID", insertable = true, updatable = true, nullable=true)
+	private ResourceEntity adminResource;
 
     public String getId() {
         return id;
@@ -150,32 +154,6 @@ public class GroupEntity {
         this.companyId = companyId;
     }
 
-    /*
-    public String getOwnerId() {
-        return ownerId;
-    }
-
-    public void setOwnerId(String ownerId) {
-        this.ownerId = ownerId;
-    }
-
-    public String getProvisionMethod() {
-        return provisionMethod;
-    }
-
-    public void setProvisionMethod(String provisionMethod) {
-        this.provisionMethod = provisionMethod;
-    }
-
-    public String getProvisionObjName() {
-        return provisionObjName;
-    }
-
-    public void setProvisionObjName(String provisionObjName) {
-        this.provisionObjName = provisionObjName;
-    }
-    */
-
     public String getDescription() {
         return description;
     }
@@ -207,24 +185,6 @@ public class GroupEntity {
     public void setLastUpdatedBy(String lastUpdatedBy) {
         this.lastUpdatedBy = lastUpdatedBy;
     }
-
-    /*
-    public String getMetadataTypeId() {
-        return metadataTypeId;
-    }
-
-    public void setMetadataTypeId(String metadataTypeId) {
-        this.metadataTypeId = metadataTypeId;
-    }
-
-    public String getInternalGroupId() {
-        return internalGroupId;
-    }
-
-    public void setInternalGroupId(String internalGroupId) {
-        this.internalGroupId = internalGroupId;
-    }
-    */
 
     public Set<GroupEntity> getParentGroups() {
         return parentGroups;
@@ -318,6 +278,14 @@ public class GroupEntity {
 
 	public void setManagedSystem(ManagedSysEntity managedSystem) {
 		this.managedSystem = managedSystem;
+	}
+
+	public ResourceEntity getAdminResource() {
+		return adminResource;
+	}
+
+	public void setAdminResource(ResourceEntity adminResource) {
+		this.adminResource = adminResource;
 	}
 
 	@Override

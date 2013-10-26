@@ -1,6 +1,7 @@
 package org.openiam.idm.srvc.grp.service;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -14,11 +15,14 @@ import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.mngsys.service.ManagedSysDAO;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
+import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
+import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.srvc.user.util.DelegationFilterHelper;
 import org.openiam.validator.EntityValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -59,6 +63,12 @@ public class GroupDataServiceImpl implements GroupDataService {
     
     @Autowired
     private ManagedSysDAO managedSysDAO;
+    
+	@Value("${org.openiam.resource.system.action.id}")
+	private String systemActionId;
+	
+	@Autowired
+	private ResourceTypeDAO resourceTypeDAO;
 	
 	private static final Log log = LogFactory.getLog(GroupDataServiceImpl.class);
 
@@ -203,12 +213,24 @@ public class GroupDataServiceImpl implements GroupDataService {
 					group.setResources(dbGroup.getResources());
 					group.setRoles(dbGroup.getRoles());
 					group.setUsers(dbGroup.getUsers());
+					group.setAdminResource(dbGroup.getAdminResource());
+					if(group.getAdminResource() == null) {
+						group.setAdminResource(getNewAdminResource(group));
+					}
 					groupDao.merge(group);
 				}
 			} else {
+				group.setAdminResource(getNewAdminResource(group));
 				groupDao.save(group);
 			}
 		}
+	}
+	
+	private ResourceEntity getNewAdminResource(final GroupEntity entity) {
+		final ResourceEntity adminResource = new ResourceEntity();
+		adminResource.setName(String.format("GRP_ADMIN_%s_%s", entity.getName(), RandomStringUtils.randomAlphanumeric(2)));
+		adminResource.setResourceType(resourceTypeDAO.findById(systemActionId));
+		return adminResource;
 	}
 	
 	private void mergeAttribute(final GroupEntity bean, final GroupEntity dbObject) {

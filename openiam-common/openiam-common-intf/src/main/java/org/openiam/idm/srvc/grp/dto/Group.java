@@ -38,7 +38,9 @@ import java.util.*;
         "operation",
         "parentGroups",
         "childGroups",
-        "resources"
+        "resources",
+        "adminResourceId",
+        "adminResourceName"
 })
 @XmlRootElement(name = "Group")
 @XmlSeeAlso({
@@ -62,21 +64,15 @@ public class Group extends BaseObject implements java.io.Serializable {
     protected Date createDate;
     protected String createdBy;
     protected String companyId;
-    /*
-    protected String ownerId;
-    protected String provisionMethod;
-    protected String provisionObjName;
-    */
     protected String description;
 
     protected String status;
     @XmlSchemaType(name = "dateTime")
     protected Date lastUpdate;
     protected String lastUpdatedBy;
-    /*
-    protected String metadataTypeId;
-    protected String internalGroupId = null;
-    */
+    
+    private String adminResourceId;
+    private String adminResourceName;
     
     private Set<Group> parentGroups;
     private Set<Group> childGroups;
@@ -136,24 +132,6 @@ public class Group extends BaseObject implements java.io.Serializable {
         this.companyId = companyId;
     }
 
-    /*
-    public String getProvisionMethod() {
-        return this.provisionMethod;
-    }
-
-    public void setProvisionMethod(String provisionMethod) {
-        this.provisionMethod = provisionMethod;
-    }
-
-    public String getProvisionObjName() {
-        return this.provisionObjName;
-    }
-
-    public void setProvisionObjName(String provisionObjName) {
-        this.provisionObjName = provisionObjName;
-    }
-    */
-
     public Set<Role> getRoles() {
         return this.roles;
     }
@@ -198,26 +176,6 @@ public class Group extends BaseObject implements java.io.Serializable {
         this.lastUpdatedBy = lastUpdatedBy;
     }
 
-    /*
-    public String getMetadataTypeId() {
-        return metadataTypeId;
-    }
-
-    public void setMetadataTypeId(String metadataTypeId) {
-        this.metadataTypeId = metadataTypeId;
-    }
-	*/
-
-    /*
-    public String getOwnerId() {
-        return ownerId;
-    }
-
-    public void setOwnerId(String ownerId) {
-        this.ownerId = ownerId;
-    }
-	*/
-
     public void setGroupStatus(GroupStatus status) {
         this.status = status.toString();
     }
@@ -229,16 +187,6 @@ public class Group extends BaseObject implements java.io.Serializable {
     public void setStatus(String status) {
         this.status = status;
     }
-
-    /*
-    public String getInternalGroupId() {
-        return internalGroupId;
-    }
-
-    public void setInternalGroupId(String internalGroupId) {
-        this.internalGroupId = internalGroupId;
-    }
-    */
 
     public AttributeOperationEnum getOperation() {
         return operation;
@@ -304,6 +252,22 @@ public class Group extends BaseObject implements java.io.Serializable {
 
 	public void setManagedSysName(String managedSysName) {
 		this.managedSysName = managedSysName;
+	}
+
+	public String getAdminResourceId() {
+		return adminResourceId;
+	}
+
+	public void setAdminResourceId(String adminResourceId) {
+		this.adminResourceId = adminResourceId;
+	}
+
+	public String getAdminResourceName() {
+		return adminResourceName;
+	}
+
+	public void setAdminResourceName(String adminResourceName) {
+		this.adminResourceName = adminResourceName;
 	}
 
 	@Override
