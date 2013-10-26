@@ -483,6 +483,13 @@ public class ResourceServiceImpl implements ResourceService {
 			if(CollectionUtils.isNotEmpty(adminOfRoles)) {
 				throw new BasicDataServiceException(ResponseCode.RESOURCE_IS_AN_ADMIN_OF_ROLE, adminOfRoles.get(0).getName());
 			}
+			
+			final GroupEntity groupSearchBean = new GroupEntity();
+			groupSearchBean.setAdminResource(new ResourceEntity(resourceId));
+			final List<GroupEntity> adminOfGroups = groupDao.getByExample(groupSearchBean);
+			if(CollectionUtils.isNotEmpty(adminOfGroups)) {
+				throw new BasicDataServiceException(ResponseCode.RESOURCE_IS_AN_ADMIN_OF_GROUP, adminOfGroups.get(0).getName());
+			}
 		}
 	}
 	
