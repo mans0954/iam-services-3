@@ -1,5 +1,7 @@
 import org.openiam.base.AttributeOperationEnum
 import org.openiam.idm.srvc.audit.service.AuditLogService
+import org.openiam.idm.srvc.res.dto.Resource
+import org.openiam.idm.srvc.res.service.ResourceDataService
 import org.openiam.idm.srvc.role.service.RoleDataService
 import org.openiam.idm.srvc.role.ws.RoleDataWebService
 import org.openiam.provision.dto.ProvisionUser
@@ -130,14 +132,18 @@ public class LDAPPopulationScript extends org.openiam.idm.srvc.recon.service.Abs
                     break
             }
         }
-        Set<Role> roleList = pUser.getRoles();
-        RoleDataWebService dataService = context.getBean("roleWS");
-        Role endUserRole = dataService.getRole("1","3000");
-        if (!roleList.contains(endUserRole)) {
-            endUserRole.setOperation(AttributeOperationEnum.ADD);
-            pUser.getRoles().add(endUserRole);
-        }
+        /* Set<Role> roleList = pUser.getRoles();
+         RoleDataWebService dataService = context.getBean("roleWS");
+         Role endUserRole = dataService.getRole("1","3000");
+         if (!roleList.contains(endUserRole)) {
+             endUserRole.setOperation(AttributeOperationEnum.ADD);
+             pUser.getRoles().add(endUserRole);
+         }*/
 
+        ResourceDataService  resourceDataService = context.getBean("resourceDataService");
+        Resource currentResource = resourceDataService.getResource(pUser.getSrcSystemId());
+        currentResource.setOperation(AttributeOperationEnum.ADD);
+        pUser.getResources().add(currentResource);
         //set status to active: IMPORTANT!!!!
         pUser.setStatus(UserStatusEnum.PENDING_INITIAL_LOGIN);
         return retval;
