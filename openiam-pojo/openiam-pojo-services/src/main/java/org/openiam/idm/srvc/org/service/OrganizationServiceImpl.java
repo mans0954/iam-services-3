@@ -72,8 +72,8 @@ public class OrganizationServiceImpl implements OrganizationService {
 
     @Override
     public OrganizationEntity getOrganizationByName(final String name, String requesterId) {
-        OrganizationSearchBean searchBean = new OrganizationSearchBean();
-        searchBean.setOrganizationName(name);
+        final OrganizationSearchBean searchBean = new OrganizationSearchBean();
+        searchBean.setName(name);
         final List<OrganizationEntity> foundList = this.findBeans(searchBean, requesterId, 0, 1);
         return (CollectionUtils.isNotEmpty(foundList)) ? foundList.get(0) : null;
     }

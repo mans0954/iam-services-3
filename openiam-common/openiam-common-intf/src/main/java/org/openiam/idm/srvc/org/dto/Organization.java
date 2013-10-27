@@ -40,7 +40,7 @@ import org.openiam.idm.srvc.user.dto.User;
         "lstUpdate",
         "lstUpdatedBy",
         "id",
-        "organizationName",
+        "name",
         "organizationTypeId",
         "organizationTypeName",
         "internalOrgId",
@@ -79,7 +79,7 @@ public class Organization implements java.io.Serializable, Comparable<Organizati
 
     protected String lstUpdatedBy;
 
-    protected String organizationName;
+    protected String name;
 
     protected String internalOrgId;
 
@@ -276,25 +276,15 @@ public class Organization implements java.io.Serializable, Comparable<Organizati
 		this.id = id;
 	}
 
+    public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
 	/**
-     * Gets the value of the organizationName property.
-     *
-     * @return possible object is {@link String }
-     */
-    public String getOrganizationName() {
-        return organizationName;
-    }
-
-    /**
-     * Sets the value of the organizationName property.
-     *
-     * @param value allowed object is {@link String }
-     */
-    public void setOrganizationName(String value) {
-        this.organizationName = value;
-    }
-
-    /**
      * Gets the value of the status property.
      *
      * @return possible object is {@link String }
@@ -369,10 +359,10 @@ public class Organization implements java.io.Serializable, Comparable<Organizati
 	}
 
 	public int compareTo(Organization o) {
-        if (getOrganizationName() == null || o == null) {
+        if (getName() == null || o == null) {
             return Integer.MIN_VALUE;
         }
-        return getOrganizationName().compareTo(o.getOrganizationName());
+        return getName().compareTo(o.getName());
     }
 
 	public String getOrganizationTypeId() {
@@ -407,7 +397,7 @@ public class Organization implements java.io.Serializable, Comparable<Organizati
         if (createdBy != null ? !createdBy.equals(that.createdBy) : that.createdBy != null) return false;
         if (domainName != null ? !domainName.equals(that.domainName) : that.domainName != null) return false;
         if (id != null ? !id.equals(that.id) : that.id != null) return false;
-        if (organizationName != null ? !organizationName.equals(that.organizationName) : that.organizationName != null)
+        if (name != null ? !name.equals(that.name) : that.name != null)
             return false;
 
         return true;
@@ -420,7 +410,7 @@ public class Organization implements java.io.Serializable, Comparable<Organizati
         result = 31 * result + (createdBy != null ? createdBy.hashCode() : 0);
         result = 31 * result + (domainName != null ? domainName.hashCode() : 0);
         result = 31 * result + (createDate != null ? createDate.hashCode() : 0);
-        result = 31 * result + (organizationName != null ? organizationName.hashCode() : 0);
+        result = 31 * result + (name != null ? name.hashCode() : 0);
         return result;
     }
 }

@@ -79,7 +79,7 @@ public class OrganizationEntity {
     private String lstUpdatedBy;
 
     @Column(name="COMPANY_NAME", length=200)
-    private String organizationName;
+    private String name;
 
     @Column(name="INTERNAL_COMPANY_ID")
     private String internalOrgId;
@@ -198,13 +198,13 @@ public class OrganizationEntity {
         this.lstUpdatedBy = lstUpdatedBy;
     }
 
-    public String getOrganizationName() {
-        return organizationName;
-    }
+    public String getName() {
+		return name;
+	}
 
-    public void setOrganizationName(String organizationName) {
-        this.organizationName = organizationName;
-    }
+	public void setName(String name) {
+		this.name = name;
+	}
 
     public String getInternalOrgId() {
         return internalOrgId;
@@ -319,7 +319,7 @@ public class OrganizationEntity {
         if (createdBy != null ? !createdBy.equals(that.createdBy) : that.createdBy != null) return false;
         if (domainName != null ? !domainName.equals(that.domainName) : that.domainName != null) return false;
         if (id != null ? !id.equals(that.id) : that.id != null) return false;
-        if (organizationName != null ? !organizationName.equals(that.organizationName) : that.organizationName != null)
+        if (name != null ? !name.equals(that.name) : that.name != null)
             return false;
 
         return true;
@@ -331,7 +331,7 @@ public class OrganizationEntity {
         result = 31 * result + (createDate != null ? createDate.hashCode() : 0);
         result = 31 * result + (createdBy != null ? createdBy.hashCode() : 0);
         result = 31 * result + (domainName != null ? domainName.hashCode() : 0);
-        result = 31 * result + (organizationName != null ? organizationName.hashCode() : 0);
+        result = 31 * result + (name != null ? name.hashCode() : 0);
         return result;
     }
 }

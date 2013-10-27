@@ -192,11 +192,11 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
             if (organization == null) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
             }
-            if (StringUtils.isBlank(organization.getOrganizationName())) {
+            if (StringUtils.isBlank(organization.getName())) {
                 throw new BasicDataServiceException(ResponseCode.ORGANIZATION_NAME_NOT_SET);
             }
 
-            final OrganizationEntity found = organizationService.getOrganizationByName(organization.getOrganizationName(), null);
+            final OrganizationEntity found = organizationService.getOrganizationByName(organization.getName(), null);
             if (found != null) {
                 if (StringUtils.isBlank(organization.getId()) && found != null) {
                     throw new BasicDataServiceException(ResponseCode.NAME_TAKEN);

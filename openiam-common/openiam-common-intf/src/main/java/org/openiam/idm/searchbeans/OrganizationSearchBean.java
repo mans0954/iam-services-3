@@ -17,7 +17,7 @@ import java.util.Set;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "OrganizationSearchBean", propOrder = {
         "keySet",
-        "organizationName",
+        "name",
 		"organizationTypeId",
 		"userId",
 		"parentId",
@@ -29,7 +29,7 @@ public class OrganizationSearchBean extends AbstractSearchBean<Organization, Str
         Serializable {
     private static final long serialVersionUID = 1L;
     private Set<String> keySet;
-    private String organizationName;
+    private String name;
     private String organizationTypeId;
     private String userId;
     private String parentId;
@@ -37,15 +37,15 @@ public class OrganizationSearchBean extends AbstractSearchBean<Organization, Str
     private String validParentTypeId;
     private String internalOrgId;
 
-    public String getOrganizationName() {
-        return organizationName;
-    }
+    public String getName() {
+		return name;
+	}
 
-    public void setOrganizationName(String organizationName) {
-        this.organizationName = organizationName;
-    }
+	public void setName(String name) {
+		this.name = name;
+	}
 
-    public String getOrganizationTypeId() {
+	public String getOrganizationTypeId() {
 		return organizationTypeId;
 	}
 
