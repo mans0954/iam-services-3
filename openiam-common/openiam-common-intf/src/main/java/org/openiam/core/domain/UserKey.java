@@ -29,13 +29,14 @@ public class UserKey implements Serializable {
     @GenericGenerator(name="system-uuid", strategy = "uuid")
     @Column(name="USER_KEY_ID", length=32, nullable = false)
     private String userKeyId;
-
+    @Column(name="USER_ID", length=32, nullable = false)
+    private String userId;
     @Column(name="NAME", length=40, nullable = false)
     private String name;
     @Column(name="KEY_VALUE", length=255, nullable = false)
     private String key;
 
-  //  @XmlTransient
+    @XmlTransient
     @ManyToOne
     @JoinColumn(name = "USER_ID", referencedColumnName = "USER_ID", insertable = false, updatable = false)
     private UserEntity user;
@@ -50,6 +51,13 @@ public class UserKey implements Serializable {
 
     public void setUser(UserEntity user) {
         this.user = user;
+    }
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 
     public void setUserKeyId(String userKeyId) {

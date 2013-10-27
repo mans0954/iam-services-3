@@ -7,6 +7,7 @@ import org.openiam.idm.srvc.recon.service.ReconciliationCommand;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.provision.dto.ProvisionUser;
+import org.openiam.provision.resp.ProvisionUserResponse;
 import org.openiam.provision.service.ProvisionService;
 import org.openiam.provision.type.ExtensibleAttribute;
 
@@ -30,7 +31,7 @@ public class DeleteIdmUserExcludeTargetCommand implements ReconciliationCommand 
     public boolean execute(Login login, User user, List<ExtensibleAttribute> attributes) {
         log.debug("Entering DeleteIdmUserExcludeTargetCommand");
         log.debug("Delete  user :" + login.getUserId());
-        provisionService.deleteByUserId( login.getUserId(), UserStatusEnum.DELETED,"3000");
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
+        ProvisionUserResponse response = provisionService.deleteByUserId(login.getUserId(), UserStatusEnum.DELETED, "3000");
+        return response.isSuccess();
     }
 }

@@ -1,6 +1,5 @@
 package org.openiam.idm.srvc.recon.dto;
 
-import java.util.List;
 import java.util.Set;
 
 import javax.persistence.Transient;
@@ -32,7 +31,7 @@ public class ReconciliationConfig implements java.io.Serializable {
     private String endOfLine;
     private String notificationEmailAddress;
     private String targetSystemMatchScript;
-    private List<ReconciliationSituation> situationSet;
+    private Set<ReconciliationSituation> situationSet;
     private boolean manualReconciliationFlag;
 
     @XmlElement
@@ -106,11 +105,11 @@ public class ReconciliationConfig implements java.io.Serializable {
         this.status = status;
     }
 
-    public List<ReconciliationSituation> getSituationSet() {
+    public Set<ReconciliationSituation> getSituationSet() {
         return situationSet;
     }
 
-    public void setSituationSet(List<ReconciliationSituation> situationSet) {
+    public void setSituationSet(Set<ReconciliationSituation> situationSet) {
         this.situationSet = situationSet;
     }
 

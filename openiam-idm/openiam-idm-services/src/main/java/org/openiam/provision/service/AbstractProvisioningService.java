@@ -23,6 +23,7 @@ import org.openiam.connector.type.request.PasswordRequest;
 import org.openiam.connector.type.response.ObjectResponse;
 import org.openiam.connector.type.response.ResponseType;
 import org.openiam.connector.type.response.SearchResponse;
+import org.openiam.core.domain.UserKey;
 import org.openiam.dozer.converter.*;
 import org.openiam.exception.EncryptionException;
 import org.openiam.exception.ObjectNotFoundException;
@@ -344,7 +345,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
             log.debug("- policyAttrMap IS NOT null");
 
             Login primaryIdentity = new Login();
-
+            primaryIdentity.setOperation(AttributeOperationEnum.ADD);
             // init values
             primaryIdentity.setDomainId(sysConfiguration.getDefaultSecurityDomain());
             primaryIdentity.setManagedSysId(sysConfiguration.getDefaultManagedSysId());
@@ -917,8 +918,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     LoginEntity entity = loginDozerConverter.convertToEntity(e, false);
                     try {
                         entity.setUserId(userEntity.getUserId());
-                        entity.setPassword(loginManager.encryptPassword(userEntity.getUserId(), e.getPassword()));
                         userEntity.getPrincipalList().add(entity);
+                        entity.setPassword(loginManager.encryptPassword(userEntity.getUserId(), e.getPassword()));
                     } catch (EncryptionException ee) {
                         log.error(ee);
                         ee.printStackTrace();

@@ -6,6 +6,7 @@ import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.recon.service.ReconciliationCommand;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.provision.dto.ProvisionUser;
+import org.openiam.provision.resp.ProvisionUserResponse;
 import org.openiam.provision.service.ProvisionService;
 import org.openiam.provision.type.ExtensibleAttribute;
 
@@ -30,7 +31,9 @@ public class CreateResourceAccountCommand implements ReconciliationCommand {
         log.debug("Entering CreateResourceAccountCommand");
         log.debug("Create Resource Account for user: " + user.getUserId());
         ProvisionUser pUser = new ProvisionUser(user);
-        provisionService.modifyUser(pUser);
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
+        //Reset source system flag from User to avoid ignoring Provisioning for this resource
+        pUser.setSrcSystemId(null);
+        ProvisionUserResponse response = provisionService.modifyUser(pUser);
+        return response.isSuccess();
     }
 }

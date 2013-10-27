@@ -148,6 +148,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
          try {
 
             final TransactionTemplate transactionTemplate = new TransactionTemplate(platformTransactionManager);
+            transactionTemplate.setPropagationBehavior(TransactionTemplate.PROPAGATION_REQUIRED);
             res = transactionTemplate.execute(new TransactionCallback<ProvisionUserResponse>() {
                 @Override
                 public ProvisionUserResponse doInTransaction(TransactionStatus status) {
@@ -937,6 +938,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         if (isAdd) {
             try {
                 userMgr.addUser(userEntity); // Need to have userId to encrypt/decrypt password
+                pUser.setUserId(userEntity.getUserId());
             } catch (Exception e) {
                 auditLog.fail().setFailureReason("Exception while creating user: "+e.getMessage());
                 log.error("Exception while creating user", e);
