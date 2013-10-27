@@ -38,12 +38,13 @@ public class UpdateIdmUserCommand implements ReconciliationCommand {
             log.debug("Can't update IDM user from non-existent resource...");
         } else {
             Map<String, String> line = new HashMap<String, String>();
-            for(ExtensibleAttribute attr: lookupResp.getAttrList()){
+            for(ExtensibleAttribute attr: attributes){
                 line.put(attr.getName(), attr.getValue());
             }
             try {
                 PopulationScript script = (PopulationScript)scriptRunner.instantiateClass(null, config.getScript());
                 ProvisionUser pUser = new ProvisionUser(user);
+                pUser.setSrcSystemId(login.getManagedSysId());
                 int retval = script.execute(line, pUser);
                 if(retval == 0){
                     provisionService.modifyUser(pUser);

@@ -65,7 +65,10 @@ public class CreateIdmAccountCommand implements ReconciliationCommand {
                         primaryLogin.setManagedSysId("0");
                         primaryLogin.setOperation(AttributeOperationEnum.ADD);
                         pUser.getPrincipalList().add(primaryLogin);
+
+                        pUser.setSrcSystemId(login.getManagedSysId());
                     }
+
                     provisionService.addUser(pUser);
                 }else{
                     log.debug("Couldn't populate ProvisionUser. User not added");

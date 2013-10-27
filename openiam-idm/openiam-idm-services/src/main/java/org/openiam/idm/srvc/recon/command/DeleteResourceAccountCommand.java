@@ -66,7 +66,7 @@ public class DeleteResourceAccountCommand implements ReconciliationCommand {
 
         ProvisionUser pUser = new ProvisionUser(user);
         pUser.setPrincipalList(principleList);
-
+        pUser.setSrcSystemId(login.getManagedSysId());
         provisionService.modifyUser(pUser);
         return false;
     }

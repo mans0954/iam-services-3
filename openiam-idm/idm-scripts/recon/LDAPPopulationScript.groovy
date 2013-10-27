@@ -1,5 +1,8 @@
 import org.openiam.base.AttributeOperationEnum
 import org.openiam.idm.srvc.audit.service.AuditLogService
+import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto
+import org.openiam.idm.srvc.mngsys.service.ManagedSystemServiceImpl
+import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService
 import org.openiam.idm.srvc.res.dto.Resource
 import org.openiam.idm.srvc.res.service.ResourceDataService
 import org.openiam.idm.srvc.role.service.RoleDataService
@@ -139,9 +142,10 @@ public class LDAPPopulationScript extends org.openiam.idm.srvc.recon.service.Abs
              endUserRole.setOperation(AttributeOperationEnum.ADD);
              pUser.getRoles().add(endUserRole);
          }*/
-
+        ManagedSystemWebService systemWebService = context.getBean("managedSysService");
         ResourceDataService  resourceDataService = context.getBean("resourceDataService");
-        Resource currentResource = resourceDataService.getResource(pUser.getSrcSystemId());
+        ManagedSysDto currentManagedSys = systemWebService.getManagedSys(pUser.getSrcSystemId());
+        Resource currentResource = resourceDataService.getResource(currentManagedSys.getResourceId());
         currentResource.setOperation(AttributeOperationEnum.ADD);
         pUser.getResources().add(currentResource);
         //set status to active: IMPORTANT!!!!

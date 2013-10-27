@@ -32,7 +32,7 @@ public class DisableIdmAccountCommand implements ReconciliationCommand {
 
         ProvisionUser pUser = new ProvisionUser(user);
         pUser.setPrincipalList(principleList);
-
+        pUser.setSrcSystemId(login.getManagedSysId());
         ProvisionUserResponse response = provisionService.modifyUser(pUser);
         return response.isSuccess();
     }

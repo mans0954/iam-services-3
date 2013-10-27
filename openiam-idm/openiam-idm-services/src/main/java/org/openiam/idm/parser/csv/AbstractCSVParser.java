@@ -365,7 +365,7 @@ public abstract class AbstractCSVParser<T, E extends Enum<E>> {
         ReconciliationObject<T> object = new ReconciliationObject<T>();
         object.setObject(pu);
         for (AttributeMapEntity a : attrMap) {
-            String name = AttributeMapUtil.getAttributeIDMFieldName(a);
+            String name = a.getAttributeName();
             if (name != null) {
                 if (PRINCIPAL_OBJECT.equals(a.getMapForObjectType())) {
                     E fieldValue;

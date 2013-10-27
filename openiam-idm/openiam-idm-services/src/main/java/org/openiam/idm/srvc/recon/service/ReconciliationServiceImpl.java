@@ -589,8 +589,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
 
                 resultBean.getRows().add(
                         this.setRowInReconciliationResult(resultBean
-                                .getHeader(), attrMap, userCSVParser
-                                .toReconciliationObject(user, attrMap),
+                                .getHeader(), attrMap, new ReconciliationObject<User>(principal, user),
                                 extensibleAttributes,
                                 ReconciliationResultCase.MATCH_FOUND));
                 if (!isManualRecon) {
@@ -707,7 +706,18 @@ public class ReconciliationServiceImpl implements ReconciliationService {
                 }
                 if (value1 != null && value2 != null && !value1.equals(value2)) {
                     row.setCaseReconciliation(ReconciliationResultCase.MATCH_FOUND_DIFFERENT);
-                    value1.getValues().addAll(value2.getValues());
+                    List<String> merged = new ArrayList<String>();
+                    for(String val :value1.getValues()) {
+                       if(StringUtils.isNotBlank(val)) {
+                          merged.add(val);
+                       }
+                    }
+                    for(String val : value2.getValues()) {
+                        if(StringUtils.isNotBlank(val)) {
+                            merged.add(val);
+                        }
+                    }
+                    value1.setValues(merged);
                     user1Map.put(key, value1);
                 }
             }
