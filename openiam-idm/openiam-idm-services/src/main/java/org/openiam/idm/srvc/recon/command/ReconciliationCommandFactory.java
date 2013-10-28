@@ -29,7 +29,7 @@ public class ReconciliationCommandFactory {
         } else if(name.equalsIgnoreCase("DEL_RES_ACCOUNT")){
             reconCommand = new DeleteResourceAccountCommand((ProvisionService) applicationContext.getBean("defaultProvision"),
                     (ManagedSystemWebService)applicationContext.getBean("managedSysService"),
-                    (ProvisionConnectorWebService)applicationContext.getBean("connectorService"),
+                    (ProvisionConnectorWebService)applicationContext.getBean("provisionConnectorWebService"),
                      MuleContextProvider.getCtx(),
                     managedSysId,
                     (ConnectorAdapter)applicationContext.getBean("connectorAdapter"));

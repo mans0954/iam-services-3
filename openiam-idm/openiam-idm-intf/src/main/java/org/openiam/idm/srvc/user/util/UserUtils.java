@@ -19,7 +19,9 @@ public class UserUtils {
             if (a.isMultivalued()) {
                 field.setValues(a.getValueList());
             } else {
-                field.setValues(Arrays.asList(a.getValue()));
+                List<String> l = new ArrayList<String>();
+                l.add(a.getValue());
+                field.setValues(l);
             }
             user2Map.put(a.getName(), field);
         }
