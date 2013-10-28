@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.recon.command;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.ws.ResponseStatus;
@@ -10,6 +11,8 @@ import org.openiam.idm.srvc.recon.service.ReconciliationCommand;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.resp.LookupUserResponse;
+import org.openiam.provision.resp.ProvisionUserResponse;
+import org.openiam.provision.service.AbstractProvisioningService;
 import org.openiam.provision.service.ProvisionService;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.script.ScriptIntegration;
@@ -37,25 +40,26 @@ public class UpdateIdmUserCommand implements ReconciliationCommand {
         if(lookupResp.getStatus() == ResponseStatus.FAILURE){
             log.debug("Can't update IDM user from non-existent resource...");
         } else {
-            Map<String, String> line = new HashMap<String, String>();
-            for(ExtensibleAttribute attr: attributes) {
-                line.put(attr.getName(), attr.getValue());
-            }
-            try {
-                PopulationScript script = (PopulationScript)scriptRunner.instantiateClass(null, config.getScript());
-                ProvisionUser pUser = new ProvisionUser(user);
-                pUser.setSrcSystemId(login.getManagedSysId());
-                int retval = script.execute(line, pUser);
-                if(retval == 0){
-                    provisionService.modifyUser(pUser);
-                }else{
-                    log.debug("Couldn't populate ProvisionUser. User not modified");
-                    return false;
+            ProvisionUser pUser = new ProvisionUser(user);
+            pUser.setSrcSystemId(login.getManagedSysId());
+            if(StringUtils.isNotEmpty(config.getScript())){
+                try {
+                    Map<String, String> line = new HashMap<String, String>();
+                    for (ExtensibleAttribute attr : attributes) {
+                        line.put(attr.getName(), attr.getValue());
+                    }
+                    Map<String, Object> bindingMap = new HashMap<String, Object>();
+                    bindingMap.put(AbstractProvisioningService.TARGET_SYS_MANAGED_SYS_ID, login.getManagedSysId());
+                    PopulationScript script = (PopulationScript) scriptRunner.instantiateClass(bindingMap, config.getScript());
+                    int retval = script.execute(line, pUser);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
-                return true;
-            } catch (IOException e) {
-                e.printStackTrace();
             }
+            ProvisionUserResponse response = provisionService.modifyUser(pUser);
+            return response.isSuccess();
         }
         return false;
     }
