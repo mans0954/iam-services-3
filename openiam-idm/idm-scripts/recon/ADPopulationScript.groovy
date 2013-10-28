@@ -1,12 +1,16 @@
+import org.openiam.base.AttributeOperationEnum
+import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto
+import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService
+import org.openiam.idm.srvc.res.dto.Resource
+import org.openiam.idm.srvc.res.service.ResourceDataService
 import org.openiam.provision.dto.ProvisionUser
 import org.openiam.idm.srvc.role.dto.Role;
-import org.openiam.idm.srvc.role.dto.RoleId;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum
 import org.openiam.idm.srvc.synch.dto.Attribute
 import org.openiam.idm.srvc.user.dto.UserAttribute
 import org.openiam.idm.srvc.auth.dto.Login;
 
-public class ADPopulationScript implements org.openiam.idm.srvc.recon.service.PopulationScript {
+public class ADPopulationScript extends org.openiam.idm.srvc.recon.service.AbstractPopulationScript {
     public int execute(Map<String, String> line, ProvisionUser pUser){
         int retval = 1;
         for(String key: line.keySet()) {
@@ -15,7 +19,7 @@ public class ADPopulationScript implements org.openiam.idm.srvc.recon.service.Po
                     addAttribute(pUser, "sAMAccountName", line.get("sAMAccountName"));
                     break
                 case "cn":
-                		//ignore for now
+                    //ignore for now
                     /*String[] parts = line.get("cn").split(" ")
                     if(parts.length == 2){
                         if(pUser.firstName != parts[0]){
@@ -113,7 +117,7 @@ public class ADPopulationScript implements org.openiam.idm.srvc.recon.service.Po
                     }
                     addAttribute(pUser, "displayName", line.get("displayName"));
                     break
- 
+
                 case "title":
                     if(pUser.title != line.get("title")){
                         pUser.title = line.get("title")
@@ -133,29 +137,21 @@ public class ADPopulationScript implements org.openiam.idm.srvc.recon.service.Po
                     break
             }
         }
-        List<Role> roleList = pUser.getMemberOfRoles() != null ? pUser.getMemberOfRoles() : new LinkedList<Role>();
-        boolean isEndUserRoleFound = false;
-        RoleId endUserRoleId = new RoleId("USR_SEC_DOMAIN", "END_USER");
 
-        for(Role role : roleList) {
-            if(role.getId().equals(endUserRoleId)) {
-                isEndUserRoleFound = true;
-                break;
-            }
-        }
-        if(!isEndUserRoleFound) {
-            Role r = new Role();
-            r.setId(endUserRoleId);
-            roleList.add(r);
-            pUser.setMemberOfRoles(roleList);
-        }
+        ManagedSystemWebService systemWebService = context.getBean("managedSysService");
+        ResourceDataService  resourceDataService = context.getBean("resourceDataService");
+        ManagedSysDto currentManagedSys = systemWebService.getManagedSys(managedSysId);
+        Resource currentResource = resourceDataService.getResource(currentManagedSys.getResourceId());
+        currentResource.setOperation(AttributeOperationEnum.ADD);
+        pUser.getResources().add(currentResource);
         //set status to active: IMPORTANT!!!!
         pUser.setStatus(UserStatusEnum.PENDING_INITIAL_LOGIN);
         return retval;
     }
 
     private void addAttribute(ProvisionUser user, String attributeName, String attributeValue) {
-       UserAttribute userAttr = new UserAttribute(attributeName, attributeValue);
-       user.getUserAttributes().put(attributeName, userAttr);
+        UserAttribute userAttr = new UserAttribute(attributeName, attributeValue);
+        userAttr.setOperation(AttributeOperationEnum.ADD);
+        user.getUserAttributes().put(attributeName, userAttr);
     }
 }

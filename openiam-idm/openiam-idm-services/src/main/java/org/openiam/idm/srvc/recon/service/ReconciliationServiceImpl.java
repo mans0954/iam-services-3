@@ -80,6 +80,7 @@ import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.srvc.user.util.UserUtils;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.resp.LookupUserResponse;
+import org.openiam.provision.service.AbstractProvisioningService;
 import org.openiam.provision.service.ConnectorAdapter;
 import org.openiam.provision.service.ProvisionService;
 import org.openiam.provision.type.ExtensibleAttribute;
@@ -352,8 +353,11 @@ public class ReconciliationServiceImpl implements ReconciliationService {
             log.error("SearchQuery not defined for this reconciliation config.");
             return new ReconciliationResponse(ResponseStatus.FAILURE);
         }
+        Map<String, Object> bindingMap = new HashMap<String, Object>();
+        bindingMap.put(AbstractProvisioningService.TARGET_SYS_MANAGED_SYS_ID,mSys.getManagedSysId());
+        bindingMap.put("baseDnField", baseDnField);
         String searchQuery = (String) scriptRunner.execute(
-                new HashMap<String, Object>(),
+                bindingMap,
                 config.getTargetSystemMatchScript());
         if (StringUtils.isEmpty(searchQuery)) {
             log.error("SearchQuery not defined for this reconciliation config.");

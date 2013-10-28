@@ -11,6 +11,7 @@ import org.openiam.idm.srvc.recon.service.ReconciliationCommand;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.resp.LookupUserResponse;
+import org.openiam.provision.service.AbstractProvisioningService;
 import org.openiam.provision.service.ProvisionService;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.script.ScriptIntegration;
@@ -31,6 +32,7 @@ import java.util.Map;
  * To change this template use File | Settings | File Templates.
  */
 public class CreateIdmAccountCommand implements ReconciliationCommand {
+    public static final String OPENIAM_MANAGED_SYS_ID = "0";
     private ProvisionService provisionService;
     private ReconciliationSituation config;
     private static final Log log = LogFactory.getLog(CreateIdmAccountCommand.class);
@@ -53,22 +55,29 @@ public class CreateIdmAccountCommand implements ReconciliationCommand {
                 line.put(attr.getName(), attr.getValue());
             }
             try {
-                PopulationScript script = (PopulationScript)scriptRunner.instantiateClass(null, config.getScript());
+                Map<String, Object> bindingMap = new HashMap<String, Object>();
+                bindingMap.put(AbstractProvisioningService.TARGET_SYS_MANAGED_SYS_ID, login.getManagedSysId());
+                PopulationScript script = (PopulationScript)scriptRunner.instantiateClass(bindingMap, config.getScript());
                 ProvisionUser pUser = new ProvisionUser(user);
+                pUser.setSrcSystemId(login.getManagedSysId());
                 int retval = script.execute(line, pUser);
                 if(retval == 0){
                     if(login != null) {
-                        Login primaryLogin = new Login();
-                        primaryLogin.setOperation(AttributeOperationEnum.ADD);
-                        primaryLogin.setDomainId(login.getDomainId());
-                        primaryLogin.setLogin(login.getLogin());
-                        primaryLogin.setManagedSysId("0");
-                        primaryLogin.setOperation(AttributeOperationEnum.ADD);
-                        pUser.getPrincipalList().add(primaryLogin);
-
-                        pUser.setSrcSystemId(login.getManagedSysId());
+                        Login idmLogin = null;
+                        for(Login pr : user.getPrincipalList()) {
+                           if(OPENIAM_MANAGED_SYS_ID.equalsIgnoreCase(pr.getManagedSysId())) {
+                               idmLogin = pr;
+                           }
+                        }
+                        if(idmLogin == null){
+                            idmLogin = new Login();
+                            idmLogin.setOperation(AttributeOperationEnum.ADD);
+                            idmLogin.setDomainId(login.getDomainId());
+                            idmLogin.setLogin(login.getLogin());
+                            idmLogin.setManagedSysId("0");
+                            pUser.getPrincipalList().add(idmLogin);
+                        }
                     }
-
                     provisionService.addUser(pUser);
                 }else{
                     log.debug("Couldn't populate ProvisionUser. User not added");
