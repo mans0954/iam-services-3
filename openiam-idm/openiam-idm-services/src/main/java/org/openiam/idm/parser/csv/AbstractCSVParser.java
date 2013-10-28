@@ -354,7 +354,9 @@ public abstract class AbstractCSVParser<T, E extends Enum<E>> {
         }
         for (int i = 0; i < header_.length; i++) {
             ReconciliationResultField field = new ReconciliationResultField();
-            field.setValues(Arrays.asList(values[i]));
+            List<String> l = new ArrayList<String>();
+            l.add(values[i]);
+            field.setValues(l);
             result.put(header_[i], field);
         }
         return result;
