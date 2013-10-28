@@ -34,7 +34,7 @@ public class LDAPPopulationScript extends org.openiam.idm.srvc.recon.service.Abs
                     break
                 case "mail":
                     if(pUser.email != line.get("mail")){
-                        pUser.email = line.get("mail")
+                        pUser.setEmail(line.get("mail"))
                         retval = 0
                     }
                     break
@@ -52,7 +52,7 @@ public class LDAPPopulationScript extends org.openiam.idm.srvc.recon.service.Abs
                     break
                 case "sn":
                     if(pUser.lastName != line.get("sn")){
-                        pUser.lastName = line.get("sn")
+                        pUser.setLastName(line.get("sn"))
                         retval = 0
                     }
                     break
@@ -103,18 +103,18 @@ public class LDAPPopulationScript extends org.openiam.idm.srvc.recon.service.Abs
                     String[] parts = line.get("displayName").split(",")
                     if(parts.length == 2){
                         if(pUser.firstName != parts[1]){
-                            pUser.firstName = parts[1]
+                            pUser.setFirstName(parts[1])
                             retval = 0
                         }
                         if(pUser.lastName != parts[0]){
-                            pUser.lastName = parts[0]
+                            pUser.setLastName(parts[0])
                             retval = 0
                         }
                     }
                     break
                 case "employeeType":
                     if(pUser.employeeType != line.get("employeeType")){
-                        pUser.employeeType = line.get("employeeType")
+                        pUser.setEmployeeType("employeeType")
                         retval = 0
                     }
                     break
@@ -123,13 +123,13 @@ public class LDAPPopulationScript extends org.openiam.idm.srvc.recon.service.Abs
                     break
                 case "title":
                     if(pUser.title != line.get("title")){
-                        pUser.title = line.get("title")
+                        pUser.setTitle(line.get("title"))
                         retval = 0
                     }
                     break
                 case "givenName":
                     if(pUser.firstName != line.get("givenName")){
-                        pUser.firstName = line.get("givenName")
+                        pUser.setFirstName(line.get("givenName"))
                         retval = 0
                     }
                     break

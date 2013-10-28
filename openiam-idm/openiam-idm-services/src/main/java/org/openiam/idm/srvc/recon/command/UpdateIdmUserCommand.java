@@ -38,7 +38,7 @@ public class UpdateIdmUserCommand implements ReconciliationCommand {
             log.debug("Can't update IDM user from non-existent resource...");
         } else {
             Map<String, String> line = new HashMap<String, String>();
-            for(ExtensibleAttribute attr: attributes){
+            for(ExtensibleAttribute attr: attributes) {
                 line.put(attr.getName(), attr.getValue());
             }
             try {

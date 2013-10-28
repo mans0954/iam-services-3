@@ -1034,7 +1034,8 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         if (!isAdd) {
             if (CollectionUtils.isNotEmpty(deleteResourceSet)) {
                 for (Resource res : deleteResourceSet) {
-                    try { // Protects other resources if one resource failed
+                    try {
+                    // Protects other resources if one resource failed
                         ProvisionDataContainer data = deprovisionResource(res, userEntity, requestId);
                         if (data != null) {
                             dataList.add(data);
@@ -1051,7 +1052,16 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         if (provInTargetSystemNow) {
             if (CollectionUtils.isNotEmpty(resourceSet)) {
                 for (Resource res : resourceSet) {
-                    try { // Protects other resources if one resource failed
+                    try {
+                       if(pUser.getSrcSystemId() != null) {
+                           // do check if provisioning user has source resource => we should skip it from double provisioning
+                           // reconciliation case
+                           ManagedSysDto managedSys = managedSysService.getManagedSys(pUser.getSrcSystemId());
+                           if(res.getResourceId().equals(managedSys.getResourceId())) {
+                              continue;
+                           }
+                       }
+                       // Protects other resources if one resource failed
                         Map<String, Object> tmpMap = new HashMap<String, Object>(bindingMap); // prevent bindingMap rewrite in dataList
                         ProvisionDataContainer data = provisionResource(isAdd, res, userEntity, pUser, tmpMap, primaryIdentity, requestId);
                         if (data != null) {
@@ -1105,7 +1115,6 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
     private ProvisionDataContainer provisionResource(boolean isAdd, Resource res, UserEntity userEntity, ProvisionUser pUser,
             Map<String, Object> bindingMap, Login primaryIdentity, String requestId) {
-
         ManagedSysDto managedSys = managedSysService.getManagedSysByResource(res.getResourceId());
         String managedSysId = (managedSys != null) ? managedSys.getManagedSysId() : null;
         if (managedSysId != null) {
