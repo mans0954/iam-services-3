@@ -18,6 +18,7 @@ import org.openiam.am.srvc.domain.URIPatternEntity;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.dozer.converter.ResourceDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
+import org.openiam.idm.searchbeans.OrganizationSearchBean;
 import org.openiam.idm.searchbeans.ResourceSearchBean;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.service.GroupDAO;
@@ -27,6 +28,8 @@ import org.openiam.idm.srvc.meta.service.MetadataElementDAO;
 import org.openiam.idm.srvc.meta.service.MetadataElementPageTemplateDAO;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.service.ManagedSysDAO;
+import org.openiam.idm.srvc.org.domain.OrganizationEntity;
+import org.openiam.idm.srvc.org.service.OrganizationDAO;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
 import org.openiam.idm.srvc.res.domain.ResourceTypeEntity;
@@ -71,6 +74,9 @@ public class ResourceServiceImpl implements ResourceService {
 	
 	@Autowired
 	private ManagedSysDAO managedSysDAO;
+	
+	@Autowired
+	private OrganizationDAO orgDAO;
 	
 	@Autowired
 	private MetadataElementPageTemplateDAO templateDAO;
@@ -489,6 +495,13 @@ public class ResourceServiceImpl implements ResourceService {
 			final List<GroupEntity> adminOfGroups = groupDao.getByExample(groupSearchBean);
 			if(CollectionUtils.isNotEmpty(adminOfGroups)) {
 				throw new BasicDataServiceException(ResponseCode.RESOURCE_IS_AN_ADMIN_OF_GROUP, adminOfGroups.get(0).getName());
+			}
+			
+			final OrganizationEntity orgSearchBean = new OrganizationEntity();
+			orgSearchBean.setAdminResource(new ResourceEntity(resourceId));
+			final List<OrganizationEntity> adminOfOrgs = orgDAO.getByExample(orgSearchBean);
+			if(CollectionUtils.isNotEmpty(adminOfOrgs)) {
+				throw new BasicDataServiceException(ResponseCode.RESOURCE_IS_AN_ADMIN_OF_ORG, adminOfOrgs.get(0).getName());
 			}
 		}
 	}

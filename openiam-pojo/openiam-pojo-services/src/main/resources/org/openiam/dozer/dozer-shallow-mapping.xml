@@ -8,6 +8,10 @@
 		<class-a>org.openiam.idm.srvc.org.domain.OrganizationEntity</class-a>
 		<class-b>org.openiam.idm.srvc.org.domain.OrganizationEntity</class-b>
 		<field-exclude>
+			<a>adminResource</a>
+			<b>adminResource</b>
+		</field-exclude>
+		<field-exclude>
 			<a>attributes</a>
 			<b>attributes</b>
 		</field-exclude>

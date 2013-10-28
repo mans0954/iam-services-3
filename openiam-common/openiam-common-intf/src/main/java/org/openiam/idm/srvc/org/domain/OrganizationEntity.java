@@ -35,6 +35,7 @@ import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.search.annotations.DocumentId;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.dto.OrganizationAttribute;
+import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 
@@ -114,6 +115,10 @@ public class OrganizationEntity {
 	@ManyToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
     @JoinTable(name = "USER_AFFILIATION", joinColumns = { @JoinColumn(name = "COMPANY_ID") }, inverseJoinColumns = { @JoinColumn(name = "USER_ID") })
 	private Set<UserEntity> users;
+	
+	@ManyToOne(fetch = FetchType.EAGER,cascade={CascadeType.ALL})
+    @JoinColumn(name="ADMIN_RESOURCE_ID", referencedColumnName = "RESOURCE_ID", insertable = true, updatable = true, nullable=true)
+	private ResourceEntity adminResource;
 
     public OrganizationEntity() {
     }
@@ -308,7 +313,15 @@ public class OrganizationEntity {
         this.users = users;
     }
 
-    @Override
+    public ResourceEntity getAdminResource() {
+		return adminResource;
+	}
+
+	public void setAdminResource(ResourceEntity adminResource) {
+		this.adminResource = adminResource;
+	}
+
+	@Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;

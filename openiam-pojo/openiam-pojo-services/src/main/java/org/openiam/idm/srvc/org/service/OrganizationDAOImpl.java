@@ -142,36 +142,30 @@ public class OrganizationDAOImpl extends
 					matchMode = MatchMode.START;
 					name = name.substring(1);
 				}
-				if (StringUtils.isNotEmpty(name)
-						&& StringUtils.indexOf(name, "*") == name
-								.length() - 1) {
-					name = name.substring(0,
-							name.length() - 1);
-					matchMode = (matchMode == MatchMode.START) ? MatchMode.ANYWHERE
-							: MatchMode.END;
+				if (StringUtils.isNotEmpty(name) && StringUtils.indexOf(name, "*") == name.length() - 1) {
+					name = name.substring(0, name.length() - 1);
+					matchMode = (matchMode == MatchMode.START) ? MatchMode.ANYWHERE : MatchMode.END;
 				}
 
 				if (StringUtils.isNotEmpty(name)) {
 					if (matchMode != null) {
-						criteria.add(Restrictions.ilike("name",
-								name, matchMode));
+						criteria.add(Restrictions.ilike("name", name, matchMode));
 					} else {
-						criteria.add(Restrictions.eq("name",
-								name));
+						criteria.add(Restrictions.eq("name", name));
 					}
 				}
 			}
 
-			if (organization.getOrganizationType() != null
-					&& StringUtils.isNotBlank(organization
-							.getOrganizationType().getId())) {
-				criteria.add(Restrictions.eq("organizationType.id",
-						organization.getOrganizationType().getId()));
+			if (organization.getOrganizationType() != null && StringUtils.isNotBlank(organization.getOrganizationType().getId())) {
+				criteria.add(Restrictions.eq("organizationType.id", organization.getOrganizationType().getId()));
 			}
 
 			if (StringUtils.isNotBlank(organization.getInternalOrgId())) {
-				criteria.add(Restrictions.eq("internalOrgId",
-						organization.getInternalOrgId()));
+				criteria.add(Restrictions.eq("internalOrgId", organization.getInternalOrgId()));
+			}
+			
+			if(organization.getAdminResource() != null && StringUtils.isNotBlank(organization.getAdminResource().getResourceId())) {
+				criteria.add(Restrictions.eq("adminResource.resourceId", organization.getAdminResource().getResourceId()));
 			}
 		}
 		criteria.addOrder(Order.asc("name"));

@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.dozer.converter.OrganizationDozerConverter;
@@ -17,6 +18,8 @@ import org.openiam.idm.srvc.meta.service.MetadataElementDAO;
 import org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.dto.Organization;
+import org.openiam.idm.srvc.res.domain.ResourceEntity;
+import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
 import org.openiam.idm.srvc.role.domain.RoleAttributeEntity;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
@@ -25,6 +28,7 @@ import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.srvc.user.util.DelegationFilterHelper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -55,6 +59,12 @@ public class OrganizationServiceImpl implements OrganizationService {
     
     @Autowired
     private MetadataElementDAO metadataElementDAO;
+    
+	@Value("${org.openiam.resource.system.action.id}")
+	private String systemActionId;
+	
+	@Autowired
+    private ResourceTypeDAO resourceTypeDao;
 
     @Override
     public OrganizationEntity getOrganization(String orgId) {
@@ -176,12 +186,24 @@ public class OrganizationServiceImpl implements OrganizationService {
                 entity.setChildOrganizations(dbOrg.getChildOrganizations());
                 entity.setParentOrganizations(dbOrg.getParentOrganizations());
                 entity.setUsers(dbOrg.getUsers());
+                entity.setAdminResource(dbOrg.getAdminResource());
+                if(entity.getAdminResource() == null) {
+                	entity.setAdminResource(getNewAdminResource(entity));
+                }
                 orgDao.merge(entity);
             }
         } else {
+        	entity.setAdminResource(getNewAdminResource(entity));
             orgDao.save(entity);
         }
     }
+    
+    private ResourceEntity getNewAdminResource(final OrganizationEntity entity) {
+		final ResourceEntity adminResource = new ResourceEntity();
+		adminResource.setName(String.format("ORG_ADMIN_%s_%s", entity.getName(), RandomStringUtils.randomAlphanumeric(2)));
+		adminResource.setResourceType(resourceTypeDao.findById(systemActionId));
+		return adminResource;
+	}
     
     private void mergeAttributes(final OrganizationEntity bean, final OrganizationEntity dbObject) {
 		

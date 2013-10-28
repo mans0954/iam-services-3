@@ -50,7 +50,9 @@ import org.openiam.idm.srvc.user.dto.User;
         "selected",
         "operation",
         "parentOrganizations",
-        "childOrganizations"
+        "childOrganizations",
+        "adminResourceId",
+        "adminResourceName"
 })
 @DozerDTOCorrespondence(OrganizationEntity.class)
 public class Organization implements java.io.Serializable, Comparable<Organization> {
@@ -99,6 +101,11 @@ public class Organization implements java.io.Serializable, Comparable<Organizati
 
     private Set<Organization> parentOrganizations;
     private Set<Organization> childOrganizations;
+    
+    private String adminResourceId;
+    private String adminResourceName;
+    
+    
     /**
      * default constructor
      */
@@ -383,6 +390,22 @@ public class Organization implements java.io.Serializable, Comparable<Organizati
 
 	public void setOrganizationTypeName(String organizationTypeName) {
 		this.organizationTypeName = organizationTypeName;
+	}
+	
+	 public String getAdminResourceId() {
+		return adminResourceId;
+	}
+
+	public void setAdminResourceId(String adminResourceId) {
+		this.adminResourceId = adminResourceId;
+	}
+
+	public String getAdminResourceName() {
+		return adminResourceName;
+	}
+
+	public void setAdminResourceName(String adminResourceName) {
+		this.adminResourceName = adminResourceName;
 	}
 
     @Override
