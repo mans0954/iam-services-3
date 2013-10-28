@@ -23,10 +23,13 @@ import org.openiam.connector.type.request.PasswordRequest;
 import org.openiam.connector.type.response.ObjectResponse;
 import org.openiam.connector.type.response.ResponseType;
 import org.openiam.connector.type.response.SearchResponse;
+import org.openiam.core.domain.UserKey;
 import org.openiam.dozer.converter.*;
 import org.openiam.exception.EncryptionException;
 import org.openiam.exception.ObjectNotFoundException;
 import org.openiam.exception.ScriptEngineException;
+import org.openiam.idm.srvc.audit.service.AuditLogProvider;
+import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
@@ -124,7 +127,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
     public static final String IDENTITY_EXIST = "EXIST";
 
     @Value("${org.openiam.idm.system.user.id}")
-    private String systemUserId;
+    protected String systemUserId;
     @Autowired
     @Qualifier("cryptor")
     private Cryptor cryptor;
@@ -207,6 +210,10 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
     protected AttributeMapDozerConverter attributeMapDozerConverter;
     @Autowired
     protected ProvisionQueueService provQueueService;
+    @Autowired
+    protected AuditLogProvider auditLogProvider;
+    @Autowired
+    protected AuditLogService auditLogService;
 
     protected void checkAuditingAttributes(ProvisionUser pUser) {
         if ( pUser.getRequestClientIP() == null || pUser.getRequestClientIP().isEmpty() ) {
@@ -221,16 +228,6 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         if ( pUser.getCreatedBy() == null || pUser.getCreatedBy().isEmpty() ) {
             pUser.setCreatedBy("NA");
         }
-    }
-
-    protected boolean callConnector(Login mLg, String requestId, ManagedSysDto mSys,
-                                    ManagedSystemObjectMatch matchObj, ExtensibleUser extUser,
-                                    ProvisionConnectorDto connector,
-                                    ProvisionUser user) {
-
-
-            return add(mLg, requestId, mSys, matchObj, extUser);
-
     }
 
     protected String getDecryptedPassword(ManagedSysDto managedSys) throws ConnectorDataException {
@@ -337,8 +334,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
     }
 
     protected Login buildPrimaryPrincipal(Map<String, Object> bindingMap, ScriptIntegration se) {
-
-        List<AttributeMapEntity> amEList = managedSystemService.getResourceAttributeMaps(sysConfiguration.getDefaultManagedSysId()); // TODO: managedSysId confused with resourceId??
+        ManagedSysEntity defaultManagedSys = managedSystemService.getManagedSysById(sysConfiguration.getDefaultManagedSysId());
+        List<AttributeMapEntity> amEList = managedSystemService.getResourceAttributeMaps(defaultManagedSys.getResourceId());
         List<AttributeMap> policyAttrMap = (amEList == null) ? null : attributeMapDozerConverter.convertToDTOList(amEList, true);
 
         log.debug("Building primary identity. ");
@@ -348,7 +345,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
             log.debug("- policyAttrMap IS NOT null");
 
             Login primaryIdentity = new Login();
-
+            primaryIdentity.setOperation(AttributeOperationEnum.ADD);
             // init values
             primaryIdentity.setDomainId(sysConfiguration.getDefaultSecurityDomain());
             primaryIdentity.setManagedSysId(sysConfiguration.getDefaultManagedSysId());
@@ -385,7 +382,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
     }
 
     protected String parseUserPrincipal(List<ExtensibleAttribute> extensibleAttributes) {
-        List<AttributeMapEntity> amEList = managedSystemService.getResourceAttributeMaps(sysConfiguration.getDefaultManagedSysId()); // TODO: managedSysId confused with resourceId??
+        ManagedSysEntity defaultManagedSys = managedSystemService.getManagedSysById(sysConfiguration.getDefaultManagedSysId());
+        List<AttributeMapEntity> amEList = managedSystemService.getResourceAttributeMaps(defaultManagedSys.getResourceId());
         List<AttributeMap> policyAttrMap = (amEList == null) ? null : attributeMapDozerConverter.convertToDTOList(amEList, true);
         String principalAttributeName = null;
         for (AttributeMap attr : policyAttrMap) {
@@ -412,8 +410,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
     protected void buildPrimaryIDPassword(Login primaryIdentity, Map<String, Object> bindingMap,
                                                  ScriptIntegration se) {
         log.debug("setPrimaryIDPassword() ");
-
-        List<AttributeMapEntity> amEList = managedSystemService.getResourceAttributeMaps(sysConfiguration.getDefaultManagedSysId()); // TODO: managedSysId confused with resourceId??
+        ManagedSysEntity defaultManagedSys = managedSystemService.getManagedSysById(sysConfiguration.getDefaultManagedSysId());
+        List<AttributeMapEntity> amEList = managedSystemService.getResourceAttributeMaps(defaultManagedSys.getResourceId());
         List<AttributeMap> policyAttrMap = (amEList == null) ? null : attributeMapDozerConverter.convertToDTOList(amEList, true);
         if (policyAttrMap != null) {
             log.debug("- policyAttrMap IS NOT null");
@@ -920,8 +918,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     LoginEntity entity = loginDozerConverter.convertToEntity(e, false);
                     try {
                         entity.setUserId(userEntity.getUserId());
-                        entity.setPassword(loginManager.encryptPassword(userEntity.getUserId(), e.getPassword()));
                         userEntity.getPrincipalList().add(entity);
+                        entity.setPassword(loginManager.encryptPassword(userEntity.getUserId(), e.getPassword()));
                     } catch (EncryptionException ee) {
                         log.error(ee);
                         ee.printStackTrace();
@@ -1057,15 +1055,6 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
 
         ObjectResponse resp = connectorAdapter.addRequest(mSys, userReq, MuleContextProvider.getCtx());
 
-            /*auditHelper.addLog("ADD IDENTITY", user.getRequestorDomain(), user.getRequestorLogin(),
-                "IDM SERVICE", user.getCreatedBy(), mLg.getManagedSysId(),
-                "USER", user.getUserId(),
-                idmAuditLog.getLogId(), resp.getStatus().toString(), idmAuditLog.getLogId(), "IDENTITY_STATUS",
-                "SUCCESS",
-                requestId, resp.getErrorCodeAsStr(), user.getSessionId(), resp.getErrorMsgAsStr(),
-                user.getRequestorLogin(), mLg.getLogin(), mLg.getDomainId());*/
-
-
         return resp.getStatus() != StatusCodeType.FAILURE;
     }
 
@@ -1097,19 +1086,11 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         request.setScriptHandler(mSys.getDeleteHandler());
 
         ObjectResponse resp = connectorAdapter.deleteRequest(mSys, request, MuleContextProvider.getCtx());
-        /*
-        auditHelper.addLog("DELETE IDENTITY", auditLog.getDomainId(), auditLog.getPrincipal(),
-                "IDM SERVICE", user.getCreatedBy(), mLg.getManagedSysId(),
-                "IDENTITY", user.getUserId(),
-                auditLog.getLogId(), resp.getStatus().toString(), auditLog.getLogId(), "IDENTITY_STATUS",
-                "DELETED",
-                requestId, resp.getErrorCodeAsStr(), user.getSessionId(), resp.getErrorMsgAsStr(),
-                user.getRequestClientIP(), mLg.getLogin(), mLg.getDomainId());
-		*/
+
         return resp;
     }
 
-    protected void resetPassword(String requestId, Login login,
+    protected ResponseType resetPassword(String requestId, Login login,
             String password, ManagedSysDto mSys,
             ManagedSystemObjectMatch matchObj) {
 
@@ -1132,14 +1113,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
 
         req.setScriptHandler(mSys.getPasswordHandler());
 
-        ResponseType respType = connectorAdapter.resetPasswordRequest(mSys, req, MuleContextProvider.getCtx());
-        /*
-        auditHelper.addLog("RESET PASSWORD IDENTITY", passwordSync.getRequestorDomain(), passwordSync.getRequestorLogin(),
-                "IDM SERVICE", null, mSys.getManagedSysId(), "PASSWORD", null, null, respType.getStatus().toString(), "NA", null,
-                null,
-                requestId, respType.getErrorCodeAsStr(), null, respType.getErrorMsgAsStr(),
-                passwordSync.getRequestClientIP(), login.getLogin(), login.getDomainId());
-		*/
+        return connectorAdapter.resetPasswordRequest(mSys, req, MuleContextProvider.getCtx());
+
     }
     
     protected ResponseType setPassword(String requestId, Login login,
@@ -1167,13 +1142,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         ResponseType respType = connectorAdapter.setPasswordRequest(mSys, req, MuleContextProvider.getCtx());
 
         req.setScriptHandler(mSys.getPasswordHandler());
-        /*
-        auditHelper.addLog("SET PASSWORD IDENTITY", passwordSync.getRequestorDomain(), passwordSync.getRequestorLogin(),
-                "IDM SERVICE", null, "PASSWORD", "PASSWORD", null, null, respType.getStatus().toString(), "NA", null,
-                null,
-                requestId, respType.getErrorCodeAsStr(), null, respType.getErrorMsgAsStr(),
-                passwordSync.getRequestClientIP(), login.getLogin(), login.getDomainId());
-		*/
+
         return respType;
 
     }
@@ -1201,33 +1170,11 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     loginDozerConverter.convertToEntity(
                             primaryLogin, true), passwordPolicy);
             if (valCode == null || !valCode.isSuccess()) {
-            	/*
-                auditHelper.addLog("CREATE", user.getRequestorDomain(),
-                        user.getRequestorLogin(), "IDM SERVICE",
-                        user.getCreatedBy(), "0", "USER", user.getUserId(),
-                        null, "FAIL", null, "USER_STATUS", user.getUser()
-                        .getStatus().toString(), requestId,
-                        ResponseCode.FAIL_DECRYPTION.toString(),
-                        user.getSessionId(), "Password validation failed",
-                        user.getRequestClientIP(), primaryLogin.getLogin(),
-                        primaryLogin.getDomainId());
-				*/
                 resp.setStatus(ResponseStatus.FAILURE);
                 resp.setErrorCode(ResponseCode.FAIL_NEQ_PASSWORD);
                 return resp;
             }
         } catch (ObjectNotFoundException e) {
-        	/*
-            auditHelper.addLog("CREATE", user.getRequestorDomain(),
-                    user.getRequestorLogin(), "IDM SERVICE",
-                    user.getCreatedBy(), "0", "USER", user.getUserId(),
-                    null, "FAIL", null, "USER_STATUS", user.getUser()
-                    .getStatus().toString(), requestId,
-                    ResponseCode.FAIL_DECRYPTION.toString(),
-                    user.getSessionId(), e.toString(),
-                    user.getRequestClientIP(), primaryLogin.getLogin(),
-                    primaryLogin.getDomainId());
-			*/
             resp.setStatus(ResponseStatus.FAILURE);
             resp.setErrorCode(ResponseCode.FAIL_NEQ_PASSWORD);
             return resp;

@@ -223,9 +223,7 @@ public class UserEntity {
     @Fetch(FetchMode.SUBSELECT)
     private List<LoginEntity> principalList = new LinkedList<LoginEntity>();
 
-    @OneToMany(cascade=CascadeType.ALL,fetch=FetchType.LAZY)
-    @JoinColumn(name="USER_ID", referencedColumnName="USER_ID")
-    @Fetch(FetchMode.SUBSELECT)
+    @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "user", fetch = FetchType.LAZY)
     protected Set<UserKey> userKeys = new HashSet<UserKey>(0);
 
     @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)

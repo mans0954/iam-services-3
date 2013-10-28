@@ -145,15 +145,6 @@ public interface ProvisionService {
             @WebParam(name = "passwordSync", targetNamespace = "") PasswordSync passwordSync);
 
     /**
-     * Synchronization password with target resources.
-     *
-     * @param passwordSync - PasswordSync
-     * @return Response
-     */
-    public Response syncPasswordFromSrc(
-            @WebParam(name = "passwordSync", targetNamespace = "") PasswordSync passwordSync);
-
-    /**
      * Reset password in target systems
      *
      * @param passwordSync

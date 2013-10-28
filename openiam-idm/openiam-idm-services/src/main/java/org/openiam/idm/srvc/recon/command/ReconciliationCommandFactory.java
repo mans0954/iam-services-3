@@ -1,50 +1,49 @@
 package org.openiam.idm.srvc.recon.command;
 
 import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
-import org.openiam.idm.srvc.mngsys.ws.ProvisionConnectorWebService;
 import org.openiam.idm.srvc.recon.dto.ReconciliationSituation;
 import org.openiam.idm.srvc.recon.service.ReconciliationCommand;
+import org.openiam.idm.srvc.recon.service.ReconciliationSituationResponseOptions;
 import org.openiam.provision.service.ConnectorAdapter;
 import org.openiam.provision.service.ProvisionService;
+import org.openiam.script.ScriptIntegration;
 import org.openiam.util.MuleContextProvider;
 import org.openiam.util.SpringContextProvider;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
-/**
- * Created with IntelliJ IDEA.
- * User: Pascal
- * Date: 27.04.12
- * Time: 15:54
- * To change this template use File | Settings | File Templates.
- */
 @Component("reconciliationFactory")
 public class ReconciliationCommandFactory {
+    @Autowired
+    @Qualifier("configurableGroovyScriptEngine")
+    protected ScriptIntegration scriptRunner;
 
     public ReconciliationCommand createCommand(String name, ReconciliationSituation config, String managedSysId) {
         ReconciliationCommand reconCommand = null;
         ApplicationContext applicationContext = SpringContextProvider.getApplicationContext();
-        if(name.equalsIgnoreCase("NOTHING")){
+        if(name.equalsIgnoreCase(ReconciliationSituationResponseOptions.NOTHING.name())){
             reconCommand = new DoNothingCommand();
-        } else if(name.equalsIgnoreCase("DEL_RES_ACCOUNT")){
+        } else if(name.equalsIgnoreCase(ReconciliationSituationResponseOptions.DELETE_FROM_RES.name())){
             reconCommand = new DeleteResourceAccountCommand((ProvisionService) applicationContext.getBean("defaultProvision"),
                     (ManagedSystemWebService)applicationContext.getBean("managedSysService"),
-                    (ProvisionConnectorWebService)applicationContext.getBean("provisionConnectorWebService"),
+                    (ProvisionConnectorWebService)applicationContext.getBean("connectorService"),
                      MuleContextProvider.getCtx(),
                     managedSysId,
                     (ConnectorAdapter)applicationContext.getBean("connectorAdapter"));
-        } else if(name.equalsIgnoreCase("DEL_IDM_ACCOUNT")){
-            reconCommand = new DeleteIdmAccountCommand((ProvisionService) applicationContext.getBean("defaultProvision"));
-        } else if(name.equalsIgnoreCase("DEL_IDM_USER")){
-            reconCommand = new DeleteIdmUserCommand((ProvisionService) applicationContext.getBean("defaultProvision"));
-        } else if(name.equalsIgnoreCase("DEL_IDM_USER-NOT_TARGET")){
+        } else if(name.equalsIgnoreCase(ReconciliationSituationResponseOptions.DISABLE_IN_IDM.name())){
+            reconCommand = new DisableIdmAccountCommand((ProvisionService) applicationContext.getBean("defaultProvision"));
+        } else if(name.equalsIgnoreCase(ReconciliationSituationResponseOptions.REMOVE_FROM_IDM.name())){
+            reconCommand = new RemoveIdmUserCommand((ProvisionService) applicationContext.getBean("defaultProvision"));
+        } else if(name.equalsIgnoreCase(ReconciliationSituationResponseOptions.DELETE_FROM_IDM.name())){
             reconCommand = new DeleteIdmUserExcludeTargetCommand((ProvisionService) applicationContext.getBean("defaultProvision"));
-        } else if(name.equalsIgnoreCase("CREATE_RES_ACCOUNT")){
+        } else if(name.equalsIgnoreCase(ReconciliationSituationResponseOptions.ADD_TO_RES.name())){
             reconCommand = new CreateResourceAccountCommand((ProvisionService) applicationContext.getBean("defaultProvision"));
-        } else if(name.equalsIgnoreCase("CREATE_IDM_ACCOUNT")){
-            reconCommand = new CreateIdmAccountCommand((ProvisionService) applicationContext.getBean("defaultProvision"), config);
-        } else if(name.equalsIgnoreCase("UPD_IDM_USER")){
-            reconCommand = new UpdateIdmUserCommand((ProvisionService) applicationContext.getBean("defaultProvision"), config);
+        } else if(name.equalsIgnoreCase(ReconciliationSituationResponseOptions.ADD_TO_IDM.name())){
+            reconCommand = new CreateIdmAccountCommand((ProvisionService) applicationContext.getBean("defaultProvision"), config, scriptRunner);
+        } else if(name.equalsIgnoreCase(ReconciliationSituationResponseOptions.UPDATE_IDM_FROM_RES.name())){
+            reconCommand = new UpdateIdmUserCommand((ProvisionService) applicationContext.getBean("defaultProvision"), config, scriptRunner);
         }
         return reconCommand;
     }

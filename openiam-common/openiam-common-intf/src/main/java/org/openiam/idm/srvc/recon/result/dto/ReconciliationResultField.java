@@ -18,7 +18,7 @@ public class ReconciliationResultField implements java.io.Serializable {
      * 
      */
     private static final long serialVersionUID = 1L;
-    List<String> values = new ArrayList<String>();
+    private List<String> values = new ArrayList<String>();
     private boolean keyField;
 
     public boolean isKeyField() {

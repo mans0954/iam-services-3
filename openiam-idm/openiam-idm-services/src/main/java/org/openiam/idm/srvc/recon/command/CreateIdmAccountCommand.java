@@ -2,6 +2,7 @@ package org.openiam.idm.srvc.recon.command;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.recon.dto.ReconciliationSituation;
@@ -34,13 +35,12 @@ public class CreateIdmAccountCommand implements ReconciliationCommand {
     private ReconciliationSituation config;
     private static final Log log = LogFactory.getLog(CreateIdmAccountCommand.class);
     
-    @Autowired
-    @Qualifier("configurableGroovyScriptEngine")
-    private ScriptIntegration scriptRunner;
+    private final ScriptIntegration scriptRunner;
 
-    public CreateIdmAccountCommand(ProvisionService provisionService, ReconciliationSituation config) {
+    public CreateIdmAccountCommand(ProvisionService provisionService, ReconciliationSituation config, ScriptIntegration scriptRunner) {
         this.provisionService = provisionService;
         this.config = config;
+        this.scriptRunner = scriptRunner;
     }
 
     public boolean execute(Login login, User user, List<ExtensibleAttribute> attributes)  {
@@ -54,30 +54,35 @@ public class CreateIdmAccountCommand implements ReconciliationCommand {
             }
             try {
                 PopulationScript script = (PopulationScript)scriptRunner.instantiateClass(null, config.getScript());
-                ProvisionUser pUser = new ProvisionUser();
+                ProvisionUser pUser = new ProvisionUser(user);
                 int retval = script.execute(line, pUser);
                 if(retval == 0){
                     if(login != null) {
-                        List<Login> pList = new ArrayList<Login>();
-                        pList.add(login);
-                        login.setManagedSysId("0");
-                        pUser.setPrincipalList(pList);
+                        Login primaryLogin = new Login();
+                        primaryLogin.setOperation(AttributeOperationEnum.ADD);
+                        primaryLogin.setDomainId(login.getDomainId());
+                        primaryLogin.setLogin(login.getLogin());
+                        primaryLogin.setManagedSysId("0");
+                        primaryLogin.setOperation(AttributeOperationEnum.ADD);
+                        pUser.getPrincipalList().add(primaryLogin);
+
+                        pUser.setSrcSystemId(login.getManagedSysId());
                     }
+
                     provisionService.addUser(pUser);
-                    //provisionService.modifyUser(pUser);
                 }else{
                     log.debug("Couldn't populate ProvisionUser. User not added");
                     return false;
                 }
                 return true;
             } catch (ClassNotFoundException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                e.printStackTrace();
             } catch (IOException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                e.printStackTrace();
             } catch (Exception e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                e.printStackTrace();
             }
         }
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
+        return false;
     }
 }

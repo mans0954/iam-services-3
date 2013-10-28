@@ -7,9 +7,7 @@ import org.openiam.base.AttributeOperationEnum;
 import org.openiam.connector.type.request.CrudRequest;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
-import org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorDto;
 import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
-import org.openiam.idm.srvc.mngsys.ws.ProvisionConnectorWebService;
 import org.openiam.idm.srvc.recon.service.ReconciliationCommand;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.provision.dto.ProvisionUser;
@@ -20,31 +18,21 @@ import org.openiam.provision.type.ExtensibleUser;
 
 import java.util.List;
 
-/**
- * Created with IntelliJ IDEA.
- * User: Pascal
- * Date: 27.04.12
- * Time: 15:44
- * To change this template use File | Settings | File Templates.
- */
 public class DeleteResourceAccountCommand implements ReconciliationCommand {
     private ProvisionService provisionService;
     private static final Log log = LogFactory.getLog(DeleteResourceAccountCommand.class);
     private ManagedSystemWebService managedSysService;
-    private ProvisionConnectorWebService connectorService;
     private MuleContext muleContext;
     private String managedSysId;
     private ConnectorAdapter connectorAdapter;
 
     public DeleteResourceAccountCommand(ProvisionService provisionService,
                                         ManagedSystemWebService managedSysService,
-                                        ProvisionConnectorWebService connectorService,
                                         MuleContext muleContext,
                                         String managedSysId,
                                         ConnectorAdapter connectorAdapter) {
         this.provisionService = provisionService;
         this.managedSysService = managedSysService;
-        this.connectorService = connectorService;
         this.muleContext = muleContext;
         this.managedSysId = managedSysId;
         this.connectorAdapter = connectorAdapter;
@@ -78,7 +66,7 @@ public class DeleteResourceAccountCommand implements ReconciliationCommand {
 
         ProvisionUser pUser = new ProvisionUser(user);
         pUser.setPrincipalList(principleList);
-
+        pUser.setSrcSystemId(login.getManagedSysId());
         provisionService.modifyUser(pUser);
         return false;
     }
