@@ -1331,8 +1331,8 @@ public class UserMgr implements UserDataService {
         id.setSupervisorId(supervisorId);
         id.setEmployeeId(employeeId);
 
-        final SupervisorEntity entity = supervisorDao.findById(id);
-        supervisorDao.delete(entity);
+//        final SupervisorEntity entity = supervisorDao.findById(id);
+        supervisorDao.deleteById(id);
     }
 
     // @Override
