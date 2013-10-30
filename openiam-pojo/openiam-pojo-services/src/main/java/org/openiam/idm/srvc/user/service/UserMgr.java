@@ -1295,8 +1295,14 @@ public class UserMgr implements UserDataService {
     @Override
     @Transactional
     public void addSuperior(String supervisorId, String subordinateId) {
-        UserEntity supervisor = getUser(supervisorId, subordinateId);
-        UserEntity subordinate = getUser(subordinateId, supervisorId);
+        UserEntity supervisor = getUser(supervisorId, null);
+        UserEntity subordinate = getUser(subordinateId, null);
+        if (supervisor == null) {
+           throw new NullPointerException("supervisor is null");
+        }
+        if (subordinate == null) {
+           throw new NullPointerException("subordinate is null");
+        }
         addSupervisor(new SupervisorEntity(supervisor, subordinate));
     }
 
