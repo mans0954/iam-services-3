@@ -59,17 +59,6 @@ public class ProvisionRequestDAOImpl extends BaseDaoImpl<ProvisionRequestEntity,
 		return criteria;
 	}
 
-
-
-	public List<ProvisionRequestEntity> findRequestByApprover(String approverId, String status) {
-		final ProvisionRequestEntity example = new ProvisionRequestEntity();
-		final RequestApproverEntity approver = new RequestApproverEntity();
-		approver.setApproverId(approverId);
-		example.addRequestApprover(approver);
-		example.setStatus(status);
-		return getByExample(example);	
-	}
-
 	@Override
 	protected String getPKfieldName() {
 		return "id";

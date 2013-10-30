@@ -4,6 +4,8 @@ import java.util.List;
 
 import org.openiam.am.srvc.domain.AuthProviderEntity;
 import org.openiam.idm.searchbeans.AttributeMapSearchBean;
+import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
+import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.DefaultReconciliationAttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
@@ -79,4 +81,6 @@ public interface ManagedSystemService {
     void deleteManagedSystemObjectMatch(String objectMatchId);
 
     List<AuthProviderEntity> findAuthProvidersByManagedSysId(String managedSysId);
+    
+    public void saveApproverAssociations(final List<ApproverAssociationEntity> entityList, final AssociationType type, final String id);
 }

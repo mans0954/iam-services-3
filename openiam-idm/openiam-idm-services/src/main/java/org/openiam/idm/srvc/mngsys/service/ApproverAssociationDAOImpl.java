@@ -12,6 +12,7 @@ import org.hibernate.LockMode;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
 import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
@@ -61,6 +62,7 @@ public class ApproverAssociationDAOImpl extends BaseDaoImpl<ApproverAssociationE
 			if(entity.getApproverLevel() != null) {
 				criteria.add(Restrictions.eq("approverLevel", entity.getApproverLevel()));
 			}
+			criteria.addOrder(Order.asc("approverLevel"));
 		}
 		return criteria;
 	}

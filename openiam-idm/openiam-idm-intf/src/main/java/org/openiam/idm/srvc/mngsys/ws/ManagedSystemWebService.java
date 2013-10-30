@@ -8,6 +8,7 @@ import javax.jws.WebService;
 
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.AttributeMapSearchBean;
+import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 import org.openiam.idm.srvc.mngsys.dto.*;
 
 /**
@@ -110,17 +111,6 @@ public interface ManagedSystemWebService {
             @WebParam(name = "obj", targetNamespace = "") ManagedSystemObjectMatch obj);
 
     /**
-     * Gets the approver association.
-     * 
-     * @param approverAssociationId
-     *            the approver association id
-     * @return the approver association
-     */
-    @WebMethod
-    ApproverAssociation getApproverAssociation(
-            @WebParam(name = "approverAssociationId", targetNamespace = "") String approverAssociationId);
-
-    /**
      * Removes the approver association.
      * 
      * @param approverAssociationId
@@ -210,6 +200,9 @@ public interface ManagedSystemWebService {
     @WebMethod
     List<DefaultReconciliationAttributeMap> getAllDefaultReconcileMap();
 
+    @WebMethod
+    public Response saveApproverAssociations(final List<ApproverAssociation> approverAssociationList);
+    
     @WebMethod
     public Response saveApproverAssociation(
             final @WebParam(name = "approverAssociation", targetNamespace = "") ApproverAssociation approverAssociation);
