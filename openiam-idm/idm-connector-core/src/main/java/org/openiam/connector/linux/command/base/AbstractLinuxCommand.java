@@ -2,6 +2,7 @@ package org.openiam.connector.linux.command.base;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 
 import org.apache.solr.update.processor.MD5Signature;
 import org.bouncycastle.jcajce.provider.asymmetric.rsa.ISOSignatureSpi.MD5WithRSAEncryption;
@@ -16,7 +17,9 @@ import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.connector.type.constant.ErrorCode;
 import org.openiam.connector.type.request.RequestType;
 import org.openiam.connector.type.response.ResponseType;
+import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
+import org.openiam.idm.srvc.mngsys.dto.PolicyMapObjectTypeOptions;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
 import org.springframework.beans.factory.annotation.Value;
@@ -41,6 +44,19 @@ public abstract class AbstractLinuxCommand<Request extends RequestType, Response
             throws ConnectorDataException {
         log.debug("Getting SSH for managed sys with id=" + targetId);
         return getSSHAgent(managedSysService.getManagedSysById(targetId));
+    }
+
+    protected String getKeyField(String mSysId) {
+        List<AttributeMapEntity> attrMapList = managedSysService
+                .getAttributeMapsByManagedSysId(mSysId);
+        String key = "";
+        for (AttributeMapEntity attrMap : attrMapList) {
+            if (PolicyMapObjectTypeOptions.PRINCIPAL.name().equalsIgnoreCase(
+                    attrMap.getMapForObjectType())) {
+                key = attrMap.getAttributeName();
+            }
+        }
+        return key;
     }
 
     protected SSHAgent getSSHAgent(ManagedSysEntity managedSys)

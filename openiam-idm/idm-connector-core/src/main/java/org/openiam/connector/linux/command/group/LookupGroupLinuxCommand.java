@@ -5,6 +5,7 @@ import org.openiam.connector.linux.data.LinuxGroup;
 import org.openiam.connector.linux.ssh.SSHAgent;
 import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.connector.type.constant.ErrorCode;
+import org.openiam.connector.type.response.SearchResponse;
 import org.openiam.provision.type.ExtensibleUser;
 import org.springframework.stereotype.Service;
 
@@ -13,7 +14,8 @@ public class LookupGroupLinuxCommand extends
         AbstractLookupLinuxCommand<ExtensibleUser> {
 
     @Override
-    protected boolean lookupObject(String id, SSHAgent ssh)
+    protected boolean lookupObject(String id, SSHAgent ssh,
+            SearchResponse responseType, String mSysId)
             throws ConnectorDataException {
         LinuxGroup group = objectToLinuxGroup(id);
         if (group != null) {
