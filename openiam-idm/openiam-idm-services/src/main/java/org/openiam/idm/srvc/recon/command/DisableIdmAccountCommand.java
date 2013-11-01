@@ -4,11 +4,11 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.idm.srvc.auth.dto.Login;
+import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
 import org.openiam.idm.srvc.recon.dto.ReconciliationSituation;
 import org.openiam.idm.srvc.recon.service.PopulationScript;
 import org.openiam.idm.srvc.recon.service.ReconciliationCommand;
 import org.openiam.idm.srvc.user.dto.User;
-import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.resp.ProvisionUserResponse;
 import org.openiam.provision.service.AbstractProvisioningService;
@@ -21,23 +21,32 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class DeleteIdmUserExcludeTargetCommand implements ReconciliationCommand {
+public class DisableIdmAccountCommand implements ReconciliationCommand {
     private ProvisionService provisionService;
-    private static final Log log = LogFactory.getLog(DeleteIdmUserExcludeTargetCommand.class);
+    private static final Log log = LogFactory.getLog(DisableIdmAccountCommand.class);
     private final ReconciliationSituation config;
 
     private final ScriptIntegration scriptRunner;
 
-    public DeleteIdmUserExcludeTargetCommand(ProvisionService provisionService, ReconciliationSituation config, ScriptIntegration scriptRunner) {
+    public DisableIdmAccountCommand(ProvisionService provisionService,
+                                    ReconciliationSituation config,
+                                    ScriptIntegration scriptRunner) {
         this.provisionService = provisionService;
         this.scriptRunner = scriptRunner;
         this.config = config;
     }
 
     public boolean execute(Login login, User user, List<ExtensibleAttribute> attributes) {
-        log.debug("Entering DeleteIdmUserExcludeTargetCommand");
-        log.debug("Delete  user :" + login.getUserId());
+        List<Login> principleList = user.getPrincipalList();
+        for(Login l : principleList){
+            if(l.getLoginId().equals(login.getLoginId())){
+                l.setStatus(LoginStatusEnum.INACTIVE);
+                break;
+            }
+        }
+
         ProvisionUser pUser = new ProvisionUser(user);
+        pUser.setPrincipalList(principleList);
         pUser.setSrcSystemId(login.getManagedSysId());
         if(StringUtils.isNotEmpty(config.getScript())){
             try {
@@ -55,7 +64,7 @@ public class DeleteIdmUserExcludeTargetCommand implements ReconciliationCommand 
                 e.printStackTrace();
             }
         }
-        ProvisionUserResponse response = provisionService.deleteByUserId(login.getUserId(), UserStatusEnum.DELETED, "3000");
+        ProvisionUserResponse response = provisionService.modifyUser(pUser);
         return response.isSuccess();
     }
 }

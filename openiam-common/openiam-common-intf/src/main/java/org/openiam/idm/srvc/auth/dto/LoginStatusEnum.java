@@ -21,6 +21,10 @@ public enum LoginStatusEnum {
     PENDING_UPDATE("PENDING_UPDATE"),
     @XmlEnumValue("Fail create")
     FAIL_CREATE("FAIL_CREATE"),
+    @XmlEnumValue("Fail delete")
+    FAIL_DELETE("FAIL_DELETE"),
+    @XmlEnumValue("Fail remove")
+    FAIL_REMOVE("FAIL_REMOVE"),
     @XmlEnumValue("Fail update")
     FAIL_UPDATE("FAIL_UPDATE");
 

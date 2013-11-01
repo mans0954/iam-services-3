@@ -21,19 +21,14 @@
  */
 package org.openiam.idm.srvc.recon.service;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.id.UUIDGen;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.connector.type.ObjectValue;
@@ -85,6 +80,7 @@ import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.srvc.user.util.UserUtils;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.resp.LookupUserResponse;
+import org.openiam.provision.service.AbstractProvisioningService;
 import org.openiam.provision.service.ConnectorAdapter;
 import org.openiam.provision.service.ProvisionService;
 import org.openiam.provision.type.ExtensibleAttribute;
@@ -161,9 +157,9 @@ public class ReconciliationServiceImpl implements ReconciliationService {
         if (config == null) {
             throw new IllegalArgumentException("config parameter is null");
         }
-        List<ReconciliationSituation> sitSet = null;
+        Set<ReconciliationSituation> sitSet = null;
         if (!CollectionUtils.isEmpty(config.getSituationSet())) {
-            sitSet = new ArrayList<ReconciliationSituation>(
+            sitSet = new HashSet<ReconciliationSituation>(
                     config.getSituationSet());
         }
         config.setReconConfigId(null);
@@ -176,7 +172,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
     }
 
     @Transactional
-    private void saveSituationSet(List<ReconciliationSituation> sitSet,
+    private void saveSituationSet(Set<ReconciliationSituation> sitSet,
             String configId) {
         if (sitSet != null) {
             for (ReconciliationSituation s : sitSet) {
@@ -201,9 +197,9 @@ public class ReconciliationServiceImpl implements ReconciliationService {
         if (config == null) {
             throw new IllegalArgumentException("config parameter is null");
         }
-        List<ReconciliationSituation> sitSet = null;
+        Set<ReconciliationSituation> sitSet = null;
         if (!CollectionUtils.isEmpty(config.getSituationSet())) {
-            sitSet = new ArrayList<ReconciliationSituation>(
+            sitSet = new HashSet<ReconciliationSituation>(
                     config.getSituationSet());
         }
         config.setSituationSet(null);
@@ -268,7 +264,6 @@ public class ReconciliationServiceImpl implements ReconciliationService {
             // have resource
             Resource res = resourceDataService.getResource(config
                     .getResourceId());
-            //String managedSysId = res.getManagedSysId();
 
             ManagedSysEntity mSys = managedSysService.getManagedSysByResource(res.getResourceId(), "ACTIVE");
             String managedSysId = (mSys != null) ? mSys.getManagedSysId() : null;
@@ -286,12 +281,11 @@ public class ReconciliationServiceImpl implements ReconciliationService {
             ProvisionConnectorDto connector = connectorService
                     .getProvisionConnector(mSys.getConnectorId());
 
-            // TODO check IF managed system is CSV, because we don't need to do
-            // reconciliation into TargetSystem directional
-            ManagedSysDto managedSysDto = managedSysDozerConverter
-                    .convertToDTO(mSys, true);
             if (connector.getServiceUrl().contains("CSV")) {
                 // Get user without fetches
+                // reconciliation into TargetSystem directional
+                ManagedSysDto managedSysDto = managedSysDozerConverter
+                        .convertToDTO(mSys, true);
                 log.debug("Start recon");
                 connectorAdapter.reconcileResource(managedSysDto, config,
                         MuleContextProvider.getCtx());
@@ -353,14 +347,17 @@ public class ReconciliationServiceImpl implements ReconciliationService {
             Map<String, ReconciliationCommand> situations,
             ProvisionConnectorDto connector, String keyField, String baseDnField)
             throws ScriptEngineException {
-        // FIXME targetSystemMatchScript is mandatory?
+
         if (config == null
                 || StringUtils.isEmpty(config.getTargetSystemMatchScript())) {
             log.error("SearchQuery not defined for this reconciliation config.");
             return new ReconciliationResponse(ResponseStatus.FAILURE);
         }
+        Map<String, Object> bindingMap = new HashMap<String, Object>();
+        bindingMap.put(AbstractProvisioningService.TARGET_SYS_MANAGED_SYS_ID,mSys.getManagedSysId());
+        bindingMap.put("baseDnField", baseDnField);
         String searchQuery = (String) scriptRunner.execute(
-                new HashMap<String, Object>(),
+                bindingMap,
                 config.getTargetSystemMatchScript());
         if (StringUtils.isEmpty(searchQuery)) {
             log.error("SearchQuery not defined for this reconciliation config.");
@@ -419,8 +416,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
         String targetUserPrincipal = null;
         for (ExtensibleAttribute attr : extensibleAttributes) {
             // search principal attribute by KeyField
-            // (matchObjAry[0].getKeyField();)
-            if (attr.getName().equals(keyField)) {
+            if (attr.getName().equalsIgnoreCase(keyField)) {
                 targetUserPrincipal = attr.getValue();
                 break;
             }
@@ -456,8 +452,9 @@ public class ReconciliationServiceImpl implements ReconciliationService {
                         l.setDomainId(mSys.getDomainId());
                         l.setLogin(targetUserPrincipal);
                         l.setManagedSysId(managedSysId);
-
+                        l.setOperation(AttributeOperationEnum.ADD);
                         ProvisionUser newUser = new ProvisionUser();
+                        newUser.setSrcSystemId(managedSysId);
                         // ADD Target user principal
                         newUser.getPrincipalList().add(l);
                         if (idmLogin != null) {
@@ -585,7 +582,9 @@ public class ReconciliationServiceImpl implements ReconciliationService {
                             .get(ReconciliationCommand.IDM_DELETED__SYS_EXISTS);
                     if (command != null) {
                         log.debug("Call command for: Record in resource but deleted in IDM");
-                        command.execute(idDto, new ProvisionUser(user),
+                        ProvisionUser provisionUser = new ProvisionUser(user);
+                        provisionUser.setSrcSystemId(mSys.getManagedSysId());
+                        command.execute(idDto, provisionUser,
                                 extensibleAttributes);
                     }
                 }
@@ -594,8 +593,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
 
                 resultBean.getRows().add(
                         this.setRowInReconciliationResult(resultBean
-                                .getHeader(), attrMap, userCSVParser
-                                .toReconciliationObject(user, attrMap),
+                                .getHeader(), attrMap, new ReconciliationObject<User>(principal, user),
                                 extensibleAttributes,
                                 ReconciliationResultCase.MATCH_FOUND));
                 if (!isManualRecon) {
@@ -603,7 +601,9 @@ public class ReconciliationServiceImpl implements ReconciliationService {
                             .get(ReconciliationCommand.IDM_EXISTS__SYS_EXISTS);
                     if (command != null) {
                         log.debug("Call command for: Record in resource and in IDM");
-                        command.execute(idDto, new ProvisionUser(user),
+                        ProvisionUser provisionUser = new ProvisionUser(user);
+                        provisionUser.setSrcSystemId(mSys.getManagedSysId());
+                        command.execute(idDto, provisionUser,
                                 extensibleAttributes);
                     }
                 }
@@ -626,7 +626,9 @@ public class ReconciliationServiceImpl implements ReconciliationService {
                             .get(ReconciliationCommand.IDM_EXISTS__SYS_NOT_EXISTS);
                     if (command != null) {
                         log.debug("Call command for: Record in resource and in IDM");
-                        command.execute(idDto, new ProvisionUser(user),
+                        ProvisionUser provisionUser = new ProvisionUser(user);
+                        provisionUser.setSrcSystemId(mSys.getManagedSysId());
+                        command.execute(idDto, provisionUser,
                                 extensibleAttributes);
                     }
                 }
@@ -708,7 +710,18 @@ public class ReconciliationServiceImpl implements ReconciliationService {
                 }
                 if (value1 != null && value2 != null && !value1.equals(value2)) {
                     row.setCaseReconciliation(ReconciliationResultCase.MATCH_FOUND_DIFFERENT);
-                    value1.getValues().addAll(value2.getValues());
+                    List<String> merged = new ArrayList<String>();
+                    for(String val :value1.getValues()) {
+                       if(StringUtils.isNotBlank(val)) {
+                          merged.add(val);
+                       }
+                    }
+                    for(String val : value2.getValues()) {
+                        if(StringUtils.isNotBlank(val)) {
+                            merged.add(val);
+                        }
+                    }
+                    value1.setValues(merged);
                     user1Map.put(key, value1);
                 }
             }

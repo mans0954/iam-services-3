@@ -1,0 +1,1 @@
+output="(&(&(objectCategory=person)(objectClass=user))(ou="+baseDnField +"))";

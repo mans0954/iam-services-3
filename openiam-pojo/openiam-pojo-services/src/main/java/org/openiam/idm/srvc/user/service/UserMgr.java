@@ -31,7 +31,6 @@ import org.openiam.idm.searchbeans.DelegationFilterSearchBean;
 import org.openiam.idm.searchbeans.EmailSearchBean;
 import org.openiam.idm.searchbeans.LoginSearchBean;
 import org.openiam.idm.searchbeans.PhoneSearchBean;
-import org.openiam.idm.searchbeans.PotentialSupSubSearchBean;
 import org.openiam.idm.searchbeans.UserSearchBean;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
@@ -66,7 +65,6 @@ import org.openiam.idm.srvc.searchbean.converter.EmailAddressSearchBeanConverter
 import org.openiam.idm.srvc.searchbean.converter.PhoneSearchBeanConverter;
 import org.openiam.idm.srvc.user.dao.UserSearchDAO;
 import org.openiam.idm.srvc.user.domain.SupervisorEntity;
-import org.openiam.idm.srvc.user.domain.SupervisorIDEntity;
 import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.domain.UserNoteEntity;
@@ -432,18 +430,21 @@ public class UserMgr implements UserDataService {
     @Override
     @Transactional
     public void removeUser(String id) throws Exception {
-        if (id == null)
+        if (id == null) {
             throw new NullPointerException("user id is null");
-
+        }
         // removes all the dependant objects.
-        removeAllAttributes(id);
-        removeAllPhones(id);
-        removeAllAddresses(id);
-        removeAllNotes(id);
-        removeAllEmailAddresses(id);
+        // removeAllAttributes(id);
+       // removeAllPhones(id);
+       // removeAllAddresses(id);
+       // removeAllNotes(id);
+       // removeAllEmailAddresses(id);
 
-        userKeyDao.deleteByUserId(id);
-
+        // userKeyDao.deleteByUserId(id);
+        List<SupervisorEntity> supervisors = getSupervisors(id);
+        for(SupervisorEntity se : supervisors) {
+           supervisorDao.delete(se);
+        }
         userDao.delete(userDao.findById(id));
     }
 

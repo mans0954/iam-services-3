@@ -21,21 +21,21 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class DeleteIdmUserExcludeTargetCommand implements ReconciliationCommand {
+public class RemoveIdmUserCommand implements ReconciliationCommand {
     private ProvisionService provisionService;
-    private static final Log log = LogFactory.getLog(DeleteIdmUserExcludeTargetCommand.class);
+    private static final Log log = LogFactory.getLog(RemoveIdmUserCommand.class);
     private final ReconciliationSituation config;
 
     private final ScriptIntegration scriptRunner;
 
-    public DeleteIdmUserExcludeTargetCommand(ProvisionService provisionService, ReconciliationSituation config, ScriptIntegration scriptRunner) {
+    public RemoveIdmUserCommand(final ProvisionService provisionService, final ReconciliationSituation config, final ScriptIntegration scriptRunner) {
         this.provisionService = provisionService;
         this.scriptRunner = scriptRunner;
         this.config = config;
     }
 
     public boolean execute(Login login, User user, List<ExtensibleAttribute> attributes) {
-        log.debug("Entering DeleteIdmUserExcludeTargetCommand");
+        log.debug("Entering RemoveIdmUserCommand");
         log.debug("Delete  user :" + login.getUserId());
         ProvisionUser pUser = new ProvisionUser(user);
         pUser.setSrcSystemId(login.getManagedSysId());
@@ -55,7 +55,7 @@ public class DeleteIdmUserExcludeTargetCommand implements ReconciliationCommand 
                 e.printStackTrace();
             }
         }
-        ProvisionUserResponse response = provisionService.deleteByUserId(login.getUserId(), UserStatusEnum.DELETED, "3000");
+        ProvisionUserResponse response =  provisionService.deleteByUserId(login.getUserId(), UserStatusEnum.REMOVE, "3000");
         return response.isSuccess();
     }
 }
