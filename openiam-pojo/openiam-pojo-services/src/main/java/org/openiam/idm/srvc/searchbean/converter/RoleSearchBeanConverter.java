@@ -10,8 +10,8 @@ public class RoleSearchBeanConverter implements SearchBeanConverter<RoleEntity, 
 	@Override
 	public RoleEntity convert(RoleSearchBean searchBean) {
 		final RoleEntity entity = new RoleEntity();
-		entity.setRoleName(searchBean.getName());
-		entity.setRoleId(searchBean.getKey());
+		entity.setName(searchBean.getName());
+		entity.setId(searchBean.getKey());
 		entity.setServiceId(searchBean.getServiceId());
 		return entity;
 	}

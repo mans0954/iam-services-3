@@ -336,7 +336,7 @@ public class UserAttributeHelper {
 				if (curGroupList != null) {
 					boolean found = false;
 					for (Group cGroup : curGroupList) {
-						if (cGroup.getGrpId().equals(grp.getGrpId())) {
+						if (cGroup.getId().equals(grp.getId())) {
 							found = true;
 						}
 					}
@@ -357,7 +357,7 @@ public class UserAttributeHelper {
 			if (groupSet != null) {
 				boolean found = false;
 				for (Group newGroup :groupSet) {
-					if (g.getGrpId().equalsIgnoreCase(newGroup.getGrpId())) {
+					if (g.getId().equalsIgnoreCase(newGroup.getId())) {
 						found = true;
 					}
 				}
@@ -386,7 +386,7 @@ public class UserAttributeHelper {
 				if (curRoleList != null) {
 					boolean found = false;
 					for (Role cRl : curRoleList) {
-						if (cRl.getRoleId().equals(rl.getRoleId())) {
+						if (cRl.getId().equals(rl.getId())) {
 							found = true;
 						}
 					}
@@ -408,7 +408,7 @@ public class UserAttributeHelper {
 			if (roleSet != null) {
 				boolean found = false;
 				for (Role newRole : roleSet) {
-					if (rl.getRoleId().equalsIgnoreCase(newRole.getRoleId())) {
+					if (rl.getId().equalsIgnoreCase(newRole.getId())) {
 						found = true;
 					}
 				}

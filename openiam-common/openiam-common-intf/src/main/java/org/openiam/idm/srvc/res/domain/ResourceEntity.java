@@ -54,23 +54,11 @@ public class ResourceEntity {
     @Column(name = "DESCRIPTION", length = 100)
     private String description;
 
-    @Column(name = "BRANCH_ID", length = 20)
-    private String branchId;
-
-    @Column(name = "CATEGORY_ID", length = 20)
-    private String categoryId;
-
     @Column(name = "DISPLAY_ORDER")
     private Integer displayOrder;
 
     @Column(name = "URL", length = 255)
     private String URL;
-
-    @Column(name = "RES_OWNER_USER_ID")
-    private String resOwnerUserId;
-
-    @Column(name = "RES_OWNER_GROUP_ID")
-    private String resOwnerGroupId;
 
     @ManyToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
     @JoinTable(name = "res_to_res_membership",
@@ -113,14 +101,16 @@ public class ResourceEntity {
     @Column(name = "IS_PUBLIC")
     @Type(type = "yes_no")
     private boolean isPublic = true;
-
-    /*
-    @Column(name = "IS_SSL")
-    @Type(type = "yes_no")
-    private boolean isSSL = false;
-    */
     
+	@ManyToOne(fetch = FetchType.EAGER,cascade={CascadeType.ALL})
+    @JoinColumn(name="ADMIN_RESOURCE_ID", referencedColumnName = "RESOURCE_ID", insertable = true, updatable = true, nullable=true)
+	private ResourceEntity adminResource;
+
     public ResourceEntity() {
+    }
+    
+    public ResourceEntity(String id) {
+    	this.resourceId = id;
     }
   
     public Set<RoleEntity> getRoles() {
@@ -163,22 +153,6 @@ public class ResourceEntity {
         this.description = description;
     }
 
-    public String getBranchId() {
-        return branchId;
-    }
-
-    public void setBranchId(String branchId) {
-        this.branchId = branchId;
-    }
-
-    public String getCategoryId() {
-        return categoryId;
-    }
-
-    public void setCategoryId(String categoryId) {
-        this.categoryId = categoryId;
-    }
-
     public Integer getDisplayOrder() {
         return displayOrder;
     }
@@ -193,22 +167,6 @@ public class ResourceEntity {
 
     public void setURL(String URL) {
         this.URL = URL;
-    }
-
-    public String getResOwnerUserId() {
-        return resOwnerUserId;
-    }
-
-    public void setResOwnerUserId(String resOwnerUserId) {
-        this.resOwnerUserId = resOwnerUserId;
-    }
-
-    public String getResOwnerGroupId() {
-        return resOwnerGroupId;
-    }
-
-    public void setResOwnerGroupId(String resOwnerGroupId) {
-        this.resOwnerGroupId = resOwnerGroupId;
     }
 
     public Set<ResourceEntity> getParentResources() {
@@ -266,18 +224,16 @@ public class ResourceEntity {
     public void setIsPublic(boolean aPublic) {
         isPublic = aPublic;
     }
-
-    /*
-    public boolean getIsSSL() {
-        return isSSL;
-    }
-
-    public void setIsSSL(boolean SSL) {
-        isSSL = SSL;
-    }
-    */
     
-    public Set<UserEntity> getUsers() {
+    public ResourceEntity getAdminResource() {
+		return adminResource;
+	}
+
+	public void setAdminResource(ResourceEntity adminResource) {
+		this.adminResource = adminResource;
+	}
+
+	public Set<UserEntity> getUsers() {
         return users;
     }
 
@@ -357,12 +313,8 @@ public class ResourceEntity {
                 ", resourceType=" + resourceType +
                 ", name='" + name + '\'' +
                 ", description='" + description + '\'' +
-                ", branchId='" + branchId + '\'' +
-                ", categoryId='" + categoryId + '\'' +
                 ", displayOrder=" + displayOrder +
                 ", URL='" + URL + '\'' +
-                ", resOwnerUserId='" + resOwnerUserId + '\'' +
-                ", resOwnerGroupId='" + resOwnerGroupId + '\'' +
                 '}';
     }
 
@@ -376,8 +328,6 @@ public class ResourceEntity {
         if (isPublic != that.isPublic) return false;
         //if (isSSL != that.isSSL) return false;
         if (URL != null ? !URL.equals(that.URL) : that.URL != null) return false;
-        if (branchId != null ? !branchId.equals(that.branchId) : that.branchId != null) return false;
-        if (categoryId != null ? !categoryId.equals(that.categoryId) : that.categoryId != null) return false;
         if (domain != null ? !domain.equals(that.domain) : that.domain != null) return false;
         if (name != null ? !name.equals(that.name) : that.name != null) return false;
         if (resourceId != null ? !resourceId.equals(that.resourceId) : that.resourceId != null) return false;
@@ -389,8 +339,6 @@ public class ResourceEntity {
     public int hashCode() {
         int result = resourceId != null ? resourceId.hashCode() : 0;
         result = 31 * result + (name != null ? name.hashCode() : 0);
-        result = 31 * result + (branchId != null ? branchId.hashCode() : 0);
-        result = 31 * result + (categoryId != null ? categoryId.hashCode() : 0);
         result = 31 * result + (domain != null ? domain.hashCode() : 0);
         result = 31 * result + (isPublic ? 1 : 0);
         //result = 31 * result + (isSSL ? 1 : 0)

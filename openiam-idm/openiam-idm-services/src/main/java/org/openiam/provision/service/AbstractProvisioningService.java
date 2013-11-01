@@ -756,11 +756,11 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     continue;
                 }
                 if (e.getOperation().equals(AttributeOperationEnum.DELETE)) {
-                    List<SupervisorEntity> supervisorList = userMgr.getSupervisors(userId);
+                    List<UserEntity> supervisorList = userMgr.getSuperiors(userId, 0, Integer.MAX_VALUE);
                     if (CollectionUtils.isNotEmpty(supervisorList)) {
-                        for (SupervisorEntity se : supervisorList) {
-                            if (se.getSupervisor().getUserId().equals(e.getUserId())) {
-                                userMgr.removeSupervisor(se.getOrgStructureId());
+                        for (UserEntity se : supervisorList) {
+                            if (se.getUserId().equals(e.getUserId())) {
+                                userMgr.removeSupervisor(se.getUserId(), userId);
                                 log.info(String.format("Removed a supervisor user %s from user %s",
                                         e.getUserId(), userId));
                             }
@@ -787,11 +787,11 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     return;
 
                 } else if (operation == AttributeOperationEnum.ADD) {
-                    GroupEntity groupEntity = groupManager.getGroup(g.getGrpId());
+                    GroupEntity groupEntity = groupManager.getGroup(g.getId());
                     userEntity.getGroups().add(groupEntity);
 
                 } else if (operation == AttributeOperationEnum.DELETE) {
-                    GroupEntity groupEntity = groupManager.getGroup(g.getGrpId());
+                    GroupEntity groupEntity = groupManager.getGroup(g.getId());
                     userEntity.getGroups().remove(groupEntity);
 
                 } else if (operation == AttributeOperationEnum.REPLACE) {
@@ -810,14 +810,14 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     return;
 
                 } else if (operation == AttributeOperationEnum.ADD) {
-                    RoleEntity roleEntity = roleDataService.getRole(r.getRoleId());
+                    RoleEntity roleEntity = roleDataService.getRole(r.getId());
                     if (userEntity.getRoles().contains(roleEntity)) {
                         throw new IllegalArgumentException("Role with this name alreday exists");
                     }
                     userEntity.getRoles().add(roleEntity);
 
                 } else if (operation == AttributeOperationEnum.DELETE) {
-                    RoleEntity re = roleDataService.getRole(r.getRoleId());
+                    RoleEntity re = roleDataService.getRole(r.getId());
                     userEntity.getRoles().remove(re);
                     deleteRoleSet.add(roleDozerConverter.convertToDTO(re, true));
 

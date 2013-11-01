@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.am.srvc.dao.AuthProviderDao;
 import org.openiam.am.srvc.dao.ContentProviderDao;
@@ -17,6 +18,7 @@ import org.openiam.am.srvc.domain.URIPatternEntity;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.dozer.converter.ResourceDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
+import org.openiam.idm.searchbeans.OrganizationSearchBean;
 import org.openiam.idm.searchbeans.ResourceSearchBean;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.service.GroupDAO;
@@ -26,6 +28,8 @@ import org.openiam.idm.srvc.meta.service.MetadataElementDAO;
 import org.openiam.idm.srvc.meta.service.MetadataElementPageTemplateDAO;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.service.ManagedSysDAO;
+import org.openiam.idm.srvc.org.domain.OrganizationEntity;
+import org.openiam.idm.srvc.org.service.OrganizationDAO;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
 import org.openiam.idm.srvc.res.domain.ResourceTypeEntity;
@@ -34,6 +38,7 @@ import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.service.RoleDAO;
 import org.openiam.idm.srvc.searchbean.converter.ResourceSearchBeanConverter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -71,7 +76,13 @@ public class ResourceServiceImpl implements ResourceService {
 	private ManagedSysDAO managedSysDAO;
 	
 	@Autowired
+	private OrganizationDAO orgDAO;
+	
+	@Autowired
 	private MetadataElementPageTemplateDAO templateDAO;
+	
+	@Value("${org.openiam.resource.system.action.id}")
+	private String systemActionId;
 
 	@Override
     @Transactional
@@ -89,21 +100,35 @@ public class ResourceServiceImpl implements ResourceService {
 	public void save(ResourceEntity entity) {
 		if(StringUtils.isNotBlank(entity.getResourceId())) {
 			final ResourceEntity dbObject = resourceDao.findById(entity.getResourceId());
+			entity.setAdminResource(dbObject.getAdminResource());
+			if(entity.getAdminResource() == null) {
+				final ResourceEntity adminResource = getNewAdminResource(entity);
+				//resourceDao.save(adminResource);
+				entity.setAdminResource(adminResource);
+			}
 			entity.setChildResources(dbObject.getChildResources());
 			entity.setParentResources(dbObject.getParentResources());
 			entity.setUsers(dbObject.getUsers());
 			entity.setGroups(dbObject.getGroups());
 			entity.setRoles(dbObject.getRoles());
 			if(entity.getResourceType() != null) {
-				entity.setResourceType(resourceTypeDao.findById(entity.getResourceType().getResourceTypeId()));
+				entity.setResourceType(resourceTypeDao.findById(entity.getResourceType().getId()));
 			}
 			
 			mergeAttribute(entity, dbObject);
 			
 			resourceDao.merge(entity);
 		} else {
+			entity.setAdminResource(getNewAdminResource(entity));
 			resourceDao.save(entity);
 		}
+	}
+	
+	private ResourceEntity getNewAdminResource(final ResourceEntity entity) {
+		final ResourceEntity adminResource = new ResourceEntity();
+		adminResource.setName(String.format("RES_ADMIN_%s_%s", entity.getName(), RandomStringUtils.randomAlphanumeric(2)));
+		adminResource.setResourceType(resourceTypeDao.findById(systemActionId));
+		return adminResource;
 	}
 
 	private void mergeAttribute(final ResourceEntity bean, final ResourceEntity dbObject) {
@@ -206,7 +231,7 @@ public class ResourceServiceImpl implements ResourceService {
 	@Override
     @Transactional
 	public void save(ResourceTypeEntity entity) {
-		if(StringUtils.isBlank(entity.getResourceTypeId())) {
+		if(StringUtils.isBlank(entity.getId())) {
 			resourceTypeDao.save(entity);
 		} else {
 			resourceTypeDao.merge(entity);
@@ -405,6 +430,14 @@ public class ResourceServiceImpl implements ResourceService {
 		  !parent.getResourceType().equals(child.getResourceType())) {
 			throw new BasicDataServiceException(ResponseCode.RESOURCE_TYPES_NOT_EQUAL);
 		}
+		
+		if(parent.getResourceType() != null && !parent.getResourceType().isSupportsHierarchy()) {
+			throw new BasicDataServiceException(ResponseCode.RESOURCE_TYPE_NOT_SUPPORTS_HIERARCHY, parent.getResourceType().getDescription());
+		}
+		
+		if(child.getResourceType() != null && !child.getResourceType().isSupportsHierarchy()) {
+			throw new BasicDataServiceException(ResponseCode.RESOURCE_TYPE_NOT_SUPPORTS_HIERARCHY, child.getResourceType().getDescription());
+		}
 	}
 	
 	@Override
@@ -441,6 +474,34 @@ public class ResourceServiceImpl implements ResourceService {
 			final List<MetadataElementPageTemplateEntity> pageTemplates = templateDAO.getByResourceId(resourceId);
 			if(CollectionUtils.isNotEmpty(pageTemplates)) {
 				throw new BasicDataServiceException(ResponseCode.LINKED_TO_PAGE_TEMPLATE, pageTemplates.get(0).getName());
+			}
+			
+			final ResourceEntity searchBean = new ResourceEntity();
+			searchBean.setAdminResource(new ResourceEntity(resourceId));
+			final List<ResourceEntity> adminOfResources = resourceDao.getByExample(searchBean);
+			if(CollectionUtils.isNotEmpty(adminOfResources)) {
+				throw new BasicDataServiceException(ResponseCode.RESOURCE_IS_AN_ADMIN_OF_RESOURCE, adminOfResources.get(0).getName());
+			}
+			
+			final RoleEntity roleSearchBean = new RoleEntity();
+			roleSearchBean.setAdminResource(new ResourceEntity(resourceId));
+			final List<RoleEntity> adminOfRoles = roleDao.getByExample(roleSearchBean);
+			if(CollectionUtils.isNotEmpty(adminOfRoles)) {
+				throw new BasicDataServiceException(ResponseCode.RESOURCE_IS_AN_ADMIN_OF_ROLE, adminOfRoles.get(0).getName());
+			}
+			
+			final GroupEntity groupSearchBean = new GroupEntity();
+			groupSearchBean.setAdminResource(new ResourceEntity(resourceId));
+			final List<GroupEntity> adminOfGroups = groupDao.getByExample(groupSearchBean);
+			if(CollectionUtils.isNotEmpty(adminOfGroups)) {
+				throw new BasicDataServiceException(ResponseCode.RESOURCE_IS_AN_ADMIN_OF_GROUP, adminOfGroups.get(0).getName());
+			}
+			
+			final OrganizationEntity orgSearchBean = new OrganizationEntity();
+			orgSearchBean.setAdminResource(new ResourceEntity(resourceId));
+			final List<OrganizationEntity> adminOfOrgs = orgDAO.getByExample(orgSearchBean);
+			if(CollectionUtils.isNotEmpty(adminOfOrgs)) {
+				throw new BasicDataServiceException(ResponseCode.RESOURCE_IS_AN_ADMIN_OF_ORG, adminOfOrgs.get(0).getName());
 			}
 		}
 	}

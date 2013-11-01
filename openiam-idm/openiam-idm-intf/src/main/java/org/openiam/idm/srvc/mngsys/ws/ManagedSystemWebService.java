@@ -8,6 +8,7 @@ import javax.jws.WebService;
 
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.AttributeMapSearchBean;
+import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 import org.openiam.idm.srvc.mngsys.dto.*;
 
 /**
@@ -50,18 +51,7 @@ public interface ManagedSystemWebService {
     ManagedSysDto getManagedSys(
             @WebParam(name = "sysId", targetNamespace = "") String sysId);
 
-    /**
-     * Returns a ManagedSys object for the specified name. The name is the value
-     * in the name field in the ManagedSys object.
-     * 
-     * @param name
-     *            the name
-     * @return the managed sys by name
-     */
-    @WebMethod
-    ManagedSysDto getManagedSysByName(
-            @WebParam(name = "name", targetNamespace = "") String name);
-
+    
     @WebMethod
     List<ManagedSysDto> getAllManagedSys();
 
@@ -119,17 +109,6 @@ public interface ManagedSystemWebService {
     @WebMethod
     public void removeManagedSystemObjectMatch(
             @WebParam(name = "obj", targetNamespace = "") ManagedSystemObjectMatch obj);
-
-    /**
-     * Gets the approver association.
-     * 
-     * @param approverAssociationId
-     *            the approver association id
-     * @return the approver association
-     */
-    @WebMethod
-    ApproverAssociation getApproverAssociation(
-            @WebParam(name = "approverAssociationId", targetNamespace = "") String approverAssociationId);
 
     /**
      * Removes the approver association.
@@ -221,6 +200,9 @@ public interface ManagedSystemWebService {
     @WebMethod
     List<DefaultReconciliationAttributeMap> getAllDefaultReconcileMap();
 
+    @WebMethod
+    public Response saveApproverAssociations(final List<ApproverAssociation> approverAssociationList);
+    
     @WebMethod
     public Response saveApproverAssociation(
             final @WebParam(name = "approverAssociation", targetNamespace = "") ApproverAssociation approverAssociation);

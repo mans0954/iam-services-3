@@ -1,9 +1,11 @@
 package org.openiam.idm.srvc.mngsys.service;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.openiam.am.srvc.dao.AuthProviderDao;
 import org.openiam.am.srvc.domain.AuthProviderEntity;
 import org.openiam.dozer.converter.ManagedSysDozerConverter;
@@ -11,6 +13,8 @@ import org.openiam.dozer.converter.ManagedSystemObjectMatchDozerConverter;
 import org.openiam.idm.searchbeans.AttributeMapSearchBean;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.service.GroupDAO;
+import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
+import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.DefaultReconciliationAttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
@@ -70,6 +74,9 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
     
     @Autowired
     private RoleDAO roleDAO;
+    
+    @Autowired
+    private ApproverAssociationDAO approverAssociationDao;
     
     @Autowired
     private ResourceService resourceService;
@@ -375,4 +382,49 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
     public List<AuthProviderEntity> findAuthProvidersByManagedSysId(String managedSysId) {
         return authProviderDao.getByManagedSysId(managedSysId);
     }
+
+	@Override
+	@Transactional
+	public void saveApproverAssociations(List<ApproverAssociationEntity> entityList, final AssociationType type, final String entityId) {
+		//final List<ApproverAssociationEntity> newList = new LinkedList<ApproverAssociationEntity>();
+		//final List<ApproverAssociationEntity> updateList = new LinkedList<ApproverAssociationEntity>();
+		final List<ApproverAssociationEntity> deleteList = new LinkedList<ApproverAssociationEntity>();
+		
+		if(type != null && StringUtils.isNotBlank(entityId)) {
+			final List<ApproverAssociationEntity> existingList = approverAssociationDao.getByAssociation(entityId, type);
+			if(CollectionUtils.isNotEmpty(existingList)) {
+				for(final ApproverAssociationEntity existingEntity : existingList) {
+					boolean contains = false;
+					if(CollectionUtils.isNotEmpty(entityList)) {
+						for(final ApproverAssociationEntity incomingEntity : entityList) {
+							if(StringUtils.equals(existingEntity.getId(), incomingEntity.getId())) {
+								contains = true;
+								break;
+							}
+						}
+					}
+					
+					if(!contains) {
+						deleteList.add(existingEntity);
+					}
+				}
+			}
+		}
+		
+		if(CollectionUtils.isNotEmpty(entityList)) {
+			for(final ApproverAssociationEntity entity : entityList) {
+				if(StringUtils.isNotBlank(entity.getId())) {
+					approverAssociationDao.merge(entity);
+				} else {
+					approverAssociationDao.save(entity);
+				}
+			}
+		}
+		
+		if(CollectionUtils.isNotEmpty(deleteList)) {
+			for(final ApproverAssociationEntity entity : deleteList) {
+				approverAssociationDao.delete(entity);
+			}
+		}
+	}
 }

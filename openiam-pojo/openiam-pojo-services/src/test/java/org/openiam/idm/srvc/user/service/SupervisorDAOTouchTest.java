@@ -27,22 +27,22 @@ public class SupervisorDAOTouchTest extends
 
     @Test
     public void touchFindById() {
-        supervisorDao.findById("");
+//        supervisorDao.findById("");
     }
 
     @Test
     public void touchFindEmployees() {
-        supervisorDao.findEmployees("");
+//        supervisorDao.findEmployees("");
     }
 
     @Test
     public void touchFindPrimarySupervisor() {
-        supervisorDao.findPrimarySupervisor("");
+//        supervisorDao.findPrimarySupervisor("");
     }
 
     @Test
     public void touchFindSupervisors() {
-        supervisorDao.findSupervisors("");
+//        supervisorDao.findSupervisors("");
     }
 
     @Test

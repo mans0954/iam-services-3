@@ -803,8 +803,8 @@
 <xs:element minOccurs="0" name="createdBy" type="xs:string"/>
 <xs:element minOccurs="0" name="description" type="xs:string"/>
 <xs:element minOccurs="0" name="groupClass" type="xs:string"/>
-<xs:element minOccurs="0" name="grpId" type="xs:string"/>
-<xs:element minOccurs="0" name="grpName" type="xs:string"/>
+<xs:element minOccurs="0" name="id" type="xs:string"/>
+<xs:element minOccurs="0" name="name" type="xs:string"/>
 <xs:element minOccurs="0" name="inheritFromParent" type="xs:boolean"/>
 <xs:element minOccurs="0" name="lastUpdate" type="xs:dateTime"/>
 <xs:element minOccurs="0" name="lastUpdatedBy" type="xs:string"/>
@@ -845,8 +845,8 @@
 </xs:complexType>
 <xs:complexType name="groupsearch">
 <xs:sequence>
-<xs:element minOccurs="0" name="grpId" type="xs:string"/>
-<xs:element minOccurs="0" name="grpName" type="xs:string"/>
+<xs:element minOccurs="0" name="id" type="xs:string"/>
+<xs:element minOccurs="0" name="name" type="xs:string"/>
 <xs:element minOccurs="0" name="status" type="xs:string"/>
 <xs:element minOccurs="0" name="ownerId" type="xs:string"/>
 <xs:element minOccurs="0" name="internalGroupId" type="xs:string"/>

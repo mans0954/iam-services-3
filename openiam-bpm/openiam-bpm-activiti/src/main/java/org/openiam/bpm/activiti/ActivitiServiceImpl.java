@@ -434,10 +434,10 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 			final String description = String.format("Edit User %s", request.getUser().getDisplayName());
 			
 			final Set<String> requestApproverIds = new HashSet<String>();
-			final List<SupervisorEntity> supervisors = supervisorDAO.findSupervisors(request.getUser().getUserId());
+			final List<UserEntity> supervisors = userDataService.getSuperiors(request.getUser().getUserId(), 0, Integer.MAX_VALUE);
 			if(CollectionUtils.isNotEmpty(supervisors)) {
-				for(final SupervisorEntity supervisor : supervisors) {
-					requestApproverIds.add(supervisor.getSupervisor().getUserId());
+				for(final UserEntity supervisor : supervisors) {
+					requestApproverIds.add(supervisor.getUserId());
 				}
 			}
 			if(CollectionUtils.isEmpty(requestApproverIds)) {
@@ -553,11 +553,11 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 				
 				/* for user target objects, use the supervisors - no approver association */
 				if(AssociationType.USER.equals(request.getAssociationType()) && StringUtils.isNotEmpty(request.getUserCentricUserId())) {
-					final List<SupervisorEntity> supervisors = supervisorDAO.findSupervisors(request.getUserCentricUserId());
+					final List<UserEntity> supervisors = userDataService.getSuperiors(request.getUserCentricUserId(), 0, Integer.MAX_VALUE);
 					if(CollectionUtils.isNotEmpty(supervisors)) {
-						for(final SupervisorEntity supervisor : supervisors) {
-							if(supervisor != null && supervisor.getSupervisor() != null) {
-								approverUserIds.add(supervisor.getSupervisor().getUserId());
+						for(final UserEntity supervisor : supervisors) {
+							if(supervisor != null ) {
+								approverUserIds.add(supervisor.getUserId());
 							}
 						}
 					}
@@ -595,11 +595,11 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 										approverUserIds.add(approverId);
 										break;
 									case SUPERVISOR: /* assume association ID is a user */
-										final List<SupervisorEntity> supervisors = supervisorDAO.findSupervisors(request.getAssociationId());
+										final List<UserEntity> supervisors = userDataService.getSuperiors(request.getAssociationId(), 0, Integer.MAX_VALUE);
 										if(CollectionUtils.isNotEmpty(supervisors)) {
-											for(final SupervisorEntity supervisor : supervisors) {
-												if(supervisor != null && supervisor.getSupervisor() != null) {
-													approverUserIds.add(supervisor.getSupervisor().getUserId());
+											for(final UserEntity supervisor : supervisors) {
+												if(supervisor != null ) {
+													approverUserIds.add(supervisor.getUserId());
 												}
 											}
 										}

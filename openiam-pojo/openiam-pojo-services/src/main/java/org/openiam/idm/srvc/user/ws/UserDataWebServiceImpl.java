@@ -21,18 +21,31 @@
  */
 package org.openiam.idm.srvc.user.ws;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import javax.jws.WebService;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
+import org.openiam.dozer.converter.AddressDozerConverter;
+import org.openiam.dozer.converter.EmailAddressDozerConverter;
+import org.openiam.dozer.converter.PhoneDozerConverter;
+import org.openiam.dozer.converter.SupervisorDozerConverter;
+import org.openiam.dozer.converter.UserAttributeDozerConverter;
+import org.openiam.dozer.converter.UserDozerConverter;
+import org.openiam.dozer.converter.UserNoteDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
-import org.openiam.dozer.converter.*;
-import org.openiam.idm.searchbeans.*;
+import org.openiam.idm.searchbeans.AddressSearchBean;
+import org.openiam.idm.searchbeans.EmailSearchBean;
+import org.openiam.idm.searchbeans.PhoneSearchBean;
+import org.openiam.idm.searchbeans.PotentialSupSubSearchBean;
+import org.openiam.idm.searchbeans.UserSearchBean;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.continfo.domain.AddressEntity;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
@@ -40,11 +53,8 @@ import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
 import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
-import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
-import org.openiam.idm.srvc.meta.dto.MetadataType;
 import org.openiam.idm.srvc.meta.dto.SaveTemplateProfileResponse;
 import org.openiam.idm.srvc.meta.exception.PageTemplateException;
-import org.openiam.idm.srvc.meta.service.MetadataService;
 import org.openiam.idm.srvc.msg.dto.NotificationParam;
 import org.openiam.idm.srvc.msg.dto.NotificationRequest;
 import org.openiam.idm.srvc.msg.service.MailService;
@@ -52,23 +62,17 @@ import org.openiam.idm.srvc.msg.service.MailTemplateParameters;
 import org.openiam.idm.srvc.user.domain.SupervisorEntity;
 import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
-import org.openiam.idm.srvc.user.domain.UserNoteEntity;
-import org.openiam.idm.srvc.user.dto.DelegationFilterSearch;
 import org.openiam.idm.srvc.user.dto.Supervisor;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
-import org.openiam.idm.srvc.user.dto.UserNote;
 import org.openiam.idm.srvc.user.dto.UserProfileRequestModel;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.srvc.user.service.UserProfileService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import javax.jws.WebService;
 
 /**
  * @author suneet
@@ -79,7 +83,7 @@ import javax.jws.WebService;
             targetNamespace = "urn:idm.openiam.org/srvc/user/service",
             serviceName = "UserDataWebService",
             portName = "UserDataWebServicePort")
-public class UserDataWebServiceImpl implements UserDataWebService{
+public class UserDataWebServiceImpl implements UserDataWebService {
 
     private static Logger log = Logger.getLogger(UserDataWebServiceImpl.class);
 
@@ -121,14 +125,14 @@ public class UserDataWebServiceImpl implements UserDataWebService{
             if (val == null) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
             }
-            if(StringUtils.isBlank(val.getMetadataTypeId())){
+            if (StringUtils.isBlank(val.getMetadataTypeId())) {
                 throw new BasicDataServiceException(ResponseCode.ADDRESS_TYPE_REQUIRED);
             }
             AddressSearchBean searchBean = new AddressSearchBean();
             searchBean.setParentId(val.getParentId());
             searchBean.setMetadataTypeId(val.getMetadataTypeId());
-            List<AddressEntity> entityList =  userManager.getAddressList(searchBean, Integer.MAX_VALUE, 0);
-            if(CollectionUtils.isNotEmpty(entityList))
+            List<AddressEntity> entityList = userManager.getAddressList(searchBean, Integer.MAX_VALUE, 0);
+            if (CollectionUtils.isNotEmpty(entityList))
                 throw new BasicDataServiceException(ResponseCode.ADDRESS_TYPE_DUPLICATED);
 
             final AddressEntity entity = addressDozerConverter.convertToEntity(val, true);
@@ -180,14 +184,14 @@ public class UserDataWebServiceImpl implements UserDataWebService{
             if (val == null) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
             }
-            if(StringUtils.isBlank(val.getMetadataTypeId())){
+            if (StringUtils.isBlank(val.getMetadataTypeId())) {
                 throw new BasicDataServiceException(ResponseCode.EMAIL_ADDRESS_TYPE_REQUIRED);
             }
             EmailSearchBean searchBean = new EmailSearchBean();
             searchBean.setParentId(val.getParentId());
             searchBean.setMetadataTypeId(val.getMetadataTypeId());
-            List<EmailAddressEntity> entityList =  userManager.getEmailAddressList(searchBean, Integer.MAX_VALUE, 0);
-            if(CollectionUtils.isNotEmpty(entityList))
+            List<EmailAddressEntity> entityList = userManager.getEmailAddressList(searchBean, Integer.MAX_VALUE, 0);
+            if (CollectionUtils.isNotEmpty(entityList))
                 throw new BasicDataServiceException(ResponseCode.EMAIL_ADDRESS_TYPE_DUPLICATED);
 
             final EmailAddressEntity entity = emailAddressDozerConverter.convertToEntity(val, true);
@@ -207,27 +211,19 @@ public class UserDataWebServiceImpl implements UserDataWebService{
     }
 
     /*
-    @Override
-    public Response addNote(final UserNote note) {
-        final Response response = new Response(ResponseStatus.SUCCESS);
-        try {
-            if (note == null) {
-                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
-            }
-
-            final UserNoteEntity entity = userNoteDozerConverter.convertToEntity(note, true);
-            userManager.addNote(entity);
-        } catch (BasicDataServiceException e) {
-            response.setErrorCode(e.getCode());
-            response.setStatus(ResponseStatus.FAILURE);
-        } catch (Throwable e) {
-            log.error("Can't perform operation", e);
-            response.setErrorText(e.getMessage());
-            response.setStatus(ResponseStatus.FAILURE);
-        }
-        return response;
-    }
-    */
+     * @Override public Response addNote(final UserNote note) { final Response
+     * response = new Response(ResponseStatus.SUCCESS); try { if (note == null)
+     * { throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS); }
+     * 
+     * final UserNoteEntity entity =
+     * userNoteDozerConverter.convertToEntity(note, true);
+     * userManager.addNote(entity); } catch (BasicDataServiceException e) {
+     * response.setErrorCode(e.getCode());
+     * response.setStatus(ResponseStatus.FAILURE); } catch (Throwable e) {
+     * log.error("Can't perform operation", e);
+     * response.setErrorText(e.getMessage());
+     * response.setStatus(ResponseStatus.FAILURE); } return response; }
+     */
 
     @Override
     public Response addPhone(Phone val) {
@@ -236,14 +232,14 @@ public class UserDataWebServiceImpl implements UserDataWebService{
             if (val == null) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
             }
-            if(StringUtils.isBlank(val.getMetadataTypeId())){
+            if (StringUtils.isBlank(val.getMetadataTypeId())) {
                 throw new BasicDataServiceException(ResponseCode.PHONE_TYPE_REQUIRED);
             }
             PhoneSearchBean searchBean = new PhoneSearchBean();
             searchBean.setParentId(val.getParentId());
             searchBean.setMetadataTypeId(val.getMetadataTypeId());
-            List<PhoneEntity> entityList =  userManager.getPhoneList(searchBean, Integer.MAX_VALUE, 0);
-            if(CollectionUtils.isNotEmpty(entityList))
+            List<PhoneEntity> entityList = userManager.getPhoneList(searchBean, Integer.MAX_VALUE, 0);
+            if (CollectionUtils.isNotEmpty(entityList))
                 throw new BasicDataServiceException(ResponseCode.PHONE_TYPE_DUPLICATED);
 
             final PhoneEntity entity = phoneDozerConverter.convertToEntity(val, true);
@@ -284,134 +280,134 @@ public class UserDataWebServiceImpl implements UserDataWebService{
     }
 
     @Override
-    @Transactional(readOnly=true)
+    @Transactional(readOnly = true)
     public List<User> findUserByOrganization(final String orgId) {
         final List<UserEntity> entityList = userManager.findUserByOrganization(orgId);
         return userDozerConverter.convertToDTOList(entityList, false);
     }
 
     @Override
-    @Transactional(readOnly=true)
+    @Transactional(readOnly = true)
     public Address getAddressById(String addressId) {
         final AddressEntity adr = userManager.getAddressById(addressId);
         return addressDozerConverter.convertToDTO(adr, false);
     }
 
     @Override
-    @Transactional(readOnly=true)
+    @Transactional(readOnly = true)
     public List<Address> getAddressList(String userId) {
         return this.getAddressListByPage(userId, Integer.MAX_VALUE, 0);
     }
 
     @Override
-    @Transactional(readOnly=true)
+    @Transactional(readOnly = true)
     public List<Address> getAddressListByPage(String userId, Integer size, Integer from) {
         final List<AddressEntity> adrList = userManager.getAddressList(userId, size, from);
         return addressDozerConverter.convertToDTOList(adrList, false);
     }
 
     /*
-    @Override
-    @Transactional(readOnly=true)
-    public List<UserNote> getAllNotes(String userId) {
-        final List<UserNoteEntity> entityList = userManager.getAllNotes(userId);
-        return userNoteDozerConverter.convertToDTOList(entityList, false);
-    }
-    */
+     * @Override
+     * 
+     * @Transactional(readOnly=true) public List<UserNote> getAllNotes(String
+     * userId) { final List<UserNoteEntity> entityList =
+     * userManager.getAllNotes(userId); return
+     * userNoteDozerConverter.convertToDTOList(entityList, false); }
+     */
 
     @Override
-    @Transactional(readOnly=true)
+    @Transactional(readOnly = true)
     public UserAttribute getAttribute(String attrId) {
         final UserAttributeEntity userAttr = userManager.getAttribute(attrId);
         return userAttributeDozerConverter.convertToDTO(userAttr, false);
     }
 
     @Override
-    @Transactional(readOnly=true)
+    @Transactional(readOnly = true)
     public EmailAddress getEmailAddressById(String addressId) {
         final EmailAddressEntity adr = userManager.getEmailAddressById(addressId);
         return emailAddressDozerConverter.convertToDTO(adr, false);
     }
 
     @Override
-    @Transactional(readOnly=true)
+    @Transactional(readOnly = true)
     public List<EmailAddress> getEmailAddressList(String userId) {
         return this.getEmailAddressListByPage(userId, Integer.MAX_VALUE, 0);
     }
 
     @Override
-    @Transactional(readOnly=true)
+    @Transactional(readOnly = true)
     public List<EmailAddress> getEmailAddressListByPage(String userId, Integer size, Integer from) {
         final List<EmailAddressEntity> adr = userManager.getEmailAddressList(userId, size, from);
         return emailAddressDozerConverter.convertToDTOList(adr, false);
     }
 
-    @Override
-    @Transactional(readOnly=true)
-    public List<Supervisor> getEmployees(String supervisorId) {
-        final List<SupervisorEntity> sup = userManager.getEmployees(supervisorId);
-        return supervisorDozerConverter.convertToDTOList(sup, false);
-    }
+    // @Override
+    // @Transactional(readOnly=true)
+    // public List<Supervisor> getEmployees(String supervisorId) {
+    // final List<SupervisorEntity> sup =
+    // userManager.getEmployees(supervisorId);
+    // return supervisorDozerConverter.convertToDTOList(sup, false);
+    // }
 
     /*
-    @Override
-    @Transactional(readOnly=true)
-    public UserNote getNote(String noteId) {
-        final UserNoteEntity note = userManager.getNote(noteId);
-        return userNoteDozerConverter.convertToDTO(note, false);
-    }
-    */
+     * @Override
+     * 
+     * @Transactional(readOnly=true) public UserNote getNote(String noteId) {
+     * final UserNoteEntity note = userManager.getNote(noteId); return
+     * userNoteDozerConverter.convertToDTO(note, false); }
+     */
 
     @Override
-    @Transactional(readOnly=true)
+    @Transactional(readOnly = true)
     public Phone getPhoneById(String addressId) {
         final PhoneEntity ph = userManager.getPhoneById(addressId);
         return phoneDozerConverter.convertToDTO(ph, false);
     }
 
     @Override
-    @Transactional(readOnly=true)
+    @Transactional(readOnly = true)
     public List<Phone> getPhoneList(String userId) {
         return getPhoneListByPage(userId, Integer.MAX_VALUE, 0);
     }
 
     @Override
-    @Transactional(readOnly=true)
+    @Transactional(readOnly = true)
     public List<Phone> getPhoneListByPage(String userId, Integer size, Integer from) {
         final List<PhoneEntity> phoneList = userManager.getPhoneList(userId, size, from);
         return phoneDozerConverter.convertToDTOList(phoneList, false);
     }
 
     @Override
-    @Transactional(readOnly=true)
-    public Supervisor getPrimarySupervisor(String employeeId) {
-        final SupervisorEntity sup = userManager.getPrimarySupervisor(employeeId);
-        return supervisorDozerConverter.convertToDTO(sup, false);
+    @Transactional(readOnly = true)
+    public User getPrimarySupervisor(String employeeId) {
+        final UserEntity sup = userManager.getPrimarySupervisor(employeeId);
+        return userDozerConverter.convertToDTO(sup, false);
     }
 
-    @Override
-    @Transactional(readOnly=true)
-    public Supervisor getSupervisor(String supervisorObjId) {
-        final SupervisorEntity sup = userManager.getSupervisor(supervisorObjId);
-        return supervisorDozerConverter.convertToDTO(sup, false);
-    }
+    // @Override
+    // @Transactional(readOnly=true)
+    // public Supervisor getSupervisor(String supervisorObjId) {
+    // final SupervisorEntity sup = userManager.getSupervisor(supervisorObjId);
+    // return supervisorDozerConverter.convertToDTO(sup, false);
+    // }
+
+    // @Override
+    // @Transactional(readOnly=true)
+    // public List<Supervisor> getSupervisors(String employeeId) {
+    // final List<SupervisorEntity> sup =
+    // userManager.getSupervisors(employeeId);
+    // return supervisorDozerConverter.convertToDTOList(sup, true);
+    // }
 
     @Override
-    @Transactional(readOnly=true)
-    public List<Supervisor> getSupervisors(String employeeId) {
-        final List<SupervisorEntity> sup = userManager.getSupervisors(employeeId);
-        return supervisorDozerConverter.convertToDTOList(sup, true);
-    }
-
-    @Override
-    @Transactional(readOnly=true)
+    @Transactional(readOnly = true)
     public Supervisor findSupervisor(String superiorId, String subordinateId) {
-        return supervisorDozerConverter.convertToDTO(
-                userManager.findSupervisor(superiorId, subordinateId), true);
+        return supervisorDozerConverter.convertToDTO(userManager.findSupervisor(superiorId, subordinateId), true);
     }
 
     @Override
-    @Transactional(readOnly=true)
+    @Transactional(readOnly = true)
     public List<User> getSuperiors(String userId, Integer from, Integer size) {
         final List<UserEntity> superiors = userManager.getSuperiors(userId, from, size);
         return userDozerConverter.convertToDTOList(superiors, true);
@@ -423,7 +419,7 @@ public class UserDataWebServiceImpl implements UserDataWebService{
     }
 
     @Override
-    @Transactional(readOnly=true)
+    @Transactional(readOnly = true)
     public List<User> getSubordinates(String userId, Integer from, Integer size) {
         final List<UserEntity> subordinates = userManager.getSubordinates(userId, from, size);
         return userDozerConverter.convertToDTOList(subordinates, true);
@@ -435,13 +431,13 @@ public class UserDataWebServiceImpl implements UserDataWebService{
     }
 
     @Override
-    @Transactional(readOnly=true)
-    public List<User> findPotentialSupSubs(UserSearchBean userSearchBean, Integer from, Integer size) {
+    @Transactional(readOnly = true)
+    public List<User> findPotentialSupSubs(PotentialSupSubSearchBean userSearchBean, Integer from, Integer size) {
         return userDozerConverter.convertToDTOList(userManager.findPotentialSupSubs(userSearchBean, from, size), true);
     }
 
     @Override
-    public int findPotentialSupSubsCount(UserSearchBean userSearchBean) {
+    public int findPotentialSupSubsCount(PotentialSupSubSearchBean userSearchBean) {
         return userManager.findPotentialSupSubsCount(userSearchBean);
     }
 
@@ -480,15 +476,15 @@ public class UserDataWebServiceImpl implements UserDataWebService{
     }
 
     @Override
-    public Response removeSuperior(String requesterId, String userId) {
+    public Response removeSuperior(String userId, String employeeId) {
 
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
-            SupervisorEntity supervisor = userManager.findSupervisor(userId, requesterId);
+            SupervisorEntity supervisor = userManager.findSupervisor(userId, employeeId);
             if (supervisor == null) {
                 throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
             }
-            userManager.removeSupervisor(supervisor.getOrgStructureId());
+            userManager.removeSupervisor(userId, employeeId);
 
         } catch (BasicDataServiceException e) {
             response.setErrorCode(e.getCode());
@@ -502,14 +498,14 @@ public class UserDataWebServiceImpl implements UserDataWebService{
     }
 
     @Override
-    @Transactional(readOnly=true)
+    @Transactional(readOnly = true)
     public User getUserWithDependent(String id, String requestorId, boolean dependants) {
         final UserEntity user = userManager.getUser(id, requestorId);
         return userDozerConverter.convertToDTO(user, dependants);
     }
 
     @Override
-    @Transactional(readOnly=true)
+    @Transactional(readOnly = true)
     public User getUserByPrincipal(String securityDomain, String principal, String managedSysId, boolean dependants) {
         final UserEntity user = userManager.getUserByPrincipal(securityDomain, principal, managedSysId, dependants);
         return userDozerConverter.convertToDTO(user, dependants);
@@ -536,25 +532,17 @@ public class UserDataWebServiceImpl implements UserDataWebService{
     }
 
     /*
-    @Override
-    public Response removeAllNotes(String userId) {
-        final Response response = new Response(ResponseStatus.SUCCESS);
-        try {
-            if (userId == null) {
-                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
-            }
-            userManager.removeAllNotes(userId);
-        } catch (BasicDataServiceException e) {
-            response.setErrorCode(e.getCode());
-            response.setStatus(ResponseStatus.FAILURE);
-        } catch (Throwable e) {
-            log.error("Can't perform operation", e);
-            response.setErrorText(e.getMessage());
-            response.setStatus(ResponseStatus.FAILURE);
-        }
-        return response;
-    }
-    */
+     * @Override public Response removeAllNotes(String userId) { final Response
+     * response = new Response(ResponseStatus.SUCCESS); try { if (userId ==
+     * null) { throw new
+     * BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS); }
+     * userManager.removeAllNotes(userId); } catch (BasicDataServiceException e)
+     * { response.setErrorCode(e.getCode());
+     * response.setStatus(ResponseStatus.FAILURE); } catch (Throwable e) {
+     * log.error("Can't perform operation", e);
+     * response.setErrorText(e.getMessage());
+     * response.setStatus(ResponseStatus.FAILURE); } return response; }
+     */
 
     @Override
     public Response removeAttribute(String attrId) {
@@ -595,25 +583,17 @@ public class UserDataWebServiceImpl implements UserDataWebService{
     }
 
     /*
-    @Override
-    public Response removeNote(String noteId) {
-        final Response response = new Response(ResponseStatus.SUCCESS);
-        try {
-            if (noteId == null) {
-                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
-            }
-            userManager.removeNote(noteId);
-        } catch (BasicDataServiceException e) {
-            response.setErrorCode(e.getCode());
-            response.setStatus(ResponseStatus.FAILURE);
-        } catch (Throwable e) {
-            log.error("Can't perform operation", e);
-            response.setErrorText(e.getMessage());
-            response.setStatus(ResponseStatus.FAILURE);
-        }
-        return response;
-    }
-    */
+     * @Override public Response removeNote(String noteId) { final Response
+     * response = new Response(ResponseStatus.SUCCESS); try { if (noteId ==
+     * null) { throw new
+     * BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS); }
+     * userManager.removeNote(noteId); } catch (BasicDataServiceException e) {
+     * response.setErrorCode(e.getCode());
+     * response.setStatus(ResponseStatus.FAILURE); } catch (Throwable e) {
+     * log.error("Can't perform operation", e);
+     * response.setErrorText(e.getMessage());
+     * response.setStatus(ResponseStatus.FAILURE); } return response; }
+     */
 
     @Override
     public Response removePhone(String phoneId) {
@@ -635,13 +615,13 @@ public class UserDataWebServiceImpl implements UserDataWebService{
     }
 
     @Override
-    public Response removeSupervisor(String supervisorId) {
+    public Response removeSupervisor(String supervisorId, String employeeId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
             if (supervisorId == null) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
             }
-            userManager.removeSupervisor(supervisorId);
+            userManager.removeSupervisor(supervisorId, employeeId);
         } catch (BasicDataServiceException e) {
             response.setErrorCode(e.getCode());
             response.setStatus(ResponseStatus.FAILURE);
@@ -673,7 +653,7 @@ public class UserDataWebServiceImpl implements UserDataWebService{
     }
 
     @Override
-    @Transactional(readOnly=true)
+    @Transactional(readOnly = true)
     public List<User> findBeans(UserSearchBean userSearchBean, int from, int size) {
         final List<UserEntity> userList = userManager.findBeans(userSearchBean, from, size);
         return userDozerConverter.convertToDTOList(userList, userSearchBean.isDeepCopy());
@@ -691,15 +671,15 @@ public class UserDataWebServiceImpl implements UserDataWebService{
             if (val == null) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
             }
-            if(StringUtils.isBlank(val.getMetadataTypeId())){
+            if (StringUtils.isBlank(val.getMetadataTypeId())) {
                 throw new BasicDataServiceException(ResponseCode.ADDRESS_TYPE_REQUIRED);
             }
 
             AddressSearchBean searchBean = new AddressSearchBean();
             searchBean.setParentId(val.getParentId());
             searchBean.setMetadataTypeId(val.getMetadataTypeId());
-            List<AddressEntity> entityList =  userManager.getAddressList(searchBean, Integer.MAX_VALUE, 0);
-            if(CollectionUtils.isNotEmpty(entityList) && !entityList.get(0).getAddressId().equals(val.getAddressId()))
+            List<AddressEntity> entityList = userManager.getAddressList(searchBean, Integer.MAX_VALUE, 0);
+            if (CollectionUtils.isNotEmpty(entityList) && !entityList.get(0).getAddressId().equals(val.getAddressId()))
                 throw new BasicDataServiceException(ResponseCode.ADDRESS_TYPE_DUPLICATED);
 
             final AddressEntity entity = addressDozerConverter.convertToEntity(val, false);
@@ -751,7 +731,7 @@ public class UserDataWebServiceImpl implements UserDataWebService{
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
             }
 
-            if(StringUtils.isBlank(val.getMetadataTypeId())){
+            if (StringUtils.isBlank(val.getMetadataTypeId())) {
                 throw new BasicDataServiceException(ResponseCode.EMAIL_ADDRESS_TYPE_REQUIRED);
             }
 
@@ -759,10 +739,9 @@ public class UserDataWebServiceImpl implements UserDataWebService{
             searchBean.setParentId(val.getParentId());
             searchBean.setMetadataTypeId(val.getMetadataTypeId());
             // searchBean.setParentType(ContactConstants.PARENT_TYPE_USER);
-            List<EmailAddressEntity> entityList =  userManager.getEmailAddressList(searchBean, Integer.MAX_VALUE, 0);
-            if(CollectionUtils.isNotEmpty(entityList) && !entityList.get(0).getEmailId().equals(val.getEmailId()))
+            List<EmailAddressEntity> entityList = userManager.getEmailAddressList(searchBean, Integer.MAX_VALUE, 0);
+            if (CollectionUtils.isNotEmpty(entityList) && !entityList.get(0).getEmailId().equals(val.getEmailId()))
                 throw new BasicDataServiceException(ResponseCode.EMAIL_ADDRESS_TYPE_DUPLICATED);
-
 
             final EmailAddressEntity entity = emailAddressDozerConverter.convertToEntity(val, true);
             UserEntity user = new UserEntity();
@@ -781,27 +760,19 @@ public class UserDataWebServiceImpl implements UserDataWebService{
     }
 
     /*
-    @Override
-    public Response updateNote(UserNote note) {
-        final Response response = new Response(ResponseStatus.SUCCESS);
-        try {
-            if (note == null) {
-                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
-            }
-
-            final UserNoteEntity entity = userNoteDozerConverter.convertToEntity(note, true);
-            userManager.updateNote(entity);
-        } catch (BasicDataServiceException e) {
-            response.setErrorCode(e.getCode());
-            response.setStatus(ResponseStatus.FAILURE);
-        } catch (Throwable e) {
-            log.error("Can't perform operation", e);
-            response.setErrorText(e.getMessage());
-            response.setStatus(ResponseStatus.FAILURE);
-        }
-        return response;
-    }
-    */
+     * @Override public Response updateNote(UserNote note) { final Response
+     * response = new Response(ResponseStatus.SUCCESS); try { if (note == null)
+     * { throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS); }
+     * 
+     * final UserNoteEntity entity =
+     * userNoteDozerConverter.convertToEntity(note, true);
+     * userManager.updateNote(entity); } catch (BasicDataServiceException e) {
+     * response.setErrorCode(e.getCode());
+     * response.setStatus(ResponseStatus.FAILURE); } catch (Throwable e) {
+     * log.error("Can't perform operation", e);
+     * response.setErrorText(e.getMessage());
+     * response.setStatus(ResponseStatus.FAILURE); } return response; }
+     */
 
     @Override
     public Response updatePhone(Phone val) {
@@ -810,7 +781,7 @@ public class UserDataWebServiceImpl implements UserDataWebService{
             if (val == null) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
             }
-            if(StringUtils.isBlank(val.getMetadataTypeId())){
+            if (StringUtils.isBlank(val.getMetadataTypeId())) {
                 throw new BasicDataServiceException(ResponseCode.PHONE_TYPE_REQUIRED);
             }
 
@@ -818,10 +789,9 @@ public class UserDataWebServiceImpl implements UserDataWebService{
             searchBean.setParentId(val.getParentId());
             searchBean.setMetadataTypeId(val.getMetadataTypeId());
             // searchBean.setParentType(ContactConstants.PARENT_TYPE_USER);
-            List<PhoneEntity> entityList =  userManager.getPhoneList(searchBean, Integer.MAX_VALUE, 0);
-            if(CollectionUtils.isNotEmpty(entityList) && !entityList.get(0).getPhoneId().equals(val.getPhoneId()))
+            List<PhoneEntity> entityList = userManager.getPhoneList(searchBean, Integer.MAX_VALUE, 0);
+            if (CollectionUtils.isNotEmpty(entityList) && !entityList.get(0).getPhoneId().equals(val.getPhoneId()))
                 throw new BasicDataServiceException(ResponseCode.PHONE_TYPE_DUPLICATED);
-
 
             final PhoneEntity entity = phoneDozerConverter.convertToEntity(val, true);
             UserEntity user = new UserEntity();
@@ -839,29 +809,30 @@ public class UserDataWebServiceImpl implements UserDataWebService{
         return response;
     }
 
-    @Override
-    public Response updateSupervisor(Supervisor supervisor) {
-        final Response response = new Response(ResponseStatus.SUCCESS);
-        try {
-            if (supervisor == null) {
-                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
-            }
+    // @Override
+    // public Response updateSupervisor(Supervisor supervisor) {
+    // final Response response = new Response(ResponseStatus.SUCCESS);
+    // try {
+    // if (supervisor == null) {
+    // throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+    // }
+    //
+    // final SupervisorEntity entity =
+    // supervisorDozerConverter.convertToEntity(supervisor, true);
+    // userManager.updateSupervisor(entity);
+    // } catch (BasicDataServiceException e) {
+    // response.setErrorCode(e.getCode());
+    // response.setStatus(ResponseStatus.FAILURE);
+    // } catch (Throwable e) {
+    // log.error("Can't perform operation", e);
+    // response.setErrorText(e.getMessage());
+    // response.setStatus(ResponseStatus.FAILURE);
+    // }
+    // return response;
+    // }
 
-            final SupervisorEntity entity = supervisorDozerConverter.convertToEntity(supervisor, true);
-            userManager.updateSupervisor(entity);
-        } catch (BasicDataServiceException e) {
-            response.setErrorCode(e.getCode());
-            response.setStatus(ResponseStatus.FAILURE);
-        } catch (Throwable e) {
-            log.error("Can't perform operation", e);
-            response.setErrorText(e.getMessage());
-            response.setStatus(ResponseStatus.FAILURE);
-        }
-        return response;
-    }
-
     @Override
-    @Transactional(readOnly=true)
+    @Transactional(readOnly = true)
     public List<User> getUsersForResource(final String resourceId, String requesterId, final int from, final int size) {
         final List<UserEntity> entityList = userManager.getUsersForResource(resourceId, requesterId, from, size);
         return userDozerConverter.convertToDTOList(entityList, false);
@@ -873,7 +844,7 @@ public class UserDataWebServiceImpl implements UserDataWebService{
     }
 
     @Override
-    @Transactional(readOnly=true)
+    @Transactional(readOnly = true)
     public List<User> getUsersForGroup(final String groupId, String requesterId, final int from, final int size) {
         final List<UserEntity> entityList = userManager.getUsersForGroup(groupId, requesterId, from, size);
         return userDozerConverter.convertToDTOList(entityList, false);
@@ -885,7 +856,7 @@ public class UserDataWebServiceImpl implements UserDataWebService{
     }
 
     @Override
-    @Transactional(readOnly=true)
+    @Transactional(readOnly = true)
     public List<User> getUsersForRole(final String roleId, String requesterId, final int from, final int size) {
         final List<UserEntity> entityList = userManager.getUsersForRole(roleId, requesterId, from, size);
         return userDozerConverter.convertToDTOList(entityList, false);
@@ -897,7 +868,7 @@ public class UserDataWebServiceImpl implements UserDataWebService{
     }
 
     @Override
-    public UserResponse saveUserInfo(final User user, final Supervisor supervisor) {
+    public UserResponse saveUserInfo(final User user, final String supervisorId) {
         final UserResponse response = new UserResponse(ResponseStatus.SUCCESS);
         try {
             if (user == null) {
@@ -905,12 +876,17 @@ public class UserDataWebServiceImpl implements UserDataWebService{
             }
             if (user.getUserId() == null) {
 
-//                final MetadataTypeSearchBean typeSearchBean = new MetadataTypeSearchBean();
-//                typeSearchBean.setGrouping("EMAIL");
-//                typeSearchBean.setActive(true);
+                // final MetadataTypeSearchBean typeSearchBean = new
+                // MetadataTypeSearchBean();
+                // typeSearchBean.setGrouping("EMAIL");
+                // typeSearchBean.setActive(true);
 
-//                final List<MetadataTypeEntity> entityList = metadataService.findBeans(typeSearchBean, 0, Integer.MAX_VALUE);
-//                List<MetadataType> typeList = (entityList != null) ? metaDataTypeDozerConverter.convertToDTOList(entityList, false) : null;
+                // final List<MetadataTypeEntity> entityList =
+                // metadataService.findBeans(typeSearchBean, 0,
+                // Integer.MAX_VALUE);
+                // List<MetadataType> typeList = (entityList != null) ?
+                // metaDataTypeDozerConverter.convertToDTOList(entityList,
+                // false) : null;
 
                 // create new user, need to merge user objects
                 List<Login> principalList = new ArrayList<Login>();
@@ -920,24 +896,25 @@ public class UserDataWebServiceImpl implements UserDataWebService{
                 principalList.add(principal);
                 user.setPrincipalList(principalList);
 
-
-//                if(CollectionUtils.isNotEmpty(typeList)){
-//                    Set<EmailAddress> emailAddressList = new HashSet<EmailAddress>();
-//
-//                    EmailAddress ea = new EmailAddress();
-//                    ea.setEmailAddress(user.getEmail());
-//                    ea.setIsDefault(true);
-//                    ea.setMetadataTypeId(typeList.get(0).getMetadataTypeId());
-//                    emailAddressList.add(ea);
-//                    user.setEmailAddresses(emailAddressList);
-//                }
+                // if(CollectionUtils.isNotEmpty(typeList)){
+                // Set<EmailAddress> emailAddressList = new
+                // HashSet<EmailAddress>();
+                //
+                // EmailAddress ea = new EmailAddress();
+                // ea.setEmailAddress(user.getEmail());
+                // ea.setIsDefault(true);
+                // ea.setMetadataTypeId(typeList.get(0).getMetadataTypeId());
+                // emailAddressList.add(ea);
+                // user.setEmailAddresses(emailAddressList);
+                // }
             }
 
             final UserEntity userEntity = userDozerConverter.convertToEntity(user, true);
             SupervisorEntity supervisorEntity = null;
-            if (supervisor != null)
-                supervisorEntity = supervisorDozerConverter.convertToEntity(supervisor, true);
-            String userId = userManager.saveUserInfo(userEntity, supervisorEntity);
+            // if (supervisorId != null)
+            // supervisorEntity =
+            // supervisorDozerConverter.convertToEntity(supervisor, true);
+            String userId = userManager.saveUserInfo(userEntity, supervisorId);
             user.setUserId(userId);
 
             if (user.getNotifyUserViaEmail()) {
@@ -1043,7 +1020,7 @@ public class UserDataWebServiceImpl implements UserDataWebService{
     }
 
     @Override
-    @Transactional(readOnly=true)
+    @Transactional(readOnly = true)
     public List<UserAttribute> getUserAttributes(final String userId) {
         final UserEntity user = userManager.getUser(userId, null);
         final List<UserAttributeEntity> attributes = (user != null && user.getUserAttributes() != null) ? new ArrayList<UserAttributeEntity>(user
@@ -1066,7 +1043,7 @@ public class UserDataWebServiceImpl implements UserDataWebService{
             response.setErrorCode(e.getCode());
             response.setStatus(ResponseStatus.FAILURE);
         } catch (BasicDataServiceException e) {
-        	response.setErrorTokenList(e.getErrorTokenList());
+            response.setErrorTokenList(e.getErrorTokenList());
             response.setErrorCode(e.getCode());
             response.setStatus(ResponseStatus.FAILURE);
         } catch (Throwable e) {
@@ -1078,37 +1055,30 @@ public class UserDataWebServiceImpl implements UserDataWebService{
     }
 
     /*
-    @Override
-    public SaveTemplateProfileResponse createNewUserProfile(final NewUserProfileRequestModel request) {
-        final SaveTemplateProfileResponse response = new SaveTemplateProfileResponse(ResponseStatus.SUCCESS);
-        try {
-            if (request == null || request.getUser() == null || CollectionUtils.isEmpty(request.getLoginList())) {
-                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
-            }
-
-            final CreateUserToken token = userProfileService.createNewUserProfile(request);
-            final UserEntity userEntity = token.getUser();
-            final String login = token.getLogin();
-            final String plaintextPassword = token.getPassword();
-            response.setUserId(userEntity.getUserId());
-            response.setPlaintextPassword(plaintextPassword);
-            response.setLogin(login);
-        } catch (PageTemplateException e) {
-            response.setCurrentValue(e.getCurrentValue());
-            response.setElementName(e.getElementName());
-            response.setErrorCode(e.getCode());
-            response.setStatus(ResponseStatus.FAILURE);
-        } catch (BasicDataServiceException e) {
-            response.setErrorCode(e.getCode());
-            response.setStatus(ResponseStatus.FAILURE);
-        } catch (Throwable e) {
-            log.error("Can't perform operation", e);
-            response.setErrorText(e.getMessage());
-            response.setStatus(ResponseStatus.FAILURE);
-        }
-        return response;
-    }
-    */
+     * @Override public SaveTemplateProfileResponse createNewUserProfile(final
+     * NewUserProfileRequestModel request) { final SaveTemplateProfileResponse
+     * response = new SaveTemplateProfileResponse(ResponseStatus.SUCCESS); try {
+     * if (request == null || request.getUser() == null ||
+     * CollectionUtils.isEmpty(request.getLoginList())) { throw new
+     * BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS); }
+     * 
+     * final CreateUserToken token =
+     * userProfileService.createNewUserProfile(request); final UserEntity
+     * userEntity = token.getUser(); final String login = token.getLogin();
+     * final String plaintextPassword = token.getPassword();
+     * response.setUserId(userEntity.getUserId());
+     * response.setPlaintextPassword(plaintextPassword);
+     * response.setLogin(login); } catch (PageTemplateException e) {
+     * response.setCurrentValue(e.getCurrentValue());
+     * response.setElementName(e.getElementName());
+     * response.setErrorCode(e.getCode());
+     * response.setStatus(ResponseStatus.FAILURE); } catch
+     * (BasicDataServiceException e) { response.setErrorCode(e.getCode());
+     * response.setStatus(ResponseStatus.FAILURE); } catch (Throwable e) {
+     * log.error("Can't perform operation", e);
+     * response.setErrorText(e.getMessage());
+     * response.setStatus(ResponseStatus.FAILURE); } return response; }
+     */
 
     @Override
     public Response acceptITPolicy(final String userId) {

@@ -52,7 +52,7 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
 			}
 			
 			if(CollectionUtils.isNotEmpty(resourceSearchBean.getExcludeResourceTypes())) {
-				criteria.add(Restrictions.not(Restrictions.in("resourceType.resourceTypeId", resourceSearchBean.getExcludeResourceTypes())));
+				criteria.add(Restrictions.not(Restrictions.in("resourceType.id", resourceSearchBean.getExcludeResourceTypes())));
 			}
 			
 			if(CollectionUtils.isNotEmpty(resourceSearchBean.getAttributes())) {
@@ -99,12 +99,15 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
 					}
 				}
 			}
+			
+			if(resource.getAdminResource() != null && StringUtils.isNotBlank(resource.getAdminResource().getResourceId())) {
+				criteria.add(Restrictions.eq("adminResource.resourceId", resource.getAdminResource().getResourceId()));
+			}
 
 			if (resource.getResourceType() != null) {
 				final ResourceTypeEntity type = resource.getResourceType();
-				if (StringUtils.isNotBlank(type.getResourceTypeId())) {
-					criteria.add(Restrictions.eq("resourceType.resourceTypeId",
-							type.getResourceTypeId()));
+				if (StringUtils.isNotBlank(type.getId())) {
+					criteria.add(Restrictions.eq("resourceType.id", type.getId()));
 				}
 			}
 
@@ -170,9 +173,9 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
 		return (ResourceEntity) criteria.uniqueResult();
 	}
 
-	public List<ResourceEntity> getResourcesByType(String resourceTypeId) {
+	public List<ResourceEntity> getResourcesByType(String id) {
 		Criteria criteria = getCriteria().createAlias("resourceType", "rt")
-				.add(Restrictions.eq("rt.resourceTypeId", resourceTypeId))
+				.add(Restrictions.eq("rt.id", id))
 				.addOrder(Order.asc("displayOrder"));
 		return (List<ResourceEntity>) criteria.list();
 	}
@@ -181,7 +184,7 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
 			final int from, final int size) {
 		final Criteria criteria = getCriteria()
 				.createAlias("roles", "rr")
-				.add(Restrictions.eq("rr.roleId", roleId))
+				.add(Restrictions.eq("rr.id", roleId))
 				.addOrder(Order.asc("name"));
 
 		if (from > -1) {
@@ -201,7 +204,7 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
 	public int getNumOfResourcesForRole(String roleId) {
 		final Criteria criteria = getCriteria()
 				.createAlias("roles", "rr")
-				.add(Restrictions.eq("rr.roleId", roleId))
+				.add(Restrictions.eq("rr.id", roleId))
 				.setProjection(rowCount());
 
 		return ((Number) criteria.uniqueResult()).intValue();
@@ -217,7 +220,7 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
 			final int from, final int size) {
 		final Criteria criteria = getCriteria()
 				.createAlias("groups", "rg")
-				.add(Restrictions.eq("rg.grpId", groupId))
+				.add(Restrictions.eq("rg.id", groupId))
 				.addOrder(Order.asc("name"));
 
 		if (from > -1) {
@@ -237,7 +240,7 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
 	public int getNumOfResourcesForGroup(final String groupId) {
 		final Criteria criteria = getCriteria()
 				.createAlias("groups", "rg")
-				.add(Restrictions.eq("rg.grpId", groupId))
+				.add(Restrictions.eq("rg.id", groupId))
 				.setProjection(rowCount());
 
 		return ((Number) criteria.uniqueResult()).intValue();

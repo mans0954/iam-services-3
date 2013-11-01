@@ -45,11 +45,11 @@ public class GroupEntity {
     @GeneratedValue(generator = "system-uuid")
     @GenericGenerator(name = "system-uuid", strategy = "uuid")
     @Column(name = "GRP_ID", length = 32)
-    private String grpId;
+    private String id;
 
     @Column(name = "GRP_NAME", length = 80)
     @Size(max = 80, message = "group.name.too.long")
-    private String grpName;
+    private String name;
 
     @Column(name = "CREATE_DATE", length = 19)
     private Date createDate;
@@ -64,17 +64,6 @@ public class GroupEntity {
     @Column(name = "COMPANY_ID", length = 32)
     private String companyId;
 
-    /*
-    @Column(name = "OWNER_ID", length = 20)
-    private String ownerId;
-
-    @Column(name = "PROVISION_METHOD", length = 20)
-    private String provisionMethod;
-
-    @Column(name = "PROVISION_OBJ_NAME", length = 80)
-    private String provisionObjName;
-    */
-
     @Column(name = "GROUP_DESC", length = 80)
     @Size(max = 80, message = "group.description.too.long")
     private String description;
@@ -87,14 +76,6 @@ public class GroupEntity {
 
     @Column(name = "LAST_UPDATED_BY", length = 20)
     private String lastUpdatedBy;
-
-    /*
-    @Column(name = "TYPE_ID", length = 20)
-    private String metadataTypeId;
-
-    @Column(name = "INTERNAL_GROUP_ID", length = 32)
-    private String internalGroupId;
-	*/
 
     @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinTable(name = "RESOURCE_GROUP", joinColumns = { @JoinColumn(name = "GRP_ID") }, inverseJoinColumns = { @JoinColumn(name = "RESOURCE_ID") })
@@ -128,21 +109,25 @@ public class GroupEntity {
     @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinTable(name = "USER_GRP", joinColumns = { @JoinColumn(name = "GRP_ID") }, inverseJoinColumns = { @JoinColumn(name = "USER_ID") })
     private Set<UserEntity> users = new HashSet<UserEntity>(0);
+    
+	@ManyToOne(fetch = FetchType.EAGER,cascade={CascadeType.ALL})
+    @JoinColumn(name="ADMIN_RESOURCE_ID", referencedColumnName = "RESOURCE_ID", insertable = true, updatable = true, nullable=true)
+	private ResourceEntity adminResource;
 
-    public String getGrpId() {
-        return grpId;
+    public String getId() {
+        return id;
     }
 
-    public void setGrpId(String grpId) {
-        this.grpId = grpId;
+    public void setId(String id) {
+        this.id = id;
     }
 
-    public String getGrpName() {
-        return grpName;
+    public String getName() {
+        return name;
     }
 
-    public void setGrpName(String grpName) {
-        this.grpName = grpName;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public Date getCreateDate() {
@@ -168,32 +153,6 @@ public class GroupEntity {
     public void setCompanyId(String companyId) {
         this.companyId = companyId;
     }
-
-    /*
-    public String getOwnerId() {
-        return ownerId;
-    }
-
-    public void setOwnerId(String ownerId) {
-        this.ownerId = ownerId;
-    }
-
-    public String getProvisionMethod() {
-        return provisionMethod;
-    }
-
-    public void setProvisionMethod(String provisionMethod) {
-        this.provisionMethod = provisionMethod;
-    }
-
-    public String getProvisionObjName() {
-        return provisionObjName;
-    }
-
-    public void setProvisionObjName(String provisionObjName) {
-        this.provisionObjName = provisionObjName;
-    }
-    */
 
     public String getDescription() {
         return description;
@@ -227,24 +186,6 @@ public class GroupEntity {
         this.lastUpdatedBy = lastUpdatedBy;
     }
 
-    /*
-    public String getMetadataTypeId() {
-        return metadataTypeId;
-    }
-
-    public void setMetadataTypeId(String metadataTypeId) {
-        this.metadataTypeId = metadataTypeId;
-    }
-
-    public String getInternalGroupId() {
-        return internalGroupId;
-    }
-
-    public void setInternalGroupId(String internalGroupId) {
-        this.internalGroupId = internalGroupId;
-    }
-    */
-
     public Set<GroupEntity> getParentGroups() {
         return parentGroups;
     }
@@ -267,7 +208,7 @@ public class GroupEntity {
         if (groupId != null) {
             if (childGroups != null) {
                 for (final GroupEntity entity : childGroups) {
-                    if (entity.getGrpId().equals(groupId)) {
+                    if (entity.getId().equals(groupId)) {
                         retVal = true;
                         break;
                     }
@@ -282,7 +223,7 @@ public class GroupEntity {
             if (childGroups != null) {
                 for (final Iterator<GroupEntity> it = childGroups.iterator(); it.hasNext();) {
                     final GroupEntity group = it.next();
-                    if (group.getGrpId().equals(groupId)) {
+                    if (group.getId().equals(groupId)) {
                         it.remove();
                         break;
                     }
@@ -339,6 +280,14 @@ public class GroupEntity {
 		this.managedSystem = managedSystem;
 	}
 
+	public ResourceEntity getAdminResource() {
+		return adminResource;
+	}
+
+	public void setAdminResource(ResourceEntity adminResource) {
+		this.adminResource = adminResource;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -349,8 +298,8 @@ public class GroupEntity {
 				+ ((createdBy == null) ? 0 : createdBy.hashCode());
 		result = prime * result
 				+ ((description == null) ? 0 : description.hashCode());
-		result = prime * result + ((grpId == null) ? 0 : grpId.hashCode());
-		result = prime * result + ((grpName == null) ? 0 : grpName.hashCode());
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result
 				+ ((lastUpdate == null) ? 0 : lastUpdate.hashCode());
 		result = prime * result
@@ -388,15 +337,15 @@ public class GroupEntity {
 				return false;
 		} else if (!description.equals(other.description))
 			return false;
-		if (grpId == null) {
-			if (other.grpId != null)
+		if (id == null) {
+			if (other.id != null)
 				return false;
-		} else if (!grpId.equals(other.grpId))
+		} else if (!id.equals(other.id))
 			return false;
-		if (grpName == null) {
-			if (other.grpName != null)
+		if (name == null) {
+			if (other.name != null)
 				return false;
-		} else if (!grpName.equals(other.grpName))
+		} else if (!name.equals(other.name))
 			return false;
 		if (lastUpdate == null) {
 			if (other.lastUpdate != null)
@@ -429,8 +378,8 @@ public class GroupEntity {
 	@Override
 	public String toString() {
 		return String
-				.format("GroupEntity [grpId=%s, grpName=%s, createDate=%s, createdBy=%s, managedSystem=%s, description=%s, status=%s, lastUpdate=%s, lastUpdatedBy=%s]",
-						grpId, grpName, createDate, createdBy, managedSystem,
+				.format("GroupEntity [id=%s, name=%s, createDate=%s, createdBy=%s, managedSystem=%s, description=%s, status=%s, lastUpdate=%s, lastUpdatedBy=%s]",
+						id, name, createDate, createdBy, managedSystem,
 						description, status, lastUpdate, lastUpdatedBy);
 	}
 

@@ -41,74 +41,7 @@ public class RequestDataServiceImpl implements RequestDataService {
 		return requestDao.findById(requestId);
 	}
 
-	public void removeRequest(String requestId) {
-		ProvisionRequestEntity request = requestDao.findById(requestId);
-		if(request != null) {
-			requestDao.delete(request);
-		}
-
-	}
-
-	/*
-	public List<ProvisionRequestEntity> search(SearchRequest search) {
-		return requestDao.search(search);
-	}
-	*/
-	
-	public List<ProvisionRequestEntity> requestByApprover(String approverId, String status) {
-		return requestDao.findRequestByApprover(approverId, status);
-	}
-
-	public void setRequestStatus(String requestId, String approverId, String status) {
-		final ProvisionRequestEntity request = requestDao.findById(requestId);
-		request.setStatus(status);
-		request.setStatusDate(new Date(System.currentTimeMillis()));
-		requestDao.update(request);
-	}
-
 	public void updateRequest(ProvisionRequestEntity request) {
 		requestDao.merge(request);
-	}
-	
-	private Set<RequestApprover> getApprover(List<ApproverAssociation> approverList,	Supervisor supervisor) {
-		Set<RequestApprover> reqApproverList = new HashSet<RequestApprover>();
-		
-		// look at the first approver to figure the type of approver 
-		if (approverList == null || approverList.isEmpty()) {
-			 return null;
-		}
-		ApproverAssociation approver = approverList.get(0);
-		AssociationType assocType = approver.getAssociationType();
-		if (assocType == null) {
-			throw new IllegalArgumentException("Approver association is not defined.");
-		}
-		
-		
-		if (AssociationType.SUPERVISOR.equals(assocType)) {
-
-			String supervisorUserId = supervisor.getSupervisor().getUserId();
-			RequestApprover app = new RequestApprover();
-			
-			app.setApproverId(supervisorUserId);
-			app.setApproverType("SUPERVISOR");
-			app.setApproverLevel(approver.getApproverLevel());
-			reqApproverList.add(app);
-			return reqApproverList;
-		}
-		if (AssociationType.GROUP.equals(assocType) || AssociationType.ROLE.equals(assocType)) {
-
-			for ( ApproverAssociation assoc : approverList) {
-				RequestApprover app = new RequestApprover();
-				app.setApproverType(assocType.getValue());
-				app.setApproverId(assoc.getOnApproveEntityId());
-				app.setApproverLevel(app.getApproverLevel());
-				reqApproverList.add(app);
-			}
-
-			return reqApproverList;
-		}
-
-		return null;
-		
 	}
 }

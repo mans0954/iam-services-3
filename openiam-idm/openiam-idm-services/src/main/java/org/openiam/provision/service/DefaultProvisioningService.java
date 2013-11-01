@@ -733,8 +733,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         if (CollectionUtils.isNotEmpty(roleList)) {
             for (final RoleEntity role : roleList) {
                 final List<Resource> resourceList = resourceDataService
-                        .getResourcesForRole(role.getRoleId(), 0,
-                                Integer.MAX_VALUE);
+                        .getResourcesForRole(role.getId(), 0, Integer.MAX_VALUE);
                 if (CollectionUtils.isNotEmpty(resourceList)) {
                     for (final Resource resource : resourceList) {
                         ManagedSysDto managedSys = managedSysService.getManagedSysByResource(resource.getResourceId());
@@ -1859,8 +1858,8 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         final Set<Resource> resourceList = new HashSet<Resource>();
         if (CollectionUtils.isNotEmpty(roleSet)) {
             for (Role rl : roleSet) {
-                if (rl.getRoleId() != null) {
-                    List<ResourceEntity> resources = resourceService.getResourcesForRole(rl.getRoleId(), -1, -1);
+                if (rl.getId() != null) {
+                    List<ResourceEntity> resources = resourceService.getResourcesForRole(rl.getId(), -1, -1);
                     if (CollectionUtils.isNotEmpty(resources)) {
                         resourceList.addAll(resourceDozerConverter.convertToDTOList(resources, false));
                     }

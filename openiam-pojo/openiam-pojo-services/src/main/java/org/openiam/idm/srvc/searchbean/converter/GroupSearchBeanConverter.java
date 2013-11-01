@@ -10,8 +10,8 @@ public class GroupSearchBeanConverter implements SearchBeanConverter<GroupEntity
 	@Override
 	public GroupEntity convert(GroupSearchBean searchBean) {
 		final GroupEntity groupEntity = new GroupEntity();
-		groupEntity.setGrpId(searchBean.getKey());
-		groupEntity.setGrpName(searchBean.getName());
+		groupEntity.setId(searchBean.getKey());
+		groupEntity.setName(searchBean.getName());
 		return groupEntity;
 	}
 

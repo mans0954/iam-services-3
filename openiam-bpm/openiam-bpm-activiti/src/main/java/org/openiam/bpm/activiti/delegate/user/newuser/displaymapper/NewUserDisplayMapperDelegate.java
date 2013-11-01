@@ -79,7 +79,7 @@ public class NewUserDisplayMapperDelegate extends AbstractUserDisplayMapper impl
 				if(StringUtils.isNotBlank(roleId)) {
 					final RoleEntity role = roleDataService.getRole(roleId);
 					if(role != null) {
-						metadataMap.put(String.format("Role %s", idx), role.getRoleName());
+						metadataMap.put(String.format("Role %s", idx), role.getName());
 						idx++;
 					}
 				}
@@ -92,7 +92,7 @@ public class NewUserDisplayMapperDelegate extends AbstractUserDisplayMapper impl
 			for(final String groupId : groupIds) {
 				final GroupEntity group = groupDataService.getGroup(groupId);
 				if(group != null) {
-					metadataMap.put(String.format("Group %s", idx), group.getGrpName());
+					metadataMap.put(String.format("Group %s", idx), group.getName());
 					idx++;
 				}
 			}
@@ -104,7 +104,7 @@ public class NewUserDisplayMapperDelegate extends AbstractUserDisplayMapper impl
 			for(final String organizationId : organizationIds) {
 				final OrganizationEntity organization = organizationService.getOrganization(organizationId);
 				if(organization != null) {
-					metadataMap.put(String.format("Organization %s", idx), organization.getOrganizationName());
+					metadataMap.put(String.format("Organization %s", idx), organization.getName());
 					idx++;
 				}
 			}

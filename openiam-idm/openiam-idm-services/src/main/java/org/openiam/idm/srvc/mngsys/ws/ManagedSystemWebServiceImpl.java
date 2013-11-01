@@ -62,9 +62,6 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
     private ApproverAssociationDAO approverAssociationDao;
 
     @Autowired
-    private UserDataService userManager;
-
-    @Autowired
     private KeyManagementService keyManagementService;
 
     @Autowired
@@ -174,11 +171,13 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
         return sysDto;
     }
 
+    @Override
     public List<ManagedSysDto> getAllManagedSys() {
         final List<ManagedSysEntity> sysList = managedSystemService.getAllManagedSys();
         return managedSysDozerConverter.convertToDTOList(sysList, true);
     }
 
+    @Override
     public Response removeManagedSystem(String sysId) {
     	final Response response = new Response(ResponseStatus.SUCCESS);
     	try {
@@ -210,6 +209,7 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
      * @param objectType
      * @return
      */
+    @Override
     public ManagedSystemObjectMatch[] managedSysObjectParam(
             String managedSystemId, String objectType) {
         if (managedSystemId == null) {
@@ -230,6 +230,7 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
         return objAry;
     }
 
+    @Override
     public ManagedSysDto getManagedSysByResource(String resourceId) {
     	ManagedSysDto sysDto = null;
         if(resourceId != null) {
@@ -250,62 +251,78 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
         return sysDto;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService#getApproversByAction
-     * (java.lang.String, java.lang.String, int)
-     */
-    /*
-     * public List<ApproverAssociation> getApproversByAction(String
-     * managedSysId, String action, int level) { if ( managedSysId == null) {
-     * throw new NullPointerException("managedSysId is null"); } return
-     * resourceApproverDao.findApproversByAction(managedSysId, action, level); }
-     */
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService#getApproversByResource
-     * (java.lang.String)
-     */
-    /*
-     * public List<ApproverAssociation> getApproversByResource(String
-     * managedSysId) { if ( managedSysId == null) { throw new
-     * NullPointerException("managedSysId is null"); } return
-     * resourceApproverDao.findApproversByResource(managedSysId); }
-     */
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService#getManagedSysByName
-     * (java.lang.String)
-     */
-    public ManagedSysDto getManagedSysByName(String name) {
-        if (name == null) {
-            throw new NullPointerException(
-                    "Parameter Managed system name is null");
-        }
-        return managedSysDozerConverter.convertToDTO(
-                managedSystemService.getManagedSysByName(name), true);
-    }
-
     // Approver Association
     // ================================================================
 
     @Override
     public List<ApproverAssociation> getApproverAssociations(
             ApproverAssocationSearchBean searchBean, int from, int size) {
-        final ApproverAssociationEntity entity = approverSearchBeanConverter
-                .convert(searchBean);
-        final List<ApproverAssociationEntity> entityList = approverAssociationDao
-                .getByExample(entity, from, size);
-        return (entityList != null) ? approverAssociationDozerConverter
-                .convertToDTOList(entityList, searchBean.isDeepCopy()) : null;
+        final ApproverAssociationEntity entity = approverSearchBeanConverter.convert(searchBean);
+        final List<ApproverAssociationEntity> entityList = approverAssociationDao.getByExample(entity, from, size);
+        return (entityList != null) ? approverAssociationDozerConverter.convertToDTOList(entityList, searchBean.isDeepCopy()) : null;
+    }
+    
+    @Override
+	public Response saveApproverAssociations(final List<ApproverAssociation> approverAssociationList) {
+    	final Response response = new Response(ResponseStatus.SUCCESS);
+    	 try {
+    		 if(CollectionUtils.isNotEmpty(approverAssociationList)) {
+    			 for(final ApproverAssociation approverAssociation : approverAssociationList) {
+		             if (approverAssociation == null) {
+		                 throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+		             }
+		
+		             if (StringUtils.isBlank(approverAssociation.getApproverEntityId())
+		                     || approverAssociation.getApproverEntityType() == null) {
+		                 approverAssociation.setApproverEntityId(null);
+		                 approverAssociation.setApproverEntityType(null);
+		             }
+		
+		             if (StringUtils.isBlank(approverAssociation.getOnApproveEntityId())
+		                     || approverAssociation.getOnApproveEntityType() == null) {
+		                 approverAssociation.setOnApproveEntityId(null);
+		                 approverAssociation.setOnApproveEntityType(null);
+		             }
+		
+		             if (StringUtils.isBlank(approverAssociation.getOnRejectEntityId())
+		                     || approverAssociation.getOnRejectEntityType() == null) {
+		                 approverAssociation.setOnRejectEntityId(null);
+		                 approverAssociation.setOnRejectEntityType(null);
+		             }
+		
+		             if (StringUtils.isBlank(approverAssociation.getAssociationEntityId())
+		                     || approverAssociation.getAssociationType() == null) {
+		                 approverAssociation.setAssociationEntityId(null);
+		                 approverAssociation.setAssociationType(null);
+		             }
+		
+		             if (approverAssociation.getApproverEntityType() == null
+		                     || StringUtils.isBlank(approverAssociation
+		                             .getApproverEntityId())) {
+		                 throw new BasicDataServiceException(
+		                         ResponseCode.REQUEST_APPROVERS_NOT_SET);
+		             }
+		             
+		             if(approverAssociation.getApproverLevel() == null) {
+		            	 approverAssociation.setApproverLevel(Integer.valueOf(0));
+		             }
+	    		 }
+    			 
+
+                 final List<ApproverAssociationEntity> entityList = approverAssociationDozerConverter.convertToEntityList(approverAssociationList, true);
+                 managedSystemService.saveApproverAssociations(entityList, entityList.get(0).getAssociationType(), entityList.get(0).getAssociationEntityId());
+    		 }
+         } catch (BasicDataServiceException e) {
+             response.setErrorCode(e.getCode());
+             response.setStatus(ResponseStatus.FAILURE);
+         } catch (Throwable e) {
+             log.error(e);
+             response.setStatus(ResponseStatus.FAILURE);
+         }
+    	return response;
     }
 
+    @Override
     public Response saveApproverAssociation(
             final ApproverAssociation approverAssociation) {
         final Response response = new Response(ResponseStatus.SUCCESS);
@@ -364,14 +381,8 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
         return response;
     }
 
-    public ApproverAssociation getApproverAssociation(
-            String approverAssociationId) {
-        final ApproverAssociationEntity entity = approverAssociationDao
-                .findById(approverAssociationId);
-        return (entity != null) ? approverAssociationDozerConverter
-                .convertToDTO(entity, true) : null;
-    }
 
+    @Override
     public Response removeApproverAssociation(String approverAssociationId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
@@ -425,10 +436,12 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
         return response;
     }
 
+    @Override
     public void removeManagedSystemObjectMatch(ManagedSystemObjectMatch obj) {
         this.managedSystemService.deleteManagedSystemObjectMatch(obj.getObjectSearchId());
     }
 
+    @Override
     public AttributeMap getAttributeMap(String attributeMapId) {
         if (attributeMapId == null) {
             throw new IllegalArgumentException("attributeMapId is null");
@@ -439,6 +452,7 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
                 obj, true);
     }
 
+    @Override
     public AttributeMap addAttributeMap(AttributeMap attributeMap) {
         if (attributeMap == null) {
             throw new IllegalArgumentException("AttributeMap object is null");
@@ -470,6 +484,7 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
             return attributeMapDozerConverter.convertToDTOList(res, true);
     }
 
+    @Override
     public AttributeMap updateAttributeMap(AttributeMap attributeMap) {
         if (attributeMap == null) {
             throw new IllegalArgumentException("attributeMap object is null");
@@ -479,6 +494,7 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
         return attributeMap;
     }
 
+    @Override
     public void removeAttributeMap(String attributeMapId) {
         if (attributeMapId == null) {
             throw new IllegalArgumentException("attributeMapId is null");
@@ -486,6 +502,7 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
         managedSystemService.removeAttributeMap(attributeMapId);
     }
 
+    @Override
     public void removeResourceAttributeMaps(String resourceId) {
         if (resourceId == null) {
             throw new IllegalArgumentException("resourceId is null");
@@ -494,6 +511,7 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
         managedSystemService.removeResourceAttributeMaps(resourceId);
     }
 
+    @Override
     public List<AttributeMap> getResourceAttributeMaps(String resourceId) {
         if (resourceId == null) {
             throw new IllegalArgumentException("resourceId is null");
@@ -516,6 +534,7 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
                 .convertToDTOList(ameList, true);
     }
 
+    @Override
     public List<AttributeMap> getAllAttributeMaps() {
         List<AttributeMapEntity> amEList = managedSystemService
                 .getAllAttributeMaps();
@@ -523,6 +542,7 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
                 .convertToDTOList(amEList, true);
     }
 
+    @Override
     public List<DefaultReconciliationAttributeMap> getAllDefaultReconcileMap() {
         List<DefaultReconciliationAttributeMapEntity> list = managedSystemService
                 .getAllDefaultReconAttributeMap();

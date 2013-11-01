@@ -83,7 +83,9 @@ import java.util.*;
         "roles",
         "resources",
         "groups",
-        "affiliations"
+        "affiliations",
+        "supervisors",
+        "subordinates"
 })
 @XmlSeeAlso({
         Login.class,
@@ -220,6 +222,10 @@ public class User extends org.openiam.base.BaseObject {
     private String login;
     private String password;
     private Boolean notifyUserViaEmail=true;
+
+    private Set<Supervisor> supervisors;
+
+    private Set<Supervisor> subordinates;
 
     // Constructors
 
@@ -669,25 +675,6 @@ public class User extends org.openiam.base.BaseObject {
         this.mailCode = mailCode;
     }
 
-    /*
-     public Set<Phone> getPhones() {
-         return phones;
-     }f
-
-     public void setPhones(Set<Phone> phones) {
-         this.phones = phones;
-     }
-     */
-
-    /*public Set<EmailAddress> getEmailAddresses() {
-            return emailAddresses;
-        }
-
-        public void setEmailAddresses(Set<EmailAddress> emailAddresses) {
-            this.emailAddresses = emailAddresses;
-        }
-    */
-
     public Set<Role> getRoles() {
         return roles;
     }
@@ -696,7 +683,7 @@ public class User extends org.openiam.base.BaseObject {
     	if(id != null) {
     		if(roles != null) {
     			for(final Role role : roles) {
-    				if(StringUtils.equals(role.getRoleId(), id)) {
+    				if(StringUtils.equals(role.getId(), id)) {
     					role.setOperation(AttributeOperationEnum.DELETE);
     					break;
     				}
@@ -737,7 +724,7 @@ public class User extends org.openiam.base.BaseObject {
     	if(groupId != null) {
     		if(groups != null) {
     			for(final Group group : groups) {
-    				if(StringUtils.equals(group.getGrpId(), groupId)) {
+    				if(StringUtils.equals(group.getId(), groupId)) {
     					group.setOperation(AttributeOperationEnum.DELETE);
     					break;
     				}
@@ -1243,6 +1230,22 @@ public class User extends org.openiam.base.BaseObject {
 
     public void setNotifyUserViaEmail(Boolean notifyUserViaEmail) {
         this.notifyUserViaEmail = notifyUserViaEmail;
+    }
+
+    public Set<Supervisor> getSupervisors() {
+        return supervisors;
+    }
+
+    public void setSupervisors(Set<Supervisor> supervisorsSet) {
+        this.supervisors = supervisorsSet;
+    }
+
+    public Set<Supervisor> getSubordinates() {
+        return subordinates;
+    }
+
+    public void setSubordinates(Set<Supervisor> subordinatesSet) {
+        this.subordinates = subordinatesSet;
     }
 
 

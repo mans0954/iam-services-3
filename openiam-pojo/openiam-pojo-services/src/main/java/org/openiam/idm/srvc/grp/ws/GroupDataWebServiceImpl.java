@@ -79,30 +79,30 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
 			if(group == null) {
 				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
 			}
-            auditBuilder.setRequestorUserId(group.getRequestorUserId()).setTargetGroup(group.getGrpId());
-            if(StringUtils.isBlank(group.getGrpId())) {
+            auditBuilder.setRequestorUserId(group.getRequestorUserId()).setTargetGroup(group.getId());
+            if(StringUtils.isBlank(group.getId())) {
                 auditBuilder.setAction(AuditAction.ADD_GROUP);
             }
 
 
-			if(StringUtils.isBlank(group.getGrpName())) {
+			if(StringUtils.isBlank(group.getName())) {
 				throw new BasicDataServiceException(ResponseCode.NO_NAME);
 			}
 			
-			final GroupEntity found = groupManager.getGroupByName(group.getGrpName(), null);
+			final GroupEntity found = groupManager.getGroupByName(group.getName(), null);
 			if(found != null) {
-				if(StringUtils.isBlank(group.getGrpId()) && found != null) {
+				if(StringUtils.isBlank(group.getId()) && found != null) {
 					throw new BasicDataServiceException(ResponseCode.NAME_TAKEN, "Group name is already in use");
 				}
 			
-				if(StringUtils.isNotBlank(group.getGrpId()) && !group.getGrpId().equals(found.getGrpId())) {
+				if(StringUtils.isNotBlank(group.getId()) && !group.getId().equals(found.getId())) {
 					throw new BasicDataServiceException(ResponseCode.NAME_TAKEN, "Group name is already in use");
 				}
 			}
 			
 			GroupEntity entity = groupDozerConverter.convertToEntity(group, true);
 			groupManager.saveGroup(entity);
-			response.setResponseValue(entity.getGrpId());
+			response.setResponseValue(entity.getId());
             auditBuilder.succeed();
 		} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);

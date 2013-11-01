@@ -55,7 +55,7 @@ public interface GroupDataWebService {
     /**
      * This method removes group from openIAM database for a particular groupId.
      *
-     * @param groupId The grpId to be removed.
+     * @param groupId The id to be removed.
      * @return - a Response Object which contains operation status.
      */
     @WebMethod

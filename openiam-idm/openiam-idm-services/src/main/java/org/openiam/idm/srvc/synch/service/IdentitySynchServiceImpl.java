@@ -392,7 +392,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
             roleId = st.nextToken();
         }
         Role r = new Role();
-        r.setRoleId(roleId);
+        r.setId(roleId);
 
         return r;
     }
@@ -416,7 +416,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
 
         // create role object to show role membership
         Role rl = new Role();
-        rl.setRoleId(roleId);
+        rl.setId(roleId);
 
         // all the provisioning service
         for ( User user :  searchResult) {

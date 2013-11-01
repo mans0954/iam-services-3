@@ -13,10 +13,10 @@ public class UserRoleGroup implements Serializable, Group {
     private String id = null;
     private Set<Principal> users = new HashSet<Principal>();
 
-    public UserRoleGroup(String name, String roleId) {
+    public UserRoleGroup(String name, String id) {
         super();
         this.name = name;
-        this.id = roleId;
+        this.id = id;
     }
     @Override
     public boolean addMember(Principal user) {
