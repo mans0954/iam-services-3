@@ -44,7 +44,7 @@ public interface ConnectorService {
     @WebMethod(action = "http://www.openiam.org/service/connector/ConnectorService/modify")
     ObjectResponse modify(@WebParam(name = "reqType", targetNamespace = "") CrudRequest<? extends ExtensibleObject> reqType);
 
-    @WebMethod
+    @WebMethod(action = "http://www.openiam.org/service/connector/ConnectorService/testConnection")
     ResponseType testConnection( @WebParam(name = "reqType", targetNamespace = "") RequestType<? extends ExtensibleObject> reqType);
 
     @WebMethod(action = "http://www.openiam.org/service/connector/ConnectorService/delete")
