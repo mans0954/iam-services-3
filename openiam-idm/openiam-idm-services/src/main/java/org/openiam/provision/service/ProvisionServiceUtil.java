@@ -4,7 +4,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.openiam.exception.ScriptEngineException;
+import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
+import org.openiam.idm.srvc.policy.domain.PolicyEntity;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.script.ScriptIntegration;
 
@@ -15,6 +17,24 @@ public class ProvisionServiceUtil {
         Object output = "";
         if (attr.getReconResAttribute().getAttributePolicy() != null) {
             Policy policy = attr.getReconResAttribute().getAttributePolicy();
+            String url = policy.getRuleSrcUrl();
+            if (url != null) {
+                output = se.execute(bindingMap, url);
+            }
+        } else if (attr.getReconResAttribute().getDefaultAttributePolicy() != null) {
+            output = attr.getReconResAttribute().getDefaultAttributePolicy()
+                    .getDefaultAttributeMapId();
+        }
+        return output;
+    }
+
+    public static Object getOutputFromAttrMap(AttributeMapEntity attr,
+            Map<String, Object> bindingMap, ScriptIntegration se)
+            throws ScriptEngineException {
+        Object output = "";
+        if (attr.getReconResAttribute().getAttributePolicy() != null) {
+            PolicyEntity policy = attr.getReconResAttribute()
+                    .getAttributePolicy();
             String url = policy.getRuleSrcUrl();
             if (url != null) {
                 output = se.execute(bindingMap, url);
