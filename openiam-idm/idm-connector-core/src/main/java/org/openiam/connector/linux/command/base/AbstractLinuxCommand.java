@@ -157,6 +157,30 @@ public abstract class AbstractLinuxCommand<Request extends RequestType, Response
         return group;
     }
 
+    protected String getGroups(LinuxUser user, SSHAgent ssh) {
+        String groups = "";
+        try {
+            groups = ssh.executeCommand(user.getUserGroupsCommand());
+        } catch (Exception e) {
+            log.error(e);
+            log.error(e.getStackTrace());
+            return groups;
+        }
+        if (StringUtils.hasText(groups)) {
+            try {
+                String[] gr = groups.split(":");
+                if (gr != null && gr.length > 1) {
+                    log.info("GROUPS FOR USER:" + user.getLogin() + ": "
+                            + gr[1].trim());
+                    return gr[1].trim();
+                }
+            } catch (Exception e) {
+                log.info("groups not founded");
+            }
+        }
+        return groups;
+    }
+
     protected String getPassword(String managedSystemId)
             throws ConnectorDataException {
         ManagedSysEntity mSys = managedSysService

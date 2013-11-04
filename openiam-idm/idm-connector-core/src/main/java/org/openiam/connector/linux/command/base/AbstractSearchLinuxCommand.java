@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.openiam.connector.linux.data.LinuxUser;
 import org.openiam.connector.linux.ssh.SSHAgent;
 import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.connector.type.ObjectValue;
@@ -35,16 +36,19 @@ public abstract class AbstractSearchLinuxCommand<ExtObject extends ExtensibleObj
             List<ObjectValue> objectValues = new ArrayList<ObjectValue>();
 
             String key = this.getKeyField(searchRequest.getTargetID());
-
             if (!StringUtils.hasText(key)) {
                 throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR,
                         "Key field not defined in policyMap");
             }
             for (String userIdentity : usersIdentities) {
+                LinuxUser user = objectToLinuxUser(userIdentity, null);
                 ObjectValue obj = new ObjectValue();
                 obj.setAttributeList(new ArrayList<ExtensibleAttribute>());
                 obj.getAttributeList().add(
                         new ExtensibleAttribute(key, userIdentity));
+                obj.getAttributeList().add(
+                        new ExtensibleAttribute("groups", this.getGroups(user,
+                                ssh)));
                 obj.setObjectIdentity(userIdentity);
                 objectValues.add(obj);
             }

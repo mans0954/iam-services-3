@@ -40,23 +40,9 @@ public class LookupUserLinuxCommand extends
                             ov.setAttributeList(new LinkedList<ExtensibleAttribute>());
                             ov.getAttributeList().add(
                                     new ExtensibleAttribute(key, result));
-                            String groups = ssh.executeCommand(user
-                                    .getUserGroupsCommand());
-                            if (StringUtils.hasText(groups)) {
-                                try {
-                                    String[] gr = groups.split(":");
-                                    if (gr != null && gr.length > 1) {
-                                        ov.getAttributeList().add(
-                                                new ExtensibleAttribute(
-                                                        "groups", gr[1]
-                                                                .trim()));
-                                        log.info("GROUPS FOR USER:" + result
-                                                + ": " + gr[1].trim());
-                                    }
-                                } catch (Exception e) {
-                                    log.info("groups not founded");
-                                }
-                            }
+                            ov.getAttributeList().add(
+                                    new ExtensibleAttribute("groups", this
+                                            .getGroups(user, ssh)));
                             ov.setObjectIdentity(key);
                             ovList.add(ov);
                             responseType.setObjectList(ovList);
