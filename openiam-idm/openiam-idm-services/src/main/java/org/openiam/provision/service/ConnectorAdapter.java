@@ -582,12 +582,7 @@ public class ConnectorAdapter {
                             .getServiceUrl().length() > 0)) {
                 RequestType<ExtensibleUser> rt = new RequestType<ExtensibleUser>();
                 rt.setTargetID(managedSys.getManagedSysId());
-//                rt.setRequestID("R" + UUIDGen.getUUID());
-//                rt.setExtensibleObject(new ExtensibleUser());
-//                rt.setHostUrl(managedSys.getHostUrl());
-//                rt.setHostLoginId(managedSys.getUserId());
-//                rt.setHostLoginPassword(managedSys.getDecryptPassword());
-//                rt.setScriptHandler(managedSys.getTestConnectionHandler());
+                rt.setScriptHandler(managedSys.getTestConnectionHandler());
                 MuleMessage msg = getService(connector, rt,
                         connector.getServiceUrl(), "testConnection",
                         muleContext);
