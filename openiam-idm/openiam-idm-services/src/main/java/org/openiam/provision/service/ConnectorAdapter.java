@@ -579,8 +579,8 @@ public class ConnectorAdapter {
                     && (connector.getServiceUrl() != null && connector
                             .getServiceUrl().length() > 0)) {
                 RequestType<ExtensibleUser> rt = new RequestType<ExtensibleUser>();
-                rt.setExtensibleObject(new ExtensibleUser());
                 rt.setTargetID(managedSys.getManagedSysId());
+                rt.setScriptHandler(managedSys.getTestConnectionHandler());
                 MuleMessage msg = getService(connector, rt,
                         connector.getServiceUrl(), "testConnection",
                         muleContext);
