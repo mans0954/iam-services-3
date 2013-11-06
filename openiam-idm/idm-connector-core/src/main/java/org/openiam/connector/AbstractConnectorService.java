@@ -131,7 +131,7 @@ public abstract class AbstractConnectorService implements ConnectorService,Appli
                 //TODO needs to be fixed.
                 if (commandType == CommandType.DELETE ||
                         commandType == CommandType.RESET_PASSWORD ||
-                        commandType == CommandType.SET_PASSWORD) {
+                        commandType == CommandType.SET_PASSWORD || commandType == CommandType.TEST) {
                 	cmd = connectorCommandFactory.getConnectorCommand(commandType, ExtensibleObjectType.USER, this.connectorType);
                 } else {
                 	cmd = connectorCommandFactory.getConnectorCommand(commandType, requestType.getExtensibleObject().getExtensibleObjectType(), this.connectorType);
