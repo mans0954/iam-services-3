@@ -18,6 +18,7 @@ import org.openiam.dozer.converter.ResourcePropDozerConverter;
 import org.openiam.dozer.converter.ResourceTypeDozerConverter;
 import org.openiam.idm.searchbeans.ResourceSearchBean;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
+import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
 import org.openiam.idm.srvc.audit.domain.AuditLogBuilder;
 import org.openiam.idm.srvc.base.AbstractBaseService;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
@@ -683,6 +684,22 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
         }
         return resourceList;
 	}
+
+    @Override
+    public List<Resource> getResourcesForUserByType(final String userId, final String resourceTypeId) {
+        List<Resource> resourceList = null;
+        AuditLogBuilder auditBuilder = auditLogProvider.getAuditLogBuilder();
+        auditBuilder.setAction(AuditAction.GET_RESOURCE_FOR_USER_BY_TYPE).setTargetUser(userId).addAttribute(AuditAttributeName.RESOURCE_TYPE, resourceTypeId);
+        try{
+            final List<ResourceEntity> entityList = resourceService.getResourcesForUserByType(userId, resourceTypeId);
+            resourceList = resourceConverter.convertToDTOList(entityList, true);
+        } catch(Throwable e) {
+            auditBuilder.fail().setException(e);
+        }finally {
+            auditLogService.enqueue(auditBuilder);
+        }
+        return resourceList;
+    }
 
 	@Override
 	public Response canAddUserToResource(String userId, String resourceId) {

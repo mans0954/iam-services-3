@@ -27,7 +27,7 @@ public interface ResourceService {
 	public List<ResourceEntity> getResourcesForGroup(final String groupId, final int from, final int size);
 	public int getNumOfResourceForUser(final String userId);
 	public List<ResourceEntity> getResourcesForUser(final String userId, final int from, final int size);
-
+    public List<ResourceEntity> getResourcesForUserByType(String userId, String resourceTypeId);
 
 	public void save(final ResourceTypeEntity entity);
 	public ResourceTypeEntity findResourceTypeById(final String id);

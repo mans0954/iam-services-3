@@ -299,6 +299,15 @@ public interface ResourceDataService {
 			@WebParam(name = "from", targetNamespace = "") int from,
 			@WebParam(name = "size", targetNamespace = "") int size);
 
+    /**
+     * Gets Resources that a User is entitled to by Resource type
+     * @param userId - the User ID
+     * @param resourceTypeId - resource type ID
+     * @return
+     */
+    @WebMethod
+    public List<Resource> getResourcesForUserByType(@WebParam(name = "userId", targetNamespace = "") final String userId,
+                                                    @WebParam(name = "resourceTypeId", targetNamespace = "") final String resourceTypeId);
 	/**
 	 * Tells the caller if the user can be entitled to this resource
 	 * @param userId - the User ID
