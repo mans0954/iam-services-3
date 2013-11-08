@@ -227,14 +227,21 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 	}
 
 	@Override
-	public List<Role> getRolesForUser(final String userId, final String requesterId, final int from, final int size) {
-       return getRolesForUser(userId, requesterId, from, size, false);
+	public List<Role> getRolesForUser(final String userId, final String requesterId, Boolean deepFlag, final int from, final int size) {
+        List<Role> roleList = null;
+        AuditLogBuilder auditBuilder = auditLogProvider.getAuditLogBuilder();
+        auditBuilder.setAction(AuditAction.GET_ROLE_FOR_USER).setRequestorUserId(requesterId).setTargetUser(userId);
+        try{
+            final List<RoleEntity> entityList = roleDataService.getRolesForUser(userId, requesterId, from, size);
+            roleList = roleDozerConverter.convertToDTOList(entityList, deepFlag);
+            auditBuilder.succeed();
+        } catch(Throwable e) {
+            auditBuilder.fail().setException(e);
+        }finally {
+            auditLogService.enqueue(auditBuilder);
+        }
+        return  roleList;
 	}
-
-    @Override
-    public List<Role> getRolesForUserWithDependencies(final String userId, final String requesterId) {
-        return getRolesForUser(userId, requesterId, -1, -1, true);
-    }
 
 	@Override
 	public int getNumOfRolesForUser(final String userId, String requesterId) {
@@ -820,20 +827,4 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 		return response;
 	}
 
-
-    private List<Role> getRolesForUser(final String userId, String requesterId, final int from, final int size, boolean deepCopy){
-        List<Role> roleList = null;
-        AuditLogBuilder auditBuilder = auditLogProvider.getAuditLogBuilder();
-        auditBuilder.setAction(AuditAction.GET_ROLE_FOR_USER).setRequestorUserId(requesterId).setTargetUser(userId);
-        try{
-            final List<RoleEntity> entityList = roleDataService.getRolesForUser(userId, requesterId, from, size);
-            roleList = roleDozerConverter.convertToDTOList(entityList, deepCopy);
-            auditBuilder.succeed();
-        } catch(Throwable e) {
-            auditBuilder.fail().setException(e);
-        }finally {
-            auditLogService.enqueue(auditBuilder);
-        }
-        return  roleList;
-    }
 }

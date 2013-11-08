@@ -148,6 +148,7 @@ public interface RoleDataWebService {
      * Gets a paged List of Roles directly entitled to the User specified by the userId
      * @param userId - the User ID
      * @param requesterId -  the User ID who request this operation.  This param is required if delegation filter is set
+     * @param deepFlag - shows that method returns Role List with all sub collections
      * @param from - where to start in the paged list
      * @param size - how many to return
      * @return a paged List of  Roles directly entitled to the User specified by the userId
@@ -155,18 +156,9 @@ public interface RoleDataWebService {
     @WebMethod
     List<Role> getRolesForUser(final @WebParam(name = "userId", targetNamespace = "") String userId,
                                final @WebParam(name="requesterId", targetNamespace="") String requesterId,
+                               final @WebParam(name="deepFlag", targetNamespace="") Boolean deepFlag,
                                final @WebParam(name = "from", targetNamespace = "") int from,
                                final @WebParam(name = "size", targetNamespace = "") int size);
-
-    /**
-     * Gets a paged List of Roles directly entitled to the User specified by the userId
-     * @param userId - the User ID
-     * @param requesterId -  the User ID who request this operation.  This param is required if delegation filter is set
-     * @return a List of  Roles directly entitled to the User specified by the userId
-     */
-    @WebMethod
-    public List<Role> getRolesForUserWithDependencies(final @WebParam(name = "userId", targetNamespace = "") String userId,
-                                                      final @WebParam(name="requesterId", targetNamespace="") String requesterId);
 
     /**
      * Gets the number of Roles directly entitled to the User specified by the userId
