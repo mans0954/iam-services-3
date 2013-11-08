@@ -3,6 +3,7 @@ package org.openiam.bpm.activiti.delegate.entitlements;
 import org.activiti.engine.delegate.DelegateExecution;
 import org.apache.commons.collections.CollectionUtils;
 import org.openiam.base.AttributeOperationEnum;
+import org.openiam.bpm.activiti.delegate.core.AbstractDelegate;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
@@ -12,7 +13,7 @@ import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.provision.dto.ProvisionUser;
 import org.springframework.beans.factory.annotation.Autowired;
 
-public class DeleteLogin extends AbstractEntitlementsDelegate {
+public class DeleteLogin extends AbstractDelegate {
 	
 	@Autowired
 	private LoginDataService loginDataService;
@@ -43,8 +44,7 @@ public class DeleteLogin extends AbstractEntitlementsDelegate {
 		}
 	}
 	
-	@Override
-	protected String getNotificationType() {
+	protected String getTargetUserId(final DelegateExecution execution) {
 		return null;
 	}
 }

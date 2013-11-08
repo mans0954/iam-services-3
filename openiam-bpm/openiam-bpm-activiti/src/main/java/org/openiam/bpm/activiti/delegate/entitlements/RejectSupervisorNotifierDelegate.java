@@ -2,15 +2,18 @@ package org.openiam.bpm.activiti.delegate.entitlements;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.activiti.engine.delegate.DelegateExecution;
+import org.openiam.bpm.activiti.delegate.core.AbstractNotificationDelegate;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.service.UserDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 
-public class RejectSupervisorNotifierDelegate extends AbstractEntitlementsDelegate {	
+public class RejectSupervisorNotifierDelegate extends AbstractNotificationDelegate {	
 	
 	@Autowired
 	private UserDAO userDAO;
@@ -32,7 +35,6 @@ public class RejectSupervisorNotifierDelegate extends AbstractEntitlementsDelega
 	
 	@Override
 	public void execute(DelegateExecution execution) throws Exception {
-		final String associationId = (String)execution.getVariable(ActivitiConstants.ASSOCIATION_ID);
 		final String targetUserId = (String)execution.getVariable(ActivitiConstants.MEMBER_ASSOCIATION_ID);
 		final UserEntity targetUser = userDAO.findById(targetUserId);
 		
@@ -41,7 +43,8 @@ public class RejectSupervisorNotifierDelegate extends AbstractEntitlementsDelega
 		final String taskOwner = (String)execution.getVariable(ActivitiConstants.TASK_OWNER);
 		final UserEntity owner = userDAO.findById(taskOwner);
 		
-		final Collection<String> candidateUsersIds = getCandidateUserIds(execution);
+		final Set<String> candidateUsersIds = new HashSet<String>(activitiHelper.getCandidateUserIds(execution, targetUserId, null));
+		candidateUsersIds.addAll(activitiHelper.getCandidateUserIds(execution));
 		
 		for(final String userId : candidateUsersIds) {
 			final UserEntity user = userDAO.findById(userId);

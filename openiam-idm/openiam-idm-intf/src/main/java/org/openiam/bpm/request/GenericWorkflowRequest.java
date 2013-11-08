@@ -2,6 +2,7 @@ package org.openiam.bpm.request;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -34,7 +35,7 @@ public class GenericWorkflowRequest extends RequestorInformation {
 	private String associationId;
 	private String activitiRequestType;
 	private Map<String, Object> parameters;
-	private Set<String> customApproverAssociationIds;
+	private List<String> customApproverAssociationIds;
 	private Set<String> customApproverIds;
 	private String userCentricUserId;
 
@@ -98,12 +99,12 @@ public class GenericWorkflowRequest extends RequestorInformation {
 			   StringUtils.isBlank(callerUserId);
 	}
 
-	public Set<String> getCustomApproverAssociationIds() {
+	public List<String> getCustomApproverAssociationIds() {
 		return customApproverAssociationIds;
 	}
 
 	public void setCustomApproverAssociationIds(
-			Set<String> customApproverAssociationIds) {
+			List<String> customApproverAssociationIds) {
 		this.customApproverAssociationIds = customApproverAssociationIds;
 	}
 

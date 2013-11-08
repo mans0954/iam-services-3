@@ -2,6 +2,7 @@ package org.openiam.bpm.activiti.delegate.entitlements;
 
 import org.activiti.engine.delegate.DelegateExecution;
 import org.openiam.base.AttributeOperationEnum;
+import org.openiam.bpm.activiti.delegate.core.AbstractDelegate;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.service.OrganizationDataService;
@@ -12,7 +13,7 @@ import org.openiam.provision.service.ProvisionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
-public class RemoveUserFromOrganization extends AbstractEntitlementsDelegate {
+public class RemoveUserFromOrganization extends AbstractDelegate {
 
 	//@Autowired
 	//private OrganizationDataService organizationDataService;
@@ -35,10 +36,5 @@ public class RemoveUserFromOrganization extends AbstractEntitlementsDelegate {
 			//pUser.getAffiliations().add(entity);
 			provisionService.modifyUser(pUser);
 		//}
-	}
-
-	@Override
-	protected String getNotificationType() {
-		return null;
 	}
 }

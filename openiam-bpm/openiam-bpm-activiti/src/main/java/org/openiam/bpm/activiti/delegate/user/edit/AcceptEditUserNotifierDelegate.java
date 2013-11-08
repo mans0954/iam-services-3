@@ -32,14 +32,14 @@ public class AcceptEditUserNotifierDelegate extends AbstractEntitlementsDelegate
 		final String taskName = (String)execution.getVariable(ActivitiConstants.TASK_NAME);
 		final String taskDescription = (String)execution.getVariable(ActivitiConstants.TASK_DESCRIPTION);
 		final String comment = (String)execution.getVariable(ActivitiConstants.COMMENT);
-		final String targetUserId = (String)execution.getVariable(ActivitiConstants.ASSOCIATION_ID);
+		final String targetUserId = getTargetUserId(execution);
 		final UserEntity targetUser = userDAO.findById(targetUserId);
 		
 		final String taskOwner = (String)execution.getVariable(ActivitiConstants.TASK_OWNER);
 		final UserEntity owner = userDAO.findById(taskOwner);
 		
 		userIds.add(taskOwner);
-		final Collection<String> candidateUsersIds = getCandidateUserIds(execution);
+		final Collection<String> candidateUsersIds = activitiHelper.getCandidateUserIds(execution);
 		if(CollectionUtils.isNotEmpty(candidateUsersIds)) {
 			userIds.addAll(candidateUsersIds);
 		}
@@ -58,6 +58,10 @@ public class AcceptEditUserNotifierDelegate extends AbstractEntitlementsDelegate
 				sendNotification(toNotify, owner, targetUser, comment, taskName, taskDescription);
 			}
 		}
+	}
+	
+	protected String getTargetUserId(final DelegateExecution execution) {
+		return (String)execution.getVariable(ActivitiConstants.ASSOCIATION_ID);
 	}
 
 	@Override
