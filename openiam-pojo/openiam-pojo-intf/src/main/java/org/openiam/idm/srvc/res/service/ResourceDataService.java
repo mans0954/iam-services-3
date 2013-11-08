@@ -148,6 +148,7 @@ public interface ResourceDataService {
 	/**
 	 * Find the child resources of a particular Resource
 	 * @param resourceId - resource ID
+     * @param deepFlag - shows that method returns Resource collection with all sub collections
 	 * @param from - where to start
 	 * @param size - how many to return
 	 * @return
@@ -155,10 +156,11 @@ public interface ResourceDataService {
 	@WebMethod
 	List<Resource> getChildResources(
 			@WebParam(name = "resourceId", targetNamespace = "") final String resourceId,
+            @WebParam(name = "deepFlag", targetNamespace = "") final Boolean deepFlag,
 			@WebParam(name = "from", targetNamespace = "") int from,
 			@WebParam(name = "size", targetNamespace = "") int size);
 
-	/**
+   	/**
 	 * Gets the number of child resources for a particular Resource
 	 * @param resourceId - the resource ID
 	 * @return

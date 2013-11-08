@@ -353,13 +353,13 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
 	}
 
 	@Override
-	public List<Resource> getChildResources(final String resourceId, final int from, final int size) {
+	public List<Resource> getChildResources(final String resourceId, Boolean deepFlag, final int from, final int size) {
         List<Resource> resourceList = null;
         AuditLogBuilder auditBuilder = auditLogProvider.getAuditLogBuilder();
         auditBuilder.setAction(AuditAction.GET_CHILD_RESOURCE).setTargetResource(resourceId);
         try{
             final List<ResourceEntity> resultList = resourceService.getChildResources(resourceId, from, size);
-            resourceList = resourceConverter.convertToDTOList(resultList, false);
+            resourceList = resourceConverter.convertToDTOList(resultList, (deepFlag!=null)?deepFlag:false);
             auditBuilder.succeed();
         } catch(Throwable e) {
             auditBuilder.fail().setException(e);
@@ -368,6 +368,8 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
         }
         return  resourceList;
 	}
+
+
 
 	@Override
 	public int getNumOfChildResources(final String resourceId) {
