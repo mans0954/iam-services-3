@@ -396,6 +396,12 @@ public class ResourceServiceImpl implements ResourceService {
 	public List<ResourceEntity> getResourcesForUser(String userId, int from, int size) {
 		return resourceDao.getResourcesForUser(userId, from, size);
 	}
+    @Override
+    @Transactional(readOnly = true)
+    public List<ResourceEntity> getResourcesForUserByType(String userId, String resourceTypeId) {
+        return resourceDao.getResourcesForUserByType(userId, resourceTypeId);
+    }
+
 
 	@Override
     @Transactional(readOnly = true)
