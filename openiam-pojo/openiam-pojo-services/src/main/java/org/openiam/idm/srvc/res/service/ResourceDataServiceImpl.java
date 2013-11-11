@@ -114,46 +114,62 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
         return  resourceList;
 	}
 
-	/*
-	public Response addResource(Resource resource) {
-		return saveOrUpdateResource(resource);
+	@Override
+	public Response validateEditResource(Resource resource) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			validate(resource);
+		} catch (BasicDataServiceException e) {
+			response.setErrorCode(e.getCode());
+			response.setStatus(ResponseStatus.FAILURE);
+		} catch (Throwable e) {
+			log.error("Can't validate resource", e);
+			response.setErrorText(e.getMessage());
+			response.setStatus(ResponseStatus.FAILURE);
+		}
+		return response;
 	}
-	*/
+	
+	private void validate(final Resource resource) throws BasicDataServiceException {
+		if (resource == null) {
+			throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND, "Role object is null");
+		}
+		
+		ResourceEntity entity = resourceConverter.convertToEntity(resource, true);
+		if (StringUtils.isEmpty(entity.getName())) {
+			throw new BasicDataServiceException(ResponseCode.NO_NAME, "Resource Name is null or empty");
+		}
+		
+		/* duplicate name check */
+		final ResourceEntity nameCheck = resourceService.findResourceByName(entity.getName());
+		if (nameCheck != null) {
+			if (StringUtils.isBlank(entity.getResourceId())) {
+				throw new BasicDataServiceException(ResponseCode.NAME_TAKEN, "Resource Name is already in use");
+			} else if (!nameCheck.getResourceId().equals(entity.getResourceId())) {
+				throw new BasicDataServiceException(ResponseCode.NAME_TAKEN, "Resource Name is already in use");
+			}
+		}
+
+		if (entity.getResourceType() == null) {
+			throw new BasicDataServiceException(ResponseCode.INVALID_RESOURCE_TYPE, "Resource Type is not set");
+		}
+
+	}
 
 	@Override
-	public Response saveResource(Resource resource) {
+	public Response saveResource(Resource resource, final String requestorId) {
 		final Response response = new Response(ResponseStatus.SUCCESS);
         AuditLogBuilder auditBuilder = auditLogProvider.getAuditLogBuilder();
         auditBuilder.setAction(AuditAction.SAVE_RESOURCE);
 		try {
-			if (resource == null) {
-				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND, "Role object is null");
-			}
+			validate(resource);
             auditBuilder.setRequestorUserId(resource.getRequestorUserId()).setTargetResource(resource.getResourceId());
             if(StringUtils.isBlank(resource.getResourceId())) {
                 auditBuilder.setAction(AuditAction.ADD_RESOURCE);
             }
 
-			ResourceEntity entity = resourceConverter.convertToEntity(resource, true);
-			if (StringUtils.isEmpty(entity.getName())) {
-				throw new BasicDataServiceException(ResponseCode.NO_NAME, "Resource Name is null or empty");
-			}
-
-			/* duplicate name check */
-			final ResourceEntity nameCheck = resourceService.findResourceByName(entity.getName());
-			if (nameCheck != null) {
-				if (StringUtils.isBlank(entity.getResourceId())) {
-					throw new BasicDataServiceException(ResponseCode.NAME_TAKEN, "Resource Name is already in use");
-				} else if (!nameCheck.getResourceId().equals(entity.getResourceId())) {
-					throw new BasicDataServiceException(ResponseCode.NAME_TAKEN, "Resource Name is already in use");
-				}
-			}
-
-			if (entity.getResourceType() == null) {
-				throw new BasicDataServiceException(ResponseCode.INVALID_RESOURCE_TYPE, "Resource Type is not set");
-			}
-
-			resourceService.save(entity);
+			final ResourceEntity entity = resourceConverter.convertToEntity(resource, true);
+			resourceService.save(entity, requestorId);
 			response.setResponseValue(entity.getResourceId());
             auditBuilder.succeed();
 		} catch (BasicDataServiceException e) {
@@ -320,6 +336,23 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
         }finally {
             auditLogService.enqueue(auditBuilder);
         }
+		return response;
+	}
+	
+	@Override
+	public Response validateDeleteResource(String resourceId) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			resourceService.validateResourceDeletion(resourceId);
+		} catch(BasicDataServiceException e) {
+			response.setErrorCode(e.getCode());
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setResponseValue(e.getResponseValue());
+		} catch (Throwable e) {
+			log.error("Can't delete resource", e);
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
+		}
 		return response;
 	}
 

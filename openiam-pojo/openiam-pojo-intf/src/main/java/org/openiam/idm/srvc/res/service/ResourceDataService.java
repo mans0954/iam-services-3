@@ -12,7 +12,23 @@ import java.util.List;
 
 @WebService(targetNamespace = "urn:idm.openiam.org/srvc/res/service", name = "ResourceDataWebService")
 public interface ResourceDataService {
+	
+	@WebMethod
+	Response validateDeleteResource(final @WebParam(name = "resourceId", targetNamespace = "") String resourceId);
 
+	/**
+	 * Validate if the resource can be created
+	 * @param resource - the Resource
+	 * @return
+	 */
+	@WebMethod
+	Response validateEditResource(final @WebParam(name = "resource", targetNamespace = "") Resource resource);
+	
+	/**
+	 * Deletes a Resoruce
+	 * @param resourceId - the resource id
+	 * @return
+	 */
 	@WebMethod
 	Response deleteResource(
 			@WebParam(name = "resourceId", targetNamespace = "") final String resourceId);
@@ -26,7 +42,8 @@ public interface ResourceDataService {
 	 */
 	@WebMethod
 	Response saveResource(
-			@WebParam(name = "resource", targetNamespace = "") Resource resource);
+			final @WebParam(name = "resource", targetNamespace = "") Resource resource, 
+			final @WebParam(name = "userId", targetNamespace = "") String requestorId);
 
 	/**
 	 * Find a resource.

@@ -22,7 +22,10 @@ public enum ActivitiRequestType {
 	REMOVE_SUPERIOR("removeSuperior", "Remove Superior"),
 	
 	SAVE_LOGIN("saveLogin", "Save Login"),
-	DELETE_LOGIN("deleteLogin", "Delete Login");
+	DELETE_LOGIN("deleteLogin", "Delete Login"),
+	
+	EDIT_RESOURCE("editResource", "Edit Resource"),
+	DELETE_RESOURCE("deleteResource", "Delete Resource");
 	
 	private String description;
 	private String key;

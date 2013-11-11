@@ -23,7 +23,7 @@ public interface RoleDataService {
     public RoleEntity getRole(String roleId, String requesterId);
     public RoleEntity getRoleByName(final String roleName, String requesterId);
     
-    public void saveRole(final RoleEntity role) throws BasicDataServiceException;
+    public void saveRole(final RoleEntity role, final String requestorId) throws BasicDataServiceException;
     
     public void removeRole(String roleId);
 

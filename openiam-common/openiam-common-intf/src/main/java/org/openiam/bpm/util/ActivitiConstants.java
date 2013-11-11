@@ -31,4 +31,8 @@ public class ActivitiConstants {
 	public static final String LOOP_COUNTER = "loopCounter";
 	
 	public static final String CARDINALITY_OBJECT = "cardinalityObject";
+	
+	public static final String RESOURCE = "Resource";
+	
+	public static final String RESOURCE_ID = "ResourceId";
 }

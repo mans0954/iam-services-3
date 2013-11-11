@@ -37,6 +37,7 @@ import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.service.RoleDAO;
 import org.openiam.idm.srvc.searchbean.converter.ResourceSearchBeanConverter;
+import org.openiam.idm.srvc.user.service.UserDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -79,6 +80,9 @@ public class ResourceServiceImpl implements ResourceService {
 	private OrganizationDAO orgDAO;
 	
 	@Autowired
+	private UserDAO userDAO;
+	
+	@Autowired
 	private MetadataElementPageTemplateDAO templateDAO;
 	
 	@Value("${org.openiam.resource.admin.resource.type.id}")
@@ -97,7 +101,7 @@ public class ResourceServiceImpl implements ResourceService {
 
 	@Override
     @Transactional
-	public void save(ResourceEntity entity) {
+	public void save(ResourceEntity entity, final String requestorId) {
 		if(entity.getResourceType() != null) {
 			entity.setResourceType(resourceTypeDao.findById(entity.getResourceType().getId()));
 		}
@@ -112,7 +116,7 @@ public class ResourceServiceImpl implements ResourceService {
 			if(isAdminResource) {
 				entity.setAdminResource(null);
 			} else if(entity.getAdminResource() == null) {
-				final ResourceEntity adminResource = getNewAdminResource(entity);
+				final ResourceEntity adminResource = getNewAdminResource(entity, requestorId);
 				entity.setAdminResource(adminResource);
 			}
 			entity.setChildResources(dbObject.getChildResources());
@@ -128,16 +132,17 @@ public class ResourceServiceImpl implements ResourceService {
 			if(isAdminResource) {
 				entity.setAdminResource(null);
 			} else {
-				entity.setAdminResource(getNewAdminResource(entity));
+				entity.setAdminResource(getNewAdminResource(entity, requestorId));
 			}
 			resourceDao.save(entity);
 		}
 	}
 	
-	private ResourceEntity getNewAdminResource(final ResourceEntity entity) {
+	private ResourceEntity getNewAdminResource(final ResourceEntity entity, final String requestorId) {
 		final ResourceEntity adminResource = new ResourceEntity();
 		adminResource.setName(String.format("RES_ADMIN_%s_%s", entity.getName(), RandomStringUtils.randomAlphanumeric(2)));
 		adminResource.setResourceType(resourceTypeDao.findById(adminResourceTypeId));
+		adminResource.addUser(userDAO.findById(requestorId));
 		return adminResource;
 	}
 

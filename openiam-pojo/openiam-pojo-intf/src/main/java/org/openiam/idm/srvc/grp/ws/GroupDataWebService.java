@@ -38,7 +38,8 @@ public interface GroupDataWebService {
      * otherwise it contains error code.
      */
     @WebMethod
-    public Response saveGroup(final @WebParam(name = "group", targetNamespace = "") Group group);
+    public Response saveGroup(final @WebParam(name = "group", targetNamespace = "") Group group,
+    						  final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
     /**
      * This method retrieves an existing group object. Dependent objects such as

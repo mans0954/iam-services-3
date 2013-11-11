@@ -68,7 +68,8 @@ public interface OrganizationDataService {
 
 
     @WebMethod
-    public Response saveOrganization(@WebParam(name = "organization", targetNamespace = "") Organization organization);
+    public Response saveOrganization(final @WebParam(name = "organization", targetNamespace = "") Organization organization, 
+    								 final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
     @WebMethod
     public Response saveAttribute(@WebParam(name = "organizationAttribute", targetNamespace = "") OrganizationAttribute organizationAttribute);

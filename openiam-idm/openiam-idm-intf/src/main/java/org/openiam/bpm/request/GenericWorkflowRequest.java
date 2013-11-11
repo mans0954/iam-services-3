@@ -1,5 +1,6 @@
 package org.openiam.bpm.request;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -11,6 +12,9 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
 import org.apache.commons.lang.StringUtils;
+import org.codehaus.jackson.JsonGenerationException;
+import org.codehaus.jackson.map.JsonMappingException;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.openiam.bpm.request.RequestorInformation;
 import org.openiam.bpm.util.ActivitiRequestType;
 import org.openiam.idm.srvc.mngsys.domain.AssociationType;
@@ -25,7 +29,8 @@ import org.openiam.idm.srvc.mngsys.domain.AssociationType;
     "parameters",
     "customApproverAssociationIds",
     "customApproverIds",
-    "userCentricUserId"
+    "userCentricUserId",
+    "jsonSerializedParams"
 })
 public class GenericWorkflowRequest extends RequestorInformation {
 
@@ -34,6 +39,7 @@ public class GenericWorkflowRequest extends RequestorInformation {
 	private String description;
 	private String associationId;
 	private String activitiRequestType;
+	private Map<String, String> jsonSerializedParams;
 	private Map<String, Object> parameters;
 	private List<String> customApproverAssociationIds;
 	private Set<String> customApproverIds;
@@ -130,6 +136,20 @@ public class GenericWorkflowRequest extends RequestorInformation {
 				this.customApproverIds = new HashSet<String>();
 			}
 			this.customApproverIds.add(customApproverId);
+		}
+	}
+	
+	public Map<String, String> getJsonSerializedParams() {
+		return jsonSerializedParams;
+	}
+
+	public void setJsonSerializedParams(Map<String, String> jsonSerializedParams) {
+		this.jsonSerializedParams = jsonSerializedParams;
+	}
+
+	public void addJSONParameter(final String key, final Object value, final ObjectMapper mapper) throws Exception {
+		if(key != null && value != null && mapper != null) {
+			jsonSerializedParams.put(key, mapper.writeValueAsString(value));
 		}
 	}
 }

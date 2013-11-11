@@ -240,6 +240,15 @@ public class ResourceEntity {
     public void setUsers(Set<UserEntity> users) {
         this.users = users;
     }
+    
+    public void addUser(final UserEntity user) {
+    	if(user != null) {
+    		if(this.users == null) {
+    			this.users = new HashSet<UserEntity>();
+    		}
+    		this.users.add(user);
+    	}
+    }
 
     public void addParentResource(final ResourceEntity resource) {
     	if(resource != null) {

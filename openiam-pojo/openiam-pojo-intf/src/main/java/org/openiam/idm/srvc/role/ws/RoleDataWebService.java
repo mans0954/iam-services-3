@@ -41,7 +41,8 @@ public interface RoleDataWebService {
      * otherwise it contains error code.
      */
     @WebMethod
-    Response saveRole(@WebParam(name = "role", targetNamespace = "") Role role);
+    Response saveRole(@WebParam(name = "role", targetNamespace = "") Role role,
+    				 final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
     /**
      * This method removes role from openIAM database for a particular roleID.

@@ -71,7 +71,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
 	}
 
 	@Override
-	public Response saveGroup(final Group group) {
+	public Response saveGroup(final Group group, final String requestorId) {
         AuditLogBuilder auditBuilder = auditLogProvider.getAuditLogBuilder();
         auditBuilder.setAction(AuditAction.SAVE_GROUP);
 		final Response response = new Response(ResponseStatus.SUCCESS);
@@ -101,7 +101,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
 			}
 			
 			GroupEntity entity = groupDozerConverter.convertToEntity(group, true);
-			groupManager.saveGroup(entity);
+			groupManager.saveGroup(entity, requestorId);
 			response.setResponseValue(entity.getId());
             auditBuilder.succeed();
 		} catch(BasicDataServiceException e) {

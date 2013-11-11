@@ -402,7 +402,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 	*/
 
 	@Override
-	public Response saveRole(Role role) {
+	public Response saveRole(Role role, final String requestorId) {
 		final Response response = new Response(ResponseStatus.SUCCESS);
         AuditLogBuilder auditBuilder = auditLogProvider.getAuditLogBuilder();
         auditBuilder.setAction(AuditAction.SAVE_ROLE);
@@ -436,7 +436,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 				throw new BasicDataServiceException(ResponseCode.INVALID_ROLE_DOMAIN, "Security Domain for Role is not found");
 			}
 			
-			roleDataService.saveRole(entity);
+			roleDataService.saveRole(entity, requestorId);
 			response.setResponseValue(entity.getId());
             auditBuilder.succeed();
 		} catch(BasicDataServiceException e) {
