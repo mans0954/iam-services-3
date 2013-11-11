@@ -64,8 +64,8 @@ public class GroupDataServiceImpl implements GroupDataService {
     @Autowired
     private ManagedSysDAO managedSysDAO;
     
-	@Value("${org.openiam.resource.system.action.id}")
-	private String systemActionId;
+	@Value("${org.openiam.resource.admin.resource.type.id}")
+	private String adminResourceTypeId;
 	
 	@Autowired
 	private ResourceTypeDAO resourceTypeDAO;
@@ -229,7 +229,7 @@ public class GroupDataServiceImpl implements GroupDataService {
 	private ResourceEntity getNewAdminResource(final GroupEntity entity) {
 		final ResourceEntity adminResource = new ResourceEntity();
 		adminResource.setName(String.format("GRP_ADMIN_%s_%s", entity.getName(), RandomStringUtils.randomAlphanumeric(2)));
-		adminResource.setResourceType(resourceTypeDAO.findById(systemActionId));
+		adminResource.setResourceType(resourceTypeDAO.findById(adminResourceTypeId));
 		return adminResource;
 	}
 	

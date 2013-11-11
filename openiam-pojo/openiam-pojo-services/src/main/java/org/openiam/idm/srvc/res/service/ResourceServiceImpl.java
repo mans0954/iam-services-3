@@ -81,8 +81,8 @@ public class ResourceServiceImpl implements ResourceService {
 	@Autowired
 	private MetadataElementPageTemplateDAO templateDAO;
 	
-	@Value("${org.openiam.resource.system.action.id}")
-	private String systemActionId;
+	@Value("${org.openiam.resource.admin.resource.type.id}")
+	private String adminResourceTypeId;
 
 	@Override
     @Transactional
@@ -98,12 +98,21 @@ public class ResourceServiceImpl implements ResourceService {
 	@Override
     @Transactional
 	public void save(ResourceEntity entity) {
+		if(entity.getResourceType() != null) {
+			entity.setResourceType(resourceTypeDao.findById(entity.getResourceType().getId()));
+		}
+		
+		/* admin resource can't have an admin resource - do this check here */
+		boolean isAdminResource = StringUtils.equals(entity.getResourceType().getId(), adminResourceTypeId);
+		
 		if(StringUtils.isNotBlank(entity.getResourceId())) {
 			final ResourceEntity dbObject = resourceDao.findById(entity.getResourceId());
 			entity.setAdminResource(dbObject.getAdminResource());
-			if(entity.getAdminResource() == null) {
+			
+			if(isAdminResource) {
+				entity.setAdminResource(null);
+			} else if(entity.getAdminResource() == null) {
 				final ResourceEntity adminResource = getNewAdminResource(entity);
-				//resourceDao.save(adminResource);
 				entity.setAdminResource(adminResource);
 			}
 			entity.setChildResources(dbObject.getChildResources());
@@ -111,15 +120,16 @@ public class ResourceServiceImpl implements ResourceService {
 			entity.setUsers(dbObject.getUsers());
 			entity.setGroups(dbObject.getGroups());
 			entity.setRoles(dbObject.getRoles());
-			if(entity.getResourceType() != null) {
-				entity.setResourceType(resourceTypeDao.findById(entity.getResourceType().getId()));
-			}
 			
 			mergeAttribute(entity, dbObject);
 			
 			resourceDao.merge(entity);
 		} else {
-			entity.setAdminResource(getNewAdminResource(entity));
+			if(isAdminResource) {
+				entity.setAdminResource(null);
+			} else {
+				entity.setAdminResource(getNewAdminResource(entity));
+			}
 			resourceDao.save(entity);
 		}
 	}
@@ -127,7 +137,7 @@ public class ResourceServiceImpl implements ResourceService {
 	private ResourceEntity getNewAdminResource(final ResourceEntity entity) {
 		final ResourceEntity adminResource = new ResourceEntity();
 		adminResource.setName(String.format("RES_ADMIN_%s_%s", entity.getName(), RandomStringUtils.randomAlphanumeric(2)));
-		adminResource.setResourceType(resourceTypeDao.findById(systemActionId));
+		adminResource.setResourceType(resourceTypeDao.findById(adminResourceTypeId));
 		return adminResource;
 	}
 

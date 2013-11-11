@@ -62,8 +62,8 @@ public class RoleDataServiceImpl implements RoleDataService {
     @Autowired
     private ManagedSysDAO managedSysDAO;
     
-	@Value("${org.openiam.resource.system.action.id}")
-	private String systemActionId;
+	@Value("${org.openiam.resource.admin.resource.type.id}")
+	private String adminResourceTypeId;
 
 	private static final Log log = LogFactory.getLog(RoleDataServiceImpl.class);
 
@@ -237,7 +237,7 @@ public class RoleDataServiceImpl implements RoleDataService {
 	private ResourceEntity getNewAdminResource(final RoleEntity entity) {
 		final ResourceEntity adminResource = new ResourceEntity();
 		adminResource.setName(String.format("ROLE_ADMIN_%s_%s", entity.getName(), RandomStringUtils.randomAlphanumeric(2)));
-		adminResource.setResourceType(resourceTypeDAO.findById(systemActionId));
+		adminResource.setResourceType(resourceTypeDAO.findById(adminResourceTypeId));
 		return adminResource;
 	}
 	

@@ -60,8 +60,8 @@ public class OrganizationServiceImpl implements OrganizationService {
     @Autowired
     private MetadataElementDAO metadataElementDAO;
     
-	@Value("${org.openiam.resource.system.action.id}")
-	private String systemActionId;
+	@Value("${org.openiam.resource.admin.resource.type.id}")
+	private String adminResourceTypeId;
 	
 	@Autowired
     private ResourceTypeDAO resourceTypeDao;
@@ -201,7 +201,7 @@ public class OrganizationServiceImpl implements OrganizationService {
     private ResourceEntity getNewAdminResource(final OrganizationEntity entity) {
 		final ResourceEntity adminResource = new ResourceEntity();
 		adminResource.setName(String.format("ORG_ADMIN_%s_%s", entity.getName(), RandomStringUtils.randomAlphanumeric(2)));
-		adminResource.setResourceType(resourceTypeDao.findById(systemActionId));
+		adminResource.setResourceType(resourceTypeDao.findById(adminResourceTypeId));
 		return adminResource;
 	}
     
