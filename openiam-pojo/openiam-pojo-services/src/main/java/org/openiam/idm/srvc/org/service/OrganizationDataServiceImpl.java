@@ -186,7 +186,7 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
     }
 
     @Override
-    public Response saveOrganization(final Organization organization) {
+    public Response saveOrganization(final Organization organization, final String requestorId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
             if (organization == null) {
@@ -216,7 +216,7 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
             }
 
             final OrganizationEntity entity = organizationDozerConverter.convertToEntity(organization, true);
-            organizationService.save(entity);
+            organizationService.save(entity, requestorId);
             response.setResponseValue(entity.getId());
         } catch (BasicDataServiceException e) {
             response.setStatus(ResponseStatus.FAILURE);

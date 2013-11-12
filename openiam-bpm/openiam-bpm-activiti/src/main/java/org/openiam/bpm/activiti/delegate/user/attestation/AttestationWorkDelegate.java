@@ -93,34 +93,19 @@ public class AttestationWorkDelegate implements JavaDelegate {
 			final ProvisionUser provisionUser = new ProvisionUser(dto);
 			if(CollectionUtils.isNotEmpty(disassociatedGroupIds)) {
 				for(final String groupId : disassociatedGroupIds) {
-					final GroupEntity groupEntity = groupService.getGroup(groupId);
-					if(groupEntity != null) {
-						final Group group = groupDozerConverter.convertToDTO(groupEntity, false);
-						group.setOperation(AttributeOperationEnum.DELETE);
-						provisionUser.getGroups().add(group);
-					}
+					provisionUser.markGroupAsDeleted(groupId);
 				}
 			}
 			
 			if(CollectionUtils.isNotEmpty(disassociatedRoleIds)) {
 				for(final String roleId : disassociatedRoleIds) {
-					final RoleEntity roleEntity = roleService.getRole(roleId);
-					if(roleEntity != null) {
-						final Role role = roleDozerConverter.convertToDTO(roleEntity, false);
-						role.setOperation(AttributeOperationEnum.DELETE);
-						provisionUser.getRoles().add(role);
-					}
+					provisionUser.markRoleAsDeleted(roleId);
 				}
 			}
 			
 			if(CollectionUtils.isNotEmpty(disassociatedResourceIds)) {
 				for(final String resourceId : disassociatedResourceIds) {
-					final ResourceEntity resourceEntity = resourceService.findResourceById(resourceId);
-					if(resourceEntity != null) {
-						final Resource resource = resourceDozerConverter.convertToDTO(resourceEntity, false);
-                        resource.setOperation(AttributeOperationEnum.DELETE);
-						provisionUser.getResources().add(resource);
-					}
+					provisionUser.markResourceAsDeleted(resourceId);
 				}
 			}
 			provisionService.modifyUser(provisionUser);

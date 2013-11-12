@@ -2,6 +2,7 @@ package org.openiam.bpm.activiti.delegate.entitlements;
 
 import org.activiti.engine.delegate.DelegateExecution;
 import org.openiam.base.AttributeOperationEnum;
+import org.openiam.bpm.activiti.delegate.core.AbstractDelegate;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.dozer.converter.RoleDozerConverter;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
@@ -14,7 +15,7 @@ import org.openiam.provision.service.ProvisionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
-public class RemoveUserFromRole extends AbstractEntitlementsDelegate {
+public class RemoveUserFromRole extends AbstractDelegate {
 
 	@Autowired
 	private RoleDataService roleDataService;
@@ -33,10 +34,5 @@ public class RemoveUserFromRole extends AbstractEntitlementsDelegate {
 		final ProvisionUser pUser = new ProvisionUser(user);
 		pUser.markRoleAsDeleted(roleId);
 		provisionService.modifyUser(pUser);
-	}
-
-	@Override
-	protected String getNotificationType() {
-		return null;
 	}
 }

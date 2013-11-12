@@ -1,6 +1,10 @@
 package org.openiam.bpm.activiti.delegate.entitlements;
 
 import org.activiti.engine.delegate.DelegateExecution;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+import org.openiam.base.AttributeOperationEnum;
+import org.openiam.bpm.activiti.delegate.core.AbstractDelegate;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
@@ -9,7 +13,7 @@ import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.provision.dto.ProvisionUser;
 import org.springframework.beans.factory.annotation.Autowired;
 
-public class SaveLogin extends AbstractEntitlementsDelegate {
+public class SaveLogin extends AbstractDelegate {
 	
 	@Autowired
 	private LoginDataService loginDataService;
@@ -28,32 +32,31 @@ public class SaveLogin extends AbstractEntitlementsDelegate {
 		if(execution.hasVariable(ActivitiConstants.LOGIN_ID)) {
 			loginId = (String)execution.getVariable(ActivitiConstants.LOGIN_ID);
 		}
-		Login loginDTO = null;
-		if(loginId != null) {
-			loginDTO = loginDataService.getLoginDTO(loginId);
-		} else {
-			loginDTO = new Login();
-			loginDTO.setUserId(userId);
-		}
-		loginDTO.setLogin(login);
-		loginDTO.setManagedSysId(managedSysId);
-		loginDTO.setDomainId(domainId);
-		
 		final User user = getUser(userId);
 		ProvisionUser pUser = new ProvisionUser(user);
-		pUser.addPrincipal(loginDTO);
-		provisionService.modifyUser(pUser);
-		/*
-		if(loginId == null) {
-			loginDataService.addLogin(loginEntity);
+		
+		if(loginId != null) {
+			if(CollectionUtils.isNotEmpty(pUser.getPrincipalList())) {
+				for(final Login l : pUser.getPrincipalList()) {
+					if(StringUtils.equals(l.getLoginId(), loginId)) {
+						l.setLogin(login);
+						l.setManagedSysId(managedSysId);
+						l.setDomainId(domainId);
+						l.setOperation(AttributeOperationEnum.REPLACE);
+						break;
+					}
+				}
+			}
 		} else {
-			loginDataService.updateLogin(loginEntity);
+			final Login loginDTO = new Login();
+			loginDTO.setUserId(userId);
+			loginDTO.setLogin(login);
+			loginDTO.setManagedSysId(managedSysId);
+			loginDTO.setDomainId(domainId);
+			loginDTO.setOperation(AttributeOperationEnum.ADD);
+			pUser.addPrincipal(loginDTO);
 		}
-		*/
-	}
-	
-	@Override
-	protected String getNotificationType() {
-		return null;
+		
+		provisionService.modifyUser(pUser);
 	}
 }

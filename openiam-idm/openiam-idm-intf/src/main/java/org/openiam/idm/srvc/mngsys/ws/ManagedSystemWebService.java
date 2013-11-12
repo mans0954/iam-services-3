@@ -201,7 +201,7 @@ public interface ManagedSystemWebService {
     List<DefaultReconciliationAttributeMap> getAllDefaultReconcileMap();
 
     @WebMethod
-    public Response saveApproverAssociations(final List<ApproverAssociation> approverAssociationList);
+    public Response saveApproverAssociations(final List<ApproverAssociation> approverAssociationList, final AssociationType type, final String entityId);
     
     @WebMethod
     public Response saveApproverAssociation(

@@ -267,6 +267,12 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
 		return criteria.list();
 	}
 
+    public List<ResourceEntity> getResourcesForUserByType(final String userId, String resourceTypeId){
+        final Criteria criteria = getResourceForUserCriteria(userId);
+        criteria.createAlias("resourceType", "rt")
+                .add(Restrictions.eq("rt.id", resourceTypeId));
+        return criteria.list();
+    }
 	@Override
 	public int getNumOfResourcesForUser(String userId) {
 		final Criteria criteria = getResourceForUserCriteria(userId)

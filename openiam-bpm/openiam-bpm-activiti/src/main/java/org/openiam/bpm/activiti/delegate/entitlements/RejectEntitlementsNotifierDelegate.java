@@ -29,6 +29,10 @@ public class RejectEntitlementsNotifierDelegate extends AbstractEntitlementsDele
 		NOTIFICATION_MAP.put("DISENTITLE_USER_FROM_RESOURCE", "DISENTITLE_USER_FROM_RESOURCE_REJECT_NOTIFY");
 		NOTIFICATION_MAP.put("DELETE_LOGIN", "DELETE_LOGIN_REJECT_NOTIFY");
 		NOTIFICATION_MAP.put("ADD_UPDATE_LOGIN", "ADD_UPDATE_LOGIN_REJECT_NOTIFY");
+		NOTIFICATION_MAP.put("ADD_USER_TO_ORG", "ADD_USER_TO_ORG_REJECT_NOTIFY");
+		NOTIFICATION_MAP.put("REMOVE_USER_FROM_ORG", "REMOVE_USER_FROM_ORG_REJECT_NOTIFY");
+		NOTIFICATION_MAP.put("REMOVE_SUPERIOR", "REMOVE_SUPERIOR_REJECT");
+		NOTIFICATION_MAP.put("ADD_SUPERIOR", "ADD_SUPERIOR_REJECT");
 	}
 	
 	public RejectEntitlementsNotifierDelegate() {
@@ -42,7 +46,7 @@ public class RejectEntitlementsNotifierDelegate extends AbstractEntitlementsDele
 		final String taskName = (String)execution.getVariable(ActivitiConstants.TASK_NAME);
 		final String taskDescription = (String)execution.getVariable(ActivitiConstants.TASK_DESCRIPTION);
 		final String comment = (String)execution.getVariable(ActivitiConstants.COMMENT);
-		final String targetUserId = (String)execution.getVariable(ActivitiConstants.MEMBER_ASSOCIATION_ID);
+		final String targetUserId = getTargetUserId(execution);
 		final UserEntity targetUser = userDAO.findById(targetUserId);
 		
 		final String taskOwner = (String)execution.getVariable(ActivitiConstants.TASK_OWNER);
@@ -50,10 +54,10 @@ public class RejectEntitlementsNotifierDelegate extends AbstractEntitlementsDele
 		
 		userIds.add(taskOwner);
 		
-		final List<ApproverAssociationEntity> approverAssociationEntities = getApproverAssociations(execution);
+		final List<ApproverAssociationEntity> approverAssociationEntities = activitiHelper.getApproverAssociations(execution);
 		if(CollectionUtils.isNotEmpty(approverAssociationEntities)) {
 			for(final ApproverAssociationEntity association : approverAssociationEntities) {
-				userIds.addAll(getNotifyUserIds(association.getOnRejectEntityType(), association.getOnRejectEntityId(), targetUserId));
+				userIds.addAll(activitiHelper.getNotifyUserIds(association.getOnRejectEntityType(), association.getOnRejectEntityId(), targetUserId));
 			}
 		}
 		
@@ -68,5 +72,10 @@ public class RejectEntitlementsNotifierDelegate extends AbstractEntitlementsDele
 	@Override
 	protected String getNotificationType() {
 		return NOTIFICATION_MAP.get(getOperation());
+	}
+
+	@Override
+	protected String getTargetUserId(final DelegateExecution execution) {
+		return (String)execution.getVariable(ActivitiConstants.MEMBER_ASSOCIATION_ID);
 	}
 }

@@ -60,8 +60,8 @@ public class OrganizationServiceImpl implements OrganizationService {
     @Autowired
     private MetadataElementDAO metadataElementDAO;
     
-	@Value("${org.openiam.resource.system.action.id}")
-	private String systemActionId;
+	@Value("${org.openiam.resource.admin.resource.type.id}")
+	private String adminResourceTypeId;
 	
 	@Autowired
     private ResourceTypeDAO resourceTypeDao;
@@ -172,7 +172,7 @@ public class OrganizationServiceImpl implements OrganizationService {
 
     @Override
     @Transactional
-    public void save(final OrganizationEntity entity) {
+    public void save(final OrganizationEntity entity, final String requestorId) {
     	
     	if(entity.getOrganizationType() != null) {
     		entity.setOrganizationType(orgTypeDAO.findById(entity.getOrganizationType().getId()));
@@ -188,20 +188,21 @@ public class OrganizationServiceImpl implements OrganizationService {
                 entity.setUsers(dbOrg.getUsers());
                 entity.setAdminResource(dbOrg.getAdminResource());
                 if(entity.getAdminResource() == null) {
-                	entity.setAdminResource(getNewAdminResource(entity));
+                	entity.setAdminResource(getNewAdminResource(entity, requestorId));
                 }
                 orgDao.merge(entity);
             }
         } else {
-        	entity.setAdminResource(getNewAdminResource(entity));
+        	entity.setAdminResource(getNewAdminResource(entity, requestorId));
             orgDao.save(entity);
         }
     }
     
-    private ResourceEntity getNewAdminResource(final OrganizationEntity entity) {
+    private ResourceEntity getNewAdminResource(final OrganizationEntity entity, final String requestorId) {
 		final ResourceEntity adminResource = new ResourceEntity();
 		adminResource.setName(String.format("ORG_ADMIN_%s_%s", entity.getName(), RandomStringUtils.randomAlphanumeric(2)));
-		adminResource.setResourceType(resourceTypeDao.findById(systemActionId));
+		adminResource.setResourceType(resourceTypeDao.findById(adminResourceTypeId));
+		adminResource.addUser(userDAO.findById(requestorId));
 		return adminResource;
 	}
     

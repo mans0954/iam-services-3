@@ -227,13 +227,13 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 	}
 
 	@Override
-	public List<Role> getRolesForUser(final String userId, String requesterId, final int from, final int size) {
+	public List<Role> getRolesForUser(final String userId, final String requesterId, Boolean deepFlag, final int from, final int size) {
         List<Role> roleList = null;
         AuditLogBuilder auditBuilder = auditLogProvider.getAuditLogBuilder();
         auditBuilder.setAction(AuditAction.GET_ROLE_FOR_USER).setRequestorUserId(requesterId).setTargetUser(userId);
         try{
             final List<RoleEntity> entityList = roleDataService.getRolesForUser(userId, requesterId, from, size);
-            roleList = roleDozerConverter.convertToDTOList(entityList, false);
+            roleList = roleDozerConverter.convertToDTOList(entityList, deepFlag);
             auditBuilder.succeed();
         } catch(Throwable e) {
             auditBuilder.fail().setException(e);
@@ -242,7 +242,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
         }
         return  roleList;
 	}
-	
+
 	@Override
 	public int getNumOfRolesForUser(final String userId, String requesterId) {
         int count =0;
@@ -402,7 +402,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 	*/
 
 	@Override
-	public Response saveRole(Role role) {
+	public Response saveRole(Role role, final String requestorId) {
 		final Response response = new Response(ResponseStatus.SUCCESS);
         AuditLogBuilder auditBuilder = auditLogProvider.getAuditLogBuilder();
         auditBuilder.setAction(AuditAction.SAVE_ROLE);
@@ -436,7 +436,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 				throw new BasicDataServiceException(ResponseCode.INVALID_ROLE_DOMAIN, "Security Domain for Role is not found");
 			}
 			
-			roleDataService.saveRole(entity);
+			roleDataService.saveRole(entity, requestorId);
 			response.setResponseValue(entity.getId());
             auditBuilder.succeed();
 		} catch(BasicDataServiceException e) {
@@ -629,13 +629,13 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 	}
 
 	@Override
-	public List<Role> getChildRoles(final String roleId, String requesterId, final  int from, final int size) {
+	public List<Role> getChildRoles(final String roleId, String requesterId, Boolean deepFlag, final  int from, final int size) {
         List<Role> roleList = null;
         AuditLogBuilder auditBuilder = auditLogProvider.getAuditLogBuilder();
         auditBuilder.setAction(AuditAction.GET_CHILD_ROLE).setRequestorUserId(requesterId).setTargetRole(roleId);
         try{
             final List<RoleEntity> entityList = roleDataService.getChildRoles(roleId, requesterId, from, size);
-            roleList = roleDozerConverter.convertToDTOList(entityList, false);
+            roleList = roleDozerConverter.convertToDTOList(entityList, (deepFlag!=null)?deepFlag:false);
             auditBuilder.succeed();
         } catch(Throwable e) {
             auditBuilder.fail().setException(e);
@@ -826,4 +826,5 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
         }
 		return response;
 	}
+
 }

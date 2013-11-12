@@ -27,22 +27,20 @@ public class EntitleUserToResource extends AbstractEntitlementsDelegate {
 	@Override
 	public void execute(DelegateExecution execution) throws Exception {
 		final String resourceId = (String)execution.getVariable(ActivitiConstants.ASSOCIATION_ID);
-		final String userId = (String)execution.getVariable(ActivitiConstants.MEMBER_ASSOCIATION_ID);	
+		final String userId = getTargetUserId(execution);
 		
 		final User user = getUser(userId);
 		final ResourceEntity entity = resourceService.findResourceById(resourceId);
 		if(user != null && entity != null) {
 			final ProvisionUser pUser = new ProvisionUser(user);
             final Resource resource = resourceService.getResourceDTO(resourceId);
-            //resource.setOperation(AttributeOperationEnum.ADD);
+            resource.setOperation(AttributeOperationEnum.ADD);
             pUser.addResource(resource);
-            //pUser.getResources().add(resource);
 			provisionService.modifyUser(pUser);
 		}
 	}
 
-	@Override
-	protected String getNotificationType() {
-		return null;
+	protected String getTargetUserId(final DelegateExecution execution) {
+		return (String)execution.getVariable(ActivitiConstants.MEMBER_ASSOCIATION_ID);
 	}
 }

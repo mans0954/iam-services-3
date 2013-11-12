@@ -2,6 +2,7 @@ package org.openiam.bpm.activiti.delegate.entitlements;
 
 import org.activiti.engine.delegate.DelegateExecution;
 import org.openiam.base.AttributeOperationEnum;
+import org.openiam.bpm.activiti.delegate.core.AbstractDelegate;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.dozer.converter.GroupDozerConverter;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
@@ -11,10 +12,7 @@ import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.provision.dto.ProvisionUser;
 import org.springframework.beans.factory.annotation.Autowired;
 
-public class RemoveUserFromGroup extends AbstractEntitlementsDelegate {
-	
-	@Autowired
-	private GroupDataService groupDataService;
+public class RemoveUserFromGroup extends AbstractDelegate {
 	
 	public RemoveUserFromGroup() {
 		super();
@@ -32,10 +30,5 @@ public class RemoveUserFromGroup extends AbstractEntitlementsDelegate {
 		pUser.markGroupAsDeleted(groupId);
 		//pUser.getGroups().add(group);
 		provisionService.modifyUser(pUser);
-	}
-
-	@Override
-	protected String getNotificationType() {
-		return null;
 	}
 }

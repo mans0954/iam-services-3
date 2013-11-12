@@ -62,8 +62,8 @@ public class RoleDataServiceImpl implements RoleDataService {
     @Autowired
     private ManagedSysDAO managedSysDAO;
     
-	@Value("${org.openiam.resource.system.action.id}")
-	private String systemActionId;
+	@Value("${org.openiam.resource.admin.resource.type.id}")
+	private String adminResourceTypeId;
 
 	private static final Log log = LogFactory.getLog(RoleDataServiceImpl.class);
 
@@ -202,7 +202,7 @@ public class RoleDataServiceImpl implements RoleDataService {
 
 	@Override
     @Transactional
-	public void saveRole(final RoleEntity role) throws BasicDataServiceException {
+	public void saveRole(final RoleEntity role, final String requestorId) throws BasicDataServiceException {
 		if(role != null && entityValidator.isValid(role)) {
 			if(role.getManagedSystem() != null && role.getManagedSystem().getManagedSysId() != null) {
 				role.setManagedSystem(managedSysDAO.findById(role.getManagedSystem().getManagedSysId()));
@@ -211,7 +211,7 @@ public class RoleDataServiceImpl implements RoleDataService {
 			}
 			
 			if(StringUtils.isBlank(role.getId())) {
-				role.setAdminResource(getNewAdminResource(role));
+				role.setAdminResource(getNewAdminResource(role, requestorId));
 				roleDao.save(role);
 			} else {
 				final RoleEntity dbRole = roleDao.findById(role.getId());
@@ -224,7 +224,7 @@ public class RoleDataServiceImpl implements RoleDataService {
 					role.setUsers(dbRole.getUsers());
 					role.setAdminResource(dbRole.getAdminResource());
 					if(role.getAdminResource() == null) {
-						role.setAdminResource(getNewAdminResource(role));
+						role.setAdminResource(getNewAdminResource(role, requestorId));
 					}
 					
 					mergeAttributes(role, dbRole);
@@ -234,10 +234,11 @@ public class RoleDataServiceImpl implements RoleDataService {
 		}
 	}
 	
-	private ResourceEntity getNewAdminResource(final RoleEntity entity) {
+	private ResourceEntity getNewAdminResource(final RoleEntity entity, final String requestorId) {
 		final ResourceEntity adminResource = new ResourceEntity();
 		adminResource.setName(String.format("ROLE_ADMIN_%s_%s", entity.getName(), RandomStringUtils.randomAlphanumeric(2)));
-		adminResource.setResourceType(resourceTypeDAO.findById(systemActionId));
+		adminResource.setResourceType(resourceTypeDAO.findById(adminResourceTypeId));
+		adminResource.addUser(userDAO.findById(requestorId));
 		return adminResource;
 	}
 	

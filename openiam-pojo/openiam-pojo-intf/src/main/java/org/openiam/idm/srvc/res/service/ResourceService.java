@@ -13,7 +13,7 @@ import org.openiam.idm.srvc.res.dto.Resource;
 public interface ResourceService {
 
 	public void deleteResource(final String resourceId);
-	public void save(final ResourceEntity resource);
+	public void save(final ResourceEntity resource, final String requestorId);
 	public ResourceEntity findResourceById(final String resourceId);
 	public List<ResourceEntity> findResourcesByIds(final Collection<String> resourceIdCollection);
 	public ResourceEntity findResourceByName(final String name);
@@ -27,7 +27,7 @@ public interface ResourceService {
 	public List<ResourceEntity> getResourcesForGroup(final String groupId, final int from, final int size);
 	public int getNumOfResourceForUser(final String userId);
 	public List<ResourceEntity> getResourcesForUser(final String userId, final int from, final int size);
-
+    public List<ResourceEntity> getResourcesForUserByType(String userId, String resourceTypeId);
 
 	public void save(final ResourceTypeEntity entity);
 	public ResourceTypeEntity findResourceTypeById(final String id);
