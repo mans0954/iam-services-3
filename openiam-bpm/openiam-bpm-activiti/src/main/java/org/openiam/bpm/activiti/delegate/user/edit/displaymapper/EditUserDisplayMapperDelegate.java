@@ -15,23 +15,23 @@ import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.thoughtworks.xstream.XStream;
 
-public class EditUserDisplayMapperDelegate extends AbstractUserDisplayMapper implements JavaDelegate {
+public class EditUserDisplayMapperDelegate extends AbstractUserDisplayMapper{
 
 	@Autowired
 	@Qualifier("provRequestService")
 	private RequestDataService provRequestService;
 	
 	public EditUserDisplayMapperDelegate() {
-		SpringContextProvider.autowire(this);
+		super();
 	}
 	
 	@Override
 	public void execute(DelegateExecution execution) throws Exception {
-		final String provisionRequestId = (String)execution.getVariable(ActivitiConstants.PROVISION_REQUEST_ID);
+		final String provisionRequestId = (String)execution.getVariable(ActivitiConstants.PROVISION_REQUEST_ID.getName());
 		final ProvisionRequestEntity provisionRequest = provRequestService.getRequest(provisionRequestId);
 		final UserProfileRequestModel profile = (UserProfileRequestModel)new XStream().fromXML(provisionRequest.getRequestXML());
 		final LinkedHashMap<String, String> metadataMap = getMetadataMap(profile, execution);
 		
-		execution.setVariable(ActivitiConstants.REQUEST_METADATA_MAP, metadataMap);
+		execution.setVariable(ActivitiConstants.REQUEST_METADATA_MAP.getName(), metadataMap);
 	}
 }

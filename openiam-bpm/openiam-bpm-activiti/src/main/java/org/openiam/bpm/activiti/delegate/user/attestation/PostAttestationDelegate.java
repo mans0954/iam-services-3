@@ -20,14 +20,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 public class PostAttestationDelegate extends AbstractEntitlementsDelegate {
 	
-	@Autowired
-	private MailService mailService;
-	
-	@Autowired
-	private UserDataService userService;
-	
 	public PostAttestationDelegate() {
-		SpringContextProvider.autowire(this);
+		super();
 	}
 	
 	private static Logger LOG = Logger.getLogger(PostAttestationDelegate.class);
@@ -39,11 +33,11 @@ public class PostAttestationDelegate extends AbstractEntitlementsDelegate {
 		
 		final String employeeId = getTargetUserId(execution);
 		if(employeeId != null) {
-			final UserEntity employee = userService.getUser(employeeId);
+			final UserEntity employee = getUserEntity(employeeId);
 			if(employee != null) {
 				final Collection<String> candidateUsersIds = activitiHelper.getCandidateUserIds(execution, employeeId, null);
 				for(final String candidateId : candidateUsersIds) {
-					final UserEntity supervisor = userService.getUser(candidateId);
+					final UserEntity supervisor = getUserEntity(candidateId);
 					if(supervisor != null) {
 						sendNotificationRequest(supervisor, employee);
 					}
@@ -62,9 +56,5 @@ public class PostAttestationDelegate extends AbstractEntitlementsDelegate {
         request.getParamList().add(new NotificationParam("EMPLOYEE", employee));
         request.getParamList().add(new NotificationParam("SUPERVISOR", supervisor));
         mailService.sendNotification(request);
-	}
-
-	protected String getTargetUserId(final DelegateExecution execution) {
-		return (String)execution.getVariable(ActivitiConstants.EMPLOYEE_ID);
 	}
 }

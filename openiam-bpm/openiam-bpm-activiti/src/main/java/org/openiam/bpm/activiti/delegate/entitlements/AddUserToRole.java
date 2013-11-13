@@ -2,7 +2,7 @@ package org.openiam.bpm.activiti.delegate.entitlements;
 
 import org.activiti.engine.delegate.DelegateExecution;
 import org.openiam.base.AttributeOperationEnum;
-import org.openiam.bpm.activiti.delegate.core.AbstractDelegate;
+import org.openiam.bpm.activiti.delegate.core.AbstractActivitiJob;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.dozer.converter.RoleDozerConverter;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
@@ -15,7 +15,7 @@ import org.openiam.provision.service.ProvisionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
-public class AddUserToRole extends AbstractDelegate {
+public class AddUserToRole extends AbstractEntitlementsDelegate {
 	
 	@Autowired
 	private RoleDataService roleDataService;
@@ -26,7 +26,7 @@ public class AddUserToRole extends AbstractDelegate {
 
 	@Override
 	public void execute(DelegateExecution execution) throws Exception {
-		final String roleId = (String)execution.getVariable(ActivitiConstants.ASSOCIATION_ID);
+		final String roleId = getStringVariable(execution, ActivitiConstants.ASSOCIATION_ID);
 		final String userId = getTargetUserId(execution);
 		final RoleEntity roleEntity = roleDataService.getRole(roleId);
 		final User user = getUser(userId);
@@ -39,9 +39,4 @@ public class AddUserToRole extends AbstractDelegate {
 			provisionService.modifyUser(pUser);
 		}
 	}
-	
-	protected String getTargetUserId(final DelegateExecution execution) {
-		return (String)execution.getVariable(ActivitiConstants.MEMBER_ASSOCIATION_ID);
-	}
-	
 }

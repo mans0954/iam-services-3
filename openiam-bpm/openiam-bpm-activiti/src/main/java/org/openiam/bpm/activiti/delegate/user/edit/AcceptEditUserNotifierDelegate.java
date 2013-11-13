@@ -29,41 +29,25 @@ public class AcceptEditUserNotifierDelegate extends AbstractEntitlementsDelegate
 	public void execute(DelegateExecution execution) throws Exception {
 		final Set<String> userIds = new HashSet<String>();
 		
-		final String taskName = (String)execution.getVariable(ActivitiConstants.TASK_NAME);
-		final String taskDescription = (String)execution.getVariable(ActivitiConstants.TASK_DESCRIPTION);
-		final String comment = (String)execution.getVariable(ActivitiConstants.COMMENT);
 		final String targetUserId = getTargetUserId(execution);
 		final UserEntity targetUser = userDAO.findById(targetUserId);
 		
-		final String taskOwner = (String)execution.getVariable(ActivitiConstants.TASK_OWNER);
-		final UserEntity owner = userDAO.findById(taskOwner);
+		final String taskOwner = getRequestorId(execution);
 		
 		userIds.add(taskOwner);
-		final Collection<String> candidateUsersIds = activitiHelper.getCandidateUserIds(execution);
+		final Collection<String> candidateUsersIds = activitiHelper.getOnAcceptUserIds(execution, targetUserId, getSupervisorsForUser(targetUser));
 		if(CollectionUtils.isNotEmpty(candidateUsersIds)) {
 			userIds.addAll(candidateUsersIds);
 		}
-		/*
-		final List<ApproverAssociationEntity> approverAssociationEntities = getApproverAssociations(execution);
-		if(CollectionUtils.isNotEmpty(approverAssociationEntities)) {
-			for(final ApproverAssociationEntity association : approverAssociationEntities) {
-				userIds.addAll(getNotifyUserIds(association.getOnRejectEntityType(), association.getOnRejectEntityId(), targetUserId));
-			}
-		}
-		*/
 		
 		for(final String toNotifyUserId : userIds) {
 			final UserEntity toNotify = userDAO.findById(toNotifyUserId);
 			if(toNotify != null) {
-				sendNotification(toNotify, owner, targetUser, comment, taskName, taskDescription);
+				sendNotification(toNotify, targetUser, execution);
 			}
 		}
 	}
 	
-	protected String getTargetUserId(final DelegateExecution execution) {
-		return (String)execution.getVariable(ActivitiConstants.ASSOCIATION_ID);
-	}
-
 	@Override
 	protected String getNotificationType() {
 		return NOTIFY_TYPE;

@@ -2,7 +2,7 @@ package org.openiam.bpm.activiti.delegate.entitlements;
 
 import org.activiti.engine.delegate.DelegateExecution;
 import org.openiam.base.AttributeOperationEnum;
-import org.openiam.bpm.activiti.delegate.core.AbstractDelegate;
+import org.openiam.bpm.activiti.delegate.core.AbstractActivitiJob;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.service.OrganizationDataService;
@@ -14,7 +14,7 @@ import org.openiam.provision.service.ProvisionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
-public class AddUserToOrganization extends AbstractDelegate {
+public class AddUserToOrganization extends AbstractEntitlementsDelegate {
 
 	@Autowired
 	private OrganizationService organizationService;
@@ -25,7 +25,7 @@ public class AddUserToOrganization extends AbstractDelegate {
 
 	@Override
 	public void execute(DelegateExecution execution) throws Exception {
-		final String organizationId = (String)execution.getVariable(ActivitiConstants.ASSOCIATION_ID);
+		final String organizationId = getStringVariable(execution, ActivitiConstants.ASSOCIATION_ID);
 		final String userId = getTargetUserId(execution);
 
 		final Organization entity = organizationService.getOrganizationDTO(organizationId);
@@ -36,9 +36,5 @@ public class AddUserToOrganization extends AbstractDelegate {
 			pUser.addAffiliation(entity);
 			provisionService.modifyUser(pUser);
 		}
-	}
-	
-	protected String getTargetUserId(final DelegateExecution execution) {
-		return (String)execution.getVariable(ActivitiConstants.MEMBER_ASSOCIATION_ID);
 	}
 }

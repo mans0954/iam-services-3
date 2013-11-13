@@ -15,7 +15,7 @@ import org.apache.commons.lang.StringUtils;
 import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
-import org.openiam.bpm.request.RequestorInformation;
+import org.openiam.base.BaseObject;
 import org.openiam.bpm.util.ActivitiRequestType;
 import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 
@@ -32,7 +32,7 @@ import org.openiam.idm.srvc.mngsys.domain.AssociationType;
     "userCentricUserId",
     "jsonSerializedParams"
 })
-public class GenericWorkflowRequest extends RequestorInformation {
+public class GenericWorkflowRequest extends BaseObject {
 
 	private AssociationType associationType;
 	private String name;
@@ -101,8 +101,7 @@ public class GenericWorkflowRequest extends RequestorInformation {
 	}
 	
 	public boolean isEmpty() {
-		return StringUtils.isBlank(activitiRequestType) ||
-			   StringUtils.isBlank(callerUserId);
+		return StringUtils.isBlank(activitiRequestType) || StringUtils.isBlank(requestorUserId);
 	}
 
 	public List<String> getCustomApproverAssociationIds() {
@@ -149,6 +148,9 @@ public class GenericWorkflowRequest extends RequestorInformation {
 
 	public void addJSONParameter(final String key, final Object value, final ObjectMapper mapper) throws Exception {
 		if(key != null && value != null && mapper != null) {
+			if(jsonSerializedParams == null) {
+				jsonSerializedParams = new HashMap<String, String>();
+			}
 			jsonSerializedParams.put(key, mapper.writeValueAsString(value));
 		}
 	}

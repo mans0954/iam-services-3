@@ -33,6 +33,7 @@ public class RejectEntitlementsNotifierDelegate extends AbstractEntitlementsDele
 		NOTIFICATION_MAP.put("REMOVE_USER_FROM_ORG", "REMOVE_USER_FROM_ORG_REJECT_NOTIFY");
 		NOTIFICATION_MAP.put("REMOVE_SUPERIOR", "REMOVE_SUPERIOR_REJECT");
 		NOTIFICATION_MAP.put("ADD_SUPERIOR", "ADD_SUPERIOR_REJECT");
+		NOTIFICATION_MAP.put("EDIT_RESOURCE", "EDIT_RESOURCE_REJECT");
 	}
 	
 	public RejectEntitlementsNotifierDelegate() {
@@ -43,16 +44,13 @@ public class RejectEntitlementsNotifierDelegate extends AbstractEntitlementsDele
 	public void execute(DelegateExecution execution) throws Exception {
 		final Set<String> userIds = new HashSet<String>();
 		
-		final String taskName = (String)execution.getVariable(ActivitiConstants.TASK_NAME);
-		final String taskDescription = (String)execution.getVariable(ActivitiConstants.TASK_DESCRIPTION);
-		final String comment = (String)execution.getVariable(ActivitiConstants.COMMENT);
 		final String targetUserId = getTargetUserId(execution);
 		final UserEntity targetUser = userDAO.findById(targetUserId);
 		
-		final String taskOwner = (String)execution.getVariable(ActivitiConstants.TASK_OWNER);
-		final UserEntity owner = userDAO.findById(taskOwner);
+		final String taskOwner = getRequestorId(execution);
 		
 		userIds.add(taskOwner);
+		userIds.add(targetUserId);
 		
 		final List<ApproverAssociationEntity> approverAssociationEntities = activitiHelper.getApproverAssociations(execution);
 		if(CollectionUtils.isNotEmpty(approverAssociationEntities)) {
@@ -64,7 +62,7 @@ public class RejectEntitlementsNotifierDelegate extends AbstractEntitlementsDele
 		for(final String toNotifyUserId : userIds) {
 			final UserEntity toNotify = userDAO.findById(toNotifyUserId);
 			if(toNotify != null) {
-				sendNotification(toNotify, owner, targetUser, comment, taskName, taskDescription);
+				sendNotification(toNotify, targetUser, execution);
 			}
 		}
 	}
@@ -72,10 +70,5 @@ public class RejectEntitlementsNotifierDelegate extends AbstractEntitlementsDele
 	@Override
 	protected String getNotificationType() {
 		return NOTIFICATION_MAP.get(getOperation());
-	}
-
-	@Override
-	protected String getTargetUserId(final DelegateExecution execution) {
-		return (String)execution.getVariable(ActivitiConstants.MEMBER_ASSOCIATION_ID);
 	}
 }

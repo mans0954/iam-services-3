@@ -21,14 +21,4 @@ public class SendUserCentricEntitlementsRequestDelegate extends AbstractEntitlem
 	public SendUserCentricEntitlementsRequestDelegate() {
 		super();
 	}
-
-	@Override
-	public void execute(DelegateExecution execution) throws Exception {
-		super.execute(execution);
-	}
-	
-	@Override
-	protected String getTargetUserId(final DelegateExecution execution) {
-		return (String)execution.getVariable(ActivitiConstants.MEMBER_ASSOCIATION_ID);
-	}
 }

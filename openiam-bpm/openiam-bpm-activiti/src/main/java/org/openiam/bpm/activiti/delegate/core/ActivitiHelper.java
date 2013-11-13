@@ -10,12 +10,14 @@ import java.util.Set;
 import org.activiti.engine.delegate.DelegateExecution;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.openiam.bpm.activiti.model.ActivitiJSONStringWrapper;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 import org.openiam.idm.srvc.mngsys.service.ApproverAssociationDAO;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.service.UserDataService;
+import org.openiam.idm.util.CustomJacksonMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,7 +33,7 @@ public class ActivitiHelper {
 
 	@Transactional
 	public List<ApproverAssociationEntity> getApproverAssociations(final DelegateExecution execution) {
-		final List<String> approverAssociationIds = (List<String>)execution.getVariable(ActivitiConstants.APPROVER_ASSOCIATION_IDS);
+		final List<String> approverAssociationIds = (List<String>)execution.getVariable(ActivitiConstants.APPROVER_ASSOCIATION_IDS.getName());
 		return approverAssociationDao.findByIds(approverAssociationIds);
 	}
 	
@@ -234,8 +236,8 @@ public class ActivitiHelper {
 	public List<String> getCandidateUserIds(final DelegateExecution execution) {
 		final List<String> candidateUsersIds = new LinkedList<String>();
 		Object cardinalityObject = null;
-		if(execution.hasVariable(ActivitiConstants.CARDINALITY_OBJECT)) {
-			cardinalityObject = execution.getVariable(ActivitiConstants.CARDINALITY_OBJECT);
+		if(execution.hasVariable(ActivitiConstants.CARDINALITY_OBJECT.getName())) {
+			cardinalityObject = execution.getVariable(ActivitiConstants.CARDINALITY_OBJECT.getName());
 			if((cardinalityObject instanceof Collection<?>)) {
 				for(final String candidateId : (Collection<String>)cardinalityObject) {
 					if(candidateId != null) {
@@ -250,8 +252,8 @@ public class ActivitiHelper {
 	private ApproverAssociationEntity getApproverAssociation(final DelegateExecution execution) {
 		ApproverAssociationEntity association = null;
 		Object cardinalityObject = null;
-		if(execution.hasVariable(ActivitiConstants.CARDINALITY_OBJECT)) {
-			cardinalityObject = execution.getVariable(ActivitiConstants.CARDINALITY_OBJECT);
+		if(execution.hasVariable(ActivitiConstants.CARDINALITY_OBJECT.getName())) {
+			cardinalityObject = execution.getVariable(ActivitiConstants.CARDINALITY_OBJECT.getName());
 			if(cardinalityObject instanceof String) {
 				final String id = (String)cardinalityObject;
 				association = approverAssociationDao.findById(id);

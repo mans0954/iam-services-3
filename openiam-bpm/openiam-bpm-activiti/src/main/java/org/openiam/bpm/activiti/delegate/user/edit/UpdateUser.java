@@ -47,7 +47,7 @@ public class UpdateUser implements JavaDelegate {
 
 	@Override
 	public void execute(DelegateExecution execution) throws Exception {
-		final String provisionRequestId = (String)execution.getVariable(ActivitiConstants.PROVISION_REQUEST_ID);
+		final String provisionRequestId = (String)execution.getVariable(ActivitiConstants.PROVISION_REQUEST_ID.getName());
 		final ProvisionRequestEntity provisionRequest = provRequestService.getRequest(provisionRequestId);
 		final UserProfileRequestModel profile = (UserProfileRequestModel)new XStream().fromXML(provisionRequest.getRequestXML());
 		//final String userId = (String)execution.getVariable(ActivitiConstants.ASSOCIATION_ID);

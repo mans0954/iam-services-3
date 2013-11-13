@@ -15,7 +15,6 @@ import org.apache.log4j.Logger;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.bpm.activiti.delegate.core.ActivitiHelper;
-import org.openiam.bpm.request.RequestorInformation;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
@@ -76,9 +75,9 @@ public class AcceptProfileProvisionDelegate implements JavaDelegate {
 	
 	@Override
     public void execute(DelegateExecution execution) throws Exception {
-		final String lastCaller = (String)execution.getVariable(ActivitiConstants.EXECUTOR_ID);
-		final String provisionRequestId = (String)execution.getVariable(ActivitiConstants.PROVISION_REQUEST_ID);
-		final String newUserId = (String)execution.getVariable(ActivitiConstants.NEW_USER_ID);
+		final String lastCaller = (String)execution.getVariable(ActivitiConstants.EXECUTOR_ID.getName());
+		final String provisionRequestId = (String)execution.getVariable(ActivitiConstants.PROVISION_REQUEST_ID.getName());
+		final String newUserId = (String)execution.getVariable(ActivitiConstants.NEW_USER_ID.getName());
             
 		final UserEntity newUser = userManager.getUser(newUserId);
             

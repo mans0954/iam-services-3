@@ -25,7 +25,7 @@ public class AddUserCentricCandidateTaskListener extends AbstractCandidateTaskLi
 
 	@Override
 	public String getTargetUserId(final DelegateExecution execution) {
-		return (String)execution.getVariable(ActivitiConstants.MEMBER_ASSOCIATION_ID);
+		return getStringVariable(execution, ActivitiConstants.MEMBER_ASSOCIATION_ID);
 	}
 
 }

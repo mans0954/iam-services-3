@@ -3,6 +3,7 @@ package org.openiam.bpm.activiti.delegate.entitlements;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -35,21 +36,17 @@ public class RejectSupervisorNotifierDelegate extends AbstractNotificationDelega
 	
 	@Override
 	public void execute(DelegateExecution execution) throws Exception {
-		final String targetUserId = (String)execution.getVariable(ActivitiConstants.MEMBER_ASSOCIATION_ID);
+		final String targetUserId = getStringVariable(execution, ActivitiConstants.MEMBER_ASSOCIATION_ID);
 		final UserEntity targetUser = userDAO.findById(targetUserId);
 		
-		final String taskName = (String)execution.getVariable(ActivitiConstants.TASK_NAME);
-		final String taskDescription = (String)execution.getVariable(ActivitiConstants.TASK_DESCRIPTION);
-		final String taskOwner = (String)execution.getVariable(ActivitiConstants.TASK_OWNER);
-		final UserEntity owner = userDAO.findById(taskOwner);
+		final List<String> notifyIds = getSupervisorsForUser(targetUser);
+		notifyIds.add(targetUserId);
+		notifyIds.add(getStringVariable(execution, ActivitiConstants.ASSOCIATION_ID));
 		
-		final Set<String> candidateUsersIds = new HashSet<String>(activitiHelper.getCandidateUserIds(execution, targetUserId, null));
-		candidateUsersIds.addAll(activitiHelper.getCandidateUserIds(execution));
-		
-		for(final String userId : candidateUsersIds) {
+		for(final String userId : notifyIds) {
 			final UserEntity user = userDAO.findById(userId);
 			if(user != null) {
-				sendNotification(user, owner, targetUser, null, taskName, taskDescription);
+				sendNotification(user, targetUser, execution);
 			}
 		}
 	}

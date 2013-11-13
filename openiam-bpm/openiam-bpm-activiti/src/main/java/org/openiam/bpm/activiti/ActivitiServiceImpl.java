@@ -43,6 +43,7 @@ import org.openiam.bpm.activiti.groovy.AbstractApproverAssociationIdentifier;
 import org.openiam.bpm.activiti.groovy.DefaultEditUserApproverAssociationIdentifier;
 import org.openiam.bpm.activiti.groovy.DefaultGenericWorkflowRequestApproverAssociationIdentifier;
 import org.openiam.bpm.activiti.groovy.DefaultNewHireRequestApproverAssociationIdentifier;
+import org.openiam.bpm.activiti.model.ActivitiJSONStringWrapper;
 import org.openiam.bpm.request.ActivitiClaimRequest;
 import org.openiam.bpm.request.ActivitiRequestDecision;
 import org.openiam.bpm.request.GenericWorkflowRequest;
@@ -133,9 +134,6 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 	
 	@Autowired
 	private CustomJacksonMapper jacksonMapper;
-
-	@Autowired
-	private SupervisorDAO supervisorDAO;
 	
 	@Autowired
 	private UserProfileService userProfileService;
@@ -330,12 +328,12 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 			}
 			
 			final Map<String, Object> variables = new HashMap<String, Object>();
-			variables.put(ActivitiConstants.APPROVER_CARDINALTITY, approverCardinatlity);
-			variables.put(ActivitiConstants.APPROVER_ASSOCIATION_IDS, approverAssociationIds);
-			variables.put(ActivitiConstants.PROVISION_REQUEST_ID, provisionRequest.getId());
-			variables.put(ActivitiConstants.TASK_NAME, taskName);
-			variables.put(ActivitiConstants.TASK_DESCRIPTION, taskDescription);
-			variables.put(ActivitiConstants.TASK_OWNER, request.getRequestorUserId());
+			variables.put(ActivitiConstants.APPROVER_CARDINALTITY.getName(), approverCardinatlity);
+			variables.put(ActivitiConstants.APPROVER_ASSOCIATION_IDS.getName(), approverAssociationIds);
+			variables.put(ActivitiConstants.PROVISION_REQUEST_ID.getName(), provisionRequest.getId());
+			variables.put(ActivitiConstants.TASK_NAME.getName(), taskName);
+			variables.put(ActivitiConstants.TASK_DESCRIPTION.getName(), taskDescription);
+			variables.put(ActivitiConstants.REQUESTOR.getName(), request.getRequestorUserId());
 			runtimeService.startProcessInstanceByKey(requestType.getKey(), variables);
 
 			response.setStatus(ResponseStatus.SUCCESS);
@@ -383,7 +381,7 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 		try {
 			builder.addAttributeAsJson(AuditAttributeName.REQUEST, request, jacksonMapper);
 			
-			final List<Task> taskList = taskService.createTaskQuery().taskCandidateUser(request.getCallerUserId()).list();
+			final List<Task> taskList = taskService.createTaskQuery().taskCandidateUser(request.getRequestorUserId()).list();
 			if(CollectionUtils.isEmpty(taskList)) {
 				throw new ActivitiException("No Candidate Task available");
 			}
@@ -405,8 +403,8 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 			}
 			
 			/* claim the process, and set the assignee */
-			taskService.claim(potentialTaskToClaim.getId(), request.getCallerUserId());
-			taskService.setAssignee(potentialTaskToClaim.getId(), request.getCallerUserId());
+			taskService.claim(potentialTaskToClaim.getId(), request.getRequestorUserId());
+			taskService.setAssignee(potentialTaskToClaim.getId(), request.getRequestorUserId());
 			
 
 			response.setStatus(ResponseStatus.SUCCESS);
@@ -493,13 +491,13 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 			}
 			
 			final Map<String, Object> variables = new HashMap<String, Object>();
-			variables.put(ActivitiConstants.APPROVER_CARDINALTITY, approverCardinatlity);
-			variables.put(ActivitiConstants.APPROVER_ASSOCIATION_IDS, approverAssociationIds);
-			variables.put(ActivitiConstants.PROVISION_REQUEST_ID, provisionRequest.getId());
-			variables.put(ActivitiConstants.TASK_NAME, description);
-			variables.put(ActivitiConstants.TASK_DESCRIPTION, description);
-			variables.put(ActivitiConstants.TASK_OWNER, request.getRequestorUserId());
-			variables.put(ActivitiConstants.ASSOCIATION_ID, request.getUser().getUserId());
+			variables.put(ActivitiConstants.APPROVER_CARDINALTITY.getName(), approverCardinatlity);
+			variables.put(ActivitiConstants.APPROVER_ASSOCIATION_IDS.getName(), approverAssociationIds);
+			variables.put(ActivitiConstants.PROVISION_REQUEST_ID.getName(), provisionRequest.getId());
+			variables.put(ActivitiConstants.TASK_NAME.getName(), description);
+			variables.put(ActivitiConstants.TASK_DESCRIPTION.getName(), description);
+			variables.put(ActivitiConstants.REQUESTOR.getName(), request.getRequestorUserId());
+			variables.put(ActivitiConstants.ASSOCIATION_ID.getName(), request.getUser().getUserId());
 			final ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(ActivitiRequestType.EDIT_USER.getKey(), variables);
 			
 			/* throws exception if invalid - caught in try/catch */
@@ -602,15 +600,22 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 			builder.addAttributeAsJson(AuditAttributeName.REQUEST_APPROVER_IDS, approverUserIds, jacksonMapper);
 			
 			final Map<String, Object> variables = new HashMap<String, Object>();
-			variables.put(ActivitiConstants.APPROVER_CARDINALTITY, approverCardinatlity);
-			variables.put(ActivitiConstants.APPROVER_ASSOCIATION_IDS, approverAssociationIds);
-			variables.put(ActivitiConstants.TASK_NAME, request.getName());
-			variables.put(ActivitiConstants.TASK_DESCRIPTION, request.getDescription());
-			variables.put(ActivitiConstants.TASK_OWNER, request.getCallerUserId());
-			variables.put(ActivitiConstants.ASSOCIATION_ID, request.getAssociationId());
+			variables.put(ActivitiConstants.APPROVER_CARDINALTITY.getName(), approverCardinatlity);
+			variables.put(ActivitiConstants.APPROVER_ASSOCIATION_IDS.getName(), approverAssociationIds);
+			variables.put(ActivitiConstants.TASK_NAME.getName(), request.getName());
+			variables.put(ActivitiConstants.TASK_DESCRIPTION.getName(), request.getDescription());
+			variables.put(ActivitiConstants.REQUESTOR.getName(), request.getRequestorUserId());
+			variables.put(ActivitiConstants.ASSOCIATION_ID.getName(), request.getAssociationId());
 			if(request.getParameters() != null) {
 				variables.putAll(request.getParameters());
 			}
+			if(request.getJsonSerializedParams() != null) {
+				for(final String key : request.getJsonSerializedParams().keySet()) {
+					final String value = request.getJsonSerializedParams().get(key);
+					variables.put(key, new ActivitiJSONStringWrapper(value));
+				}
+			}
+			
 			runtimeService.startProcessInstanceByKey(request.getActivitiRequestType(), variables);
 
 			response.setStatus(ResponseStatus.SUCCESS);
@@ -648,9 +653,9 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 		
         	/* complete the Task in Activiti, passing required parameters */
         	final Map<String, Object> variables = new HashMap<String, Object>();
-        	variables.put(ActivitiConstants.COMMENT, request.getComment());
-        	variables.put(ActivitiConstants.IS_TASK_APPROVED, request.isAccepted());
-        	variables.put(ActivitiConstants.EXECUTOR_ID, request.getCallerUserId());
+        	variables.put(ActivitiConstants.COMMENT.getName(), request.getComment());
+        	variables.put(ActivitiConstants.IS_TASK_APPROVED.getName(), request.isAccepted());
+        	variables.put(ActivitiConstants.EXECUTOR_ID.getName(), request.getRequestorUserId());
         	if(request.getCustomVariables() != null) {
         		variables.putAll(request.getCustomVariables());
         	}
@@ -680,7 +685,7 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 	}
 	
 	private Task getTaskAssignee(final ActivitiRequestDecision newHireRequest) throws ActivitiException {
-		return getTaskAssignee(newHireRequest.getTaskId(), newHireRequest.getCallerUserId());
+		return getTaskAssignee(newHireRequest.getTaskId(), newHireRequest.getRequestorUserId());
 	}
 
 	@Override

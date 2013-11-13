@@ -8,12 +8,13 @@ import org.activiti.engine.delegate.DelegateTask;
 import org.activiti.engine.delegate.TaskListener;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.openiam.bpm.activiti.delegate.core.AbstractActivitiJob;
 import org.openiam.bpm.activiti.delegate.core.ActivitiHelper;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.util.SpringContextProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 
-public abstract class AbstractCandidateTaskListener implements TaskListener {
+public abstract class AbstractCandidateTaskListener extends AbstractActivitiJob {
 
 	protected Logger LOG = Logger.getLogger(AbstractCandidateTaskListener.class);
 	
@@ -28,9 +29,9 @@ public abstract class AbstractCandidateTaskListener implements TaskListener {
 	public void notify(DelegateTask delegateTask, final List<String> supervisorIds) {
 		final DelegateExecution execution = delegateTask.getExecution();
 		final String targetUserId = getTargetUserId(execution);
-		final String taskOwner = StringUtils.trimToNull((String)delegateTask.getExecution().getVariable(ActivitiConstants.TASK_OWNER));
-		final String taskDescription = (String)delegateTask.getExecution().getVariable(ActivitiConstants.TASK_DESCRIPTION);
-		final String taskName = (String)delegateTask.getExecution().getVariable(ActivitiConstants.TASK_NAME);
+		final String taskOwner = getRequestorId(delegateTask.getExecution());
+		final String taskDescription = StringUtils.trimToNull(getStringVariable(execution, ActivitiConstants.TASK_DESCRIPTION));
+		final String taskName = getStringVariable(execution, ActivitiConstants.TASK_NAME);
 		
 		final Collection<String> candidateUsersIds = activitiHelper.getCandidateUserIds(execution, targetUserId, supervisorIds);
 		

@@ -9,6 +9,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.time.StopWatch;
 import org.apache.log4j.Logger;
 import org.openiam.base.AttributeOperationEnum;
+import org.openiam.bpm.activiti.delegate.core.AbstractActivitiJob;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.dozer.converter.GroupDozerConverter;
 import org.openiam.dozer.converter.ResourceDozerConverter;
@@ -33,37 +34,11 @@ import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.thoughtworks.xstream.XStream;
 
-public class AttestationWorkDelegate implements JavaDelegate {
-
-	@Autowired
-	private GroupDataService groupService;
-	
-	@Autowired
-	private RoleDataService roleService;
-	
-	@Autowired
-	private ResourceService resourceService;
-	
-	@Autowired
-	private UserDataService userDataService;
-	
-	@Autowired
-	private GroupDozerConverter groupDozerConverter;
-	
-	@Autowired
-	private RoleDozerConverter roleDozerConverter;
-	
-	@Autowired
-	private ResourceDozerConverter resourceDozerConverter;
-	
-	@Autowired
-	@Qualifier("defaultProvision")
-	private ProvisionService provisionService;
-	
+public class AttestationWorkDelegate extends AbstractActivitiJob {
 	private static Logger LOG = Logger.getLogger(AttestationWorkDelegate.class);
 	
 	public AttestationWorkDelegate() {
-		SpringContextProvider.autowire(this);
+		super();
 	}
 	
 	private Set<String> objectToSet(final Object obj) {
@@ -83,10 +58,10 @@ public class AttestationWorkDelegate implements JavaDelegate {
 		final StopWatch sw = new StopWatch();
 		sw.start();
 		
-		final String employeeId = (String)execution.getVariable(ActivitiConstants.EMPLOYEE_ID);
-		final Set<String> disassociatedGroupIds = objectToSet(execution.getVariable(ActivitiConstants.DISASSOCIATED_GROUP_IDS));
-		final Set<String> disassociatedRoleIds = objectToSet(execution.getVariable(ActivitiConstants.DISASSOCIATED_ROLE_IDS));
-		final Set<String> disassociatedResourceIds = objectToSet(execution.getVariable(ActivitiConstants.DISASSOCIATED_RESOURCE_IDS));
+		final String employeeId = getStringVariable(execution, ActivitiConstants.EMPLOYEE_ID);
+		final Set<String> disassociatedGroupIds = objectToSet(execution.getVariable(ActivitiConstants.DISASSOCIATED_GROUP_IDS.getName()));
+		final Set<String> disassociatedRoleIds = objectToSet(execution.getVariable(ActivitiConstants.DISASSOCIATED_ROLE_IDS.getName()));
+		final Set<String> disassociatedResourceIds = objectToSet(execution.getVariable(ActivitiConstants.DISASSOCIATED_RESOURCE_IDS.getName()));
 		
 		final User dto = userDataService.getUserDto(employeeId);
 		if(dto != null) {

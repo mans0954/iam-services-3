@@ -54,7 +54,7 @@ public class SendNewHireRequestDelegate extends AbstractNotificationDelegate {
 	
 	@Override
 	public void execute(DelegateExecution execution) throws Exception {
-		final String provisionRequestId = (String)execution.getVariable(ActivitiConstants.PROVISION_REQUEST_ID);
+		final String provisionRequestId = getStringVariable(execution, ActivitiConstants.PROVISION_REQUEST_ID);
 		//final String callerId = (String)execution.getVariable(ActivitiConstants.TASK_OWNER);
 		
 		provisionRequest = provRequestService.getRequest(provisionRequestId);

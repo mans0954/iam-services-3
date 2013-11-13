@@ -6,7 +6,7 @@ import java.util.List;
 import org.activiti.engine.delegate.DelegateExecution;
 import org.activiti.engine.delegate.JavaDelegate;
 import org.openiam.base.AttributeOperationEnum;
-import org.openiam.bpm.activiti.delegate.core.AbstractDelegate;
+import org.openiam.bpm.activiti.delegate.core.AbstractActivitiJob;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.dto.Role;
@@ -18,7 +18,7 @@ import org.openiam.provision.service.ProvisionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
-public class AddSupervisor extends AbstractDelegate {
+public class AddSupervisor extends AbstractActivitiJob {
 	
 	@Autowired
 	@Qualifier("userWS")
@@ -30,8 +30,8 @@ public class AddSupervisor extends AbstractDelegate {
 
 	@Override
 	public void execute(DelegateExecution execution) throws Exception {
-		final String superiorId = (String)execution.getVariable(ActivitiConstants.ASSOCIATION_ID);
-		final String subordinateId = (String)execution.getVariable(ActivitiConstants.MEMBER_ASSOCIATION_ID);
+		final String superiorId = getStringVariable(execution, ActivitiConstants.ASSOCIATION_ID);
+		final String subordinateId = getStringVariable(execution, ActivitiConstants.MEMBER_ASSOCIATION_ID);
 		final User superior = getUser(superiorId);
 		final User subordinate = getUser(subordinateId);
 		

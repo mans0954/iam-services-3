@@ -53,7 +53,7 @@ public class CreateNewUser implements JavaDelegate {
 	
 	@Override
 	public void execute(DelegateExecution execution) throws Exception {
-		final String provisionRequestId = (String)execution.getVariable(ActivitiConstants.PROVISION_REQUEST_ID);
+		final String provisionRequestId = (String)execution.getVariable(ActivitiConstants.PROVISION_REQUEST_ID.getName());
 		final ProvisionRequestEntity provisionRequest = provRequestService.getRequest(provisionRequestId);
 		final NewUserProfileRequestModel request = (NewUserProfileRequestModel)new XStream().fromXML(provisionRequest.getRequestXML());
 		//final CreateUserToken token = userProfileService.createNewUserProfile(request);
@@ -65,7 +65,7 @@ public class CreateNewUser implements JavaDelegate {
 		final ProvisionUserResponse response = provisionService.addUser(user);
 		if(ResponseStatus.SUCCESS.equals(response.getStatus()) && response.getUser() != null && StringUtils.isNotBlank(response.getUser().getUserId())) {
 			final String userId = response.getUser().getUserId();
-			execution.setVariable(ActivitiConstants.NEW_USER_ID, userId);
+			execution.setVariable(ActivitiConstants.NEW_USER_ID.getName(), userId);
 		} else {
 			throw new Exception("Could not save User Profile using Provisioning Service - can't continue");
 		}

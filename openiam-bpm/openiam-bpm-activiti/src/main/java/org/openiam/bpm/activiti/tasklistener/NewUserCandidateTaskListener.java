@@ -23,7 +23,7 @@ public class NewUserCandidateTaskListener extends AbstractCandidateTaskListener 
 
 	@Override
 	public void notify(DelegateTask delegateTask) {
-		final String provisionRequestId = (String)delegateTask.getExecution().getVariable(ActivitiConstants.PROVISION_REQUEST_ID);
+		final String provisionRequestId = getStringVariable(delegateTask.getExecution(), ActivitiConstants.PROVISION_REQUEST_ID);
 		final ProvisionRequestEntity provisionRequest = provRequestService.getRequest(provisionRequestId);
 		final NewUserProfileRequestModel profileModel = (NewUserProfileRequestModel)new XStream().fromXML(provisionRequest.getRequestXML());
 		

@@ -20,10 +20,9 @@ public class AddAttestationCandidateUsersTaskListener extends AbstractCandidateT
 	public void notify(DelegateTask delegateTask) {
 		super.notify(delegateTask, null);
 	}
-
-	@Override
-	public String getTargetUserId(final DelegateExecution execution) {
-		return (String)execution.getVariable(ActivitiConstants.EMPLOYEE_ID);
-	}
-
+	
+	 @Override
+     public String getTargetUserId(final DelegateExecution execution) {
+		 return getStringVariable(execution, ActivitiConstants.EMPLOYEE_ID);
+     }
 }

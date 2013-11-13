@@ -9,6 +9,7 @@ import org.activiti.engine.delegate.JavaDelegate;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.openiam.bpm.activiti.delegate.core.AbstractActivitiJob;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
@@ -27,7 +28,7 @@ import org.openiam.util.SpringContextProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
-public class AcceptProfileProvisionNotifierDelegate implements JavaDelegate {
+public class AcceptProfileProvisionNotifierDelegate extends AbstractActivitiJob {
 	
 	private static Logger log = Logger.getLogger(AcceptProfileProvisionNotifierDelegate.class);
 
@@ -55,10 +56,10 @@ public class AcceptProfileProvisionNotifierDelegate implements JavaDelegate {
 	
 	@Override
 	public void execute(DelegateExecution execution) throws Exception {
-		final String lastCaller = (String)execution.getVariable(ActivitiConstants.EXECUTOR_ID);
-		final String provisionRequestId = (String)execution.getVariable(ActivitiConstants.PROVISION_REQUEST_ID);
-		final String newUserId = (String)execution.getVariable(ActivitiConstants.NEW_USER_ID);
-		final List<String> approverAssociationIds = (List<String>)execution.getVariable(ActivitiConstants.APPROVER_ASSOCIATION_IDS);
+		final String lastCaller = getStringVariable(execution, ActivitiConstants.EXECUTOR_ID);
+		final String provisionRequestId = getStringVariable(execution, ActivitiConstants.PROVISION_REQUEST_ID);
+		final String newUserId = getStringVariable(execution, ActivitiConstants.NEW_USER_ID);
+		final List<String> approverAssociationIds = (List<String>)execution.getVariable(ActivitiConstants.APPROVER_ASSOCIATION_IDS.getName());
 		
 		final UserEntity newUser = userManager.getUser(newUserId);
 		

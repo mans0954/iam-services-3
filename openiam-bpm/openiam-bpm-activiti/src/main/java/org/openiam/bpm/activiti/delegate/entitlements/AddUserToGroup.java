@@ -25,7 +25,7 @@ public class AddUserToGroup extends AbstractEntitlementsDelegate {
 
 	@Override
 	public void execute(DelegateExecution execution) throws Exception {
-		final String groupId = (String)execution.getVariable(ActivitiConstants.ASSOCIATION_ID);
+		final String groupId = getStringVariable(execution, ActivitiConstants.ASSOCIATION_ID);
 		final String userId = getTargetUserId(execution);
 		//groupDataService.addUserToGroup(groupId, userId);
 		
@@ -43,9 +43,5 @@ public class AddUserToGroup extends AbstractEntitlementsDelegate {
 	@Override
 	protected String getNotificationType() {
 		return null;
-	}
-	
-	protected String getTargetUserId(final DelegateExecution execution) {
-		return (String)execution.getVariable(ActivitiConstants.MEMBER_ASSOCIATION_ID);
 	}
 }

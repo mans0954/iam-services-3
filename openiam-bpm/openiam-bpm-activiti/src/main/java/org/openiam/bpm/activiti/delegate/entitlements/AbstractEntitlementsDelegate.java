@@ -7,7 +7,7 @@ import java.util.Map;
 import org.activiti.engine.delegate.DelegateExecution;
 import org.activiti.engine.impl.el.FixedValue;
 import org.apache.commons.lang.StringUtils;
-import org.openiam.bpm.activiti.delegate.core.AbstractDelegate;
+import org.openiam.bpm.activiti.delegate.core.AbstractActivitiJob;
 import org.openiam.bpm.activiti.delegate.core.AbstractNotificationDelegate;
 import org.openiam.bpm.activiti.delegate.core.ActivitiHelper;
 import org.openiam.bpm.util.ActivitiConstants;
@@ -40,6 +40,7 @@ public abstract class AbstractEntitlementsDelegate extends AbstractNotificationD
 		NOTIFICATION_MAP.put("ADD_USER_TO_ORG", "ADD_USER_TO_ORG_NOTIFY");
 		NOTIFICATION_MAP.put("REMOVE_USER_FROM_ORG", "REMOVE_USER_FROM_ORG_NOTIFY");
 		NOTIFICATION_MAP.put("EDIT_USER", "EDIT_USER_NOTIFY");
+		NOTIFICATION_MAP.put("EDIT_RESOURCE", "EDIT_RESOURCE_NOTIFY");
 	}
 	
 	protected AbstractEntitlementsDelegate() {
@@ -50,24 +51,21 @@ public abstract class AbstractEntitlementsDelegate extends AbstractNotificationD
 		return NOTIFICATION_MAP.get(getOperation());
 	}
 	
-	protected abstract String getTargetUserId(final DelegateExecution execution);
+	protected final String getTargetUserId(final DelegateExecution execution) {
+		return getStringVariable(execution, getTargetVariable());
+	}
 	
 	@Override
 	public void execute(DelegateExecution execution) throws Exception {
 		final String targetUserId = getTargetUserId(execution);
 		final UserEntity targetUser = getUserEntity(targetUserId);
 		
-		final String taskName = (String)execution.getVariable(ActivitiConstants.TASK_NAME);
-		final String taskDescription = (String)execution.getVariable(ActivitiConstants.TASK_DESCRIPTION);
-		final String taskOwner = (String)execution.getVariable(ActivitiConstants.TASK_OWNER);
-		final UserEntity owner = getUserEntity(taskOwner);
-		
 		final Collection<String> candidateUsersIds = activitiHelper.getCandidateUserIds(execution, targetUserId, null);
 				
 		for(final String userId : candidateUsersIds) {
 			final UserEntity user = getUserEntity(userId);
 			if(user != null) {
-				sendNotification(user, owner, targetUser, null, taskName, taskDescription);
+				sendNotification(user, targetUser, execution);
 			}
 		}
 	}

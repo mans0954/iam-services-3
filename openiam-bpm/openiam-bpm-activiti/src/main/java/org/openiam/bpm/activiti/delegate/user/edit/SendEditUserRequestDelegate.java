@@ -21,9 +21,4 @@ public class SendEditUserRequestDelegate extends AbstractEntitlementsDelegate {
 	public void execute(DelegateExecution execution) throws Exception {
 		super.execute(execution);
 	}
-	
-	@Override
-	protected String getTargetUserId(final DelegateExecution execution) {
-		return (String)execution.getVariable(ActivitiConstants.ASSOCIATION_ID);
-	}
 }

@@ -17,6 +17,6 @@ public class AddEditUserCandidateTaskListener extends AbstractCandidateTaskListe
 
 	@Override
 	public String getTargetUserId(final DelegateExecution execution) {
-		return (String)execution.getVariable(ActivitiConstants.ASSOCIATION_ID);
+		return getStringVariable(execution, ActivitiConstants.ASSOCIATION_ID);
 	}
 }

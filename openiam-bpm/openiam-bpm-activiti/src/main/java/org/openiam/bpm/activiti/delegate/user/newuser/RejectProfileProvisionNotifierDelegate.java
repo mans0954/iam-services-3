@@ -64,9 +64,9 @@ public class RejectProfileProvisionNotifierDelegate implements JavaDelegate {
 	
 	@Override
 	public void execute(DelegateExecution execution) throws Exception {
-		final String lastCaller = (String)execution.getVariable(ActivitiConstants.EXECUTOR_ID);
-		final String provisionRequestId = (String)execution.getVariable(ActivitiConstants.PROVISION_REQUEST_ID);
-		final List<String> approverAssociationIds = (List<String>)execution.getVariable(ActivitiConstants.APPROVER_ASSOCIATION_IDS);
+		final String lastCaller = (String)execution.getVariable(ActivitiConstants.EXECUTOR_ID.getName());
+		final String provisionRequestId = (String)execution.getVariable(ActivitiConstants.PROVISION_REQUEST_ID.getName());
+		final List<String> approverAssociationIds = (List<String>)execution.getVariable(ActivitiConstants.APPROVER_ASSOCIATION_IDS.getName());
 		
 		final Set<String> userIds = new HashSet<String>();
         final Set<String> emails = new HashSet<String>();
