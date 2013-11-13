@@ -30,8 +30,8 @@ public abstract class AbstractCandidateTaskListener extends AbstractActivitiJob 
 		final DelegateExecution execution = delegateTask.getExecution();
 		final String targetUserId = getTargetUserId(execution);
 		final String taskOwner = getRequestorId(delegateTask.getExecution());
-		final String taskDescription = StringUtils.trimToNull(getStringVariable(execution, ActivitiConstants.TASK_DESCRIPTION));
-		final String taskName = getStringVariable(execution, ActivitiConstants.TASK_NAME);
+		final String taskDescription = getTaskDescription(execution);
+		final String taskName = getTaskName(execution);
 		
 		final Collection<String> candidateUsersIds = activitiHelper.getCandidateUserIds(execution, targetUserId, supervisorIds);
 		

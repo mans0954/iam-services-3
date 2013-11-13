@@ -53,9 +53,7 @@ public class NewUserDisplayMapperDelegate extends AbstractUserDisplayMapper {
 	
 	@Override
 	public void execute(DelegateExecution execution) throws Exception {
-		final String provisionRequestId = getStringVariable(execution, ActivitiConstants.PROVISION_REQUEST_ID);
-		final ProvisionRequestEntity provisionRequest = provRequestService.getRequest(provisionRequestId);
-		final NewUserProfileRequestModel request = (NewUserProfileRequestModel)new XStream().fromXML(provisionRequest.getRequestXML());
+		final NewUserProfileRequestModel request = getObjectVariable(execution, ActivitiConstants.REQUEST, NewUserProfileRequestModel.class);
 		
 		final LinkedHashMap<String, String> metadataMap = getMetadataMap(request, execution);
 	

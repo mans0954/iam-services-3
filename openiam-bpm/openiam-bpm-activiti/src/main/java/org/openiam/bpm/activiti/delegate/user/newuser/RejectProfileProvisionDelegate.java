@@ -11,6 +11,7 @@ import org.activiti.engine.delegate.JavaDelegate;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.openiam.bpm.activiti.delegate.core.AbstractNotificationDelegate;
 import org.openiam.bpm.activiti.delegate.core.ActivitiHelper;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
@@ -34,86 +35,67 @@ import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.thoughtworks.xstream.XStream;
 
-public class RejectProfileProvisionDelegate implements JavaDelegate {
+public class RejectProfileProvisionDelegate extends AbstractNotificationDelegate {
 	
-	 private static Logger log = Logger.getLogger(RejectProfileProvisionNotifierDelegate.class);
-     
-     @Autowired
-     @Qualifier("mailService")
-     private MailService mailService;
-     
-     @Autowired
-     @Qualifier("approverAssociationDAO")
-     private ApproverAssociationDAO approverAssociationDao;
-     
-     @Autowired
-     @Qualifier("defaultProvision")
-     private ProvisionService provisionService;
-     
-     @Autowired
-     private UserDataService userManager;
-     
-     @Autowired
-     @Qualifier("provRequestService")
-     private RequestDataService provRequestService;
-     
-     @Autowired
-     @Qualifier("userDAO")
-     private UserDAO userDAO;
+	 private static Logger log = Logger.getLogger(RejectProfileProvisionDelegate.class);
      
      @Autowired
      private ActivitiHelper activitiHelper;
 
      public RejectProfileProvisionDelegate() {
-             SpringContextProvider.autowire(this);
+    	 super();
      }
      
      @Override
      public void execute(DelegateExecution execution) throws Exception {
-             final String lastCaller = (String)execution.getVariable(ActivitiConstants.EXECUTOR_ID.getName());
-             final String provisionRequestId = (String)execution.getVariable(ActivitiConstants.PROVISION_REQUEST_ID.getName());
+    	 final String reqeustorId = getRequestorId(execution);
              
-             final Set<String> emails = new HashSet<String>();
+    	 final Set<String> emails = new HashSet<String>();
              
-             final ProvisionRequestEntity provisionRequest = provRequestService.getRequest(provisionRequestId);
-             final NewUserProfileRequestModel profileModel = (NewUserProfileRequestModel)new XStream().fromXML(provisionRequest.getRequestXML());
-             if(CollectionUtils.isNotEmpty(profileModel.getEmails())) {
-                     for(final EmailAddress address : profileModel.getEmails()) {
-                             if(StringUtils.isNotBlank(address.getEmailAddress())) {
-                                     emails.add(address.getEmailAddress());
-                             }
-                     }
+    	 final NewUserProfileRequestModel profileModel = getObjectVariable(execution, ActivitiConstants.REQUEST, NewUserProfileRequestModel.class);
+         if(CollectionUtils.isNotEmpty(profileModel.getEmails())) {
+        	 for(final EmailAddress address : profileModel.getEmails()) {
+            	 if(StringUtils.isNotBlank(address.getEmailAddress())) {
+            		 emails.add(address.getEmailAddress());
+            	 }
              }
+         }
              
-             final Collection<String> userIds = activitiHelper.getOnRejectUserIds(execution, null, profileModel.getSupervisorIds());
-             
-             final UserEntity requestor = userManager.getUser(lastCaller);
-             sendEmails(requestor, provisionRequest, profileModel.getUser(), userIds, emails);
+         final Collection<String> userIds = activitiHelper.getOnRejectUserIds(execution, null, profileModel.getSupervisorIds());
+         
+         final UserEntity requestor = getUserEntity(reqeustorId);
+         sendEmails(requestor, execution, profileModel.getUser(), userIds, emails);
      }
      
-     private void sendEmails(final UserEntity requestor, final ProvisionRequestEntity provisionRequest, final User user, final Collection<String> userIds, final Collection<String> emailAddresses) {
-             if(CollectionUtils.isNotEmpty(userIds)) {
-                     for(final String userId : userIds) {
-                             sendEmail(requestor, provisionRequest, user, userId, null);
-                     }
+     private void sendEmails(final UserEntity requestor, final DelegateExecution execution, final User user, final Collection<String> userIds, final Collection<String> emailAddresses) {
+         if(CollectionUtils.isNotEmpty(userIds)) {
+             for(final String userId : userIds) {
+                     sendEmail(requestor, execution, user, userId, null);
              }
-             
-             if(CollectionUtils.isNotEmpty(emailAddresses)) {
-                     for(final String email : emailAddresses) {
-                             sendEmail(requestor, provisionRequest, user, null, email);
-                     }
+         }
+         
+         if(CollectionUtils.isNotEmpty(emailAddresses)) {
+             for(final String email : emailAddresses) {
+                     sendEmail(requestor, execution, user, null, email);
              }
+         }
      }
      
-     private void sendEmail(final UserEntity requestor, final ProvisionRequestEntity provisionRequest, final User user, final String userId, final String email) {
+     private void sendEmail(final UserEntity requestor, final DelegateExecution execution, final User user, final String userId, final String email) {
 	     final NotificationRequest request = new NotificationRequest();
 	     request.setUserId(userId);
-	     request.setNotificationType("REQUEST_REJECTED");
+	     request.setNotificationType(getNotificationType());
 	     request.setTo(email);
-	     request.getParamList().add(new NotificationParam("REQUEST_ID", provisionRequest.getId()));
-	     request.getParamList().add(new NotificationParam("REQUEST_REASON", provisionRequest.getRequestReason()));
-	     request.getParamList().add(new NotificationParam("REQUESTOR", String.format("%s %s", requestor.getFirstName(), requestor.getLastName())));
-	     request.getParamList().add(new NotificationParam("TARGET_USER", String.format("%s %s", user.getFirstName(), user.getLastName())));
+	     request.getParamList().add(new NotificationParam("REQUEST_REASON", getTaskDescription(execution)));
+	     request.getParamList().add(new NotificationParam("TARGET_USER", user.getDisplayName()));
+	     if(requestor != null) {
+	    	 request.getParamList().add(new NotificationParam("REQUESTOR", requestor.getDisplayName()));
+	     }
 	     mailService.sendNotification(request);
      }
+
+	@Override
+	protected String getNotificationType() {
+		return "REQUEST_REJECTED";
+	}
 }

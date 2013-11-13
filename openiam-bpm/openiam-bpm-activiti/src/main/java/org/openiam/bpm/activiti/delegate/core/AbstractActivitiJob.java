@@ -54,6 +54,9 @@ public abstract class AbstractActivitiJob implements JavaDelegate, TaskListener 
 	@Autowired
 	private CustomJacksonMapper customJacksonMapper;
 	
+	@Autowired
+	protected ApproverAssociationDAO approverAssociationDAO;
+	
 	@Override
 	public void notify(DelegateTask delegateTask) {
 		throw new RuntimeException("notify() not overridden");
@@ -108,5 +111,13 @@ public abstract class AbstractActivitiJob implements JavaDelegate, TaskListener 
 	
 	public String getRequestorId(final DelegateExecution execution) {
 		return getStringVariable(execution, ActivitiConstants.REQUESTOR);
+	}
+	
+	public String getTaskDescription(final DelegateExecution execution) {
+		return getStringVariable(execution, ActivitiConstants.TASK_DESCRIPTION);
+	}
+	
+	public String getTaskName(final DelegateExecution execution) {
+		return getStringVariable(execution, ActivitiConstants.TASK_NAME);
 	}
 }

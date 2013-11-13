@@ -23,7 +23,7 @@ public class NewUserController extends ExtendController   {
     List<Role> roleList =  u.getMemberOfRoles();
     if (roleList != null && roleList.size() > 0)  {
         Role r = roleList.get(0);
-        if (r.getRoleName().equals("ORG_ADMIN")) {
+        if (r.getName().equals("ORG_ADMIN")) {
             // set the delegated admin filter
             u.setDelAdmin(0);
             Map<String, UserAttribute> aMap =  u.getUserAttributes();

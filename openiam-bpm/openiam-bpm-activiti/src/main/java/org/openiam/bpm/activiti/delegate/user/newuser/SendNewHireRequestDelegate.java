@@ -41,40 +41,30 @@ import com.thoughtworks.xstream.XStream;
 
 public class SendNewHireRequestDelegate extends AbstractNotificationDelegate {
 
-	@Autowired
-	@Qualifier("provRequestService")
-	private RequestDataService provRequestService;
-	
 	public SendNewHireRequestDelegate() {
-		SpringContextProvider.autowire(this);
+		super();
 	}
 
 	private NewUserProfileRequestModel profileModel;
-	private ProvisionRequestEntity provisionRequest;
 	
 	@Override
 	public void execute(DelegateExecution execution) throws Exception {
-		final String provisionRequestId = getStringVariable(execution, ActivitiConstants.PROVISION_REQUEST_ID);
-		//final String callerId = (String)execution.getVariable(ActivitiConstants.TASK_OWNER);
-		
-		provisionRequest = provRequestService.getRequest(provisionRequestId);
-		profileModel = (NewUserProfileRequestModel)new XStream().fromXML(provisionRequest.getRequestXML());
+		profileModel = getObjectVariable(execution, ActivitiConstants.REQUEST, NewUserProfileRequestModel.class);
 		
 		final Collection<String> candidateUserIds = activitiHelper.getCandidateUserIds(execution, null, profileModel.getSupervisorIds());
 		for(final String candidateId : candidateUserIds) {
 			final UserEntity entity = getUserEntity(candidateId);
 			if(entity != null) {
-				sendNotificationRequest(entity);
+				sendNotificationRequest(entity, execution);
 			}
 		}
 	}
 	
-	private void sendNotificationRequest(final UserEntity user) {
+	private void sendNotificationRequest(final UserEntity user, final DelegateExecution execution) {
 		final NotificationRequest request = new NotificationRequest();
         request.setUserId(user.getUserId());
         request.setNotificationType(getNotificationType());
-        request.getParamList().add(new NotificationParam("REQUEST_ID", provisionRequest.getId()));
-        request.getParamList().add(new NotificationParam("REQUEST_REASON", provisionRequest.getRequestReason()));
+        request.getParamList().add(new NotificationParam("REQUEST_REASON", getTaskDescription(execution)));
         request.getParamList().add(new NotificationParam("REQUESTOR",  user.getDisplayName()));
         request.getParamList().add(new NotificationParam("TARGET_USER", profileModel.getUser().getDisplayName()));
         mailService.sendNotification(request);

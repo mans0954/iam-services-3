@@ -2,7 +2,7 @@ package org.openiam.bpm.util;
 
 public enum ActivitiConstants {
 	COMMENT("Comment"),
-	PROVISION_REQUEST_ID("ProvisionRequestId"),
+	REQUEST("Request"),
 	IS_TASK_APPROVED("IsTaskApproved"),
 	NEW_USER_ID("NewUserId"),
 	CANDIDATE_USERS_IDS("candidateUsersIds"),

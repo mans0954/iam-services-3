@@ -13,19 +13,13 @@ import com.thoughtworks.xstream.XStream;
 
 public class NewUserCandidateTaskListener extends AbstractCandidateTaskListener {
 	
-	@Autowired
-	@Qualifier("provRequestService")
-	private RequestDataService provRequestService;
-	
 	public NewUserCandidateTaskListener() {
 		super();
 	}
 
 	@Override
 	public void notify(DelegateTask delegateTask) {
-		final String provisionRequestId = getStringVariable(delegateTask.getExecution(), ActivitiConstants.PROVISION_REQUEST_ID);
-		final ProvisionRequestEntity provisionRequest = provRequestService.getRequest(provisionRequestId);
-		final NewUserProfileRequestModel profileModel = (NewUserProfileRequestModel)new XStream().fromXML(provisionRequest.getRequestXML());
+		final NewUserProfileRequestModel profileModel = getObjectVariable(delegateTask.getExecution(), ActivitiConstants.REQUEST, NewUserProfileRequestModel.class);
 		
 		super.notify(delegateTask, profileModel.getSupervisorIds());
 	}

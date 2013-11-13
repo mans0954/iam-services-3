@@ -129,10 +129,6 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 	private ApproverAssociationDAO approverAssociationDao;
 	
 	@Autowired
-	@Qualifier("provRequestService")
-	private RequestDataService provRequestService;
-	
-	@Autowired
 	private CustomJacksonMapper jacksonMapper;
 	
 	@Autowired
@@ -204,9 +200,6 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 			
 			/* throws exception if invalid - caught in try/catch */
 			userProfileService.validate(request);
-			
-			final ProvisionRequestEntity provisionRequest = new ProvisionRequestEntity();
-			final User provisionUser = request.getUser();
 			
 			validateUserRequest(request);
 			
@@ -294,29 +287,10 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
         	//	throw new BasicDataServiceException(ResponseCode.NO_REQUEST_APPROVERS);
         	//}
 	        
-			/* set provision user fields before saving request */
-			provisionUser.setUserId(null);
-			provisionUser.setCreateDate(new Date());
-			provisionUser.setCreatedBy(request.getRequestorUserId());
-			provisionUser.setStatus(UserStatusEnum.PENDING_APPROVAL);
-
 			/* populate the provision request with required values */
-			final Date currentDate = new Date();
-			final String xml = new XStream().toXML(request);
-			provisionRequest.setRequestXML(xml);
-			provisionRequest.setStatus("PENDING");
-			provisionRequest.setStatusDate(currentDate);
-			provisionRequest.setRequestDate(currentDate);
-			provisionRequest.setRequestReason(String.format("New User Request for %s %s", provisionUser.getFirstName(), provisionUser.getLastName()));
-			provisionRequest.setRequestorId(request.getRequestorUserId());
-			
-			/* save the request */
-			provRequestService.addRequest(provisionRequest);
-			
-			/* set a dsearch filter, in case it is needed by the underlying delegate */
 			
 			final ActivitiRequestType requestType = request.getActivitiRequestType();
-			final String taskName = String.format("%s Request for %s %s", requestType.getDescription(), provisionUser.getFirstName(), provisionUser.getLastName());
+			final String taskName = String.format("%s Request for %s", requestType.getDescription(), request.getUser().getDisplayName());
 			final String taskDescription = taskName;
 			
 			/* pass required variables to Activiti, and start the process */
@@ -330,7 +304,7 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 			final Map<String, Object> variables = new HashMap<String, Object>();
 			variables.put(ActivitiConstants.APPROVER_CARDINALTITY.getName(), approverCardinatlity);
 			variables.put(ActivitiConstants.APPROVER_ASSOCIATION_IDS.getName(), approverAssociationIds);
-			variables.put(ActivitiConstants.PROVISION_REQUEST_ID.getName(), provisionRequest.getId());
+			variables.put(ActivitiConstants.REQUEST.getName(), new ActivitiJSONStringWrapper(jacksonMapper.writeValueAsString(request)));
 			variables.put(ActivitiConstants.TASK_NAME.getName(), taskName);
 			variables.put(ActivitiConstants.TASK_DESCRIPTION.getName(), taskDescription);
 			variables.put(ActivitiConstants.REQUESTOR.getName(), request.getRequestorUserId());
@@ -451,18 +425,6 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 			
 			final Date currentDate = new Date();
 			
-			final ProvisionRequestEntity provisionRequest = new ProvisionRequestEntity();
-			final String xml = new XStream().toXML(request);
-			provisionRequest.setRequestXML(xml);
-			provisionRequest.setStatus("PENDING");
-			provisionRequest.setStatusDate(currentDate);
-			provisionRequest.setRequestDate(currentDate);
-			provisionRequest.setRequestReason(description);
-			provisionRequest.setRequestorId(request.getRequestorUserId());
-			
-			/* save the request */
-			provRequestService.addRequest(provisionRequest);
-			
 			final Map<String, Object> bindingMap = new HashMap<String, Object>();
 			bindingMap.put("REQUEST", request);
 			bindingMap.put("BUILDER", builder);
@@ -493,12 +455,12 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 			final Map<String, Object> variables = new HashMap<String, Object>();
 			variables.put(ActivitiConstants.APPROVER_CARDINALTITY.getName(), approverCardinatlity);
 			variables.put(ActivitiConstants.APPROVER_ASSOCIATION_IDS.getName(), approverAssociationIds);
-			variables.put(ActivitiConstants.PROVISION_REQUEST_ID.getName(), provisionRequest.getId());
+			variables.put(ActivitiConstants.REQUEST.getName(), new ActivitiJSONStringWrapper(jacksonMapper.writeValueAsString(request)));
 			variables.put(ActivitiConstants.TASK_NAME.getName(), description);
 			variables.put(ActivitiConstants.TASK_DESCRIPTION.getName(), description);
 			variables.put(ActivitiConstants.REQUESTOR.getName(), request.getRequestorUserId());
 			variables.put(ActivitiConstants.ASSOCIATION_ID.getName(), request.getUser().getUserId());
-			final ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(ActivitiRequestType.EDIT_USER.getKey(), variables);
+			runtimeService.startProcessInstanceByKey(ActivitiRequestType.EDIT_USER.getKey(), variables);
 			
 			/* throws exception if invalid - caught in try/catch */
 			//userProfileService.validate(request);

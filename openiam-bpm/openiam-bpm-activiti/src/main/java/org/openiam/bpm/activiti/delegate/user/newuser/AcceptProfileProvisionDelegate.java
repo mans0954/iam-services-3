@@ -14,6 +14,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.bpm.util.ActivitiConstants;
+import org.openiam.bpm.activiti.delegate.core.AbstractNotificationDelegate;
 import org.openiam.bpm.activiti.delegate.core.ActivitiHelper;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
@@ -46,98 +47,87 @@ import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.thoughtworks.xstream.XStream;
 
-public class AcceptProfileProvisionDelegate implements JavaDelegate {
+public class AcceptProfileProvisionDelegate extends AbstractNotificationDelegate {
 
     @Autowired
-    @Qualifier("mailService")
-    private MailService mailService;
-    
-    @Autowired
     private LoginDataService loginDS;
-    
-    @Autowired
-    private UserDataService userManager;
-    
-    @Autowired
-    @Qualifier("provRequestService")
-    private RequestDataService provRequestService;
-    
-    @Autowired
-    @Qualifier("userDAO")
-    private UserDAO userDAO;
-    
-    @Autowired
-    private ActivitiHelper activitiHelper;
 	
 	public AcceptProfileProvisionDelegate() {
-		SpringContextProvider.autowire(this);
+		super();
 	}
 	
 	@Override
-    public void execute(DelegateExecution execution) throws Exception {
-		final String lastCaller = (String)execution.getVariable(ActivitiConstants.EXECUTOR_ID.getName());
-		final String provisionRequestId = (String)execution.getVariable(ActivitiConstants.PROVISION_REQUEST_ID.getName());
-		final String newUserId = (String)execution.getVariable(ActivitiConstants.NEW_USER_ID.getName());
+    public void execute(final DelegateExecution execution) throws Exception {
+		final String reqeustorId = getRequestorId(execution);
+		final String newUserId = getStringVariable(execution, ActivitiConstants.NEW_USER_ID);
             
-		final UserEntity newUser = userManager.getUser(newUserId);
-            
+		final UserEntity newUser = getUserEntity(newUserId);
+		final UserEntity requestor = getUserEntity(reqeustorId);    
+		
 		/* notify the approvers */
 		final Set<String> userIds = new HashSet<String>();
 		final Set<String> emails = new HashSet<String>();
-    
-		userIds.add(newUserId);
-            
-		final ProvisionRequestEntity provisionRequest = provRequestService.getRequest(provisionRequestId);
-		
-		userIds.addAll(activitiHelper.getOnAcceptUserIds(execution, newUserId, null));
-    
-		/* if there's no approver to notify, send it to the original user */
-		if(CollectionUtils.isEmpty(userIds)) {
-            userIds.add(newUserId);
-		}
+        
+		userIds.addAll(activitiHelper.getOnAcceptUserIds(execution, newUserId, getSupervisorsForUser(newUser)));
     
 		String identity = null;
+		sendEmails(execution, requestor, newUser, userIds, emails, identity, null);
+		
 		String password = null;
-
-		final UserEntity approver = userManager.getUser(lastCaller);
 
 		final LoginEntity login = loginDS.getPrimaryIdentity(newUserId);
 		if (login != null) {
             identity = login.getLogin();
             password = loginDS.decryptPassword(login.getUserId(),login.getPassword());
 		}
-		sendEmails(approver, provisionRequest, newUser, userIds, emails, identity, password);
+		sendEmail(execution, requestor, newUser, newUser.getUserId(), null, identity, password);
     }
     
-    private void sendEmails(final UserEntity approver, final ProvisionRequestEntity provisionRequest, final UserEntity newUser, 
-                                                    final Set<String> userIds, final Set<String> emailAddresses, final String identity, final String password) {
+    private void sendEmails(final DelegateExecution execution,
+    						final UserEntity requestor, 
+    						final UserEntity newUser, 
+    						final Set<String> userIds, 
+    						final Set<String> emailAddresses, 
+    						final String identity, 
+    						final String password) {
             if(CollectionUtils.isNotEmpty(userIds)) {
                     for(final String userId : userIds) {
-                            sendEmail(approver, provisionRequest, newUser, userId, null, identity, password);
+                            sendEmail(execution, requestor, newUser, userId, null, identity, password);
                     }
             }
             
             if(CollectionUtils.isNotEmpty(emailAddresses)) {
                     for(final String email : emailAddresses) {
-                            sendEmail(approver, provisionRequest, newUser, null, email, identity, password);
+                            sendEmail(execution, requestor, newUser, null, email, identity, password);
                     }
             }
     }
     
-    private void sendEmail(final UserEntity approver, final ProvisionRequestEntity provisionRequest, final UserEntity newUser, 
-                                               final String userId, final String email, final String identity, final String password) {
-            final NotificationRequest request = new NotificationRequest();
+    private void sendEmail(final DelegateExecution execution,
+    					   final UserEntity requestor, 
+    					   final UserEntity newUser, 
+    					   final String userId, 
+    					   final String email, 
+    					   final String identity, 
+    					   final String password) {
+    	final NotificationRequest request = new NotificationRequest();
 	    request.setUserId(userId);
-	    request.setNotificationType("REQUEST_APPROVED");
+	    request.setNotificationType(getNotificationType());
 	    request.setTo(email);
-	    request.getParamList().add(new NotificationParam("REQUEST_ID", provisionRequest.getId()));
-	    request.getParamList().add(new NotificationParam("REQUEST_REASON", provisionRequest.getRequestReason()));
-	    request.getParamList().add(new NotificationParam("REQUESTOR", String.format("%s %s", approver.getFirstName(), approver.getLastName())));
-	    request.getParamList().add(new NotificationParam("TARGET_USER", String.format("%s %s", newUser.getFirstName(), newUser.getLastName())));
+	    request.getParamList().add(new NotificationParam("REQUEST_REASON", getTaskDescription(execution)));
+	    request.getParamList().add(new NotificationParam("TARGET_USER", newUser.getDisplayName()));
 	    request.getParamList().add(new NotificationParam("IDENTITY", identity));
 	    request.getParamList().add(new NotificationParam("PSWD", password));
+	    if(requestor != null) {
+	    	request.getParamList().add(new NotificationParam("REQUESTOR", requestor.getDisplayName()));
+	     }
 
 
 	    mailService.sendNotification(request);
     }
+
+	@Override
+	protected String getNotificationType() {
+		return "REQUEST_APPROVED";
+	}
 }
