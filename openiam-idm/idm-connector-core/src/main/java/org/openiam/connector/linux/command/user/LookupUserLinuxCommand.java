@@ -24,30 +24,21 @@ public class LookupUserLinuxCommand extends
     protected boolean lookupObject(String id, SSHAgent ssh,
             SearchResponse responseType, String mSysId)
             throws ConnectorDataException {
+        String searchRule = managedSysService.getManagedSysById(mSysId)
+                .getSearchHandler();
         LinuxUser user = objectToLinuxUser(id, null);
         if (user != null) {
             try {
-                String result = ssh.executeCommand(user.getUserExistsCommand());
+                String result = ssh.executeCommand(getUserSearchQuery(id));
                 if (StringUtils.hasText(result)) {
-                    String resMas[] = result.split(":");
-                    if (resMas != null && resMas.length > 0) {
-                        result = resMas[0].trim();
-                        String key = this.getKeyField(mSysId);
-                        if (result.length() > 0) {
-                            List<ObjectValue> ovList = new LinkedList<ObjectValue>();
-                            ObjectValue ov = new ObjectValue();
-                            ov.setObjectIdentity(result);
-                            ov.setAttributeList(new LinkedList<ExtensibleAttribute>());
-                            ov.getAttributeList().add(
-                                    new ExtensibleAttribute(key, result));
-                            ov.getAttributeList().add(
-                                    new ExtensibleAttribute("groups", this
-                                            .getGroups(user, ssh)));
-                            ov.setObjectIdentity(key);
+                    if (result.length() > 0) {
+                        List<ObjectValue> ovList = new LinkedList<ObjectValue>();
+                        ObjectValue ov = getObjectValue(searchRule, result, ssh);
+                        if (ov != null) {
                             ovList.add(ov);
-                            responseType.setObjectList(ovList);
-                            return true;
                         }
+                        responseType.setObjectList(ovList);
+                        return true;
                     }
                 }
                 return false;

@@ -2,7 +2,11 @@ package org.openiam.connector.linux.command.base;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.openiam.connector.linux.data.LinuxUser;
@@ -13,14 +17,17 @@ import org.openiam.connector.type.constant.ErrorCode;
 import org.openiam.connector.type.constant.StatusCodeType;
 import org.openiam.connector.type.request.SearchRequest;
 import org.openiam.connector.type.response.SearchResponse;
-import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
-import org.openiam.idm.srvc.mngsys.dto.PolicyMapObjectTypeOptions;
+import org.openiam.idm.srvc.auth.dto.Login;
+import org.openiam.idm.srvc.grp.dto.Group;
+import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
+import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
 import org.springframework.util.StringUtils;
 
 public abstract class AbstractSearchLinuxCommand<ExtObject extends ExtensibleObject>
         extends AbstractLinuxCommand<SearchRequest<ExtObject>, SearchResponse> {
+
     @Override
     public SearchResponse execute(SearchRequest<ExtObject> searchRequest)
             throws ConnectorDataException {
@@ -34,23 +41,15 @@ public abstract class AbstractSearchLinuxCommand<ExtObject extends ExtensibleObj
             if (CollectionUtils.isEmpty(usersIdentities))
                 throw new ConnectorDataException(ErrorCode.NO_SUCH_IDENTIFIER);
             List<ObjectValue> objectValues = new ArrayList<ObjectValue>();
+            ManagedSysEntity ms = managedSysService
+                    .getManagedSysById(searchRequest.getTargetID());
+            String searchRule = ms.getSearchHandler();
 
-            String key = this.getKeyField(searchRequest.getTargetID());
-            if (!StringUtils.hasText(key)) {
-                throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR,
-                        "Key field not defined in policyMap");
-            }
             for (String userIdentity : usersIdentities) {
-                LinuxUser user = objectToLinuxUser(userIdentity, null);
-                ObjectValue obj = new ObjectValue();
-                obj.setAttributeList(new ArrayList<ExtensibleAttribute>());
-                obj.getAttributeList().add(
-                        new ExtensibleAttribute(key, userIdentity));
-                obj.getAttributeList().add(
-                        new ExtensibleAttribute("groups", this.getGroups(user,
-                                ssh)));
-                obj.setObjectIdentity(userIdentity);
-                objectValues.add(obj);
+                ObjectValue ov = getObjectValue(searchRule, userIdentity, ssh);
+                if (ov != null) {
+                    objectValues.add(ov);
+                }
             }
             responseType.setObjectList(objectValues);
             return responseType;

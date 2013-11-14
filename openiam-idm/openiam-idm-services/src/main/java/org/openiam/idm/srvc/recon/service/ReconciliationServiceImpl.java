@@ -961,9 +961,9 @@ public class ReconciliationServiceImpl implements ReconciliationService {
             bindingMap.put("user", new ProvisionUser(user));
             bindingMap.put("sysId", sysConfiguration.getDefaultManagedSysId());
             // get all groups for user
-            List<org.openiam.idm.srvc.grp.dto.Group> curGroupList = groupDozerConverter.convertToDTOList(
-                    groupManager.getGroupsForUser(user.getUserId(), null, -1,
-                            -1), false);
+            List<org.openiam.idm.srvc.grp.dto.Group> curGroupList = groupDozerConverter
+                    .convertToDTOList(groupManager.getGroupsForUser(
+                            user.getUserId(), null, -1, -1), false);
             String decPassword = "";
             if (primaryIdentity != null) {
                 if (StringUtils.isEmpty(primaryIdentity.getUserId())) {
