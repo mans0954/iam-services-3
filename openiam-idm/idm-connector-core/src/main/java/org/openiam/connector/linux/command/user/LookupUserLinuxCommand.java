@@ -27,27 +27,24 @@ public class LookupUserLinuxCommand extends
         String searchRule = managedSysService.getManagedSysById(mSysId)
                 .getSearchHandler();
         LinuxUser user = objectToLinuxUser(id, null);
-        if (user != null) {
-            try {
-                String result = ssh.executeCommand(getUserSearchQuery(id));
-                if (StringUtils.hasText(result)) {
-                    if (result.length() > 0) {
-                        List<ObjectValue> ovList = new LinkedList<ObjectValue>();
-                        ObjectValue ov = getObjectValue(searchRule, result, ssh);
-                        if (ov != null) {
-                            ovList.add(ov);
-                        }
-                        responseType.setObjectList(ovList);
-                        return true;
+        try {
+            String result = ssh.executeCommand(getUserSearchQuery(id));
+            if (StringUtils.hasText(result)) {
+                if (result.length() > 0) {
+                    List<ObjectValue> ovList = new LinkedList<ObjectValue>();
+                    ObjectValue ov = getObjectValue(searchRule, result, ssh);
+                    if (ov != null) {
+                        ovList.add(ov);
                     }
+                    responseType.setObjectList(ovList);
+                    return true;
                 }
-                return false;
-            } catch (Exception e) {
-                log.error(e.getMessage(), e);
-                throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR,
-                        e.getMessage());
             }
+            return false;
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR,
+                    e.getMessage());
         }
-        return false;
     }
 }
