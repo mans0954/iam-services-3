@@ -4,11 +4,8 @@ import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService
 import org.openiam.idm.srvc.res.dto.Resource
 import org.openiam.idm.srvc.res.service.ResourceDataService
 import org.openiam.provision.dto.ProvisionUser
-import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum
-import org.openiam.idm.srvc.synch.dto.Attribute
 import org.openiam.idm.srvc.user.dto.UserAttribute
-import org.openiam.idm.srvc.auth.dto.Login;
 
 public class ADPopulationScript extends org.openiam.idm.srvc.recon.service.AbstractPopulationScript {
     public int execute(Map<String, String> line, ProvisionUser pUser){
@@ -19,7 +16,7 @@ public class ADPopulationScript extends org.openiam.idm.srvc.recon.service.Abstr
                     addAttribute(pUser, "sAMAccountName", line.get("sAMAccountName"));
                     break
                 case "cn":
-                    //ignore for now
+                		//ignore for now
                     /*String[] parts = line.get("cn").split(" ")
                     if(parts.length == 2){
                         if(pUser.firstName != parts[0]){
@@ -117,7 +114,7 @@ public class ADPopulationScript extends org.openiam.idm.srvc.recon.service.Abstr
                     }
                     addAttribute(pUser, "displayName", line.get("displayName"));
                     break
-
+ 
                 case "title":
                     if(pUser.title != line.get("title")){
                         pUser.title = line.get("title")
@@ -146,12 +143,13 @@ public class ADPopulationScript extends org.openiam.idm.srvc.recon.service.Abstr
         pUser.getResources().add(currentResource);
         //set status to active: IMPORTANT!!!!
         pUser.setStatus(UserStatusEnum.PENDING_INITIAL_LOGIN);
+	pUser.setMetadataTypeId("Contractor");
         return retval;
     }
 
     private void addAttribute(ProvisionUser user, String attributeName, String attributeValue) {
-        UserAttribute userAttr = new UserAttribute(attributeName, attributeValue);
-        userAttr.setOperation(AttributeOperationEnum.ADD);
-        user.getUserAttributes().put(attributeName, userAttr);
+       UserAttribute userAttr = new UserAttribute(attributeName, attributeValue);
+       userAttr.setOperation(AttributeOperationEnum.ADD);
+       user.getUserAttributes().put(attributeName, userAttr);
     }
 }
