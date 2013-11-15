@@ -1,15 +1,8 @@
-import org.openiam.idm.srvc.role.dto.Role;
-
-List<Role> userRoles = user.memberOfRoles;
-if (userRoles == null || userRoles.isEmpty()) {
-	output="USR_SEC_DOMAIN";
-}else {
-	Role rl = userRoles.get(0);
-	System.out.println(rl);
-    def attr = rl.serviceId;
-    if (attr?.value) {
-        output =  attr.value;
-    } else {
-        output = "USR_SEC_DOMAIN";
-    }
+def it = user.roles.iterator()
+if (!it.hasNext()) {
+	output = "USR_SEC_DOMAIN"
+} else {
+	def rl = it.next()
+	println("Found role " + rl.roleName)
+    output = rl.serviceId?: "USR_SEC_DOMAIN"
 }
