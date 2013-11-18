@@ -45,6 +45,10 @@
 			<a>users</a>
 			<b>users</b>
 		</field-exclude>
+		<field-exclude>
+			<a>approverAssociations</a>
+			<b>approverAssociations</b>
+		</field-exclude>
 	</mapping>
 
 	<mapping>

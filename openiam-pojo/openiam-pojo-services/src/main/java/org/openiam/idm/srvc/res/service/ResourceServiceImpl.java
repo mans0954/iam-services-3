@@ -26,7 +26,10 @@ import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataElementPageTemplateEntity;
 import org.openiam.idm.srvc.meta.service.MetadataElementDAO;
 import org.openiam.idm.srvc.meta.service.MetadataElementPageTemplateDAO;
+import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
+import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
+import org.openiam.idm.srvc.mngsys.service.ApproverAssociationDAO;
 import org.openiam.idm.srvc.mngsys.service.ManagedSysDAO;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.service.OrganizationDAO;
@@ -85,6 +88,9 @@ public class ResourceServiceImpl implements ResourceService {
 	@Autowired
 	private MetadataElementPageTemplateDAO templateDAO;
 	
+	@Autowired
+	private ApproverAssociationDAO approverAssociationDAO;
+	
 	@Value("${org.openiam.resource.admin.resource.type.id}")
 	private String adminResourceTypeId;
 
@@ -112,12 +118,16 @@ public class ResourceServiceImpl implements ResourceService {
 		if(StringUtils.isNotBlank(entity.getResourceId())) {
 			final ResourceEntity dbObject = resourceDao.findById(entity.getResourceId());
 			entity.setAdminResource(dbObject.getAdminResource());
+			entity.setApproverAssociations(dbObject.getApproverAssociations());
 			
 			if(isAdminResource) {
 				entity.setAdminResource(null);
 			} else if(entity.getAdminResource() == null) {
 				final ResourceEntity adminResource = getNewAdminResource(entity, requestorId);
 				entity.setAdminResource(adminResource);
+				if(CollectionUtils.isEmpty(dbObject.getApproverAssociations())) {
+					entity.addApproverAssociation(createDefaultApproverAssociations(entity, requestorId));
+				}
 			}
 			entity.setChildResources(dbObject.getChildResources());
 			entity.setParentResources(dbObject.getParentResources());
@@ -127,15 +137,32 @@ public class ResourceServiceImpl implements ResourceService {
 			
 			mergeAttribute(entity, dbObject);
 			
-			resourceDao.merge(entity);
 		} else {
+			boolean addApproverAssociation = false;
 			if(isAdminResource) {
 				entity.setAdminResource(null);
 			} else {
 				entity.setAdminResource(getNewAdminResource(entity, requestorId));
+				addApproverAssociation = true;
 			}
 			resourceDao.save(entity);
+			
+			if(addApproverAssociation) {
+				entity.addApproverAssociation(createDefaultApproverAssociations(entity, requestorId));
+			}
 		}
+		
+		resourceDao.merge(entity);
+	}
+	
+	private ApproverAssociationEntity createDefaultApproverAssociations(final ResourceEntity entity, final String requestorId) {
+		final ApproverAssociationEntity association = new ApproverAssociationEntity();
+		association.setAssociationEntityId(entity.getResourceId());
+		association.setAssociationType(AssociationType.RESOURCE);
+		association.setApproverLevel(Integer.valueOf(0));
+		association.setApproverEntityId(requestorId);
+		association.setApproverEntityType(AssociationType.USER);
+		return association;
 	}
 	
 	private ResourceEntity getNewAdminResource(final ResourceEntity entity, final String requestorId) {

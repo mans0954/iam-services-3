@@ -18,9 +18,6 @@ public class AcceptEditUserNotifierDelegate extends AbstractEntitlementsDelegate
 	
 	private static final String NOTIFY_TYPE = "EDIT_USER_NOTIFY_ACCEPT";
 
-	@Autowired
-	private UserDAO userDAO;
-	
 	public AcceptEditUserNotifierDelegate() {
 		super();
 	}
@@ -30,7 +27,7 @@ public class AcceptEditUserNotifierDelegate extends AbstractEntitlementsDelegate
 		final Set<String> userIds = new HashSet<String>();
 		
 		final String targetUserId = getTargetUserId(execution);
-		final UserEntity targetUser = userDAO.findById(targetUserId);
+		final UserEntity targetUser = getUserEntity(targetUserId);
 		
 		final String taskOwner = getRequestorId(execution);
 		
@@ -41,7 +38,7 @@ public class AcceptEditUserNotifierDelegate extends AbstractEntitlementsDelegate
 		}
 		
 		for(final String toNotifyUserId : userIds) {
-			final UserEntity toNotify = userDAO.findById(toNotifyUserId);
+			final UserEntity toNotify = getUserEntity(toNotifyUserId);
 			if(toNotify != null) {
 				sendNotification(toNotify, targetUser, execution);
 			}

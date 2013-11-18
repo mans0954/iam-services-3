@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.activiti.engine.delegate.DelegateExecution;
@@ -119,5 +120,9 @@ public abstract class AbstractActivitiJob implements JavaDelegate, TaskListener 
 	
 	public String getTaskName(final DelegateExecution execution) {
 		return getStringVariable(execution, ActivitiConstants.TASK_NAME);
+	}
+	
+	protected void addStringReturnValue(final DelegateExecution execution, final ActivitiConstants key, final Object value) {
+		execution.setVariable(key.getName(), value);
 	}
 }

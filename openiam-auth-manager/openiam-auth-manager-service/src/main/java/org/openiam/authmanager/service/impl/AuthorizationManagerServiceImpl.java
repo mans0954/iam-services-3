@@ -841,6 +841,13 @@ public class AuthorizationManagerServiceImpl implements AuthorizationManagerServ
 		//service.submit(this);
 	}
 
+	@Override
+	public boolean isEntitled(String userId, String resourceId) {
+		final AuthorizationResource resource = new AuthorizationResource();
+		resource.setId(resourceId);
+		return isEntitled(userId, resource);
+	}
+
 	/*
 	@Override
 	public List<AuthorizationUser> getUsersForRole(String roleId) {

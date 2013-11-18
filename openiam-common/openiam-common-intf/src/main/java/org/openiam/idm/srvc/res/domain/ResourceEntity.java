@@ -12,6 +12,7 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.JoinColumns;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
@@ -25,8 +26,10 @@ import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
+import org.hibernate.annotations.Where;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
+import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
@@ -105,6 +108,10 @@ public class ResourceEntity {
 	@ManyToOne(fetch = FetchType.EAGER,cascade={CascadeType.ALL})
     @JoinColumn(name="ADMIN_RESOURCE_ID", referencedColumnName = "RESOURCE_ID", insertable = true, updatable = true, nullable=true)
 	private ResourceEntity adminResource;
+	
+	@OneToMany(cascade = {CascadeType.ALL}, fetch = FetchType.LAZY, mappedBy="associationEntityId", orphanRemoval=true)
+	@Where(clause="ASSOCIATION_TYPE='RESOURCE'")
+	private Set<ApproverAssociationEntity> approverAssociations;
 
     public ResourceEntity() {
     }
@@ -314,6 +321,24 @@ public class ResourceEntity {
     	}
     	this.resourceProps.add(property);
     }
+
+	public Set<ApproverAssociationEntity> getApproverAssociations() {
+		return approverAssociations;
+	}
+
+	public void setApproverAssociations(
+			Set<ApproverAssociationEntity> approverAssociations) {
+		this.approverAssociations = approverAssociations;
+	}
+	
+	public void addApproverAssociation(final ApproverAssociationEntity entity) {
+		if(entity != null) {
+			if(this.approverAssociations == null) {
+				this.approverAssociations = new HashSet<ApproverAssociationEntity>();
+			}
+			this.approverAssociations.add(entity);
+		}
+	}
 
 	@Override
     public String toString() {

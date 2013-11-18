@@ -125,10 +125,6 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 	private HistoryService historyService;
 	
 	@Autowired
-	@Qualifier("approverAssociationDAO")
-	private ApproverAssociationDAO approverAssociationDao;
-	
-	@Autowired
 	private CustomJacksonMapper jacksonMapper;
 	
 	@Autowired
@@ -136,12 +132,6 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
     @Autowired
     private UserDataService userDataService;
 
-	@Value("${org.openiam.idm.activiti.default.approver.association.resource.name}")
-	private String defaultApproverAssociationResourceId;
-	
-	@Value("${org.openiam.idm.activiti.default.approver.user}")
-	private String defaultApproverUserId;
-	
 	@Value("${org.openiam.activiti.membership.approver.association.groovy.script}")
 	private String membershipApproverAssociationGroovyScript;
 	
@@ -568,6 +558,9 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 			variables.put(ActivitiConstants.TASK_DESCRIPTION.getName(), request.getDescription());
 			variables.put(ActivitiConstants.REQUESTOR.getName(), request.getRequestorUserId());
 			variables.put(ActivitiConstants.ASSOCIATION_ID.getName(), request.getAssociationId());
+			if(request.getAssociationType() != null) {
+				variables.put(ActivitiConstants.ASSOCIATION_TYPE.getName(), request.getAssociationType().getValue());
+			}
 			if(request.getParameters() != null) {
 				variables.putAll(request.getParameters());
 			}
@@ -578,7 +571,7 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 				}
 			}
 			
-			runtimeService.startProcessInstanceByKey(request.getActivitiRequestType(), variables);
+			final ProcessInstance instance = runtimeService.startProcessInstanceByKey(request.getActivitiRequestType(), variables);
 
 			response.setStatus(ResponseStatus.SUCCESS);
 			builder.succeed();
@@ -850,10 +843,6 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 			response.setErrorText(e.getMessage());
 		}
 		return response;
-	}
-	
-	private List<ApproverAssociationEntity> getDefaultApproverAssociations() {
-		return approverAssociationDao.getByAssociation(defaultApproverAssociationResourceId, AssociationType.RESOURCE);
 	}
 	
 	@Override
