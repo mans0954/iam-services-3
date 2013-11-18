@@ -736,4 +736,12 @@ public interface UserDataWebService {
      */
     @WebMethod
     public Response acceptITPolicy(@WebParam(name = "userId", targetNamespace = "") final String userId);
+
+    /**
+     * Validate user search request according to  Delegation filter.
+     * @param userSearchBean - UserSearchBean that is represented user search request
+     * @return a Response Object, containing the result of this operation
+     */
+    @WebMethod
+    public Response validateUserSearchRequest(@WebParam(name = "userSearchBean", targetNamespace = "") final UserSearchBean userSearchBean);
 }
