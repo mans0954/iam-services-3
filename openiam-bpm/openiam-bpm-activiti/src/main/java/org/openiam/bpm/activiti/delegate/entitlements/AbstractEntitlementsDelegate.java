@@ -41,6 +41,7 @@ public abstract class AbstractEntitlementsDelegate extends AbstractNotificationD
 		NOTIFICATION_MAP.put("REMOVE_USER_FROM_ORG", "REMOVE_USER_FROM_ORG_NOTIFY");
 		NOTIFICATION_MAP.put("EDIT_USER", "EDIT_USER_NOTIFY");
 		NOTIFICATION_MAP.put("EDIT_RESOURCE", "EDIT_RESOURCE_NOTIFY");
+		NOTIFICATION_MAP.put("DELETE_RESOURCE", "DELETE_RESOURCE_NOTIFY");
 	}
 	
 	protected AbstractEntitlementsDelegate() {
