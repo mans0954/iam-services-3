@@ -35,6 +35,7 @@ public class RejectEntitlementsNotifierDelegate extends AbstractEntitlementsDele
 		NOTIFICATION_MAP.put("ADD_SUPERIOR", "ADD_SUPERIOR_REJECT");
 		NOTIFICATION_MAP.put("EDIT_RESOURCE", "EDIT_RESOURCE_REJECT");
 		NOTIFICATION_MAP.put("DELETE_RESOURCE", "DELETE_RESOURCE_REJECT");
+		NOTIFICATION_MAP.put("NEW_RESOURCE", "NEW_RESOURCE_REJECT");
 	}
 	
 	public RejectEntitlementsNotifierDelegate() {
