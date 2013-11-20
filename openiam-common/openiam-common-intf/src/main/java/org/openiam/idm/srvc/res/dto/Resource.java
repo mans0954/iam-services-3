@@ -36,7 +36,6 @@ import org.openiam.idm.srvc.user.dto.User;
         "childResources",
         "parentResources",
         "minAuthLevel",
-        "domain",
         "isPublic",
         "operation",
         "adminResourceId",
@@ -67,7 +66,6 @@ public class Resource extends BaseObject {
 
     private Set<Group> groups = new HashSet<Group>(0);
     private String minAuthLevel;
-    private String domain;
     private boolean isPublic = true;
     //private boolean isSSL = false;
 
@@ -149,14 +147,6 @@ public class Resource extends BaseObject {
 
 	public void setMinAuthLevel(String minAuthLevel) {
 		this.minAuthLevel = minAuthLevel;
-	}
-
-	public String getDomain() {
-		return domain;
-	}
-
-	public void setDomain(String domain) {
-		this.domain = domain;
 	}
 
 	public boolean getIsPublic() {

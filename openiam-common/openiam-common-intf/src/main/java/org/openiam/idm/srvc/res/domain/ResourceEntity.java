@@ -98,9 +98,6 @@ public class ResourceEntity {
     @Column(name = "MIN_AUTH_LEVEL")
     private String minAuthLevel;
 
-    @Column(name = "DOMAIN")
-    private String domain;
-
     @Column(name = "IS_PUBLIC")
     @Type(type = "yes_no")
     private boolean isPublic = true;
@@ -214,14 +211,6 @@ public class ResourceEntity {
 
     public void setMinAuthLevel(String minAuthLevel) {
         this.minAuthLevel = minAuthLevel;
-    }
-
-    public String getDomain() {
-        return domain;
-    }
-
-    public void setDomain(String domain) {
-        this.domain = domain;
     }
 
     public boolean getIsPublic() {
@@ -362,7 +351,6 @@ public class ResourceEntity {
         if (isPublic != that.isPublic) return false;
         //if (isSSL != that.isSSL) return false;
         if (URL != null ? !URL.equals(that.URL) : that.URL != null) return false;
-        if (domain != null ? !domain.equals(that.domain) : that.domain != null) return false;
         if (name != null ? !name.equals(that.name) : that.name != null) return false;
         if (resourceId != null ? !resourceId.equals(that.resourceId) : that.resourceId != null) return false;
 
@@ -373,7 +361,6 @@ public class ResourceEntity {
     public int hashCode() {
         int result = resourceId != null ? resourceId.hashCode() : 0;
         result = 31 * result + (name != null ? name.hashCode() : 0);
-        result = 31 * result + (domain != null ? domain.hashCode() : 0);
         result = 31 * result + (isPublic ? 1 : 0);
         //result = 31 * result + (isSSL ? 1 : 0)
         return result;

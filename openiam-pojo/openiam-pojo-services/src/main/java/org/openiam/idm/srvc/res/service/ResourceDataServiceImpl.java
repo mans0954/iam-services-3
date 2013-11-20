@@ -150,7 +150,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
 			}
 		}
 
-		if (entity.getResourceType() == null) {
+		if (entity.getResourceType() == null || StringUtils.isBlank(entity.getResourceType().getId())) {
 			throw new BasicDataServiceException(ResponseCode.INVALID_RESOURCE_TYPE, "Resource Type is not set");
 		}
 
