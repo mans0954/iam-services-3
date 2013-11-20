@@ -1835,7 +1835,6 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         return retVal;
     }
 
-    @Deprecated
     private String getResProperty(Set<ResourceProp> resPropSet,
             String propertyName) {
         String value = null;
