@@ -46,11 +46,11 @@ public class RoleEntity implements Serializable {
     @GeneratedValue(generator="system-uuid")
     @GenericGenerator(name="system-uuid", strategy = "uuid")
     @Column(name="ROLE_ID", length=32)
-	private String roleId;
+	private String id;
     
     @Column(name="ROLE_NAME",length=80)
     @Size(max = 80, message = "role.name.too.long")
-    private String roleName;
+    private String name;
     
     @Column(name="DESCRIPTION")
     @Size(max = 255, message = "role.description.too.long")
@@ -111,21 +111,25 @@ public class RoleEntity implements Serializable {
     
     @Column(name="CREATED_BY",length=20)
 	private String createdBy;
+    
+	@ManyToOne(fetch = FetchType.EAGER,cascade={CascadeType.ALL})
+    @JoinColumn(name="ADMIN_RESOURCE_ID", referencedColumnName = "RESOURCE_ID", insertable = true, updatable = true, nullable=true)
+	private ResourceEntity adminResource;
 
-	public String getRoleId() {
-		return roleId;
+	public String getId() {
+		return id;
 	}
 
-	public void setRoleId(String roleId) {
-		this.roleId = roleId;
+	public void setId(String id) {
+		this.id = id;
 	}
 
-	public String getRoleName() {
-		return roleName;
+	public String getName() {
+		return name;
 	}
 
-	public void setRoleName(String roleName) {
-		this.roleName = roleName;
+	public void setName(String name) {
+		this.name = name;
 	}
 
 	public String getDescription() {
@@ -156,7 +160,7 @@ public class RoleEntity implements Serializable {
 		boolean retVal = false;
 		if(groups != null) {
 			for(final GroupEntity entity : groups) {
-				if(entity.getGrpId().equals(groupId)) {
+				if(entity.getId().equals(groupId)) {
 					retVal = true;
 					break;
 				}
@@ -187,7 +191,7 @@ public class RoleEntity implements Serializable {
 			if(groups != null) {
 				for(final Iterator<GroupEntity> it = groups.iterator(); it.hasNext();) {
 					final GroupEntity entity = it.next();
-					if(entity.getGrpId().equals(groupId)) {
+					if(entity.getId().equals(groupId)) {
 						it.remove();
 						break;
 					}
@@ -224,12 +228,12 @@ public class RoleEntity implements Serializable {
 		return childRoles;
 	}
 	
-	public boolean hasChildRole(final String roleId) {
+	public boolean hasChildRole(final String id) {
 		boolean retVal = false;
-		if(roleId != null) {
+		if(id != null) {
 			if(childRoles != null) {
 				for(final RoleEntity role : childRoles) {
-					if(role.getRoleId().equals(roleId)) {
+					if(role.getId().equals(id)) {
 						retVal = true;
 						break;
 					}
@@ -248,12 +252,12 @@ public class RoleEntity implements Serializable {
 		}
 	}
 	
-	public void removeChildRole(final String roleId) {
-		if(roleId != null) {
+	public void removeChildRole(final String id) {
+		if(id != null) {
 			if(childRoles != null) {
 				for(final Iterator<RoleEntity> it = childRoles.iterator(); it.hasNext();) {
 					final RoleEntity role = it.next();
-					if(role.getRoleId().equals(roleId)) {
+					if(role.getId().equals(id)) {
 						it.remove();
 						break;
 					}
@@ -306,6 +310,14 @@ public class RoleEntity implements Serializable {
 		this.managedSystem = managedSystem;
 	}
 
+	public ResourceEntity getAdminResource() {
+		return adminResource;
+	}
+
+	public void setAdminResource(ResourceEntity adminResource) {
+		this.adminResource = adminResource;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -318,9 +330,9 @@ public class RoleEntity implements Serializable {
 				+ ((description == null) ? 0 : description.hashCode());
 		result = prime * result
 				+ ((managedSystem == null) ? 0 : managedSystem.hashCode());
-		result = prime * result + ((roleId == null) ? 0 : roleId.hashCode());
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		result = prime * result
-				+ ((roleName == null) ? 0 : roleName.hashCode());
+				+ ((name == null) ? 0 : name.hashCode());
 		result = prime * result
 				+ ((serviceId == null) ? 0 : serviceId.hashCode());
 		result = prime * result + ((status == null) ? 0 : status.hashCode());
@@ -356,15 +368,15 @@ public class RoleEntity implements Serializable {
 				return false;
 		} else if (!managedSystem.equals(other.managedSystem))
 			return false;
-		if (roleId == null) {
-			if (other.roleId != null)
+		if (id == null) {
+			if (other.id != null)
 				return false;
-		} else if (!roleId.equals(other.roleId))
+		} else if (!id.equals(other.id))
 			return false;
-		if (roleName == null) {
-			if (other.roleName != null)
+		if (name == null) {
+			if (other.name != null)
 				return false;
-		} else if (!roleName.equals(other.roleName))
+		} else if (!name.equals(other.name))
 			return false;
 		if (serviceId == null) {
 			if (other.serviceId != null)
@@ -382,8 +394,8 @@ public class RoleEntity implements Serializable {
 	@Override
 	public String toString() {
 		return String
-				.format("RoleEntity [roleId=%s, roleName=%s, description=%s, status=%s, serviceId=%s, managedSystem=%s, createDate=%s, createdBy=%s]",
-						roleId, roleName, description, status, serviceId,
+				.format("RoleEntity [id=%s, name=%s, description=%s, status=%s, serviceId=%s, managedSystem=%s, createDate=%s, createdBy=%s]",
+						id, name, description, status, serviceId,
 						managedSystem, createDate, createdBy);
 	}
 

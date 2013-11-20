@@ -27,9 +27,9 @@ import java.util.*;
  *         &lt;element name="createdBy" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
  *         &lt;element name="description" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
  *         &lt;element name="groups" type="{urn:idm.openiam.org/srvc/grp/dto}groupSet" minOccurs="0"/>
- *         &lt;element name="id" type="{urn:idm.openiam.org/srvc/role/dto}roleId" minOccurs="0"/>
+ *         &lt;element name="id" type="{urn:idm.openiam.org/srvc/role/dto}id" minOccurs="0"/>
  *         &lt;element name="roleAttributes" type="{urn:idm.openiam.org/srvc/role/dto}roleAttributeSet" minOccurs="0"/>
- *         &lt;element name="roleName" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
+ *         &lt;element name="name" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
  *         &lt;element name="userAssociationMethod" type="{http://www.w3.org/2001/XMLSchema}int" minOccurs="0"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
@@ -41,14 +41,14 @@ import java.util.*;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "role", propOrder = {
-        "roleId",
+        "id",
         "createDate",
         "serviceId",
         "createdBy",
         "description",
         "groups",
         "roleAttributes",
-        "roleName",
+        "name",
         "userAssociationMethod",
         "status",
         "childRoles",
@@ -60,7 +60,9 @@ import java.util.*;
         "parentRoles",
         "resources",
         "managedSysId",
-        "managedSysName"
+        "managedSysName",
+        "adminResourceId",
+        "adminResourceName"
 })
 @XmlRootElement(name = "Role")
 @XmlSeeAlso({
@@ -85,19 +87,22 @@ public class Role extends BaseObject implements Comparable<Role> {
     protected String description;
     //@XmlJavaTypeAdapter(GroupSetAdapter.class)
     protected Set<Group> groups = new HashSet<Group>(0);
-    protected String roleId;
+    protected String id;
     @XmlJavaTypeAdapter(RoleAttributeSetAdapter.class)
     protected Set<RoleAttribute> roleAttributes = new HashSet<RoleAttribute>(0);
 
     protected Set<RolePolicy> rolePolicy = new HashSet<RolePolicy>();
 
-    protected String roleName;
+    protected String name;
     protected int userAssociationMethod = RoleConstant.UN_ASSIGNED;
 
     protected String status;
     protected Boolean selected = new Boolean(false);
 
     private String serviceId;
+    
+    private String adminResourceId;
+    private String adminResourceName;
 
     private Set<Role> parentRoles;
     private Set<Role> childRoles;
@@ -116,16 +121,16 @@ public class Role extends BaseObject implements Comparable<Role> {
     public Role() {
     }
     
-    public Role(final String roleId) {
-    	this.roleId = roleId;
+    public Role(final String id) {
+    	this.id = id;
     }
 
-    public String getRoleId() {
-		return roleId;
+    public String getId() {
+		return id;
 	}
 
-	public void setRoleId(String roleId) {
-		this.roleId = roleId;
+	public void setId(String id) {
+		this.id = id;
 	}
 
 	public String getServiceId() {
@@ -176,12 +181,12 @@ public class Role extends BaseObject implements Comparable<Role> {
         this.roleAttributes = value;
     }
 
-    public String getRoleName() {
-        return roleName;
+    public String getName() {
+        return name;
     }
 
-    public void setRoleName(String value) {
-        this.roleName = value;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public int getUserAssociationMethod() {
@@ -284,10 +289,10 @@ public class Role extends BaseObject implements Comparable<Role> {
 
 
     public int compareTo(Role o) {
-        if (getRoleName() == null || o == null) {
+        if (getName() == null || o == null) {
             return Integer.MIN_VALUE;
         }
-        return getRoleName().compareTo(o.getRoleName());
+        return getName().compareTo(o.getName());
     }
 
     public Set<Resource> getResources() {
@@ -314,7 +319,23 @@ public class Role extends BaseObject implements Comparable<Role> {
 		this.managedSysName = managedSysName;
 	}
 
-    @Override
+    public String getAdminResourceId() {
+		return adminResourceId;
+	}
+
+	public void setAdminResourceId(String adminResourceId) {
+		this.adminResourceId = adminResourceId;
+	}
+
+	public String getAdminResourceName() {
+		return adminResourceName;
+	}
+
+	public void setAdminResourceName(String adminResourceName) {
+		this.adminResourceName = adminResourceName;
+	}
+
+	@Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
@@ -323,8 +344,8 @@ public class Role extends BaseObject implements Comparable<Role> {
 
         if (createDate != null ? !createDate.equals(role.createDate) : role.createDate != null) return false;
         if (description != null ? !description.equals(role.description) : role.description != null) return false;
-        if (roleId != null ? !roleId.equals(role.roleId) : role.roleId != null) return false;
-        if (roleName != null ? !roleName.equals(role.roleName) : role.roleName != null) return false;
+        if (id != null ? !id.equals(role.id) : role.id != null) return false;
+        if (name != null ? !name.equals(role.name) : role.name != null) return false;
         if (selected != null ? !selected.equals(role.selected) : role.selected != null) return false;
         if (serviceId != null ? !serviceId.equals(role.serviceId) : role.serviceId != null) return false;
         if (status != null ? !status.equals(role.status) : role.status != null) return false;
@@ -337,8 +358,8 @@ public class Role extends BaseObject implements Comparable<Role> {
     public int hashCode() {
         int result = createDate != null ? createDate.hashCode() : 0;
         result = 31 * result + (description != null ? description.hashCode() : 0);
-        result = 31 * result + (roleId != null ? roleId.hashCode() : 0);
-        result = 31 * result + (roleName != null ? roleName.hashCode() : 0);
+        result = 31 * result + (id != null ? id.hashCode() : 0);
+        result = 31 * result + (name != null ? name.hashCode() : 0);
         result = 31 * result + (status != null ? status.hashCode() : 0);
         result = 31 * result + (selected != null ? selected.hashCode() : 0);
         result = 31 * result + (serviceId != null ? serviceId.hashCode() : 0);

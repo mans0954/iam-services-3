@@ -59,6 +59,10 @@
     <mapping>
         <class-a>org.openiam.idm.srvc.res.domain.ResourceEntity</class-a>
         <class-b>org.openiam.idm.srvc.res.domain.ResourceEntity</class-b>
+        <field custom-converter="org.openiam.dozer.PersistentObjectConverter" custom-converter-param="amShallowDozerMapper">
+        	<a>adminResource</a>
+        	<b>adminResource</b>
+        </field>
         <field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="amShallowDozerMapper">
             <a>parentResources</a>
             <b>parentResources</b>
@@ -83,6 +87,10 @@
             <a>users</a>
             <b>users</b>
         </field-exclude>
+        <field-exclude>
+			<a>approverAssociations</a>
+			<b>approverAssociations</b>
+		</field-exclude>
     </mapping>
 
     <mapping>

@@ -20,18 +20,15 @@ import org.apache.commons.logging.LogFactory;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.BaseConstants;
 import org.openiam.base.SysConfiguration;
+import org.openiam.base.ws.ResponseCode;
 import org.openiam.core.dao.UserKeyDao;
 import org.openiam.dozer.converter.AddressDozerConverter;
 import org.openiam.dozer.converter.EmailAddressDozerConverter;
 import org.openiam.dozer.converter.PhoneDozerConverter;
 import org.openiam.dozer.converter.UserAttributeDozerConverter;
 import org.openiam.dozer.converter.UserDozerConverter;
-import org.openiam.idm.searchbeans.AddressSearchBean;
-import org.openiam.idm.searchbeans.DelegationFilterSearchBean;
-import org.openiam.idm.searchbeans.EmailSearchBean;
-import org.openiam.idm.searchbeans.LoginSearchBean;
-import org.openiam.idm.searchbeans.PhoneSearchBean;
-import org.openiam.idm.searchbeans.UserSearchBean;
+import org.openiam.exception.BasicDataServiceException;
+import org.openiam.idm.searchbeans.*;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
 import org.openiam.idm.srvc.auth.login.LoginDAO;
@@ -64,10 +61,7 @@ import org.openiam.idm.srvc.searchbean.converter.AddressSearchBeanConverter;
 import org.openiam.idm.srvc.searchbean.converter.EmailAddressSearchBeanConverter;
 import org.openiam.idm.srvc.searchbean.converter.PhoneSearchBeanConverter;
 import org.openiam.idm.srvc.user.dao.UserSearchDAO;
-import org.openiam.idm.srvc.user.domain.SupervisorEntity;
-import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
-import org.openiam.idm.srvc.user.domain.UserEntity;
-import org.openiam.idm.srvc.user.domain.UserNoteEntity;
+import org.openiam.idm.srvc.user.domain.*;
 import org.openiam.idm.srvc.user.dto.DelegationFilterSearch;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
@@ -441,12 +435,11 @@ public class UserMgr implements UserDataService {
        // removeAllEmailAddresses(id);
 
         // userKeyDao.deleteByUserId(id);
-        List<SupervisorEntity> supervisors = getSupervisors(id);
-        for(SupervisorEntity se : supervisors) {
-           supervisorDao.delete(se);
+        List<UserEntity> supervisors = getSuperiors(id, 0, Integer.MAX_VALUE);
+        for(UserEntity se : supervisors) {
+           removeSupervisor(se.getUserId(), id);
         }
         userDao.delete(userDao.findById(id));
-        //userKeyDao.delete();
     }
 
     /*
@@ -463,7 +456,7 @@ public class UserMgr implements UserDataService {
 
     @Override
     @Transactional(readOnly = true)
-    public UserEntity getUserByName(String firstName, String lastName) {
+    public UserEntity getUserByName(String firstName, String lastName) throws BasicDataServiceException {
         UserSearchBean searchBean = new UserSearchBean();
         searchBean.setFirstName(firstName);
         searchBean.setLastName(lastName);
@@ -473,7 +466,7 @@ public class UserMgr implements UserDataService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<UserEntity> findUserByOrganization(String orgId) {
+    public List<UserEntity> findUserByOrganization(String orgId) throws BasicDataServiceException {
         UserSearchBean searchBean = new UserSearchBean();
         searchBean.addOrganizationId(orgId);
         return findBeans(searchBean);
@@ -481,7 +474,7 @@ public class UserMgr implements UserDataService {
 
     @Override
     @Transactional(readOnly = true)
-    public List findUsersByStatus(UserStatusEnum status) {
+    public List findUsersByStatus(UserStatusEnum status) throws BasicDataServiceException {
         UserSearchBean searchBean = new UserSearchBean();
         searchBean.setAccountStatus(status.name());
         return findBeans(searchBean);
@@ -495,25 +488,29 @@ public class UserMgr implements UserDataService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<UserEntity> findBeans(UserSearchBean searchBean) {
+    public List<UserEntity> findBeans(UserSearchBean searchBean) throws BasicDataServiceException {
         return findBeans(searchBean, 0, 1);
     }
 
     @Transactional(readOnly = true)
-    private List<String> getUserIds(final UserSearchBean searchBean) {
+    private List<String> getUserIds(final UserSearchBean searchBean) throws BasicDataServiceException {
         final List<List<String>> nonEmptyListOfLists = new LinkedList<List<String>>();
 
         boolean isOrgFilterSet = false;
         boolean isGroupFilterSet = false;
         boolean isRoleFilterSet = false;
+        boolean isMngReportFilterSet = false;
 
         if (StringUtils.isNotBlank(searchBean.getRequesterId())) {
             // check and add delegation filter if necessary
             Map<String, UserAttribute> requesterAttributes = this.getUserAttributesDto(searchBean.getRequesterId());
 
+            validateSearchBean(searchBean,  requesterAttributes);
+
             isOrgFilterSet = DelegationFilterHelper.isOrgFilterSet(requesterAttributes);
             isGroupFilterSet = DelegationFilterHelper.isGroupFilterSet(requesterAttributes);
             isRoleFilterSet = DelegationFilterHelper.isRoleFilterSet(requesterAttributes);
+            isMngReportFilterSet = DelegationFilterHelper.isMngRptFilterSet(requesterAttributes);
 
             if (isOrgFilterSet) {
                 if (CollectionUtils.isEmpty(searchBean.getOrganizationIdList())) {
@@ -529,8 +526,12 @@ public class UserMgr implements UserDataService {
                 searchBean.setRoleIdSet(new HashSet<String>(DelegationFilterHelper.getRoleFilterFromString(requesterAttributes)));
             }
         }
-
-        List<String> idList = userSearchDAO.findIds(0, MAX_USER_SEARCH_RESULTS, null, searchBean);
+        List<String> idList = null;
+        if(isMngReportFilterSet){
+            idList = userDao.getSubordinatesIds(searchBean.getRequesterId());
+        } else {
+            idList = userSearchDAO.findIds(0, MAX_USER_SEARCH_RESULTS, null, searchBean);
+        }
 
         if (CollectionUtils.isNotEmpty(idList) || (CollectionUtils.isEmpty(idList) && (isOrgFilterSet))) {
             nonEmptyListOfLists.add(idList);
@@ -598,7 +599,7 @@ public class UserMgr implements UserDataService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<UserEntity> findBeans(UserSearchBean searchBean, int from, int size) {
+    public List<UserEntity> findBeans(UserSearchBean searchBean, int from, int size) throws BasicDataServiceException {
         List<UserEntity> entityList = null;
         if (StringUtils.isNotBlank(searchBean.getKey())) {
             final UserEntity entity = userDao.findById(searchBean.getKey());
@@ -624,7 +625,7 @@ public class UserMgr implements UserDataService {
 
     @Override
     @Transactional(readOnly = true)
-    public int count(UserSearchBean searchBean) {
+    public int count(UserSearchBean searchBean) throws BasicDataServiceException {
         return getUserIds(searchBean).size();
     }
 
@@ -1289,48 +1290,55 @@ public class UserMgr implements UserDataService {
     @Override
     @Transactional
     public void addSupervisor(SupervisorEntity supervisor) {
+        if (supervisorDao.findById(supervisor.getId()) != null)
+            return;
+        if (supervisor.getId() != null && getPrimarySupervisor(supervisor.getId().getEmployeeId()) == null) {
+            supervisor.setIsPrimarySuper(true);
+        }
         supervisorDao.save(supervisor);
     }
 
     @Override
     @Transactional
     public void addSuperior(String supervisorId, String subordinateId) {
-        UserEntity supervisor = getUser(supervisorId, null);
-        UserEntity subordinate = getUser(subordinateId, null);
-        if (supervisor == null) {
-           throw new NullPointerException("supervisor is null");
-        }
-        if (subordinate == null) {
-           throw new NullPointerException("subordinate is null");
-        }
-        addSupervisor(new SupervisorEntity(supervisor, subordinate));
+        SupervisorEntity supervisorEntity = new SupervisorEntity();
+        SupervisorIDEntity id = new SupervisorIDEntity();
+        id.setSupervisorId(supervisorId);
+        id.setEmployeeId(subordinateId);
+        supervisorEntity.setId(id);
+
+        addSupervisor(supervisorEntity);
     }
+
+    // @Override
+    // @Transactional
+    // public void updateSupervisor(SupervisorEntity supervisor) {
+    // if (supervisor == null)
+    // throw new NullPointerException("supervisor is null");
+    // supervisorDao.update(supervisor);
+    // }
 
     @Override
     @Transactional
-    public void updateSupervisor(SupervisorEntity supervisor) {
-        if (supervisor == null)
-            throw new NullPointerException("supervisor is null");
-        supervisorDao.update(supervisor);
-    }
-
-    @Override
-    @Transactional
-    public void removeSupervisor(final String supervisorId) {
+    public void removeSupervisor(final String supervisorId, final String employeeId) {
         if (supervisorId == null)
             throw new NullPointerException("supervisor is null");
 
-        final SupervisorEntity entity = supervisorDao.findById(supervisorId);
-        supervisorDao.delete(entity);
+        SupervisorIDEntity id = new SupervisorIDEntity();
+        id.setSupervisorId(supervisorId);
+        id.setEmployeeId(employeeId);
+
+//        final SupervisorEntity entity = supervisorDao.findById(id);
+        supervisorDao.deleteById(id);
     }
 
-    @Override
-    @Transactional(readOnly = true)
-    public SupervisorEntity getSupervisor(String supervisorObjId) {
-        if (supervisorObjId == null)
-            throw new NullPointerException("supervisorObjId is null");
-        return supervisorDao.findById(supervisorObjId);
-    }
+    // @Override
+    // @Transactional(readOnly = true)
+    // public SupervisorEntity getSupervisor(String supervisorObjId) {
+    // if (supervisorObjId == null)
+    // throw new NullPointerException("supervisorObjId is null");
+    // return supervisorDao.findById(supervisorObjId);
+    // }
 
     @Override
     public void evict(Object object) {
@@ -1347,28 +1355,28 @@ public class UserMgr implements UserDataService {
         }
     }
 
-    @Override
-    @Transactional(readOnly = true)
-    public List<SupervisorEntity> getSupervisors(String employeeId) {
-        if (employeeId == null)
-            throw new NullPointerException("employeeId is null");
-        return supervisorDao.findSupervisors(employeeId);
-    }
+    // @Override
+    // @Transactional(readOnly = true)
+    // public List<UserEntity> getSupervisors(String employeeId) {
+    // if (employeeId == null)
+    // throw new NullPointerException("employeeId is null");
+    // return userDao.findSupervisors(employeeId);
+    // }
+
+    // @Override
+    // @Transactional(readOnly = true)
+    // public List<SupervisorEntity> getEmployees(String supervisorId) {
+    // if (supervisorId == null)
+    // throw new NullPointerException("employeeId is null");
+    // return supervisorDao.findEmployees(supervisorId);
+    // }
 
     @Override
     @Transactional(readOnly = true)
-    public List<SupervisorEntity> getEmployees(String supervisorId) {
-        if (supervisorId == null)
-            throw new NullPointerException("employeeId is null");
-        return supervisorDao.findEmployees(supervisorId);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public SupervisorEntity getPrimarySupervisor(String employeeId) {
+    public UserEntity getPrimarySupervisor(String employeeId) {
         if (employeeId == null)
             throw new NullPointerException("employeeId is null");
-        return supervisorDao.findPrimarySupervisor(employeeId);
+        return userDao.findPrimarySupervisor(employeeId);
     }
 
     @Override
@@ -1378,7 +1386,11 @@ public class UserMgr implements UserDataService {
             throw new NullPointerException("superiorId is null");
         if (superiorId == null)
             throw new NullPointerException("subordinateId is null");
-        return supervisorDao.findSupervisor(superiorId, subordinateId);
+        SupervisorIDEntity id = new SupervisorIDEntity();
+        id.setSupervisorId(superiorId);
+        id.setEmployeeId(subordinateId);
+
+        return supervisorDao.findById(id);
     }
 
     @Override
@@ -1415,7 +1427,7 @@ public class UserMgr implements UserDataService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<UserEntity> findPotentialSupSubs(UserSearchBean searchBean, Integer from, Integer size) {
+    public List<UserEntity> findPotentialSupSubs(PotentialSupSubSearchBean searchBean, Integer from, Integer size) throws BasicDataServiceException {
         List<UserEntity> entityList = findAllPotentialSupSubs(searchBean);
 
         if (entityList != null && entityList.size() >= from) {
@@ -1431,12 +1443,12 @@ public class UserMgr implements UserDataService {
 
     @Override
     @Transactional(readOnly = true)
-    public int findPotentialSupSubsCount(UserSearchBean searchBean) {
+    public int findPotentialSupSubsCount(PotentialSupSubSearchBean searchBean) throws BasicDataServiceException {
         return findAllPotentialSupSubs(searchBean).size();
     }
 
     @Transactional(readOnly = true)
-    private List<UserEntity> findAllPotentialSupSubs(UserSearchBean searchBean) {
+    private List<UserEntity> findAllPotentialSupSubs(PotentialSupSubSearchBean searchBean) throws BasicDataServiceException {
         List<String> userIds = null;
         if (StringUtils.isNotBlank(searchBean.getKey())) {
             userIds = new ArrayList<String>(1);
@@ -1444,7 +1456,7 @@ public class UserMgr implements UserDataService {
         } else {
             userIds = getUserIds(searchBean);
         }
-        userIds.removeAll(userDao.getAllAttachedSupSubIds(searchBean.getRequesterId()));
+        userIds.removeAll(userDao.getAllAttachedSupSubIds(searchBean.getTargetUserIds()));
         return userDao.findByIds(userIds);
     }
 
@@ -1504,7 +1516,7 @@ public class UserMgr implements UserDataService {
 
     @Override
     @Transactional
-    public String saveUserInfo(UserEntity newUserEntity, SupervisorEntity supervisorEntity) throws Exception {
+    public String saveUserInfo(UserEntity newUserEntity, String supervisorId) throws Exception {
         String userId = newUserEntity.getUserId();
         if (newUserEntity.getUserId() != null) {
             // update, need to merge user objects
@@ -1514,20 +1526,18 @@ public class UserMgr implements UserDataService {
         } else {
             userId = createNewUser(newUserEntity);
         }
-        if (supervisorEntity != null) {
+        if (supervisorId != null) {
             // update supervisor
-            List<SupervisorEntity> supervisorList = this.getSupervisors(newUserEntity.getUserId());
-            for (SupervisorEntity s : supervisorList) {
-                log.debug("looking to match supervisor ids = " + s.getSupervisor().getUserId() + " " + supervisorEntity.getSupervisor().getUserId());
-                if (s.getSupervisor().getUserId().equalsIgnoreCase(supervisorEntity.getSupervisor().getUserId())) {
+            List<UserEntity> supervisorList = this.getSuperiors(newUserEntity.getUserId(), 0, Integer.MAX_VALUE);
+            for (UserEntity s : supervisorList) {
+                log.debug("looking to match supervisor ids = " + s.getUserId() + " " + supervisorId);
+                if (s.getUserId().equalsIgnoreCase(supervisorId)) {
                     break;
                 }
-                this.removeSupervisor(s.getOrgStructureId());
+                // this.removeSupervisor(s.getOrgStructureId());
             }
-            log.debug("adding supervisor: " + supervisorEntity.getSupervisor().getUserId());
-            supervisorEntity.setEmployee(newUserEntity);
-
-            this.addSupervisor(supervisorEntity);
+            log.debug("adding supervisor: " + supervisorId);
+            this.addSuperior(supervisorId, newUserEntity.getUserId());
         }
         return userId;
     }
@@ -1652,7 +1662,7 @@ public class UserMgr implements UserDataService {
         boolean isExists = false;
         UserEntity userEntity = userDao.findById(userId);
         for (RoleEntity r : userEntity.getRoles()) {
-            if (r.getRoleId().equals(roleId)) {
+            if (r.getId().equals(roleId)) {
                 return true;
             }
         }
@@ -2150,6 +2160,54 @@ public class UserMgr implements UserDataService {
         ResourceEntity resourceEntity = resourceDAO.findById(resourceId);
         UserEntity userEntity = userDao.findById(userId);
         userEntity.getResources().add(resourceEntity);
+    }
+
+
+    public boolean validateSearchBean(UserSearchBean searchBean) throws BasicDataServiceException {
+        if (StringUtils.isNotBlank(searchBean.getRequesterId())) {
+            Map<String, UserAttribute> requesterAttributes = this.getUserAttributesDto(searchBean.getRequesterId());
+            return  validateSearchBean(searchBean, requesterAttributes);
+        }
+        return true;
+    }
+    public boolean validateSearchBean(UserSearchBean searchBean, Map<String, UserAttribute> requesterAttributes) throws BasicDataServiceException {
+        if (requesterAttributes!=null && CollectionUtils.isNotEmpty(requesterAttributes.keySet())) {
+
+            boolean isOrgFilterSet = DelegationFilterHelper.isOrgFilterSet(requesterAttributes);
+            boolean isGroupFilterSet = DelegationFilterHelper.isGroupFilterSet(requesterAttributes);
+            boolean isRoleFilterSet = DelegationFilterHelper.isRoleFilterSet(requesterAttributes);
+            Set<String> filterData = null;
+
+            if (isOrgFilterSet) {
+                if (CollectionUtils.isNotEmpty(searchBean.getOrganizationIdList())) {
+                   filterData = new HashSet<String>(DelegationFilterHelper.getOrgIdFilterFromString(requesterAttributes));
+                   for(String pk : searchBean.getOrganizationIdList()) {
+                       if(!DelegationFilterHelper.isAllowed(pk, filterData)){
+                           throw new BasicDataServiceException(ResponseCode.NOT_ALLOWED_ORGANIZATION_IN_SEARCH);
+                       }
+                   }
+                }
+            }
+
+            if (CollectionUtils.isEmpty(searchBean.getGroupIdSet()) && isGroupFilterSet) {
+                filterData = new HashSet<String>(DelegationFilterHelper.getGroupFilterFromString(requesterAttributes));
+                for(String pk : searchBean.getGroupIdSet()) {
+                    if(!DelegationFilterHelper.isAllowed(pk, filterData)){
+                        throw new BasicDataServiceException(ResponseCode.NOT_ALLOWED_GROUP_IN_SEARCH);
+                    }
+                }
+            }
+
+            if (CollectionUtils.isEmpty(searchBean.getRoleIdSet()) && isRoleFilterSet) {
+                filterData = new HashSet<String>(DelegationFilterHelper.getGroupFilterFromString(requesterAttributes));
+                for(String pk : searchBean.getRoleIdSet()) {
+                    if(!DelegationFilterHelper.isAllowed(pk, filterData)){
+                        throw new BasicDataServiceException(ResponseCode.NOT_ALLOWED_ROLE_IN_SEARCH);
+                    }
+                }
+            }
+        }
+        return true;
     }
 
 }

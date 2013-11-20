@@ -12,7 +12,23 @@ import java.util.List;
 
 @WebService(targetNamespace = "urn:idm.openiam.org/srvc/res/service", name = "ResourceDataWebService")
 public interface ResourceDataService {
+	
+	@WebMethod
+	Response validateDeleteResource(final @WebParam(name = "resourceId", targetNamespace = "") String resourceId);
 
+	/**
+	 * Validate if the resource can be created
+	 * @param resource - the Resource
+	 * @return
+	 */
+	@WebMethod
+	Response validateEditResource(final @WebParam(name = "resource", targetNamespace = "") Resource resource);
+	
+	/**
+	 * Deletes a Resoruce
+	 * @param resourceId - the resource id
+	 * @return
+	 */
 	@WebMethod
 	Response deleteResource(
 			@WebParam(name = "resourceId", targetNamespace = "") final String resourceId);
@@ -26,7 +42,8 @@ public interface ResourceDataService {
 	 */
 	@WebMethod
 	Response saveResource(
-			@WebParam(name = "resource", targetNamespace = "") Resource resource);
+			final @WebParam(name = "resource", targetNamespace = "") Resource resource, 
+			final @WebParam(name = "userId", targetNamespace = "") String requestorId);
 
 	/**
 	 * Find a resource.
@@ -148,6 +165,7 @@ public interface ResourceDataService {
 	/**
 	 * Find the child resources of a particular Resource
 	 * @param resourceId - resource ID
+     * @param deepFlag - shows that method returns Resource collection with all sub collections
 	 * @param from - where to start
 	 * @param size - how many to return
 	 * @return
@@ -155,10 +173,11 @@ public interface ResourceDataService {
 	@WebMethod
 	List<Resource> getChildResources(
 			@WebParam(name = "resourceId", targetNamespace = "") final String resourceId,
+            @WebParam(name = "deepFlag", targetNamespace = "") final Boolean deepFlag,
 			@WebParam(name = "from", targetNamespace = "") int from,
 			@WebParam(name = "size", targetNamespace = "") int size);
 
-	/**
+   	/**
 	 * Gets the number of child resources for a particular Resource
 	 * @param resourceId - the resource ID
 	 * @return
@@ -299,6 +318,15 @@ public interface ResourceDataService {
 			@WebParam(name = "from", targetNamespace = "") int from,
 			@WebParam(name = "size", targetNamespace = "") int size);
 
+    /**
+     * Gets Resources that a User is entitled to by Resource type
+     * @param userId - the User ID
+     * @param resourceTypeId - resource type ID
+     * @return
+     */
+    @WebMethod
+    public List<Resource> getResourcesForUserByType(@WebParam(name = "userId", targetNamespace = "") final String userId,
+                                                    @WebParam(name = "resourceTypeId", targetNamespace = "") final String resourceTypeId);
 	/**
 	 * Tells the caller if the user can be entitled to this resource
 	 * @param userId - the User ID

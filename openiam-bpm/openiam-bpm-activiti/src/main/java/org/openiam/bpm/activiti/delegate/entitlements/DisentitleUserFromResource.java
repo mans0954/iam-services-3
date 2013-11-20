@@ -2,6 +2,7 @@ package org.openiam.bpm.activiti.delegate.entitlements;
 
 import org.activiti.engine.delegate.DelegateExecution;
 import org.openiam.base.AttributeOperationEnum;
+import org.openiam.bpm.activiti.delegate.core.AbstractActivitiJob;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.dozer.converter.ResourceDozerConverter;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
@@ -17,8 +18,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 
 public class DisentitleUserFromResource extends AbstractEntitlementsDelegate {
 	
-	@Autowired
-	private ResourceService resourceService;
 	
 	public DisentitleUserFromResource() {
 		super();
@@ -26,27 +25,14 @@ public class DisentitleUserFromResource extends AbstractEntitlementsDelegate {
 	
 	@Override
 	public void execute(DelegateExecution execution) throws Exception {
-		final String resourceId = (String)execution.getVariable(ActivitiConstants.ASSOCIATION_ID);
-		final String userId = (String)execution.getVariable(ActivitiConstants.MEMBER_ASSOCIATION_ID);
+		final String resourceId = getStringVariable(execution, ActivitiConstants.ASSOCIATION_ID);
+		final String userId = getTargetUserId(execution);
 		
 		final User user = getUser(userId);
-		//final Resource entity = resourceService.getResourceDTO(resourceId);
-		if(user != null/* && entity != null*/) {
+		if(user != null) {
             final ProvisionUser pUser = new ProvisionUser(user);
-            //final Resource resource = resourceService.getResourceDTO(resourceId);
             pUser.markResourceAsDeleted(resourceId);
             provisionService.modifyUser(pUser);
 		}
-		/*
-		final ResourceUserEntity entity = resourceUserDAO.getRecord(resourceId, userId);
-		if (entity != null) {
-			resourceUserDAO.delete(entity);
-		}
-		*/
-	}
-
-	@Override
-	protected String getNotificationType() {
-		return null;
 	}
 }

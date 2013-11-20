@@ -71,7 +71,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
 	}
 
 	@Override
-	public Response saveGroup(final Group group) {
+	public Response saveGroup(final Group group, final String requestorId) {
         AuditLogBuilder auditBuilder = auditLogProvider.getAuditLogBuilder();
         auditBuilder.setAction(AuditAction.SAVE_GROUP);
 		final Response response = new Response(ResponseStatus.SUCCESS);
@@ -79,30 +79,30 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
 			if(group == null) {
 				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
 			}
-            auditBuilder.setRequestorUserId(group.getRequestorUserId()).setTargetGroup(group.getGrpId());
-            if(StringUtils.isBlank(group.getGrpId())) {
+            auditBuilder.setRequestorUserId(group.getRequestorUserId()).setTargetGroup(group.getId());
+            if(StringUtils.isBlank(group.getId())) {
                 auditBuilder.setAction(AuditAction.ADD_GROUP);
             }
 
 
-			if(StringUtils.isBlank(group.getGrpName())) {
+			if(StringUtils.isBlank(group.getName())) {
 				throw new BasicDataServiceException(ResponseCode.NO_NAME);
 			}
 			
-			final GroupEntity found = groupManager.getGroupByName(group.getGrpName(), null);
+			final GroupEntity found = groupManager.getGroupByName(group.getName(), null);
 			if(found != null) {
-				if(StringUtils.isBlank(group.getGrpId()) && found != null) {
+				if(StringUtils.isBlank(group.getId()) && found != null) {
 					throw new BasicDataServiceException(ResponseCode.NAME_TAKEN, "Group name is already in use");
 				}
 			
-				if(StringUtils.isNotBlank(group.getGrpId()) && !group.getGrpId().equals(found.getGrpId())) {
+				if(StringUtils.isNotBlank(group.getId()) && !group.getId().equals(found.getId())) {
 					throw new BasicDataServiceException(ResponseCode.NAME_TAKEN, "Group name is already in use");
 				}
 			}
 			
 			GroupEntity entity = groupDozerConverter.convertToEntity(group, true);
-			groupManager.saveGroup(entity);
-			response.setResponseValue(entity.getGrpId());
+			groupManager.saveGroup(entity, requestorId);
+			response.setResponseValue(entity.getId());
             auditBuilder.succeed();
 		} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
@@ -184,13 +184,13 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
 	}
 
 	@Override
-	public List<Group> getChildGroups(final  String groupId, final String requesterId, final int from, final int size) {
+	public List<Group> getChildGroups(final  String groupId, final String requesterId, final Boolean deepFlag, final int from, final int size) {
         List<Group> groupList = null;
         AuditLogBuilder auditBuilder = auditLogProvider.getAuditLogBuilder();
         auditBuilder.setAction(AuditAction.GET_CHILD_GROUP).setRequestorUserId(requesterId).setTargetGroup(groupId);
         try{
             final List<GroupEntity> groupEntityList = groupManager.getChildGroups(groupId, requesterId, from, size);
-            groupList = groupDozerConverter.convertToDTOList(groupEntityList, false);
+            groupList = groupDozerConverter.convertToDTOList(groupEntityList, (deepFlag!=null)?deepFlag:false);
             auditBuilder.succeed();
         } catch(Throwable e) {
             auditBuilder.fail().setException(e);
@@ -407,13 +407,13 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
 	}
 
     @Override
-    public List<Group> getGroupsForUser(final String userId, final String requesterId, final int from, final int size) {
+    public List<Group> getGroupsForUser(final String userId, final String requesterId, Boolean deepFlag, final int from, final int size) {
         List<Group> groupList = null;
         AuditLogBuilder auditBuilder = auditLogProvider.getAuditLogBuilder();
         auditBuilder.setAction(AuditAction.GET_GROUP_FOR_USER).setRequestorUserId(requesterId).setTargetUser(userId);
         try{
             final List<GroupEntity> groupEntityList =  groupManager.getGroupsForUser(userId,requesterId, from, size);
-            groupList = groupDozerConverter.convertToDTOList(groupEntityList, false);
+            groupList = groupDozerConverter.convertToDTOList(groupEntityList, (deepFlag!=null)?deepFlag:false);
             auditBuilder.succeed();
         } catch(Throwable e) {
             auditBuilder.fail().setException(e);

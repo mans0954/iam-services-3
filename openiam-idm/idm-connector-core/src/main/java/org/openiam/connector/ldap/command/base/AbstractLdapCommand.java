@@ -105,10 +105,12 @@ public abstract class AbstractLdapCommand<Request extends RequestType, Response 
     }
 
     protected String getOU(ExtensibleObject obj) {
-        List<ExtensibleAttribute> attrList = obj.getAttributes();
-        for (ExtensibleAttribute att : attrList) {
-            if (att.getName().equalsIgnoreCase("ou")) {
-                return att.getValue();
+        if (obj != null) {
+            List<ExtensibleAttribute> attrList = obj.getAttributes();
+            for (ExtensibleAttribute att : attrList) {
+                if (att.getName().equalsIgnoreCase("ou")) {
+                    return att.getValue();
+                }
             }
         }
         return null;

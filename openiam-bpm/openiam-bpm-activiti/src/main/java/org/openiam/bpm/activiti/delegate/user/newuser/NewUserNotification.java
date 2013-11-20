@@ -33,7 +33,7 @@ public class NewUserNotification implements JavaDelegate {
 	
 	@Override
 	public void execute(DelegateExecution execution) throws Exception {
-		final String userId  = (String)execution.getVariable(ActivitiConstants.NEW_USER_ID);
+		final String userId  = (String)execution.getVariable(ActivitiConstants.NEW_USER_ID.getName());
 		final LoginEntity loginEntity = loginService.getPrimaryIdentity(userId);
 		final String password = loginService.decryptPassword(userId, loginEntity.getPassword());
 		

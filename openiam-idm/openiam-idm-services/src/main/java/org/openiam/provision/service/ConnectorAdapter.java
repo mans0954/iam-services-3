@@ -27,6 +27,7 @@ import org.mule.api.MuleContext;
 import org.mule.api.MuleException;
 import org.mule.api.MuleMessage;
 import org.mule.module.client.MuleClient;
+import org.openiam.base.id.UUIDGen;
 import org.openiam.connector.type.constant.ErrorCode;
 import org.openiam.connector.type.constant.StatusCodeType;
 import org.openiam.connector.type.request.*;
@@ -45,6 +46,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * Wraps around the connector interface and manages the calls to the varous
@@ -557,7 +559,7 @@ public class ConnectorAdapter {
     }
 
     public ResponseType testConnection(ManagedSysDto managedSys,
-            MuleContext muleContext) {
+                                       MuleContext muleContext) {
 
         ResponseType type = new ResponseType();
         type.setStatus(StatusCodeType.FAILURE);
@@ -577,10 +579,14 @@ public class ConnectorAdapter {
 
             if (connector != null
                     && (connector.getServiceUrl() != null && connector
-                            .getServiceUrl().length() > 0)) {
+                    .getServiceUrl().length() > 0)) {
                 RequestType<ExtensibleUser> rt = new RequestType<ExtensibleUser>();
-                rt.setExtensibleObject(new ExtensibleUser());
                 rt.setTargetID(managedSys.getManagedSysId());
+                rt.setScriptHandler(managedSys.getTestConnectionHandler());
+                rt.setHostPort((managedSys.getPort() != null) ? managedSys.getPort().toString() : null);
+                rt.setHostUrl(managedSys.getHostUrl());
+                rt.setHostLoginId(managedSys.getUserId());
+                rt.setHostLoginPassword(managedSys.getDecryptPassword());
                 MuleMessage msg = getService(connector, rt,
                         connector.getServiceUrl(), "testConnection",
                         muleContext);

@@ -17,18 +17,17 @@ import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
+import javax.naming.ldap.Control;
 import javax.naming.ldap.LdapContext;
+import javax.naming.ldap.PagedResultsControl;
+import javax.naming.ldap.PagedResultsResponseControl;
+import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
-/**
- * Created with IntelliJ IDEA.
- * User: alexander
- * Date: 8/6/13
- * Time: 9:32 PM
- * To change this template use File | Settings | File Templates.
- */
 public abstract class AbstractSearchLdapCommand<ExtObject extends ExtensibleObject> extends AbstractLdapCommand<SearchRequest<ExtObject>, SearchResponse> {
+
+    public static final int PAGE_SIZE = 10;
 
     @Override
     public SearchResponse execute(SearchRequest<ExtObject> searchRequest) throws ConnectorDataException {
@@ -38,61 +37,81 @@ public abstract class AbstractSearchLdapCommand<ExtObject extends ExtensibleObje
         ConnectorConfiguration config =  getConfiguration(searchRequest.getTargetID(), ConnectorConfiguration.class);
         LdapContext ldapContext = this.connect(config.getManagedSys());
 
-
         ManagedSystemObjectMatch matchObj = getMatchObject(searchRequest.getTargetID(), getObjectType());
         try {
+
             log.debug("Search Filter=" + searchRequest.getSearchQuery());
             log.debug("Searching BaseDN=" + searchRequest.getBaseDN());
 
             SearchControls searchControls = new SearchControls();
-            NamingEnumeration results = ldapContext.search(searchRequest.getBaseDN(), searchRequest.getSearchQuery(), searchControls);
-
+            ldapContext.setRequestControls(new Control[] { new PagedResultsControl(PAGE_SIZE, Control.CRITICAL) });
             String identityAttrName = matchObj != null ? matchObj.getKeyField() : "cn";
 
             List<ObjectValue> objectValueList = new LinkedList<ObjectValue>();
-
             ObjectValue objectValue = new ObjectValue();
             objectValue.setAttributeList(new LinkedList<ExtensibleAttribute>());
+
+            byte[] cookie = null;
             boolean found = false;
-            while (results != null && results.hasMoreElements()) {
-                SearchResult sr = (SearchResult) results.next();
-                Attributes attrs = sr.getAttributes();
-                if (attrs != null) {
-                    found = true;
-                    for (NamingEnumeration ae = attrs.getAll(); ae.hasMore();) {
-                        ExtensibleAttribute extAttr = new ExtensibleAttribute();
-                        Attribute attr = (Attribute) ae.next();
+            do {
+                NamingEnumeration results = ldapContext.search(searchRequest.getBaseDN(), searchRequest.getSearchQuery(), searchControls);
 
-                        boolean addToList = false;
-                        extAttr.setName(attr.getID());
-                        NamingEnumeration e = attr.getAll();
+                while (results != null && results.hasMoreElements()) {
+                    SearchResult sr = (SearchResult) results.next();
+                    Attributes attrs = sr.getAttributes();
+                    if (attrs != null) {
+                        found = true;
+                        for (NamingEnumeration ae = attrs.getAll(); ae.hasMore();) {
+                            ExtensibleAttribute extAttr = new ExtensibleAttribute();
+                            Attribute attr = (Attribute) ae.next();
 
-                        while (e.hasMore()) {
-                            Object o = e.next();
-                            if (o instanceof String) {
-                                extAttr.setValue(o.toString());
-                                addToList = true;
+                            boolean addToList = false;
+                            extAttr.setName(attr.getID());
+                            NamingEnumeration e = attr.getAll();
+
+                            while (e.hasMore()) {
+                                Object o = e.next();
+                                if (o instanceof String) {
+                                    extAttr.setValue(o.toString());
+                                    addToList = true;
+                                }
+                            }
+                            if(identityAttrName.equalsIgnoreCase(extAttr.getName())) {
+                                objectValue.setObjectIdentity(extAttr.getValue());
+                            }
+                            if (addToList) {
+                                objectValue.getAttributeList().add(extAttr);
                             }
                         }
-                        if(identityAttrName.equalsIgnoreCase(extAttr.getName())) {
-                            objectValue.setObjectIdentity(extAttr.getValue());
-                        }
-                        if (addToList) {
-                            objectValue.getAttributeList().add(extAttr);
+                        objectValueList.add(objectValue);
+                        objectValue = new ObjectValue();
+                        objectValue.setAttributeList(new LinkedList<ExtensibleAttribute>());
+                    }
+                }
+                Control[] controls = ldapContext.getResponseControls();
+                if (controls != null) {
+                    for (Control c : controls) {
+                        if (c instanceof PagedResultsResponseControl) {
+                            PagedResultsResponseControl prrc = (PagedResultsResponseControl)c;
+                            cookie = prrc.getCookie();
+                            break;
                         }
                     }
-                    objectValueList.add(objectValue);
-                    objectValue = new ObjectValue();
-                    objectValue.setAttributeList(new LinkedList<ExtensibleAttribute>());
                 }
-            }
+                ldapContext.setRequestControls(new Control[]{ new PagedResultsControl(PAGE_SIZE, cookie, Control.CRITICAL) });
+            } while (cookie != null);
+
             searchResponse.setObjectList(objectValueList);
+
             if (!found) {
                 throw  new ConnectorDataException(ErrorCode.NO_RESULTS_RETURNED);
             }
             return searchResponse;
 
         } catch (NamingException e) {
+            log.error(e.getMessage(), e);
+            throw new  ConnectorDataException(ErrorCode.DIRECTORY_ERROR, e.getMessage());
+        } catch (IOException e) {
             log.error(e.getMessage(), e);
             throw new  ConnectorDataException(ErrorCode.DIRECTORY_ERROR, e.getMessage());
         } finally {

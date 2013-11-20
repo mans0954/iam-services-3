@@ -21,4 +21,6 @@ public interface AuthorizationManagerMenuService {
 	public void processTreeUpdate(final List<ResourceEntity> toSave, final List<ResourceEntity> toUpdate, final List<ResourceEntity> toDelete);
 	
 	public void entitle(final MenuEntitlementsRequest menuEntitlementsRequest);
+	
+	public boolean isUserAuthenticatedToMenuWithURL(final String userId, final String url, final boolean defaultResult);
 }

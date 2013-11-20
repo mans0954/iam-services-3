@@ -105,8 +105,8 @@
 <xs:element minOccurs="0" name="createdBy" type="xs:string"/>
 <xs:element minOccurs="0" name="description" type="xs:string"/>
 <xs:element minOccurs="0" name="groupClass" type="xs:string"/>
-<xs:element minOccurs="0" name="grpId" type="xs:string"/>
-<xs:element minOccurs="0" name="grpName" type="xs:string"/>
+<xs:element minOccurs="0" name="id" type="xs:string"/>
+<xs:element minOccurs="0" name="name" type="xs:string"/>
 <xs:element minOccurs="0" name="inheritFromParent" type="xs:boolean"/>
 <xs:element minOccurs="0" name="lastUpdate" type="xs:dateTime"/>
 <xs:element minOccurs="0" name="lastUpdatedBy" type="xs:string"/>
@@ -1189,7 +1189,7 @@
       </wsdl:output>
     </wsdl:operation>
     <wsdl:operation name="testConnection">
-      <soap:operation soapAction="" style="document"/>
+      <soap:operation soapAction="http://www.openiam.org/service/connector/RemoteConnectorService/testConnection" style="document"/>
       <wsdl:input name="testConnection">
         <soap:body use="literal"/>
       </wsdl:input>

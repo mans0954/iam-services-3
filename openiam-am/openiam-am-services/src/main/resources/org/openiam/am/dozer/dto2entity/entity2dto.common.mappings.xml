@@ -166,5 +166,17 @@
             <a>users</a>
             <b>users</b>
         </field-exclude>
+        <field>
+        	<a>adminResource.resourceId</a>
+        	<b>adminResourceId</b>
+        </field>
+        <field>
+        	<a>adminResource.name</a>
+        	<b>adminResourceName</b>
+        </field>
+        <field-exclude>
+			<a>approverAssociations</a>
+			<b>approverAssociations</b>
+		</field-exclude>
     </mapping>
 </mappings>

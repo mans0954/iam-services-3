@@ -4,7 +4,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openiam.dozer.converter.UserDozerConverter;
+import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.UserSearchBean;
 import org.openiam.idm.srvc.synch.dto.Attribute;
 import org.openiam.idm.srvc.synch.dto.SynchConfig;
@@ -17,7 +20,7 @@ import org.springframework.stereotype.Component;
 
 @Component("defaultMatchRule")
 public class DefaultMatchObjectRule implements MatchObjectRule {
-
+    private static final Log log = LogFactory.getLog(DefaultMatchObjectRule.class);
     @Autowired
 	private UserDataService userManager;
 
@@ -68,9 +71,14 @@ public class DefaultMatchObjectRule implements MatchObjectRule {
 			//search.setAttributeValue(valueToMatch);
 		}
 
-		List<UserEntity> userList = userManager.findBeans(searchBean);
+        List<UserEntity> userList = null;
+        try {
+            userList = userManager.findBeans(searchBean);
+        } catch (BasicDataServiceException e) {
+            log.error(e.getLocalizedMessage(),e);
+        }
 
-		if (userList != null && !userList.isEmpty()) {
+        if (userList != null && !userList.isEmpty()) {
 			System.out.println("User matched with existing user...");
 			return new User(userList.get(0).getUserId());
 		}

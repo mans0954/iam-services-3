@@ -367,18 +367,18 @@ public class ModifyUser {
 
     }
 
-    private Group getGroup(String grpId, List<Group> origGroupList) {
+    private Group getGroup(String id, List<Group> origGroupList) {
         for (Group g : origGroupList) {
-            if (g.getGrpId().equalsIgnoreCase(grpId)) {
+            if (g.getId().equalsIgnoreCase(id)) {
                 return g;
             }
         }
         return null;
     }
 
-    private Role getRole(String roleId, List<Role> roleList) {
+    private Role getRole(String id, List<Role> roleList) {
         for (Role rl : roleList) {
-            if (rl.getRoleId().equals(roleId)) {
+            if (rl.getId().equals(id)) {
                 return rl;
             }
         }
@@ -598,7 +598,7 @@ public class ModifyUser {
             for (Group g : newGroupList) {
                 g.setOperation(AttributeOperationEnum.ADD);
                 groupList.add(g);
-                this.userMgr.addUserToGroup(g.getGrpId(), userId);
+                this.userMgr.addUserToGroup(g.getId(), userId);
             }
             return;
         }
@@ -617,12 +617,12 @@ public class ModifyUser {
         // else add with operation 2
         for (Group g : newGroupList) {
             if (g.getOperation() == AttributeOperationEnum.DELETE) {
-                log.debug("removing Group :" + g.getGrpId());
+                log.debug("removing Group :" + g.getId());
                 // get the email object from the original set of emails so that
                 // we can remove it
-                Group grp = getGroup(g.getGrpId(), origGroupList);
+                Group grp = getGroup(g.getId(), origGroupList);
                 if (grp != null) {
-                    this.userMgr.removeUserFromGroup(grp.getGrpId(),
+                    this.userMgr.removeUserFromGroup(grp.getId(),
                             userId);
                 }
                 groupList.add(grp);
@@ -631,13 +631,13 @@ public class ModifyUser {
                 // if it is - see if it has changed
                 // if it is not - add it.
                 log.debug("evaluate Group");
-                Group origGroup = getGroup(g.getGrpId(), origGroupList);
+                Group origGroup = getGroup(g.getId(), origGroupList);
                 if (origGroup == null) {
                     g.setOperation(AttributeOperationEnum.ADD);
                     groupList.add(g);
-                    userMgr.addUserToGroup(g.getGrpId(), userId);
+                    userMgr.addUserToGroup(g.getId(), userId);
                 } else {
-                    if (g.getGrpId().equals(origGroup.getGrpId())) {
+                    if (g.getId().equals(origGroup.getId())) {
                         // not changed
                         g.setOperation(AttributeOperationEnum.NO_CHANGE);
                         groupList.add(g);
@@ -648,7 +648,7 @@ public class ModifyUser {
         // if a value is in original list and not in the new list - then add it
         // on
         for (Group g : origGroupList) {
-            Group newGroup = getGroup(g.getGrpId(), newGroupList);
+            Group newGroup = getGroup(g.getId(), newGroupList);
             if (newGroup == null) {
                 g.setOperation(AttributeOperationEnum.NO_CHANGE);
                 groupList.add(g);
@@ -950,7 +950,7 @@ public class ModifyUser {
                 rl.setOperation(AttributeOperationEnum.ADD);
                 roleList.add(rl);
 
-                roleDataService.addUserToRole(rl.getRoleId(), userId);
+                roleDataService.addUserToRole(rl.getId(), userId);
                 
                 /*
                 logList.add(auditHelper.createLogObject("ADD ROLE", pUser
@@ -988,9 +988,9 @@ public class ModifyUser {
             if (r.getOperation() == AttributeOperationEnum.DELETE) {
                 // get the email object from the original set of emails so that
                 // we can remove it
-                Role rl = getRole(r.getRoleId(), origRoleList);
+                Role rl = getRole(r.getId(), origRoleList);
                 if (rl != null) {
-                    roleDataService.removeUserFromRole(rl.getRoleId(), userId);
+                    roleDataService.removeUserFromRole(rl.getId(), userId);
                     /*
                     logList.add(auditHelper.createLogObject("REMOVE ROLE",
                             pUser.getRequestorDomain(), pUser.getUser()
@@ -1017,14 +1017,14 @@ public class ModifyUser {
                 // if it is - see if it has changed
                 // if it is not - add it.
 
-                Role origRole = getRole(r.getRoleId(), origRoleList);
+                Role origRole = getRole(r.getId(), origRoleList);
 
                 log.debug("OrigRole found=" + origRole);
 
                 if (origRole == null) {
                     r.setOperation(AttributeOperationEnum.ADD);
                     roleList.add(r);
-                    roleDataService.addUserToRole(r.getRoleId(), userId);
+                    roleDataService.addUserToRole(r.getId(), userId);
                     /*
                     logList.add(auditHelper.createLogObject("ADD ROLE", pUser.getUser()
                             .getRequestorDomain(), pUser.getRequestorLogin(),
@@ -1043,7 +1043,7 @@ public class ModifyUser {
                     log.debug("checking if no_change or replace");
                     // if (r.equals(origRole)) {
                     // UserRole uRole = userRoleAttrEq(r, currentUserRole);
-                    if (r.getRoleId().equals(origRole.getRoleId())
+                    if (r.getId().equals(origRole.getId())
                             && userRoleAttrEq(r, origRole)) {
                         // not changed
                         log.debug("- no_change ");
@@ -1083,7 +1083,7 @@ public class ModifyUser {
         // if a value is in original list and not in the new list - then add it
         // on
         for (Role rl : origRoleList) {
-            Role newRole = getRole(rl.getRoleId(), newRoleList);
+            Role newRole = getRole(rl.getId(), newRoleList);
             if (newRole == null) {
                 rl.setOperation(AttributeOperationEnum.NO_CHANGE);
                 roleList.add(rl);
@@ -1123,16 +1123,16 @@ public class ModifyUser {
         }
         // check the current supervisor - if different - remove it and add the
         // new one.
-        List<SupervisorEntity> supervisorList = userMgr.getSupervisors(user.getUserId());
-        for (SupervisorEntity s : supervisorList) {
+        List<UserEntity> supervisorList = userMgr.getSuperiors(user.getUserId(), 0, Integer.MAX_VALUE);
+        for (UserEntity s : supervisorList) {
             log.debug("looking to match supervisor ids = "
-                    + s.getSupervisor().getUserId() + " "
+                    + s.getUserId() + " "
                     + supervisor.getSupervisor().getUserId());
-            if (s.getSupervisor().getUserId()
+            if (s.getUserId()
                     .equalsIgnoreCase(supervisor.getSupervisor().getUserId())) {
                 return;
             }
-            userMgr.removeSupervisor(s.getOrgStructureId());
+            userMgr.removeSupervisor(s.getUserId(), user.getUserId());
         }
         log.debug("adding supervisor: "
                 + supervisor.getSupervisor().getUserId());
@@ -1298,9 +1298,7 @@ public class ModifyUser {
                     log.debug("- Evaluating delRl = " + delRl);
                     if (delRl != null) {
 
-                        if (!found
-                                && r.getRoleId().equalsIgnoreCase(
-                                        delRl.getRoleId())) {
+                        if (!found && r.getId().equalsIgnoreCase(delRl.getId())) {
                             found = true;
                         }
 

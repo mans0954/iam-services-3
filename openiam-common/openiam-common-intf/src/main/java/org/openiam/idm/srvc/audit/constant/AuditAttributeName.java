@@ -18,5 +18,5 @@ public enum AuditAttributeName {
     WARNING,
     APPROVER_ASSOCIATIONS,
     REQUEST_APPROVER_IDS,
-    REQUEST;
+    REQUEST, RESOURCE_TYPE;
 }

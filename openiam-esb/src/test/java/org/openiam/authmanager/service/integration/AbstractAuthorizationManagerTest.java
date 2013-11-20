@@ -349,11 +349,11 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractTestNGSpr
 		
 		final List<AuthorizationManagerLoginId> loginIdList = getLoginIdList(user);
 		
-		checkUser2RoleMembership(user.getUserId(), null, role.getRoleId(), null);
-		checkUser2RoleMembership(user.getUserId(), null, null, role.getRoleName());
+		checkUser2RoleMembership(user.getUserId(), null, role.getId(), null);
+		checkUser2RoleMembership(user.getUserId(), null, null, role.getName());
 		for(final AuthorizationManagerLoginId loginId : loginIdList) {
-			checkUser2RoleMembership(null, loginId, role.getRoleId(), null);
-			checkUser2RoleMembership(null, loginId, null, role.getRoleName());
+			checkUser2RoleMembership(null, loginId, role.getId(), null);
+			checkUser2RoleMembership(null, loginId, null, role.getName());
 		}
 	}
 	
@@ -363,12 +363,12 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractTestNGSpr
 		
 		final List<AuthorizationManagerLoginId> loginIdList = getLoginIdList(user);
 		
-		checkUser2GroupMembership(user.getUserId(), null, group.getGrpId(), null);
-		checkUser2GroupMembership(user.getUserId(), null, null, group.getGrpName());
+		checkUser2GroupMembership(user.getUserId(), null, group.getId(), null);
+		checkUser2GroupMembership(user.getUserId(), null, null, group.getName());
 		
 		for(final AuthorizationManagerLoginId loginId : loginIdList) {
-			checkUser2GroupMembership(null, loginId, group.getGrpId(), null);
-			checkUser2GroupMembership(null, loginId, null, group.getGrpName());
+			checkUser2GroupMembership(null, loginId, group.getId(), null);
+			checkUser2GroupMembership(null, loginId, null, group.getName());
 		}
 	}
 	

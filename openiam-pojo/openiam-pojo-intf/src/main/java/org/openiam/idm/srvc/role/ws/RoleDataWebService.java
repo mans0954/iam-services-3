@@ -41,7 +41,8 @@ public interface RoleDataWebService {
      * otherwise it contains error code.
      */
     @WebMethod
-    Response saveRole(@WebParam(name = "role", targetNamespace = "") Role role);
+    Response saveRole(@WebParam(name = "role", targetNamespace = "") Role role,
+    				 final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
     /**
      * This method removes role from openIAM database for a particular roleID.
@@ -148,6 +149,7 @@ public interface RoleDataWebService {
      * Gets a paged List of Roles directly entitled to the User specified by the userId
      * @param userId - the User ID
      * @param requesterId -  the User ID who request this operation.  This param is required if delegation filter is set
+     * @param deepFlag - shows that method returns Role List with all sub collections
      * @param from - where to start in the paged list
      * @param size - how many to return
      * @return a paged List of  Roles directly entitled to the User specified by the userId
@@ -155,6 +157,7 @@ public interface RoleDataWebService {
     @WebMethod
     List<Role> getRolesForUser(final @WebParam(name = "userId", targetNamespace = "") String userId,
                                final @WebParam(name="requesterId", targetNamespace="") String requesterId,
+                               final @WebParam(name="deepFlag", targetNamespace="") Boolean deepFlag,
                                final @WebParam(name = "from", targetNamespace = "") int from,
                                final @WebParam(name = "size", targetNamespace = "") int size);
 
@@ -255,6 +258,7 @@ public interface RoleDataWebService {
      *
      * @param roleId - the Role ID
      * @param requesterId - the User ID who request this operation.  This param is required if delegation filter is set
+     * @param deepFlag - shows if method returns Roles Collection with all sub collections
      * @param from - where to start in the list
      * @param size - how many to return
      * @return a paged List of Role objects. Returns null if no roles are found.
@@ -262,8 +266,10 @@ public interface RoleDataWebService {
     @WebMethod
     public List<Role> getChildRoles(final @WebParam(name="roleId", targetNamespace="") String roleId,
                                     final @WebParam(name="requesterId", targetNamespace="") String requesterId,
+                                    final @WebParam(name="deepFlag", targetNamespace="") Boolean deepFlag,
 			  					    final @WebParam(name = "from", targetNamespace = "") int from,
 			  						final @WebParam(name = "size", targetNamespace = "") int size);
+
     /**
      * Gets the number of child roles that are direct members of this Role
      * @param roleId - the Role ID

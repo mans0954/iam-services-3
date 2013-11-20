@@ -1,30 +1,58 @@
 package org.openiam.bpm.util;
 
-public class ActivitiConstants {
-	public static final String COMMENT = "Comment";
-	public static final String PROVISION_REQUEST_ID = "ProvisionRequestId";
-	public static final String IS_TASK_APPROVED = "IsTaskApproved";
-	public static final String NEW_USER_ID = "NewUserId";
-	public static final String CANDIDATE_USERS_IDS = "candidateUsersIds";
-	public static final String TASK_NAME = "TaskName";
-	public static final String TASK_DESCRIPTION = "TaskDescription";
-	public static final String TASK_OWNER = "TaskOwner";
-	public static final String EXECUTOR_ID = "ExecutorId";
-	public static final String APPROVER_ASSOCIATION_IDS = "ApproverAssociationIds";
-	public static final String ASSOCIATION_ID = "AssociationId";
-	public static final String MEMBER_ASSOCIATION_ID = "MemberAssociationId";
-	//public static final String USER_PROFILE = "UserProfile";
-	public static final String REQUEST_METADATA_MAP = "RequestMetadataMap";
-	public static final String CUSTOM_APPROVER_IDS = "CustomApproverIds";
-	public static final String EMPLOYEE_ID = "EmployeeId";
-	public static final String DISASSOCIATED_ROLE_IDS = "DisassociatedRoleIds";
-	public static final String DISASSOCIATED_GROUP_IDS = "DisassociatedGroupIds";
-	public static final String DISASSOCIATED_RESOURCE_IDS = "DisassociatedResourceIds";
-	public static final String CUSTOM_TASK_UI_URL = "CustomTaskUIUrl";
+public enum ActivitiConstants {
+	COMMENT("Comment"),
+	REQUEST("Request"),
+	IS_TASK_APPROVED("IsTaskApproved"),
+	NEW_USER_ID("NewUserId"),
+	CANDIDATE_USERS_IDS("candidateUsersIds"),
+	TASK_NAME("TaskName"),
+	TASK_DESCRIPTION("TaskDescription"),
+	REQUESTOR("TaskOwner"),
+	EXECUTOR_ID("ExecutorId"),
+	APPROVER_ASSOCIATION_IDS("ApproverAssociationIds"),
+	ASSOCIATION_ID("AssociationId"),
+	ASSOCIATION_TYPE("AssociationType"),
+	IS_ADMIN("IsAdmin"),
+	IS_COMPLETE("IsComplete"),
+	MEMBER_ASSOCIATION_ID("MemberAssociationId"),
+	APPROVER_CARDINALTITY("ApproverCardindality"),
+	REQUEST_METADATA_MAP("RequestMetadataMap"),
+	CUSTOM_APPROVER_IDS("CustomApproverIds"),
+	EMPLOYEE_ID("EmployeeId"),
+	DISASSOCIATED_ROLE_IDS("DisassociatedRoleIds"),
+	DISASSOCIATED_GROUP_IDS("DisassociatedGroupIds"),
+	DISASSOCIATED_RESOURCE_IDS("DisassociatedResourceIds"),
+	CUSTOM_TASK_UI_URL("CustomTaskUIUrl"),
 	
-	public static final String LOGIN_ID = "LoginId";
-	public static final String USER_ID = "UserId";
-	public static final String MANAGED_SYS_ID = "ManagedSysId";
-	public static final String LOGIN = "Login";
-	public static final String SECURITY_DOMAIN_ID = "SecurityDomainId";
+	LOGIN("Login"),
+	
+	LOOP_COUNTER("loopCounter"),
+	
+	CARDINALITY_OBJECT("cardinalityObject"),
+	
+	RESOURCE("Resource"),
+	
+	RESOURCE_ID("ResourceId");
+	
+	private String name;
+	
+	ActivitiConstants(final String name) {
+		this.name = name;
+	}
+	
+	public String getName() {
+		return name;
+	}
+	
+	public static ActivitiConstants getByDeclarationName(final String name) {
+		ActivitiConstants retVal = null;
+		for(final ActivitiConstants k : ActivitiConstants.values()) {
+			if(k.name().equals(name)) {
+				retVal = k;
+				break;
+			}
+		}
+		return retVal;
+	}
 }

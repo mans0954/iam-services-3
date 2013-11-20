@@ -4,13 +4,15 @@ import java.util.List;
 import java.util.Map;
 
 import org.openiam.exception.ScriptEngineException;
+import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
+import org.openiam.idm.srvc.policy.domain.PolicyEntity;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.script.ScriptIntegration;
 
 public class ProvisionServiceUtil {
     public static Object getOutputFromAttrMap(AttributeMap attr,
-            Map<String, Object> bindingMap, ScriptIntegration se)
+                                              Map<String, Object> bindingMap, ScriptIntegration se)
             throws ScriptEngineException {
         Object output = "";
         if (attr.getReconResAttribute().getAttributePolicy() != null) {
@@ -26,14 +28,32 @@ public class ProvisionServiceUtil {
         return output;
     }
 
+    public static Object getOutputFromAttrMap(AttributeMapEntity attr,
+                                              Map<String, Object> bindingMap, ScriptIntegration se)
+            throws ScriptEngineException {
+        Object output = "";
+        if (attr.getReconResAttribute().getAttributePolicy() != null) {
+            PolicyEntity policy = attr.getReconResAttribute()
+                    .getAttributePolicy();
+            String url = policy.getRuleSrcUrl();
+            if (url != null) {
+                output = se.execute(bindingMap, url);
+            }
+        } else if (attr.getReconResAttribute().getDefaultAttributePolicy() != null) {
+            output = attr.getReconResAttribute().getDefaultAttributePolicy()
+                    .getDefaultAttributeMapId();
+        }
+        return output;
+    }
+
     /**
      * Generate the principalName for a targetSystem
-     * 
+     *
      * @return
      * @throws ScriptEngineException
      */
     public static String buildPrincipalName(List<AttributeMap> attrMap,
-            ScriptIntegration se, Map<String, Object> bindingMap)
+                                            ScriptIntegration se, Map<String, Object> bindingMap)
             throws ScriptEngineException {
         for (AttributeMap attr : attrMap) {
             if ("PRINCIPAL".equalsIgnoreCase(attr.getMapForObjectType())
