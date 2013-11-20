@@ -45,6 +45,7 @@ import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
 import org.openiam.idm.srvc.grp.dto.Group;
+import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
 import org.openiam.idm.srvc.mngsys.domain.ProvisionConnectorEntity;
@@ -52,6 +53,7 @@ import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorDto;
+import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
 import org.openiam.idm.srvc.pswd.dto.Password;
@@ -1100,8 +1102,6 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             return resp;
         }
         /* Response object */
-        userMgr.updateUser(userEntity);
-
         if (isAdd) {
             log.debug("DEFAULT PROVISIONING SERVICE: addUser complete");
         } else {
@@ -1449,7 +1449,8 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
     @Override
     @Transactional
     public LookupUserResponse getTargetSystemUser(String principalName,
-            String managedSysId) {
+            String managedSysId, List<ExtensibleAttribute> extensibleAttributes) {
+
         final AuditLogBuilder auditBuilder = auditLogProvider.getAuditLogBuilder();
         auditBuilder.setRequestorUserId(systemUserId).setTargetUser(null).setAction(AuditAction.PROVISIONING);
         AuditLogBuilder auditBuilderLookupLog = new AuditLogBuilder();
@@ -1475,7 +1476,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             String requestId = "R" + UUIDGen.getUUID();
             reqType.setRequestID(requestId);
             reqType.setSearchValue(principalName);
-
+            reqType.setRequestedAttributes(extensibleAttributes);
             reqType.setTargetID(managedSysId);
             reqType.setHostLoginId(mSys.getUserId());
             String passwordDecoded;

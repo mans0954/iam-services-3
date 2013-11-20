@@ -153,7 +153,9 @@ public class ADPopulationScript extends org.openiam.idm.srvc.recon.service.Abstr
         if (!pUser.userAttributes.containsKey(attributeName)) {
             userAttr.operation = AttributeOperationEnum.ADD
         } else {
-            userAttr.operation = AttributeOperationEnum.REPLACE
+            if (userAttr.value != attributeValue) {
+                userAttr.operation = AttributeOperationEnum.REPLACE
+            }
         }
         pUser.userAttributes.put(attributeName, userAttr)
     }
