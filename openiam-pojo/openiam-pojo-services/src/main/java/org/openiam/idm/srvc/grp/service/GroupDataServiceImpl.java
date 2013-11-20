@@ -12,6 +12,8 @@ import org.openiam.idm.searchbeans.GroupSearchBean;
 import org.openiam.idm.srvc.grp.domain.GroupAttributeEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.dto.Group;
+import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
+import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 import org.openiam.idm.srvc.mngsys.service.ManagedSysDAO;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
@@ -210,7 +212,8 @@ public class GroupDataServiceImpl implements GroupDataService {
 			if(StringUtils.isNotBlank(group.getId())) {
 				final GroupEntity dbGroup = groupDao.findById(group.getId());
 				if(dbGroup != null) {
-					//group.setAttributes(dbGroup.getAttributes());
+					group.setApproverAssociations(dbGroup.getApproverAssociations());
+					
 					mergeAttribute(group, dbGroup);
 					group.setChildGroups(dbGroup.getChildGroups());
 					group.setParentGroups(dbGroup.getParentGroups());
@@ -221,13 +224,26 @@ public class GroupDataServiceImpl implements GroupDataService {
 					if(group.getAdminResource() == null) {
 						group.setAdminResource(getNewAdminResource(group, requestorId));
 					}
-					groupDao.merge(group);
+				} else {
+					return;
 				}
 			} else {
 				group.setAdminResource(getNewAdminResource(group, requestorId));
 				groupDao.save(group);
+				group.addApproverAssociation(createDefaultApproverAssociations(group, requestorId));
 			}
+			groupDao.merge(group);
 		}
+	}
+	
+	private ApproverAssociationEntity createDefaultApproverAssociations(final GroupEntity entity, final String requestorId) {
+		final ApproverAssociationEntity association = new ApproverAssociationEntity();
+		association.setAssociationEntityId(entity.getId());
+		association.setAssociationType(AssociationType.GROUP);
+		association.setApproverLevel(Integer.valueOf(0));
+		association.setApproverEntityId(requestorId);
+		association.setApproverEntityType(AssociationType.USER);
+		return association;
 	}
 	
 	private ResourceEntity getNewAdminResource(final GroupEntity entity, final String requestorId) {

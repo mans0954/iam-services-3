@@ -69,6 +69,71 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
 	public GroupDataWebServiceImpl() {
 
 	}
+	
+	@Override
+	public Response validateEdit(Group group) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			validateSaveInternal(group);
+		} catch(BasicDataServiceException e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+            response.setErrorTokenList(e.getErrorTokenList());
+		} catch(Throwable e) {
+			log.error("Can't validate", e);
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
+            response.setErrorCode(ResponseCode.INTERNAL_ERROR);
+            response.addErrorToken(new EsbErrorToken(e.getMessage()));
+		}
+        return response;
+	}
+
+	@Override
+	public Response validateDelete(String groupId) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			validateDeleteInternal(groupId);
+		} catch(BasicDataServiceException e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+            response.setErrorTokenList(e.getErrorTokenList());
+		} catch(Throwable e) {
+			log.error("Can't validate", e);
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
+            response.setErrorCode(ResponseCode.INTERNAL_ERROR);
+            response.addErrorToken(new EsbErrorToken(e.getMessage()));
+		}
+        return response;
+	}
+	
+	private void validateDeleteInternal(final String groupId) throws BasicDataServiceException {
+		if(StringUtils.isBlank(groupId)) {
+			throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "GroupId is null or empty");
+		}
+	}
+	
+	private void validateSaveInternal(final Group group) throws BasicDataServiceException {
+		if(group == null) {
+			throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+		}
+
+		if(StringUtils.isBlank(group.getName())) {
+			throw new BasicDataServiceException(ResponseCode.NO_NAME);
+		}
+		
+		final GroupEntity found = groupManager.getGroupByName(group.getName(), null);
+		if(found != null) {
+			if(StringUtils.isBlank(group.getId()) && found != null) {
+				throw new BasicDataServiceException(ResponseCode.NAME_TAKEN, "Group name is already in use");
+			}
+		
+			if(StringUtils.isNotBlank(group.getId()) && !group.getId().equals(found.getId())) {
+				throw new BasicDataServiceException(ResponseCode.NAME_TAKEN, "Group name is already in use");
+			}
+		}
+	}
 
 	@Override
 	public Response saveGroup(final Group group, final String requestorId) {
@@ -76,31 +141,13 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
         auditBuilder.setAction(AuditAction.SAVE_GROUP);
 		final Response response = new Response(ResponseStatus.SUCCESS);
 		try {
-			if(group == null) {
-				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
-			}
+			validateSaveInternal(group);
             auditBuilder.setRequestorUserId(group.getRequestorUserId()).setTargetGroup(group.getId());
             if(StringUtils.isBlank(group.getId())) {
                 auditBuilder.setAction(AuditAction.ADD_GROUP);
             }
 
-
-			if(StringUtils.isBlank(group.getName())) {
-				throw new BasicDataServiceException(ResponseCode.NO_NAME);
-			}
-			
-			final GroupEntity found = groupManager.getGroupByName(group.getName(), null);
-			if(found != null) {
-				if(StringUtils.isBlank(group.getId()) && found != null) {
-					throw new BasicDataServiceException(ResponseCode.NAME_TAKEN, "Group name is already in use");
-				}
-			
-				if(StringUtils.isNotBlank(group.getId()) && !group.getId().equals(found.getId())) {
-					throw new BasicDataServiceException(ResponseCode.NAME_TAKEN, "Group name is already in use");
-				}
-			}
-			
-			GroupEntity entity = groupDozerConverter.convertToEntity(group, true);
+			final GroupEntity entity = groupDozerConverter.convertToEntity(group, true);
 			groupManager.saveGroup(entity, requestorId);
 			response.setResponseValue(entity.getId());
             auditBuilder.succeed();
@@ -110,6 +157,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
             response.setErrorTokenList(e.getErrorTokenList());
             auditBuilder.fail().setFailureReason(e.getCode()).setException(e);
 		} catch(Throwable e) {
+			log.error("Can't save", e);
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorText(e.getMessage());
             response.setErrorCode(ResponseCode.INTERNAL_ERROR);
@@ -146,9 +194,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
         AuditLogBuilder auditBuilder = auditLogProvider.getAuditLogBuilder();
         auditBuilder.setAction(AuditAction.DELETE_GROUP).setTargetGroup(groupId);
 		try {
-			if(StringUtils.isBlank(groupId)) {
-				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "GroupId is null or empty");
-			}
+			validateDeleteInternal(groupId);
 			
 			groupManager.deleteGroup(groupId);
             auditBuilder.succeed();
@@ -157,6 +203,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
 			response.setErrorCode(e.getCode());
 			auditBuilder.fail().setFailureReason(e.getCode()).setException(e);
 		} catch(Throwable e) {
+			log.error("Can't delete", e);
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorText(e.getMessage());
             auditBuilder.fail().setException(e);

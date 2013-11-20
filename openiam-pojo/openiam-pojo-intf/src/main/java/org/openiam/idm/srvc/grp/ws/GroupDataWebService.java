@@ -22,6 +22,12 @@ import java.util.List;
 @WebService(targetNamespace = "urn:idm.openiam.org/srvc/grp/service", name = "GroupDataWebService")
 public interface GroupDataWebService {
    
+	@WebMethod
+	public Response validateEdit(final Group group);
+	
+	@WebMethod
+	public Response validateDelete(final String groupId);
+	
 	/**
      * This method creates a new group or update existed one. For example:
      * <p/>

@@ -99,7 +99,6 @@ public class TestGroupConversion extends AbstractTestNGSpringContextTests {
 		//group.setOwnerId(rs(2));
 		//group.setProvisionMethod(rs(2));
 		//group.setProvisionObjName(rs(2));
-		group.setStatus(rs(2));
 		return group;
 	}
 	
@@ -182,7 +181,6 @@ public class TestGroupConversion extends AbstractTestNGSpringContextTests {
 		//Assert.assertEquals(original.getOwnerId(), copy.getOwnerId());
 		//Assert.assertEquals(original.getProvisionMethod(), copy.getProvisionMethod());
 		//Assert.assertEquals(original.getProvisionObjName(), copy.getProvisionObjName());
-		Assert.assertEquals(original.getStatus(), copy.getStatus());
 	}
 	
 	private void compareRole(final RoleEntity original, final RoleEntity copy, final boolean isDeep) {

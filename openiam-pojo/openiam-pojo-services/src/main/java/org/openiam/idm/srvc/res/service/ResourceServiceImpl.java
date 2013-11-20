@@ -88,9 +88,6 @@ public class ResourceServiceImpl implements ResourceService {
 	@Autowired
 	private MetadataElementPageTemplateDAO templateDAO;
 	
-	@Autowired
-	private ApproverAssociationDAO approverAssociationDAO;
-	
 	@Value("${org.openiam.resource.admin.resource.type.id}")
 	private String adminResourceTypeId;
 
