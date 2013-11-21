@@ -45,17 +45,12 @@ import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
 import org.openiam.idm.srvc.grp.dto.Group;
-import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
 import org.openiam.idm.srvc.mngsys.domain.ProvisionConnectorEntity;
 import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
-import org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorDto;
-import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
-import org.openiam.idm.srvc.policy.dto.Policy;
-import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
 import org.openiam.idm.srvc.pswd.dto.Password;
 import org.openiam.idm.srvc.pswd.dto.PasswordValidationResponse;
 import org.openiam.idm.srvc.pswd.service.PasswordGenerator;
@@ -950,9 +945,6 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             }
         }
 
-        // update attributes
-        updateUserAttributes(userEntity, pUser);
-
         // update addresses
         updateAddresses(userEntity, pUser);
 
@@ -1028,6 +1020,9 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             return resp;
         }
 
+        // update attributes
+        updateUserAttributes(userEntity, pUser);
+
         log.debug("Binding active roles to scripting");
         log.debug("- role set -> " + roleSet);
         log.debug("- Primary Identity : " + primaryIdentity);
@@ -1102,6 +1097,9 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             return resp;
         }
         /* Response object */
+
+        userMgr.updateUser(userEntity);
+
         if (isAdd) {
             log.debug("DEFAULT PROVISIONING SERVICE: addUser complete");
         } else {
