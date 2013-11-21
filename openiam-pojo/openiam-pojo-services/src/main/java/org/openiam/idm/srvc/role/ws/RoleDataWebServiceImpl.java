@@ -79,9 +79,6 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
     private RoleDozerConverter roleDozerConverter;
     
     @Autowired
-    private RoleAttributeDozerConverter roleAttributeDozerConverter;
-    
-    @Autowired
     private RolePolicyDozerConverter rolePolicyDozerConverter;
     
     @Autowired
@@ -90,30 +87,16 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
     @Autowired
     private SecurityDomainDAO securityDomainDAO;
 
-    /*
+
 	@Override
-	public RoleAttributeResponse addAttribute(RoleAttribute attribute) {
-		final RoleAttributeResponse response = new RoleAttributeResponse(ResponseStatus.SUCCESS);
+	public Response validateSave(Role role) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
 		try {
-			if(attribute == null) {
-				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
-			}
-			
-			if(StringUtils.isBlank(attribute.getName())) {
-				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
-			}
-			
-			if(StringUtils.isBlank(attribute.getValue())) {
-				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
-			}
-			
-			final RoleAttributeEntity entity = roleAttributeDozerConverter.convertToEntity(attribute, false);
-			roleDataService.saveAttribute(entity);
-			final RoleAttribute dto = roleAttributeDozerConverter.convertToDTO(entity, false);
-			response.setRoleAttr(dto);
+			validateSaveInternal(role);
 		} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
+            response.setErrorTokenList(e.getErrorTokenList());
 		} catch(Throwable e) {
 			LOG.error("Exception", e);
 			response.setStatus(ResponseStatus.FAILURE);
@@ -121,7 +104,61 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 		}
 		return response;
 	}
-	*/
+
+	@Override
+	public Response validateDelete(String roleId) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			validateDeleteInternal(roleId);
+		} catch(BasicDataServiceException e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+            response.setErrorTokenList(e.getErrorTokenList());
+		} catch(Throwable e) {
+			LOG.error("Exception", e);
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
+		}
+		return response;
+	}
+
+	private void validateSaveInternal(final Role role) throws BasicDataServiceException {
+		if(role == null) {
+			throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Role object is null");
+		}
+		
+		final RoleEntity entity = roleDozerConverter.convertToEntity(role, true);
+		if(StringUtils.isBlank(entity.getName())) {
+			throw new BasicDataServiceException(ResponseCode.NO_NAME, "Role Name is null or empty");
+		}
+		
+		/* check if the name is taken by another entity */
+		final RoleEntity nameEntity = roleDataService.getRoleByName(role.getName(), null);
+		if(nameEntity != null) {
+			if(StringUtils.isBlank(entity.getId()) || !entity.getId().equals(nameEntity.getId())) {
+				throw new BasicDataServiceException(ResponseCode.NAME_TAKEN, "Role Name is already exists");
+			}
+		}
+		
+		if(StringUtils.isBlank(entity.getServiceId())) {
+			throw new BasicDataServiceException(ResponseCode.INVALID_ROLE_DOMAIN, "Security Domain for Role is not set");
+		}
+		
+		if(securityDomainDAO.findById(entity.getServiceId()) == null) {
+			throw new BasicDataServiceException(ResponseCode.INVALID_ROLE_DOMAIN, "Security Domain for Role is not found");
+		}
+	}
+	
+	public void validateDeleteInternal(final String roleId) throws BasicDataServiceException {
+		if(roleId == null) {
+			throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "RoleId  is null or empty");
+		}
+		
+		final RoleEntity entity = roleDataService.getRole(roleId);
+		if(entity == null) {
+			throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND, String.format("No Role is found for roleId: %s", roleId));
+		}
+	}
 
 	@Override
 	public Response addGroupToRole(String roleId, String groupId) {
@@ -259,21 +296,6 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
         return count;
 	}
 
-	/*
-	@Override
-	public Response removeAttribute(final String attributeId) {
-		final Response response = new Response(ResponseStatus.SUCCESS);
-		try {
-			roleDataService.removeAttribute(attributeId);
-		} catch(Throwable e) {
-			LOG.error("Exception", e);
-			response.setStatus(ResponseStatus.FAILURE);
-			response.setErrorText(e.getMessage());
-		}
-		return response;
-	}
-	*/
-
 	@Override
 	public Response removeGroupFromRole(String roleId, String groupId) {
 		final Response response = new Response(ResponseStatus.SUCCESS);
@@ -315,25 +337,6 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 			if(entity == null) {
 				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND, String.format("No Role is found for roleId: %s", roleId));
 			}
-			
-			/*
-			if(CollectionUtils.isNotEmpty(entity.getChildRoles())) {
-				throw new BasicDataServiceException(ResponseCode.ROLE_HANGING_CHILD_ROLES);
-			}
-			
-			if(CollectionUtils.isNotEmpty(entity.getGroups())) {
-				throw new BasicDataServiceException(ResponseCode.ROLE_HANGING_GROUPS);
-			}
-			
-			if(CollectionUtils.isNotEmpty(entity.getResourceRoles())) {
-				throw new BasicDataServiceException(ResponseCode.ROLE_HANGING_RESOURCES);
-			}
-			
-			if(CollectionUtils.isNotEmpty(entity.getUserRoles())) {
-				throw new BasicDataServiceException(ResponseCode.ROLE_HANGING_USERS);
-			}
-			*/
-			
 			 roleDataService.removeRole(roleId);
             auditBuilder.succeed();
 		} catch(BasicDataServiceException e) {
@@ -407,35 +410,14 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
         AuditLogBuilder auditBuilder = auditLogProvider.getAuditLogBuilder();
         auditBuilder.setAction(AuditAction.SAVE_ROLE);
 		try {
-			if(role == null) {
-				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Role object is null");
-			}
             auditBuilder.setRequestorUserId(role.getRequestorUserId()).setTargetRole(role.getId());
             if(StringUtils.isBlank(role.getId())) {
                 auditBuilder.setAction(AuditAction.ADD_ROLE);
             }
+            
+            validateSaveInternal(role);
 			
-			RoleEntity entity = roleDozerConverter.convertToEntity(role, true);
-			if(StringUtils.isBlank(entity.getName())) {
-				throw new BasicDataServiceException(ResponseCode.NO_NAME, "Role Name is null or empty");
-			}
-			
-			/* check if the name is taken by another entity */
-			final RoleEntity nameEntity = roleDataService.getRoleByName(role.getName(), null);
-			if(nameEntity != null) {
-				if(StringUtils.isBlank(entity.getId()) || !entity.getId().equals(nameEntity.getId())) {
-					throw new BasicDataServiceException(ResponseCode.NAME_TAKEN, "Role Name is already exists");
-				}
-			}
-			
-			if(StringUtils.isBlank(entity.getServiceId())) {
-				throw new BasicDataServiceException(ResponseCode.INVALID_ROLE_DOMAIN, "Security Domain for Role is not set");
-			}
-			
-			if(securityDomainDAO.findById(entity.getServiceId()) == null) {
-				throw new BasicDataServiceException(ResponseCode.INVALID_ROLE_DOMAIN, "Security Domain for Role is not found");
-			}
-			
+			final RoleEntity entity = roleDozerConverter.convertToEntity(role, true);
 			roleDataService.saveRole(entity, requestorId);
 			response.setResponseValue(entity.getId());
             auditBuilder.succeed();
@@ -826,5 +808,4 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
         }
 		return response;
 	}
-
 }

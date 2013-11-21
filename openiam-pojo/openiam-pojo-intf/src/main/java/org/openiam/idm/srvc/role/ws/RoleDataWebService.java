@@ -21,6 +21,12 @@ import java.util.List;
 @WebService(targetNamespace = "urn:idm.openiam.org/srvc/role/service", name = "RoleDataService")
 public interface RoleDataWebService {
 
+	@WebMethod
+	public Response validateSave(final Role role);
+	
+	@WebMethod
+	public Response validateDelete(final String roleId);
+	
     /**
      * This method retrieves an existing Role object. Dependent objects such as
      * users are also retrieved. Null is returned if the Role is not found.
