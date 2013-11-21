@@ -414,7 +414,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
         searchRequest.setSearchQuery(searchQuery);
         searchRequest.setTargetID(managedSysId);
         searchRequest.setHostUrl(mSys.getHostUrl());
-        searchRequest.setHostPort(mSys.getPort().toString());
+        searchRequest.setHostPort(mSys.getPort()==null?null:mSys.getPort().toString());
         searchRequest.setHostLoginId(mSys.getUserId());
         searchRequest.setHostLoginPassword(mSys.getDecryptPassword());
         searchRequest.setExtensibleObject(new ExtensibleUser());
