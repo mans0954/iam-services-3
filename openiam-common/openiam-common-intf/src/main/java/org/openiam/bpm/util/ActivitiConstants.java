@@ -32,8 +32,10 @@ public enum ActivitiConstants {
 	CARDINALITY_OBJECT("cardinalityObject"),
 	
 	RESOURCE("Resource"),
+	GROUP("Group"),
 	
-	RESOURCE_ID("ResourceId");
+	RESOURCE_ID("ResourceId"),
+	GROUP_ID("GroupId");
 	
 	private String name;
 	
