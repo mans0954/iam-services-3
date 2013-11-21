@@ -24,6 +24,7 @@ import org.openiam.idm.searchbeans.AttributeMapSearchBean;
 import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
+import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.DefaultReconciliationAttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
@@ -263,7 +264,7 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
     }
     
     @Override
-	public Response saveApproverAssociations(final List<ApproverAssociation> approverAssociationList) {
+	public Response saveApproverAssociations(final List<ApproverAssociation> approverAssociationList, final AssociationType type, final String entityId) {
     	final Response response = new Response(ResponseStatus.SUCCESS);
     	 try {
     		 if(CollectionUtils.isNotEmpty(approverAssociationList)) {
@@ -307,11 +308,10 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
 		            	 approverAssociation.setApproverLevel(Integer.valueOf(0));
 		             }
 	    		 }
-    			 
-
-                 final List<ApproverAssociationEntity> entityList = approverAssociationDozerConverter.convertToEntityList(approverAssociationList, true);
-                 managedSystemService.saveApproverAssociations(entityList, entityList.get(0).getAssociationType(), entityList.get(0).getAssociationEntityId());
     		 }
+
+    		 final List<ApproverAssociationEntity> entityList = approverAssociationDozerConverter.convertToEntityList(approverAssociationList, true);
+    		 managedSystemService.saveApproverAssociations(entityList, type, entityId);
          } catch (BasicDataServiceException e) {
              response.setErrorCode(e.getCode());
              response.setStatus(ResponseStatus.FAILURE);

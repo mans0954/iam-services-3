@@ -7,6 +7,8 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
+import org.openiam.base.BaseObject;
+
 import com.thoughtworks.xstream.XStream;
 
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -16,7 +18,7 @@ import com.thoughtworks.xstream.XStream;
     "accepted",
     "customVariables"
 })
-public class ActivitiRequestDecision extends RequestorInformation {
+public class ActivitiRequestDecision extends BaseObject {
 
 	private String taskId;
 	private String comment;

@@ -3,6 +3,7 @@ package org.openiam.bpm.activiti.delegate.entitlements;
 import org.activiti.engine.delegate.DelegateExecution;
 import org.apache.commons.collections.CollectionUtils;
 import org.openiam.base.AttributeOperationEnum;
+import org.openiam.bpm.activiti.delegate.core.AbstractActivitiJob;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
@@ -12,7 +13,7 @@ import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.provision.dto.ProvisionUser;
 import org.springframework.beans.factory.annotation.Autowired;
 
-public class DeleteLogin extends AbstractEntitlementsDelegate {
+public class DeleteLogin extends AbstractActivitiJob {
 	
 	@Autowired
 	private LoginDataService loginDataService;
@@ -23,7 +24,8 @@ public class DeleteLogin extends AbstractEntitlementsDelegate {
 	
 	@Override
 	public void execute(DelegateExecution execution) throws Exception {
-		final String loginId = (String)execution.getVariable(ActivitiConstants.LOGIN_ID);
+		final Login loginObj = getObjectVariable(execution, ActivitiConstants.LOGIN, Login.class);
+		final String loginId = loginObj.getLoginId();
 		if(loginId != null) {
 			final Login login = loginDataService.getLoginDTO(loginId);
 			if(login != null) {
@@ -43,8 +45,7 @@ public class DeleteLogin extends AbstractEntitlementsDelegate {
 		}
 	}
 	
-	@Override
-	protected String getNotificationType() {
+	protected String getTargetUserId(final DelegateExecution execution) {
 		return null;
 	}
 }

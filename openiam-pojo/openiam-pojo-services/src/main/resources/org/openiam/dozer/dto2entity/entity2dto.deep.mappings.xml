@@ -59,6 +59,10 @@
 			<a>users</a>
 			<b>users</b>
 		</field-exclude>
+		<field-exclude>
+			<a>approverAssociations</a>
+			<b>approverAssociations</b>
+		</field-exclude>
 	</mapping>
 	<mapping>
 		<class-a>org.openiam.idm.srvc.user.domain.UserEntity</class-a>
@@ -222,6 +226,10 @@
 			<a>managedSystem.name</a>
 			<b>managedSysName</b>
 		</field>
+		<field-exclude>
+			<a>approverAssociations</a>
+			<b>approverAssociations</b>
+		</field-exclude>
 	</mapping>
 
 	<mapping>

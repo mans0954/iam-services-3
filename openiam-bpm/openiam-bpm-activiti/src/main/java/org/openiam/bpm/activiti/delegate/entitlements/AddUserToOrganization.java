@@ -2,6 +2,7 @@ package org.openiam.bpm.activiti.delegate.entitlements;
 
 import org.activiti.engine.delegate.DelegateExecution;
 import org.openiam.base.AttributeOperationEnum;
+import org.openiam.bpm.activiti.delegate.core.AbstractActivitiJob;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.service.OrganizationDataService;
@@ -24,21 +25,16 @@ public class AddUserToOrganization extends AbstractEntitlementsDelegate {
 
 	@Override
 	public void execute(DelegateExecution execution) throws Exception {
-		final String organizationId = (String)execution.getVariable(ActivitiConstants.ASSOCIATION_ID);
-		final String userId = (String)execution.getVariable(ActivitiConstants.MEMBER_ASSOCIATION_ID);
+		final String organizationId = getStringVariable(execution, ActivitiConstants.ASSOCIATION_ID);
+		final String userId = getTargetUserId(execution);
 
 		final Organization entity = organizationService.getOrganizationDTO(organizationId);
 		if(entity != null) {
-			//entity.setOperation(AttributeOperationEnum.ADD);
+			entity.setOperation(AttributeOperationEnum.ADD);
 			final User user = getUser(userId);
 			final ProvisionUser pUser = new ProvisionUser(user);
 			pUser.addAffiliation(entity);
 			provisionService.modifyUser(pUser);
 		}
-	}
-
-	@Override
-	protected String getNotificationType() {
-		return null;
 	}
 }

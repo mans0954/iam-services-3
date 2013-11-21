@@ -44,7 +44,7 @@ public interface GroupDataService {
     public int countBeans(final GroupSearchBean searchBean, final String requesterId);
 
 
-	public void saveGroup(final GroupEntity group) throws BasicDataServiceException;
+	public void saveGroup(final GroupEntity group, final String requestorId) throws BasicDataServiceException;
 	
 	public void deleteGroup(final String groupId);
 

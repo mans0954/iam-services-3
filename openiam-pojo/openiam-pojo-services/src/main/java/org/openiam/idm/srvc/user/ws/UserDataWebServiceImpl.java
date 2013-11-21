@@ -22,6 +22,7 @@
 package org.openiam.idm.srvc.user.ws;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -282,8 +283,15 @@ public class UserDataWebServiceImpl implements UserDataWebService {
     @Override
     @Transactional(readOnly = true)
     public List<User> findUserByOrganization(final String orgId) {
-        final List<UserEntity> entityList = userManager.findUserByOrganization(orgId);
-        return userDozerConverter.convertToDTOList(entityList, false);
+
+        List<User> resultList = Collections.EMPTY_LIST;
+        try {
+            List<UserEntity> userList = userManager.findUserByOrganization(orgId);
+            resultList = userDozerConverter.convertToDTOList(userList, false);
+        } catch (BasicDataServiceException e) {
+            log.error(e.getMessage(), e);
+        }
+        return resultList;
     }
 
     @Override
@@ -431,14 +439,27 @@ public class UserDataWebServiceImpl implements UserDataWebService {
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional(readOnly=true)
     public List<User> findPotentialSupSubs(PotentialSupSubSearchBean userSearchBean, Integer from, Integer size) {
-        return userDozerConverter.convertToDTOList(userManager.findPotentialSupSubs(userSearchBean, from, size), true);
+        List<User> resultList = Collections.EMPTY_LIST;
+        try {
+            List<UserEntity> userList = userManager.findPotentialSupSubs(userSearchBean, from, size);
+            resultList = userDozerConverter.convertToDTOList(userList, true);
+        } catch (BasicDataServiceException e) {
+            log.error(e.getMessage(), e);
+        }
+        return resultList;
     }
 
     @Override
     public int findPotentialSupSubsCount(PotentialSupSubSearchBean userSearchBean) {
-        return userManager.findPotentialSupSubsCount(userSearchBean);
+        int count = 0;
+        try {
+            count = userManager.findPotentialSupSubsCount(userSearchBean);
+        } catch (BasicDataServiceException e) {
+            log.error(e.getMessage(), e);
+        }
+        return count;
     }
 
     @Override
@@ -655,13 +676,25 @@ public class UserDataWebServiceImpl implements UserDataWebService {
     @Override
     @Transactional(readOnly = true)
     public List<User> findBeans(UserSearchBean userSearchBean, int from, int size) {
-        final List<UserEntity> userList = userManager.findBeans(userSearchBean, from, size);
-        return userDozerConverter.convertToDTOList(userList, userSearchBean.isDeepCopy());
+        List<User> resultList = Collections.EMPTY_LIST;
+        try {
+            List<UserEntity> userList = userManager.findBeans(userSearchBean, from, size);
+            resultList = userDozerConverter.convertToDTOList(userList, userSearchBean.isDeepCopy());
+        } catch (BasicDataServiceException e) {
+            log.error(e.getMessage(), e);
+        }
+        return resultList;
     }
 
     @Override
     public int count(UserSearchBean userSearchBean) {
-        return userManager.count(userSearchBean);
+        int count = 0;
+        try {
+            count = userManager.count(userSearchBean);
+        } catch (BasicDataServiceException e) {
+          log.error(e.getMessage(), e);
+        }
+        return count;
     }
 
     @Override
@@ -1091,6 +1124,23 @@ public class UserDataWebServiceImpl implements UserDataWebService {
             user.setDateITPolicyApproved(new Date());
             userManager.updateUser(user);
 
+        } catch (BasicDataServiceException e) {
+            response.setErrorCode(e.getCode());
+            response.setStatus(ResponseStatus.FAILURE);
+        } catch (Throwable e) {
+            log.error("Can't perform operation", e);
+            response.setErrorText(e.getMessage());
+            response.setStatus(ResponseStatus.FAILURE);
+        }
+        return response;
+    }
+
+    public Response validateUserSearchRequest(UserSearchBean userSearchBean){
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+            if (!userManager.validateSearchBean(userSearchBean)) {
+                throw new BasicDataServiceException(ResponseCode.INVALID_USER_SEARCH_REQUEST);
+            }
         } catch (BasicDataServiceException e) {
             response.setErrorCode(e.getCode());
             response.setStatus(ResponseStatus.FAILURE);

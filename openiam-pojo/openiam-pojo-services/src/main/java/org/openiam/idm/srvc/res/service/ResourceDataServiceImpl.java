@@ -18,6 +18,7 @@ import org.openiam.dozer.converter.ResourcePropDozerConverter;
 import org.openiam.dozer.converter.ResourceTypeDozerConverter;
 import org.openiam.idm.searchbeans.ResourceSearchBean;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
+import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
 import org.openiam.idm.srvc.audit.domain.AuditLogBuilder;
 import org.openiam.idm.srvc.base.AbstractBaseService;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
@@ -113,46 +114,62 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
         return  resourceList;
 	}
 
-	/*
-	public Response addResource(Resource resource) {
-		return saveOrUpdateResource(resource);
+	@Override
+	public Response validateEditResource(Resource resource) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			validate(resource);
+		} catch (BasicDataServiceException e) {
+			response.setErrorCode(e.getCode());
+			response.setStatus(ResponseStatus.FAILURE);
+		} catch (Throwable e) {
+			log.error("Can't validate resource", e);
+			response.setErrorText(e.getMessage());
+			response.setStatus(ResponseStatus.FAILURE);
+		}
+		return response;
 	}
-	*/
+	
+	private void validate(final Resource resource) throws BasicDataServiceException {
+		if (resource == null) {
+			throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND, "Role object is null");
+		}
+		
+		ResourceEntity entity = resourceConverter.convertToEntity(resource, true);
+		if (StringUtils.isEmpty(entity.getName())) {
+			throw new BasicDataServiceException(ResponseCode.NO_NAME, "Resource Name is null or empty");
+		}
+		
+		/* duplicate name check */
+		final ResourceEntity nameCheck = resourceService.findResourceByName(entity.getName());
+		if (nameCheck != null) {
+			if (StringUtils.isBlank(entity.getResourceId())) {
+				throw new BasicDataServiceException(ResponseCode.NAME_TAKEN, "Resource Name is already in use");
+			} else if (!nameCheck.getResourceId().equals(entity.getResourceId())) {
+				throw new BasicDataServiceException(ResponseCode.NAME_TAKEN, "Resource Name is already in use");
+			}
+		}
+
+		if (entity.getResourceType() == null || StringUtils.isBlank(entity.getResourceType().getId())) {
+			throw new BasicDataServiceException(ResponseCode.INVALID_RESOURCE_TYPE, "Resource Type is not set");
+		}
+
+	}
 
 	@Override
-	public Response saveResource(Resource resource) {
+	public Response saveResource(Resource resource, final String requestorId) {
 		final Response response = new Response(ResponseStatus.SUCCESS);
         AuditLogBuilder auditBuilder = auditLogProvider.getAuditLogBuilder();
         auditBuilder.setAction(AuditAction.SAVE_RESOURCE);
 		try {
-			if (resource == null) {
-				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND, "Role object is null");
-			}
+			validate(resource);
             auditBuilder.setRequestorUserId(resource.getRequestorUserId()).setTargetResource(resource.getResourceId());
             if(StringUtils.isBlank(resource.getResourceId())) {
                 auditBuilder.setAction(AuditAction.ADD_RESOURCE);
             }
 
-			ResourceEntity entity = resourceConverter.convertToEntity(resource, true);
-			if (StringUtils.isEmpty(entity.getName())) {
-				throw new BasicDataServiceException(ResponseCode.NO_NAME, "Resource Name is null or empty");
-			}
-
-			/* duplicate name check */
-			final ResourceEntity nameCheck = resourceService.findResourceByName(entity.getName());
-			if (nameCheck != null) {
-				if (StringUtils.isBlank(entity.getResourceId())) {
-					throw new BasicDataServiceException(ResponseCode.NAME_TAKEN, "Resource Name is already in use");
-				} else if (!nameCheck.getResourceId().equals(entity.getResourceId())) {
-					throw new BasicDataServiceException(ResponseCode.NAME_TAKEN, "Resource Name is already in use");
-				}
-			}
-
-			if (entity.getResourceType() == null) {
-				throw new BasicDataServiceException(ResponseCode.INVALID_RESOURCE_TYPE, "Resource Type is not set");
-			}
-
-			resourceService.save(entity);
+			final ResourceEntity entity = resourceConverter.convertToEntity(resource, true);
+			resourceService.save(entity, requestorId);
 			response.setResponseValue(entity.getResourceId());
             auditBuilder.succeed();
 		} catch (BasicDataServiceException e) {
@@ -321,6 +338,23 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
         }
 		return response;
 	}
+	
+	@Override
+	public Response validateDeleteResource(String resourceId) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			resourceService.validateResourceDeletion(resourceId);
+		} catch(BasicDataServiceException e) {
+			response.setErrorCode(e.getCode());
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setResponseValue(e.getResponseValue());
+		} catch (Throwable e) {
+			log.error("Can't delete resource", e);
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
+		}
+		return response;
+	}
 
 	@Override
 	public Response deleteResource(final String resourceId) {
@@ -352,13 +386,13 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
 	}
 
 	@Override
-	public List<Resource> getChildResources(final String resourceId, final int from, final int size) {
+	public List<Resource> getChildResources(final String resourceId, Boolean deepFlag, final int from, final int size) {
         List<Resource> resourceList = null;
         AuditLogBuilder auditBuilder = auditLogProvider.getAuditLogBuilder();
         auditBuilder.setAction(AuditAction.GET_CHILD_RESOURCE).setTargetResource(resourceId);
         try{
             final List<ResourceEntity> resultList = resourceService.getChildResources(resourceId, from, size);
-            resourceList = resourceConverter.convertToDTOList(resultList, false);
+            resourceList = resourceConverter.convertToDTOList(resultList, (deepFlag!=null)?deepFlag:false);
             auditBuilder.succeed();
         } catch(Throwable e) {
             auditBuilder.fail().setException(e);
@@ -367,6 +401,8 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
         }
         return  resourceList;
 	}
+
+
 
 	@Override
 	public int getNumOfChildResources(final String resourceId) {
@@ -683,6 +719,22 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
         }
         return resourceList;
 	}
+
+    @Override
+    public List<Resource> getResourcesForUserByType(final String userId, final String resourceTypeId) {
+        List<Resource> resourceList = null;
+        AuditLogBuilder auditBuilder = auditLogProvider.getAuditLogBuilder();
+        auditBuilder.setAction(AuditAction.GET_RESOURCE_FOR_USER_BY_TYPE).setTargetUser(userId).addAttribute(AuditAttributeName.RESOURCE_TYPE, resourceTypeId);
+        try{
+            final List<ResourceEntity> entityList = resourceService.getResourcesForUserByType(userId, resourceTypeId);
+            resourceList = resourceConverter.convertToDTOList(entityList, true);
+        } catch(Throwable e) {
+            auditBuilder.fail().setException(e);
+        }finally {
+            auditLogService.enqueue(auditBuilder);
+        }
+        return resourceList;
+    }
 
 	@Override
 	public Response canAddUserToResource(String userId, String resourceId) {

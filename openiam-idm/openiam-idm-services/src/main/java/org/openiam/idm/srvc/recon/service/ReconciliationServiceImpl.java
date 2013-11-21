@@ -62,6 +62,8 @@ import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.service.GroupDataService;
+import org.openiam.idm.srvc.key.constant.KeyName;
+import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
@@ -101,6 +103,7 @@ import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleUser;
 import org.openiam.script.ScriptIntegration;
 import org.openiam.util.MuleContextProvider;
+import org.openiam.util.encrypt.Cryptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -164,7 +167,13 @@ public class ReconciliationServiceImpl implements ReconciliationService {
     protected ScriptIntegration scriptRunner;
     @Value("${iam.files.location}")
     private String absolutePath;
-
+    @Autowired
+    @Qualifier("cryptor")
+    private Cryptor cryptor;
+    @Autowired
+    private KeyManagementService keyManagementService;
+    @Value("${org.openiam.idm.system.user.id}")
+    private String systemUserId;
     @Autowired
     private ReconciliationCommandFactory commandFactory;
 
@@ -289,6 +298,20 @@ public class ReconciliationServiceImpl implements ReconciliationService {
                     : null;
             log.debug("ManagedSysId = " + managedSysId);
             log.debug("Getting identities for managedSys");
+
+            ManagedSysDto sysDto = null;
+            if (mSys != null) {
+                sysDto = managedSysDozerConverter.convertToDTO(mSys, true);
+                if (sysDto != null && sysDto.getPswd() != null) {
+                    try {
+                        final byte[] bytes = keyManagementService.getUserKey(systemUserId, KeyName.password.name());
+                        sysDto.setDecryptPassword(cryptor.decrypt(bytes, mSys.getPswd()));
+                    } catch (Exception e) {
+                        log.error("Can't decrypt", e);
+                    }
+                }
+            }
+
             // have situations
             Map<String, ReconciliationCommand> situations = new HashMap<String, ReconciliationCommand>();
             for (ReconciliationSituation situation : config.getSituationSet()) {
@@ -299,22 +322,20 @@ public class ReconciliationServiceImpl implements ReconciliationService {
             }
             // have resource connector
             ProvisionConnectorDto connector = connectorService
-                    .getProvisionConnector(mSys.getConnectorId());
+                    .getProvisionConnector(sysDto.getConnectorId());
 
             if (connector.getServiceUrl().contains("CSV")) {
                 // Get user without fetches
                 // reconciliation into TargetSystem directional
-                ManagedSysDto managedSysDto = managedSysDozerConverter
-                        .convertToDTO(mSys, true);
                 log.debug("Start recon");
-                connectorAdapter.reconcileResource(managedSysDto, config,
+                connectorAdapter.reconcileResource(sysDto, config,
                         MuleContextProvider.getCtx());
                 log.debug("end recon");
                 return new ReconciliationResponse(ResponseStatus.SUCCESS);
             }
             ReconciliationResultBean resultBean = new ReconciliationResultBean();
             List<AttributeMapEntity> attrMap = managedSysService
-                    .getResourceAttributeMaps(mSys.getResourceId());
+                    .getResourceAttributeMaps(sysDto.getResourceId());
             resultBean.setObjectType("USER");
             resultBean.setRows(new ArrayList<ReconciliationResultRow>());
             resultBean.setHeader(ReconciliationResultUtil
@@ -338,14 +359,14 @@ public class ReconciliationServiceImpl implements ReconciliationService {
                     .getAllLoginByManagedSys(managedSysId);
             for (LoginEntity identity : idmIdentities) {
                 reconciliationIDMUserToTargetSys(resultBean, attrMap, identity,
-                        mSys, situations, config.getManualReconciliationFlag());
+                        sysDto, situations, config.getManualReconciliationFlag());
             }
 
             // 2. Do reconciliation users from Target Managed System to IDM
             // search for all Roles and Groups related with resource
             // GET Users from ConnectorAdapter by BaseDN and query rules
             processingTargetToIDM(resultBean, attrMap, config, managedSysId,
-                    mSys, situations, connector, keyField, baseDnField);
+                    sysDto, situations, connector, keyField, baseDnField);
             this.saveReconciliationResults(config.getResourceId(), resultBean);
             this.sendMail(config, res);
         } catch (Exception e) {
@@ -363,7 +384,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
     private ReconciliationResponse processingTargetToIDM(
             ReconciliationResultBean resultBean,
             List<AttributeMapEntity> attrMap, ReconciliationConfig config,
-            String managedSysId, ManagedSysEntity mSys,
+            String managedSysId, ManagedSysDto mSys,
             Map<String, ReconciliationCommand> situations,
             ProvisionConnectorDto connector, String keyField, String baseDnField)
             throws ScriptEngineException {
@@ -395,7 +416,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
         searchRequest.setHostUrl(mSys.getHostUrl());
         searchRequest.setHostPort(mSys.getPort().toString());
         searchRequest.setHostLoginId(mSys.getUserId());
-        searchRequest.setHostLoginPassword(mSys.getPswd());
+        searchRequest.setHostLoginPassword(mSys.getDecryptPassword());
         searchRequest.setExtensibleObject(new ExtensibleUser());
         SearchResponse searchResponse;
 
@@ -429,7 +450,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
     private void reconcilationTargetUserObjectToIDM(
             ReconciliationResultBean resultBean,
             List<AttributeMapEntity> attrMap, String managedSysId,
-            ManagedSysEntity mSys,
+            ManagedSysDto mSys,
             Map<String, ReconciliationCommand> situations, String keyField,
             List<ExtensibleAttribute> extensibleAttributes,
             boolean isManualRecon) {
@@ -566,7 +587,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
     private boolean reconciliationIDMUserToTargetSys(
             ReconciliationResultBean resultBean,
             List<AttributeMapEntity> attrMap, final LoginEntity identity,
-            final ManagedSysEntity mSys,
+            final ManagedSysDto mSys,
             final Map<String, ReconciliationCommand> situations,
             boolean isManualRecon) {
 
@@ -940,9 +961,9 @@ public class ReconciliationServiceImpl implements ReconciliationService {
             bindingMap.put("user", new ProvisionUser(user));
             bindingMap.put("sysId", sysConfiguration.getDefaultManagedSysId());
             // get all groups for user
-            List<org.openiam.idm.srvc.grp.dto.Group> curGroupList = groupDozerConverter.convertToDTOList(
-                    groupManager.getGroupsForUser(user.getUserId(), null, -1,
-                            -1), false);
+            List<org.openiam.idm.srvc.grp.dto.Group> curGroupList = groupDozerConverter
+                    .convertToDTOList(groupManager.getGroupsForUser(
+                            user.getUserId(), null, -1, -1), false);
             String decPassword = "";
             if (primaryIdentity != null) {
                 if (StringUtils.isEmpty(primaryIdentity.getUserId())) {

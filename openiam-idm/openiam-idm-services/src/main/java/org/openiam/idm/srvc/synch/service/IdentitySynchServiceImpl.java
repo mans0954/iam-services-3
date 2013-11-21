@@ -39,6 +39,7 @@ import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.dozer.converter.SynchConfigDozerConverter;
 import org.openiam.dozer.converter.UserDozerConverter;
+import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.AttributeMapSearchBean;
 import org.openiam.idm.searchbeans.UserSearchBean;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
@@ -270,70 +271,77 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
     public Response bulkUserMigration(BulkMigrationConfig config) {
 
         Response resp = new Response(ResponseStatus.SUCCESS);
-
-        // select the user that we need to move
-        UserSearchBean search = buildSearch(config);
-        /*
-        if (search.isEmpty()) {
-            resp.setStatus(ResponseStatus.FAILURE);
-            return resp;
-        }
-        */
-
-        List<User> searchResult =  userDozerConverter.convertToDTOList(userManager.findBeans(search), true);
-
-        // all the provisioning service
-        for ( User user :  searchResult) {
-
-            log.debug("Migrating user: " + user.getUserId() + " " + user.getLastName());
-
-            ProvisionUser pUser = new ProvisionUser(user);
-
-            if (config.getTargetRole() != null && !config.getTargetRole().isEmpty() ) {
-
-                Role r = parseRole(config.getTargetRole());
-                if ( pUser.getRoles() == null ) {
-                    Set<Role> roleSet = new HashSet<Role>();
-                    pUser.setRoles(roleSet);
-                }
-
-                if ("ADD".equalsIgnoreCase(config.getOperation())) {
-                    // add to role
-                    r.setOperation(AttributeOperationEnum.ADD);
-                    pUser.getRoles().add(r);
-                } else {
-                    // remove from role
-                    r.setOperation(AttributeOperationEnum.DELETE);
-                    pUser.getRoles().add(r);
-                }
-
-            } else if (config.getTargetResource() != null && !config.getTargetResource().isEmpty()) {
-
-                Set<Resource> resourceSet = new HashSet<Resource>();
-
-                Resource resource = new Resource();
-                resource.setResourceId(config.getTargetResource());
-
-                if ("ADD".equalsIgnoreCase(config.getOperation())) {
-                    // add to resourceList
-                    resource.setOperation(AttributeOperationEnum.ADD);
-                    resourceSet.add(resource);
-                    pUser.setResources(resourceSet);
-
-                } else {
-                    // remove from resource List
-
-                    resource.setOperation(AttributeOperationEnum.DELETE);
-                    resourceSet.add(resource);
-                    pUser.setResources(resourceSet);
-
-                }
+        try {
+            // select the user that we need to move
+            UserSearchBean search = buildSearch(config);
+            /*
+            if (search.isEmpty()) {
+                resp.setStatus(ResponseStatus.FAILURE);
+                return resp;
             }
-            // send message to provisioning service asynchronously
-            //invokeOperation(pUser);
-            provisionService.modifyUser(pUser);
-        }
+            */
 
+            List<User> searchResult = null;
+
+            searchResult = userDozerConverter.convertToDTOList(userManager.findBeans(search), true);
+
+
+            // all the provisioning service
+            for ( User user :  searchResult) {
+
+                log.debug("Migrating user: " + user.getUserId() + " " + user.getLastName());
+
+                ProvisionUser pUser = new ProvisionUser(user);
+
+                if (config.getTargetRole() != null && !config.getTargetRole().isEmpty() ) {
+
+                    Role r = parseRole(config.getTargetRole());
+                    if ( pUser.getRoles() == null ) {
+                        Set<Role> roleSet = new HashSet<Role>();
+                        pUser.setRoles(roleSet);
+                    }
+
+                    if ("ADD".equalsIgnoreCase(config.getOperation())) {
+                        // add to role
+                        r.setOperation(AttributeOperationEnum.ADD);
+                        pUser.getRoles().add(r);
+                    } else {
+                        // remove from role
+                        r.setOperation(AttributeOperationEnum.DELETE);
+                        pUser.getRoles().add(r);
+                    }
+
+                } else if (config.getTargetResource() != null && !config.getTargetResource().isEmpty()) {
+
+                    Set<Resource> resourceSet = new HashSet<Resource>();
+
+                    Resource resource = new Resource();
+                    resource.setResourceId(config.getTargetResource());
+
+                    if ("ADD".equalsIgnoreCase(config.getOperation())) {
+                        // add to resourceList
+                        resource.setOperation(AttributeOperationEnum.ADD);
+                        resourceSet.add(resource);
+                        pUser.setResources(resourceSet);
+
+                    } else {
+                        // remove from resource List
+
+                        resource.setOperation(AttributeOperationEnum.DELETE);
+                        resourceSet.add(resource);
+                        pUser.setResources(resourceSet);
+
+                    }
+                }
+                // send message to provisioning service asynchronously
+                //invokeOperation(pUser);
+                provisionService.modifyUser(pUser);
+            }
+        } catch (BasicDataServiceException e) {
+            log.error(e.getLocalizedMessage(),e);
+            resp.setStatus(ResponseStatus.FAILURE);
+            resp.setErrorCode(e.getCode());
+        }
         return null;
     }
 
@@ -402,42 +410,48 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
     public Response resynchRole(final String roleId) {
 
         Response resp = new Response(ResponseStatus.SUCCESS);
+        try {
+            log.debug("Resynch Role: " + roleId );
 
-        log.debug("Resynch Role: " + roleId );
+            final UserSearchBean searchBean = new UserSearchBean();
+            searchBean.addRoleId(roleId);
+            List<User> searchResult = null;
 
-        final UserSearchBean searchBean = new UserSearchBean();
-        searchBean.addRoleId(roleId);
-        List<User> searchResult = userDozerConverter.convertToDTOList(userManager.findBeans(searchBean), true);
+            searchResult = userDozerConverter.convertToDTOList(userManager.findBeans(searchBean), true);
 
-        if (searchResult == null) {
-            resp.setStatus(ResponseStatus.FAILURE);
-            return resp;
-        }
-
-        // create role object to show role membership
-        Role rl = new Role();
-        rl.setId(roleId);
-
-        // all the provisioning service
-        for ( User user :  searchResult) {
-
-            log.debug("Updating the user since this role's configuration has changed.: " + user.getUserId() + " " + user.getLastName());
-
-            ProvisionUser pUser = new ProvisionUser(user);
-
-            if (pUser.getRoles() == null ) {
-                Set<Role> roles = new HashSet<Role>();
-                roles.add(rl);
-                pUser.setRoles(roles);
-
-            }  else {
-                pUser.getRoles().add(rl);
+            if (searchResult == null) {
+                resp.setStatus(ResponseStatus.FAILURE);
+                return resp;
             }
 
-            provisionService.modifyUser(pUser);
+            // create role object to show role membership
+            Role rl = new Role();
+            rl.setId(roleId);
 
+            // all the provisioning service
+            for ( User user :  searchResult) {
+
+                log.debug("Updating the user since this role's configuration has changed.: " + user.getUserId() + " " + user.getLastName());
+
+                ProvisionUser pUser = new ProvisionUser(user);
+
+                if (pUser.getRoles() == null ) {
+                    Set<Role> roles = new HashSet<Role>();
+                    roles.add(rl);
+                    pUser.setRoles(roles);
+
+                }  else {
+                    pUser.getRoles().add(rl);
+                }
+
+                provisionService.modifyUser(pUser);
+
+            }
+        } catch (BasicDataServiceException e) {
+            log.error(e.getLocalizedMessage(),e);
+            resp.setStatus(ResponseStatus.FAILURE);
+            resp.setErrorCode(e.getCode());
         }
-
         return resp;
     }
 

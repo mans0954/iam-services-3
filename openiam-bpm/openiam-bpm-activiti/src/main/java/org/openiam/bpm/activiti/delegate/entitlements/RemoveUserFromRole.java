@@ -2,6 +2,7 @@ package org.openiam.bpm.activiti.delegate.entitlements;
 
 import org.activiti.engine.delegate.DelegateExecution;
 import org.openiam.base.AttributeOperationEnum;
+import org.openiam.bpm.activiti.delegate.core.AbstractActivitiJob;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.dozer.converter.RoleDozerConverter;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
@@ -25,18 +26,13 @@ public class RemoveUserFromRole extends AbstractEntitlementsDelegate {
 
 	@Override
 	public void execute(DelegateExecution execution) throws Exception {
-		final String roleId = (String)execution.getVariable(ActivitiConstants.ASSOCIATION_ID);
-		final String userId = (String)execution.getVariable(ActivitiConstants.MEMBER_ASSOCIATION_ID);
+		final String roleId = getStringVariable(execution, ActivitiConstants.ASSOCIATION_ID);
+		final String userId = getTargetUserId(execution);
 		
 		final User user = getUser(userId);
 		
 		final ProvisionUser pUser = new ProvisionUser(user);
 		pUser.markRoleAsDeleted(roleId);
 		provisionService.modifyUser(pUser);
-	}
-
-	@Override
-	protected String getNotificationType() {
-		return null;
 	}
 }

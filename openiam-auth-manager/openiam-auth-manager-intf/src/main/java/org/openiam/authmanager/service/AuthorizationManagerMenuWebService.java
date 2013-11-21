@@ -14,6 +14,12 @@ import org.openiam.base.ws.Response;
 public interface AuthorizationManagerMenuWebService {
 
 	@WebMethod
+	public boolean isUserAuthenticatedToMenuWithURL(
+			@WebParam(name = "userId", targetNamespace = "") final String userId, 
+			@WebParam(name = "url", targetNamespace = "") final String url,
+			@WebParam(name = "defaultResult", targetNamespace = "") final boolean defaultResult);
+	
+	@WebMethod
 	public AuthorizationMenu getMenuTreeForUserId(
 			@WebParam(name = "request", targetNamespace = "") final MenuRequest request
 	);

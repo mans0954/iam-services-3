@@ -7,8 +7,10 @@ import java.util.List;
 import java.util.Set;
 
 import org.activiti.engine.delegate.DelegateExecution;
+import org.activiti.engine.delegate.JavaDelegate;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.openiam.bpm.activiti.delegate.core.AbstractActivitiJob;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.continfo.dto.Address;
@@ -30,7 +32,7 @@ import org.openiam.idm.srvc.user.dto.UserProfileRequestModel;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 
-public abstract class AbstractUserDisplayMapper {
+public abstract class AbstractUserDisplayMapper extends AbstractActivitiJob {
 	
 	@Autowired
 	protected RoleDataService roleDataService;
@@ -43,6 +45,10 @@ public abstract class AbstractUserDisplayMapper {
 	
 	@Autowired
 	protected UserDataService userDataService;
+	
+	public AbstractUserDisplayMapper() {
+		super();
+	}
 
 	public LinkedHashMap<String, String> getMetadataMap(final UserProfileRequestModel request, final DelegateExecution execution) {
 		final LinkedHashMap<String, String> metadataMap = new LinkedHashMap<String, String>();
@@ -196,7 +202,7 @@ public abstract class AbstractUserDisplayMapper {
 			metadataMap.putAll(toElementMap(template));
 		}
 		
-		final String userId = (String)execution.getVariable(ActivitiConstants.TASK_OWNER);
+		final String userId = getRequestorId(execution);
 		if(StringUtils.isNotBlank(userId)) {
 			final User requestor = userDataService.getUserDto(userId);
 			if(requestor != null) {

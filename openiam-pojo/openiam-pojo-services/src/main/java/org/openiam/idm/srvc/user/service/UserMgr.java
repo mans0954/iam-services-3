@@ -20,12 +20,14 @@ import org.apache.commons.logging.LogFactory;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.BaseConstants;
 import org.openiam.base.SysConfiguration;
+import org.openiam.base.ws.ResponseCode;
 import org.openiam.core.dao.UserKeyDao;
 import org.openiam.dozer.converter.AddressDozerConverter;
 import org.openiam.dozer.converter.EmailAddressDozerConverter;
 import org.openiam.dozer.converter.PhoneDozerConverter;
 import org.openiam.dozer.converter.UserAttributeDozerConverter;
 import org.openiam.dozer.converter.UserDozerConverter;
+import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.*;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
@@ -454,7 +456,7 @@ public class UserMgr implements UserDataService {
 
     @Override
     @Transactional(readOnly = true)
-    public UserEntity getUserByName(String firstName, String lastName) {
+    public UserEntity getUserByName(String firstName, String lastName) throws BasicDataServiceException {
         UserSearchBean searchBean = new UserSearchBean();
         searchBean.setFirstName(firstName);
         searchBean.setLastName(lastName);
@@ -464,7 +466,7 @@ public class UserMgr implements UserDataService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<UserEntity> findUserByOrganization(String orgId) {
+    public List<UserEntity> findUserByOrganization(String orgId) throws BasicDataServiceException {
         UserSearchBean searchBean = new UserSearchBean();
         searchBean.addOrganizationId(orgId);
         return findBeans(searchBean);
@@ -472,7 +474,7 @@ public class UserMgr implements UserDataService {
 
     @Override
     @Transactional(readOnly = true)
-    public List findUsersByStatus(UserStatusEnum status) {
+    public List findUsersByStatus(UserStatusEnum status) throws BasicDataServiceException {
         UserSearchBean searchBean = new UserSearchBean();
         searchBean.setAccountStatus(status.name());
         return findBeans(searchBean);
@@ -486,12 +488,12 @@ public class UserMgr implements UserDataService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<UserEntity> findBeans(UserSearchBean searchBean) {
+    public List<UserEntity> findBeans(UserSearchBean searchBean) throws BasicDataServiceException {
         return findBeans(searchBean, 0, 1);
     }
 
     @Transactional(readOnly = true)
-    private List<String> getUserIds(final UserSearchBean searchBean) {
+    private List<String> getUserIds(final UserSearchBean searchBean) throws BasicDataServiceException {
         final List<List<String>> nonEmptyListOfLists = new LinkedList<List<String>>();
 
         boolean isOrgFilterSet = false;
@@ -502,6 +504,8 @@ public class UserMgr implements UserDataService {
         if (StringUtils.isNotBlank(searchBean.getRequesterId())) {
             // check and add delegation filter if necessary
             Map<String, UserAttribute> requesterAttributes = this.getUserAttributesDto(searchBean.getRequesterId());
+
+            validateSearchBean(searchBean,  requesterAttributes);
 
             isOrgFilterSet = DelegationFilterHelper.isOrgFilterSet(requesterAttributes);
             isGroupFilterSet = DelegationFilterHelper.isGroupFilterSet(requesterAttributes);
@@ -595,7 +599,7 @@ public class UserMgr implements UserDataService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<UserEntity> findBeans(UserSearchBean searchBean, int from, int size) {
+    public List<UserEntity> findBeans(UserSearchBean searchBean, int from, int size) throws BasicDataServiceException {
         List<UserEntity> entityList = null;
         if (StringUtils.isNotBlank(searchBean.getKey())) {
             final UserEntity entity = userDao.findById(searchBean.getKey());
@@ -621,7 +625,7 @@ public class UserMgr implements UserDataService {
 
     @Override
     @Transactional(readOnly = true)
-    public int count(UserSearchBean searchBean) {
+    public int count(UserSearchBean searchBean) throws BasicDataServiceException {
         return getUserIds(searchBean).size();
     }
 
@@ -1423,7 +1427,7 @@ public class UserMgr implements UserDataService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<UserEntity> findPotentialSupSubs(PotentialSupSubSearchBean searchBean, Integer from, Integer size) {
+    public List<UserEntity> findPotentialSupSubs(PotentialSupSubSearchBean searchBean, Integer from, Integer size) throws BasicDataServiceException {
         List<UserEntity> entityList = findAllPotentialSupSubs(searchBean);
 
         if (entityList != null && entityList.size() >= from) {
@@ -1439,12 +1443,12 @@ public class UserMgr implements UserDataService {
 
     @Override
     @Transactional(readOnly = true)
-    public int findPotentialSupSubsCount(PotentialSupSubSearchBean searchBean) {
+    public int findPotentialSupSubsCount(PotentialSupSubSearchBean searchBean) throws BasicDataServiceException {
         return findAllPotentialSupSubs(searchBean).size();
     }
 
     @Transactional(readOnly = true)
-    private List<UserEntity> findAllPotentialSupSubs(PotentialSupSubSearchBean searchBean) {
+    private List<UserEntity> findAllPotentialSupSubs(PotentialSupSubSearchBean searchBean) throws BasicDataServiceException {
         List<String> userIds = null;
         if (StringUtils.isNotBlank(searchBean.getKey())) {
             userIds = new ArrayList<String>(1);
@@ -2156,6 +2160,54 @@ public class UserMgr implements UserDataService {
         ResourceEntity resourceEntity = resourceDAO.findById(resourceId);
         UserEntity userEntity = userDao.findById(userId);
         userEntity.getResources().add(resourceEntity);
+    }
+
+
+    public boolean validateSearchBean(UserSearchBean searchBean) throws BasicDataServiceException {
+        if (StringUtils.isNotBlank(searchBean.getRequesterId())) {
+            Map<String, UserAttribute> requesterAttributes = this.getUserAttributesDto(searchBean.getRequesterId());
+            return  validateSearchBean(searchBean, requesterAttributes);
+        }
+        return true;
+    }
+    public boolean validateSearchBean(UserSearchBean searchBean, Map<String, UserAttribute> requesterAttributes) throws BasicDataServiceException {
+        if (requesterAttributes!=null && CollectionUtils.isNotEmpty(requesterAttributes.keySet())) {
+
+            boolean isOrgFilterSet = DelegationFilterHelper.isOrgFilterSet(requesterAttributes);
+            boolean isGroupFilterSet = DelegationFilterHelper.isGroupFilterSet(requesterAttributes);
+            boolean isRoleFilterSet = DelegationFilterHelper.isRoleFilterSet(requesterAttributes);
+            Set<String> filterData = null;
+
+            if (isOrgFilterSet) {
+                if (CollectionUtils.isNotEmpty(searchBean.getOrganizationIdList())) {
+                   filterData = new HashSet<String>(DelegationFilterHelper.getOrgIdFilterFromString(requesterAttributes));
+                   for(String pk : searchBean.getOrganizationIdList()) {
+                       if(!DelegationFilterHelper.isAllowed(pk, filterData)){
+                           throw new BasicDataServiceException(ResponseCode.NOT_ALLOWED_ORGANIZATION_IN_SEARCH);
+                       }
+                   }
+                }
+            }
+
+            if (CollectionUtils.isEmpty(searchBean.getGroupIdSet()) && isGroupFilterSet) {
+                filterData = new HashSet<String>(DelegationFilterHelper.getGroupFilterFromString(requesterAttributes));
+                for(String pk : searchBean.getGroupIdSet()) {
+                    if(!DelegationFilterHelper.isAllowed(pk, filterData)){
+                        throw new BasicDataServiceException(ResponseCode.NOT_ALLOWED_GROUP_IN_SEARCH);
+                    }
+                }
+            }
+
+            if (CollectionUtils.isEmpty(searchBean.getRoleIdSet()) && isRoleFilterSet) {
+                filterData = new HashSet<String>(DelegationFilterHelper.getGroupFilterFromString(requesterAttributes));
+                for(String pk : searchBean.getRoleIdSet()) {
+                    if(!DelegationFilterHelper.isAllowed(pk, filterData)){
+                        throw new BasicDataServiceException(ResponseCode.NOT_ALLOWED_ROLE_IN_SEARCH);
+                    }
+                }
+            }
+        }
+        return true;
     }
 
 }

@@ -12,6 +12,7 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.JoinColumns;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
@@ -25,8 +26,10 @@ import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
+import org.hibernate.annotations.Where;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
+import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
@@ -95,9 +98,6 @@ public class ResourceEntity {
     @Column(name = "MIN_AUTH_LEVEL")
     private String minAuthLevel;
 
-    @Column(name = "DOMAIN")
-    private String domain;
-
     @Column(name = "IS_PUBLIC")
     @Type(type = "yes_no")
     private boolean isPublic = true;
@@ -105,6 +105,10 @@ public class ResourceEntity {
 	@ManyToOne(fetch = FetchType.EAGER,cascade={CascadeType.ALL})
     @JoinColumn(name="ADMIN_RESOURCE_ID", referencedColumnName = "RESOURCE_ID", insertable = true, updatable = true, nullable=true)
 	private ResourceEntity adminResource;
+	
+	@OneToMany(cascade = {CascadeType.ALL}, fetch = FetchType.LAZY, mappedBy="associationEntityId", orphanRemoval=true)
+	@Where(clause="ASSOCIATION_TYPE='RESOURCE'")
+	private Set<ApproverAssociationEntity> approverAssociations;
 
     public ResourceEntity() {
     }
@@ -209,14 +213,6 @@ public class ResourceEntity {
         this.minAuthLevel = minAuthLevel;
     }
 
-    public String getDomain() {
-        return domain;
-    }
-
-    public void setDomain(String domain) {
-        this.domain = domain;
-    }
-
     public boolean getIsPublic() {
         return isPublic;
     }
@@ -239,6 +235,15 @@ public class ResourceEntity {
 
     public void setUsers(Set<UserEntity> users) {
         this.users = users;
+    }
+    
+    public void addUser(final UserEntity user) {
+    	if(user != null) {
+    		if(this.users == null) {
+    			this.users = new HashSet<UserEntity>();
+    		}
+    		this.users.add(user);
+    	}
     }
 
     public void addParentResource(final ResourceEntity resource) {
@@ -306,6 +311,24 @@ public class ResourceEntity {
     	this.resourceProps.add(property);
     }
 
+	public Set<ApproverAssociationEntity> getApproverAssociations() {
+		return approverAssociations;
+	}
+
+	public void setApproverAssociations(
+			Set<ApproverAssociationEntity> approverAssociations) {
+		this.approverAssociations = approverAssociations;
+	}
+	
+	public void addApproverAssociation(final ApproverAssociationEntity entity) {
+		if(entity != null) {
+			if(this.approverAssociations == null) {
+				this.approverAssociations = new HashSet<ApproverAssociationEntity>();
+			}
+			this.approverAssociations.add(entity);
+		}
+	}
+
 	@Override
     public String toString() {
         return "Resource{" +
@@ -328,7 +351,6 @@ public class ResourceEntity {
         if (isPublic != that.isPublic) return false;
         //if (isSSL != that.isSSL) return false;
         if (URL != null ? !URL.equals(that.URL) : that.URL != null) return false;
-        if (domain != null ? !domain.equals(that.domain) : that.domain != null) return false;
         if (name != null ? !name.equals(that.name) : that.name != null) return false;
         if (resourceId != null ? !resourceId.equals(that.resourceId) : that.resourceId != null) return false;
 
@@ -339,7 +361,6 @@ public class ResourceEntity {
     public int hashCode() {
         int result = resourceId != null ? resourceId.hashCode() : 0;
         result = 31 * result + (name != null ? name.hashCode() : 0);
-        result = 31 * result + (domain != null ? domain.hashCode() : 0);
         result = 31 * result + (isPublic ? 1 : 0);
         //result = 31 * result + (isSSL ? 1 : 0)
         return result;

@@ -24,39 +24,27 @@ public class LookupUserLinuxCommand extends
     protected boolean lookupObject(String id, SSHAgent ssh,
             SearchResponse responseType, String mSysId)
             throws ConnectorDataException {
+        String searchRule = managedSysService.getManagedSysById(mSysId)
+                .getSearchHandler();
         LinuxUser user = objectToLinuxUser(id, null);
-        if (user != null) {
-            try {
-                String result = ssh.executeCommand(user.getUserExistsCommand());
-                if (StringUtils.hasText(result)) {
-                    String resMas[] = result.split(":");
-                    if (resMas != null && resMas.length > 0) {
-                        result = resMas[0].trim();
-                        String key = this.getKeyField(mSysId);
-                        if (result.length() > 0) {
-                            List<ObjectValue> ovList = new LinkedList<ObjectValue>();
-                            ObjectValue ov = new ObjectValue();
-                            ov.setObjectIdentity(result);
-                            ov.setAttributeList(new LinkedList<ExtensibleAttribute>());
-                            ov.getAttributeList().add(
-                                    new ExtensibleAttribute(key, result));
-                            ov.getAttributeList().add(
-                                    new ExtensibleAttribute("groups", this
-                                            .getGroups(user, ssh)));
-                            ov.setObjectIdentity(key);
-                            ovList.add(ov);
-                            responseType.setObjectList(ovList);
-                            return true;
-                        }
+        try {
+            String result = ssh.executeCommand(getUserSearchQuery(id));
+            if (StringUtils.hasText(result)) {
+                if (result.length() > 0) {
+                    List<ObjectValue> ovList = new LinkedList<ObjectValue>();
+                    ObjectValue ov = getObjectValue(searchRule, result, ssh);
+                    if (ov != null) {
+                        ovList.add(ov);
                     }
+                    responseType.setObjectList(ovList);
+                    return true;
                 }
-                return false;
-            } catch (Exception e) {
-                log.error(e.getMessage(), e);
-                throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR,
-                        e.getMessage());
             }
+            return false;
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR,
+                    e.getMessage());
         }
-        return false;
     }
 }

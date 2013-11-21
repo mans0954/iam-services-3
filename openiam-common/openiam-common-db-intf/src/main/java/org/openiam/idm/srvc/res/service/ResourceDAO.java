@@ -28,6 +28,7 @@ public interface ResourceDAO extends BaseDao<ResourceEntity, String> {
     int getNumOfResourcesForGroup(final String groupId);
     
     public List<ResourceEntity> getResourcesForUser(final String userId, final int from, final int size);
+    public List<ResourceEntity> getResourcesForUserByType(final String userId, String resourceTypeId);
     public int getNumOfResourcesForUser(final String userId);
 
 }

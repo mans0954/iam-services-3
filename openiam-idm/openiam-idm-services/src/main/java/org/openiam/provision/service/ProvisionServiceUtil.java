@@ -12,7 +12,7 @@ import org.openiam.script.ScriptIntegration;
 
 public class ProvisionServiceUtil {
     public static Object getOutputFromAttrMap(AttributeMap attr,
-            Map<String, Object> bindingMap, ScriptIntegration se)
+                                              Map<String, Object> bindingMap, ScriptIntegration se)
             throws ScriptEngineException {
         Object output = "";
         if (attr.getReconResAttribute().getAttributePolicy() != null) {
@@ -29,7 +29,7 @@ public class ProvisionServiceUtil {
     }
 
     public static Object getOutputFromAttrMap(AttributeMapEntity attr,
-            Map<String, Object> bindingMap, ScriptIntegration se)
+                                              Map<String, Object> bindingMap, ScriptIntegration se)
             throws ScriptEngineException {
         Object output = "";
         if (attr.getReconResAttribute().getAttributePolicy() != null) {
@@ -48,12 +48,12 @@ public class ProvisionServiceUtil {
 
     /**
      * Generate the principalName for a targetSystem
-     * 
+     *
      * @return
      * @throws ScriptEngineException
      */
     public static String buildPrincipalName(List<AttributeMap> attrMap,
-            ScriptIntegration se, Map<String, Object> bindingMap)
+                                            ScriptIntegration se, Map<String, Object> bindingMap)
             throws ScriptEngineException {
         for (AttributeMap attr : attrMap) {
             if ("PRINCIPAL".equalsIgnoreCase(attr.getMapForObjectType())

@@ -1,7 +1,9 @@
 package org.openiam.bpm.request;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -10,7 +12,10 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
 import org.apache.commons.lang.StringUtils;
-import org.openiam.bpm.request.RequestorInformation;
+import org.codehaus.jackson.JsonGenerationException;
+import org.codehaus.jackson.map.JsonMappingException;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.openiam.base.BaseObject;
 import org.openiam.bpm.util.ActivitiRequestType;
 import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 
@@ -24,17 +29,19 @@ import org.openiam.idm.srvc.mngsys.domain.AssociationType;
     "parameters",
     "customApproverAssociationIds",
     "customApproverIds",
-    "userCentricUserId"
+    "userCentricUserId",
+    "jsonSerializedParams"
 })
-public class GenericWorkflowRequest extends RequestorInformation {
+public class GenericWorkflowRequest extends BaseObject {
 
 	private AssociationType associationType;
 	private String name;
 	private String description;
 	private String associationId;
 	private String activitiRequestType;
+	private Map<String, String> jsonSerializedParams;
 	private Map<String, Object> parameters;
-	private Set<String> customApproverAssociationIds;
+	private List<String> customApproverAssociationIds;
 	private Set<String> customApproverIds;
 	private String userCentricUserId;
 
@@ -94,16 +101,15 @@ public class GenericWorkflowRequest extends RequestorInformation {
 	}
 	
 	public boolean isEmpty() {
-		return StringUtils.isBlank(activitiRequestType) ||
-			   StringUtils.isBlank(callerUserId);
+		return StringUtils.isBlank(activitiRequestType) || StringUtils.isBlank(requestorUserId);
 	}
 
-	public Set<String> getCustomApproverAssociationIds() {
+	public List<String> getCustomApproverAssociationIds() {
 		return customApproverAssociationIds;
 	}
 
 	public void setCustomApproverAssociationIds(
-			Set<String> customApproverAssociationIds) {
+			List<String> customApproverAssociationIds) {
 		this.customApproverAssociationIds = customApproverAssociationIds;
 	}
 
@@ -129,6 +135,23 @@ public class GenericWorkflowRequest extends RequestorInformation {
 				this.customApproverIds = new HashSet<String>();
 			}
 			this.customApproverIds.add(customApproverId);
+		}
+	}
+	
+	public Map<String, String> getJsonSerializedParams() {
+		return jsonSerializedParams;
+	}
+
+	public void setJsonSerializedParams(Map<String, String> jsonSerializedParams) {
+		this.jsonSerializedParams = jsonSerializedParams;
+	}
+
+	public void addJSONParameter(final String key, final Object value, final ObjectMapper mapper) throws Exception {
+		if(key != null && value != null && mapper != null) {
+			if(jsonSerializedParams == null) {
+				jsonSerializedParams = new HashMap<String, String>();
+			}
+			jsonSerializedParams.put(key, mapper.writeValueAsString(value));
 		}
 	}
 }

@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.AddressSearchBean;
 import org.openiam.idm.searchbeans.EmailSearchBean;
 import org.openiam.idm.searchbeans.PhoneSearchBean;
@@ -65,21 +66,21 @@ public interface UserDataService {
      */
     public void removeUser(String id) throws Exception;
 
-    public UserEntity getUserByName(String firstName, String lastName);
+    public UserEntity getUserByName(String firstName, String lastName) throws BasicDataServiceException;
 
     public List<UserEntity> findUsersByLastUpdateRange(Date startDate, Date endDate);
 
-    public List<UserEntity> findUserByOrganization(String orgId);
+    public List<UserEntity> findUserByOrganization(String orgId) throws BasicDataServiceException;
 
-    public List<UserEntity> findUsersByStatus(UserStatusEnum status);
+    public List<UserEntity> findUsersByStatus(UserStatusEnum status) throws BasicDataServiceException;
 
     public List<UserEntity> searchByDelegationProperties(DelegationFilterSearch search);
 
-    public List<UserEntity> findBeans(UserSearchBean searchBean);
+    public List<UserEntity> findBeans(UserSearchBean searchBean) throws BasicDataServiceException;
 
-    public List<UserEntity> findBeans(UserSearchBean searchBean, int from, int size);
+    public List<UserEntity> findBeans(UserSearchBean searchBean, int from, int size) throws BasicDataServiceException;
 
-    int count(UserSearchBean searchBean);
+    int count(UserSearchBean searchBean) throws BasicDataServiceException;
 
     public void addAttribute(UserAttributeEntity attribute);
 
@@ -194,9 +195,9 @@ public interface UserDataService {
 
     public int getSubordinatesCount(String userId);
 
-    public List<UserEntity> findPotentialSupSubs(PotentialSupSubSearchBean searchBean, Integer from, Integer size);
+    public List<UserEntity> findPotentialSupSubs(PotentialSupSubSearchBean searchBean, Integer from, Integer size) throws BasicDataServiceException;
 
-    public int findPotentialSupSubsCount(PotentialSupSubSearchBean searchBean);
+    public int findPotentialSupSubsCount(PotentialSupSubSearchBean searchBean)  throws BasicDataServiceException;
 
     /**
      * Returns a list of Supervisor objects that represents the employees or
@@ -277,5 +278,9 @@ public interface UserDataService {
     boolean isHasResource(String userId, String resourceId);
 
     boolean isHasOrganization(String userId, String organizationId);
+
+    boolean validateSearchBean(UserSearchBean seachBean) throws BasicDataServiceException;
+
+    public boolean validateSearchBean(UserSearchBean searchBean, Map<String, UserAttribute> requesterAttributes) throws BasicDataServiceException;
 
 }

@@ -41,21 +41,19 @@ import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.thoughtworks.xstream.XStream;
 
-public class NewUserDisplayMapperDelegate extends AbstractUserDisplayMapper implements JavaDelegate {
+public class NewUserDisplayMapperDelegate extends AbstractUserDisplayMapper {
 	
 	@Autowired
 	@Qualifier("provRequestService")
 	private RequestDataService provRequestService;
 
 	public NewUserDisplayMapperDelegate() {
-		SpringContextProvider.autowire(this);
+		super();
 	}
 	
 	@Override
 	public void execute(DelegateExecution execution) throws Exception {
-		final String provisionRequestId = (String)execution.getVariable(ActivitiConstants.PROVISION_REQUEST_ID);
-		final ProvisionRequestEntity provisionRequest = provRequestService.getRequest(provisionRequestId);
-		final NewUserProfileRequestModel request = (NewUserProfileRequestModel)new XStream().fromXML(provisionRequest.getRequestXML());
+		final NewUserProfileRequestModel request = getObjectVariable(execution, ActivitiConstants.REQUEST, NewUserProfileRequestModel.class);
 		
 		final LinkedHashMap<String, String> metadataMap = getMetadataMap(request, execution);
 	
@@ -122,7 +120,7 @@ public class NewUserDisplayMapperDelegate extends AbstractUserDisplayMapper impl
 			}
 		}
 		
-		execution.setVariable(ActivitiConstants.REQUEST_METADATA_MAP, metadataMap);
+		execution.setVariable(ActivitiConstants.REQUEST_METADATA_MAP.getName(), metadataMap);
 	}
 	
 	

@@ -1,6 +1,7 @@
 package org.openiam.bpm.activiti;
 
 import java.util.List;
+import java.util.Set;
 
 import javax.jws.WebMethod;
 import javax.jws.WebService;
@@ -65,4 +66,7 @@ public interface ActivitiService {
 	
 	@WebMethod
 	public Response deleteTaskForUser(final String taskId, final String userId);
+	
+	@WebMethod
+	public Set<String> getDefaultApproversForEntityCreation();
 }

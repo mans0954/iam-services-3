@@ -66,7 +66,6 @@ public class TestCrossEntityConversion extends AbstractTestNGSpringContextTests 
 	private void confirmSimple(final Resource resource, final ResourceEntity entity) {
 		Assert.assertEquals(resource.getDescription(), entity.getDescription());
 		Assert.assertEquals(resource.getDisplayOrder(), entity.getDisplayOrder());
-		Assert.assertEquals(resource.getDomain(), entity.getDomain());
 		Assert.assertEquals(resource.getIsPublic(), entity.getIsPublic());
 		//Assert.assertEquals(resource.getIsSSL(), entity.getIsSSL());
 		Assert.assertEquals(resource.getMinAuthLevel(), entity.getMinAuthLevel());
@@ -129,7 +128,6 @@ public class TestCrossEntityConversion extends AbstractTestNGSpringContextTests 
 		final ResourceEntity entity = new ResourceEntity();
 		entity.setDescription(rs(2));
 		entity.setDisplayOrder(3);
-		entity.setDomain(rs(2));
 		entity.setIsPublic(true);
 		//entity.setIsSSL(true);
 		entity.setMinAuthLevel(rs(2));

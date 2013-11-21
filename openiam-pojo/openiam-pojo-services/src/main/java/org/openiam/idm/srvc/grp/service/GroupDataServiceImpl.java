@@ -12,11 +12,14 @@ import org.openiam.idm.searchbeans.GroupSearchBean;
 import org.openiam.idm.srvc.grp.domain.GroupAttributeEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.dto.Group;
+import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
+import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 import org.openiam.idm.srvc.mngsys.service.ManagedSysDAO;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
+import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.srvc.user.util.DelegationFilterHelper;
 import org.openiam.validator.EntityValidator;
@@ -55,6 +58,9 @@ public class GroupDataServiceImpl implements GroupDataService {
     private UserDataService userDataService;
     
     @Autowired
+    private UserDAO userDAO;
+    
+    @Autowired
     private GroupDozerConverter groupDozerConverter;
 
     @Autowired
@@ -64,8 +70,8 @@ public class GroupDataServiceImpl implements GroupDataService {
     @Autowired
     private ManagedSysDAO managedSysDAO;
     
-	@Value("${org.openiam.resource.system.action.id}")
-	private String systemActionId;
+	@Value("${org.openiam.resource.admin.resource.type.id}")
+	private String adminResourceTypeId;
 	
 	@Autowired
 	private ResourceTypeDAO resourceTypeDAO;
@@ -194,7 +200,7 @@ public class GroupDataServiceImpl implements GroupDataService {
 	}
 
 	@Override
-	public void saveGroup(final GroupEntity group) throws BasicDataServiceException {
+	public void saveGroup(final GroupEntity group, final String requestorId) throws BasicDataServiceException {
 		if(group != null && entityValidator.isValid(group)) {
 			
 			if(group.getManagedSystem() != null && group.getManagedSystem().getManagedSysId() != null) {
@@ -206,7 +212,8 @@ public class GroupDataServiceImpl implements GroupDataService {
 			if(StringUtils.isNotBlank(group.getId())) {
 				final GroupEntity dbGroup = groupDao.findById(group.getId());
 				if(dbGroup != null) {
-					//group.setAttributes(dbGroup.getAttributes());
+					group.setApproverAssociations(dbGroup.getApproverAssociations());
+					
 					mergeAttribute(group, dbGroup);
 					group.setChildGroups(dbGroup.getChildGroups());
 					group.setParentGroups(dbGroup.getParentGroups());
@@ -215,21 +222,35 @@ public class GroupDataServiceImpl implements GroupDataService {
 					group.setUsers(dbGroup.getUsers());
 					group.setAdminResource(dbGroup.getAdminResource());
 					if(group.getAdminResource() == null) {
-						group.setAdminResource(getNewAdminResource(group));
+						group.setAdminResource(getNewAdminResource(group, requestorId));
 					}
-					groupDao.merge(group);
+				} else {
+					return;
 				}
 			} else {
-				group.setAdminResource(getNewAdminResource(group));
+				group.setAdminResource(getNewAdminResource(group, requestorId));
 				groupDao.save(group);
+				group.addApproverAssociation(createDefaultApproverAssociations(group, requestorId));
 			}
+			groupDao.merge(group);
 		}
 	}
 	
-	private ResourceEntity getNewAdminResource(final GroupEntity entity) {
+	private ApproverAssociationEntity createDefaultApproverAssociations(final GroupEntity entity, final String requestorId) {
+		final ApproverAssociationEntity association = new ApproverAssociationEntity();
+		association.setAssociationEntityId(entity.getId());
+		association.setAssociationType(AssociationType.GROUP);
+		association.setApproverLevel(Integer.valueOf(0));
+		association.setApproverEntityId(requestorId);
+		association.setApproverEntityType(AssociationType.USER);
+		return association;
+	}
+	
+	private ResourceEntity getNewAdminResource(final GroupEntity entity, final String requestorId) {
 		final ResourceEntity adminResource = new ResourceEntity();
 		adminResource.setName(String.format("GRP_ADMIN_%s_%s", entity.getName(), RandomStringUtils.randomAlphanumeric(2)));
-		adminResource.setResourceType(resourceTypeDAO.findById(systemActionId));
+		adminResource.setResourceType(resourceTypeDAO.findById(adminResourceTypeId));
+		adminResource.addUser(userDAO.findById(requestorId));
 		return adminResource;
 	}
 	

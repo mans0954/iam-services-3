@@ -25,14 +25,14 @@ public class AddUserToGroup extends AbstractEntitlementsDelegate {
 
 	@Override
 	public void execute(DelegateExecution execution) throws Exception {
-		final String groupId = (String)execution.getVariable(ActivitiConstants.ASSOCIATION_ID);
-		final String userId = (String)execution.getVariable(ActivitiConstants.MEMBER_ASSOCIATION_ID);
+		final String groupId = getStringVariable(execution, ActivitiConstants.ASSOCIATION_ID);
+		final String userId = getTargetUserId(execution);
 		//groupDataService.addUserToGroup(groupId, userId);
 		
 		final GroupEntity entity = groupDataService.getGroup(groupId);
 		if(entity != null) {
 			final Group group = groupDataService.getGroupDTO(groupId);
-			//group.setOperation(AttributeOperationEnum.ADD);
+			group.setOperation(AttributeOperationEnum.ADD);
 			final User user = getUser(userId);
 			final ProvisionUser pUser = new ProvisionUser(user);
 			pUser.addGroup(group);
