@@ -17,7 +17,9 @@ import org.openiam.idm.srvc.recon.domain.ReconciliationConfigEntity;
 @XmlType(name = "ReconciliationConfig", propOrder = { "reconConfigId",
         "resourceId", "frequency", "status", "situationSet", "reportPath",
         "separator", "endOfLine", "notificationEmailAddress",
-        "manualReconciliationFlag","targetSystemMatchScript","scriptHandler" })
+        "manualReconciliationFlag","targetSystemMatchScript",
+        "customIdentityMatchScript",
+        "scriptHandler" })
 
 @DozerDTOCorrespondence(ReconciliationConfigEntity.class)
 public class ReconciliationConfig implements java.io.Serializable {
@@ -31,6 +33,7 @@ public class ReconciliationConfig implements java.io.Serializable {
     private String endOfLine;
     private String notificationEmailAddress;
     private String targetSystemMatchScript;
+    private String customIdentityMatchScript;
     private Set<ReconciliationSituation> situationSet;
     private boolean manualReconciliationFlag;
 
@@ -151,11 +154,20 @@ public class ReconciliationConfig implements java.io.Serializable {
     public void setManualReconciliationFlag(boolean manualReconciliationFlag) {
         this.manualReconciliationFlag = manualReconciliationFlag;
     }
+
     public String getScriptHandler() {
         return scriptHandler;
     }
 
     public void setScriptHandler(String scriptHandler) {
         this.scriptHandler = scriptHandler;
+    }
+
+    public String getCustomIdentityMatchScript() {
+        return customIdentityMatchScript;
+    }
+
+    public void setCustomIdentityMatchScript(String customIdentityMatchScript) {
+        this.customIdentityMatchScript = customIdentityMatchScript;
     }
 }
