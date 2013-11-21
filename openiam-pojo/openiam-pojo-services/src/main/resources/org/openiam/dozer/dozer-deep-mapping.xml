@@ -103,6 +103,10 @@
 			<a>managedSystem</a>
 			<b>managedSystem</b>
 		</field>
+		<field-exclude>
+			<a>approverAssociations</a>
+			<b>approverAssociations</b>
+		</field-exclude>
 	</mapping>
 	
 	<mapping>

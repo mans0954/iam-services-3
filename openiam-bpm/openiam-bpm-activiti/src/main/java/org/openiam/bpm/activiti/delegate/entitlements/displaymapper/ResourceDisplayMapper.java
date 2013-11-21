@@ -53,6 +53,6 @@ public class ResourceDisplayMapper extends AbstractActivitiJob {
 			}
 		}
 		
-		execution.setVariable(ActivitiConstants.REQUEST_METADATA_MAP.getName(), metadataMap);
+		setDisplayMap(execution, metadataMap);
 	}
 }

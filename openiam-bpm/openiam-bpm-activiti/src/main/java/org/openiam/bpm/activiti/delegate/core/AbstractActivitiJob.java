@@ -3,6 +3,7 @@ package org.openiam.bpm.activiti.delegate.core;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -124,5 +125,9 @@ public abstract class AbstractActivitiJob implements JavaDelegate, TaskListener 
 	
 	protected void addStringReturnValue(final DelegateExecution execution, final ActivitiConstants key, final Object value) {
 		execution.setVariable(key.getName(), value);
+	}
+	
+	protected void setDisplayMap(final DelegateExecution execution, final LinkedHashMap<String, String> metadataMap) {
+		execution.setVariable(ActivitiConstants.REQUEST_METADATA_MAP.getName(), metadataMap);
 	}
 }

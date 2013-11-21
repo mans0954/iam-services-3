@@ -26,7 +26,11 @@ public enum ActivitiRequestType {
 	
 	NEW_RESOURCE("newResource", "New Resource"),
 	EDIT_RESOURCE("editResource", "Edit Resource"),
-	DELETE_RESOURCE("deleteResource", "Delete Resource");
+	DELETE_RESOURCE("deleteResource", "Delete Resource"),
+	
+	NEW_GROUP("newGroup", "New Group"),
+	EDIT_GROUP("editGroup", "Edit Group"),
+	DELETE_GROUP("deleteGroup", "Delete Group");
 	
 	private String description;
 	private String key;
