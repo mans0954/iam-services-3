@@ -1,15 +1,11 @@
 package org.openiam.connector.linux.command.base;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.solr.update.processor.MD5Signature;
-import org.bouncycastle.jcajce.provider.asymmetric.rsa.ISOSignatureSpi.MD5WithRSAEncryption;
 import org.openiam.connector.common.command.AbstractCommand;
 import org.openiam.connector.linux.data.LinuxGroup;
-import org.openiam.connector.linux.data.LinuxGroups;
 import org.openiam.connector.linux.data.LinuxUser;
 import org.openiam.connector.linux.ssh.SSHAgent;
 import org.openiam.connector.linux.ssh.SSHConnectionFactory;
@@ -26,8 +22,6 @@ import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.StringUtils;
-
-import ch.ethz.ssh2.crypto.digest.MD5;
 
 public abstract class AbstractLinuxCommand<Request extends RequestType, Response extends ResponseType>
         extends AbstractCommand<Request, Response> {
