@@ -1,8 +1,6 @@
 package org.openiam.idm.srvc.recon.domain;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
@@ -48,6 +46,8 @@ public class ReconciliationConfigEntity implements java.io.Serializable {
     private String notificationEmailAddress;
     @Column(name = "TARGET_SYS_MATCH_SCRIPT", length = 120)
     private String targetSystemMatchScript;
+    @Column(name = "CUSTOM_IDENTITY_MATCH_SCRIPT", length = 120)
+    private String customIdentityMatchScript;
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "RECON_CONFIG_ID", insertable = false, updatable = false)
     private Set<ReconciliationSituationEntity> situationSet = new HashSet<ReconciliationSituationEntity>(
@@ -167,5 +167,13 @@ public class ReconciliationConfigEntity implements java.io.Serializable {
 
     public void setManualReconciliationFlag(boolean manualReconciliationFlag) {
         this.manualReconciliationFlag = manualReconciliationFlag;
+    }
+
+    public String getCustomIdentityMatchScript() {
+        return customIdentityMatchScript;
+    }
+
+    public void setCustomIdentityMatchScript(String customIdentityMatchScript) {
+        this.customIdentityMatchScript = customIdentityMatchScript;
     }
 }
