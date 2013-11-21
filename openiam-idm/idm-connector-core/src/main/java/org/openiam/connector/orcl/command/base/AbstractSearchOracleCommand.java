@@ -5,7 +5,7 @@ import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.connector.type.ObjectValue;
 import org.openiam.connector.type.constant.ErrorCode;
 import org.openiam.connector.type.constant.StatusCodeType;
-import org.openiam.connector.type.request.LookupRequest;
+import org.openiam.connector.type.request.SearchRequest;
 import org.openiam.connector.type.response.SearchResponse;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
@@ -19,22 +19,20 @@ import java.sql.*;
  * Time: 1:00 AM
  * To change this template use File | Settings | File Templates.
  */
-public abstract class AbstractLookupOracleCommand<ExtObject extends ExtensibleObject> extends AbstractOracleCommand<LookupRequest<ExtObject>, SearchResponse> {
+public abstract class AbstractSearchOracleCommand<ExtObject extends ExtensibleObject> extends AbstractOracleCommand<SearchRequest<ExtObject>, SearchResponse> {
     @Override
-    public SearchResponse execute(LookupRequest<ExtObject> lookupRequest) throws ConnectorDataException {
+    public SearchResponse execute(SearchRequest<ExtObject> searchRequest) throws ConnectorDataException {
         final SearchResponse response = new SearchResponse();
         response.setStatus(StatusCodeType.SUCCESS);
 
-        final String dataId = lookupRequest.getSearchValue();
+        final String dataId = searchRequest.getSearchValue();
         /* targetID -  */
-        ConnectorConfiguration config =  getConfiguration(lookupRequest.getTargetID(), ConnectorConfiguration.class);
+        ConnectorConfiguration config =  getConfiguration(searchRequest.getTargetID(), ConnectorConfiguration.class);
         Connection con = this.getConnection(config.getManagedSys());
-
-        try {
+               try {
             final ObjectValue resultObject = new ObjectValue();
-       
-            resultObject.setObjectIdentity(dataId);
-            final ResultSet rs = lookupObject(con, dataId);
+                        resultObject.setObjectIdentity(dataId);
+            final ResultSet rs = searchObject(con, dataId);
 
             final ResultSetMetaData rsMetadata = rs.getMetaData();
             int columnCount = rsMetadata.getColumnCount();
@@ -55,7 +53,11 @@ public abstract class AbstractLookupOracleCommand<ExtObject extends ExtensibleOb
             }else {
             	response.setStatus(StatusCodeType.FAILURE);
                 log.debug("LOOKUP successful without results.");
+//                throw new ConnectorDataException(ErrorCode.NO_RESULTS_RETURNED);
             }
+//            else
+//                throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR, "Principal not found");
+
             return response;
         } catch(Throwable e) {
             log.error(e.getMessage(),e);
@@ -129,5 +131,5 @@ public abstract class AbstractLookupOracleCommand<ExtObject extends ExtensibleOb
     }
 
 
-    protected abstract ResultSet lookupObject(Connection con, String dataId) throws ConnectorDataException;
+    protected abstract ResultSet searchObject(Connection con, String dataId) throws ConnectorDataException;
 }

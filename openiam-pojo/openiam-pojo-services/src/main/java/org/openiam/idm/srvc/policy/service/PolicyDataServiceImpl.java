@@ -330,10 +330,12 @@ public class PolicyDataServiceImpl implements PolicyDataService {
 				throw new BasicDataServiceException(
 						ResponseCode.INVALID_ARGUMENTS);
 			}
+			
+			
 			PolicyObjectAssocEntity poaEntity = policyAssocObjectDozerConverter
 					.convertToEntity(poa, true);
-			if (poaEntity.getObjectId() == null
-					&& poaEntity.getObjectId().isEmpty()) {
+       		if (poaEntity==null ||poaEntity.getPolicyObjectId()==null 
+					&& poaEntity.getObjectId()==null) {
 				poaEntity.setObjectId(null);
 				poaEntity = policyObjectAssocDAO.add(poaEntity);
 				response.setResponseValue(poaEntity.getPolicyObjectId());
