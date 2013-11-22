@@ -7,6 +7,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.AttributeOperationEnum;
@@ -18,10 +20,9 @@ import org.openiam.dozer.converter.PhoneDozerConverter;
 import org.openiam.dozer.converter.SupervisorDozerConverter;
 import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.exception.EncryptionException;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
-import org.openiam.idm.srvc.audit.service.AuditHelper;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
+import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
 import org.openiam.idm.srvc.continfo.dto.Address;
@@ -29,10 +30,12 @@ import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.service.GroupDataService;
+import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
+import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
+import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.service.OrganizationDataService;
 import org.openiam.idm.srvc.res.dto.Resource;
-import org.openiam.idm.srvc.role.domain.UserRoleEntity;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.user.domain.SupervisorEntity;
@@ -63,8 +66,6 @@ public class ModifyUser {
     @Autowired
     private LoginDataService loginManager;
     @Autowired
-    private AuditHelper auditHelper;
-    @Autowired
     private OrganizationDataService orgManager;
     
     @Autowired
@@ -84,6 +85,9 @@ public class ModifyUser {
     
     @Autowired
     private SupervisorDozerConverter supervisorDozerConverter;
+    
+    @Autowired
+    private ManagedSystemService managedSysService;
 
     private static final Log log = LogFactory.getLog(ModifyUser.class);
 
@@ -185,8 +189,8 @@ public class ModifyUser {
         }
 
         // the affiliations
-        List<Organization> affiliationList = user.getUserAffiliations();
-        if (affiliationList == null || affiliationList.isEmpty()) {
+        Set<Organization> affiliationSet = user.getAffiliations();
+        if (affiliationSet == null || affiliationSet.isEmpty()) {
 
             log.debug("- Adding original affiliationList to the user object");
 
@@ -194,7 +198,7 @@ public class ModifyUser {
                     .getOrganizationsForUser(user.getUserId(), null, 0,Integer.MAX_VALUE);
             if (userAffiliations != null && !userAffiliations.isEmpty()) {
 
-                user.setUserAffiliations(userAffiliations);
+                user.setAffiliations(new HashSet<Organization>(userAffiliations));
             }
 
         }
@@ -594,7 +598,7 @@ public class ModifyUser {
             for (Group g : newGroupList) {
                 g.setOperation(AttributeOperationEnum.ADD);
                 groupList.add(g);
-                this.groupManager.addUserToGroup(g.getGrpId(), userId);
+                this.userMgr.addUserToGroup(g.getGrpId(), userId);
             }
             return;
         }
@@ -618,7 +622,7 @@ public class ModifyUser {
                 // we can remove it
                 Group grp = getGroup(g.getGrpId(), origGroupList);
                 if (grp != null) {
-                    this.groupManager.removeUserFromGroup(grp.getGrpId(),
+                    this.userMgr.removeUserFromGroup(grp.getGrpId(),
                             userId);
                 }
                 groupList.add(grp);
@@ -631,7 +635,7 @@ public class ModifyUser {
                 if (origGroup == null) {
                     g.setOperation(AttributeOperationEnum.ADD);
                     groupList.add(g);
-                    groupManager.addUserToGroup(g.getGrpId(), userId);
+                    userMgr.addUserToGroup(g.getGrpId(), userId);
                 } else {
                     if (g.getGrpId().equals(origGroup.getGrpId())) {
                         // not changed
@@ -691,7 +695,7 @@ public class ModifyUser {
             for (Login l : origLoginList) {
                 l.setOperation(AttributeOperationEnum.NO_CHANGE);
                 if (notInDeleteResourceList(l, deleteResourceList)) {
-                    l.setStatus("ACTIVE");
+                    l.setStatus(LoginStatusEnum.ACTIVE);
                     l.setAuthFailCount(0);
                     l.setIsLocked(0);
                     l.setPasswordChangeCount(0);
@@ -727,7 +731,7 @@ public class ModifyUser {
                 Login lg = getPrincipal(l, origLoginList);
 
                 if (lg != null) {
-                    lg.setStatus("INACTIVE");
+                    lg.setStatus(LoginStatusEnum.INACTIVE);
                     final LoginEntity entity = loginDozerConverter.convertToEntity(l, true);
                     loginManager.updateLogin(entity);
 
@@ -856,8 +860,9 @@ public class ModifyUser {
             return true;
         }
         for (Resource r : deleteResourceList) {
-            if (l.getManagedSysId()
-                    .equalsIgnoreCase(r.getManagedSysId())) {
+        	final ManagedSysEntity mSys = managedSysService.getManagedSysByResource(r.getResourceId(), "ACTIVE");
+            final String mSysId = (mSys != null) ? mSys.getManagedSysId() : null;
+            if(StringUtils.equalsIgnoreCase(l.getManagedSysId(), mSysId)) {
                 return false;
             }
         }
@@ -914,8 +919,7 @@ public class ModifyUser {
     /* Role Association */
 
     public void updateRoleAssociation(String userId, List<Role> origRoleList,
-            List<Role> newRoleList, List<IdmAuditLog> logList,
-            ProvisionUser pUser, Login primaryIdentity) {
+            List<Role> newRoleList, ProvisionUser pUser, Login primaryIdentity) {
 
         log.debug("updateRoleAssociation():");
         log.debug("-origRoleList =" + origRoleList);
@@ -925,8 +929,6 @@ public class ModifyUser {
         roleList = new ArrayList<Role>();
         deleteRoleList = new ArrayList<Role>();
 
-        List<UserRoleEntity> currentUserRole = roleDataService
-                .getUserRolesForUser(userId, 0, Integer.MAX_VALUE);
         UserEntity user = userMgr.getUser(userId);
 
         if ((origRoleList == null || origRoleList.size() == 0)
@@ -949,7 +951,8 @@ public class ModifyUser {
                 roleList.add(rl);
 
                 roleDataService.addUserToRole(rl.getRoleId(), userId);
-
+                
+                /*
                 logList.add(auditHelper.createLogObject("ADD ROLE", pUser
                         .getRequestorDomain(), pUser.getRequestorLogin(),
                         "IDM SERVICE", user.getCreatedBy(), "0", "USER", user
@@ -958,7 +961,7 @@ public class ModifyUser {
                         null, null, rl.getRoleId(), pUser.getRequestClientIP(),
                         primaryIdentity.getLogin(), primaryIdentity
                                 .getDomainId()));
-
+				*/
                 // roleDataService.addUserToRole(rl.getServiceId(),
                 // rl.getRoleId(), userId);
             }
@@ -988,7 +991,7 @@ public class ModifyUser {
                 Role rl = getRole(r.getRoleId(), origRoleList);
                 if (rl != null) {
                     roleDataService.removeUserFromRole(rl.getRoleId(), userId);
-
+                    /*
                     logList.add(auditHelper.createLogObject("REMOVE ROLE",
                             pUser.getRequestorDomain(), pUser.getUser()
                                     .getRequestorLogin(), "IDM SERVICE", user
@@ -999,7 +1002,7 @@ public class ModifyUser {
                                     .getRequestClientIP(), primaryIdentity
                                     .getLogin(), primaryIdentity
                                     .getDomainId()));
-
+					*/
                 }
                 log.debug("Adding role to deleteRoleList =" + rl);
                 this.deleteRoleList.add(rl);
@@ -1022,7 +1025,7 @@ public class ModifyUser {
                     r.setOperation(AttributeOperationEnum.ADD);
                     roleList.add(r);
                     roleDataService.addUserToRole(r.getRoleId(), userId);
-
+                    /*
                     logList.add(auditHelper.createLogObject("ADD ROLE", pUser.getUser()
                             .getRequestorDomain(), pUser.getRequestorLogin(),
                             "IDM SERVICE", user.getCreatedBy(), "0", "USER",
@@ -1032,7 +1035,7 @@ public class ModifyUser {
                                     .getRequestClientIP(), primaryIdentity
                                     .getLogin(), primaryIdentity
                                     .getDomainId()));
-
+					*/
                     // roleDataService.addUserToRole(r.getServiceId(),
                     // r.getRoleId(), userId);
                 } else {
@@ -1041,7 +1044,7 @@ public class ModifyUser {
                     // if (r.equals(origRole)) {
                     // UserRole uRole = userRoleAttrEq(r, currentUserRole);
                     if (r.getRoleId().equals(origRole.getRoleId())
-                            && userRoleAttrEq(r, currentUserRole)) {
+                            && userRoleAttrEq(r, origRole)) {
                         // not changed
                         log.debug("- no_change ");
                         r.setOperation(AttributeOperationEnum.NO_CHANGE);
@@ -1055,11 +1058,11 @@ public class ModifyUser {
                         // UserRole ur = new UserRole(userId,
                         // r.getServiceId(),
                         // r.getRoleId());
-                        UserRoleEntity ur = getUserRole(r, currentUserRole);
-                        if (ur == null) {
+                       /* UserRoleEntity ur = getUserRole(r, currentUserRole);
+                        if (ur == null) {*/
                             roleDataService.addUserToRole(user.getUserId(),
                                     userId);
-                        }
+                       // }
                         /*
                          * if (ur != null) { if (r.getStartDate() != null) {
                          * ur.setStartDate(r.getStartDate()); } if
@@ -1089,53 +1092,24 @@ public class ModifyUser {
 
     }
 
-    private UserRoleEntity getUserRole(Role r,
-            List<UserRoleEntity> currentUserRole) {
+    private boolean userRoleAttrEq(Role r, Role origUserRole) {
         // boolean retval = true;
 
-        if (currentUserRole == null) {
-            return null;
-        }
-
-        // get the user role object
-        for (UserRoleEntity u : currentUserRole) {
-            if (r.getRoleId().equalsIgnoreCase(u.getRoleId())) {
-                return u;
-            }
-        }
-        return null;
-
-    }
-
-    private boolean userRoleAttrEq(Role r, List<UserRoleEntity> currentUserRole) {
-        // boolean retval = true;
-
-        if (currentUserRole == null) {
-            return false;
-        }
-
-        UserRoleEntity ur = null;
-        // get the user role object
-        for (UserRoleEntity u : currentUserRole) {
-            if (r.getRoleId().equalsIgnoreCase(u.getRoleId())) {
-                ur = u;
-            }
-        }
-        if (ur == null) {
+        if (r == null || origUserRole == null) {
             return false;
         }
         if (r.getStatus() != null) {
-            if (!r.getStatus().equalsIgnoreCase(ur.getStatus())) {
+            if (!r.getStatus().equalsIgnoreCase(origUserRole.getStatus())) {
                 return false;
             }
         }
         if (r.getStartDate() != null) {
-            if (!r.getStartDate().equals(ur.getStartDate())) {
+            if (!r.getStartDate().equals(origUserRole.getStartDate())) {
                 return false;
             }
         }
         if (r.getEndDate() != null) {
-            if (!r.getEndDate().equals(ur.getEndDate())) {
+            if (!r.getEndDate().equals(origUserRole.getEndDate())) {
                 return false;
             }
         }
@@ -1264,6 +1238,7 @@ public class ModifyUser {
         this.loginManager = loginManager;
     }
 
+    /*
     public AuditHelper getAuditHelper() {
         return auditHelper;
     }
@@ -1271,7 +1246,8 @@ public class ModifyUser {
     public void setAuditHelper(AuditHelper auditHelper) {
         this.auditHelper = auditHelper;
     }
-
+	*/
+    
     public Set<EmailAddress> getEmailSet() {
         return emailSet;
     }
@@ -1384,7 +1360,7 @@ public class ModifyUser {
                         // primary identity - do not delete. Just disable its
                         // status
                         log.debug("Primary identity - chagne its status");
-                        l.setStatus("INACTIVE");
+                        l.setStatus(LoginStatusEnum.INACTIVE);
                         loginManager.updateLogin(l);
 
                     } else {

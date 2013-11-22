@@ -1,6 +1,7 @@
 package org.openiam.dozer.converter;
 
 import java.util.List;
+import java.util.Set;
 
 import org.openiam.idm.srvc.pswd.domain.IdentityQuestionEntity;
 import org.openiam.idm.srvc.pswd.dto.IdentityQuestion;
@@ -43,5 +44,17 @@ public class IdentityQuestionDozerConverter extends AbstractDozerEntityConverter
 			List<IdentityQuestionEntity> list, boolean isDeep) {
 		return convertListToCrossEntity(list, isDeep, IdentityQuestion.class);
 	}
+
+    @Override
+    public Set<IdentityQuestionEntity> convertToEntitySet(
+            Set<IdentityQuestion> set, boolean isDeep) {
+        return convertSetToCrossEntity(set, isDeep, IdentityQuestionEntity.class);
+    }
+
+    @Override
+    public Set<IdentityQuestion> convertToDTOSet(
+            Set<IdentityQuestionEntity> set, boolean isDeep) {
+        return convertSetToCrossEntity(set, isDeep, IdentityQuestion.class);
+    }
 
 }

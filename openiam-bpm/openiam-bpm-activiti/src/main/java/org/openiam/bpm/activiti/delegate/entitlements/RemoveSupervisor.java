@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.activiti.engine.delegate.DelegateExecution;
 import org.apache.commons.collections.CollectionUtils;
+import org.openiam.base.AttributeOperationEnum;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.service.UserDataService;
@@ -41,6 +42,7 @@ public class RemoveSupervisor extends AbstractEntitlementsDelegate {
 			final ProvisionUser pUser = new ProvisionUser(subordinate);
 			final List<User> superiors = userDataWebService.getSuperiors(subordinateId, -1, -1);
 			if(CollectionUtils.isNotEmpty(superiors)) {
+				superior.setOperation(AttributeOperationEnum.DELETE);
 				superiors.remove(superior);
 			}
             pUser.addSuperiors(superiors);

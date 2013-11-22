@@ -8,6 +8,7 @@ import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.domain.ResourceTypeEntity;
 import org.openiam.idm.srvc.res.service.ResourceDAO;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
+import org.openiam.idm.srvc.res.service.ResourceService;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -37,7 +38,7 @@ public class AuthProviderServiceImpl implements AuthProviderService {
     @Autowired
     private ResourceTypeDAO resourceTypeDAO;
     @Autowired
-    private ResourceDataService resourceDataService;
+    private ResourceService resourceService;
 
     /*
     *==================================================
@@ -251,7 +252,7 @@ public class AuthProviderServiceImpl implements AuthProviderService {
             authResourceAttributeMapDao.deleteByProviderId(providerId);
             this.deleteAuthProviderAttributes(providerId);
             authProviderDao.deleteByPkList(Arrays.asList(new String[]{providerId}));
-            resourceDataService.deleteResource(entity.getResource().getResourceId());
+            resourceService.deleteResource(entity.getResource().getResourceId());
         }
     }
 
@@ -273,7 +274,7 @@ public class AuthProviderServiceImpl implements AuthProviderService {
             authResourceAttributeMapDao.deleteByProviderList(pkList);
             authProviderDao.deleteByPkList(pkList);
             for (String resourceId :resourceIdList){
-                resourceDataService.deleteResource(resourceId);
+            	resourceService.deleteResource(resourceId);
             }
         }
     }

@@ -31,6 +31,7 @@ import org.mule.api.MuleContext;
 import org.openiam.base.ws.Response;
 import org.openiam.connector.type.request.LookupRequest;
 
+import org.openiam.idm.srvc.pswd.dto.PasswordValidationResponse;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.provision.dto.AccountLockEnum;
 import org.openiam.provision.dto.PasswordSync;
@@ -61,8 +62,13 @@ public interface ProvisionService {
             @WebParam(name = "managedSysId", targetNamespace = "") String managedSysId);
 
     /**
-     * The addUser operation enables a requestor to create a new user on the
-     * target systems
+     *  The addUser operation enables a requester to create a new user on the
+     *  target systems.
+     *  Also this operation can do modify if this user has existed in one of the target systems.
+     *
+     * @param user - new provisioning user
+     * @return ProvisionUserResponse
+     * @throws Exception
      */
     @WebMethod
     public ProvisionUserResponse addUser(
@@ -70,16 +76,26 @@ public interface ProvisionService {
             throws Exception;
 
     /**
-     * The modifyUser operation enables the requestor to modify an existing user
+     * The modifyUser operation enables the requester to modify an existing user
      * in appropriate target systems
+     *
+     * @param user - provision user for modify
+     * @return ProvisionUserResponse
      */
     @WebMethod
-    public ProvisionUserResponse modifyUser(
+    public ProvisionUserResponse modifyUser (
             @WebParam(name = "user", targetNamespace = "") ProvisionUser user);
 
     /**
-     * The deleteUser operation enables the requestor to delete an existing user
+     * The deleteUser operation enables the requester to delete an existing user
      * from the appropriate target systems
+     *
+     * @param securityDomain -
+     * @param managedSystemId - target system
+     * @param principal - identity of the user in target system
+     * @param status - status od delete operation
+     * @param requestorId - requester
+     * @return
      */
     @WebMethod
     public ProvisionUserResponse deleteUser(
@@ -89,12 +105,28 @@ public interface ProvisionService {
             @WebParam(name = "status", targetNamespace = "") UserStatusEnum status,
             @WebParam(name = "requestorId", targetNamespace = "") String requestorId);
 
+    /**
+     * Delete user from target system  by user id
+     *
+     * @param userId - deleted user ID
+     * @param status - delete status
+     * @param requestorId - requestor
+     * @return  ProvisionUserResponse
+     */
     @WebMethod
     public ProvisionUserResponse deleteByUserId(
-            @WebParam(name = "user", targetNamespace = "") ProvisionUser user,
+            @WebParam(name = "userId", targetNamespace = "") String userId,
             @WebParam(name = "status", targetNamespace = "") UserStatusEnum status,
             @WebParam(name = "requestorId", targetNamespace = "") String requestorId);
 
+    /**
+     * De-provisioning User only from selected resources
+     *
+     * @param userId - user id
+     * @param requestorUserId - requestor
+     * @param resourceList - selected resources
+     * @return
+     */
     @WebMethod
     public ProvisionUserResponse deprovisionSelectedResources(
             @WebParam(name = "userId", targetNamespace = "") String userId,
@@ -109,12 +141,15 @@ public interface ProvisionService {
      * @return
      */
     @WebMethod
-    public Response setPassword(
+    public PasswordValidationResponse setPassword(
             @WebParam(name = "passwordSync", targetNamespace = "") PasswordSync passwordSync);
 
-    public Response syncPasswordFromSrc(
-            @WebParam(name = "passwordSync", targetNamespace = "") PasswordSync passwordSync);
-
+    /**
+     * Reset password in target systems
+     *
+     * @param passwordSync
+     * @return PasswordResponse
+     */
     @WebMethod
     public PasswordResponse resetPassword(
             @WebParam(name = "passwordSync", targetNamespace = "") PasswordSync passwordSync);
@@ -147,16 +182,25 @@ public interface ProvisionService {
             @WebParam(name = "operation", targetNamespace = "") boolean operation,
             @WebParam(name = "requestor", targetNamespace = "") String requestorId);
 
+    /**
+     * Lookup user by principal name in target system
+     *
+     * @param principalName - login of user for selected target system
+     * @param managedSysId  - selected managed system
+     * @return  LookupUserResponse
+     */
     @WebMethod
     LookupUserResponse getTargetSystemUser(
             @WebParam(name = "principalName", targetNamespace = "") String principalName,
             @WebParam(name = "managedSysId", targetNamespace = "") String managedSysId);
 
-    @WebMethod
-    LookupUserResponse getTargetSystemUserWithUserId(
-            @WebParam(name = "userId", targetNamespace = "") String userId,
-            @WebParam(name = "managedSysId", targetNamespace = "") String managedSysId);
-
+    /**
+     * Return all possible attributes for selected managed system
+     *
+     * @param managedSysId - managed system
+     * @param config - LookupRequest
+     * @return  List<String> with attributes
+     */
     @WebMethod
     public List<String> getAttributesList(
             @WebParam(name = "managedSysId", targetNamespace = "") String managedSysId,

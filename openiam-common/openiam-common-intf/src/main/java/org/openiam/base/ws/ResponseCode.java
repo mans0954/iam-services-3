@@ -69,6 +69,12 @@ public enum ResponseCode {
     @XmlEnumValue("objectNotFound")
     OBJECT_NOT_FOUND("objectNotFound"),
     
+    @XmlEnumValue("questNotSelected")
+    QUEST_NOT_SELECTED("questNotSelected"),
+    
+    @XmlEnumValue("answerNotTaken")
+    ANSWER_NOT_TAKEN("answerNotTaken"),
+    
     @XmlEnumValue("hangingChildRoles")
     ROLE_HANGING_CHILD_ROLES("hangingChildRoles"),
     
@@ -446,6 +452,9 @@ public enum ResponseCode {
 	@XmlEnumValue("LINKED_TO_METADATA_ELEMENT")
 	LINKED_TO_METADATA_ELEMENT("LINKED_TO_METADATA_ELEMENT"),
 	
+	@XmlEnumValue("LINKED_TO_MANAGED_SYSTEM")
+	LINKED_TO_MANAGED_SYSTEM("LINKED_TO_MANAGED_SYSTEM"),
+	
 	@XmlEnumValue("LINKED_TO_PAGE_TEMPLATE")
 	LINKED_TO_PAGE_TEMPLATE("LINKED_TO_PAGE_TEMPLATE"),
 
@@ -570,7 +579,10 @@ public enum ResponseCode {
 	META_VALUE_MISSING("META_VALUE_MISSING"),
 	
 	@XmlEnumValue("CONNECTOR_REQUIRED")
-	CONNECTOR_REQUIRED("CONNECTOR_REQUIRED");
+	CONNECTOR_REQUIRED("CONNECTOR_REQUIRED"),
+	
+	@XmlEnumValue("FAIL_LIMIT_NUM_REPEAT_CHAR")
+	FAIL_LIMIT_NUM_REPEAT_CHAR("FAIL_LIMIT_NUM_REPEAT_CHAR");
 	
     private final String value;
 

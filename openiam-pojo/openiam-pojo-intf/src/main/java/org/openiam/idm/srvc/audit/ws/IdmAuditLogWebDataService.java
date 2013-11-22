@@ -1,10 +1,18 @@
 package org.openiam.idm.srvc.audit.ws;
 
+import org.openiam.base.ws.Response;
+import org.openiam.idm.searchbeans.AuditLogSearchBean;
+import org.openiam.idm.srvc.audit.domain.AuditLogBuilder;
+import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
+import org.openiam.idm.srvc.audit.dto.AuditLogBuilderDto;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.dto.SearchAudit;
 
+import javax.jws.WebMethod;
+import javax.jws.WebParam;
 import javax.jws.WebService;
 import java.util.Date;
+import java.util.List;
 
 /**
  * Interface for  <code>IdmAuditLogDataService</code>. All audit logging activities
@@ -12,35 +20,28 @@ import java.util.Date;
  */
 @WebService(targetNamespace = "urn:idm.openiam.org/srvc/audit/service", name = "AuditDataService")
 public interface IdmAuditLogWebDataService {
+    
+	@WebMethod
+	public IdmAuditLog getLogRecord(final @WebParam(name = "id", targetNamespace = "") String id);
+	
+	@WebMethod
+    public Response addLogs(final List<AuditLogBuilderDto> logList);
+    
+	@WebMethod
+    public List<IdmAuditLog> findBeans(final @WebParam(name = "searchBean", targetNamespace = "") AuditLogSearchBean searchBean,
+    								   final @WebParam(name = "from", targetNamespace = "") int from,
+    								   final @WebParam(name = "size", targetNamespace = "") int size);
+	
+	@WebMethod
+	public int count(final @WebParam(name = "searchBean", targetNamespace = "") AuditLogSearchBean searchBean);
 
-    /**
-     * Creates a new audit log entry. The returned object contains the
-     *
-     * @param log
-     * @return
-     */
-    public IdmAuditLogResponse addLog(IdmAuditLog log);
-
-    public IdmAuditLogListResponse getCompleteLog();
-
-    public IdmAuditLogListResponse getPasswordChangeLog();
-
-    /**
-     * Returns a collection of audit log entries based on the search parameters.
-     *
-     * @param search
-     * @return
-     */
-    public IdmAuditLogListResponse search(SearchAudit search);
+    /*
     public IdmAuditLogListResponse searchEvents(SearchAudit search, Integer from, Integer size);
     public Integer countEvents(SearchAudit search);
-
-    public void updateLog(IdmAuditLog log);
 
     IdmAuditLogListResponse eventsAboutUser(String principal, Date startDate);
     public IdmAuditLogListResponse searchEventsAboutUser(String principal, Date startDate, Date endDate, Integer from, Integer size);
 
     public Integer countEventsAboutUser(String principal, Date startDate, Date endDate);
-
-
+	*/
 }

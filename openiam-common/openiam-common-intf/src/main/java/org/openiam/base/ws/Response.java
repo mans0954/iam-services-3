@@ -66,6 +66,10 @@ public class Response implements Serializable {
     public ResponseStatus getStatus() {
         return status;
     }
+    
+    public void fail() {
+    	this.status = ResponseStatus.FAILURE;
+    }
 
     public void setStatus(ResponseStatus status) {
         this.status = status;
@@ -96,11 +100,11 @@ public class Response implements Serializable {
     }
 
     public boolean isSuccess() {
-        return status.equals(ResponseStatus.SUCCESS);
+    	return ResponseStatus.SUCCESS.equals(status);
     }
 
     public boolean isFailure() {
-        return status.equals(ResponseStatus.FAILURE);
+        return !isSuccess();
     }
 
     public List<EsbErrorToken> getErrorTokenList() {

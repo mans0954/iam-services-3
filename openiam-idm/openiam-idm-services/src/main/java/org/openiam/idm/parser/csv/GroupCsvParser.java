@@ -39,9 +39,11 @@ public class GroupCsvParser extends AbstractCSVParser<Group, GroupFields> implem
             case companyId:
                 group.setCompanyId(objValue);
                 break;
+            /*
             case ownerId:
                 group.setOwnerId(objValue);
                 break;
+            */
             case description:
                 group.setDescription(objValue);
                 break;
@@ -58,12 +60,17 @@ public class GroupCsvParser extends AbstractCSVParser<Group, GroupFields> implem
             case lastUpdatedBy:
                 group.setLastUpdatedBy(objValue);
                 break;
+            case managedSysId:
+            	group.setManagedSysId(objValue);
+            	break;
+            /*
             case metadataTypeId:
                 group.setMetadataTypeId(objValue);
                 break;
             case internalGroupId:
                 group.setInternalGroupId(objValue);
                 break;
+           	*/
             default:
                 break;
         }
@@ -84,15 +91,20 @@ public class GroupCsvParser extends AbstractCSVParser<Group, GroupFields> implem
                 objValue = group.getLastUpdate() == null ? "" : toString(sdf
                         .format(group.getLastUpdate()));
                 break;
+            case managedSysId:
+            	objValue = group.getManagedSysId();
+            	break;
             case createdBy:
                 objValue = group.getCreatedBy();
                 break;
             case companyId:
                 objValue = group.getCompanyId();
                 break;
+            /*
             case ownerId:
                 objValue = group.getOwnerId();
                 break;
+            */
             case description:
                 objValue = group.getDescription();
                 break;
@@ -106,12 +118,14 @@ public class GroupCsvParser extends AbstractCSVParser<Group, GroupFields> implem
             case lastUpdatedBy:
                 objValue = group.getLastUpdatedBy();
                 break;
+            /*
             case metadataTypeId:
                 objValue = group.getMetadataTypeId();
                 break;
             case internalGroupId:
                 objValue = group.getInternalGroupId();
                 break;
+            */
             default:
                 break;
         }

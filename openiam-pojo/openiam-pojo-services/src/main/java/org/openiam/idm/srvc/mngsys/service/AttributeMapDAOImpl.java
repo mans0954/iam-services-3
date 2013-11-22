@@ -31,6 +31,13 @@ public class AttributeMapDAOImpl extends
                 .addOrder(Order.asc("managedSysId")).list();
     }
 
+    public List<AttributeMapEntity> findByManagedSysId(String managedSysId) {
+        return (List<AttributeMapEntity>) this.getCriteria()
+                .add(Restrictions.eq("managedSysId", managedSysId))
+                .addOrder(Order.asc("mapForObjectType"))
+                .addOrder(Order.asc("managedSysId")).list();
+    }
+
     public List<AttributeMapEntity> findBySynchConfigId(String synchConfigId) {
         return (List<AttributeMapEntity>) this.getCriteria()
                 .add(Restrictions.eq("synchConfigId", synchConfigId))

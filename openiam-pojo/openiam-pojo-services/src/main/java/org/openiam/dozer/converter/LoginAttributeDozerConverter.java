@@ -5,6 +5,7 @@ import org.openiam.idm.srvc.auth.dto.LoginAttribute;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by: Alexander Duckardt
@@ -40,5 +41,15 @@ public class LoginAttributeDozerConverter extends AbstractDozerEntityConverter<L
     @Override
     public List<LoginAttribute> convertToDTOList(List<LoginAttributeEntity> list, boolean isDeep) {
         return convertListToCrossEntity(list, isDeep, LoginAttribute.class);
+    }
+
+    @Override
+    public Set<LoginAttributeEntity> convertToEntitySet(Set<LoginAttribute> set, boolean isDeep) {
+        return convertSetToCrossEntity(set, isDeep, LoginAttributeEntity.class);
+    }
+
+    @Override
+    public Set<LoginAttribute> convertToDTOSet(Set<LoginAttributeEntity> set, boolean isDeep) {
+        return convertSetToCrossEntity(set, isDeep, LoginAttribute.class);
     }
 }

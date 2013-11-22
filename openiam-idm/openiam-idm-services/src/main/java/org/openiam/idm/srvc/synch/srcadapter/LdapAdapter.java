@@ -27,7 +27,6 @@ import org.openiam.base.id.UUIDGen;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.synch.dto.Attribute;
 import org.openiam.idm.srvc.synch.dto.LineObject;
 import org.openiam.idm.srvc.synch.dto.SyncResponse;
@@ -71,9 +70,6 @@ public class LdapAdapter extends AbstractSrcAdapter { // implements SourceAdapte
      */
     private static Set<String> runningTask = Collections.newSetFromMap(new ConcurrentHashMap());
 
-    protected LineObject rowHeader = new LineObject();
-    protected ProvisionUser pUser = new ProvisionUser();
-    
     @Value("${KEYSTORE}")
     private String keystore;
 
@@ -89,16 +85,15 @@ public class LdapAdapter extends AbstractSrcAdapter { // implements SourceAdapte
         long mostRecentRecord = 0L;
         String lastRecProcessed = null;
         //java.util.Date lastExec = null;
-        IdmAuditLog synchUserStartLog = null;
 
         log.debug("LDAP startSynch CALLED.^^^^^^^^");
 
         String requestId = UUIDGen.getUUID();
-
+        /*
         IdmAuditLog synchStartLog = new IdmAuditLog();
         synchStartLog.setSynchAttributes("SYNCH_USER", config.getSynchConfigId(), "START", "SYSTEM", requestId);
         synchStartLog = auditHelper.logEvent(synchStartLog);
-
+		*/
         // This needs to be synchronized, because the check for the taskId and the insertion need to
         // happen atomically. It is possible for two threads, started by Quartz, to reach this point at
         // the same time for the same task.
@@ -131,10 +126,10 @@ public class LdapAdapter extends AbstractSrcAdapter { // implements SourceAdapte
                 runningTask.remove(config.getSynchConfigId());
 
                 log.error(cnfe);
-
+                /*
                 synchStartLog.updateSynchAttributes("FAIL",ResponseCode.CLASS_NOT_FOUND.toString() , cnfe.toString());
                 auditHelper.logEvent(synchStartLog);
-
+				*/
                 SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
                 resp.setErrorCode(ResponseCode.CLASS_NOT_FOUND);
                 return resp;
@@ -164,7 +159,6 @@ public class LdapAdapter extends AbstractSrcAdapter { // implements SourceAdapte
                 SearchResult sr = (SearchResult) results.next();
                 Attributes attrs = sr.getAttributes();
 
-                pUser = new ProvisionUser();
                 LineObject rowObj = new LineObject();
 
                 log.debug("-New Row to Synchronize --" + ctr++);
@@ -235,31 +229,42 @@ public class LdapAdapter extends AbstractSrcAdapter { // implements SourceAdapte
 
                     // transform
                     int retval = -1;
+                    ProvisionUser pUser = new ProvisionUser();
                     List<TransformScript> transformScripts = SynchScriptFactory.createTransformationScript(config);
                     if (transformScripts != null && transformScripts.size() > 0) {
-
                         for (TransformScript transformScript : transformScripts) {
+                            transformScript.init();
+                            pUser = new ProvisionUser();
                             // initialize the transform script
                             if (usr != null) {
                                 transformScript.setNewUser(false);
-                                transformScript.setUser(userDozerConverter.convertToDTO(userManager.getUser(usr.getUserId()), true));
-                                transformScript.setPrincipalList(loginDozerConverter.convertToDTOList(loginManager.getLoginByUser(usr.getUserId()), true));
+                                User u = userManager.getUserDto(usr.getUserId());
+                                pUser = new ProvisionUser(u);
+                                transformScript.setUser(u);
+                                transformScript.setPrincipalList(loginDozerConverter.convertToDTOList(loginManager.getLoginByUser(usr.getUserId()), false));
                                 transformScript.setUserRoleList(roleDataService.getUserRolesAsFlatList(usr.getUserId()));
 
                             } else {
                                 transformScript.setNewUser(true);
+                                transformScript.setUser(null);
+                                transformScript.setPrincipalList(null);
+                                transformScript.setUserRoleList(null);
                             }
 
-                            retval = transformScript.execute(rowObj, pUser);
+                            log.info(" - Execute transform script");
 
+                            //Disable PRE and POST processors/performance optimizations
+                            pUser.setSkipPreprocessor(true);
+                            pUser.setSkipPostProcessor(true);
+                            retval = transformScript.execute(rowObj, pUser);
                             log.debug("Transform result=" + retval);
                         }
-
+                        /*
                         pUser.setSessionId(synchStartLog.getSessionId());
-
+						*/
                         if (retval == TransformScript.DELETE && usr != null) {
                             log.debug("deleting record - " + usr.getUserId());
-                            ProvisionUserResponse userResp = provService.deleteByUserId(new ProvisionUser(usr), UserStatusEnum.DELETED, systemAccount);
+                            ProvisionUserResponse userResp = provService.deleteByUserId(usr.getUserId(), UserStatusEnum.DELETED, systemAccount);
 
                         } else {
                             // call synch
@@ -287,10 +292,10 @@ public class LdapAdapter extends AbstractSrcAdapter { // implements SourceAdapte
                     }
 
                     log.error(cnfe);
-
+                    /*
                     synchStartLog.updateSynchAttributes("FAIL",ResponseCode.CLASS_NOT_FOUND.toString() , cnfe.toString());
                     auditHelper.logEvent(synchStartLog);
-
+					*/
                     SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
                     resp.setErrorCode(ResponseCode.CLASS_NOT_FOUND);
                     resp.setErrorText(cnfe.toString());
@@ -302,10 +307,10 @@ public class LdapAdapter extends AbstractSrcAdapter { // implements SourceAdapte
                     }
 
                     log.error(fe);
-
+                    /*
                     synchStartLog.updateSynchAttributes("FAIL",ResponseCode.FILE_EXCEPTION.toString() , fe.toString());
                     auditHelper.logEvent(synchStartLog);
-
+					*/
                     SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
                     resp.setErrorCode(ResponseCode.FILE_EXCEPTION);
                     resp.setErrorText(fe.toString());
@@ -318,10 +323,10 @@ public class LdapAdapter extends AbstractSrcAdapter { // implements SourceAdapte
                     }
 
                     log.error(e);
-
+                    /*
                     synchStartLog.updateSynchAttributes("FAIL",ResponseCode.FAIL_OTHER.toString() , e.toString());
                     auditHelper.logEvent(synchStartLog);
-
+					*/
                     SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
                     resp.setErrorCode(ResponseCode.FAIL_OTHER);
                     resp.setErrorText(e.toString());
@@ -336,10 +341,10 @@ public class LdapAdapter extends AbstractSrcAdapter { // implements SourceAdapte
             }
 
             log.error(ne);
-
+            /*
             synchStartLog.updateSynchAttributes("FAIL",ResponseCode.DIRECTORY_NAMING_EXCEPTION.toString() , ne.toString());
             auditHelper.logEvent(synchStartLog);
-
+			*/
             SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
             resp.setErrorCode(ResponseCode.CLASS_NOT_FOUND);
             resp.setErrorText(ne.toString());
@@ -445,8 +450,7 @@ public class LdapAdapter extends AbstractSrcAdapter { // implements SourceAdapte
         envDC.put(Context.SECURITY_PRINCIPAL, config.getSrcLoginId());  //"administrator@diamelle.local"
         envDC.put(Context.SECURITY_CREDENTIALS, config.getSrcPassword());
 
-        if (hostUrl.contains("ldaps")) {
-
+        if (hostUrl.toLowerCase().contains("ldaps")) {
             envDC.put(Context.SECURITY_PROTOCOL, "SSL");
         }
 

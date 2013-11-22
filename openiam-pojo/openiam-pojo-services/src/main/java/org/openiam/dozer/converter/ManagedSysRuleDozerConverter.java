@@ -1,6 +1,7 @@
 package org.openiam.dozer.converter;
 
 import java.util.List;
+import java.util.Set;
 
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysRuleEntity;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysRuleDto;
@@ -43,5 +44,15 @@ public class ManagedSysRuleDozerConverter extends
     public List<ManagedSysRuleDto> convertToDTOList(
             List<ManagedSysRuleEntity> list, boolean isDeep) {
         return convertListToCrossEntity(list, isDeep, ManagedSysRuleDto.class);
+    }
+
+    @Override
+    public Set<ManagedSysRuleEntity> convertToEntitySet(Set<ManagedSysRuleDto> set, boolean isDeep) {
+        return convertSetToCrossEntity(set, isDeep, ManagedSysRuleEntity.class);
+    }
+
+    @Override
+    public Set<ManagedSysRuleDto> convertToDTOSet(Set<ManagedSysRuleEntity> set, boolean isDeep) {
+        return convertSetToCrossEntity(set, isDeep, ManagedSysRuleDto.class);
     }
 }

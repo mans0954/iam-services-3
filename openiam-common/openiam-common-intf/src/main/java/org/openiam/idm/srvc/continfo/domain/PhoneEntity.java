@@ -232,7 +232,6 @@ public class PhoneEntity {
 		result = prime * result
 				+ ((lastUpdate == null) ? 0 : lastUpdate.hashCode());
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
-		result = prime * result + ((parent == null) ? 0 : parent.hashCode());
 		result = prime * result
 				+ ((phoneExt == null) ? 0 : phoneExt.hashCode());
 		result = prime * result + ((phoneId == null) ? 0 : phoneId.hashCode());
@@ -288,11 +287,6 @@ public class PhoneEntity {
 			if (other.name != null)
 				return false;
 		} else if (!name.equals(other.name))
-			return false;
-		if (parent == null) {
-			if (other.parent != null)
-				return false;
-		} else if (!parent.equals(other.parent))
 			return false;
 		if (phoneExt == null) {
 			if (other.phoneExt != null)

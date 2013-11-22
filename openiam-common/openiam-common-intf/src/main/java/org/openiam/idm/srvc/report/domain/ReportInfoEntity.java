@@ -18,7 +18,6 @@ import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.report.dto.ReportInfoDto;
-import org.openiam.idm.srvc.res.domain.ResourceUserEntity;
 
 /**
  * This entity used in reporting system to define Report information

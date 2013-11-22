@@ -172,6 +172,8 @@ public interface UserDataService {
 
     public SupervisorEntity getSupervisor(String supervisorObjId);
 
+    public void evict(Object object);
+
     /**
      * Returns a List of supervisor objects that represents the supervisors for
      * this employee or user.
@@ -237,15 +239,15 @@ public interface UserDataService {
 
     public void deleteUser(String userId);
 
-    public void enableDisableUser(String userId, UserStatusEnum secondaryStatus);
+    public void setSecondaryStatus(String userId, UserStatusEnum secondaryStatus);
 
     public void activateUser(String userId);
 
-    public Integer getNumOfEmailsForUser(String userId);
+    public int getNumOfEmailsForUser(String userId);
 
-    public Integer getNumOfAddressesForUser(String userId);
+    public int getNumOfAddressesForUser(String userId);
 
-    public Integer getNumOfPhonesForUser(String userId);
+    public int getNumOfPhonesForUser(String userId);
 
     public void mergeUserFields(UserEntity origUserEntity, UserEntity newUserEntity);
 
@@ -255,5 +257,24 @@ public interface UserDataService {
 
     public Map<String, UserAttributeEntity> getUserAttributes(String userId);
 
-    List<UserEntity> getByExample(UserSearchBean searchBean);
+    List<UserEntity> getByExample(UserSearchBean searchBean, int start, int size);
+
+    boolean isRoleInUser(String userId, String roleId);
+
+    List<String> getUserIdsInRole(String roleId, String requestrId);
+
+    List<String> getUserIdsInGroup(String groupId, String requestrId);
+
+    void addUserToGroup(String userId, String groupId);
+
+    void removeUserFromGroup(String userId, String groupId);
+
+    boolean isHasGroup(String userId, String groupId);
+
+    void addUserToResource(String userId, String resourceId);
+
+    boolean isHasResource(String userId, String resourceId);
+
+    boolean isHasOrganization(String userId, String organizationId);
+
 }

@@ -27,7 +27,6 @@ import org.openiam.base.id.UUIDGen;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.synch.dto.Attribute;
 import org.openiam.idm.srvc.synch.dto.LineObject;
 import org.openiam.idm.srvc.synch.dto.SyncResponse;
@@ -60,9 +59,6 @@ import java.util.Map;
 @Component
 public class WSAdapter extends AbstractSrcAdapter { // implements SourceAdapter
 
-	protected LineObject rowHeader = new LineObject();
-	protected ProvisionUser pUser = new ProvisionUser();
-
 	@Autowired
     @Qualifier("configurableGroovyScriptEngine")
     private ScriptIntegration scriptRunner;
@@ -77,24 +73,24 @@ public class WSAdapter extends AbstractSrcAdapter { // implements SourceAdapter
 		MatchObjectRule matchRule = null;
 		String changeLog = null;
 		Date mostRecentRecord = null;
-		IdmAuditLog synchUserStartLog = null;
 
 		log.debug("WS SYNCH STARTED ^^^^^^^^");
 
         String requestId = UUIDGen.getUUID();
 
+        /*
         IdmAuditLog synchStartLog = new IdmAuditLog();
         synchStartLog.setSynchAttributes("SYNCH_USER", config.getSynchConfigId(), "START", "SYSTEM", requestId);
         synchStartLog = auditHelper.logEvent(synchStartLog);
-
+		*/
 		try {
 			matchRule = matchRuleFactory.create(config);
 		} catch(ClassNotFoundException cnfe) {
 			log.error(cnfe);
-
+			/*
             synchStartLog.updateSynchAttributes("FAIL",ResponseCode.CLASS_NOT_FOUND.toString() , cnfe.toString());
             auditHelper.logEvent(synchStartLog);
-
+			*/
             SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
             resp.setErrorCode(ResponseCode.CLASS_NOT_FOUND);
             return resp;
@@ -123,8 +119,7 @@ public class WSAdapter extends AbstractSrcAdapter { // implements SourceAdapter
 			//while ( rs.next()) {
                 log.debug("-SYNCHRONIZING NEW RECORD ---" );
 				// make sure we have a new object for each row
-				pUser = new ProvisionUser();
-				
+
 			//	LineObject rowObj = rowHeader.copy();
 			//	DatabaseUtil.populateRowObject(rowObj, rs, changeLog);
 				
@@ -167,6 +162,7 @@ public class WSAdapter extends AbstractSrcAdapter { // implements SourceAdapter
 
 					// transform
                     int retval = -1;
+                    ProvisionUser pUser = new ProvisionUser();
                     List<TransformScript> transformScripts =  SynchScriptFactory.createTransformationScript(config);
                     if (transformScripts != null && transformScripts.size() > 0) {
 
@@ -174,8 +170,10 @@ public class WSAdapter extends AbstractSrcAdapter { // implements SourceAdapter
                             // initialize the transform script
                             if (usr != null) {
                                 transformScript.setNewUser(false);
-                                transformScript.setUser(userDozerConverter.convertToDTO(userManager.getUser(usr.getUserId()), true));
-                                transformScript.setPrincipalList(loginDozerConverter.convertToDTOList(loginManager.getLoginByUser(usr.getUserId()), true));
+                                User u = userManager.getUserDto(usr.getUserId());
+                                pUser = new ProvisionUser(u);
+                                transformScript.setUser(u);
+                                transformScript.setPrincipalList(loginDozerConverter.convertToDTOList(loginManager.getLoginByUser(usr.getUserId()), false));
                                 transformScript.setUserRoleList(roleDataService.getUserRolesAsFlatList(usr.getUserId()));
 
                             } else {
@@ -184,7 +182,8 @@ public class WSAdapter extends AbstractSrcAdapter { // implements SourceAdapter
                                 transformScript.setPrincipalList(null);
                                 transformScript.setUserRoleList(null);
                             }
-
+                            pUser.setSkipPreprocessor(true);
+                            pUser.setSkipPostProcessor(true);
                             retval = transformScript.execute(rowObj, pUser);
 
                             log.debug("- Transform result=" + retval);
@@ -194,13 +193,13 @@ public class WSAdapter extends AbstractSrcAdapter { // implements SourceAdapter
                         log.debug("- User After Transformation =" + pUser);
                         log.debug("- User = " + pUser.getUserId() + "-" + pUser.getFirstName() + " " + pUser.getLastName());
                         log.debug("- User Attributes = " + pUser.getUserAttributes());
-
+                        /*
 						pUser.setSessionId(synchStartLog.getSessionId());
-
+						*/
 						if (retval == TransformScript.DELETE && usr != null) {
 							log.debug("deleting record - " + usr.getUserId());
-							ProvisionUserResponse userResp = provService.deleteByUserId( new ProvisionUser( usr ), UserStatusEnum.DELETED, systemAccount);
-							
+							ProvisionUserResponse userResp = provService.deleteByUserId(usr.getUserId(), UserStatusEnum.DELETED, systemAccount);
+
 						} else {
 							// call synch
 
@@ -226,10 +225,10 @@ public class WSAdapter extends AbstractSrcAdapter { // implements SourceAdapter
 
 				} catch(ClassNotFoundException cnfe) {
 					log.error(cnfe);
-
+					/*
                     synchStartLog.updateSynchAttributes("FAIL",ResponseCode.CLASS_NOT_FOUND.toString() , cnfe.toString());
                     auditHelper.logEvent(synchStartLog);
-
+					*/
 					SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
 					resp.setErrorCode(ResponseCode.CLASS_NOT_FOUND);
                     resp.setErrorText(cnfe.toString());
@@ -239,10 +238,10 @@ public class WSAdapter extends AbstractSrcAdapter { // implements SourceAdapter
 				} catch (IOException fe ) {
 
                     log.error(fe);
-
+                    /*
                     synchStartLog.updateSynchAttributes("FAIL",ResponseCode.FILE_EXCEPTION.toString() , fe.toString());
                     auditHelper.logEvent(synchStartLog);
-
+					*/
                     SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
                     resp.setErrorCode(ResponseCode.FILE_EXCEPTION);
                     resp.setErrorText(fe.toString());
@@ -253,19 +252,21 @@ public class WSAdapter extends AbstractSrcAdapter { // implements SourceAdapter
 						
 		} catch(Exception se) {
 			log.error(se);
-
+			/*
             synchStartLog.updateSynchAttributes("FAIL",ResponseCode.SYNCHRONIZATION_EXCEPTION.toString() , se.toString());
             auditHelper.logEvent(synchStartLog);
-
+			*/
 			SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
 			resp.setErrorCode(ResponseCode.SQL_EXCEPTION);
 			resp.setErrorText(se.toString());
 			return resp;
 		} finally {
 			// mark the end of the synch
+			/*
 			IdmAuditLog synchEndLog = new IdmAuditLog();
 			synchEndLog.setSynchAttributes("SYNCH_USER", config.getSynchConfigId(), "END", "SYSTEM", synchStartLog.getSessionId());
-			auditHelper.logEvent(synchEndLog);			
+			auditHelper.logEvent(synchEndLog);
+			*/			
 		}
 		
 		log.debug("WS SYNCH COMPLETE.^^^^^^^^");

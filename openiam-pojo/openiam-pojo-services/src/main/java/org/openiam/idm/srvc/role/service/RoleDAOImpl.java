@@ -13,9 +13,10 @@ import org.hibernate.criterion.Restrictions;
 import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.idm.searchbeans.RoleSearchBean;
 import org.openiam.idm.searchbeans.SearchBean;
-import org.openiam.idm.srvc.res.domain.ResourceRoleEntity;
+import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.searchbean.converter.RoleSearchBeanConverter;
+import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -90,44 +91,21 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
 					criteria.add(Restrictions.eq("serviceId", entity.getServiceId()));
 				}
 				
-				if(CollectionUtils.isNotEmpty(entity.getResourceRoles())) {
+				if(CollectionUtils.isNotEmpty(entity.getResources())) {
 					final Set<String> resourceIds = new HashSet<String>();
-	            	for(final ResourceRoleEntity resourceRole : entity.getResourceRoles()) {
-	            		if(resourceRole != null && StringUtils.isNotBlank(resourceRole.getId().getResourceId())) {
-	            			resourceIds.add(resourceRole.getId().getResourceId());
+	            	for(final ResourceEntity resourceRole : entity.getResources()) {
+	            		if(resourceRole != null && StringUtils.isNotBlank(resourceRole.getResourceId())) {
+	            			resourceIds.add(resourceRole.getResourceId());
 	            		}
 	            	}
 	            	
 	            	if(CollectionUtils.isNotEmpty(resourceIds)) {
-	            		criteria.createAlias("resourceRoles", "rr").add( Restrictions.in("rr.id.resourceId", resourceIds));
+	            		criteria.createAlias("resources", "rr").add( Restrictions.in("rr.resourceId", resourceIds));
 	            	}
 				}
 			}
 		}
 		return criteria;
-	}
-
-	@Override
-	public List<RoleEntity> findUserRoles(final String userId, final Set<String> filter, final int from, final int size) {
-		final Query qry = getSession().createQuery("select role from RoleEntity role, UserRoleEntity ur " +
-				" where ur.userId = :userId and  ur.roleId = role.roleId" +
-                ((filter!=null && !filter.isEmpty())? " and role.roleId in (:roleList)" :"") +
-				" order by role.roleName ");
-		
-	
-		qry.setString("userId", userId);
-        if(filter!=null && !filter.isEmpty()){
-            qry.setParameterList("roleList", filter);
-        }
-
-		if(from > -1) {
-			qry.setFirstResult(from);
-		}
-		
-		if(size > -1) {
-			qry.setMaxResults(size);
-		}
-		return qry.list();
 	}
 
 	@Override
@@ -171,8 +149,8 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
         final Criteria criteria = super.getCriteria();
 
         if(StringUtils.isNotBlank(userId)){
-            criteria.createAlias("userRoles", "ur")
-                    .add(Restrictions.eq("ur.userId", userId));
+            criteria.createAlias("users", "u")
+                    .add(Restrictions.eq("u.userId", userId));
         }
 
         if(StringUtils.isNotBlank(groupId)){
@@ -180,7 +158,7 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
         }
 
         if(StringUtils.isNotBlank(resourceId)){
-            criteria.createAlias("resourceRoles", "resourceRole").add( Restrictions.eq("resourceRole.id.resourceId", resourceId));
+            criteria.createAlias("resources", "resources").add( Restrictions.eq("resources.resourceId", resourceId));
         }
 
         if(filter!=null && !filter.isEmpty()){
@@ -235,8 +213,8 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
 	
 	private Criteria getRolesForUserCriteria(final String userId, final Set<String> filter) {
 		return getCriteria()
-	               .createAlias("userRoles", "ur")
-	               .add(Restrictions.eq("ur.userId", userId));
+	               .createAlias("users", "u")
+	               .add(Restrictions.eq("u.userId", userId));
 	}
 
     private List<RoleEntity> getList(Criteria criteria, int from, int size){

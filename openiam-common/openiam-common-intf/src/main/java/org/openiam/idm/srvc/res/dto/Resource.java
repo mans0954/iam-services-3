@@ -2,20 +2,22 @@ package org.openiam.idm.srvc.res.dto;
 
 // Generated Mar 8, 2009 12:54:32 PM by Hibernate Tools 3.2.2.GA
 
+import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.BaseObject;
 import org.openiam.dozer.DozerDTOCorrespondence;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlTransient;
+import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlType;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
+
+import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
-import org.openiam.idm.srvc.res.domain.ResourceGroupEntity;
-import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
-import org.openiam.idm.srvc.res.domain.ResourceRoleEntity;
+import org.openiam.idm.srvc.role.dto.Role;
+import org.openiam.idm.srvc.user.dto.User;
 
 /**
  * Resources are items that need to be managed or protected. These can be both logic and physical in nature.
@@ -29,19 +31,23 @@ import org.openiam.idm.srvc.res.domain.ResourceRoleEntity;
         "branchId",
         "categoryId",
         "displayOrder",
-        "managedSysId",
         "URL",
-        "resourceRoles",
+        "roles",
         "resourceProps",
-        "resourceGroups",
+        "groups",
         "resOwnerUserId",
         "resOwnerGroupId",
         "childResources",
         "parentResources",
         "minAuthLevel",
         "domain",
-        "isPublic"/*,
-        "isSSL"*/
+        "isPublic",
+        //"isSSL",
+        "operation"
+})
+@XmlSeeAlso({
+        Role.class,
+        User.class
 })
 @DozerDTOCorrespondence(ResourceEntity.class)
 public class Resource extends BaseObject {
@@ -53,7 +59,6 @@ public class Resource extends BaseObject {
     private String branchId;
     private String categoryId;
     private Integer displayOrder;
-    private String managedSysId;
     private String URL;
 
     private String resOwnerUserId;
@@ -62,30 +67,19 @@ public class Resource extends BaseObject {
     private Set<Resource> parentResources = new HashSet<Resource>(0);
     private Set<Resource> childResources = new HashSet<Resource>(0);
 
-    private Set<ResourceRole> resourceRoles = new HashSet<ResourceRole>(0);
+    private Set<Role> roles = new HashSet<Role>(0);
 
     private Set<ResourceProp> resourceProps = new HashSet<ResourceProp>(0); // defined as a Set in Hibernate map
 
-    private Set<ResourceGroup> resourceGroups = new HashSet<ResourceGroup>(0);
-
-    @XmlTransient
-    private Set<ResourceUser> resourceUsers = new HashSet<ResourceUser>();
-    
+    private Set<Group> groups = new HashSet<Group>(0);
     private String minAuthLevel;
     private String domain;
     private boolean isPublic = true;
     //private boolean isSSL = false;
 
+    protected AttributeOperationEnum operation = AttributeOperationEnum.NO_CHANGE;
+
     public Resource() {
-    }
-
-    public Resource(String resourceId) {
-        this.resourceId = resourceId;
-    }
-
-    public Resource(String resourceId, String managedSysId) {
-        this.resourceId = resourceId;
-        this.managedSysId = managedSysId;
     }
 
     public String getResourceId() {
@@ -144,14 +138,6 @@ public class Resource extends BaseObject {
         this.displayOrder = displayOrder;
     }
 
-    public Set<ResourceRole> getResourceRoles() {
-        return this.resourceRoles;
-    }
-
-    public void setResourceRoles(Set<ResourceRole> resourceRoles) {
-        this.resourceRoles = resourceRoles;
-    }
-
     public Set<ResourceProp> getResourceProps() {
         return resourceProps;
     }
@@ -204,21 +190,21 @@ public class Resource extends BaseObject {
 	}
 	
 	/*
-	public boolean getIsSSL() {
+    public boolean getIsSSL() {
 		return this.isSSL;
 	}
-	
+
 	public void setIsSSL(final boolean isSSL) {
 		this.isSSL = isSSL;
 	}
 	*/
 
-	public Set<ResourceUser> getResourceUsers() {
-		return resourceUsers;
+    public AttributeOperationEnum getOperation() {
+        return operation;
 	}
 
-	public void setResourceUsers(Set<ResourceUser> resourceUsers) {
-		this.resourceUsers = resourceUsers;
+    public void setOperation(AttributeOperationEnum operation) {
+        this.operation = operation;
 	}
 
 	@Override
@@ -231,23 +217,11 @@ public class Resource extends BaseObject {
                 ", branchId='" + branchId + '\'' +
                 ", categoryId='" + categoryId + '\'' +
                 ", displayOrder=" + displayOrder +
-                ", managedSysId='" + managedSysId + '\'' +
                 ", URL='" + URL + '\'' +
                 ", resOwnerUserId='" + resOwnerUserId + '\'' +
                 ", resOwnerGroupId='" + resOwnerGroupId + '\'' +
-                ", resourceRoles=" + resourceRoles +
-                ", resourceProps=" + resourceProps +
-                ", resourceGroups=" + resourceGroups +
                 /*", entitlements=" + entitlements +*/
                 '}';
-    }
-
-    public String getManagedSysId() {
-        return managedSysId;
-    }
-
-    public void setManagedSysId(String managedSysId) {
-        this.managedSysId = managedSysId;
     }
 
     public String getURL() {
@@ -258,12 +232,20 @@ public class Resource extends BaseObject {
         URL = uRL;
     }
 
-    public Set<ResourceGroup> getResourceGroups() {
-        return resourceGroups;
+    public Set<Role> getRoles() {
+        return roles;
     }
 
-    public void setResourceGroups(Set<ResourceGroup> resourceGroups) {
-        this.resourceGroups = resourceGroups;
+    public void setRoles(Set<Role> roles) {
+        this.roles = roles;
+    }
+
+    public Set<Group> getGroups() {
+        return groups;
+    }
+
+    public void setGroups(Set<Group> groups) {
+        this.groups = groups;
     }
 
     public String getResOwnerUserId() {

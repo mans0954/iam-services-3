@@ -12,7 +12,6 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Example;
 import org.openiam.exception.data.DataException;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.springframework.dao.DataAccessException;
 import org.springframework.orm.hibernate3.HibernateTemplate;
 

@@ -7,6 +7,7 @@ import org.dozer.Mapper;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.dto.LoginAttribute;
+import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
 import org.openiam.idm.srvc.user.dto.*;
@@ -76,8 +77,6 @@ public class TestDozerConversion extends AbstractTestNGSpringContextTests {
 		final List<Login> principalList = new LinkedList<Login>();
 		user.setPrincipalList(principalList);
 		user.setRequestClientIP(rs(2));
-		user.setRequestorDomain(rs(2));
-		user.setRequestorLogin(rs(2));
 		user.setSecondaryStatus(UserStatusEnum.ACTIVE);
 		user.setSecurityDomain(rs(2));
 		user.setSex(rs(2));
@@ -146,7 +145,7 @@ public class TestDozerConversion extends AbstractTestNGSpringContextTests {
 		login.setPwdExp(new Date());
 		login.setResetPassword(4);
 		login.setSelected(true);
-		login.setStatus(rs(2));
+		login.setStatus(LoginStatusEnum.ACTIVE);
 		login.setUserId(rs(2));
 		
 		final Login deepCopy = deepDozerMapper.map(login, Login.class);
@@ -274,7 +273,7 @@ public class TestDozerConversion extends AbstractTestNGSpringContextTests {
 			Assert.assertTrue(CollectionUtils.isEmpty(copy.getPrincipalList()));
 		}
 		Assert.assertEquals(original.getRequestClientIP(), copy.getRequestClientIP());
-		Assert.assertEquals(original.getRequestorDomain(), copy.getRequestorDomain());
+		//Assert.assertEquals(original.getRequestorDomain(), copy.getRequestorDomain());
 		Assert.assertEquals(original.getRequestorLogin(), copy.getRequestorLogin());
 		Assert.assertEquals(original.getSecondaryStatus(), copy.getSecondaryStatus());
 		Assert.assertEquals(original.getSecurityDomain(), copy.getSecurityDomain());

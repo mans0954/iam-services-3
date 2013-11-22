@@ -22,6 +22,7 @@
 package org.openiam.idm.srvc.synch.service;
 
 import java.util.List;
+import java.util.Set;
 
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.role.dto.Role;

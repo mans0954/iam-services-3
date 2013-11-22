@@ -1,6 +1,5 @@
 package org.openiam.bpm.activiti.delegate.user.newuser;
 
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -13,8 +12,6 @@ import org.apache.log4j.Logger;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
-import org.openiam.idm.srvc.continfo.dto.EmailAddress;
-import org.openiam.idm.srvc.grp.service.UserGroupDAO;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 import org.openiam.idm.srvc.mngsys.service.ApproverAssociationDAO;
@@ -22,22 +19,13 @@ import org.openiam.idm.srvc.msg.dto.NotificationParam;
 import org.openiam.idm.srvc.msg.dto.NotificationRequest;
 import org.openiam.idm.srvc.msg.service.MailService;
 import org.openiam.idm.srvc.prov.request.domain.ProvisionRequestEntity;
-import org.openiam.idm.srvc.prov.request.domain.RequestApproverEntity;
 import org.openiam.idm.srvc.prov.request.service.RequestDataService;
-import org.openiam.idm.srvc.role.service.UserRoleDAO;
 import org.openiam.idm.srvc.user.domain.SupervisorEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
-import org.openiam.idm.srvc.user.dto.NewUserProfileRequestModel;
-import org.openiam.idm.srvc.user.dto.Supervisor;
-import org.openiam.idm.srvc.user.dto.User;
-import org.openiam.idm.srvc.user.dto.UserStatusEnum;
-import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.util.SpringContextProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-
-import com.thoughtworks.xstream.XStream;
 
 public class AcceptProfileProvisionNotifierDelegate implements JavaDelegate {
 	
@@ -56,13 +44,7 @@ public class AcceptProfileProvisionNotifierDelegate implements JavaDelegate {
 	
 	@Autowired
 	private LoginDataService loginDS;
-	
-	@Autowired
-	private UserRoleDAO userRoleDAO;
-	
-	@Autowired
-	private UserGroupDAO userGroupDAO;
-	
+
 	@Autowired
 	@Qualifier("provRequestService")
 	private RequestDataService provRequestService;
@@ -101,13 +83,13 @@ public class AcceptProfileProvisionNotifierDelegate implements JavaDelegate {
 	            
 	            switch(typeOfUserToNotify) {
 	            	case GROUP:
-	            		final List<String> usersInGroup = userGroupDAO.getUserIdsInGroup(notifyId);
+	            		final List<String> usersInGroup = userManager.getUserIdsInGroup(notifyId, requestorId);
 						if(CollectionUtils.isNotEmpty(usersInGroup)) {
 							userIds.addAll(usersInGroup);
 						}
 	            		break;
 	            	case ROLE:
-	            		final List<String> usersInRole = userRoleDAO.getUserIdsInRole(notifyId);
+	            		final List<String> usersInRole = userManager.getUserIdsInRole(notifyId, requestorId);
 						if(CollectionUtils.isNotEmpty(usersInRole)) {
 							userIds.addAll(usersInRole);
 						}

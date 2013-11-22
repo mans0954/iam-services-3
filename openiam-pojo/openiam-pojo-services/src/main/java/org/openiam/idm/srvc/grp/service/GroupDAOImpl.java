@@ -11,7 +11,7 @@ import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.idm.searchbeans.GroupSearchBean;
 import org.openiam.idm.searchbeans.SearchBean;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
-import org.openiam.idm.srvc.res.domain.ResourceGroupEntity;
+import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.searchbean.converter.GroupSearchBeanConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -78,6 +78,7 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
                 }
             }
 			
+			/*
 			if(StringUtils.isNotBlank(group.getOwnerId())) {
 				criteria.add(Restrictions.eq("ownerId", group.getOwnerId()));
 			}
@@ -85,12 +86,13 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
 			if(StringUtils.isNotBlank(group.getInternalGroupId())) {
 				criteria.add(Restrictions.eq("internalGroupId", group.getInternalGroupId()));
 			}
+			*/
             
-            if(CollectionUtils.isNotEmpty(group.getResourceGroups())) {
+            if(CollectionUtils.isNotEmpty(group.getResources())) {
             	final Set<String> resourceIds = new HashSet<String>();
-            	for(final ResourceGroupEntity resourceGroupEntity : group.getResourceGroups()) {
-            		if(resourceGroupEntity != null && StringUtils.isNotBlank(resourceGroupEntity.getResourceId())) {
-            			resourceIds.add(resourceGroupEntity.getResourceId());
+            	for(final ResourceEntity resourceEntity : group.getResources()) {
+            		if(resourceEntity != null && StringUtils.isNotBlank(resourceEntity.getResourceId())) {
+            			resourceIds.add(resourceEntity.getResourceId());
             		}
             	}
             	
@@ -187,9 +189,9 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
     private Criteria getEntitlementGroupsCriteria(String userId, String roleId, String resourceId, Set<String> filter){
         final Criteria criteria = super.getCriteria();
 
-        if(StringUtils.isNotBlank(userId)){
-            criteria.createAlias("userGroups", "ug")
-                    .add(Restrictions.eq("ug.userId", userId));
+            if(StringUtils.isNotBlank(userId)){
+            criteria.createAlias("users", "u")
+                    .add(Restrictions.eq("u.userId", userId));
         }
 
         if(StringUtils.isNotBlank(roleId)){
@@ -197,7 +199,7 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
         }
 
         if(StringUtils.isNotBlank(resourceId)){
-            criteria.createAlias("resourceGroups", "resourceGroup").add( Restrictions.eq("resourceGroup.resourceId", resourceId));
+            criteria.createAlias("resources", "resources").add( Restrictions.eq("resources.resourceId", resourceId));
         }
 
         if(filter!=null && !filter.isEmpty()){

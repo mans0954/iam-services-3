@@ -4,14 +4,16 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.base.ws.ResponseCode;
 import org.openiam.dozer.converter.GroupDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.GroupSearchBean;
 import org.openiam.idm.srvc.grp.domain.GroupAttributeEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
-import org.openiam.idm.srvc.grp.domain.UserGroupEntity;
 import org.openiam.idm.srvc.grp.dto.Group;
-import org.openiam.idm.srvc.res.service.ResourceGroupDAO;
+import org.openiam.idm.srvc.mngsys.service.ManagedSysDAO;
+import org.openiam.idm.srvc.res.domain.ResourceEntity;
+import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.srvc.user.util.DelegationFilterHelper;
 import org.openiam.validator.EntityValidator;
@@ -44,9 +46,6 @@ public class GroupDataServiceImpl implements GroupDataService {
 	
 	@Autowired
 	private GroupAttributeDAO groupAttrDao;
-	
-	@Autowired
-	private UserGroupDAO userGroupDao;
 
     @Autowired
     private UserDataService userDataService;
@@ -55,11 +54,11 @@ public class GroupDataServiceImpl implements GroupDataService {
     private GroupDozerConverter groupDozerConverter;
 
     @Autowired
-    private ResourceGroupDAO resoruceGroupDAO;
-
-    @Autowired
     @Qualifier("entityValidator")
     private EntityValidator entityValidator;
+    
+    @Autowired
+    private ManagedSysDAO managedSysDAO;
 	
 	private static final Log log = LogFactory.getLog(GroupDataServiceImpl.class);
 
@@ -84,14 +83,6 @@ public class GroupDataServiceImpl implements GroupDataService {
         searchBean.setName(groupName);
         final List<GroupEntity> foundList = this.findBeans(searchBean, requesterId, 0, 1);
         return (CollectionUtils.isNotEmpty(foundList)) ? foundList.get(0) : null;
-    }
-
-    @Override
-    public UserGroupEntity getRecord(final String userId, final String groupId, final String requesterId) {
-        if(DelegationFilterHelper.isAllowed(groupId, getDelegationFilter(requesterId))){
-            return userGroupDao.getRecord(groupId, userId);
-        }
-        return null;
     }
 
     @Override
@@ -193,39 +184,25 @@ public class GroupDataServiceImpl implements GroupDataService {
 	}
 
 	@Override
-	public void addUserToGroup(final String groupId, final String userId) {
-		if(groupId != null && userId != null) {
-			final UserGroupEntity entity = userGroupDao.getRecord(groupId, userId);
-			if(entity == null) {
-				final UserGroupEntity toSave = new UserGroupEntity(groupId, userId);
-				userGroupDao.save(toSave);
-			}
-		}
-	}
-	
-	@Override
-	public void removeUserFromGroup(String groupId, String userId) {
-		if(groupId != null && userId != null) {
-			final UserGroupEntity entity = userGroupDao.getRecord(groupId, userId);
-			if(entity != null) {
-				userGroupDao.delete(entity);
-			}
-		}
-	}
-	
-	@Override
 	public void saveGroup(final GroupEntity group) throws BasicDataServiceException {
 		if(group != null && entityValidator.isValid(group)) {
+			
+			if(group.getManagedSystem() != null && group.getManagedSystem().getManagedSysId() != null) {
+				group.setManagedSystem(managedSysDAO.findById(group.getManagedSystem().getManagedSysId()));
+			} else {
+				group.setManagedSystem(null);
+			}
 
 			if(StringUtils.isNotBlank(group.getGrpId())) {
 				final GroupEntity dbGroup = groupDao.findById(group.getGrpId());
 				if(dbGroup != null) {
-					group.setAttributes(dbGroup.getAttributes());
+					//group.setAttributes(dbGroup.getAttributes());
+					mergeAttribute(group, dbGroup);
 					group.setChildGroups(dbGroup.getChildGroups());
 					group.setParentGroups(dbGroup.getParentGroups());
-					group.setResourceGroups(dbGroup.getResourceGroups());
+					group.setResources(dbGroup.getResources());
 					group.setRoles(dbGroup.getRoles());
-					group.setUserGroups(dbGroup.getUserGroups());
+					group.setUsers(dbGroup.getUsers());
 					groupDao.merge(group);
 				}
 			} else {
@@ -233,15 +210,52 @@ public class GroupDataServiceImpl implements GroupDataService {
 			}
 		}
 	}
+	
+	private void mergeAttribute(final GroupEntity bean, final GroupEntity dbObject) {
+		final Set<GroupAttributeEntity> renewedProperties = new HashSet<GroupAttributeEntity>();
+		
+		Set<GroupAttributeEntity> beanProps = (bean.getAttributes() != null) ? bean.getAttributes() : new HashSet<GroupAttributeEntity>();
+		Set<GroupAttributeEntity> dbProps = (dbObject.getAttributes() != null) ? dbObject.getAttributes() : new HashSet<GroupAttributeEntity>();
+		
+		/* update */
+		for(GroupAttributeEntity dbProp : dbProps) {
+			for(final GroupAttributeEntity beanProp : beanProps) {
+				if(StringUtils.equals(dbProp.getId(), beanProp.getId())) {
+					dbProp.setMetadataElementId(beanProp.getMetadataElementId());
+					dbProp.setName(beanProp.getName());
+					dbProp.setValue(beanProp.getValue());
+					renewedProperties.add(dbProp);
+					break;
+				}
+			}
+		}
+		
+		/* add */
+		for(final GroupAttributeEntity beanProp : beanProps) {
+			boolean contains = false;
+			for(GroupAttributeEntity dbProp : dbProps) {
+				if(StringUtils.equals(dbProp.getId(), beanProp.getId())) {
+					contains = true;
+				}
+			}
+			
+			if(!contains) {
+				beanProp.setGroup(bean);
+				//dbProps.add(beanProp);
+				renewedProperties.add(beanProp);
+			}
+		}
+		
+		bean.setAttributes(renewedProperties);
+		//bean.setResourceProps(renewedProperties);
+	}
 
 	@Override
-	//@Transactional
+	@Transactional
 	public void deleteGroup(String groupId) {
 		final GroupEntity entity = groupDao.findById(groupId);
 		if(entity != null) {
-			userGroupDao.deleteByGroupId(groupId);
-			resoruceGroupDAO.deleteByGroupId(groupId);
-			groupAttrDao.deleteByGroupId(groupId);
+			//groupAttrDao.deleteByGroupId(groupId);
 			groupDao.delete(entity);
 		}
 	}
@@ -310,4 +324,51 @@ public class GroupDataServiceImpl implements GroupDataService {
         }
         return filterData;
     }
+
+	@Override
+	@Transactional
+	public void validateGroup2GroupAddition(String parentId, String memberId) throws BasicDataServiceException {
+		final GroupEntity parent = groupDao.findById(parentId);
+		final GroupEntity child = groupDao.findById(memberId);
+		
+		if(parent == null || child == null) {
+			throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+		}
+		
+		if(causesCircularDependency(parent, child, new HashSet<GroupEntity>())) {
+			throw new BasicDataServiceException(ResponseCode.CIRCULAR_DEPENDENCY);
+		}
+		
+		if(parent.hasChildGroup(child.getGrpId())) {
+			throw new BasicDataServiceException(ResponseCode.RELATIONSHIP_EXISTS);
+		}
+		
+		if(StringUtils.equals(parentId, memberId)) {
+			throw new BasicDataServiceException(ResponseCode.CANT_ADD_YOURSELF_AS_CHILD);
+		}
+	}
+	
+	private boolean causesCircularDependency(final GroupEntity parent, final GroupEntity child, final Set<GroupEntity> visitedSet) {
+		boolean retval = false;
+		if(parent != null && child != null) {
+			if(!visitedSet.contains(child)) {
+				visitedSet.add(child);
+				if(CollectionUtils.isNotEmpty(parent.getParentGroups())) {
+					for(final GroupEntity entity : parent.getParentGroups()) {
+						retval = entity.getGrpId().equals(child.getGrpId());
+						if(retval) {
+							break;
+						}
+						causesCircularDependency(parent, entity, visitedSet);
+					}
+				}
+			}
+		}
+		return retval;
+	}
+
+	@Override
+	public Group getGroupDTO(String groupId) {
+		return groupDozerConverter.convertToDTO(groupDao.findById(groupId), true);
+	}
 }

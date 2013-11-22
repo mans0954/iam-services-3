@@ -12,14 +12,12 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.openiam.bpm.util.ActivitiConstants;
-import org.openiam.idm.srvc.grp.service.UserGroupDAO;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 import org.openiam.idm.srvc.mngsys.service.ApproverAssociationDAO;
 import org.openiam.idm.srvc.msg.dto.NotificationParam;
 import org.openiam.idm.srvc.msg.dto.NotificationRequest;
 import org.openiam.idm.srvc.msg.service.MailService;
-import org.openiam.idm.srvc.role.service.UserRoleDAO;
 import org.openiam.idm.srvc.user.domain.SupervisorEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.service.UserDataService;
@@ -32,13 +30,7 @@ public abstract class AbstractDelegate implements JavaDelegate {
 
 	@Autowired
 	private ApproverAssociationDAO approverAssociationDao;
-	
-	@Autowired
-	private UserGroupDAO userGroupDAO;
-	
-	@Autowired
-	private UserRoleDAO userRoleDAO;
-	
+
 	@Autowired
 	private UserDataService userManager;
 	
@@ -60,7 +52,7 @@ public abstract class AbstractDelegate implements JavaDelegate {
 		if(notifyType != null && StringUtils.isNotBlank(notifyId)) {
 			switch(notifyType) {
 				case GROUP:
-					final List<String> usersInGroup = userGroupDAO.getUserIdsInGroup(notifyId);
+					final List<String> usersInGroup = userManager.getUserIdsInGroup(notifyId, targetUserId);
 	        		if(CollectionUtils.isNotEmpty(usersInGroup)) {
 	        			userIds.addAll(usersInGroup);
 	        		}	
@@ -81,7 +73,7 @@ public abstract class AbstractDelegate implements JavaDelegate {
 	        		userIds.add(notifyId);
 	        		break;
 				case ROLE:
-					final List<String> usersInRole = userRoleDAO.getUserIdsInRole(notifyId);
+					final List<String> usersInRole = userManager.getUserIdsInRole(notifyId, targetUserId);
 					if(CollectionUtils.isNotEmpty(usersInRole)) {
 						userIds.addAll(usersInRole);
 					}

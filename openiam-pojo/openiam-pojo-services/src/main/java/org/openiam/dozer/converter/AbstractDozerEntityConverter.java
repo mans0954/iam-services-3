@@ -1,8 +1,6 @@
 package org.openiam.dozer.converter;
 
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.dozer.Mapper;
@@ -33,6 +31,8 @@ public abstract class AbstractDozerEntityConverter<DTO, Entity> {
 	public abstract DTO convertToDTO(final Entity entity, final boolean isDeep);
 	public abstract List<Entity> convertToEntityList(final List<DTO> list, final boolean isDeep);
 	public abstract List<DTO> convertToDTOList(final List<Entity> list, final boolean isDeep);
+    public abstract Set<Entity> convertToEntitySet(final Set<DTO> set, final boolean isDeep);
+    public abstract Set<DTO> convertToDTOSet(final Set<Entity> set, final boolean isDeep);
 	
 	public <T> T convert(final Object entity, final boolean isDeep, final Class<T> clazz) {
 		final Mapper mapper = (isDeep) ? deepDozerMapper : shallowDozerMapper;
@@ -54,4 +54,15 @@ public abstract class AbstractDozerEntityConverter<DTO, Entity> {
 		}
 		return retVal;
 	}
+
+    public <T> Set<T> convertSetToCrossEntity(final Set fromSet, final boolean isDeep, final Class<T> clazz) {
+        final Set<T> retVal = new HashSet<T>();
+        final Mapper mapper = (isDeep) ? dto2entityDeepDozerMapper : dto2entityShallowDozerMapper;
+        if(CollectionUtils.isNotEmpty(fromSet)) {
+            for(final Object from : fromSet) {
+                retVal.add(mapper.map(from, clazz));
+            }
+        }
+        return retVal;
+    }
 }

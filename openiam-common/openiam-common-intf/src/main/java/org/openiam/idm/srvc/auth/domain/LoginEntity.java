@@ -2,6 +2,7 @@ package org.openiam.idm.srvc.auth.domain;
 // Generated Feb 18, 2008 3:56:06 PM by Hibernate Tools 3.2.0.b11
 
 
+import org.apache.commons.lang.StringUtils;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.Fetch;
@@ -17,6 +18,7 @@ import org.openiam.core.dao.lucene.LuceneId;
 import org.openiam.core.dao.lucene.LuceneLastUpdate;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.auth.dto.Login;
+import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
 import org.openiam.idm.srvc.auth.dto.SSOToken;
 import org.openiam.idm.srvc.auth.dto.Subject;
 
@@ -86,8 +88,9 @@ public class LoginEntity implements java.io.Serializable {
     @Column(name="IS_LOCKED",nullable = false)
     protected int isLocked;
 
+    @Enumerated(EnumType.STRING)
     @Column(name="STATUS",length = 20)
-    protected String status;
+    protected LoginStatusEnum status;
 
     @Column(name="GRACE_PERIOD",length=19)
     @Temporal(TemporalType.TIMESTAMP)
@@ -220,11 +223,11 @@ public class LoginEntity implements java.io.Serializable {
         this.isLocked = isLocked;
     }
 
-    public String getStatus() {
+    public LoginStatusEnum getStatus() {
         return this.status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(LoginStatusEnum status) {
         this.status = status;
     }
 
@@ -384,6 +387,11 @@ public class LoginEntity implements java.io.Serializable {
 
 	public void setLogin(String login) {
 		this.login = login;
+		if(login != null) {
+			this.lowerCaseLogin = login.toLowerCase();
+		} else {
+			this.lowerCaseLogin = null;
+		}
 	}
 
 	public String getManagedSysId() {

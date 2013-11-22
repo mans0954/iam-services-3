@@ -16,12 +16,12 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
 import javax.persistence.MapKeyColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.validation.constraints.Size;
 
-import org.apache.commons.lang.StringUtils;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.Fetch;
@@ -29,8 +29,10 @@ import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.grp.dto.Group;
-import org.openiam.idm.srvc.res.domain.ResourceGroupEntity;
+import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
+import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
+import org.openiam.idm.srvc.user.domain.UserEntity;
 
 @Entity
 @Table(name = "GRP")
@@ -54,10 +56,15 @@ public class GroupEntity {
 
     @Column(name = "CREATED_BY", length = 20)
     private String createdBy;
+    
+    @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+    @JoinColumn(name = "MANAGED_SYS_ID", referencedColumnName = "MANAGED_SYS_ID", insertable = true, updatable = true, nullable=true)
+    private ManagedSysEntity managedSystem;
 
-    @Column(name = "COMPANY_ID", length = 20)
+    @Column(name = "COMPANY_ID", length = 32)
     private String companyId;
 
+    /*
     @Column(name = "OWNER_ID", length = 20)
     private String ownerId;
 
@@ -66,6 +73,7 @@ public class GroupEntity {
 
     @Column(name = "PROVISION_OBJ_NAME", length = 80)
     private String provisionObjName;
+    */
 
     @Column(name = "GROUP_DESC", length = 80)
     @Size(max = 80, message = "group.description.too.long")
@@ -80,16 +88,17 @@ public class GroupEntity {
     @Column(name = "LAST_UPDATED_BY", length = 20)
     private String lastUpdatedBy;
 
+    /*
     @Column(name = "TYPE_ID", length = 20)
     private String metadataTypeId;
 
     @Column(name = "INTERNAL_GROUP_ID", length = 32)
     private String internalGroupId;
+	*/
 
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumn(name = "GRP_ID")
-    @Fetch(FetchMode.SUBSELECT)
-    private Set<ResourceGroupEntity> resourceGroups;
+    @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+    @JoinTable(name = "RESOURCE_GROUP", joinColumns = { @JoinColumn(name = "GRP_ID") }, inverseJoinColumns = { @JoinColumn(name = "RESOURCE_ID") })
+    private Set<ResourceEntity> resources;
 
     @ManyToMany(cascade = { CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH }, fetch = FetchType.LAZY)
     @JoinTable(name = "grp_to_grp_membership",
@@ -105,21 +114,20 @@ public class GroupEntity {
     @Fetch(FetchMode.SUBSELECT)
     private Set<GroupEntity> childGroups;
 
-    @OneToMany(fetch = FetchType.LAZY, orphanRemoval = true, cascade = { CascadeType.ALL })
-    @JoinColumn(name = "GRP_ID", referencedColumnName = "GRP_ID")
+    @OneToMany(fetch = FetchType.LAZY, orphanRemoval = true, cascade = { CascadeType.ALL }, mappedBy="group")
+    //@JoinColumn(name = "GRP_ID", referencedColumnName = "GRP_ID")
     @MapKeyColumn(name = "name")
     @Fetch(FetchMode.SUBSELECT)
-    private Map<String, GroupAttributeEntity> attributes;
+    private Set<GroupAttributeEntity> attributes;
 
     @ManyToMany(cascade = { CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH }, fetch = FetchType.LAZY)
     @JoinTable(name = "GRP_ROLE", joinColumns = { @JoinColumn(name = "GRP_ID") }, inverseJoinColumns = { @JoinColumn(name = "ROLE_ID") })
     @Fetch(FetchMode.SUBSELECT)
     private Set<RoleEntity> roles;
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JoinColumn(name = "GRP_ID", referencedColumnName = "GRP_ID")
-    @Fetch(FetchMode.SUBSELECT)
-    private Set<UserGroupEntity> userGroups = new HashSet<UserGroupEntity>(0);
+    @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+    @JoinTable(name = "USER_GRP", joinColumns = { @JoinColumn(name = "GRP_ID") }, inverseJoinColumns = { @JoinColumn(name = "USER_ID") })
+    private Set<UserEntity> users = new HashSet<UserEntity>(0);
 
     public String getGrpId() {
         return grpId;
@@ -161,6 +169,7 @@ public class GroupEntity {
         this.companyId = companyId;
     }
 
+    /*
     public String getOwnerId() {
         return ownerId;
     }
@@ -184,6 +193,7 @@ public class GroupEntity {
     public void setProvisionObjName(String provisionObjName) {
         this.provisionObjName = provisionObjName;
     }
+    */
 
     public String getDescription() {
         return description;
@@ -217,6 +227,7 @@ public class GroupEntity {
         this.lastUpdatedBy = lastUpdatedBy;
     }
 
+    /*
     public String getMetadataTypeId() {
         return metadataTypeId;
     }
@@ -232,6 +243,7 @@ public class GroupEntity {
     public void setInternalGroupId(String internalGroupId) {
         this.internalGroupId = internalGroupId;
     }
+    */
 
     public Set<GroupEntity> getParentGroups() {
         return parentGroups;
@@ -287,29 +299,20 @@ public class GroupEntity {
         this.childGroups = childGroups;
     }
 
-    public Map<String, GroupAttributeEntity> getAttributes() {
-        return attributes;
+    public Set<GroupAttributeEntity> getAttributes() {
+		return attributes;
+	}
+
+	public void setAttributes(Set<GroupAttributeEntity> attributes) {
+		this.attributes = attributes;
+	}
+
+	public Set<ResourceEntity> getResources() {
+        return resources;
     }
 
-    public void setAttributes(Map<String, GroupAttributeEntity> attributes) {
-        this.attributes = attributes;
-    }
-
-    public Set<ResourceGroupEntity> getResourceGroups() {
-        return resourceGroups;
-    }
-
-    public void setResourceGroups(Set<ResourceGroupEntity> resourceGroups) {
-        this.resourceGroups = resourceGroups;
-    }
-
-    public void addResourceGroup(final ResourceGroupEntity resourceGroup) {
-        if (resourceGroup != null) {
-            if (resourceGroups == null) {
-                this.resourceGroups = new HashSet<ResourceGroupEntity>();
-            }
-            this.resourceGroups.add(resourceGroup);
-        }
+    public void setResources(Set<ResourceEntity> resources) {
+        this.resources = resources;
     }
 
     public Set<RoleEntity> getRoles() {
@@ -320,152 +323,116 @@ public class GroupEntity {
         this.roles = roles;
     }
 
-    public Set<UserGroupEntity> getUserGroups() {
-        return userGroups;
+    public Set<UserEntity> getUsers() {
+        return users;
     }
 
-    public boolean isUserInGroup(final String userId) {
-        boolean retVal = false;
-        if (userGroups != null) {
-            for (final Iterator<UserGroupEntity> it = userGroups.iterator(); it.hasNext();) {
-                final UserGroupEntity entity = it.next();
-                if (entity != null) {
-                    if (StringUtils.equals(entity.getUserId(), userId)) {
-                        retVal = true;
-                        break;
-                    }
-                }
-            }
-        }
-        return retVal;
+    public void setUsers(Set<UserEntity> users) {
+        this.users = users;
     }
 
-    public void removeUserFromGroup(final String userId) {
-        if (userGroups != null) {
-            for (final Iterator<UserGroupEntity> it = userGroups.iterator(); it.hasNext();) {
-                final UserGroupEntity entity = it.next();
-                if (entity != null) {
-                    if (StringUtils.equals(entity.getUserId(), userId)) {
-                        it.remove();
-                        break;
-                    }
-                }
-            }
-        }
-    }
+	public ManagedSysEntity getManagedSystem() {
+		return managedSystem;
+	}
 
-    public void setUserGroups(Set<UserGroupEntity> userGroups) {
-        this.userGroups = userGroups;
-    }
+	public void setManagedSystem(ManagedSysEntity managedSystem) {
+		this.managedSystem = managedSystem;
+	}
 
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((companyId == null) ? 0 : companyId.hashCode());
-        result = prime * result + ((createDate == null) ? 0 : createDate.hashCode());
-        result = prime * result + ((createdBy == null) ? 0 : createdBy.hashCode());
-        result = prime * result + ((description == null) ? 0 : description.hashCode());
-        result = prime * result + ((grpId == null) ? 0 : grpId.hashCode());
-        result = prime * result + ((internalGroupId == null) ? 0 : internalGroupId.hashCode());
-        result = prime * result + ((lastUpdate == null) ? 0 : lastUpdate.hashCode());
-        result = prime * result + ((lastUpdatedBy == null) ? 0 : lastUpdatedBy.hashCode());
-        result = prime * result + ((metadataTypeId == null) ? 0 : metadataTypeId.hashCode());
-        result = prime * result + ((grpName == null) ? 0 : grpName.hashCode());
-        result = prime * result + ((ownerId == null) ? 0 : ownerId.hashCode());
-        result = prime * result + ((provisionMethod == null) ? 0 : provisionMethod.hashCode());
-        result = prime * result + ((provisionObjName == null) ? 0 : provisionObjName.hashCode());
-        result = prime * result + ((status == null) ? 0 : status.hashCode());
-        return result;
-    }
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result
+				+ ((createDate == null) ? 0 : createDate.hashCode());
+		result = prime * result
+				+ ((createdBy == null) ? 0 : createdBy.hashCode());
+		result = prime * result
+				+ ((description == null) ? 0 : description.hashCode());
+		result = prime * result + ((grpId == null) ? 0 : grpId.hashCode());
+		result = prime * result + ((grpName == null) ? 0 : grpName.hashCode());
+		result = prime * result
+				+ ((lastUpdate == null) ? 0 : lastUpdate.hashCode());
+		result = prime * result
+				+ ((lastUpdatedBy == null) ? 0 : lastUpdatedBy.hashCode());
+		result = prime * result
+				+ ((managedSystem == null) ? 0 : managedSystem.hashCode());
+		result = prime * result + ((status == null) ? 0 : status.hashCode());
+		
+		result = prime * result
+				+ ((companyId == null) ? 0 : companyId.hashCode());
+		return result;
+	}
 
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        GroupEntity other = (GroupEntity) obj;
-        if (companyId == null) {
-            if (other.companyId != null)
-                return false;
-        } else if (!companyId.equals(other.companyId))
-            return false;
-        if (createDate == null) {
-            if (other.createDate != null)
-                return false;
-        } else if (!createDate.equals(other.createDate))
-            return false;
-        if (createdBy == null) {
-            if (other.createdBy != null)
-                return false;
-        } else if (!createdBy.equals(other.createdBy))
-            return false;
-        if (description == null) {
-            if (other.description != null)
-                return false;
-        } else if (!description.equals(other.description))
-            return false;
-        if (grpId == null) {
-            if (other.grpId != null)
-                return false;
-        } else if (!grpId.equals(other.grpId))
-            return false;
-        if (internalGroupId == null) {
-            if (other.internalGroupId != null)
-                return false;
-        } else if (!internalGroupId.equals(other.internalGroupId))
-            return false;
-        if (lastUpdate == null) {
-            if (other.lastUpdate != null)
-                return false;
-        } else if (!lastUpdate.equals(other.lastUpdate))
-            return false;
-        if (lastUpdatedBy == null) {
-            if (other.lastUpdatedBy != null)
-                return false;
-        } else if (!lastUpdatedBy.equals(other.lastUpdatedBy))
-            return false;
-        if (metadataTypeId == null) {
-            if (other.metadataTypeId != null)
-                return false;
-        } else if (!metadataTypeId.equals(other.metadataTypeId))
-            return false;
-        if (grpName == null) {
-            if (other.grpName != null)
-                return false;
-        } else if (!grpName.equals(other.grpName))
-            return false;
-        if (ownerId == null) {
-            if (other.ownerId != null)
-                return false;
-        } else if (!ownerId.equals(other.ownerId))
-            return false;
-        if (provisionMethod == null) {
-            if (other.provisionMethod != null)
-                return false;
-        } else if (!provisionMethod.equals(other.provisionMethod))
-            return false;
-        if (provisionObjName == null) {
-            if (other.provisionObjName != null)
-                return false;
-        } else if (!provisionObjName.equals(other.provisionObjName))
-            return false;
-        if (status == null) {
-            if (other.status != null)
-                return false;
-        } else if (!status.equals(other.status))
-            return false;
-        return true;
-    }
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		GroupEntity other = (GroupEntity) obj;
+		if (createDate == null) {
+			if (other.createDate != null)
+				return false;
+		} else if (!createDate.equals(other.createDate))
+			return false;
+		if (createdBy == null) {
+			if (other.createdBy != null)
+				return false;
+		} else if (!createdBy.equals(other.createdBy))
+			return false;
+		if (description == null) {
+			if (other.description != null)
+				return false;
+		} else if (!description.equals(other.description))
+			return false;
+		if (grpId == null) {
+			if (other.grpId != null)
+				return false;
+		} else if (!grpId.equals(other.grpId))
+			return false;
+		if (grpName == null) {
+			if (other.grpName != null)
+				return false;
+		} else if (!grpName.equals(other.grpName))
+			return false;
+		if (lastUpdate == null) {
+			if (other.lastUpdate != null)
+				return false;
+		} else if (!lastUpdate.equals(other.lastUpdate))
+			return false;
+		if (lastUpdatedBy == null) {
+			if (other.lastUpdatedBy != null)
+				return false;
+		} else if (!lastUpdatedBy.equals(other.lastUpdatedBy))
+			return false;
+		if (managedSystem == null) {
+			if (other.managedSystem != null)
+				return false;
+		} else if (!managedSystem.equals(other.managedSystem))
+			return false;
+		if (status == null) {
+			if (other.status != null)
+				return false;
+		} else if (!status.equals(other.status))
+			return false;
+		if (companyId == null) {
+			if (other.companyId != null)
+				return false;
+		} else if (!companyId.equals(other.companyId))
+			return false;
+		return true;
+	}
 
-    @Override
-    public String toString() {
-        return String.format("GroupEntity [grpId=%s, grpName=%s, createDate=%s, createdBy=%s, companyId=%s, ownerId=%s, provisionMethod=%s, provisionObjName=%s, description=%s, status=%s, lastUpdate=%s, lastUpdatedBy=%s, metadataTypeId=%s, internalGroupId=%s]",
-                             grpId, grpName, createDate, createdBy, companyId, ownerId, provisionMethod, provisionObjName, description, status,
-                             lastUpdate, lastUpdatedBy, metadataTypeId, internalGroupId);
-    }
+	@Override
+	public String toString() {
+		return String
+				.format("GroupEntity [grpId=%s, grpName=%s, createDate=%s, createdBy=%s, managedSystem=%s, description=%s, status=%s, lastUpdate=%s, lastUpdatedBy=%s]",
+						grpId, grpName, createDate, createdBy, managedSystem,
+						description, status, lastUpdate, lastUpdatedBy);
+	}
 
+    
 }

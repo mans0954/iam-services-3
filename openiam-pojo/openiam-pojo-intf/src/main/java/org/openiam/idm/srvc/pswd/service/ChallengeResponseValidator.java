@@ -48,4 +48,6 @@ public interface ChallengeResponseValidator {
     public void saveAnswer(final UserIdentityAnswerEntity answer) throws Exception;
     public void deleteAnswer(final String answerId) throws Exception;
     public void saveAnswers(List<UserIdentityAnswerEntity> answerList) throws Exception;
+    public boolean isUserAnsweredSecurityQuestions(final String userId, final String domainId);
+    public Integer getNumOfRequiredQuestions(final String userId, final String domainId);
 }

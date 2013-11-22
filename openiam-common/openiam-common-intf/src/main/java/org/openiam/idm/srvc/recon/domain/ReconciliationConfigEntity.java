@@ -1,6 +1,7 @@
 package org.openiam.idm.srvc.recon.domain;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -49,7 +50,7 @@ public class ReconciliationConfigEntity implements java.io.Serializable {
     private String targetSystemMatchScript;
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "RECON_CONFIG_ID", insertable = false, updatable = false)
-    private List<ReconciliationSituationEntity> situationSet = new ArrayList<ReconciliationSituationEntity>(
+    private Set<ReconciliationSituationEntity> situationSet = new HashSet<ReconciliationSituationEntity>(
             0);
 
     @Column(name = "MANUAL_RECONCILIATION_FLAG")
@@ -152,11 +153,11 @@ public class ReconciliationConfigEntity implements java.io.Serializable {
         this.targetSystemMatchScript = targetSystemMatchScript;
     }
 
-    public List<ReconciliationSituationEntity> getSituationSet() {
+    public Set<ReconciliationSituationEntity> getSituationSet() {
         return situationSet;
     }
 
-    public void setSituationSet(List<ReconciliationSituationEntity> situationSet) {
+    public void setSituationSet(Set<ReconciliationSituationEntity> situationSet) {
         this.situationSet = situationSet;
     }
 

@@ -4,6 +4,8 @@ import org.openiam.exception.AuthenticationException;
 import org.openiam.exception.EncryptionException;
 import org.openiam.idm.searchbeans.LoginSearchBean;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
+import org.openiam.idm.srvc.auth.dto.Login;
+import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 
 import javax.jws.WebService;
@@ -25,11 +27,13 @@ public interface LoginDataService {
 
     public void deleteLogin(final String loginId);
 
-    public void activateDeactivateLogin(String loginId, String status);
+    public void activateDeactivateLogin(String loginId, LoginStatusEnum status);
     
     public void removeLogin(String domainId, String principal, String managedSysId);
     
     public LoginEntity getLoginDetails(final String loginId);
+    
+    public Login getLoginDTO(final String loginId);
 
     public LoginEntity getLoginByManagedSys(String domainId, String principal, String sysId);
 
@@ -182,4 +186,6 @@ public interface LoginDataService {
     Integer count(LoginSearchBean searchBean);
 
     List<LoginEntity> findBeans(LoginSearchBean searchBean, Integer from, Integer size);
+
+    void evict(LoginEntity entity);
 }

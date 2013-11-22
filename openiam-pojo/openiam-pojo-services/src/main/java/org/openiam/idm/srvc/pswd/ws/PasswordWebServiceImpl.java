@@ -34,7 +34,7 @@ import org.openiam.idm.srvc.policy.ws.PolicyResponse;
 import org.openiam.idm.srvc.pswd.dto.Password;
 import org.openiam.idm.srvc.pswd.dto.PasswordResetTokenRequest;
 import org.openiam.idm.srvc.pswd.dto.PasswordResetTokenResponse;
-import org.openiam.idm.srvc.pswd.dto.PasswordValidationCode;
+import org.openiam.idm.srvc.pswd.dto.PasswordValidationResponse;
 import org.openiam.idm.srvc.pswd.service.PasswordService;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.pswd.dto.ValidatePasswordResetTokenResponse;
@@ -54,19 +54,9 @@ public class PasswordWebServiceImpl implements PasswordWebService {
 	@Autowired
 	private PasswordService passwordDS;
 
-	public Response isPasswordValid(Password pswd)
+	public PasswordValidationResponse isPasswordValid(Password pswd)
 			throws ObjectNotFoundException {
-
-		Response resp = new Response(ResponseStatus.SUCCESS);
-
-		PasswordValidationCode cd = passwordDS.isPasswordValid(pswd);
-		if (cd != PasswordValidationCode.SUCCESS) {
-			resp.setStatus(ResponseStatus.FAILURE);
-			resp.setErrorCode(ResponseCode.valueOf(cd.getValue()));
-			return resp;
-		}
-
-		return resp;
+		return passwordDS.isPasswordValid(pswd);
 	}
 
 	@Override

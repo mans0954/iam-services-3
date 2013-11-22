@@ -6,7 +6,6 @@ import java.util.List;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.idm.searchbeans.IdentityAnswerSearchBean;
 import org.openiam.idm.searchbeans.IdentityQuestionSearchBean;
-import org.openiam.idm.srvc.audit.service.AuditHelper;
 import org.openiam.idm.srvc.policy.domain.PolicyAttributeEntity;
 import org.openiam.idm.srvc.policy.domain.PolicyEntity;
 import org.openiam.idm.srvc.policy.dto.Policy;
@@ -44,44 +43,11 @@ public class ChallengeResponseServiceImpl implements ChallengeResponseService {
     private UserDAO userDAO;
     
     @Autowired
-    private AuditHelper auditHelper;
-    
-    @Autowired
     private PasswordService passwordMgr;
-    
-    @Autowired
-    private PasswordService policyService;
-    
-    @Autowired
-    private PolicyDAO policyDAO;
-    
-    @Autowired
-    private SecurityDomainDAO securityDomainDAO;
 	
 	@Override
 	public Integer getNumOfRequiredQuestions(String userId, String domainId) {
-		PolicyEntity passwordPolicy = null;
-		if(StringUtils.isNotBlank(userId)) {
-			final UserEntity user = userDAO.findById(userId);
-			passwordPolicy = policyService.getPasswordPolicyForUser(domainId, user);
-		}
-		if(passwordPolicy == null) {
-			final SecurityDomainEntity securityDomainEntity = securityDomainDAO.findById(domainId);
-			if(securityDomainEntity != null) {
-				passwordPolicy = policyDAO.findById(securityDomainEntity.getPasswordPolicyId());
-			}
-		}
-		
-		Integer count = null;
-		if(passwordPolicy != null) {
-			PolicyAttributeEntity countAttr = passwordPolicy.getAttribute("QUEST_COUNT");
-			try {
-				count = Integer.valueOf(countAttr.getValue1());
-			} catch(Throwable e) {
-				
-			}
-		}
-		return count;
+		return getResponseValidator().getNumOfRequiredQuestions(userId, domainId);
 	}
 
 	@Override
@@ -166,4 +132,9 @@ public class ChallengeResponseServiceImpl implements ChallengeResponseService {
 	 private ChallengeResponseValidator getResponseValidator() {
 		 return respValidatorFactory.createValidator(respValidatorObjName, respValidatorObjType);
 	 }
+
+	@Override
+	public boolean isUserAnsweredSecurityQuestions(final String userId, final String domainId) {
+		return getResponseValidator().isUserAnsweredSecurityQuestions(userId, domainId);
+	}
 }

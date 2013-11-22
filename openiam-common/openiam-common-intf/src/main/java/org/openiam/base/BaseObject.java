@@ -18,8 +18,8 @@ import javax.xml.bind.annotation.XmlType;
         "objectState",
         "requestorUserId",
         "requestorLogin",
-        "requestorDomain",
-        "requestClientIP"
+        "requestClientIP",
+        "requestorSessionID"
 })
 public class BaseObject implements Serializable {
 
@@ -35,9 +35,9 @@ public class BaseObject implements Serializable {
     protected String objectState = NEW;
 
     // track the source of the request
+    protected String requestorSessionID;
     protected String requestorUserId;
     protected String requestorLogin;
-    protected String requestorDomain;
     protected String requestClientIP;
 
 
@@ -53,24 +53,12 @@ public class BaseObject implements Serializable {
         this.objectState = objectState;
     }
 
-    @Deprecated
     public String getRequestorLogin() {
         return requestorLogin;
     }
 
-    @Deprecated
     public void setRequestorLogin(String requestorLogin) {
         this.requestorLogin = requestorLogin;
-    }
-
-    @Deprecated
-    public String getRequestorDomain() {
-        return requestorDomain;
-    }
-
-    @Deprecated
-    public void setRequestorDomain(String requestorDomain) {
-        this.requestorDomain = requestorDomain;
     }
 
     public String getRequestClientIP() {
@@ -91,6 +79,16 @@ public class BaseObject implements Serializable {
 		this.requestorUserId = requestorUserId;
 	}
 
+	public String getRequestorSessionID() {
+		return requestorSessionID;
+	}
+
+	public void setRequestorSessionID(String requestorSessionID) {
+		this.requestorSessionID = requestorSessionID;
+	}
+	
+	
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -100,9 +98,13 @@ public class BaseObject implements Serializable {
 		result = prime * result
 				+ ((requestClientIP == null) ? 0 : requestClientIP.hashCode());
 		result = prime * result
-				+ ((requestorDomain == null) ? 0 : requestorDomain.hashCode());
-		result = prime * result
 				+ ((requestorLogin == null) ? 0 : requestorLogin.hashCode());
+		result = prime
+				* result
+				+ ((requestorSessionID == null) ? 0 : requestorSessionID
+						.hashCode());
+		result = prime * result
+				+ ((requestorUserId == null) ? 0 : requestorUserId.hashCode());
 		return result;
 	}
 
@@ -125,18 +127,31 @@ public class BaseObject implements Serializable {
 				return false;
 		} else if (!requestClientIP.equals(other.requestClientIP))
 			return false;
-		if (requestorDomain == null) {
-			if (other.requestorDomain != null)
-				return false;
-		} else if (!requestorDomain.equals(other.requestorDomain))
-			return false;
 		if (requestorLogin == null) {
 			if (other.requestorLogin != null)
 				return false;
 		} else if (!requestorLogin.equals(other.requestorLogin))
 			return false;
+		if (requestorSessionID == null) {
+			if (other.requestorSessionID != null)
+				return false;
+		} else if (!requestorSessionID.equals(other.requestorSessionID))
+			return false;
+		if (requestorUserId == null) {
+			if (other.requestorUserId != null)
+				return false;
+		} else if (!requestorUserId.equals(other.requestorUserId))
+			return false;
 		return true;
 	}
-    
-    
+
+	@Override
+	public String toString() {
+		return String
+				.format("BaseObject [objectState=%s, requestorSessionID=%s, requestorUserId=%s, requestorLogin=%s, requestClientIP=%s]",
+						objectState, requestorSessionID, requestorUserId,
+						requestorLogin, requestClientIP);
+	}
+	
+	
 }

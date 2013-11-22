@@ -1,26 +1,18 @@
 package org.openiam.dozer;
 
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
 import junit.framework.Assert;
 
 import org.apache.commons.lang.RandomStringUtils;
-import org.dozer.Mapper;
 import org.openiam.dozer.converter.ResourceDozerConverter;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
-import org.openiam.idm.srvc.res.domain.ResourceGroupEntity;
 import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
-import org.openiam.idm.srvc.res.domain.ResourceRoleEmbeddableId;
-import org.openiam.idm.srvc.res.domain.ResourceRoleEntity;
 import org.openiam.idm.srvc.res.domain.ResourceTypeEntity;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.dto.ResourceType;
-import org.openiam.idm.srvc.res.service.ResourceDAO;
-import org.openiam.idm.srvc.user.service.UserDAO;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.springframework.util.CollectionUtils;
@@ -56,41 +48,30 @@ public class TestCrossEntityConversion extends AbstractTestNGSpringContextTests 
 	private void confirmCollections(final Resource resource, final ResourceEntity entity) {
 		Assert.assertEquals(resource.getParentResources().size(), entity.getParentResources().size());
 		Assert.assertEquals(resource.getChildResources().size(), entity.getChildResources().size());
-		Assert.assertEquals(resource.getResourceGroups().size(), entity.getResourceGroups().size());
 		Assert.assertEquals(resource.getResourceProps().size(), entity.getResourceProps().size());
-		Assert.assertEquals(resource.getResourceRoles().size(), entity.getResourceRoles().size());
 	}
 	
 	private void confirmEmptyCollections(final ResourceEntity entity) {
 		Assert.assertTrue(CollectionUtils.isEmpty(entity.getChildResources()));
 		Assert.assertTrue(CollectionUtils.isEmpty(entity.getParentResources()));
-		Assert.assertTrue(CollectionUtils.isEmpty(entity.getResourceGroups()));
 		Assert.assertTrue(CollectionUtils.isEmpty(entity.getResourceProps()));
-		Assert.assertTrue(CollectionUtils.isEmpty(entity.getResourceRoles()));
 	}
 	
 	private void confirmEmptyCollections(final Resource resource) {
 		Assert.assertTrue(CollectionUtils.isEmpty(resource.getChildResources()));
 		Assert.assertTrue(CollectionUtils.isEmpty(resource.getParentResources()));
-		Assert.assertTrue(CollectionUtils.isEmpty(resource.getResourceGroups()));
 		Assert.assertTrue(CollectionUtils.isEmpty(resource.getResourceProps()));
-		Assert.assertTrue(CollectionUtils.isEmpty(resource.getResourceRoles()));
 	}
 	
 	private void confirmSimple(final Resource resource, final ResourceEntity entity) {
-		Assert.assertEquals(resource.getBranchId(), entity.getBranchId());
-		Assert.assertEquals(resource.getCategoryId(), entity.getCategoryId());
 		Assert.assertEquals(resource.getDescription(), entity.getDescription());
 		Assert.assertEquals(resource.getDisplayOrder(), entity.getDisplayOrder());
 		Assert.assertEquals(resource.getDomain(), entity.getDomain());
 		Assert.assertEquals(resource.getIsPublic(), entity.getIsPublic());
 		//Assert.assertEquals(resource.getIsSSL(), entity.getIsSSL());
-		Assert.assertEquals(resource.getManagedSysId(), entity.getManagedSysId());
 		Assert.assertEquals(resource.getMinAuthLevel(), entity.getMinAuthLevel());
 		Assert.assertEquals(resource.getName(), entity.getName());
 		Assert.assertEquals(resource.getResourceId(), entity.getResourceId());
-		Assert.assertEquals(resource.getResOwnerGroupId(), entity.getResOwnerGroupId());
-		Assert.assertEquals(resource.getResOwnerUserId(), entity.getResOwnerUserId());
 		Assert.assertEquals(resource.getURL(), entity.getURL());
 		confirm(resource.getResourceType(), entity.getResourceType());
 	}
@@ -121,15 +102,7 @@ public class TestCrossEntityConversion extends AbstractTestNGSpringContextTests 
 		parentResources.add(createSimpleResourceEntity());
 		parentResources.add(createSimpleResourceEntity());
 		entity.setParentResources(parentResources);
-		
-		final Set<ResourceGroupEntity> resourceGroups = new HashSet<ResourceGroupEntity>();
-		resourceGroups.add(createResoruceGroupEntity());
-		resourceGroups.add(createResoruceGroupEntity());
-		resourceGroups.add(createResoruceGroupEntity());
-		resourceGroups.add(createResoruceGroupEntity());
-		resourceGroups.add(createResoruceGroupEntity());
-		entity.setResourceGroups(resourceGroups);
-		
+
 		final Set<ResourcePropEntity> resourceProps = new HashSet<ResourcePropEntity>();
 		resourceProps.add(createResourcePropEntity());
 		resourceProps.add(createResourcePropEntity());
@@ -138,67 +111,31 @@ public class TestCrossEntityConversion extends AbstractTestNGSpringContextTests 
 		resourceProps.add(createResourcePropEntity());
 		resourceProps.add(createResourcePropEntity());
 		entity.setResourceProps(resourceProps);
-		
-		final Set<ResourceRoleEntity> resourceRoles = new HashSet<ResourceRoleEntity>();
-		resourceRoles.add(createResourceRoleEntity());
-		resourceRoles.add(createResourceRoleEntity());
-		resourceRoles.add(createResourceRoleEntity());
-		resourceRoles.add(createResourceRoleEntity());
-		resourceRoles.add(createResourceRoleEntity());
-		resourceRoles.add(createResourceRoleEntity());
-		entity.setResourceRoles(resourceRoles);
-		
+
 		return entity;
 	}
-	
-	private ResourceRoleEntity createResourceRoleEntity() {
-		final ResourceRoleEntity entity = new ResourceRoleEntity();
-		entity.setEndDate(new Date());
-		
-		final ResourceRoleEmbeddableId id = new ResourceRoleEmbeddableId();
-		id.setResourceId(rs(2));
-		id.setRoleId(rs(2));
-		entity.setId(id);
-		entity.setStartDate(new Date());
-		return entity;
-	}
-	
+
 	private ResourcePropEntity createResourcePropEntity() {
 		final ResourcePropEntity entity = new ResourcePropEntity();
 		entity.setMetadataId(rs(2));
 		entity.setName(rs(2));
 		entity.setPropValue(rs(2));
-		entity.setResourceId(rs(2));
+		//entity.setResourceId(rs(2));
 		entity.setResourcePropId(rs(2));
 		return entity;
 	}
-	
-	private ResourceGroupEntity createResoruceGroupEntity() {
-		final ResourceGroupEntity entity = new ResourceGroupEntity();
-		entity.setEndDate(new Date());
-		entity.setGroupId(rs(2));
-		entity.setResGroupId(rs(2));
-		entity.setResourceId(rs(2));
-		entity.setStartDate(new Date());
-		return entity;
-	}
-	
+
 	private ResourceEntity createSimpleResourceEntity() {
 		final ResourceEntity entity = new ResourceEntity();
-		entity.setBranchId(rs(2));
-		entity.setCategoryId(rs(2));
 		entity.setDescription(rs(2));
 		entity.setDisplayOrder(3);
 		entity.setDomain(rs(2));
 		entity.setIsPublic(true);
 		//entity.setIsSSL(true);
-		entity.setManagedSysId(rs(2));
 		entity.setMinAuthLevel(rs(2));
 		entity.setName(rs(2));
 		entity.setResourceId(rs(2));
 		entity.setResourceType(createResourceTypeEntity());
-		entity.setResOwnerGroupId(rs(2));
-		entity.setResOwnerUserId(rs(2));
 		entity.setURL(rs(2));
 		return entity;
 	}

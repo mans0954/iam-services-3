@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.recon.command;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.mule.api.MuleContext;
@@ -7,78 +8,68 @@ import org.openiam.base.AttributeOperationEnum;
 import org.openiam.connector.type.request.CrudRequest;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
-import org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorDto;
 import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
-import org.openiam.idm.srvc.mngsys.ws.ProvisionConnectorWebService;
+import org.openiam.idm.srvc.recon.dto.ReconciliationSituation;
+import org.openiam.idm.srvc.recon.service.PopulationScript;
 import org.openiam.idm.srvc.recon.service.ReconciliationCommand;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.provision.dto.ProvisionUser;
+import org.openiam.provision.resp.ProvisionUserResponse;
+import org.openiam.provision.service.AbstractProvisioningService;
 import org.openiam.provision.service.ConnectorAdapter;
 import org.openiam.provision.service.ProvisionService;
-import org.openiam.provision.service.RemoteConnectorAdapter;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleUser;
+import org.openiam.script.ScriptIntegration;
 
+import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-/**
- * Created with IntelliJ IDEA.
- * User: Pascal
- * Date: 27.04.12
- * Time: 15:44
- * To change this template use File | Settings | File Templates.
- */
 public class DeleteResourceAccountCommand implements ReconciliationCommand {
     private ProvisionService provisionService;
     private static final Log log = LogFactory.getLog(DeleteResourceAccountCommand.class);
     private ManagedSystemWebService managedSysService;
-    private ProvisionConnectorWebService connectorService;
-    private RemoteConnectorAdapter remoteConnectorAdapter;
     private MuleContext muleContext;
     private String managedSysId;
     private ConnectorAdapter connectorAdapter;
+    private final ReconciliationSituation config;
+
+    private final ScriptIntegration scriptRunner;
 
     public DeleteResourceAccountCommand(ProvisionService provisionService,
                                         ManagedSystemWebService managedSysService,
-                                        ProvisionConnectorWebService connectorService,
-                                        RemoteConnectorAdapter remoteConnectorAdapter,
                                         MuleContext muleContext,
                                         String managedSysId,
-                                        ConnectorAdapter connectorAdapter) {
+                                        ConnectorAdapter connectorAdapter,
+                                        ReconciliationSituation config,
+                                        ScriptIntegration scriptRunner) {
         this.provisionService = provisionService;
         this.managedSysService = managedSysService;
-        this.connectorService = connectorService;
-        this.remoteConnectorAdapter = remoteConnectorAdapter;
         this.muleContext = muleContext;
         this.managedSysId = managedSysId;
         this.connectorAdapter = connectorAdapter;
+        this.scriptRunner = scriptRunner;
+        this.config = config;
     }
 
     public boolean execute(Login login, User user, List<ExtensibleAttribute> attributes) {
         log.debug("Entering DeleteResourceAccountCommand");
         if(user == null) {
             ManagedSysDto mSys = managedSysService.getManagedSys(managedSysId);
-            ProvisionConnectorDto connector = connectorService.getProvisionConnector(mSys.getConnectorId());
 
-            if (connector.getConnectorInterface() != null &&
-                    connector.getConnectorInterface().equalsIgnoreCase("REMOTE")) {
+            log.debug("Calling delete with Remote connector");
+            CrudRequest<ExtensibleUser> request = new CrudRequest<ExtensibleUser>();
+            request.setObjectIdentity(login.getLogin());
+            request.setTargetID(login.getManagedSysId());
+            request.setHostLoginId(mSys.getUserId());
+            request.setHostLoginPassword(mSys.getDecryptPassword());
+            request.setHostUrl(mSys.getHostUrl());
+            request.setScriptHandler(mSys.getDeleteHandler());
+            log.debug("Calling delete local connector");
+            connectorAdapter.deleteRequest(mSys, request, muleContext);
 
-                log.debug("Calling delete with Remote connector");
-                CrudRequest<ExtensibleUser> request = new CrudRequest<ExtensibleUser>();
-                request.setObjectIdentity(login.getLogin());
-                request.setTargetID(login.getManagedSysId());
-                request.setHostLoginId(mSys.getUserId());
-                request.setHostLoginPassword(mSys.getDecryptPassword());
-                request.setHostUrl(mSys.getHostUrl());
-                request.setScriptHandler(mSys.getDeleteHandler());
-                remoteConnectorAdapter.deleteRequest(mSys, request, connector, muleContext);
-            } else {
-                CrudRequest<ExtensibleUser>  reqType = new CrudRequest<ExtensibleUser>();
-                reqType.setObjectIdentity(login.getLogin());
-                reqType.setTargetID(managedSysId);
-                log.debug("Calling delete local connector");
-                connectorAdapter.deleteRequest(mSys, reqType, muleContext);
-            }
             return true;
         }
         List<Login> principleList = user.getPrincipalList();
@@ -91,8 +82,26 @@ public class DeleteResourceAccountCommand implements ReconciliationCommand {
 
         ProvisionUser pUser = new ProvisionUser(user);
         pUser.setPrincipalList(principleList);
-
-        provisionService.modifyUser(pUser);
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
+        pUser.setSrcSystemId(login.getManagedSysId());
+        if(StringUtils.isNotEmpty(config.getScript())){
+            try {
+                Map<String, String> line = new HashMap<String, String>();
+                for (ExtensibleAttribute attr : attributes) {
+                    line.put(attr.getName(), attr.getValue());
+                }
+                Map<String, Object> bindingMap = new HashMap<String, Object>();
+                bindingMap.put(AbstractProvisioningService.TARGET_SYS_MANAGED_SYS_ID, login.getManagedSysId());
+                PopulationScript script = (PopulationScript) scriptRunner.instantiateClass(bindingMap, config.getScript());
+                int retval = script.execute(line, pUser);
+                //Reset source system flag from User to avoid ignoring Provisioning for this resource
+                pUser.setSrcSystemId(null);
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        ProvisionUserResponse response = provisionService.modifyUser(pUser);
+        return response.isSuccess();
     }
 }

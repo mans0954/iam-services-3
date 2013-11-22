@@ -1,6 +1,7 @@
 package org.openiam.dozer.converter;
 
 import java.util.List;
+import java.util.Set;
 
 import org.openiam.idm.srvc.mngsys.domain.ReconciliationResourceAttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.dto.ReconciliationResourceAttributeMap;
@@ -49,5 +50,17 @@ public class ReconciliationResourceAttributeMapDozerConverter
             List<ReconciliationResourceAttributeMapEntity> list, boolean isDeep) {
         return convertListToCrossEntity(list, isDeep,
                 ReconciliationResourceAttributeMap.class);
+    }
+
+    @Override
+    public Set<ReconciliationResourceAttributeMapEntity> convertToEntitySet(
+            Set<ReconciliationResourceAttributeMap> set, boolean isDeep) {
+        return convertSetToCrossEntity(set, isDeep, ReconciliationResourceAttributeMapEntity.class);
+    }
+
+    @Override
+    public Set<ReconciliationResourceAttributeMap> convertToDTOSet(
+            Set<ReconciliationResourceAttributeMapEntity> set, boolean isDeep) {
+        return convertSetToCrossEntity(set, isDeep, ReconciliationResourceAttributeMap.class);
     }
 }

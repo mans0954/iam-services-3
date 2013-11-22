@@ -76,20 +76,20 @@
             <b>childResources</b>
         </field-exclude>
         <field-exclude>
-            <a>resourceRoles</a>
-            <b>resourceRoles</b>
+            <a>roles</a>
+            <b>roles</b>
         </field-exclude>
         <field-exclude>
             <a>resourceProps</a>
             <b>resourceProps</b>
         </field-exclude>
         <field-exclude>
-            <a>resourceGroups</a>
-            <b>resourceGroups</b>
+            <a>groups</a>
+            <b>groups</b>
         </field-exclude>
         <field-exclude>
-            <a>resourceUsers</a>
-            <b>resourceUsers</b>
+            <a>users</a>
+            <b>users</b>
         </field-exclude>
     </mapping>
 

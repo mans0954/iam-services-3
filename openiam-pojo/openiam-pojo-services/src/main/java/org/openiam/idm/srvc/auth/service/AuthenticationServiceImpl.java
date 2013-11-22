@@ -31,6 +31,7 @@ import javax.jws.WebMethod;
 import javax.jws.WebService;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.SysConfiguration;
@@ -42,8 +43,13 @@ import org.openiam.dozer.converter.RoleDozerConverter;
 import org.openiam.exception.AuthenticationException;
 import org.openiam.exception.LogoutException;
 import org.openiam.exception.ScriptEngineException;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
-import org.openiam.idm.srvc.audit.service.AuditLogUtil;
+import org.openiam.idm.srvc.audit.annotation.AuditLoggable;
+import org.openiam.idm.srvc.audit.constant.AuditAction;
+import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
+import org.openiam.idm.srvc.audit.constant.AuditResult;
+import org.openiam.idm.srvc.audit.constant.AuditSource;
+import org.openiam.idm.srvc.audit.domain.AuditLogBuilder;
+import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.idm.srvc.auth.context.AuthContextFactory;
 import org.openiam.idm.srvc.auth.context.AuthenticationContext;
 import org.openiam.idm.srvc.auth.context.PasswordCredential;
@@ -61,6 +67,7 @@ import org.openiam.idm.srvc.auth.spi.LoginModule;
 import org.openiam.idm.srvc.auth.sso.SSOTokenFactory;
 import org.openiam.idm.srvc.auth.sso.SSOTokenModule;
 import org.openiam.idm.srvc.auth.ws.AuthenticationResponse;
+import org.openiam.idm.srvc.base.AbstractBaseService;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.service.GroupDataService;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
@@ -110,7 +117,7 @@ import org.springframework.transaction.annotation.Transactional;
 @WebService(endpointInterface = "org.openiam.idm.srvc.auth.service.AuthenticationService", targetNamespace = "urn:idm.openiam.org/srvc/auth/service", portName = "AuthenticationServicePort", serviceName = "AuthenticationService")
 @ManagedResource(objectName = "openiam:name=authenticationService", description = "Authentication Service")
 @Transactional
-public class AuthenticationServiceImpl implements AuthenticationService, ApplicationContextAware, BeanFactoryAware {
+public class AuthenticationServiceImpl extends AbstractBaseService implements AuthenticationService, ApplicationContextAware, BeanFactoryAware {
 
 	@Autowired
     private AuthStateDAO authStateDao;
@@ -140,9 +147,6 @@ public class AuthenticationServiceImpl implements AuthenticationService, Applica
     @Autowired
     @Qualifier("cryptor")
     private Cryptor cryptor;
-
-    @Autowired
-    private AuditLogUtil auditLogUtil;
     
     @Autowired
     private SysConfiguration sysConfiguration;
@@ -165,736 +169,295 @@ public class AuthenticationServiceImpl implements AuthenticationService, Applica
 
     private static final Log log = LogFactory.getLog(AuthenticationServiceImpl.class);
 
-    /*
-    public AuthenticationResponse authenticate(AuthenticationContext ctx)
-            throws Exception {
-        AuthenticationResponse authResp = new AuthenticationResponse(
-                ResponseStatus.FAILURE);
-
-        AbstractLoginModule loginModule = null;
-
-        if (ctx == null) {
-            throw new NullPointerException(
-                    "AuthenticationContext parameter is null");
-        }
-
-        String secDomainId = ctx.getDomainId();
-
-        SecurityDomain secDomain = secDomainService
-                .getSecurityDomain(secDomainId);
-        if (secDomain == null) {
-            authResp.setAuthErrorCode(AuthenticationConstants.RESULT_INVALID_DOMAIN);
-            return authResp;
-
-            // throw new
-            // AuthenticationException(AuthenticationConstants.RESULT_INVALID_DOMAIN);
-        }
-        try {
-            log.debug("loginModule=" + secDomain.getDefaultLoginModule());
-
-            // create the authentication module class
-            // if the authenticationcontext has a class, that will over-ride the
-            // one that is with the domain
-            // later add the abilty to define a login module at the resource
-            // level
-            if (ctx.getLoginModule() != null) {
-                loginModule = (AbstractLoginModule) LoginModuleFactory
-                        .createModule(ctx.getLoginModule());
-            } else {
-                loginModule = (AbstractLoginModule) LoginModuleFactory
-                        .createModule(secDomain.getDefaultLoginModule());
-            }
-           
-           	//Dependency injection fails when we use our own factory. Set the
-            //necessary beans directly
-             
-            loginModule.setLoginService(loginManager);
-            loginModule.setTokenModule(defaultToken);
-            loginModule.setUserService(userManager);
-            loginModule.setCryptor(cryptor);
-            loginModule.setSecurityDomain(secDomain);
-            loginModule.setAuditUtil(auditLogUtil);
-
-        } catch (Exception ie) {
-            log.error(ie.getMessage(), ie);
-            authResp.setAuthErrorCode(AuthenticationConstants.INTERNAL_ERROR);
-            return authResp;
-        }
-
-        Map<String, Object> authParamMap = new HashMap<String, Object>();
-        authParamMap.put("SEC_DOMAIN_ID", secDomainId);
-        authParamMap.put("AUTH_SYS_ID", secDomain.getAuthSysId());
-        ctx.setAuthParam(authParamMap);
-
-        try {
-            Subject sub = loginModule.login(ctx);
-            // add the sso token to the authstate
-
-            updateAuthState(sub);
-
-            populateSubject(sub.getUserId(), sub);
-
-            authResp.setSubject(sub);
-            authResp.setStatus(ResponseStatus.SUCCESS);
-            return authResp;
-
-        } catch (AuthenticationException ae) {
-            int errCode = ae.getErrorCode();
-            switch (errCode) {
-            case AuthenticationConstants.RESULT_INVALID_DOMAIN:
-                authResp.setAuthErrorCode(AuthenticationConstants.RESULT_INVALID_DOMAIN);
-                break;
-            case AuthenticationConstants.RESULT_INVALID_LOGIN:
-                authResp.setAuthErrorCode(AuthenticationConstants.RESULT_INVALID_LOGIN);
-                break;
-            case AuthenticationConstants.RESULT_INVALID_PASSWORD:
-                authResp.setAuthErrorCode(AuthenticationConstants.RESULT_INVALID_PASSWORD);
-                break;
-            case AuthenticationConstants.RESULT_INVALID_USER_STATUS:
-                authResp.setAuthErrorCode(AuthenticationConstants.RESULT_INVALID_USER_STATUS);
-                break;
-            case AuthenticationConstants.RESULT_LOGIN_DISABLED:
-                authResp.setAuthErrorCode(AuthenticationConstants.RESULT_LOGIN_DISABLED);
-                break;
-            case AuthenticationConstants.RESULT_LOGIN_LOCKED:
-                authResp.setAuthErrorCode(AuthenticationConstants.RESULT_LOGIN_LOCKED);
-                break;
-            case AuthenticationConstants.RESULT_PASSWORD_EXPIRED:
-                authResp.setAuthErrorCode(AuthenticationConstants.RESULT_PASSWORD_EXPIRED);
-                break;
-            case AuthenticationConstants.RESULT_SERVICE_NOT_FOUND:
-                authResp.setAuthErrorCode(AuthenticationConstants.RESULT_SERVICE_NOT_FOUND);
-                break;
-            default:
-                authResp.setAuthErrorCode(AuthenticationConstants.INTERNAL_ERROR);
-            }
-            return authResp;
-        }
-
-    }
-    */
-
-    /*
-    @ManagedAttribute
-    public Subject authenticateByToken(String userId, String token,
-            String tokenType) throws Exception {
-
-        String tokenUserId = null;
-        SSOTokenModule tkModule = SSOTokenFactory.createModule(tokenType);
-        tkModule.setCryptor(cryptor);
-        tkModule.setKeyManagementService(keyManagementService);
-
-        if (!AuthenticationConstants.OPENIAM_TOKEN.equalsIgnoreCase(tokenType)) {
-            log.debug("authenticateByToken: Token type is invalid=" + tokenType);
-            Subject sub = new Subject();
-            sub.setResultCode(AuthenticationConstants.RESULT_INVALID_TOKEN);
-            return sub;
-        }
-
-        String tkString = tkModule.getDecryptedToken(userId, token);
-
-        log.debug("authenticateByToken: Decrypted token=" + tkString);
-
-        StringTokenizer tokenizer = new StringTokenizer(tkString, ":");
-        if (tokenizer.hasMoreTokens()) {
-            tokenUserId = tokenizer.nextToken();
-        } else {
-            log.debug("authenticateByToken: no userId in the token");
-
-            Subject sub = new Subject();
-            sub.setResultCode(AuthenticationConstants.RESULT_INVALID_TOKEN);
-            return sub;
-        }
-
-        LoginEntity lg = loginManager.getPrimaryIdentity(tokenUserId);
-
-        Response resp = renewToken(lg.getLogin(), token, tokenType);
-
-        log.debug("authenticateByToken: response from renewToken=" + resp);
-
-        if (resp.getStatus() == ResponseStatus.FAILURE) {
-            Subject sub = new Subject();
-            sub.setResultCode(AuthenticationConstants.RESULT_INVALID_TOKEN);
-            return sub;
-        }
-
-        AuthState authSt = authStateDao.findById(tokenUserId);
-        Subject sub = new Subject(tokenUserId);
-        sub.setPrincipal(lg.getLogin());
-        sub.setExpirationTime(authSt.getExpiration());
-        sub.setResultCode(AuthenticationConstants.RESULT_SUCCESS);
-
-        populateSubject(tokenUserId, sub);
-
-        return sub;
-
-    }
-    */
-
     @Override
     @ManagedAttribute
-    public void globalLogout(String userId) throws LogoutException {
-        if (userId == null) {
-            throw new NullPointerException("UserId is null");
+    public void globalLogout(String userId) throws Throwable {
+        final AuditLogBuilder auditBuilder=auditLogProvider.getAuditLogBuilder();
+        try{
+            auditBuilder.setRequestorUserId(userId).setTargetUser(userId).setAction(AuditAction.LOGOUT);
+
+            if (userId == null) {
+                auditBuilder.fail().setFailureReason("Target User object not passed");
+                throw new NullPointerException("UserId is null");
+            }
+
+            AuthStateEntity authSt = authStateDao.findById(userId);
+            if (authSt == null) {
+                auditBuilder.fail().setFailureReason(String.format("Cannot find AuthState object for User: %s",userId));
+                log.error("AuthState not found for userId=" + userId);
+                throw new LogoutException();
+            }
+
+            authSt.setAuthState(new BigDecimal(0));
+            authSt.setToken("LOGOUT");
+            authStateDao.saveAuthState(authSt);
+            auditBuilder.succeed();
+        /*
+        } catch (Throwable ex){
+           if(!AuditResult.FAILURE.value().equals(auditBuilder.getEntity().getResult()))
+               auditBuilder.setResult(AuditResult.FAILURE).addAttribute(AuditAttributeName.FAILURE_REASON, ex.getMessage());
+
+           throw ex;
+		*/
+        } finally {
+            auditLogService.enqueue(auditBuilder);
         }
-
-        AuthStateEntity authSt = authStateDao.findById(userId);
-        if (authSt == null) {
-            log.error("AuthState not found for userId=" + userId);
-            throw new LogoutException();
-        }
-
-        authSt.setAuthState(new BigDecimal(0));
-        authSt.setToken("LOGOUT");
-        authStateDao.saveAuthState(authSt);
-
     }
 
     @Override
     public AuthenticationResponse login(AuthenticationRequest request) {
-        if (request == null) {
-            throw new IllegalArgumentException("Request object is null");
-        }
-
-        final String secDomainId = request.getDomainId();
-        final String principal = request.getPrincipal();
-        final String password = request.getPassword();
-        final String clientIP = request.getClientIP();
-        final String nodeIP = request.getNodeIP();
-
-        AuthenticationResponse authResp = new AuthenticationResponse(
-                ResponseStatus.FAILURE);
-
-        AuthenticationContext ctx = null;
-        AbstractLoginModule loginModule = null;
-        String loginModName = null;
-        LoginModuleSelector modSel = new LoginModuleSelector();
-
-        LoginEntity lg = null;
-        String userId = null;
-        UserEntity user = null;
-
-        SecurityDomainEntity secDomain = securityDomainDAO.findById(secDomainId);
-        if (secDomain == null) {
-            // throw new
-            // AuthenticationException(AuthenticationConstants.RESULT_INVALID_DOMAIN);
-            authResp.setAuthErrorCode(AuthenticationConstants.RESULT_INVALID_DOMAIN);
-            return authResp;
-        }
-
-        // Determine which login module to use
-        // - get the Authentication policy for the domain
-        String authPolicyId = secDomain.getAuthnPolicyId();
-        final PolicyEntity authPolicy = policyDao.findById(authPolicyId);
-        PolicyAttributeEntity modType = authPolicy.getAttribute("LOGIN_MOD_TYPE");
-        PolicyAttributeEntity defaultModule = authPolicy.getAttribute("DEFAULT_LOGIN_MOD");
-        loginModName = defaultModule.getValue1();
-        if (modType != null) {
-            // modSel.setModuleType( Integer.parseInt(modType.getValue1()));
-            modSel.setModuleName(loginModName);
-        }
-
-        // log.debug("loginModule=" + secDomain.getDefaultLoginModule());
-
-        if (StringUtils.equals(loginModName, defaultLoginModule)) {
-            /* Few basic checks must be met before calling the login module. */
-            /* Simplifies the login module */
-            if (StringUtils.isBlank(principal)) {
-                log("AUTHENTICATION", "AUTHENTICATION", "FAIL",
-                        "INVALID LOGIN", secDomainId, null, principal, null,
-                        null, clientIP, nodeIP);
-                // throw new
-                // AuthenticationException(AuthenticationConstants.RESULT_INVALID_LOGIN);
-
-                authResp.setAuthErrorCode(AuthenticationConstants.RESULT_INVALID_LOGIN);
-                return authResp;
-
-            }
-
-            if (StringUtils.isBlank(password)) {
-
-                log.debug("Invalid password");
-
-                log("AUTHENTICATION", "AUTHENTICATION", "FAIL",
-                        "INVALID PASSWORD", secDomainId, null, principal, null,
-                        null, clientIP, nodeIP);
-                // throw new
-                // AuthenticationException(AuthenticationConstants.RESULT_INVALID_PASSWORD);
-
-                authResp.setAuthErrorCode(AuthenticationConstants.RESULT_INVALID_PASSWORD);
-                return authResp;
-
-            }
-
-            lg = loginManager.getLoginByManagedSys(secDomainId, principal,
-                    secDomain.getAuthSysId());
-
-            if (lg == null) {
-                log("AUTHENTICATION", "AUTHENTICATION", "FAIL",
-                        "INVALID LOGIN", secDomainId, null, principal, null,
-                        null, clientIP, nodeIP);
-                // throw new
-                // AuthenticationException(AuthenticationConstants.RESULT_INVALID_LOGIN);
-
-                authResp.setAuthErrorCode(AuthenticationConstants.RESULT_INVALID_LOGIN);
-                return authResp;
-
-            }
-
-            // check the user status - move to the abstract class for reuse
-            userId = lg.getUserId();
-            
-            user = userManager.getUser(userId);
-        }
-
-        try {
-
-            log.debug("Creating authentication context");
-
-            ctx = AuthContextFactory.createContext(authContextClass);
-
-            PolicyAttributeEntity selPolicy = authPolicy
-                    .getAttribute("LOGIN_MODULE_SEL_POLCY");
-            if (selPolicy != null && StringUtils.isNotBlank(selPolicy.getValue1())) {
-
-                log.debug("Calling policy selection rule");
-
-                Map<String, Object> bindingMap = new HashMap<String, Object>();
-                bindingMap.put("secDomainId", secDomainId);
-                bindingMap.put("principal", principal);
-                bindingMap.put("sysId", secDomain.getAuthSysId());
-                // also bind the user and login objects to avoid
-                // re-initialization of spring the scripting engine
-                bindingMap.put("login", lg);
-                bindingMap.put("user", user);
-
-                try {
-                    loginModName = (String) scriptRunner.execute(bindingMap,
-                            selPolicy.getValue1());
-                } catch (ScriptEngineException e) {
-                    log.error(e);
-                }
-
-            }
-
-            if (modSel.getModuleType() == LoginModuleSelector.MODULE_TYPE_LOGIN_MODULE) {
-            	/* here for backward compatability. in case a groovy script returned an actual class name, get 
-            	 * the spring bean name
-            	 */
-            	try {
-            		loginModName = Class.forName(loginModName).getAnnotation(Component.class).value();
-            	} catch(Throwable e) {
-            		
-            	}
-            	
-                loginModule = beanFactory.getBean(loginModName, AbstractLoginModule.class); 
-                //loginModule = (AbstractLoginModule) LoginModuleFactory.createModule(loginModName);
-                loginModule.setSecurityDomain(secDomain);
-                loginModule.setUser(user);
-                loginModule.setLg(lg);
-                loginModule.setAuthPolicyId(authPolicyId);
-            }
-
-        } catch (Throwable ie) {
-            log.error(ie.getMessage(), ie);
-            // throw (new
-            // AuthenticationException(AuthenticationConstants.INTERNAL_ERROR,ie.getMessage(),ie));
-            authResp.setAuthErrorCode(AuthenticationConstants.INTERNAL_ERROR);
-            return authResp;
-        }
-        PasswordCredential cred = (PasswordCredential) ctx
-                .createCredentialObject(AuthenticationConstants.AUTHN_TYPE_PASSWORD);
-        cred.setCredentials(secDomainId, principal, password);
-        ctx.setCredential(AuthenticationConstants.AUTHN_TYPE_PASSWORD, cred);
-
-        Map<String, Object> authParamMap = new HashMap<String, Object>();
-        authParamMap.put("SEC_DOMAIN_ID", secDomainId);
-        authParamMap.put("AUTH_SYS_ID", secDomain.getAuthSysId());
-        ctx.setAuthParam(authParamMap);
-
-        ctx.setNodeIP(nodeIP);
-        ctx.setClientIP(clientIP);
-
-        Subject sub = null;
-        if (modSel.getModuleType() == LoginModuleSelector.MODULE_TYPE_LOGIN_MODULE) {
-            try {
-                sub = loginModule.login(ctx);
-
-            } catch (AuthenticationException ae) {
-
-                log.debug("Authentication error " + ae.toString());
-
-                int errCode = ae.getErrorCode();
-                switch (errCode) {
-                case AuthenticationConstants.RESULT_INVALID_DOMAIN:
-                    authResp.setAuthErrorCode(AuthenticationConstants.RESULT_INVALID_DOMAIN);
-                    break;
-                case AuthenticationConstants.RESULT_INVALID_LOGIN:
-                    authResp.setAuthErrorCode(AuthenticationConstants.RESULT_INVALID_LOGIN);
-                    break;
-                case AuthenticationConstants.RESULT_INVALID_PASSWORD:
-                    authResp.setAuthErrorCode(AuthenticationConstants.RESULT_INVALID_PASSWORD);
-                    break;
-                case AuthenticationConstants.RESULT_INVALID_USER_STATUS:
-                    authResp.setAuthErrorCode(AuthenticationConstants.RESULT_INVALID_USER_STATUS);
-                    break;
-                case AuthenticationConstants.RESULT_LOGIN_DISABLED:
-                    authResp.setAuthErrorCode(AuthenticationConstants.RESULT_LOGIN_DISABLED);
-                    break;
-                case AuthenticationConstants.RESULT_LOGIN_LOCKED:
-                    authResp.setAuthErrorCode(AuthenticationConstants.RESULT_LOGIN_LOCKED);
-                    break;
-                case AuthenticationConstants.RESULT_PASSWORD_EXPIRED:
-                    authResp.setAuthErrorCode(AuthenticationConstants.RESULT_PASSWORD_EXPIRED);
-                    break;
-                case AuthenticationConstants.RESULT_SERVICE_NOT_FOUND:
-                    authResp.setAuthErrorCode(AuthenticationConstants.RESULT_SERVICE_NOT_FOUND);
-                    break;
-                case AuthenticationConstants.RESULT_INVALID_CONFIGURATION:
-                    authResp.setAuthErrorCode(AuthenticationConstants.RESULT_INVALID_CONFIGURATION);
-                    break;
-                case AuthenticationConstants.RESULT_SUCCESS_PASSWORD_EXP:
-                	authResp.setAuthErrorCode(AuthenticationConstants.RESULT_SUCCESS_PASSWORD_EXP);
-                	break;
-                default:
-                    authResp.setAuthErrorCode(AuthenticationConstants.INTERNAL_ERROR);
-                }
-                return authResp;
-            } catch (Throwable e) {
-            	log.error("Unknown Exception", e);
-                authResp.setStatus(ResponseStatus.FAILURE);
-                authResp.setAuthErrorCode(AuthenticationConstants.INTERNAL_ERROR);
-                authResp.setAuthErrorMessage(e.getMessage());
-                return authResp;
-            }
-        } else {
-
-        }
-        // add the sso token to the authstate
-
-        updateAuthState(sub);
-        //populateSubject(sub.getUserId(), sub);
-
-        log.debug("*** PasswordAuth complete...Returning response object");
-
-        authResp.setSubject(sub);
-        authResp.setStatus(ResponseStatus.SUCCESS);
-        
+    	final AuditLogBuilder auditBuilder=auditLogProvider.getAuditLogBuilder().setAction(AuditAction.LOGIN);
+    	final AuthenticationResponse authResp = new AuthenticationResponse(ResponseStatus.FAILURE);
+    	try {
+	        if (request == null) {
+	        	auditBuilder.fail().setFailureReason("Request object is null");
+	            throw new IllegalArgumentException("Request object is null");
+	        }
+	
+	        final String secDomainId = request.getDomainId();
+	        final String principal = request.getPrincipal();
+	        final String password = request.getPassword();
+	        final String clientIP = request.getClientIP();
+	        final String nodeIP = request.getNodeIP();
+	
+	        auditBuilder.setClientIP(clientIP).setRequestorPrincipal(principal);
+	        
+	        AuthenticationContext ctx = null;
+	        AbstractLoginModule loginModule = null;
+	        String loginModName = null;
+	        LoginModuleSelector modSel = new LoginModuleSelector();
+	
+	        LoginEntity lg = null;
+	        String userId = null;
+	        UserEntity user = null;
+	
+	        SecurityDomainEntity secDomain = securityDomainDAO.findById(secDomainId);
+	        if (secDomain == null) {
+	            // throw new
+	            // AuthenticationException(AuthenticationConstants.RESULT_INVALID_DOMAIN);
+	        	auditBuilder.fail().setFailureReason(String.format("Security domain %s is invalid", secDomainId));
+	            authResp.setAuthErrorCode(AuthenticationConstants.RESULT_INVALID_DOMAIN);
+	            return authResp;
+	        }
+	        auditBuilder.setManagedSysId(secDomain.getAuthSysId());
+	
+	        // Determine which login module to use
+	        // - get the Authentication policy for the domain
+	        String authPolicyId = secDomain.getAuthnPolicyId();
+	        final PolicyEntity authPolicy = policyDao.findById(authPolicyId);
+	        PolicyAttributeEntity modType = authPolicy.getAttribute("LOGIN_MOD_TYPE");
+	        PolicyAttributeEntity defaultModule = authPolicy.getAttribute("DEFAULT_LOGIN_MOD");
+	        loginModName = defaultModule.getValue1();
+	        if (modType != null) {
+	            // modSel.setModuleType( Integer.parseInt(modType.getValue1()));
+	            modSel.setModuleName(loginModName);
+	        }
+	
+	        // log.debug("loginModule=" + secDomain.getDefaultLoginModule());
+	
+	        if (StringUtils.equals(loginModName, defaultLoginModule)) {
+	            /* Few basic checks must be met before calling the login module. */
+	            /* Simplifies the login module */
+	            if (StringUtils.isBlank(principal)) {
+	            	/*
+	                log("AUTHENTICATION", "AUTHENTICATION", "FAIL",
+	                        "INVALID LOGIN", secDomainId, null, principal, null,
+	                        null, clientIP, nodeIP);
+					*/
+	            	auditBuilder.fail().setFailureReason("Invalid Principlal");
+	                // throw new
+	                // AuthenticationException(AuthenticationConstants.RESULT_INVALID_LOGIN);
+	
+	                authResp.setAuthErrorCode(AuthenticationConstants.RESULT_INVALID_LOGIN);
+	                return authResp;
+	
+	            }
+	
+	            if (StringUtils.isBlank(password)) {
+	
+	                log.debug("Invalid password");
+	                /*
+	                log("AUTHENTICATION", "AUTHENTICATION", "FAIL",
+	                        "INVALID PASSWORD", secDomainId, null, principal, null,
+	                        null, clientIP, nodeIP);
+					*/
+	                
+	                // throw new
+	                // AuthenticationException(AuthenticationConstants.RESULT_INVALID_PASSWORD);
+	                auditBuilder.fail().setFailureReason("Invalid Password");
+	                authResp.setAuthErrorCode(AuthenticationConstants.RESULT_INVALID_PASSWORD);
+	                return authResp;
+	
+	            }
+	
+	            lg = loginManager.getLoginByManagedSys(secDomainId, principal,
+	                    secDomain.getAuthSysId());
+	
+	            if (lg == null) {
+	            	auditBuilder.fail().setFailureReason(
+	            			String.format("Cannot find login for security domain '%s', principal '%s' and managedSystem '%s'", 
+	            					secDomainId, principal, secDomain.getAuthSysId()));
+	            	/*
+	                log("AUTHENTICATION", "AUTHENTICATION", "FAIL",
+	                        "INVALID LOGIN", secDomainId, null, principal, null,
+	                        null, clientIP, nodeIP);
+					*/
+	                // throw new
+	                // AuthenticationException(AuthenticationConstants.RESULT_INVALID_LOGIN);
+	
+	                authResp.setAuthErrorCode(AuthenticationConstants.RESULT_INVALID_LOGIN);
+	                return authResp;
+	
+	            }
+	
+	            // check the user status - move to the abstract class for reuse
+	            userId = lg.getUserId();
+	            auditBuilder.setRequestorUserId(userId).setTargetUser(userId);
+	            
+	            user = userManager.getUser(userId);
+	        }
+	
+	        try {
+	
+	            log.debug("Creating authentication context");
+	
+	            ctx = AuthContextFactory.createContext(authContextClass);
+	
+	            PolicyAttributeEntity selPolicy = authPolicy
+	                    .getAttribute("LOGIN_MODULE_SEL_POLCY");
+	            if (selPolicy != null && StringUtils.isNotBlank(selPolicy.getValue1())) {
+	
+	                log.debug("Calling policy selection rule");
+	
+	                Map<String, Object> bindingMap = new HashMap<String, Object>();
+	                bindingMap.put("secDomainId", secDomainId);
+	                bindingMap.put("principal", principal);
+	                bindingMap.put("sysId", secDomain.getAuthSysId());
+	                // also bind the user and login objects to avoid
+	                // re-initialization of spring the scripting engine
+	                bindingMap.put("login", lg);
+	                bindingMap.put("user", user);
+	
+	                try {
+	                    loginModName = (String) scriptRunner.execute(bindingMap,
+	                            selPolicy.getValue1());
+	                } catch (ScriptEngineException e) {
+	                    log.error("Can't execute script", e);
+	                }
+	
+	            }
+	
+	            if (modSel.getModuleType() == LoginModuleSelector.MODULE_TYPE_LOGIN_MODULE) {
+	            	/* here for backward compatability. in case a groovy script returned an actual class name, get 
+	            	 * the spring bean name
+	            	 */
+	            	try {
+	            		loginModName = Class.forName(loginModName).getAnnotation(Component.class).value();
+	            	} catch(Throwable e) {
+	            		
+	            	}
+	            	
+	                loginModule = beanFactory.getBean(loginModName, AbstractLoginModule.class); 
+	                //loginModule = (AbstractLoginModule) LoginModuleFactory.createModule(loginModName);
+	                loginModule.setSecurityDomain(secDomain);
+	                loginModule.setUser(user);
+	                loginModule.setLg(lg);
+	                loginModule.setAuthPolicyId(authPolicyId);
+	            }
+	
+	        } catch (Throwable ie) {
+	            log.error(ie.getMessage(), ie);
+	            // throw (new
+	            // AuthenticationException(AuthenticationConstants.INTERNAL_ERROR,ie.getMessage(),ie));
+	            auditBuilder.fail().setFailureReason(ie.getMessage()).setException(ie);
+	            authResp.setAuthErrorCode(AuthenticationConstants.INTERNAL_ERROR);
+	            return authResp;
+	        }
+	        PasswordCredential cred = (PasswordCredential) ctx
+	                .createCredentialObject(AuthenticationConstants.AUTHN_TYPE_PASSWORD);
+	        cred.setCredentials(secDomainId, principal, password);
+	        ctx.setCredential(AuthenticationConstants.AUTHN_TYPE_PASSWORD, cred);
+	
+	        Map<String, Object> authParamMap = new HashMap<String, Object>();
+	        authParamMap.put("SEC_DOMAIN_ID", secDomainId);
+	        authParamMap.put("AUTH_SYS_ID", secDomain.getAuthSysId());
+	        ctx.setAuthParam(authParamMap);
+	
+	        ctx.setNodeIP(nodeIP);
+	        ctx.setClientIP(clientIP);
+	
+	        Subject sub = null;
+	        if (modSel.getModuleType() == LoginModuleSelector.MODULE_TYPE_LOGIN_MODULE) {
+	            try {
+	                sub = loginModule.login(ctx);
+	
+	            } catch (AuthenticationException ae) {
+	            	final String erroCodeAsString = Integer.valueOf(ae.getErrorCode()).toString();
+	            	auditBuilder.fail().setFailureReason(erroCodeAsString).addAttribute(AuditAttributeName.LOGIN_ERROR_CODE, erroCodeAsString);
+	                int errCode = ae.getErrorCode();
+	                switch (errCode) {
+		                case AuthenticationConstants.RESULT_INVALID_DOMAIN:
+		                    authResp.setAuthErrorCode(AuthenticationConstants.RESULT_INVALID_DOMAIN);
+		                    break;
+		                case AuthenticationConstants.RESULT_INVALID_LOGIN:
+		                    authResp.setAuthErrorCode(AuthenticationConstants.RESULT_INVALID_LOGIN);
+		                    break;
+		                case AuthenticationConstants.RESULT_INVALID_PASSWORD:
+		                    authResp.setAuthErrorCode(AuthenticationConstants.RESULT_INVALID_PASSWORD);
+		                    break;
+		                case AuthenticationConstants.RESULT_INVALID_USER_STATUS:
+		                    authResp.setAuthErrorCode(AuthenticationConstants.RESULT_INVALID_USER_STATUS);
+		                    break;
+		                case AuthenticationConstants.RESULT_LOGIN_DISABLED:
+		                    authResp.setAuthErrorCode(AuthenticationConstants.RESULT_LOGIN_DISABLED);
+		                    break;
+		                case AuthenticationConstants.RESULT_LOGIN_LOCKED:
+		                    authResp.setAuthErrorCode(AuthenticationConstants.RESULT_LOGIN_LOCKED);
+		                    break;
+		                case AuthenticationConstants.RESULT_PASSWORD_EXPIRED:
+		                    authResp.setAuthErrorCode(AuthenticationConstants.RESULT_PASSWORD_EXPIRED);
+		                    break;
+		                case AuthenticationConstants.RESULT_SERVICE_NOT_FOUND:
+		                    authResp.setAuthErrorCode(AuthenticationConstants.RESULT_SERVICE_NOT_FOUND);
+		                    break;
+		                case AuthenticationConstants.RESULT_INVALID_CONFIGURATION:
+		                    authResp.setAuthErrorCode(AuthenticationConstants.RESULT_INVALID_CONFIGURATION);
+		                    break;
+		                case AuthenticationConstants.RESULT_SUCCESS_PASSWORD_EXP:
+		                	authResp.setAuthErrorCode(AuthenticationConstants.RESULT_SUCCESS_PASSWORD_EXP);
+		                	break;
+		                case AuthenticationConstants.RESULT_PASSWORD_CHANGE_AFTER_RESET:
+		                    authResp.setAuthErrorCode(AuthenticationConstants.RESULT_PASSWORD_CHANGE_AFTER_RESET);
+		                    break;
+		                default:
+		                    authResp.setAuthErrorCode(AuthenticationConstants.INTERNAL_ERROR);
+		                    break;
+	                }
+	                return authResp;
+	            } catch (Throwable e) {
+	            	log.error("Unknown Exception", e);
+	            	auditBuilder.fail().setFailureReason(e.getMessage()).setException(e);
+	                authResp.setStatus(ResponseStatus.FAILURE);
+	                authResp.setAuthErrorCode(AuthenticationConstants.INTERNAL_ERROR);
+	                authResp.setAuthErrorMessage(e.getMessage());
+	                return authResp;
+	            }
+	        }
+	        // add the sso token to the authstate
+	
+	        updateAuthState(sub);
+	        //populateSubject(sub.getUserId(), sub);
+	
+	        log.debug("*** PasswordAuth complete...Returning response object");
+	
+	        auditBuilder.succeed();
+	        authResp.setSubject(sub);
+	        authResp.setStatus(ResponseStatus.SUCCESS);
+    	} finally {
+    		auditLogService.enqueue(auditBuilder);
+    	}
         return authResp;
     }
-
-    /*
-    @ManagedAttribute
-    public AuthenticationResponse passwordAuth(String secDomainId,
-            String principal, String password) throws Exception {
-
-        log.debug("*** PasswordAuth called...");
-
-        AuthenticationResponse authResp = new AuthenticationResponse(
-                ResponseStatus.FAILURE);
-
-        AuthenticationContext ctx = null;
-        AbstractLoginModule loginModule = null;
-        Policy authPolicy = null;
-        String loginModName = null;
-        LoginModuleSelector modSel = new LoginModuleSelector();
-
-        LoginEntity lg = null;
-        String userId = null;
-        UserEntity user = null;
-
-        SecurityDomain secDomain = secDomainService
-                .getSecurityDomain(secDomainId);
-        if (secDomain == null) {
-            // throw new
-            // AuthenticationException(AuthenticationConstants.RESULT_INVALID_DOMAIN);
-            authResp.setAuthErrorCode(AuthenticationConstants.RESULT_INVALID_DOMAIN);
-            return authResp;
-
-        }
-
-        // Determine which login module to use
-        // - get the Authentication policy for the domain
-        String authPolicyId = secDomain.getAuthnPolicyId();
-
-        log.debug("Authn policyId=" + authPolicyId);
-
-        authPolicy = policyDataService.getPolicy(authPolicyId);
-
-        log.debug("Auth Policy object=" + authPolicy);
-
-        PolicyAttribute modType = authPolicy.getAttribute("LOGIN_MOD_TYPE");
-        PolicyAttribute defaultModule = authPolicy
-                .getAttribute("DEFAULT_LOGIN_MOD");
-        loginModName = defaultModule.getValue1();
-        if (modType != null) {
-            // modSel.setModuleType( Integer.parseInt(modType.getValue1()));
-            modSel.setModuleName(loginModName);
-        }
-
-        // log.debug("loginModule=" + secDomain.getDefaultLoginModule());
-
-        if (loginModName
-                .equalsIgnoreCase("org.openiam.idm.srvc.auth.spi.DefaultLoginModule")) {
-            //Few basic checks must be met before calling the login module.
-            //Simplifies the login module
-            if (principal == null || principal.length() == 0) {
-
-                log.debug("Invalid login:" + principal);
-
-                log("AUTHENTICATION", "AUTHENTICATION", "FAIL",
-                        "INVALID LOGIN", secDomainId, null, principal, null,
-                        null, null, null);
-                // throw new
-                // AuthenticationException(AuthenticationConstants.RESULT_INVALID_LOGIN);
-
-                authResp.setAuthErrorCode(AuthenticationConstants.RESULT_INVALID_LOGIN);
-                return authResp;
-
-            }
-
-            if (password == null || password.equals("")) {
-
-                log.debug("Invalid password");
-
-                log("AUTHENTICATION", "AUTHENTICATION", "FAIL",
-                        "INVALID PASSWORD", secDomainId, null, principal, null,
-                        null, null, null);
-                // throw new
-                // AuthenticationException(AuthenticationConstants.RESULT_INVALID_PASSWORD);
-
-                authResp.setAuthErrorCode(AuthenticationConstants.RESULT_INVALID_PASSWORD);
-                return authResp;
-
-            }
-
-            lg = loginManager.getLoginByManagedSys(secDomainId, principal,
-                    secDomain.getAuthSysId());
-
-            log.debug("login object after looking up the login:" + lg);
-
-            if (lg == null) {
-                log.debug("Login not found. Throw authentication exception");
-                log("AUTHENTICATION", "AUTHENTICATION", "FAIL",
-                        "INVALID LOGIN", secDomainId, null, principal, null,
-                        null, null, null);
-                // throw new
-                // AuthenticationException(AuthenticationConstants.RESULT_INVALID_LOGIN);
-
-                authResp.setAuthErrorCode(AuthenticationConstants.RESULT_INVALID_LOGIN);
-                return authResp;
-
-            } else {
-                log.debug("Login found. No exception thrown");
-            }
-
-            // check the user status - move to the abstract class for reuse
-            userId = lg.getUserId();
-
-            log.debug("UserId=" + userId);
-            user = userManager.getUser(userId);
-        }
-
-        try {
-
-            log.debug("Creating authentication context");
-
-            ctx = AuthContextFactory.createContext(authContextClass);
-
-            PolicyAttribute selPolicy = authPolicy
-                    .getAttribute("LOGIN_MODULE_SEL_POLCY");
-            if (selPolicy != null && selPolicy.getValue1() != null
-                    && selPolicy.getValue1().length() > 0) {
-
-                log.debug("Calling policy selection rule");
-
-                Map<String, Object> bindingMap = new HashMap<String, Object>();
-                bindingMap.put("secDomainId", secDomainId);
-                bindingMap.put("principal", principal);
-                bindingMap.put("sysId", secDomain.getAuthSysId());
-                // also bind the user and login objects to avoid
-                // re-initialization of spring the scripting engine
-                bindingMap.put("login", lg);
-                bindingMap.put("user", user);
-
-                ScriptIntegration se = ScriptFactory
-                        .createModule(this.scriptEngine);
-                try {
-                    loginModName = (String) se.execute(bindingMap,
-                            selPolicy.getValue1());
-                } catch (ScriptEngineException e) {
-                    log.error(e);
-                }
-
-                log.debug("LoginModName from script =" + loginModName);
-
-            } else {
-                log.debug("retrieving default login module for policy");
-
-                // test code
-                Set<PolicyAttribute> attSet = authPolicy.getPolicyAttributes();
-                Iterator<PolicyAttribute> it = attSet.iterator();
-
-            }
-            log.debug("login module name=" + loginModName);
-
-            if (modSel.getModuleType() == LoginModuleSelector.MODULE_TYPE_LOGIN_MODULE) {
-                loginModule = (AbstractLoginModule) LoginModuleFactory
-                        .createModule(loginModName);
-                //
-                //Dependency injection fails when we use our own factory. Set
-                //the necessary beans directly
-                
-                loginModule.setLoginService(loginManager);
-                loginModule.setTokenModule(defaultToken);
-                loginModule.setUserService(userManager);
-                loginModule.setCryptor(cryptor);
-                loginModule.setSecurityDomain(secDomain);
-                loginModule.setAuditUtil(auditLogUtil);
-                loginModule.setUser(user);
-                loginModule.setLg(lg);
-                loginModule.setAuthPolicyId(authPolicyId);
-                loginModule.setResourceService(resourceService);
-                loginModule.setPasswordManager(passwordManager);
-                loginModule.setPolicyDataService(policyDataService);
-                loginModule.setKeyManagementService(keyManagementService);
-            }
-
-        } catch (Exception ie) {
-            log.error(ie.getMessage(), ie);
-            // throw (new
-            // AuthenticationException(AuthenticationConstants.INTERNAL_ERROR,ie.getMessage(),ie));
-            authResp.setAuthErrorCode(AuthenticationConstants.INTERNAL_ERROR);
-            return authResp;
-        }
-        PasswordCredential cred = (PasswordCredential) ctx
-                .createCredentialObject(AuthenticationConstants.AUTHN_TYPE_PASSWORD);
-        cred.setCredentials(secDomainId, principal, password);
-        ctx.setCredential(AuthenticationConstants.AUTHN_TYPE_PASSWORD, cred);
-
-        Map<String, Object> authParamMap = new HashMap<String, Object>();
-        authParamMap.put("SEC_DOMAIN_ID", secDomainId);
-        authParamMap.put("AUTH_SYS_ID", secDomain.getAuthSysId());
-        ctx.setAuthParam(authParamMap);
-
-        Subject sub = null;
-        if (modSel.getModuleType() == LoginModuleSelector.MODULE_TYPE_LOGIN_MODULE) {
-            try {
-                sub = loginModule.login(ctx);
-
-            } catch (AuthenticationException ae) {
-
-                log.debug("Authentication error " + ae.toString());
-
-                int errCode = ae.getErrorCode();
-                switch (errCode) {
-                case AuthenticationConstants.RESULT_INVALID_DOMAIN:
-                    authResp.setAuthErrorCode(AuthenticationConstants.RESULT_INVALID_DOMAIN);
-                    break;
-                case AuthenticationConstants.RESULT_INVALID_LOGIN:
-                    authResp.setAuthErrorCode(AuthenticationConstants.RESULT_INVALID_LOGIN);
-                    break;
-                case AuthenticationConstants.RESULT_INVALID_PASSWORD:
-                    authResp.setAuthErrorCode(AuthenticationConstants.RESULT_INVALID_PASSWORD);
-                    break;
-                case AuthenticationConstants.RESULT_INVALID_USER_STATUS:
-                    authResp.setAuthErrorCode(AuthenticationConstants.RESULT_INVALID_USER_STATUS);
-                    break;
-                case AuthenticationConstants.RESULT_LOGIN_DISABLED:
-                    authResp.setAuthErrorCode(AuthenticationConstants.RESULT_LOGIN_DISABLED);
-                    break;
-                case AuthenticationConstants.RESULT_LOGIN_LOCKED:
-                    authResp.setAuthErrorCode(AuthenticationConstants.RESULT_LOGIN_LOCKED);
-                    break;
-                case AuthenticationConstants.RESULT_PASSWORD_EXPIRED:
-                    authResp.setAuthErrorCode(AuthenticationConstants.RESULT_PASSWORD_EXPIRED);
-                    break;
-                case AuthenticationConstants.RESULT_SERVICE_NOT_FOUND:
-                    authResp.setAuthErrorCode(AuthenticationConstants.RESULT_SERVICE_NOT_FOUND);
-                    break;
-                case AuthenticationConstants.RESULT_INVALID_CONFIGURATION:
-                    authResp.setAuthErrorCode(AuthenticationConstants.RESULT_INVALID_CONFIGURATION);
-                    break;
-                default:
-                    authResp.setAuthErrorCode(AuthenticationConstants.INTERNAL_ERROR);
-                }
-                return authResp;
-            }
-
-        } else {
-
-        }
-        // add the sso token to the authstate
-
-        updateAuthState(sub);
-        populateSubject(sub.getUserId(), sub);
-
-        log.debug("*** PasswordAuth complete...Returning response object");
-
-        authResp.setSubject(sub);
-        authResp.setStatus(ResponseStatus.SUCCESS);
-        return authResp;
-
-    }
-    */
-
-    /*
-    private void populateSubject(String userId, Subject sub) {
-        log.debug("populateSubject: userId=" + userId);
-
-        final List<GroupEntity> groupList = groupManager.getGroupsForUser(
-                userId, 0, Integer.MAX_VALUE);
-        final List<RoleEntity> roleAry = roleManager.getUserRoles(userId, 0,
-                Integer.MAX_VALUE);
-
-        if (CollectionUtils.isNotEmpty(groupList)) {
-            sub.setGroups(groupDozerConverter.convertToDTOList(groupList, true));
-        }
-        if (CollectionUtils.isNotEmpty(roleAry)) {
-            sub.setRoles(roleDozerConverter.convertToDTOList(roleAry, true));
-        }
-
-    }
-    */
-
-    /*
-    public BooleanResponse validateToken(String loginId, String token,
-            String tokenType) throws Exception {
-
-        if (loginId == null) {
-            throw new IllegalArgumentException("loginId is null");
-        }
-        if (token == null) {
-            throw new IllegalArgumentException("token is null");
-        }
-        if (tokenType == null) {
-            throw new IllegalArgumentException("tokenType is null");
-        }
-
-        log.debug("validateToken token=" + token);
-
-        // check if this is a valid user
-        LoginEntity lg = loginManager.getLoginByManagedSys(
-                this.sysConfiguration.getDefaultSecurityDomain(), loginId,
-                this.sysConfiguration.getDefaultManagedSysId());
-        if (lg == null) {
-            log.debug("login object is null.");
-            BooleanResponse resp = new BooleanResponse(false);
-            return resp;
-        }
-
-        // get handler for the token type
-        SSOTokenModule tkModule = SSOTokenFactory.createModule(tokenType);
-        tkModule.setCryptor(cryptor);
-        tkModule.setKeyManagementService(keyManagementService);
-        boolean tokenStatus = tkModule.isTokenValid(lg.getUserId(), loginId,
-                token);
-
-        BooleanResponse resp = new BooleanResponse(tokenStatus);
-        return resp;
-
-    }
-    */
 
     @Override
     public Response renewToken(String principal, String token, String tokenType) {
@@ -1017,53 +580,6 @@ public class AuthenticationServiceImpl implements AuthenticationService, Applica
 
     }
 
-    /*
-    public BooleanResponse validateTokenByUser(String userId, String token,
-            String tokenType) throws Exception {
-        if (userId == null) {
-            throw new IllegalArgumentException("userId is null");
-        }
-        if (token == null) {
-            throw new IllegalArgumentException("token is null");
-        }
-        if (tokenType == null) {
-            throw new IllegalArgumentException("tokenType is null");
-        }
-
-        // get the user
-
-        UserEntity user = userManager.getUser(userId);
-        if (user == null) {
-            // invalid user
-            BooleanResponse resp = new BooleanResponse(false);
-            return resp;
-        }
-        // get the password policy
-        SecurityDomain secDomain = secDomainService
-                .getSecurityDomain(getSysConfiguration()
-                        .getDefaultSecurityDomain());
-
-        Policy plcy = policyDataService.getPolicy(secDomain.getAuthnPolicyId());
-        String tokenLife = getPolicyAttribute(plcy.getPolicyAttributes(),
-                "TOKEN_LIFE");
-        String tokenIssuer = getPolicyAttribute(plcy.getPolicyAttributes(),
-                "TOKEN_ISSUER");
-
-        // get the primary identity
-        LoginEntity lg = this.loginManager.getPrimaryIdentity(userId);
-        SSOTokenModule tkModule = SSOTokenFactory.createModule(tokenType);
-        tkModule.setCryptor(cryptor);
-        tkModule.setKeyManagementService(keyManagementService);
-        tkModule.setTokenLife(Integer.parseInt(tokenLife));
-
-        boolean tokenStatus = tkModule.isTokenValid(lg.getUserId(), lg.getLogin(), token);
-
-        BooleanResponse resp = new BooleanResponse(tokenStatus);
-        return resp;
-
-    }
-    */
-
     private void updateAuthState(Subject sub) {
 
     	AuthStateEntity state = new AuthStateEntity(sub.getDomainId(), new BigDecimal(1),
@@ -1071,28 +587,6 @@ public class AuthenticationServiceImpl implements AuthenticationService, Applica
                         .getSsoToken().getToken(), sub.getUserId());
 
         authStateDao.saveAuthState(state);
-    }
-
-    /*
-    private SSOToken token(String userId, Map tokenParam) throws Exception {
-
-        tokenParam.put("USER_ID", userId);
-
-        SSOTokenModule tkModule = SSOTokenFactory
-                .createModule((String) tokenParam.get("TOKEN_TYPE"));
-        return tkModule.createToken(tokenParam);
-    }
-    */
-
-    public void log(String objectTypeId, String actionId, String actionStatus,
-            String reason, String domainId, String userId, String principal,
-            String linkedLogId, String clientId, String clientIP, String nodeIP) {
-
-        IdmAuditLog log = new IdmAuditLog(objectTypeId, actionId, actionStatus,
-                reason, domainId, userId, principal, linkedLogId, clientId);
-        log.setHost(clientIP);
-        log.setNodeIP(nodeIP);
-        auditLogUtil.log(log);
     }
 
 	@Override

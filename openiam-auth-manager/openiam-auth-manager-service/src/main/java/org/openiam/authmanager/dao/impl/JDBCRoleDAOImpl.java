@@ -8,6 +8,7 @@ import javax.annotation.PostConstruct;
 
 import org.openiam.authmanager.common.model.AuthorizationRole;
 import org.openiam.authmanager.dao.RoleDAO;
+import org.openiam.core.dao.AbstractJDBCDao;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 

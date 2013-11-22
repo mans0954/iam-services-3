@@ -10,6 +10,7 @@ import org.openiam.am.srvc.domain.AuthProviderEntity;
 import org.openiam.am.srvc.domain.ContentProviderEntity;
 import org.openiam.am.srvc.domain.URIPatternEntity;
 import org.openiam.core.dao.BaseDaoImpl;
+import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -89,4 +90,14 @@ public class AuthProviderDaoImpl extends BaseDaoImpl<AuthProviderEntity, String>
 		entity.setResource(resource);
 		return getByExample(entity);
 	}
+
+    public List<AuthProviderEntity> getByManagedSysId(final String managedSysId) {
+        final AuthProviderEntity entity = new AuthProviderEntity();
+        final ManagedSysEntity managedSysEntity = new ManagedSysEntity();
+        managedSysEntity.setManagedSysId(managedSysId);
+        entity.setManagedSys(managedSysEntity);
+        entity.setManagedSysId(managedSysId);
+        return getByExample(entity);
+    }
+
 }

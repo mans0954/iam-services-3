@@ -22,8 +22,9 @@
 package org.openiam.idm.srvc.pswd.rule;
 
 
+import org.apache.commons.lang.StringUtils;
+import org.openiam.base.ws.ResponseCode;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
-import org.openiam.idm.srvc.pswd.dto.PasswordValidationCode;
 
 /**
  * Validates a password to ensure the password is not equal to the principal
@@ -33,13 +34,12 @@ import org.openiam.idm.srvc.pswd.dto.PasswordValidationCode;
 public class PasswordChangesFrequencyRule extends AbstractPasswordRule {
 
 
-	public PasswordValidationCode isValid() {
-			
-		PasswordValidationCode retval = PasswordValidationCode.SUCCESS;
+	@Override
+	public void validate() throws PasswordRuleException {
 		boolean enabled = false;
 				
 		PolicyAttribute attribute = policy.getAttribute("RESET_PER_TIME");
-		if (!skipPasswordFrequencyCheck && attribute.getValue1() != null && attribute.getValue1().length() > 0) {
+		if (!skipPasswordFrequencyCheck && attribute != null && StringUtils.isNotBlank(attribute.getValue1())) {
 			enabled = true;
 		}
 		if (enabled) {
@@ -47,17 +47,8 @@ public class PasswordChangesFrequencyRule extends AbstractPasswordRule {
 			int changesAllowed =  Integer.parseInt(attribute.getValue1()); 
 			
 			if (changeCount >= changesAllowed) {
-				return PasswordValidationCode.FAIL_PASSWORD_CHANGE_FREQUENCY;
+				throw new PasswordRuleException(ResponseCode.FAIL_PASSWORD_CHANGE_FREQUENCY, new Object[] {changesAllowed});
 			}
-			
-
-			
 		}
-			
-		return retval;
-	}
-	
-
-	
-	
+	}	
 }

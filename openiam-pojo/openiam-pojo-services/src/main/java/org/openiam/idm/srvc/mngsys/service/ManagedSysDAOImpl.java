@@ -118,4 +118,11 @@ public class ManagedSysDAOImpl extends BaseDaoImpl<ManagedSysEntity, String> imp
     protected String getPKfieldName() {
         return "managedSysId";
     }
+
+	@Override
+	public List<ManagedSysEntity> findByResource(String resourceId) {
+		 return getCriteria()
+	                .add(Restrictions.eq("resourceId",resourceId))
+	                .addOrder(Order.asc("name")).list();
+	}
 }

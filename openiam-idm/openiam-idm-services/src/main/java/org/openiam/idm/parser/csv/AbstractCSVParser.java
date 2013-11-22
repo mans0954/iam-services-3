@@ -354,7 +354,9 @@ public abstract class AbstractCSVParser<T, E extends Enum<E>> {
         }
         for (int i = 0; i < header_.length; i++) {
             ReconciliationResultField field = new ReconciliationResultField();
-            field.setValues(Arrays.asList(values[i]));
+            List<String> l = new ArrayList<String>();
+            l.add(values[i]);
+            field.setValues(l);
             result.put(header_[i], field);
         }
         return result;
@@ -365,7 +367,7 @@ public abstract class AbstractCSVParser<T, E extends Enum<E>> {
         ReconciliationObject<T> object = new ReconciliationObject<T>();
         object.setObject(pu);
         for (AttributeMapEntity a : attrMap) {
-            String name = AttributeMapUtil.getAttributeIDMFieldName(a);
+            String name = a.getAttributeName();
             if (name != null) {
                 if (PRINCIPAL_OBJECT.equals(a.getMapForObjectType())) {
                     E fieldValue;

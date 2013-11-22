@@ -59,7 +59,6 @@ import org.openiam.authmanager.dao.UserDAO;
 import org.openiam.authmanager.model.ResourceEntitlementToken;
 import org.openiam.authmanager.service.AuthorizationManagerService;
 import org.openiam.authmanager.common.model.AuthorizationManagerLoginId;
-import org.openiam.idm.srvc.grp.ws.GroupResponse;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.thread.Sweepable;
 import org.springframework.beans.BeansException;

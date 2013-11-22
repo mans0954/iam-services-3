@@ -38,6 +38,9 @@ public abstract class AbstractPostProcessor implements ProvisionServicePostProce
     @Value("${openiam.idm.ws.path}")
     private String serviceContext;
 
+    public void setApplicationContext(ApplicationContext context) {
+        this.context = context;
+    }
 
     public void setMuleContext(MuleContext ctx) {
         muleContext = ctx;

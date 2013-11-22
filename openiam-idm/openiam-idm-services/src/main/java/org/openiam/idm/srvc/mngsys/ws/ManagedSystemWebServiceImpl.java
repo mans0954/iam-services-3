@@ -1,14 +1,15 @@
 package org.openiam.idm.srvc.mngsys.ws;
 
-import java.util.LinkedList;
 import java.util.List;
 
 import javax.jws.WebParam;
 import javax.jws.WebService;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.am.srvc.domain.AuthProviderEntity;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
@@ -39,7 +40,6 @@ import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.idm.srvc.mngsys.searchbeans.converter.ApproverAssocationSearchBeanConverter;
 import org.openiam.idm.srvc.mngsys.searchbeans.converter.ManagedSystemSearchBeanConverter;
 import org.openiam.idm.srvc.mngsys.service.ApproverAssociationDAO;
-import org.openiam.idm.srvc.mngsys.service.ManagedSystemObjectMatchDAO;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.util.encrypt.Cryptor;
@@ -47,7 +47,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 
 @Service("managedSysService")
 @WebService(endpointInterface = "org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService", targetNamespace = "urn:idm.openiam.org/srvc/mngsys/service", portName = "ManagedSystemWebServicePort", serviceName = "ManagedSystemWebService")
@@ -58,9 +57,6 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
 
     @Autowired
     private ManagedSystemService managedSystemService;
-
-    @Autowired
-    private ManagedSystemObjectMatchDAO managedSysObjectMatchDao;
 
     @Autowired
     private ApproverAssociationDAO approverAssociationDao;
@@ -138,14 +134,14 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
     		if (encrypt && sys.getPswd() != null) {
     			sys.setPswd(cryptor.encrypt(keyManagementService.getUserKey(systemUserId, KeyName.password.name()), sys.getPswd()));
     		}
-    		
-    		final ManagedSysEntity entity = managedSysDozerConverter.convertToEntity(sys, true);
-    		if(StringUtils.isBlank(entity.getManagedSysId())) {
-    			managedSystemService.addManagedSys(entity);
+
+
+    		if(StringUtils.isBlank(sys.getManagedSysId())) {
+    			managedSystemService.addManagedSys(sys);
     		}  else {
-    			managedSystemService.updateManagedSys(entity);
+    			managedSystemService.updateManagedSys(sys);
     		}
-    		response.setResponseValue(entity.getManagedSysId());
+    		response.setResponseValue(sys.getManagedSysId());
     	} catch (BasicDataServiceException e) {
 			response.setErrorCode(e.getCode());
 			response.setStatus(ResponseStatus.FAILURE);
@@ -167,9 +163,8 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
         		sysDto = managedSysDozerConverter.convertToDTO(sys, true);
         		if (sysDto != null && sysDto.getPswd() != null) {
         			try {
-        				sysDto.setDecryptPassword(cryptor.decrypt(
-                            keyManagementService.getUserKey(systemUserId,
-                                    KeyName.password.name()), sys.getPswd()));
+        				final byte[] bytes = keyManagementService.getUserKey(systemUserId, KeyName.password.name());
+        				sysDto.setDecryptPassword(cryptor.decrypt(bytes, sys.getPswd()));
         			} catch (Exception e) {
         				log.error("Can't decrypt", e);
         			}
@@ -190,9 +185,13 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
     		if(StringUtils.isBlank(sysId)) {
     			throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
     		}
-    		
+            List<AuthProviderEntity> authProviderEntities = managedSystemService.findAuthProvidersByManagedSysId(sysId);
+            if (CollectionUtils.isNotEmpty(authProviderEntities)) {
+                throw new BasicDataServiceException(ResponseCode.LINKED_TO_AUTHENTICATION_PROVIDER, authProviderEntities.get(0).getName());
+            }
     		managedSystemService.removeManagedSysById(sysId);
     	} catch (BasicDataServiceException e) {
+            response.setResponseValue(e.getResponseValue());
 			response.setErrorCode(e.getCode());
 			response.setStatus(ResponseStatus.FAILURE);
 		} catch (Throwable e) {
@@ -232,25 +231,22 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
     }
 
     public ManagedSysDto getManagedSysByResource(String resourceId) {
-        if (resourceId == null) {
-            throw new NullPointerException("resourceId is null");
-        }
-        ManagedSysEntity sys = managedSystemService.getManagedSysByResource(
-                resourceId, "ACTIVE");
-        ManagedSysDto sysDto = null;
-        if (sys != null) {
-            sysDto = managedSysDozerConverter.convertToDTO(sys, true);
-            if (sysDto != null && sysDto.getPswd() != null) {
-                try {
-                    sysDto.setDecryptPassword(cryptor.decrypt(
+    	ManagedSysDto sysDto = null;
+        if(resourceId != null) {
+        	ManagedSysEntity sys = managedSystemService.getManagedSysByResource(resourceId, "ACTIVE");
+        	if (sys != null) {
+        		sysDto = managedSysDozerConverter.convertToDTO(sys, true);
+        		if (sysDto != null && sysDto.getPswd() != null) {
+        			try {
+        				sysDto.setDecryptPassword(cryptor.decrypt(
                             keyManagementService.getUserKey(systemUserId,
                                     KeyName.password.name()), sys.getPswd()));
-                } catch (Exception e) {
-                    log.error(e);
-                }
-            }
+        			} catch (Exception e) {
+        				log.error(e);
+        			}
+        		}
+        	}
         }
-
         return sysDto;
     }
 
@@ -414,11 +410,10 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
                 throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
             }
 
-            final ManagedSystemObjectMatchEntity entity = managedSystemObjectMatchDozerConverter.convertToEntity(obj, false);
             if(StringUtils.isNotBlank(obj.getObjectSearchId())) {
-            	managedSysObjectMatchDao.update(entity);
+            	managedSystemService.updateManagedSystemObjectMatch(obj);
             } else {
-            	managedSysObjectMatchDao.save(entity);
+            	managedSystemService.saveManagedSystemObjectMatch(obj);
             }
         } catch (BasicDataServiceException e) {
             response.setErrorCode(e.getCode());
@@ -431,9 +426,7 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
     }
 
     public void removeManagedSystemObjectMatch(ManagedSystemObjectMatch obj) {
-        this.managedSysObjectMatchDao
-                .delete(managedSystemObjectMatchDozerConverter.convertToEntity(
-                        obj, false));
+        this.managedSystemService.deleteManagedSystemObjectMatch(obj.getObjectSearchId());
     }
 
     public AttributeMap getAttributeMap(String attributeMapId) {

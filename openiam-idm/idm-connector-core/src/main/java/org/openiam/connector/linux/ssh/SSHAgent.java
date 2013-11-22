@@ -10,10 +10,10 @@ import org.apache.commons.logging.LogFactory;
 
 import java.io.*;
 
-
 /**
- * The SSHAgent allows a Java application to execute commands on a remote server via SSH
- *
+ * The SSHAgent allows a Java application to execute commands on a remote server
+ * via SSH
+ * 
  * @author shaines
  */
 public class SSHAgent {
@@ -27,7 +27,8 @@ public class SSHAgent {
 
     private Connection connection;
 
-    public SSHAgent(String hostname, Integer port, String username, String password) {
+    public SSHAgent(String hostname, Integer port, String username,
+            String password) {
         this.hostname = hostname;
         this.username = username;
         this.password = password;
@@ -38,7 +39,6 @@ public class SSHAgent {
             this.port = 22;
     }
 
-
     public boolean connect() throws SSHException {
         try {
             // Connect to the server
@@ -46,27 +46,33 @@ public class SSHAgent {
             connection.connect();
 
             // Authenticate
-            boolean result = connection.authenticateWithPassword(username, password);
+            boolean result = connection.authenticateWithPassword(username,
+                    password);
             log.debug("Connection result: " + result);
             return result;
         } catch (Exception e) {
-            throw new SSHException("An exception occurred while trying to connect to the host: " + hostname + ", Exception=" + e.getMessage(), e);
+            throw new SSHException(
+                    "An exception occurred while trying to connect to the host: "
+                            + hostname + ", Exception=" + e.getMessage(), e);
         }
     }
 
-    public String executeCommand(String command) throws  SSHException {
+    public String executeCommand(String command) throws SSHException {
         return executeCommand(command, null);
     }
-    
+
     /**
      * Executes the specified command and returns the response from the server
-     *
-     * @param command The command to execute
-     * @param moreArgs Arguments to be piped into STDIO. Accepts newlines
+     * 
+     * @param command
+     *            The command to execute
+     * @param moreArgs
+     *            Arguments to be piped into STDIO. Accepts newlines
      * @return The response that is returned from the server (or null)
      * @throws SSHException
      */
-    public String executeCommand(String command, String moreArgs) throws SSHException {
+    public String executeCommand(String command, String moreArgs)
+            throws SSHException {
         try {
             // Open a session
             Session session = connection.openSession();
@@ -78,9 +84,10 @@ public class SSHAgent {
 
             if (moreArgs != null) {
                 log.debug(".. piping arguments to STDIN");
-                BufferedWriter bf = new BufferedWriter(new OutputStreamWriter(session.getStdin()));
+                BufferedWriter bf = new BufferedWriter(new OutputStreamWriter(
+                        session.getStdin()));
                 String[] args = moreArgs.split("\\n");
-                
+
                 for (String a : args) {
                     bf.write(a);
                     bf.newLine();
@@ -88,11 +95,12 @@ public class SSHAgent {
 
                 bf.flush();
             }
-            
+
             // Read the results
             StringBuilder sb = new StringBuilder();
             InputStream stdout = new StreamGobbler(session.getStdout());
-            BufferedReader br = new BufferedReader(new InputStreamReader(stdout));
+            BufferedReader br = new BufferedReader(
+                    new InputStreamReader(stdout));
             String line = br.readLine();
             while (line != null) {
                 sb.append(line).append("\n");
@@ -108,10 +116,18 @@ public class SSHAgent {
             // Return the results to the caller
             return sb.toString();
         } catch (Exception e) {
-            throw new SSHException("An exception occurred while executing the following command: " + command + ". Exception = " + e.getMessage(), e);
+            throw new SSHException(
+                    "An exception occurred while executing the following command: "
+                            + command + ". Exception = " + e.getMessage(), e);
         }
     }
 
+    public void copyScript(String localPath, String remotePath, String fileName)
+            throws IOException {
+        // Open a session
+        connection.createSCPClient().put(localPath + fileName, remotePath,
+                "1777");
+    }
 
     /**
      * Logs out from the server
@@ -120,13 +136,16 @@ public class SSHAgent {
         try {
             connection.close();
         } catch (Exception e) {
-            log.error("An exception occurred while closing the SSH connection: " + e.getMessage(), e);
+            log.error(
+                    "An exception occurred while closing the SSH connection: "
+                            + e.getMessage(), e);
         }
     }
 
     /**
-     * Returns true if the underlying authentication is complete, otherwise returns false
-     *
+     * Returns true if the underlying authentication is complete, otherwise
+     * returns false
+     * 
      * @return
      */
     public boolean isAuthenticationComplete() {

@@ -59,6 +59,10 @@ public class AuthenticationResponse {
         status = s;
     }
 
+    /**
+     * 
+     * @return - the <code>Subject</code>, containing information about the user, and his token
+     */
     public Subject getSubject() {
         return subject;
     }

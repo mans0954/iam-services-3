@@ -5,6 +5,7 @@ import org.openiam.idm.srvc.user.dto.UserNote;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by: Alexander Duckardt
@@ -40,5 +41,15 @@ public class UserNoteDozerConverter extends AbstractDozerEntityConverter<UserNot
     @Override
     public List<UserNote> convertToDTOList(List<UserNoteEntity> list, boolean isDeep) {
         return convertListToCrossEntity(list, isDeep, UserNote.class);
+    }
+
+    @Override
+    public Set<UserNoteEntity> convertToEntitySet(Set<UserNote> set, boolean isDeep) {
+        return convertSetToCrossEntity(set, isDeep, UserNoteEntity.class);
+    }
+
+    @Override
+    public Set<UserNote> convertToDTOSet(Set<UserNoteEntity> set, boolean isDeep) {
+        return convertSetToCrossEntity(set, isDeep, UserNote.class);
     }
 }

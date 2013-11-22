@@ -1,6 +1,8 @@
+
+output = null
+
 if("EXIST" == targetSystemIdentityStatus) {
-        output = null
-    return output
+    return
 }
 def attr = user.getUserAttributes().get("sAMAccountName")
 if (attr?.value) {
@@ -10,6 +12,6 @@ if (attr?.value) {
     if (value) {
        output = value
     } else {
-       output = user.firstName + "." + user.lastName as String
+       output = lg.login
     }
 }

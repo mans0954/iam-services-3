@@ -1,5 +1,6 @@
 package org.openiam.connector.ldap.command.base;
 
+import org.apache.commons.lang.StringUtils;
 import org.openiam.base.BaseAttribute;
 import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.connector.type.constant.ErrorCode;
@@ -21,15 +22,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
-import javax.naming.directory.Attribute;
-import javax.naming.directory.BasicAttribute;
-import javax.naming.directory.BasicAttributes;
-import javax.naming.directory.SearchControls;
+import javax.naming.directory.*;
 import javax.naming.ldap.LdapContext;
 import java.io.UnsupportedEncodingException;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public abstract class AbstractLdapCommand<Request extends RequestType, Response extends ResponseType>  extends AbstractCommand<Request, Response> {
 
@@ -77,6 +78,21 @@ public abstract class AbstractLdapCommand<Request extends RequestType, Response 
         return null;
     }
 
+    public boolean isMembershipEnabled(Set<ResourceProp> rpSet, String property) {
+        ResourceProp rpSupervisorMembership = getResourceAttr(rpSet, property);
+        // BY DEFAULT - we want to enable membership
+        if (rpSupervisorMembership == null || rpSupervisorMembership.getPropValue() == null
+                || "Y".equalsIgnoreCase(rpSupervisorMembership.getPropValue())) {
+            return true;
+
+        } else if (rpSupervisorMembership.getPropValue() != null) {
+            if ("N".equalsIgnoreCase(rpSupervisorMembership.getPropValue())) {
+                return false;
+            }
+        }
+        return false;
+    }
+
     protected boolean identityExists(String ldapName, LdapContext ctx) {
 
         try {
@@ -122,11 +138,19 @@ public abstract class AbstractLdapCommand<Request extends RequestType, Response 
         }
     }
 
-    protected void buildMembershipList( ExtensibleAttribute att ,List<BaseAttribute>targetMembershipList) {
+    protected void buildMembershipList(ExtensibleAttribute att, List<BaseAttribute>targetMembershipList) {
         if (att == null)
             return;
         if (att.getAttributeContainer() != null) {
             targetMembershipList.addAll( att.getAttributeContainer().getAttributeList() );
+        }
+    }
+
+    protected void buildSupervisorMembershipList(ExtensibleAttribute att, List<BaseAttribute>supervisorMembershipList) {
+        if (att == null)
+            return;
+        if (att.getAttributeContainer() != null) {
+            supervisorMembershipList.addAll( att.getAttributeContainer().getAttributeList() );
         }
     }
 
@@ -141,7 +165,9 @@ public abstract class AbstractLdapCommand<Request extends RequestType, Response 
     }
 
     protected BasicAttributes getBasicAttributes(ExtensibleObject obj, String idField,
-                                               List<BaseAttribute> targetMembershipList, boolean groupMembershipEnabled) {
+                    List<BaseAttribute> targetMembershipList, boolean groupMembershipEnabled,
+                    List<BaseAttribute> supervisorMembershipList, boolean supervisorMembershipEnabled) {
+
         BasicAttributes attrs = new BasicAttributes();
 
         // add the object class
@@ -166,45 +192,66 @@ public abstract class AbstractLdapCommand<Request extends RequestType, Response 
         List<ExtensibleAttribute> attrList = obj.getAttributes();
         for (ExtensibleAttribute att : attrList) {
 
-            log.debug("Attr Name=" + att.getName() + " " + att.getDataType() + " " + att.getValue());
+            log.debug("Extensible Attribute: " + att.getName() + " " + att.getDataType());
 
+            if (att.getDataType() == null) {
+                continue;
+            }
 
-            if (att.getDataType() == null || !att.getDataType().equalsIgnoreCase("memberOf")) {
+            if (att.getName().equalsIgnoreCase(idField)) {
+                log.debug("Attr Name=" + att.getName() + " Value=" + att.getValue() + " ignored");
+                continue;
+            }
 
-                if (att.getName().equalsIgnoreCase(idField)) {
-                    log.debug("Attr Name=" + att.getName() + " Value=" + att.getValue() + " ignored");
-                    continue;
+            if (att.getDataType().equalsIgnoreCase("manager")) {
+                if (supervisorMembershipEnabled) {
+                    buildSupervisorMembershipList(att, supervisorMembershipList);
                 }
+            } else if (att.getDataType().equalsIgnoreCase("memberOf")) {
+                if (groupMembershipEnabled) {
+                    buildMembershipList(att, targetMembershipList);
+                }
+            } else if (att.getDataType().equalsIgnoreCase("byteArray")) {
 
-                Attribute a = null;
-                if (att.isMultivalued()) {
-                    List<String> valList = att.getValueList();
-                    if (valList != null && valList.size() > 0) {
-                        int ctr = 0;
-                        for (String s : valList) {
-                            if (ctr == 0) {
-                                a = new BasicAttribute(att.getName(), valList.get(ctr));
-                            } else {
-                                a.add(valList.get(ctr));
-                            }
-                            ctr++;
-                        }
+                attrs.put(new BasicAttribute(att.getName(), att.getValueAsByteArray()));
 
-                    }
-                } else if ("unicodePwd".equalsIgnoreCase(att.getName())) {
-                    a = generateActiveDirectoryPassword(att.getValue());
+            } else if (att.getName() != null) {
+
+                // set an attribute to null
+                if ((att.getValue() == null || att.getValue().contains("null")) &&
+                        (att.getValueList() == null || att.getValueList().size() == 0)) {
+
+                    attrs.put(new BasicAttribute(att.getName(), null));
+
                 } else {
-                    // add a password to a user separately. If OpenLDAP is not using PPolicy the password is not hashed
-                    a = new BasicAttribute(att.getName(), att.getValue());
-                }
-                if (a != null) {
-                    attrs.put(a);
-                }
+                    // valid value
 
-            } else {
-                if ("memberOf".equalsIgnoreCase(att.getDataType())) {
-                    if (groupMembershipEnabled) {
-                        buildMembershipList(att, targetMembershipList);
+                    if ("unicodePwd".equalsIgnoreCase(att.getName())) {
+                        Attribute a = generateActiveDirectoryPassword(att.getValue());
+                        attrs.put(a);
+
+                    } else if ("userPassword".equalsIgnoreCase(att.getName())) {
+                        attrs.put(new BasicAttribute(att.getName(), att.getValue()));
+
+                    } else {
+                        Attribute a = null;
+                        if (att.isMultivalued()) {
+                            List<String> valList = att.getValueList();
+                            if (valList != null && valList.size() > 0) {
+                                int ctr = 0;
+                                for (String s : valList) {
+                                    if (ctr == 0) {
+                                        a = new BasicAttribute(att.getName(), s);
+                                    } else {
+                                        a.add(s);
+                                    }
+                                    ctr++;
+                                }
+                            }
+                        } else {
+                            a = new BasicAttribute(att.getName(), att.getValue());
+                        }
+                        attrs.put(a);
                     }
                 }
             }
@@ -220,15 +267,15 @@ public abstract class AbstractLdapCommand<Request extends RequestType, Response 
         SearchControls searchCtls = new SearchControls();
         searchCtls.setReturningAttributes(attrIds);
 
-
         String searchFilter = matchObj.getSearchFilter();
         // replace the place holder in the search filter
-        searchFilter = searchFilter.replace("?", searchValue);
+        if (StringUtils.isNotBlank(searchFilter)) {
+            searchFilter = searchFilter.replace("?", searchValue);
+        }
 
         if (objectBaseDN == null) {
             objectBaseDN = matchObj.getSearchBaseDn();
         }
-
 
         log.debug("Search Filter=" + searchFilter);
         log.debug("Searching BaseDN=" + objectBaseDN);
@@ -246,6 +293,7 @@ public abstract class AbstractLdapCommand<Request extends RequestType, Response 
                 return true;
             }
             return false;
+
         } catch (NamingException ne) {
             log.error(ne);
             return false;

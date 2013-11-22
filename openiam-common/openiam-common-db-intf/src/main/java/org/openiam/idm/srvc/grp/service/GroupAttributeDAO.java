@@ -14,5 +14,5 @@ import java.util.List;
  */
 public interface GroupAttributeDAO extends BaseDao<GroupAttributeEntity, String> {
 	
-	public void deleteByGroupId(final String groupId);
+	//public void deleteByGroupId(final String groupId);
 }

@@ -94,7 +94,7 @@ public class UserSearchBean extends AbstractSearchBean<User, String> implements 
     protected String loggedIn = null;
     protected boolean delAdmin = false;
 
-    protected List<String> organizationIdList = new ArrayList<String>();
+    protected Set<String> organizationIdList = new HashSet<String>();
     protected List<SearchAttribute> attributeList = new ArrayList<SearchAttribute>();
 
     private String requesterId;
@@ -107,18 +107,18 @@ public class UserSearchBean extends AbstractSearchBean<User, String> implements 
         this.requesterId = requesterId;
     }
 
-    public List<String> getOrganizationIdList() {
+    public Set<String> getOrganizationIdList() {
         return organizationIdList;
     }
 
-    public void setOrganizationIdList(List<String> organizationIdList) {
+    public void setOrganizationIdList(Set<String> organizationIdList) {
         this.organizationIdList = organizationIdList;
     }
     
     public void addOrganizationIdList(final List<String> organizationIdList) {
     	if(organizationIdList != null) {
     		if(this.organizationIdList==null) {
-    			this.organizationIdList = new ArrayList<String>();
+    			this.organizationIdList = new HashSet<String>();
     		}
     		
     		for(final String organizationId : organizationIdList) {
@@ -130,8 +130,9 @@ public class UserSearchBean extends AbstractSearchBean<User, String> implements 
     }
 
     public void addOrganizationId(String organizationId){
-         if(organizationIdList==null)
-             organizationIdList = new ArrayList<String>();
+         if(organizationIdList==null) {
+             organizationIdList = new HashSet<String>();
+         }
         organizationIdList.add(organizationId);
     }
    

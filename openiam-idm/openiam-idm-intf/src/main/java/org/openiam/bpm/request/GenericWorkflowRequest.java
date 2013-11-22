@@ -124,9 +124,11 @@ public class GenericWorkflowRequest extends RequestorInformation {
 	}
 
 	public void addCustomApproverId(final String customApproverId) {
-		if(this.customApproverIds == null) {
-			this.customApproverIds = new HashSet<String>();
+		if(customApproverId != null) {
+			if(this.customApproverIds == null) {
+				this.customApproverIds = new HashSet<String>();
+			}
+			this.customApproverIds.add(customApproverId);
 		}
-		this.customApproverIds.add(customApproverId);
 	}
 }

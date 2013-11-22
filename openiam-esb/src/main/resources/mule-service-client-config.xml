@@ -26,7 +26,7 @@
 			exchange-pattern="request-response">
 		</vm:inbound-endpoint>
 
-		<outbound-endpoint address="http://#[header:INBOUND:serviceName]"
+		<outbound-endpoint responseTimeout="18000000" address="http://#[header:INBOUND:serviceName]"
 			exchange-pattern="request-response">
 
 			<cxf:jaxws-client serviceClass="org.openiam.connector.ConnectorService"
@@ -41,7 +41,7 @@
 			exchange-pattern="request-response">
 		</vm:inbound-endpoint>
 
-		<outbound-endpoint address="http://#[header:INBOUND:serviceName]"
+		<outbound-endpoint responseTimeout="18000000" address="http://#[header:INBOUND:serviceName]"
 			exchange-pattern="request-response">
 
 			<cxf:jaxws-client serviceClass="org.openiam.connector.ConnectorService"
@@ -52,7 +52,7 @@
 
 
 	<flow name="connectorClientDelete">
-		<vm:inbound-endpoint path="dispatchConnectorMessageDelete"
+		<vm:inbound-endpoint responseTimeout="18000000" path="dispatchConnectorMessageDelete"
 			exchange-pattern="request-response">
 		</vm:inbound-endpoint>
 
@@ -85,7 +85,7 @@
 			exchange-pattern="request-response">
 		</vm:inbound-endpoint>
 
-		<outbound-endpoint address="http://#[header:INBOUND:serviceName]"
+		<outbound-endpoint responseTimeout="18000000" address="http://#[header:INBOUND:serviceName]"
 			exchange-pattern="request-response">
 
 			<cxf:jaxws-client serviceClass="org.openiam.connector.ConnectorService"
@@ -99,7 +99,7 @@
 			exchange-pattern="request-response">
 		</vm:inbound-endpoint>
 
-		<outbound-endpoint address="http://#[header:INBOUND:serviceName]"
+		<outbound-endpoint responseTimeout="18000000" address="http://#[header:INBOUND:serviceName]"
 			exchange-pattern="request-response">
 
 			<cxf:jaxws-client serviceClass="org.openiam.connector.ConnectorService"
@@ -109,7 +109,7 @@
 	</flow>
 
 	<flow name="connectorClientResetPassword">
-		<vm:inbound-endpoint path="dispatchConnectorMessageResetPassword"
+		<vm:inbound-endpoint responseTimeout="18000000" path="dispatchConnectorMessageResetPassword"
 			exchange-pattern="request-response">
 		</vm:inbound-endpoint>
 
@@ -223,7 +223,7 @@
 
 	<!-- REMOTE CONNECTOR INTERFACE -->
 
-	<flow name="remoteConnectorClientTestConnection">
+	<!--<flow name="remoteConnectorClientTestConnection">
 		<vm:inbound-endpoint path="remoteConnectorMsgTestConnection"
 			exchange-pattern="request-response">
 		</vm:inbound-endpoint>
@@ -236,9 +236,9 @@
 			</cxf:jaxws-client>
 		</outbound-endpoint>
 
-	</flow>
+	</flow>-->
 
-	<flow name="remoteConnectorClientAdd">
+	<!--<flow name="remoteConnectorClientAdd">
 		<vm:inbound-endpoint path="remoteConnectorMessageAdd"
 			exchange-pattern="request-response">
 		</vm:inbound-endpoint>
@@ -251,8 +251,8 @@
 			</cxf:jaxws-client>
 		</outbound-endpoint>
 
-	</flow>
-
+	</flow>-->
+<!--
 	<flow name="remoteConnectorClientModify">
 		<vm:inbound-endpoint path="remoteConnectorMessageModify"
 			exchange-pattern="request-response">
@@ -265,9 +265,9 @@
 				operation="modify">
 			</cxf:jaxws-client>
 		</outbound-endpoint>
-	</flow>
+	</flow>-->
 
-	<flow name="remoteConnectorClientDelete">
+	<!--<flow name="remoteConnectorClientDelete">
 		<vm:inbound-endpoint path="remoteConnectorMessageDelete"
 			exchange-pattern="request-response">
 		</vm:inbound-endpoint>
@@ -279,9 +279,9 @@
 				operation="delete">
 			</cxf:jaxws-client>
 		</outbound-endpoint>
-	</flow>
+	</flow>-->
 
-	<flow name="remoteConnectorClientResetPassword">
+	<!--<flow name="remoteConnectorClientResetPassword">
 		<vm:inbound-endpoint path="remoteConnectorMessageResetPassword"
 			exchange-pattern="request-response">
 		</vm:inbound-endpoint>
@@ -293,8 +293,9 @@
 				operation="resetPassword">
 			</cxf:jaxws-client>
 		</outbound-endpoint>
-	</flow>
+	</flow>-->
 
+<!--
 	<flow name="remoteConnectorClientSetPassword">
 		<vm:inbound-endpoint path="remoteConnectorMessageSetPassword"
 			exchange-pattern="request-response">
@@ -308,8 +309,9 @@
 			</cxf:jaxws-client>
 		</outbound-endpoint>
 	</flow>
+-->
 
-	<flow name="remoteConnectorClientResume">
+	<!--<flow name="remoteConnectorClientResume">
 		<vm:inbound-endpoint path="remoteConnectorMessageResume"
 			exchange-pattern="request-response">
 		</vm:inbound-endpoint>
@@ -335,9 +337,9 @@
 				operation="suspend">
 			</cxf:jaxws-client>
 		</outbound-endpoint>
-	</flow>
+	</flow>-->
 
-	<flow name="remoteConnectorClientLookup">
+<!--	<flow name="remoteConnectorClientLookup">
 		<vm:inbound-endpoint path="remoteConnectorMessageLookup"
 			exchange-pattern="request-response">
 		</vm:inbound-endpoint>
@@ -349,9 +351,9 @@
 				operation="lookup">
 			</cxf:jaxws-client>
 		</outbound-endpoint>
-	</flow>
+	</flow>-->
 
-	<flow name="remoteConnectorClientReconcile">
+	<!--<flow name="remoteConnectorClientReconcile">
 		<vm:inbound-endpoint path="remoteConnectorMessageReconcile"
 			exchange-pattern="request-response">
 		</vm:inbound-endpoint>
@@ -363,9 +365,9 @@
 				operation="reconcileResource">
 			</cxf:jaxws-client>
 		</outbound-endpoint>
-	</flow>
+	</flow>-->
 
-        <flow name="remoteConnectorClientSearch">
+       <!-- <flow name="remoteConnectorClientSearch">
             <vm:inbound-endpoint path="remoteConnectorMessageSearch" exchange-pattern="request-response"  >
             </vm:inbound-endpoint>
 
@@ -376,7 +378,7 @@
                 <cxf:jaxws-client serviceClass="org.openiam.connector.ConnectorService" operation="search" >
                 </cxf:jaxws-client>
             </outbound-endpoint>
-        </flow>
+        </flow>-->
 
 	<!-- Synchronization Service CALL -->
 

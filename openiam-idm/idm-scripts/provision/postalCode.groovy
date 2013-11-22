@@ -1,7 +1,4 @@
-/*if (user.postalCd != null) { 
-output=user.postalCd
-}else {
-output=null
-}
-*/
-output=null
+
+def it = user.addresses?.iterator()
+output = it?.hasNext() ? it.next()?.postalCd : null
+

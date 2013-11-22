@@ -38,13 +38,11 @@ import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorDto;
 import org.openiam.idm.srvc.mngsys.ws.ProvisionConnectorWebService;
 import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
-import org.openiam.connector.ConnectorService;
+import org.openiam.provision.type.ExtensibleUser;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.xml.namespace.QName;
-import javax.xml.ws.Service;
-import javax.xml.ws.soap.SOAPBinding;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -65,12 +63,14 @@ public class ConnectorAdapter {
     public ObjectResponse addRequest(ManagedSysDto managedSys,
                                       CrudRequest addReqType,
                                       MuleContext muleContext) {
-        ObjectResponse respType = new ObjectResponse();
-        respType.setStatus(StatusCodeType.FAILURE);
+        ObjectResponse resp = new ObjectResponse();
+        resp.setStatus(StatusCodeType.FAILURE);
 
         try {
             if (managedSys == null) {
-                return respType;
+                resp.setStatus(StatusCodeType.FAILURE);
+                resp.setError(ErrorCode.INVALID_MANAGED_SYS_ID);
+                return resp;
             }
             log.info("ConnectorAdapter:addRequest called. Managed sys ="
                     + managedSys.getManagedSysId());
@@ -84,25 +84,20 @@ public class ConnectorAdapter {
 
                 MuleMessage msg = getService(connector, addReqType,
                         connector.getServiceUrl(), "add", muleContext);
-
-                if (msg.getPayload() instanceof org.mule.transport.NullPayload) {
-
-                    log.debug("MuleMessage is null..");
-                    return respType;
-
-                } else {
+                log.debug("***ADD Payload=" +msg);
+                if (msg.getPayload() != null
+                        && msg.getPayload() instanceof ObjectResponse) {
                     return (ObjectResponse) msg.getPayload();
-
                 }
 
             }
-            return respType;
+            return resp;
 
         } catch (Exception e) {
             // log.error(e);
-            respType.setError(ErrorCode.OTHER_ERROR);
-            respType.addErrorMessage(e.toString());
-            return respType;
+            resp.setError(ErrorCode.OTHER_ERROR);
+            resp.addErrorMessage(e.toString());
+            return resp;
         }
 
     }
@@ -110,12 +105,14 @@ public class ConnectorAdapter {
     public ObjectResponse modifyRequest(ManagedSysDto managedSys,
                                       CrudRequest modReqType,
                                       MuleContext muleContext) {
-        ObjectResponse respType = new ObjectResponse();
-        respType.setStatus(StatusCodeType.FAILURE);
+        ObjectResponse resp = new ObjectResponse();
+        resp.setStatus(StatusCodeType.FAILURE);
 
         try {
             if (managedSys == null) {
-                return respType;
+                resp.setStatus(StatusCodeType.FAILURE);
+                resp.setError(ErrorCode.INVALID_MANAGED_SYS_ID);
+                return resp;
             }
             log.debug("ConnectorAdapter:modifyRequest called. Managed sys ="
                     + managedSys.getManagedSysId());
@@ -132,25 +129,21 @@ public class ConnectorAdapter {
                 MuleMessage msg = getService(connector, modReqType,
                         connector.getServiceUrl(), "modify", muleContext);
 
-                if (msg.getPayload() instanceof org.mule.transport.NullPayload) {
-
-                    log.debug("MuleMessage is null..");
-                    return respType;
-
-                } else {
+                log.debug("***MODIFY Payload=" + msg);
+                if (msg.getPayload() != null
+                        && msg.getPayload() instanceof ObjectResponse) {
                     return (ObjectResponse) msg.getPayload();
-
                 }
 
             }
-            return respType;
+            return resp;
         } catch (Exception e) {
             log.debug("Exception caught in ConnectorAdaptor:modifyRequest");
             log.error(e);
 
-            respType.setError(ErrorCode.OTHER_ERROR);
-            respType.addErrorMessage(e.toString());
-            return respType;
+            resp.setError(ErrorCode.OTHER_ERROR);
+            resp.addErrorMessage(e.toString());
+            return resp;
         }
 
     }
@@ -162,7 +155,9 @@ public class ConnectorAdapter {
         resp.setStatus(StatusCodeType.FAILURE);
 
         if (managedSys == null) {
-            return null;
+            resp.setStatus(StatusCodeType.FAILURE);
+            resp.setError(ErrorCode.INVALID_MANAGED_SYS_ID);
+            return resp;
         }
         log.debug("ConnectorAdapter:lookupRequest called. Managed sys ="
                 + managedSys.getManagedSysId());
@@ -177,18 +172,14 @@ public class ConnectorAdapter {
 
                 MuleMessage msg = getService(connector, req,
                         connector.getServiceUrl(), "lookup", muleContext);
-                if (msg != null) {
-                    log.debug("LOOKUP Payload=" + msg.getPayload());
-                    if (msg.getPayload() != null
-                            && msg.getPayload() instanceof SearchResponse) {
+                log.debug("***LOOKUP Payload=" + msg.getPayload());
+                if (msg.getPayload() != null
+                        && msg.getPayload() instanceof SearchResponse) {
 
-                        return (SearchResponse) msg.getPayload();
-                    } else {
-                        log.debug("LOOKUP payload is not an instance of LookupResponseType");
-                        return resp;
-                    }
+                    return (SearchResponse) msg.getPayload();
                 } else {
-                    log.debug("MuleMessage is null..");
+                    log.debug("LOOKUP payload is not an instance of LookupResponseType");
+                    return resp;
                 }
 
             }
@@ -219,14 +210,23 @@ public class ConnectorAdapter {
                 //Send search to Local Connector to get data (e.g. Active Directory via LDAP)
                 MuleMessage msg = getService(connector, searchRequest, connector.getServiceUrl(), "search", muleContext);
                 if (msg != null) {
-                    log.debug("Test connection Payload=" + msg.getPayload());
-                    if (msg.getPayload() != null && msg.getPayload() instanceof ResponseType) {
+                    log.debug("***SEARCH Payload=" + msg);
+                    if (msg.getPayload() != null
+                            && msg.getPayload() instanceof SearchResponse) {
                         resp = (SearchResponse) msg.getPayload();
-                        if(resp.getStatus() == StatusCodeType.SUCCESS) {
+                        if (resp.getStatus() == StatusCodeType.SUCCESS
+                                || resp.getObjectList().size() > 0) {
+                            if (resp.getErrorMessage().size() > 0) {
+                                log.debug("Connector Search: error message = "
+                                        + resp.getErrorMsgAsStr());
+                            }
+                            log.debug("Connector Search:"
+                                    + StatusCodeType.SUCCESS);
                             resp.setStatus(StatusCodeType.SUCCESS);
                             return resp;
                         }
                     }
+
                     resp.setStatus(StatusCodeType.FAILURE);
                     return resp;
                 } else {
@@ -266,12 +266,11 @@ public class ConnectorAdapter {
                 MuleMessage msg = getService(connector, config,
                         connector.getServiceUrl(), "reconcile", muleContext);
 
-                log.debug("MuleMessage payload=" + msg);
+                log.debug("***RECONCILE payload=" + msg);
 
-                if (msg != null) {
+                if (msg.getPayload() != null
+                        && msg.getPayload() instanceof ResponseType) {
                     return (ResponseType) msg.getPayload();
-                } else {
-                    return type;
                 }
 
             }
@@ -312,12 +311,10 @@ public class ConnectorAdapter {
                         connector.getServiceUrl(), "lookupAttributes",
                         muleContext);
 
-                log.debug("MuleMessage payload=" + msg);
-
-                if (msg != null) {
+                log.debug("***Lookup Attributes payload=" + msg);
+                if (msg.getPayload() != null
+                        && msg.getPayload() instanceof LookupAttributeResponse) {
                     return (LookupAttributeResponse) msg.getPayload();
-                } else {
-                    return type;
                 }
 
             }
@@ -335,11 +332,13 @@ public class ConnectorAdapter {
     public ObjectResponse deleteRequest(ManagedSysDto managedSys,
                                       CrudRequest delReqType,
                                       MuleContext muleContext) {
-        ObjectResponse type = new ObjectResponse();
-        type.setStatus(StatusCodeType.FAILURE);
+        ObjectResponse resp = new ObjectResponse();
+        resp.setStatus(StatusCodeType.FAILURE);
 
         if (managedSys == null) {
-            return type;
+            resp.setStatus(StatusCodeType.FAILURE);
+            resp.setError(ErrorCode.INVALID_MANAGED_SYS_ID);
+            return resp;
         }
         log.info("ConnectorAdapter:deleteRequest called. Managed sys ="
                 + managedSys.getManagedSysId());
@@ -355,22 +354,21 @@ public class ConnectorAdapter {
 
                 MuleMessage msg = getService(connector, delReqType,
                         connector.getServiceUrl(), "delete", muleContext);
-                if (msg != null) {
-                    return (ObjectResponse) msg.getPayload();
-                } else {
-                    log.debug("MuleMessage is null..");
-                    return type;
+                log.debug("***Delete Request =" + msg.getPayload());
 
+                if (msg.getPayload() != null
+                        && msg.getPayload() instanceof ObjectResponse) {
+                    return (ObjectResponse) msg.getPayload();
                 }
 
             }
-            return type;
+            return resp;
         } catch (Exception e) {
             log.error(e);
 
-            type.setError(ErrorCode.OTHER_ERROR);
-            type.addErrorMessage(e.toString());
-            return type;
+            resp.setError(ErrorCode.OTHER_ERROR);
+            resp.addErrorMessage(e.toString());
+            return resp;
 
         }
 
@@ -379,11 +377,13 @@ public class ConnectorAdapter {
     public ResponseType setPasswordRequest(ManagedSysDto managedSys,
                                            PasswordRequest request,
                                            MuleContext muleContext) {
-        ResponseType type = new ResponseType();
-        type.setStatus(StatusCodeType.FAILURE);
+        ResponseType resp = new ResponseType();
+        resp.setStatus(StatusCodeType.FAILURE);
 
         if (managedSys == null) {
-            return type;
+            resp.setStatus(StatusCodeType.FAILURE);
+            resp.setError(ErrorCode.INVALID_MANAGED_SYS_ID);
+            return resp;
         }
         log.info("ConnectorAdapter:setPasswordRequest called. Managed sys ="
                 + managedSys.getManagedSysId());
@@ -399,29 +399,20 @@ public class ConnectorAdapter {
                 MuleMessage msg = getService(connector, request,
                         connector.getServiceUrl(), "setPassword", muleContext);
 
-                if (msg.getPayload() instanceof org.mule.transport.NullPayload) {
-                    // payload is null - exception was thrown
-                    log.debug("Exception payload as a string: "
-                            + msg.getExceptionPayload().toString());
-                    return type;
-                } else {
-                    // valid payload
-
-                    log.debug("Message payload found on password change: "
-                            + msg.getPayload());
-
+                log.debug("***Set Password Request payload=" + msg);
+                if (msg.getPayload() != null
+                        && msg.getPayload() instanceof ResponseType) {
                     return (ResponseType) msg.getPayload();
-
                 }
 
             }
-            return type;
+            return resp;
         } catch (Exception e) {
             log.error(e);
 
-            type.setError(ErrorCode.OTHER_ERROR);
-            type.addErrorMessage(e.toString());
-            return type;
+            resp.setError(ErrorCode.OTHER_ERROR);
+            resp.addErrorMessage(e.toString());
+            return resp;
 
         }
 
@@ -432,11 +423,13 @@ public class ConnectorAdapter {
             PasswordRequest request,
             MuleContext muleContext) {
 
-        ResponseType type = new ResponseType();
-        type.setStatus(StatusCodeType.FAILURE);
+        ResponseType resp = new ResponseType();
+        resp.setStatus(StatusCodeType.FAILURE);
 
         if (managedSys == null) {
-            return type;
+            resp.setStatus(StatusCodeType.FAILURE);
+            resp.setError(ErrorCode.INVALID_MANAGED_SYS_ID);
+            return resp;
         }
         log.debug("ConnectorAdapter:resetPasswordRequest called. Managed sys ="
                 + managedSys.getManagedSysId());
@@ -452,28 +445,22 @@ public class ConnectorAdapter {
                 MuleMessage msg = getService(connector, request,
                         connector.getServiceUrl(), "resetPassword", muleContext);
 
-                if (msg.getPayload() instanceof org.mule.transport.NullPayload) {
-                    // payload is null - exception was thrown
-                    log.debug("Exception payload as a string: "
-                            + msg.getExceptionPayload().toString());
-                    return type;
-                } else {
-                    // valid payload
-
-                    log.debug("Message payload found on password reset: "
-                            + msg.getPayload());
-
-                    return (ResponseType) msg.getPayload();
+                if (msg != null) {
+                    log.debug("***Reset Pasword Payload=" + msg.getPayload());
+                    if (msg.getPayload() != null
+                            && msg.getPayload() instanceof ResponseType) {
+                        return (ResponseType) msg.getPayload();
+                    }
                 }
 
             }
-            return type;
+            return resp;
         } catch (Exception e) {
             log.error(e);
 
-            type.setError(ErrorCode.OTHER_ERROR);
-            type.addErrorMessage(e.toString());
-            return type;
+            resp.setError(ErrorCode.OTHER_ERROR);
+            resp.addErrorMessage(e.toString());
+            return resp;
 
         }
 
@@ -483,11 +470,13 @@ public class ConnectorAdapter {
                                        SuspendResumeRequest request,
                                        MuleContext muleContext) {
 
-        ResponseType type = new ResponseType();
-        type.setStatus(StatusCodeType.FAILURE);
+        ResponseType resp = new ResponseType();
+        resp.setStatus(StatusCodeType.FAILURE);
 
         if (managedSys == null) {
-            return type;
+            resp.setStatus(StatusCodeType.FAILURE);
+            resp.setError(ErrorCode.INVALID_MANAGED_SYS_ID);
+            return resp;
         }
         log.debug("ConnectorAdapter:suspendRequest called. Managed sys ="
                 + managedSys.getManagedSysId());
@@ -503,21 +492,22 @@ public class ConnectorAdapter {
 
                 MuleMessage msg = getService(connector, request,
                         connector.getServiceUrl(), "suspend", muleContext);
-                if (msg != null) {
+                log.debug("***Suspend Payload=" + msg.getPayload());
+                if (msg.getPayload() != null
+                        && msg.getPayload() instanceof ResponseType) {
                     return (ResponseType) msg.getPayload();
-                } else {
-                    return type;
                 }
 
+
             }
-            return type;
+            return resp;
 
         } catch (Exception e) {
             log.error(e);
 
-            type.setError(ErrorCode.OTHER_ERROR);
-            type.addErrorMessage(e.toString());
-            return type;
+            resp.setError(ErrorCode.OTHER_ERROR);
+            resp.addErrorMessage(e.toString());
+            return resp;
 
         }
 
@@ -546,10 +536,11 @@ public class ConnectorAdapter {
 
                 MuleMessage msg = getService(connector, request,
                         connector.getServiceUrl(), "resume", muleContext);
-                if (msg != null) {
+
+                log.debug("***Resume Payload=" + msg.getPayload());
+                if (msg.getPayload() != null
+                        && msg.getPayload() instanceof ResponseType) {
                     return (ResponseType) msg.getPayload();
-                } else {
-                    return type;
                 }
 
             }
@@ -587,17 +578,19 @@ public class ConnectorAdapter {
             if (connector != null
                     && (connector.getServiceUrl() != null && connector
                             .getServiceUrl().length() > 0)) {
-
-                MuleMessage msg = getService(connector, managedSys,
+                RequestType<ExtensibleUser> rt = new RequestType<ExtensibleUser>();
+                rt.setExtensibleObject(new ExtensibleUser());
+                rt.setTargetID(managedSys.getManagedSysId());
+                MuleMessage msg = getService(connector, rt,
                         connector.getServiceUrl(), "testConnection",
                         muleContext);
 
                 log.debug("MuleMessage payload=" + msg);
 
-                if (msg != null) {
+                log.debug("***Resume Payload=" + msg.getPayload());
+                if (msg.getPayload() != null
+                        && msg.getPayload() instanceof ResponseType) {
                     return (ResponseType) msg.getPayload();
-                } else {
-                    return type;
                 }
 
             }
@@ -682,7 +675,7 @@ public class ConnectorAdapter {
 
         if (operation.equalsIgnoreCase("testConnection")) {
             msg = client.send("vm://dispatchConnectorMsgTestConnection",
-                    (ManagedSysDto) reqType, msgPropMap);
+                    (RequestType<ExtensibleUser>) reqType, msgPropMap);
         }
 
         if (operation.equalsIgnoreCase("lookupAttributes")) {
@@ -700,29 +693,5 @@ public class ConnectorAdapter {
 
     }
 
-    @Deprecated
-    private ConnectorService getService(ProvisionConnectorDto connector) {
-        try {
-
-            QName SERVICE_NAME = new QName(connector.getServiceUrl());
-            QName PORT_NAME = new QName(connector.getServiceNameSpace(),
-                    connector.getServicePort());
-
-            Service service = Service.create(SERVICE_NAME);
-            service.addPort(PORT_NAME, SOAPBinding.SOAP11HTTP_BINDING,
-                    connector.getServiceUrl());
-
-            ConnectorService port = service.getPort(
-                    new QName(connector.getServiceNameSpace(), connector
-                            .getServicePort()), ConnectorService.class);
-            return port;
-
-        } catch (Exception e) {
-            log.error(e);
-
-            return null;
-        }
-
-    }
 
 }

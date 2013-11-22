@@ -1,10 +1,12 @@
 package org.openiam.idm.srvc.audit.domain;
 
-// Generated Nov 30, 2007 3:01:45 AM by Hibernate Tools 3.2.0.b11
-
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -12,411 +14,377 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.audit.constant.CustomIdmAuditLogType;
+import org.openiam.idm.srvc.audit.dto.AuditLogTarget;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 
-/**
- * DTO object that is used log and retrieve audit information
- * Refactoring 6.12.2012
- * @author zaporozhec
- */
 @Entity
-@Table(name = "IDM_AUDIT_LOG")
+@Table(name = "OPENIAM_LOG")
 @DozerDTOCorrespondence(IdmAuditLog.class)
-public class IdmAuditLogEntity implements java.io.Serializable {
+@Cache(usage=CacheConcurrencyStrategy.NONE)
+public class IdmAuditLogEntity implements Serializable {
     @Id
     @GeneratedValue(generator = "system-uuid")
     @GenericGenerator(name = "system-uuid", strategy = "uuid")
-    @Column(name = "LOG_ID", length = 32)
-    private String logId;
-
-    @Column(name = "OBJECT_TYPE_ID", length = 20)
-    private String objectTypeId;
-
-    @Column(name = "OBJECT_ID", length = 32)
-    private String objectId;
-
-    @Column(name = "ACTION_ID", length = 50)
-    private String actionId;
-
-    @Column(name = "ACTION_STATUS", length = 32)
-    private String actionStatus;
-
-    @Column(name = "REASON", length = 1000)
-    private String reason;
-
-    @Column(name = "REASON_DETAIL")
-    private String reasonDetail;
-
-    @Column(name = "ACTION_DATETIME")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date actionDatetime;
-
-    @Column(name = "OBJECT_NAME", length = 255)
-    private String objectName;
-
-    @Column(name = "RESOURCE_NAME", length = 255)
-    private String resourceName;
-
-    @Column(name = "USER_ID", length = 32)
+    @Column(name = "OPENIAM_LOG_ID", length = 32)
+    private String id;
+    
+    @Column(name="USER_ID", length=32)
     private String userId;
-
-    @Column(name = "SERVICE_ID", length = 20)
-    private String domainId;
-
-    @Column(name = "LOGIN_ID", length = 320)
+    
+    @Column(name="PRINCIPAL", length=320)
     private String principal;
+    
+    @Column(name="MANAGED_SYS_ID", length=32)
+    private String managedSysId;
+    
+    @Column(name="CREATED_DATETIME")
+    private Date timestamp;
 
-    @Column(name = "HOST", length = 100)
-    /* IP or host name of the client machine */
-    private String host;
-
-    @Column(name = "NODE_IP", length = 60)
-    /* IP or host name of the node which sent the request to the IAM server */
+    @Column(name="SOURCE", length=50)
+    private String source;
+    
+    @Column(name="CLIENT_IP", length=50)
+    private String clientIP;
+    
+    @Column(name="NODE_ID", length=50)
     private String nodeIP;
-
-    @Column(name = "CLIENT_ID", length = 20)
-    private String clientId;
-
-    @Column(name = "REQ_URL", length = 255)
-    private String reqUrl;
-
-    @Column(name = "LINKED_LOG_ID", length = 40)
-    private String linkedLogId;
-
-    @Column(name = "LINK_SEQUENCE")
-    private Integer linkSequence = 0;
-
-    @Column(name = "LOG_HASH", length = 80)
-    private String logHash;
-
-    @Column(name = "REQUEST_ID", length = 40)
-    private String requestId;
-
-    @Column(name = "SESSION_ID", length = 40)
-    private String sessionId;
-
-    @Column(name = "SRC_SYSTEM_ID", length = 32)
-    private String srcSystemId;
-
-    @Column(name = "TARGET_SYSTEM_ID", length = 40)
-    private String targetSystemId;
-
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JoinColumn(name = "LOG_ID", insertable = false, updatable = false)
-    private List<IdmAuditLogCustomEntity> customRecords = new ArrayList<IdmAuditLogCustomEntity>(
-            0);
-
-    /**
-     * @return the customRecords
-     */
-    public List<IdmAuditLogCustomEntity> getCustomRecords() {
-        return customRecords;
+    
+    @Column(name="LOG_ACTION", length=50)
+    private String action;
+    
+    @Column(name="RESULT", length=50)
+    private String result;
+    
+    @Column(name="HASH", length=100)
+    private String hash;
+    
+    @Column(name="SESSION_ID", length=100)
+    private String sessionID;
+    
+    @Column(name="CORRELATION_ID", length=32)
+    private String coorelationId;
+    
+    @OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL, mappedBy = "log")
+    private Set<IdmAuditLogCustomEntity> customRecords;
+    
+    @OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL, mappedBy = "log")
+    private Set<AuditLogTargetEntity> targets;
+    
+    @ManyToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
+    @JoinTable(name = "OPENIAM_LOG_LOG_MEMBERSHIP",
+            joinColumns = {@JoinColumn(name = "OPENIAM_MEMBER_LOG_ID")},
+            inverseJoinColumns = {@JoinColumn(name = "OPENIAM_LOG_ID")})
+    @Fetch(FetchMode.SUBSELECT)
+    private Set<IdmAuditLogEntity> parentLogs;
+    
+    @ManyToMany(cascade=CascadeType.ALL,fetch=FetchType.LAZY)
+    @JoinTable(name = "OPENIAM_LOG_LOG_MEMBERSHIP",
+            joinColumns = {@JoinColumn(name = "OPENIAM_LOG_ID")},
+            inverseJoinColumns = {@JoinColumn(name = "OPENIAM_MEMBER_LOG_ID")})
+    @Fetch(FetchMode.SUBSELECT)
+    private Set<IdmAuditLogEntity> childLogs;
+    
+    public void addChild(final IdmAuditLogEntity entity) {
+    	if(entity != null) {
+    		if(this.childLogs == null) {
+    			this.childLogs = new HashSet<IdmAuditLogEntity>();
+    		}
+    		this.childLogs.add(entity);
+    	}
+    }
+    
+    public void addCustomRecord(final String key, final String value) {
+    	if(key != null && value != null) {
+    		if(customRecords == null) {
+    			customRecords = new HashSet<IdmAuditLogCustomEntity>();
+    		}
+    		final IdmAuditLogCustomEntity entity = new IdmAuditLogCustomEntity();
+    		entity.setKey(key);
+    		entity.setValue(value);
+    		entity.setLog(this);
+    		customRecords.add(entity);
+    	}
     }
 
-    /**
-     * @param customRecords the customRecords to set
-     */
-    public void setCustomRecords(List<IdmAuditLogCustomEntity> customRecords) {
-        this.customRecords = customRecords;
-    }
+	public String getId() {
+		return id;
+	}
 
-    /**
-     * @param linkSequence the linkSequence to set
-     */
-    public void setLinkSequence(Integer linkSequence) {
-        this.linkSequence = linkSequence;
-    }
+	public void setId(String id) {
+		this.id = id;
+	}
 
-    public IdmAuditLogEntity() {
-    }
+	public String getUserId() {
+		return userId;
+	}
 
-    public IdmAuditLogEntity(String objectTypeId, String actionId,
-            String actionStatus, String reason, String domainId, String userId,
-            String principal, String linkedLogId, String clientId) {
+	public void setUserId(String userId) {
+		this.userId = userId;
+	}
 
-        this.objectTypeId = objectTypeId;
-        this.actionId = actionId;
-        this.actionStatus = actionStatus;
-        this.reason = reason;
-        this.domainId = domainId;
-        this.userId = userId;
-        this.principal = principal;
-        this.actionDatetime = new java.util.Date(System.currentTimeMillis());
-        this.userId = userId;
-        this.clientId = clientId;
-    }
+	public Date getTimestamp() {
+		return timestamp;
+	}
 
-    /**
-     * Populates the attributes that used when starting or ending synchronization
-     */
-    public void setSynchAttributes(String objectTypeId, String objectId,
-            String actionId, String userId, String sessionId) {
-        this.objectTypeId = objectTypeId;
-        this.objectId = objectId;
-        this.actionId = actionId;
-        this.actionDatetime = new Date(System.currentTimeMillis());
-        this.userId = userId;
-        this.sessionId = sessionId;
-    }
+	public void setTimestamp(Date timestamp) {
+		this.timestamp = timestamp;
+	}
 
-    public void setSynchUserAttributes(String objectTypeId, String objectId,
-            String actionId, String actionStatus, String userId,
-            String principal, String requestId, String reason,
-            String sessionId, String attrName, String attrValue) {
+	public String getSource() {
+		return source;
+	}
 
-        this.objectTypeId = objectTypeId;
-        this.objectId = objectId;
-        this.actionId = actionId;
-        this.actionDatetime = new Date(System.currentTimeMillis());
-        this.actionStatus = actionStatus;
-        this.userId = userId;
-        this.sessionId = sessionId;
-        this.principal = principal;
-        this.requestId = requestId;
-        this.reason = reason;
-        this.updateCustomRecord(attrName, attrValue, 1,
-                CustomIdmAuditLogType.ATTRIB);
+	public void setSource(String source) {
+		this.source = source;
+	}
 
-    }
+	public String getClientIP() {
+		return clientIP;
+	}
 
-    public void updateCustomRecord(String name, String value, int displayOrder,
-            CustomIdmAuditLogType type) {
-        if (type == null)
-            return;
-        boolean isExist = false;
-        for (IdmAuditLogCustomEntity ialcEntity : customRecords) {
-            if (type.equals(ialcEntity.getType())
-                    && displayOrder == ialcEntity.getDispayOrder()) {
-                isExist = true;
-                ialcEntity.setCustomValue(value);
-                ialcEntity.setCustomName(name);
-                break;
-            }
-        }
-        if (!isExist) {
-            IdmAuditLogCustomEntity ialcEntity = new IdmAuditLogCustomEntity();
-            ialcEntity.setType(type);
-            ialcEntity.setCustomName(name);
-            ialcEntity.setCustomValue(value);
-            ialcEntity.setDispayOrder(displayOrder);
-            ialcEntity.setLogId(this.logId);
-            customRecords.add(ialcEntity);
-        }
-    }
+	public void setClientIP(String clientIP) {
+		this.clientIP = clientIP;
+	}
 
-    public void updateSynchAttributes(String actionStatus, String reason,
-            String reasonDetail) {
-        this.actionStatus = actionStatus;
-        this.reason = reason;
-        this.reasonDetail = reasonDetail;
+	public String getNodeIP() {
+		return nodeIP;
+	}
 
-    }
+	public void setNodeIP(String nodeIP) {
+		this.nodeIP = nodeIP;
+	}
 
-    public String getLinkedLogId() {
-        return linkedLogId;
-    }
+	public String getAction() {
+		return action;
+	}
 
-    public void setLinkedLogId(String linkedLogId) {
-        this.linkedLogId = linkedLogId;
-    }
+	public void setAction(String action) {
+		this.action = action;
+	}
 
-    public int getLinkSequence() {
-        return linkSequence;
-    }
+	public String getResult() {
+		return result;
+	}
 
-    public void setLinkSequence(int linkSequence) {
-        this.linkSequence = linkSequence;
-    }
+	public void setResult(String result) {
+		this.result = result;
+	}
 
-    public String getLogHash() {
-        return logHash;
-    }
+	public String getHash() {
+		return hash;
+	}
 
-    public void setLogHash(String logHash) {
-        this.logHash = logHash;
-    }
+	public void setHash(String hash) {
+		this.hash = hash;
+	}
 
-    public String getLogId() {
-        return this.logId;
-    }
+	public String getPrincipal() {
+		return principal;
+	}
 
-    public void setLogId(String logId) {
-        this.logId = logId;
-    }
+	public void setPrincipal(String principal) {
+		this.principal = principal;
+	}
 
-    public String getObjectTypeId() {
-        return this.objectTypeId;
-    }
+	public String getManagedSysId() {
+		return managedSysId;
+	}
 
-    public void setObjectTypeId(String objectTypeId) {
-        this.objectTypeId = objectTypeId;
-    }
+	public void setManagedSysId(String managedSysId) {
+		this.managedSysId = managedSysId;
+	}
+	
+	public String getSessionID() {
+		return sessionID;
+	}
 
-    public String getActionId() {
-        return this.actionId;
-    }
+	public void setSessionID(String sessionID) {
+		this.sessionID = sessionID;
+	}
 
-    public void setActionId(String actionId) {
-        this.actionId = actionId;
-    }
+	public Set<IdmAuditLogCustomEntity> getCustomRecords() {
+		return customRecords;
+	}
 
-    public String getActionStatus() {
-        return this.actionStatus;
-    }
+	public void setCustomRecords(Set<IdmAuditLogCustomEntity> customRecords) {
+		this.customRecords = customRecords;
+	}
+	
+	public Set<IdmAuditLogEntity> getChildLogs() {
+		return childLogs;
+	}
 
-    public void setActionStatus(String actionStatus) {
-        this.actionStatus = actionStatus;
-    }
+	public void setChildLogs(Set<IdmAuditLogEntity> childLogs) {
+		this.childLogs = childLogs;
+	}
 
-    public String getReason() {
-        return this.reason;
-    }
+	public String getCoorelationId() {
+		return coorelationId;
+	}
 
-    public void setReason(String reason) {
-        this.reason = reason;
-    }
+	public void setCoorelationId(String coorelationId) {
+		this.coorelationId = coorelationId;
+	}
 
-    public String getReasonDetail() {
-        return this.reasonDetail;
-    }
+	public Set<AuditLogTargetEntity> getTargets() {
+		return targets;
+	}
 
-    public void setReasonDetail(String reasonDetail) {
-        this.reasonDetail = reasonDetail;
-    }
+	public void setTargets(Set<AuditLogTargetEntity> targets) {
+		this.targets = targets;
+	}
+	
+	public Set<IdmAuditLogEntity> getParentLogs() {
+		return parentLogs;
+	}
 
-    public Date getActionDatetime() {
-        return this.actionDatetime;
-    }
+	public void setParentLogs(Set<IdmAuditLogEntity> parentLogs) {
+		this.parentLogs = parentLogs;
+	}
 
-    public void setActionDatetime(Date actionDatetime) {
-        this.actionDatetime = actionDatetime;
-    }
+	public void addTarget(final String targetId, final String targetType) {
+		if(targetId != null && targetType != null) {
+			if(this.targets == null) {
+				this.targets = new HashSet<AuditLogTargetEntity>();
+			}
+			final AuditLogTargetEntity target = new AuditLogTargetEntity();
+			target.setTargetId(targetId);
+			target.setTargetType(targetType);
+			target.setLog(this);
+			this.targets.add(target);
+		}
+	}
 
-    public String getObjectName() {
-        return this.objectName;
-    }
 
-    public void setObjectName(String objectName) {
-        this.objectName = objectName;
-    }
+	public String concat() {
+		return String.format("%s-%s-%s-%s-%s-%s-%s-%s-%s-%s-%s", action, clientIP, principal, nodeIP, result, source, timestamp, userId, sessionID, managedSysId, coorelationId);
+	}
 
-    public String getResourceName() {
-        return this.resourceName;
-    }
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((action == null) ? 0 : action.hashCode());
+		result = prime * result
+				+ ((clientIP == null) ? 0 : clientIP.hashCode());
+		result = prime * result + ((hash == null) ? 0 : hash.hashCode());
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		result = prime * result + ((nodeIP == null) ? 0 : nodeIP.hashCode());
+		result = prime * result
+				+ ((this.result == null) ? 0 : this.result.hashCode());
+		result = prime * result + ((source == null) ? 0 : source.hashCode());
+		result = prime * result
+				+ ((timestamp == null) ? 0 : timestamp.hashCode());
+		result = prime * result + ((userId == null) ? 0 : userId.hashCode());
+		result = prime * result + ((principal == null) ? 0 : principal.hashCode());
+		result = prime * result + ((managedSysId == null) ? 0 : managedSysId.hashCode());
+		result = prime * result + ((sessionID == null) ? 0 : sessionID.hashCode());
+		result = prime * result + ((coorelationId == null) ? 0 : coorelationId.hashCode());
+		return result;
+	}
 
-    public void setResourceName(String resourceName) {
-        this.resourceName = resourceName;
-    }
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		IdmAuditLogEntity other = (IdmAuditLogEntity) obj;
+		if (action == null) {
+			if (other.action != null)
+				return false;
+		} else if (!action.equals(other.action))
+			return false;
+		if (clientIP == null) {
+			if (other.clientIP != null)
+				return false;
+		} else if (!clientIP.equals(other.clientIP))
+			return false;
+		if (hash == null) {
+			if (other.hash != null)
+				return false;
+		} else if (!hash.equals(other.hash))
+			return false;
+		if (id == null) {
+			if (other.id != null)
+				return false;
+		} else if (!id.equals(other.id))
+			return false;
+		if (nodeIP == null) {
+			if (other.nodeIP != null)
+				return false;
+		} else if (!nodeIP.equals(other.nodeIP))
+			return false;
+		if (result == null) {
+			if (other.result != null)
+				return false;
+		} else if (!result.equals(other.result))
+			return false;
+		if (source == null) {
+			if (other.source != null)
+				return false;
+		} else if (!source.equals(other.source))
+			return false;
+		if (timestamp == null) {
+			if (other.timestamp != null)
+				return false;
+		} else if (!timestamp.equals(other.timestamp))
+			return false;
+		if (userId == null) {
+			if (other.userId != null)
+				return false;
+		} else if (!userId.equals(other.userId))
+			return false;
+		if (principal == null) {
+			if (other.principal != null)
+				return false;
+		} else if (!principal.equals(other.principal))
+			return false;
+		
+		if (sessionID == null) {
+			if (other.sessionID != null)
+				return false;
+		} else if (!sessionID.equals(other.sessionID))
+			return false;
+		
+		if (managedSysId == null) {
+			if (other.managedSysId != null)
+				return false;
+		} else if (!managedSysId.equals(other.managedSysId))
+			return false;
+		
+		if (coorelationId == null) {
+			if (other.coorelationId != null)
+				return false;
+		} else if (!coorelationId.equals(other.coorelationId))
+			return false;
+		return true;
+	}
 
-    public String getUserId() {
-        return this.userId;
-    }
+	@Override
+	public String toString() {
+		return String
+				.format("IdmAuditLogEntity [id=%s, userId=%s, principal=%s, timestamp=%s, source=%s, clientIP=%s, nodeIP=%s, action=%s, result=%s, hash=%s]",
+						id, userId, principal, timestamp, source, clientIP,
+						nodeIP, action, result, hash);
+	}
 
-    public void setUserId(String userId) {
-        this.userId = userId;
-    }
 
-    public String getHost() {
-        return this.host;
-    }
-
-    public void setHost(String host) {
-        this.host = host;
-    }
-
-    public String getClientId() {
-        return this.clientId;
-    }
-
-    public void setClientId(String clientId) {
-        this.clientId = clientId;
-    }
-
-    public String getReqUrl() {
-        return this.reqUrl;
-    }
-
-    public void setReqUrl(String reqUrl) {
-        this.reqUrl = reqUrl;
-    }
-
-    // public String getAttributesChanges() {
-    // return this.attributesChanges;
-    // }
-    //
-    // public void setAttributesChanges(String attributesChanges) {
-    // this.attributesChanges = attributesChanges;
-    // }
-
-    public String getDomainId() {
-        return domainId;
-    }
-
-    public void setDomainId(String domainId) {
-        this.domainId = domainId;
-    }
-
-    public String getPrincipal() {
-        return principal;
-    }
-
-    public void setPrincipal(String principal) {
-        this.principal = principal;
-    }
-
-    public String getSrcSystemId() {
-        return srcSystemId;
-    }
-
-    public void setSrcSystemId(String srcSystemId) {
-        this.srcSystemId = srcSystemId;
-    }
-
-    public String getTargetSystemId() {
-        return targetSystemId;
-    }
-
-    public void setTargetSystemId(String targetSystemId) {
-        this.targetSystemId = targetSystemId;
-    }
-
-    public String getRequestId() {
-        return requestId;
-    }
-
-    public void setRequestId(String requestId) {
-        this.requestId = requestId;
-    }
-
-    public String getSessionId() {
-        return sessionId;
-    }
-
-    public void setSessionId(String sessionId) {
-        this.sessionId = sessionId;
-    }
-
-    public String getObjectId() {
-        return objectId;
-    }
-
-    public void setObjectId(String objectId) {
-        this.objectId = objectId;
-    }
-
-    public String getNodeIP() {
-        return nodeIP;
-    }
-
-    public void setNodeIP(String nodeIP) {
-        this.nodeIP = nodeIP;
-    }
-
+    
 }

@@ -88,6 +88,19 @@ public class OrganizationTypeEntity {
 	public void setParentTypes(Set<OrganizationTypeEntity> parentTypes) {
 		this.parentTypes = parentTypes;
 	}
+	
+	public boolean hasChildType(final String typeId) {
+		boolean retVal = false;
+		if(childTypes != null) {
+			for(final OrganizationTypeEntity type : childTypes) {
+				if(StringUtils.equals(type.getId(), typeId)) {
+					retVal = true;
+					break;
+				}
+			}
+		}
+		return retVal;
+	}
 
 	public Set<OrganizationTypeEntity> getChildTypes() {
 		return childTypes;

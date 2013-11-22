@@ -30,6 +30,7 @@ import org.apache.commons.logging.LogFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.openiam.exception.ScriptEngineException;
@@ -78,7 +79,8 @@ public class GroovyScriptEngineIntegration implements ScriptIntegration, Applica
     @Override
     public Object execute(Map<String, Object> bindingMap, String scriptName) throws ScriptEngineException {
         try {
-            Binding binding = new Binding(bindingMap);
+            Map<String, Object> tmpMap = new HashMap<String, Object>(bindingMap); // avoid change of bindingMap
+            Binding binding = new Binding(tmpMap);
 
             // make application context accessible from all groovy scripts
             binding.setVariable(APP_CONTEXT, ac);
@@ -99,11 +101,11 @@ public class GroovyScriptEngineIntegration implements ScriptIntegration, Applica
     }
 
     @Override
-    public Object instantiateClass(Map<String, Object> bindingMap, String scriptName) throws IOException {
+    public Object instantiateClass(Map<String, Object> bindingMap, String storageDirectory, String scriptName) throws IOException {
         log.info("instantiateClass called.");
 
         try {
-            String fullPath = scriptRoot + scriptName;
+            String fullPath = storageDirectory + scriptName;
             Class cl = gse.loadScriptByName(fullPath);
             Object instance = cl.newInstance();
 
@@ -135,6 +137,11 @@ public class GroovyScriptEngineIntegration implements ScriptIntegration, Applica
             log.error("Instantiation problems when instantiating class " + scriptName, ia);
         }
         return null;
+    }
+
+    @Override
+    public Object instantiateClass(Map<String, Object> bindingMap, String scriptName) throws IOException {
+         return instantiateClass(bindingMap, scriptRoot, scriptName);
     }
 
     @Override

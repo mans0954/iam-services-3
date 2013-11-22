@@ -15,6 +15,7 @@ import org.openiam.authmanager.common.model.InternalAuthroizationUser;
 import org.openiam.authmanager.common.model.AuthorizationManagerLoginId;
 import org.openiam.authmanager.common.model.AuthorizationUser;
 import org.openiam.authmanager.dao.UserDAO;
+import org.openiam.core.dao.AbstractJDBCDao;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.RowMapper;

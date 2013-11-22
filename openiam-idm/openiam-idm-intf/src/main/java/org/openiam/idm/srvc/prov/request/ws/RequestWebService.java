@@ -18,37 +18,42 @@ import org.openiam.idm.srvc.user.dto.Supervisor;
 @WebService(targetNamespace = "urn:idm.openiam.org/srvc/prov/request/service", name = "RequestWebService")
 public interface RequestWebService {
 
+	/*
 	@WebMethod
 	Response addRequest(
 			@WebParam(name = "request", targetNamespace = "")
 			ProvisionRequest request);
 	
 	Response updateRequest(ProvisionRequest request);
-	
+	*/
 	/**
 	 * Returns a request
 	 * @param requestId
 	 * @return
 	 */
+	/*
 	@WebMethod
 	ProvisionRequest getRequest(
 			@WebParam(name = "requestId", targetNamespace = "")
 			String requestId);
-	
+	*/
 	/**
 	 * Method to carry out adhoc search;
 	 * @param search
 	 * @return
 	 */
+	/*
 	@WebMethod
 	List<ProvisionRequest> search(
 			@WebParam(name = "search", targetNamespace = "")
 			SearchRequest search);
-	
+	*/
+	/*
 	@WebMethod
 	List<ProvisionRequest> requestByApprover(
 			@WebParam(name = "approverId", targetNamespace = "")
 			String approverId, 
 			@WebParam(name = "status", targetNamespace = "")
 			String status);
+	*/
 }

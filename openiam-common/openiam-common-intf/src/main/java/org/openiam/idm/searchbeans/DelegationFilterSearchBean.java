@@ -1,5 +1,6 @@
 package org.openiam.idm.searchbeans;
 
+import java.util.HashSet;
 import java.util.Set;
 
 public class DelegationFilterSearchBean {
@@ -38,5 +39,14 @@ public class DelegationFilterSearchBean {
 
     public void setAppIdSet(Set<String> appIdSet) {
         this.appIdSet = appIdSet;
+    }
+    
+    public void addOranizationId(final String orgId) {
+    	if(orgId != null) {
+    		if(organizationIdSet == null) {
+    			organizationIdSet = new HashSet<String>();
+    		}
+    		organizationIdSet.add(orgId);
+    	}
     }
 }

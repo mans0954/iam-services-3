@@ -13,12 +13,19 @@
 
     <jee:jndi-lookup id="connectionFactory" jndi-name="java:/JmsXA" expected-type="javax.jms.ConnectionFactory" />
 
-    <jee:jndi-lookup id="mailQueue" jndi-name="queue/mail" expected-type="javax.jms.Queue" />
-
     <bean id="jmsTemplate" class="org.springframework.jms.core.JmsTemplate">
         <property name="connectionFactory" ref="connectionFactory" />
     </bean>
+    
+    <bean id="jtaTransactionManager" class="org.springframework.transaction.jta.JtaTransactionManager"/>
 
+	<bean id="jmsReceiverThreadPoolTaskExecutor" class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
+        <property name="daemon" value="true" />
+        <!--<property name="corePoolSize" value="3" />-->
+        <!--<property name="maxPoolSize" value="5" />-->
+    </bean>
+
+	<jee:jndi-lookup id="mailQueue" jndi-name="queue/mail" expected-type="javax.jms.Queue" />
     <bean id="jmsContainer" class="org.springframework.jms.listener.DefaultMessageListenerContainer">
         <property name="connectionFactory" ref="connectionFactory" />
         <property name="destination" ref="mailQueue" />
@@ -30,12 +37,18 @@
         <property name="errorHandler" ref="mailErrorHandler"/>
     </bean>
 
-    <bean id="jmsReceiverThreadPoolTaskExecutor" class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
-        <property name="daemon" value="true" />
-        <!--<property name="corePoolSize" value="3" />-->
-        <!--<property name="maxPoolSize" value="5" />-->
+
+	<jee:jndi-lookup id="logQueue" jndi-name="queue/log" expected-type="javax.jms.Queue" />
+	<bean id="mailJmsContainer" class="org.springframework.jms.listener.DefaultMessageListenerContainer">
+		<property name="connectionFactory" ref="connectionFactory" />
+        <property name="destination" ref="logQueue" />
+        <property name="messageListener" ref="auditLogDispatcher" />
+        <!--<property name="concurrency" value="3" />-->
+        <!--<property name="maxConcurrentConsumers" value="5" />-->
+        <property name="taskExecutor" ref="jmsReceiverThreadPoolTaskExecutor" />
+        <property name="transactionManager" ref="jtaTransactionManager" />
+        <property name="errorHandler" ref="auditLogErrorHandler"/>
     </bean>
 
-    <bean id="jtaTransactionManager" class="org.springframework.transaction.jta.JtaTransactionManager"/>
-
+    <jee:jndi-lookup id="provQueue" jndi-name="queue/prov" expected-type="javax.jms.Queue" />
 </beans>

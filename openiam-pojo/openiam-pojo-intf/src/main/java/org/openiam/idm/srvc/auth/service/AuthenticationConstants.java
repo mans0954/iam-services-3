@@ -78,4 +78,6 @@ public class AuthenticationConstants {
      * when attempting to use Single Sign On.
      */
     public static final int RESULT_SENSITIVE_APP = 106;
+
+    public static final int RESULT_PASSWORD_CHANGE_AFTER_RESET=111;
 }

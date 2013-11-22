@@ -36,9 +36,9 @@ public class LdapCommandFactory extends AbstractCommandFactory {
     @Autowired
     @Qualifier("searchUserLdapCommand")
     private ConnectorCommand searchUserLdapCommand;
-
-
-
+    @Autowired
+    @Qualifier("testUserLdapCommand")
+    private ConnectorCommand testUserLdapCommand;
 
     public ConnectorCommand getConnectorCommand(CommandType commandType, ExtensibleObjectType extensibleObjectType) throws ConnectorDataException {
         String error = String.format(ERROR_PATTERN, commandType, extensibleObjectType, "LDAP");
@@ -60,8 +60,12 @@ public class LdapCommandFactory extends AbstractCommandFactory {
                     return resumeLdapCommand;
                 case SET_PASSWORD:
                     return setPasswordLdapCommand;
+                case RESET_PASSWORD:
+                    return setPasswordLdapCommand;
                 case SUSPEND:
                     return suspendLdapCommand;
+                case TEST:
+                    return testUserLdapCommand;
                 default:
                     throw new ConnectorDataException(ErrorCode.OPERATION_NOT_SUPPORTED_EXCEPTION, error);
             }

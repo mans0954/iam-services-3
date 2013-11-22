@@ -1,6 +1,8 @@
 package org.openiam.dozer.converter;
 
 import java.util.List;
+import java.util.Set;
+
 import org.openiam.idm.srvc.policy.domain.PolicyEntity;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.springframework.stereotype.Component;
@@ -50,4 +52,13 @@ public class PolicyDozerConverter extends
         return convertListToCrossEntity(list, isDeep, Policy.class);
     }
 
+    @Override
+    public Set<PolicyEntity> convertToEntitySet(Set<Policy> set, boolean isDeep) {
+        return convertSetToCrossEntity(set, isDeep, PolicyEntity.class);
+    }
+
+    @Override
+    public Set<Policy> convertToDTOSet(Set<PolicyEntity> set, boolean isDeep) {
+        return convertSetToCrossEntity(set, isDeep, Policy.class);
+    }
 }

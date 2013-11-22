@@ -7,6 +7,7 @@ import javax.persistence.*;
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
+import org.openiam.idm.srvc.mngsys.dto.PolicyMapDataTypeOptions;
 
 /**
  * @author zaporozhec
@@ -69,9 +70,12 @@ public class AttributeMapEntity implements java.io.Serializable {
 
     @Transient
     private Boolean selected = new Boolean(false);
+
     /* Data type of the attribute */
     @Column(name = "DATA_TYPE", length = 20)
-    private String dataType;
+    @Enumerated(EnumType.STRING)
+    private PolicyMapDataTypeOptions dataType;
+
     @Column(name = "DEFAULT_VALUE", length = 32)
     private String defaultValue;
 
@@ -223,11 +227,11 @@ public class AttributeMapEntity implements java.io.Serializable {
         this.selected = selected;
     }
 
-    public String getDataType() {
+    public PolicyMapDataTypeOptions getDataType() {
         return dataType;
     }
 
-    public void setDataType(String dataType) {
+    public void setDataType(PolicyMapDataTypeOptions dataType) {
         this.dataType = dataType;
     }
 

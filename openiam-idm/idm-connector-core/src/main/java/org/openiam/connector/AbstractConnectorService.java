@@ -129,13 +129,15 @@ public abstract class AbstractConnectorService implements ConnectorService,Appli
                 ConnectorCommand cmd = null;
                 //in delete the object is null, setting USER as only USER is implemented now
                 //TODO needs to be fixed.
-                if (commandType ==CommandType.DELETE)
+                if (commandType == CommandType.DELETE ||
+                        commandType == CommandType.RESET_PASSWORD ||
+                        commandType == CommandType.SET_PASSWORD) {
                 	cmd = connectorCommandFactory.getConnectorCommand(commandType, ExtensibleObjectType.USER, this.connectorType);
-                else
+                } else {
                 	cmd = connectorCommandFactory.getConnectorCommand(commandType, requestType.getExtensibleObject().getExtensibleObjectType(), this.connectorType);
+                }
                 response = (Response)cmd.execute(requestType);
             } catch (ConnectorDataException e) {
-                log.error(e.getMessage(), e);
                 response.setStatus(StatusCodeType.FAILURE);
                 response.setError(e.getCode());
                 response.addErrorMessage(e.getMessage());

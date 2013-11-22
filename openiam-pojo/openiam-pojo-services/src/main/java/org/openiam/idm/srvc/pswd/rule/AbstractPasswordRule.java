@@ -21,11 +21,12 @@
  */
 package org.openiam.idm.srvc.pswd.rule;
 
+import org.openiam.base.ws.ResponseCode;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.policy.dto.Policy;
-import org.openiam.idm.srvc.pswd.dto.PasswordValidationCode;
+import org.openiam.idm.srvc.pswd.dto.PasswordValidationResponse;
 import org.openiam.idm.srvc.pswd.service.PasswordHistoryDAO;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
@@ -50,7 +51,14 @@ public abstract class AbstractPasswordRule {
     protected KeyManagementService keyManagementService;
     protected String domainId;
 
-	public abstract PasswordValidationCode isValid(); 
+	public abstract void validate() throws PasswordRuleException; 
+	
+	protected PasswordRuleException createException(final ResponseCode code, final int minBound, final int maxBound) {
+		final PasswordRuleException ex = new PasswordRuleException(code);
+		ex.setMinBound((minBound > 0) ? Integer.valueOf(minBound) : null);
+		ex.setMaxBound((maxBound > 0) ? Integer.valueOf(maxBound) : null);
+		return ex;
+	}
 	
 	public Policy getPolicy() {
 		return policy;

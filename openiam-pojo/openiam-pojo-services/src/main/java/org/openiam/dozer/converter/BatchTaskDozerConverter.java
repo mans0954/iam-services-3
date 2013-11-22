@@ -1,6 +1,7 @@
 package org.openiam.dozer.converter;
 
 import java.util.List;
+import java.util.Set;
 
 import org.openiam.idm.srvc.batch.domain.BatchTaskEntity;
 import org.openiam.idm.srvc.batch.dto.BatchTask;
@@ -41,4 +42,13 @@ public class BatchTaskDozerConverter extends AbstractDozerEntityConverter<BatchT
 		return convertListToCrossEntity(list, isDeep, BatchTask.class);
 	}
 
+    @Override
+    public Set<BatchTaskEntity> convertToEntitySet(Set<BatchTask> set, boolean isDeep) {
+        return convertSetToCrossEntity(set, isDeep, BatchTaskEntity.class);
+    }
+
+    @Override
+    public Set<BatchTask> convertToDTOSet(Set<BatchTaskEntity> set, boolean isDeep) {
+        return convertSetToCrossEntity(set, isDeep, BatchTask.class);
+    }
 }

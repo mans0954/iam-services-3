@@ -7,6 +7,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
 /**
+ * This class is deprecated. Use resources collection directly for provision/deprovision
  * UserResourceAssociation is used to provision and de-provision a user from resources directly (without using a role)
  * User: suneetshah
  * Date: 6/6/12
@@ -18,6 +19,7 @@ import javax.xml.bind.annotation.XmlType;
         "managedSystemId",
         "operation"
 })
+@Deprecated
 public class UserResourceAssociation {
 
     private String resourceId;
@@ -25,10 +27,9 @@ public class UserResourceAssociation {
     private String managedSystemId;
 
     // default to ADD
-    private AttributeOperationEnum operation = AttributeOperationEnum.ADD;
+    private AttributeOperationEnum operation = AttributeOperationEnum.NO_CHANGE;
 
     public UserResourceAssociation() {
-
     }
 
     public UserResourceAssociation(String resourceId, AttributeOperationEnum operation) {

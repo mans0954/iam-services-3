@@ -22,8 +22,9 @@
 package org.openiam.idm.srvc.pswd.rule;
 
 
+import org.apache.commons.lang.StringUtils;
+import org.openiam.base.ws.ResponseCode;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
-import org.openiam.idm.srvc.pswd.dto.PasswordValidationCode;
 
 /**
  * Validates a password to ensure the lenght is consistent with the lenght defined in the password policy
@@ -33,38 +34,35 @@ import org.openiam.idm.srvc.pswd.dto.PasswordValidationCode;
 public class PasswordLengthRule extends AbstractPasswordRule {
 
 
-	public PasswordValidationCode isValid() {
-		PasswordValidationCode retval = PasswordValidationCode.SUCCESS;
+	@Override
+	public void validate() throws PasswordRuleException {
 		int minlen = 0;
 		int maxlen = 0;
 				
 		PolicyAttribute attribute = policy.getAttribute("PWD_LEN");
-		if (attribute.getValue1() != null && attribute.getValue1().length() > 0 )  {
+		if (attribute != null && StringUtils.isNotBlank(attribute.getValue1())) {
 			minlen = Integer.parseInt(attribute.getValue1());
 		}
-		if (attribute.getValue2() != null && attribute.getValue2().length() > 0) {
+		if (attribute != null && StringUtils.isNotBlank(attribute.getValue2())) {
 			maxlen = Integer.parseInt(attribute.getValue2());
 		}
+		
+		final PasswordRuleException ex = createException(ResponseCode.FAIL_LENGTH_RULE, minlen, maxlen);
+		
 		if (password == null) {
-			return PasswordValidationCode.FAIL_LENGTH_RULE;
+			throw ex;
 		}
 		
 		if (minlen > 0 ) {
 			if (password.length() < minlen) {
-				retval = PasswordValidationCode.FAIL_LENGTH_RULE;
+				throw ex;
 			}
 		}
 		if (maxlen > 0 ) {
 			if (password.length() > maxlen ) {
-				retval = PasswordValidationCode.FAIL_LENGTH_RULE;
+				throw ex;
 			}
 		}
 		
-		
-		return retval;
 	}
-	
-
-	
-	
 }

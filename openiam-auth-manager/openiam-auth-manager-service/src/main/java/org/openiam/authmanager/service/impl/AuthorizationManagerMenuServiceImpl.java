@@ -29,15 +29,14 @@ import org.openiam.authmanager.service.AuthorizationManagerAdminService;
 import org.openiam.authmanager.service.AuthorizationManagerMenuService;
 import org.openiam.authmanager.service.AuthorizationManagerService;
 import org.openiam.authmanager.ws.request.MenuEntitlementsRequest;
+import org.openiam.idm.srvc.grp.domain.GroupEntity;
+import org.openiam.idm.srvc.grp.service.GroupDAO;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
-import org.openiam.idm.srvc.res.domain.ResourceGroupEntity;
-import org.openiam.idm.srvc.res.domain.ResourceRoleEmbeddableId;
-import org.openiam.idm.srvc.res.domain.ResourceRoleEntity;
-import org.openiam.idm.srvc.res.domain.ResourceUserEntity;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
-import org.openiam.idm.srvc.res.service.ResourceGroupDAO;
-import org.openiam.idm.srvc.res.service.ResourceRoleDAO;
-import org.openiam.idm.srvc.res.service.ResourceUserDAO;
+import org.openiam.idm.srvc.role.domain.RoleEntity;
+import org.openiam.idm.srvc.role.service.RoleDAO;
+import org.openiam.idm.srvc.user.domain.UserEntity;
+import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.thread.Sweepable;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
@@ -73,7 +72,16 @@ public class AuthorizationManagerMenuServiceImpl implements AuthorizationManager
 	@Autowired
 	@Qualifier("jdbcResourceDAO")
 	private ResourceDAO resourceDAO;
-	
+
+    @Autowired
+    private UserDAO userDAOHibernate;
+    @Autowired
+    private GroupDAO groupDAOHibernate;
+    @Autowired
+    private RoleDAO roleDAOHibernate;
+    @Autowired
+    private org.openiam.idm.srvc.res.service.ResourceDAO resourceDAOHibernate;
+
 	@Autowired
 	private AuthorizationManagerService authManager;
 	
@@ -82,16 +90,7 @@ public class AuthorizationManagerMenuServiceImpl implements AuthorizationManager
 	
 	@Autowired
 	private org.openiam.idm.srvc.res.service.ResourceDAO hibernateResourceDAO;
-	
-	@Autowired
-	private ResourceRoleDAO resourceRoleDAO;
-	
-	@Autowired
-	private ResourceGroupDAO resourceGroupDAO;
-	
-	@Autowired
-	private ResourceUserDAO resourceUserDAO;
-	
+
 	/*
 	private boolean forceThreadShutdown = false;
 	
@@ -443,60 +442,69 @@ public class AuthorizationManagerMenuServiceImpl implements AuthorizationManager
 		}
 	}
 
-	@Override
-	@Transactional
-	public void entitle(MenuEntitlementsRequest menuEntitlementsRequest) {
-		final String principalType = menuEntitlementsRequest.getPrincipalType();
-		final String principalId = menuEntitlementsRequest.getPrincipalId();
-		
-		if(StringUtils.equalsIgnoreCase("user", principalType)) {
-			final String userId = principalId;
-			if(CollectionUtils.isNotEmpty(menuEntitlementsRequest.getDisentitled())) {
-				resourceUserDAO.deleteByUserId(userId, menuEntitlementsRequest.getDisentitled());
-			}
-			
-			if(CollectionUtils.isNotEmpty(menuEntitlementsRequest.getNewlyEntitled())) {
-				final List<ResourceUserEntity> entityList = new ArrayList<ResourceUserEntity>(menuEntitlementsRequest.getNewlyEntitled().size());
-				for(final String resourceId : menuEntitlementsRequest.getNewlyEntitled()) {
-					final ResourceUserEntity entity = new ResourceUserEntity();
-					entity.setUserId(userId);
-					entity.setResourceId(resourceId);
-					entityList.add(entity);
-				}
-				resourceUserDAO.save(entityList);
-			}
-		} else if(StringUtils.equalsIgnoreCase("group", principalType)) {
-			final String groupId = principalId;
-			if(CollectionUtils.isNotEmpty(menuEntitlementsRequest.getDisentitled())) {
-				resourceGroupDAO.deleteByGroupId(groupId, menuEntitlementsRequest.getDisentitled());
-			}
-			
-			if(CollectionUtils.isNotEmpty(menuEntitlementsRequest.getNewlyEntitled())) {
-				final List<ResourceGroupEntity> entityList = new ArrayList<ResourceGroupEntity>(menuEntitlementsRequest.getNewlyEntitled().size());
-				for(final String resourceId : menuEntitlementsRequest.getNewlyEntitled()) {
-					final ResourceGroupEntity entity = new ResourceGroupEntity();
-					entity.setGroupId(groupId);
-					entity.setResourceId(resourceId);
-					entityList.add(entity);
-				}
-				resourceGroupDAO.save(entityList);
-			}
-		} else if(StringUtils.equalsIgnoreCase("role", principalType)) {
-			final String roleId = principalId;
-			if(CollectionUtils.isNotEmpty(menuEntitlementsRequest.getDisentitled())) {
-				resourceRoleDAO.deleteByRoleId(roleId, menuEntitlementsRequest.getDisentitled());
-			}
-			
-			if(CollectionUtils.isNotEmpty(menuEntitlementsRequest.getNewlyEntitled())) {
-				final List<ResourceRoleEntity> entityList = new ArrayList<ResourceRoleEntity>(menuEntitlementsRequest.getNewlyEntitled().size());
-				for(final String resourceId : menuEntitlementsRequest.getNewlyEntitled()) {
-					final ResourceRoleEntity entity = new ResourceRoleEntity();
-					final ResourceRoleEmbeddableId id = new ResourceRoleEmbeddableId(roleId, resourceId);
-					entity.setId(id);
-					entityList.add(entity);
-				}
-				resourceRoleDAO.save(entityList);
-			}
-		}
-	}
+    @Override
+    @Transactional
+    public void entitle(MenuEntitlementsRequest menuEntitlementsRequest) {
+        final String principalType = menuEntitlementsRequest.getPrincipalType();
+        final String principalId = menuEntitlementsRequest.getPrincipalId();
+
+        if(StringUtils.equalsIgnoreCase("user", principalType)) {
+            UserEntity userEntity = userDAOHibernate.findById(principalId);
+            if(CollectionUtils.isNotEmpty(menuEntitlementsRequest.getDisentitled())) {
+                List<ResourceEntity> resourceEntities = resourceDAOHibernate.findByIds(menuEntitlementsRequest.getDisentitled());
+                for(ResourceEntity resourceEntity : resourceEntities) {
+                    if(userEntity.getResources().contains(resourceEntity)) {
+                        userEntity.getResources().remove(resourceEntity);
+                    }
+                }
+
+            }
+
+            if(CollectionUtils.isNotEmpty(menuEntitlementsRequest.getNewlyEntitled())) {
+                List<ResourceEntity> resourceEntities = resourceDAOHibernate.findByIds(menuEntitlementsRequest.getNewlyEntitled());
+                for(ResourceEntity resourceEntity : resourceEntities) {
+                       userEntity.getResources().add(resourceEntity);
+                }
+
+            }
+        } else if(StringUtils.equalsIgnoreCase("group", principalType)) {
+            GroupEntity groupEntity = groupDAOHibernate.findById(principalId);
+
+            if(CollectionUtils.isNotEmpty(menuEntitlementsRequest.getDisentitled())) {
+                List<ResourceEntity> resourceEntities = resourceDAOHibernate.findByIds(menuEntitlementsRequest.getDisentitled());
+                for(ResourceEntity resourceEntity : resourceEntities) {
+                    if(groupEntity.getResources().contains(resourceEntity)) {
+                        groupEntity.getResources().remove(resourceEntity);
+                    }
+                }
+            }
+
+            if(CollectionUtils.isNotEmpty(menuEntitlementsRequest.getNewlyEntitled())) {
+                List<ResourceEntity> resourceEntities = resourceDAOHibernate.findByIds(menuEntitlementsRequest.getNewlyEntitled());
+                for(final ResourceEntity resource : resourceEntities) {
+                    groupEntity.getResources().add(resource);
+                }
+
+            }
+        } else if(StringUtils.equalsIgnoreCase("role", principalType)) {
+            final RoleEntity role = roleDAOHibernate.findById(principalId);
+
+            if(CollectionUtils.isNotEmpty(menuEntitlementsRequest.getDisentitled())) {
+                List<ResourceEntity> resourceEntities = resourceDAOHibernate.findByIds(menuEntitlementsRequest.getDisentitled());
+                for(ResourceEntity resourceEntity : resourceEntities) {
+                    if(role.getResources().contains(resourceEntity)) {
+                        role.getResources().remove(resourceEntity);
+                    }
+                }
+
+            }
+
+            if(CollectionUtils.isNotEmpty(menuEntitlementsRequest.getNewlyEntitled())) {
+                List<ResourceEntity> resourceEntities = resourceDAOHibernate.findByIds(menuEntitlementsRequest.getNewlyEntitled());
+                for(final ResourceEntity resource : resourceEntities) {
+                    role.getResources().add(resource);
+                }
+            }
+        }
+    }
 }

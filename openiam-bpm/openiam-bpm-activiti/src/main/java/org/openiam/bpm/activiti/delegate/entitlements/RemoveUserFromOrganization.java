@@ -14,15 +14,8 @@ import org.springframework.beans.factory.annotation.Qualifier;
 
 public class RemoveUserFromOrganization extends AbstractEntitlementsDelegate {
 
-	@Autowired
-	private OrganizationDataService organizationDataService;
-	
-	@Autowired
-	@Qualifier("defaultProvision")
-	private ProvisionService provisionService;
-	
-	@Autowired
-	private UserDataService userDataService;
+	//@Autowired
+	//private OrganizationDataService organizationDataService;
 	
 	public RemoveUserFromOrganization() {
 		super();
@@ -33,14 +26,15 @@ public class RemoveUserFromOrganization extends AbstractEntitlementsDelegate {
 		final String organizationId = (String)execution.getVariable(ActivitiConstants.ASSOCIATION_ID);
 		final String userId = (String)execution.getVariable(ActivitiConstants.MEMBER_ASSOCIATION_ID);
 
-		final Organization entity = organizationDataService.getOrganization(organizationId, null);
-		if(entity != null) {
-			entity.setOperation(AttributeOperationEnum.DELETE);
-			final User user = userDataService.getUserDto(userId);
+		//final Organization entity = organizationDataService.getOrganization(organizationId, null);
+		//if(entity != null) {
+		//	entity.setOperation(AttributeOperationEnum.DELETE);
+			final User user = getUser(userId);
 			final ProvisionUser pUser = new ProvisionUser(user);
-			pUser.addUserAffiliation(entity);
+			pUser.markAffiliateAsDeleted(organizationId);
+			//pUser.getAffiliations().add(entity);
 			provisionService.modifyUser(pUser);
-		}
+		//}
 	}
 
 	@Override

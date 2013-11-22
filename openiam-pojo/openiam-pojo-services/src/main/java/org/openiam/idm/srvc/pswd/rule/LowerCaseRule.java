@@ -1,5 +1,5 @@
 /*
- * Copyright 2009, OpenIAM LLC 
+ * Copyright 2009, OpenIAM LLC 	
  * This file is part of the OpenIAM Identity and Access Management Suite
  *
  *   OpenIAM Identity and Access Management Suite is free software: 
@@ -22,8 +22,9 @@
 package org.openiam.idm.srvc.pswd.rule;
 
 
+import org.apache.commons.lang.StringUtils;
+import org.openiam.base.ws.ResponseCode;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
-import org.openiam.idm.srvc.pswd.dto.PasswordValidationCode;
 
 /**
  * Validates a password to ensure that it contains the appropriate number of numeric characters in 
@@ -34,22 +35,26 @@ import org.openiam.idm.srvc.pswd.dto.PasswordValidationCode;
 public class LowerCaseRule extends AbstractPasswordRule {
 
 
-	public PasswordValidationCode isValid() {
-		PasswordValidationCode retval = PasswordValidationCode.SUCCESS;
+	@Override
+	public void validate() throws PasswordRuleException {
 		int minChar = 0;
 		int maxChar = 0;
 				
 		PolicyAttribute attribute = policy.getAttribute("LOWERCASE_CHARS");
 		
-		if (attribute.getValue1() != null && attribute.getValue1().length() > 0 ) {
+		if (attribute != null && StringUtils.isNotBlank(attribute.getValue1())) {
 			minChar = Integer.parseInt(attribute.getValue1());
 		}
-		if (attribute.getValue2() != null && attribute.getValue2().length() > 0) {
+		
+		if (attribute != null && StringUtils.isNotBlank(attribute.getValue2())) {
 			maxChar = Integer.parseInt(attribute.getValue2()  );
 		}
+		
+		final PasswordRuleException ex = createException(ResponseCode.FAIL_LOWER_CASE_RULE, minChar, maxChar);
+		
 		// count the number of characters in the password
 		if (password == null) {
-			return PasswordValidationCode.FAIL_LOWER_CASE_RULE;
+			throw ex;
 		}
 		int charCtr = 0;
 		for (int i=0; i < password.length(); i++) {
@@ -59,24 +64,15 @@ public class LowerCaseRule extends AbstractPasswordRule {
 			}
 		}
 		
-		
 		if (minChar > 0 ) {
 			if (charCtr  < minChar) {
-				retval = PasswordValidationCode.FAIL_LOWER_CASE_RULE;
+				throw ex;
 			}
 		}
 		if (maxChar > 0 ) {
 			if (charCtr > maxChar ) {
-				retval = PasswordValidationCode.FAIL_LOWER_CASE_RULE;
+				throw ex;
 			}
 		}
-		
-		
-		return retval;		
-		
-	}
-	
-
-	
-	
+	}	
 }

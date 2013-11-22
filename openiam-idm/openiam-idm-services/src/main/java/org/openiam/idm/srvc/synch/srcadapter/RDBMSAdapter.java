@@ -28,7 +28,6 @@ import org.openiam.base.id.UUIDGen;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.synch.dto.Attribute;
 import org.openiam.idm.srvc.synch.dto.LineObject;
 import org.openiam.idm.srvc.synch.dto.SyncResponse;
@@ -80,11 +79,11 @@ public class RDBMSAdapter extends AbstractSrcAdapter {
         log.debug("RDBMS SYNCH STARTED ^^^^^^^^");
 
         String requestId = UUIDGen.getUUID();
-
+        /*
         IdmAuditLog synchStartLog_ = new IdmAuditLog();
         synchStartLog_.setSynchAttributes("SYNCH_USER", config.getSynchConfigId(), "START", "SYSTEM", requestId);
         final IdmAuditLog synchStartLog = auditHelper.logEvent(synchStartLog_);
-
+		*/
         if (!connect(config)) {
 
             SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
@@ -172,13 +171,14 @@ public class RDBMSAdapter extends AbstractSrcAdapter {
                         @Override
                         public void run() {
                             try {
-                                Timestamp mostRecentRecord = proccess(config, provService, synchStartLog, part, validationScript, transformScripts, startIndex);
+                                Timestamp mostRecentRecord = proccess(config, provService, part, validationScript, transformScripts, startIndex);
                                 recentRecordByThreadInx.put("Thread_" + threadIndx, mostRecentRecord);
                             } catch (ClassNotFoundException e) {
                                 log.error(e);
-
+                                /*
                                 synchStartLog.updateSynchAttributes("FAIL", ResponseCode.CLASS_NOT_FOUND.toString(), e.toString());
                                 auditHelper.logEvent(synchStartLog);
+                                */
                             }
                         }
                     }));
@@ -196,10 +196,10 @@ public class RDBMSAdapter extends AbstractSrcAdapter {
                             }
                         } catch (InterruptedException e) {
                             log.error(e);
-
+                            /*
                                 synchStartLog.updateSynchAttributes("FAIL", ResponseCode.INTERRUPTED_EXCEPTION.toString(), e.toString());
                             auditHelper.logEvent(synchStartLog);
-
+							*/
                             SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
                             resp.setErrorCode(ResponseCode.INTERRUPTED_EXCEPTION);
                         }
@@ -211,10 +211,10 @@ public class RDBMSAdapter extends AbstractSrcAdapter {
         } catch (ClassNotFoundException cnfe) {
 
             log.error(cnfe);
-
+            /*
             synchStartLog.updateSynchAttributes("FAIL", ResponseCode.CLASS_NOT_FOUND.toString(), cnfe.toString());
             auditHelper.logEvent(synchStartLog);
-
+			*/
             SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
             resp.setErrorCode(ResponseCode.CLASS_NOT_FOUND);
             resp.setErrorText(cnfe.toString());
@@ -223,10 +223,10 @@ public class RDBMSAdapter extends AbstractSrcAdapter {
         } catch (IOException fe) {
 
             log.error(fe);
-
+            /*
             synchStartLog.updateSynchAttributes("FAIL", ResponseCode.FILE_EXCEPTION.toString(), fe.toString());
             auditHelper.logEvent(synchStartLog);
-
+			*/
             SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
             resp.setErrorCode(ResponseCode.FILE_EXCEPTION);
             resp.setErrorText(fe.toString());
@@ -236,27 +236,29 @@ public class RDBMSAdapter extends AbstractSrcAdapter {
 
             log.error(se);
             closeConnection();
-
+            /*
             synchStartLog.updateSynchAttributes("FAIL", ResponseCode.SQL_EXCEPTION.toString(), se.toString());
             auditHelper.logEvent(synchStartLog);
-
+			*/
             SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
             resp.setErrorCode(ResponseCode.SQL_EXCEPTION);
             resp.setErrorText(se.toString());
             return resp;
         } catch (InterruptedException e) {
             log.error(e);
-
+            /*
             synchStartLog.updateSynchAttributes("FAIL", ResponseCode.INTERRUPTED_EXCEPTION.toString(), e.toString());
             auditHelper.logEvent(synchStartLog);
-
+			*/
             SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
             resp.setErrorCode(ResponseCode.INTERRUPTED_EXCEPTION);
         } finally {
             // mark the end of the synch
+        	/*
             IdmAuditLog synchEndLog = new IdmAuditLog();
             synchEndLog.setSynchAttributes("SYNCH_USER", config.getSynchConfigId(), "END", "SYSTEM", synchStartLog.getSessionId());
             auditHelper.logEvent(synchEndLog);
+            */
         }
 
         log.debug("RDBMS SYNCH COMPLETE.^^^^^^^^");
@@ -266,15 +268,10 @@ public class RDBMSAdapter extends AbstractSrcAdapter {
         return new SyncResponse(ResponseStatus.SUCCESS);
     }
 
-    private Timestamp proccess(SynchConfig config, ProvisionService provService, IdmAuditLog synchStartLog, List<LineObject> part, final ValidationScript validationScript, final List<TransformScript> transformScripts, int ctr) throws ClassNotFoundException {
+    private Timestamp proccess(SynchConfig config, ProvisionService provService, List<LineObject> part, final ValidationScript validationScript, final List<TransformScript> transformScripts, int ctr) throws ClassNotFoundException {
         Timestamp mostRecentRecord = null;
         for (LineObject rowObj : part) {
             log.debug("-RDBMS ADAPTER: SYNCHRONIZING  RECORD # ---" + ctr++);
-            // make sure we have a new object for each row
-            ProvisionUser pUser = new ProvisionUser();
-            // this configure the loading Pre/Post groovy scrips, should be switch off for performance
-            pUser.setSkipPostProcessor(true);
-            pUser.setSkipPreprocessor(true);
 
             log.debug(" - Record update time=" + rowObj.getLastUpdate());
 
@@ -317,6 +314,7 @@ public class RDBMSAdapter extends AbstractSrcAdapter {
 
             // transform
             int retval = -1;
+            ProvisionUser pUser = new ProvisionUser();
             if (transformScripts != null && transformScripts.size() > 0) {
 
                 for (TransformScript transformScript : transformScripts) {
@@ -324,10 +322,13 @@ public class RDBMSAdapter extends AbstractSrcAdapter {
                         // initialize the transform script
                         transformScript.init();
 
+                        // initialize the transform script
                         if (usr != null) {
                             transformScript.setNewUser(false);
-                            transformScript.setUser(userDozerConverter.convertToDTO(userManager.getUser(usr.getUserId()), true));
-                            transformScript.setPrincipalList(loginDozerConverter.convertToDTOList(loginManager.getLoginByUser(usr.getUserId()), true));
+                            User u = userManager.getUserDto(usr.getUserId());
+                            pUser = new ProvisionUser(u);
+                            transformScript.setUser(u);
+                            transformScript.setPrincipalList(loginDozerConverter.convertToDTOList(loginManager.getLoginByUser(usr.getUserId()), false));
                             transformScript.setUserRoleList(roleDataService.getUserRolesAsFlatList(usr.getUserId()));
 
                         } else {
@@ -337,22 +338,22 @@ public class RDBMSAdapter extends AbstractSrcAdapter {
                             transformScript.setUserRoleList(null);
                         }
 
+                        log.info(" - Execute transform script");
+
+                        //Disable PRE and POST processors/performance optimizations
+                        pUser.setSkipPreprocessor(true);
+                        pUser.setSkipPostProcessor(true);
                         retval = transformScript.execute(rowObj, pUser);
-
-                        log.debug("- Transform result=" + retval);
-
-                        // show the user object
-                        log.debug("- User After Transformation =" + pUser);
-                        log.debug("- User = " + pUser.getUserId() + "-" + pUser.getFirstName() + " " + pUser.getLastName());
-                        log.debug("- User Attributes = " + pUser.getUserAttributes());
+                        log.debug("Transform result=" + retval);
                     }
                 }
+                /*
                 pUser.setSessionId(synchStartLog.getSessionId());
-
+				*/
                 if (retval != -1) {
                     if (retval == TransformScript.DELETE && usr != null) {
                         log.debug("deleting record - " + usr.getUserId());
-                        provService.deleteByUserId(new ProvisionUser(usr), UserStatusEnum.DELETED, systemAccount);
+                        provService.deleteByUserId(usr.getUserId(), UserStatusEnum.DELETED, systemAccount);
 
                     } else {
                         // call synch

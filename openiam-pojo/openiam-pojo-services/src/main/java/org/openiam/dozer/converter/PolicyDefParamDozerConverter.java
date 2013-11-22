@@ -1,6 +1,8 @@
 package org.openiam.dozer.converter;
 
 import java.util.List;
+import java.util.Set;
+
 import org.openiam.idm.srvc.policy.domain.PolicyDefParamEntity;
 import org.openiam.idm.srvc.policy.dto.PolicyDefParam;
 import org.springframework.stereotype.Component;
@@ -52,4 +54,13 @@ public class PolicyDefParamDozerConverter extends
         return convertListToCrossEntity(list, isDeep, PolicyDefParam.class);
     }
 
+    @Override
+    public Set<PolicyDefParamEntity> convertToEntitySet(Set<PolicyDefParam> set, boolean isDeep) {
+        return convertSetToCrossEntity(set, isDeep, PolicyDefParamEntity.class);
+    }
+
+    @Override
+    public Set<PolicyDefParam> convertToDTOSet(Set<PolicyDefParamEntity> set, boolean isDeep) {
+        return convertSetToCrossEntity(set, isDeep, PolicyDefParam.class);
+    }
 }

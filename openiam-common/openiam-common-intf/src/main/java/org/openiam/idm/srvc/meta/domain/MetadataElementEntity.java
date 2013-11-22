@@ -275,79 +275,29 @@ public class MetadataElementEntity implements Serializable {
 		this.isPublic = isPublic;
 	}
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result
-				+ ((attributeName == null) ? 0 : attributeName.hashCode());
-		result = prime * result + (auditable ? 1231 : 1237);
-		result = prime * result
-				+ ((dataType == null) ? 0 : dataType.hashCode());
-		result = prime * result
-				+ ((description == null) ? 0 : description.hashCode());
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
-		result = prime * result
-				+ ((metadataType == null) ? 0 : metadataType.hashCode());
-		result = prime * result + (required ? 1231 : 1237);
-		result = prime * result + (selfEditable ? 1231 : 1237);
-		result = prime
-				* result
-				+ ((staticDefaultValue == null) ? 0 : staticDefaultValue
-						.hashCode());
-		result = prime * result + (isPublic ? 1231 : 1237);
-		return result;
-	}
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		MetadataElementEntity other = (MetadataElementEntity) obj;
-		if (attributeName == null) {
-			if (other.attributeName != null)
-				return false;
-		} else if (!attributeName.equals(other.attributeName))
-			return false;
-		if (auditable != other.auditable)
-			return false;
-		if (dataType == null) {
-			if (other.dataType != null)
-				return false;
-		} else if (!dataType.equals(other.dataType))
-			return false;
-		if (description == null) {
-			if (other.description != null)
-				return false;
-		} else if (!description.equals(other.description))
-			return false;
-		if (id == null) {
-			if (other.id != null)
-				return false;
-		} else if (!id.equals(other.id))
-			return false;
-		if (isPublic != other.isPublic)
-			return false;
-		if (metadataType == null) {
-			if (other.metadataType != null)
-				return false;
-		} else if (!metadataType.equals(other.metadataType))
-			return false;
-		if (required != other.required)
-			return false;
-		if (selfEditable != other.selfEditable)
-			return false;
-		if (staticDefaultValue == null) {
-			if (other.staticDefaultValue != null)
-				return false;
-		} else if (!staticDefaultValue.equals(other.staticDefaultValue))
-			return false;
-		return true;
-	}
+        MetadataElementEntity that = (MetadataElementEntity) o;
 
-	
+        if (attributeName != null ? !attributeName.equals(that.attributeName) : that.attributeName != null)
+            return false;
+        if (dataType != null ? !dataType.equals(that.dataType) : that.dataType != null) return false;
+        if (id != null ? !id.equals(that.id) : that.id != null) return false;
+        if (staticDefaultValue != null ? !staticDefaultValue.equals(that.staticDefaultValue) : that.staticDefaultValue != null)
+            return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = id != null ? id.hashCode() : 0;
+        result = 31 * result + (attributeName != null ? attributeName.hashCode() : 0);
+        result = 31 * result + (dataType != null ? dataType.hashCode() : 0);
+        result = 31 * result + (staticDefaultValue != null ? staticDefaultValue.hashCode() : 0);
+        return result;
+    }
 }

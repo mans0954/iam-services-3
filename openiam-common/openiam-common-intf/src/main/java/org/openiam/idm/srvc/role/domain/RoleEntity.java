@@ -17,10 +17,10 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
 import javax.persistence.Table;
-import javax.validation.constraints.Max;
 import javax.validation.constraints.Size;
 
 import org.hibernate.annotations.Cache;
@@ -30,8 +30,10 @@ import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
-import org.openiam.idm.srvc.res.domain.ResourceRoleEntity;
+import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
+import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.role.dto.Role;
+import org.openiam.idm.srvc.user.domain.UserEntity;
 
 @Entity
 @Table(name="ROLE")
@@ -57,17 +59,12 @@ public class RoleEntity implements Serializable {
     @Column(name="STATUS",length=20)
     private String status;
     
-    @Column(name="TYPE_ID",length=20)
-    private String metadataTypeId;
-
-    @Column(name="OWNER_ID",length=32)
-    private String ownerId;
-    
-    @Column(name="INTERNAL_ROLE_ID")
-    private String internalRoleId;
-    
     @Column(name="SERVICE_ID",length=32)
     private String serviceId;
+    
+    @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+    @JoinColumn(name = "MANAGED_SYS_ID", referencedColumnName = "MANAGED_SYS_ID", insertable = true, updatable = true, nullable=true)
+    private ManagedSysEntity managedSystem;
 
     @ManyToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
     @JoinTable(name="GRP_ROLE",
@@ -76,9 +73,9 @@ public class RoleEntity implements Serializable {
 	@Fetch(FetchMode.SUBSELECT)
     private Set<GroupEntity> groups;
 	
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy="role", orphanRemoval=true)
     @OrderBy("name asc")
-    @JoinColumn(name = "ROLE_ID")
+    //@JoinColumn(name = "ROLE_ID")
     @Fetch(FetchMode.SUBSELECT)
 	private Set<RoleAttributeEntity> roleAttributes;
 	
@@ -100,18 +97,15 @@ public class RoleEntity implements Serializable {
         inverseJoinColumns={@JoinColumn(name="MEMBER_ROLE_ID")})
     @Fetch(FetchMode.SUBSELECT)
     private Set<RoleEntity> childRoles;
-	
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumn(name = "ROLE_ID")
-    @Fetch(FetchMode.SUBSELECT)
-    private Set<ResourceRoleEntity> resourceRoles;
-    
 
-    @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.REMOVE, CascadeType.DETACH})
-    @JoinColumn(name = "ROLE_ID")
-    @Fetch(FetchMode.SUBSELECT)
-    private Set<UserRoleEntity> userRoles;
-    
+    @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+    @JoinTable(name = "RESOURCE_ROLE", joinColumns = { @JoinColumn(name = "ROLE_ID") }, inverseJoinColumns = { @JoinColumn(name = "RESOURCE_ID") })
+    private Set<ResourceEntity> resources;
+
+    @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+    @JoinTable(name = "USER_ROLE", joinColumns = { @JoinColumn(name = "ROLE_ID") }, inverseJoinColumns = { @JoinColumn(name = "USER_ID") })
+    private Set<UserEntity> users = new HashSet<UserEntity>(0);
+
     @Column(name="CREATE_DATE",length=19)
 	private Date createDate;
     
@@ -148,30 +142,6 @@ public class RoleEntity implements Serializable {
 
 	public void setStatus(String status) {
 		this.status = status;
-	}
-
-	public String getMetadataTypeId() {
-		return metadataTypeId;
-	}
-
-	public void setMetadataTypeId(String metadataTypeId) {
-		this.metadataTypeId = metadataTypeId;
-	}
-
-	public String getOwnerId() {
-		return ownerId;
-	}
-
-	public void setOwnerId(String ownerId) {
-		this.ownerId = ownerId;
-	}
-
-	public String getInternalRoleId() {
-		return internalRoleId;
-	}
-
-	public void setInternalRoleId(String internalRoleId) {
-		this.internalRoleId = internalRoleId;
 	}
 
 	public String getServiceId() {
@@ -312,29 +282,28 @@ public class RoleEntity implements Serializable {
 		this.createdBy = createdBy;
 	}
 
-	public Set<ResourceRoleEntity> getResourceRoles() {
-		return resourceRoles;
+    public Set<ResourceEntity> getResources() {
+        return resources;
+    }
+
+    public void setResources(Set<ResourceEntity> resources) {
+        this.resources = resources;
+    }
+
+    public Set<UserEntity> getUsers() {
+        return users;
+    }
+
+    public void setUsers(Set<UserEntity> users) {
+        this.users = users;
+    }
+    
+	public ManagedSysEntity getManagedSystem() {
+		return managedSystem;
 	}
 
-	public void setResourceRoles(Set<ResourceRoleEntity> resourceRoles) {
-		this.resourceRoles = resourceRoles;
-	}
-	
-	public void addResourceRole(final ResourceRoleEntity entity) {
-		if(entity != null) {
-			if(resourceRoles == null) {
-				resourceRoles = new LinkedHashSet<ResourceRoleEntity>();
-			}
-			resourceRoles.add(entity);
-		}
-	}
-
-	public Set<UserRoleEntity> getUserRoles() {
-		return userRoles;
-	}
-
-	public void setUserRoles(Set<UserRoleEntity> userRoles) {
-		this.userRoles = userRoles;
+	public void setManagedSystem(ManagedSysEntity managedSystem) {
+		this.managedSystem = managedSystem;
 	}
 
 	@Override
@@ -348,10 +317,7 @@ public class RoleEntity implements Serializable {
 		result = prime * result
 				+ ((description == null) ? 0 : description.hashCode());
 		result = prime * result
-				+ ((internalRoleId == null) ? 0 : internalRoleId.hashCode());
-		result = prime * result
-				+ ((metadataTypeId == null) ? 0 : metadataTypeId.hashCode());
-		result = prime * result + ((ownerId == null) ? 0 : ownerId.hashCode());
+				+ ((managedSystem == null) ? 0 : managedSystem.hashCode());
 		result = prime * result + ((roleId == null) ? 0 : roleId.hashCode());
 		result = prime * result
 				+ ((roleName == null) ? 0 : roleName.hashCode());
@@ -385,20 +351,10 @@ public class RoleEntity implements Serializable {
 				return false;
 		} else if (!description.equals(other.description))
 			return false;
-		if (internalRoleId == null) {
-			if (other.internalRoleId != null)
+		if (managedSystem == null) {
+			if (other.managedSystem != null)
 				return false;
-		} else if (!internalRoleId.equals(other.internalRoleId))
-			return false;
-		if (metadataTypeId == null) {
-			if (other.metadataTypeId != null)
-				return false;
-		} else if (!metadataTypeId.equals(other.metadataTypeId))
-			return false;
-		if (ownerId == null) {
-			if (other.ownerId != null)
-				return false;
-		} else if (!ownerId.equals(other.ownerId))
+		} else if (!managedSystem.equals(other.managedSystem))
 			return false;
 		if (roleId == null) {
 			if (other.roleId != null)
@@ -426,11 +382,10 @@ public class RoleEntity implements Serializable {
 	@Override
 	public String toString() {
 		return String
-				.format("RoleEntity [roleId=%s, roleName=%s, description=%s, status=%s, metadataTypeId=%s, ownerId=%s, internalRoleId=%s, serviceId=%s, createDate=%s, createdBy=%s]",
-						roleId, roleName, description,
-						status, metadataTypeId, ownerId, internalRoleId,
-						serviceId, createDate, createdBy);
+				.format("RoleEntity [roleId=%s, roleName=%s, description=%s, status=%s, serviceId=%s, managedSystem=%s, createDate=%s, createdBy=%s]",
+						roleId, roleName, description, status, serviceId,
+						managedSystem, createDate, createdBy);
 	}
-    
-    
+
+
 }

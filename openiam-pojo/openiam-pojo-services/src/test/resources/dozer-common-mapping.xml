@@ -59,25 +59,13 @@
 		<class-b>org.openiam.idm.srvc.policy.dto.PolicyMembership</class-b>
 	</mapping>
 	
-	<mapping>
-		<class-a>org.openiam.idm.srvc.res.dto.ResourceGroup</class-a>
-		<class-b>org.openiam.idm.srvc.res.dto.ResourceGroup</class-b>
-	</mapping>
-	
+
 	<mapping>
 		<class-a>org.openiam.idm.srvc.res.dto.ResourceProp</class-a>
 		<class-b>org.openiam.idm.srvc.res.dto.ResourceProp</class-b>
 	</mapping>
 	
-	<mapping>
-		<class-a>org.openiam.idm.srvc.res.dto.ResourceRoleId</class-a>
-		<class-b>org.openiam.idm.srvc.res.dto.ResourceRoleId</class-b>
-	</mapping>
-	
-	<mapping>
-		<class-a>org.openiam.idm.srvc.res.dto.ResourceRole</class-a>
-		<class-b>org.openiam.idm.srvc.res.dto.ResourceRole</class-b>
-	</mapping>
+
 	
 	<mapping>
 		<class-a>org.openiam.idm.srvc.res.dto.ResourceType</class-a>

@@ -1,6 +1,7 @@
 package org.openiam.dozer.converter;
 
 import java.util.List;
+import java.util.Set;
 
 import org.openiam.idm.srvc.recon.domain.ReconciliationConfigEntity;
 import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
@@ -50,4 +51,13 @@ public class ReconciliationConfigDozerConverter
                 ReconciliationConfig.class);
     }
 
+    @Override
+    public Set<ReconciliationConfigEntity> convertToEntitySet(Set<ReconciliationConfig> set, boolean isDeep) {
+        return convertSetToCrossEntity(set, isDeep, ReconciliationConfigEntity.class);
+    }
+
+    @Override
+    public Set<ReconciliationConfig> convertToDTOSet(Set<ReconciliationConfigEntity> set, boolean isDeep) {
+        return convertSetToCrossEntity(set, isDeep, ReconciliationConfig.class);
+    }
 }

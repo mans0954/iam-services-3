@@ -19,7 +19,7 @@ public interface ResourceDAO extends BaseDao<ResourceEntity, String> {
 
     List<ResourceEntity> getResourcesForRole(final String roleId, final int from, final int size);
 
-    List<ResourceEntity> getRootResources(ResourceEntity resource, int startAt, int size);
+    //List<ResourceEntity> getRootResources(ResourceEntity resource, int startAt, int size);
     
     int getNumOfResourcesForRole(String roleId);
     
@@ -30,6 +30,4 @@ public interface ResourceDAO extends BaseDao<ResourceEntity, String> {
     public List<ResourceEntity> getResourcesForUser(final String userId, final int from, final int size);
     public int getNumOfResourcesForUser(final String userId);
 
-	List<ResourceEntity> getResourcesForManagedSys(String mngSysId, int from,
-			int size);
 }

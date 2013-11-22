@@ -29,7 +29,7 @@ import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.pswd.dto.Password;
 import org.openiam.idm.srvc.pswd.dto.PasswordResetTokenRequest;
 import org.openiam.idm.srvc.pswd.dto.PasswordResetTokenResponse;
-import org.openiam.idm.srvc.pswd.dto.PasswordValidationCode;
+import org.openiam.idm.srvc.pswd.dto.PasswordValidationResponse;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.pswd.dto.ValidatePasswordResetTokenResponse;
@@ -53,7 +53,7 @@ public interface PasswordService {
      * @param pswd
      * @return
      */
-    PasswordValidationCode isPasswordValid(Password pswd) throws ObjectNotFoundException;
+	PasswordValidationResponse isPasswordValid(Password pswd) throws ObjectNotFoundException;
 
 
     /**
@@ -64,7 +64,7 @@ public interface PasswordService {
      * @return
      * @throws ObjectNotFoundException
      */
-    PasswordValidationCode isPasswordValidForUser(Password pswd, UserEntity user, LoginEntity lg) throws ObjectNotFoundException;
+	PasswordValidationResponse isPasswordValidForUser(Password pswd, UserEntity user, LoginEntity lg) throws ObjectNotFoundException;
 
     /**
      * Returns if the password conforms to selected password policy
@@ -75,7 +75,7 @@ public interface PasswordService {
      * @return
      * @throws ObjectNotFoundException
      */
-    PasswordValidationCode isPasswordValidForUserAndPolicy(Password pswd, UserEntity user, LoginEntity lg, Policy policy) throws ObjectNotFoundException;
+	PasswordValidationResponse isPasswordValidForUserAndPolicy(Password pswd, UserEntity user, LoginEntity lg, Policy policy) throws ObjectNotFoundException;
 
     /**
      * Determines if the user is allowed to change their password based on the policy and the number of times that password
@@ -115,20 +115,20 @@ public interface PasswordService {
      */
     Policy getPasswordPolicy(String domainId, String principal, String managedSysId);
 
-    /**
-     * Returns the global password policy
-     *
-     * @return
-     */
-    Policy getGlobalPasswordPolicy();
+//    /**
+//     * Returns the global password policy
+//     *
+//     * @return
+//     */
+//    Policy getGlobalPasswordPolicy();
 
-    /**
-     * Gets the password policy based on the User object
-     * @param domainId
-     * @param user
-     * @return
-     */
-    Policy getPasswordPolicyByUser(String domainId, UserEntity user);
+//    /**
+//     * Gets the password policy based on the User object
+//     * @param domainId
+//     * @param user
+//     * @return
+//     */
+//    Policy getPasswordPolicyByUser(String domainId, UserEntity user);
     
     /**
      * This method exists to REPLACE <b>getPasswordPolicyByUser</b>.  The functionality is the same.

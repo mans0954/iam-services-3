@@ -5,14 +5,9 @@ import org.openiam.base.AttributeOperationEnum;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.dozer.converter.GroupDozerConverter;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
-import org.openiam.idm.srvc.grp.domain.UserGroupEntity;
 import org.openiam.idm.srvc.grp.dto.Group;
-import org.openiam.idm.srvc.grp.service.GroupDAO;
 import org.openiam.idm.srvc.grp.service.GroupDataService;
-import org.openiam.idm.srvc.grp.service.UserGroupDAO;
-import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
-import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.service.ProvisionService;
@@ -23,16 +18,6 @@ public class AddUserToGroup extends AbstractEntitlementsDelegate {
 
 	@Autowired
 	private GroupDataService groupDataService;
-	
-	@Autowired
-	@Qualifier("defaultProvision")
-	private ProvisionService provisionService;
-	
-	@Autowired
-	private UserDataService userDataService;
-	
-	@Autowired
-	private GroupDozerConverter groupDozerConverter;
 	
 	public AddUserToGroup() {
 		super();
@@ -46,11 +31,11 @@ public class AddUserToGroup extends AbstractEntitlementsDelegate {
 		
 		final GroupEntity entity = groupDataService.getGroup(groupId);
 		if(entity != null) {
-			final Group group = groupDozerConverter.convertToDTO(entity, false);
-			group.setOperation(AttributeOperationEnum.ADD);
-			final User user = userDataService.getUserDto(userId);
+			final Group group = groupDataService.getGroupDTO(groupId);
+			//group.setOperation(AttributeOperationEnum.ADD);
+			final User user = getUser(userId);
 			final ProvisionUser pUser = new ProvisionUser(user);
-			pUser.addMemberGroup(group);
+			pUser.addGroup(group);
 			provisionService.modifyUser(pUser);
 		}
 	}

@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 import org.openiam.authmanager.dao.ResourcePropDAO;
+import org.openiam.core.dao.AbstractJDBCDao;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;

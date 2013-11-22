@@ -39,7 +39,6 @@ import org.openiam.idm.srvc.policy.dto.PolicyDefParam;
 import org.openiam.idm.srvc.policy.service.PolicyDAO;
 import org.openiam.idm.srvc.policy.service.PolicyDefParamDAO;
 import org.openiam.idm.srvc.pswd.dto.Password;
-import org.openiam.idm.srvc.pswd.dto.PasswordValidationCode;
 import org.openiam.idm.srvc.pswd.service.PasswordHistoryDAO;
 import org.openiam.idm.srvc.secdomain.service.SecurityDomainDataService;
 import org.openiam.idm.srvc.user.domain.UserEntity;
@@ -91,19 +90,19 @@ public class PasswordValidatorImpl implements PasswordValidator {
      * org.openiam.idm.srvc.pswd.rule.PasswordValidator#validate(org.openiam
      * .idm.srvc.pswd.dto.Password)
      */
-    public PasswordValidationCode validate(Policy pswdPolicy, Password password)
-            throws ObjectNotFoundException, IOException {
+    public void validate(Policy pswdPolicy, Password password)
+            throws ObjectNotFoundException, IOException, PasswordRuleException {
         // get the user object for the principal
         LoginEntity lg = loginDao.getRecord(password.getPrincipal(), password.getManagedSysId(), password.getDomainId());
         UserEntity usr = userDao.findById(lg.getUserId());
 
-        return validateForUser(pswdPolicy, password, usr, lg);
+        validateForUser(pswdPolicy, password, usr, lg);
     }
 
     @Override
-    public PasswordValidationCode validateForUser(Policy pswdPolicy,
+    public void validateForUser(Policy pswdPolicy,
             Password password, UserEntity user, LoginEntity login)
-            throws ObjectNotFoundException, IOException {
+            throws ObjectNotFoundException, IOException, PasswordRuleException {
         Class cls = null;
         AbstractPasswordRule rule = null;
 
@@ -168,21 +167,13 @@ public class PasswordValidatorImpl implements PasswordValidator {
                     rule.setCryptor(cryptor);
                     rule.setKeyManagementService(keyManagementService);
                     // -- check if valid
-                    PasswordValidationCode retval = rule.isValid();
+                    rule.validate();
 
-                    if (retval != PasswordValidationCode.SUCCESS) {
-                        log.info("Password failed validation check for rule:"
-                                + strRule);
-                        return retval;
-                    } else {
-                        log.info("Passed validation for:" + strRule);
-                    }
+                    log.info(String.format("Passed validation for: %s", strRule));
                 }
 
             }
         }
-
-        return PasswordValidationCode.SUCCESS;
     }
 
     private boolean policyToCheck(String defParamId, Policy pswdPolicy) {

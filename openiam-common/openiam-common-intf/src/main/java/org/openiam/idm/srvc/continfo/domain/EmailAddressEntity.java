@@ -175,7 +175,6 @@ public class EmailAddressEntity {
 		result = prime * result
 				+ ((lastUpdate == null) ? 0 : lastUpdate.hashCode());
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
-		result = prime * result + ((parent == null) ? 0 : parent.hashCode());
         result = prime * result + ((metadataType == null) ? 0 : metadataType.hashCode());
 		return result;
 	}
@@ -222,11 +221,6 @@ public class EmailAddressEntity {
 			if (other.name != null)
 				return false;
 		} else if (!name.equals(other.name))
-			return false;
-		if (parent == null) {
-			if (other.parent != null)
-				return false;
-		} else if (!parent.equals(other.parent))
 			return false;
         if (metadataType == null) {
             if (other.metadataType != null)

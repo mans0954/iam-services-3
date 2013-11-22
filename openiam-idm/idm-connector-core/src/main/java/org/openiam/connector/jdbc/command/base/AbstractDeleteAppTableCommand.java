@@ -54,7 +54,7 @@ public abstract class AbstractDeleteAppTableCommand<ExtObject extends Extensible
 
             AttributeMapEntity atr = getAttribute(attrMap);
             String principalFieldName = atr.getAttributeName();
-            String principalFieldDataType = atr.getDataType();
+            String principalFieldDataType = atr.getDataType().getValue();
 
             final String sql = String.format(DELETE_SQL, tableName, principalFieldName);
 

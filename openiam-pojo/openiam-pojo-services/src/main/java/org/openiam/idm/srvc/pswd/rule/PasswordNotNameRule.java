@@ -22,8 +22,9 @@
 package org.openiam.idm.srvc.pswd.rule;
 
 
+import org.apache.commons.lang.StringUtils;
+import org.openiam.base.ws.ResponseCode;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
-import org.openiam.idm.srvc.pswd.dto.PasswordValidationCode;
 
 /**
  * Validates a password to ensure the password is not equal to the principal
@@ -33,13 +34,12 @@ import org.openiam.idm.srvc.pswd.dto.PasswordValidationCode;
 public class PasswordNotNameRule extends AbstractPasswordRule {
 
 
-	public PasswordValidationCode isValid() {
-			
-		PasswordValidationCode retval = PasswordValidationCode.SUCCESS;
+	@Override
+	public void validate() throws PasswordRuleException {
 		boolean enabled = false;
 				
 		PolicyAttribute attribute = policy.getAttribute("PWD_NAME");
-		if (attribute.getValue1() != null && attribute.getValue1().length() > 0) {
+		if (attribute != null && StringUtils.isNotBlank(attribute.getValue1())) {
 			enabled = Boolean.parseBoolean(attribute.getValue1());
 
 		}
@@ -49,13 +49,11 @@ public class PasswordNotNameRule extends AbstractPasswordRule {
 				String upperPassword = password.toUpperCase();
 				if (upperPassword.contains(user.getFirstName().toUpperCase()) ||
 						upperPassword.contains(user.getLastName().toUpperCase())) {
-					return PasswordValidationCode.FAIL_NEQ_NAME;
+					throw new PasswordRuleException(ResponseCode.FAIL_NEQ_NAME);
 				}
 				
 			}			
 		}
-			
-		return retval;
 	}
 	
 

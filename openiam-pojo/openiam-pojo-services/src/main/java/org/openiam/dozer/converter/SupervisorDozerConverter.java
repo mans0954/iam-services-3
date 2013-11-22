@@ -5,6 +5,7 @@ import org.openiam.idm.srvc.user.dto.Supervisor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by: Alexander Duckardt
@@ -40,5 +41,15 @@ public class SupervisorDozerConverter extends AbstractDozerEntityConverter<Super
     @Override
     public List<Supervisor> convertToDTOList(List<SupervisorEntity> list, boolean isDeep) {
         return convertListToCrossEntity(list, isDeep, Supervisor.class);
+    }
+
+    @Override
+    public Set<SupervisorEntity> convertToEntitySet(Set<Supervisor> set, boolean isDeep) {
+        return convertSetToCrossEntity(set, isDeep, SupervisorEntity.class);
+    }
+
+    @Override
+    public Set<Supervisor> convertToDTOSet(Set<SupervisorEntity> set, boolean isDeep) {
+        return convertSetToCrossEntity(set, isDeep, Supervisor.class);
     }
 }

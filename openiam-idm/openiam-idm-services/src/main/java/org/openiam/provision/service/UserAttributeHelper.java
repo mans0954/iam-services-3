@@ -120,11 +120,11 @@ public class UserAttributeHelper {
 					if (lg.getManagedSysId().equalsIgnoreCase("0")) {
 						extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY.PRINCIPAL.", lg.getLogin()));
 						extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY_PSWD.PRINCIPAL", lg.getPassword()));
-						extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY_STATUS.PRINCIPAL", lg.getStatus()));
+						extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY_STATUS.PRINCIPAL", lg.getStatus().name()));
 					}else {
 						extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY." + lg.getManagedSysId(), lg.getLogin()));
 						extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY_PSWD."+lg.getManagedSysId(), lg.getPassword()));
-						extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY_STATUS."+lg.getManagedSysId(), lg.getStatus()));
+						extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY_STATUS."+lg.getManagedSysId(), lg.getStatus().name()));
 
 					}
 				}catch(Exception e) {
@@ -142,18 +142,18 @@ public class UserAttributeHelper {
 	*/
 		
 		// groups
-		List<Group> groupList = pUser.getMemberOfGroups();
-		if (groupList != null) {
-			for (Group grp : groupList) {
+		Set<Group> groupSet = pUser.getGroups();
+		if (groupSet != null) {
+			for (Group grp : groupSet) {
 				ExtensibleGroup extGroup = new ExtensibleGroup(grp);
 				log.info("Group being added to extGroup=" + grp);
 				extUser.getGroup().add(extGroup);			
 			}
 		}
 		// roles
-		List<Role> roleList = pUser.getMemberOfRoles();
-		if (roleList != null) {
-			for (Role rl : roleList) {
+		Set<Role> roleSet = pUser.getRoles();
+		if (roleSet != null) {
+			for (Role rl : roleSet) {
 				ExtensibleRole extRole = new ExtensibleRole(rl);
 				log.info("Role being added to extRole=" + rl);
 				extUser.getRole().add(extRole);			
@@ -298,7 +298,7 @@ public class UserAttributeHelper {
 					}else {
 						extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY_PSWD.PRINCIPAL", p ,0, "String"));
 					}
-					extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY_STATUS.PRINCIPAL", lg.getStatus()));
+					extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY_STATUS.PRINCIPAL", lg.getStatus().name()));
 				}else {
 					extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY." + lg.getManagedSysId(), lg.getLogin(),0, "String"));
 					String p = lg.getPassword();
@@ -309,7 +309,7 @@ public class UserAttributeHelper {
 						extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY_PSWD."+lg.getManagedSysId(), p,0, "String"));
 					}
 					//extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY_PSWD."+lg.getManagedSysId(), lg.getPassword(),0));
-					extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY_STATUS."+lg.getManagedSysId(), lg.getStatus()));
+					extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY_STATUS."+lg.getManagedSysId(), lg.getStatus().name()));
 				}
 			}catch(Exception e) {
 				log.error(e);
@@ -326,9 +326,9 @@ public class UserAttributeHelper {
 */
 	
 	// groups
-	List<Group> groupList = pUser.getMemberOfGroups();
-	if (groupList != null) {
-		for (Group grp : groupList) {
+	Set<Group> groupSet = pUser.getGroups();
+	if (groupSet != null) {
+		for (Group grp : groupSet) {
 			ExtensibleGroup extGroup = new ExtensibleGroup(grp);
 			log.info("Group being added to extGroup=" + grp);
 			// Check the current list. if not found, then the operation is an add
@@ -354,9 +354,9 @@ public class UserAttributeHelper {
 	if (curGroupList != null) {
 		for (Group g: curGroupList) {
 			// check if its in the new list. If not, add it on
-			if (groupList != null) {
+			if (groupSet != null) {
 				boolean found = false;
-				for (Group newGroup :groupList) {
+				for (Group newGroup :groupSet) {
 					if (g.getGrpId().equalsIgnoreCase(newGroup.getGrpId())) {
 						found = true;
 					}
@@ -377,9 +377,9 @@ public class UserAttributeHelper {
 	
 	
 	// roles
-	List<Role> roleList = pUser.getMemberOfRoles();
-	if (roleList != null) {
-		for (Role rl : roleList) {
+	Set<Role> roleSet = pUser.getRoles();
+	if (roleSet != null) {
+		for (Role rl : roleSet) {
 			ExtensibleRole extRole = new ExtensibleRole(rl);
 			log.info("Role being added to extRole=" + rl);
 			if (rl.getOperation() != AttributeOperationEnum.DELETE) {
@@ -405,9 +405,9 @@ public class UserAttributeHelper {
 	if (curRoleList != null) {
 		for (Role rl: curRoleList) {
 			// check if its in the new list. If not, add it on
-			if (roleList != null) {
+			if (roleSet != null) {
 				boolean found = false;
-				for (Role newRole : roleList) {
+				for (Role newRole : roleSet) {
 					if (rl.getRoleId().equalsIgnoreCase(newRole.getRoleId())) {
 						found = true;
 					}

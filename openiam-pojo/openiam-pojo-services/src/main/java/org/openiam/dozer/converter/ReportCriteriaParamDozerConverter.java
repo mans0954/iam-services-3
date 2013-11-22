@@ -5,6 +5,7 @@ import org.openiam.idm.srvc.report.dto.ReportCriteriaParamDto;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Set;
 
 @Component("reportCriteriaParamDozerMapper")
 public class ReportCriteriaParamDozerConverter extends AbstractDozerEntityConverter<ReportCriteriaParamDto, ReportCriteriaParamEntity>{
@@ -37,5 +38,15 @@ public class ReportCriteriaParamDozerConverter extends AbstractDozerEntityConver
     @Override
     public List<ReportCriteriaParamDto> convertToDTOList(List<ReportCriteriaParamEntity> list, boolean isDeep) {
         return convertListToCrossEntity(list, isDeep, ReportCriteriaParamDto.class);
+    }
+
+    @Override
+    public Set<ReportCriteriaParamEntity> convertToEntitySet(Set<ReportCriteriaParamDto> set, boolean isDeep) {
+        return convertSetToCrossEntity(set, isDeep, ReportCriteriaParamEntity.class);
+    }
+
+    @Override
+    public Set<ReportCriteriaParamDto> convertToDTOSet(Set<ReportCriteriaParamEntity> set, boolean isDeep) {
+        return convertSetToCrossEntity(set, isDeep, ReportCriteriaParamDto.class);
     }
 }

@@ -4,9 +4,9 @@ import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.BaseObject;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.grp.dto.Group;
-import org.openiam.idm.srvc.grp.dto.GroupSetAdapter;
-import org.openiam.idm.srvc.res.dto.ResourceRole;
+import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
+import org.openiam.idm.srvc.user.dto.User;
 
 import javax.xml.bind.annotation.*;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
@@ -31,7 +31,6 @@ import java.util.*;
  *         &lt;element name="roleAttributes" type="{urn:idm.openiam.org/srvc/role/dto}roleAttributeSet" minOccurs="0"/>
  *         &lt;element name="roleName" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
  *         &lt;element name="userAssociationMethod" type="{http://www.w3.org/2001/XMLSchema}int" minOccurs="0"/>
- *         &lt;element name="users" type="{urn:idm.openiam.org/srvc/user/dto}userSet" minOccurs="0"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -51,25 +50,24 @@ import java.util.*;
         "roleAttributes",
         "roleName",
         "userAssociationMethod",
-        "metadataTypeId",
-        "ownerId",
         "status",
         "childRoles",
         "selected",
-        "internalRoleId",
         "operation",
         "startDate",
         "endDate",
         "rolePolicy",
         "parentRoles",
-        "resourceRoles",
-        "userRoles"
+        "resources",
+        "managedSysId",
+        "managedSysName"
 })
 @XmlRootElement(name = "Role")
 @XmlSeeAlso({
         Group.class,
         RoleAttribute.class,
-        RolePolicy.class
+        RolePolicy.class,
+        Resource.class
 })
 @DozerDTOCorrespondence(RoleEntity.class)
 public class Role extends BaseObject implements Comparable<Role> {
@@ -79,13 +77,13 @@ public class Role extends BaseObject implements Comparable<Role> {
      */
     private static final long serialVersionUID = -3903402630611423082L;
 
-    protected AttributeOperationEnum operation;
+    protected AttributeOperationEnum operation = AttributeOperationEnum.NO_CHANGE;
 
     @XmlSchemaType(name = "dateTime")
     protected Date createDate;
     protected String createdBy;
     protected String description;
-    @XmlJavaTypeAdapter(GroupSetAdapter.class)
+    //@XmlJavaTypeAdapter(GroupSetAdapter.class)
     protected Set<Group> groups = new HashSet<Group>(0);
     protected String roleId;
     @XmlJavaTypeAdapter(RoleAttributeSetAdapter.class)
@@ -99,18 +97,15 @@ public class Role extends BaseObject implements Comparable<Role> {
     protected String status;
     protected Boolean selected = new Boolean(false);
 
-    protected String metadataTypeId;
-
-    protected String ownerId;
-    protected String internalRoleId;
     private String serviceId;
 
     private Set<Role> parentRoles;
     private Set<Role> childRoles;
     
-    private Set<ResourceRole> resourceRoles;
+    private String managedSysId;
+    private String managedSysName;
     
-    private Set<UserRole> userRoles;
+    private Set<Resource> resources;
 
 
     @XmlSchemaType(name = "dateTime")
@@ -197,24 +192,6 @@ public class Role extends BaseObject implements Comparable<Role> {
         this.userAssociationMethod = value;
     }
 
-    public String getMetadataTypeId() {
-        return metadataTypeId;
-    }
-
-
-    public void setMetadataTypeId(String metadataTypeId) {
-        this.metadataTypeId = metadataTypeId;
-    }
-
-    public String getOwnerId() {
-        return ownerId;
-    }
-
-
-    public void setOwnerId(String ownerId) {
-        this.ownerId = ownerId;
-    }
-    
     public void addParentRole(final Role role) {
     	if(role != null) {
     		if(parentRoles == null) {
@@ -250,18 +227,6 @@ public class Role extends BaseObject implements Comparable<Role> {
 		this.childRoles = childRoles;
 	}
 
-
-	public String toString() {
-        String str = "id=" + roleId +
-                " name=" + roleName +
-                " metadataTypeId=" + metadataTypeId +
-                " ownerId=" + ownerId +
-                " startDate=" + startDate +
-                " endDate=" + endDate;
-        return str;
-
-    }
-
     public String getStatus() {
         return status;
     }
@@ -273,15 +238,6 @@ public class Role extends BaseObject implements Comparable<Role> {
 
     public void setRoleStatus(RoleStatus status) {
         this.status = status.toString();
-    }
-
-    public String getInternalRoleId() {
-        return internalRoleId;
-    }
-
-
-    public void setInternalRoleId(String internalRoleId) {
-        this.internalRoleId = internalRoleId;
     }
 
     public Boolean getSelected() {
@@ -334,90 +290,62 @@ public class Role extends BaseObject implements Comparable<Role> {
         return getRoleName().compareTo(o.getRoleName());
     }
 
-	public Set<ResourceRole> getResourceRoles() {
-		return resourceRoles;
-	}
-
-	public void setResourceRoles(Set<ResourceRole> resourceRoles) {
-		this.resourceRoles = resourceRoles;
-	}
-
-	public Set<UserRole> getUserRoles() {
-		return userRoles;
-	}
-
-	public void setUserRoles(Set<UserRole> userRoles) {
-		this.userRoles = userRoles;
-	}
-
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((roleId == null) ? 0 : roleId.hashCode());
-		return result;
-	}
-
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (!(obj instanceof Role)) {
-            return false;
-        }
-
-        Role compareRole = (Role) obj;
-        // check for nulls
-
-        if ((this.createDate == null && compareRole.createDate != null) ||
-                this.createDate != null && compareRole.createDate == null) {
-            return false;
-        }
-
-        if ((this.endDate == null && compareRole.endDate != null) ||
-                this.endDate != null && compareRole.endDate == null) {
-            return false;
-        }
-
-        if ((this.description == null && compareRole.description != null) ||
-                this.description != null && compareRole.description == null) {
-            return false;
-        }
-
-        if ((this.internalRoleId == null && compareRole.internalRoleId != null) ||
-                this.internalRoleId != null && compareRole.internalRoleId == null) {
-            return false;
-        }
-
-        if ((this.metadataTypeId == null && compareRole.metadataTypeId != null) ||
-                this.metadataTypeId != null && compareRole.metadataTypeId == null) {
-            return false;
-        }
-
-        if ((this.ownerId == null && compareRole.ownerId != null) ||
-                this.ownerId != null && compareRole.ownerId == null) {
-            return false;
-        }
-        if ((this.status == null && compareRole.status != null) ||
-                this.status != null && compareRole.status == null) {
-            return false;
-        }
-
-        return (this.description == compareRole.description || this.description.equals(compareRole.description)) &&
-                (this.roleId.equals(compareRole.roleId)) &&
-                (this.internalRoleId == compareRole.internalRoleId || this.internalRoleId.equals(compareRole.internalRoleId)) &&
-                (this.metadataTypeId == compareRole.metadataTypeId || this.metadataTypeId.equals(compareRole.metadataTypeId)) &&
-                (this.ownerId == compareRole.ownerId || this.ownerId.equals(compareRole.ownerId)) &&
-                (this.status == compareRole.status || this.status.equals(compareRole.status)) &&
-                (this.startDate == compareRole.startDate || this.startDate.equals(compareRole.startDate)) &&
-                (this.endDate == compareRole.endDate || this.endDate.equals(compareRole.endDate));
+    public Set<Resource> getResources() {
+        return resources;
     }
 
+    public void setResources(Set<Resource> resources) {
+        this.resources = resources;
+    }
+    
+    public String getManagedSysId() {
+		return managedSysId;
+	}
+
+	public void setManagedSysId(String managedSysId) {
+		this.managedSysId = managedSysId;
+	}
+
+	public String getManagedSysName() {
+		return managedSysName;
+	}
+
+	public void setManagedSysName(String managedSysName) {
+		this.managedSysName = managedSysName;
+	}
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Role role = (Role) o;
+
+        if (createDate != null ? !createDate.equals(role.createDate) : role.createDate != null) return false;
+        if (description != null ? !description.equals(role.description) : role.description != null) return false;
+        if (roleId != null ? !roleId.equals(role.roleId) : role.roleId != null) return false;
+        if (roleName != null ? !roleName.equals(role.roleName) : role.roleName != null) return false;
+        if (selected != null ? !selected.equals(role.selected) : role.selected != null) return false;
+        if (serviceId != null ? !serviceId.equals(role.serviceId) : role.serviceId != null) return false;
+        if (status != null ? !status.equals(role.status) : role.status != null) return false;
+        if (managedSysId != null ? !managedSysId.equals(role.managedSysId) : role.managedSysId != null) return false;
+        if (managedSysName != null ? !managedSysName.equals(role.managedSysName) : role.managedSysName != null) return false;
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = createDate != null ? createDate.hashCode() : 0;
+        result = 31 * result + (description != null ? description.hashCode() : 0);
+        result = 31 * result + (roleId != null ? roleId.hashCode() : 0);
+        result = 31 * result + (roleName != null ? roleName.hashCode() : 0);
+        result = 31 * result + (status != null ? status.hashCode() : 0);
+        result = 31 * result + (selected != null ? selected.hashCode() : 0);
+        result = 31 * result + (serviceId != null ? serviceId.hashCode() : 0);
+        result = 31 * result + (managedSysId != null ? managedSysId.hashCode() : 0);
+        result = 31 * result + (managedSysName != null ? managedSysName.hashCode() : 0);
+        return result;
+    }
 }
 
 

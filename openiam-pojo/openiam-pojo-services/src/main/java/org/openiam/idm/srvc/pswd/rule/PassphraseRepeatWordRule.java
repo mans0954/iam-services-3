@@ -26,8 +26,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import org.apache.commons.lang.StringUtils;
+import org.openiam.base.ws.ResponseCode;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
-import org.openiam.idm.srvc.pswd.dto.PasswordValidationCode;
 
 /**
  * Validates a password to ensure that the repetition of words in passphrase is
@@ -38,13 +39,13 @@ import org.openiam.idm.srvc.pswd.dto.PasswordValidationCode;
  */
 public class PassphraseRepeatWordRule extends AbstractPasswordRule {
 
-	public PasswordValidationCode isValid() {
-		PasswordValidationCode retval = PasswordValidationCode.SUCCESS;
+	@Override
+	public void validate() throws PasswordRuleException {
 		boolean enabled = false;
 
 		PolicyAttribute attribute = policy
 				.getAttribute("REPEAT_SAME_WORD_PASSPHRASE");
-		if (attribute.getValue1() != null && attribute.getValue1().length() > 0) {
+		if (attribute != null && StringUtils.isNotBlank(attribute.getValue1())) {
 			enabled = Boolean.parseBoolean(attribute.getValue1());
 
 		}
@@ -60,14 +61,10 @@ public class PassphraseRepeatWordRule extends AbstractPasswordRule {
 			for (int i=0; i< words.size() -1; i++){
 				//only one comparison needed, as list is sorted
 				if (words.get(i).equalsIgnoreCase(words.get(i+1))){
-					retval = PasswordValidationCode.FAIL_MIN_WORDS_PASSPHRASE_RULE;
-					break;
+					throw new PasswordRuleException(ResponseCode.FAIL_MIN_WORDS_PASSPHRASE_RULE);
 				}
 			}
-			
-			
 		}
-		return retval;
 	}
 
 }

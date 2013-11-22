@@ -11,9 +11,6 @@ import org.openiam.connector.type.request.CrudRequest;
 import org.openiam.connector.type.response.ObjectResponse;
 import org.openiam.connector.type.response.ResponseType;
 import org.openiam.dozer.converter.LoginDozerConverter;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
-import org.openiam.idm.srvc.audit.service.AuditHelper;
-import org.openiam.idm.srvc.audit.service.IdmAuditLogDataService;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.login.LoginDAO;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
@@ -49,8 +46,6 @@ public class BaseProvisioningHelper {
     @Autowired
     protected LoginDAO loginDao;
     @Autowired
-    protected IdmAuditLogDataService auditDataService;
-    @Autowired
     protected ManagedSystemWebService managedSysService;
     @Autowired
     protected RoleDataService roleDataService;
@@ -71,11 +66,7 @@ public class BaseProvisioningHelper {
     @Autowired
     protected PasswordService passwordDS;
     @Autowired
-    protected AuditHelper auditHelper;
-    @Autowired
     protected ConnectorAdapter connectorAdapter;
-    @Autowired
-    protected RemoteConnectorAdapter remoteConnectorAdapter;
 
     @Autowired
     @Qualifier("configurableGroovyScriptEngine")
@@ -178,45 +169,8 @@ public class BaseProvisioningHelper {
 
     }
 
-    protected ResponseType localDelete(Login l, String requestId, ManagedSysDto mSys, ProvisionUser user,
-            IdmAuditLog auditLog) {
-
-        log.debug("Local delete for=" + l);
-
-        CrudRequest reqType = new CrudRequest();
-        reqType.setRequestID(requestId);
-
-        ResponseType resp = connectorAdapter.deleteRequest(mSys, reqType,
-                MuleContextProvider.getCtx());
-
-        String logid = null;
-        String status = null;
-
-        if (resp.getStatus() != null) {
-            status = resp.getStatus().toString();
-        }
-
-        if (auditLog != null) {
-            logid = auditLog.getLogId();
-        }
-
-        auditHelper.addLog("DELETE IDENTITY", user.getRequestorDomain(), user.getRequestorLogin(),
-                "IDM SERVICE", user.getCreatedBy(), l.getManagedSysId(),
-                "IDENTITY", user.getUserId(),
-                logid, status, logid,
-                "IDENTITY_STATUS", "DELETED",
-                requestId, resp.getErrorCodeAsStr(), user.getSessionId(), resp.getErrorMsgAsStr(),
-                user.getRequestClientIP(), l.getLogin(), l.getDomainId());
-
-        return resp;
-
-
-    }
-
-    protected ObjectResponse remoteDelete(Login mLg, String requestId,
-            ManagedSysDto mSys, ProvisionConnectorDto connector,
-            ManagedSystemObjectMatch matchObj, ProvisionUser user,
-            IdmAuditLog auditLog) {
+    protected ObjectResponse delete(Login mLg, String requestId,
+            ManagedSysDto mSys, ManagedSystemObjectMatch matchObj) {
 
         CrudRequest<ExtensibleUser> request = new CrudRequest<ExtensibleUser>();
 
@@ -233,8 +187,8 @@ public class BaseProvisioningHelper {
 
         request.setScriptHandler(mSys.getDeleteHandler());
 
-        ObjectResponse resp = remoteConnectorAdapter.deleteRequest(mSys, request, connector, MuleContextProvider.getCtx());
-
+        ObjectResponse resp = connectorAdapter.deleteRequest(mSys, request, MuleContextProvider.getCtx());
+        /*
         auditHelper.addLog("DELETE IDENTITY", auditLog.getDomainId(), auditLog.getPrincipal(),
                 "IDM SERVICE", user.getCreatedBy(), mLg.getManagedSysId(),
                 "IDENTITY", user.getUserId(),
@@ -242,7 +196,7 @@ public class BaseProvisioningHelper {
                 "DELETED",
                 requestId, resp.getErrorCodeAsStr(), user.getSessionId(), resp.getErrorMsgAsStr(),
                 user.getRequestClientIP(), mLg.getLogin(), mLg.getDomainId());
-
+		*/
         return resp;
 
 

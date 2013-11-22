@@ -1,6 +1,7 @@
 package org.openiam.dozer.converter;
 
 import java.util.List;
+import java.util.Set;
 
 import org.openiam.idm.srvc.secdomain.domain.SecurityDomainEntity;
 import org.openiam.idm.srvc.secdomain.dto.SecurityDomain;
@@ -44,4 +45,13 @@ public class SecurityDomainDozerConverter extends AbstractDozerEntityConverter<S
 	    return convertListToCrossEntity(list, isDeep, SecurityDomain.class);
 	}
 
+    @Override
+    public Set<SecurityDomainEntity> convertToEntitySet(Set<SecurityDomain> set, boolean isDeep) {
+        return convertSetToCrossEntity(set, isDeep, SecurityDomainEntity.class);
+    }
+
+    @Override
+    public Set<SecurityDomain> convertToDTOSet(Set<SecurityDomainEntity> set, boolean isDeep) {
+        return convertSetToCrossEntity(set, isDeep, SecurityDomain.class);
+    }
 }

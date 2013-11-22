@@ -1,6 +1,7 @@
 package org.openiam.dozer.converter;
 
 import java.util.List;
+import java.util.Set;
 
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
@@ -39,7 +40,16 @@ public class OrganizationTypeDozerBeanConverter extends AbstractDozerEntityConve
 	@Override
 	public List<OrganizationType> convertToDTOList(List<OrganizationTypeEntity> list, boolean isDeep) {
 		return convertListToCrossEntity(list, isDeep, OrganizationType.class);
-		
 	}
+
+    @Override
+    public Set<OrganizationTypeEntity> convertToEntitySet(Set<OrganizationType> set, boolean isDeep) {
+        return convertSetToCrossEntity(set, isDeep, OrganizationTypeEntity.class);
+    }
+
+    @Override
+    public Set<OrganizationType> convertToDTOSet(Set<OrganizationTypeEntity> set, boolean isDeep) {
+        return convertSetToCrossEntity(set, isDeep, OrganizationType.class);
+    }
 
 }

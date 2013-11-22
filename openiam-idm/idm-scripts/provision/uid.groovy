@@ -1,3 +1,5 @@
+import org.openiam.idm.srvc.auth.login.LoginDataService
+
 /*
 Objects that are passed to the script:
 sysId - DefaultManagedSysId
@@ -9,33 +11,19 @@ targetSystemIdentity
 targetSystemAttributes = attributes at the target system
 */
 
-
-import org.springframework.context.support.ClassPathXmlApplicationContext
-import java.util.*;
-
-def loginManager = context.getBean("loginManager")
-
 println("uid.groovy called.")
+println(">>>>> user " + user.toString())
 
+def loginManager = context.getBean("loginManager") as LoginDataService
 
-	loginId =  lg.id.login;
-	
-	origLoginID = loginId
-	
-
-	loginId = matchParam.keyField + "=" + loginId + ",ou=users," + matchParam.baseDn;
-
-
-	ctr = 1;
-	
-
-
-	while ( loginManager.loginExists( "USR_SEC_DOMAIN", loginId, "101" )) {
-		  strCtrSize = String.valueOf(ctr)
-			loginId=  matchParam.keyField + "=" +  origLoginID + ctr + "," + matchParam.baseDn;
-			ctr++
-	}
-	
-		
-	output = loginId
-	
+def primaryLogin = lg.login
+def loginId = matchParam.keyField + "=" + primaryLogin + "," + matchParam.baseDn
+if (binding.hasVariable("managedSysId")) {
+    def ctr = 0
+    while (loginManager.loginExists( "USR_SEC_DOMAIN", loginId, managedSysId)) {
+        strCtrSize = ctr as String
+        loginId = matchParam.keyField + "=" +  primaryLogin + ctr + "," + matchParam.baseDn
+        ctr++
+    }
+}
+output = loginId

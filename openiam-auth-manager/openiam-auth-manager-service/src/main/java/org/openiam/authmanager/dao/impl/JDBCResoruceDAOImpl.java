@@ -14,6 +14,7 @@ import org.openiam.authmanager.common.model.AuthorizationMenu;
 import org.openiam.authmanager.common.model.AuthorizationResource;
 import org.openiam.authmanager.dao.ResourceDAO;
 import org.openiam.authmanager.util.AuthorizationConstants;
+import org.openiam.core.dao.AbstractJDBCDao;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.ResultSetExtractor;

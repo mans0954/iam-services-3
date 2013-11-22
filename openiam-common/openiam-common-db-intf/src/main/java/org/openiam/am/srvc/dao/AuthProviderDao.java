@@ -11,4 +11,6 @@ public interface AuthProviderDao extends BaseDao<AuthProviderEntity, String>{
     void deleteByPkList(List<String> pkList);
     
     public List<AuthProviderEntity> getByResourceId(final String resourceId);
+
+    public List<AuthProviderEntity> getByManagedSysId(final String managedSysId);
 }

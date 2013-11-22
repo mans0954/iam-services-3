@@ -1,5 +1,3 @@
-if (user.addresses != null &&  user.addresses.size()  > 0) {
-    output= user.addresses.city
-}else {
-    ouput=null;
-}
+
+def it = user.addresses?.iterator()
+output = it?.hasNext() ? it.next()?.city : null

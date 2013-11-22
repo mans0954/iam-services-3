@@ -32,7 +32,6 @@ import org.openiam.base.id.UUIDGen;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.synch.dto.Attribute;
 import org.openiam.idm.srvc.synch.dto.LineObject;
 import org.openiam.idm.srvc.synch.dto.SyncResponse;
@@ -97,11 +96,11 @@ public class CSVAdapter extends AbstractSrcAdapter {
         final ProvisionService provService = (ProvisionService) SpringContextProvider.getBean("defaultProvision");
 
         String requestId = UUIDGen.getUUID();
-
+        /*
         IdmAuditLog synchStartLog_ = new IdmAuditLog();
         synchStartLog_.setSynchAttributes("SYNCH_USER", config.getSynchConfigId(), "START", "SYSTEM", requestId);
         final IdmAuditLog synchStartLog = auditHelper.logEvent(synchStartLog_);
-
+		*/
         try {
             CSVParser parser;
             String csvFileName = config.getFileName();
@@ -146,7 +145,7 @@ public class CSVAdapter extends AbstractSrcAdapter {
                     results.add(service.submit(new Runnable() {
                         @Override
                         public void run() {
-                            proccess(config, provService, synchStartLog, part, validationScript, transformScripts, matchRule, rowHeader, startIndex);
+                            proccess(config, provService, part, validationScript, transformScripts, matchRule, rowHeader, startIndex);
                         }
                     }));
                     //Give 30sec time for thread to be UP (load all cache and begin the work)
@@ -163,10 +162,10 @@ public class CSVAdapter extends AbstractSrcAdapter {
                             }
                         } catch (InterruptedException e) {
                             log.error(e);
-
+                            /*
                             synchStartLog.updateSynchAttributes("FAIL", ResponseCode.INTERRUPTED_EXCEPTION.toString(), e.toString());
                             auditHelper.logEvent(synchStartLog);
-
+							*/
                             SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
                             resp.setErrorCode(ResponseCode.INTERRUPTED_EXCEPTION);
                         }
@@ -178,10 +177,10 @@ public class CSVAdapter extends AbstractSrcAdapter {
             fe.printStackTrace();
 
             log.error(fe);
-
+            /*
             synchStartLog.updateSynchAttributes("FAIL", ResponseCode.FILE_EXCEPTION.toString(), fe.toString());
             auditHelper.logEvent(synchStartLog);
-
+			*/
             SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
             resp.setErrorCode(ResponseCode.FILE_EXCEPTION);
             return resp;
@@ -189,45 +188,45 @@ public class CSVAdapter extends AbstractSrcAdapter {
         } catch (ClassNotFoundException cnfe) {
 
             log.error(cnfe);
-
+            /*
             synchStartLog.updateSynchAttributes("FAIL", ResponseCode.CLASS_NOT_FOUND.toString(), cnfe.toString());
             auditHelper.logEvent(synchStartLog);
-
+			*/
             SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
             resp.setErrorCode(ResponseCode.CLASS_NOT_FOUND);
             return resp;
         } catch (IOException io) {
             io.printStackTrace();
-
+            /*
             synchStartLog.updateSynchAttributes("FAIL", ResponseCode.IO_EXCEPTION.toString(), io.toString());
             auditHelper.logEvent(synchStartLog);
-
+			*/
             SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
             resp.setErrorCode(ResponseCode.IO_EXCEPTION);
             return resp;
         } catch (InterruptedException e) {
             log.error(e);
-
+            /*
             synchStartLog.updateSynchAttributes("FAIL", ResponseCode.INTERRUPTED_EXCEPTION.toString(), e.toString());
             auditHelper.logEvent(synchStartLog);
-
+			*/
             SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
             resp.setErrorCode(ResponseCode.INTERRUPTED_EXCEPTION);
         } catch (SftpException sftpe) {
             log.error(sftpe);
-
+            /*
             synchStartLog.updateSynchAttributes("FAIL", ResponseCode.FILE_EXCEPTION.toString(), sftpe.toString());
             auditHelper.logEvent(synchStartLog);
-
+			*/
             SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
             resp.setErrorCode(ResponseCode.FILE_EXCEPTION);
             sftpe.printStackTrace();
         } catch (JSchException jsche) {
             log.error(jsche);
-
+            /*
             synchStartLog.updateSynchAttributes("FAIL", ResponseCode.FILE_EXCEPTION.toString(), jsche.toString());
             auditHelper.logEvent(synchStartLog);
-
+			*/
             SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
             resp.setErrorCode(ResponseCode.FILE_EXCEPTION);
             jsche.printStackTrace();
@@ -246,15 +245,11 @@ public class CSVAdapter extends AbstractSrcAdapter {
         return new SyncResponse(ResponseStatus.SUCCESS);
     }
 
-    private void proccess(SynchConfig config, ProvisionService provService, IdmAuditLog synchStartLog, String[][] rows, final ValidationScript validationScript, final List<TransformScript> transformScripts, MatchObjectRule matchRule, LineObject rowHeader, int ctr) {
+    private void proccess(SynchConfig config, ProvisionService provService, String[][] rows, final ValidationScript validationScript, final List<TransformScript> transformScripts, MatchObjectRule matchRule, LineObject rowHeader, int ctr) {
         for (String[] row : rows) {
             log.info("*** Record counter: " + ctr++);
 
             //populate the data object
-            ProvisionUser pUser = new ProvisionUser();
-            //Disable PRE and POST processors/performance optimizations
-            pUser.setSkipPreprocessor(true);
-            pUser.setSkipPostProcessor(true);
 
             LineObject rowObj = rowHeader.copy();
             populateRowObject(rowObj, row);
@@ -291,16 +286,17 @@ public class CSVAdapter extends AbstractSrcAdapter {
 
             // transform
             int retval = -1;
+            ProvisionUser pUser = new ProvisionUser();
             if (transformScripts != null && transformScripts.size() > 0) {
-
                 for (TransformScript transformScript : transformScripts) {
                     synchronized (mutex) {
                         transformScript.init();
-
                         // initialize the transform script
                         if (usr != null) {
                             transformScript.setNewUser(false);
-                            transformScript.setUser(userDozerConverter.convertToDTO(userManager.getUser(usr.getUserId()), false));
+                            User u = userManager.getUserDto(usr.getUserId());
+                            pUser = new ProvisionUser(u);
+                            transformScript.setUser(u);
                             transformScript.setPrincipalList(loginDozerConverter.convertToDTOList(loginManager.getLoginByUser(usr.getUserId()), false));
                             transformScript.setUserRoleList(roleDataService.getUserRolesAsFlatList(usr.getUserId()));
 
@@ -313,15 +309,17 @@ public class CSVAdapter extends AbstractSrcAdapter {
 
                         log.info(" - Execute transform script");
 
+                        //Disable PRE and POST processors/performance optimizations
+                        pUser.setSkipPreprocessor(true);
+                        pUser.setSkipPostProcessor(true);
                         retval = transformScript.execute(rowObj, pUser);
+                        log.debug("Transform result=" + retval);
                     }
                     log.info(" - Execute complete transform script");
                 }
-
-                pUser.setSessionId(synchStartLog.getSessionId());
                 if (retval != -1) {
                     if (retval == TransformScript.DELETE && pUser.getUser() != null) {
-                        provService.deleteByUserId(pUser, UserStatusEnum.DELETED, systemAccount);
+                        provService.deleteByUserId(pUser.getUserId(), UserStatusEnum.DELETED, systemAccount);
                     } else {
                         // call synch
                         if (retval != TransformScript.DELETE) {
@@ -359,19 +357,36 @@ public class CSVAdapter extends AbstractSrcAdapter {
     }
 
     public Response testConnection(SynchConfig config) {
-        File file = new File(config.getFileName());
-        FileReader reader = null;
+        Reader reader = null;
         try {
-            reader = new FileReader(file);
+            String csvFileName = config.getFileName();
+            if (useRemoteFilestorage) {
+                InputStream is = remoteFileStorageManager.downloadFile(SYNC_DIR, csvFileName);
+                reader = new InputStreamReader(is);
+            } else {
+                File file = new File(uploadRoot + File.separator + SYNC_DIR + File.separator + csvFileName);
+                reader = new FileReader(file);
+            }
+
         } catch (FileNotFoundException fe) {
             fe.printStackTrace();
-
             log.error(fe);
-
             Response resp = new Response(ResponseStatus.FAILURE);
             resp.setErrorCode(ResponseCode.FILE_EXCEPTION);
             resp.setErrorText(fe.getMessage());
             return resp;
+
+        } catch (SftpException sftpe) {
+            log.error(sftpe);
+            SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
+            resp.setErrorCode(ResponseCode.FILE_EXCEPTION);
+            sftpe.printStackTrace();
+
+        } catch (JSchException jsche) {
+            log.error(jsche);
+            SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
+            resp.setErrorCode(ResponseCode.FILE_EXCEPTION);
+            jsche.printStackTrace();
 
         } finally {
             if (reader != null) {

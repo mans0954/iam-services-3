@@ -21,7 +21,11 @@ import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.BaseConstants;
 import org.openiam.base.SysConfiguration;
 import org.openiam.core.dao.UserKeyDao;
-import org.openiam.dozer.converter.*;
+import org.openiam.dozer.converter.AddressDozerConverter;
+import org.openiam.dozer.converter.EmailAddressDozerConverter;
+import org.openiam.dozer.converter.PhoneDozerConverter;
+import org.openiam.dozer.converter.UserAttributeDozerConverter;
+import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.idm.searchbeans.AddressSearchBean;
 import org.openiam.idm.searchbeans.DelegationFilterSearchBean;
 import org.openiam.idm.searchbeans.EmailSearchBean;
@@ -29,6 +33,7 @@ import org.openiam.idm.searchbeans.LoginSearchBean;
 import org.openiam.idm.searchbeans.PhoneSearchBean;
 import org.openiam.idm.searchbeans.UserSearchBean;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
+import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
 import org.openiam.idm.srvc.auth.login.LoginDAO;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.auth.login.lucene.LoginSearchDAO;
@@ -43,20 +48,18 @@ import org.openiam.idm.srvc.continfo.service.EmailAddressDAO;
 import org.openiam.idm.srvc.continfo.service.EmailSearchDAO;
 import org.openiam.idm.srvc.continfo.service.PhoneDAO;
 import org.openiam.idm.srvc.continfo.service.PhoneSearchDAO;
-import org.openiam.idm.srvc.grp.service.UserGroupDAO;
+import org.openiam.idm.srvc.grp.domain.GroupEntity;
+import org.openiam.idm.srvc.grp.service.GroupDAO;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.meta.service.MetadataElementDAO;
 import org.openiam.idm.srvc.meta.service.MetadataTypeDAO;
-import org.openiam.idm.srvc.org.domain.UserAffiliationEntity;
 import org.openiam.idm.srvc.org.service.OrganizationService;
-import org.openiam.idm.srvc.org.service.UserAffiliationDAO;
-import org.openiam.idm.srvc.res.service.ResourceUserDAO;
-import org.openiam.idm.srvc.role.domain.UserRoleEntity;
-import org.openiam.idm.srvc.role.dto.UserRole;
+import org.openiam.idm.srvc.res.domain.ResourceEntity;
+import org.openiam.idm.srvc.res.service.ResourceDAO;
+import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.service.RoleDataService;
-import org.openiam.idm.srvc.role.service.UserRoleDAO;
 import org.openiam.idm.srvc.searchbean.converter.AddressSearchBeanConverter;
 import org.openiam.idm.srvc.searchbean.converter.EmailAddressSearchBeanConverter;
 import org.openiam.idm.srvc.searchbean.converter.PhoneSearchBeanConverter;
@@ -109,13 +112,6 @@ public class UserMgr implements UserDataService {
     protected LoginDAO loginDao;
     @Autowired
     protected SysConfiguration sysConfiguration;
-    @Autowired
-    private UserRoleDAO userRoleDAO;
-
-    @Autowired
-    private UserGroupDAO userGroupDAO;
-    @Autowired
-    private ResourceUserDAO resourceUserDAO;
 
     @Autowired
     private UserSearchDAO userSearchDAO;
@@ -124,13 +120,15 @@ public class UserMgr implements UserDataService {
     private LoginSearchDAO loginSearchDAO;
 
     @Autowired
-    private EmailSearchDAO emailSearchDAO;
+    @Qualifier("groupDAO")
+    private GroupDAO groupDAO;
 
+    @Autowired
+    private EmailSearchDAO emailSearchDAO;
+    @Autowired
+    private ResourceDAO resourceDAO;
     @Autowired
     private PhoneSearchDAO phoneSearchDAO;
-
-    @Autowired
-    private UserAffiliationDAO userAffiliationDAO;
 
     @Autowired
     private UserKeyDao userKeyDao;
@@ -276,7 +274,7 @@ public class UserMgr implements UserDataService {
             throw new NullPointerException("user object is null");
         if (user.getUserId() == null)
             throw new NullPointerException("user id is null");
-
+        // Processing emails
         user.setLastUpdate(new Date(System.currentTimeMillis()));
 
         UserEntity userEntity = userDao.findById(user.getUserId());
@@ -296,7 +294,7 @@ public class UserMgr implements UserDataService {
                     }
                 } else if (e.getOperation().equals(AttributeOperationEnum.ADD)) {
                     EmailAddressEntity entity = emailAddressDao.findById(e.getEmailId());
-                    if(entity != null) {
+                    if (entity != null) {
                         emailAddressDao.evict(entity);
                     }
                     entity = emailAddressDozerConverter.convertToEntity(e, false);
@@ -376,78 +374,79 @@ public class UserMgr implements UserDataService {
         // Processing user attributes
         updateUserAttributes(userDozerConverter.convertToEntity(user, true), userEntity);
 
-        //TODO: Check userRoles and affiliations
+        // TODO: Check userRoles and affiliations
 
         userDao.update(userEntity);
 
     }
 
     private void updateUserAttributes(final UserEntity user, final UserEntity userEntity) {
-    	Map<String, UserAttributeEntity> incomingAttributes = user.getUserAttributes();
-    	Map<String, UserAttributeEntity> existingAttributes = userEntity.getUserAttributes();
-    	incomingAttributes = (incomingAttributes != null) ? incomingAttributes : new HashMap<String, UserAttributeEntity>();
+        Map<String, UserAttributeEntity> incomingAttributes = user.getUserAttributes();
+        Map<String, UserAttributeEntity> existingAttributes = userEntity.getUserAttributes();
+        incomingAttributes = (incomingAttributes != null) ? incomingAttributes : new HashMap<String, UserAttributeEntity>();
         existingAttributes = (existingAttributes != null) ? existingAttributes : new HashMap<String, UserAttributeEntity>();
-        
+
         final List<UserAttributeEntity> deleteList = new LinkedList<UserAttributeEntity>();
         final List<UserAttributeEntity> editList = new LinkedList<UserAttributeEntity>();
         final List<UserAttributeEntity> newList = new LinkedList<UserAttributeEntity>();
-        
-        for(final String incomingKey : incomingAttributes.keySet()) {
-        	/* new */
-        	final UserAttributeEntity incomingEntity = incomingAttributes.get(incomingKey);
-        	final UserAttributeEntity existingEntity = existingAttributes.get(incomingKey);
-        	if(existingEntity == null) {
-        		//incomingEntity.setUser(userEntity);
-        		newList.add(incomingEntity);
-        	} else { /* exists - modify */
-        		//existingEntity.setUser(userEntity);
-        		existingEntity.setElement(incomingEntity.getElement());
-        		existingEntity.setName(incomingEntity.getName());
-        		existingEntity.setValue(incomingEntity.getValue());
-        		editList.add(existingEntity);
-        	}
+
+        for (final String incomingKey : incomingAttributes.keySet()) {
+            /* new */
+            final UserAttributeEntity incomingEntity = incomingAttributes.get(incomingKey);
+            final UserAttributeEntity existingEntity = existingAttributes.get(incomingKey);
+            if (existingEntity == null) {
+                // incomingEntity.setUser(userEntity);
+                newList.add(incomingEntity);
+            } else { /* exists - modify */
+                // existingEntity.setUser(userEntity);
+                existingEntity.setElement(incomingEntity.getElement());
+                existingEntity.setName(incomingEntity.getName());
+                existingEntity.setValue(incomingEntity.getValue());
+                editList.add(existingEntity);
+            }
         }
-        
-        for(final String oldKey : existingAttributes.keySet()) {
-        	if(!incomingAttributes.containsKey(oldKey)) {
-        		deleteList.add(existingAttributes.get(oldKey));
-        	}
+
+        for (final String oldKey : existingAttributes.keySet()) {
+            if (!incomingAttributes.containsKey(oldKey)) {
+                deleteList.add(existingAttributes.get(oldKey));
+            }
         }
-        
-        for(final UserAttributeEntity entity : newList) {
-        	userAttributeDao.save(entity);
+
+        for (final UserAttributeEntity entity : newList) {
+            userAttributeDao.save(entity);
         }
-        
-        for(final UserAttributeEntity entity : editList) {
-        	userAttributeDao.update(entity);
+
+        for (final UserAttributeEntity entity : editList) {
+            userAttributeDao.update(entity);
         }
-        
-        for(final UserAttributeEntity entity : deleteList) {
-        	userAttributeDao.delete(entity);
+
+        for (final UserAttributeEntity entity : deleteList) {
+            userAttributeDao.delete(entity);
         }
-        
+
         user.setUserAttributes(incomingAttributes);
     }
 
     @Override
     @Transactional
     public void removeUser(String id) throws Exception {
-        if (id == null)
+        if (id == null) {
             throw new NullPointerException("user id is null");
-
+        }
         // removes all the dependant objects.
-        removeAllAttributes(id);
-        removeAllPhones(id);
-        removeAllAddresses(id);
-        removeAllNotes(id);
-        removeAllEmailAddresses(id);
+        // removeAllAttributes(id);
+       // removeAllPhones(id);
+       // removeAllAddresses(id);
+       // removeAllNotes(id);
+       // removeAllEmailAddresses(id);
 
-        userGroupDAO.deleteByUserId(id);
-        userRoleDAO.deleteByUserId(id);
-        resourceUserDAO.deleteAllByUserId(id);
-        userKeyDao.deleteByUserId(id);
-
+        // userKeyDao.deleteByUserId(id);
+        List<SupervisorEntity> supervisors = getSupervisors(id);
+        for(SupervisorEntity se : supervisors) {
+           supervisorDao.delete(se);
+        }
         userDao.delete(userDao.findById(id));
+        //userKeyDao.delete();
     }
 
     /*
@@ -537,22 +536,26 @@ public class UserMgr implements UserDataService {
             nonEmptyListOfLists.add(idList);
         }
 
+        if (CollectionUtils.isNotEmpty(searchBean.getRoleIdSet())) {
+            nonEmptyListOfLists.add(userDao.getUserIdsForRoles(searchBean.getRoleIdSet(), 0, MAX_USER_SEARCH_RESULTS));
+        }
+
+        if (CollectionUtils.isNotEmpty(searchBean.getOrganizationIdList())) {
+            nonEmptyListOfLists.add(userDao.getUserIdsForOrganizations(searchBean.getOrganizationIdList(), 0, MAX_USER_SEARCH_RESULTS));
+        }
+
+        if (CollectionUtils.isNotEmpty(searchBean.getGroupIdSet())) {
+            nonEmptyListOfLists.add(userDao.getUserIdsForGroups(searchBean.getGroupIdSet(), 0, MAX_USER_SEARCH_RESULTS));
+        }
+
+        if (CollectionUtils.isNotEmpty(searchBean.getResourceIdSet())) {
+            nonEmptyListOfLists.add(userDao.getUserIdsForResources(searchBean.getResourceIdSet(), 0, MAX_USER_SEARCH_RESULTS));
+        }
+
         if (StringUtils.isNotBlank(searchBean.getPrincipal())) {
             final LoginSearchBean loginSearchBean = new LoginSearchBean();
             loginSearchBean.setLogin(StringUtils.trimToNull(searchBean.getPrincipal()));
             nonEmptyListOfLists.add(loginSearchDAO.findUserIds(0, MAX_USER_SEARCH_RESULTS, loginSearchBean));
-        }
-
-        if (CollectionUtils.isNotEmpty(searchBean.getRoleIdSet())) {
-            nonEmptyListOfLists.add(userRoleDAO.getUserIdsInRole(searchBean.getRoleIdSet(), 0, MAX_USER_SEARCH_RESULTS));
-        }
-
-        if (CollectionUtils.isNotEmpty(searchBean.getOrganizationIdList())) {
-            nonEmptyListOfLists.add(userAffiliationDAO.getUserIdsInOrganization(searchBean.getOrganizationIdList(), 0, MAX_USER_SEARCH_RESULTS));
-        }
-
-        if (CollectionUtils.isNotEmpty(searchBean.getGroupIdSet())) {
-            nonEmptyListOfLists.add(userGroupDAO.getUserIdsInGroup(searchBean.getGroupIdSet(), 0, MAX_USER_SEARCH_RESULTS));
         }
 
         if (StringUtils.isNotBlank(searchBean.getEmailAddress())) {
@@ -583,7 +586,7 @@ public class UserMgr implements UserDataService {
             if (CollectionUtils.isEmpty(nextSubList))
                 nextSubList = Collections.EMPTY_LIST;
 
-            if (finalizedIdList == null) {
+            if (CollectionUtils.isEmpty(finalizedIdList)) {
                 finalizedIdList = nextSubList;
             } else {
                 finalizedIdList = ListUtils.intersection(finalizedIdList, nextSubList);
@@ -622,7 +625,7 @@ public class UserMgr implements UserDataService {
     @Override
     @Transactional(readOnly = true)
     public int count(UserSearchBean searchBean) {
-        return userDao.findByIds(getUserIds(searchBean)).size();
+        return getUserIds(searchBean).size();
     }
 
     @Override
@@ -814,9 +817,9 @@ public class UserMgr implements UserDataService {
 
         List<AddressEntity> entityList = addressDao.getByExample(example);
         if (CollectionUtils.isNotEmpty(entityList))
-            for (AddressEntity a:entityList) {
-                if( (a.getAddressId()!=null && !a.getAddressId().equals(val.getAddressId()))
-                        && a.getMetadataType().getMetadataTypeId().equals(val.getMetadataType().getMetadataTypeId())){
+            for (AddressEntity a : entityList) {
+                if ((a.getAddressId() != null && !a.getAddressId().equals(val.getAddressId()))
+                    && a.getMetadataType().getMetadataTypeId().equals(val.getMetadataType().getMetadataTypeId())) {
                     throw new NullPointerException("Address with provided type exists");
                 }
             }
@@ -949,7 +952,7 @@ public class UserMgr implements UserDataService {
         AddressSearchBean searchBean = new AddressSearchBean();
         searchBean.setParentId(userId);
         /* searchBean.setParentType(ContactConstants.PARENT_TYPE_USER); */
-        return getAddressList(searchBean, size,from);
+        return getAddressList(searchBean, size, from);
     }
 
     @Override
@@ -978,15 +981,14 @@ public class UserMgr implements UserDataService {
         example.setParent(val.getParent());
 
         List<PhoneEntity> entityList = phoneDao.getByExample(example);
-        if (CollectionUtils.isNotEmpty(entityList))  {
-            for (PhoneEntity ph:entityList) {
-                if( (ph.getPhoneId()!=null && !ph.getPhoneId().equals(val.getPhoneId()))
-                        && ph.getMetadataType().getMetadataTypeId().equals(val.getMetadataType().getMetadataTypeId())){
+        if (CollectionUtils.isNotEmpty(entityList)) {
+            for (PhoneEntity ph : entityList) {
+                if ((ph.getPhoneId() != null && !ph.getPhoneId().equals(val.getPhoneId()))
+                    && ph.getMetadataType().getMetadataTypeId().equals(val.getMetadataType().getMetadataTypeId())) {
                     throw new NullPointerException("Phone with provided type exists");
                 }
             }
         }
-
 
         MetadataTypeEntity type = metadataTypeDAO.findById(val.getMetadataType().getMetadataTypeId());
         val.setMetadataType(type);
@@ -1140,13 +1142,12 @@ public class UserMgr implements UserDataService {
 
         List<EmailAddressEntity> entityList = emailAddressDao.getByExample(example);
         if (CollectionUtils.isNotEmpty(entityList))
-            for (EmailAddressEntity ea:entityList) {
-                if( (ea.getEmailId()!=null && !ea.getEmailId().equals(val.getEmailId()))
-                        && ea.getMetadataType().getMetadataTypeId().equals(val.getMetadataType().getMetadataTypeId())){
+            for (EmailAddressEntity ea : entityList) {
+                if ((ea.getEmailId() != null && !ea.getEmailId().equals(val.getEmailId()))
+                    && ea.getMetadataType().getMetadataTypeId().equals(val.getMetadataType().getMetadataTypeId())) {
                     throw new NullPointerException("Email Address with provided type exists");
                 }
             }
-
 
         MetadataTypeEntity type = metadataTypeDAO.findById(val.getMetadataType().getMetadataTypeId());
         val.setMetadataType(type);
@@ -1294,8 +1295,14 @@ public class UserMgr implements UserDataService {
     @Override
     @Transactional
     public void addSuperior(String supervisorId, String subordinateId) {
-        UserEntity supervisor = getUser(supervisorId, subordinateId);
-        UserEntity subordinate = getUser(subordinateId, supervisorId);
+        UserEntity supervisor = getUser(supervisorId, null);
+        UserEntity subordinate = getUser(subordinateId, null);
+        if (supervisor == null) {
+           throw new NullPointerException("supervisor is null");
+        }
+        if (subordinate == null) {
+           throw new NullPointerException("subordinate is null");
+        }
         addSupervisor(new SupervisorEntity(supervisor, subordinate));
     }
 
@@ -1323,6 +1330,21 @@ public class UserMgr implements UserDataService {
         if (supervisorObjId == null)
             throw new NullPointerException("supervisorObjId is null");
         return supervisorDao.findById(supervisorObjId);
+    }
+
+    @Override
+    public void evict(Object object) {
+        if (object instanceof EmailAddressEntity) {
+            emailAddressDao.evict((EmailAddressEntity) object);
+        } else if (object instanceof PhoneEntity) {
+            phoneDao.evict((PhoneEntity) object);
+        } else if (object instanceof AddressEntity) {
+            addressDao.evict((AddressEntity) object);
+        } else if (object instanceof UserAttributeEntity) {
+            userAttributeDao.evict((UserAttributeEntity) object);
+        } else {
+            throw new IllegalArgumentException("Unsupported type");
+        }
     }
 
     @Override
@@ -1516,14 +1538,12 @@ public class UserMgr implements UserDataService {
         Set<EmailAddressEntity> emailAddressList = newUserEntity.getEmailAddresses();
         Set<AddressEntity> addressList = newUserEntity.getAddresses();
         Set<PhoneEntity> phoneList = newUserEntity.getPhones();
-        Set<UserAffiliationEntity> userOrgs = newUserEntity.getAffiliations();
-        Set<UserRoleEntity> userRoles =  newUserEntity.getUserRoles();
 
         newUserEntity.setPrincipalList(null);
         newUserEntity.setPhones(null);
         newUserEntity.setAddresses(null);
         newUserEntity.setAffiliations(null);
-        newUserEntity.setUserRoles(null);
+        newUserEntity.setRoles(null);
         // newUserEntity.setEmailAddresses(null);
 
         this.addUser(newUserEntity);
@@ -1536,7 +1556,7 @@ public class UserMgr implements UserDataService {
                 lg.setIsLocked(0);
                 lg.setCreateDate(new Date(System.currentTimeMillis()));
                 lg.setUserId(newUserEntity.getUserId());
-                lg.setStatus("ACTIVE");
+                lg.setStatus(LoginStatusEnum.ACTIVE);
                 // encrypt the password
                 if (lg.getPassword() != null) {
                     String pswd = lg.getPassword();
@@ -1564,22 +1584,12 @@ public class UserMgr implements UserDataService {
             this.addPhoneSet(phoneList);
         }
 
-        if(CollectionUtils.isNotEmpty(userOrgs)){
-            for (final UserAffiliationEntity userOrg : userOrgs) {
-                organizationService.addUserToOrg(userOrg.getOrganization().getId(), newUserEntity.getUserId());
-            }
-        }
-        if(CollectionUtils.isNotEmpty(userOrgs)){
-            for (final UserAffiliationEntity userOrg : userOrgs) {
-                organizationService.addUserToOrg(userOrg.getOrganization().getId(), newUserEntity.getUserId());
-            }
-        }
-        if(CollectionUtils.isNotEmpty(userRoles)){
-            for (final UserRoleEntity userRole : userRoles) {
-                userRole.setUserId(newUserEntity.getUserId());
-                roleDataService.assocUserToRole(userRole);
-            }
-        }
+        /*
+         * if(CollectionUtils.isNotEmpty(userRoles)){ for (final UserRoleEntity
+         * userRole : userRoles) {
+         * userRole.setUserId(newUserEntity.getUserId());
+         * roleDataService.assocUserToRole(userRole); } }
+         */
         return newUserEntity.getUserId();
     }
 
@@ -1591,7 +1601,7 @@ public class UserMgr implements UserDataService {
         }
         for (LoginEntity login : loginList) {
             // change the status on the identity
-            login.setStatus("INACTIVE");
+            login.setStatus(LoginStatusEnum.INACTIVE);
             loginDao.update(login);
         }
         // Turning off the primary identity - change the status on the user
@@ -1603,7 +1613,7 @@ public class UserMgr implements UserDataService {
     }
 
     @Transactional
-    public void enableDisableUser(String userId, UserStatusEnum secondaryStatus) {
+    public void setSecondaryStatus(String userId, UserStatusEnum secondaryStatus) {
         UserEntity user = this.getUser(userId, null);
         if (user == null) {
             log.error("UserId " + userId + " not found");
@@ -1636,8 +1646,21 @@ public class UserMgr implements UserDataService {
         }
     }
 
+    @Override
     @Transactional(readOnly = true)
-    public Integer getNumOfEmailsForUser(String userId) {
+    public boolean isRoleInUser(String userId, String roleId) {
+        boolean isExists = false;
+        UserEntity userEntity = userDao.findById(userId);
+        for (RoleEntity r : userEntity.getRoles()) {
+            if (r.getRoleId().equals(roleId)) {
+                return true;
+            }
+        }
+        return isExists;
+    }
+
+    @Transactional(readOnly = true)
+    public int getNumOfEmailsForUser(String userId) {
         EmailSearchBean searchBean = new EmailSearchBean();
         searchBean.setParentId(userId);
         // searchBean.setParentType(ContactConstants.PARENT_TYPE_USER);
@@ -1645,7 +1668,7 @@ public class UserMgr implements UserDataService {
     }
 
     @Transactional(readOnly = true)
-    public Integer getNumOfAddressesForUser(String userId) {
+    public int getNumOfAddressesForUser(String userId) {
         AddressSearchBean searchBean = new AddressSearchBean();
         searchBean.setParentId(userId);
         // searchBean.setParentType(ContactConstants.PARENT_TYPE_USER);
@@ -1653,7 +1676,7 @@ public class UserMgr implements UserDataService {
     }
 
     @Transactional(readOnly = true)
-    public Integer getNumOfPhonesForUser(String userId) {
+    public int getNumOfPhonesForUser(String userId) {
         PhoneSearchBean searchBean = new PhoneSearchBean();
         searchBean.setParentId(userId);
         // searchBean.setParentType(ContactConstants.PARENT_TYPE_USER);
@@ -1683,37 +1706,37 @@ public class UserMgr implements UserDataService {
                 origUserEntity.setCostCenter(newUserEntity.getCostCenter());
             }
         }
-        
-        if(newUserEntity.getLocationCd() != null) {
-        	if(newUserEntity.getLocationCd().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-        		origUserEntity.setLocationCd(null);
-        	} else {
-        		origUserEntity.setLocationCd(newUserEntity.getLocationCd());
-        	}
+
+        if (newUserEntity.getLocationCd() != null) {
+            if (newUserEntity.getLocationCd().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+                origUserEntity.setLocationCd(null);
+            } else {
+                origUserEntity.setLocationCd(newUserEntity.getLocationCd());
+            }
         }
-        
-        if(newUserEntity.getLocationName() != null) {
-        	if(newUserEntity.getLocationName().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-        		origUserEntity.setLocationName(null);
-        	} else {
-        		origUserEntity.setLocationName(newUserEntity.getLocationName());
-        	}
+
+        if (newUserEntity.getLocationName() != null) {
+            if (newUserEntity.getLocationName().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+                origUserEntity.setLocationName(null);
+            } else {
+                origUserEntity.setLocationName(newUserEntity.getLocationName());
+            }
         }
-        
-        if(newUserEntity.getMailCode() != null) {
-        	if(newUserEntity.getMailCode().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-        		origUserEntity.setMailCode(null);
-        	} else {
-        		origUserEntity.setMailCode(newUserEntity.getMailCode());
-        	}
+
+        if (newUserEntity.getMailCode() != null) {
+            if (newUserEntity.getMailCode().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+                origUserEntity.setMailCode(null);
+            } else {
+                origUserEntity.setMailCode(newUserEntity.getMailCode());
+            }
         }
-        
-        if(newUserEntity.getPrefix() != null) {
-        	if(newUserEntity.getPrefix().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-        		origUserEntity.setPrefix(null);
-        	} else {
-        		origUserEntity.setPrefix(newUserEntity.getPrefix());
-        	}
+
+        if (newUserEntity.getPrefix() != null) {
+            if (newUserEntity.getPrefix().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+                origUserEntity.setPrefix(null);
+            } else {
+                origUserEntity.setPrefix(newUserEntity.getPrefix());
+            }
         }
 
         if (newUserEntity.getEmployeeId() != null) {
@@ -1918,6 +1941,34 @@ public class UserMgr implements UserDataService {
         }
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<String> getUserIdsInRole(String roleId, String requesterId) {
+        LinkedList<String> userIds = new LinkedList<String>();
+        DelegationFilterSearchBean delegationFilter = this.getDelegationFilterForUserSearch(requesterId);
+        if (DelegationFilterHelper.isAllowed(roleId, delegationFilter.getRoleIdSet())) {
+            List<UserEntity> users = userDao.getUsersForRole(roleId, delegationFilter, 0, Integer.MAX_VALUE);
+            for (UserEntity userEntity : users) {
+                userIds.add(userEntity.getUserId());
+            }
+        }
+        return userIds;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<String> getUserIdsInGroup(String groupId, String requesterId) {
+        LinkedList<String> userIds = new LinkedList<String>();
+        DelegationFilterSearchBean delegationFilter = this.getDelegationFilterForUserSearch(requesterId);
+        if (DelegationFilterHelper.isAllowed(groupId, delegationFilter.getRoleIdSet())) {
+            List<UserEntity> users = userDao.getUsersForGroup(groupId, delegationFilter, 0, Integer.MAX_VALUE);
+            for (UserEntity userEntity : users) {
+                userIds.add(userEntity.getUserId());
+            }
+        }
+        return userIds;
+    }
+
     @Transactional
     private void updateDefaultFlagForEmail(EmailAddressEntity targetEntity, boolean newDefaultValue, UserEntity parent) {
         // update default flag
@@ -2039,7 +2090,66 @@ public class UserMgr implements UserDataService {
     }
 
     @Override
-    public List<UserEntity> getByExample(UserSearchBean searchBean) {
-        return userDao.getByExample(searchBean);
+    @Transactional(readOnly = true)
+    public List<UserEntity> getByExample(UserSearchBean searchBean, int start, int size) {
+        return userDao.getByExample(searchBean, start, size);
     }
+
+    @Override
+    @Transactional
+    public void addUserToGroup(String userId, String groupId) {
+        GroupEntity groupEntity = groupDAO.findById(groupId);
+        UserEntity userEntity = userDao.findById(userId);
+        userEntity.getGroups().add(groupEntity);
+    }
+
+    @Override
+    @Transactional
+    public void removeUserFromGroup(String userId, String groupId) {
+        GroupEntity groupEntity = groupDAO.findById(groupId);
+        UserEntity userEntity = userDao.findById(userId);
+        userEntity.getGroups().remove(groupEntity);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public boolean isHasGroup(String userId, String groupId) {
+        // DelegationFilterSearchBean delegationFilter =
+        // this.getDelegationFilterForUserSearch(null);
+        return userDao.isUserInGroup(userId, groupId);
+        // return
+        // CollectionUtils.isNotEmpty(userDao.getUsersForGroup(groupId,delegationFilter,
+        // 0, Integer.MAX_VALUE));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public boolean isHasResource(String userId, String resourceId) {
+        // DelegationFilterSearchBean delegationFilter =
+        // this.getDelegationFilterForUserSearch(null);
+        return userDao.isUserEntitledToResoruce(userId, resourceId);
+        // return
+        // CollectionUtils.isNotEmpty(userDao.getUsersForResource(resourceId,
+        // delegationFilter, 0, Integer.MAX_VALUE));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public boolean isHasOrganization(String userId, String organizationId) {
+        // DelegationFilterSearchBean delegationFilter =
+        // this.getDelegationFilterForUserSearch(null);
+        // return
+        // CollectionUtils.isNotEmpty(userDao.getUsersForOrganization(organizationId,
+        // delegationFilter, 0, Integer.MAX_VALUE));
+        return userDao.isUserInOrg(userId, organizationId);
+    }
+
+    @Override
+    @Transactional
+    public void addUserToResource(String userId, String resourceId) {
+        ResourceEntity resourceEntity = resourceDAO.findById(resourceId);
+        UserEntity userEntity = userDao.findById(userId);
+        userEntity.getResources().add(resourceEntity);
+    }
+
 }

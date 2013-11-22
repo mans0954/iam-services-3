@@ -34,6 +34,8 @@ public enum UserStatusEnum {
     TERMINATE("TERMINATE"),
     @XmlEnumValue("deleted")
     DELETED("DELETED"),
+    @XmlEnumValue("remove")
+    REMOVE("REMOVE"),
     @XmlEnumValue("locked")
     LOCKED("LOCKED"),
     @XmlEnumValue("locked_admin")

@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.synch.service;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.dozer.converter.RoleDozerConverter;
@@ -55,7 +56,9 @@ public class PolicyMapTransformScript extends AbstractTransformScript {
         Role r = roleDozerConverter.convertToDTO(role, false);
         userRoleList.add(r);
 
-        pUser.setMemberOfRoles(userRoleList);
+        if (userRoleList != null) {
+            pUser.setRoles(new HashSet<Role>(userRoleList));
+        }
 
         populateUser(rowObj, pUser);
 

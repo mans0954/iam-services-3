@@ -5,8 +5,8 @@ import org.openiam.idm.searchbeans.RoleSearchBean;
 import org.openiam.idm.srvc.role.domain.RoleAttributeEntity;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.domain.RolePolicyEntity;
-import org.openiam.idm.srvc.role.domain.UserRoleEntity;
 import org.openiam.idm.srvc.role.dto.Role;
+import org.openiam.idm.srvc.user.domain.UserEntity;
 
 import java.util.List;
 
@@ -52,14 +52,14 @@ public interface RoleDataService {
      *
      * @param attribute
      */
-    public void saveAttribute(RoleAttributeEntity attribute);
+    //public void saveAttribute(RoleAttributeEntity attribute);
 
     /**
      * Removes a RoleAttribute specified by the attribute.
      *
      * @param roleAttributeId
      */
-    public void removeAttribute(final String roleAttributeId);
+    //public void removeAttribute(final String roleAttributeId);
 
     /** * Role-Group Methods ****** */
 
@@ -94,25 +94,16 @@ public interface RoleDataService {
      * @param groupId
      */
     public void removeGroupFromRole(String roleId, String groupId);
-    
-    /**
-     * Returns a list of UserRole objects
-     *
-     * @param userId
-     * @return
-     */
-    public List<UserRoleEntity> getUserRolesForUser(final String userId, final int from, final int size);
-    
-    
+
+
     public List<RoleEntity> getRolesForUser(final String userId, String requesterId, final int from, final int size);
     public int getNumOfRolesForUser(final String userId, String requesterId);
 
     /**
      * Adds a user to a role using the UserRole object. Similar to addUserToRole, but allows you to update attributes likes start and end date.
      */
-    void assocUserToRole(UserRoleEntity ur);
+    void assocUserToRole(String userId, String roleId);
 
-    void updateUserRoleAssoc(UserRoleEntity ur);
     /**
      * This method adds particular user directly to a role.<br>
      * For example:
@@ -174,6 +165,8 @@ public interface RoleDataService {
     
     public List<RoleEntity> getParentRoles(final String roleId, final String requesterId, final int from, final int size);
     public int getNumOfParentRoles(final String roleId, final String requesterId);
+
+    public void validateRole2RoleAddition(final String parentId, final String memberId) throws BasicDataServiceException;
     
-    public UserRoleEntity getUserRole(final String userId, final String roleId, final String requesterId);
+    public Role getRoleDTO(final String roleId);
 }

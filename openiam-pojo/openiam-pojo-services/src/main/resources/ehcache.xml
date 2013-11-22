@@ -50,8 +50,6 @@
         diskExpiryThreadIntervalSeconds="180"
         memoryStoreEvictionPolicy="LRU"
         />
-        
-
 
     <cache name="org.openiam.idm.srvc.org.dto.Organization"
         maxElementsInMemory="1000"

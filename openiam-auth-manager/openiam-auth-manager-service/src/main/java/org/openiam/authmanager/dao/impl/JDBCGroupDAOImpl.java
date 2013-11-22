@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.openiam.authmanager.common.model.AuthorizationGroup;
 import org.openiam.authmanager.dao.GroupDAO;
+import org.openiam.core.dao.AbstractJDBCDao;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 

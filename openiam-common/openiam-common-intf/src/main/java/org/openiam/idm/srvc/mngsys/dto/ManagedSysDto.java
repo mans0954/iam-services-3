@@ -4,8 +4,10 @@ package org.openiam.idm.srvc.mngsys.dto;
 
 import org.apache.commons.lang.StringUtils;
 import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysRuleEntity;
+import org.openiam.idm.srvc.role.dto.Role;
 
 import javax.persistence.CascadeType;
 import javax.persistence.FetchType;
@@ -37,7 +39,7 @@ import java.util.Set;
         "driverUrl", "connectionString", "addHandler", "modifyHandler",
         "deleteHandler", "passwordHandler", "suspendHandler", "searchHandler",
         "lookupHandler", "testConnectionHandler", "reconcileResourceHandler",
-        "handler5", "rules" })
+        "handler5", "rules", "groups", "roles" })
 @DozerDTOCorrespondence(ManagedSysEntity.class)
 public class ManagedSysDto implements java.io.Serializable {
 
@@ -87,6 +89,10 @@ public class ManagedSysDto implements java.io.Serializable {
      */
     private Set<ManagedSystemObjectMatch> mngSysObjectMatchs = new HashSet<ManagedSystemObjectMatch>(
             0);
+    
+    private Set<Group> groups;
+    
+    private Set<Role> roles;
 
     public ManagedSysDto() {
     }
@@ -444,4 +450,22 @@ public class ManagedSysDto implements java.io.Serializable {
     public void setRules(List<ManagedSysRuleDto> rules) {
         this.rules = rules;
     }
+
+	public Set<Group> getGroups() {
+		return groups;
+	}
+
+	public void setGroups(Set<Group> groups) {
+		this.groups = groups;
+	}
+
+	public Set<Role> getRoles() {
+		return roles;
+	}
+
+	public void setRoles(Set<Role> roles) {
+		this.roles = roles;
+	}
+    
+    
 }

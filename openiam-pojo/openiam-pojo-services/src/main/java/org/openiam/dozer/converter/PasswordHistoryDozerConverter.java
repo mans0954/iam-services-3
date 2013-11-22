@@ -5,6 +5,7 @@ import org.openiam.idm.srvc.pswd.dto.PasswordHistory;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Set;
 
 @Component("passwordHistoryDozerMapper")
 public class PasswordHistoryDozerConverter extends AbstractDozerEntityConverter<PasswordHistory, PasswordHistoryEntity> {
@@ -39,4 +40,13 @@ public class PasswordHistoryDozerConverter extends AbstractDozerEntityConverter<
         return convertListToCrossEntity(list, isDeep, PasswordHistory.class);
     }
 
+    @Override
+    public Set<PasswordHistoryEntity> convertToEntitySet(Set<PasswordHistory> set, boolean isDeep) {
+        return convertSetToCrossEntity(set, isDeep, PasswordHistoryEntity.class);
+    }
+
+    @Override
+    public Set<PasswordHistory> convertToDTOSet(Set<PasswordHistoryEntity> set, boolean isDeep) {
+        return convertSetToCrossEntity(set, isDeep, PasswordHistory.class);
+    }
 }

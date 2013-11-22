@@ -1,11 +1,10 @@
 package org.openiam.dozer.converter;
 
 import java.util.List;
+import java.util.Set;
 
 import org.openiam.idm.srvc.res.domain.ResourceTypeEntity;
-import org.openiam.idm.srvc.res.domain.ResourceUserEntity;
 import org.openiam.idm.srvc.res.dto.ResourceType;
-import org.openiam.idm.srvc.res.dto.ResourceUser;
 import org.springframework.stereotype.Component;
 
 @Component("resourceTypeDozerConverter")
@@ -41,4 +40,13 @@ public class ResourceTypeDozerConverter extends AbstractDozerEntityConverter<Res
 		return convertListToCrossEntity(list, isDeep, ResourceType.class);
 	}
 
+    @Override
+    public Set<ResourceTypeEntity> convertToEntitySet(Set<ResourceType> set, boolean isDeep) {
+        return convertSetToCrossEntity(set, isDeep, ResourceTypeEntity.class);
+    }
+
+    @Override
+    public Set<ResourceType> convertToDTOSet(Set<ResourceTypeEntity> set, boolean isDeep) {
+        return convertSetToCrossEntity(set, isDeep, ResourceType.class);
+    }
 }
