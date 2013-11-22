@@ -16,7 +16,7 @@ import org.openiam.idm.srvc.recon.domain.ReconciliationConfigEntity;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "ReconciliationConfig", propOrder = { "reconConfigId",
-        "resourceId", "frequency", "status", "situationSet", "reportPath",
+        "resourceId", "managedSysId", "frequency", "status", "situationSet", "reportPath",
         "separator", "endOfLine", "notificationEmailAddress",
         "manualReconciliationFlag","targetSystemMatchScript",
         "customIdentityMatchScript",
@@ -31,6 +31,7 @@ public class ReconciliationConfig implements MatchConfig, java.io.Serializable {
     private static final long serialVersionUID = 431603790346613674L;
     private String reconConfigId;
     private String resourceId;
+    private String managedSysId;
     private String frequency;
     private String status;
     private String separator;
@@ -72,11 +73,12 @@ public class ReconciliationConfig implements MatchConfig, java.io.Serializable {
         this.reconConfigId = reconConfigId;
     }
 
-    public ReconciliationConfig(String reconConfigId, String resourceId,
+    public ReconciliationConfig(String reconConfigId, String resourceId, String managedSysId,
             String mode, String frequency, String status,
             Integer attributeLevelCheck, Integer updateChangedAttribute) {
         this.reconConfigId = reconConfigId;
         this.resourceId = resourceId;
+        this.managedSysId = managedSysId;
         this.frequency = frequency;
         this.status = status;
 
@@ -96,6 +98,14 @@ public class ReconciliationConfig implements MatchConfig, java.io.Serializable {
 
     public void setResourceId(String resourceId) {
         this.resourceId = resourceId;
+    }
+
+    public String getManagedSysId() {
+        return managedSysId;
+    }
+
+    public void setManagedSysId(String managedSysId) {
+        this.managedSysId = managedSysId;
     }
 
     public String getFrequency() {

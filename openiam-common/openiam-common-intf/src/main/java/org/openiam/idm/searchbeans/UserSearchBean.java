@@ -68,7 +68,7 @@ public class UserSearchBean extends AbstractSearchBean<User, String> implements 
     protected Set<String> roleIdSet = null;
     protected Set<String> resourceIdSet = null;
     protected String emailAddress = null;
-    protected String principal;
+    protected LoginSearchBean principal;
     protected String attributeName;
     protected String attributeValue;
     protected String attributeElementId;
@@ -252,11 +252,11 @@ public class UserSearchBean extends AbstractSearchBean<User, String> implements 
         this.emailAddress = emailAddress;
     }
 
-    public String getPrincipal() {
+    public LoginSearchBean getPrincipal() {
         return principal;
     }
 
-    public void setPrincipal(String principal) {
+    public void setPrincipal(LoginSearchBean principal) {
         this.principal = principal;
     }
 

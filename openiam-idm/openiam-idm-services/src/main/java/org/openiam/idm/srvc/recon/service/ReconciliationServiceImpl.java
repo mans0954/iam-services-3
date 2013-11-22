@@ -469,10 +469,12 @@ public class ReconciliationServiceImpl implements ReconciliationService {
         try {
             MatchObjectRule matchObjectRule = matchRuleFactory.create(config.getCustomIdentityMatchScript());
             User usr = matchObjectRule.lookup(config, attributeMap);
+
             if(usr != null) {
+               User u = userManager.getUserDto(usr.getUserId());
                //situation TARGET EXIST, IDM EXIST do modify
                //check principal list on this ManagedSys exists
-               List<Login> principals = usr.getPrincipalList();
+               List<Login> principals = u.getPrincipalList();
                Login principal = null;
                for(Login l : principals) {
                    if(l.getManagedSysId().equals(managedSysId)) {
@@ -483,7 +485,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
                    // if user exists but don;t have principal for current target sys
                    ReconciliationCommand command = situations.get(ReconciliationCommand.IDM_EXISTS__SYS_EXISTS);
                    if(command != null) {
-                       ProvisionUser newUser = new ProvisionUser(usr);
+                       ProvisionUser newUser = new ProvisionUser(u);
                        if(principal == null) {
                            principal = new Login();
                            principal.setDomainId(mSys.getDomainId());
