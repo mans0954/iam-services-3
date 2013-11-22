@@ -593,6 +593,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
         log.debug("1 Reconciliation for user " + user);
 
         List<ExtensibleAttribute> requestedExtensibleAttributes = new ArrayList<ExtensibleAttribute>();
+
         for (AttributeMapEntity ame : attrMap) {
             if ("USER".equalsIgnoreCase(ame.getMapForObjectType()) && "ACTIVE".equalsIgnoreCase(ame.getStatus())) {
                 requestedExtensibleAttributes.add(new ExtensibleAttribute(ame.getAttributeName(), null));
