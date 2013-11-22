@@ -185,6 +185,10 @@
             <a>resources</a>
             <b>resources</b>
         </field-exclude>
+        <field-exclude>
+			<a>approverAssociations</a>
+			<b>approverAssociations</b>
+		</field-exclude>
 	</mapping>
 	<mapping>
 		<class-a>org.openiam.idm.srvc.res.dto.Resource</class-a>

@@ -33,9 +33,11 @@ public enum ActivitiConstants {
 	
 	RESOURCE("Resource"),
 	GROUP("Group"),
+	ROLE("Role"),
 	
 	RESOURCE_ID("ResourceId"),
-	GROUP_ID("GroupId");
+	GROUP_ID("GroupId"),
+	ROLE_ID("RoleID");
 	
 	private String name;
 	

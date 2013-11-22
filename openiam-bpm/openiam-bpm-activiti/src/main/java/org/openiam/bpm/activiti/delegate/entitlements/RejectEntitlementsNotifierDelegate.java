@@ -40,6 +40,10 @@ public class RejectEntitlementsNotifierDelegate extends AbstractEntitlementsDele
 		NOTIFICATION_MAP.put("NEW_GROUP", "NEW_GROUP_REJECT");
 		NOTIFICATION_MAP.put("EDIT_GROUP", "EDIT_GROUP_REJECT");
 		NOTIFICATION_MAP.put("DELETE_GROUP", "DELETE_GROUP_REJECT");
+		
+		NOTIFICATION_MAP.put("NEW_ROLE", "NEW_ROLE_REJECT");
+		NOTIFICATION_MAP.put("EDIT_ROLE", "EDIT_ROLE_REJECT");
+		NOTIFICATION_MAP.put("DELETE_ROLE", "DELETE_ROLE_REJECT");
 	}
 	
 	public RejectEntitlementsNotifierDelegate() {

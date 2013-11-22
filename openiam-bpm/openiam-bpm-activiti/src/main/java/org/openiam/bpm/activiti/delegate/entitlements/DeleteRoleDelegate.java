@@ -4,23 +4,22 @@ import org.activiti.engine.delegate.DelegateExecution;
 import org.openiam.base.ws.Response;
 import org.openiam.bpm.activiti.delegate.core.AbstractActivitiJob;
 import org.openiam.bpm.util.ActivitiConstants;
-import org.openiam.idm.srvc.grp.dto.Group;
-import org.openiam.idm.srvc.grp.ws.GroupDataWebService;
+import org.openiam.idm.srvc.role.ws.RoleDataWebService;
 import org.springframework.beans.factory.annotation.Autowired;
 
-public class SaveGroupDelegate extends AbstractActivitiJob {
-
-	@Autowired
-	private GroupDataWebService groupDataService;
+public class DeleteRoleDelegate extends AbstractActivitiJob {
 	
-	public SaveGroupDelegate() {
+	@Autowired
+	private RoleDataWebService roleService;
+
+	public DeleteRoleDelegate() {
 		super();
 	}
 	
 	@Override
 	public void execute(DelegateExecution execution) throws Exception {
-		final Group group = getObjectVariable(execution, ActivitiConstants.GROUP, Group.class);
-		final Response wsResponse = groupDataService.saveGroup(group, getRequestorId(execution));
+		final String roleId = getStringVariable(execution, ActivitiConstants.ROLE_ID);
+		final Response wsReponse = roleService.removeRole(roleId);
 		//TODO:  validate
 	}
 }

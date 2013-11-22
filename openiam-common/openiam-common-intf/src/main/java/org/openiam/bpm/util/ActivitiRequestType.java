@@ -30,7 +30,11 @@ public enum ActivitiRequestType {
 	
 	NEW_GROUP("newGroup", "New Group"),
 	EDIT_GROUP("editGroup", "Edit Group"),
-	DELETE_GROUP("deleteGroup", "Delete Group");
+	DELETE_GROUP("deleteGroup", "Delete Group"),
+	
+	NEW_ROLE("newRole", "New Role"),
+	EDIT_ROLE("editRole", "Edit Role"),
+	DELETE_ROLE("deleteRole", "Delete Role");
 	
 	private String description;
 	private String key;

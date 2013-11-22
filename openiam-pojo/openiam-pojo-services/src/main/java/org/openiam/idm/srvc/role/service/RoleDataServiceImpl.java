@@ -11,6 +11,8 @@ import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.RoleSearchBean;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.service.GroupDAO;
+import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
+import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 import org.openiam.idm.srvc.mngsys.service.ManagedSysDAO;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
@@ -213,9 +215,11 @@ public class RoleDataServiceImpl implements RoleDataService {
 			if(StringUtils.isBlank(role.getId())) {
 				role.setAdminResource(getNewAdminResource(role, requestorId));
 				roleDao.save(role);
+				role.addApproverAssociation(createDefaultApproverAssociations(role, requestorId));
 			} else {
 				final RoleEntity dbRole = roleDao.findById(role.getId());
 				if(dbRole != null) {
+					role.setApproverAssociations(dbRole.getApproverAssociations());
 					role.setChildRoles(dbRole.getChildRoles());
 					role.setGroups(dbRole.getGroups());
 					role.setParentRoles(dbRole.getParentRoles());
@@ -228,9 +232,9 @@ public class RoleDataServiceImpl implements RoleDataService {
 					}
 					
 					mergeAttributes(role, dbRole);
-					roleDao.merge(role);
 				}
 			}
+			roleDao.merge(role);
 		}
 	}
 	
@@ -240,6 +244,16 @@ public class RoleDataServiceImpl implements RoleDataService {
 		adminResource.setResourceType(resourceTypeDAO.findById(adminResourceTypeId));
 		adminResource.addUser(userDAO.findById(requestorId));
 		return adminResource;
+	}
+	
+	private ApproverAssociationEntity createDefaultApproverAssociations(final RoleEntity entity, final String requestorId) {
+		final ApproverAssociationEntity association = new ApproverAssociationEntity();
+		association.setAssociationEntityId(entity.getId());
+		association.setAssociationType(AssociationType.ROLE);
+		association.setApproverLevel(Integer.valueOf(0));
+		association.setApproverEntityId(requestorId);
+		association.setApproverEntityType(AssociationType.USER);
+		return association;
 	}
 	
 	private void mergeAttributes(final RoleEntity bean, final RoleEntity dbObject) {
