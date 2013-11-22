@@ -11,36 +11,74 @@ import org.openiam.base.id.UUIDGen;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
+import org.openiam.connector.type.ConnectorDataException;
+import org.openiam.connector.type.constant.ErrorCode;
 import org.openiam.connector.type.request.SuspendResumeRequest;
 import org.openiam.idm.srvc.audit.service.AuditHelper;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
+import org.openiam.idm.srvc.key.constant.KeyName;
+import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
+import org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorDto;
 import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
+import org.openiam.idm.srvc.mngsys.ws.ProvisionConnectorWebService;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.idm.srvc.user.service.UserDataService;
+import org.openiam.util.MuleContextProvider;
+import org.openiam.util.encrypt.Cryptor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 /**
  * Class to handle the Disable User operation
  * @author suneet shah
  *
  */
+@Component("disableUser")
 public class DisableUserDelegate {
-
+    @Autowired
     protected UserDataService userMgr;
     @Autowired
     protected AuditHelper auditHelper;
+    @Autowired
     protected SysConfiguration sysConfiguration;
+    @Autowired
     protected LoginDataService loginManager;
+    @Autowired
     protected ManagedSystemWebService managedSysService;
+    @Autowired
     protected ConnectorAdapter connectorAdapter;
+    @Autowired
     protected RemoteConnectorAdapter remoteConnectorAdapter;
+    @Autowired
+    protected ProvisionConnectorWebService provisionConnectorWebService;
+    @Value("${org.openiam.idm.system.user.id}")
+    private String systemUserId;
+    @Autowired
+    @Qualifier("cryptor")
+    private Cryptor cryptor;
+    @Autowired
+    private KeyManagementService keyManagementService;
 
     protected static final Log log = LogFactory
             .getLog(DisableUserDelegate.class);
 
+    protected String getDecryptedPassword(ManagedSysDto managedSys) throws ConnectorDataException {
+        String result = null;
+        if( managedSys.getPswd()!=null){
+            try {
+                result = cryptor.decrypt(keyManagementService.getUserKey(systemUserId, KeyName.password.name()), managedSys.getPswd());
+            } catch (Exception e) {
+                log.error(e);
+                throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR, e.getMessage());
+            }
+        }
+        return result;
+    }
     public Response disableUser(String userId, boolean operation,
             String requestorId, MuleContext muleContext) {
         log.debug("----disableUser called.------");
@@ -121,7 +159,8 @@ public class DisableUserDelegate {
                     // update the target system
                     ManagedSysDto mSys = managedSysService
                             .getManagedSys(managedSysId);
-
+                    ProvisionConnectorDto connector = provisionConnectorWebService
+                            .getProvisionConnector(mSys.getConnectorId());
                     if (operation) {
                         // suspend
                         log.debug("preparing suspendRequest object");
@@ -130,6 +169,28 @@ public class DisableUserDelegate {
                         suspendReq.setObjectIdentity(lg.getLogin());
                         suspendReq.setTargetID(managedSysId);
                         suspendReq.setRequestID(requestId);
+                        suspendReq.setScriptHandler(mSys
+                                .getSuspendHandler());
+
+                        suspendReq.setHostLoginId(mSys.getUserId());
+                        String passwordDecoded = mSys.getPswd();
+                        try {
+                            passwordDecoded = getDecryptedPassword(mSys);
+                        } catch (ConnectorDataException e) {
+                            e.printStackTrace();
+                        }
+                        suspendReq.setHostLoginPassword(passwordDecoded);
+                        suspendReq.setHostUrl(mSys.getHostUrl());
+
+                        if (connector.getConnectorInterface() != null
+                                && connector.getConnectorInterface()
+                                .equalsIgnoreCase("REMOTE")) {
+                            remoteConnectorAdapter.suspend(mSys,
+                                    suspendReq, connector, MuleContextProvider.getCtx());
+                        } else {
+                            connectorAdapter.suspendRequest(mSys,
+                                    suspendReq, MuleContextProvider.getCtx());
+                        }
                         connectorAdapter.suspendRequest(mSys, suspendReq,
                                 muleContext);
 
@@ -147,8 +208,26 @@ public class DisableUserDelegate {
                         resumeReq.setObjectIdentity(lg.getLogin());
                         resumeReq.setTargetID(managedSysId);
                         resumeReq.setRequestID(requestId);
-                        connectorAdapter.resumeRequest(mSys, resumeReq,
-                                muleContext);
+                        resumeReq.setScriptHandler(mSys
+                                .getSuspendHandler());
+                        resumeReq.setHostLoginId(mSys.getUserId());
+                        String passwordDecoded = mSys.getPswd();
+                        try {
+                            passwordDecoded = getDecryptedPassword(mSys);
+                        } catch (ConnectorDataException e) {
+                            e.printStackTrace();
+                        }
+                        resumeReq.setHostLoginPassword(passwordDecoded);
+                        resumeReq.setHostUrl(mSys.getHostUrl());
+                        if (connector.getConnectorInterface() != null
+                                && connector.getConnectorInterface()
+                                .equalsIgnoreCase("REMOTE")) {
+                            remoteConnectorAdapter.resumeRequest(mSys,
+                                    resumeReq, connector, MuleContextProvider.getCtx());
+                        } else {
+                            connectorAdapter.resumeRequest(mSys,
+                                    resumeReq, MuleContextProvider.getCtx());
+                        }
                     }
 
                     String domainId = null;
@@ -174,62 +253,4 @@ public class DisableUserDelegate {
         return response;
 
     }
-
-    public UserDataService getUserMgr() {
-        return userMgr;
-    }
-
-    public void setUserMgr(UserDataService userMgr) {
-        this.userMgr = userMgr;
-    }
-
-    public AuditHelper getAuditHelper() {
-        return auditHelper;
-    }
-
-    public void setAuditHelper(AuditHelper auditHelper) {
-        this.auditHelper = auditHelper;
-    }
-
-    public SysConfiguration getSysConfiguration() {
-        return sysConfiguration;
-    }
-
-    public void setSysConfiguration(SysConfiguration sysConfiguration) {
-        this.sysConfiguration = sysConfiguration;
-    }
-
-    public LoginDataService getLoginManager() {
-        return loginManager;
-    }
-
-    public void setLoginManager(LoginDataService loginManager) {
-        this.loginManager = loginManager;
-    }
-
-    public ManagedSystemWebService getManagedSysService() {
-        return managedSysService;
-    }
-
-    public void setManagedSysService(ManagedSystemWebService managedSysService) {
-        this.managedSysService = managedSysService;
-    }
-
-    public ConnectorAdapter getConnectorAdapter() {
-        return connectorAdapter;
-    }
-
-    public void setConnectorAdapter(ConnectorAdapter connectorAdapter) {
-        this.connectorAdapter = connectorAdapter;
-    }
-
-    public RemoteConnectorAdapter getRemoteConnectorAdapter() {
-        return remoteConnectorAdapter;
-    }
-
-    public void setRemoteConnectorAdapter(
-            RemoteConnectorAdapter remoteConnectorAdapter) {
-        this.remoteConnectorAdapter = remoteConnectorAdapter;
-    }
-
 }

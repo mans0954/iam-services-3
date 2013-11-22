@@ -8,12 +8,14 @@ import javax.jws.WebService;
 import org.openiam.idm.srvc.audit.export.ExportAuditEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Component;
 
 
 @WebService(endpointInterface = "org.openiam.idm.srvc.audit.ws.PublishAuditEventWebService",
 		targetNamespace = "urn:idm.openiam.org/srvc/audit/service",
 		portName = "PublishAuditEventWebServicePort",
 		serviceName = "PublishAuditEventService")
+@Component("asyncPublishAuditWS")
 public class PublishAuditEventWebServiceImpl implements PublishAuditEventWebService{
     protected static final Log l = LogFactory.getLog(PublishAuditEventWebServiceImpl.class);
 

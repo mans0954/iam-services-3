@@ -3,6 +3,8 @@ package org.openiam.idm.srvc.mngsys.service;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.openiam.idm.searchbeans.AttributeMapSearchBean;
 import org.openiam.idm.searchbeans.SearchBean;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
@@ -12,10 +14,12 @@ import org.openiam.idm.srvc.mngsys.domain.ManagedSysRuleEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
 import org.openiam.idm.srvc.mngsys.domain.ReconciliationResourceAttributeMapEntity;
 import org.openiam.idm.srvc.policy.service.PolicyDAO;
+import org.openiam.idm.srvc.res.domain.ResourceEntity;
+import org.openiam.idm.srvc.res.service.ResourceDAO;
+import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 
 @Service
 public class ManagedSystemServiceImpl implements ManagedSystemService {
@@ -36,6 +40,14 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
 
     @Autowired
     private ManagedSystemObjectMatchDAO matchDAO;
+    
+    @Autowired
+    private ResourceTypeDAO resourceTypeDAO;
+    
+    @Autowired
+    private ResourceDAO resourceDAO;
+    
+    private static final String resourceTypeId="MANAGED_SYS";
 
     @Override
     @Transactional(readOnly = true)
@@ -48,12 +60,6 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
     @Transactional(readOnly = true)
     public Integer getManagedSystemsCountByExample(ManagedSysEntity example) {
         return managedSysDAO.count(example);
-    }
-
-    @Override
-    @Transactional
-    public void addManagedSys(ManagedSysEntity entity) {
-        managedSysDAO.persist(entity);
     }
 
     @Override
@@ -83,9 +89,6 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
     @Override
     @Transactional
     public void removeManagedSysById(String id) {
-        if (!StringUtils.hasText(id)) {
-            return;
-        }
         ManagedSysEntity sysEntity = managedSysDAO.findById(id);
         for (ManagedSystemObjectMatchEntity matchEntity : sysEntity
                 .getMngSysObjectMatchs()) {
@@ -96,11 +99,53 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
         }
         managedSysDAO.delete(sysEntity);
     }
+    
+    @Override
+    @Transactional
+    public void addManagedSys(ManagedSysEntity entity) {
+    	//if(org.apache.commons.lang.StringUtils.isBlank(entity.getResourceId())) {
+    	final ResourceEntity resource = new ResourceEntity();
+    	resource.setName(String.format("%s_%S", entity.getName(), System.currentTimeMillis()));
+    	resource.setResourceType(resourceTypeDAO.findById(resourceTypeId));
+    	resource.setIsPublic(false);
+    	resourceDAO.save(resource);
+    	entity.setResourceId(resource.getResourceId());
+    	//}
+        managedSysDAO.save(entity);
+        //resource.setManagedSysId(entity.getManagedSysId());
+        //resourceDAO.update(resource);
+        //saveManagedSysCollections(entity);
+    }
 
     @Override
     @Transactional
     public void updateManagedSys(ManagedSysEntity entity) {
+    	ResourceEntity resource = null;
+    	if(org.apache.commons.lang.StringUtils.isEmpty(entity.getResourceId())) {
+    		resource = new ResourceEntity();
+    		resource.setName(String.format("%s_%S", entity.getName(), System.currentTimeMillis()));
+    		resource.setResourceType(resourceTypeDAO.findById(resourceTypeId));
+    		resource.setIsPublic(false);
+    		//resource.setManagedSysId(entity.getManagedSysId());
+    		resourceDAO.save(resource);
+    		entity.setResourceId(resource.getResourceId());
+    	}
         managedSysDAO.merge(entity);
+        //saveManagedSysCollections(entity);
+    }
+    
+    private void saveManagedSysCollections(final ManagedSysEntity entity) {
+    	if(entity != null) {
+    		if(CollectionUtils.isNotEmpty(entity.getMngSysObjectMatchs())) {
+    			for(final ManagedSystemObjectMatchEntity match : entity.getMngSysObjectMatchs()) {
+    				if(StringUtils.isNotBlank(match.getObjectSearchId())) {
+    					matchDAO.update(match);
+    				} else {
+    					matchDAO.save(match);
+    				}
+    			}
+    		}
+    	}
     }
 
     @Override
@@ -253,8 +298,6 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
 
     @Override
     public void deleteRules(String ruleId) {
-        if (!StringUtils.hasText(ruleId))
-            return;
         ManagedSysRuleEntity entity = managedSysRuleDAO.findById(ruleId);
         if (entity == null)
             return;

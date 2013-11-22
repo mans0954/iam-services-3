@@ -40,8 +40,8 @@ import org.openiam.idm.srvc.res.domain.ResourceRoleEntity;
         "parentResources",
         "minAuthLevel",
         "domain",
-        "isPublic",
-        "isSSL"
+        "isPublic"/*,
+        "isSSL"*/
 })
 @DozerDTOCorrespondence(ResourceEntity.class)
 public class Resource extends BaseObject {
@@ -74,7 +74,7 @@ public class Resource extends BaseObject {
     private String minAuthLevel;
     private String domain;
     private boolean isPublic = true;
-    private boolean isSSL = false;
+    //private boolean isSSL = false;
 
     public Resource() {
     }
@@ -203,6 +203,7 @@ public class Resource extends BaseObject {
 		this.isPublic = isPublic;
 	}
 	
+	/*
 	public boolean getIsSSL() {
 		return this.isSSL;
 	}
@@ -210,6 +211,7 @@ public class Resource extends BaseObject {
 	public void setIsSSL(final boolean isSSL) {
 		this.isSSL = isSSL;
 	}
+	*/
 
 	public Set<ResourceUser> getResourceUsers() {
 		return resourceUsers;

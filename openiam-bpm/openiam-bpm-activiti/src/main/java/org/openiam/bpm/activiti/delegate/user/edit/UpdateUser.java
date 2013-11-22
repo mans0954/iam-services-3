@@ -32,6 +32,9 @@ public class UpdateUser implements JavaDelegate {
 	private UserDataWebService userDataService;
 	
 	@Autowired
+	private UserDataService userService;
+	
+	@Autowired
 	private UserDozerConverter dozerConverter;
 	
 	@Autowired
@@ -54,7 +57,7 @@ public class UpdateUser implements JavaDelegate {
 			user.setNotifyUserViaEmail(false); /* edit user - don't send creds */
 			userDataService.saveUserProfile(profile);
 			//userDataService.saveUserInfo(user, null);
-			user = userDataService.getUserWithDependent(user.getUserId(), null, true);
+			user = userService.getUserDto(user.getUserId());
 			
 			final ProvisionUser pUser = new ProvisionUser(user);
 			provisionService.modifyUser(pUser);

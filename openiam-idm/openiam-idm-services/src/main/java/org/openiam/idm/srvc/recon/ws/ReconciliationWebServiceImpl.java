@@ -33,16 +33,17 @@ import org.openiam.idm.srvc.recon.dto.ReconciliationResponse;
 import org.openiam.idm.srvc.recon.result.dto.ReconciliationResultBean;
 import org.openiam.idm.srvc.recon.service.ReconciliationService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 /**
  * @author suneet
  * 
  */
 @WebService(endpointInterface = "org.openiam.idm.srvc.recon.ws.ReconciliationWebService", targetNamespace = "http://www.openiam.org/service/recon", portName = "ReconciliationWebServicePort", serviceName = "ReconciliationWebService")
+@Component("reconServiceWS")
 public class ReconciliationWebServiceImpl implements ReconciliationWebService {
     @Autowired
     protected ReconciliationService reconService;
-    protected MuleContext muleContext;
 
     public ReconciliationConfigResponse addConfig(ReconciliationConfig config) {
         ReconciliationConfigResponse response = new ReconciliationConfigResponse(

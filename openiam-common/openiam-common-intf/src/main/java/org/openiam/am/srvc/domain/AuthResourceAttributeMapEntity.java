@@ -41,7 +41,7 @@ public class AuthResourceAttributeMapEntity implements Serializable {
     private AuthProviderEntity provider;
 
     @ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH}, optional = true)
-    @JoinColumn(name="AM_RES_ATTRIBUTE_ID", referencedColumnName = "AM_RES_ATTRIBUTE_ID", insertable = false, updatable = false)
+    @JoinColumn(name="AM_RES_ATTRIBUTE_ID", referencedColumnName = "AM_RES_ATTRIBUTE_ID", insertable = false, updatable = false, nullable=true)
     private AuthResourceAMAttributeEntity amAttribute;
 
     public String getAttributeMapId() {

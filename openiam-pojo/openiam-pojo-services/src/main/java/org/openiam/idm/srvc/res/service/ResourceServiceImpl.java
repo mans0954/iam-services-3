@@ -1,7 +1,10 @@
 package org.openiam.idm.srvc.res.service;
 
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.openiam.idm.searchbeans.ResourceSearchBean;
@@ -12,6 +15,7 @@ import org.openiam.idm.srvc.res.domain.ResourceRoleEmbeddableId;
 import org.openiam.idm.srvc.res.domain.ResourceRoleEntity;
 import org.openiam.idm.srvc.res.domain.ResourceTypeEntity;
 import org.openiam.idm.srvc.res.domain.ResourceUserEntity;
+import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.idm.srvc.searchbean.converter.ResourceSearchBeanConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -61,19 +65,78 @@ public class ResourceServiceImpl implements ResourceService {
 		if(StringUtils.isNotBlank(entity.getResourceId())) {
 			final ResourceEntity dbObject = resourceDao.findById(entity.getResourceId());
 			entity.setChildResources(dbObject.getChildResources());
-			entity.setParentResources(dbObject.getParentResources());
 			entity.setResourceGroups(dbObject.getResourceGroups());
-			entity.setResourceProps(dbObject.getResourceProps());
-			entity.setResourceUsers(dbObject.getResourceUsers());
+			entity.setParentResources(dbObject.getParentResources());
 			entity.setResourceRoles(dbObject.getResourceRoles());
+			entity.setResourceUsers(dbObject.getResourceUsers());
+			
 			if(entity.getResourceType() != null) {
-				final ResourceTypeEntity resourceType = resourceTypeDao.findById(entity.getResourceType().getResourceTypeId());
-				entity.setResourceType(resourceType);
+				entity.setResourceType(resourceTypeDao.findById(entity.getResourceType().getResourceTypeId()));
 			}
+			
+			mergeAttribute(entity, dbObject);
+			
 			resourceDao.merge(entity);
 		} else {
 			resourceDao.save(entity);
 		}
+	}
+	
+	private void mergeAttribute(final ResourceEntity bean, final ResourceEntity dbObject) {
+		Set<ResourcePropEntity> beanProps = (bean.getResourceProps() != null) ? bean.getResourceProps() : new HashSet<ResourcePropEntity>();
+		Set<ResourcePropEntity> dbProps = (dbObject.getResourceProps() != null) ? dbObject.getResourceProps() : new HashSet<ResourcePropEntity>();
+		
+		/* delete */
+		for(final Iterator<ResourcePropEntity> dbIt = dbProps.iterator(); dbIt.hasNext();) {
+			final ResourcePropEntity dbProp = dbIt.next();
+			
+			boolean contains = false;
+			for(final Iterator<ResourcePropEntity> it = beanProps.iterator(); it.hasNext();) {
+			final ResourcePropEntity beanProp = it.next();
+				if(StringUtils.equals(dbProp.getResourcePropId(), beanProp.getResourcePropId())) {
+					contains = true;
+					break;
+				}
+			}
+			
+			if(!contains) {
+				dbIt.remove();
+			}
+		}
+			
+		/* update */
+		for(final Iterator<ResourcePropEntity> dbIt = dbProps.iterator(); dbIt.hasNext();) {
+			final ResourcePropEntity dbProp = dbIt.next();
+			for(final Iterator<ResourcePropEntity> it = beanProps.iterator(); it.hasNext();) {
+				final ResourcePropEntity beanProp = it.next();
+				if(StringUtils.equals(dbProp.getResourcePropId(), beanProp.getResourcePropId())) {
+					dbProp.setPropValue(beanProp.getPropValue());
+					dbProp.setMetadataId(beanProp.getMetadataId());
+					dbProp.setName(beanProp.getName());
+					dbProp.setResourceId(beanProp.getResourceId());
+					break;
+				}
+			}
+		}
+		
+		/* add */
+		for(final Iterator<ResourcePropEntity> it = beanProps.iterator(); it.hasNext();) {
+			boolean contains = false;
+			final ResourcePropEntity beanProp = it.next();
+			for(final Iterator<ResourcePropEntity> dbIt = dbProps.iterator(); dbIt.hasNext();) {
+				final ResourcePropEntity dbProp = dbIt.next();
+				if(StringUtils.equals(dbProp.getResourcePropId(), beanProp.getResourcePropId())) {
+					contains = true;
+				}
+			}
+			
+			if(!contains) {
+				beanProp.setResourceId(bean.getResourceId());
+				dbProps.add(beanProp);
+			}
+		}
+		
+		bean.setResourceProps(dbProps);
 	}
 
 	@Override

@@ -26,7 +26,6 @@ import javax.naming.ldap.InitialLdapContext;
 import javax.naming.ldap.LdapContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.mule.api.MuleContext;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
@@ -41,38 +40,37 @@ import org.openiam.idm.srvc.synch.service.SourceAdapter;
 import org.openiam.idm.srvc.synch.srcadapter.MatchRuleFactory;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.dto.ProvisionUser;
-import org.openiam.provision.service.ProvisionService;
-import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationContext;
+import org.springframework.stereotype.Component;
 
 /**
  * Scan Ldap for any new records, changed users, or delete operations and then synchronizes them back into OpenIAM.
  *
  * @author suneet
  */
+@Component("genericObjLdapAdapter")
 public class LdapAdapterForGenericObject implements SourceAdapter {
 
     protected LineObject rowHeader = new LineObject();
     protected ProvisionUser pUser = new ProvisionUser();
 
-    public static ApplicationContext ac;
-
+    @Autowired
     protected LoginDataService loginManager;
+    @Autowired
     protected RoleDataService roleDataService;
     @Autowired
     protected AuditHelper auditHelper;
+    @Autowired
     protected MatchRuleFactory matchRuleFactory;
 
     @Value("${KEYSTORE}")
     private String keystore;
 
     LdapContext ctx = null;
-
+    @Autowired
     protected UserDataService userMgr;
-    ProvisionService provService = null;
-    String systemAccount;
+
     private static final Log log = LogFactory
             .getLog(LdapAdapterForGenericObject.class);
 
@@ -153,69 +151,4 @@ public class LdapAdapterForGenericObject implements SourceAdapter {
         }
 
     }
-
-    public MatchRuleFactory getMatchRuleFactory() {
-        return matchRuleFactory;
-    }
-
-    public void setMatchRuleFactory(MatchRuleFactory matchRuleFactory) {
-        this.matchRuleFactory = matchRuleFactory;
-    }
-
-    public String getSystemAccount() {
-        return systemAccount;
-    }
-
-    public void setSystemAccount(String systemAccount) {
-        this.systemAccount = systemAccount;
-    }
-
-    public LoginDataService getLoginManager() {
-        return loginManager;
-    }
-
-    public void setLoginManager(LoginDataService loginManager) {
-        this.loginManager = loginManager;
-    }
-
-    public RoleDataService getRoleDataService() {
-        return roleDataService;
-    }
-
-    public void setRoleDataService(RoleDataService roleDataService) {
-        this.roleDataService = roleDataService;
-    }
-
-    public UserDataService getUserMgr() {
-        return userMgr;
-    }
-
-    public void setUserMgr(UserDataService userMgr) {
-        this.userMgr = userMgr;
-    }
-
-    public AuditHelper getAuditHelper() {
-        return auditHelper;
-    }
-
-    public void setAuditHelper(AuditHelper auditHelper) {
-        this.auditHelper = auditHelper;
-    }
-
-    public void setApplicationContext(ApplicationContext applicationContext)
-            throws BeansException {
-        ac = applicationContext;
-    }
-
-    public void setMuleContext(MuleContext ctx) {
-        // To change body of implemented methods use File | Settings | File
-        // Templates.
-    }
-
-    private class LastRecordTime {
-        long mostRecentRecord;
-        String generalizedTime;
-
-    }
-
 }

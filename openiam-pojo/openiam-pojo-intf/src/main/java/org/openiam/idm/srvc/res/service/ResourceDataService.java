@@ -24,8 +24,13 @@ public interface ResourceDataService {
 	 * @param resource
 	 * @return
 	 */
+	/*
 	@WebMethod
 	Response addResource(
+			@WebParam(name = "resource", targetNamespace = "") Resource resource);
+	*/
+	@WebMethod
+	Response saveResource(
 			@WebParam(name = "resource", targetNamespace = "") Resource resource);
 
 	/**
@@ -46,9 +51,11 @@ public interface ResourceDataService {
 	 *            the resource
 	 * @return the resource
 	 */
+	/*
 	@WebMethod
 	Response updateResource(
 			@WebParam(name = "resource", targetNamespace = "") Resource resource);
+	*/
 
 	/**
 	 * Add a new resource type.

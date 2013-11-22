@@ -35,7 +35,6 @@ import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVStrategy;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.mule.api.MuleContext;
 import org.openiam.base.id.UUIDGen;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
@@ -54,40 +53,37 @@ import org.openiam.idm.srvc.synch.srcadapter.MatchRuleFactory;
 import org.openiam.idm.srvc.synch.srcadapter.SynchScriptFactory;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.dto.ProvisionUser;
-import org.openiam.provision.service.ProvisionService;
-import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Component;
 
 /**
  * Reads a CSV file for use during the synchronization process
  * @author suneet
  *
  */
+@Component("genericObjCsvAdapter")
 public class CSVAdapterForGenericObject implements SourceAdapter {
-
+    @Autowired
     ObjectAdapterMap adapterMap;
     protected LineObject rowHeader = new LineObject();
     protected ProvisionUser pUser = new ProvisionUser();
-    public static ApplicationContext ac;
+    @Autowired
     protected LoginDataService loginManager;
+    @Autowired
     protected RoleDataService roleDataService;
     @Autowired
     protected AuditHelper auditHelper;
-
+    @Autowired
     protected UserDataService userMgr;
-    ProvisionService provService = null;
+    @Autowired
+    @Qualifier("systemAccount")
     String systemAccount;
-
+    @Autowired
     MatchRuleFactory matchRuleFactory;
 
     private static final Log log = LogFactory
             .getLog(CSVAdapterForGenericObject.class);
-
-    public void setApplicationContext(ApplicationContext applicationContext)
-            throws BeansException {
-        ac = applicationContext;
-    }
 
     public SyncResponse startSynch(SynchConfig config) {
 
@@ -281,14 +277,6 @@ public class CSVAdapterForGenericObject implements SourceAdapter {
 
     }
 
-    public static ApplicationContext getAc() {
-        return ac;
-    }
-
-    public static void setAc(ApplicationContext ac) {
-        CSVAdapterForGenericObject.ac = ac;
-    }
-
     public LoginDataService getLoginManager() {
         return loginManager;
     }
@@ -327,19 +315,6 @@ public class CSVAdapterForGenericObject implements SourceAdapter {
 
     public void setMatchRuleFactory(MatchRuleFactory matchRuleFactory) {
         this.matchRuleFactory = matchRuleFactory;
-    }
-
-    public AuditHelper getAuditHelper() {
-        return auditHelper;
-    }
-
-    public void setAuditHelper(AuditHelper auditHelper) {
-        this.auditHelper = auditHelper;
-    }
-
-    public void setMuleContext(MuleContext ctx) {
-        // To change body of implemented methods use File | Settings | File
-        // Templates.
     }
 
     public ObjectAdapterMap getAdapterMap() {

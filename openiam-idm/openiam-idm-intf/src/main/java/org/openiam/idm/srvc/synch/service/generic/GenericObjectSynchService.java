@@ -21,6 +21,4 @@ public interface GenericObjectSynchService {
      */
 	SyncResponse startSynchronization(SynchConfig config);
 
-    public void setMuleContext(MuleContext ctx);
-
 }

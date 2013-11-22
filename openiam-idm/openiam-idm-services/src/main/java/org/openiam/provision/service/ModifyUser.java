@@ -45,19 +45,26 @@ import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleUser;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 /**
  * Helper class for the modifyUser operation in the Provisioning Service.
  *
  * @author administrator
  */
+@Component
 public class ModifyUser {
+    @Autowired
     private RoleDataService roleDataService;
+    @Autowired
     private GroupDataService groupManager;
+    @Autowired
     private UserDataService userMgr;
+    @Autowired
     private LoginDataService loginManager;
     @Autowired
     private AuditHelper auditHelper;
+    @Autowired
     private OrganizationDataService orgManager;
     
     @Autowired

@@ -374,7 +374,7 @@ public class UserMgr implements UserDataService {
         }
 
         // Processing user attributes
-        updateUserAttributes(userDozerConverter.convertToEntity(user, false), userEntity);
+        updateUserAttributes(userDozerConverter.convertToEntity(user, true), userEntity);
 
         //TODO: Check userRoles and affiliations
 
@@ -383,33 +383,50 @@ public class UserMgr implements UserDataService {
     }
 
     private void updateUserAttributes(final UserEntity user, final UserEntity userEntity) {
-        Map<String, UserAttributeEntity> newAttributes = user.getUserAttributes();
-        Map<String, UserAttributeEntity> oldAttributes = userEntity.getUserAttributes();
-        Map<String, UserAttributeEntity> mergedAttributes = new HashMap<String, UserAttributeEntity>();
-        for (Map.Entry<String, UserAttributeEntity> attr : oldAttributes.entrySet()) {
-            if (!newAttributes.containsKey(attr.getKey())) {
-                userAttributeDao.delete(attr.getValue());
-            } else {
-                UserAttributeEntity oldattr = attr.getValue();
-                UserAttributeEntity newattr = newAttributes.get(attr.getKey());
-                oldattr.setValue(newattr.getValue());
-                oldattr.setUser(newattr.getUser());
-                oldattr.setElement(newattr.getElement());
-                mergedAttributes.put(oldattr.getName(), oldattr);
-            }
+    	Map<String, UserAttributeEntity> incomingAttributes = user.getUserAttributes();
+    	Map<String, UserAttributeEntity> existingAttributes = userEntity.getUserAttributes();
+    	incomingAttributes = (incomingAttributes != null) ? incomingAttributes : new HashMap<String, UserAttributeEntity>();
+        existingAttributes = (existingAttributes != null) ? existingAttributes : new HashMap<String, UserAttributeEntity>();
+        
+        final List<UserAttributeEntity> deleteList = new LinkedList<UserAttributeEntity>();
+        final List<UserAttributeEntity> editList = new LinkedList<UserAttributeEntity>();
+        final List<UserAttributeEntity> newList = new LinkedList<UserAttributeEntity>();
+        
+        for(final String incomingKey : incomingAttributes.keySet()) {
+        	/* new */
+        	final UserAttributeEntity incomingEntity = incomingAttributes.get(incomingKey);
+        	final UserAttributeEntity existingEntity = existingAttributes.get(incomingKey);
+        	if(existingEntity == null) {
+        		//incomingEntity.setUser(userEntity);
+        		newList.add(incomingEntity);
+        	} else { /* exists - modify */
+        		//existingEntity.setUser(userEntity);
+        		existingEntity.setElement(incomingEntity.getElement());
+        		existingEntity.setName(incomingEntity.getName());
+        		existingEntity.setValue(incomingEntity.getValue());
+        		editList.add(existingEntity);
+        	}
         }
-        userEntity.getUserAttributes().clear();
-        for (Map.Entry<String, UserAttributeEntity> attr : newAttributes.entrySet()) {
-            UserAttributeEntity userAttributeEntity = attr.getValue();
-            if (mergedAttributes.containsKey(attr.getKey())) {
-                userAttributeEntity = mergedAttributes.get(attr.getKey());
-
-            } else {
-                mergedAttributes.put(attr.getKey(), userAttributeEntity);
-            }
-            userAttributeDao.save(userAttributeEntity);
-            userEntity.getUserAttributes().put(userAttributeEntity.getName(), userAttributeEntity);
+        
+        for(final String oldKey : existingAttributes.keySet()) {
+        	if(!incomingAttributes.containsKey(oldKey)) {
+        		deleteList.add(existingAttributes.get(oldKey));
+        	}
         }
+        
+        for(final UserAttributeEntity entity : newList) {
+        	userAttributeDao.save(entity);
+        }
+        
+        for(final UserAttributeEntity entity : editList) {
+        	userAttributeDao.update(entity);
+        }
+        
+        for(final UserAttributeEntity entity : deleteList) {
+        	userAttributeDao.delete(entity);
+        }
+        
+        user.setUserAttributes(incomingAttributes);
     }
 
     @Override

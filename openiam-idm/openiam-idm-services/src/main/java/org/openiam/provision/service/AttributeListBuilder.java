@@ -27,12 +27,12 @@ import org.mule.util.StringUtils;
 import org.openiam.exception.ScriptEngineException;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
-import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleUser;
 import org.openiam.script.ScriptIntegration;
 import org.openiam.base.BaseAttributeContainer;
+import org.springframework.stereotype.Component;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -47,6 +47,7 @@ import java.util.Map;
  * 
  * @author suneet
  */
+@Component
 public class AttributeListBuilder {
 
     protected static final Log log = LogFactory

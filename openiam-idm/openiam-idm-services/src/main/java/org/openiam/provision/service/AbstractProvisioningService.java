@@ -95,7 +95,7 @@ import org.springframework.beans.factory.annotation.Value;
  * Base class for the provisioning service
  * User: suneetshah
  */
-public abstract class AbstractProvisioningService implements ProvisionService, ApplicationContextAware {
+public abstract class AbstractProvisioningService implements ProvisionService {
 
     protected static final Log log = LogFactory.getLog(AbstractProvisioningService.class);
 
@@ -167,8 +167,7 @@ public abstract class AbstractProvisioningService implements ProvisionService, A
     protected ValidateConnectionConfig validateConnectionConfig;
     @Autowired
     protected PasswordHistoryDAO passwordHistoryDao;
-    @Autowired
-    protected DeprovisionSelectedResourceHelper deprovisionSelectedResource;
+
     @Autowired
     protected UserDozerConverter userDozerConverter;
     @Autowired
@@ -200,16 +199,10 @@ public abstract class AbstractProvisioningService implements ProvisionService, A
     @Autowired
     @Qualifier("configurableGroovyScriptEngine")
     protected ScriptIntegration scriptRunner;
-
+    @Autowired
     protected String preProcessor;
+    @Autowired
     protected String postProcessor;
-
-    // used to inject the application context into the groovy scripts
-    protected static ApplicationContext ac;
-
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        ac = applicationContext;
-    }
 
     protected void checkAuditingAttributes(ProvisionUser pUser) {
         if ( pUser.getRequestClientIP() == null || pUser.getRequestClientIP().isEmpty() ) {
@@ -2031,67 +2024,6 @@ public abstract class AbstractProvisioningService implements ProvisionService, A
         return null;
     }
 
-    /**
-     * If the user has selected roles that are in multiple domains, we need to make sure that they identities for
-     * each of these domains
-     * @param primaryIdentity
-     * @param roleList
-     */
-
-    public void validateIdentitiesExistforSecurityDomain(Login primaryIdentity, List<Role> roleList) {
-
-        log.debug("validateIdentitiesExistforSecurityDomain");
-
-        List<LoginEntity> identityList = loginManager.getLoginByUser(primaryIdentity.getUserId());
-        String managedSysId = primaryIdentity.getManagedSysId();
-
-        log.debug("Identitylist =" + identityList);
-
-        if (roleList != null) {
-            for (Role r : roleList) {
-                String secDomain = r.getServiceId();
-                if (!identityInDomain(secDomain, managedSysId ,identityList)) {
-
-                    log.debug("Adding identity to :" + secDomain);
-
-                    addIdentity(secDomain, primaryIdentity);
-                }
-            }
-        }
-
-        // determine if we should remove an identity
-        if (identityList != null) {
-            for (LoginEntity l : identityList) {
-                if (l.getManagedSysId().equalsIgnoreCase(managedSysId)) {
-                    boolean found = false;
-
-                    // possible to have a user with no roles.
-                    if (roleList != null) {
-                        for ( Role r : roleList) {
-                            if (r.getServiceId().equalsIgnoreCase(l.getDomainId())) {
-                                found = true ;
-                            }
-                        }
-                    }
-                    //TODO check this case was added when StaterBros debug: the ACTIVE status was awerrided with INACTIVE from this condition
-                    if (!found) {
-                        if ( l.getManagedSysId().equalsIgnoreCase( "0" )) {
-                            // primary identity - do not delete. Just disable its status
-                            log.debug("Primary identity - chagne its status");
-//                            l.setStatus("INACTIVE");
-//                            loginManager.updateLogin(l);
-
-                        } else {
-
-                            log.debug("Removing identity for  :" + l.getLoginId() );
-                            loginManager.removeLogin(l.getDomainId(), l.getLogin(), l.getManagedSysId());
-                        }
-                    }
-                }
-            }
-        }
-    }
-
     private boolean identityInDomain(String secDomain, String managedSysId,  List<LoginEntity> identityList) {
 
         log.debug("IdentityinDomain =" + secDomain + "-" + managedSysId);
@@ -2567,11 +2499,4 @@ public abstract class AbstractProvisioningService implements ProvisionService, A
         return respType;
     }
 
-    public void setPreProcessor(String preProcessor) {
-        this.preProcessor = preProcessor;
-    }
-
-    public void setPostProcessor(String postProcessor) {
-        this.postProcessor = postProcessor;
-    }
 }

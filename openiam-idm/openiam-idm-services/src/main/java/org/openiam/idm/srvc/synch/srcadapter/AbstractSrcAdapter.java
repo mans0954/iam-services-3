@@ -23,12 +23,10 @@ import org.openiam.idm.srvc.synch.service.SourceAdapter;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.service.ProvisionService;
-import org.springframework.beans.BeansException;
+import org.openiam.util.MuleContextProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 
 /**
  * Abstract class which all Source System adapters must extend
@@ -37,15 +35,11 @@ import org.springframework.context.ApplicationContextAware;
  * Time: 6:18 PM
  * To change this template use File | Settings | File Templates.
  */
-public abstract class AbstractSrcAdapter implements SourceAdapter, MuleContextAware, ApplicationContextAware {
+public abstract class AbstractSrcAdapter implements SourceAdapter {
 
     protected final long SHUTDOWN_TIME = 5000;
 
     private static final Log log = LogFactory.getLog(AbstractSrcAdapter.class);
-
-    static protected ApplicationContext applicationContext;
-
-    protected MuleContext muleContext;
 
     @Autowired
     protected String systemAccount;
@@ -86,7 +80,7 @@ public abstract class AbstractSrcAdapter implements SourceAdapter, MuleContextAw
 
         try {
             // Create the client with the context
-            MuleClient client = new MuleClient(muleContext);
+            MuleClient client = new MuleClient(MuleContextProvider.getCtx());
             client.sendAsync("vm://provisionServiceAddMessage",
                     (ProvisionUser) pUser, msgPropMap);
 
@@ -109,7 +103,7 @@ public abstract class AbstractSrcAdapter implements SourceAdapter, MuleContextAw
 
         try {
             // Create the client with the context
-            MuleClient client = new MuleClient(muleContext);
+            MuleClient client = new MuleClient(MuleContextProvider.getCtx());
             client.sendAsync("vm://provisionServiceModifyMessage",
                     (ProvisionUser) pUser, msgPropMap);
 
@@ -142,12 +136,4 @@ public abstract class AbstractSrcAdapter implements SourceAdapter, MuleContextAw
         }
     }
 
-    public void setMuleContext(MuleContext muleContext) {
-        this.muleContext = muleContext;
-    }
-
-    @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        this.applicationContext = applicationContext;
-    }
 }

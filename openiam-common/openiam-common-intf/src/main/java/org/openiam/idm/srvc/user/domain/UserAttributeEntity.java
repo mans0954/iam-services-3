@@ -37,7 +37,7 @@ public class UserAttributeEntity {
     private String userId;
     */
 
-    @Column(name = "VALUE", length = 50)
+    @Column(name = "VALUE", length = 1000)
     private String value;
 
     @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
