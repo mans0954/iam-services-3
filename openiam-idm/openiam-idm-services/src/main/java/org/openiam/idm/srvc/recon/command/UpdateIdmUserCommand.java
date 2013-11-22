@@ -36,7 +36,7 @@ public class UpdateIdmUserCommand implements ReconciliationCommand {
 
     public boolean execute(Login login, User user, List<ExtensibleAttribute> attributes) {
         log.debug("Entering UpdateIdmUserCommand");
-        LookupUserResponse lookupResp =  provisionService.getTargetSystemUser(login.getLogin(), login.getManagedSysId());
+        LookupUserResponse lookupResp =  provisionService.getTargetSystemUser(login.getLogin(), login.getManagedSysId(), attributes);
         if(lookupResp.getStatus() == ResponseStatus.FAILURE){
             log.debug("Can't update IDM user from non-existent resource...");
         } else {

@@ -595,10 +595,18 @@ public class ReconciliationServiceImpl implements ReconciliationService {
         Login idDto = loginDozerConverter.convertToDTO(identity, true);
         log.debug("1 Reconciliation for user " + user);
 
+        List<ExtensibleAttribute> requestedExtensibleAttributes = new ArrayList<ExtensibleAttribute>();
+
+        for (AttributeMapEntity ame : attrMap) {
+            if ("USER".equalsIgnoreCase(ame.getMapForObjectType()) && "ACTIVE".equalsIgnoreCase(ame.getStatus())) {
+                requestedExtensibleAttributes.add(new ExtensibleAttribute(ame.getAttributeName(), null));
+            }
+        }
+
         String principal = identity.getLogin();
         log.debug("looking up identity in resource: " + principal);
         LookupUserResponse lookupResp = provisionService.getTargetSystemUser(
-                principal, mSys.getManagedSysId());
+                principal, mSys.getManagedSysId(), requestedExtensibleAttributes);
 
         log.debug("Lookup status for " + principal + " ="
                 + lookupResp.getStatus());
