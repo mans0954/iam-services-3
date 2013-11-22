@@ -60,6 +60,7 @@ public class AuthorizationManagerMenuServiceImpl implements AuthorizationManager
 	
 	private Map<String, AuthorizationMenu> menuCache;
 	private Map<String, AuthorizationMenu> menuNameCache;
+	private Map<String, AuthorizationMenu> urlCache;
 	
 	@Autowired
 	@Qualifier("jdbcResourceResourceXrefDAO")
@@ -215,9 +216,16 @@ public class AuthorizationManagerMenuServiceImpl implements AuthorizationManager
 		for(final AuthorizationMenu menu : tempMenuTreeMap.values()) {
 			tempMenuNameMap.put(menu.getName(), menu);
 		}
+		
+		final Map<String, AuthorizationMenu> tempURLCache = new HashMap<String, AuthorizationMenu>();
+		for(final AuthorizationMenu menu : tempMenuTreeMap.values()) {
+			tempURLCache.put(menu.getUrl(), menu);
+		}
+		
 		synchronized(this) {
 			menuCache = tempMenuTreeMap;
 			menuNameCache = tempMenuNameMap;
+			urlCache = tempURLCache;
 		}
 		sw.stop();
 		log.debug(String.format("Done creating menu trees. Took: %s ms", sw.getTime()));
@@ -507,4 +515,20 @@ public class AuthorizationManagerMenuServiceImpl implements AuthorizationManager
             }
         }
     }
+
+	@Override
+	public boolean isUserAuthenticatedToMenuWithURL(final String userId, final String url, final boolean defaultResult) {
+		boolean retVal = defaultResult;
+		final AuthorizationMenu menu = urlCache.get(url);
+		if(menu != null) {
+			if(menu.getIsPublic()) {
+				retVal = true;
+			} else {
+				final AuthorizationResource resource = new AuthorizationResource();
+				resource.setId(menu.getId());
+				retVal = authManager.isEntitled(userId, resource);
+			}
+		}
+		return retVal;
+	}
 }

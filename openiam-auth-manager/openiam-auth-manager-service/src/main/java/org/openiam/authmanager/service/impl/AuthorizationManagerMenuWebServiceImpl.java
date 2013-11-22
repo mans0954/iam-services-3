@@ -428,4 +428,10 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 		}
 		return response;
 	}
+	
+
+	@Override
+	public boolean isUserAuthenticatedToMenuWithURL(final String userId, final String url, final boolean defaultResult) {
+		return menuService.isUserAuthenticatedToMenuWithURL(userId, url, defaultResult);
+	}
 }
