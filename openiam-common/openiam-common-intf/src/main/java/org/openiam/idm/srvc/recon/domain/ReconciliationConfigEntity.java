@@ -57,6 +57,13 @@ public class ReconciliationConfigEntity implements java.io.Serializable {
     @Type(type = "yes_no")
     private boolean manualReconciliationFlag;
 
+    @Column(name="MATCH_FIELD_NAME",length=40)
+    private String matchFieldName;
+    @Column(name="CUSTOM_MATCH_ATTR",length=40)
+    private String customMatchAttr;
+    @Column(name="CUSTOM_MATCH_SRC_ATTR",length=40)
+    private String matchSrcFieldName;
+
     public String getSeparator() {
         return separator;
     }
@@ -175,5 +182,29 @@ public class ReconciliationConfigEntity implements java.io.Serializable {
 
     public void setCustomIdentityMatchScript(String customIdentityMatchScript) {
         this.customIdentityMatchScript = customIdentityMatchScript;
+    }
+
+    public String getMatchFieldName() {
+        return matchFieldName;
+    }
+
+    public void setMatchFieldName(String matchFieldName) {
+        this.matchFieldName = matchFieldName;
+    }
+
+    public String getCustomMatchAttr() {
+        return customMatchAttr;
+    }
+
+    public void setCustomMatchAttr(String customMatchAttr) {
+        this.customMatchAttr = customMatchAttr;
+    }
+
+    public String getMatchSrcFieldName() {
+        return matchSrcFieldName;
+    }
+
+    public void setMatchSrcFieldName(String matchSrcFieldName) {
+        this.matchSrcFieldName = matchSrcFieldName;
     }
 }

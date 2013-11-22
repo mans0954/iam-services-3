@@ -2,6 +2,7 @@ package org.openiam.idm.srvc.recon.dto;
 
 import java.util.Set;
 
+import javax.persistence.Column;
 import javax.persistence.Transient;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -19,10 +20,13 @@ import org.openiam.idm.srvc.recon.domain.ReconciliationConfigEntity;
         "separator", "endOfLine", "notificationEmailAddress",
         "manualReconciliationFlag","targetSystemMatchScript",
         "customIdentityMatchScript",
-        "scriptHandler" })
+        "scriptHandler",
+        "matchFieldName",
+        "customMatchAttr",
+        "matchSrcFieldName"})
 
 @DozerDTOCorrespondence(ReconciliationConfigEntity.class)
-public class ReconciliationConfig implements java.io.Serializable {
+public class ReconciliationConfig implements MatchConfig, java.io.Serializable {
 
     private static final long serialVersionUID = 431603790346613674L;
     private String reconConfigId;
@@ -36,7 +40,9 @@ public class ReconciliationConfig implements java.io.Serializable {
     private String customIdentityMatchScript;
     private Set<ReconciliationSituation> situationSet;
     private boolean manualReconciliationFlag;
-
+    private String matchFieldName;
+    private String customMatchAttr;
+    private String matchSrcFieldName;
     @XmlElement
     private String scriptHandler;
 
@@ -169,5 +175,29 @@ public class ReconciliationConfig implements java.io.Serializable {
 
     public void setCustomIdentityMatchScript(String customIdentityMatchScript) {
         this.customIdentityMatchScript = customIdentityMatchScript;
+    }
+
+    public String getMatchFieldName() {
+        return matchFieldName;
+    }
+
+    public void setMatchFieldName(String matchFieldName) {
+        this.matchFieldName = matchFieldName;
+    }
+
+    public String getCustomMatchAttr() {
+        return customMatchAttr;
+    }
+
+    public void setCustomMatchAttr(String customMatchAttr) {
+        this.customMatchAttr = customMatchAttr;
+    }
+
+    public String getMatchSrcFieldName() {
+        return matchSrcFieldName;
+    }
+
+    public void setMatchSrcFieldName(String matchSrcFieldName) {
+        this.matchSrcFieldName = matchSrcFieldName;
     }
 }

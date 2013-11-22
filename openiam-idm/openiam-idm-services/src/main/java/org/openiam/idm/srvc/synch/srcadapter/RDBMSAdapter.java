@@ -309,7 +309,7 @@ public class RDBMSAdapter extends AbstractSrcAdapter {
             Map<String, Attribute> rowAttr = rowObj.getColumnMap();
             //
             // rule used to match object from source system to data in IDM
-            MatchObjectRule matchRule = matchRuleFactory.create(config);
+            MatchObjectRule matchRule = matchRuleFactory.create(config.getCustomMatchRule());
             User usr = matchRule.lookup(config, rowAttr);
 
             // transform

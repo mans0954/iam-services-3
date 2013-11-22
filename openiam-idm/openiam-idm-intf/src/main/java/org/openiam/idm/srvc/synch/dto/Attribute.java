@@ -29,10 +29,10 @@ import java.util.List;
  *
  */
 public class Attribute implements Cloneable {
-	private String name;
+	protected String name;
 
-    private String value;
-    private List<String> valueList;
+    protected String value;
+    protected List<String> valueList;
     boolean multiValued = false;
 
 

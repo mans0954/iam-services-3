@@ -21,6 +21,7 @@ package org.openiam.provision.type;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.BaseAttributeContainer;
+import org.openiam.idm.srvc.synch.dto.Attribute;
 import org.openiam.util.StringUtil;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -52,7 +53,7 @@ import java.util.List;
     "attributeContainer"
 
 })
-public class ExtensibleAttribute  implements Serializable {
+public class ExtensibleAttribute extends Attribute implements Serializable {
 
     private static final long serialVersionUID = 8402148961330001942L;
     protected String name;

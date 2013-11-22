@@ -3,12 +3,13 @@ package org.openiam.idm.srvc.synch.srcadapter;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openiam.idm.srvc.synch.dto.SynchConfig;
 import org.openiam.idm.srvc.synch.service.MatchObjectRule;
 import org.openiam.script.ScriptIntegration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
+
+import java.util.Map;
 
 /**
  * Instantiates the appropriate matching rule object for use in the synchronization request
@@ -27,15 +28,15 @@ public class MatchRuleFactory {
     @Autowired
     private MatchObjectRule defaultMatchRule;
 
-	public MatchObjectRule create(SynchConfig config) throws ClassNotFoundException {
-        String matchRule = config.getCustomMatchRule();
-		if (StringUtils.isBlank(matchRule)) {
+	public MatchObjectRule create(String customMatchRule) throws ClassNotFoundException {
+
+		if (StringUtils.isBlank(customMatchRule)) {
 			return defaultMatchRule;
 		}
 		// instantiate a rule via script
 
 		try {
-			return (MatchObjectRule)scriptRunner.instantiateClass(null, matchRule);
+			return (MatchObjectRule)scriptRunner.instantiateClass(null, customMatchRule);
 		} catch(Exception e) {
 			log.error(e);
 			return null;
