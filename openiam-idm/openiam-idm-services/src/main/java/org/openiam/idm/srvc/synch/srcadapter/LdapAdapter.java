@@ -120,7 +120,7 @@ public class LdapAdapter extends AbstractSrcAdapter { // implements SourceAdapte
             }
 
             try {
-                matchRule = matchRuleFactory.create(config);
+                matchRule = matchRuleFactory.create(config.getCustomMatchRule());
             } catch (ClassNotFoundException cnfe) {
 
                 runningTask.remove(config.getSynchConfigId());
@@ -224,7 +224,7 @@ public class LdapAdapter extends AbstractSrcAdapter { // implements SourceAdapte
                     // check if the user exists or not
                     Map<String, Attribute> rowAttr = rowObj.getColumnMap();
                     //
-                    matchRule = matchRuleFactory.create(config);
+                    matchRule = matchRuleFactory.create(config.getCustomMatchRule());
                     User usr = matchRule.lookup(config, rowAttr);
 
                     // transform

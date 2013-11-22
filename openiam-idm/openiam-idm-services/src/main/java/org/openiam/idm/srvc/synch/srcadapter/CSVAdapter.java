@@ -120,7 +120,7 @@ public class CSVAdapter extends AbstractSrcAdapter {
             //initialization if transformation script config exists
             final List<TransformScript> transformScripts = SynchScriptFactory.createTransformationScript(config);
             //init match rules
-            final MatchObjectRule matchRule = matchRuleFactory.create(config);
+            final MatchObjectRule matchRule = matchRuleFactory.create(config.getCustomMatchRule());
             //Get Header
             final LineObject rowHeader = populateTemplate(rows[0]);
             rows = Arrays.copyOfRange(rows, 1, rows.length);

@@ -84,7 +84,7 @@ public class WSAdapter extends AbstractSrcAdapter { // implements SourceAdapter
         synchStartLog = auditHelper.logEvent(synchStartLog);
 		*/
 		try {
-			matchRule = matchRuleFactory.create(config);
+			matchRule = matchRuleFactory.create(config.getCustomMatchRule());
 		} catch(ClassNotFoundException cnfe) {
 			log.error(cnfe);
 			/*
@@ -157,7 +157,7 @@ public class WSAdapter extends AbstractSrcAdapter { // implements SourceAdapter
 					// check if the user exists or not
 					Map<String, Attribute> rowAttr = rowObj.getColumnMap();					
 					//
-					matchRule =  matchRuleFactory.create(config);
+					matchRule =  matchRuleFactory.create(config.getCustomMatchRule());
 					User usr = matchRule.lookup(config, rowAttr);
 
 					// transform
