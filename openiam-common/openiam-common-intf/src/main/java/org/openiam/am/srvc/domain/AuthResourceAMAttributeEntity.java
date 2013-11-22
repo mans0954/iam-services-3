@@ -5,7 +5,9 @@ import org.openiam.am.srvc.dto.AuthResourceAMAttribute;
 import org.openiam.dozer.DozerDTOCorrespondence;
 
 import javax.persistence.*;
+
 import java.io.Serializable;
+import java.util.Set;
 
 @Entity
 @Table(name = "AUTH_RESOURCE_AM_ATTRIBUTE")
@@ -21,6 +23,9 @@ public class AuthResourceAMAttributeEntity implements Serializable {
     private String reflectionKey;
     @Column(name="ATTRIBUTE_NAME", length=100, nullable = false)
     private String attributeName;
+    
+    @OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL, mappedBy = "amAttribute")
+    private Set<URIPatternMetaValueEntity> metaValues;
 
     public String getId() {
         return id;
@@ -45,6 +50,14 @@ public class AuthResourceAMAttributeEntity implements Serializable {
     public void setAttributeName(String attributeName) {
         this.attributeName = attributeName;
     }
+
+	public Set<URIPatternMetaValueEntity> getMetaValues() {
+		return metaValues;
+	}
+
+	public void setMetaValues(Set<URIPatternMetaValueEntity> metaValues) {
+		this.metaValues = metaValues;
+	}
 
 	@Override
 	public int hashCode() {

@@ -7,26 +7,35 @@ import org.openiam.connector.type.request.CrudRequest;
 import org.openiam.provision.type.ExtensibleUser;
 import org.openiam.connector.linux.data.LinuxUser;
 import org.openiam.connector.linux.ssh.SSHAgent;
+import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service("addUserLinuxCommand")
-public class AddUserLinuxCommand extends AbstractCrudLinuxCommand<ExtensibleUser> {
+public class AddUserLinuxCommand extends
+        AbstractCrudLinuxCommand<ExtensibleUser> {
 
     @Override
-    protected void performObjectOperation(CrudRequest<ExtensibleUser> crudRequest, SSHAgent ssh) throws ConnectorDataException {
-        LinuxUser user = objectToLinuxUser(crudRequest.getObjectIdentity(), crudRequest.getExtensibleObject());
+    protected void performObjectOperation(
+            CrudRequest<ExtensibleUser> crudRequest, SSHAgent ssh)
+            throws ConnectorDataException {
+        LinuxUser user = objectToLinuxUser(crudRequest.getObjectIdentity(),
+                crudRequest.getExtensibleObject());
         if (user != null) {
             try {
+                String sudoPassword = this.getPassword(crudRequest
+                        .getTargetID());
                 // Then add user
-                ssh.executeCommand(user.getUserAddCommand());
-                sendPassword(ssh, user);
-                ssh.executeCommand(user.getUserSetDetailsCommand());
+                ssh.executeCommand(user.getUserAddCommand(), sudoPassword);
+                sendPassword(ssh, user, sudoPassword);
+                ssh.executeCommand(user.getUserSetDetailsCommand(),
+                        sudoPassword);
 
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
-                throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR, e.getMessage());
+                throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR,
+                        e.getMessage());
             }
         }
     }

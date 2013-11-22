@@ -13,6 +13,7 @@ import javax.xml.bind.annotation.XmlType;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.idm.srvc.role.domain.UserRoleEntity;
 
 import java.util.Date;
 
@@ -30,7 +31,7 @@ import java.util.Date;
         "status",
         "createdBy"
 })
-@DozerDTOCorrespondence(UserRole.class)
+@DozerDTOCorrespondence(UserRoleEntity.class)
 public class UserRole implements java.io.Serializable {
 
     /**

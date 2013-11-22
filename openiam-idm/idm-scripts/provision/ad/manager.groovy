@@ -18,7 +18,7 @@ if (supVisorList) {
     def l = loginManager.getByUserIdManagedSys(supervisor.supervisor.userId, managedSysId)
 
     // identity for the AD resource
-    output = l.id.login;
+    output = l.login;
 
 }
 

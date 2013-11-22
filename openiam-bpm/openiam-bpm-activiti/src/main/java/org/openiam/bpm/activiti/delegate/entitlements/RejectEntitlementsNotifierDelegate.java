@@ -30,9 +30,6 @@ public class RejectEntitlementsNotifierDelegate extends AbstractEntitlementsDele
 	@Autowired
 	private UserDAO userDAO;
 	
-	@Autowired
-	private MailService mailService;
-	
 	private static Map<String, String> NOTIFICATION_MAP = new HashMap<String, String>();
 	static {
 		NOTIFICATION_MAP.put("ADD_USER_TO_ROLE", "ADD_USER_TO_ROLE_REJECT_NOTIFY");
@@ -41,6 +38,8 @@ public class RejectEntitlementsNotifierDelegate extends AbstractEntitlementsDele
 		NOTIFICATION_MAP.put("REMOVE_USER_FROM_GROUP", "REMOVE_USER_FROM_GROUP_REJECT_NOTIFY");
 		NOTIFICATION_MAP.put("ENTITLE_USER_TO_RESOURCE", "ENTITLE_USER_TO_RESOURCE_REJECT_NOTIFY");
 		NOTIFICATION_MAP.put("DISENTITLE_USER_FROM_RESOURCE", "DISENTITLE_USER_FROM_RESOURCE_REJECT_NOTIFY");
+		NOTIFICATION_MAP.put("DELETE_LOGIN", "DELETE_LOGIN_REJECT_NOTIFY");
+		NOTIFICATION_MAP.put("ADD_UPDATE_LOGIN", "ADD_UPDATE_LOGIN_REJECT_NOTIFY");
 	}
 	
 	public RejectEntitlementsNotifierDelegate() {

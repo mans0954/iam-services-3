@@ -1,7 +1,9 @@
 package org.openiam.am.srvc.service;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.cxf.interceptor.URIMappingInterceptor;
+import org.openiam.am.srvc.constants.AmAttributes;
 import org.openiam.am.srvc.dao.*;
 import org.openiam.am.srvc.domain.*;
 import org.openiam.base.AttributeOperationEnum;
@@ -16,6 +18,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -346,40 +351,89 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
            || uriPatternMetaEntity.getMetaType().getId()==null
            || uriPatternMetaEntity.getMetaType().getId().trim().isEmpty())
             throw new NullPointerException("Meta Type not set");
+        
+        if(CollectionUtils.isNotEmpty(uriPatternMetaEntity.getMetaValueSet())) {
+    		for(final URIPatternMetaValueEntity value : uriPatternMetaEntity.getMetaValueSet()) {
+    			value.setMetaEntity(uriPatternMetaEntity);
+	
+    			/* satisfy data integrity */
+    			if(value.getAmAttribute() != null && StringUtils.isNotBlank(value.getAmAttribute().getId())) {
+    				value.setStaticValue(null);
+    				value.setGroovyScript(null);
+    			} else if(StringUtils.isNotBlank(value.getStaticValue())) {
+    				value.setAmAttribute(null);
+    				value.setGroovyScript(null);
+    			} else if(StringUtils.isNotBlank(value.getGroovyScript())) {
+    				value.setAmAttribute(null);
+    				value.setStaticValue(null);
+    			}
 
-        URIPatternMetaTypeEntity metaType = uriPatternMetaTypeDao.findById(uriPatternMetaEntity.getMetaType().getId());
-        if(metaType==null){
-            throw new NullPointerException("Cannot save Meta data for URI pattern. Meta Type is not found");
+    			/* set am attribute entity, if any */
+    			if(value.getAmAttribute() != null && StringUtils.isNotBlank(value.getAmAttribute().getId())) {
+    				final AuthResourceAMAttributeEntity attribute = authResourceAMAttributeDao.findById(value.getAmAttribute().getId());
+    				value.setAmAttribute(attribute);
+    			}
+    		}
+    	}
+        
+        final URIPatternMetaTypeEntity metaType = uriPatternMetaTypeDao.findById(uriPatternMetaEntity.getMetaType().getId());
+    	final URIPatternEntity pattern = uriPatternDao.findById(uriPatternMetaEntity.getPattern().getId());
+        if(StringUtils.isBlank(uriPatternMetaEntity.getId())) {
+        	/* set meta type */
+        	uriPatternMetaEntity.setMetaType(metaType);
+        	uriPatternMetaEntity.setPattern(pattern);
+        	uriPatternMetaDao.save(uriPatternMetaEntity);
+        } else {
+        	/* do a merge */
+        	final URIPatternMetaEntity existing = uriPatternMetaDao.findById(uriPatternMetaEntity.getId());
+        	existing.setName(uriPatternMetaEntity.getName());
+        	existing.setPattern(pattern);
+        	existing.setMetaType(metaType);
+        	
+        	final Set<URIPatternMetaValueEntity> incomingValues = (uriPatternMetaEntity.getMetaValueSet() != null) ? uriPatternMetaEntity.getMetaValueSet() : new HashSet<URIPatternMetaValueEntity>();
+        	final Set<URIPatternMetaValueEntity> existingValues = (existing.getMetaValueSet() != null) ? existing.getMetaValueSet() : new HashSet<URIPatternMetaValueEntity>();
+        	for(final Iterator<URIPatternMetaValueEntity> it = existingValues.iterator(); it.hasNext();) {
+        		final URIPatternMetaValueEntity existingValue = it.next();
+        		boolean exists = false;
+        		for(final URIPatternMetaValueEntity incomingValue : incomingValues) {
+        			if(StringUtils.equals(incomingValue.getId(), existingValue.getId())) {
+        				exists = true;
+        				existingValue.setAmAttribute(incomingValue.getAmAttribute());
+        				existingValue.setGroovyScript(incomingValue.getGroovyScript());
+        				existingValue.setStaticValue(incomingValue.getStaticValue());
+        				existingValue.setName(incomingValue.getName());
+        			}
+        		}
+        		if(!exists) {
+        			it.remove();
+        		}
+        	}
+        	
+        	/* find new ones */
+        	final List<URIPatternMetaValueEntity> newValues = new LinkedList<URIPatternMetaValueEntity>();
+        	for(final URIPatternMetaValueEntity incomingValue : incomingValues) {
+        		boolean exists = false;
+        		for(final URIPatternMetaValueEntity existingValue : existingValues) {
+        			if(StringUtils.equals(incomingValue.getId(), existingValue.getId())) {
+        				exists = true;
+        			}
+        		}
+        		
+        		if(!exists) {
+        			incomingValue.setMetaEntity(existing);
+        			newValues.add(incomingValue);
+        		}
+    		}
+        	
+        	existingValues.addAll(newValues);
+        	
+        	uriPatternMetaDao.update(existing);
+        	uriPatternMetaEntity = existing;
         }
-
-        URIPatternEntity pattern = uriPatternDao.findById(uriPatternMetaEntity.getPattern().getId());
-        if(pattern==null){
-            throw new NullPointerException("Cannot save Meta data for URI pattern. URI pattern is not found");
-        }
-
-        Set<URIPatternMetaValueEntity> metaValues =uriPatternMetaEntity.getMetaValueSet();
-        uriPatternMetaEntity.setPattern(pattern);
-        uriPatternMetaEntity.setMetaType(metaType);
-        uriPatternMetaEntity.setMetaValueSet(null);
-
-        URIPatternMetaEntity entity  = null;
-        if(uriPatternMetaEntity.getId()==null || uriPatternMetaEntity.getId().trim().isEmpty()){
-            // new meta data
-            uriPatternMetaEntity.setId(null);
-
-            uriPatternMetaDao.save(uriPatternMetaEntity);
-            entity = uriPatternMetaEntity;
-        } else{
-            // update meta data
-            entity  = uriPatternMetaDao.findById(uriPatternMetaEntity.getId());
-            entity.setMetaType(uriPatternMetaEntity.getMetaType());
-            uriPatternMetaDao.save(entity);
-        }
-        // sync values
-        syncURIPatternMetaValue(entity, metaValues);
-        return entity;
+        return uriPatternMetaEntity;
     }
 
+    
 
 
     @Override
@@ -401,6 +455,7 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
         return uriPatternMetaTypeDao.findAll();
     }
 
+    /*
     @Transactional
     private void syncURIPatternMetaValue(URIPatternMetaEntity metaData, Set<URIPatternMetaValueEntity> newValues){
         if(newValues==null || newValues.isEmpty())
@@ -410,15 +465,19 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
                deleteMetaValue(value.getId());
            } else {
                value.setMetaEntity(metaData);
+               
                saveMetaValue(value);
            }
         }
     }
+    */
+    
     @Transactional
     private void deleteMetaValue(String id) {
         uriPatternMetaValueDao.deleteById(id);
     }
 
+    /*
     @Transactional
     private void saveMetaValue(URIPatternMetaValueEntity value) {
         if (value == null) {
@@ -430,16 +489,16 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
         if (StringUtils.isBlank(value.getName())) {
             throw new NullPointerException("Meta Data Attribute Name is not set");
         }
-        if ((value.getAmAttribute() == null || StringUtils.isBlank(value.getAmAttribute().getReflectionKey())) &&
+        if ((value.getAmAttribute() == null || StringUtils.isBlank(value.getAmAttribute().getId())) &&
         	(StringUtils.isBlank(value.getStaticValue())) && 
         	(StringUtils.isBlank(value.getGroovyScript()))) {
             throw new NullPointerException("Meta Data Attribute value not set");
         }
 
-        if(value.getAmAttribute() != null && StringUtils.isNotBlank(value.getAmAttribute().getReflectionKey())) {
+        if(value.getAmAttribute() != null && StringUtils.isNotBlank(value.getAmAttribute().getId())) {
             value.setStaticValue(null);
             value.setGroovyScript(null);
-            AuthResourceAMAttributeEntity amAttribute = authResourceAMAttributeDao.findById(value.getAmAttribute().getReflectionKey());
+            AuthResourceAMAttributeEntity amAttribute = authResourceAMAttributeDao.findById(value.getAmAttribute().getId());
             if(amAttribute==null) {
                 throw new  NullPointerException("Cannot save Meta data value for URI pattern. Attribute Map is not found");
             }
@@ -447,7 +506,7 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
         } else if(StringUtils.isNotBlank(value.getGroovyScript())) {
         	value.setStaticValue(null);
             value.setAmAttribute(null);
-        } else { /* static value */
+        } else {
         	value.setAmAttribute(null);
         	value.setGroovyScript(null);
         }
@@ -468,6 +527,7 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
             uriPatternMetaValueDao.save(entity);
         }
     }
+    */
 
     /*
     @Transactional

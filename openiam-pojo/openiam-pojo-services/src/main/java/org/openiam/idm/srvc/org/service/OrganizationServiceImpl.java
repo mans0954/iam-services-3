@@ -58,6 +58,7 @@ public class OrganizationServiceImpl implements OrganizationService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public OrganizationEntity getOrganization(String orgId, String requesterId) {
         if (DelegationFilterHelper.isAllowed(orgId, getDelegationFilter(requesterId, null))) {
             return orgDao.findById(orgId);

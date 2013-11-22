@@ -13,38 +13,49 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service("modifyUserLinuxCommand")
-public class ModifyUserLinuxCommand extends AbstractCrudLinuxCommand<ExtensibleUser> {
+public class ModifyUserLinuxCommand extends
+        AbstractCrudLinuxCommand<ExtensibleUser> {
     @Override
-    protected void performObjectOperation(CrudRequest<ExtensibleUser> crudRequest, SSHAgent ssh) throws ConnectorDataException {
+    protected void performObjectOperation(
+            CrudRequest<ExtensibleUser> crudRequest, SSHAgent ssh)
+            throws ConnectorDataException {
         ExtensibleUser extensibleUser = crudRequest.getExtensibleObject();
 
         String originalName = isRename(extensibleUser);
-        String login = (originalName == null) ? crudRequest.getObjectIdentity() : originalName;
+        String login = (originalName == null) ? crudRequest.getObjectIdentity()
+                : originalName;
 
-        LinuxUser user = objectToLinuxUser(crudRequest.getObjectIdentity(), extensibleUser);
+        LinuxUser user = objectToLinuxUser(crudRequest.getObjectIdentity(),
+                extensibleUser);
 
         if (user != null) {
             try {
+                String sudoPassword = this.getPassword(crudRequest
+                        .getTargetID());
                 // Then modify account
-                ssh.executeCommand(user.getUserModifyCommand(login));
-                ssh.executeCommand(user.getUserSetDetailsCommand());
-                sendPassword(ssh, user);
+                ssh.executeCommand(user.getUserModifyCommand(login),
+                        sudoPassword);
+                ssh.executeCommand(user.getUserSetDetailsCommand(),
+                        sudoPassword);
+                sendPassword(ssh, user, sudoPassword);
             } catch (Exception e) {
                 log.error(e.getMessage());
-                throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR, e.getMessage());
+                throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR,
+                        e.getMessage());
             }
         }
     }
 
     /**
      * Detects whether a given modifications list contains a rename directive
-     *
+     * 
      * @param extensibleUser
      * @return Original user account name; null if unchanged
      */
     private String isRename(ExtensibleUser extensibleUser) {
         for (ExtensibleAttribute att : extensibleUser.getAttributes()) {
-            if (att.getOperation() != 0 && att.getName() != null && att.getName().equalsIgnoreCase("ORIG_IDENTITY")) {
+            if (att.getOperation() != 0 && att.getName() != null
+                    && att.getName().equalsIgnoreCase("ORIG_IDENTITY")) {
                 return att.getValue();
             }
         }

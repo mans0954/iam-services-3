@@ -11,6 +11,7 @@ import javax.xml.bind.annotation.XmlType;
 		"name",
 		"status", 
 		"synchAdapter",
+        "useSystemPath",
 		"fileName",
 		"managedSysId",
 		"loadMatchOnly",
@@ -51,6 +52,7 @@ public class SynchConfig implements java.io.Serializable {
 	private String name;
 	private String status;
 	private String synchAdapter;
+    private Boolean useSystemPath;
 	private String fileName;
 	private String managedSysId;
 	private Integer loadMatchOnly;
@@ -116,7 +118,15 @@ public class SynchConfig implements java.io.Serializable {
 		this.status = status;
 	}
 
-	public String getFileName() {
+    public Boolean getUseSystemPath() {
+        return useSystemPath;
+    }
+
+    public void setUseSystemPath(Boolean useSystemPath) {
+        this.useSystemPath = useSystemPath;
+    }
+
+    public String getFileName() {
 		return this.fileName;
 	}
 
@@ -349,6 +359,7 @@ public class SynchConfig implements java.io.Serializable {
                 ", name='" + name + '\'' +
                 ", status='" + status + '\'' +
                 ", synchAdapter='" + synchAdapter + '\'' +
+                ", useSystemPath='" + useSystemPath.toString() + '\'' +
                 ", fileName='" + fileName + '\'' +
                 ", managedSysId='" + managedSysId + '\'' +
                 ", loadMatchOnly=" + loadMatchOnly +

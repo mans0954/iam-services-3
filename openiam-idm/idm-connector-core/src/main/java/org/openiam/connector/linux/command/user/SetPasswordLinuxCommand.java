@@ -11,9 +11,11 @@ import org.openiam.connector.linux.ssh.SSHAgent;
 import org.springframework.stereotype.Service;
 
 @Service("setPasswordLinuxCommand")
-public class SetPasswordLinuxCommand extends AbstractLinuxCommand<PasswordRequest,ResponseType> {
+public class SetPasswordLinuxCommand extends
+        AbstractLinuxCommand<PasswordRequest, ResponseType> {
     @Override
-    public ResponseType execute(PasswordRequest passwordRequest) throws ConnectorDataException {
+    public ResponseType execute(PasswordRequest passwordRequest)
+            throws ConnectorDataException {
         ResponseType responseType = new ResponseType();
         responseType.setRequestID(passwordRequest.getRequestID());
         responseType.setStatus(StatusCodeType.SUCCESS);
@@ -22,12 +24,15 @@ public class SetPasswordLinuxCommand extends AbstractLinuxCommand<PasswordReques
         String password = passwordRequest.getPassword();
         SSHAgent ssh = getSSHAgent(passwordRequest.getTargetID());
         try {
-            LinuxUser user = new LinuxUser(null, login, password, null, null, null, null, null, null, null);
-            sendPassword(ssh, user);
+            LinuxUser user = new LinuxUser(null, login, password, null, null,
+                    null, null, null, null, null);
+            sendPassword(ssh, user,
+                    this.getPassword(passwordRequest.getTargetID()));
             return responseType;
         } catch (Exception e) {
-            log.error(e.getMessage(),e);
-            throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR, e.getMessage());
+            log.error(e.getMessage(), e);
+            throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR,
+                    e.getMessage());
         } finally {
             ssh.logout();
         }

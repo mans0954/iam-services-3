@@ -10,16 +10,22 @@ import org.openiam.connector.linux.ssh.SSHAgent;
 import org.springframework.stereotype.Service;
 
 @Service("deleteUserLinuxCommand")
-public class DeleteUserLinuxCommand extends AbstractCrudLinuxCommand<ExtensibleUser> {
+public class DeleteUserLinuxCommand extends
+        AbstractCrudLinuxCommand<ExtensibleUser> {
     @Override
-    protected void performObjectOperation(CrudRequest<ExtensibleUser> crudRequest, SSHAgent ssh) throws ConnectorDataException {
-        LinuxUser user = objectToLinuxUser(crudRequest.getObjectIdentity(), null);
+    protected void performObjectOperation(
+            CrudRequest<ExtensibleUser> crudRequest, SSHAgent ssh)
+            throws ConnectorDataException {
+        LinuxUser user = objectToLinuxUser(crudRequest.getObjectIdentity(),
+                null);
         if (user != null) {
             try {
-                ssh.executeCommand(user.getUserDeleteCommand());
+                ssh.executeCommand(user.getUserDeleteCommand(),
+                        this.getPassword(crudRequest.getTargetID()));
             } catch (Exception e) {
                 log.error(e.getMessage());
-                throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR, e.getMessage());
+                throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR,
+                        e.getMessage());
             }
         }
     }

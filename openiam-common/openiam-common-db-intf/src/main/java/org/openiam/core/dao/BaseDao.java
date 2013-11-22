@@ -40,6 +40,8 @@ public interface BaseDao<T, PrimaryKey extends Serializable> {
 
   void attachClean(T t);
 
+  void evict(T t);
+
   List<T> getByExample(T t, int startAt, int size);
   List<T> getByExample(T t);
   List<T> getByExample(SearchBean searchBean);

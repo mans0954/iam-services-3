@@ -23,7 +23,8 @@
     								      org.openiam.core,
     								      org.openiam.idm.srvc.*,
     								      org.openiam.idm.srvc.synch.ws,
-    								      org.openiam.dozer.converter" />
+    								      org.openiam.dozer.converter,
+    								      org.openiam.validator" />
 
 	<bean id="springContextProvider" class="org.openiam.util.SpringContextProvider" />
 

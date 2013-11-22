@@ -19,7 +19,10 @@ public enum ActivitiRequestType {
 	ATTESTATION("attestationWorkflow", "Attestation"),
 	
 	ADD_SUPERIOR("addSuperior", "Add Superior"),
-	REMOVE_SUPERIOR("removeSuperior", "Remove Superior");
+	REMOVE_SUPERIOR("removeSuperior", "Remove Superior"),
+	
+	SAVE_LOGIN("saveLogin", "Save Login"),
+	DELETE_LOGIN("deleteLogin", "Delete Login");
 	
 	private String description;
 	private String key;

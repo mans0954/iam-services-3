@@ -45,7 +45,7 @@ public class LinuxUser {
     public String getUserSetDetailsCommand() {
         // chfn [-f full_name] [-r room_no] [-w work_ph] [-h home_ph] [-o other]  [user]
         StringBuilder cmd = new StringBuilder();
-        cmd.append("chfn ");
+        cmd.append("sudo -S chfn ");
         cmd.append(notBlank("f", (name + " " + surname).trim(), true));
         cmd.append(notBlank("r", roomNumber, true));
         cmd.append(notBlank("w", workPhone, true));
@@ -61,12 +61,11 @@ public class LinuxUser {
         // [-m [-k skeleton_dir]] [-p passwd] [-s shell] [-u uid [ -o]] login
 
         StringBuilder cmd = new StringBuilder();
-        cmd.append("useradd -N ");              // do not create a group with the user login
+        cmd.append("sudo -S useradd -N ");              // do not create a group with the user login
         cmd.append(notBlank("G", groups.getGroupsAsCommaSeparatedString(), true));
         cmd.append(notBlank("e", expireDate, true));
         cmd.append(notBlank("f", daysBeforeDisable, true));
         cmd.append(login);
-
         return cmd.toString();
     }
 
@@ -76,7 +75,7 @@ public class LinuxUser {
         // [-l login_name] [-p passwd] [-s shell] [-u uid [-o]] [-L|-U] login
 
         StringBuilder cmd = new StringBuilder();
-        cmd.append("usermod ");
+        cmd.append("sudo -S usermod ");
         cmd.append(notBlank("e", expireDate, true));
         cmd.append(notBlank("f", daysBeforeDisable, true));
         cmd.append(notBlank("G", groups.getGroupsAsCommaSeparatedString(), true));
@@ -89,7 +88,7 @@ public class LinuxUser {
     // Deletes a user with a given login name
     public String getUserDeleteCommand() {
         StringBuilder cmd = new StringBuilder();
-        cmd.append("userdel -r ");
+        cmd.append("sudo -S userdel -r ");
         cmd.append(login);
 
         return cmd.toString();
@@ -98,7 +97,7 @@ public class LinuxUser {
     // Expires a user's password
     public String getUserExpirePasswordCommand() {
         StringBuilder cmd = new StringBuilder();
-        cmd.append("passwd -e ");
+        cmd.append("sudo -S passwd -e ");
         cmd.append(login);
         return cmd.toString();
     }
@@ -106,7 +105,7 @@ public class LinuxUser {
     // Set new password. The command will block (passwd) and expects the password to be entered twice
     public String getUserSetPasswordCommand() {
         StringBuilder cmd = new StringBuilder();
-        cmd.append("passwd ");
+        cmd.append("sudo -S passwd ");
         cmd.append(login);
 
         return cmd.toString();
@@ -115,7 +114,7 @@ public class LinuxUser {
     // Disables access with a password
     public String getUserLockCommand() {
         StringBuilder cmd = new StringBuilder();
-        cmd.append("passwd -l ");
+        cmd.append("sudo -S passwd -l ");
         cmd.append(login);
 
         return cmd.toString();
@@ -124,7 +123,7 @@ public class LinuxUser {
     // Enables password again
     public String getUserUnlockCommand() {
         StringBuilder cmd = new StringBuilder();
-        cmd.append("passwd -u ");
+        cmd.append("sudo -S passwd -u ");
         cmd.append(login);
 
         return cmd.toString();

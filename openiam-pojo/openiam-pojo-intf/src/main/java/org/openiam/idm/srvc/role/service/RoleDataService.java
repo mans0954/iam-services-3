@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.role.service;
 
+import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.RoleSearchBean;
 import org.openiam.idm.srvc.role.domain.RoleAttributeEntity;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
@@ -22,7 +23,7 @@ public interface RoleDataService {
     public RoleEntity getRole(String roleId, String requesterId);
     public RoleEntity getRoleByName(final String roleName, String requesterId);
     
-    public void saveRole(final RoleEntity role);
+    public void saveRole(final RoleEntity role) throws BasicDataServiceException;
     
     public void removeRole(String roleId);
 

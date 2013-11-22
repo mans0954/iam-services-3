@@ -26,12 +26,11 @@ import java.util.*;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.mule.api.MuleContext;
-import org.mule.api.context.MuleContextAware;
+
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.base.ws.exception.BasicDataServiceException;
+import org.openiam.exception.BasicDataServiceException;
 import org.openiam.dozer.converter.*;
 import org.openiam.idm.searchbeans.*;
 import org.openiam.idm.srvc.auth.dto.Login;
@@ -78,7 +77,7 @@ import javax.jws.WebService;
             targetNamespace = "urn:idm.openiam.org/srvc/user/service",
             serviceName = "UserDataWebService",
             portName = "UserDataWebServicePort")
-public class UserDataWebServiceImpl implements UserDataWebService, MuleContextAware {
+public class UserDataWebServiceImpl implements UserDataWebService{
 
     private static Logger log = Logger.getLogger(UserDataWebServiceImpl.class);
 
@@ -116,14 +115,9 @@ public class UserDataWebServiceImpl implements UserDataWebService, MuleContextAw
     @Autowired
     private MailService mailService;
 
-    private MuleContext muleContext;
-
     @Autowired
     private UserProfileService userProfileService;
 
-    public void setMuleContext(MuleContext ctx) {
-        muleContext = ctx;
-    }
 
     @Value("${openiam.service_base}")
     private String serviceHost;
@@ -1166,12 +1160,12 @@ public class UserDataWebServiceImpl implements UserDataWebService, MuleContextAw
             }
             if (user.getUserId() == null) {
 
-                final MetadataTypeSearchBean typeSearchBean = new MetadataTypeSearchBean();
-                typeSearchBean.setGrouping("EMAIL");
-                typeSearchBean.setActive(true);
+//                final MetadataTypeSearchBean typeSearchBean = new MetadataTypeSearchBean();
+//                typeSearchBean.setGrouping("EMAIL");
+//                typeSearchBean.setActive(true);
 
-                final List<MetadataTypeEntity> entityList = metadataService.findBeans(typeSearchBean, 0, Integer.MAX_VALUE);
-                List<MetadataType> typeList = (entityList != null) ? metaDataTypeDozerConverter.convertToDTOList(entityList, false) : null;
+//                final List<MetadataTypeEntity> entityList = metadataService.findBeans(typeSearchBean, 0, Integer.MAX_VALUE);
+//                List<MetadataType> typeList = (entityList != null) ? metaDataTypeDozerConverter.convertToDTOList(entityList, false) : null;
 
                 // create new user, need to merge user objects
                 List<Login> principalList = new ArrayList<Login>();
@@ -1182,16 +1176,16 @@ public class UserDataWebServiceImpl implements UserDataWebService, MuleContextAw
                 user.setPrincipalList(principalList);
 
 
-                if(CollectionUtils.isNotEmpty(typeList)){
-                    Set<EmailAddress> emailAddressList = new HashSet<EmailAddress>();
-
-                    EmailAddress ea = new EmailAddress();
-                    ea.setEmailAddress(user.getEmail());
-                    ea.setIsDefault(true);
-                    ea.setMetadataTypeId(typeList.get(0).getMetadataTypeId());
-                    emailAddressList.add(ea);
-                    user.setEmailAddresses(emailAddressList);
-                }
+//                if(CollectionUtils.isNotEmpty(typeList)){
+//                    Set<EmailAddress> emailAddressList = new HashSet<EmailAddress>();
+//
+//                    EmailAddress ea = new EmailAddress();
+//                    ea.setEmailAddress(user.getEmail());
+//                    ea.setIsDefault(true);
+//                    ea.setMetadataTypeId(typeList.get(0).getMetadataTypeId());
+//                    emailAddressList.add(ea);
+//                    user.setEmailAddresses(emailAddressList);
+//                }
             }
 
             final UserEntity userEntity = userDozerConverter.convertToEntity(user, true);
@@ -1326,6 +1320,7 @@ public class UserDataWebServiceImpl implements UserDataWebService, MuleContextAw
             response.setErrorCode(e.getCode());
             response.setStatus(ResponseStatus.FAILURE);
         } catch (BasicDataServiceException e) {
+        	response.setErrorTokenList(e.getErrorTokenList());
             response.setErrorCode(e.getCode());
             response.setStatus(ResponseStatus.FAILURE);
         } catch (Throwable e) {

@@ -2,9 +2,16 @@ package org.openiam.connector.util.connect;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.connector.type.ConnectorDataException;
+import org.openiam.connector.type.constant.ErrorCode;
 import org.openiam.connector.util.ConnectionMgr;
+import org.openiam.idm.srvc.key.constant.KeyName;
+import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
+import org.openiam.util.encrypt.Cryptor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
@@ -22,6 +29,12 @@ import java.util.*;
 @Service
 public class LdapConnectionMgr implements ConnectionMgr {
 
+    @Autowired
+    @Qualifier("cryptor")
+    private Cryptor cryptor;
+    @Autowired
+    private KeyManagementService keyManagementService;
+
 	LdapContext ctxLdap = null;
 	
     private static final Log log = LogFactory.getLog(LdapConnectionMgr.class);
@@ -32,8 +45,26 @@ public class LdapConnectionMgr implements ConnectionMgr {
     @Value("${KEYSTORE_PSWD}")
     private String keystorePasswd;
 
+    @Value("${openiam.default_managed_sys}")
+    protected String defaultManagedSysId;
+    @Value("${org.openiam.idm.system.user.id}")
+    private String systemUserId;
+
     public LdapConnectionMgr() {
     	
+    }
+
+    protected String getDecryptedPassword(ManagedSysEntity managedSys) throws ConnectorDataException {
+        String result = null;
+        if( managedSys.getPswd()!=null){
+            try {
+                result = cryptor.decrypt(keyManagementService.getUserKey(systemUserId, KeyName.password.name()), managedSys.getPswd());
+            } catch (Exception e) {
+                log.error(e);
+                throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR, e.getMessage());
+            }
+        }
+        return result;
     }
 
 	public LdapContext connect(ManagedSysEntity managedSys)  throws NamingException{
@@ -55,18 +86,26 @@ public class LdapConnectionMgr implements ConnectionMgr {
 		if (managedSys.getPort() > 0 ) {
 			hostUrl = hostUrl + ":" + String.valueOf(managedSys.getPort());
 		}
-
+        String decryptedPassword;
+        try {
+            decryptedPassword = getDecryptedPassword(managedSys);
+        } catch (ConnectorDataException e) {
+            decryptedPassword = managedSys.getPswd();
+            e.printStackTrace();
+        }
         log.debug("connect: Connecting to target system: " + managedSys.getManagedSysId() );
         log.debug("connect: Managed System object : " + managedSys);
 
-		//log.info(" directory login = " + managedSys.getUserId() );
-		//log.info(" directory login passowrd= " + managedSys.getDecryptPassword() );
+		log.info(" directory login = " + managedSys.getUserId() );
+		log.info(" directory login passwrd= " + decryptedPassword );
+        log.info(" javax.net.ssl.trustStore= " + System.getProperty("javax.net.ssl.trustStore"));
+        log.info(" javax.net.ssl.keyStorePassword= " + System.getProperty("javax.net.ssl.keyStorePassword"));
 
 		envDC.put(Context.PROVIDER_URL,hostUrl);
 		envDC.put(Context.INITIAL_CONTEXT_FACTORY,"com.sun.jndi.ldap.LdapCtxFactory");		
 		envDC.put(Context.SECURITY_AUTHENTICATION, "simple" ); // simple
 		envDC.put(Context.SECURITY_PRINCIPAL,managedSys.getUserId());  //"administrator@diamelle.local"
-		envDC.put(Context.SECURITY_CREDENTIALS,managedSys.getPswd());
+		envDC.put(Context.SECURITY_CREDENTIALS,decryptedPassword);
 
         /*
         Protocol is defined in the url - ldaps vs ldap
@@ -75,9 +114,9 @@ public class LdapConnectionMgr implements ConnectionMgr {
 			envDC.put(Context.SECURITY_PROTOCOL, managedSys.getCommProtocol());
 		}
 		*/
-        if (managedSys.getCommProtocol() != null && managedSys.getCommProtocol().equalsIgnoreCase("SSL")) {
-            envDC.put(Context.SECURITY_PROTOCOL, "SSL");
-        }
+       // if (managedSys.getCommProtocol() != null && managedSys.getCommProtocol().equalsIgnoreCase("SSL")) {
+        //    envDC.put(Context.SECURITY_PROTOCOL, "SSL");
+        //}
 
         try {
 

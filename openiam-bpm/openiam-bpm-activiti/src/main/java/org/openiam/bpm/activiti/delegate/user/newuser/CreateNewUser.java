@@ -54,7 +54,6 @@ public class CreateNewUser implements JavaDelegate {
 	@Override
 	public void execute(DelegateExecution execution) throws Exception {
 		final String provisionRequestId = (String)execution.getVariable(ActivitiConstants.PROVISION_REQUEST_ID);
-		
 		final ProvisionRequestEntity provisionRequest = provRequestService.getRequest(provisionRequestId);
 		final NewUserProfileRequestModel request = (NewUserProfileRequestModel)new XStream().fromXML(provisionRequest.getRequestXML());
 		//final CreateUserToken token = userProfileService.createNewUserProfile(request);

@@ -21,6 +21,17 @@
  */
 package org.openiam.provision.dto;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
+
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlType;
+
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.base.AttributeOperationEnum;
@@ -29,47 +40,25 @@ import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.role.dto.Role;
+import org.openiam.idm.srvc.role.dto.UserRole;
 import org.openiam.idm.srvc.user.dto.User;
-
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlType;
-import java.util.*;
 
 /**
  * ProvisionUser is the user object used by the provisioning service.
- *
+ * 
  * @author suneet
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "ProvisionUser", propOrder = {
-        "memberOfGroups",
-        "requestId",
-        "sessionId",
-        "memberOfRoles",
-        "userResourceList",
-        "userAffiliations",
-        "superiors",
-        "srcSystemId",
-        "provisionModel",
-        "securityDomain",
-        "notifyTargetSystems",
-        "emailCredentialsToNewUsers",
-        "emailCredentialsToSupervisor",
-        "provisionOnStartDate",
-        "addInitialPasswordToHistory",
-        "passwordPolicy",
-        "password",
-        "skipPreprocessor",
-        "skipPostProcessor"
-})
-
+@XmlType(name = "ProvisionUser", propOrder = { "memberOfGroups", "requestId", "sessionId", "memberOfRoles", "userResourceList", "userAffiliations",
+                                              "superiors", "srcSystemId", "provisionModel", "securityDomain", "notifyTargetSystems",
+                                              "emailCredentialsToNewUsers", "emailCredentialsToSupervisor", "provisionOnStartDate",
+                                              "addInitialPasswordToHistory", "passwordPolicy", "skipPreprocessor", "skipPostProcessor" })
 public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
     /**
      *
      */
     private static final long serialVersionUID = 6441635701870724194L;
-  //  protected List<Login> principalList;
+    // protected List<Login> principalList;
     protected List<Group> memberOfGroups;
     protected List<Role> memberOfRoles;
     protected List<Organization> userAffiliations;
@@ -84,8 +73,10 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
     boolean emailCredentialsToSupervisor = false;
     boolean addInitialPasswordToHistory = false;
 
-    // default behaviour - you dont have to wait till the start date to provision a user
-    // if this is set to true, the system will wait till the start date to provision the user
+    // default behaviour - you dont have to wait till the start date to
+    // provision a user
+    // if this is set to true, the system will wait till the start date to
+    // provision the user
     boolean provisionOnStartDate = false;
 
     protected String requestId;
@@ -95,16 +86,17 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
     boolean skipPreprocessor = false;
     boolean skipPostProcessor = false;
 
-    /* ID of the system where this request came from.  If this value is set, then in the modify operation, that resource will not
-     * be updated. */
+    /*
+     * ID of the system where this request came from. If this value is set, then
+     * in the modify operation, that resource will not be updated.
+     */
     protected String srcSystemId;
-    /* Flag that indicates if target systems should be updated or not
+    /*
+     * Flag that indicates if target systems should be updated or not
      */
     protected boolean notifyTargetSystems = true;
 
     protected Policy passwordPolicy = null;
-
-    protected String password = null;
 
     public ProvisionUser() {
 
@@ -160,9 +152,12 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         userAttributes = user.getUserAttributes();
         phones = user.getPhones();
         addresses = user.getAddresses();
+        emailAddresses = user.getEmailAddresses();
         // set the email address in a hibernate friendly manner
-
-
+        principalList = user.getPrincipalList();
+        setPassword(user.getPassword());
+        setLogin(user.getLogin());
+        initMemberOfRoles(user.getUserRoles());
     }
 
     public User getUser() {
@@ -218,7 +213,6 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         return user;
     }
 
-
     public Login getPrimaryPrincipal(String managedSysId) {
         if (principalList == null) {
             return null;
@@ -230,9 +224,6 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         }
         return null;
     }
-
-
-
 
     public String getRequestId() {
         return requestId;
@@ -288,17 +279,17 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
     }
 
     public void addSuperior(final User superior) {
-        if(superior != null) {
-            if(superiors == null) {
+        if (superior != null) {
+            if (superiors == null) {
                 superiors = new HashSet<User>();
             }
             superiors.add(superior);
         }
     }
 
-    public void addSuperiors(final Collection<User> superiors)  {
-        if(superiors != null) {
-            if(this.superiors == null) {
+    public void addSuperiors(final Collection<User> superiors) {
+        if (superiors != null) {
+            if (this.superiors == null) {
                 this.superiors = new HashSet<User>();
             }
             this.superiors.addAll(superiors);
@@ -339,27 +330,13 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
 
     @Override
     public String toString() {
-        return "ProvisionUser{" +
-                "memberOfGroups=" + memberOfGroups +
-                ", memberOfRoles=" + memberOfRoles +
-                ", userAffiliations=" + userAffiliations +
-                ", userResourceList=" + userResourceList +
-                ", superiors=" + superiors +
-                ", provisionModel=" + provisionModel +
-                ", securityDomain='" + securityDomain + '\'' +
-                ", emailCredentialsToNewUsers=" + emailCredentialsToNewUsers +
-                ", emailCredentialsToSupervisor=" + emailCredentialsToSupervisor +
-                ", addInitialPasswordToHistory=" + addInitialPasswordToHistory +
-                ", provisionOnStartDate=" + provisionOnStartDate +
-                ", requestId='" + requestId + '\'' +
-                ", sessionId='" + sessionId + '\'' +
-                ", skipPreprocessor=" + skipPreprocessor +
-                ", skipPostProcessor=" + skipPostProcessor +
-                ", srcSystemId='" + srcSystemId + '\'' +
-                ", notifyTargetSystems=" + notifyTargetSystems +
-                ", passwordPolicy=" + passwordPolicy +
-                ", password='" + password + '\'' +
-                '}';
+        return "ProvisionUser{" + "memberOfGroups=" + memberOfGroups + ", memberOfRoles=" + memberOfRoles + ", userAffiliations=" + userAffiliations
+               + ", userResourceList=" + userResourceList + ", superiors=" + superiors + ", provisionModel=" + provisionModel + ", securityDomain='"
+               + securityDomain + '\'' + ", emailCredentialsToNewUsers=" + emailCredentialsToNewUsers + ", emailCredentialsToSupervisor="
+               + emailCredentialsToSupervisor + ", addInitialPasswordToHistory=" + addInitialPasswordToHistory + ", provisionOnStartDate="
+               + provisionOnStartDate + ", requestId='" + requestId + '\'' + ", sessionId='" + sessionId + '\'' + ", skipPreprocessor="
+               + skipPreprocessor + ", skipPostProcessor=" + skipPostProcessor + ", srcSystemId='" + srcSystemId + '\'' + ", notifyTargetSystems="
+               + notifyTargetSystems + ", passwordPolicy=" + passwordPolicy + '}';
     }
 
     public boolean isEmailCredentialsToNewUsers() {
@@ -381,14 +358,14 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
     public List<Organization> getUserAffiliations() {
         return userAffiliations;
     }
-    
+
     public void addUserAffiliation(final Organization organization) {
-    	if(organization != null) {
-	    	if(this.userAffiliations == null) {
-	    		this.userAffiliations = new LinkedList<Organization>();
-	    	}
-	    	this.userAffiliations.add(organization);
-    	}
+        if (organization != null) {
+            if (this.userAffiliations == null) {
+                this.userAffiliations = new LinkedList<Organization>();
+            }
+            this.userAffiliations.add(organization);
+        }
     }
 
     public void setUserAffiliations(List<Organization> userAffiliations) {
@@ -427,14 +404,6 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         this.passwordPolicy = passwordPolicy;
     }
 
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
     public boolean isSkipPreprocessor() {
         return skipPreprocessor;
     }
@@ -455,7 +424,7 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
      * Its possible for the user to send service request which is missing most
      * of the values that a User already has This can cause the provisioning
      * scripts to fail
-     *
+     * 
      * @param user
      */
     public void updateMissingUserAttributes(User user) {
@@ -585,62 +554,92 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
             dateITPolicyApproved = user.getDateITPolicyApproved();
         }
     }
-    
+
     public void addMemberGroup(final Group group) {
-    	if(group != null) {
-    		if(this.memberOfGroups == null) {
-    			this.memberOfGroups = new LinkedList<Group>();
-    		}
-    		this.memberOfGroups.add(group);
-    	}
+        if (group != null) {
+            if (this.memberOfGroups == null) {
+                this.memberOfGroups = new LinkedList<Group>();
+            }
+            this.memberOfGroups.add(group);
+        }
     }
-    
+
     public void addMemberRole(final Role role) {
-    	if(role != null) {
-    		if(this.memberOfRoles == null) {
-    			this.memberOfRoles = new LinkedList<Role>();
-    		}
-    		this.memberOfRoles.add(role);
-    	}
+        if (role != null) {
+            if (this.memberOfRoles == null) {
+                this.memberOfRoles = new LinkedList<Role>();
+            }
+            this.memberOfRoles.add(role);
+        }
     }
-    
+
     public void addResourceUserAssociation(final UserResourceAssociation association) {
-    	if(association != null) {
-    		if(this.userResourceList == null) {
-    			this.userResourceList = new LinkedList<UserResourceAssociation>();
-    		}
-    		this.userResourceList.add(association);
-    	}
+        if (association != null) {
+            if (this.userResourceList == null) {
+                this.userResourceList = new LinkedList<UserResourceAssociation>();
+            }
+            this.userResourceList.add(association);
+        }
     }
-    
-    //HACK
+
+    // HACK
     public Organization getPrimaryOrganization() {
-    	Organization retVal = null;
-    	if(CollectionUtils.isNotEmpty(userAffiliations)) {
-    		for(final Organization organization : userAffiliations) {
-    			if(!AttributeOperationEnum.DELETE.equals(organization.getOperation())) {
-    				if(organization.isOrganization()) {
-    					retVal = organization;
-    					break;
-    				}
-    			}
-    		}
-    	}
-    	return retVal;
+        Organization retVal = null;
+        if (CollectionUtils.isNotEmpty(userAffiliations)) {
+            for (final Organization organization : userAffiliations) {
+                if (!AttributeOperationEnum.DELETE.equals(organization.getOperation())) {
+                    if (organization.isOrganization()) {
+                        retVal = organization;
+                        break;
+                    }
+                }
+            }
+        }
+        return retVal;
     }
-    
+
     public boolean isOrganizationMarkedAsDeleted(final String organizationId) {
-    	boolean retVal = false;
-    	if(CollectionUtils.isNotEmpty(userAffiliations)) {
-    		for(final Organization organization : userAffiliations) {
-    			if(AttributeOperationEnum.DELETE.equals(organization.getOperation())) {
-    				if(StringUtils.equalsIgnoreCase(organizationId, organization.getId())) {
-    					retVal = true;
-    					break;
-    				}
-    			}
-    		}
-    	}
-    	return retVal;
+        boolean retVal = false;
+        if (CollectionUtils.isNotEmpty(userAffiliations)) {
+            for (final Organization organization : userAffiliations) {
+                if (AttributeOperationEnum.DELETE.equals(organization.getOperation())) {
+                    if (StringUtils.equalsIgnoreCase(organizationId, organization.getId())) {
+                        retVal = true;
+                        break;
+                    }
+                }
+            }
+        }
+        return retVal;
+    }
+
+    private void initMemberOfRoles(Set<UserRole> userRoles) {
+        if(CollectionUtils.isNotEmpty(userRoles)){
+            if(CollectionUtils.isEmpty(memberOfRoles))
+                memberOfRoles = new ArrayList<Role>();
+
+            for(UserRole ur: userRoles){
+                Role role= new Role();
+                role.setRoleId(ur.getRoleId());
+
+                memberOfRoles.add(role);
+            }
+        }
+    }
+
+    private Set<UserRole> initUserRoles() {
+        Set<UserRole> userRoles = null;
+        if(CollectionUtils.isNotEmpty(memberOfRoles)){
+            userRoles = new HashSet<UserRole>();
+
+            for(Role role: memberOfRoles){
+                UserRole userRole= new UserRole();
+                userRole.setRoleId(role.getRoleId());
+                userRole.setUserId(userId);
+
+                userRoles.add(userRole);
+            }
+        }
+        return userRoles;
     }
 }

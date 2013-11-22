@@ -75,9 +75,6 @@ public class OrganizationEntity {
     @Column(name="LST_UPDATED_BY", length=20)
     private String lstUpdatedBy;
 
-    @Column(name="TYPE_ID", length=20)
-    private String metadataTypeId;
-
     @Column(name="COMPANY_NAME", length=200)
     private String organizationName;
 
@@ -195,14 +192,6 @@ public class OrganizationEntity {
 
     public void setLstUpdatedBy(String lstUpdatedBy) {
         this.lstUpdatedBy = lstUpdatedBy;
-    }
-
-    public String getMetadataTypeId() {
-        return metadataTypeId;
-    }
-
-    public void setMetadataTypeId(String metadataTypeId) {
-        this.metadataTypeId = metadataTypeId;
     }
 
     public String getOrganizationName() {
@@ -338,8 +327,6 @@ public class OrganizationEntity {
 				+ ((lstUpdate == null) ? 0 : lstUpdate.hashCode());
 		result = prime * result
 				+ ((lstUpdatedBy == null) ? 0 : lstUpdatedBy.hashCode());
-		result = prime * result
-				+ ((metadataTypeId == null) ? 0 : metadataTypeId.hashCode());
 		result = prime
 				* result
 				+ ((organizationName == null) ? 0 : organizationName.hashCode());
@@ -414,11 +401,6 @@ public class OrganizationEntity {
 			if (other.lstUpdatedBy != null)
 				return false;
 		} else if (!lstUpdatedBy.equals(other.lstUpdatedBy))
-			return false;
-		if (metadataTypeId == null) {
-			if (other.metadataTypeId != null)
-				return false;
-		} else if (!metadataTypeId.equals(other.metadataTypeId))
 			return false;
 		if (organizationName == null) {
 			if (other.organizationName != null)

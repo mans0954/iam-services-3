@@ -1,5 +1,6 @@
 package org.openiam.connector.ldap.command.user;
 
+import org.apache.commons.lang.StringUtils;
 import org.openiam.base.BaseAttribute;
 import org.openiam.connector.ldap.command.base.AbstractCrudLdapCommand;
 import org.openiam.connector.type.ConnectorDataException;
@@ -19,9 +20,12 @@ import javax.naming.Context;
 import javax.naming.NamingException;
 import javax.naming.directory.*;
 import javax.naming.ldap.LdapContext;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service("modifyUserLdapCommand")
 public class ModifyUserLdapCommand extends AbstractCrudLdapCommand<ExtensibleUser> {
@@ -30,17 +34,36 @@ public class ModifyUserLdapCommand extends AbstractCrudLdapCommand<ExtensibleUse
     protected void performObjectOperation(ManagedSysEntity managedSys, CrudRequest<ExtensibleUser> crudRequest, LdapContext ldapctx) throws ConnectorDataException {
         ManagedSystemObjectMatch matchObj = getMatchObject(crudRequest.getTargetID(), "USER");
         boolean groupMembershipEnabled = false;
-        List<ExtensibleObject> extobjectList = null;
+
         List<BaseAttribute> targetMembershipList = new ArrayList<BaseAttribute>();
         try {
-            String ldapName = crudRequest.getObjectIdentity();
+            String identity = crudRequest.getObjectIdentity();
+            //Check identity on CN format or not
+            String identityPatternStr =  MessageFormat.format(DN_IDENTITY_MATCH_REGEXP, matchObj.getKeyField());
+            Pattern pattern = Pattern.compile(identityPatternStr);
+            Matcher matcher = pattern.matcher(identity);
+            String objectBaseDN;
+            if(matcher.matches()) {
+                identity = matcher.group(1);
+                String CN = matchObj.getKeyField()+"="+identity;
+                objectBaseDN =  crudRequest.getObjectIdentity().substring(CN.length()+1);
+            } else {
+                // if identity is not in DN format try to find OU info in attributes
+                String OU = getOU(crudRequest.getExtensibleObject());
+                if(StringUtils.isNotEmpty(OU)) {
+                    objectBaseDN = OU+","+matchObj.getBaseDn();
+                } else {
+                    objectBaseDN = matchObj.getBaseDn();
+                }
+            }
+
 
             ExtensibleAttribute origIdentity = isRename(crudRequest.getExtensibleObject());
             if (origIdentity != null) {
                 log.debug("Renaming identity: " + origIdentity.getValue());
 
                 try {
-                    ldapctx.rename(origIdentity.getValue(), ldapName);
+                    ldapctx.rename(origIdentity.getValue(), identity);
                     log.debug("Renaming : " + origIdentity.getValue());
 
                 } catch (NamingException ne) {
@@ -65,7 +88,7 @@ public class ModifyUserLdapCommand extends AbstractCrudLdapCommand<ExtensibleUse
             Directory dirSpecificImp = DirectorySpecificImplFactory.create(managedSys.getHandler5());
 
 
-            if (isInDirectory(ldapName, matchObj, ldapctx)) {
+
                 ExtensibleObject obj = crudRequest.getExtensibleObject();
 
                 List<ExtensibleAttribute> attrList = obj.getAttributes();
@@ -139,17 +162,14 @@ public class ModifyUserLdapCommand extends AbstractCrudLdapCommand<ExtensibleUse
                 modItemList.toArray(mods);
 
                 log.debug("ModifyAttribute array=" + mods);
-                log.debug("ldapName=" + ldapName);
-                ldapctx.modifyAttributes(ldapName, mods);
-            } else {
-                // create the record in ldap
-                log.debug("ldapName NOT FOUND in directory. Adding new record to directory..");
-                BasicAttributes basicAttr = getBasicAttributes(crudRequest.getExtensibleObject(), matchObj.getKeyField(),
-                        targetMembershipList, groupMembershipEnabled);
-                Context result = ldapctx.createSubcontext(ldapName, basicAttr);
-            }
+
+                //Important!!! For save and modify we need to create DN format
+                String identityDN = matchObj.getKeyField() + "=" + identity+","+objectBaseDN;
+                log.debug("Modifying users in ldap.." + identityDN);
+                ldapctx.modifyAttributes(identityDN, mods);
+
             if (groupMembershipEnabled) {
-                dirSpecificImp.updateAccountMembership(targetMembershipList, ldapName, matchObj, ldapctx, crudRequest.getExtensibleObject());
+                dirSpecificImp.updateAccountMembership(targetMembershipList, identityDN, matchObj, ldapctx, crudRequest.getExtensibleObject());
             }
         } catch (NamingException ne) {
            log.error(ne.getMessage(),ne);

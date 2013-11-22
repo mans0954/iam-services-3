@@ -20,78 +20,66 @@ import org.activiti.engine.RepositoryService;
 import org.activiti.engine.RuntimeService;
 import org.activiti.engine.TaskService;
 import org.activiti.engine.history.HistoricActivityInstance;
-import org.activiti.engine.history.HistoricDetail;
-import org.activiti.engine.history.HistoricProcessInstance;
 import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.history.HistoricTaskInstanceQuery;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Task;
-import org.activiti.engine.task.TaskQuery;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.log4j.Logger;
-import org.openiam.authmanager.common.model.AuthorizationUser;
 import org.openiam.authmanager.service.AuthorizationManagerService;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.base.ws.exception.BasicDataServiceException;
-import org.openiam.bpm.activiti.groovy.UserCentricApproverAssociationIdentifier;
+import org.openiam.dozer.converter.AddressDozerConverter;
+import org.openiam.dozer.converter.EmailAddressDozerConverter;
+import org.openiam.dozer.converter.PhoneDozerConverter;
+import org.openiam.dozer.converter.UserDozerConverter;
+import org.openiam.exception.BasicDataServiceException;
 import org.openiam.bpm.request.ActivitiClaimRequest;
 import org.openiam.bpm.request.ActivitiRequestDecision;
 import org.openiam.bpm.request.GenericWorkflowRequest;
 import org.openiam.bpm.request.HistorySearchBean;
-import org.openiam.bpm.response.NewHireResponse;
-import org.openiam.bpm.response.ProcessWrapper;
 import org.openiam.bpm.response.TaskHistoryWrapper;
 import org.openiam.bpm.response.TaskListWrapper;
 import org.openiam.bpm.response.TaskWrapper;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.bpm.util.ActivitiRequestType;
+import org.openiam.idm.srvc.continfo.domain.AddressEntity;
+import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
+import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
+import org.openiam.idm.srvc.continfo.dto.Address;
+import org.openiam.idm.srvc.continfo.dto.EmailAddress;
+import org.openiam.idm.srvc.continfo.dto.Phone;
 import org.openiam.idm.srvc.grp.service.UserGroupDAO;
 import org.openiam.idm.srvc.meta.dto.SaveTemplateProfileResponse;
 import org.openiam.idm.srvc.meta.exception.PageTemplateException;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.mngsys.domain.AssociationType;
-import org.openiam.idm.srvc.mngsys.dto.ApproverAssociation;
 import org.openiam.idm.srvc.mngsys.service.ApproverAssociationDAO;
-import org.openiam.idm.srvc.mngsys.service.ApproverAssociationDAOImpl;
-import org.openiam.idm.srvc.prov.request.dto.ProvisionRequest;
 import org.openiam.idm.srvc.prov.request.domain.ProvisionRequestEntity;
-import org.openiam.idm.srvc.prov.request.domain.RequestApproverEntity;
-import org.openiam.idm.srvc.prov.request.service.ProvisionRequestDAO;
 import org.openiam.idm.srvc.prov.request.service.RequestDataService;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
-import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.service.ResourceDAO;
-import org.openiam.idm.srvc.role.domain.UserRoleEntity;
 import org.openiam.idm.srvc.role.service.UserRoleDAO;
 import org.openiam.idm.srvc.user.domain.SupervisorEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
-import org.openiam.idm.srvc.user.dto.DelegationFilterSearch;
 import org.openiam.idm.srvc.user.dto.NewUserProfileRequestModel;
-import org.openiam.idm.srvc.user.dto.Supervisor;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserProfileRequestModel;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.idm.srvc.user.service.SupervisorDAO;
 import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.idm.srvc.user.service.UserProfileService;
-import org.openiam.provision.dto.ProvisionUser;
-import org.openiam.provision.resp.ProvisionUserResponse;
-import org.openiam.provision.service.ProvisionService;
 import org.openiam.script.ScriptIntegration;
+import org.openiam.validator.EntityValidator;
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.thoughtworks.xstream.XStream;
@@ -169,6 +157,22 @@ public class ActivitiServiceImpl implements ActivitiService, ApplicationContextA
     
     @Value("${org.openiam.bpm.user.approver.association.script}")
     private String approverAssociationScript;
+    
+    @Autowired
+    @Qualifier("entityValidator")
+    private EntityValidator entityValidator;
+    
+    @Autowired
+    private UserDozerConverter userDozerConverter;
+    
+    @Autowired
+    private EmailAddressDozerConverter emailDozerConverter;
+    
+    @Autowired
+    private AddressDozerConverter addressDozerConverter;
+    
+    @Autowired
+    private PhoneDozerConverter phoneDozerConverter;
 
 	@Override
 	@WebMethod
@@ -194,6 +198,10 @@ public class ActivitiServiceImpl implements ActivitiService, ApplicationContextA
 			
 			final ProvisionRequestEntity provisionRequest = new ProvisionRequestEntity();
 			final User provisionUser = request.getUser();
+			
+			validateUserRequest(request);
+			//final UserEntity provisionUserValidationObject = userDozerConverter.convertToEntity(provisionUser, true);
+			//entityValidator.isValid(provisionUserValidationObject);
 			
 			/* get a list of approvers for the new hire request, including information about their organization */
 	        
@@ -297,7 +305,7 @@ public class ActivitiServiceImpl implements ActivitiService, ApplicationContextA
 			variables.put(ActivitiConstants.TASK_NAME, taskName);
 			variables.put(ActivitiConstants.TASK_DESCRIPTION, taskDescription);
 			variables.put(ActivitiConstants.TASK_OWNER, request.getRequestorUserId());
-			final ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(requestType.getKey(), variables);
+			runtimeService.startProcessInstanceByKey(requestType.getKey(), variables);
 
 			response.setStatus(ResponseStatus.SUCCESS);
 		} catch (PageTemplateException e) {
@@ -306,6 +314,7 @@ public class ActivitiServiceImpl implements ActivitiService, ApplicationContextA
 			response.setErrorCode(e.getCode());
 			response.setStatus(ResponseStatus.FAILURE);
 		} catch(BasicDataServiceException e) {
+            response.setErrorTokenList(e.getErrorTokenList());
 			response.setErrorCode(e.getCode());
 			response.setStatus(ResponseStatus.FAILURE);
 		} catch(ActivitiException e) {
@@ -405,6 +414,11 @@ public class ActivitiServiceImpl implements ActivitiService, ApplicationContextA
 				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
 			}
 			
+			//userProfileService.validate(request);
+			validateUserRequest(request);
+			//final UserEntity provisionUserValidationObject = userDozerConverter.convertToEntity(request.getUser(), true);
+			//entityValidator.isValid(provisionUserValidationObject);
+			
 			final String description = String.format("Edit User %s", request.getUser().getDisplayName());
 			
 			final Set<String> requestApproverIds = new HashSet<String>();
@@ -457,6 +471,7 @@ public class ActivitiServiceImpl implements ActivitiService, ApplicationContextA
 		} catch(BasicDataServiceException e) {
 			response.setErrorCode(e.getCode());
 			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorTokenList(e.getErrorTokenList());
 		} catch(ActivitiException e) {
 			log.info("Activiti Exception", e);
 			response.setStatus(ResponseStatus.FAILURE);
@@ -469,6 +484,30 @@ public class ActivitiServiceImpl implements ActivitiService, ApplicationContextA
 			response.setErrorText(e.getMessage());
 		}
 		return response;
+	}
+	
+	private void validateUserRequest(final UserProfileRequestModel request) throws BasicDataServiceException {
+		final User user = request.getUser();
+		final UserEntity provisionUserValidationObject = userDozerConverter.convertToEntity(request.getUser(), true);
+		entityValidator.isValid(provisionUserValidationObject);
+		if(CollectionUtils.isNotEmpty(request.getEmails())) {
+			for(final EmailAddress bean : request.getEmails()) {
+				final EmailAddressEntity entity = emailDozerConverter.convertToEntity(bean, true);
+				entityValidator.isValid(entity);
+			}
+		}
+		if(CollectionUtils.isNotEmpty(request.getPhones())) {
+			for(final Phone bean : request.getPhones()) {
+				final PhoneEntity entity = phoneDozerConverter.convertToEntity(bean, true);
+				entityValidator.isValid(entity);
+			}
+		}
+		if(CollectionUtils.isNotEmpty(request.getAddresses())) {
+			for(final Address bean : request.getAddresses()) {
+				final AddressEntity entity = addressDozerConverter.convertToEntity(bean, true);
+				entityValidator.isValid(entity);
+			}
+		}
 	}
 	
 	@Override
@@ -487,72 +526,69 @@ public class ActivitiServiceImpl implements ActivitiService, ApplicationContextA
 				approverUserIds.addAll(request.getCustomApproverIds());
 			} else {
 				List<ApproverAssociationEntity> approverAssocationList = null;
-				if(CollectionUtils.isNotEmpty(request.getCustomApproverAssociationIds())) {
-					approverAssocationList = approverAssociationDao.findByIds(request.getCustomApproverAssociationIds());
-				} else {
-					/* for user target objects, use the groovy script */
-					if(AssociationType.USER.equals(request.getAssociationId())) {
-						try {
-							final UserCentricApproverAssociationIdentifier identifier = 
-									(UserCentricApproverAssociationIdentifier)scriptRunner.instantiateClass(null, approverAssociationScript);
-							final Map<String, Object> bindingMap = new HashMap<String, Object>();
-							bindingMap.put("USER", userDAO.findById(request.getAssociationId()));
-							identifier.init(bindingMap);
-							approverAssocationList = identifier.getApproverAssociations();
-						} catch(Throwable e) {
-							log.warn("Can't instantiate groovy class", e);
+				
+				/* for user target objects, use the supervisors - no approver association */
+				if(AssociationType.USER.equals(request.getAssociationType()) && StringUtils.isNotEmpty(request.getUserCentricUserId())) {
+					final List<SupervisorEntity> supervisors = supervisorDAO.findSupervisors(request.getUserCentricUserId());
+					if(CollectionUtils.isNotEmpty(supervisors)) {
+						for(final SupervisorEntity supervisor : supervisors) {
+							if(supervisor != null && supervisor.getSupervisor() != null) {
+								approverUserIds.add(supervisor.getSupervisor().getUserId());
+							}
 						}
+					}
+				} else {
+					if(CollectionUtils.isNotEmpty(request.getCustomApproverAssociationIds())) {
+						approverAssocationList = approverAssociationDao.findByIds(request.getCustomApproverAssociationIds());
 					} else {
 						approverAssocationList = approverAssociationDao.getByAssociation(request.getAssociationId(), request.getAssociationType());
 					}
-				}
-				
-				if(CollectionUtils.isEmpty(approverAssocationList)) {
-					log.warn(String.format("Can't find approver association for %s %s, using default approver association", request.getAssociationType(), request.getAssociationId()));
-					approverAssocationList = getDefaultApproverAssociations();
-				}
-				if(CollectionUtils.isNotEmpty(approverAssocationList)) {
-					for(final ApproverAssociationEntity entity : approverAssocationList) {
-						approverAssociationIds.add(entity.getId());
-						if(entity.getApproverEntityType() != null && StringUtils.isNotBlank(entity.getApproverEntityId())) {
-							final String approverId = entity.getApproverEntityId();
-							switch(entity.getApproverEntityType()) {
-								case GROUP:
-									final List<String> groupUsers = userGroupDAO.getUserIdsInGroup(approverId);
-									if(CollectionUtils.isNotEmpty(groupUsers)) {
-		    							approverUserIds.addAll(groupUsers);
-		    						}
-									break;
-								case ROLE:
-									final List<String> roleUsers = userRoleDAO.getUserIdsInRole(approverId);
-									if(CollectionUtils.isNotEmpty(roleUsers)) {
-										approverUserIds.addAll(roleUsers);
-									}
-									break;
-								case USER:
-									approverUserIds.add(approverId);
-									break;
-								case SUPERVISOR: /* assume association ID is a user */
-									final List<SupervisorEntity> supervisors = supervisorDAO.findSupervisors(request.getAssociationId());
-									if(CollectionUtils.isNotEmpty(supervisors)) {
-										for(final SupervisorEntity supervisor : supervisors) {
-											if(supervisor != null && supervisor.getEmployee() != null) {
-												approverUserIds.add(supervisor.getEmployee().getUserId());
+					if(CollectionUtils.isEmpty(approverAssocationList)) {
+						log.warn(String.format("Can't find approver association for %s %s, using default approver association", request.getAssociationType(), request.getAssociationId()));
+						approverAssocationList = getDefaultApproverAssociations();
+					}
+					if(CollectionUtils.isNotEmpty(approverAssocationList)) {
+						for(final ApproverAssociationEntity entity : approverAssocationList) {
+							approverAssociationIds.add(entity.getId());
+							if(entity.getApproverEntityType() != null && StringUtils.isNotBlank(entity.getApproverEntityId())) {
+								final String approverId = entity.getApproverEntityId();
+								switch(entity.getApproverEntityType()) {
+									case GROUP:
+										final List<String> groupUsers = userGroupDAO.getUserIdsInGroup(approverId);
+										if(CollectionUtils.isNotEmpty(groupUsers)) {
+			    							approverUserIds.addAll(groupUsers);
+			    						}
+										break;
+									case ROLE:
+										final List<String> roleUsers = userRoleDAO.getUserIdsInRole(approverId);
+										if(CollectionUtils.isNotEmpty(roleUsers)) {
+											approverUserIds.addAll(roleUsers);
+										}
+										break;
+									case USER:
+										approverUserIds.add(approverId);
+										break;
+									case SUPERVISOR: /* assume association ID is a user */
+										final List<SupervisorEntity> supervisors = supervisorDAO.findSupervisors(request.getAssociationId());
+										if(CollectionUtils.isNotEmpty(supervisors)) {
+											for(final SupervisorEntity supervisor : supervisors) {
+												if(supervisor != null && supervisor.getSupervisor() != null) {
+													approverUserIds.add(supervisor.getSupervisor().getUserId());
+												}
 											}
 										}
-									}
-									break;
-								default:
-									break;
+										break;
+									default:
+										break;
+								}
 							}
 						}
 					}
 				}
-				
-				if(CollectionUtils.isEmpty(approverUserIds)) {
-					log.warn("Could not found any approvers - using default user");
-	        		approverUserIds.add(defaultApproverUserId);
-	        	}
+			}
+			if(CollectionUtils.isEmpty(approverUserIds)) {
+				log.warn("Could not found any approvers - using default user");
+	        	approverUserIds.add(defaultApproverUserId);
 			}
 			
 			final Map<String, Object> variables = new HashMap<String, Object>();
@@ -588,7 +624,6 @@ public class ActivitiServiceImpl implements ActivitiService, ApplicationContextA
 
 	@Override
 	@WebMethod
-	@Transactional
 	public Response makeDecision(final ActivitiRequestDecision request) {
 		final Response response = new Response();
 		try {

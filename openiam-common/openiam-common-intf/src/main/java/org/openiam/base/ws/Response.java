@@ -22,11 +22,15 @@
 package org.openiam.base.ws;
 
 
+import org.openiam.exception.EsbErrorToken;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlType;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Base class that is used for responses from a web service.
@@ -38,7 +42,8 @@ import java.io.Serializable;
         "status",
         "errorCode",
         "responseValue",
-        "errorText"
+        "errorText",
+        "errorTokenList"
 })
 public class Response implements Serializable {
 
@@ -48,6 +53,7 @@ public class Response implements Serializable {
     protected String errorText;
 
     protected Object responseValue;
+    private List<EsbErrorToken> errorTokenList;
 
     public Response() {
 
@@ -97,6 +103,20 @@ public class Response implements Serializable {
         return status.equals(ResponseStatus.FAILURE);
     }
 
+    public List<EsbErrorToken> getErrorTokenList() {
+        return errorTokenList;
+    }
+
+    public void setErrorTokenList(List<EsbErrorToken> errorTokenList) {
+        this.errorTokenList = errorTokenList;
+    }
+
+    public void addErrorToken(EsbErrorToken errorToken){
+        if(errorTokenList==null)
+            errorTokenList = new ArrayList<EsbErrorToken>();
+        errorTokenList.add(errorToken);
+    }
+
     @Override
     public String toString() {
         return "Response{" +
@@ -104,6 +124,7 @@ public class Response implements Serializable {
                 ", errorCode=" + errorCode +
                 ", errorText='" + errorText + '\'' +
                 ", responseValue=" + responseValue +
+                ", errorTokenList=" + errorTokenList +
                 '}';
     }
 }

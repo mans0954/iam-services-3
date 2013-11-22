@@ -250,7 +250,7 @@ public class AttributeListBuilder {
 
         if (attrMap != null) {
 
-            log.debug("buildModifyFromRules: attrMap IS NOT null");
+            log.debug("buildFromRules: attrMap IS NOT null");
 
             for (AttributeMap attr : attrMap) {
 
@@ -265,7 +265,7 @@ public class AttributeListBuilder {
                         String objectType = attr.getMapForObjectType();
                         if (objectType != null) {
 
-                            log.debug("buildModifyFromRules: OBJECTTYPE="
+                            log.debug("buildFromRules: OBJECTTYPE="
                                     + objectType + " SCRIPT OUTPUT=" + output
                                     + " attribute name="
                                     + attr.getAttributeName());
@@ -322,7 +322,7 @@ public class AttributeListBuilder {
 
                                     extUser.getAttributes().add(newAttr);
 
-                                    log.debug("buildModifyFromRules: added attribute to extUser:"
+                                    log.debug("buildFromRules: added attribute to extUser:"
                                             + attr.getAttributeName());
                                 }
 

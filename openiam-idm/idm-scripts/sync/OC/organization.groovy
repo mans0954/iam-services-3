@@ -2,6 +2,8 @@ import org.openiam.dozer.converter.OrganizationDozerConverter
 import org.openiam.idm.searchbeans.OrganizationSearchBean
 import org.openiam.idm.srvc.org.service.OrganizationService
 
+output = ""
+
 def homeDeptCd = attribute.value
 
 def organizationService = context?.getBean("organizationService") as OrganizationService
@@ -19,11 +21,10 @@ if (orgList) {
 if (homeDeptCd) {
     def deptSearchBean = new OrganizationSearchBean()
     deptSearchBean.internalOrgId = homeDeptCd.substring(1)
-    deptSearchBean.organizationTypeId = "DEPARTMENT"
+    deptSearchBean.organizationTypeId = "DIVISION"
     def deptList = organizationService.findBeans(deptSearchBean, null, 0, 1)
     if (deptList) {
         def department = organizationDozerConverter?.convertToDTO(deptList.get(0), false)
         pUser.addUserAffiliation(department)
     }
 }
-output = ""

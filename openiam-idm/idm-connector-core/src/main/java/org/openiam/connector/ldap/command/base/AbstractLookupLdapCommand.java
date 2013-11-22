@@ -28,8 +28,10 @@ public abstract class AbstractLookupLdapCommand<ExtObject extends ExtensibleObje
         try {
             found = this.lookup(config.getManagedSys(), lookupRequest, respType, ldapctx);
             log.debug("LOOKUP successful");
-            if (!found) {
-                throw  new ConnectorDataException(ErrorCode.NO_RESULTS_RETURNED);
+            if (found) {
+                log.debug("LOOKUP successful with results.");
+            } else {
+                log.debug("LOOKUP successful without results.");
             }
 
         } finally {

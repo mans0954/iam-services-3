@@ -1,21 +1,22 @@
 package org.openiam.connector.orcl.command.user;
 
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-import org.openiam.connector.type.constant.ErrorCode;
-import org.openiam.connector.type.request.CrudRequest;
-import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
-import org.openiam.provision.type.ExtensibleAttribute;
-import org.openiam.connector.type.ConnectorDataException;
-import org.openiam.provision.type.ExtensibleUser;
-import org.openiam.connector.orcl.command.base.AbstractAddOracleCommand;
-import org.springframework.stereotype.Service;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.List;
+
+import org.apache.commons.lang.StringUtils;
+import org.openiam.connector.orcl.command.base.AbstractAddOracleCommand;
+import org.openiam.connector.type.ConnectorDataException;
+import org.openiam.connector.type.constant.ErrorCode;
+import org.openiam.connector.type.request.CrudRequest;
+import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
+import org.openiam.provision.type.ExtensibleAttribute;
+import org.openiam.provision.type.ExtensibleObject;
+import org.openiam.provision.type.ExtensibleUser;
+import org.springframework.stereotype.Service;
 
 /**
  * Created with IntelliJ IDEA.
@@ -29,8 +30,10 @@ public class AddUserOracleCommand extends AbstractAddOracleCommand<ExtensibleUse
     private static final String INSERT_SQL = "CREATE USER \"%s\" IDENTIFIED BY \"%s\"";
     private static final String SELECT_SQL = "SELECT USER_ID FROM DBA_USERS WHERE USERNAME=?";
 
+   
     @Override
     protected void addObject(CrudRequest<ExtensibleUser> crudRequest, List<AttributeMapEntity> attributeMap, Connection con) throws ConnectorDataException {
+    	
         if (identityExists(con, crudRequest.getObjectIdentity())) {
             if(log.isDebugEnabled()) {
                 log.debug(String.format("%s exists. Returning success to the connector", crudRequest.getObjectIdentity()));
@@ -39,23 +42,36 @@ public class AddUserOracleCommand extends AbstractAddOracleCommand<ExtensibleUse
         }
 
         String identifiedBy = null;
-            final List<ExtensibleAttribute> attrList = crudRequest.getExtensibleObject().getAttributes();
-
-            if(log.isDebugEnabled()) {
-                log.debug(String.format("Number of attributes to persist in ADD = %s", attrList.size()));
-            }
-
-            if(CollectionUtils.isNotEmpty(attributeMap)) {
-                for (final ExtensibleAttribute att : attrList) {
-                    for(final AttributeMapEntity attribute : attributeMap) {
-                        if(StringUtils.equalsIgnoreCase("password", attribute.getMapForObjectType())) {
-                            if(StringUtils.equalsIgnoreCase(att.getName(),  attribute.getAttributeName())) {
-                                identifiedBy = att.getValue();
-                            }
-                        }
+        ExtensibleObject obj = crudRequest.getExtensibleObject();
+        
+        if (StringUtils.isNotBlank(crudRequest.getObjectIdentity())) {
+            // Extract attribues into a map. Also save groups
+            HashMap<String, String> attributes = new HashMap<String, String>();
+            attributes.put("login", crudRequest.getObjectIdentity());
+            if (obj == null) {
+                log.debug("Object: not provided, just identity, seems it is delete operation");
+            } else {
+                log.debug("Object:" + obj.getName() + " - operation="
+                        + obj.getOperation());
+                
+                // Extract attributes
+                for (ExtensibleAttribute att : obj.getAttributes()) {
+                    if (att != null) {
+                        attributes.put(att.getName(), att.getValue());
                     }
                 }
             }
+            
+            
+           identifiedBy = attributes.get("password");
+            
+          
+
+            if(log.isDebugEnabled()) {
+                log.debug(String.format("Number of attributes to persist in ADD = %s", attributes.size()));
+            }
+
+            
 
         if(StringUtils.isBlank(identifiedBy))
             throw new ConnectorDataException(ErrorCode.INVALID_ATTRIBUTE, "No password specified");
@@ -72,8 +88,10 @@ public class AddUserOracleCommand extends AbstractAddOracleCommand<ExtensibleUse
             throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR, e.getMessage());
         }
     }
+        }
 
     protected boolean identityExists(final Connection connection, final String principalName) throws ConnectorDataException {
+    	
         PreparedStatement statement = null;
         try {
             boolean exists = false;
@@ -81,7 +99,6 @@ public class AddUserOracleCommand extends AbstractAddOracleCommand<ExtensibleUse
                 if(org.mule.util.StringUtils.isNotBlank(principalName)) {
                     statement = connection.prepareStatement(SELECT_SQL);
                     statement.setString(1, principalName);
-
                     final ResultSet rs = statement.executeQuery();
                     if (rs != null && rs.next()) {
                         return true;

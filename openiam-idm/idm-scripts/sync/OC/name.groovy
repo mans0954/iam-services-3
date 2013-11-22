@@ -1,4 +1,6 @@
 
+output = ""
+
 def attrVal = attribute.value
 if (attrVal) {
     def names = attrVal.split(', ')
@@ -15,4 +17,3 @@ if (attrVal) {
         }
     }
 }
-output = ""

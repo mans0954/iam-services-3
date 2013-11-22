@@ -1,6 +1,8 @@
 import org.openiam.dozer.converter.RoleDozerConverter
 import org.openiam.idm.srvc.role.service.RoleDataService
 
+output = ""
+
 def roleName = attributeName
 def foundRole = userRoleList.find { r-> r.roleName == roleName }
 if (!foundRole) {
@@ -9,4 +11,3 @@ if (!foundRole) {
     def role = roleDozerConverter?.convertToDTO(roleDataService?.getRoleByName(roleName, null), false)
     pUser.addMemberRole(role)
 }
-output = ""

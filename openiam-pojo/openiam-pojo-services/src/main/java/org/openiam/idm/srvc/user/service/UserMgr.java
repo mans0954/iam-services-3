@@ -17,11 +17,11 @@ import org.apache.commons.collections.ListUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.BaseConstants;
 import org.openiam.base.SysConfiguration;
 import org.openiam.core.dao.UserKeyDao;
-import org.openiam.dozer.converter.UserAttributeDozerConverter;
-import org.openiam.dozer.converter.UserDozerConverter;
+import org.openiam.dozer.converter.*;
 import org.openiam.idm.searchbeans.AddressSearchBean;
 import org.openiam.idm.searchbeans.DelegationFilterSearchBean;
 import org.openiam.idm.searchbeans.EmailSearchBean;
@@ -35,6 +35,9 @@ import org.openiam.idm.srvc.auth.login.lucene.LoginSearchDAO;
 import org.openiam.idm.srvc.continfo.domain.AddressEntity;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
 import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
+import org.openiam.idm.srvc.continfo.dto.Address;
+import org.openiam.idm.srvc.continfo.dto.EmailAddress;
+import org.openiam.idm.srvc.continfo.dto.Phone;
 import org.openiam.idm.srvc.continfo.service.AddressDAO;
 import org.openiam.idm.srvc.continfo.service.EmailAddressDAO;
 import org.openiam.idm.srvc.continfo.service.EmailSearchDAO;
@@ -46,8 +49,13 @@ import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.meta.service.MetadataElementDAO;
 import org.openiam.idm.srvc.meta.service.MetadataTypeDAO;
+import org.openiam.idm.srvc.org.domain.UserAffiliationEntity;
+import org.openiam.idm.srvc.org.service.OrganizationService;
 import org.openiam.idm.srvc.org.service.UserAffiliationDAO;
 import org.openiam.idm.srvc.res.service.ResourceUserDAO;
+import org.openiam.idm.srvc.role.domain.UserRoleEntity;
+import org.openiam.idm.srvc.role.dto.UserRole;
+import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.role.service.UserRoleDAO;
 import org.openiam.idm.srvc.searchbean.converter.AddressSearchBeanConverter;
 import org.openiam.idm.srvc.searchbean.converter.EmailAddressSearchBeanConverter;
@@ -143,9 +151,20 @@ public class UserMgr implements UserDataService {
     @Autowired
     private UserDozerConverter userDozerConverter;
     @Autowired
+    private AddressDozerConverter addressDozerConverter;
+    @Autowired
+    EmailAddressDozerConverter emailAddressDozerConverter;
+    @Autowired
+    PhoneDozerConverter phoneDozerConverter;
+
+    @Autowired
     private MetadataElementDAO metadataElementDAO;
     @Autowired
     private MetadataTypeDAO metadataTypeDAO;
+    @Autowired
+    private OrganizationService organizationService;
+    @Autowired
+    private RoleDataService roleDataService;
 
     @Value("${org.openiam.user.search.max.results}")
     private int MAX_USER_SEARCH_RESULTS;
@@ -247,6 +266,119 @@ public class UserMgr implements UserDataService {
 
         userDao.update(userEntity);
         validateEmailAddress(userEntity, user.getEmailAddresses());
+
+    }
+
+    @Transactional
+    public void updateUserFromDto(User user) {
+
+        if (user == null)
+            throw new NullPointerException("user object is null");
+        if (user.getUserId() == null)
+            throw new NullPointerException("user id is null");
+
+        user.setLastUpdate(new Date(System.currentTimeMillis()));
+
+        UserEntity userEntity = userDao.findById(user.getUserId());
+        userEntity.updateUser(userDozerConverter.convertToEntity(user, false));
+
+        // Processing emails
+        Set<EmailAddress> emailAddresses = user.getEmailAddresses();
+        if (CollectionUtils.isNotEmpty(emailAddresses)) {
+            for (EmailAddress e : emailAddresses) {
+                if (e.getOperation() == null) {
+                    continue;
+                }
+                if (e.getOperation().equals(AttributeOperationEnum.DELETE)) {
+                    EmailAddressEntity entity = emailAddressDao.findById(e.getEmailId());
+                    if (entity != null) {
+                        userEntity.getEmailAddresses().remove(entity);
+                    }
+                } else if (e.getOperation().equals(AttributeOperationEnum.ADD)) {
+                    EmailAddressEntity entity = emailAddressDao.findById(e.getEmailId());
+                    if(entity != null) {
+                        emailAddressDao.evict(entity);
+                    }
+                    entity = emailAddressDozerConverter.convertToEntity(e, false);
+                    entity.setParent(userEntity);
+                    userEntity.getEmailAddresses().add(entity);
+                } else if (e.getOperation().equals(AttributeOperationEnum.REPLACE)) {
+                    EmailAddressEntity entity = emailAddressDao.findById(e.getEmailId());
+                    if (entity != null) {
+                        userEntity.getEmailAddresses().remove(entity);
+                        emailAddressDao.evict(entity);
+                        entity = emailAddressDozerConverter.convertToEntity(e, false);
+                        entity.setParent(userEntity);
+                        userEntity.getEmailAddresses().add(entity);
+                    }
+                }
+            }
+        }
+
+        // Processing addresses
+        Set<Address> addresses = user.getAddresses();
+        if (CollectionUtils.isNotEmpty(addresses)) {
+            for (Address e : addresses) {
+                if (e.getOperation() == null) {
+                    continue;
+                }
+                if (e.getOperation().equals(AttributeOperationEnum.DELETE)) {
+                    AddressEntity entity = addressDao.findById(e.getAddressId());
+                    if (entity != null) {
+                        userEntity.getAddresses().remove(entity);
+                    }
+                } else if (e.getOperation().equals(AttributeOperationEnum.ADD)) {
+                    AddressEntity entity = addressDozerConverter.convertToEntity(e, false);
+                    entity.setParent(userEntity);
+                    userEntity.getAddresses().add(entity);
+                } else if (e.getOperation().equals(AttributeOperationEnum.REPLACE)) {
+                    AddressEntity entity = addressDao.findById(e.getAddressId());
+                    if (entity != null) {
+                        userEntity.getAddresses().remove(entity);
+                        addressDao.evict(entity);
+                        entity = addressDozerConverter.convertToEntity(e, false);
+                        entity.setParent(userEntity);
+                        userEntity.getAddresses().add(entity);
+                    }
+                }
+            }
+        }
+
+        // Processing phones
+        Set<Phone> phones = user.getPhones();
+        if (CollectionUtils.isNotEmpty(phones)) {
+            for (Phone e : phones) {
+                if (e.getOperation() == null) {
+                    continue;
+                }
+                if (e.getOperation().equals(AttributeOperationEnum.DELETE)) {
+                    PhoneEntity entity = phoneDao.findById(e.getPhoneId());
+                    if (entity != null) {
+                        userEntity.getPhones().remove(entity);
+                    }
+                } else if (e.getOperation().equals(AttributeOperationEnum.ADD)) {
+                    PhoneEntity entity = phoneDozerConverter.convertToEntity(e, false);
+                    entity.setParent(userEntity);
+                    userEntity.getPhones().add(entity);
+                } else if (e.getOperation().equals(AttributeOperationEnum.REPLACE)) {
+                    PhoneEntity entity = phoneDao.findById(e.getPhoneId());
+                    if (entity != null) {
+                        userEntity.getPhones().remove(entity);
+                        phoneDao.evict(entity);
+                        entity = phoneDozerConverter.convertToEntity(e, false);
+                        entity.setParent(userEntity);
+                        userEntity.getPhones().add(entity);
+                    }
+                }
+            }
+        }
+
+        // Processing user attributes
+        updateUserAttributes(userDozerConverter.convertToEntity(user, false), userEntity);
+
+        //TODO: Check userRoles and affiliations
+
+        userDao.update(userEntity);
 
     }
 
@@ -787,6 +919,12 @@ public class UserMgr implements UserDataService {
 
     @Override
     @Transactional(readOnly = true)
+    public List<Address> getAddressDtoList(String userId, boolean isDeep) {
+        return addressDozerConverter.convertToDTOList(getAddressList(userId), isDeep);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<AddressEntity> getAddressList(String userId, Integer size, Integer from) {
         if (userId == null)
             throw new NullPointerException("userId is null");
@@ -944,6 +1082,12 @@ public class UserMgr implements UserDataService {
 
     @Override
     @Transactional(readOnly = true)
+    public List<Phone> getPhoneDtoList(String userId, boolean isDeep) {
+        return phoneDozerConverter.convertToDTOList(getPhoneList(userId), isDeep);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<PhoneEntity> getPhoneList(String userId, Integer size, Integer from) {
         if (userId == null)
             throw new NullPointerException("userId is null");
@@ -1097,6 +1241,12 @@ public class UserMgr implements UserDataService {
     @Transactional(readOnly = true)
     public List<EmailAddressEntity> getEmailAddressList(String userId) {
         return this.getEmailAddressList(userId, Integer.MAX_VALUE, 0);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<EmailAddress> getEmailAddressDtoList(String userId, boolean isDeep) {
+        return emailAddressDozerConverter.convertToDTOList(getEmailAddressList(userId), isDeep);
     }
 
     @Override
@@ -1347,8 +1497,16 @@ public class UserMgr implements UserDataService {
     private String createNewUser(UserEntity newUserEntity) throws Exception {
         List<LoginEntity> principalList = newUserEntity.getPrincipalList();
         Set<EmailAddressEntity> emailAddressList = newUserEntity.getEmailAddresses();
+        Set<AddressEntity> addressList = newUserEntity.getAddresses();
+        Set<PhoneEntity> phoneList = newUserEntity.getPhones();
+        Set<UserAffiliationEntity> userOrgs = newUserEntity.getAffiliations();
+        Set<UserRoleEntity> userRoles =  newUserEntity.getUserRoles();
 
         newUserEntity.setPrincipalList(null);
+        newUserEntity.setPhones(null);
+        newUserEntity.setAddresses(null);
+        newUserEntity.setAffiliations(null);
+        newUserEntity.setUserRoles(null);
         // newUserEntity.setEmailAddresses(null);
 
         this.addUser(newUserEntity);
@@ -1370,11 +1528,40 @@ public class UserMgr implements UserDataService {
                 loginDao.save(lg);
             }
         }
-        if (emailAddressList != null && !emailAddressList.isEmpty()) {
+        if (CollectionUtils.isNotEmpty(emailAddressList)) {
             for (final EmailAddressEntity email : emailAddressList) {
                 email.setParent(newUserEntity);
             }
             this.addEmailAddressSet(emailAddressList);
+        }
+        if (CollectionUtils.isNotEmpty(addressList)) {
+            for (final AddressEntity address : addressList) {
+                address.setParent(newUserEntity);
+            }
+            this.addAddressSet(addressList);
+        }
+        if (CollectionUtils.isNotEmpty(phoneList)) {
+            for (final PhoneEntity phone : phoneList) {
+                phone.setParent(newUserEntity);
+            }
+            this.addPhoneSet(phoneList);
+        }
+
+        if(CollectionUtils.isNotEmpty(userOrgs)){
+            for (final UserAffiliationEntity userOrg : userOrgs) {
+                organizationService.addUserToOrg(userOrg.getOrganization().getId(), newUserEntity.getUserId());
+            }
+        }
+        if(CollectionUtils.isNotEmpty(userOrgs)){
+            for (final UserAffiliationEntity userOrg : userOrgs) {
+                organizationService.addUserToOrg(userOrg.getOrganization().getId(), newUserEntity.getUserId());
+            }
+        }
+        if(CollectionUtils.isNotEmpty(userRoles)){
+            for (final UserRoleEntity userRole : userRoles) {
+                userRole.setUserId(newUserEntity.getUserId());
+                roleDataService.assocUserToRole(userRole);
+            }
         }
         return newUserEntity.getUserId();
     }
@@ -1638,7 +1825,6 @@ public class UserMgr implements UserDataService {
                 origUserEntity.setAlternateContactId(newUserEntity.getAlternateContactId());
             }
         }
-
     }
 
     @Transactional

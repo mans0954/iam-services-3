@@ -127,6 +127,8 @@
         <hibernate.version>3.6.6.Final</hibernate.version>
         <hibernatesearch.version>3.4.0.Final</hibernatesearch.version>
         <hibernate.entity.manager.version>3.6.7.Final</hibernate.entity.manager.version>
+        <validation-api.version>1.0.0.GA</validation-api.version>
+        <hibernate-validator.version>4.3.0.Final</hibernate-validator.version>
         <servletapi.version>2.5</servletapi.version>
         <ehcache.version>2.4.3</ehcache.version>
         <log4j.version>1.2.16</log4j.version>
@@ -284,6 +286,17 @@
                 <artifactId>hibernate-ehcache</artifactId>
                 <version>${hibernate.version}</version>
             </dependency>
+            <dependency>
+                <groupId>javax.validation</groupId>
+                <artifactId>validation-api</artifactId>
+                <version>${validation-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.hibernate</groupId>
+                <artifactId>hibernate-validator</artifactId>
+                <version>${hibernate-validator.version}</version>
+            </dependency>
+
             <!-- ehcache dependencies -->
             <dependency>
                 <groupId>net.sf.ehcache</groupId>
