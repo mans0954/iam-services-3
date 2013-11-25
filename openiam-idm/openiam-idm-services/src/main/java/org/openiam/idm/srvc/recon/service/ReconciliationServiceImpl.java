@@ -359,16 +359,21 @@ public class ReconciliationServiceImpl implements ReconciliationService {
             // Get List with all users who have Identity if this resource
             List<LoginEntity> idmIdentities = loginManager
                     .getAllLoginByManagedSys(managedSysId);
+
+            List<String> processedUserIds = new ArrayList<String>();
             for (LoginEntity identity : idmIdentities) {
-                reconciliationIDMUserToTargetSys(resultBean, attrMap, identity,
-                        sysDto, situations, config.getManualReconciliationFlag());
+                if (identity.getUserId() != null) {
+                    processedUserIds.add(identity.getUserId()); // to avoid double processing
+                    reconciliationIDMUserToTargetSys(resultBean, attrMap, identity,
+                            sysDto, situations, config.getManualReconciliationFlag());
+                }
             }
 
             // 2. Do reconciliation users from Target Managed System to IDM
             // search for all Roles and Groups related with resource
             // GET Users from ConnectorAdapter by BaseDN and query rules
             processingTargetToIDM(resultBean, attrMap, config, managedSysId,
-                    sysDto, situations, connector, keyField, baseDnField);
+                    sysDto, situations, connector, keyField, baseDnField, processedUserIds);
             this.saveReconciliationResults(config.getResourceId(), resultBean);
             this.sendMail(config, res);
         } catch (Exception e) {
@@ -388,7 +393,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
             List<AttributeMapEntity> attrMap, ReconciliationConfig config,
             String managedSysId, ManagedSysDto mSys,
             Map<String, ReconciliationCommand> situations,
-            ProvisionConnectorDto connector, String keyField, String baseDnField)
+            ProvisionConnectorDto connector, String keyField, String baseDnField, List<String> processedUserIds)
             throws ScriptEngineException {
 
         if (config == null
@@ -439,7 +444,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
                     reconcilationTargetUserObjectToIDM(
                             managedSysId, mSys, situations,
                             extensibleAttributes,
-                            config);
+                            config, processedUserIds);
                 }
             }
         } else {
@@ -454,15 +459,16 @@ public class ReconciliationServiceImpl implements ReconciliationService {
             ManagedSysDto mSys,
             Map<String, ReconciliationCommand> situations,
             List<ExtensibleAttribute> extensibleAttributes,
-            ReconciliationConfig config) {
+            ReconciliationConfig config, List<String> processedUserIds) {
         String targetUserPrincipal = null;
 
         Map<String, Attribute>  attributeMap = new HashMap<String,Attribute>();
         for (ExtensibleAttribute attr : extensibleAttributes) {
             // search principal attribute by KeyField
             attributeMap.put(attr.getName(),attr);
-            if(targetUserPrincipal == null && attr.getName().equals(config.getMatchFieldName())) {
+            if(targetUserPrincipal == null && attr.getName().equals(config.getCustomMatchAttr())) {
                 targetUserPrincipal = attr.getValue();
+                break;
             }
         }
 
@@ -471,6 +477,9 @@ public class ReconciliationServiceImpl implements ReconciliationService {
             User usr = matchObjectRule.lookup(config, attributeMap);
 
             if(usr != null) {
+               if (processedUserIds.contains(usr.getUserId())) { // already processed
+                   return;
+               }
                User u = userManager.getUserDto(usr.getUserId());
                //situation TARGET EXIST, IDM EXIST do modify
                //check principal list on this ManagedSys exists
@@ -517,9 +526,11 @@ public class ReconciliationServiceImpl implements ReconciliationService {
                     newUser.getPrincipalList().add(l);
                     LoginEntity idmLogin = loginManager.getLoginByManagedSys(
                             mSys.getDomainId(), targetUserPrincipal, "0");
-                    newUser.getPrincipalList().add(
-                                loginDozerConverter.convertToDTO(idmLogin,
-                                        true));
+                    if (idmLogin != null) {
+                        newUser.getPrincipalList().add(
+                                    loginDozerConverter.convertToDTO(idmLogin,
+                                            true));
+                    }
 
                     log.debug("Call command for Match Not Found");
                     command.execute(l, newUser, extensibleAttributes);

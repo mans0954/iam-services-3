@@ -34,6 +34,8 @@ public class ReconciliationConfigEntity implements java.io.Serializable {
     private String reconConfigId;
     @Column(name = "RESOURCE_ID", length = 32)
     private String resourceId;
+    @Column(name = "MANAGED_SYS_ID", length = 32)
+    private String managedSysId;
     @Column(name = "FREQUENCY", length = 20)
     private String frequency;
     @Column(name = "STATUS", length = 20)
@@ -87,11 +89,12 @@ public class ReconciliationConfigEntity implements java.io.Serializable {
         this.reconConfigId = reconConfigId;
     }
 
-    public ReconciliationConfigEntity(String reconConfigId, String resourceId,
+    public ReconciliationConfigEntity(String reconConfigId, String resourceId,  String managedSysId,
             String mode, String frequency, String status,
             Integer attributeLevelCheck, Integer updateChangedAttribute) {
         this.reconConfigId = reconConfigId;
         this.resourceId = resourceId;
+        this.managedSysId = managedSysId;
         this.frequency = frequency;
         this.status = status;
 
@@ -111,6 +114,14 @@ public class ReconciliationConfigEntity implements java.io.Serializable {
 
     public void setResourceId(String resourceId) {
         this.resourceId = resourceId;
+    }
+
+    public String getManagedSysId() {
+        return managedSysId;
+    }
+
+    public void setManagedSysId(String managedSysId) {
+        this.managedSysId = managedSysId;
     }
 
     public String getFrequency() {
