@@ -319,7 +319,7 @@ public class CSVAdapter extends AbstractSrcAdapter {
                 }
                 if (retval != -1) {
                     if (retval == TransformScript.DELETE && pUser.getUser() != null) {
-                        provService.deleteByUserId(pUser.getUserId(), UserStatusEnum.DELETED, systemAccount);
+                        provService.deleteByUserId(pUser.getUserId(), UserStatusEnum.REMOVE, systemAccount);
                     } else {
                         // call synch
                         if (retval != TransformScript.DELETE) {

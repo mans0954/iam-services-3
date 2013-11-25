@@ -506,7 +506,18 @@ public class ProvisionDispatcher implements Sweepable {
                                 extUser.getAttributes().add(newAttr);
 
 
-                            } else if (output instanceof Date) {
+                            } else if (output instanceof Integer) {
+
+                                // if its memberOf object than dont add it to the list
+                                // the connectors can detect a delete if an attribute is not in the list
+
+                                newAttr = new ExtensibleAttribute(attr.getAttributeName(),
+                                        ((Integer)output).toString(), 1, attr.getDataType().getValue());
+                                newAttr.setObjectType(objectType);
+                                extUser.getAttributes().add(newAttr);
+
+
+                            }  else if (output instanceof Date) {
                                 // date
                                 Date d = (Date) output;
                                 String DATE_FORMAT = "MM/dd/yyyy";
