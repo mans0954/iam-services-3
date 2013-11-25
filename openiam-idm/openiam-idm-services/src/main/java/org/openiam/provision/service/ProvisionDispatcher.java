@@ -137,7 +137,8 @@ public class ProvisionDispatcher implements Sweepable {
         //TODO: add support for batch processing if possible
         for (ProvisionDataContainer data : entities) {
             Login identity = data.getIdentity();
-            LoginEntity loginEntity = loginManager.getLoginDetails(identity.getLoginId());
+            LoginEntity loginEntity = loginManager.getLoginByManagedSys(identity.getDomainId(),
+                    identity.getLogin(), identity.getManagedSysId());
 
             if (data.getOperation() == AttributeOperationEnum.DELETE) {
 
