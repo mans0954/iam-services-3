@@ -59,24 +59,21 @@ public class DefaultMatchObjectRule implements MatchObjectRule {
 
 		} else if (matchAttrName.equalsIgnoreCase("ATTRIBUTE")) {
 			System.out.println("- cofiguring search by attribute..");
-			System.out.println("- match attr=.." + matchConfig.getCustomMatchAttr());
+			System.out.println("- match attr=.." + matchConfig.getMatchSrcFieldName());
 		
 			// get the attribute value from the data_set
 			System.out.println("- src field value=.." + matchAttrValue);
-			matchAttrName = matchConfig.getCustomMatchAttr();
+			matchAttrName = matchConfig.getMatchSrcFieldName();
 
 			searchBean.setAttributeName(matchAttrName);
 			searchBean.setAttributeValue(matchAttrValue);
-			//search.setAttributeName(config.getCustomMatchAttr());
-			//search.setAttributeValue(valueToMatch);
+
 		}
 
         List<UserEntity> userList = null;
-        try {
-            userList = userManager.findBeans(searchBean);
-        } catch (BasicDataServiceException e) {
-            log.error(e.getLocalizedMessage(),e);
-        }
+
+        userList = userManager.getByExample(searchBean, 0, Integer.MAX_VALUE);
+
 
         if (userList != null && !userList.isEmpty()) {
 			System.out.println("User matched with existing user...");
