@@ -27,11 +27,13 @@ import javax.persistence.OrderBy;
 import javax.persistence.Table;
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Where;
 import org.hibernate.search.annotations.DocumentId;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.dto.OrganizationAttribute;
@@ -119,6 +121,10 @@ public class OrganizationEntity {
 	@ManyToOne(fetch = FetchType.EAGER,cascade={CascadeType.ALL})
     @JoinColumn(name="ADMIN_RESOURCE_ID", referencedColumnName = "RESOURCE_ID", insertable = true, updatable = true, nullable=true)
 	private ResourceEntity adminResource;
+	
+	@OneToMany(cascade = {CascadeType.ALL}, fetch = FetchType.LAZY, mappedBy="associationEntityId", orphanRemoval=true)
+	@Where(clause="ASSOCIATION_TYPE='ORGANIZATION'")
+	private Set<ApproverAssociationEntity> approverAssociations;
 
     public OrganizationEntity() {
     }
@@ -319,6 +325,24 @@ public class OrganizationEntity {
 
 	public void setAdminResource(ResourceEntity adminResource) {
 		this.adminResource = adminResource;
+	}
+	
+	public Set<ApproverAssociationEntity> getApproverAssociations() {
+		return approverAssociations;
+	}
+
+	public void setApproverAssociations(
+			Set<ApproverAssociationEntity> approverAssociations) {
+		this.approverAssociations = approverAssociations;
+	}
+	
+	public void addApproverAssociation(final ApproverAssociationEntity entity) {
+		if(entity != null) {
+			if(this.approverAssociations == null) {
+				this.approverAssociations = new HashSet<ApproverAssociationEntity>();
+			}
+			this.approverAssociations.add(entity);
+		}
 	}
 
 	@Override

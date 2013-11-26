@@ -34,7 +34,11 @@ public enum ActivitiRequestType {
 	
 	NEW_ROLE("newRole", "New Role"),
 	EDIT_ROLE("editRole", "Edit Role"),
-	DELETE_ROLE("deleteRole", "Delete Role");
+	DELETE_ROLE("deleteRole", "Delete Role"),
+	
+	NEW_ORGANIZATION("newOrganization", "New Organization"),
+	EDIT_ORGANIZATION("editOrganization", "Edit Organization"),
+	DELETE_ORGANIZATION("deleteOrganization", "DeleteOrganization");
 	
 	private String description;
 	private String key;

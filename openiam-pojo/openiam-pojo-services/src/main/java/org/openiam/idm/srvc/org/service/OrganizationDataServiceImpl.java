@@ -58,9 +58,6 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
     private UserDataService userDataService;
 
     @Autowired
-    private OrganizationSearchBeanConverter organizationSearchBeanConverter;
-
-    @Autowired
     private OrganizationDozerConverter organizationDozerConverter;
 
     @Autowired
@@ -164,57 +161,36 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
         }
         return response;
     }
+    
+    private void validateEditInternal(final Organization organization) throws BasicDataServiceException {
+    	if (organization == null) {
+            throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+        }
+        if (StringUtils.isBlank(organization.getName())) {
+            throw new BasicDataServiceException(ResponseCode.ORGANIZATION_NAME_NOT_SET);
+        }
 
-    @Override
-    public Response removeAttribute(final String attributeId) {
-        final Response response = new Response(ResponseStatus.SUCCESS);
-        try {
-            if (attributeId == null) {
-                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+        final OrganizationEntity found = organizationService.getOrganizationByName(organization.getName(), null);
+        if (found != null) {
+            if (StringUtils.isBlank(organization.getId()) && found != null) {
+                throw new BasicDataServiceException(ResponseCode.NAME_TAKEN);
             }
 
-            organizationService.removeAttribute(attributeId);
-        } catch (BasicDataServiceException e) {
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorCode(e.getCode());
-        } catch (Throwable e) {
-            log.error("Can't delete occupation attribute", e);
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorText(e.getMessage());
+            if (StringUtils.isNotBlank(organization.getId()) && !organization.getId().equals(found.getId())) {
+                throw new BasicDataServiceException(ResponseCode.NAME_TAKEN);
+            }
         }
-        return response;
+        
+        if(StringUtils.isBlank(organization.getOrganizationTypeId())) {
+            throw new BasicDataServiceException(ResponseCode.CLASSIFICATION_NOT_SET);
+        }
     }
 
     @Override
     public Response saveOrganization(final Organization organization, final String requestorId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
-            if (organization == null) {
-                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
-            }
-            if (StringUtils.isBlank(organization.getName())) {
-                throw new BasicDataServiceException(ResponseCode.ORGANIZATION_NAME_NOT_SET);
-            }
-
-            final OrganizationEntity found = organizationService.getOrganizationByName(organization.getName(), null);
-            if (found != null) {
-                if (StringUtils.isBlank(organization.getId()) && found != null) {
-                    throw new BasicDataServiceException(ResponseCode.NAME_TAKEN);
-                }
-
-                if (StringUtils.isNotBlank(organization.getId()) && !organization.getId().equals(found.getId())) {
-                    throw new BasicDataServiceException(ResponseCode.NAME_TAKEN);
-                }
-            }
-
-            // if(StringUtils.isBlank(organization.getMetadataTypeId())) {
-            // throw new
-            // BasicDataServiceException(ResponseCode.ORGANIZATION_TYPE_NOT_SET);
-            // }
-            if(StringUtils.isBlank(organization.getOrganizationTypeId())) {
-                throw new BasicDataServiceException(ResponseCode.CLASSIFICATION_NOT_SET);
-            }
-
+        	validateEditInternal(organization);
             final OrganizationEntity entity = organizationDozerConverter.convertToEntity(organization, true);
             organizationService.save(entity, requestorId);
             response.setResponseValue(entity.getId());
@@ -223,35 +199,6 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
             response.setErrorCode(e.getCode());
         } catch (Throwable e) {
             log.error("Can't save organization", e);
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorText(e.getMessage());
-        }
-        return response;
-    }
-
-    @Override
-    public Response saveAttribute(final OrganizationAttribute attribute) {
-        final Response response = new Response(ResponseStatus.SUCCESS);
-        try {
-            if (attribute == null) {
-                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
-            }
-
-            if (StringUtils.isBlank(attribute.getOrganizationId())) {
-                throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
-            }
-
-            final OrganizationAttributeEntity entity = organizationAttributeDozerConverter.convertToEntity(attribute, false);
-            if (StringUtils.isBlank(entity.getName())) {
-                throw new BasicDataServiceException(ResponseCode.NO_NAME);
-            }
-
-            organizationService.save(entity);
-        } catch (BasicDataServiceException e) {
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorCode(e.getCode());
-        } catch (Throwable e) {
-            log.error("Can't save resource type", e);
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorText(e.getMessage());
         }
@@ -317,6 +264,44 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
         }
         return response;
     }
+    
+    private void validateDeleteInternal(final String id) throws BasicDataServiceException {
+    	if (id == null) {
+            throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+        }
+    }
+    
+    @Override
+	public Response validateEdit(Organization organization) {
+    	 final Response response = new Response(ResponseStatus.SUCCESS);
+         try {
+        	 validateEditInternal(organization);
+         } catch (BasicDataServiceException e) {
+             response.setStatus(ResponseStatus.FAILURE);
+             response.setErrorCode(e.getCode());
+         } catch (Throwable e) {
+             log.error("Exception", e);
+             response.setStatus(ResponseStatus.FAILURE);
+             response.setErrorText(e.getMessage());
+         }
+         return response;
+	}
+
+	@Override
+	public Response validateDelete(String id) {
+		 final Response response = new Response(ResponseStatus.SUCCESS);
+         try {
+        	 validateDeleteInternal(id);
+         } catch (BasicDataServiceException e) {
+             response.setStatus(ResponseStatus.FAILURE);
+             response.setErrorCode(e.getCode());
+         } catch (Throwable e) {
+             log.error("Exception", e);
+             response.setStatus(ResponseStatus.FAILURE);
+             response.setErrorText(e.getMessage());
+         }
+         return response;
+	}
 
 	@Override
 	public List<Organization> getOrganizationsForUserByType(final String userId, final String requesterId, final String organizationTypeId) {
