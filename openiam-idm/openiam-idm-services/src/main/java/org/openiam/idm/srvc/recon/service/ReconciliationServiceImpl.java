@@ -421,7 +421,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
         searchRequest.setSearchQuery(searchQuery);
         searchRequest.setTargetID(managedSysId);
         searchRequest.setHostUrl(mSys.getHostUrl());
-        searchRequest.setHostPort(mSys.getPort().toString());
+        searchRequest.setHostPort((mSys.getPort()!=null)? mSys.getPort().toString() : null);
         searchRequest.setHostLoginId(mSys.getUserId());
         searchRequest.setHostLoginPassword(mSys.getDecryptPassword());
         searchRequest.setExtensibleObject(new ExtensibleUser());
@@ -653,7 +653,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
         this.getValuesForExtensibleUser(fromIDM, user, attrMap, identity);
         if (userFoundInTargetSystem) {
             // Record exists in resource
-            if (user.getStatus().equals(UserStatusEnum.DELETED)) {
+            if (UserStatusEnum.DELETED.equals(user.getStatus())) {
                 // IDM_DELETED__SYS_EXISTS
 
                 resultBean.getRows().add(
@@ -694,7 +694,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
 
         } else {
             // Record not found in resource
-            if (!user.getStatus().equals(UserStatusEnum.DELETED)) {
+            if (!UserStatusEnum.DELETED.equals(user.getStatus())) {
                 // IDM_EXISTS__SYS_NOT_EXISTS
                 resultBean
                         .getRows()

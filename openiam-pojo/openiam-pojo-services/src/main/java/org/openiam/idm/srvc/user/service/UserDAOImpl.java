@@ -280,11 +280,13 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
             if (searchBean.getPrincipal() != null || StringUtils.isNotEmpty(searchBean.getDomainId())
                 || StringUtils.isNotEmpty(searchBean.getLoggedIn())) {
                 criteria.createAlias("principalList", "lg");
-                if (StringUtils.isNotEmpty(searchBean.getPrincipal().getLogin())) {
-                    criteria.add(getStringCriterion("lg.login", searchBean.getPrincipal().getLogin(), ORACLE_INSENSITIVE));
-                }
-                if (StringUtils.isNotEmpty(searchBean.getPrincipal().getManagedSysId())) {
-                    criteria.add(Restrictions.eq("lg.managedSysId", searchBean.getPrincipal().getManagedSysId()));
+                if (searchBean.getPrincipal() != null) {
+                    if (StringUtils.isNotEmpty(searchBean.getPrincipal().getLogin())) {
+                        criteria.add(getStringCriterion("lg.login", searchBean.getPrincipal().getLogin(), ORACLE_INSENSITIVE));
+                    }
+                    if (StringUtils.isNotEmpty(searchBean.getPrincipal().getManagedSysId())) {
+                        criteria.add(Restrictions.eq("lg.managedSysId", searchBean.getPrincipal().getManagedSysId()));
+                    }
                 }
                 if (StringUtils.isNotEmpty(searchBean.getDomainId())) {
                     criteria.add(Restrictions.eq("lg.domainId", searchBean.getDomainId()));
