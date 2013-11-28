@@ -5,10 +5,12 @@ import java.util.List;
 
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.ResourceSearchBean;
+import org.openiam.idm.searchbeans.ResourceTypeSearchBean;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
 import org.openiam.idm.srvc.res.domain.ResourceTypeEntity;
 import org.openiam.idm.srvc.res.dto.Resource;
+import org.openiam.idm.srvc.res.dto.ResourceType;
 
 public interface ResourceService {
 
@@ -54,4 +56,6 @@ public interface ResourceService {
     public Resource getResourceDTO(final String resourceId);
     
     public void validateResourceDeletion(final String resourceId) throws BasicDataServiceException;
+    
+    public List<ResourceTypeEntity> findResourceTypes(ResourceTypeSearchBean searchBean, int from, int size);
 }

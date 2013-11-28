@@ -17,6 +17,7 @@ import org.openiam.dozer.converter.ResourceDozerConverter;
 import org.openiam.dozer.converter.ResourcePropDozerConverter;
 import org.openiam.dozer.converter.ResourceTypeDozerConverter;
 import org.openiam.idm.searchbeans.ResourceSearchBean;
+import org.openiam.idm.searchbeans.ResourceTypeSearchBean;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
 import org.openiam.idm.srvc.audit.domain.AuditLogBuilder;
@@ -27,6 +28,7 @@ import org.openiam.idm.srvc.res.domain.ResourceTypeEntity;
 import org.openiam.idm.srvc.res.dto.*;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.dto.Role;
+import org.openiam.idm.srvc.searchbean.converter.ResourceTypeSearchBeanConverter;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.util.DozerMappingType;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -791,5 +793,11 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
             auditLogService.enqueue(auditBuilder);
         }
 		return response;
+	}
+
+	@Override
+	public List<ResourceType> findResourceTypes(final ResourceTypeSearchBean searchBean, int from, int size) {
+		final List<ResourceTypeEntity> entityList = resourceService.findResourceTypes(searchBean, from, size);
+		return resourceTypeConverter.convertToDTOList(entityList, searchBean.isDeepCopy());
 	}
 }

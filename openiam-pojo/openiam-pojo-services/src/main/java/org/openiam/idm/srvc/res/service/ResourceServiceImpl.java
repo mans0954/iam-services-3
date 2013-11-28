@@ -20,6 +20,7 @@ import org.openiam.dozer.converter.ResourceDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.OrganizationSearchBean;
 import org.openiam.idm.searchbeans.ResourceSearchBean;
+import org.openiam.idm.searchbeans.ResourceTypeSearchBean;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.service.GroupDAO;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
@@ -574,5 +575,10 @@ public class ResourceServiceImpl implements ResourceService {
 	@Override
 	public Resource getResourceDTO(String resourceId) {
 		return dozerConverter.convertToDTO(resourceDao.findById(resourceId), true);
+	}
+
+	@Override
+	public List<ResourceTypeEntity> findResourceTypes(final ResourceTypeSearchBean searchBean, int from, int size) {
+		return resourceTypeDao.getByExample(searchBean, from, size);
 	}
 }

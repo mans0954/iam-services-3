@@ -36,6 +36,10 @@ public class ResourceTypeEntity {
     @Column(name="SUPPORTS_HIERARCHY")
     @Type(type = "yes_no")
     private boolean supportsHierarchy = true;
+    
+    @Column(name="SEARCHABLE")
+    @Type(type = "yes_no")
+    private boolean searchable = true;
 
     public ResourceTypeEntity() {
     }
@@ -88,32 +92,87 @@ public class ResourceTypeEntity {
 		this.supportsHierarchy = supportsHierarchy;
 	}
 
+	public boolean isSearchable() {
+		return searchable;
+	}
+
+	public void setSearchable(boolean searchable) {
+		this.searchable = searchable;
+	}
+
 	@Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result
+				+ ((description == null) ? 0 : description.hashCode());
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		result = prime * result
+				+ ((metadataTypeId == null) ? 0 : metadataTypeId.hashCode());
+		result = prime * result
+				+ ((processName == null) ? 0 : processName.hashCode());
+		result = prime
+				* result
+				+ ((provisionResource == null) ? 0 : provisionResource
+						.hashCode());
+		result = prime * result + (searchable ? 1231 : 1237);
+		result = prime * result + (supportsHierarchy ? 1231 : 1237);
+		return result;
+	}
 
-        ResourceTypeEntity that = (ResourceTypeEntity) o;
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		ResourceTypeEntity other = (ResourceTypeEntity) obj;
+		if (description == null) {
+			if (other.description != null)
+				return false;
+		} else if (!description.equals(other.description))
+			return false;
+		if (id == null) {
+			if (other.id != null)
+				return false;
+		} else if (!id.equals(other.id))
+			return false;
+		if (metadataTypeId == null) {
+			if (other.metadataTypeId != null)
+				return false;
+		} else if (!metadataTypeId.equals(other.metadataTypeId))
+			return false;
+		if (processName == null) {
+			if (other.processName != null)
+				return false;
+		} else if (!processName.equals(other.processName))
+			return false;
+		if (provisionResource == null) {
+			if (other.provisionResource != null)
+				return false;
+		} else if (!provisionResource.equals(other.provisionResource))
+			return false;
+		if (searchable != other.searchable)
+			return false;
+		if (supportsHierarchy != other.supportsHierarchy)
+			return false;
+		return true;
+	}
 
-        if (description != null ? !description.equals(that.description) : that.description != null) return false;
-        if (metadataTypeId != null ? !metadataTypeId.equals(that.metadataTypeId) : that.metadataTypeId != null)
-            return false;
-        if (processName != null ? !processName.equals(that.processName) : that.processName != null) return false;
-        if (provisionResource != null ? !provisionResource.equals(that.provisionResource) : that.provisionResource != null)
-            return false;
-        if (id != null ? !id.equals(that.id) : that.id != null)
-            return false;
+	public ResourceTypeEntity(String id, String description,
+			String metadataTypeId, Integer provisionResource,
+			String processName, boolean supportsHierarchy, boolean searchable) {
+		super();
+		this.id = id;
+		this.description = description;
+		this.metadataTypeId = metadataTypeId;
+		this.provisionResource = provisionResource;
+		this.processName = processName;
+		this.supportsHierarchy = supportsHierarchy;
+		this.searchable = searchable;
+	}
 
-        return true;
-    }
-
-    @Override
-    public int hashCode() {
-        int result = id != null ? id.hashCode() : 0;
-        result = 31 * result + (description != null ? description.hashCode() : 0);
-        result = 31 * result + (metadataTypeId != null ? metadataTypeId.hashCode() : 0);
-        result = 31 * result + (provisionResource != null ? provisionResource.hashCode() : 0);
-        result = 31 * result + (processName != null ? processName.hashCode() : 0);
-        return result;
-    }
+	
 }

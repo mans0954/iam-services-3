@@ -2,6 +2,7 @@ package org.openiam.idm.srvc.res.service;
 
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.ResourceSearchBean;
+import org.openiam.idm.searchbeans.ResourceTypeSearchBean;
 import org.openiam.idm.srvc.res.dto.*;
 import org.openiam.idm.srvc.role.dto.Role;
 
@@ -63,6 +64,9 @@ public interface ResourceDataService {
 	 */
 	@WebMethod
 	List<ResourceType> getAllResourceTypes();
+	
+	@WebMethod
+	public List<ResourceType> findResourceTypes(final ResourceTypeSearchBean searchBean, final int from, final int size);
 
 	/**
 	 * Add a resource property.
