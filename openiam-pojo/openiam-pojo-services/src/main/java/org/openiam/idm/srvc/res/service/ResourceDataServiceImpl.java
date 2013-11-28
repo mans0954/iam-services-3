@@ -115,13 +115,14 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
 	}
 
 	@Override
-	public Response validateEditResource(Resource resource) {
+	public Response validateEdit(Resource resource) {
 		final Response response = new Response(ResponseStatus.SUCCESS);
 		try {
 			validate(resource);
 		} catch (BasicDataServiceException e) {
-			response.setErrorCode(e.getCode());
 			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+            response.setErrorTokenList(e.getErrorTokenList());
 		} catch (Throwable e) {
 			log.error("Can't validate resource", e);
 			response.setErrorText(e.getMessage());
@@ -154,6 +155,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
 			throw new BasicDataServiceException(ResponseCode.INVALID_RESOURCE_TYPE, "Resource Type is not set");
 		}
 
+		entityValidator.isValid(entity);
 	}
 
 	@Override
@@ -173,8 +175,9 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
 			response.setResponseValue(entity.getResourceId());
             auditBuilder.succeed();
 		} catch (BasicDataServiceException e) {
-			response.setErrorCode(e.getCode());
 			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+            response.setErrorTokenList(e.getErrorTokenList());
 			auditBuilder.fail().setFailureReason(e.getCode()).setException(e);
 		} catch (Throwable e) {
 			log.error("Can't save or update resource", e);
@@ -340,7 +343,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
 	}
 	
 	@Override
-	public Response validateDeleteResource(String resourceId) {
+	public Response validateDelete(String resourceId) {
 		final Response response = new Response(ResponseStatus.SUCCESS);
 		try {
 			resourceService.validateResourceDeletion(resourceId);

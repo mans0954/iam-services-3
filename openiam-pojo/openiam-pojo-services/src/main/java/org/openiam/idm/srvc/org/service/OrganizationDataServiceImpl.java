@@ -17,6 +17,7 @@ import org.openiam.exception.BasicDataServiceException;
 import org.openiam.dozer.converter.OrganizationAttributeDozerConverter;
 import org.openiam.dozer.converter.OrganizationDozerConverter;
 import org.openiam.idm.searchbeans.OrganizationSearchBean;
+import org.openiam.idm.srvc.base.AbstractBaseService;
 import org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.dto.Organization;
@@ -47,7 +48,7 @@ import org.springframework.transaction.annotation.Transactional;
             portName = "OrganizationDataWebServicePort",
             serviceName = "OrganizationDataWebService")
 @Service("orgManager")
-public class OrganizationDataServiceImpl implements OrganizationDataService {
+public class OrganizationDataServiceImpl extends AbstractBaseService implements OrganizationDataService {
 
     private static final Log log = LogFactory.getLog(OrganizationDataServiceImpl.class);
 
@@ -162,7 +163,7 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
         return response;
     }
     
-    private void validateEditInternal(final Organization organization) throws BasicDataServiceException {
+    private void validate(final Organization organization) throws BasicDataServiceException {
     	if (organization == null) {
             throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
         }
@@ -184,19 +185,23 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
         if(StringUtils.isBlank(organization.getOrganizationTypeId())) {
             throw new BasicDataServiceException(ResponseCode.CLASSIFICATION_NOT_SET);
         }
+        
+        final OrganizationEntity entity = organizationDozerConverter.convertToEntity(organization, true);
+        entityValidator.isValid(entity);
     }
 
     @Override
     public Response saveOrganization(final Organization organization, final String requestorId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
-        	validateEditInternal(organization);
+        	validate(organization);
             final OrganizationEntity entity = organizationDozerConverter.convertToEntity(organization, true);
             organizationService.save(entity, requestorId);
             response.setResponseValue(entity.getId());
         } catch (BasicDataServiceException e) {
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorCode(e.getCode());
+        	response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+            response.setErrorTokenList(e.getErrorTokenList());
         } catch (Throwable e) {
             log.error("Can't save organization", e);
             response.setStatus(ResponseStatus.FAILURE);
@@ -275,10 +280,11 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
 	public Response validateEdit(Organization organization) {
     	 final Response response = new Response(ResponseStatus.SUCCESS);
          try {
-        	 validateEditInternal(organization);
+        	 validate(organization);
          } catch (BasicDataServiceException e) {
-             response.setStatus(ResponseStatus.FAILURE);
-             response.setErrorCode(e.getCode());
+        	response.setStatus(ResponseStatus.FAILURE);
+ 			response.setErrorCode(e.getCode());
+            response.setErrorTokenList(e.getErrorTokenList());
          } catch (Throwable e) {
              log.error("Exception", e);
              response.setStatus(ResponseStatus.FAILURE);

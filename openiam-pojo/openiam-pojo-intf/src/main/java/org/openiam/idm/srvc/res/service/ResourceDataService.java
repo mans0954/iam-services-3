@@ -14,7 +14,7 @@ import java.util.List;
 public interface ResourceDataService {
 	
 	@WebMethod
-	Response validateDeleteResource(final @WebParam(name = "resourceId", targetNamespace = "") String resourceId);
+	Response validateDelete(final @WebParam(name = "resourceId", targetNamespace = "") String resourceId);
 
 	/**
 	 * Validate if the resource can be created
@@ -22,7 +22,7 @@ public interface ResourceDataService {
 	 * @return
 	 */
 	@WebMethod
-	Response validateEditResource(final @WebParam(name = "resource", targetNamespace = "") Resource resource);
+	Response validateEdit(final @WebParam(name = "resource", targetNamespace = "") Resource resource);
 	
 	/**
 	 * Deletes a Resoruce

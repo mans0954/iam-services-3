@@ -89,10 +89,10 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 
 
 	@Override
-	public Response validateSave(Role role) {
+	public Response validateEdit(Role role) {
 		final Response response = new Response(ResponseStatus.SUCCESS);
 		try {
-			validateSaveInternal(role);
+			validate(role);
 		} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
@@ -122,7 +122,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 		return response;
 	}
 
-	private void validateSaveInternal(final Role role) throws BasicDataServiceException {
+	private void validate(final Role role) throws BasicDataServiceException {
 		if(role == null) {
 			throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Role object is null");
 		}
@@ -147,6 +147,8 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 		if(securityDomainDAO.findById(entity.getServiceId()) == null) {
 			throw new BasicDataServiceException(ResponseCode.INVALID_ROLE_DOMAIN, "Security Domain for Role is not found");
 		}
+		
+		entityValidator.isValid(entity);
 	}
 	
 	public void validateDeleteInternal(final String roleId) throws BasicDataServiceException {
@@ -342,6 +344,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 		} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
+            response.setErrorTokenList(e.getErrorTokenList());
 			auditBuilder.fail().setFailureReason(e.getCode()).setException(e);
 		} catch(Throwable e) {
 			LOG.error("Exception", e);
@@ -415,7 +418,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
                 auditBuilder.setAction(AuditAction.ADD_ROLE);
             }
             
-            validateSaveInternal(role);
+            validate(role);
 			
 			final RoleEntity entity = roleDozerConverter.convertToEntity(role, true);
 			roleDataService.saveRole(entity, requestorId);

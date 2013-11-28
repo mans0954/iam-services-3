@@ -74,7 +74,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
 	public Response validateEdit(Group group) {
 		final Response response = new Response(ResponseStatus.SUCCESS);
 		try {
-			validateSaveInternal(group);
+			validate(group);
 		} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
@@ -114,7 +114,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
 		}
 	}
 	
-	private void validateSaveInternal(final Group group) throws BasicDataServiceException {
+	private void validate(final Group group) throws BasicDataServiceException {
 		if(group == null) {
 			throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
 		}
@@ -133,6 +133,8 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
 				throw new BasicDataServiceException(ResponseCode.NAME_TAKEN, "Group name is already in use");
 			}
 		}
+		
+		entityValidator.isValid(groupDozerConverter.convertToEntity(group, true));
 	}
 
 	@Override
@@ -141,7 +143,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
         auditBuilder.setAction(AuditAction.SAVE_GROUP);
 		final Response response = new Response(ResponseStatus.SUCCESS);
 		try {
-			validateSaveInternal(group);
+			validate(group);
             auditBuilder.setRequestorUserId(group.getRequestorUserId()).setTargetGroup(group.getId());
             if(StringUtils.isBlank(group.getId())) {
                 auditBuilder.setAction(AuditAction.ADD_GROUP);

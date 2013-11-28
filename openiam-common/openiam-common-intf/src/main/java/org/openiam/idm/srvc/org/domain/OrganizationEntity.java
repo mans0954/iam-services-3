@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.org.domain;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -8,6 +9,7 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
+import javax.persistence.Cacheable;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -25,10 +27,14 @@ import javax.persistence.MapKeyColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
 import javax.persistence.Table;
+import javax.validation.constraints.Size;
+
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.org.dto.Organization;
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
@@ -43,8 +49,10 @@ import org.openiam.idm.srvc.user.domain.UserEntity;
 
 @Entity
 @Table(name = "COMPANY")
+@Cacheable
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @DozerDTOCorrespondence(Organization.class)
-public class OrganizationEntity {
+public class OrganizationEntity implements Serializable {
     @Id
     @GeneratedValue(generator="system-uuid")
     @GenericGenerator(name="system-uuid", strategy = "uuid")
@@ -53,6 +61,7 @@ public class OrganizationEntity {
     private String id;
 
     @Column(name="ALIAS", length=100)
+    @Size(max = 100, message = "organization.alias.too.long")
     private String alias;
 
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "organization", fetch = FetchType.LAZY)
@@ -67,9 +76,11 @@ public class OrganizationEntity {
     private String createdBy;
 
     @Column(name="DESCRIPTION", length=100)
+    @Size(max = 100, message = "organization.description.too.long")
     private String description;
 
     @Column(name="DOMAIN_NAME", length=40)
+    @Size(max = 40, message = "organization.domain.name.too.long")
     private String domainName;
 
     @Column(name="LDAP_STR")
@@ -82,6 +93,7 @@ public class OrganizationEntity {
     private String lstUpdatedBy;
 
     @Column(name="COMPANY_NAME", length=200)
+    @Size(max = 200, message = "organization.name.too.long")
     private String name;
 
     @Column(name="INTERNAL_COMPANY_ID")
@@ -95,9 +107,11 @@ public class OrganizationEntity {
     private OrganizationTypeEntity organizationType;
 
     @Column(name="ABBREVIATION", length=20)
+    @Size(max = 20, message = "organization.abbreviation.too.long")
     private String abbreviation;
 
     @Column(name="SYMBOL", length=10)
+    @Size(max = 10, message = "organization.symbol.too.long")
     private String symbol;
     
 	@ManyToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)

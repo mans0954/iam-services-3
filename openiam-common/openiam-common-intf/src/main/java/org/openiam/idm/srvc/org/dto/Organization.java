@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.org.dto;
 
+import java.io.Serializable;
 import java.util.HashMap;
 
 import org.apache.commons.lang.StringUtils;
@@ -55,7 +56,7 @@ import org.openiam.idm.srvc.user.dto.User;
         "adminResourceName"
 })
 @DozerDTOCorrespondence(OrganizationEntity.class)
-public class Organization implements java.io.Serializable, Comparable<Organization> {
+public class Organization implements Serializable, Comparable<Organization> {
 
     private static final long serialVersionUID = -6297113958697455428L;
 
