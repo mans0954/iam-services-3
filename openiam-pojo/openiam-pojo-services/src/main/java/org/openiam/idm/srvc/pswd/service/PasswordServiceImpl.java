@@ -340,7 +340,7 @@ public class PasswordServiceImpl implements PasswordService {
 		// get the user for this principal
 		final LoginEntity lg = loginManager.getLoginByManagedSys(domainId,
 				principal, managedSysId);
-		log.info("login=" + lg);
+		log.info(String.format("login=%s", lg));
 		final UserEntity user = userManager.getUser(lg.getUserId());
 
 		return passwordPolicyProvider.getPasswordPolicyByUser(domainId, user);
@@ -564,7 +564,7 @@ public class PasswordServiceImpl implements PasswordService {
 		if (request == null || request.getPrincipal() == null
 				|| request.getDomainId() == null
 				|| request.getManagedSysId() == null) {
-
+			log.warn("can't generate password reset token - Either the request, principal, domain ID, or managed system ID were null");
 			resp.setStatus(ResponseStatus.FAILURE);
 			return resp;
 		}
@@ -572,6 +572,7 @@ public class PasswordServiceImpl implements PasswordService {
 		Policy pl = getPasswordPolicy(request.getDomainId(),
 				request.getPrincipal(), request.getManagedSysId());
 		if (pl == null) {
+			log.warn("can't generate password reset token - can't get password policy");
 			resp.setStatus(ResponseStatus.FAILURE);
 			resp.setErrorCode(ResponseCode.PASSWORD_POLICY_NOT_FOUND);
 			return resp;

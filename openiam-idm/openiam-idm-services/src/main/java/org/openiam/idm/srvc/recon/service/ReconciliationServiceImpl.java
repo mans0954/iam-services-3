@@ -477,16 +477,16 @@ public class ReconciliationServiceImpl implements ReconciliationService {
             User usr = matchObjectRule.lookup(config, attributeMap);
 
             if(usr != null) {
-                if (processedUserIds.contains(usr.getUserId())) { // already processed
-                    return;
-                }
-                User u = userManager.getUserDto(usr.getUserId());
-                //situation TARGET EXIST, IDM EXIST do modify
-                //check principal list on this ManagedSys exists
-                List<Login> principals = u.getPrincipalList();
-                Login principal = null;
-                for(Login l : principals) {
-                    if(l.getManagedSysId().equals(managedSysId)) {
+               if (processedUserIds.contains(usr.getUserId())) { // already processed
+                   return;
+               }
+               User u = userManager.getUserDto(usr.getUserId());
+               //situation TARGET EXIST, IDM EXIST do modify
+               //check principal list on this ManagedSys exists
+               List<Login> principals = u.getPrincipalList();
+               Login principal = null;
+               for(Login l : principals) {
+                   if(l.getManagedSysId().equals(managedSysId)) {
                         principal = l;
                         break;
                     }

@@ -42,7 +42,7 @@ public class CreateNewUser extends AbstractEntitlementsDelegate {
 	public void execute(DelegateExecution execution) throws Exception {
 		final NewUserProfileRequestModel request = getObjectVariable(execution, ActivitiConstants.REQUEST, NewUserProfileRequestModel.class);
 		final ProvisionUser user = converter.convertNewProfileModel(request);
-        user.setEmailCredentialsToNewUsers(true);
+        user.setEmailCredentialsToNewUsers(false);
 		user.setStatus(UserStatusEnum.PENDING_INITIAL_LOGIN);
 		user.setSecondaryStatus(null);
 		
