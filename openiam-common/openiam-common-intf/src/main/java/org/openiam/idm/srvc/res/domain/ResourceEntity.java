@@ -19,6 +19,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
 import javax.persistence.Table;
+import javax.validation.constraints.Size;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -52,15 +53,18 @@ public class ResourceEntity {
     private ResourceTypeEntity resourceType;
 
     @Column(name = "NAME", length = 150)
+    @Size(max = 150, message = "resource.name.too.long")
     private String name;
 
     @Column(name = "DESCRIPTION", length = 100)
+    @Size(max = 100, message = "resource.description.too.long")
     private String description;
 
     @Column(name = "DISPLAY_ORDER")
     private Integer displayOrder;
 
     @Column(name = "URL", length = 255)
+    @Size(max = 255, message = "resource.url.too.long")
     private String URL;
 
     @ManyToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)

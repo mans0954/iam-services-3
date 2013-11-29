@@ -22,7 +22,7 @@ import java.util.List;
 public interface RoleDataWebService {
 
 	@WebMethod
-	public Response validateSave(final Role role);
+	public Response validateEdit(final Role role);
 	
 	@WebMethod
 	public Response validateDelete(final String roleId);

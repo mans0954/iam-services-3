@@ -8,6 +8,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
+import org.openiam.idm.searchbeans.LoginSearchBean;
 import org.openiam.idm.searchbeans.UserSearchBean;
 import org.openiam.idm.srvc.recon.dto.MatchConfig;
 import org.openiam.idm.srvc.synch.dto.Attribute;
@@ -26,7 +27,7 @@ public class DefaultMatchObjectRule implements MatchObjectRule {
 
     @Autowired
     private UserDozerConverter userDozerConverter;
-	
+
 	private String matchAttrName = null;
 	private String matchAttrValue = null;
 
@@ -45,11 +46,14 @@ public class DefaultMatchObjectRule implements MatchObjectRule {
 			searchBean.setUserId(matchAttrValue);
 			//search.setUserId(matchAttrValue);
 
-		} else if (matchAttrName.equalsIgnoreCase("PRINCIPAL")) {
-			searchBean.setPrincipal(matchAttrValue);
-			//search.setPrincipal(matchAttrValue);
+        } else if (matchAttrName.equalsIgnoreCase("PRINCIPAL")) {
+            LoginSearchBean lsb = new LoginSearchBean();
+            lsb.setLogin(matchAttrValue);
+            lsb.setManagedSysId(matchConfig.getManagedSysId());
+            searchBean.setPrincipal(lsb);
+            //search.setPrincipal(matchAttrValue);
 
-		} else if (matchAttrName.equalsIgnoreCase("EMAIL")) {
+        } else if (matchAttrName.equalsIgnoreCase("EMAIL")) {
 			searchBean.setEmailAddress(matchAttrValue);
 			//search.setEmailAddress(matchAttrValue);
 
@@ -60,7 +64,7 @@ public class DefaultMatchObjectRule implements MatchObjectRule {
 		} else if (matchAttrName.equalsIgnoreCase("ATTRIBUTE")) {
 			System.out.println("- cofiguring search by attribute..");
 			System.out.println("- match attr=.." + matchConfig.getMatchSrcFieldName());
-		
+
 			// get the attribute value from the data_set
 			System.out.println("- src field value=.." + matchAttrValue);
 			matchAttrName = matchConfig.getMatchSrcFieldName();

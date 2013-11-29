@@ -14,6 +14,12 @@ import java.util.List;
 @WebService(targetNamespace = "urn:idm.openiam.org/srvc/org/service", name = "OrganizationDataService")
 public interface OrganizationDataService {
 
+	@WebMethod
+	public Response validateEdit(final @WebParam(name = "organization", targetNamespace = "") Organization organization);
+	
+	@WebMethod
+	public Response validateDelete(final @WebParam(name = "orgId", targetNamespace = "") String id);
+	
     @WebMethod
     public Organization getOrganization(@WebParam(name = "orgId", targetNamespace = "") String orgId,
                                         @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
@@ -72,9 +78,6 @@ public interface OrganizationDataService {
     								 final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
     @WebMethod
-    public Response saveAttribute(@WebParam(name = "organizationAttribute", targetNamespace = "") OrganizationAttribute organizationAttribute);
-
-    @WebMethod
     public Response addUserToOrg(@WebParam(name = "orgId", targetNamespace = "") String orgId,
                                  @WebParam(name = "userId", targetNamespace = "") String userId);
 
@@ -89,9 +92,6 @@ public interface OrganizationDataService {
     @WebMethod
     public Response removeUserFromOrg(@WebParam(name = "orgId", targetNamespace = "") String orgId,
                                       @WebParam(name = "userId", targetNamespace = "") String userId);
-
-    @WebMethod
-    public Response removeAttribute(final @WebParam(name = "attributeId", targetNamespace = "") String attributeId);
 
     @WebMethod
     public Response removeChildOrganization(@WebParam(name = "organizationId", targetNamespace = "") String organizationId,

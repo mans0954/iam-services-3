@@ -15,6 +15,8 @@ import org.openiam.dozer.converter.OrganizationDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.OrganizationSearchBean;
 import org.openiam.idm.srvc.meta.service.MetadataElementDAO;
+import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
+import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 import org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.dto.Organization;
@@ -181,7 +183,6 @@ public class OrganizationServiceImpl implements OrganizationService {
         if (StringUtils.isNotBlank(entity.getId())) {
             final OrganizationEntity dbOrg = orgDao.findById(entity.getId());
             if (dbOrg != null) {
-                //entity.setAttributes(dbOrg.getAttributes());
             	mergeAttributes(entity, dbOrg);
                 entity.setChildOrganizations(dbOrg.getChildOrganizations());
                 entity.setParentOrganizations(dbOrg.getParentOrganizations());
@@ -190,12 +191,15 @@ public class OrganizationServiceImpl implements OrganizationService {
                 if(entity.getAdminResource() == null) {
                 	entity.setAdminResource(getNewAdminResource(entity, requestorId));
                 }
-                orgDao.merge(entity);
+                entity.setApproverAssociations(dbOrg.getApproverAssociations());
             }
         } else {
         	entity.setAdminResource(getNewAdminResource(entity, requestorId));
             orgDao.save(entity);
+            entity.addApproverAssociation(createDefaultApproverAssociations(entity, requestorId));
         }
+        
+        orgDao.merge(entity);
     }
     
     private ResourceEntity getNewAdminResource(final OrganizationEntity entity, final String requestorId) {
@@ -204,6 +208,16 @@ public class OrganizationServiceImpl implements OrganizationService {
 		adminResource.setResourceType(resourceTypeDao.findById(adminResourceTypeId));
 		adminResource.addUser(userDAO.findById(requestorId));
 		return adminResource;
+	}
+    
+    private ApproverAssociationEntity createDefaultApproverAssociations(final OrganizationEntity entity, final String requestorId) {
+		final ApproverAssociationEntity association = new ApproverAssociationEntity();
+		association.setAssociationEntityId(entity.getId());
+		association.setAssociationType(AssociationType.ORGANIZATION);
+		association.setApproverLevel(Integer.valueOf(0));
+		association.setApproverEntityId(requestorId);
+		association.setApproverEntityType(AssociationType.USER);
+		return association;
 	}
     
     private void mergeAttributes(final OrganizationEntity bean, final OrganizationEntity dbObject) {

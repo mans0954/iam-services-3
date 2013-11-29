@@ -308,8 +308,8 @@ public class LoginDAOImpl extends BaseDaoImpl<LoginEntity, String> implements
         log.debug("findUserNearPswdExp: findUserNearPswdExp called.");
         log.debug("days to password Expiration=" + daysToExpiration);
 
-        java.sql.Date expDate = new java.sql.Date(System.currentTimeMillis());
-        java.sql.Date endDate = new java.sql.Date(expDate.getTime());
+        Date expDate = new java.sql.Date(System.currentTimeMillis());
+        Date endDate = new java.sql.Date(expDate.getTime());
 
         if (daysToExpiration != 0) {
 
@@ -328,7 +328,7 @@ public class LoginDAOImpl extends BaseDaoImpl<LoginEntity, String> implements
         }
 
         String sql = new String(
-                " from org.openiam.idm.srvc.auth.dto.Login l where "
+                " from org.openiam.idm.srvc.auth.domain.LoginEntity l where "
                         + " l.pwdExp BETWEEN :startDate and :endDate");
 
         Session session = getSession();

@@ -17,6 +17,7 @@ import org.openiam.dozer.converter.ResourceDozerConverter;
 import org.openiam.dozer.converter.ResourcePropDozerConverter;
 import org.openiam.dozer.converter.ResourceTypeDozerConverter;
 import org.openiam.idm.searchbeans.ResourceSearchBean;
+import org.openiam.idm.searchbeans.ResourceTypeSearchBean;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
 import org.openiam.idm.srvc.audit.domain.AuditLogBuilder;
@@ -27,6 +28,7 @@ import org.openiam.idm.srvc.res.domain.ResourceTypeEntity;
 import org.openiam.idm.srvc.res.dto.*;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.dto.Role;
+import org.openiam.idm.srvc.searchbean.converter.ResourceTypeSearchBeanConverter;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.util.DozerMappingType;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -115,13 +117,14 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
 	}
 
 	@Override
-	public Response validateEditResource(Resource resource) {
+	public Response validateEdit(Resource resource) {
 		final Response response = new Response(ResponseStatus.SUCCESS);
 		try {
 			validate(resource);
 		} catch (BasicDataServiceException e) {
-			response.setErrorCode(e.getCode());
 			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+            response.setErrorTokenList(e.getErrorTokenList());
 		} catch (Throwable e) {
 			log.error("Can't validate resource", e);
 			response.setErrorText(e.getMessage());
@@ -154,6 +157,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
 			throw new BasicDataServiceException(ResponseCode.INVALID_RESOURCE_TYPE, "Resource Type is not set");
 		}
 
+		entityValidator.isValid(entity);
 	}
 
 	@Override
@@ -173,8 +177,9 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
 			response.setResponseValue(entity.getResourceId());
             auditBuilder.succeed();
 		} catch (BasicDataServiceException e) {
-			response.setErrorCode(e.getCode());
 			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+            response.setErrorTokenList(e.getErrorTokenList());
 			auditBuilder.fail().setFailureReason(e.getCode()).setException(e);
 		} catch (Throwable e) {
 			log.error("Can't save or update resource", e);
@@ -340,7 +345,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
 	}
 	
 	@Override
-	public Response validateDeleteResource(String resourceId) {
+	public Response validateDelete(String resourceId) {
 		final Response response = new Response(ResponseStatus.SUCCESS);
 		try {
 			resourceService.validateResourceDeletion(resourceId);
@@ -788,5 +793,11 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
             auditLogService.enqueue(auditBuilder);
         }
 		return response;
+	}
+
+	@Override
+	public List<ResourceType> findResourceTypes(final ResourceTypeSearchBean searchBean, int from, int size) {
+		final List<ResourceTypeEntity> entityList = resourceService.findResourceTypes(searchBean, from, size);
+		return resourceTypeConverter.convertToDTOList(entityList, searchBean.isDeepCopy());
 	}
 }
