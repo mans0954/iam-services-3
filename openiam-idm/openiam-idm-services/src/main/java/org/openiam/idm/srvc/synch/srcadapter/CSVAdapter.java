@@ -32,6 +32,8 @@ import org.openiam.base.id.UUIDGen;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
+import org.openiam.idm.srvc.audit.constant.AuditAction;
+import org.openiam.idm.srvc.audit.domain.AuditLogBuilder;
 import org.openiam.idm.srvc.synch.dto.Attribute;
 import org.openiam.idm.srvc.synch.dto.LineObject;
 import org.openiam.idm.srvc.synch.dto.SyncResponse;
@@ -87,20 +89,17 @@ public class CSVAdapter extends AbstractSrcAdapter {
     @Autowired
     private RemoteFileStorageManager remoteFileStorageManager;
 
-    public SyncResponse startSynch(final SynchConfig config) {
+    public SyncResponse startSynch(final SynchConfig config, final AuditLogBuilder auditLogBuilder) {
         log.debug("CSV startSynch CALLED.^^^^^^^^");
         System.out.println("CSV startSynch CALLED.^^^^^^^^");
-
+        auditLogBuilder.succeed().setAuditDescription("CSV startSynch CALLED.^^^^^^^^");
         Reader reader = null;
 
         final ProvisionService provService = (ProvisionService) SpringContextProvider.getBean("defaultProvision");
 
         String requestId = UUIDGen.getUUID();
-        /*
-        IdmAuditLog synchStartLog_ = new IdmAuditLog();
-        synchStartLog_.setSynchAttributes("SYNCH_USER", config.getSynchConfigId(), "START", "SYSTEM", requestId);
-        final IdmAuditLog synchStartLog = auditHelper.logEvent(synchStartLog_);
-		*/
+
+
         try {
             CSVParser parser;
             String csvFileName = config.getFileName();
@@ -145,7 +144,7 @@ public class CSVAdapter extends AbstractSrcAdapter {
                     results.add(service.submit(new Runnable() {
                         @Override
                         public void run() {
-                            proccess(config, provService, part, validationScript, transformScripts, matchRule, rowHeader, startIndex);
+                            proccess(config, provService, part, validationScript, transformScripts, matchRule, rowHeader, startIndex, auditLogBuilder);
                         }
                     }));
                     //Give 30sec time for thread to be UP (load all cache and begin the work)
@@ -245,10 +244,9 @@ public class CSVAdapter extends AbstractSrcAdapter {
         return new SyncResponse(ResponseStatus.SUCCESS);
     }
 
-    private void proccess(SynchConfig config, ProvisionService provService, String[][] rows, final ValidationScript validationScript, final List<TransformScript> transformScripts, MatchObjectRule matchRule, LineObject rowHeader, int ctr) {
+    private void proccess(SynchConfig config, ProvisionService provService, String[][] rows, final ValidationScript validationScript, final List<TransformScript> transformScripts, MatchObjectRule matchRule, LineObject rowHeader, int ctr,  AuditLogBuilder auditLogBuilder) {
         for (String[] row : rows) {
             log.info("*** Record counter: " + ctr++);
-
             //populate the data object
 
             LineObject rowObj = rowHeader.copy();
@@ -317,8 +315,13 @@ public class CSVAdapter extends AbstractSrcAdapter {
                     }
                     log.info(" - Execute complete transform script");
                 }
+
+                AuditLogBuilder auditBuilderTestChild = new AuditLogBuilder();
+                auditBuilderTestChild.setRequestorUserId(systemUserId).setTargetUser(pUser.getLogin()).setAction(AuditAction.SYNCH_USER);
+                auditLogBuilder.addChild(auditBuilderTestChild);
                 if (retval != -1) {
                     if (retval == TransformScript.DELETE && pUser.getUser() != null) {
+                        auditBuilderTestChild.succeed().setAuditDescription("User login: "+pUser.getLogin()+" [REMOVED]");
                         provService.deleteByUserId(pUser.getUserId(), UserStatusEnum.REMOVE, systemAccount);
                     } else {
                         // call synch
@@ -329,20 +332,25 @@ public class CSVAdapter extends AbstractSrcAdapter {
                                 try {
                                     provService.modifyUser(pUser);
                                 } catch (Exception e) {
+                                    auditBuilderTestChild.fail().setAuditDescription("User login: "+pUser.getLogin()+" [MODIFY]");
                                     log.error(e);
                                 }
-
+                                auditBuilderTestChild.succeed().setAuditDescription("User login: "+pUser.getLogin()+" [MODIFY]");
                             } else {
                                 log.info(" - New user being provisioned");
                                 pUser.setUserId(null);
                                 try {
                                     provService.addUser(pUser);
                                 } catch (Exception e) {
+                                    auditBuilderTestChild.fail().setAuditDescription("User login: "+pUser.getLogin()+" [ADD]");
                                     log.error(e);
                                 }
+                                auditBuilderTestChild.succeed().setAuditDescription("User login: "+pUser.getLogin()+" [ADD]");
                             }
                         }
                     }
+                } else {
+                    auditBuilderTestChild.fail().setAuditDescription("User login: "+pUser.getLogin());
                 }
             }
             // show the user object

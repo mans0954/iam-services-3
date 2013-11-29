@@ -27,6 +27,7 @@ import java.util.Set;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -46,7 +47,8 @@ import org.openiam.idm.srvc.user.dto.User;
 @XmlType(name = "ProvisionUser", propOrder = { "requestId", "sessionId",
                                               "superiors", "srcSystemId", "provisionModel", "securityDomain", "notifyTargetSystems",
                                               "emailCredentialsToNewUsers", "emailCredentialsToSupervisor", "provisionOnStartDate",
-                                              "addInitialPasswordToHistory", "passwordPolicy", "skipPreprocessor", "skipPostProcessor" })
+                                              "addInitialPasswordToHistory", "passwordPolicy", "skipPreprocessor",
+                                              "skipPostProcessor"})
 public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
     /**
      *
@@ -58,6 +60,9 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
 //    protected List<Organization> userAffiliations;
 //    protected List<UserResourceAssociation> userResourceList;
     protected Set<User> superiors = new HashSet<User>(0);
+    @XmlTransient
+    protected Set<String> notProvisioninResourcesIds = new HashSet<String>();
+
 
     public ProvisionModelEnum provisionModel;
     public String securityDomain;
@@ -602,5 +607,17 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         return retVal;
     }
 
+    public Set<String> getNotProvisioninResourcesIds() {
+        return notProvisioninResourcesIds;
+    }
 
+    public void setNotProvisioninResourcesIds(Set<String> notProvisioninResourcesIds) {
+        this.notProvisioninResourcesIds = notProvisioninResourcesIds;
+    }
+
+    public void addNotProvisioninResourcesId(final String notProvisioninResourceId) {
+        if (notProvisioninResourceId != null) {
+            notProvisioninResourcesIds.add(notProvisioninResourceId);
+        }
+    }
 }
