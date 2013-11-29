@@ -29,8 +29,7 @@ public class IdmAuditLogDAOImpl extends BaseDaoImpl<IdmAuditLogEntity, String> i
 	private AuditLogSearchBeanConverter converter;
 	
 
-    @Override
-	protected Criteria getExampleCriteria(final IdmAuditLogEntity entity) {
+	protected Criteria getExampleCriteriaWithoutOrder(final IdmAuditLogEntity entity) {
     	final Criteria criteria = super.getCriteria();
     	if(entity != null) {
     		if(StringUtils.isNotBlank(entity.getId())) {
@@ -40,9 +39,31 @@ public class IdmAuditLogDAOImpl extends BaseDaoImpl<IdmAuditLogEntity, String> i
                 criteria.add(Restrictions.eq("action",entity.getAction()));
             }
     	}
-    	criteria.addOrder(Order.desc("timestamp"));
+
     	return criteria;
 	}
+
+    protected Criteria getExampleCriteria(final IdmAuditLogEntity entity) {
+        final Criteria criteria = getExampleCriteriaWithoutOrder(entity);
+        criteria.addOrder(Order.desc("timestamp"));
+        return criteria;
+    }
+
+    public int count(AuditLogSearchBean searchBean) {
+        Criteria criteria = super.getCriteria();
+        if(searchBean != null && (searchBean instanceof AuditLogSearchBean)) {
+            criteria = getExampleCriteriaWithoutOrder(converter.convert(searchBean));
+            if(searchBean.getFrom() != null && searchBean.getTo() != null) {
+                criteria.add(Restrictions.between("timestamp", searchBean.getFrom(), searchBean.getTo()));
+            } else if(searchBean.getFrom() != null) {
+                criteria.add(Restrictions.gt("timestamp", searchBean.getFrom()));
+            } else if(searchBean.getTo() != null) {
+                criteria.add(Restrictions.lt("timestamp", searchBean.getTo()));
+            }
+        }
+        return ((Number) criteria.setProjection(rowCount())
+                .uniqueResult()).intValue();
+    }
 
 	@Override
 	protected Criteria getExampleCriteria(SearchBean searchBean) {

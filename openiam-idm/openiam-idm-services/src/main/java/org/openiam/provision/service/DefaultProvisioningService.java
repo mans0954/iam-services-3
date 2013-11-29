@@ -1030,6 +1030,11 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         if (!isAdd) {
             if (CollectionUtils.isNotEmpty(deleteResourceSet)) {
                 for (Resource res : deleteResourceSet) {
+                    //skip provisioning for resource if it in NotProvisioning set
+                    if(pUser.getNotProvisioninResourcesIds().contains(res.getResourceId())) {
+                         auditLog.succeed().setAuditDescription("Skip De-Provisioning for resource: "+res.getName());
+                         continue;
+                    }
                     try {
                     // Protects other resources if one resource failed
                         ProvisionDataContainer data = deprovisionResource(res, userEntity, requestId);
@@ -1048,6 +1053,11 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         if (provInTargetSystemNow) {
             if (CollectionUtils.isNotEmpty(resourceSet)) {
                 for (Resource res : resourceSet) {
+                    //skip provisioning for resource if it in NotProvisioning set
+                    if(pUser.getNotProvisioninResourcesIds().contains(res.getResourceId())) {
+                        auditLog.succeed().setAuditDescription("Skip Provisioning for resource: "+res.getName());
+                        continue;
+                    }
                     try {
                        if(pUser.getSrcSystemId() != null) {
                            // do check if provisioning user has source resource => we should skip it from double provisioning
