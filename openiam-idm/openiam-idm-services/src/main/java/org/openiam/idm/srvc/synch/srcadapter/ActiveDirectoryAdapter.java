@@ -35,6 +35,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseStatus;
+import org.openiam.idm.srvc.audit.domain.AuditLogBuilder;
 import org.openiam.idm.srvc.synch.dto.Attribute;
 import org.openiam.idm.srvc.synch.dto.LineObject;
 import org.openiam.idm.srvc.synch.dto.SyncResponse;
@@ -60,7 +61,7 @@ public class ActiveDirectoryAdapter extends AbstractSrcAdapter{
     }
 
     @Override
-    public SyncResponse startSynch(SynchConfig config) {
+    public SyncResponse startSynch(SynchConfig config, AuditLogBuilder auditLogBuilder) {
 
         log.debug("CSV startSynch CALLED.^^^^^^^^");
         Reader reader = null;

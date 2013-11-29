@@ -28,6 +28,7 @@ import org.openiam.base.id.UUIDGen;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
+import org.openiam.idm.srvc.audit.domain.AuditLogBuilder;
 import org.openiam.idm.srvc.synch.dto.Attribute;
 import org.openiam.idm.srvc.synch.dto.LineObject;
 import org.openiam.idm.srvc.synch.dto.SyncResponse;
@@ -74,7 +75,7 @@ public class RDBMSAdapter extends AbstractSrcAdapter {
     @Value("${rdbmsvadapter.thread.delay.beforestart}")
     private int THREAD_DELAY_BEFORE_START;
 
-    public SyncResponse startSynch(final SynchConfig config) {
+    public SyncResponse startSynch(final SynchConfig config, AuditLogBuilder auditLogBuilder) {
 
         log.debug("RDBMS SYNCH STARTED ^^^^^^^^");
 
@@ -309,7 +310,7 @@ public class RDBMSAdapter extends AbstractSrcAdapter {
             Map<String, Attribute> rowAttr = rowObj.getColumnMap();
             //
             // rule used to match object from source system to data in IDM
-            MatchObjectRule matchRule = matchRuleFactory.create(config);
+            MatchObjectRule matchRule = matchRuleFactory.create(config.getCustomMatchRule());
             User usr = matchRule.lookup(config, rowAttr);
 
             // transform

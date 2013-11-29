@@ -1,8 +1,6 @@
 package org.openiam.idm.srvc.recon.domain;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
@@ -36,6 +34,8 @@ public class ReconciliationConfigEntity implements java.io.Serializable {
     private String reconConfigId;
     @Column(name = "RESOURCE_ID", length = 32)
     private String resourceId;
+    @Column(name = "MANAGED_SYS_ID", length = 32)
+    private String managedSysId;
     @Column(name = "FREQUENCY", length = 20)
     private String frequency;
     @Column(name = "STATUS", length = 20)
@@ -48,6 +48,8 @@ public class ReconciliationConfigEntity implements java.io.Serializable {
     private String notificationEmailAddress;
     @Column(name = "TARGET_SYS_MATCH_SCRIPT", length = 120)
     private String targetSystemMatchScript;
+    @Column(name = "CUSTOM_IDENTITY_MATCH_SCRIPT", length = 120)
+    private String customIdentityMatchScript;
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "RECON_CONFIG_ID", insertable = false, updatable = false)
     private Set<ReconciliationSituationEntity> situationSet = new HashSet<ReconciliationSituationEntity>(
@@ -56,6 +58,13 @@ public class ReconciliationConfigEntity implements java.io.Serializable {
     @Column(name = "MANUAL_RECONCILIATION_FLAG")
     @Type(type = "yes_no")
     private boolean manualReconciliationFlag;
+
+    @Column(name="MATCH_FIELD_NAME",length=40)
+    private String matchFieldName;
+    @Column(name="CUSTOM_MATCH_ATTR",length=40)
+    private String customMatchAttr;
+    @Column(name="CUSTOM_MATCH_SRC_ATTR",length=40)
+    private String matchSrcFieldName;
 
     public String getSeparator() {
         return separator;
@@ -80,11 +89,12 @@ public class ReconciliationConfigEntity implements java.io.Serializable {
         this.reconConfigId = reconConfigId;
     }
 
-    public ReconciliationConfigEntity(String reconConfigId, String resourceId,
+    public ReconciliationConfigEntity(String reconConfigId, String resourceId,  String managedSysId,
             String mode, String frequency, String status,
             Integer attributeLevelCheck, Integer updateChangedAttribute) {
         this.reconConfigId = reconConfigId;
         this.resourceId = resourceId;
+        this.managedSysId = managedSysId;
         this.frequency = frequency;
         this.status = status;
 
@@ -104,6 +114,14 @@ public class ReconciliationConfigEntity implements java.io.Serializable {
 
     public void setResourceId(String resourceId) {
         this.resourceId = resourceId;
+    }
+
+    public String getManagedSysId() {
+        return managedSysId;
+    }
+
+    public void setManagedSysId(String managedSysId) {
+        this.managedSysId = managedSysId;
     }
 
     public String getFrequency() {
@@ -167,5 +185,37 @@ public class ReconciliationConfigEntity implements java.io.Serializable {
 
     public void setManualReconciliationFlag(boolean manualReconciliationFlag) {
         this.manualReconciliationFlag = manualReconciliationFlag;
+    }
+
+    public String getCustomIdentityMatchScript() {
+        return customIdentityMatchScript;
+    }
+
+    public void setCustomIdentityMatchScript(String customIdentityMatchScript) {
+        this.customIdentityMatchScript = customIdentityMatchScript;
+    }
+
+    public String getMatchFieldName() {
+        return matchFieldName;
+    }
+
+    public void setMatchFieldName(String matchFieldName) {
+        this.matchFieldName = matchFieldName;
+    }
+
+    public String getCustomMatchAttr() {
+        return customMatchAttr;
+    }
+
+    public void setCustomMatchAttr(String customMatchAttr) {
+        this.customMatchAttr = customMatchAttr;
+    }
+
+    public String getMatchSrcFieldName() {
+        return matchSrcFieldName;
+    }
+
+    public void setMatchSrcFieldName(String matchSrcFieldName) {
+        this.matchSrcFieldName = matchSrcFieldName;
     }
 }

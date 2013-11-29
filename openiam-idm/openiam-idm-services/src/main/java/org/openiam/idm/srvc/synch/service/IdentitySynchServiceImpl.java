@@ -42,6 +42,10 @@ import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.AttributeMapSearchBean;
 import org.openiam.idm.searchbeans.UserSearchBean;
+import org.openiam.idm.srvc.audit.constant.AuditAction;
+import org.openiam.idm.srvc.audit.domain.AuditLogBuilder;
+import org.openiam.idm.srvc.audit.service.AuditLogProvider;
+import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.service.AttributeMapDAO;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
@@ -90,6 +94,13 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
     
     @Value("${openiam.idm.ws.path}")
     private String serviceContext;
+
+    @Autowired
+    private AuditLogProvider auditLogProvider;
+    @Autowired
+    private AuditLogService auditLogService;
+    @Value("${org.openiam.idm.system.user.id}")
+    private String systemUserId;
 
 	private static final Log log = LogFactory.getLog(IdentitySynchServiceImpl.class);
 
@@ -158,25 +169,29 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
         SyncResponse syncResponse = new SyncResponse(ResponseStatus.SUCCESS);
 
         log.debug("-startSynchronization CALLED.^^^^^^^^");
+        final AuditLogBuilder auditBuilder = auditLogProvider.getAuditLogBuilder();
+        auditBuilder.setRequestorUserId(systemUserId).setTargetUser(null).setAction(AuditAction.SYNCHRONIZATION);
+        auditBuilder.succeed().setAuditDescription("-startSynchronization CALLED.^^^^^^^^");
 
         SyncResponse processCheckResponse = addTask(config.getSynchConfigId());
-        if ( processCheckResponse.getStatus() == ResponseStatus.FAILURE ) {
-            return processCheckResponse;
 
-        }
         try {
+            if ( processCheckResponse.getStatus() == ResponseStatus.FAILURE ) {
+                return processCheckResponse;
 
+            }
             SynchConfig configDTO = synchConfigDozerConverter.convertToDTO(config, false);
 
 			SourceAdapter adapt = adapterFactory.create(configDTO);
 
 			long newLastExecTime = System.currentTimeMillis();
 
-            syncResponse = adapt.startSynch(configDTO);
+            syncResponse = adapt.startSynch(configDTO, auditBuilder);
 			
 			log.debug("SyncReponse updateTime value=" + syncResponse.getLastRecordTime());
-			
-			if (syncResponse.getLastRecordTime() == null) {
+            auditBuilder.succeed().setAuditDescription("SyncReponse updateTime value=" + syncResponse.getLastRecordTime());
+
+            if (syncResponse.getLastRecordTime() == null) {
 			
 				synchConfigDao.updateExecTime(config.getSynchConfigId(), new Timestamp( newLastExecTime ));
 			} else {
@@ -189,7 +204,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
 			}
 
 		    log.debug("-startSynchronization COMPLETE.^^^^^^^^");
-
+            auditBuilder.succeed().setAuditDescription("-startSynchronization COMPLETE.^^^^^^^^");
 		} catch( ClassNotFoundException cnfe) {
 
             cnfe.printStackTrace();
@@ -208,7 +223,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
 
 		} finally {
             endTask(config.getSynchConfigId());
-
+            auditLogService.enqueue(auditBuilder);
             return syncResponse;
 
         }

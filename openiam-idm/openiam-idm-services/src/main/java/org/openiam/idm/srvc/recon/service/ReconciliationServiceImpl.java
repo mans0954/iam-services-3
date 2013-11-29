@@ -86,6 +86,9 @@ import org.openiam.idm.srvc.recon.util.Serializer;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.openiam.idm.srvc.role.service.RoleDataService;
+import org.openiam.idm.srvc.synch.dto.Attribute;
+import org.openiam.idm.srvc.synch.service.MatchObjectRule;
+import org.openiam.idm.srvc.synch.srcadapter.MatchRuleFactory;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.idm.srvc.user.service.UserDataService;
@@ -173,6 +176,8 @@ public class ReconciliationServiceImpl implements ReconciliationService {
     private String systemUserId;
     @Autowired
     private ReconciliationCommandFactory commandFactory;
+    @Autowired
+    protected MatchRuleFactory matchRuleFactory;
 
     private static final Log log = LogFactory
             .getLog(ReconciliationServiceImpl.class);
@@ -354,16 +359,21 @@ public class ReconciliationServiceImpl implements ReconciliationService {
             // Get List with all users who have Identity if this resource
             List<LoginEntity> idmIdentities = loginManager
                     .getAllLoginByManagedSys(managedSysId);
+
+            List<String> processedUserIds = new ArrayList<String>();
             for (LoginEntity identity : idmIdentities) {
-                reconciliationIDMUserToTargetSys(resultBean, attrMap, identity,
-                        sysDto, situations, config.getManualReconciliationFlag());
+                if (identity.getUserId() != null) {
+                    processedUserIds.add(identity.getUserId()); // to avoid double processing
+                    reconciliationIDMUserToTargetSys(resultBean, attrMap, identity,
+                            sysDto, situations, config.getManualReconciliationFlag());
+                }
             }
 
             // 2. Do reconciliation users from Target Managed System to IDM
             // search for all Roles and Groups related with resource
             // GET Users from ConnectorAdapter by BaseDN and query rules
             processingTargetToIDM(resultBean, attrMap, config, managedSysId,
-                    sysDto, situations, connector, keyField, baseDnField);
+                    sysDto, situations, connector, keyField, baseDnField, processedUserIds);
             this.saveReconciliationResults(config.getResourceId(), resultBean);
             this.sendMail(config, res);
         } catch (Exception e) {
@@ -383,7 +393,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
             List<AttributeMapEntity> attrMap, ReconciliationConfig config,
             String managedSysId, ManagedSysDto mSys,
             Map<String, ReconciliationCommand> situations,
-            ProvisionConnectorDto connector, String keyField, String baseDnField)
+            ProvisionConnectorDto connector, String keyField, String baseDnField, List<String> processedUserIds)
             throws ScriptEngineException {
 
         if (config == null
@@ -411,7 +421,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
         searchRequest.setSearchQuery(searchQuery);
         searchRequest.setTargetID(managedSysId);
         searchRequest.setHostUrl(mSys.getHostUrl());
-        searchRequest.setHostPort(mSys.getPort().toString());
+        searchRequest.setHostPort((mSys.getPort()!=null)? mSys.getPort().toString() : null);
         searchRequest.setHostLoginId(mSys.getUserId());
         searchRequest.setHostLoginPassword(mSys.getDecryptPassword());
         searchRequest.setExtensibleObject(new ExtensibleUser());
@@ -431,10 +441,10 @@ public class ReconciliationServiceImpl implements ReconciliationService {
                             .getAttributeList() != null ? userValue
                             .getAttributeList()
                             : new LinkedList<ExtensibleAttribute>();
-                    reconcilationTargetUserObjectToIDM(resultBean, attrMap,
-                            managedSysId, mSys, situations, keyField,
+                    reconcilationTargetUserObjectToIDM(
+                            managedSysId, mSys, situations,
                             extensibleAttributes,
-                            config.getManualReconciliationFlag());
+                            config, processedUserIds);
                 }
             }
         } else {
@@ -445,69 +455,92 @@ public class ReconciliationServiceImpl implements ReconciliationService {
 
     // Reconciliation processingTargetToIDM
     private void reconcilationTargetUserObjectToIDM(
-            ReconciliationResultBean resultBean,
-            List<AttributeMapEntity> attrMap, String managedSysId,
+            String managedSysId,
             ManagedSysDto mSys,
-            Map<String, ReconciliationCommand> situations, String keyField,
+            Map<String, ReconciliationCommand> situations,
             List<ExtensibleAttribute> extensibleAttributes,
-            boolean isManualRecon) {
+            ReconciliationConfig config, List<String> processedUserIds) {
         String targetUserPrincipal = null;
-        ExtensibleUser eUser = new ExtensibleUser();
+
+        Map<String, Attribute>  attributeMap = new HashMap<String,Attribute>();
         for (ExtensibleAttribute attr : extensibleAttributes) {
             // search principal attribute by KeyField
-            if (attr.getName().equalsIgnoreCase(keyField)) {
+            attributeMap.put(attr.getName(),attr);
+            if(targetUserPrincipal == null && attr.getName().equals(config.getCustomMatchAttr())) {
                 targetUserPrincipal = attr.getValue();
                 break;
             }
         }
-        eUser.setAttributes(extensibleAttributes);
-        eUser.setPrincipalFieldName(keyField);
-        // check if principal attribute found
-        if (StringUtils.isNotEmpty(targetUserPrincipal)) {
-            log.debug("reconcile principle found=> [" + keyField + "="
-                    + targetUserPrincipal + "]");
-            // if principal attribute exists in user attributes from target
-            // system
-            // we need to define Command
-            // try to find user in IDM by login=principal
-            LoginEntity login = loginManager.getLoginByManagedSys(
-                    mSys.getDomainId(), targetUserPrincipal, managedSysId);
-            LoginEntity idmLogin = loginManager.getLoginByManagedSys(
-                    mSys.getDomainId(), targetUserPrincipal, "0");
-            boolean identityExistsInIDM = login != null;
 
-            if (!identityExistsInIDM) {
-                // user doesn't exists in IDM
+        try {
+            MatchObjectRule matchObjectRule = matchRuleFactory.create(config.getCustomIdentityMatchScript());
+            User usr = matchObjectRule.lookup(config, attributeMap);
 
-                resultBean.getRows().add(
-                        this.setRowInReconciliationResult(
-                                resultBean.getHeader(), attrMap, null, eUser,
-                                ReconciliationResultCase.NOT_EXIST_IN_IDM_DB));
-                // SYS_EXISTS__IDM_NOT_EXISTS
-                if (!isManualRecon) {
-                    ReconciliationCommand command = situations
-                            .get(ReconciliationCommand.SYS_EXISTS__IDM_NOT_EXISTS);
-                    if (command != null) {
-                        Login l = new Login();
-                        l.setDomainId(mSys.getDomainId());
-                        l.setLogin(targetUserPrincipal);
-                        l.setManagedSysId(managedSysId);
-                        l.setOperation(AttributeOperationEnum.ADD);
-                        ProvisionUser newUser = new ProvisionUser();
-                        newUser.setSrcSystemId(managedSysId);
-                        // ADD Target user principal
-                        newUser.getPrincipalList().add(l);
-                        if (idmLogin != null) {
-                            newUser.getPrincipalList().add(
+            if(usr != null) {
+               if (processedUserIds.contains(usr.getUserId())) { // already processed
+                   return;
+               }
+               User u = userManager.getUserDto(usr.getUserId());
+               //situation TARGET EXIST, IDM EXIST do modify
+               //check principal list on this ManagedSys exists
+               List<Login> principals = u.getPrincipalList();
+               Login principal = null;
+               for(Login l : principals) {
+                   if(l.getManagedSysId().equals(managedSysId)) {
+                       principal = l;
+                       break;
+                   }
+               }
+                   // if user exists but don;t have principal for current target sys
+                   ReconciliationCommand command = situations.get(ReconciliationCommand.IDM_EXISTS__SYS_EXISTS);
+                   if(command != null) {
+                       ProvisionUser newUser = new ProvisionUser(u);
+                       if(principal == null) {
+                           principal = new Login();
+                           principal.setDomainId(mSys.getDomainId());
+                           principal.setLogin(targetUserPrincipal);
+                           principal.setManagedSysId(managedSysId);
+                           principal.setOperation(AttributeOperationEnum.ADD);
+                            // ADD Target user principal
+                           newUser.getPrincipalList().add(principal);
+                       }
+                       newUser.setSrcSystemId(managedSysId);
+
+                       log.debug("Call command for IDM Match Found");
+                       command.execute(principal, newUser, extensibleAttributes);
+
+               }
+            }  else {
+                //create new user in IDM
+                ReconciliationCommand command = situations
+                        .get(ReconciliationCommand.SYS_EXISTS__IDM_NOT_EXISTS);
+                if (command != null) {
+                    Login l = new Login();
+                    l.setDomainId(mSys.getDomainId());
+                    l.setLogin(targetUserPrincipal);
+                    l.setManagedSysId(managedSysId);
+                    l.setOperation(AttributeOperationEnum.ADD);
+                    ProvisionUser newUser = new ProvisionUser();
+                    newUser.setSrcSystemId(managedSysId);
+                    // ADD Target user principal
+                    newUser.getPrincipalList().add(l);
+                    LoginEntity idmLogin = loginManager.getLoginByManagedSys(
+                            mSys.getDomainId(), targetUserPrincipal, "0");
+                    if (idmLogin != null) {
+                        newUser.getPrincipalList().add(
                                     loginDozerConverter.convertToDTO(idmLogin,
                                             true));
-                        }
-                        log.debug("Call command for Match Found");
-                        command.execute(l, newUser, extensibleAttributes);
                     }
+
+                    log.debug("Call command for Match Not Found");
+                    command.execute(l, newUser, extensibleAttributes);
                 }
             }
+
+        } catch (ClassNotFoundException cnfe) {
+            log.error(cnfe);
         }
+
     }
 
     @Override
@@ -537,7 +570,6 @@ public class ReconciliationServiceImpl implements ReconciliationService {
                     }
                     if (ReconciliationResultAction.REMOVE_FROM_TARGET
                             .equals(row.getAction())) {
-                        // TODO HOWTO DELETE
                         // REMOVETE From Target system
                         // provisionService.de(managedSysDozerConverter
                         // .convertToDTO(mSys, false), u);
@@ -592,10 +624,18 @@ public class ReconciliationServiceImpl implements ReconciliationService {
         Login idDto = loginDozerConverter.convertToDTO(identity, true);
         log.debug("1 Reconciliation for user " + user);
 
+        List<ExtensibleAttribute> requestedExtensibleAttributes = new ArrayList<ExtensibleAttribute>();
+
+        for (AttributeMapEntity ame : attrMap) {
+            if ("USER".equalsIgnoreCase(ame.getMapForObjectType()) && "ACTIVE".equalsIgnoreCase(ame.getStatus())) {
+                requestedExtensibleAttributes.add(new ExtensibleAttribute(ame.getAttributeName(), null));
+            }
+        }
+
         String principal = identity.getLogin();
         log.debug("looking up identity in resource: " + principal);
         LookupUserResponse lookupResp = provisionService.getTargetSystemUser(
-                principal, mSys.getManagedSysId());
+                principal, mSys.getManagedSysId(), requestedExtensibleAttributes);
 
         log.debug("Lookup status for " + principal + " ="
                 + lookupResp.getStatus());
@@ -613,7 +653,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
         this.getValuesForExtensibleUser(fromIDM, user, attrMap, identity);
         if (userFoundInTargetSystem) {
             // Record exists in resource
-            if (user.getStatus().equals(UserStatusEnum.DELETED)) {
+            if (UserStatusEnum.DELETED.equals(user.getStatus())) {
                 // IDM_DELETED__SYS_EXISTS
 
                 resultBean.getRows().add(
@@ -654,7 +694,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
 
         } else {
             // Record not found in resource
-            if (!user.getStatus().equals(UserStatusEnum.DELETED)) {
+            if (!UserStatusEnum.DELETED.equals(user.getStatus())) {
                 // IDM_EXISTS__SYS_NOT_EXISTS
                 resultBean
                         .getRows()

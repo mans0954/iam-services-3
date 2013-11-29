@@ -27,6 +27,7 @@ import org.openiam.base.id.UUIDGen;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
+import org.openiam.idm.srvc.audit.domain.AuditLogBuilder;
 import org.openiam.idm.srvc.synch.dto.Attribute;
 import org.openiam.idm.srvc.synch.dto.LineObject;
 import org.openiam.idm.srvc.synch.dto.SyncResponse;
@@ -77,7 +78,7 @@ public class LdapAdapter extends AbstractSrcAdapter { // implements SourceAdapte
 
     private static final Log log = LogFactory.getLog(LdapAdapter.class);
 
-    public SyncResponse startSynch(SynchConfig config) {
+    public SyncResponse startSynch(SynchConfig config, AuditLogBuilder auditLogBuilder) {
         // rule used to match object from source system to data in IDM
         MatchObjectRule matchRule = null;
        // String changeLog = null;
@@ -120,7 +121,7 @@ public class LdapAdapter extends AbstractSrcAdapter { // implements SourceAdapte
             }
 
             try {
-                matchRule = matchRuleFactory.create(config);
+                matchRule = matchRuleFactory.create(config.getCustomMatchRule());
             } catch (ClassNotFoundException cnfe) {
 
                 runningTask.remove(config.getSynchConfigId());
@@ -224,7 +225,7 @@ public class LdapAdapter extends AbstractSrcAdapter { // implements SourceAdapte
                     // check if the user exists or not
                     Map<String, Attribute> rowAttr = rowObj.getColumnMap();
                     //
-                    matchRule = matchRuleFactory.create(config);
+                    matchRule = matchRuleFactory.create(config.getCustomMatchRule());
                     User usr = matchRule.lookup(config, rowAttr);
 
                     // transform

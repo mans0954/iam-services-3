@@ -27,7 +27,6 @@ import javax.jws.WebService;
 
 import java.util.List;
 
-import org.mule.api.MuleContext;
 import org.openiam.base.ws.Response;
 import org.openiam.connector.type.request.LookupRequest;
 
@@ -39,6 +38,7 @@ import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.resp.LookupUserResponse;
 import org.openiam.provision.resp.PasswordResponse;
 import org.openiam.provision.resp.ProvisionUserResponse;
+import org.openiam.provision.type.ExtensibleAttribute;
 
 /**
  * <code>ProvisionService</code> Interface for the Provisioning service which is
@@ -192,7 +192,8 @@ public interface ProvisionService {
     @WebMethod
     LookupUserResponse getTargetSystemUser(
             @WebParam(name = "principalName", targetNamespace = "") String principalName,
-            @WebParam(name = "managedSysId", targetNamespace = "") String managedSysId);
+            @WebParam(name = "managedSysId", targetNamespace = "") String managedSysId,
+            @WebParam(name = "attributes", targetNamespace = "") List<ExtensibleAttribute> attributes);
 
     /**
      * Return all possible attributes for selected managed system

@@ -556,10 +556,8 @@ public class UserMgr implements UserDataService {
             nonEmptyListOfLists.add(userDao.getUserIdsForResources(searchBean.getResourceIdSet(), 0, MAX_USER_SEARCH_RESULTS));
         }
 
-        if (StringUtils.isNotBlank(searchBean.getPrincipal())) {
-            final LoginSearchBean loginSearchBean = new LoginSearchBean();
-            loginSearchBean.setLogin(StringUtils.trimToNull(searchBean.getPrincipal()));
-            nonEmptyListOfLists.add(loginSearchDAO.findUserIds(0, MAX_USER_SEARCH_RESULTS, loginSearchBean));
+        if (searchBean.getPrincipal() != null) {
+            nonEmptyListOfLists.add(loginSearchDAO.findUserIds(0, MAX_USER_SEARCH_RESULTS, searchBean.getPrincipal()));
         }
 
         if (StringUtils.isNotBlank(searchBean.getEmailAddress())) {
@@ -2183,7 +2181,7 @@ public class UserMgr implements UserDataService {
                 }
             }
 
-            if (CollectionUtils.isEmpty(searchBean.getGroupIdSet()) && isGroupFilterSet) {
+            if (CollectionUtils.isNotEmpty(searchBean.getGroupIdSet()) && isGroupFilterSet) {
                 filterData = new HashSet<String>(DelegationFilterHelper.getGroupFilterFromString(requesterAttributes));
                 for(String pk : searchBean.getGroupIdSet()) {
                     if(!DelegationFilterHelper.isAllowed(pk, filterData)){
@@ -2192,7 +2190,7 @@ public class UserMgr implements UserDataService {
                 }
             }
 
-            if (CollectionUtils.isEmpty(searchBean.getRoleIdSet()) && isRoleFilterSet) {
+            if (CollectionUtils.isNotEmpty(searchBean.getRoleIdSet()) && isRoleFilterSet) {
                 filterData = new HashSet<String>(DelegationFilterHelper.getGroupFilterFromString(requesterAttributes));
                 for(String pk : searchBean.getRoleIdSet()) {
                     if(!DelegationFilterHelper.isAllowed(pk, filterData)){

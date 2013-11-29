@@ -13,6 +13,7 @@ import org.mule.api.context.MuleContextAware;
 import org.mule.module.client.MuleClient;
 import org.openiam.dozer.converter.LoginDozerConverter;
 import org.openiam.dozer.converter.UserDozerConverter;
+import org.openiam.idm.srvc.audit.domain.AuditLogBuilder;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.synch.dto.SyncResponse;
@@ -60,13 +61,16 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
     @Autowired
     protected IdentitySynchService synchService;
 
+    @Value("${org.openiam.idm.system.user.id}")
+    protected String systemUserId;
+
     @Value("${openiam.service_base}")
     private String serviceHost;
     
     @Value("${openiam.idm.ws.path}")
     private String serviceContext;
 
-    public abstract SyncResponse startSynch(SynchConfig config);
+    public abstract SyncResponse startSynch(SynchConfig config, AuditLogBuilder auditLogBuilder);
 
     public void addUser(ProvisionUser pUser) {
         long startTime = System.currentTimeMillis();

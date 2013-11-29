@@ -2,6 +2,7 @@ package org.openiam.idm.srvc.recon.dto;
 
 import java.util.Set;
 
+import javax.persistence.Column;
 import javax.persistence.Transient;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -15,25 +16,34 @@ import org.openiam.idm.srvc.recon.domain.ReconciliationConfigEntity;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "ReconciliationConfig", propOrder = { "reconConfigId",
-        "resourceId", "frequency", "status", "situationSet", "reportPath",
+        "resourceId", "managedSysId", "frequency", "status", "situationSet", "reportPath",
         "separator", "endOfLine", "notificationEmailAddress",
-        "manualReconciliationFlag","targetSystemMatchScript","scriptHandler" })
+        "manualReconciliationFlag","targetSystemMatchScript",
+        "customIdentityMatchScript",
+        "scriptHandler",
+        "matchFieldName",
+        "customMatchAttr",
+        "matchSrcFieldName"})
 
 @DozerDTOCorrespondence(ReconciliationConfigEntity.class)
-public class ReconciliationConfig implements java.io.Serializable {
+public class ReconciliationConfig implements MatchConfig, java.io.Serializable {
 
     private static final long serialVersionUID = 431603790346613674L;
     private String reconConfigId;
     private String resourceId;
+    private String managedSysId;
     private String frequency;
     private String status;
     private String separator;
     private String endOfLine;
     private String notificationEmailAddress;
     private String targetSystemMatchScript;
+    private String customIdentityMatchScript;
     private Set<ReconciliationSituation> situationSet;
     private boolean manualReconciliationFlag;
-
+    private String matchFieldName;
+    private String customMatchAttr;
+    private String matchSrcFieldName;
     @XmlElement
     private String scriptHandler;
 
@@ -63,11 +73,12 @@ public class ReconciliationConfig implements java.io.Serializable {
         this.reconConfigId = reconConfigId;
     }
 
-    public ReconciliationConfig(String reconConfigId, String resourceId,
+    public ReconciliationConfig(String reconConfigId, String resourceId, String managedSysId,
             String mode, String frequency, String status,
             Integer attributeLevelCheck, Integer updateChangedAttribute) {
         this.reconConfigId = reconConfigId;
         this.resourceId = resourceId;
+        this.managedSysId = managedSysId;
         this.frequency = frequency;
         this.status = status;
 
@@ -87,6 +98,14 @@ public class ReconciliationConfig implements java.io.Serializable {
 
     public void setResourceId(String resourceId) {
         this.resourceId = resourceId;
+    }
+
+    public String getManagedSysId() {
+        return managedSysId;
+    }
+
+    public void setManagedSysId(String managedSysId) {
+        this.managedSysId = managedSysId;
     }
 
     public String getFrequency() {
@@ -151,11 +170,44 @@ public class ReconciliationConfig implements java.io.Serializable {
     public void setManualReconciliationFlag(boolean manualReconciliationFlag) {
         this.manualReconciliationFlag = manualReconciliationFlag;
     }
+
     public String getScriptHandler() {
         return scriptHandler;
     }
 
     public void setScriptHandler(String scriptHandler) {
         this.scriptHandler = scriptHandler;
+    }
+
+    public String getCustomIdentityMatchScript() {
+        return customIdentityMatchScript;
+    }
+
+    public void setCustomIdentityMatchScript(String customIdentityMatchScript) {
+        this.customIdentityMatchScript = customIdentityMatchScript;
+    }
+
+    public String getMatchFieldName() {
+        return matchFieldName;
+    }
+
+    public void setMatchFieldName(String matchFieldName) {
+        this.matchFieldName = matchFieldName;
+    }
+
+    public String getCustomMatchAttr() {
+        return customMatchAttr;
+    }
+
+    public void setCustomMatchAttr(String customMatchAttr) {
+        this.customMatchAttr = customMatchAttr;
+    }
+
+    public String getMatchSrcFieldName() {
+        return matchSrcFieldName;
+    }
+
+    public void setMatchSrcFieldName(String matchSrcFieldName) {
+        this.matchSrcFieldName = matchSrcFieldName;
     }
 }

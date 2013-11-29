@@ -255,10 +255,12 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
 		}
 		// get the user object
 		if (req.getUserId() == null) {
+			log.warn("UserID is null");
 			return false;
 		}
 		UserEntity usr = userManager.getUser(req.getUserId());
 		if (usr == null) {
+			log.warn(String.format("Can't find user with id '%s", req.getUserId()));
 			return false;
 		}
 		if (log.isDebugEnabled()) {
@@ -281,6 +283,7 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
 		}
 		String[] emailDetails = fetchEmailDetails(req.getNotificationType());
 		if (emailDetails == null) {
+			log.warn(String.format("Email details were null for notification type '%s'", req.getNotificationType()));
 			return false;
 		}
 
@@ -290,11 +293,11 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
 
 		String emailBody = createEmailBody(bindingMap, emailDetails[SCRIPT_IDX]);
 		if (emailBody != null) {
-
 			sendEmail(null, usr.getEmail(), null, emailDetails[SUBJECT_IDX],
 					emailBody, null, isHtmlFormat(emailDetails));
 			return true;
 		}
+		log.warn("Email not sent - failure occurred");
 		return false;
 	}
 

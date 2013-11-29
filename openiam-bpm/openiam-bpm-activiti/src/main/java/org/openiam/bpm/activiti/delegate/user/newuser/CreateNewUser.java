@@ -58,7 +58,7 @@ public class CreateNewUser implements JavaDelegate {
 		final NewUserProfileRequestModel request = (NewUserProfileRequestModel)new XStream().fromXML(provisionRequest.getRequestXML());
 		//final CreateUserToken token = userProfileService.createNewUserProfile(request);
 		final ProvisionUser user = converter.convertNewProfileModel(request);
-        user.setEmailCredentialsToNewUsers(true);
+        user.setEmailCredentialsToNewUsers(false);
 		user.setStatus(UserStatusEnum.PENDING_INITIAL_LOGIN);
 		user.setSecondaryStatus(null);
 		
