@@ -65,8 +65,6 @@ public class AcceptProfileProvisionNotifierDelegate implements JavaDelegate {
         /* notify the approvers */
         final Set<String> userIds = new HashSet<String>();
         final Set<String> emails = new HashSet<String>();
-        
-        userIds.add(newUserId);
 		
 		final ProvisionRequestEntity provisionRequest = provRequestService.getRequest(provisionRequestId);
 		final String requestorId = provisionRequest.getRequestorId();
@@ -120,21 +118,21 @@ public class AcceptProfileProvisionNotifierDelegate implements JavaDelegate {
         }
         
         /* if there's no approver to notify, send it to the original user */
-        if(CollectionUtils.isEmpty(userIds)) {
-        	userIds.add(newUserId);
-        }
+
+        final UserEntity approver = userManager.getUser(lastCaller);
+        sendEmails(approver, provisionRequest, newUser, userIds, emails, null, null);
         
         String identity = null;
         String password = null;
-
-        final UserEntity approver = userManager.getUser(lastCaller);
 
         final LoginEntity login = loginDS.getPrimaryIdentity(newUserId);
         if (login != null) {
         	identity = login.getLogin();
         	password = loginDS.decryptPassword(login.getUserId(),login.getPassword());
         }
-        sendEmails(approver, provisionRequest, newUser, userIds, emails, identity, password);
+        userIds.clear();
+        userIds.add(newUserId);
+        sendEmails(approver, provisionRequest, newUser, userIds, null, identity, password);
 	}
 	
 	private void sendEmails(final UserEntity approver, final ProvisionRequestEntity provisionRequest, final UserEntity newUser, 
