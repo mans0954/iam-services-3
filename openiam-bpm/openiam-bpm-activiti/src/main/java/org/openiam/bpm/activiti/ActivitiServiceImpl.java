@@ -21,8 +21,12 @@ import org.activiti.engine.RepositoryService;
 import org.activiti.engine.RuntimeService;
 import org.activiti.engine.TaskService;
 import org.activiti.engine.history.HistoricActivityInstance;
+import org.activiti.engine.history.HistoricActivityInstanceQuery;
+import org.activiti.engine.history.HistoricDetail;
+import org.activiti.engine.history.HistoricDetailQuery;
 import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.history.HistoricTaskInstanceQuery;
+import org.activiti.engine.history.HistoricVariableUpdate;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Task;
 import org.apache.commons.collections.CollectionUtils;
@@ -686,9 +690,17 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 	}
 	
 	@Override
-	public TaskWrapper getTaskFromHistory(String taskId) {
+	public TaskWrapper getTaskFromHistory(final String executionId, final String taskId) {
 		TaskWrapper retVal = null;
-		final List<HistoricTaskInstance> instances = historyService.createHistoricTaskInstanceQuery().taskId(taskId).list();
+		final HistoricTaskInstanceQuery query = historyService.createHistoricTaskInstanceQuery(); 
+		if(StringUtils.isNotBlank(executionId)) {
+			query.executionId(executionId);
+		} else if(StringUtils.isNotBlank(taskId)) {
+			query.taskId(taskId);
+		} else {
+			throw new IllegalArgumentException("Execution ID and Task ID are null");
+		}
+		final List<HistoricTaskInstance> instances = query.list();
 		if(CollectionUtils.isNotEmpty(instances)) {
 			retVal = new TaskWrapper(instances.get(0));
 		}
@@ -708,7 +720,8 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 				}
 			}
 			
-			final List<HistoricActivityInstance> activityList = historyService.createHistoricActivityInstanceQuery().executionId(executionId).list();
+			final HistoricActivityInstanceQuery query = historyService.createHistoricActivityInstanceQuery().executionId(executionId);
+			final List<HistoricActivityInstance> activityList = query.list();
 			if(CollectionUtils.isNotEmpty(activityList)) {
 				for(int i = 0; i < activityList.size(); i++) {
 					final HistoricActivityInstance instance = activityList.get(i);
@@ -725,6 +738,19 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 					if(i < activityList.size() - 1) {
 						wrapper.addNextTask(activityList.get(i + 1).getId());
 					}
+					
+					/*
+					final HistoricDetailQuery detailQuery = historyService.createHistoricDetailQuery()
+																		  .activityInstanceId(instance.getId())
+																		  .variableUpdates();
+					final List<HistoricDetail> details = detailQuery.list();
+					if(CollectionUtils.isNotEmpty(details)) {
+						for(final HistoricDetail detail : details) {
+							final HistoricVariableUpdate variableUpdate = (HistoricVariableUpdate)detail;
+							log.info(String.format("Variable update: %s", variableUpdate));
+						}
+					}
+					*/
 				}
 			}
 		}

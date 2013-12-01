@@ -36,7 +36,7 @@ public class TaskHistoryWrapper {
 	private String activityType;
 	private String assigneeId;
 	private String assigneeName;
-	private long duration;
+	private Long duration;
 	private Date endTime;
 	private String executionId;
 	private String processDefinitionId;
@@ -119,11 +119,11 @@ public class TaskHistoryWrapper {
 		this.assigneeName = assigneeName;
 	}
 
-	public long getDuration() {
+	public Long getDuration() {
 		return duration;
 	}
 
-	public void setDuration(long duration) {
+	public void setDuration(Long duration) {
 		this.duration = duration;
 	}
 
