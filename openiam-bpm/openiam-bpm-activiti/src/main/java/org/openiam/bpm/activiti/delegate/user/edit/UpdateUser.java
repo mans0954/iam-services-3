@@ -5,8 +5,6 @@ import org.activiti.engine.delegate.JavaDelegate;
 import org.openiam.bpm.activiti.delegate.entitlements.AbstractEntitlementsDelegate;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.dozer.converter.UserDozerConverter;
-import org.openiam.idm.srvc.prov.request.domain.ProvisionRequestEntity;
-import org.openiam.idm.srvc.prov.request.service.RequestDataService;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserProfileRequestModel;

@@ -9,8 +9,6 @@ import org.openiam.bpm.activiti.delegate.entitlements.AbstractEntitlementsDelega
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
-import org.openiam.idm.srvc.prov.request.domain.ProvisionRequestEntity;
-import org.openiam.idm.srvc.prov.request.service.RequestDataService;
 import org.openiam.idm.srvc.provision.NewUserModelToProvisionConverter;
 import org.openiam.idm.srvc.pswd.service.PasswordGenerator;
 import org.openiam.idm.srvc.user.dto.NewUserProfileRequestModel;

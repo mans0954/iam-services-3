@@ -26,8 +26,6 @@ import org.openiam.idm.srvc.meta.dto.PageElementValue;
 import org.openiam.idm.srvc.meta.dto.PageTempate;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.service.OrganizationService;
-import org.openiam.idm.srvc.prov.request.domain.ProvisionRequestEntity;
-import org.openiam.idm.srvc.prov.request.service.RequestDataService;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.user.domain.UserEntity;
@@ -42,10 +40,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import com.thoughtworks.xstream.XStream;
 
 public class NewUserDisplayMapperDelegate extends AbstractUserDisplayMapper {
-	
-	@Autowired
-	@Qualifier("provRequestService")
-	private RequestDataService provRequestService;
 
 	public NewUserDisplayMapperDelegate() {
 		super();

@@ -3,8 +3,6 @@ package org.openiam.bpm.activiti.tasklistener;
 import org.activiti.engine.delegate.DelegateExecution;
 import org.activiti.engine.delegate.DelegateTask;
 import org.openiam.bpm.util.ActivitiConstants;
-import org.openiam.idm.srvc.prov.request.domain.ProvisionRequestEntity;
-import org.openiam.idm.srvc.prov.request.service.RequestDataService;
 import org.openiam.idm.srvc.user.dto.NewUserProfileRequestModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;

@@ -117,20 +117,6 @@
 		</service>
 	</model>
 
-	<model name="provReqServiceModel">
-		<service name="provReqService">
-			<inbound>
-				<inbound-endpoint address="${webservice.path}RequestWebService"
-					exchange-pattern="request-response">
-					<cxf:jaxws-service />
-				</inbound-endpoint>
-			</inbound>
-			<component>
-				<spring-object bean="provRequestWS" />
-			</component>
-		</service>
-	</model>
-
 	<model name="connectorWebServiceModel">
 		<service name="connectorWebService">
 			<inbound>

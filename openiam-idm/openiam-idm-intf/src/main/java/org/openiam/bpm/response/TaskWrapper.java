@@ -19,7 +19,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.mule.util.concurrent.DaemonThreadFactory;
 import org.openiam.bpm.util.ActivitiConstants;
-import org.openiam.idm.srvc.prov.request.dto.ProvisionRequest;
 import org.openiam.provision.dto.ProvisionUser;
 
 @XmlAccessorType(XmlAccessType.FIELD)

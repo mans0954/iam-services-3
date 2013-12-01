@@ -70,8 +70,6 @@ import org.openiam.idm.srvc.meta.service.MetadataElementTemplateService;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 import org.openiam.idm.srvc.mngsys.service.ApproverAssociationDAO;
-import org.openiam.idm.srvc.prov.request.domain.ProvisionRequestEntity;
-import org.openiam.idm.srvc.prov.request.service.RequestDataService;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.service.ResourceDAO;
 import org.openiam.idm.srvc.user.domain.SupervisorEntity;

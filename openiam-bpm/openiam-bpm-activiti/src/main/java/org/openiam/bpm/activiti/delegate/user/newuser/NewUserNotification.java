@@ -10,8 +10,6 @@ import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.msg.dto.NotificationParam;
 import org.openiam.idm.srvc.msg.dto.NotificationRequest;
 import org.openiam.idm.srvc.msg.service.MailService;
-import org.openiam.idm.srvc.prov.request.domain.ProvisionRequestEntity;
-import org.openiam.idm.srvc.prov.request.service.RequestDataService;
 import org.openiam.idm.srvc.pswd.service.PasswordService;
 import org.openiam.util.SpringContextProvider;
 import org.springframework.beans.factory.annotation.Autowired;

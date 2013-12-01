@@ -17,7 +17,6 @@ import org.openiam.bpm.response.TaskHistoryWrapper;
 import org.openiam.bpm.response.TaskListWrapper;
 import org.openiam.bpm.response.TaskWrapper;
 import org.openiam.idm.srvc.meta.dto.SaveTemplateProfileResponse;
-import org.openiam.idm.srvc.prov.request.dto.ProvisionRequest;
 import org.openiam.idm.srvc.user.dto.NewUserProfileRequestModel;
 import org.openiam.idm.srvc.user.dto.UserProfileRequestModel;
 import org.openiam.provision.dto.ProvisionUser;

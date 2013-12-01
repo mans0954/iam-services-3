@@ -6,8 +6,6 @@ import org.activiti.engine.delegate.DelegateExecution;
 import org.activiti.engine.delegate.JavaDelegate;
 import org.openiam.bpm.activiti.delegate.user.displaymapper.AbstractUserDisplayMapper;
 import org.openiam.bpm.util.ActivitiConstants;
-import org.openiam.idm.srvc.prov.request.domain.ProvisionRequestEntity;
-import org.openiam.idm.srvc.prov.request.service.RequestDataService;
 import org.openiam.idm.srvc.user.dto.UserProfileRequestModel;
 import org.openiam.util.SpringContextProvider;
 import org.springframework.beans.factory.annotation.Autowired;
