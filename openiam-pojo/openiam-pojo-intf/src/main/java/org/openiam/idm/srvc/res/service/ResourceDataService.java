@@ -129,7 +129,8 @@ public interface ResourceDataService {
 	 */
 	@WebMethod
 	int getNumOfResourcesForRole(
-			@WebParam(name = "roleId", targetNamespace = "") String roleId);
+			@WebParam(name = "roleId", targetNamespace = "") String roleId, 
+			@WebParam(name = "searchBean", targetNamespace = "") ResourceSearchBean searchBean);
 
 	/**
 	 * Gets a List of Resources that a Role is entitled to
@@ -142,7 +143,8 @@ public interface ResourceDataService {
 	List<Resource> getResourcesForRole(
 			@WebParam(name = "roleId", targetNamespace = "") String roleId,
 			@WebParam(name = "from", targetNamespace = "") int from,
-			@WebParam(name = "size", targetNamespace = "") int size);
+			@WebParam(name = "size", targetNamespace = "") int size,
+			@WebParam(name = "searchBean", targetNamespace = "") ResourceSearchBean searchBean);
 
 	/**
 	 * Search a Resource
@@ -285,7 +287,8 @@ public interface ResourceDataService {
 	 */
 	@WebMethod
 	int getNumOfResourceForGroup(
-			@WebParam(name = "groupId", targetNamespace = "") String groupId);
+			@WebParam(name = "groupId", targetNamespace = "") String groupId, 
+			@WebParam(name = "searchBean", targetNamespace = "") ResourceSearchBean searchBean);
 
 	/**
 	 * Gets Resources that a Group is entitled to
@@ -298,7 +301,8 @@ public interface ResourceDataService {
 	List<Resource> getResourcesForGroup(
 			@WebParam(name = "groupId", targetNamespace = "") String groupId,
 			@WebParam(name = "from", targetNamespace = "") int from,
-			@WebParam(name = "size", targetNamespace = "") int size);
+			@WebParam(name = "size", targetNamespace = "") int size,
+			@WebParam(name = "searchBean", targetNamespace = "") ResourceSearchBean searchBean);
 
 	/**
 	 * Gets the number of Resources that a User is Entitled to
@@ -307,7 +311,8 @@ public interface ResourceDataService {
 	 */
 	@WebMethod
 	int getNumOfResourceForUser(
-			@WebParam(name = "userId", targetNamespace = "") String userId);
+			@WebParam(name = "userId", targetNamespace = "") String userId, 
+			@WebParam(name = "searchBean", targetNamespace = "") ResourceSearchBean searchBean);
 
 	/**
 	 * Gets Resources that a User is entitled to
@@ -320,7 +325,8 @@ public interface ResourceDataService {
 	List<Resource> getResourcesForUser(
 			@WebParam(name = "userId", targetNamespace = "") String userId,
 			@WebParam(name = "from", targetNamespace = "") int from,
-			@WebParam(name = "size", targetNamespace = "") int size);
+			@WebParam(name = "size", targetNamespace = "") int size,
+			@WebParam(name = "searchBean", targetNamespace = "") ResourceSearchBean searchBean);
 
     /**
      * Gets Resources that a User is entitled to by Resource type
@@ -330,7 +336,8 @@ public interface ResourceDataService {
      */
     @WebMethod
     public List<Resource> getResourcesForUserByType(@WebParam(name = "userId", targetNamespace = "") final String userId,
-                                                    @WebParam(name = "resourceTypeId", targetNamespace = "") final String resourceTypeId);
+                                                    @WebParam(name = "resourceTypeId", targetNamespace = "") final String resourceTypeId,
+                                                    @WebParam(name = "searchBean", targetNamespace = "") ResourceSearchBean searchBean);
 	/**
 	 * Tells the caller if the user can be entitled to this resource
 	 * @param userId - the User ID

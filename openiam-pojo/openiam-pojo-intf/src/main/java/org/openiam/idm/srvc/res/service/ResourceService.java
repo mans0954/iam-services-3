@@ -24,12 +24,12 @@ public interface ResourceService {
 	public int getNumOfChildResources(final String resourceId);
 	public List<ResourceEntity> getParentResources(final  String resourceId, final int from, final int size);
 	public int getNumOfParentResources(final String resourceId);
-	public List<ResourceEntity> getResourcesForRole(final String roleId, final int from, final int size);
-	public int getNumOfResourceForGroup(final String groupId);
-	public List<ResourceEntity> getResourcesForGroup(final String groupId, final int from, final int size);
-	public int getNumOfResourceForUser(final String userId);
-	public List<ResourceEntity> getResourcesForUser(final String userId, final int from, final int size);
-    public List<ResourceEntity> getResourcesForUserByType(String userId, String resourceTypeId);
+	public List<ResourceEntity> getResourcesForRole(final String roleId, final int from, final int size, final ResourceSearchBean searchBean);
+	public int getNumOfResourceForGroup(final String groupId, final ResourceSearchBean searchBean);
+	public List<ResourceEntity> getResourcesForGroup(final String groupId, final int from, final int size, final ResourceSearchBean searchBean);
+	public int getNumOfResourceForUser(final String userId, final ResourceSearchBean searchBean);
+	public List<ResourceEntity> getResourcesForUser(final String userId, final int from, final int size, final ResourceSearchBean searchBean);
+    public List<ResourceEntity> getResourcesForUserByType(String userId, String resourceTypeId, final ResourceSearchBean searchBean);
 
 	public void save(final ResourceTypeEntity entity);
 	public ResourceTypeEntity findResourceTypeById(final String id);
@@ -48,7 +48,7 @@ public interface ResourceService {
 	public void deleteResourceGroup(final String resourceId, final String groupId);
 
 	public void deleteResourceRole(final String resourceId, final String roleId);
-	public int getNumOfResourcesForRole(final String roleId);
+	public int getNumOfResourcesForRole(final String roleId, final ResourceSearchBean searchBean);
     public void addResourceToRole(final String resourceId, final String roleId);
     
     public void validateResource2ResourceAddition(final String parentId, final String memberId) throws BasicDataServiceException;

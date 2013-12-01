@@ -403,43 +403,43 @@ public class ResourceServiceImpl implements ResourceService {
 
 	@Override
     @Transactional(readOnly = true)
-	public int getNumOfResourcesForRole(String roleId) {
-		return resourceDao.getNumOfResourcesForRole(roleId);
+	public int getNumOfResourcesForRole(String roleId, final ResourceSearchBean searchBean) {
+		return resourceDao.getNumOfResourcesForRole(roleId, searchBean);
 	}
 
 	@Override
     @Transactional(readOnly = true)
-	public List<ResourceEntity> getResourcesForRole(String roleId, int from, int size) {
-		return resourceDao.getResourcesForRole(roleId, from, size);
+	public List<ResourceEntity> getResourcesForRole(String roleId, int from, int size, final ResourceSearchBean searchBean) {
+		return resourceDao.getResourcesForRole(roleId, from, size, searchBean);
 	}
 
 	@Override
     @Transactional(readOnly = true)
-	public int getNumOfResourceForGroup(String groupId) {
-		return resourceDao.getNumOfResourcesForGroup(groupId);
+	public int getNumOfResourceForGroup(String groupId, final ResourceSearchBean searchBean) {
+		return resourceDao.getNumOfResourcesForGroup(groupId, searchBean);
 	}
 
 	@Override
     @Transactional(readOnly = true)
-	public List<ResourceEntity> getResourcesForGroup(String groupId, int from, int size) {
-		return resourceDao.getResourcesForGroup(groupId, from, size);
+	public List<ResourceEntity> getResourcesForGroup(String groupId, int from, int size, final ResourceSearchBean searchBean) {
+		return resourceDao.getResourcesForGroup(groupId, from, size, searchBean);
 	}
 
 	@Override
     @Transactional(readOnly = true)
-	public int getNumOfResourceForUser(String userId) {
-		return resourceDao.getNumOfResourcesForUser(userId);
+	public int getNumOfResourceForUser(String userId, final ResourceSearchBean searchBean) {
+		return resourceDao.getNumOfResourcesForUser(userId, searchBean);
 	}
 
 	@Override
     @Transactional(readOnly = true)
-	public List<ResourceEntity> getResourcesForUser(String userId, int from, int size) {
-		return resourceDao.getResourcesForUser(userId, from, size);
+	public List<ResourceEntity> getResourcesForUser(String userId, int from, int size, final ResourceSearchBean searchBean) {
+		return resourceDao.getResourcesForUser(userId, from, size, searchBean);
 	}
     @Override
     @Transactional(readOnly = true)
-    public List<ResourceEntity> getResourcesForUserByType(String userId, String resourceTypeId) {
-        return resourceDao.getResourcesForUserByType(userId, resourceTypeId);
+    public List<ResourceEntity> getResourcesForUserByType(String userId, String resourceTypeId, final ResourceSearchBean searchBean) {
+        return resourceDao.getResourcesForUserByType(userId, resourceTypeId, searchBean);
     }
 
 

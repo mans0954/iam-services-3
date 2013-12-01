@@ -629,12 +629,12 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
 	}
 
 	@Override
-	public int getNumOfResourcesForRole(final String roleId) {
+	public int getNumOfResourcesForRole(final String roleId, final ResourceSearchBean searchBean) {
         int count =0;
         AuditLogBuilder auditBuilder = auditLogProvider.getAuditLogBuilder();
         auditBuilder.setAction(AuditAction.GET_RESOURCE_NUM_FOR_ROLE).setTargetRole(roleId);
         try{
-            count = resourceService.getNumOfResourcesForRole(roleId);
+            count = resourceService.getNumOfResourcesForRole(roleId, searchBean);
             auditBuilder.succeed();
         } catch(Throwable e) {
             auditBuilder.fail().setException(e);
@@ -645,12 +645,12 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
 	}
 
 	@Override
-	public List<Resource> getResourcesForRole(final String roleId, final int from, final int size) {
+	public List<Resource> getResourcesForRole(final String roleId, final int from, final int size, final ResourceSearchBean searchBean) {
         List<Resource> resourceList = null;
         AuditLogBuilder auditBuilder = auditLogProvider.getAuditLogBuilder();
         auditBuilder.setAction(AuditAction.GET_RESOURCE_FOR_ROLE).setTargetRole(roleId);
         try{
-            final List<ResourceEntity> entityList = resourceService.getResourcesForRole(roleId, from, size);
+            final List<ResourceEntity> entityList = resourceService.getResourcesForRole(roleId, from, size, searchBean);
 		    resourceList = resourceConverter.convertToDTOList(entityList, false);
         } catch(Throwable e) {
             auditBuilder.fail().setException(e);
@@ -662,12 +662,12 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
 
 
 	@Override
-	public int getNumOfResourceForGroup(final String groupId) {
+	public int getNumOfResourceForGroup(final String groupId, final ResourceSearchBean searchBean) {
         int count =0;
         AuditLogBuilder auditBuilder = auditLogProvider.getAuditLogBuilder();
         auditBuilder.setAction(AuditAction.GET_RESOURCE_NUM_FOR_GROUP).setTargetGroup(groupId);
         try{
-            count = resourceService.getNumOfResourceForGroup(groupId);
+            count = resourceService.getNumOfResourceForGroup(groupId, searchBean);
             auditBuilder.succeed();
         } catch(Throwable e) {
             auditBuilder.fail().setException(e);
@@ -678,12 +678,12 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
 	}
 
 	@Override
-	public List<Resource> getResourcesForGroup(final String groupId, final int from, final int size) {
+	public List<Resource> getResourcesForGroup(final String groupId, final int from, final int size, final ResourceSearchBean searchBean) {
         List<Resource> resourceList = null;
         AuditLogBuilder auditBuilder = auditLogProvider.getAuditLogBuilder();
         auditBuilder.setAction(AuditAction.GET_RESOURCE_FOR_GROUP).setTargetGroup(groupId);
         try{
-            final List<ResourceEntity> entityList = resourceService.getResourcesForGroup(groupId, from, size);
+            final List<ResourceEntity> entityList = resourceService.getResourcesForGroup(groupId, from, size, searchBean);
             resourceList = resourceConverter.convertToDTOList(entityList, false);
         } catch(Throwable e) {
             auditBuilder.fail().setException(e);
@@ -694,12 +694,12 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
 	}
 
 	@Override
-	public int getNumOfResourceForUser(final String userId) {
+	public int getNumOfResourceForUser(final String userId, final ResourceSearchBean searchBean) {
         int count =0;
         AuditLogBuilder auditBuilder = auditLogProvider.getAuditLogBuilder();
         auditBuilder.setAction(AuditAction.GET_RESOURCE_NUM_FOR_USER).setTargetUser(userId);
         try{
-            count = resourceService.getNumOfResourceForUser(userId);
+            count = resourceService.getNumOfResourceForUser(userId, searchBean);
             auditBuilder.succeed();
         } catch(Throwable e) {
             auditBuilder.fail().setException(e);
@@ -710,12 +710,12 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
 	}
 
 	@Override
-	public List<Resource> getResourcesForUser(final String userId, final int from, final int size) {
+	public List<Resource> getResourcesForUser(final String userId, final int from, final int size, final ResourceSearchBean searchBean) {
         List<Resource> resourceList = null;
         AuditLogBuilder auditBuilder = auditLogProvider.getAuditLogBuilder();
         auditBuilder.setAction(AuditAction.GET_RESOURCE_FOR_USER).setTargetUser(userId);
         try{
-            final List<ResourceEntity> entityList = resourceService.getResourcesForUser(userId, from, size);
+            final List<ResourceEntity> entityList = resourceService.getResourcesForUser(userId, from, size, searchBean);
             resourceList = resourceConverter.convertToDTOList(entityList, false);
         } catch(Throwable e) {
             auditBuilder.fail().setException(e);
@@ -726,12 +726,12 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
 	}
 
     @Override
-    public List<Resource> getResourcesForUserByType(final String userId, final String resourceTypeId) {
+    public List<Resource> getResourcesForUserByType(final String userId, final String resourceTypeId, final ResourceSearchBean searchBean) {
         List<Resource> resourceList = null;
         AuditLogBuilder auditBuilder = auditLogProvider.getAuditLogBuilder();
         auditBuilder.setAction(AuditAction.GET_RESOURCE_FOR_USER_BY_TYPE).setTargetUser(userId).addAttribute(AuditAttributeName.RESOURCE_TYPE, resourceTypeId);
         try{
-            final List<ResourceEntity> entityList = resourceService.getResourcesForUserByType(userId, resourceTypeId);
+            final List<ResourceEntity> entityList = resourceService.getResourcesForUserByType(userId, resourceTypeId, searchBean);
             resourceList = resourceConverter.convertToDTOList(entityList, true);
         } catch(Throwable e) {
             auditBuilder.fail().setException(e);
