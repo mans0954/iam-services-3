@@ -100,7 +100,7 @@ public interface UserDataWebService {
 
     /**
      * Get a UserAttribute by the id
-     * @param id - the id of this UserAttribute
+     * @param attrId - the id of this UserAttribute
      * @return a UserAttribute object, or null if not found
      */
     @WebMethod
@@ -108,7 +108,7 @@ public interface UserDataWebService {
 
     /**
      * Removes a UserAttribute with the specified ID
-     * @param id - the id of this UserAttribute
+     * @param attrId the id of this UserAttribute
      * @return a Response Object, containing the result of this operation
      */
     @WebMethod
@@ -221,7 +221,7 @@ public interface UserDataWebService {
 
     /**
      * Get a Phone record by it's ID
-     * @param addressId - the ID of the phone
+     * @param phoneId - the ID of the phone
      * @return the Phone record, or null if not found
      */
     @WebMethod
@@ -513,13 +513,16 @@ public interface UserDataWebService {
 
     /**
      * Saves a User Object, with an optional Supervisor
-     * @param user - the User Object
-     * @param supervisor - the opetional Supervisor
+     *
+     * @param user
+     *            - the User Object
+     * @param supervisorId
+     *            - the opetional Supervisor
      * @return - a UserResponse Object, containing the User object saved
      */
     @WebMethod
     public UserResponse saveUserInfo(@WebParam(name = "user", targetNamespace = "") final User user,
-                                     @WebParam(name = "supervisor", targetNamespace = "") final Supervisor supervisor);
+                                     @WebParam(name = "supervisorId", targetNamespace = "") final String supervisorId);
 
     /**
      * Deletes a User from the databse

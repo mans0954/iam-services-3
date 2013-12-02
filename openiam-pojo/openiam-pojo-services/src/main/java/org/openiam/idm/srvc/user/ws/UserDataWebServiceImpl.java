@@ -929,7 +929,7 @@ public class UserDataWebServiceImpl implements UserDataWebService{
     }
 
     @Override
-    public UserResponse saveUserInfo(final User user, final Supervisor supervisor) {
+    public UserResponse saveUserInfo(final User user, final String supervisorId) {
         final UserResponse response = new UserResponse(ResponseStatus.SUCCESS);
         try {
             if (user == null) {
@@ -937,12 +937,17 @@ public class UserDataWebServiceImpl implements UserDataWebService{
             }
             if (user.getUserId() == null) {
 
-//                final MetadataTypeSearchBean typeSearchBean = new MetadataTypeSearchBean();
-//                typeSearchBean.setGrouping("EMAIL");
-//                typeSearchBean.setActive(true);
+                // final MetadataTypeSearchBean typeSearchBean = new
+                // MetadataTypeSearchBean();
+                // typeSearchBean.setGrouping("EMAIL");
+                // typeSearchBean.setActive(true);
 
-//                final List<MetadataTypeEntity> entityList = metadataService.findBeans(typeSearchBean, 0, Integer.MAX_VALUE);
-//                List<MetadataType> typeList = (entityList != null) ? metaDataTypeDozerConverter.convertToDTOList(entityList, false) : null;
+                // final List<MetadataTypeEntity> entityList =
+                // metadataService.findBeans(typeSearchBean, 0,
+                // Integer.MAX_VALUE);
+                // List<MetadataType> typeList = (entityList != null) ?
+                // metaDataTypeDozerConverter.convertToDTOList(entityList,
+                // false) : null;
 
                 // create new user, need to merge user objects
                 List<Login> principalList = new ArrayList<Login>();
@@ -952,24 +957,25 @@ public class UserDataWebServiceImpl implements UserDataWebService{
                 principalList.add(principal);
                 user.setPrincipalList(principalList);
 
-
-//                if(CollectionUtils.isNotEmpty(typeList)){
-//                    Set<EmailAddress> emailAddressList = new HashSet<EmailAddress>();
-//
-//                    EmailAddress ea = new EmailAddress();
-//                    ea.setEmailAddress(user.getEmail());
-//                    ea.setIsDefault(true);
-//                    ea.setMetadataTypeId(typeList.get(0).getMetadataTypeId());
-//                    emailAddressList.add(ea);
-//                    user.setEmailAddresses(emailAddressList);
-//                }
+                // if(CollectionUtils.isNotEmpty(typeList)){
+                // Set<EmailAddress> emailAddressList = new
+                // HashSet<EmailAddress>();
+                //
+                // EmailAddress ea = new EmailAddress();
+                // ea.setEmailAddress(user.getEmail());
+                // ea.setIsDefault(true);
+                // ea.setMetadataTypeId(typeList.get(0).getMetadataTypeId());
+                // emailAddressList.add(ea);
+                // user.setEmailAddresses(emailAddressList);
+                // }
             }
 
             final UserEntity userEntity = userDozerConverter.convertToEntity(user, true);
             SupervisorEntity supervisorEntity = null;
-            if (supervisor != null)
-                supervisorEntity = supervisorDozerConverter.convertToEntity(supervisor, true);
-            String userId = userManager.saveUserInfo(userEntity, supervisorEntity);
+            // if (supervisorId != null)
+            // supervisorEntity =
+            // supervisorDozerConverter.convertToEntity(supervisor, true);
+            String userId = userManager.saveUserInfo(userEntity, supervisorId);
             user.setUserId(userId);
 
             if (user.getNotifyUserViaEmail()) {
