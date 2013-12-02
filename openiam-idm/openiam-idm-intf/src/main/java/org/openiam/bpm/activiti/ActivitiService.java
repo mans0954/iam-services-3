@@ -49,7 +49,7 @@ public interface ActivitiService {
 	public TaskWrapper getTask(final String taskId);
 	
 	@WebMethod
-	public TaskWrapper getTaskFromHistory(final String taskId);
+	public TaskWrapper getTaskFromHistory(final String executionId, final String taskId);
 	
 	@WebMethod
 	public List<TaskWrapper> getHistory(final HistorySearchBean searchBean, final int from, final int size);
