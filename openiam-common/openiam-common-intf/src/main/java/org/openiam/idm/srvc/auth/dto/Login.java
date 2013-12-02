@@ -88,6 +88,9 @@ public class Login implements java.io.Serializable {
 
     protected LoginStatusEnum status;
 
+    @XmlTransient
+    protected LoginStatusEnum initialStatus;
+
     @XmlSchemaType(name = "dateTime")
     private Date gracePeriod;
 
@@ -402,9 +405,14 @@ public class Login implements java.io.Serializable {
 		return login;
 	}
 
-	public void setLogin(String login) {
-		this.login = login;
-	}
+    public void setLogin(String login) {
+        this.login = login;
+        if(login != null) {
+            this.lowerCaseLogin = login.toLowerCase();
+        } else {
+            this.lowerCaseLogin = null;
+        }
+    }
 
 	public String getManagedSysId() {
 		return managedSysId;
@@ -440,7 +448,15 @@ public class Login implements java.io.Serializable {
         }
     }
 
-	@Override
+    public LoginStatusEnum getInitialStatus() {
+        return initialStatus;
+    }
+
+    public void setInitialStatus(LoginStatusEnum initialStatus) {
+        this.initialStatus = initialStatus;
+    }
+
+    @Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
