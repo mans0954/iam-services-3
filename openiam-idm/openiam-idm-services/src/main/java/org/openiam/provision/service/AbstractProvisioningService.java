@@ -930,6 +930,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     if (CollectionUtils.isNotEmpty(entities)) {
                         for (LoginEntity en : entities) {
                             if (en.getLoginId().equals(e.getLoginId())) {
+                                e.setOrigPrincipalName(en.getLogin());
                                 userEntity.getPrincipalList().remove(en);
                                 loginManager.evict(en);
                                 LoginEntity entity = loginDozerConverter.convertToEntity(e, false);

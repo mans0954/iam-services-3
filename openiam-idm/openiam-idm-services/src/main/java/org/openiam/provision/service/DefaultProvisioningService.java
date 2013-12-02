@@ -1225,6 +1225,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 if (l.getLoginId()!=null && l.getLoginId().equals(targetSysLogin.getLoginId())) {
                     targetSysLogin.setOperation(l.getOperation());
                     targetSysLogin.setOrigPrincipalName(l.getOrigPrincipalName());
+                    targetSysLogin.setInitialStatus(l.getStatus());
                 }
             }
 

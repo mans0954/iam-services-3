@@ -43,6 +43,7 @@ import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.idm.srvc.res.service.ResourceService;
+import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.resp.ProvisionUserResponse;
 import org.openiam.provision.type.ExtensibleAttribute;
@@ -144,6 +145,9 @@ public class ProvisionDispatcher implements Sweepable {
             if (data.getOperation() == AttributeOperationEnum.DELETE) {
 
                 try {
+                    // udate target sys identity
+                    loginEntity.setStatus(LoginStatusEnum.INACTIVE);
+                    // do de-provisioning
                     if (StatusCodeType.SUCCESS.equals(deprovision(data).getStatus())) {
                         loginEntity.setStatus(LoginStatusEnum.INACTIVE);
                         loginEntity.setAuthFailCount(0);
@@ -167,9 +171,18 @@ public class ProvisionDispatcher implements Sweepable {
                 }
             } else if (data.getOperation() == AttributeOperationEnum.ADD) {
                 try {
-                    if (provision(data).isSuccess()) {
-                        loginEntity.setStatus(LoginStatusEnum.ACTIVE);
+                    // update target identity status
+                    if(data.getProvUser().getSecondaryStatus() == UserStatusEnum.DISABLED
+                            || data.getProvUser().getSecondaryStatus() == UserStatusEnum.DELETED
+                            || data.getIdentity().getInitialStatus() == LoginStatusEnum.INACTIVE) {
+                        loginEntity.setStatus(LoginStatusEnum.INACTIVE);
                     } else {
+                        loginEntity.setStatus(data.getIdentity().getStatus() != null && data.getIdentity().getStatus() != LoginStatusEnum.PENDING_CREATE ? data.getIdentity().getStatus() : LoginStatusEnum.ACTIVE);
+                    }
+
+                    data.getIdentity().setStatus(loginEntity.getStatus());
+                    // do provisioning to target system
+                    if (!provision(data).isSuccess()) {
                         loginEntity.setStatus(LoginStatusEnum.FAIL_CREATE);
                     }
                 }  catch (Throwable th) {
@@ -177,9 +190,17 @@ public class ProvisionDispatcher implements Sweepable {
                 }
             } else if (data.getOperation() == AttributeOperationEnum.REPLACE) {
                 try {
-                    if (provision(data).isSuccess()) {
-                        loginEntity.setStatus(LoginStatusEnum.ACTIVE);
+                    // update target identity status
+                    if(data.getProvUser().getSecondaryStatus() == UserStatusEnum.DISABLED
+                            || data.getProvUser().getSecondaryStatus() == UserStatusEnum.DELETED
+                            || data.getIdentity().getInitialStatus() == LoginStatusEnum.INACTIVE) {
+                        loginEntity.setStatus(LoginStatusEnum.INACTIVE);
                     } else {
+                        loginEntity.setStatus(data.getIdentity().getStatus() != null && data.getIdentity().getStatus() != LoginStatusEnum.PENDING_UPDATE  ? data.getIdentity().getStatus() : LoginStatusEnum.ACTIVE);
+                    }
+                    data.getIdentity().setStatus(loginEntity.getStatus());
+                    // do provisioning to target system
+                    if (!provision(data).isSuccess()) {
                         loginEntity.setStatus(LoginStatusEnum.FAIL_UPDATE);
                     }
                 } catch (Throwable th) {
