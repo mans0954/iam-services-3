@@ -78,6 +78,20 @@
 			</component>
 		</service>
 	</model>
+	
+	<model name="scimConnectorServiceModel">
+		<service name="scimConnectorService">
+			<inbound>
+				<inbound-endpoint address="${webservice.path}ScimConnector"
+					exchange-pattern="request-response">
+					<cxf:jaxws-service />
+				</inbound-endpoint>
+			</inbound>
+			<component>
+				<spring-object bean="genericScimConnector" />
+			</component>
+		</service>
+	</model>
 
 	<model name="salesForceConnectorServiceModel">
 		<service name="salesForceConnectorService">

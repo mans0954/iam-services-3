@@ -41,6 +41,10 @@ public class ConnectorCommandFactory {
     @Autowired
     @Qualifier("oracleCommandFactory")
     private AbstractCommandFactory oracleCommandFactory;
+    
+    @Autowired
+    @Qualifier("scimCommandFactory")
+    private AbstractCommandFactory scimCommandFactory;
 
     @Autowired
     @Qualifier("salesForceCommandFactory")
@@ -78,6 +82,8 @@ public class ConnectorCommandFactory {
                 return scriptCommandFactory.getConnectorCommand(commandType, extensibleObjectType);
             case SHELL:
                 return shellCommandFactory.getConnectorCommand(commandType, extensibleObjectType);
+            case SCIM:
+                return scimCommandFactory.getConnectorCommand(commandType, extensibleObjectType);
             default:
                 throw new ConnectorDataException(ErrorCode.OPERATION_NOT_SUPPORTED_EXCEPTION, error);
         }
