@@ -1,5 +1,9 @@
 package org.openiam.connector.scim.command.base;
 
+import java.net.HttpURLConnection;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openiam.connector.common.data.ConnectorConfiguration;
 import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.connector.type.constant.ErrorCode;
@@ -7,8 +11,6 @@ import org.openiam.connector.type.constant.StatusCodeType;
 import org.openiam.connector.type.request.CrudRequest;
 import org.openiam.connector.type.response.ObjectResponse;
 import org.openiam.provision.type.ExtensibleObject;
-
-import java.sql.Connection;
 
 /**
  * Created with IntelliJ IDEA.
@@ -18,6 +20,9 @@ import java.sql.Connection;
  * To change this template use File | Settings | File Templates.
  */
 public abstract class AbstractDeleteScimCommand<ExtObject extends ExtensibleObject> extends AbstractScimCommand<CrudRequest<ExtObject>, ObjectResponse> {
+	private static final Log log = LogFactory
+	.getLog(AbstractDeleteScimCommand.class);
+	
     @Override
     public ObjectResponse execute(CrudRequest<ExtObject> deleteRequestType) throws ConnectorDataException {
         final ObjectResponse response = new ObjectResponse();
@@ -25,7 +30,7 @@ public abstract class AbstractDeleteScimCommand<ExtObject extends ExtensibleObje
 
         final String dataId = deleteRequestType.getObjectIdentity();
         ConnectorConfiguration config =  getConfiguration(deleteRequestType.getTargetID(), ConnectorConfiguration.class);
-        Connection con = getConnection(config.getManagedSys());
+        HttpURLConnection con = getConnection(config.getManagedSys(), "/v1/Users/" + dataId);
         try {
             deleteObject(dataId, con);
             return response;
@@ -33,9 +38,9 @@ public abstract class AbstractDeleteScimCommand<ExtObject extends ExtensibleObje
             log.error(e.getMessage(),e);
             throw  new ConnectorDataException(ErrorCode.OTHER_ERROR, e.getMessage());
         } finally {
-           this.closeConnection(con);
+           con.disconnect();
         }
     }
 
-    protected abstract void deleteObject(String dataId,  Connection con)throws ConnectorDataException;
+    protected abstract void deleteObject(String dataId,  HttpURLConnection con)throws ConnectorDataException;
 }

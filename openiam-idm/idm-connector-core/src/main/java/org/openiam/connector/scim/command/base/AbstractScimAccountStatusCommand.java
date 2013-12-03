@@ -45,22 +45,23 @@ public abstract class AbstractScimAccountStatusCommand extends AbstractScimComma
         final String principalName = request.getObjectIdentity();
         ConnectorConfiguration config =  getConfiguration(request.getTargetID(), ConnectorConfiguration.class);
         String resourceId = config.getResourceId();
-
-        Connection connection = this.getConnection(config.getManagedSys());
-
-        try {
-            final String sql = String.format(SQL, principalName, getNewAccountStatus());
-            connection.createStatement().execute(sql);
-            return response;
-        } catch (SQLException se) {
-            log.error(se.getMessage(), se);
-            throw new ConnectorDataException(ErrorCode.SQL_ERROR, se.getMessage());
-        }  catch(Throwable e) {
-            log.error(e.getMessage(),e);
-            throw new ConnectorDataException(ErrorCode.OTHER_ERROR, e.getMessage());
-        }finally {
-            this.closeConnection(connection);
-        }
+        //TODO to be implemented
+//        Connection connection = this.getConnection(config.getManagedSys());
+//
+//        try {
+//            final String sql = String.format(SQL, principalName, getNewAccountStatus());
+//            connection.createStatement().execute(sql);
+//           
+//        } catch (SQLException se) {
+//            log.error(se.getMessage(), se);
+//            throw new ConnectorDataException(ErrorCode.SQL_ERROR, se.getMessage());
+//        }  catch(Throwable e) {
+//            log.error(e.getMessage(),e);
+//            throw new ConnectorDataException(ErrorCode.OTHER_ERROR, e.getMessage());
+//        }finally {
+//            this.closeConnection(connection);
+//        }
+        return response;
     }
 
 
