@@ -1,6 +1,9 @@
 package org.openiam.connector.scim.command.base;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openiam.connector.common.data.ConnectorConfiguration;
+import org.openiam.connector.scim.command.user.DeleteUserScimCommand;
 import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.connector.type.constant.ErrorCode;
 import org.openiam.connector.type.constant.StatusCodeType;
@@ -9,50 +12,59 @@ import org.openiam.connector.type.response.ObjectResponse;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.provision.type.ExtensibleObject;
 
+import java.net.HttpURLConnection;
 import java.sql.Connection;
 import java.util.List;
 
 /**
- * Created with IntelliJ IDEA.
- * User: alexander
- * Date: 7/11/13
- * Time: 10:37 PM
- * To change this template use File | Settings | File Templates.
+ * Created with IntelliJ IDEA. User: alexander Date: 7/11/13 Time: 10:37 PM To
+ * change this template use File | Settings | File Templates.
  */
-public abstract class AbstractModifyScimCommand<ExtObject extends ExtensibleObject> extends AbstractScimCommand<CrudRequest<ExtObject>, ObjectResponse> {
-    @Override
-    public ObjectResponse execute(CrudRequest<ExtObject> crudRequest) throws ConnectorDataException {
-        final ObjectResponse response = new ObjectResponse();
-        response.setStatus(StatusCodeType.SUCCESS);
+public abstract class AbstractModifyScimCommand<ExtObject extends ExtensibleObject>
+		extends AbstractScimCommand<CrudRequest<ExtObject>, ObjectResponse> {
+	private static final Log log = LogFactory
+			.getLog(AbstractModifyScimCommand.class);
 
-        ConnectorConfiguration config =  getConfiguration(crudRequest.getTargetID(), ConnectorConfiguration.class);
-        String resourceId = config.getResourceId();
+	@Override
+	public ObjectResponse execute(CrudRequest<ExtObject> crudRequest)
+			throws ConnectorDataException {
+		final ObjectResponse response = new ObjectResponse();
+		response.setStatus(StatusCodeType.SUCCESS);
 
-        if(crudRequest.getObjectIdentity() == null)
-            throw new ConnectorDataException(ErrorCode.INVALID_CONFIGURATION, "No identity sent");
+		ConnectorConfiguration config = getConfiguration(
+				crudRequest.getTargetID(), ConnectorConfiguration.class);
+		String resourceId = config.getResourceId();
 
-//        final ExtObject extObject = crudRequest.getExtensibleObject();
-//
-//        if(log.isDebugEnabled()) {
-//            log.debug(String.format("ExtensibleObject in Modify Request=%s", extObject));
-//        }
+		if (crudRequest.getObjectIdentity() == null)
+			throw new ConnectorDataException(ErrorCode.INVALID_CONFIGURATION,
+					"No identity sent");
 
-        final List<AttributeMapEntity> attributeMap = attributeMaps(resourceId);
+		// final ExtObject extObject = crudRequest.getExtensibleObject();
+		//
+		// if(log.isDebugEnabled()) {
+		// log.debug(String.format("ExtensibleObject in Modify Request=%s",
+		// extObject));
+		// }
 
-        Connection con = this.getConnection(config.getManagedSys());
-        try {
-            modifyObject(crudRequest,attributeMap,  con);
-            return response;
-        } catch (ConnectorDataException e) {
-            log.error(e.getMessage(), e);
-            throw  e;
-        } catch(Throwable e) {
-            log.error(e.getMessage(), e);
-            throw new ConnectorDataException(ErrorCode.OTHER_ERROR, e.getMessage());
-        } finally {
-            this.closeConnection(con);
-        }
-    }
+		HttpURLConnection con = this.getConnection(config.getManagedSys(),
+				"Users/" + crudRequest.getObjectIdentity());
+		try {
+			modifyObject(crudRequest, con);
+			// TODO check how to handle attribute map
+			// modifyObject(crudRequest,attributeMap, con);
+			return response;
+		} catch (ConnectorDataException e) {
+			log.error(e.getMessage(), e);
+			throw e;
+		} catch (Throwable e) {
+			log.error(e.getMessage(), e);
+			throw new ConnectorDataException(ErrorCode.OTHER_ERROR,
+					e.getMessage());
+		} finally {
+			con.disconnect();
+		}
+	}
 
-    protected abstract void modifyObject(CrudRequest<ExtObject> crudRequest, List<AttributeMapEntity> attributeMap, Connection con) throws ConnectorDataException;
+	protected abstract void modifyObject(CrudRequest<ExtObject> crudRequest,
+			HttpURLConnection con) throws ConnectorDataException;
 }

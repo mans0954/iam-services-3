@@ -1,12 +1,13 @@
 package org.openiam.connector.scim.command.user;
 
-import org.openiam.connector.type.constant.ErrorCode;
-import org.openiam.connector.type.ConnectorDataException;
-import org.openiam.provision.type.ExtensibleUser;
-import org.openiam.connector.scim.command.base.AbstractSearchScimCommand;
-import org.springframework.stereotype.Service;
+import java.net.HttpURLConnection;
 
-import java.sql.*;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.openiam.connector.common.scim.S;
+import org.openiam.connector.scim.command.base.AbstractSearchScimCommand;
+import org.openiam.provision.type.ExtensibleUser;
+import org.springframework.stereotype.Service;
 
 /**
  * Created with IntelliJ IDEA.
@@ -17,19 +18,27 @@ import java.sql.*;
  */
 @Service("searchUserScimCommand")
 public class SearchUserScimCommand extends AbstractSearchScimCommand<ExtensibleUser> {
-    private static final String SELECT_USER = "SELECT * FROM DBA_USERS WHERE USERNAME=?";
+	private static final Log log = LogFactory
+	.getLog(SearchUserScimCommand.class);
 
     @Override
-    protected ResultSet searchObject(Connection con, String dataId) throws ConnectorDataException {
-        PreparedStatement statement = null;
+    protected String searchObject(HttpURLConnection connection, String dataId) throws Exception {
         try {
-            statement = con.prepareStatement(SELECT_USER);
-            statement.setString(1, dataId);
-
-            return statement.executeQuery();
-        } catch (SQLException e) {
-            log.error(e.getMessage(), e);
-            throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR,e.getMessage());
+    		connection.setDoOutput(true);
+    		connection.setRequestProperty("Accept", "application/xml");
+    		connection.setRequestProperty("X-HTTP-Method-Override", "GET");
+    		S token = new S();
+    	    token.setTimestamp(System.currentTimeMillis());
+    	    token.setPassword("foobar");
+    	    String encrypted =token.getPassword();
+    		//String encrypted = TestRSA.encrypt(token);
+    		connection
+    				.setRequestProperty(
+    						"Authorization",
+    						"Bearer " + encrypted);
+    		return makeCall(connection, "");
+            
+            
         } finally {
             //this.closeStatement(statement);
         }

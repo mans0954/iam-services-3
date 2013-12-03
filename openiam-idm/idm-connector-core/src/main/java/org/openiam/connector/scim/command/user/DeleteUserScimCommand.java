@@ -1,13 +1,15 @@
 package org.openiam.connector.scim.command.user;
 
-import org.openiam.connector.type.constant.ErrorCode;
-import org.openiam.connector.type.ConnectorDataException;
-import org.openiam.provision.type.ExtensibleUser;
-import org.openiam.connector.scim.command.base.AbstractDeleteScimCommand;
-import org.springframework.stereotype.Service;
+import java.net.HttpURLConnection;
 
-import java.sql.Connection;
-import java.sql.SQLException;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.openiam.connector.common.scim.S;
+import org.openiam.connector.scim.command.base.AbstractDeleteScimCommand;
+import org.openiam.connector.type.ConnectorDataException;
+import org.openiam.connector.type.constant.ErrorCode;
+import org.openiam.provision.type.ExtensibleUser;
+import org.springframework.stereotype.Service;
 
 /**
  * Created with IntelliJ IDEA.
@@ -18,16 +20,30 @@ import java.sql.SQLException;
  */
 @Service("deleteUserScimCommand")
 public class DeleteUserScimCommand extends AbstractDeleteScimCommand<ExtensibleUser> {
-    private static final String DROP_USER = "DROP USER \"%s\"";
+	private static final Log log = LogFactory
+	.getLog(DeleteUserScimCommand.class);
 
     @Override
-    protected void deleteObject(String dataId, Connection con) throws ConnectorDataException {
-        final String sql = String.format(DROP_USER, dataId);
+    protected void deleteObject(String dataId, HttpURLConnection connection) throws ConnectorDataException {
         try {
-            con.createStatement().execute(sql);
-        } catch (SQLException e) {
+    		connection.setDoOutput(true);
+    		connection.setRequestProperty("X-HTTP-Method-Override", "DELETE");
+    		S token = new S();
+    	    token.setTimestamp(System.currentTimeMillis());
+    	    //TODO check how to get this
+    	    token.setPassword("foobar");
+    	    String encrypted =token.getPassword();
+    		//String encrypted = TestRSA.encrypt(token);
+    		connection
+    				.setRequestProperty(
+    						"Authorization",
+    						"Bearer " + encrypted);
+    		makeCall(connection, "");
+        } catch (Exception e) {
             log.error(e.getMessage(),e);
             throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR, e.getMessage());
         }
     }
+
+
 }
