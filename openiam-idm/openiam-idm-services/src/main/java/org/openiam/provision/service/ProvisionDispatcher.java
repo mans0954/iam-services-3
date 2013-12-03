@@ -202,6 +202,10 @@ public class ProvisionDispatcher implements Sweepable {
                     // do provisioning to target system
                     if (!provision(data).isSuccess()) {
                         loginEntity.setStatus(LoginStatusEnum.FAIL_UPDATE);
+                        // if we have changed identity for managed sys when rename we have to revert it because failed
+                        if(StringUtils.isNotEmpty(data.getIdentity().getOrigPrincipalName())) {
+                            loginEntity.setLogin(data.getIdentity().getOrigPrincipalName());
+                        }
                     }
                 } catch (Throwable th) {
                     loginEntity.setStatus(LoginStatusEnum.FAIL_UPDATE);
