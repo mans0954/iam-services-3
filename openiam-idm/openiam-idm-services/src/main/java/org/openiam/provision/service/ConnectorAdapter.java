@@ -670,7 +670,7 @@ public class ConnectorAdapter {
         if (operation.equalsIgnoreCase("suspend")) {
 
             msg = client.send("vm://dispatchConnectorMessageSuspend",
-                    (PasswordRequest) reqType, msgPropMap);
+                    (SuspendResumeRequest) reqType, msgPropMap);
         }
         if (operation.equalsIgnoreCase("resume")) {
             msg = client.send("vm://dispatchConnectorMessageResume",
