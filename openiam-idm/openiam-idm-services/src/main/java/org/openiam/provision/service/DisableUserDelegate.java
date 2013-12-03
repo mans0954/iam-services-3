@@ -15,6 +15,7 @@ import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.connector.type.constant.ErrorCode;
 import org.openiam.connector.type.request.SuspendResumeRequest;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
+import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
@@ -182,15 +183,13 @@ public class DisableUserDelegate {
                         connectorAdapter.suspendRequest(mSys, suspendReq,
                                 muleContext);
 
+                        lg.setStatus(LoginStatusEnum.INACTIVE);
+                        loginManager.updateLogin(lg);
                     } else {
                         // resume - re-enable
                         log.debug("preparing resumeRequest object");
 
-                        // reset flags that go with this identiy
-                        lg.setAuthFailCount(0);
-                        lg.setIsLocked(0);
-                        lg.setPasswordChangeCount(0);
-                        loginManager.updateLogin(lg);
+
 
                         SuspendResumeRequest resumeReq = new SuspendResumeRequest();
                         resumeReq.setObjectIdentity(lg.getLogin());
@@ -211,6 +210,12 @@ public class DisableUserDelegate {
                         connectorAdapter.resumeRequest(mSys,
                                 resumeReq, MuleContextProvider.getCtx());
 
+                        // reset flags that go with this identiy
+                        lg.setAuthFailCount(0);
+                        lg.setIsLocked(0);
+                        lg.setPasswordChangeCount(0);
+                        lg.setStatus(LoginStatusEnum.ACTIVE);
+                        loginManager.updateLogin(lg);
                     }
 
                     String domainId = null;
