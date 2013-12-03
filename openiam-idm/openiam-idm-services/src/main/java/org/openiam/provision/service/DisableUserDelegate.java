@@ -161,6 +161,7 @@ public class DisableUserDelegate {
                     if (operation) {
                         // suspend
                         log.debug("preparing suspendRequest object");
+                        lg.setStatus(LoginStatusEnum.INACTIVE);
 
                         SuspendResumeRequest suspendReq = new SuspendResumeRequest();
                         suspendReq.setObjectIdentity(lg.getLogin());
@@ -189,7 +190,11 @@ public class DisableUserDelegate {
                         // resume - re-enable
                         log.debug("preparing resumeRequest object");
 
-
+                        // reset flags that go with this identiy
+                        lg.setAuthFailCount(0);
+                        lg.setIsLocked(0);
+                        lg.setPasswordChangeCount(0);
+                        lg.setStatus(LoginStatusEnum.ACTIVE);
 
                         SuspendResumeRequest resumeReq = new SuspendResumeRequest();
                         resumeReq.setObjectIdentity(lg.getLogin());
@@ -209,13 +214,6 @@ public class DisableUserDelegate {
 
                         connectorAdapter.resumeRequest(mSys,
                                 resumeReq, MuleContextProvider.getCtx());
-
-                        // reset flags that go with this identiy
-                        lg.setAuthFailCount(0);
-                        lg.setIsLocked(0);
-                        lg.setPasswordChangeCount(0);
-                        lg.setStatus(LoginStatusEnum.ACTIVE);
-                        loginManager.updateLogin(lg);
                     }
 
                     String domainId = null;
