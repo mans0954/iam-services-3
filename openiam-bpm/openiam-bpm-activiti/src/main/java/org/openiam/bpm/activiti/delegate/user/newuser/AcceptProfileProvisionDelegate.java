@@ -66,10 +66,11 @@ public class AcceptProfileProvisionDelegate extends AbstractNotificationDelegate
 		final Set<String> emails = new HashSet<String>();
         
 		userIds.addAll(activitiHelper.getOnAcceptUserIds(execution, newUserId, getSupervisorsForUser(newUser)));
-    
-		String identity = null;
-		sendEmails(execution, requestor, newUser, userIds, emails, identity, null);
+		userIds.remove(newUserId); /* don't send to target user just quite yet */
 		
+		sendEmails(execution, requestor, newUser, userIds, emails, null, null);
+		
+		String identity = null;
 		String password = null;
 
 		final LoginEntity login = loginDS.getPrimaryIdentity(newUserId);

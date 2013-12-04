@@ -28,7 +28,8 @@ import java.util.concurrent.atomic.AtomicInteger;
         "patternSet",
         "serverSet",
         "managedSysId",
-        "url"
+        "url",
+        "themeId"
 })
 @DozerDTOCorrespondence(ContentProviderEntity.class)
 public class ContentProvider implements Serializable {
@@ -46,6 +47,7 @@ public class ContentProvider implements Serializable {
 	private Set<URIPattern> patternSet;
 	private String url;
 	private Set<ContentProviderServer> serverSet;
+	private String themeId;
 	
 	/*
 	 * federation variables.  Internal use only
@@ -157,15 +159,20 @@ public class ContentProvider implements Serializable {
 	public void setUrl(String url) {
 		this.url = url;
 	}
+
+	public String getThemeId() {
+		return themeId;
+	}
+	public void setThemeId(String themeId) {
+		this.themeId = themeId;
+	}
 	
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result
-				+ ((authLevel == null) ? 0 : authLevel.hashCode());
-		result = prime * result
-				+ ((domainPattern == null) ? 0 : domainPattern.hashCode());
+		result = prime * result + ((authLevel == null) ? 0 : authLevel.hashCode());
+		result = prime * result + ((domainPattern == null) ? 0 : domainPattern.hashCode());
 		/*
         result = prime * result
                  + ((contextPath == null) ? 0 : contextPath.hashCode());
@@ -174,10 +181,9 @@ public class ContentProvider implements Serializable {
 		result = prime * result + (isPublic ? 1231 : 1237);
 		result = prime * result + ((isSSL == null) ? 0 : isSSL.hashCode());
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
-		result = prime * result
-				+ ((resourceId == null) ? 0 : resourceId.hashCode());
-		result = prime * result
-				+ ((url == null) ? 0 : url.hashCode());
+		result = prime * result + ((resourceId == null) ? 0 : resourceId.hashCode());
+		result = prime * result + ((url == null) ? 0 : url.hashCode());
+		result = prime * result + ((themeId == null) ? 0 : themeId.hashCode());
 		return result;
 	}
 	@Override
@@ -233,6 +239,12 @@ public class ContentProvider implements Serializable {
 			if (other.resourceId != null)
 				return false;
 		} else if (!resourceId.equals(other.resourceId))
+			return false;
+		
+		if (themeId == null) {
+			if (other.themeId != null)
+				return false;
+		} else if (!themeId.equals(other.themeId))
 			return false;
 		return true;
 	}

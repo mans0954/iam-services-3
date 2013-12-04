@@ -7,7 +7,9 @@ import org.hibernate.annotations.Type;
 import org.openiam.am.srvc.dto.URIPattern;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.meta.domain.MetadataElementPageTemplateEntity;
+import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
+import org.openiam.idm.srvc.ui.theme.domain.UIThemeEntity;
 
 import javax.persistence.*;
 
@@ -40,6 +42,10 @@ public class URIPatternEntity implements Serializable {
 	@Column(name = "IS_PUBLIC", nullable = false)
 	@Type(type = "yes_no")
 	private boolean isPublic;
+	
+    @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+    @JoinColumn(name = "UI_THEME_ID", referencedColumnName = "UI_THEME_ID", insertable = true, updatable = true, nullable=true)
+    private UIThemeEntity uiTheme;
 
 	/*
     @Column(name = "RESOURCE_ID", length = 32, nullable = false)
@@ -123,6 +129,14 @@ public class URIPatternEntity implements Serializable {
 		}
 		metaEntitySet.add(enitity);
 	}
+	
+	public UIThemeEntity getUiTheme() {
+		return uiTheme;
+	}
+
+	public void setUiTheme(UIThemeEntity uiTheme) {
+		this.uiTheme = uiTheme;
+	}
 
 	/*
     public String getResourceId() {
@@ -156,6 +170,8 @@ public class URIPatternEntity implements Serializable {
 		result = prime * result + ((pattern == null) ? 0 : pattern.hashCode());
 		result = prime * result
 				+ ((resource == null) ? 0 : resource.hashCode());
+		result = prime * result
+				+ ((uiTheme == null) ? 0 : uiTheme.hashCode());
 		return result;
 	}
 
@@ -194,6 +210,12 @@ public class URIPatternEntity implements Serializable {
 			if (other.resource != null)
 				return false;
 		} else if (!resource.equals(other.resource))
+			return false;
+		
+		if (uiTheme == null) {
+			if (other.uiTheme != null)
+				return false;
+		} else if (!uiTheme.equals(other.uiTheme))
 			return false;
 		return true;
 	}

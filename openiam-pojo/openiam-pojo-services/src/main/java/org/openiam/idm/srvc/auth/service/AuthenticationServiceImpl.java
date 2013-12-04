@@ -132,13 +132,6 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
     private String authContextClass;
     
     @Autowired
-    private ResourceDataService resourceService;
-
-    @Autowired
-    @Qualifier("defaultSSOToken")
-    private SSOTokenModule defaultToken;
-    
-    @Autowired
     private UserDataService userManager;
     
     @Autowired
@@ -150,9 +143,6 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
     
     @Autowired
     private SysConfiguration sysConfiguration;
-    
-    @Autowired
-    private PasswordService passwordManager;
 
     @Autowired
     protected KeyManagementService keyManagementService;

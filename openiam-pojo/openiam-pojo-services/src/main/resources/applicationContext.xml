@@ -366,7 +366,8 @@
                                                org.openiam.idm.srvc.lang.domain*,
                                                org.openiam.idm.srvc.report.domain*,
                                                org.openiam.idm.srvc.prov*,
-                                               org.openiam.idm.srvc.batch.domain*
+                                               org.openiam.idm.srvc.batch.domain*,
+                                               org.openiam.idm.srvc.ui*
                                                " />
 
 	</bean>

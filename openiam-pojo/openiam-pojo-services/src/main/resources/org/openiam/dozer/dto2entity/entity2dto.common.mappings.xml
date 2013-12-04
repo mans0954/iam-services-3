@@ -263,4 +263,136 @@
 		<class-a>org.openiam.idm.srvc.meta.domain.MetadataFieldTemplateXrefIDEntity</class-a>
 		<class-b>org.openiam.idm.srvc.meta.dto.MetadataFieldTemplateXrefID</class-b>
 	</mapping>
+	
+	<mapping>
+        <class-a>org.openiam.am.srvc.domain.URIPatternMetaTypeEntity</class-a>
+        <class-b>org.openiam.am.srvc.dto.URIPatternMetaType</class-b>
+    </mapping>
+    
+    <mapping>
+        <class-a>org.openiam.am.srvc.domain.AuthLevelEntity</class-a>
+        <class-b>org.openiam.am.srvc.dto.AuthLevel</class-b>
+        <!--<field-exclude>-->
+            <!--<a>contentProviderSet</a>-->
+            <!--<b>contentProviderSet</b>-->
+        <!--</field-exclude>-->
+    </mapping>
+    
+    <mapping>
+        <class-a>org.openiam.am.srvc.domain.ContentProviderServerEntity</class-a>
+        <class-b>org.openiam.am.srvc.dto.ContentProviderServer</class-b>
+        <field>
+            <a>id</a>
+            <b>id</b>
+        </field>
+        <field>
+            <a>contentProvider.id</a>
+            <b>contentProviderId</b>
+        </field>
+        <field>
+            <a>serverURL</a>
+            <b>serverURL</b>
+        </field>
+    </mapping>
+    
+     <mapping>
+        <class-a>org.openiam.am.srvc.domain.AuthProviderAttributeEntity</class-a>
+        <class-b>org.openiam.am.srvc.dto.AuthProviderAttribute</class-b>
+        <field>
+            <a>providerAttributeId</a>
+            <b>providerAttributeId</b>
+        </field>
+        <field>
+            <a>providerId</a>
+            <b>providerId</b>
+        </field>
+        <field>
+            <a>attributeId</a>
+            <b>attributeId</b>
+        </field>
+        <field>
+            <a>value</a>
+            <b>value</b>
+        </field>
+        <field>
+            <a>dataType</a>
+            <b>dataType</b>
+        </field>
+        <field>
+            <a>attribute.attributeName</a>
+            <b>attributeName</b>
+        </field>
+        <field>
+            <a>attribute.defaultValue</a>
+            <b>defaultValue</b>
+        </field>
+    </mapping>
+    
+     <mapping>
+        <class-a>org.openiam.am.srvc.domain.AuthResourceAttributeMapEntity</class-a>
+        <class-b>org.openiam.am.srvc.dto.AuthResourceAttributeMap</class-b>
+        <field>
+            <a>attributeMapId</a>
+            <b>attributeMapId</b>
+        </field>
+        <field>
+            <a>providerId</a>
+            <b>providerId</b>
+        </field>
+        <field>
+            <a>targetAttributeName</a>
+            <b>targetAttributeName</b>
+        </field>
+        <field>
+            <a>attributeValue</a>
+            <b>attributeValue</b>
+        </field>
+        <field>
+            <a>attributeType</a>
+            <b>attributeType</b>
+        </field>
+        <field>
+            <a>amResAttributeId</a>
+            <b>amResAttributeId</b>
+        </field>
+        <field>
+            <a>amPolicyUrl</a>
+            <b>amPolicyUrl</b>
+        </field>
+        <field>
+            <a>amAttribute.attributeName</a>
+            <b>amResAttributeName</b>
+        </field>
+        <field>
+            <a>amAttribute.reflectionKey</a>
+            <b>amReflectionKey</b>
+        </field>
+    </mapping>
+    
+    <mapping>
+        <class-a>org.openiam.am.srvc.domain.AuthProviderTypeEntity</class-a>
+        <class-b>org.openiam.am.srvc.dto.AuthProviderType</class-b>
+        <field-exclude>
+            <a>attributeSet</a>
+            <b>attributeSet</b>
+        </field-exclude>
+        <field-exclude>
+            <a>providerSet</a>
+            <b>providerSet</b>
+        </field-exclude>
+    </mapping>
+
+    <mapping>
+        <class-a>org.openiam.am.srvc.domain.AuthAttributeEntity</class-a>
+        <class-b>org.openiam.am.srvc.dto.AuthAttribute</class-b>
+    </mapping>
+
+    <mapping>
+        <class-a>org.openiam.am.srvc.domain.AuthResourceAMAttributeEntity</class-a>
+        <class-b>org.openiam.am.srvc.dto.AuthResourceAMAttribute</class-b>
+        <field-exclude>
+        	<a>metaValues</a>
+        	<b>metaValues</b>
+        </field-exclude>
+    </mapping>
 </mappings>

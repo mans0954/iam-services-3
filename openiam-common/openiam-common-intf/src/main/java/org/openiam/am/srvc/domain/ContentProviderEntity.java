@@ -6,8 +6,10 @@ import org.openiam.am.srvc.dto.ContentProvider;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
+import org.openiam.idm.srvc.ui.theme.domain.UIThemeEntity;
 
 import javax.persistence.*;
+
 import java.io.Serializable;
 import java.util.Set;
 
@@ -44,6 +46,10 @@ public class ContentProviderEntity implements Serializable {
 	@Column(name = "IS_SSL", nullable = true)
 	@Type(type = "yes_no")
 	private Boolean isSSL;
+	
+    @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+    @JoinColumn(name = "UI_THEME_ID", referencedColumnName = "UI_THEME_ID", insertable = true, updatable = true, nullable=true)
+    private UIThemeEntity uiTheme;
 
 	/*
     @Column(name = "CONTEXT_PATH", nullable = false)
@@ -140,6 +146,8 @@ public class ContentProviderEntity implements Serializable {
 	public void setPatternSet(Set<URIPatternEntity> patternSet) {
 		this.patternSet = patternSet;
 	}
+	
+	
 
 	/*
     public String getResourceId() {
@@ -161,7 +169,15 @@ public class ContentProviderEntity implements Serializable {
     }
     */
 
-    public ManagedSysEntity getManagedSystem() {
+    public UIThemeEntity getUiTheme() {
+		return uiTheme;
+	}
+
+	public void setUiTheme(UIThemeEntity uiTheme) {
+		this.uiTheme = uiTheme;
+	}
+
+	public ManagedSysEntity getManagedSystem() {
 		return managedSystem;
 	}
 
@@ -187,6 +203,8 @@ public class ContentProviderEntity implements Serializable {
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result
 				+ ((resource == null) ? 0 : resource.hashCode());
+		result = prime * result
+				+ ((uiTheme == null) ? 0 : uiTheme.hashCode());
 		return result;
 	}
 
@@ -237,6 +255,12 @@ public class ContentProviderEntity implements Serializable {
 			if (other.resource != null)
 				return false;
 		} else if (!resource.equals(other.resource))
+			return false;
+		
+		if (uiTheme == null) {
+			if (other.uiTheme != null)
+				return false;
+		} else if (!uiTheme.equals(other.uiTheme))
 			return false;
 		return true;
 	}

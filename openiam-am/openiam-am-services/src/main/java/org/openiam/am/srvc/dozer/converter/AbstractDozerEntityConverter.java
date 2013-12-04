@@ -11,21 +11,21 @@ import java.util.List;
 // TODO: need to be refactored - Create only one abstarct class for all projects
 public abstract class AbstractDozerEntityConverter <DTO, Entity> {
 
-    @Autowired
-    @Qualifier("amDto2entityDeepDozerMapper")
-    protected Mapper dto2entityDeepDozerMapper;
-
-    @Autowired
-    @Qualifier("amDto2entityShallowDozerMapper")
-    protected Mapper dto2entityShallowDozerMapper;
-
-    @Autowired
-    @Qualifier("amDeepDozerMapper")
-    protected Mapper deepDozerMapper;
-
-    @Autowired
-    @Qualifier("amShallowDozerMapper")
-    protected Mapper shallowDozerMapper;
+	@Autowired
+	@Qualifier("dto2entityDeepDozerMapper")
+	protected Mapper dto2entityDeepDozerMapper;
+	
+	@Autowired
+	@Qualifier("dto2entityShallowDozerMapper")
+	protected Mapper dto2entityShallowDozerMapper;
+	
+	@Autowired
+	@Qualifier("deepDozerMapper")
+	protected Mapper deepDozerMapper;
+	
+	@Autowired
+	@Qualifier("shallowDozerMapper")
+	protected Mapper shallowDozerMapper;
 
     public abstract Entity convertEntity (final Entity entity, final boolean isDeep);
     public abstract DTO convertDTO(final DTO entity, final boolean isDeep);
