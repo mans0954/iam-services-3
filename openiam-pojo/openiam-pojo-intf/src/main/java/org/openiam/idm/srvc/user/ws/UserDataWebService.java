@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.user.ws;
 
+import java.util.Date;
 import java.util.List;
 
 import javax.jws.WebMethod;
