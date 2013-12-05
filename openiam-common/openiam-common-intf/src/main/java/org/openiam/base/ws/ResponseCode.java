@@ -478,6 +478,9 @@ public enum ResponseCode {
     
     @XmlEnumValue("NAME_MISSING")
 	NAME_MISSING("NAME_MISSING"),
+	
+	@XmlEnumValue("URL_REQUIRED")
+	URL_REQUIRED("URL_REQUIRED"),
 
     @XmlEnumValue("REPORT_NAME_NOT_SET")
     REPORT_NAME_NOT_SET("REPORT_NAME_NOT_SET"),

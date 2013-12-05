@@ -41,6 +41,7 @@ public class UIThemeWebServiceImpl implements UIThemeWebService {
 			final UIThemeEntity entity = dozerConverter.convertToEntity(dto, false);
 			uiThemeService.validateSave(entity);
 			uiThemeService.save(entity);
+			response.setResponseValue(entity.getId());
 		} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
