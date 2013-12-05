@@ -622,4 +622,15 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
         criteria.add(disjunction);
         return criteria;
     }
+
+    @Override
+    public List<UserEntity> getUserByLastDate(Date lastDate) {
+        if (lastDate != null) {
+            List<UserEntity> retVal = new ArrayList<UserEntity>();
+            final Criteria criteria = getCriteria().add(
+                    Restrictions.eq("lastDate", lastDate));
+            return criteria.list();
+        } else
+            return null;
+    }
 }
