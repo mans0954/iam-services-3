@@ -14,6 +14,8 @@ import org.openiam.idm.srvc.res.domain.ResourceTypeEntity;
 import org.openiam.idm.srvc.res.service.ResourceDAO;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
+import org.openiam.idm.srvc.ui.theme.UIThemeDAO;
+import org.openiam.idm.srvc.ui.theme.domain.UIThemeEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -50,8 +52,9 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
     private ResourceDAO resourceDao;
     @Autowired
     private ResourceTypeDAO resourceTypeDAO;
+    
     @Autowired
-    private ResourceDataService resourceDataService;
+    private UIThemeDAO uiThemeDAO;
     
     @Autowired
     private ManagedSysDAO managedSysDAO;
@@ -109,6 +112,11 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
         	throw new NullPointerException("Cannot save content provider. Managed System is not found");
         }
         
+        if(provider.getUiTheme() != null) {
+        	final UIThemeEntity theme = uiThemeDAO.findById(provider.getUiTheme().getId());
+        	provider.setUiTheme(theme);
+        }
+        
         final String cpURL = provider.getResource().getURL();
 
         provider.setManagedSystem(managedSys);
@@ -144,6 +152,7 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
             entity.setMinAuthLevel(authLevel);
             entity.setIsPublic(provider.getIsPublic());
             entity.setIsSSL(provider.getIsSSL());
+            entity.setUiTheme(provider.getUiTheme());
             entity.getResource().setURL(cpURL);
             /*entity.setContextPath(provider.getContextPath());*/
             entity.setPatternSet(null);
@@ -264,6 +273,11 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
             throw new NullPointerException("Cannot save content provider. Auth LEVEL is not found");
         }
 
+        if(pattern.getUiTheme() != null) {
+        	final UIThemeEntity theme = uiThemeDAO.findById(pattern.getUiTheme().getId());
+        	pattern.setUiTheme(theme);
+        }
+        
         ContentProviderEntity provider = contentProviderDao.findById(pattern.getContentProvider().getId());
         if(provider==null){
             throw new NullPointerException("Cannot save content provider server. Content Provider is not found");
@@ -297,6 +311,7 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
         } else{
             // update provider
             entity  = uriPatternDao.findById(pattern.getId());
+            entity.setUiTheme(pattern.getUiTheme());
             entity.setPattern(pattern.getPattern());
             entity.setMinAuthLevel(authLevel);
             entity.setIsPublic(pattern.getIsPublic());
