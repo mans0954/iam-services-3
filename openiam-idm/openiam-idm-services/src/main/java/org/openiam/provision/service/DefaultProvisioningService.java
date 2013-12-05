@@ -1027,10 +1027,15 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         log.debug("- role set -> " + roleSet);
         log.debug("- Primary Identity : " + primaryIdentity);
 
+        ProvisionUser finalProvUser = new ProvisionUser(userDozerConverter.convertToDTO(userEntity, true));
+
         // deprovision resources
         if (!isAdd) {
             if (CollectionUtils.isNotEmpty(deleteResourceSet)) {
-                for (Resource res : deleteResourceSet) {
+
+                List<Resource> resources = orderResources("DELETE", finalProvUser, deleteResourceSet, bindingMap);
+
+                for (Resource res : resources) {
                     //skip provisioning for resource if it in NotProvisioning set
                     if(pUser.getNotProvisioninResourcesIds().contains(res.getResourceId())) {
                          auditLog.succeed().setAuditDescription("Skip De-Provisioning for resource: "+res.getName());
@@ -1053,7 +1058,10 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         // provision resources
         if (provInTargetSystemNow) {
             if (CollectionUtils.isNotEmpty(resourceSet)) {
-                for (Resource res : resourceSet) {
+
+                List<Resource> resources = orderResources("ADD", finalProvUser, resourceSet, bindingMap);
+
+                for (Resource res : resources) {
                     //skip provisioning for resource if it in NotProvisioning set
                     if(pUser.getNotProvisioninResourcesIds().contains(res.getResourceId())) {
                         auditLog.succeed().setAuditDescription("Skip Provisioning for resource: "+res.getName());
@@ -1081,8 +1089,6 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 }
             }
         }
-
-        ProvisionUser finalProvUser = new ProvisionUser(userDozerConverter.convertToDTO(userEntity, true));
 
         if (isAdd) { // send email notifications
             if (pUser.isEmailCredentialsToNewUsers()) {
