@@ -267,6 +267,19 @@
 			</service>
 		</model>
 		
+		<model name="uiThemeServiceModel">
+			<service name="uiThemeService">
+				<inbound>
+						<inbound-endpoint address="${webservice.path}UIThemeWebService" 		exchange-pattern="request-response">
+						<cxf:jaxws-service />
+					</inbound-endpoint>
+				</inbound>
+				<component>
+					<spring-object bean="uiThemeWS" />
+				</component>
+			</service>
+		</model>
+		
 		<model name="authorizationManagerAdminServiceModel">
 			<service name="authorizationManagerAdminService">
 				<inbound>
