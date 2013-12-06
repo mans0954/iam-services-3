@@ -354,6 +354,9 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
 
             try {
                 for (AttributeMap attr : policyAttrMap) {
+                    if("INACTIVE".equalsIgnoreCase(attr.getStatus())) {
+                       continue;
+                    }
                     String output = (String)ProvisionServiceUtil.getOutputFromAttrMap(
                             attr, bindingMap, se);
                     String objectType = attr.getMapForObjectType();

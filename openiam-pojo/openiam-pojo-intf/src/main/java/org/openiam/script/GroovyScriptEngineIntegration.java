@@ -97,6 +97,10 @@ public class GroovyScriptEngineIntegration implements ScriptIntegration, Applica
             String msg = "Resource problem for " + scriptName;
             log.error(msg, re);
             throw new ScriptEngineException(msg, re);
+        } catch (Exception e){
+            String msg = "Resource problem for " + scriptName;
+            log.error(msg, e);
+            throw new ScriptEngineException(msg, e);
         }
     }
 
