@@ -3,6 +3,7 @@ package org.openiam.idm.srvc.user.service;
 import static org.hibernate.criterion.Projections.rowCount;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
@@ -621,5 +622,16 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
         disjunction.add(Restrictions.isNull("systemFlag")).add(Restrictions.ne("systemFlag", "1"));
         criteria.add(disjunction);
         return criteria;
+    }
+
+    @Override
+    public List<UserEntity> getUserByLastDate(Date lastDate) {
+        if (lastDate != null) {
+            List<UserEntity> retVal = new ArrayList<UserEntity>();
+            final Criteria criteria = getCriteria().add(
+                    Restrictions.lt("lastDate", lastDate));
+            return criteria.list();
+        } else
+            return null;
     }
 }

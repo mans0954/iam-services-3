@@ -7,8 +7,10 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hibernate.Criteria;
 import org.hibernate.Query;
 import org.hibernate.SQLQuery;
 import org.hibernate.Session;
@@ -44,7 +46,8 @@ public class LoginDAOImpl extends BaseDaoImpl<LoginEntity, String> implements
     public LoginEntity getRecord(final String login, final String managedSysId,
             final String domainId) {
         return (LoginEntity) getCriteria()
-        		.add(Restrictions.eq("lowerCaseLogin", (login != null) ? login.toLowerCase() : null))
+                .add(Restrictions.eq("lowerCaseLogin",
+                        (login != null) ? login.toLowerCase() : null))
                 .add(Restrictions.eq("managedSysId", managedSysId))
                 .add(Restrictions.eq("domainId", domainId)).uniqueResult();
     }
@@ -55,23 +58,22 @@ public class LoginDAOImpl extends BaseDaoImpl<LoginEntity, String> implements
     }
 
     public List<LoginEntity> findAllLoginByManagedSys(String managedSysId) {
-    	return getCriteria().add(Restrictions.eq("managedSysId", managedSysId)).list();
+        return getCriteria().add(Restrictions.eq("managedSysId", managedSysId))
+                .list();
     }
 
     public List<LoginEntity> getLoginSublist(int startPos, int size) {
         StringBuilder sql = new StringBuilder();
         sql.append("from ").append(LoginEntity.class.getName()).append(" l");
-        return (List<LoginEntity>) getSession()
-                .createQuery(sql.toString()).setFirstResult(startPos)
-                .setMaxResults(size).list();
+        return (List<LoginEntity>) getSession().createQuery(sql.toString())
+                .setFirstResult(startPos).setMaxResults(size).list();
     }
 
     public Long getLoginCount() {
         StringBuilder sql = new StringBuilder();
         sql.append("SELECT count(l.password) from ")
                 .append(LoginEntity.class.getName()).append(" l");
-        return (Long) getSession()
-                .createQuery(sql.toString()).uniqueResult();
+        return (Long) getSession().createQuery(sql.toString()).uniqueResult();
     }
 
     public List<LoginEntity> findUser(String userId) {
@@ -140,14 +142,10 @@ public class LoginDAOImpl extends BaseDaoImpl<LoginEntity, String> implements
     }
 
     public List<LoginEntity> findLockedUsers(Date startTime) {
-        Session session = getSession();
-        Query qry = session
-                .createQuery("from org.openiam.idm.srvc.auth.domain.LoginEntity l "
-                        + " where l.isLocked = 1 and  "
-                        + "  l.lastAuthAttempt >= :startTime ");
-        qry.setTimestamp("startTime", startTime);
-        return (List<LoginEntity>) qry.list();
-
+        Criteria c = getCriteria().add(
+                Restrictions.and(Restrictions.eq("isLocked", 1),
+                        Restrictions.ge("lastAuthAttempt", startTime)));
+        return c.list();
     }
 
     String loginQry = " UPDATE org.openiam.idm.srvc.auth.domain.LoginEntity l  "
@@ -396,65 +394,64 @@ public class LoginDAOImpl extends BaseDaoImpl<LoginEntity, String> implements
 
     }
 
-	@Override
-	public void save(LoginEntity entity) {
-		if(entity != null) {
-			entity.setLowerCaseLogin(entity.getLogin());
-		}
-		super.save(entity);
-	}
+    @Override
+    public void save(LoginEntity entity) {
+        if (entity != null) {
+            entity.setLowerCaseLogin(entity.getLogin());
+        }
+        super.save(entity);
+    }
 
-	@Override
-	public LoginEntity add(LoginEntity entity) {
-		if(entity != null) {
-			entity.setLowerCaseLogin(entity.getLogin());
-		}
-		return super.add(entity);
-	}
+    @Override
+    public LoginEntity add(LoginEntity entity) {
+        if (entity != null) {
+            entity.setLowerCaseLogin(entity.getLogin());
+        }
+        return super.add(entity);
+    }
 
-	@Override
-	public void update(LoginEntity entity) {
-		if(entity != null) {
-			entity.setLowerCaseLogin(entity.getLogin());
-		}
-		super.update(entity);
-	}
+    @Override
+    public void update(LoginEntity entity) {
+        if (entity != null) {
+            entity.setLowerCaseLogin(entity.getLogin());
+        }
+        super.update(entity);
+    }
 
-	@Override
-	public LoginEntity merge(LoginEntity entity) {
-		if(entity != null) {
-			entity.setLowerCaseLogin(entity.getLogin());
-		}
-		return super.merge(entity);
-	}
+    @Override
+    public LoginEntity merge(LoginEntity entity) {
+        if (entity != null) {
+            entity.setLowerCaseLogin(entity.getLogin());
+        }
+        return super.merge(entity);
+    }
 
-	@Override
-	public void attachDirty(LoginEntity entity) {
-		if(entity != null) {
-			entity.setLowerCaseLogin(entity.getLogin());
-		}
-		super.attachDirty(entity);
-	}
+    @Override
+    public void attachDirty(LoginEntity entity) {
+        if (entity != null) {
+            entity.setLowerCaseLogin(entity.getLogin());
+        }
+        super.attachDirty(entity);
+    }
 
-	@Override
-	public void attachClean(LoginEntity entity) {
-		if(entity != null) {
-			entity.setLowerCaseLogin(entity.getLogin());
-		}
-		super.attachClean(entity);
-	}
+    @Override
+    public void attachClean(LoginEntity entity) {
+        if (entity != null) {
+            entity.setLowerCaseLogin(entity.getLogin());
+        }
+        super.attachClean(entity);
+    }
 
-	@Override
-	public void save(Collection<LoginEntity> entities) {
-		if(entities != null) {
-			for(final LoginEntity entity : entities) {
-				if(entity != null) {
-					entity.setLowerCaseLogin(entity.getLogin());
-				}
-			}
-		}
-		super.save(entities);
-	}
-    
-    
+    @Override
+    public void save(Collection<LoginEntity> entities) {
+        if (entities != null) {
+            for (final LoginEntity entity : entities) {
+                if (entity != null) {
+                    entity.setLowerCaseLogin(entity.getLogin());
+                }
+            }
+        }
+        super.save(entities);
+    }
+
 }
