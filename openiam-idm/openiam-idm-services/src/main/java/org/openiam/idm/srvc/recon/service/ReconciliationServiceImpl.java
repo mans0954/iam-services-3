@@ -396,15 +396,21 @@ public class ReconciliationServiceImpl implements ReconciliationService {
             ProvisionConnectorDto connector, String keyField, String baseDnField, List<String> processedUserIds)
             throws ScriptEngineException {
 
-        if (config == null
-                || StringUtils.isEmpty(config.getTargetSystemMatchScript())) {
-            log.error("SearchQuery not defined for this reconciliation config.");
+        if (config == null) {
+            log.error("Reconciliation config is null");
             return new ReconciliationResponse(ResponseStatus.FAILURE);
         }
+        if (StringUtils.isBlank(config.getTargetSystemMatchScript())) {
+            log.error("SearchQuery is not defined for reconciliation config.");
+            return new ReconciliationResponse(ResponseStatus.FAILURE);
+        }
+
         Map<String, Object> bindingMap = new HashMap<String, Object>();
         bindingMap.put(AbstractProvisioningService.TARGET_SYS_MANAGED_SYS_ID,
                 mSys.getManagedSysId());
         bindingMap.put("baseDnField", baseDnField);
+        bindingMap.put("searchFilter", config.getSearchFilter());
+        bindingMap.put("updatedSince", config.getUpdatedSince());
         String searchQuery = (String) scriptRunner.execute(bindingMap,
                 config.getTargetSystemMatchScript());
         if (StringUtils.isEmpty(searchQuery)) {

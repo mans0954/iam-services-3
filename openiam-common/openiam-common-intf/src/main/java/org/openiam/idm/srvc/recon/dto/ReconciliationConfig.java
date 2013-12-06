@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.recon.dto;
 
+import java.util.Date;
 import java.util.Set;
 
 import javax.persistence.Column;
@@ -11,6 +12,7 @@ import javax.xml.bind.annotation.XmlType;
 
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.recon.domain.ReconciliationConfigEntity;
+import org.springframework.format.annotation.DateTimeFormat;
 
 // Generated May 29, 2010 8:20:09 PM by Hibernate Tools 3.2.2.GA
 
@@ -18,7 +20,7 @@ import org.openiam.idm.srvc.recon.domain.ReconciliationConfigEntity;
 @XmlType(name = "ReconciliationConfig", propOrder = { "reconConfigId",
         "resourceId", "managedSysId", "frequency", "status", "situationSet", "reportPath",
         "separator", "endOfLine", "notificationEmailAddress",
-        "manualReconciliationFlag","targetSystemMatchScript",
+        "manualReconciliationFlag","targetSystemMatchScript","searchFilter","updatedSince",
         "customIdentityMatchScript",
         "scriptHandler",
         "matchFieldName",
@@ -38,6 +40,8 @@ public class ReconciliationConfig implements MatchConfig, java.io.Serializable {
     private String endOfLine;
     private String notificationEmailAddress;
     private String targetSystemMatchScript;
+    private String searchFilter;
+    private Date updatedSince;
     private String customIdentityMatchScript;
     private Set<ReconciliationSituation> situationSet;
     private boolean manualReconciliationFlag;
@@ -161,6 +165,22 @@ public class ReconciliationConfig implements MatchConfig, java.io.Serializable {
 
     public void setTargetSystemMatchScript(String targetSystemMatchScript) {
         this.targetSystemMatchScript = targetSystemMatchScript;
+    }
+
+    public String getSearchFilter() {
+        return searchFilter;
+    }
+
+    public void setSearchFilter(String searchFilter) {
+        this.searchFilter = searchFilter;
+    }
+
+    public Date getUpdatedSince() {
+        return updatedSince;
+    }
+
+    public void setUpdatedSince(Date updatedSince) {
+        this.updatedSince = updatedSince;
     }
 
     public boolean getManualReconciliationFlag() {
