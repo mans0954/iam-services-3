@@ -78,4 +78,6 @@ public interface UserDAO extends BaseDao<UserEntity, String> {
     public boolean isUserEntitledToResoruce(final String userId, final String resourceId);
 
     public UserEntity findPrimarySupervisor(String employeeId);
+
+    public List<UserEntity> getUserByLastDate(Date lastDate);
 }

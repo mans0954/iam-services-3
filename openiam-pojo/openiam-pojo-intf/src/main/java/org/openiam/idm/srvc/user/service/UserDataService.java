@@ -283,4 +283,6 @@ public interface UserDataService {
 
     public boolean validateSearchBean(UserSearchBean searchBean, Map<String, UserAttribute> requesterAttributes) throws BasicDataServiceException;
 
+    List<UserEntity> getUserByLastDate(Date lastDate);
+
 }

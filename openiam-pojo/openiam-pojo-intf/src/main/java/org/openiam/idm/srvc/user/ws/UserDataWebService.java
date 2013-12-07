@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.user.ws;
 
+import java.util.Date;
 import java.util.List;
 
 import javax.jws.WebMethod;
@@ -744,4 +745,9 @@ public interface UserDataWebService {
      */
     @WebMethod
     public Response validateUserSearchRequest(@WebParam(name = "userSearchBean", targetNamespace = "") final UserSearchBean userSearchBean);
+
+    @WebMethod
+    public List<User> getUserByLastDate(
+            @WebParam(name = "lastDate", targetNamespace = "") final Date lastDate);
+
 }

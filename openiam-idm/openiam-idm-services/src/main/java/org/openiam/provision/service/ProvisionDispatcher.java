@@ -168,6 +168,7 @@ public class ProvisionDispatcher implements Sweepable {
                         loginEntity.setStatus(LoginStatusEnum.FAIL_UPDATE);
                     }
                 }  catch (Throwable th) {
+                    //TODO add audit log
                     loginEntity.setStatus(LoginStatusEnum.FAIL_UPDATE);
                 }
             } else if (data.getOperation() == AttributeOperationEnum.ADD) {
@@ -187,6 +188,7 @@ public class ProvisionDispatcher implements Sweepable {
                         loginEntity.setStatus(LoginStatusEnum.FAIL_CREATE);
                     }
                 }  catch (Throwable th) {
+                    //TODO add audit log
                     loginEntity.setStatus(LoginStatusEnum.FAIL_CREATE);
                 }
             } else if (data.getOperation() == AttributeOperationEnum.REPLACE) {
@@ -209,6 +211,7 @@ public class ProvisionDispatcher implements Sweepable {
                         }
                     }
                 } catch (Throwable th) {
+                    //TODO add audit log
                     loginEntity.setStatus(LoginStatusEnum.FAIL_UPDATE);
                 }
             }
