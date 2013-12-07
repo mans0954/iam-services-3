@@ -301,14 +301,9 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
             if (pattern.getAuthLevel()==null || StringUtils.isBlank(pattern.getAuthLevel().getId())) {
                 throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_AUTH_LEVEL_NOT_SET);
             }
-            URIPatternEntity example = new URIPatternEntity();
-            ContentProviderEntity cp = new ContentProviderEntity();
-            cp.setId(pattern.getContentProviderId());
-            example.setContentProvider(cp);
-            example.setPattern(pattern.getPattern());
-
+            
             final List<URIPatternEntity> entityList = 
-            		contentProviderService.getUriPatternsList(example, Integer.valueOf(0), Integer.valueOf(Integer.MAX_VALUE));
+            		contentProviderService.getURIPatternsForContentProviderMatchingPattern(pattern.getContentProviderId(), pattern.getPattern());
             if(CollectionUtils.isNotEmpty(entityList)) {
             	if(StringUtils.isBlank(pattern.getId())) {
             		throw new  BasicDataServiceException(ResponseCode.URI_PATTERN_EXISTS);

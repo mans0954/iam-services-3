@@ -492,6 +492,11 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
         uriPatternMetaValueDao.deleteById(id);
     }
 
+	@Override
+	public List<URIPatternEntity> getURIPatternsForContentProviderMatchingPattern(final String contentProviderId, final String pattern) {
+		return uriPatternDao.getURIPatternsForContentProviderMatchingPattern(contentProviderId, pattern);
+	}
+
     /*
     @Transactional
     private void saveMetaValue(URIPatternMetaValueEntity value) {

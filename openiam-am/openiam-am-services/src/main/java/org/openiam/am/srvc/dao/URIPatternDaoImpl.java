@@ -67,4 +67,12 @@ public class URIPatternDaoImpl extends BaseDaoImpl<URIPatternEntity, String> imp
 		entity.setResource(resource);
 		return getByExample(entity);
 	}
+	@Override
+	public List<URIPatternEntity> getURIPatternsForContentProviderMatchingPattern(
+			String contentProviderId, String pattern) {
+		final Criteria criteria = getCriteria();
+		criteria.add(Restrictions.eq("contentProvider.id", contentProviderId));
+		criteria.add(Restrictions.eq("pattern", pattern));
+		return criteria.list();
+	}
 }
