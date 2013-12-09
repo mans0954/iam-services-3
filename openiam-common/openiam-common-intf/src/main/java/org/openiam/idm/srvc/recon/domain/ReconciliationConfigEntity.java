@@ -4,15 +4,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
@@ -51,6 +43,7 @@ public class ReconciliationConfigEntity implements java.io.Serializable {
     private String targetSystemMatchScript;
     @Column(name = "SEARCH_FILTER", length = 200)
     private String searchFilter;
+    @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "UPDATED_SINCE", length = 19)
     private Date updatedSince;
     @Column(name = "CUSTOM_IDENTITY_MATCH_SCRIPT", length = 120)

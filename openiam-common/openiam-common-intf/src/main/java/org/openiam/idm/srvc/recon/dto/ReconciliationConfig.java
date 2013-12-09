@@ -5,10 +5,7 @@ import java.util.Set;
 
 import javax.persistence.Column;
 import javax.persistence.Transient;
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.*;
 
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.recon.domain.ReconciliationConfigEntity;
@@ -41,6 +38,7 @@ public class ReconciliationConfig implements MatchConfig, java.io.Serializable {
     private String notificationEmailAddress;
     private String targetSystemMatchScript;
     private String searchFilter;
+    @XmlSchemaType(name = "dateTime")
     private Date updatedSince;
     private String customIdentityMatchScript;
     private Set<ReconciliationSituation> situationSet;
