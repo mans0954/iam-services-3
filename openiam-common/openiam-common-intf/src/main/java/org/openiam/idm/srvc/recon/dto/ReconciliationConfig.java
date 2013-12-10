@@ -17,7 +17,8 @@ import org.springframework.format.annotation.DateTimeFormat;
 @XmlType(name = "ReconciliationConfig", propOrder = { "reconConfigId",
         "resourceId", "managedSysId", "frequency", "status", "situationSet", "reportPath",
         "separator", "endOfLine", "notificationEmailAddress",
-        "manualReconciliationFlag","targetSystemMatchScript","searchFilter","updatedSince",
+        "manualReconciliationFlag","targetSystemMatchScript","targetSystemSearchFilter",
+        "matchScript","searchFilter","updatedSince",
         "customIdentityMatchScript",
         "scriptHandler",
         "matchFieldName",
@@ -37,6 +38,8 @@ public class ReconciliationConfig implements MatchConfig, java.io.Serializable {
     private String endOfLine;
     private String notificationEmailAddress;
     private String targetSystemMatchScript;
+    private String targetSystemSearchFilter;
+    private String matchScript;
     private String searchFilter;
     @XmlSchemaType(name = "dateTime")
     private Date updatedSince;
@@ -163,6 +166,22 @@ public class ReconciliationConfig implements MatchConfig, java.io.Serializable {
 
     public void setTargetSystemMatchScript(String targetSystemMatchScript) {
         this.targetSystemMatchScript = targetSystemMatchScript;
+    }
+
+    public String getTargetSystemSearchFilter() {
+        return targetSystemSearchFilter;
+    }
+
+    public void setTargetSystemSearchFilter(String targetSystemSearchFilter) {
+        this.targetSystemSearchFilter = targetSystemSearchFilter;
+    }
+
+    public String getMatchScript() {
+        return matchScript;
+    }
+
+    public void setMatchScript(String matchScript) {
+        this.matchScript = matchScript;
     }
 
     public String getSearchFilter() {

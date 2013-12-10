@@ -41,6 +41,10 @@ public class ReconciliationConfigEntity implements java.io.Serializable {
     private String notificationEmailAddress;
     @Column(name = "TARGET_SYS_MATCH_SCRIPT", length = 120)
     private String targetSystemMatchScript;
+    @Column(name = "TARGET_SYS_SEARCH_FILTER", length = 200)
+    private String targetSystemSearchFilter;
+    @Column(name = "MATCH_SCRIPT", length = 120)
+    private String matchScript;
     @Column(name = "SEARCH_FILTER", length = 200)
     private String searchFilter;
     @Temporal(TemporalType.TIMESTAMP)
@@ -50,8 +54,7 @@ public class ReconciliationConfigEntity implements java.io.Serializable {
     private String customIdentityMatchScript;
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "RECON_CONFIG_ID", insertable = false, updatable = false)
-    private Set<ReconciliationSituationEntity> situationSet = new HashSet<ReconciliationSituationEntity>(
-            0);
+    private Set<ReconciliationSituationEntity> situationSet = new HashSet<ReconciliationSituationEntity>(0);
 
     @Column(name = "MANUAL_RECONCILIATION_FLAG")
     @Type(type = "yes_no")
@@ -167,6 +170,22 @@ public class ReconciliationConfigEntity implements java.io.Serializable {
 
     public void setTargetSystemMatchScript(String targetSystemMatchScript) {
         this.targetSystemMatchScript = targetSystemMatchScript;
+    }
+
+    public String getTargetSystemSearchFilter() {
+        return targetSystemSearchFilter;
+    }
+
+    public void setTargetSystemSearchFilter(String targetSystemSearchFilter) {
+        this.targetSystemSearchFilter = targetSystemSearchFilter;
+    }
+
+    public String getMatchScript() {
+        return matchScript;
+    }
+
+    public void setMatchScript(String matchScript) {
+        this.matchScript = matchScript;
     }
 
     public String getSearchFilter() {

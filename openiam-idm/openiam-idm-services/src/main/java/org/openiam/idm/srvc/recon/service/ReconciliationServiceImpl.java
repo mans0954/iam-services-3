@@ -54,6 +54,7 @@ import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.exception.ScriptEngineException;
 import org.openiam.idm.parser.csv.UserCSVParser;
 import org.openiam.idm.parser.csv.UserSearchBeanCSVParser;
+import org.openiam.idm.searchbeans.LoginSearchBean;
 import org.openiam.idm.searchbeans.ManualReconciliationSearchBean;
 import org.openiam.idm.searchbeans.UserSearchBean;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
@@ -89,6 +90,7 @@ import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.synch.dto.Attribute;
 import org.openiam.idm.srvc.synch.service.MatchObjectRule;
 import org.openiam.idm.srvc.synch.srcadapter.MatchRuleFactory;
+import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.idm.srvc.user.service.UserDataService;
@@ -354,16 +356,42 @@ public class ReconciliationServiceImpl implements ReconciliationService {
             String keyField = matchObjAry.get(0).getKeyField();
             String baseDnField = matchObjAry.get(0).getBaseDn();
 
-            // 1. Do reconciliation users from IDM to Target Managed System
-            // search for all Roles and Groups related with resource
-            // Get List with all users who have Identity if this resource
-            List<LoginEntity> idmIdentities = loginManager
-                    .getAllLoginByManagedSys(managedSysId);
+            List<LoginEntity> idmIdentities = new ArrayList<LoginEntity>();
+
+            UserSearchBean searchBean;
+            if (StringUtils.isNotBlank(config.getMatchScript())) {
+                Map<String, Object> bindingMap = new HashMap<String, Object>();
+                bindingMap.put(AbstractProvisioningService.TARGET_SYS_MANAGED_SYS_ID, mSys.getManagedSysId());
+                bindingMap.put("searchFilter", config.getSearchFilter());
+                bindingMap.put("updatedSince", config.getUpdatedSince());
+                IDMSearchScript searchScript = (IDMSearchScript)scriptRunner.instantiateClass(bindingMap, config.getMatchScript());
+                searchBean = searchScript.createUserSearchBean(bindingMap);
+            } else {
+                searchBean = new UserSearchBean();
+            }
+            if (searchBean != null) {
+                if (searchBean.getPrincipal() == null) {
+                    searchBean.setPrincipal(new LoginSearchBean());
+                }
+                searchBean.getPrincipal().setManagedSysId(mSys.getManagedSysId());
+                List<UserEntity> idmUsers = userManager
+                        .getByExample(searchBean, 0, Integer.MAX_VALUE);
+                if (CollectionUtils.isNotEmpty(idmUsers)) {
+                    for (UserEntity u : idmUsers) {
+                        for (LoginEntity l : u.getPrincipalList()) {
+                            if (l.getManagedSysId().equals(mSys.getManagedSysId())) {
+                                idmIdentities.add(l);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
 
             List<String> processedUserIds = new ArrayList<String>();
             for (LoginEntity identity : idmIdentities) {
                 if (identity.getUserId() != null) {
-                    processedUserIds.add(identity.getUserId()); // to avoid double processing
+                    processedUserIds.add(identity.getUserId()); // Collect user IDs to avoid double processing
                     reconciliationIDMUserToTargetSys(resultBean, attrMap, identity,
                             sysDto, situations, config.getManualReconciliationFlag());
                 }
@@ -409,7 +437,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
         bindingMap.put(AbstractProvisioningService.TARGET_SYS_MANAGED_SYS_ID,
                 mSys.getManagedSysId());
         bindingMap.put("baseDnField", baseDnField);
-        bindingMap.put("searchFilter", config.getSearchFilter());
+        bindingMap.put("searchFilter", config.getTargetSystemSearchFilter());
         bindingMap.put("updatedSince", config.getUpdatedSince());
         String searchQuery = (String) scriptRunner.execute(bindingMap,
                 config.getTargetSystemMatchScript());

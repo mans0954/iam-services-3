@@ -50,7 +50,8 @@ import java.util.*;
         "delAdmin",
         "organizationIdList",
         "attributeList",
-        "requesterId"
+        "requesterId",
+        "updatedSince"
 })
 public class UserSearchBean extends AbstractSearchBean<User, String> implements SearchBean<User, String>,
         Serializable {
@@ -86,6 +87,8 @@ public class UserSearchBean extends AbstractSearchBean<User, String> implements 
     protected Date startDate;
     @XmlSchemaType(name = "dateTime")
     protected Date lastDate;
+    @XmlSchemaType(name = "dateTime")
+    protected Date updatedSince;
 
     @XmlSchemaType(name = "dateTime")
     protected Date dateOfBirth;
@@ -362,6 +365,14 @@ public class UserSearchBean extends AbstractSearchBean<User, String> implements 
 
     public void setLastDate(Date lastDate) {
         this.lastDate = lastDate;
+    }
+
+    public Date getUpdatedSince() {
+        return updatedSince;
+    }
+
+    public void setUpdatedSince(Date updatedSince) {
+        this.updatedSince = updatedSince;
     }
 
     public Date getDateOfBirth() {

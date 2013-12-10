@@ -196,6 +196,9 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
             if (searchBean.getLastDate() != null) {
                 criteria.add(Restrictions.eq("lastDate", searchBean.getLastDate()));
             }
+            if (searchBean.getUpdatedSince() != null) {
+                criteria.add(Restrictions.ge("lastUpdate", searchBean.getUpdatedSince()));
+            }
             if (searchBean.getDateOfBirth() != null) {
                 criteria.add(Restrictions.eq("birthdate", searchBean.getDateOfBirth()));
             }
