@@ -500,7 +500,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
         for (ExtensibleAttribute attr : extensibleAttributes) {
             // search principal attribute by KeyField
             attributeMap.put(attr.getName(),attr);
-            if(targetUserPrincipal == null && attr.getName().equals(config.getCustomMatchAttr())) {
+            if(attr.getName().equals(config.getCustomMatchAttr())) {
                 targetUserPrincipal = attr.getValue();
                 break;
             }

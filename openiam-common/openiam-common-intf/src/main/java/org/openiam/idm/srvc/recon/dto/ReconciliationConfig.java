@@ -37,17 +37,26 @@ public class ReconciliationConfig implements MatchConfig, java.io.Serializable {
     private String separator;
     private String endOfLine;
     private String notificationEmailAddress;
+    //Target System Search Query Script
     private String targetSystemMatchScript;
+    //Target System Search Query Filter
     private String targetSystemSearchFilter;
+    //IDM Search Query Script
     private String matchScript;
+    //IDM Search Query Filter
     private String searchFilter;
+    //Updated Since
     @XmlSchemaType(name = "dateTime")
     private Date updatedSince;
+    //Custom Rule for Matching
     private String customIdentityMatchScript;
     private Set<ReconciliationSituation> situationSet;
     private boolean manualReconciliationFlag;
+    //IDM Repository Match Field
     private String matchFieldName;
+    //Target System Match Attribute Name
     private String customMatchAttr;
+    //IDM Custom Match Attribute Name (only if CUSTOM ATTRIBUTE type selected)
     private String matchSrcFieldName;
     @XmlElement
     private String scriptHandler;
