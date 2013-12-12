@@ -6,7 +6,7 @@ import org.springframework.context.ApplicationContext;
 import java.util.Date;
 import java.util.Map;
 
-public abstract class AbstractIDMSearchScript implements IDMSearchScript {
+public class AbstractIDMSearchScript implements IDMSearchScript {
 
     protected String searchFilter;
     protected Date updatedSince;

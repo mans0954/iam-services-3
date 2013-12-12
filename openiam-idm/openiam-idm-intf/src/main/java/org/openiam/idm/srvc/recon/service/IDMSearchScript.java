@@ -5,5 +5,5 @@ import org.openiam.idm.searchbeans.UserSearchBean;
 import java.util.Map;
 
 public interface IDMSearchScript {
-    public UserSearchBean createUserSearchBean(Map<String, Object> bindingMap);
+    UserSearchBean createUserSearchBean(Map<String, Object> bindingMap);
 }
