@@ -86,8 +86,8 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
 	                }
 	            }
 				
-				if(entity.getAdminResource() != null && StringUtils.isNotBlank(entity.getAdminResource().getResourceId())) {
-					criteria.add(Restrictions.eq("adminResource.resourceId", entity.getAdminResource().getResourceId()));
+				if(entity.getAdminResource() != null && StringUtils.isNotBlank(entity.getAdminResource().getId())) {
+					criteria.add(Restrictions.eq("adminResource.id", entity.getAdminResource().getId()));
 				}
 				
 				if(StringUtils.isNotBlank(entity.getServiceId())) {
@@ -97,13 +97,13 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
 				if(CollectionUtils.isNotEmpty(entity.getResources())) {
 					final Set<String> resourceIds = new HashSet<String>();
 	            	for(final ResourceEntity resourceRole : entity.getResources()) {
-	            		if(resourceRole != null && StringUtils.isNotBlank(resourceRole.getResourceId())) {
-	            			resourceIds.add(resourceRole.getResourceId());
+	            		if(resourceRole != null && StringUtils.isNotBlank(resourceRole.getId())) {
+	            			resourceIds.add(resourceRole.getId());
 	            		}
 	            	}
 	            	
 	            	if(CollectionUtils.isNotEmpty(resourceIds)) {
-	            		criteria.createAlias("resources", "rr").add( Restrictions.in("rr.resourceId", resourceIds));
+	            		criteria.createAlias("resources", "rr").add( Restrictions.in("rr.id", resourceIds));
 	            	}
 				}
 			}
@@ -161,7 +161,7 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
         }
 
         if(StringUtils.isNotBlank(resourceId)){
-            criteria.createAlias("resources", "resources").add( Restrictions.eq("resources.resourceId", resourceId));
+            criteria.createAlias("resources", "resources").add( Restrictions.eq("resources.id", resourceId));
         }
 
         if(filter!=null && !filter.isEmpty()){

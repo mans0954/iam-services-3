@@ -15,7 +15,7 @@ public class ConnectorConfiguration {
     private Resource resource;
 
     public String getResourceId() {
-        return resource.getResourceId();
+        return resource.getId();
     }
 
     public Resource getResource() {

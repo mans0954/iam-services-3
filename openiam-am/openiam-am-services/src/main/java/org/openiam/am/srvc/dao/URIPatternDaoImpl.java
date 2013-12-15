@@ -37,8 +37,8 @@ public class URIPatternDaoImpl extends BaseDaoImpl<URIPatternEntity, String> imp
 //                criteria.add(Restrictions.eq("pattern", entity.getPattern()));
             }
             
-            if(entity.getResource() != null && StringUtils.isNotEmpty(entity.getResource().getResourceId())) {
-            	criteria.add(Restrictions.eq("resource.resourceId", entity.getResource().getResourceId()));
+            if(entity.getResource() != null && StringUtils.isNotEmpty(entity.getResource().getId())) {
+            	criteria.add(Restrictions.eq("resource.id", entity.getResource().getId()));
             }
         }
         return criteria;
@@ -63,7 +63,7 @@ public class URIPatternDaoImpl extends BaseDaoImpl<URIPatternEntity, String> imp
 	public List<URIPatternEntity> getByResourceId(String resourceId) {
 		final URIPatternEntity entity = new URIPatternEntity();
 		final ResourceEntity resource = new ResourceEntity();
-		resource.setResourceId(resourceId);
+		resource.setId(resourceId);
 		entity.setResource(resource);
 		return getByExample(entity);
 	}

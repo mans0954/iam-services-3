@@ -70,7 +70,7 @@ public class TestCrossEntityConversion extends AbstractTestNGSpringContextTests 
 		//Assert.assertEquals(resource.getIsSSL(), entity.getIsSSL());
 		Assert.assertEquals(resource.getMinAuthLevel(), entity.getMinAuthLevel());
 		Assert.assertEquals(resource.getName(), entity.getName());
-		Assert.assertEquals(resource.getResourceId(), entity.getResourceId());
+		Assert.assertEquals(resource.getId(), entity.getId());
 		Assert.assertEquals(resource.getURL(), entity.getURL());
 		confirm(resource.getResourceType(), entity.getResourceType());
 	}
@@ -131,7 +131,7 @@ public class TestCrossEntityConversion extends AbstractTestNGSpringContextTests 
 		//entity.setIsSSL(true);
 		entity.setMinAuthLevel(rs(2));
 		entity.setName(rs(2));
-		entity.setResourceId(rs(2));
+		entity.setId(rs(2));
 		entity.setResourceType(createResourceTypeEntity());
 		entity.setURL(rs(2));
 		return entity;

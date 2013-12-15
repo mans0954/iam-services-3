@@ -745,7 +745,7 @@ public class User extends org.openiam.base.BaseObject {
     	if(resourceId != null) {
     		if(resources != null) {
     			for(final Resource resource : resources) {
-    				if(StringUtils.equals(resource.getResourceId(), resourceId)) {
+    				if(StringUtils.equals(resource.getId(), resourceId)) {
     					resource.setOperation(AttributeOperationEnum.DELETE);
     					break;
     				}

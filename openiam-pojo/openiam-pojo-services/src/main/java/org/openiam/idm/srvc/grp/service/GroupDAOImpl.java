@@ -77,20 +77,20 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
                 }
             }
 			
-			if(group.getAdminResource() != null && StringUtils.isNotBlank(group.getAdminResource().getResourceId())) {
-				criteria.add(Restrictions.eq("adminResource.resourceId", group.getAdminResource().getResourceId()));
+			if(group.getAdminResource() != null && StringUtils.isNotBlank(group.getAdminResource().getId())) {
+				criteria.add(Restrictions.eq("adminResource.id", group.getAdminResource().getId()));
 			}
             
             if(CollectionUtils.isNotEmpty(group.getResources())) {
             	final Set<String> resourceIds = new HashSet<String>();
             	for(final ResourceEntity resourceEntity : group.getResources()) {
-            		if(resourceEntity != null && StringUtils.isNotBlank(resourceEntity.getResourceId())) {
-            			resourceIds.add(resourceEntity.getResourceId());
+            		if(resourceEntity != null && StringUtils.isNotBlank(resourceEntity.getId())) {
+            			resourceIds.add(resourceEntity.getId());
             		}
             	}
             	
             	if(CollectionUtils.isNotEmpty(resourceIds)) {
-            		criteria.createAlias("resourceGroups", "resourceGroup").add( Restrictions.in("resourceGroup.resourceId", resourceIds));
+            		criteria.createAlias("resources", "resources").add( Restrictions.in("resources.id", resourceIds));
             	}
             }
 		}
@@ -192,7 +192,7 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
         }
 
         if(StringUtils.isNotBlank(resourceId)){
-            criteria.createAlias("resources", "resources").add( Restrictions.eq("resources.resourceId", resourceId));
+            criteria.createAlias("resources", "resources").add( Restrictions.eq("resources.id", resourceId));
         }
 
         if(filter!=null && !filter.isEmpty()){

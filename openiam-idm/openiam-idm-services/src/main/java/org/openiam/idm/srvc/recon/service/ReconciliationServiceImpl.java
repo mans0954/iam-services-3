@@ -295,7 +295,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
                     .getResourceId());
 
             ManagedSysEntity mSys = managedSysService.getManagedSysByResource(
-                    res.getResourceId(), "ACTIVE");
+                    res.getId(), "ACTIVE");
             String managedSysId = (mSys != null) ? mSys.getManagedSysId()
                     : null;
             log.debug("ManagedSysId = " + managedSysId);
@@ -868,7 +868,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
         StringBuilder message = new StringBuilder();
         if (!StringUtils.isEmpty(config.getNotificationEmailAddress())) {
             message.append("Resource: " + res.getName() + ".\n");
-            message.append("Uploaded CSV file: " + res.getResourceId()
+            message.append("Uploaded CSV file: " + res.getId()
                     + ".csv was successfully reconciled.\n");
             mailService.sendEmails(null,
                     new String[] { config.getNotificationEmailAddress() },

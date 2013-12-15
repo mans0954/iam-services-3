@@ -46,7 +46,7 @@ public class ResourceEntity {
     @GeneratedValue(generator = "system-uuid")
     @GenericGenerator(name = "system-uuid", strategy = "uuid")
     @Column(name = "RESOURCE_ID", length = 32)
-    private String resourceId;
+    private String id;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "RESOURCE_TYPE_ID")
@@ -118,7 +118,7 @@ public class ResourceEntity {
     }
     
     public ResourceEntity(String id) {
-    	this.resourceId = id;
+    	this.id = id;
     }
   
     public Set<RoleEntity> getRoles() {
@@ -129,12 +129,12 @@ public class ResourceEntity {
         this.roles = roles;
     }
 
-    public String getResourceId() {
-        return resourceId;
+    public String getId() {
+        return id;
     }
 
-    public void setResourceId(String resourceId) {
-        this.resourceId = resourceId;
+    public void setId(String id) {
+        this.id = id;
     }
 
     public ResourceTypeEntity getResourceType() {
@@ -280,7 +280,7 @@ public class ResourceEntity {
 		if(resourceId != null && childResources != null) {
 			for(final Iterator<ResourceEntity> it = childResources.iterator(); it.hasNext();) {
 				final ResourceEntity resource = it.next();
-				if(resource.getResourceId().equals(resourceId)) {
+				if(resource.getId().equals(resourceId)) {
 					it.remove();
 					break;
 				}
@@ -336,7 +336,7 @@ public class ResourceEntity {
 	@Override
     public String toString() {
         return "Resource{" +
-                "resourceId='" + resourceId + '\'' +
+                "resourceId='" + id + '\'' +
                 ", resourceType=" + resourceType +
                 ", name='" + name + '\'' +
                 ", description='" + description + '\'' +
@@ -356,14 +356,14 @@ public class ResourceEntity {
         //if (isSSL != that.isSSL) return false;
         if (URL != null ? !URL.equals(that.URL) : that.URL != null) return false;
         if (name != null ? !name.equals(that.name) : that.name != null) return false;
-        if (resourceId != null ? !resourceId.equals(that.resourceId) : that.resourceId != null) return false;
+        if (id != null ? !id.equals(that.id) : that.id != null) return false;
 
         return true;
     }
 
     @Override
     public int hashCode() {
-        int result = resourceId != null ? resourceId.hashCode() : 0;
+        int result = id != null ? id.hashCode() : 0;
         result = 31 * result + (name != null ? name.hashCode() : 0);
         result = 31 * result + (isPublic ? 1 : 0);
         //result = 31 * result + (isSSL ? 1 : 0)

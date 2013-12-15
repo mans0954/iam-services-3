@@ -860,7 +860,7 @@ public class ModifyUser {
             return true;
         }
         for (Resource r : deleteResourceList) {
-        	final ManagedSysEntity mSys = managedSysService.getManagedSysByResource(r.getResourceId(), "ACTIVE");
+        	final ManagedSysEntity mSys = managedSysService.getManagedSysByResource(r.getId(), "ACTIVE");
             final String mSysId = (mSys != null) ? mSys.getManagedSysId() : null;
             if(StringUtils.equalsIgnoreCase(l.getManagedSysId(), mSysId)) {
                 return false;

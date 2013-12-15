@@ -872,11 +872,11 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                 if (operation == null) {
                     return;
                 } else if (operation == AttributeOperationEnum.ADD) {
-                    ResourceEntity organizationEntity = resourceService.findResourceById(r.getResourceId());
+                    ResourceEntity organizationEntity = resourceService.findResourceById(r.getId());
                     userEntity.getResources().add(organizationEntity);
 
                 } else if (operation == AttributeOperationEnum.DELETE) {
-                    ResourceEntity re = resourceService.findResourceById(r.getResourceId());
+                    ResourceEntity re = resourceService.findResourceById(r.getId());
                     userEntity.getResources().remove(re);
                     deleteResourceSet.add(resourceDozerConverter.convertToDTO(re, true));
 
@@ -886,7 +886,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
             }
         }
         for (ResourceEntity rue : userEntity.getResources()) {
-            ResourceEntity e = resourceService.findResourceById(rue.getResourceId());
+            ResourceEntity e = resourceService.findResourceById(rue.getId());
             resourceSet.add(resourceDozerConverter.convertToDTO(e, false));
         }
     }

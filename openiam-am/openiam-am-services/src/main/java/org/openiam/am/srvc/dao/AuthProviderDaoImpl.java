@@ -58,8 +58,8 @@ public class AuthProviderDaoImpl extends BaseDaoImpl<AuthProviderEntity, String>
                 }
             }
             
-            if(entity.getResource() != null && StringUtils.isNotEmpty(entity.getResource().getResourceId())) {
-            	criteria.add(Restrictions.eq("resource.resourceId", entity.getResource().getResourceId()));
+            if(entity.getResource() != null && StringUtils.isNotEmpty(entity.getResource().getId())) {
+            	criteria.add(Restrictions.eq("resource.id", entity.getResource().getId()));
             }
         }
         return criteria;
@@ -86,7 +86,7 @@ public class AuthProviderDaoImpl extends BaseDaoImpl<AuthProviderEntity, String>
 	public List<AuthProviderEntity> getByResourceId(String resourceId) {
 		final AuthProviderEntity entity = new AuthProviderEntity();
 		final ResourceEntity resource = new ResourceEntity();
-		resource.setResourceId(resourceId);
+		resource.setId(resourceId);
 		entity.setResource(resource);
 		return getByExample(entity);
 	}

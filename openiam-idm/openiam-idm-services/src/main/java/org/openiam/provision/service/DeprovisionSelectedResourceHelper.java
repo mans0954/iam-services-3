@@ -94,7 +94,7 @@ public class DeprovisionSelectedResourceHelper extends BaseProvisioningHelper {
 
             log.debug("Resource object = " + res);
 
-            ManagedSysDto managedSys = managedSysService.getManagedSysByResource(res.getResourceId());
+            ManagedSysDto managedSys = managedSysService.getManagedSysByResource(res.getId());
             String mSysId = (managedSys != null) ? managedSys.getManagedSysId() : null;
             if (mSysId != null)  {
 

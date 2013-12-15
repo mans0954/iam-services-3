@@ -133,7 +133,7 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
             ResourceEntity resource = new ResourceEntity();
             resource.setName(resourceTypeId+"_"+provider.getName() + "_" + System.currentTimeMillis());
             resource.setResourceType(resourceType);
-            resource.setResourceId(null);
+            resource.setId(null);
             resource.setIsPublic(false);
             resource.setURL(cpURL);
             resourceDao.save(resource);
@@ -297,7 +297,7 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
             ResourceEntity resource = new ResourceEntity();
             resource.setName(System.currentTimeMillis() + "_" + pattern.getPattern());
             resource.setResourceType(resourceType);
-            resource.setResourceId(null);
+            resource.setId(null);
             resource.setIsPublic(false);
             resourceDao.add(resource);
 

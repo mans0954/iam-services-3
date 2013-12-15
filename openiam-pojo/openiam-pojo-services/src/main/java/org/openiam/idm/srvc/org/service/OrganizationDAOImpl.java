@@ -164,8 +164,8 @@ public class OrganizationDAOImpl extends
 				criteria.add(Restrictions.eq("internalOrgId", organization.getInternalOrgId()));
 			}
 			
-			if(organization.getAdminResource() != null && StringUtils.isNotBlank(organization.getAdminResource().getResourceId())) {
-				criteria.add(Restrictions.eq("adminResource.resourceId", organization.getAdminResource().getResourceId()));
+			if(organization.getAdminResource() != null && StringUtils.isNotBlank(organization.getAdminResource().getId())) {
+				criteria.add(Restrictions.eq("adminResource.id", organization.getAdminResource().getId()));
 			}
 		}
 		criteria.addOrder(Order.asc("name"));

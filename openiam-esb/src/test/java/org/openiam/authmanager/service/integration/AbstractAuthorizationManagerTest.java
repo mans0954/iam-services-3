@@ -376,12 +376,12 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractTestNGSpr
 		final Resource resource = resourceServiceClient.getResource(resourceId);
 		final User user = userDataWebService.getUserWithDependent(userId,null, true);
 		
-		checkUser2ResourceEntitlement(user.getUserId(), null, resource.getResourceId(), null);
+		checkUser2ResourceEntitlement(user.getUserId(), null, resource.getId(), null);
 		checkUser2ResourceEntitlement(user.getUserId(), null, null, resource.getName());
 		
 		final List<AuthorizationManagerLoginId> loginIdList = getLoginIdList(user);
 		for(final AuthorizationManagerLoginId loginId : loginIdList) {
-			checkUser2ResourceEntitlement(null, loginId, resource.getResourceId(), null);
+			checkUser2ResourceEntitlement(null, loginId, resource.getId(), null);
 			checkUser2ResourceEntitlement(null, loginId, null, resource.getName());
 		}
 	}

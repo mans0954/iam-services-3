@@ -25,7 +25,7 @@ import org.openiam.idm.srvc.user.dto.User;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "Resource", propOrder = {
         "resourceType",
-        "resourceId",
+        "id",
         "name",
         "description",
         "displayOrder",
@@ -48,7 +48,7 @@ import org.openiam.idm.srvc.user.dto.User;
 @DozerDTOCorrespondence(ResourceEntity.class)
 public class Resource extends BaseObject {
 
-    private String resourceId;
+    private String id;
     private ResourceType resourceType;
     private String name;
     private String description;
@@ -74,12 +74,12 @@ public class Resource extends BaseObject {
     public Resource() {
     }
 
-    public String getResourceId() {
-        return this.resourceId;
+    public String getId() {
+        return this.id;
     }
 
-    public void setResourceId(String resourceId) {
-        this.resourceId = resourceId;
+    public void setId(String id) {
+        this.id = id;
     }
 
     public ResourceType getResourceType() {
@@ -184,7 +184,7 @@ public class Resource extends BaseObject {
 	@Override
     public String toString() {
         return "Resource{" +
-                "resourceId='" + resourceId + '\'' +
+                "resourceId='" + id + '\'' +
                 ", resourceType=" + resourceType +
                 ", name='" + name + '\'' +
                 ", description='" + description + '\'' +
@@ -237,7 +237,7 @@ public class Resource extends BaseObject {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((resourceId == null) ? 0 : resourceId.hashCode());
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		return result;
 	}
 }
