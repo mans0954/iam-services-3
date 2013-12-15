@@ -9,6 +9,7 @@ package org.openiam.idm.srvc.audit.constant;
  */
 public enum AuditAttributeName {
     FAILURE_REASON,
+    SUCCESS_REASON,
     LOGIN_ERROR_CODE,
     EXCEPTION,
     RELAY_STATE,
@@ -19,5 +20,6 @@ public enum AuditAttributeName {
     APPROVER_ASSOCIATIONS,
     REQUEST_APPROVER_IDS,
     URL,
+    MENU_ID,
     REQUEST, RESOURCE_TYPE;
 }

@@ -874,7 +874,7 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 	}
 	
 	@Override
-	public Set<String> getDefaultApproversForEntityCreation() {
+	public Set<String> getDefaultApproversForEntityCreation(final String requestorId, final AssociationType type) {
 		DefaultNewEntityApproverIdentifier identifier = null;
 		try {
 			identifier = (DefaultNewEntityApproverIdentifier)scriptRunner.instantiateClass(null, newEntityApproverGroovyScript);

@@ -17,6 +17,7 @@ public interface AuthorizationManagerMenuWebService {
 	public boolean isUserAuthenticatedToMenuWithURL(
 			@WebParam(name = "userId", targetNamespace = "") final String userId, 
 			@WebParam(name = "url", targetNamespace = "") final String url,
+			@WebParam(name = "menuId", targetNamespace = "") final String menuId,
 			@WebParam(name = "defaultResult", targetNamespace = "") final boolean defaultResult);
 	
 	@WebMethod

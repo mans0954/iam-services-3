@@ -22,5 +22,5 @@ public interface AuthorizationManagerMenuService {
 	
 	public void entitle(final MenuEntitlementsRequest menuEntitlementsRequest);
 	
-	public boolean isUserAuthenticatedToMenuWithURL(final String userId, final String url, final boolean defaultResult);
+	public boolean isUserAuthenticatedToMenuWithURL(final String userId, final String url, final String menuId, final boolean defaultResult);
 }

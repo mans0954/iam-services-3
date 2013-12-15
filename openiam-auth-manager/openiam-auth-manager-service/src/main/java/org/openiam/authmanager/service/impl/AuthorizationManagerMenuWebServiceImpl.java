@@ -431,7 +431,7 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 	
 
 	@Override
-	public boolean isUserAuthenticatedToMenuWithURL(final String userId, final String url, final boolean defaultResult) {
-		return menuService.isUserAuthenticatedToMenuWithURL(userId, url, defaultResult);
+	public boolean isUserAuthenticatedToMenuWithURL(final String userId, final String url, final String menuId, final boolean defaultResult) {
+		return menuService.isUserAuthenticatedToMenuWithURL(userId, url, menuId, defaultResult);
 	}
 }
