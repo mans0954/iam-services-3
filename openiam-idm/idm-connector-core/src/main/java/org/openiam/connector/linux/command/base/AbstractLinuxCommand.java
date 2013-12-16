@@ -99,32 +99,6 @@ public abstract class AbstractLinuxCommand<Request extends RequestType, Response
         sshAgent.executeCommand(user.getUserSetPasswordCommand(), doubledPass);
     }
 
-    protected HashMap<String, String> objectToAttributes(String login,
-            ExtensibleObject obj) {
-        HashMap<String, String> attributes = new HashMap<String, String>();
-        if (StringUtils.hasText(login)) {
-            // Extract attribues into a map. Also save groups
-
-            attributes.put("login", login);
-            if (obj == null) {
-                log.debug("Object: not provided, just identity, seems it is delete operation");
-            } else {
-                log.debug("Object:" + obj.getName() + " - operation="
-                        + obj.getOperation());
-                // Extract attributes
-                for (ExtensibleAttribute att : obj.getAttributes()) {
-                    if (att != null) {
-                        attributes.put(att.getName().toLowerCase(),
-                                att.getValue());
-                    }
-                }
-            }
-        } else {
-            log.error("Login name for Linux user not specified");
-        }
-        return attributes;
-    }
-
     /**
      * Extracts a LinuxUser from the given list of Extensible Objects,
      * 
