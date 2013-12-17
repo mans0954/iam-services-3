@@ -67,6 +67,12 @@ public class ReconciliationConfigEntity implements java.io.Serializable {
     @Column(name="CUSTOM_MATCH_SRC_ATTR",length=40)
     private String matchSrcFieldName;
 
+   /* @Column(name="LAST_EXEC_TIME",length=19)
+    @Temporal(TemporalType.DATE)
+    private java.util.Date lastExecTime;
+    @Column(name="PROGRESS_STATUS",length=40)
+    public String progressStatus;*/
+
     public String getSeparator() {
         return separator;
     }
