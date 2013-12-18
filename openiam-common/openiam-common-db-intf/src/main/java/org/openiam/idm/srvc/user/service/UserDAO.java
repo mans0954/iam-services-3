@@ -74,4 +74,6 @@ public interface UserDAO extends BaseDao<UserEntity, String> {
     public boolean isUserInOrg(final String userId, final String orgId);
 
     public boolean isUserEntitledToResoruce(final String userId, final String resourceId);
+
+    public UserEntity findPrimarySupervisor(String employeeId);
 }

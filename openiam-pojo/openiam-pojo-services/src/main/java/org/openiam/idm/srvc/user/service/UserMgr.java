@@ -1506,7 +1506,7 @@ public class UserMgr implements UserDataService {
 
     @Override
     @Transactional
-    public String saveUserInfo(UserEntity newUserEntity, SupervisorEntity supervisorEntity) throws Exception {
+    public String saveUserInfo(UserEntity newUserEntity, String supervisorId) throws Exception {
         String userId = newUserEntity.getUserId();
         if (newUserEntity.getUserId() != null) {
             // update, need to merge user objects
@@ -1516,20 +1516,18 @@ public class UserMgr implements UserDataService {
         } else {
             userId = createNewUser(newUserEntity);
         }
-        if (supervisorEntity != null) {
+        if (supervisorId != null) {
             // update supervisor
-            List<SupervisorEntity> supervisorList = this.getSupervisors(newUserEntity.getUserId());
-            for (SupervisorEntity s : supervisorList) {
-                log.debug("looking to match supervisor ids = " + s.getSupervisor().getUserId() + " " + supervisorEntity.getSupervisor().getUserId());
-                if (s.getSupervisor().getUserId().equalsIgnoreCase(supervisorEntity.getSupervisor().getUserId())) {
+            List<UserEntity> supervisorList = this.getSuperiors(newUserEntity.getUserId(), 0, Integer.MAX_VALUE);
+            for (UserEntity s : supervisorList) {
+                log.debug("looking to match supervisor ids = " + s.getUserId() + " " + supervisorId);
+                if (s.getUserId().equalsIgnoreCase(supervisorId)) {
                     break;
                 }
-                this.removeSupervisor(s.getOrgStructureId());
+                // this.removeSupervisor(s.getOrgStructureId());
             }
-            log.debug("adding supervisor: " + supervisorEntity.getSupervisor().getUserId());
-            supervisorEntity.setEmployee(newUserEntity);
-
-            this.addSupervisor(supervisorEntity);
+            log.debug("adding supervisor: " + supervisorId);
+            this.addSuperior(supervisorId, newUserEntity.getUserId());
         }
         return userId;
     }

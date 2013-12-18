@@ -236,7 +236,7 @@ public interface UserDataService {
 
     public int getNumOfUsersForRole(final String roleId, String requesterId);
 
-    public String saveUserInfo(UserEntity userEntity, SupervisorEntity supervisorEntity) throws Exception;
+    public String saveUserInfo(UserEntity userEntity, String supervisorId) throws Exception;
 
     public void deleteUser(String userId);
 

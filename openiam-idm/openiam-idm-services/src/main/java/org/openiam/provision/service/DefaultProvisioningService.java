@@ -1027,10 +1027,15 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         log.debug("- role set -> " + roleSet);
         log.debug("- Primary Identity : " + primaryIdentity);
 
+        ProvisionUser finalProvUser = new ProvisionUser(userDozerConverter.convertToDTO(userEntity, true));
+
         // deprovision resources
         if (!isAdd) {
             if (CollectionUtils.isNotEmpty(deleteResourceSet)) {
-                for (Resource res : deleteResourceSet) {
+
+                List<Resource> resources = orderResources("DELETE", finalProvUser, deleteResourceSet, bindingMap);
+
+                for (Resource res : resources) {
                     //skip provisioning for resource if it in NotProvisioning set
                     if(pUser.getNotProvisioninResourcesIds().contains(res.getResourceId())) {
                          auditLog.succeed().setAuditDescription("Skip De-Provisioning for resource: "+res.getName());
@@ -1053,7 +1058,10 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         // provision resources
         if (provInTargetSystemNow) {
             if (CollectionUtils.isNotEmpty(resourceSet)) {
-                for (Resource res : resourceSet) {
+
+                List<Resource> resources = orderResources("ADD", finalProvUser, resourceSet, bindingMap);
+
+                for (Resource res : resources) {
                     //skip provisioning for resource if it in NotProvisioning set
                     if(pUser.getNotProvisioninResourcesIds().contains(res.getResourceId())) {
                         auditLog.succeed().setAuditDescription("Skip Provisioning for resource: "+res.getName());
@@ -1081,8 +1089,6 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 }
             }
         }
-
-        ProvisionUser finalProvUser = new ProvisionUser(userDozerConverter.convertToDTO(userEntity, true));
 
         if (isAdd) { // send email notifications
             if (pUser.isEmailCredentialsToNewUsers()) {
@@ -1225,6 +1231,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 if (l.getLoginId()!=null && l.getLoginId().equals(targetSysLogin.getLoginId())) {
                     targetSysLogin.setOperation(l.getOperation());
                     targetSysLogin.setOrigPrincipalName(l.getOrigPrincipalName());
+                    targetSysLogin.setInitialStatus(l.getStatus());
                 }
             }
 
@@ -1879,16 +1886,22 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
     }
 
     @Override
-    @Transactional
-    public List<String> getAttributesList(String mSysId,
-                                          LookupRequest config) {
+    @Transactional(readOnly = true)
+    public List<String> getAttributesList(String mSysId) {
         if (mSysId == null)
             return null;
-        ManagedSysDto msys = managedSysService.getManagedSys(mSysId);
-        if (msys == null)
+        ManagedSysDto mSys = managedSysService.getManagedSys(mSysId);
+        if (mSys == null)
             return null;
+        LookupRequest lookupRequest = new LookupRequest();
+        lookupRequest.setTargetID(mSys.getManagedSysId());
+        lookupRequest.setRequestID(mSys.getResourceId());
+        lookupRequest.setHostUrl(mSys.getHostUrl());
+        lookupRequest.setHostLoginId(mSys.getUserId());
+        lookupRequest.setHostLoginPassword(mSys.getDecryptPassword());
+        lookupRequest.setScriptHandler(mSys.getAttributeNamesHandler());
         LookupAttributeResponse response = connectorAdapter
-                .lookupAttributes(msys.getConnectorId(), config, MuleContextProvider.getCtx());
+                .lookupAttributes(mSys.getConnectorId(), lookupRequest, MuleContextProvider.getCtx());
         if (StatusCodeType.SUCCESS.equals(response.getStatus())) {
             List<String> attributeNames = new LinkedList<String>();
             for(ExtensibleAttribute attr : response.getAttributes()) {

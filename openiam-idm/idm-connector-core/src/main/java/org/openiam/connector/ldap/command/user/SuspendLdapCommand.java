@@ -54,15 +54,16 @@ public class SuspendLdapCommand extends AbstractLdapCommand<SuspendResumeRequest
             // check if this object exists in the target system
             // dont try to disable and object that does not exist
 
-            if (identityExists(identity, ldapctx)) {
+            //Important!!! For add new record in LDAP we must to create identity in DN format
+            String identityDN = matchObj.getKeyField() + "=" + identity+","+objectBaseDN;
+
+            if (identityExists(identityDN, ldapctx)) {
 
                 // Each directory
                 Directory dirSpecificImp  = DirectorySpecificImplFactory.create(config.getManagedSys().getHandler5());
                 log.debug("Directory specific object name = " + dirSpecificImp.getClass().getName());
                 ModificationItem[] mods = dirSpecificImp.suspend(suspendRequestType);
 
-                //Important!!! For add new record in LDAP we must to create identity in DN format
-                String identityDN = matchObj.getKeyField() + "=" + identity+","+objectBaseDN;
                 log.debug("Modifying for Suspend.. users in ldap.." + identityDN);
                 ldapctx.modifyAttributes(identityDN, mods);
             }

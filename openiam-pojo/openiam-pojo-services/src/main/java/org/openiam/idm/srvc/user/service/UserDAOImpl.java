@@ -196,6 +196,9 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
             if (searchBean.getLastDate() != null) {
                 criteria.add(Restrictions.eq("lastDate", searchBean.getLastDate()));
             }
+            if (searchBean.getUpdatedSince() != null) {
+                criteria.add(Restrictions.ge("lastUpdate", searchBean.getUpdatedSince()));
+            }
             if (searchBean.getDateOfBirth() != null) {
                 criteria.add(Restrictions.eq("birthdate", searchBean.getDateOfBirth()));
             }
@@ -466,6 +469,13 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
 
     public int getSubordinatesCount(String userId) {
         return ((Number) getSubordinatesCriteria(userId).setProjection(rowCount()).uniqueResult()).intValue();
+    }
+
+    public UserEntity findPrimarySupervisor(String employeeId) {
+        Criteria criteria = getCriteria().createAlias("supervisors", "s").add(Restrictions.eq("userId", employeeId))
+                .add(Restrictions.eq("s.isPrimarySuper", true)).setProjection(Projections.property("s.supervisor"));
+
+        return (UserEntity) criteria.uniqueResult();
     }
 
     private Criteria getSuperiorsCriteria(String userId) {

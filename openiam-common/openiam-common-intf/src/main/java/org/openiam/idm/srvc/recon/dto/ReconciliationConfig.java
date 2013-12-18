@@ -1,16 +1,15 @@
 package org.openiam.idm.srvc.recon.dto;
 
+import java.util.Date;
 import java.util.Set;
 
 import javax.persistence.Column;
 import javax.persistence.Transient;
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.*;
 
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.recon.domain.ReconciliationConfigEntity;
+import org.springframework.format.annotation.DateTimeFormat;
 
 // Generated May 29, 2010 8:20:09 PM by Hibernate Tools 3.2.2.GA
 
@@ -18,7 +17,8 @@ import org.openiam.idm.srvc.recon.domain.ReconciliationConfigEntity;
 @XmlType(name = "ReconciliationConfig", propOrder = { "reconConfigId",
         "resourceId", "managedSysId", "frequency", "status", "situationSet", "reportPath",
         "separator", "endOfLine", "notificationEmailAddress",
-        "manualReconciliationFlag","targetSystemMatchScript",
+        "manualReconciliationFlag","targetSystemMatchScript","targetSystemSearchFilter",
+        "matchScript","searchFilter","updatedSince",
         "customIdentityMatchScript",
         "scriptHandler",
         "matchFieldName",
@@ -37,12 +37,26 @@ public class ReconciliationConfig implements MatchConfig, java.io.Serializable {
     private String separator;
     private String endOfLine;
     private String notificationEmailAddress;
+    //Target System Search Query Script
     private String targetSystemMatchScript;
+    //Target System Search Query Filter
+    private String targetSystemSearchFilter;
+    //IDM Search Query Script
+    private String matchScript;
+    //IDM Search Query Filter
+    private String searchFilter;
+    //Updated Since
+    @XmlSchemaType(name = "dateTime")
+    private Date updatedSince;
+    //Custom Rule for Matching
     private String customIdentityMatchScript;
     private Set<ReconciliationSituation> situationSet;
     private boolean manualReconciliationFlag;
+    //IDM Repository Match Field
     private String matchFieldName;
+    //Target System Match Attribute Name
     private String customMatchAttr;
+    //IDM Custom Match Attribute Name (only if CUSTOM ATTRIBUTE type selected)
     private String matchSrcFieldName;
     @XmlElement
     private String scriptHandler;
@@ -161,6 +175,38 @@ public class ReconciliationConfig implements MatchConfig, java.io.Serializable {
 
     public void setTargetSystemMatchScript(String targetSystemMatchScript) {
         this.targetSystemMatchScript = targetSystemMatchScript;
+    }
+
+    public String getTargetSystemSearchFilter() {
+        return targetSystemSearchFilter;
+    }
+
+    public void setTargetSystemSearchFilter(String targetSystemSearchFilter) {
+        this.targetSystemSearchFilter = targetSystemSearchFilter;
+    }
+
+    public String getMatchScript() {
+        return matchScript;
+    }
+
+    public void setMatchScript(String matchScript) {
+        this.matchScript = matchScript;
+    }
+
+    public String getSearchFilter() {
+        return searchFilter;
+    }
+
+    public void setSearchFilter(String searchFilter) {
+        this.searchFilter = searchFilter;
+    }
+
+    public Date getUpdatedSince() {
+        return updatedSince;
+    }
+
+    public void setUpdatedSince(Date updatedSince) {
+        this.updatedSince = updatedSince;
     }
 
     public boolean getManualReconciliationFlag() {

@@ -56,6 +56,8 @@ public class ManagedSysEntity implements Serializable {
     @Column(name = "END_DATE", length = 10)
     @Temporal(TemporalType.DATE)
     private Date endDate;
+    @Column(name = "ATTRIBUTE_NAMES_LOOKUP", length = 120)
+    private String attributeNamesLookup;
     @Column(name = "RESOURCE_ID", length = 32)
     private String resourceId;
     @Column(name = "PRIMARY_REPOSITORY")
@@ -86,6 +88,8 @@ public class ManagedSysEntity implements Serializable {
     private String testConnectionHandler;
     @Column(name = "RECONCILE_RESOURCE_HNDLR", length = 100)
     private String reconcileResourceHandler;
+    @Column(name = "ATTRIBUTE_NAMES_HNDLR", length = 100)
+    private String attributeNamesHandler;
     @Column(name = "HNDLR_5", length = 100)
     private String handler5;
 
@@ -215,6 +219,14 @@ public class ManagedSysEntity implements Serializable {
         this.endDate = endDate;
     }
 
+    public String getAttributeNamesLookup() {
+        return attributeNamesLookup;
+    }
+
+    public void setAttributeNamesLookup(String attributeNamesLookup) {
+        this.attributeNamesLookup = attributeNamesLookup;
+    }
+
     public String getResourceId() {
         return resourceId;
     }
@@ -335,6 +347,14 @@ public class ManagedSysEntity implements Serializable {
         this.reconcileResourceHandler = reconcileResourceHandler;
     }
 
+    public String getAttributeNamesHandler() {
+        return attributeNamesHandler;
+    }
+
+    public void setAttributeNamesHandler(String attributeNamesHandler) {
+        this.attributeNamesHandler = attributeNamesHandler;
+    }
+
     public String getHandler5() {
         return handler5;
     }
@@ -436,6 +456,13 @@ public class ManagedSysEntity implements Serializable {
                 .equals(that.reconcileResourceHandler)
                 : that.reconcileResourceHandler != null)
             return false;
+        if (attributeNamesHandler != null ? !attributeNamesHandler
+                .equals(that.attributeNamesHandler)
+                : that.attributeNamesHandler != null)
+            return false;
+        if (attributeNamesLookup != null ? !attributeNamesLookup.equals(that.attributeNamesLookup)
+                : that.attributeNamesLookup != null)
+            return false;
         if (resourceId != null ? !resourceId.equals(that.resourceId)
                 : that.resourceId != null)
             return false;
@@ -485,6 +512,7 @@ public class ManagedSysEntity implements Serializable {
         result = 31 * result + (pswd != null ? pswd.hashCode() : 0);
         result = 31 * result + (startDate != null ? startDate.hashCode() : 0);
         result = 31 * result + (endDate != null ? endDate.hashCode() : 0);
+        result = 31 * result + (attributeNamesLookup != null ? attributeNamesLookup.hashCode() : 0);
         result = 31 * result + (resourceId != null ? resourceId.hashCode() : 0);
         result = 31
                 * result
@@ -519,6 +547,7 @@ public class ManagedSysEntity implements Serializable {
                 * result
                 + (reconcileResourceHandler != null ? reconcileResourceHandler
                         .hashCode() : 0);
+        result = 31 * result + (attributeNamesHandler != null ? attributeNamesHandler.hashCode() : 0);
         result = 31 * result + (handler5 != null ? handler5.hashCode() : 0);
         return result;
     }
