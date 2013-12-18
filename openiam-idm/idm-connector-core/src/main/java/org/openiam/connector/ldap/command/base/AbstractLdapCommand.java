@@ -31,6 +31,8 @@ import java.util.Set;
 
 public abstract class AbstractLdapCommand<Request extends RequestType, Response extends ResponseType>  extends AbstractCommand<Request, Response> {
 
+    public static final int PAGE_SIZE = 100;
+
     @Autowired
     private ResourceDataService resourceDataService;
 

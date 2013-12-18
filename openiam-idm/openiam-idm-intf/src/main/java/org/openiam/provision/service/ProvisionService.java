@@ -199,12 +199,10 @@ public interface ProvisionService {
      * Return all possible attributes for selected managed system
      *
      * @param managedSysId - managed system
-     * @param config - LookupRequest
      * @return  List<String> with attributes
      */
     @WebMethod
     public List<String> getAttributesList(
-            @WebParam(name = "managedSysId", targetNamespace = "") String managedSysId,
-            @WebParam(name = "config", targetNamespace = "") LookupRequest config);
+            @WebParam(name = "managedSysId", targetNamespace = "") String managedSysId);
 
 }

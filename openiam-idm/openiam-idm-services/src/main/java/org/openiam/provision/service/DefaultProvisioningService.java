@@ -1886,16 +1886,22 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
     }
 
     @Override
-    @Transactional
-    public List<String> getAttributesList(String mSysId,
-                                          LookupRequest config) {
+    @Transactional(readOnly = true)
+    public List<String> getAttributesList(String mSysId) {
         if (mSysId == null)
             return null;
-        ManagedSysDto msys = managedSysService.getManagedSys(mSysId);
-        if (msys == null)
+        ManagedSysDto mSys = managedSysService.getManagedSys(mSysId);
+        if (mSys == null)
             return null;
+        LookupRequest lookupRequest = new LookupRequest();
+        lookupRequest.setTargetID(mSys.getManagedSysId());
+        lookupRequest.setRequestID(mSys.getResourceId());
+        lookupRequest.setHostUrl(mSys.getHostUrl());
+        lookupRequest.setHostLoginId(mSys.getUserId());
+        lookupRequest.setHostLoginPassword(mSys.getDecryptPassword());
+        lookupRequest.setScriptHandler(mSys.getAttributeNamesHandler());
         LookupAttributeResponse response = connectorAdapter
-                .lookupAttributes(msys.getConnectorId(), config, MuleContextProvider.getCtx());
+                .lookupAttributes(mSys.getConnectorId(), lookupRequest, MuleContextProvider.getCtx());
         if (StatusCodeType.SUCCESS.equals(response.getStatus())) {
             List<String> attributeNames = new LinkedList<String>();
             for(ExtensibleAttribute attr : response.getAttributes()) {
