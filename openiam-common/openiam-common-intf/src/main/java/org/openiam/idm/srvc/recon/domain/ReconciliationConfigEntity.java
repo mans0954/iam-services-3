@@ -1,17 +1,10 @@
 package org.openiam.idm.srvc.recon.domain;
 
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
@@ -48,12 +41,20 @@ public class ReconciliationConfigEntity implements java.io.Serializable {
     private String notificationEmailAddress;
     @Column(name = "TARGET_SYS_MATCH_SCRIPT", length = 120)
     private String targetSystemMatchScript;
+    @Column(name = "TARGET_SYS_SEARCH_FILTER", length = 200)
+    private String targetSystemSearchFilter;
+    @Column(name = "MATCH_SCRIPT", length = 120)
+    private String matchScript;
+    @Column(name = "SEARCH_FILTER", length = 200)
+    private String searchFilter;
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "UPDATED_SINCE", length = 19)
+    private Date updatedSince;
     @Column(name = "CUSTOM_IDENTITY_MATCH_SCRIPT", length = 120)
     private String customIdentityMatchScript;
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "RECON_CONFIG_ID", insertable = false, updatable = false)
-    private Set<ReconciliationSituationEntity> situationSet = new HashSet<ReconciliationSituationEntity>(
-            0);
+    private Set<ReconciliationSituationEntity> situationSet = new HashSet<ReconciliationSituationEntity>(0);
 
     @Column(name = "MANUAL_RECONCILIATION_FLAG")
     @Type(type = "yes_no")
@@ -65,6 +66,12 @@ public class ReconciliationConfigEntity implements java.io.Serializable {
     private String customMatchAttr;
     @Column(name="CUSTOM_MATCH_SRC_ATTR",length=40)
     private String matchSrcFieldName;
+
+   /* @Column(name="LAST_EXEC_TIME",length=19)
+    @Temporal(TemporalType.DATE)
+    private java.util.Date lastExecTime;
+    @Column(name="PROGRESS_STATUS",length=40)
+    public String progressStatus;*/
 
     public String getSeparator() {
         return separator;
@@ -169,6 +176,38 @@ public class ReconciliationConfigEntity implements java.io.Serializable {
 
     public void setTargetSystemMatchScript(String targetSystemMatchScript) {
         this.targetSystemMatchScript = targetSystemMatchScript;
+    }
+
+    public String getTargetSystemSearchFilter() {
+        return targetSystemSearchFilter;
+    }
+
+    public void setTargetSystemSearchFilter(String targetSystemSearchFilter) {
+        this.targetSystemSearchFilter = targetSystemSearchFilter;
+    }
+
+    public String getMatchScript() {
+        return matchScript;
+    }
+
+    public void setMatchScript(String matchScript) {
+        this.matchScript = matchScript;
+    }
+
+    public String getSearchFilter() {
+        return searchFilter;
+    }
+
+    public void setSearchFilter(String searchFilter) {
+        this.searchFilter = searchFilter;
+    }
+
+    public Date getUpdatedSince() {
+        return updatedSince;
+    }
+
+    public void setUpdatedSince(Date updatedSince) {
+        this.updatedSince = updatedSince;
     }
 
     public Set<ReconciliationSituationEntity> getSituationSet() {

@@ -25,14 +25,13 @@ import javax.naming.NamingException;
 import javax.naming.directory.*;
 import javax.naming.ldap.LdapContext;
 import java.io.UnsupportedEncodingException;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public abstract class AbstractLdapCommand<Request extends RequestType, Response extends ResponseType>  extends AbstractCommand<Request, Response> {
+
+    public static final int PAGE_SIZE = 100;
 
     @Autowired
     private ResourceDataService resourceDataService;

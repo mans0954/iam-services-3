@@ -8,6 +8,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 import java.io.Serializable;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -79,6 +80,12 @@ public class OrganizationSearchBean extends AbstractSearchBean<Organization, Str
 
     public boolean hasMultipleKeys() {
         return (keySet != null && keySet.size() > 1);
+    }
+    
+    public void setKeys(final List<String> keySet) {
+    	if(keySet != null) {
+    		setKeys(new HashSet<String>(keySet));
+    	}
     }
 
     public void setKeys(final Set<String> keySet) {

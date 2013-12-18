@@ -14,6 +14,9 @@
     <bean id="postProcessor" class="java.lang.String">
         <constructor-arg value="/prov-helper/ProvisionServicePostProcessor.groovy"/>
     </bean>
+    <bean id="resourceOrderProcessor" class="java.lang.String">
+        <constructor-arg value="/prov-helper/ProvisionServiceResourceOrderProcessor.groovy"/>
+    </bean>
 
 	<bean
 		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
