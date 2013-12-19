@@ -70,6 +70,7 @@ import org.openiam.idm.srvc.mngsys.ws.ProvisionConnectorWebService;
 import org.openiam.idm.srvc.msg.service.MailService;
 import org.openiam.idm.srvc.recon.command.ReconciliationCommandFactory;
 import org.openiam.idm.srvc.recon.domain.ReconciliationConfigEntity;
+import org.openiam.idm.srvc.recon.dto.ReconExecStatusOptions;
 import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
 import org.openiam.idm.srvc.recon.dto.ReconciliationResponse;
 import org.openiam.idm.srvc.recon.dto.ReconciliationSituation;
@@ -291,6 +292,9 @@ public class ReconciliationServiceImpl implements ReconciliationService {
     public ReconciliationResponse startReconciliation(
             ReconciliationConfig config) {
 
+        ReconciliationConfigEntity configEntity = reconConfigDao.findById(config.getReconConfigId());
+        configEntity.setExecStatus(ReconExecStatusOptions.STARTED);
+
         Date startDate = new Date();
         SimpleDateFormat DATE_FORMAT = new SimpleDateFormat(DATETIME_FORMAT);
         final AuditLogBuilder auditBuilder = auditLogProvider.getAuditLogBuilder();
@@ -471,18 +475,25 @@ public class ReconciliationServiceImpl implements ReconciliationService {
             //TODO AUDITLOG  stop  processing TargetSys users to IDM
             this.saveReconciliationResults(config.getResourceId(), resultBean);
 
+            configEntity.setLastExecTime(startDate);
+            configEntity.setExecStatus(ReconExecStatusOptions.FINISHED);
+
             //TODO AUDITLOG  stop  processing Reconciliation
             this.sendMail(config, res);
+
         } catch (Exception e) {
             log.error(e);
             e.printStackTrace();
             ReconciliationResponse resp = new ReconciliationResponse(
                     ResponseStatus.FAILURE);
             resp.setErrorText(e.getMessage());
+            configEntity.setExecStatus(ReconExecStatusOptions.FAILED);
             return resp;
+
         } finally {
             auditBuilder.addAttribute(AuditAttributeName.START_RECONCILIATION_DATE, DATE_FORMAT.format(new Date()));
             auditLogService.enqueue(auditBuilder);
+            reconConfigDao.save(configEntity);
         }
 
         return new ReconciliationResponse(ResponseStatus.SUCCESS);
