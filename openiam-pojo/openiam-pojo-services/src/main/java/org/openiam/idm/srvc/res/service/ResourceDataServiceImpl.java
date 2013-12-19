@@ -146,9 +146,9 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
 		/* duplicate name check */
 		final ResourceEntity nameCheck = resourceService.findResourceByName(entity.getName());
 		if (nameCheck != null) {
-			if (StringUtils.isBlank(entity.getResourceId())) {
+			if (StringUtils.isBlank(entity.getId())) {
 				throw new BasicDataServiceException(ResponseCode.NAME_TAKEN, "Resource Name is already in use");
-			} else if (!nameCheck.getResourceId().equals(entity.getResourceId())) {
+			} else if (!nameCheck.getId().equals(entity.getId())) {
 				throw new BasicDataServiceException(ResponseCode.NAME_TAKEN, "Resource Name is already in use");
 			}
 		}
@@ -167,14 +167,14 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
         auditBuilder.setAction(AuditAction.SAVE_RESOURCE);
 		try {
 			validate(resource);
-            auditBuilder.setRequestorUserId(resource.getRequestorUserId()).setTargetResource(resource.getResourceId());
-            if(StringUtils.isBlank(resource.getResourceId())) {
+            auditBuilder.setRequestorUserId(resource.getRequestorUserId()).setTargetResource(resource.getId());
+            if(StringUtils.isBlank(resource.getId())) {
                 auditBuilder.setAction(AuditAction.ADD_RESOURCE);
             }
 
 			final ResourceEntity entity = resourceConverter.convertToEntity(resource, true);
 			resourceService.save(entity, requestorId);
-			response.setResponseValue(entity.getResourceId());
+			response.setResponseValue(entity.getId());
             auditBuilder.succeed();
 		} catch (BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
@@ -245,7 +245,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
 				throw new BasicDataServiceException(ResponseCode.RESOURCE_PROP_VALUE_MISSING, "Resource Property value is not set");
 			}
 
-			if (entity == null || StringUtils.isBlank(entity.getResource().getResourceId())) {
+			if (entity == null || StringUtils.isBlank(entity.getResource().getId())) {
 				throw new BasicDataServiceException(ResponseCode.RESOURCE_PROP_RESOURCE_ID_MISSING, "Resource ID is not set for Resource Property object");
 			}
             resourceService.save(entity);

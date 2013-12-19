@@ -45,6 +45,14 @@ public class ConnectorCommandFactory {
     @Autowired
     @Qualifier("scimCommandFactory")
     private AbstractCommandFactory scimCommandFactory;
+    
+    @Autowired
+    @Qualifier("restCommandFactory")
+    private AbstractCommandFactory restCommandFactory;
+    
+    @Autowired
+    @Qualifier("soapCommandFactory")
+    private AbstractCommandFactory soapCommandFactory;
 
     @Autowired
     @Qualifier("salesForceCommandFactory")
@@ -61,6 +69,7 @@ public class ConnectorCommandFactory {
 
     public ConnectorCommand getConnectorCommand(CommandType commandType, ExtensibleObjectType extensibleObjectType, ConnectorType connectorType) throws ConnectorDataException {
         String error = String.format(ERROR_PATTERN, commandType, extensibleObjectType, connectorType);
+       
         switch (connectorType){
             case CSV:
                 return csvCommandFactory.getConnectorCommand(commandType, extensibleObjectType);
@@ -83,7 +92,11 @@ public class ConnectorCommandFactory {
             case SHELL:
                 return shellCommandFactory.getConnectorCommand(commandType, extensibleObjectType);
             case SCIM:
-                return scimCommandFactory.getConnectorCommand(commandType, extensibleObjectType);
+                return scimCommandFactory.getConnectorCommand(commandType, extensibleObjectType);   
+            case REST:
+                return restCommandFactory.getConnectorCommand(commandType, extensibleObjectType);                
+            case SOAP:
+                return soapCommandFactory.getConnectorCommand(commandType, extensibleObjectType);
             default:
                 throw new ConnectorDataException(ErrorCode.OPERATION_NOT_SUPPORTED_EXCEPTION, error);
         }

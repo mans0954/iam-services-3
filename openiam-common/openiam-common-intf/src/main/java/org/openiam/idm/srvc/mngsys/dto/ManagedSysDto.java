@@ -34,12 +34,12 @@ import java.util.Set;
 @XmlType(name = "ManagedSysDto", propOrder = { "managedSysId", "name",
         "description", "status", "connectorId", "domainId", "hostUrl", "port",
         "commProtocol", "userId", "pswd", "decryptPassword", "endDate",
-        "startDate", "resourceId", "primaryRepository",
+        "startDate", "attributeNamesLookup", "resourceId", "primaryRepository",
         "secondaryRepositoryId", "updateSecondary", "mngSysObjectMatchs",
         "driverUrl", "connectionString", "addHandler", "modifyHandler",
         "deleteHandler", "passwordHandler", "suspendHandler", "searchHandler",
         "lookupHandler", "testConnectionHandler", "reconcileResourceHandler",
-        "handler5", "rules", "groups", "roles" })
+        "attributeNamesHandler", "handler5", "rules", "groups", "roles" })
 @DozerDTOCorrespondence(ManagedSysEntity.class)
 public class ManagedSysDto implements java.io.Serializable {
 
@@ -62,6 +62,7 @@ public class ManagedSysDto implements java.io.Serializable {
     private Date startDate;
     @XmlSchemaType(name = "dateTime")
     private Date endDate;
+    private String attributeNamesLookup;
     private String resourceId;
     private Integer primaryRepository;
     private String secondaryRepositoryId;
@@ -77,6 +78,7 @@ public class ManagedSysDto implements java.io.Serializable {
     private String lookupHandler;
     private String testConnectionHandler;
     private String reconcileResourceHandler;
+    private String attributeNamesHandler;
     private String handler5;
 
     private List<ManagedSysRuleDto> rules = new ArrayList<ManagedSysRuleDto>(0);
@@ -287,6 +289,14 @@ public class ManagedSysDto implements java.io.Serializable {
         this.decryptPassword = decryptPassword;
     }
 
+    public String getAttributeNamesLookup() {
+        return attributeNamesLookup;
+    }
+
+    public void setAttributeNamesLookup(String attributeNamesLookup) {
+        this.attributeNamesLookup = attributeNamesLookup;
+    }
+
     public String getResourceId() {
         return resourceId;
     }
@@ -407,6 +417,14 @@ public class ManagedSysDto implements java.io.Serializable {
         this.reconcileResourceHandler = reconcileResourceHandler;
     }
 
+    public String getAttributeNamesHandler() {
+        return attributeNamesHandler;
+    }
+
+    public void setAttributeNamesHandler(String attributeNamesHandler) {
+        this.attributeNamesHandler = attributeNamesHandler;
+    }
+
     public String getHandler5() {
         return handler5;
     }
@@ -426,6 +444,7 @@ public class ManagedSysDto implements java.io.Serializable {
                 + userId + '\'' + ", pswd='" + pswd + '\''
                 + ", decryptPassword='" + decryptPassword + '\''
                 + ", startDate=" + startDate + ", endDate=" + endDate
+                + ", attributeNamesLookup='" + attributeNamesLookup + '\''
                 + ", resourceId='" + resourceId + '\'' + ", primaryRepository="
                 + primaryRepository + ", secondaryRepositoryId='"
                 + secondaryRepositoryId + '\'' + ", updateSecondary="
@@ -439,6 +458,7 @@ public class ManagedSysDto implements java.io.Serializable {
                 + ", lookupHandler='" + lookupHandler + '\''
                 + ", testConnectionHandler='" + testConnectionHandler + '\''
                 + ", reconcileResourceHandler='" + reconcileResourceHandler
+                + ", attributeNamesHandler='" + attributeNamesHandler
                 + '\'' + ", handler5='" + handler5 + '\''
                 + ", mngSysObjectMatchs=" + mngSysObjectMatchs + '}';
     }

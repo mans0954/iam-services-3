@@ -79,8 +79,8 @@ public class MetadataElementDAOImpl extends BaseDaoImpl<MetadataElementEntity, S
 				setTemplateCriteria(criteria, templateIdSet);
 			}
 			
-			if(entity.getResource() != null && StringUtils.isNotEmpty(entity.getResource().getResourceId())) {
-            	criteria.add(Restrictions.eq("resource.resourceId", entity.getResource().getResourceId()));
+			if(entity.getResource() != null && StringUtils.isNotEmpty(entity.getResource().getId())) {
+            	criteria.add(Restrictions.eq("resource.id", entity.getResource().getId()));
             }
 		}
 		return criteria;
@@ -136,7 +136,7 @@ public class MetadataElementDAOImpl extends BaseDaoImpl<MetadataElementEntity, S
 	public List<MetadataElementEntity> getByResourceId(String resourceId) {
 		final MetadataElementEntity entity = new MetadataElementEntity();
 		final ResourceEntity resource = new ResourceEntity();
-		resource.setResourceId(resourceId);
+		resource.setId(resourceId);
 		entity.setResource(resource);
 		return getByExample(entity);
 	}

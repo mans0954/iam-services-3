@@ -184,6 +184,8 @@ public class DisableUserDelegate {
                         connectorAdapter.suspendRequest(mSys, suspendReq,
                                 muleContext);
 
+                        lg.setStatus(LoginStatusEnum.INACTIVE);
+                        loginManager.updateLogin(lg);
                     } else {
                         // resume - re-enable
                         log.debug("preparing resumeRequest object");

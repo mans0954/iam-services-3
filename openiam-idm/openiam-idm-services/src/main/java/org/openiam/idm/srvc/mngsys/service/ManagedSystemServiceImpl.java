@@ -160,7 +160,7 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
     	resource.setIsPublic(false);
 
     	resourceDAO.save(resource);
-    	entity.setResourceId(resource.getResourceId());
+    	entity.setResourceId(resource.getId());
 
         managedSysDAO.save(entity);
         
@@ -181,7 +181,7 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
     		resource.setResourceType(resourceTypeDAO.findById(resourceTypeId));
     		resource.setIsPublic(false);
     		resourceDAO.save(resource);
-    		entity.setResourceId(resource.getResourceId());
+    		entity.setResourceId(resource.getId());
             //resource.setManagedSysId(sys.getManagedSysId());
     	}
         managedSysDAO.save(entity);

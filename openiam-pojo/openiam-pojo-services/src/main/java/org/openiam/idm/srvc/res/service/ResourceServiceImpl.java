@@ -113,8 +113,8 @@ public class ResourceServiceImpl implements ResourceService {
 		/* admin resource can't have an admin resource - do this check here */
 		boolean isAdminResource = StringUtils.equals(entity.getResourceType().getId(), adminResourceTypeId);
 		
-		if(StringUtils.isNotBlank(entity.getResourceId())) {
-			final ResourceEntity dbObject = resourceDao.findById(entity.getResourceId());
+		if(StringUtils.isNotBlank(entity.getId())) {
+			final ResourceEntity dbObject = resourceDao.findById(entity.getId());
 			entity.setAdminResource(dbObject.getAdminResource());
 			entity.setApproverAssociations(dbObject.getApproverAssociations());
 			
@@ -155,7 +155,7 @@ public class ResourceServiceImpl implements ResourceService {
 	
 	private ApproverAssociationEntity createDefaultApproverAssociations(final ResourceEntity entity, final String requestorId) {
 		final ApproverAssociationEntity association = new ApproverAssociationEntity();
-		association.setAssociationEntityId(entity.getResourceId());
+		association.setAssociationEntityId(entity.getId());
 		association.setAssociationType(AssociationType.RESOURCE);
 		association.setApproverLevel(Integer.valueOf(0));
 		association.setApproverEntityId(requestorId);
@@ -314,7 +314,7 @@ public class ResourceServiceImpl implements ResourceService {
 	public List<ResourceEntity> getChildResources(String resourceId, int from, int size) {
 		final ResourceEntity example = new ResourceEntity();
 		final ResourceEntity parent = new ResourceEntity();
-		parent.setResourceId(resourceId);
+		parent.setId(resourceId);
 		example.addParentResource(parent);
 		final List<ResourceEntity> resultList = resourceDao.getByExample(example, from, size);
 		return resultList;
@@ -325,7 +325,7 @@ public class ResourceServiceImpl implements ResourceService {
 	public int getNumOfChildResources(String resourceId) {
 		final ResourceEntity example = new ResourceEntity();
 		final ResourceEntity parent = new ResourceEntity();
-		parent.setResourceId(resourceId);
+		parent.setId(resourceId);
 		example.addParentResource(parent);
 		return resourceDao.count(example);
 	}
@@ -335,7 +335,7 @@ public class ResourceServiceImpl implements ResourceService {
 	public List<ResourceEntity> getParentResources(String resourceId, int from, int size) {
 		final ResourceEntity example = new ResourceEntity();
 		final ResourceEntity child = new ResourceEntity();
-		child.setResourceId(resourceId);
+		child.setId(resourceId);
 		example.addChildResource(child);
 		return resourceDao.getByExample(example, from, size);
 	}
@@ -345,7 +345,7 @@ public class ResourceServiceImpl implements ResourceService {
 	public int getNumOfParentResources(String resourceId) {
 		final ResourceEntity example = new ResourceEntity();
 		final ResourceEntity child = new ResourceEntity();
-		child.setResourceId(resourceId);
+		child.setId(resourceId);
 		example.addChildResource(child);
 		return resourceDao.count(example);
 	}
@@ -559,8 +559,8 @@ public class ResourceServiceImpl implements ResourceService {
 				visitedSet.add(child);
 				if (CollectionUtils.isNotEmpty(parent.getParentResources())) {
 					for (final ResourceEntity entity : parent.getParentResources()) {
-						retval = entity.getResourceId().equals(
-								child.getResourceId());
+						retval = entity.getId().equals(
+								child.getId());
 						if (retval) {
 							break;
 						}

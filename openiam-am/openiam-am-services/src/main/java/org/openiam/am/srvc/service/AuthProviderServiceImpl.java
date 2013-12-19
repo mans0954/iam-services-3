@@ -181,7 +181,7 @@ public class AuthProviderServiceImpl implements AuthProviderService {
         ResourceEntity resource = provider.getResource();
         resource.setName(System.currentTimeMillis() + "_" + provider.getName());
         resource.setResourceType(resourceType);
-        resource.setResourceId(null);
+        resource.setId(null);
         resource = resourceDao.add(resource);
 
         provider.setProviderId(null);
@@ -252,7 +252,7 @@ public class AuthProviderServiceImpl implements AuthProviderService {
             authResourceAttributeMapDao.deleteByProviderId(providerId);
             this.deleteAuthProviderAttributes(providerId);
             authProviderDao.deleteByPkList(Arrays.asList(new String[]{providerId}));
-            resourceService.deleteResource(entity.getResource().getResourceId());
+            resourceService.deleteResource(entity.getResource().getId());
         }
     }
 
@@ -268,7 +268,7 @@ public class AuthProviderServiceImpl implements AuthProviderService {
         if(providerList!=null && !providerList.isEmpty()){
             for (AuthProviderEntity provider :providerList){
                 pkList.add(provider.getProviderId());
-                resourceIdList.add(provider.getResource().getResourceId());
+                resourceIdList.add(provider.getResource().getId());
             }
             authProviderAttributeDao.deleteByProviderList(pkList);
             authResourceAttributeMapDao.deleteByProviderList(pkList);

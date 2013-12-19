@@ -49,25 +49,25 @@ public class CRUDPreprocessor extends AbstractEntitlementsDelegate {
 				case RESOURCE:
 					final ResourceEntity resource = resourceService.findResourceById(associationId);
 					if(resource != null && resource.getAdminResource() != null) {
-						isAdmin = authManagerService.isEntitled(requestorId, resource.getAdminResource().getResourceId());
+						isAdmin = authManagerService.isEntitled(requestorId, resource.getAdminResource().getId());
 					}
 					break;
 				case GROUP:
 					final GroupEntity group = groupService.getGroup(associationId);
 					if(group != null && group.getAdminResource() != null) {
-						isAdmin = authManagerService.isEntitled(requestorId, group.getAdminResource().getResourceId());
+						isAdmin = authManagerService.isEntitled(requestorId, group.getAdminResource().getId());
 					}
 					break;
 				case ROLE:
 					final RoleEntity role = roleService.getRole(associationId);
 					if(role != null && role.getAdminResource() != null) {
-						isAdmin = authManagerService.isEntitled(requestorId, role.getAdminResource().getResourceId());
+						isAdmin = authManagerService.isEntitled(requestorId, role.getAdminResource().getId());
 					}
 					break;
 				case ORGANIZATION:
 					final OrganizationEntity organization = organizationService.getOrganization(associationId);
 					if(organization != null && organization.getAdminResource() != null) {
-						isAdmin = authManagerService.isEntitled(requestorId, organization.getAdminResource().getResourceId());
+						isAdmin = authManagerService.isEntitled(requestorId, organization.getAdminResource().getId());
 					}
 					break;
 				default:

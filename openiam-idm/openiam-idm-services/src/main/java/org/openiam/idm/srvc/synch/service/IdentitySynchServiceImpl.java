@@ -331,7 +331,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
                     Set<Resource> resourceSet = new HashSet<Resource>();
 
                     Resource resource = new Resource();
-                    resource.setResourceId(config.getTargetResource());
+                    resource.setId(config.getTargetResource());
 
                     if ("ADD".equalsIgnoreCase(config.getOperation())) {
                         // add to resourceList

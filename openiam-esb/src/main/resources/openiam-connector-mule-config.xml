@@ -92,6 +92,34 @@
 			</component>
 		</service>
 	</model>
+	
+	<model name="restConnectorServiceModel">
+		<service name="restConnectorService">
+			<inbound>
+				<inbound-endpoint address="${webservice.path}RestConnector"
+					exchange-pattern="request-response">
+					<cxf:jaxws-service />
+				</inbound-endpoint>
+			</inbound>
+			<component>
+				<spring-object bean="genericRestConnector" />
+			</component>
+		</service>
+	</model>
+	
+	<model name="soapConnectorServiceModel">
+		<service name="soapConnectorService">
+			<inbound>
+				<inbound-endpoint address="${webservice.path}SoapConnector"
+					exchange-pattern="request-response">
+					<cxf:jaxws-service />
+				</inbound-endpoint>
+			</inbound>
+			<component>
+				<spring-object bean="genericSoapConnector" />
+			</component>
+		</service>
+	</model>
 
 	<model name="salesForceConnectorServiceModel">
 		<service name="salesForceConnectorService">

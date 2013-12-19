@@ -54,9 +54,9 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
 	@Override
 	protected Criteria getExampleCriteria(final ResourceEntity resource) {
 		final Criteria criteria = getCriteria();
-		if (StringUtils.isNotBlank(resource.getResourceId())) {
+		if (StringUtils.isNotBlank(resource.getId())) {
 			criteria.add(Restrictions.eq(getPKfieldName(),
-					resource.getResourceId()));
+					resource.getId()));
 		} else {
 			if (StringUtils.isNotEmpty(resource.getName())) {
 				String resourceName = resource.getName();
@@ -79,8 +79,8 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
 				}
 			}
 			
-			if(resource.getAdminResource() != null && StringUtils.isNotBlank(resource.getAdminResource().getResourceId())) {
-				criteria.add(Restrictions.eq("adminResource.resourceId", resource.getAdminResource().getResourceId()));
+			if(resource.getAdminResource() != null && StringUtils.isNotBlank(resource.getAdminResource().getId())) {
+				criteria.add(Restrictions.eq("adminResource.id", resource.getAdminResource().getId()));
 			}
 
 			if (resource.getResourceType() != null) {
@@ -95,14 +95,14 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
 				for (final ResourceEntity parent : resource
 						.getParentResources()) {
 					if (parent != null
-							&& StringUtils.isNotBlank(parent.getResourceId())) {
-						parentResourceIds.add(parent.getResourceId());
+							&& StringUtils.isNotBlank(parent.getId())) {
+						parentResourceIds.add(parent.getId());
 					}
 				}
 
 				if (CollectionUtils.isNotEmpty(parentResourceIds)) {
 					criteria.createAlias("parentResources", "parent").add(
-							Restrictions.in("parent.resourceId",
+							Restrictions.in("parent.id",
 									parentResourceIds));
 				}
 			}
@@ -111,14 +111,14 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
 				final Set<String> childResoruceIds = new HashSet<String>();
 				for (final ResourceEntity child : resource.getChildResources()) {
 					if (child != null
-							&& StringUtils.isNotBlank(child.getResourceId())) {
-						childResoruceIds.add(child.getResourceId());
+							&& StringUtils.isNotBlank(child.getId())) {
+						childResoruceIds.add(child.getId());
 					}
 				}
 
 				if (CollectionUtils.isNotEmpty(childResoruceIds)) {
 					criteria.createAlias("childResources", "child").add(
-							Restrictions.in("child.resourceId",
+							Restrictions.in("child.id",
 									childResoruceIds));
 				}
 			}
@@ -193,7 +193,7 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
 
 	@Override
 	protected String getPKfieldName() {
-		return "resourceId";
+		return "id";
 	}
 
 	@Override

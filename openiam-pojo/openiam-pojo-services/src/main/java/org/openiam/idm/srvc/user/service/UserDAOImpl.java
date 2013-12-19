@@ -413,7 +413,7 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
         }
 
         if (StringUtils.isNotEmpty(resourceId)) {
-            criteria.createAlias("resources", "r").add(Restrictions.eq("r.resourceId", resourceId));
+            criteria.createAlias("resources", "r").add(Restrictions.eq("r.id", resourceId));
         }
 
         if (delegationFilter != null) {
@@ -571,7 +571,7 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
     public List<String> getUserIdsForResources(final Set<String> resourceIds, final int from, final int size) {
         List<String> retVal = null;
         if (CollectionUtils.isNotEmpty(resourceIds)) {
-            final Criteria criteria = getCriteria().createAlias("resources", "resource").add(Restrictions.in("resource.resourceId", resourceIds))
+            final Criteria criteria = getCriteria().createAlias("resources", "resource").add(Restrictions.in("resource.id", resourceIds))
                             .setProjection(Projections.property("userId"));
             if (from > -1) {
                 criteria.setFirstResult(from);

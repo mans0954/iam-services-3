@@ -196,9 +196,12 @@ public class UserProfileServiceImpl implements UserProfileService {
 		if(StringUtils.isBlank(userEntity.getLastName())) {
 			throw new BasicDataServiceException(ResponseCode.LAST_NAME_REQUIRED);
 		}
+		/*
+		 * IDMAPPS-1247
 		if(CollectionUtils.isEmpty(request.getEmails())) {
 			throw new BasicDataServiceException(ResponseCode.EMAIL_REQUIRED);
 		}
+		*/
         if (!provisionServiceFlag) {
 		if(CollectionUtils.isEmpty(request.getLoginList())) {
 			throw new BasicDataServiceException(ResponseCode.LOGIN_REQUIRED);

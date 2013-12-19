@@ -29,6 +29,10 @@ import org.openiam.authmanager.service.AuthorizationManagerAdminService;
 import org.openiam.authmanager.service.AuthorizationManagerMenuService;
 import org.openiam.authmanager.service.AuthorizationManagerService;
 import org.openiam.authmanager.ws.request.MenuEntitlementsRequest;
+import org.openiam.idm.srvc.audit.constant.AuditAction;
+import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
+import org.openiam.idm.srvc.audit.domain.AuditLogBuilder;
+import org.openiam.idm.srvc.base.AbstractBaseService;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.service.GroupDAO;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
@@ -50,7 +54,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service("authorizationManagerMenuService")
 //@ManagedResource(objectName="org.openiam.authorization.manager:name=authorizationManagerMenuService")
-public class AuthorizationManagerMenuServiceImpl implements AuthorizationManagerMenuService, InitializingBean, ApplicationContextAware, Sweepable/*, Runnable*/ {
+public class AuthorizationManagerMenuServiceImpl extends AbstractBaseService implements AuthorizationManagerMenuService, InitializingBean, ApplicationContextAware, Sweepable/*, Runnable*/ {
 
 	private ApplicationContext ctx;
 	
@@ -61,6 +65,7 @@ public class AuthorizationManagerMenuServiceImpl implements AuthorizationManager
 	private Map<String, AuthorizationMenu> menuCache;
 	private Map<String, AuthorizationMenu> menuNameCache;
 	private Map<String, AuthorizationMenu> urlCache;
+	private Map<String, AuthorizationMenu> urlIdCache;
 	
 	@Autowired
 	@Qualifier("jdbcResourceResourceXrefDAO")
@@ -206,6 +211,10 @@ public class AuthorizationManagerMenuServiceImpl implements AuthorizationManager
 		return tempMenuTreeMap;
 	}
 	
+	private String getURLCacheId(final String id, final String url) {
+		return String.format("%s:%s", id, url);
+	}
+	
 	@ManagedOperation(description="sweep the Menu Cache")
 	public void sweep() {
 		final StopWatch sw = new StopWatch();
@@ -217,15 +226,21 @@ public class AuthorizationManagerMenuServiceImpl implements AuthorizationManager
 			tempMenuNameMap.put(menu.getName(), menu);
 		}
 		
-		final Map<String, AuthorizationMenu> tempURLCache = new HashMap<String, AuthorizationMenu>();
+		final Map<String, AuthorizationMenu> tempURLIDCache = new HashMap<String, AuthorizationMenu>();
 		for(final AuthorizationMenu menu : tempMenuTreeMap.values()) {
-			tempURLCache.put(menu.getUrl(), menu);
+			tempURLIDCache.put(getURLCacheId(menu.getId(), menu.getUrl()), menu);
+		}
+		
+		final Map<String, AuthorizationMenu> tempUrlCache = new HashMap<String, AuthorizationMenu>();
+		for(final AuthorizationMenu menu : tempMenuTreeMap.values()) {
+			tempUrlCache.put(menu.getUrl(), menu);
 		}
 		
 		synchronized(this) {
 			menuCache = tempMenuTreeMap;
 			menuNameCache = tempMenuNameMap;
-			urlCache = tempURLCache;
+			urlIdCache = tempURLIDCache;
+			urlCache = tempUrlCache;
 		}
 		sw.stop();
 		log.debug(String.format("Done creating menu trees. Took: %s ms", sw.getTime()));
@@ -517,17 +532,28 @@ public class AuthorizationManagerMenuServiceImpl implements AuthorizationManager
     }
 
 	@Override
-	public boolean isUserAuthenticatedToMenuWithURL(final String userId, final String url, final boolean defaultResult) {
+	public boolean isUserAuthenticatedToMenuWithURL(final String userId, final String url, final String menuId, final boolean defaultResult) {
 		boolean retVal = defaultResult;
-		final AuthorizationMenu menu = urlCache.get(url);
-		if(menu != null) {
-			if(menu.getIsPublic()) {
-				retVal = true;
-			} else {
-				final AuthorizationResource resource = new AuthorizationResource();
-				resource.setId(menu.getId());
-				retVal = authManager.isEntitled(userId, resource);
+		final AuditLogBuilder builder = auditLogProvider.getAuditLogBuilder().setAction(AuditAction.MENU_AUTHORIZATON).setTargetUser(userId).setURL(url).addAttribute(AuditAttributeName.MENU_ID, menuId);
+		final AuthorizationMenu menu = StringUtils.isNotBlank(menuId) ? urlIdCache.get(getURLCacheId(menuId, url)) : urlCache.get(url);
+		try {
+			if(menu != null) {
+				if(menu.getIsPublic()) {
+					builder.setSuccessReason("Is Public");
+					retVal = true;
+				} else {
+					final AuthorizationResource resource = new AuthorizationResource();
+					resource.setId(menu.getId());
+					retVal = authManager.isEntitled(userId, resource);
+				}
 			}
+			if(retVal) {
+				builder.succeed();
+			} else {
+				builder.fail().setFailureReason("Unauthorized");
+			}
+		} finally {
+			auditLogService.enqueue(builder);
 		}
 		return retVal;
 	}

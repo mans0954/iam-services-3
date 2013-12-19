@@ -18,7 +18,7 @@
 		<class-a>org.openiam.idm.srvc.res.domain.ResourcePropEntity</class-a>
 		<class-b>org.openiam.idm.srvc.res.dto.ResourceProp</class-b>
 		<field>
-			<a>resource.resourceId</a>
+			<a>resource.id</a>
 			<b>resourceId</b>
 		</field>
 	</mapping>

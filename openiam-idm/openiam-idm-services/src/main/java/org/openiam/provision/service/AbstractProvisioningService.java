@@ -207,6 +207,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
     @Autowired
     protected String postProcessor;
     @Autowired
+    protected String resourceOrderProcessor;
+    @Autowired
     protected AttributeMapDozerConverter attributeMapDozerConverter;
     @Autowired
     protected ProvisionQueueService provQueueService;
@@ -436,6 +438,24 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         } else {
             log.debug("- policyAttrMap IS null");
         }
+    }
+
+    protected List<Resource> orderResources(String operation, ProvisionUser pUser, Set<Resource> resources, Map<String, Object> bindingMap) {
+        try {
+            ProvisionServiceResourceOrderProcessor script =
+                    (ProvisionServiceResourceOrderProcessor) scriptRunner.instantiateClass(bindingMap, resourceOrderProcessor);
+            if ("ADD".equalsIgnoreCase(operation)) {
+                return script.orderProvisionResources (pUser, resources, bindingMap);
+
+            } else if ("DELETE".equalsIgnoreCase(operation)) {
+                return script.orderDeprovisionResources (pUser, resources, bindingMap);
+
+            }
+        } catch (Exception ce) {
+            log.error(ce);
+        }
+
+        return Collections.EMPTY_LIST;
     }
 
     protected int callPreProcessor(String operation, ProvisionUser pUser, Map<String, Object> bindingMap ) {
@@ -872,11 +892,11 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                 if (operation == null) {
                     return;
                 } else if (operation == AttributeOperationEnum.ADD) {
-                    ResourceEntity organizationEntity = resourceService.findResourceById(r.getResourceId());
+                    ResourceEntity organizationEntity = resourceService.findResourceById(r.getId());
                     userEntity.getResources().add(organizationEntity);
 
                 } else if (operation == AttributeOperationEnum.DELETE) {
-                    ResourceEntity re = resourceService.findResourceById(r.getResourceId());
+                    ResourceEntity re = resourceService.findResourceById(r.getId());
                     userEntity.getResources().remove(re);
                     deleteResourceSet.add(resourceDozerConverter.convertToDTO(re, true));
 
@@ -886,7 +906,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
             }
         }
         for (ResourceEntity rue : userEntity.getResources()) {
-            ResourceEntity e = resourceService.findResourceById(rue.getResourceId());
+            ResourceEntity e = resourceService.findResourceById(rue.getId());
             resourceSet.add(resourceDozerConverter.convertToDTO(e, false));
         }
     }

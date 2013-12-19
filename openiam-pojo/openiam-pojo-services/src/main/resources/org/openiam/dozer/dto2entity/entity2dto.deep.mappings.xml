@@ -18,7 +18,7 @@
 		<class-a>org.openiam.idm.srvc.res.domain.ResourceEntity</class-a>
 		<class-b>org.openiam.idm.srvc.res.dto.Resource</class-b>
 		<field>
-			<a>adminResource.resourceId</a>
+			<a>adminResource.id</a>
 			<b>adminResourceId</b>
 		</field>
 		<field>
@@ -181,7 +181,7 @@
 		<class-a>org.openiam.idm.srvc.grp.domain.GroupEntity</class-a>
 		<class-b>org.openiam.idm.srvc.grp.dto.Group</class-b>
 		<field>
-			<a>adminResource.resourceId</a>
+			<a>adminResource.id</a>
 			<b>adminResourceId</b>
 		</field>
 		<field>
@@ -236,7 +236,7 @@
 		<class-a>org.openiam.idm.srvc.role.domain.RoleEntity</class-a>
 		<class-b>org.openiam.idm.srvc.role.dto.Role</class-b>
 		<field>
-			<a>adminResource.resourceId</a>
+			<a>adminResource.id</a>
 			<b>adminResourceId</b>
 		</field>
 		<field>
@@ -339,7 +339,7 @@
 		</class-a>
 		<class-b>org.openiam.idm.srvc.meta.dto.MetadataElement</class-b>
 		<field>
-			<a>resource.resourceId</a>
+			<a>resource.id</a>
 			<b>resourceId</b>
 		</field>
 		<field>
@@ -450,7 +450,7 @@
 		<class-b>org.openiam.idm.srvc.meta.dto.MetadataElementPageTemplate
 		</class-b>
 		<field>
-			<a>resource.resourceId</a>
+			<a>resource.id</a>
 			<b>resourceId</b>
 		</field>
 		<field
@@ -534,7 +534,7 @@
 		<class-a>org.openiam.idm.srvc.org.domain.OrganizationEntity</class-a>
 		<class-b>org.openiam.idm.srvc.org.dto.Organization</class-b>
 		<field>
-			<a>adminResource.resourceId</a>
+			<a>adminResource.id</a>
 			<b>adminResourceId</b>
 		</field>
 		<field>
@@ -734,7 +734,7 @@
 			<b>isPublic</b>
 		</field>
 		<field>
-			<a>resource.resourceId</a>
+			<a>resource.id</a>
 			<b>resourceId</b>
 		</field>
 		<field>
@@ -822,7 +822,7 @@
 			<b>providerAttributeSet</b>
 		</field>
 		<field>
-			<a>resource.resourceId</a>
+			<a>resource.id</a>
 			<b>resourceId</b>
 		</field>
 		<field
@@ -857,7 +857,7 @@
 			<b>isSSL</b>
 		</field>
 		<field>
-			<a>resource.resourceId</a>
+			<a>resource.id</a>
 			<b>resourceId</b>
 		</field>
 		<field>
