@@ -621,6 +621,10 @@ public class ReconciliationServiceImpl implements ReconciliationService {
             }
         }
 
+        if (StringUtils.isBlank(targetUserPrincipal)) {
+            throw new IllegalArgumentException("Target system Principal can not be defined with Match Attribute Name: " + config.getCustomMatchAttr());
+        }
+
         try {
             MatchObjectRule matchObjectRule = matchRuleFactory.create(config.getCustomIdentityMatchScript());
             User usr = matchObjectRule.lookup(config, attributeMap);
