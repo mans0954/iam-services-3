@@ -1,26 +1,15 @@
 package org.openiam.connector.gapps.command.user;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.mvel2.optimizers.impl.refl.nodes.ArrayLength;
+import org.openiam.connector.gapps.GoogleAgent;
 import org.openiam.connector.gapps.command.base.AbstractGoogleAppsCommand;
 import org.openiam.connector.type.ConnectorDataException;
-import org.openiam.connector.type.ObjectValue;
 import org.openiam.connector.type.constant.ErrorCode;
-import org.openiam.connector.type.constant.StatusCodeType;
 import org.openiam.connector.type.request.PasswordRequest;
-import org.openiam.connector.type.request.SearchRequest;
 import org.openiam.connector.type.response.ResponseType;
-import org.openiam.connector.type.response.SearchResponse;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
-import org.openiam.idm.srvc.mngsys.domain.ManagedSysRuleEntity;
-import org.openiam.provision.type.ExtensibleUser;
 import org.springframework.stereotype.Service;
 
-import com.google.api.services.admin.directory.Directory;
-import com.google.api.services.admin.directory.model.User;
+import com.google.gdata.data.appsforyourdomain.generic.GenericEntry;
 
 @Service("setPasswordGoogleAppsCommand")
 public class SetPasswordUserGoogleCommand extends
@@ -30,23 +19,24 @@ public class SetPasswordUserGoogleCommand extends
     public ResponseType execute(PasswordRequest passwordReq)
             throws ConnectorDataException {
         ResponseType responseType = new ResponseType();
+        ManagedSysEntity mSys = managedSysService.getManagedSysById(passwordReq
+                .getTargetID());
+        String adminEmail = mSys.getUserId();
+        String password = this.getPassword(mSys.getManagedSysId());
+        String domain = mSys.getHostUrl();
         try {
-            ManagedSysEntity mSys = managedSysService
-                    .getManagedSysById(passwordReq.getTargetID());
-            List<ManagedSysRuleEntity> rules = this.getRules(mSys);
-
-            responseType.setRequestID(passwordReq.getRequestID());
-            responseType.setStatus(StatusCodeType.SUCCESS);
-            Directory dir = getGoogleAppsClient(rules);
-
-            User user = dir.users().get(passwordReq.getObjectIdentity())
-                    .execute();
-            user.setPassword(passwordReq.getPassword());
-            dir.users().update(user.getId(), user);
-        } catch (IOException e) {
+            GoogleAgent agent = new GoogleAgent();
+            GenericEntry getUser = agent.getUser(adminEmail, password, domain,
+                    passwordReq.getObjectIdentity());
+            getUser.getAllProperties().put("password",
+                    passwordReq.getPassword());
+            agent.updateUser(adminEmail, password, domain,
+                    getUser.getAllProperties(), passwordReq.getObjectIdentity());
+        } catch (Exception e) {
             throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR,
                     e.getMessage());
         }
+
         return responseType;
     }
 }

@@ -1,18 +1,13 @@
 package org.openiam.connector.gapps.command.user;
 
-import java.util.List;
-
+import org.openiam.connector.gapps.GoogleAgent;
 import org.openiam.connector.gapps.command.base.AbstractCrudGoogleAppsCommand;
 import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.connector.type.constant.ErrorCode;
 import org.openiam.connector.type.request.CrudRequest;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
-import org.openiam.idm.srvc.mngsys.domain.ManagedSysRuleEntity;
 import org.openiam.provision.type.ExtensibleUser;
 import org.springframework.stereotype.Service;
-
-import com.google.api.services.admin.directory.Directory;
-import com.google.api.services.admin.directory.model.User;
 
 @Service("deleteUserGoogleAppsCommand")
 public class DeleteUserGoogleCommand extends
@@ -22,16 +17,15 @@ public class DeleteUserGoogleCommand extends
     protected void performObjectOperation(
             CrudRequest<ExtensibleUser> crudRequest, ManagedSysEntity managedSys)
             throws ConnectorDataException {
+        ManagedSysEntity mSys = managedSysService.getManagedSysById(crudRequest
+                .getTargetID());
+        String adminEmail = mSys.getUserId();
+        String password = this.getPassword(mSys.getManagedSysId());
+        String domain = mSys.getHostUrl();
         try {
-            List<ManagedSysRuleEntity> rules = this.getRules(managedSys);
-
-            Directory dir = this.getGoogleAppsClient(rules);
-            User googleUser = new User();
-            this.convertToGoogleUser(googleUser,
-                    crudRequest.getExtensibleObject(), rules);
-
-            dir.users().delete(crudRequest.getExtensibleObject().getObjectId())
-                    .execute();
+            GoogleAgent agent = new GoogleAgent();
+            agent.deleteUser(adminEmail, password, domain,
+                    crudRequest.getObjectIdentity());
         } catch (Exception e) {
             throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR,
                     e.getMessage());

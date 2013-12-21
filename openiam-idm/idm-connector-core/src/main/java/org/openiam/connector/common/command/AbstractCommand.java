@@ -82,6 +82,13 @@ public abstract class AbstractCommand<Request extends RequestType, Response exte
         return matchObj;
     }
 
+    protected String getPassword(String managedSystemId)
+            throws ConnectorDataException {
+        ManagedSysEntity mSys = managedSysService
+                .getManagedSysById(managedSystemId);
+        return this.getDecryptedPassword(mSys.getPswd());
+    }
+
     protected HashMap<String, String> objectToAttributes(String login,
             ExtensibleObject obj) {
         HashMap<String, String> attributes = new HashMap<String, String>();

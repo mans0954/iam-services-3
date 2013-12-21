@@ -170,43 +170,23 @@
 			<groupId>javax.servlet</groupId>
 			<artifactId>jstl</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>com.google.gdata</groupId>
+			<artifactId>core</artifactId>
+			<version>1.47.1</version>
+		</dependency>
+		<dependency>
+			<groupId>com.google.gdata</groupId>
+			<artifactId>gdata-analytics-2.1</artifactId>
+		</dependency>
+<!-- 		<dependency> -->
+<!-- 			<groupId>com.google.gdata</groupId> -->
+<!-- 			<artifactId>gdata-appsforyourdomain-1.0</artifactId> -->
+<!-- 		</dependency> -->
 
-		<!-- <dependency> -->
-		<!-- <groupId>com.google.gdata</groupId> -->
-		<!-- <artifactId>gdata-core-1.0</artifactId> -->
-		<!-- </dependency> -->
-		<!-- <dependency> -->
-		<!-- <groupId>com.google.gdata</groupId> -->
-		<!-- <artifactId>gdata-analytics-2.1</artifactId> -->
-		<!-- </dependency> -->
-		<!-- <dependency> -->
-		<!-- <groupId>com.google.gdata</groupId> -->
-		<!-- <artifactId>gdata-appsforyourdomain-1.0</artifactId> -->
-		<!-- </dependency> -->
-
-		<!-- <dependency> -->
-		<!-- <groupId>com.google.gdata</groupId> -->
-		<!-- <artifactId>gdata-client-1.0</artifactId> -->
-		<!-- </dependency> -->
 		<dependency>
-			<groupId>com.google.http-client</groupId>
-			<artifactId>google-http-client-jackson2</artifactId>
-			<version>1.17.0-rc</version>
-		</dependency>
-		<dependency>
-			<groupId>com.google.oauth-client</groupId>
-			<artifactId>google-oauth-client-jetty</artifactId>
-			<version>1.17.0-rc</version>
-		</dependency>
-		<dependency>
-			<groupId>com.google.apis</groupId>
-			<artifactId>google-api-services-admin</artifactId>
-			<version>email_migration_v2-rev6-1.17.0-rc</version>
-		</dependency>
-		<dependency>
-			<groupId>com.google.apis</groupId>
-			<artifactId>google-api-services-admin-directory</artifactId>
-			<version>directory_v1-rev15-1.17.0-rc</version>
+			<groupId>com.google.gdata</groupId>
+			<artifactId>gdata-client-1.0</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>ch.ethz.ssh2</groupId>

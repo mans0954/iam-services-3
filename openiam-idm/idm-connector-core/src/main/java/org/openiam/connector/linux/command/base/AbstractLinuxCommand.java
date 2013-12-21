@@ -154,13 +154,6 @@ public abstract class AbstractLinuxCommand<Request extends RequestType, Response
         return groups;
     }
 
-    protected String getPassword(String managedSystemId)
-            throws ConnectorDataException {
-        ManagedSysEntity mSys = managedSysService
-                .getManagedSysById(managedSystemId);
-        return this.getDecryptedPassword(mSys.getPswd());
-    }
-
     protected Map<String, String> ruleToMap(String searchRule) {
         Map<String, String> resultMap = new HashMap<String, String>();
         if (StringUtils.hasText(searchRule)) {
