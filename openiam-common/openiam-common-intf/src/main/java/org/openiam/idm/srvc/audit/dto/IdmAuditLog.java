@@ -236,10 +236,11 @@ public class IdmAuditLog implements Serializable {
     		if(customRecords == null) {
     			customRecords = new HashSet<IdmAuditLogCustom>();
     		}
-    		final IdmAuditLogCustom entity = new IdmAuditLogCustom();
-    		entity.setKey(key);
-    		entity.setValue(value);
-    		customRecords.add(entity);
+    		final IdmAuditLogCustom logAttr = new IdmAuditLogCustom();
+            logAttr.setKey(key);
+            logAttr.setValue(value);
+            logAttr.setTimestamp(new Date().getTime());
+    		customRecords.add(logAttr);
     	}
     }
 

@@ -12,4 +12,5 @@ import org.openiam.idm.srvc.audit.domain.AuditLogBuilder;
 public interface AuditLogProvider {
     public AuditLogBuilder getAuditLogBuilder();
     public void updateAuditLogBuilder(AuditLogBuilder value);
+    public AuditLogBuilder persist(AuditLogBuilder value);
 }

@@ -1,9 +1,9 @@
 package org.openiam.idm.srvc.audit.service;
 
-import net.sf.ehcache.Cache;
-import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Element;
+import org.apache.commons.lang.StringUtils;
 import org.openiam.idm.srvc.audit.domain.AuditLogBuilder;
+import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
@@ -21,10 +21,22 @@ public class AuditLogProviderImpl implements AuditLogProvider  {
     @Qualifier("auditLogBuilderCache")
     private net.sf.ehcache.Ehcache auditLogBuilderCache;
 
+    @Autowired
+    private AuditLogService auditLogService;
 
 
+    @Override
+    public AuditLogBuilder persist(AuditLogBuilder auditLogBuilder) {
+        IdmAuditLogEntity auditLogEntity = auditLogBuilder.getEntity();
+        if(StringUtils.isEmpty(auditLogEntity.getId())) {
+          String id = auditLogService.save(auditLogEntity);
+          auditLogEntity = auditLogService.findById(id);
+          auditLogBuilder.setEntity(auditLogEntity);
+        }
+        return auditLogBuilder;
+    }
 
-    public AuditLogBuilder getAuditLogBuilder() {
+    public AuditLogBuilder getAuditLogBuilder () {
         final long threadId = Thread.currentThread().getId();
         Element chachedElement = auditLogBuilderCache.get(threadId);
 

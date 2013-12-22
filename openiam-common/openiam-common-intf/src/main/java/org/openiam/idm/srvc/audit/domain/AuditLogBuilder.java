@@ -191,7 +191,7 @@ public class AuditLogBuilder implements Serializable {
 	 * @return this
 	 */
 	public AuditLogBuilder addAttribute(final AuditAttributeName key, final String value) {
-		entity.addCustomRecord(key.name(), value);
+        entity.addCustomRecord(key.name(), value);
 		return this;
 	}
 
