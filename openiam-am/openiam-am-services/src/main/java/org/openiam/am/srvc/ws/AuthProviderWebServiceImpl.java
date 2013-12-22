@@ -1,42 +1,54 @@
-package org.openiam.am.srvc.service;
+package org.openiam.am.srvc.ws;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.openiam.am.srvc.dao.*;
-import org.openiam.am.srvc.domain.*;
-import org.openiam.idm.srvc.res.domain.ResourceEntity;
-import org.openiam.idm.srvc.res.domain.ResourceTypeEntity;
-import org.openiam.idm.srvc.res.service.ResourceDAO;
-import org.openiam.idm.srvc.res.service.ResourceDataService;
-import org.openiam.idm.srvc.res.service.ResourceService;
-import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
+import org.apache.log4j.Logger;
+import org.openiam.am.srvc.domain.AuthAttributeEntity;
+import org.openiam.am.srvc.domain.AuthProviderEntity;
+import org.openiam.am.srvc.dozer.converter.AuthAttributeDozerConverter;
+import org.openiam.am.srvc.dozer.converter.AuthProviderAttributeDozerConverter;
+import org.openiam.am.srvc.dozer.converter.AuthProviderDozerConverter;
+import org.openiam.am.srvc.dozer.converter.AuthProviderTypeDozerConverter;
+import org.openiam.am.srvc.dto.AuthAttribute;
+import org.openiam.am.srvc.dto.AuthProvider;
+import org.openiam.am.srvc.dto.AuthProviderAttribute;
+import org.openiam.am.srvc.dto.AuthProviderType;
+import org.openiam.am.srvc.searchbeans.AuthAttributeSearchBean;
+import org.openiam.am.srvc.searchbeans.AuthProviderSearchBean;
+import org.openiam.am.srvc.searchbeans.converter.AuthAttributeSearchBeanConverter;
+import org.openiam.am.srvc.searchbeans.converter.AuthProviderSearchBeanConverter;
+import org.openiam.am.srvc.service.AuthProviderService;
+import org.openiam.base.ws.Response;
+import org.openiam.base.ws.ResponseCode;
+import org.openiam.base.ws.ResponseStatus;
+import org.openiam.exception.BasicDataServiceException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
+import javax.jws.WebService;
 import java.util.*;
 
-@Service("authProviderService")
-public class AuthProviderServiceImpl implements AuthProviderService {
-    private final Log log = LogFactory.getLog(this.getClass());
-    private static final String resourceTypeId="AUTH_PROVIDER";
+@Service("authProviderWS")
+@WebService(endpointInterface = "org.openiam.am.srvc.ws.AuthProviderWebService",
+            targetNamespace = "urn:idm.openiam.org/srvc/am/service", portName = "AuthProviderWebServicePort",
+            serviceName = "AuthProviderWebService")
+public class AuthProviderWebServiceImpl implements AuthProviderWebService {
+	
+	private static Logger log = Logger.getLogger(AuthProviderWebServiceImpl.class);
+	
+    @Autowired
+    private AuthProviderService authProviderService;
 
     @Autowired
-    private AuthProviderTypeDao authProviderTypeDao;
+    private AuthAttributeSearchBeanConverter authAttributeSearchBeanConverter;
     @Autowired
-    private AuthAttributeDao authAttributeDao;
+    private AuthProviderSearchBeanConverter authProviderSearchBeanConverter;
     @Autowired
-    private AuthProviderDao authProviderDao;
+    private AuthProviderTypeDozerConverter authProviderTypeDozerConverter;
     @Autowired
-    private AuthProviderAttributeDao authProviderAttributeDao;
+    private AuthAttributeDozerConverter authAttributeDozerConverter;
     @Autowired
-    private AuthResourceAttributeMapDao authResourceAttributeMapDao;
+    private AuthProviderDozerConverter authProviderDozerConverter;
     @Autowired
-    private AuthResourceAttributeService authResourceAttributeService;
-    @Autowired
-    private ResourceTypeDAO resourceTypeDAO;
-    @Autowired
-    private ResourceService resourceService;
+    private AuthProviderAttributeDozerConverter authProviderAttributeDozerConverter;
 
     /*
     *==================================================
@@ -44,103 +56,157 @@ public class AuthProviderServiceImpl implements AuthProviderService {
     *===================================================
     */
     @Override
-    public AuthProviderTypeEntity getAuthProviderType(String providerType) {
-        return authProviderTypeDao.findById(providerType);
+    public AuthProviderType getAuthProviderType(String providerType) {
+        return authProviderTypeDozerConverter.convertToDTO(authProviderService.getAuthProviderType(providerType), true);
     }
 
     @Override
-    public List<AuthProviderTypeEntity> getAuthProviderTypeList() {
-        return authProviderTypeDao.findAll();
+    public List<AuthProviderType> getAuthProviderTypeList() {
+        return authProviderTypeDozerConverter.convertToDTOList(authProviderService.getAuthProviderTypeList(), true);
     }
 
     @Override
-    @Transactional
-    public void addProviderType(AuthProviderTypeEntity entity) {
-        if(entity==null)
-            throw new NullPointerException("provider type is null");
-        authProviderTypeDao.save(entity);
-    }
-
-    @Override
-    @Transactional
-    public void deleteProviderType(String providerType) {
-        if(providerType==null)
-            throw new NullPointerException("provider type is null");
-        AuthProviderTypeEntity entity  = this.getAuthProviderType(providerType);
-        if(entity!=null){
-            this.deleteAuthAttributesByType(providerType);
-            this.deleteAuthProviderByType(providerType);
-            authProviderTypeDao.delete(entity);
+    public Response addProviderType(AuthProviderType providerType) {
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+            if(providerType == null || providerType.getProviderType() == null || providerType.getProviderType().trim().isEmpty()) {
+                throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_TYPE_NOT_SET);
+            }
+            authProviderService.addProviderType(authProviderTypeDozerConverter.convertToEntity(providerType, false));
+        } catch(BasicDataServiceException e) {
+        	log.error(e.getMessage(), e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(e.getCode());
+        } catch(Throwable e) {
+        	log.error(e.getMessage(), e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorText(e.getMessage());
         }
+        return response;
     }
+
+    @Override
+    public Response deleteProviderType(String providerType) {
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+            if(providerType == null || providerType.trim().isEmpty()) {
+                throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_TYPE_NOT_SET);
+            }
+            authProviderService.deleteProviderType(providerType);
+        } catch(BasicDataServiceException e) {
+        	log.error(e.getMessage(), e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(e.getCode());
+        } catch(Throwable e) {
+        	log.error(e.getMessage(), e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorText(e.getMessage());
+        }
+        return response;
+    }
+
     /*
     *==================================================
     * AuthAttributeEntity section
     *===================================================
     */
     @Override
-    public List<AuthAttributeEntity> findAuthAttributeBeans(AuthAttributeEntity searchBean, Integer size,
-                                                            Integer from) {
-        return authAttributeDao.getByExample(searchBean, from, size);
-    }
-    @Override
-    public Integer getNumOfAuthAttributeBeans(AuthAttributeEntity searchBean){
-        return authAttributeDao.count(searchBean);
+    public List<AuthAttribute> findAuthAttributeBeans(AuthAttributeSearchBean searchBean, Integer size, Integer from) {
+
+        final AuthAttributeEntity entity = authAttributeSearchBeanConverter.convert(searchBean);
+        final List<AuthAttributeEntity> attributeList = authProviderService.findAuthAttributeBeans(entity, size, from);
+        return authAttributeDozerConverter.convertToDTOList(attributeList, (searchBean.isDeepCopy()));
     }
 
     @Override
-    @Transactional
-    public void addAuthAttribute(AuthAttributeEntity attribute) {
-        if(attribute==null)
-            throw new NullPointerException("attribute is null");
-        if(attribute.getAttributeName()==null)
-            throw new NullPointerException("attribute name is null");
-        if(attribute.getProviderType()==null)
-            throw new NullPointerException("provider type is null");
-
-        attribute.setAuthAttributeId(null);
-        authAttributeDao.add(attribute);
+    public Integer getNumOfAuthAttributeBeans(AuthAttributeSearchBean searchBean){
+          return authProviderService.getNumOfAuthAttributeBeans(authAttributeSearchBeanConverter.convert(searchBean));
     }
 
     @Override
-    @Transactional
-    public void updateAuthAttribute(AuthAttributeEntity attribute) {
-        if(attribute==null)
-            throw new NullPointerException("attribute is null");
-        if(attribute.getAttributeName()==null)
-            throw new NullPointerException("attribute name is null");
-        if(attribute.getProviderType()==null)
-            throw new NullPointerException("provider type is null");
-
-        AuthAttributeEntity entity = authAttributeDao.findById(attribute.getAuthAttributeId());
-        if(entity!=null){
-            entity.setDataType(attribute.getDataType());
-            entity.setDescription(attribute.getDescription());
-            entity.setRequired(attribute.isRequired());
-            entity.setAttributeName(attribute.getAttributeName());
-            entity.setProviderType(attribute.getProviderType());
-            authAttributeDao.update(entity);
+    public Response addAuthAttribute(AuthAttribute attribute) {
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+            if(attribute==null)
+                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+            if(attribute.getAttributeName()==null || attribute.getAttributeName().trim().isEmpty())
+                throw new BasicDataServiceException(ResponseCode.AUTH_ATTRIBUTE_NAME_NOT_SET);
+            if(attribute.getProviderType()==null)
+                throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_TYPE_NOT_SET);
+            authProviderService.addAuthAttribute(authAttributeDozerConverter.convertToEntity(attribute,false));
+        } catch(BasicDataServiceException e) {
+        	log.error(e.getMessage(), e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(e.getCode());
+        } catch(Throwable e) {
+        	log.error(e.getMessage(), e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorText(e.getMessage());
         }
+        return response;
     }
 
     @Override
-    @Transactional
-    public void deleteAuthAttribute(String authAttributeId) {
-        if(authAttributeId!=null && !authAttributeId.trim().isEmpty()){
-            List<String> pkList = Arrays.asList(new String[]{authAttributeId});
-            authProviderAttributeDao.deleteByAttributeList(pkList);
-            authAttributeDao.deleteByPkList(pkList);
+    public Response updateAuthAttribute(AuthAttribute attribute) {
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+            if(attribute==null)
+                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+            if(attribute.getAttributeName()==null || attribute.getAttributeName().trim().isEmpty())
+                throw new BasicDataServiceException(ResponseCode.AUTH_ATTRIBUTE_NAME_NOT_SET);
+            if(attribute.getProviderType()==null)
+                throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_TYPE_NOT_SET);
+            authProviderService.updateAuthAttribute(authAttributeDozerConverter.convertToEntity(attribute, false));
+        } catch(BasicDataServiceException e) {
+        	log.error(e.getMessage(), e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(e.getCode());
+        } catch(Throwable e) {
+        	log.error(e.getMessage(), e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorText(e.getMessage());
         }
+        return response;
     }
 
     @Override
-    @Transactional
-    public void deleteAuthAttributesByType(String providerType) {
-        List<String> pkList = authAttributeDao.getPkListByType(providerType);
-        if(pkList!=null && !pkList.isEmpty()){
-            authProviderAttributeDao.deleteByAttributeList(pkList);
-            authAttributeDao.deleteByPkList(pkList);
+    public Response deleteAuthAttribute(String authAttributeId) {
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+            if(authAttributeId==null || authAttributeId.trim().isEmpty())
+                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+
+            authProviderService.deleteAuthAttribute(authAttributeId);
+        } catch(BasicDataServiceException e) {
+        	log.error(e.getMessage(), e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(e.getCode());
+        } catch(Throwable e) {
+        	log.error(e.getMessage(), e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorText(e.getMessage());
         }
+        return response;
+    }
+
+    @Override
+    public Response deleteAuthAttributesByType(String providerType) {
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+            if(providerType==null || providerType.trim().isEmpty())
+                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+
+            authProviderService.deleteAuthAttributesByType(providerType);
+        } catch(BasicDataServiceException e) {
+        	log.error(e.getMessage(), e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(e.getCode());
+        } catch(Throwable e) {
+        	log.error(e.getMessage(), e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorText(e.getMessage());
+        }
+        return response;
     }
     /*
     *==================================================
@@ -148,230 +214,264 @@ public class AuthProviderServiceImpl implements AuthProviderService {
     *===================================================
     */
     @Override
-    public List<AuthProviderEntity> findAuthProviderBeans(AuthProviderEntity searchBean, Integer size,
-                                                          Integer from) {
-        return authProviderDao.getByExample(searchBean,from,size);
+    public List<AuthProvider> findAuthProviderBeans(AuthProviderSearchBean searchBean,Integer size,Integer from) {
+        final AuthProviderEntity entity = authProviderSearchBeanConverter.convert(searchBean);
+        final List<AuthProviderEntity> providerList = authProviderService.findAuthProviderBeans(entity, size, from);
+        return authProviderDozerConverter.convertToDTOList(providerList, (searchBean.isDeepCopy()));
     }
     @Override
-    public Integer getNumOfAuthProviderBeans(AuthProviderEntity searchBean){
-        return authProviderDao.count(searchBean);
-    }
-    @Override
-    @Transactional
-    public void addAuthProvider(AuthProviderEntity provider) throws Exception{
-        if(provider==null)
-            throw new NullPointerException("provider is null");
-        if(provider.getProviderType()==null || provider.getProviderType().trim().isEmpty())
-            throw new NullPointerException("provider type is null");
-        if(provider.getManagedSysId()==null  || provider.getManagedSysId().trim().isEmpty())
-            throw new NullPointerException("ManageSys is not set for provider");
-        if(provider.getResource() ==null)
-            throw new NullPointerException("Resource is not set for provider");
-        if(provider.getName()==null  || provider.getName().trim().isEmpty())
-            throw new NullPointerException("provider name is null");
-
-         // add resource to db
-        ResourceTypeEntity resourceType = resourceTypeDAO.findById(resourceTypeId);
-        if(resourceType==null){
-            throw new NullPointerException("Cannot create resource for provider. Resource type is not found");
-        }
-        
-        final ResourceEntity resource = provider.getResource();
-        resource.setName(System.currentTimeMillis() + "_" + provider.getName());
-        resource.setResourceType(resourceType);
-        resource.setId(null);
-        
-        resourceService.save(resource, null);
-        provider.setProviderId(null);
-        provider.setResource(resource);
-        //provider.setResourceId(resource.getResourceId());
-        
-        Set<AuthProviderAttributeEntity> providerAttributeSet = provider.getProviderAttributeSet();
-        Map<String, AuthResourceAttributeMapEntity> resourceAttributeMap = provider.getResourceAttributeMap();
-        provider.setProviderAttributeSet(null);
-        provider.setResourceAttributeMap(null);
-        authProviderDao.add(provider);
-        if(providerAttributeSet!=null && !providerAttributeSet.isEmpty()){
-            saveAuthProviderAttributes(provider, providerAttributeSet);
-        }
-        if(resourceAttributeMap!=null && !resourceAttributeMap.isEmpty()){
-            saveAuthResourceAttributes(provider, resourceAttributeMap);
-        }
+    public Integer getNumOfAuthProviderBeans(AuthProviderSearchBean searchBean){
+         return authProviderService.getNumOfAuthProviderBeans(authProviderSearchBeanConverter.convert(searchBean));
     }
 
     @Override
-    @Transactional
-    public void updateAuthProvider(AuthProviderEntity provider) throws Exception{
-        if(provider==null)
-            throw new NullPointerException("provider is null");
-        if(provider.getProviderType()==null || provider.getProviderType().trim().isEmpty())
-            throw new NullPointerException("provider type is null");
-        if(provider.getManagedSysId()==null  || provider.getManagedSysId().trim().isEmpty())
-            throw new NullPointerException("ManageSys is not set for provider");
-        if(provider.getName()==null  || provider.getName().trim().isEmpty())
-            throw new NullPointerException("provider name is null");
-        AuthProviderEntity entity = authProviderDao.findById(provider.getProviderId());
-        if(entity!=null){
-            entity.setProviderType(provider.getProviderType());
-            entity.setManagedSysId(provider.getManagedSysId());
-            entity.setName(provider.getName());
-            entity.setDescription(provider.getDescription());
-            if(provider.getPrivateKey()!=null && provider.getPrivateKey().length>0){
-                entity.setPrivateKey(provider.getPrivateKey());
-            }
-            if(provider.getPublicKey()!=null && provider.getPublicKey().length>0){
-                entity.setPublicKey(provider.getPublicKey());
-            }
-            entity.setSignRequest(provider.isSignRequest());
+    public Response addAuthProvider(AuthProvider provider) {
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+            if(provider==null)
+                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+            if(provider.getProviderType()==null || provider.getProviderType().trim().isEmpty())
+                throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_TYPE_NOT_SET);
+            if(provider.getManagedSysId()==null  || provider.getManagedSysId().trim().isEmpty())
+                throw new BasicDataServiceException(ResponseCode.MANAGED_SYS_NOT_SET);
+            if(provider.getResource() ==null)
+                throw new BasicDataServiceException(ResponseCode.RESOURCE_PROP_MISSING);
+            if(provider.getName()==null  || provider.getName().trim().isEmpty())
+                throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NAME_NOT_SET);
+            if(provider.isSignRequest() && (provider.getPrivateKey()==null || provider.getPrivateKey().length==0
+                                            || provider.getPublicKey()==null || provider.getPublicKey().length==0))
+                throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_SECUTITY_KEYS_NOT_SET);
 
-            // get resource for provider
-            //if(provider.getResource()!=null){
-            //    final ResourceEntity resource = entity.getResource();
-            //   resource.setURL(provider.getResource().getURL());
-            //   resourceService.save(resource, null);
-            //}
+            validateAndSyncProviderAttributes(provider);
+
+            final AuthProviderEntity entity = authProviderDozerConverter.convertToEntity(provider, true);
+            authProviderService.addAuthProvider(entity);
+            response.setResponseValue(entity.getProviderId());
+        } catch(BasicDataServiceException e) {
+        	log.error(e.getMessage(), e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(e.getCode());
+        } catch(Throwable e) {
+        	log.error("Error while saving auth provider", e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorText(e.getMessage());
         }
-        
-        entity.setProviderAttributeSet(null);
-        authProviderDao.save(entity);
+        return response;
+    }
+
+    private void validateAndSyncProviderAttributes(AuthProvider provider) throws BasicDataServiceException{
+        AuthAttributeEntity example = new AuthAttributeEntity();
+        example.setProviderType(provider.getProviderType());
+        List<AuthAttributeEntity> attributeEntityList = authProviderService.findAuthAttributeBeans(example, Integer.MAX_VALUE,0);
+//        Set<String> newAttributesIds = new HashSet<String>();
+        Map<String, AuthProviderAttribute> attributeMap = new HashMap<String, AuthProviderAttribute>();
+
         if(provider.getProviderAttributeSet()!=null && !provider.getProviderAttributeSet().isEmpty()){
-            saveAuthProviderAttributes(entity, provider.getProviderAttributeSet());
+            for(AuthProviderAttribute attr: provider.getProviderAttributeSet()){
+//                newAttributesIds.add(attr.getAttributeId());
+                attributeMap.put(attr.getAttributeId(), attr);
+            }
         }
-        if(provider.getResourceAttributeMap()!=null && !provider.getResourceAttributeMap().isEmpty()){
-            saveAuthResourceAttributes(entity, provider.getResourceAttributeMap());
+        for(AuthAttributeEntity attr: attributeEntityList){
+            AuthProviderAttribute providerAttribute = attributeMap.get(attr.getAuthAttributeId());
+            boolean isAttributeEmpty= (providerAttribute==null || providerAttribute.getValue()==null || providerAttribute.getValue().trim().isEmpty());
+            if(attr.isRequired() && isAttributeEmpty)
+                throw new BasicDataServiceException(ResponseCode.AUTH_REQUIRED_PROVIDER_ATTRIBUTE_NOT_SET);
+            if(isAttributeEmpty){
+                // need to delete attribute from provider.
+                providerAttribute = new AuthProviderAttribute();
+                providerAttribute.setProviderId(provider.getProviderId());
+                providerAttribute.setAttributeId(attr.getAuthAttributeId());
+                providerAttribute.setValue(null);
+                providerAttribute.setProviderAttributeId("");
+                provider.getProviderAttributeSet().add(providerAttribute);
+            }
         }
     }
 
     @Override
-    @Transactional
-    public void deleteAuthProvider(String providerId) {
-        AuthProviderEntity entity = authProviderDao.findById(providerId);
-        if(entity!=null){
-            authResourceAttributeMapDao.deleteByProviderId(providerId);
-            this.deleteAuthProviderAttributes(providerId);
-            authProviderDao.deleteByPkList(Arrays.asList(new String[]{providerId}));
-            resourceService.deleteResource(entity.getResource().getId());
+    public Response updateAuthProvider(AuthProvider provider) {
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+            if(provider==null)
+                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+            if(provider.getProviderType()==null || provider.getProviderType().trim().isEmpty())
+                throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_TYPE_NOT_SET);
+            if(provider.getManagedSysId()==null  || provider.getManagedSysId().trim().isEmpty())
+                throw new BasicDataServiceException(ResponseCode.MANAGED_SYS_NOT_SET);
+            if(provider.getName()==null  || provider.getName().trim().isEmpty())
+                throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NAME_NOT_SET);
+            if(provider.isSignRequest() && (provider.getPrivateKey()==null || provider.getPrivateKey().length==0
+                                            || provider.getPublicKey()==null || provider.getPublicKey().length==0))
+                throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_SECUTITY_KEYS_NOT_SET);
+
+            validateAndSyncProviderAttributes(provider);
+
+            final AuthProviderEntity entity = authProviderDozerConverter.convertToEntity(provider, true);
+            authProviderService.updateAuthProvider(entity);
+            response.setResponseValue(entity.getProviderId());
+        } catch(BasicDataServiceException e) {
+        	log.error(e.getMessage(), e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(e.getCode());
+        } catch(Throwable e) {
+        	log.error("Error while updating auth provider", e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorText(e.getMessage());
         }
+        return response;
     }
 
     @Override
-    @Transactional
-    public void deleteAuthProviderByType(String providerType) {
-        AuthProviderEntity entity = new AuthProviderEntity();
-        entity.setProviderType(providerType);
-        List<AuthProviderEntity> providerList = this.findAuthProviderBeans(entity, Integer.MAX_VALUE,0);
+    public Response deleteAuthProvider(String providerId) {
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+            if(providerId==null || providerId.trim().isEmpty())
+                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
 
-        List<String> pkList = new ArrayList<String>();
-        List<String> resourceIdList = new ArrayList<String>();
-        if(providerList!=null && !providerList.isEmpty()){
-            for (AuthProviderEntity provider :providerList){
-                pkList.add(provider.getProviderId());
-                resourceIdList.add(provider.getResource().getId());
-            }
-            authProviderAttributeDao.deleteByProviderList(pkList);
-            authResourceAttributeMapDao.deleteByProviderList(pkList);
-            authProviderDao.deleteByPkList(pkList);
-            for (String resourceId :resourceIdList){
-            	resourceService.deleteResource(resourceId);
-            }
+            authProviderService.deleteAuthProvider(providerId);
+        } catch(BasicDataServiceException e) {
+        	log.error(e.getMessage(), e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(e.getCode());
+        } catch(Throwable e) {
+        	log.error(e.getMessage(), e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorText(e.getMessage());
         }
+        return response;
     }
+
+    @Override
+    public Response deleteAuthProviderByType(String providerType) {
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+            if(providerType==null || providerType.trim().isEmpty())
+                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+
+            authProviderService.deleteAuthProviderByType(providerType);
+        } catch(BasicDataServiceException e) {
+        	log.error(e.getMessage(), e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(e.getCode());
+        } catch(Throwable e) {
+        	log.error(e.getMessage(), e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorText(e.getMessage());
+        }
+        return response;
+    }
+
     /*
     *==================================================
     *  AuthProviderAttribute section
     *===================================================
     */
     @Override
-    public AuthProviderAttributeEntity getAuthProviderAttribute(String providerId, String name) {
-        return authProviderAttributeDao.getAuthProviderAttribute(providerId, name);
+    public AuthProviderAttribute getAuthProviderAttribute(String providerId, String name) {
+        return authProviderAttributeDozerConverter.convertToDTO(authProviderService.getAuthProviderAttribute(providerId, name), true);
     }
 
     @Override
-    public List<AuthProviderAttributeEntity> getAuthProviderAttributeList(String providerId, Integer size,
-                                                                          Integer from) {
-        AuthProviderAttributeEntity entity = new AuthProviderAttributeEntity();
-        entity.setProviderId(providerId);
-        return authProviderAttributeDao.getByExample(entity, from, size);
+    public List<AuthProviderAttribute> getAuthProviderAttributeList(String providerId,Integer size,Integer from) {
+        return authProviderAttributeDozerConverter.convertToDTOList(authProviderService.getAuthProviderAttributeList(providerId, size, from), true);
     }
 
-    @Override
     public Integer getNumOfAuthProviderAttributes(String providerId){
-        AuthProviderAttributeEntity attribute = new AuthProviderAttributeEntity();
-        attribute.setProviderId(providerId);
-        return authProviderAttributeDao.count(attribute);
+        return authProviderService.getNumOfAuthProviderAttributes(providerId);
     }
 
     @Override
-    @Transactional
-    public void addAuthProviderAttribute(AuthProviderAttributeEntity attribute) {
-        if(attribute==null)
-            throw new NullPointerException("attribute is null");
-        if(attribute.getProviderId()==null || attribute.getProviderId().trim().isEmpty())
-            throw new NullPointerException("Parent Provider  is not set");
-        if(attribute.getAttributeId() ==null || attribute.getAttributeId().isEmpty())
-            throw new NullPointerException("attribute name is not set");
-        if(attribute.getValue() ==null || attribute.getValue().trim().isEmpty())
-            throw new NullPointerException("value is not set");
-        attribute.setProviderAttributeId(null);
-        attribute.setAttribute(null);
-        authProviderAttributeDao.add(attribute);
-    }
+    public Response addAuthProviderAttribute(AuthProviderAttribute attribute) {
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+            if(attribute==null)
+                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+            if(attribute.getProviderId()==null || attribute.getProviderId().trim().isEmpty())
+                throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_SET);
+            if(attribute.getAttributeId() ==null || attribute.getAttributeId().isEmpty())
+                throw new BasicDataServiceException(ResponseCode.AUTH_ATTRIBUTE_NOT_SET);
+            if(attribute.getValue() ==null || attribute.getValue().trim().isEmpty())
+                throw new BasicDataServiceException(ResponseCode.AUTH_ATTRIBUTE_VALUE_NOT_SET);
 
 
-    @Override
-    @Transactional
-    public void updateAuthProviderAttribute(AuthProviderAttributeEntity attribute) {
-        if(attribute==null)
-            throw new NullPointerException("attribute is null");
-        if(attribute.getProviderId()==null || attribute.getProviderId().trim().isEmpty())
-            throw new NullPointerException("Parent Provider  is not set");
-        if(attribute.getAttributeId() ==null || attribute.getAttributeId().trim().isEmpty())
-            throw new NullPointerException("attribute name is not set");
-
-        AuthProviderAttributeEntity entity = authProviderAttributeDao.getAuthProviderAttribute(attribute.getProviderId(), attribute.getAttributeId());
-        if(entity!=null){
-            entity.setAttribute(null);
-            if(attribute.getValue() ==null || attribute.getValue().trim().isEmpty()){
-                //authProviderAttributeDao.delete(entity);
-                deleteAuthProviderAttributeByName(attribute.getProviderId(), attribute.getAttributeId());
-                return;
-            }
-            entity.setValue(attribute.getValue());
-            authProviderAttributeDao.merge(entity);
+            authProviderService.addAuthProviderAttribute(authProviderAttributeDozerConverter.convertToEntity(attribute,false));
+        } catch(BasicDataServiceException e) {
+        	log.error(e.getMessage(), e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(e.getCode());
+        } catch(Throwable e) {
+        	log.error(e.getMessage(), e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorText(e.getMessage());
         }
+        return response;
     }
 
     @Override
-    @Transactional
-    public void deleteAuthProviderAttributeByName(String providerId, String attributeId) {
-        authProviderAttributeDao.deleteByAttribute(providerId, attributeId);
+    public Response updateAuthProviderAttribute(AuthProviderAttribute attribute) {
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+            if(attribute==null)
+                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+            if(attribute.getProviderId()==null || attribute.getProviderId().trim().isEmpty())
+                throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_SET);
+            if(attribute.getAttributeId() ==null || attribute.getAttributeId().isEmpty())
+                throw new BasicDataServiceException(ResponseCode.AUTH_ATTRIBUTE_NOT_SET);
+            if(attribute.getValue() ==null || attribute.getValue().trim().isEmpty())
+                throw new BasicDataServiceException(ResponseCode.AUTH_ATTRIBUTE_VALUE_NOT_SET);
+
+            authProviderService.updateAuthProviderAttribute(authProviderAttributeDozerConverter.convertToEntity(attribute,false));
+        } catch(BasicDataServiceException e) {
+        	log.error(e.getMessage(), e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(e.getCode());
+        } catch(Throwable e) {
+        	log.error(e.getMessage(), e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorText(e.getMessage());
+        }
+        return response;
     }
 
     @Override
-    @Transactional
-    public void deleteAuthProviderAttributes(String providerId) {
-        if(providerId!=null && !providerId.trim().isEmpty()){
-            authProviderAttributeDao.deleteByProviderList(Arrays.asList(new String[]{providerId}));
+    public Response deleteAuthProviderAttributeByName(String providerId, String attributeId) {
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+            if(providerId==null || providerId.trim().isEmpty() || attributeId==null || attributeId.trim().isEmpty() )
+                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+            authProviderService.deleteAuthProviderAttributeByName(providerId, attributeId);
+        } catch(BasicDataServiceException e) {
+        	log.error(e.getMessage(), e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(e.getCode());
+        } catch(Throwable e) {
+        	log.error(e.getMessage(), e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorText(e.getMessage());
         }
+        return response;
     }
 
-    @Transactional
-    private void saveAuthProviderAttributes(AuthProviderEntity provider, Set<AuthProviderAttributeEntity> newAttributes){
-        for (AuthProviderAttributeEntity attribute : newAttributes) {
-            attribute.setProviderId(provider.getProviderId());
-            if(attribute.getProviderAttributeId()!=null){
-                updateAuthProviderAttribute(attribute);
-            }else{
-                addAuthProviderAttribute(attribute);
-            }
+    @Override
+    public Response deleteAuthProviderAttributes(String providerId) {
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+            if(providerId==null || providerId.trim().isEmpty())
+                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+
+            authProviderService.deleteAuthProviderAttributes(providerId);
+        } catch(BasicDataServiceException e) {
+        	log.error(e.getMessage(), e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(e.getCode());
+        } catch(Throwable e) {
+        	log.error(e.getMessage(), e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorText(e.getMessage());
         }
+        return response;
     }
 
-    @Transactional
-    private void saveAuthResourceAttributes(AuthProviderEntity provider, Map<String, AuthResourceAttributeMapEntity> newAttributes) throws Exception{
-        for (AuthResourceAttributeMapEntity attribute : newAttributes.values()) {
-            attribute.setProviderId(provider.getProviderId());
-            authResourceAttributeService.saveAttributeMap(attribute);
-        }
-    }
+
 }
