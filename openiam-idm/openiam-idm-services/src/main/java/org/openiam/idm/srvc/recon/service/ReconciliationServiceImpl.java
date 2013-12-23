@@ -293,16 +293,14 @@ public class ReconciliationServiceImpl implements ReconciliationService {
             ReconciliationConfig config) {
 
         ReconciliationConfigEntity configEntity = reconConfigDao.findById(config.getReconConfigId());
-        configEntity.setExecStatus(ReconExecStatusOptions.STARTED);
 
         Date startDate = new Date();
-        SimpleDateFormat DATE_FORMAT = new SimpleDateFormat(DATETIME_FORMAT);
         AuditLogBuilder auditBuilder = new AuditLogBuilder();
         auditBuilder.setRequestorUserId(systemUserId).setTargetUser(null).setAction(AuditAction.RECONCILIATION);
 
         auditLogProvider.persist(auditBuilder);
 
-       auditLogService.enqueue(auditBuilder);
+        auditLogService.enqueue(auditBuilder);
         try {
 
             log.debug("Reconciliation started for configId="
@@ -312,6 +310,10 @@ public class ReconciliationServiceImpl implements ReconciliationService {
             // have resource
             auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "Reconciliation started..."+startDate);
             auditLogService.enqueue(auditBuilder);
+
+            configEntity.setExecStatus(ReconExecStatusOptions.STARTED);
+            //reconConfigDao.persist(configEntity);
+            reconConfigDao.save(configEntity);
 
             Resource res = resourceDataService.getResource(config
                     .getResourceId());
@@ -397,6 +399,16 @@ public class ReconciliationServiceImpl implements ReconciliationService {
             } else {
                 searchBean = new UserSearchBean();
             }
+            // checking for STOP status
+            configEntity = reconConfigDao.get(config.getReconConfigId());
+            reconConfigDao.refresh(configEntity);
+            if(configEntity.getExecStatus() == ReconExecStatusOptions.STOPPING) {
+                configEntity.setExecStatus(ReconExecStatusOptions.STOPPED);
+                auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION,"Reconciliation was manually stopped at "
+                        + new Date());
+                auditLogService.enqueue(auditBuilder);
+                return new ReconciliationResponse(ResponseStatus.SUCCESS);
+            }
             if (searchBean != null) {
                 if (searchBean.getPrincipal() == null) {
                     searchBean.setPrincipal(new LoginSearchBean());
@@ -422,8 +434,23 @@ public class ReconciliationServiceImpl implements ReconciliationService {
             auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION,"Starting processing '"+usersCount + "' users from Repository to "+mSys.getName());
             auditLogService.enqueue(auditBuilder);
 
+            int counter = 0;
             for (LoginEntity identity : idmIdentities) {
+                counter++;
                 if (identity.getUserId() != null) {
+                    //checking for STOPING status for every 10 users
+                    if(counter == 10){
+                        configEntity = reconConfigDao.get(config.getReconConfigId());
+                        reconConfigDao.refresh(configEntity);
+                        if(configEntity.getExecStatus() == ReconExecStatusOptions.STOPPING) {
+                            configEntity.setExecStatus(ReconExecStatusOptions.STOPPED);
+                            auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION,"Reconciliation was manually stopped at "
+                                    + new Date());
+                            auditLogService.enqueue(auditBuilder);
+                            return new ReconciliationResponse(ResponseStatus.SUCCESS);
+                        }
+                        counter = 0;
+                    }
                     processedUserIds.add(identity.getUserId()); // Collect user IDs to avoid double processing
                     auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION,"starting reconciliation for user: " + identity);
                     auditLogService.enqueue(auditBuilder);
@@ -436,14 +463,23 @@ public class ReconciliationServiceImpl implements ReconciliationService {
                 }
             }
             auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION,"Reconciliation from Repository to target system: "+mSys.getName() + " is complete.");
-           auditLogService.enqueue(auditBuilder);
+            auditLogService.enqueue(auditBuilder);
             // 2. Do reconciliation users from Target Managed System to IDM
             // search for all Roles and Groups related with resource
             // GET Users from ConnectorAdapter by BaseDN and query rules
 
             auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION,"Starting processing from target system: "+mSys.getName()+" to Repository");
             auditLogService.enqueue(auditBuilder);
-
+            // checking for STOPPING status
+            configEntity = reconConfigDao.get(config.getReconConfigId());
+            reconConfigDao.refresh(configEntity);
+            if(configEntity.getExecStatus() == ReconExecStatusOptions.STOPPING) {
+                configEntity.setExecStatus(ReconExecStatusOptions.STOPPED);
+                auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION,"Reconciliation was manually stopped at "
+                        + new Date());
+                auditLogService.enqueue(auditBuilder);
+                return new ReconciliationResponse(ResponseStatus.SUCCESS);
+            }
             processingTargetToIDM(config, managedSysId,
                     sysDto, situations, connector, keyField, baseDnField, processedUserIds, auditBuilder);
 
@@ -463,7 +499,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
             log.error(e);
             e.printStackTrace();
             auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION,"Error: "+e.getMessage());
-           auditLogService.enqueue(auditBuilder);
+            auditLogService.enqueue(auditBuilder);
             ReconciliationResponse resp = new ReconciliationResponse(
                     ResponseStatus.FAILURE);
             resp.setErrorText(e.getMessage());
@@ -538,10 +574,24 @@ public class ReconciliationServiceImpl implements ReconciliationService {
             if (usersFromRemoteSys != null) {
 
                 //AUDITLOG  COUNT of proccessing users from target sys
-
+                int counter = 0;
                 for (ObjectValue userValue : usersFromRemoteSys) {
+                    counter++;
                     //AUDITLOG  start processing user Y from target systems  to IDM
 
+                    //checking for STOPPING status every 10 users
+                    if(counter == 10) {
+                        ReconciliationConfigEntity configEntity = reconConfigDao.findById(config.getReconConfigId());
+                        reconConfigDao.refresh(configEntity);
+                        if(configEntity.getExecStatus() == ReconExecStatusOptions.STOPPING) {
+                            configEntity.setExecStatus(ReconExecStatusOptions.STOPPED);
+                            auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION,"Reconciliation was manually stopped at "
+                                    + new Date());
+                            auditLogService.enqueue(auditBuilder);
+                            return new ReconciliationResponse(ResponseStatus.SUCCESS);
+                        }
+                        counter++;
+                    }
                     List<ExtensibleAttribute> extensibleAttributes = userValue
                             .getAttributeList() != null ? userValue
                             .getAttributeList()

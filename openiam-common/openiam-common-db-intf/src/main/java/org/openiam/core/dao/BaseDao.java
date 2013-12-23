@@ -24,6 +24,8 @@ public interface BaseDao<T, PrimaryKey extends Serializable> {
 
   T merge(T t);
 
+  void refresh(T t);
+
   void save(T t);
 
   T add(T t);
