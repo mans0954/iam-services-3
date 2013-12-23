@@ -12,6 +12,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.connector.common.scim.S;
+import org.openiam.connector.common.scim.TestRSA;
 import org.openiam.connector.scim.command.base.AbstractModifyScimCommand;
 import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.connector.type.constant.ErrorCode;
@@ -81,10 +82,12 @@ public class ModifyUserScimCommand extends
 				S token = new S();
 				token.setTimestamp(System.currentTimeMillis());
 				token.setPassword("foobar");
-			    String encrypted =token.getPassword();
-				//String encrypted = TestRSA.encrypt(token);
+				// String encrypted =token.getPassword();
+				String encrypted = TestRSA.encrypt(token);
 				connection.setRequestProperty("Authorization", "Bearer "
 						+ encrypted);
+
+				connection.connect();
 
 				makeCall(
 						connection,

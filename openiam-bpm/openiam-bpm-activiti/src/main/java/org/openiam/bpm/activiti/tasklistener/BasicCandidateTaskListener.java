@@ -12,9 +12,9 @@ import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.util.SpringContextProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 
-public class AddUserCentricCandidateTaskListener extends AbstractCandidateTaskListener {
+public class BasicCandidateTaskListener extends AbstractCandidateTaskListener {
 	
-	public AddUserCentricCandidateTaskListener() {
+	public BasicCandidateTaskListener() {
 		super();
 	}
 
@@ -22,10 +22,4 @@ public class AddUserCentricCandidateTaskListener extends AbstractCandidateTaskLi
 	public void notify(DelegateTask delegateTask) {
 		super.notify(delegateTask, null);
 	}
-
-	@Override
-	public String getTargetUserId(final DelegateExecution execution) {
-		return getStringVariable(execution, ActivitiConstants.MEMBER_ASSOCIATION_ID);
-	}
-
 }

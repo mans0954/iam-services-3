@@ -87,7 +87,7 @@ public class TestDozerConversion extends AbstractTestNGSpringContextTests {
 
 		user.setTitle(rs(2));
 		user.setUserAttributes(new HashMap<String, UserAttribute>());
-		user.setUserId(rs(2));
+		user.setId(rs(2));
 		
 		final Set<UserNote> userNotes = new HashSet<UserNote>();
 		userNotes.add(new UserNote(rs(2), rs(2), rs(2), rs(2), null, rs(2)));
@@ -289,7 +289,7 @@ public class TestDozerConversion extends AbstractTestNGSpringContextTests {
 		} else {
 			Assert.assertTrue(MapUtils.isEmpty(copy.getUserAttributes()));
 		}
-		Assert.assertEquals(original.getUserId(), copy.getUserId());
+		Assert.assertEquals(original.getId(), copy.getId());
 		
 		
 		if(isDeep) {

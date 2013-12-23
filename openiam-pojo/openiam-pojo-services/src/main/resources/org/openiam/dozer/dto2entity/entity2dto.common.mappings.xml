@@ -45,7 +45,7 @@
 			<b>metadataElementId</b>
 		</field>
 		<field>
-			<a>user.userId</a>
+			<a>user.id</a>
 			<b>userId</b>
 		</field>
 	</mapping>

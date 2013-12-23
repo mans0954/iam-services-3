@@ -37,50 +37,6 @@ public class ActivitiHelper {
 		return approverAssociationDao.findByIds(approverAssociationIds);
 	}
 	
-	@Transactional
-	public Set<String> getNotifyUserIds(final AssociationType notifyType, final String notifyId, final String targetUserId) {
-		final Set<String> userIds = new HashSet<String>();
-		if(notifyType != null && StringUtils.isNotBlank(notifyId)) {
-			switch(notifyType) {
-				case GROUP:
-					final List<String> usersInGroup = userManager.getUserIdsInGroup(notifyId, targetUserId);
-	        		if(CollectionUtils.isNotEmpty(usersInGroup)) {
-	        			userIds.addAll(usersInGroup);
-	        		}	
-					break;
-				case SUPERVISOR:
-					if(StringUtils.isNotBlank(targetUserId)) {
-						final List<UserEntity> supervisors = userManager.getSuperiors(targetUserId, 0, Integer.MAX_VALUE);
-		                if(CollectionUtils.isNotEmpty(supervisors)) {
-		                	for(final UserEntity supervisor : supervisors) {
-		                		if(supervisor != null) {
-		                			userIds.add(supervisor.getUserId());
-		                		}
-		                	}
-		                }
-					}
-	                break;
-	        	case USER:
-	        		userIds.add(notifyId);
-	        		break;
-				case ROLE:
-					final List<String> usersInRole = userManager.getUserIdsInRole(notifyId, targetUserId);
-					if(CollectionUtils.isNotEmpty(usersInRole)) {
-						userIds.addAll(usersInRole);
-					}
-	        		break;
-				case TARGET_USER:
-					if(StringUtils.isNotBlank(targetUserId)) {
-						userIds.add(targetUserId);
-					}
-					break;
-				default:
-					break;
-			}
-		}
-		return userIds;
-	}
-	
 	public Set<String> getOnRejectUserIds(final DelegateExecution execution, final String targetUserId, final List<String> supervisorIds) {
 		final Set<String> userIds = new HashSet<String>();
 		final List<ApproverAssociationEntity> approverAssociations = getApproverAssociations(execution);
@@ -110,7 +66,7 @@ public class ActivitiHelper {
 								if(CollectionUtils.isNotEmpty(supervisors)) {
 									for(final UserEntity supervisor : supervisors) {
 										if(supervisor != null ) {
-											userIds.add(supervisor.getUserId());
+											userIds.add(supervisor.getId());
 										}
 									}
 								}
@@ -119,7 +75,7 @@ public class ActivitiHelper {
 							}
 							break;
 						case TARGET_USER:
-							if(targetUserId != null) {
+							if(StringUtils.isNotBlank(targetUserId)) {
 								userIds.add(targetUserId);
 							}
 							break;
@@ -163,7 +119,7 @@ public class ActivitiHelper {
 								if(CollectionUtils.isNotEmpty(supervisors)) {
 									for(final UserEntity supervisor : supervisors) {
 										if(supervisor != null ) {
-											userIds.add(supervisor.getUserId());
+											userIds.add(supervisor.getId());
 										}
 									}
 								}
@@ -215,7 +171,7 @@ public class ActivitiHelper {
 							if(CollectionUtils.isNotEmpty(supervisors)) {
 								for(final UserEntity supervisor : supervisors) {
 									if(supervisor != null ) {
-										candidateUsersIds.add(supervisor.getUserId());
+										candidateUsersIds.add(supervisor.getId());
 									}
 								}
 							}
@@ -233,7 +189,7 @@ public class ActivitiHelper {
 		return candidateUsersIds;
 	}
 	
-	public List<String> getCandidateUserIds(final DelegateExecution execution) {
+	private List<String> getCandidateUserIds(final DelegateExecution execution) {
 		final List<String> candidateUsersIds = new LinkedList<String>();
 		Object cardinalityObject = null;
 		if(execution.hasVariable(ActivitiConstants.CARDINALITY_OBJECT.getName())) {

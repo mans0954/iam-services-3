@@ -282,7 +282,10 @@ public interface GroupDataWebService {
     public Response addChildGroup(final @WebParam(name = "groupId") String groupId, 
     							  final @WebParam(name = "childGroupId") String childGroupId);
 
-
+    @WebMethod
+    public Response validateGroup2GroupAddition(final @WebParam(name = "groupId") String groupId, 
+			  									final @WebParam(name = "childGroupId") String childGroupId);
+    
     /**
      * Remove Group specified by childGroupId from the membership list of Group specified by groupId
      * @param groupId - the Group ID from which another group specified by childGroupId will be deleted

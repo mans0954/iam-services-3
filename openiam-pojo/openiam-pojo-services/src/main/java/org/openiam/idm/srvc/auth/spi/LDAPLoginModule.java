@@ -409,7 +409,7 @@ public class LDAPLoginModule extends AbstractLoginModule {
         // send message into to audit log
 
         log("AUTHENTICATION", "AUTHENTICATION", "SUCCESS", null, domainId,
-                user.getUserId(), distinguishedName, null, null, clientIP,
+                user.getId(), distinguishedName, null, null, clientIP,
                 nodeIP);
 
         return sub;

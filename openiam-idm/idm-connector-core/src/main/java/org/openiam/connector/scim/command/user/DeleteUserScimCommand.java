@@ -5,6 +5,7 @@ import java.net.HttpURLConnection;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.connector.common.scim.S;
+import org.openiam.connector.common.scim.TestRSA;
 import org.openiam.connector.scim.command.base.AbstractDeleteScimCommand;
 import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.connector.type.constant.ErrorCode;
@@ -32,12 +33,13 @@ public class DeleteUserScimCommand extends AbstractDeleteScimCommand<ExtensibleU
     	    token.setTimestamp(System.currentTimeMillis());
     	    //TODO check how to get this
     	    token.setPassword("foobar");
-    	    String encrypted =token.getPassword();
-    		//String encrypted = TestRSA.encrypt(token);
+    	    //String encrypted =token.getPassword();
+    		String encrypted = TestRSA.encrypt(token);
     		connection
     				.setRequestProperty(
     						"Authorization",
     						"Bearer " + encrypted);
+    		connection.connect();
     		makeCall(connection, "");
         } catch (Exception e) {
             log.error(e.getMessage(),e);

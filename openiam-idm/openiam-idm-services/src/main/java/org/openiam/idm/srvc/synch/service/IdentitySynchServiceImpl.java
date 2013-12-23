@@ -304,7 +304,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
             // all the provisioning service
             for ( User user :  searchResult) {
 
-                log.debug("Migrating user: " + user.getUserId() + " " + user.getLastName());
+                log.debug("Migrating user: " + user.getId() + " " + user.getLastName());
 
                 ProvisionUser pUser = new ProvisionUser(user);
 
@@ -446,7 +446,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
             // all the provisioning service
             for ( User user :  searchResult) {
 
-                log.debug("Updating the user since this role's configuration has changed.: " + user.getUserId() + " " + user.getLastName());
+                log.debug("Updating the user since this role's configuration has changed.: " + user.getId() + " " + user.getLastName());
 
                 ProvisionUser pUser = new ProvisionUser(user);
 

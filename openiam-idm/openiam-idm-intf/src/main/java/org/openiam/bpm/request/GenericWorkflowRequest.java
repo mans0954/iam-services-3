@@ -25,6 +25,8 @@ import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 	"activitiRequestType",
     "associationId",
     "associationType",
+    "memberAssociationId",
+    "memberAssociationType",
     "description",
     "parameters",
     "customApproverAssociationIds",
@@ -34,10 +36,14 @@ import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 })
 public class GenericWorkflowRequest extends BaseObject {
 
+	private String associationId;
 	private AssociationType associationType;
+	
+	private String memberAssociationId;
+	private AssociationType memberAssociationType;
+	
 	private String name;
 	private String description;
-	private String associationId;
 	private String activitiRequestType;
 	private Map<String, String> jsonSerializedParams;
 	private Map<String, Object> parameters;
@@ -154,4 +160,22 @@ public class GenericWorkflowRequest extends BaseObject {
 			jsonSerializedParams.put(key, mapper.writeValueAsString(value));
 		}
 	}
+
+	public String getMemberAssociationId() {
+		return memberAssociationId;
+	}
+
+	public void setMemberAssociationId(String memberAssociationId) {
+		this.memberAssociationId = memberAssociationId;
+	}
+
+	public AssociationType getMemberAssociationType() {
+		return memberAssociationType;
+	}
+
+	public void setMemberAssociationType(AssociationType memberAssociationType) {
+		this.memberAssociationType = memberAssociationType;
+	}
+	
+	
 }

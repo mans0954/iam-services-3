@@ -45,8 +45,8 @@ public class SupervisorDAOImpl extends BaseDaoImpl<SupervisorEntity, SupervisorI
      * @return
      */
     public List<SupervisorEntity> findEmployees(String supervisorId) {
-        Criteria criteria = getCriteria().createAlias("supervisor", "s").add(Restrictions.eq("s.userId", supervisorId))
-                        .addOrder(Order.asc("supervisor.userId"));
+        Criteria criteria = getCriteria().createAlias("supervisor", "s").add(Restrictions.eq("s.id", supervisorId))
+                        .addOrder(Order.asc("supervisor.id"));
 
         List<SupervisorEntity> results = (List<SupervisorEntity>) criteria.list();
 
@@ -64,7 +64,7 @@ public class SupervisorDAOImpl extends BaseDaoImpl<SupervisorEntity, SupervisorI
     }
 
     public List<SupervisorEntity> findSupervisors(String employeeId) {
-        Criteria criteria = getCriteria().createAlias("employee", "e").add(Restrictions.eq("e.userId", employeeId));
+        Criteria criteria = getCriteria().createAlias("employee", "e").add(Restrictions.eq("e.id", employeeId));
 
         List<SupervisorEntity> results = (List<SupervisorEntity>) criteria.list();
 
@@ -81,7 +81,7 @@ public class SupervisorDAOImpl extends BaseDaoImpl<SupervisorEntity, SupervisorI
     }
 
     public SupervisorEntity findPrimarySupervisor(String employeeId) {
-        Criteria criteria = getCriteria().createAlias("employee", "e").add(Restrictions.eq("e.userId", employeeId))
+        Criteria criteria = getCriteria().createAlias("employee", "e").add(Restrictions.eq("e.id", employeeId))
                         .add(Restrictions.eq("isPrimarySuper", 1)).addOrder(Order.asc("supervisor"));
 
         SupervisorEntity supr = (SupervisorEntity) criteria.uniqueResult();
@@ -97,8 +97,8 @@ public class SupervisorDAOImpl extends BaseDaoImpl<SupervisorEntity, SupervisorI
     }
 
     public SupervisorEntity findSupervisor(String superiorId, String subordinateId) {
-        Criteria criteria = getCriteria().add(Restrictions.eq("supervisor.userId", superiorId))
-                        .add(Restrictions.eq("employee.userId", subordinateId));
+        Criteria criteria = getCriteria().add(Restrictions.eq("supervisor.id", superiorId))
+                        .add(Restrictions.eq("employee.id", subordinateId));
 
         SupervisorEntity supr = (SupervisorEntity) criteria.uniqueResult();
         if (supr == null)
@@ -112,7 +112,7 @@ public class SupervisorDAOImpl extends BaseDaoImpl<SupervisorEntity, SupervisorI
 
     // @Override
     public Set<String> getUniqueEmployeeIds() {
-        final List<String> list = getCriteria().setProjection(Projections.property("employee.userId")).list();
+        final List<String> list = getCriteria().setProjection(Projections.property("employee.id")).list();
         return (list != null) ? new HashSet<String>(list) : Collections.EMPTY_SET;
     }
 

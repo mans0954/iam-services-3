@@ -173,8 +173,8 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         }
         List<UserEntity> userList = new ArrayList<UserEntity>();
         userList.add(user);
-        List<LoginEntity> lgList = loginDAO.findUser(user.getUserId());
-        List<UserKey> keyList = userKeyDao.getByUserId(user.getUserId());
+        List<LoginEntity> lgList = loginDAO.findUser(user.getId());
+        List<UserKey> keyList = userKeyDao.getByUserId(user.getId());
         List<PasswordHistoryEntity> pwdList = new ArrayList<PasswordHistoryEntity>();
         for (LoginEntity lg : lgList) {
             pwdList.addAll(passwordHistoryDao.getPasswordHistoryByLoginId(lg.getLoginId(), 0, Integer.MAX_VALUE));
@@ -183,15 +183,15 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         List<UserKey> newUserKeyList = new ArrayList<UserKey>();
 
         UserSecurityWrapper usw = new UserSecurityWrapper();
-        usw.setUserId(user.getUserId());
+        usw.setUserId(user.getId());
         usw.setLoginList(lgList);
-        usw.setManagedSysList(managedSysMap.get(user.getUserId()));
+        usw.setManagedSysList(managedSysMap.get(user.getId()));
         usw.setPasswordHistoryList(pwdList);
         usw.setUserKeyList(keyList);
 
         encryptUserData(masterKey, usw, newUserKeyList);
         // replace user key for given user
-        userKeyDao.deleteByUserId(user.getUserId());
+        userKeyDao.deleteByUserId(user.getId());
         addUserKeys(newUserKeyList);
         return 2L;
     }
@@ -367,7 +367,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
 
     private void printUserData(User user, HashMap<String, List<PasswordHistory>> pwdHistoryMap, HashMap<String, List<ManagedSysDto>> managedSysMap) {
         StringBuilder msg = new StringBuilder();
-        msg.append("LOGIN LIST FOR USER_ID(" + user.getUserId() + ") [\n");
+        msg.append("LOGIN LIST FOR USER_ID(" + user.getId() + ") [\n");
         if (user.getPrincipalList() != null && !user.getPrincipalList().isEmpty()) {
             for (Login login : user.getPrincipalList()) {
                 msg.append("\t{login:" + login.getLogin() + ";password:" + login.getPassword() + "}\n");
@@ -377,9 +377,9 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         log.warn(msg.toString());
         msg.setLength(0);
 
-        msg.append("PWD HISTORY LIST FOR USER_ID(" + user.getUserId() + ") [\n");
-        if (pwdHistoryMap.containsKey(user.getUserId())) {
-            for (PasswordHistory pwd : pwdHistoryMap.get(user.getUserId())) {
+        msg.append("PWD HISTORY LIST FOR USER_ID(" + user.getId() + ") [\n");
+        if (pwdHistoryMap.containsKey(user.getId())) {
+            for (PasswordHistory pwd : pwdHistoryMap.get(user.getId())) {
                 msg.append("\tpassword:" + pwd.getPassword() + "\n");
             }
         }
@@ -387,9 +387,9 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         log.warn(msg.toString());
         msg.setLength(0);
 
-        msg.append("MANAGED SYS LIST FOR USER_ID(" + user.getUserId() + ") [\n");
-        if (managedSysMap.containsKey(user.getUserId())) {
-            for (ManagedSysDto ms : managedSysMap.get(user.getUserId())) {
+        msg.append("MANAGED SYS LIST FOR USER_ID(" + user.getId() + ") [\n");
+        if (managedSysMap.containsKey(user.getId())) {
+            for (ManagedSysDto ms : managedSysMap.get(user.getId())) {
                 if (ms.getPswd() != null) {
                     msg.append("\tpassword:" + ms.getPswd() + "\n");
                 } else {

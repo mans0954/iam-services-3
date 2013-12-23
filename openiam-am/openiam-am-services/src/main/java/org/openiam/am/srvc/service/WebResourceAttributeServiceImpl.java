@@ -133,7 +133,7 @@ public class WebResourceAttributeServiceImpl implements WebResourceAttributeServ
                 throw new NullPointerException("User object has not been found");
 
 
-            LoginEntity login = loginManager.getByUserIdManagedSys(user.getUserId(), managedSysId);
+            LoginEntity login = loginManager.getByUserIdManagedSys(user.getId(), managedSysId);
             if (login == null) {
                 StringBuilder msg = new StringBuilder();
                 msg.append("Login object for { securityDomain: ").append(securityDomain).append(", principalName: ")

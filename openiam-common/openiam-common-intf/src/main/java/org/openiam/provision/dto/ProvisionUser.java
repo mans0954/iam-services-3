@@ -121,7 +121,7 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         this.secondaryStatus = user.getSecondaryStatus();
         this.suffix = user.getSuffix();
         this.title = user.getTitle();
-        this.userId = user.getUserId();
+        this.id = user.getId();
         this.userTypeInd = user.getUserTypeInd();
         this.mailCode = user.getMailCode();
         this.costCenter = user.getCostCenter();
@@ -179,7 +179,7 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         user.setSecondaryStatus(secondaryStatus);
         user.setSuffix(suffix);
         user.setTitle(title);
-        user.setUserId(userId);
+        user.setId(id);
         user.setUserTypeInd(userTypeInd);
         user.setMailCode(mailCode);
         user.setCostCenter(costCenter);

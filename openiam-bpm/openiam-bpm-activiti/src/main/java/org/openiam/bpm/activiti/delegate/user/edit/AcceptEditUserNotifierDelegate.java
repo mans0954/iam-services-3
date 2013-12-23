@@ -8,16 +8,15 @@ import java.util.Set;
 import org.activiti.engine.delegate.DelegateExecution;
 import org.apache.commons.collections.CollectionUtils;
 import org.openiam.bpm.activiti.delegate.entitlements.AbstractEntitlementsDelegate;
+import org.openiam.bpm.activiti.delegate.entitlements.AcceptEntitlementsNotifierDelegate;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.service.UserDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 
-public class AcceptEditUserNotifierDelegate extends AbstractEntitlementsDelegate {
+public class AcceptEditUserNotifierDelegate extends AcceptEntitlementsNotifierDelegate {
 	
-	private static final String NOTIFY_TYPE = "EDIT_USER_NOTIFY_ACCEPT";
-
 	public AcceptEditUserNotifierDelegate() {
 		super();
 	}
@@ -32,6 +31,7 @@ public class AcceptEditUserNotifierDelegate extends AbstractEntitlementsDelegate
 		final String taskOwner = getRequestorId(execution);
 		
 		userIds.add(taskOwner);
+		userIds.add(targetUserId);
 		final Collection<String> candidateUsersIds = activitiHelper.getOnAcceptUserIds(execution, targetUserId, getSupervisorsForUser(targetUser));
 		if(CollectionUtils.isNotEmpty(candidateUsersIds)) {
 			userIds.addAll(candidateUsersIds);
@@ -46,7 +46,7 @@ public class AcceptEditUserNotifierDelegate extends AbstractEntitlementsDelegate
 	}
 	
 	@Override
-	protected String getNotificationType() {
-		return NOTIFY_TYPE;
+	protected ActivitiConstants getTargetVariable() {
+		return ActivitiConstants.ASSOCIATION_ID;
 	}
 }

@@ -349,8 +349,8 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractTestNGSpr
 		
 		final List<AuthorizationManagerLoginId> loginIdList = getLoginIdList(user);
 		
-		checkUser2RoleMembership(user.getUserId(), null, role.getId(), null);
-		checkUser2RoleMembership(user.getUserId(), null, null, role.getName());
+		checkUser2RoleMembership(user.getId(), null, role.getId(), null);
+		checkUser2RoleMembership(user.getId(), null, null, role.getName());
 		for(final AuthorizationManagerLoginId loginId : loginIdList) {
 			checkUser2RoleMembership(null, loginId, role.getId(), null);
 			checkUser2RoleMembership(null, loginId, null, role.getName());
@@ -363,8 +363,8 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractTestNGSpr
 		
 		final List<AuthorizationManagerLoginId> loginIdList = getLoginIdList(user);
 		
-		checkUser2GroupMembership(user.getUserId(), null, group.getId(), null);
-		checkUser2GroupMembership(user.getUserId(), null, null, group.getName());
+		checkUser2GroupMembership(user.getId(), null, group.getId(), null);
+		checkUser2GroupMembership(user.getId(), null, null, group.getName());
 		
 		for(final AuthorizationManagerLoginId loginId : loginIdList) {
 			checkUser2GroupMembership(null, loginId, group.getId(), null);
@@ -376,8 +376,8 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractTestNGSpr
 		final Resource resource = resourceServiceClient.getResource(resourceId);
 		final User user = userDataWebService.getUserWithDependent(userId,null, true);
 		
-		checkUser2ResourceEntitlement(user.getUserId(), null, resource.getId(), null);
-		checkUser2ResourceEntitlement(user.getUserId(), null, null, resource.getName());
+		checkUser2ResourceEntitlement(user.getId(), null, resource.getId(), null);
+		checkUser2ResourceEntitlement(user.getId(), null, null, resource.getName());
 		
 		final List<AuthorizationManagerLoginId> loginIdList = getLoginIdList(user);
 		for(final AuthorizationManagerLoginId loginId : loginIdList) {

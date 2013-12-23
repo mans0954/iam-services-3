@@ -217,65 +217,6 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 			final List<String> approverAssociationIds = identifier.getApproverAssociationIds();
 			final List<String> approverUserIds = identifier.getApproverIds();
 			
-			/*
-			if(CollectionUtils.isEmpty(requestApproverIds)) {
-	        	if(CollectionUtils.isEmpty(approverAssocationList)) {
-	        		builder.addWarning("Can't find approver association for, using default approver association");
-	        		log.warn("Can't find approver association for, using default approver association");
-					approverAssocationList = getDefaultApproverAssociations();
-				}
-	        	
-	        	if (CollectionUtils.isNotEmpty(approverAssocationList)) {
-	        		for (final ApproverAssociationEntity approverAssociation : approverAssocationList) {
-	        			approverAssociationIds.add(approverAssociation.getId());
-	        			if (approverAssociation != null) {
-	        				final AssociationType approverType = approverAssociation.getApproverEntityType();
-	        				final String approverId = approverAssociation.getApproverEntityId();
-	        				
-	        				if(approverType != null) {
-	        					switch(approverType) {
-	        						case SUPERVISOR:
-	        							if(CollectionUtils.isNotEmpty(request.getSupervisorIds())) {
-	        								requestApproverIds.addAll(request.getSupervisorIds());
-	        							}
-	                    				break;
-	        						case ROLE:
-	        							if(StringUtils.isNotBlank(approverId)) {
-	        								final List<String> authUsers = userDataService.getUserIdsInRole(approverId, null);
-	        								if(CollectionUtils.isNotEmpty(authUsers)) {
-	        									requestApproverIds.addAll(authUsers);
-	        								}
-	        							}
-	        							break;
-	        						case GROUP:
-	        							if(StringUtils.isNotBlank(approverId)) {
-	        								final List<String> authUsers = userDataService.getUserIdsInGroup(approverId, null);
-	        								if(CollectionUtils.isNotEmpty(authUsers)) {
-	        									requestApproverIds.addAll(authUsers);
-	                						}
-	        							}
-	        							break;
-	        						case USER:
-	        							if(StringUtils.isNotBlank(approverId)) {
-	        								requestApproverIds.add(approverId);
-	        							}
-	        							break;
-	        						default:
-	        							break;
-	        					}
-	        				}
-	        			}
-	        		}
-	        	}
-			}
-        	
-        	if(CollectionUtils.isEmpty(requestApproverIds)) {
-        		log.warn("Could not found any approvers - using default user");
-        		builder.addWarning("Could not found any approvers - using default user");
-        		requestApproverIds.add(defaultApproverUserId);
-        	}
-        	*/
-        	
         	builder.addAttributeAsJson(AuditAttributeName.APPROVER_ASSOCIATIONS, approverAssociationIds, jacksonMapper);
         	builder.addAttributeAsJson(AuditAttributeName.REQUEST_APPROVER_IDS, approverUserIds, jacksonMapper);
 	        
@@ -304,6 +245,7 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 			variables.put(ActivitiConstants.TASK_NAME.getName(), taskName);
 			variables.put(ActivitiConstants.TASK_DESCRIPTION.getName(), taskDescription);
 			variables.put(ActivitiConstants.REQUESTOR.getName(), request.getRequestorUserId());
+			variables.put(ActivitiConstants.WORKFLOW_NAME.getName(), requestType.getKey());
 			runtimeService.startProcessInstanceByKey(requestType.getKey(), variables);
 
 			response.setStatus(ResponseStatus.SUCCESS);
@@ -455,7 +397,8 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 			variables.put(ActivitiConstants.TASK_NAME.getName(), description);
 			variables.put(ActivitiConstants.TASK_DESCRIPTION.getName(), description);
 			variables.put(ActivitiConstants.REQUESTOR.getName(), request.getRequestorUserId());
-			variables.put(ActivitiConstants.ASSOCIATION_ID.getName(), request.getUser().getUserId());
+			variables.put(ActivitiConstants.ASSOCIATION_ID.getName(), request.getUser().getId());
+			variables.put(ActivitiConstants.WORKFLOW_NAME.getName(), ActivitiRequestType.EDIT_USER.getKey());
 			runtimeService.startProcessInstanceByKey(ActivitiRequestType.EDIT_USER.getKey(), variables);
 			
 			/* throws exception if invalid - caught in try/catch */
@@ -558,14 +501,23 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 			builder.addAttributeAsJson(AuditAttributeName.REQUEST_APPROVER_IDS, approverUserIds, jacksonMapper);
 			
 			final Map<String, Object> variables = new HashMap<String, Object>();
+			variables.put(ActivitiConstants.WORKFLOW_NAME.getName(), request.getActivitiRequestType());
 			variables.put(ActivitiConstants.APPROVER_CARDINALTITY.getName(), approverCardinatlity);
 			variables.put(ActivitiConstants.APPROVER_ASSOCIATION_IDS.getName(), approverAssociationIds);
 			variables.put(ActivitiConstants.TASK_NAME.getName(), request.getName());
 			variables.put(ActivitiConstants.TASK_DESCRIPTION.getName(), request.getDescription());
 			variables.put(ActivitiConstants.REQUESTOR.getName(), request.getRequestorUserId());
-			variables.put(ActivitiConstants.ASSOCIATION_ID.getName(), request.getAssociationId());
+			if(request.getAssociationId() != null) {
+				variables.put(ActivitiConstants.ASSOCIATION_ID.getName(), request.getAssociationId());
+			}
 			if(request.getAssociationType() != null) {
 				variables.put(ActivitiConstants.ASSOCIATION_TYPE.getName(), request.getAssociationType().getValue());
+			}
+			if(request.getMemberAssociationId() != null) {
+				variables.put(ActivitiConstants.MEMBER_ASSOCIATION_ID.getName(), request.getMemberAssociationId());
+			}
+			if(request.getMemberAssociationType() != null) {
+				variables.put(ActivitiConstants.MEMBER_ASSOCIATION_TYPE.getName(), request.getMemberAssociationType().getValue());
 			}
 			if(request.getParameters() != null) {
 				variables.putAll(request.getParameters());
@@ -881,7 +833,7 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 		} catch(Throwable e) {
 			identifier = new DefaultNewEntityApproverIdentifier();
 		}
-		return identifier.getApprovers();
+		return identifier.getApprovers(requestorId, type);
 	}
 	
 	@Override

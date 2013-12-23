@@ -230,7 +230,7 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
 	}
 
 	private Criteria getResourceForUserCriteria(final String userId) {
-		final Criteria criteria = getCriteria().createAlias("users", "ru").add(Restrictions.eq("ru.userId", userId));
+		final Criteria criteria = getCriteria().createAlias("users", "ru").add(Restrictions.eq("ru.id", userId));
 		return criteria;
 	}
 

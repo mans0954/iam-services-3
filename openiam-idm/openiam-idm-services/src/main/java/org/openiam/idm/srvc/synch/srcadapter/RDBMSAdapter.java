@@ -326,11 +326,11 @@ public class RDBMSAdapter extends AbstractSrcAdapter {
                         // initialize the transform script
                         if (usr != null) {
                             transformScript.setNewUser(false);
-                            User u = userManager.getUserDto(usr.getUserId());
+                            User u = userManager.getUserDto(usr.getId());
                             pUser = new ProvisionUser(u);
                             transformScript.setUser(u);
-                            transformScript.setPrincipalList(loginDozerConverter.convertToDTOList(loginManager.getLoginByUser(usr.getUserId()), false));
-                            transformScript.setUserRoleList(roleDataService.getUserRolesAsFlatList(usr.getUserId()));
+                            transformScript.setPrincipalList(loginDozerConverter.convertToDTOList(loginManager.getLoginByUser(usr.getId()), false));
+                            transformScript.setUserRoleList(roleDataService.getUserRolesAsFlatList(usr.getId()));
 
                         } else {
                             transformScript.setNewUser(true);
@@ -353,8 +353,8 @@ public class RDBMSAdapter extends AbstractSrcAdapter {
 				*/
                 if (retval != -1) {
                     if (retval == TransformScript.DELETE && usr != null) {
-                        log.debug("deleting record - " + usr.getUserId());
-                        provService.deleteByUserId(usr.getUserId(), UserStatusEnum.DELETED, systemAccount);
+                        log.debug("deleting record - " + usr.getId());
+                        provService.deleteByUserId(usr.getId(), UserStatusEnum.DELETED, systemAccount);
 
                     } else {
                         // call synch
@@ -363,15 +363,15 @@ public class RDBMSAdapter extends AbstractSrcAdapter {
                             log.debug("-Provisioning user=" + pUser.getLastName());
 
                             if (usr != null) {
-                                log.debug("-updating existing user...systemId=" + pUser.getUserId());
-                                pUser.setUserId(usr.getUserId());
+                                log.debug("-updating existing user...systemId=" + pUser.getId());
+                                pUser.setId(usr.getId());
 
                                 modifyUser(pUser);
 
                             } else {
                                 log.debug("-adding new user...");
 
-                                pUser.setUserId(null);
+                                pUser.setId(null);
                                 addUser(pUser);
                             }
                         }

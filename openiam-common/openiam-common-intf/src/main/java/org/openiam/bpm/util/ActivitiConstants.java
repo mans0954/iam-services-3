@@ -16,6 +16,7 @@ public enum ActivitiConstants {
 	IS_ADMIN("IsAdmin"),
 	IS_COMPLETE("IsComplete"),
 	MEMBER_ASSOCIATION_ID("MemberAssociationId"),
+	MEMBER_ASSOCIATION_TYPE("MemberAssociationType"),
 	APPROVER_CARDINALTITY("ApproverCardindality"),
 	REQUEST_METADATA_MAP("RequestMetadataMap"),
 	CUSTOM_APPROVER_IDS("CustomApproverIds"),
@@ -24,6 +25,7 @@ public enum ActivitiConstants {
 	DISASSOCIATED_GROUP_IDS("DisassociatedGroupIds"),
 	DISASSOCIATED_RESOURCE_IDS("DisassociatedResourceIds"),
 	CUSTOM_TASK_UI_URL("CustomTaskUIUrl"),
+	WORKFLOW_NAME("WorkflowName"),
 	
 	LOGIN("Login"),
 	

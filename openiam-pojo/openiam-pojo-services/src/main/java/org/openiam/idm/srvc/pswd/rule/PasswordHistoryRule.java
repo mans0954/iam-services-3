@@ -70,7 +70,7 @@ public class PasswordHistoryRule extends AbstractPasswordRule {
 				return;
 			}
 			// check the list.
-            String userId = (user==null)?lg.getUserId():user.getUserId();
+            String userId = (user==null)?lg.getUserId():user.getId();
 
             log.info("Found " + historyList.size() + " passwords in the history");
 			for ( PasswordHistoryEntity hist  : historyList) {

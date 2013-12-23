@@ -661,11 +661,11 @@ public class ReconciliationServiceImpl implements ReconciliationService {
             User usr = matchObjectRule.lookup(config, attributeMap);
 
             if (usr != null) {
-                if (processedUserIds.contains(usr.getUserId())) { // already
+                if (processedUserIds.contains(usr.getId())) { // already
                                                                   // processed
                     return targetUserPrincipal;
                 }
-                User u = userManager.getUserDto(usr.getUserId());
+                User u = userManager.getUserDto(usr.getId());
                 // situation TARGET EXIST, IDM EXIST do modify
                 // check principal list on this ManagedSys exists
                 List<Login> principals = u.getPrincipalList();
@@ -810,7 +810,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
                             .getAction())) {
                         User idmUser = getUserFromIDM(header, row);
                         if (idmUser != null) {
-                            userManager.deleteUser(idmUser.getUserId());
+                            userManager.deleteUser(idmUser.getId());
                         }
                     }
                     break;
@@ -1234,7 +1234,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
             // get all groups for user
             List<org.openiam.idm.srvc.grp.dto.Group> curGroupList = groupDozerConverter
                     .convertToDTOList(groupManager.getGroupsForUser(
-                            user.getUserId(), null, -1, -1), false);
+                            user.getId(), null, -1, -1), false);
             String decPassword = "";
             if (primaryIdentity != null) {
                 if (StringUtils.isEmpty(primaryIdentity.getUserId())) {

@@ -17,7 +17,7 @@ public class EmailAddressSearchBeanConverter implements SearchBeanConverter<Emai
 
         if(searchBean.getParentId() != null && searchBean.getParentId().trim().length() > 0) {
             final UserEntity parent = new UserEntity();
-            parent.setUserId(searchBean.getParentId());
+            parent.setId(searchBean.getParentId());
             email.setParent(parent);
         }
 

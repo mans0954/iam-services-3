@@ -2,6 +2,7 @@ package org.openiam.idm.srvc.role.dto;
 
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.BaseObject;
+import org.openiam.base.KeyNameDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.res.dto.Resource;
@@ -41,14 +42,12 @@ import java.util.*;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "role", propOrder = {
-        "id",
         "createDate",
         "serviceId",
         "createdBy",
         "description",
         "groups",
         "roleAttributes",
-        "name",
         "userAssociationMethod",
         "status",
         "childRoles",
@@ -72,7 +71,7 @@ import java.util.*;
         Resource.class
 })
 @DozerDTOCorrespondence(RoleEntity.class)
-public class Role extends BaseObject implements Comparable<Role> {
+public class Role extends KeyNameDTO implements Comparable<Role> {
 
     /**
      *
@@ -87,13 +86,11 @@ public class Role extends BaseObject implements Comparable<Role> {
     protected String description;
     //@XmlJavaTypeAdapter(GroupSetAdapter.class)
     protected Set<Group> groups = new HashSet<Group>(0);
-    protected String id;
     @XmlJavaTypeAdapter(RoleAttributeSetAdapter.class)
     protected Set<RoleAttribute> roleAttributes = new HashSet<RoleAttribute>(0);
 
     protected Set<RolePolicy> rolePolicy = new HashSet<RolePolicy>();
 
-    protected String name;
     protected int userAssociationMethod = RoleConstant.UN_ASSIGNED;
 
     protected String status;
@@ -121,18 +118,6 @@ public class Role extends BaseObject implements Comparable<Role> {
     public Role() {
     }
     
-    public Role(final String id) {
-    	this.id = id;
-    }
-
-    public String getId() {
-		return id;
-	}
-
-	public void setId(String id) {
-		this.id = id;
-	}
-
 	public String getServiceId() {
 		return serviceId;
 	}
@@ -179,14 +164,6 @@ public class Role extends BaseObject implements Comparable<Role> {
 
     public void setRoleAttributes(Set<RoleAttribute> value) {
         this.roleAttributes = value;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public int getUserAssociationMethod() {

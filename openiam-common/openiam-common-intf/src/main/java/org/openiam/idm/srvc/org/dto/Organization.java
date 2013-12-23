@@ -5,6 +5,7 @@ import java.util.HashMap;
 
 import org.apache.commons.lang.StringUtils;
 import org.openiam.base.AttributeOperationEnum;
+import org.openiam.base.KeyNameDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
 
 import javax.xml.bind.annotation.*;
@@ -40,8 +41,6 @@ import org.openiam.idm.srvc.user.dto.User;
         "ldapStr",
         "lstUpdate",
         "lstUpdatedBy",
-        "id",
-        "name",
         "organizationTypeId",
         "organizationTypeName",
         "internalOrgId",
@@ -56,11 +55,10 @@ import org.openiam.idm.srvc.user.dto.User;
         "adminResourceName"
 })
 @DozerDTOCorrespondence(OrganizationEntity.class)
-public class Organization implements Serializable, Comparable<Organization> {
+public class Organization extends KeyNameDTO implements Serializable, Comparable<Organization> {
 
     private static final long serialVersionUID = -6297113958697455428L;
 
-    protected String id;
 
     protected String alias;
 
@@ -81,8 +79,6 @@ public class Organization implements Serializable, Comparable<Organization> {
     protected Date createDate;
 
     protected String lstUpdatedBy;
-
-    protected String name;
 
     protected String internalOrgId;
 
@@ -274,23 +270,6 @@ public class Organization implements Serializable, Comparable<Organization> {
     public void setLstUpdatedBy(String value) {
         this.lstUpdatedBy = value;
     }
-
-
-    public String getId() {
-		return id;
-	}
-
-	public void setId(String id) {
-		this.id = id;
-	}
-
-    public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
 
 	/**
      * Gets the value of the status property.

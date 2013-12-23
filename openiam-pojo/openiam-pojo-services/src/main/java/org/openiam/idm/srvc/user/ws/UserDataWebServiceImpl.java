@@ -138,7 +138,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 
             final AddressEntity entity = addressDozerConverter.convertToEntity(val, true);
             UserEntity user = new UserEntity();
-            user.setUserId(val.getParentId());
+            user.setId(val.getParentId());
             entity.setParent(user);
             userManager.addAddress(entity);
         } catch (BasicDataServiceException e) {
@@ -197,7 +197,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 
             final EmailAddressEntity entity = emailAddressDozerConverter.convertToEntity(val, true);
             UserEntity user = new UserEntity();
-            user.setUserId(val.getParentId());
+            user.setId(val.getParentId());
             entity.setParent(user);
             userManager.addEmailAddress(entity);
         } catch (BasicDataServiceException e) {
@@ -245,7 +245,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 
             final PhoneEntity entity = phoneDozerConverter.convertToEntity(val, true);
             UserEntity user = new UserEntity();
-            user.setUserId(val.getParentId());
+            user.setId(val.getParentId());
             entity.setParent(user);
             userManager.addPhone(entity);
         } catch (BasicDataServiceException e) {
@@ -475,11 +475,11 @@ public class UserDataWebServiceImpl implements UserDataWebService {
             if (superior == null || subordinate == null) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
             }
-            SupervisorEntity found = userManager.findSupervisor(superior.getUserId(), subordinate.getUserId());
+            SupervisorEntity found = userManager.findSupervisor(superior.getId(), subordinate.getId());
             if (found != null) {
                 throw new BasicDataServiceException(ResponseCode.RELATIONSHIP_EXISTS);
             }
-            SupervisorEntity contrary = userManager.findSupervisor(subordinate.getUserId(), superior.getUserId());
+            SupervisorEntity contrary = userManager.findSupervisor(subordinate.getId(), superior.getId());
             if (contrary != null) {
                 throw new BasicDataServiceException(ResponseCode.CIRCULAR_DEPENDENCY);
             }
@@ -717,7 +717,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 
             final AddressEntity entity = addressDozerConverter.convertToEntity(val, false);
             UserEntity user = new UserEntity();
-            user.setUserId(val.getParentId());
+            user.setId(val.getParentId());
             entity.setParent(user);
             userManager.updateAddress(entity);
         } catch (BasicDataServiceException e) {
@@ -778,7 +778,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 
             final EmailAddressEntity entity = emailAddressDozerConverter.convertToEntity(val, true);
             UserEntity user = new UserEntity();
-            user.setUserId(val.getParentId());
+            user.setId(val.getParentId());
             entity.setParent(user);
             userManager.updateEmailAddress(entity);
         } catch (BasicDataServiceException e) {
@@ -828,7 +828,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 
             final PhoneEntity entity = phoneDozerConverter.convertToEntity(val, true);
             UserEntity user = new UserEntity();
-            user.setUserId(val.getParentId());
+            user.setId(val.getParentId());
             entity.setParent(user);
             userManager.updatePhone(entity);
         } catch (BasicDataServiceException e) {
@@ -907,7 +907,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
             if (user == null) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
             }
-            if (user.getUserId() == null) {
+            if (user.getId() == null) {
 
                 // final MetadataTypeSearchBean typeSearchBean = new
                 // MetadataTypeSearchBean();
@@ -948,7 +948,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
             // supervisorEntity =
             // supervisorDozerConverter.convertToEntity(supervisor, true);
             String userId = userManager.saveUserInfo(userEntity, supervisorId);
-            user.setUserId(userId);
+            user.setId(userId);
 
             if (user.getNotifyUserViaEmail()) {
                 sendCredentialsToUser(user, user.getLogin(), user.getPassword());
@@ -1040,11 +1040,11 @@ public class UserDataWebServiceImpl implements UserDataWebService {
     private void sendCredentialsToUser(User user, String identity, String password) throws BasicDataServiceException {
 
         final NotificationRequest notificationRequest = new NotificationRequest();
-        notificationRequest.setUserId(user.getUserId());
+        notificationRequest.setUserId(user.getId());
         notificationRequest.setNotificationType("NEW_USER_EMAIL");
         notificationRequest.getParamList().add(new NotificationParam(MailTemplateParameters.IDENTITY.value(), identity));
         notificationRequest.getParamList().add(new NotificationParam(MailTemplateParameters.PASSWORD.value(), password));
-        notificationRequest.getParamList().add(new NotificationParam(MailTemplateParameters.USER_ID.value(), user.getUserId()));
+        notificationRequest.getParamList().add(new NotificationParam(MailTemplateParameters.USER_ID.value(), user.getId()));
         final boolean sendEmailResult = mailService.sendNotification(notificationRequest);
         if (!sendEmailResult) {
             throw new BasicDataServiceException(ResponseCode.SEND_EMAIL_FAILED);

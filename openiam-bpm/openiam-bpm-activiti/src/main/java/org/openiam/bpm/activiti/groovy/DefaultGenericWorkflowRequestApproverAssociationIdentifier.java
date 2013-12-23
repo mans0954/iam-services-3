@@ -47,7 +47,7 @@ public class DefaultGenericWorkflowRequestApproverAssociationIdentifier extends 
 				if(CollectionUtils.isNotEmpty(supervisors)) {
 					for(final UserEntity supervisor : supervisors) {
 						if(supervisor != null ) {
-							approverUserIds.add(supervisor.getUserId());
+							approverUserIds.add(supervisor.getId());
 						}
 					}
 				}
@@ -55,7 +55,17 @@ public class DefaultGenericWorkflowRequestApproverAssociationIdentifier extends 
 				if(CollectionUtils.isNotEmpty(request.getCustomApproverAssociationIds())) {
 					approverAssocationList = approverAssociationDAO.findByIds(request.getCustomApproverAssociationIds());
 				} else {
-					approverAssocationList = approverAssociationDAO.getByAssociation(request.getAssociationId(), request.getAssociationType());
+					approverAssocationList = new LinkedList<ApproverAssociationEntity>();
+					
+					final List<ApproverAssociationEntity> associationApprovers = approverAssociationDAO.getByAssociation(request.getAssociationId(), request.getAssociationType());
+					if(CollectionUtils.isNotEmpty(associationApprovers)) {
+						approverAssocationList.addAll(associationApprovers);
+					}
+					
+					final List<ApproverAssociationEntity> memberAssociationApprovers = approverAssociationDAO.getByAssociation(request.getMemberAssociationId(), request.getMemberAssociationType());
+					if(CollectionUtils.isNotEmpty(memberAssociationApprovers)) {
+						approverAssocationList.addAll(memberAssociationApprovers);
+					}
 				}
 				if(CollectionUtils.isEmpty(approverAssocationList)) {
 					final String message = String.format("Can't find approver association for %s %s, using default approver association", request.getAssociationType(), request.getAssociationId());

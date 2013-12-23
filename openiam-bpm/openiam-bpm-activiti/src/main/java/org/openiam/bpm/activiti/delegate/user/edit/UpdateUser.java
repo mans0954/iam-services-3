@@ -40,7 +40,7 @@ public class UpdateUser extends AbstractEntitlementsDelegate {
 			user.setNotifyUserViaEmail(false); /* edit user - don't send creds */
 			userDataService.saveUserProfile(profile);
 			//userDataService.saveUserInfo(user, null);
-			user = getUser(user.getUserId());
+			user = getUser(user.getId());
 			
 			final ProvisionUser pUser = new ProvisionUser(user);
 			provisionService.modifyUser(pUser);

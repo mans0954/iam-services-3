@@ -14,37 +14,24 @@ import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.service.UserDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 
-public class RejectSupervisorNotifierDelegate extends AbstractNotificationDelegate {	
+public class RejectSupervisorNotifierDelegate extends RejectEntitlementsNotifierDelegate {	
 	
-	@Autowired
-	private UserDAO userDAO;
-	
-	private static Map<String, String> NOTIFICATION_MAP = new HashMap<String, String>();
-	static {
-		NOTIFICATION_MAP.put("REMOVE_SUPERIOR", "REMOVE_SUPERIOR_REJECT");
-		NOTIFICATION_MAP.put("ADD_SUPERIOR", "ADD_SUPERIOR_REJECT");
-	}
-	
-	@Override
-	protected String getNotificationType() {
-		return NOTIFICATION_MAP.get(getOperation());
-	}
-
 	public RejectSupervisorNotifierDelegate() {
 		super();
 	}
 	
 	@Override
 	public void execute(DelegateExecution execution) throws Exception {
-		final String targetUserId = getStringVariable(execution, ActivitiConstants.MEMBER_ASSOCIATION_ID);
-		final UserEntity targetUser = userDAO.findById(targetUserId);
+		final String targetUserId = getTargetUserId(execution);
+		final UserEntity targetUser = getUserEntity(targetUserId);
 		
 		final List<String> notifyIds = getSupervisorsForUser(targetUser);
 		notifyIds.add(targetUserId);
 		notifyIds.add(getStringVariable(execution, ActivitiConstants.ASSOCIATION_ID));
 		
-		for(final String userId : notifyIds) {
-			final UserEntity user = userDAO.findById(userId);
+		final Set<String> notifySet = new HashSet<String>(notifyIds);
+		for(final String userId : notifySet) {
+			final UserEntity user = getUserEntity(userId);
 			if(user != null) {
 				sendNotification(user, targetUser, execution);
 			}

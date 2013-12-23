@@ -36,11 +36,11 @@ public class UserAttributeDAOImpl extends BaseDaoImpl<UserAttributeEntity, Strin
     }
 
     public List<UserAttributeEntity> findUserAttributes(String userId) {
-		return (List<UserAttributeEntity>)getCriteria().add(Restrictions.eq("user.userId",userId)).addOrder(Order.asc("name")).list();
+		return (List<UserAttributeEntity>)getCriteria().add(Restrictions.eq("user.id",userId)).addOrder(Order.asc("name")).list();
 	}
 	@Transactional
 	public void deleteUserAttributes(String userId) {
-		Query qry = getSession().createQuery("delete "+this.domainClass.getName()+ " ua where ua.user.userId = :userId ");
+		Query qry = getSession().createQuery("delete "+this.domainClass.getName()+ " ua where ua.user.id = :userId ");
 		qry.setString("userId", userId);
 		qry.executeUpdate();
 	}
@@ -49,7 +49,7 @@ public class UserAttributeDAOImpl extends BaseDaoImpl<UserAttributeEntity, Strin
 	public List<UserAttributeEntity> findUserAttributes(final String userId, final Set<String> metadataElementIds) {
 		List<UserAttributeEntity> retVal = null;
 		if(CollectionUtils.isNotEmpty(metadataElementIds)) {
-			final Criteria criteria = getCriteria().add(Restrictions.eq("user.userId", userId));
+			final Criteria criteria = getCriteria().add(Restrictions.eq("user.id", userId));
 			criteria.add(Restrictions.in("element.id", metadataElementIds));
 			retVal = criteria.list();
 		} else {

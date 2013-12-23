@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.mngsys.service;
 
+import java.util.Collections;
 import java.util.List;
 import javax.naming.InitialContext;
 
@@ -74,9 +75,13 @@ public class ApproverAssociationDAOImpl extends BaseDaoImpl<ApproverAssociationE
 
 	@Override
 	public List<ApproverAssociationEntity> getByAssociation(final String associationId, final AssociationType associationType) {
-		final ApproverAssociationEntity example = new ApproverAssociationEntity();
-		example.setAssociationEntityId(associationId);
-		example.setAssociationType(associationType);
-		return getByExample(example);
+		if(StringUtils.isNotBlank(associationId) && associationType != null) {
+			final ApproverAssociationEntity example = new ApproverAssociationEntity();
+			example.setAssociationEntityId(associationId);
+			example.setAssociationType(associationType);
+			return getByExample(example);
+		} else {
+			return Collections.EMPTY_LIST;
+		}
 	}
 }

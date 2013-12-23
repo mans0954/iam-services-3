@@ -16,9 +16,9 @@ import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.service.UserDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 
-public class SendUserCentricEntitlementsRequestDelegate extends AbstractEntitlementsDelegate {
+public class BasicEntitlementsRequestDelegate extends AbstractEntitlementsDelegate {
 	
-	public SendUserCentricEntitlementsRequestDelegate() {
+	public BasicEntitlementsRequestDelegate() {
 		super();
 	}
 }

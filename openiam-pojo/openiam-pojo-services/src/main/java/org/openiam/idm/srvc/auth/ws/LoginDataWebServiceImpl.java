@@ -357,13 +357,13 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
                     String pwd = (String)respPwd.getResponseValue();
                     if(user!=null){
                         NotificationRequest request = new NotificationRequest();
-                        request.setUserId(user.getUserId());
+                        request.setUserId(user.getId());
                         request.setNotificationType("USER_PASSWORD_EMAIL");
 
 
                         List<NotificationParam> paramList = new LinkedList<NotificationParam>();
 
-                        paramList.add(new NotificationParam(MailTemplateParameters.USER_ID.value(), user.getUserId()));
+                        paramList.add(new NotificationParam(MailTemplateParameters.USER_ID.value(), user.getId()));
                         paramList.add(new NotificationParam(MailTemplateParameters.IDENTITY.value(), principal));
                         paramList.add(new NotificationParam(MailTemplateParameters.PASSWORD.value(), pwd));
                         paramList.add(new NotificationParam(MailTemplateParameters.FIRST_NAME.value(), user.getFirstName()));

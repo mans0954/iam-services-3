@@ -671,4 +671,21 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
         }
 		return response;
 	}
+
+	@Override
+	public Response validateGroup2GroupAddition(String groupId,
+			String childGroupId) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			groupManager.validateGroup2GroupAddition(groupId, childGroupId);
+		} catch(BasicDataServiceException e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+		} catch(Throwable e) {
+			log.error("can't validate", e);
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
+        }
+		return response;
+	}
 }

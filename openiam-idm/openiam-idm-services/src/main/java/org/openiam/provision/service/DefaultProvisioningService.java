@@ -189,7 +189,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             res = transactionTemplate.execute(new TransactionCallback<ProvisionUserResponse>() {
                 @Override
                 public ProvisionUserResponse doInTransaction(TransactionStatus status) {
-                    auditBuilder.setAuditDescription("Provisioning modify user: " + pUser.getUserId());
+                    auditBuilder.setAuditDescription("Provisioning modify user: " + pUser.getId());
                     AuditLogBuilder auditBuilderModifyChild = new AuditLogBuilder();
                     auditBuilderModifyChild.setRequestorUserId(systemUserId).setTargetUser(null).setAction(AuditAction.PROVISIONING_MODIFY);
                     ProvisionUserResponse tmpRes = addModifyUser(pUser, false, dataList, auditBuilderModifyChild);
@@ -726,7 +726,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             }
         }
         final List<RoleEntity> roleList = roleDataService.getUserRoles(
-                user.getUserId(), null, 0, Integer.MAX_VALUE);
+                user.getId(), null, 0, Integer.MAX_VALUE);
         if (CollectionUtils.isNotEmpty(roleList)) {
             for (final RoleEntity role : roleList) {
                 final List<Resource> resourceList = resourceDataService
@@ -779,9 +779,9 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             log.debug("--- DEFAULT PROVISIONING SERVICE: modifyUser called ---");
         }
 
-        UserEntity userEntity = !isAdd ? userMgr.getUser(pUser.getUserId()) : new UserEntity();
+        UserEntity userEntity = !isAdd ? userMgr.getUser(pUser.getId()) : new UserEntity();
         if (userEntity == null) {
-            throw new IllegalArgumentException("UserId='" + pUser.getUserId() + "' is not valid");
+            throw new IllegalArgumentException("UserId='" + pUser.getId() + "' is not valid");
         }
 
         ProvisionUserResponse resp = new ProvisionUserResponse();
@@ -824,10 +824,10 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
         if (!isAdd) {
             // get the current roles
-            List<Role> curRoleList = roleDataService.getUserRolesAsFlatList(pUser.getUserId()); //TODO: do we need children roles?
+            List<Role> curRoleList = roleDataService.getUserRolesAsFlatList(pUser.getId()); //TODO: do we need children roles?
             // get all groups for user
             List<Group> curGroupList = groupDozerConverter.convertToDTOList(
-                    groupManager.getGroupsForUser(pUser.getUserId(), null, -1, -1), false);
+                    groupManager.getGroupsForUser(pUser.getId(), null, -1, -1), false);
             // make the role and group list before these updates available to the
             // attribute policies
             bindingMap.put("currentRoleList", curRoleList);
@@ -934,7 +934,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         if (isAdd) {
             try {
                 userMgr.addUser(userEntity); // Need to have userId to encrypt/decrypt password
-                pUser.setUserId(userEntity.getUserId());
+                pUser.setId(userEntity.getId());
             } catch (Exception e) {
                 auditLog.fail().setFailureReason("Exception while creating user: "+e.getMessage());
                 log.error("Exception while creating user", e);
@@ -1013,7 +1013,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
         } else {
             auditLog.fail().setFailureReason(ResponseCode.PRINCIPAL_NOT_FOUND);
-            log.debug("Primary identity not found for user=" + userEntity.getUserId());
+            log.debug("Primary identity not found for user=" + userEntity.getId());
             resp.setStatus(ResponseStatus.FAILURE);
             resp.setErrorCode(ResponseCode.PRINCIPAL_NOT_FOUND);
             return resp;
@@ -1606,7 +1606,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
 	        String encPassword = null;
 	        try {
-	            encPassword = loginManager.encryptPassword(usr.getUserId(),
+	            encPassword = loginManager.encryptPassword(usr.getId(),
 	                    passwordSync.getPassword());
 	        } catch (EncryptionException e) {
 	        	auditLog.setException(e).fail().setFailureReason(ResponseCode.FAIL_ENCRYPTION);

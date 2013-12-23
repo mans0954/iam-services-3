@@ -36,14 +36,14 @@ public class SCIMConnectionMgr {
 
 		S token = new S();
 	    token.setTimestamp(System.currentTimeMillis());
-	    String encrypted =token.getPassword();
-		//String encrypted = TestRSA.encrypt(token);
+	    //String encrypted =token.getPassword();
+		String encrypted = TestRSA.encrypt(token);
 		connection
 				.setRequestProperty(
 						"Authorization",
 						"Bearer " + encrypted);
 
-		connection.connect();
+		//connection.connect();
 		return connection;
 	}
 }

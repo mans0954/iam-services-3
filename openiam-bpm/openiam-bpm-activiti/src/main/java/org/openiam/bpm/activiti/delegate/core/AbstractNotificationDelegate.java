@@ -4,27 +4,16 @@ import org.activiti.engine.delegate.DelegateExecution;
 import org.activiti.engine.impl.el.FixedValue;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.bpm.util.ActivitiConstants;
+import org.openiam.bpm.util.ActivitiRequestType;
 import org.openiam.idm.srvc.msg.dto.NotificationParam;
 import org.openiam.idm.srvc.msg.dto.NotificationRequest;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public abstract class AbstractNotificationDelegate extends AbstractActivitiJob {
-	
-	private FixedValue operation;
-	private FixedValue targetVariable;
 
 	@Autowired
 	protected ActivitiHelper activitiHelper;
-	
-	protected String getOperation() {
-		return (operation != null) ? StringUtils.trimToNull(operation.getExpressionText()) : null;
-	}
-	
-	protected ActivitiConstants getTargetVariable() {
-		final ActivitiConstants retVal =  (targetVariable != null) ? ActivitiConstants.getByDeclarationName(StringUtils.trimToNull(targetVariable.getExpressionText())) : null;
-		return retVal;
-	}
 
 	protected void sendNotification(final UserEntity toNotify,
 		  	final UserEntity targetUser,
@@ -38,8 +27,8 @@ public abstract class AbstractNotificationDelegate extends AbstractActivitiJob {
 		final UserEntity owner = getUserEntity(taskOwner);
 		
 		final NotificationRequest request = new NotificationRequest();
-		request.setUserId(toNotify.getUserId());
-		request.setNotificationType(getNotificationType());
+		request.setUserId(toNotify.getId());
+		request.setNotificationType(getNotificationType(execution));
 		request.getParamList().add(new NotificationParam("TO_NOTIFY", toNotify));
 		request.getParamList().add(new NotificationParam("TARGET_USER", targetUser));
 		request.getParamList().add(new NotificationParam("REQUESTOR", owner));
@@ -48,6 +37,4 @@ public abstract class AbstractNotificationDelegate extends AbstractActivitiJob {
 		request.getParamList().add(new NotificationParam("REQUEST_DESCRIPTION", taskDescription));
 		mailService.sendNotification(request);
 	}
-	
-	protected abstract String getNotificationType();
 }

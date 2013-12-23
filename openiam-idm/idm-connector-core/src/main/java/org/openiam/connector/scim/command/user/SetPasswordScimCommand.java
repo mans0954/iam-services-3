@@ -11,7 +11,7 @@ import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.connector.type.constant.ErrorCode;
 import org.openiam.connector.type.constant.StatusCodeType;
 import org.openiam.connector.type.request.PasswordRequest;
-import org.openiam.connector.type.response.ResponseType;
+import org.openiam.connector.type.response.ObjectResponse;
 import org.springframework.stereotype.Service;
 
 /**
@@ -20,14 +20,14 @@ import org.springframework.stereotype.Service;
  */
 @Service("setPasswordScimCommand")
 public class SetPasswordScimCommand extends
-		AbstractScimCommand<PasswordRequest, ResponseType> {
+		AbstractScimCommand<PasswordRequest, ObjectResponse> {
 	private static final Log log = LogFactory
 			.getLog(SetPasswordScimCommand.class);
 
 	@Override
-	public ResponseType execute(PasswordRequest passwordRequest)
+	public ObjectResponse execute(PasswordRequest passwordRequest)
 			throws ConnectorDataException {
-		final ResponseType response = new ResponseType();
+		final ObjectResponse response = new ObjectResponse();
 		response.setStatus(StatusCodeType.SUCCESS);
 
 		final String principalName = passwordRequest.getObjectIdentity();
@@ -35,10 +35,11 @@ public class SetPasswordScimCommand extends
 				passwordRequest.getTargetID(), ConnectorConfiguration.class);
 
 		HttpURLConnection connection = this.getConnection(
-				config.getManagedSys(), "Users/" + principalName + "/password");
+				config.getManagedSys(), "/v1/Users/" + principalName
+						+ "/password");
 		try {
 
-			connection.setDoOutput(true);
+			// connection.setDoOutput(true);
 			connection.setRequestProperty("X-HTTP-Method-Override", "PATCH");
 			connection.setRequestProperty("If-Match", principalName);
 
@@ -46,11 +47,11 @@ public class SetPasswordScimCommand extends
 			token.setTimestamp(System.currentTimeMillis());
 			// TODO check how to get original password
 			token.setPassword("foobar");
-		    String encrypted =token.getPassword();
-			//String encrypted = TestRSA.encrypt(token);
+			String encrypted = token.getPassword();
+			// String encrypted = TestRSA.encrypt(token);
 			connection.setRequestProperty("Authorization", "Bearer "
 					+ encrypted);
-
+			connection.connect();
 			super.makeCall(
 					connection,
 					"<User xmlns=\"urn:scim:schemas:core:1.0\" "

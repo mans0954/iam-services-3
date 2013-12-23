@@ -17,6 +17,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.openiam.bpm.activiti.delegate.core.AbstractNotificationDelegate;
+import org.openiam.bpm.activiti.delegate.entitlements.AbstractEntitlementsDelegate;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.idm.srvc.msg.dto.NotificationParam;
 import org.openiam.idm.srvc.msg.dto.NotificationRequest;
@@ -36,7 +37,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.thoughtworks.xstream.XStream;
 
-public class SendNewHireRequestDelegate extends AbstractNotificationDelegate {
+public class SendNewHireRequestDelegate extends AbstractEntitlementsDelegate {
 
 	public SendNewHireRequestDelegate() {
 		super();
@@ -59,16 +60,11 @@ public class SendNewHireRequestDelegate extends AbstractNotificationDelegate {
 	
 	private void sendNotificationRequest(final UserEntity user, final DelegateExecution execution) {
 		final NotificationRequest request = new NotificationRequest();
-        request.setUserId(user.getUserId());
-        request.setNotificationType(getNotificationType());
+        request.setUserId(user.getId());
+        request.setNotificationType(getNotificationType(execution));
         request.getParamList().add(new NotificationParam("REQUEST_REASON", getTaskDescription(execution)));
         request.getParamList().add(new NotificationParam("REQUESTOR",  user.getDisplayName()));
         request.getParamList().add(new NotificationParam("TARGET_USER", profileModel.getUser().getDisplayName()));
         mailService.sendNotification(request);
-	}
-
-	@Override
-	protected String getNotificationType() {
-		return "NEW_PENDING_REQUEST";
 	}
 }

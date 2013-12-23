@@ -143,7 +143,7 @@ public class DisableUserDelegate {
 
         // typical sync
         List<LoginEntity> principalList = loginManager
-                .getLoginByUser(usr.getUserId());
+                .getLoginByUser(usr.getId());
         if (principalList != null) {
             log.debug("PrincipalList size =" + principalList.size());
             for (LoginEntity lg : principalList) {
