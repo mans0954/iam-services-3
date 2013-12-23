@@ -12,6 +12,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.connector.common.scim.S;
+import org.openiam.connector.common.scim.TestRSA;
 import org.openiam.connector.scim.command.base.AbstractAddScimCommand;
 import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.connector.type.constant.ErrorCode;
@@ -34,6 +35,8 @@ public class AddUserScimCommand extends AbstractAddScimCommand<ExtensibleUser> {
 	protected void addObject(CrudRequest<ExtensibleUser> crudRequest,
 			HttpURLConnection connection) throws ConnectorDataException {
 
+		log.info("Inside AddUserScimCommand");
+
 		String identifiedBy = null;
 		ExtensibleObject obj = crudRequest.getExtensibleObject();
 
@@ -42,9 +45,10 @@ public class AddUserScimCommand extends AbstractAddScimCommand<ExtensibleUser> {
 			HashMap<String, String> attributes = new HashMap<String, String>();
 			attributes.put("login", crudRequest.getObjectIdentity());
 			if (obj == null) {
-				log.debug("Object: not provided, just identity, seems it is delete operation");
+
+				log.info("Object: not provided, just identity, seems it is delete operation");
 			} else {
-				log.debug("Object:" + obj.getName() + " - operation="
+				log.info("Object:" + obj.getName() + " - operation="
 						+ obj.getOperation());
 
 				// Extract attributes
@@ -67,24 +71,24 @@ public class AddUserScimCommand extends AbstractAddScimCommand<ExtensibleUser> {
 				throw new ConnectorDataException(ErrorCode.INVALID_ATTRIBUTE,
 						"No password specified");
 
-
 			try {
-				connection.setDoOutput(true);
-				connection
-						.setRequestProperty("Content-Type", "application/xml");
-				connection.setRequestProperty("Accept", "application/json");
+				// connection.setDoOutput(true);
+				// connection
+				// .setRequestProperty("Content-Type", "application/xml");
+				// connection.setRequestProperty("Accept", "application/json");
 
 				S token = new S();
 				token.setTimestamp(System.currentTimeMillis());
-			    String encrypted =token.getPassword();
-				//String encrypted = TestRSA.encrypt(token);
+				// String encrypted =token.getPassword();
+				String encrypted = TestRSA.encrypt(token);
 				System.out.println("encrypted=" + encrypted);
-				connection.setRequestProperty("Authorization", "Bearer "
-						+ encrypted);
+				// connection.setRequestProperty("Authorization", "Bearer "
+				// + encrypted);
 
 				long nanoTime = System.nanoTime();
+				connection.connect();
 
-				String response = makeCall(
+				makeCall(
 						connection,
 						"<User xmlns=\"urn:scim:schemas:core:1.0\" "
 								+ "xmlns:enterprise=\"urn:scim:schemas:extension:enterprise:1.0\">"

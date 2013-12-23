@@ -3,18 +3,13 @@ package org.openiam.connector.scim.command.base;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.connector.common.data.ConnectorConfiguration;
-import org.openiam.connector.scim.command.user.DeleteUserScimCommand;
 import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.connector.type.constant.ErrorCode;
 import org.openiam.connector.type.constant.StatusCodeType;
 import org.openiam.connector.type.request.CrudRequest;
 import org.openiam.connector.type.response.ObjectResponse;
-import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.provision.type.ExtensibleObject;
-
 import java.net.HttpURLConnection;
-import java.sql.Connection;
-import java.util.List;
 
 /**
  * Created with IntelliJ IDEA. User: alexander Date: 7/11/13 Time: 10:37 PM To
@@ -47,7 +42,7 @@ public abstract class AbstractModifyScimCommand<ExtObject extends ExtensibleObje
 		// }
 
 		HttpURLConnection con = this.getConnection(config.getManagedSys(),
-				"Users/" + crudRequest.getObjectIdentity());
+				"/v1/Users/" + crudRequest.getObjectIdentity());
 		try {
 			modifyObject(crudRequest, con);
 			// TODO check how to handle attribute map
