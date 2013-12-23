@@ -99,6 +99,7 @@ import org.openiam.provision.service.ConnectorAdapter;
 import org.openiam.provision.service.ProvisionService;
 import org.openiam.provision.service.ProvisionServiceUtil;
 import org.openiam.provision.type.ExtensibleAttribute;
+import org.openiam.provision.type.ExtensibleObject;
 import org.openiam.provision.type.ExtensibleUser;
 import org.openiam.script.ScriptIntegration;
 import org.openiam.util.MuleContextProvider;
@@ -619,7 +620,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
                     String targetUserPrincipal = reconcilationTargetUserObjectToIDM(
                             managedSysId, mSys, situations,
                             extensibleAttributes, config, processedUserIds,
-                            auditBuilder);
+                            auditBuilder, resultBean, attrMap);
 
                     if (StringUtils.isNotEmpty(targetUserPrincipal)) {
                         reconChildLog.succeed().setAuditDescription(
@@ -642,14 +643,18 @@ public class ReconciliationServiceImpl implements ReconciliationService {
             ManagedSysDto mSys, Map<String, ReconciliationCommand> situations,
             List<ExtensibleAttribute> extensibleAttributes,
             ReconciliationConfig config, List<String> processedUserIds,
-            AuditLogBuilder auditBuilder) {
+            AuditLogBuilder auditBuilder, ReconciliationResultBean resultBean,
+            List<AttributeMapEntity> attrMap) {
         String targetUserPrincipal = null;
+        ExtensibleUser eu = new ExtensibleUser();
+        eu.setAttributes(extensibleAttributes);
 
         Map<String, Attribute> attributeMap = new HashMap<String, Attribute>();
         for (ExtensibleAttribute attr : extensibleAttributes) {
             // search principal attribute by KeyField
             attributeMap.put(attr.getName(), attr);
             if (attr.getName().equals(config.getCustomMatchAttr())) {
+                eu.setPrincipalFieldName(attr.getName());
                 targetUserPrincipal = attr.getValue();
                 break;
             }
@@ -676,6 +681,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
                         break;
                     }
                 }
+
                 // if user exists but don;t have principal for current target
                 // sys
                 ReconciliationCommand command = situations
@@ -715,6 +721,10 @@ public class ReconciliationServiceImpl implements ReconciliationService {
 
                 }
             } else {
+                resultBean.getRows().add(
+                        this.setRowInReconciliationResult(
+                                resultBean.getHeader(), attrMap, null, eu,
+                                ReconciliationResultCase.NOT_EXIST_IN_IDM_DB));
                 // create new user in IDM
                 ReconciliationCommand command = situations
                         .get(ReconciliationCommand.SYS_EXISTS__IDM_NOT_EXISTS);

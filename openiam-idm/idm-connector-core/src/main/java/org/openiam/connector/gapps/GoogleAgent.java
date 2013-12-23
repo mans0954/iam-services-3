@@ -9,8 +9,10 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.util.StringUtils;
 
 import com.google.gdata.client.appsforyourdomain.AppsPropertyService;
+import com.google.gdata.client.appsforyourdomain.adminsettings.SingleSignOnService;
 import com.google.gdata.data.appsforyourdomain.AppsForYourDomainException;
 import com.google.gdata.data.appsforyourdomain.generic.GenericEntry;
 import com.google.gdata.data.appsforyourdomain.generic.GenericFeed;
@@ -25,18 +27,25 @@ public class GoogleAgent {
     private static final String APP_URL = "https://apps-apis.google.com/a/feeds/user/2.0/";
     protected final Log log = LogFactory.getLog(this.getClass());
 
-    public AppsPropertyService getService(String adminEmail, String password)
-            throws AuthenticationException {
-        AppsPropertyService service = new AppsPropertyService(
-                "OPENIAM-GOOGLE-CONNECTOR");
-        service.setUserCredentials(adminEmail, password);
+    public AppsPropertyService getService(String adminEmail, String password,
+            String domainName) throws AuthenticationException {
+        AppsPropertyService service = null;
+        if (StringUtils.hasText(adminEmail) && StringUtils.hasText(password)) {
+            service = new AppsPropertyService("OPENIAM-GOOGLE-CONNECTOR");
+            service.setUserCredentials(adminEmail, password);
+        } else if (StringUtils.hasText(domainName)) {
+            service = new SingleSignOnService(domainName,
+                    "OPENIAM-GOOGLE-CONNECTOR");
+            // service.setUserToken("");
+        }
         return service;
     }
 
     public List<GenericEntry> getAllUsers(String adminEmail, String password,
             String domain) throws AppsForYourDomainException,
             MalformedURLException, IOException, ServiceException {
-        return this.getAllUsers(this.getService(adminEmail, password), domain);
+        return this.getAllUsers(this.getService(adminEmail, password, domain),
+                domain);
     }
 
     public List<GenericEntry> getAllUsers(AppsPropertyService service,
@@ -66,7 +75,7 @@ public class GoogleAgent {
     public GenericEntry getUser(String adminEmail, String password,
             String domain, String email) throws AppsForYourDomainException,
             MalformedURLException, IOException, ServiceException {
-        return this.getService(adminEmail, password).getEntry(
+        return this.getService(adminEmail, password, domain).getEntry(
                 new URL(APP_URL + domain + "/" + email + "@" + domain),
                 GenericEntry.class);
     }
@@ -79,9 +88,9 @@ public class GoogleAgent {
         entry.addProperties(googleUserProps);
         entry.addProperty("isAdmin", "false");
         entry.addProperty("isSuspended", "false");
-        
-        GenericEntry newE = this.getService(adminEmail, password).insert(
-                new URL(APP_URL + domain), entry);
+
+        GenericEntry newE = this.getService(adminEmail, password, domain)
+                .insert(new URL(APP_URL + domain), entry);
         log.info("Google connector add run:"
                 + newE.getAllProperties().get("userEmail"));
     }
@@ -92,8 +101,9 @@ public class GoogleAgent {
             MalformedURLException, IOException, ServiceException {
         GenericEntry entry = new GenericEntry();
         entry.addProperties(googleUserProps);
-        GenericEntry newE = this.getService(adminEmail, password).update(
-                new URL(APP_URL + domain + "/" + id + "@" + domain), entry);
+        GenericEntry newE = this.getService(adminEmail, password, domain)
+                .update(new URL(APP_URL + domain + "/" + id + "@" + domain),
+                        entry);
         log.info("Google connector update run:"
                 + newE.getAllProperties().get("userEmail"));
     }
@@ -101,7 +111,7 @@ public class GoogleAgent {
     public void deleteUser(String adminEmail, String password, String domain,
             String email) throws AppsForYourDomainException,
             MalformedURLException, IOException, ServiceException {
-        this.getService(adminEmail, password).delete(
+        this.getService(adminEmail, password, domain).delete(
                 new URL(APP_URL + domain + "/" + email + "@" + domain));
     }
 }
