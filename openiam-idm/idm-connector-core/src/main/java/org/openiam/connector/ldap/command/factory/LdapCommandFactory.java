@@ -19,6 +19,9 @@ public class LdapCommandFactory extends AbstractCommandFactory {
     @Qualifier("deleteUserLdapCommand")
     private ConnectorCommand deleteUserLdapCommand;
     @Autowired
+    @Qualifier("lookupAttributeNamesCommand")
+    private ConnectorCommand lookupAttributeNamesCommand;
+    @Autowired
     @Qualifier("lookupUserLdapCommand")
     private ConnectorCommand lookupUserLdapCommand;
     @Autowired
@@ -48,8 +51,8 @@ public class LdapCommandFactory extends AbstractCommandFactory {
                     return addUserLdapCommand;
                 case DELETE:
                     return deleteUserLdapCommand;
-//                case LOOKUP_ATTRIBUTE_NAME:
-//                    return lookupCSVAttributeNamesCommand;
+                case LOOKUP_ATTRIBUTE_NAME:
+                    return lookupAttributeNamesCommand;
                 case LOOKUP:
                     return lookupUserLdapCommand;
                 case SEARCH:

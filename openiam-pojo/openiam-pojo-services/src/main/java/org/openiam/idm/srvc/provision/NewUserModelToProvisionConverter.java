@@ -32,6 +32,7 @@ import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.dto.ProvisionUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 @Component
 public class NewUserModelToProvisionConverter {
@@ -66,6 +67,7 @@ public class NewUserModelToProvisionConverter {
 	@Autowired
 	private OrganizationDozerConverter organizationDozerConverter;
 	
+	@Transactional
 	public ProvisionUser convertNewProfileModel(final NewUserProfileRequestModel request) {
 		ProvisionUser user = null;
 		if(request.getUser() != null) {
@@ -149,11 +151,18 @@ public class NewUserModelToProvisionConverter {
 			if(CollectionUtils.isNotEmpty(request.getSupervisorIds())) {
                 final Set<User> userSupervisors = new HashSet<User>();
 				for(final String supervisorId : request.getSupervisorIds()) {
+					/*
 					final UserEntity entity = userDataService.getUser(supervisorId);
 					if(entity != null) {
 						final User supervisor = userDozerConverter.convertToDTO(entity, false);
                         supervisor.setOperation(AttributeOperationEnum.ADD);
 						userSupervisors.add(supervisor);
+					}
+					*/
+					final User supervisor = userDataService.getUserDto(supervisorId);
+					if(supervisor != null) {
+						 supervisor.setOperation(AttributeOperationEnum.ADD);
+						 userSupervisors.add(supervisor);
 					}
 				}
                 user.setSuperiors(userSupervisors);

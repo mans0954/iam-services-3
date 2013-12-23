@@ -103,6 +103,7 @@ public interface RoleDataWebService {
     @WebMethod
     List<Role> getRolesInGroup(final @WebParam(name = "groupId", targetNamespace = "") String groupId,
                                final @WebParam(name="requesterId", targetNamespace="") String requesterId,
+                               final @WebParam(name = "deepFlag", targetNamespace = "") boolean deepFlag,
                                final @WebParam(name = "from", targetNamespace = "") int from,
                                final @WebParam(name = "size", targetNamespace = "") int size);
 
@@ -246,6 +247,7 @@ public interface RoleDataWebService {
     @WebMethod
     public List<Role> getRolesForResource(final @WebParam(name="resourceId", targetNamespace="") String resourceId,
                                           final @WebParam(name="requesterId", targetNamespace="") String requesterId,
+                                          final @WebParam(name = "deepFlag", targetNamespace = "") boolean deepFlag,
     									  final @WebParam(name = "from", targetNamespace = "") int from,
     									  final @WebParam(name = "size", targetNamespace = "") int size);
 

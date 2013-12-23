@@ -27,8 +27,6 @@ import java.util.List;
 
 public abstract class AbstractSearchLdapCommand<ExtObject extends ExtensibleObject> extends AbstractLdapCommand<SearchRequest<ExtObject>, SearchResponse> {
 
-    public static final int PAGE_SIZE = 10;
-
     @Override
     public SearchResponse execute(SearchRequest<ExtObject> searchRequest) throws ConnectorDataException {
         SearchResponse searchResponse = new SearchResponse();

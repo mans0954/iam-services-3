@@ -34,8 +34,6 @@ public class AuthProviderServiceImpl implements AuthProviderService {
     @Autowired
     private AuthResourceAttributeService authResourceAttributeService;
     @Autowired
-    private ResourceDAO resourceDao;
-    @Autowired
     private ResourceTypeDAO resourceTypeDAO;
     @Autowired
     private ResourceService resourceService;
@@ -177,13 +175,13 @@ public class AuthProviderServiceImpl implements AuthProviderService {
         if(resourceType==null){
             throw new NullPointerException("Cannot create resource for provider. Resource type is not found");
         }
-
-        ResourceEntity resource = provider.getResource();
+        
+        final ResourceEntity resource = provider.getResource();
         resource.setName(System.currentTimeMillis() + "_" + provider.getName());
         resource.setResourceType(resourceType);
         resource.setId(null);
-        resource = resourceDao.add(resource);
-
+        
+        resourceService.save(resource, null);
         provider.setProviderId(null);
         provider.setResource(resource);
         //provider.setResourceId(resource.getResourceId());
@@ -227,11 +225,11 @@ public class AuthProviderServiceImpl implements AuthProviderService {
             entity.setSignRequest(provider.isSignRequest());
 
             // get resource for provider
-            if(provider.getResource()!=null){
-                ResourceEntity resource = entity.getResource();
-                resource.setURL(provider.getResource().getURL());
-                resourceDao.save(resource);
-            }
+            //if(provider.getResource()!=null){
+            //    final ResourceEntity resource = entity.getResource();
+            //   resource.setURL(provider.getResource().getURL());
+            //   resourceService.save(resource, null);
+            //}
         }
         
         entity.setProviderAttributeSet(null);
