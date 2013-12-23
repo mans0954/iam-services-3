@@ -6,6 +6,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.BaseConstants;
+import org.openiam.base.KeyDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.continfo.dto.Address;
@@ -58,7 +59,6 @@ import java.util.*;
         "suffix",
         "title",
         "userAttributes",
-        "userId",
         "userTypeInd",
         "userNotes",
         "costCenter",
@@ -100,13 +100,11 @@ import java.util.*;
         Organization.class
 })
 @DozerDTOCorrespondence(UserEntity.class)
-public class User extends org.openiam.base.BaseObject {
+public class User extends KeyDTO {
 
     private AttributeOperationEnum operation = AttributeOperationEnum.NO_CHANGE;
 
     protected static final Log log = LogFactory.getLog(User.class);
-    // Fields
-    protected String userId;
 
     //protected AddressMap addresses; see below
     @XmlSchemaType(name = "dateTime")
@@ -238,18 +236,8 @@ public class User extends org.openiam.base.BaseObject {
     /**
      * minimal constructor
      */
-    public User(String userId) {
-        this.userId = userId;
-    }
-
-    // Property accessors
-    public String getUserId() {
-        return this.userId;
-    }
-
-    public void setUserId(String userId) {
-
-        this.userId = userId;
+    public User(String id) {
+    	setId(id);
     }
 
     public AttributeOperationEnum getOperation() {
@@ -1272,7 +1260,7 @@ public class User extends org.openiam.base.BaseObject {
             return false;
         if (startDate != null ? !startDate.equals(user.startDate) : user.startDate != null) return false;
         if (title != null ? !title.equals(user.title) : user.title != null) return false;
-        if (userId != null ? !userId.equals(user.userId) : user.userId != null) return false;
+        if (id != null ? !id.equals(user.id) : user.id != null) return false;
         if (userOwnerId != null ? !userOwnerId.equals(user.userOwnerId) : user.userOwnerId != null) return false;
 
         return true;
@@ -1280,7 +1268,7 @@ public class User extends org.openiam.base.BaseObject {
 
     @Override
     public int hashCode() {
-        int result = userId != null ? userId.hashCode() : 0;
+        int result = id != null ? id.hashCode() : 0;
         result = 31 * result + (companyOwnerId != null ? companyOwnerId.hashCode() : 0);
         result = 31 * result + (createDate != null ? createDate.hashCode() : 0);
         result = 31 * result + (createdBy != null ? createdBy.hashCode() : 0);

@@ -136,7 +136,7 @@ public class ModifyUser {
 
             log.debug("- Adding original addressSet to the user object");
 
-            List<Address> addressList = addressDozerConverter.convertToDTOList(userMgr.getAddressList(user.getUserId()), true);
+            List<Address> addressList = addressDozerConverter.convertToDTOList(userMgr.getAddressList(user.getId()), true);
             if (addressList != null && !addressList.isEmpty()) {
 
                 user.setAddresses(new HashSet<Address>(addressList));
@@ -151,7 +151,7 @@ public class ModifyUser {
 
             log.debug("- Adding original emailSet to the user object");
 
-            List<EmailAddress> emailList = emailAddressDozerConverter.convertToDTOList(userMgr.getEmailAddressList(user.getUserId()), true);
+            List<EmailAddress> emailList = emailAddressDozerConverter.convertToDTOList(userMgr.getEmailAddressList(user.getId()), true);
             if (emailList != null && !emailList.isEmpty()) {
 
                 user.setEmailAddresses(new HashSet<EmailAddress>(emailList));
@@ -166,7 +166,7 @@ public class ModifyUser {
 
             log.debug("- Adding original phoneSet to the user object");
 
-            List<Phone> phoneList = phoneDozerConverter.convertToDTOList(userMgr.getPhoneList(user.getUserId()), true);
+            List<Phone> phoneList = phoneDozerConverter.convertToDTOList(userMgr.getPhoneList(user.getId()), true);
             if (phoneList != null && !phoneList.isEmpty()) {
 
                 user.setPhones(new HashSet<Phone>(phoneList));
@@ -181,7 +181,7 @@ public class ModifyUser {
 
             log.debug("- Adding original user attributes to the user object");
 
-            User u = userDozerConverter.convertToDTO(userMgr.getUser(user.getUserId()), true);
+            User u = userDozerConverter.convertToDTO(userMgr.getUser(user.getId()), true);
             if (u.getUserAttributes() != null) {
                 user.setUserAttributes(u.getUserAttributes());
             }
@@ -195,7 +195,7 @@ public class ModifyUser {
             log.debug("- Adding original affiliationList to the user object");
 
             List<Organization> userAffiliations = orgManager
-                    .getOrganizationsForUser(user.getUserId(), null, 0,Integer.MAX_VALUE);
+                    .getOrganizationsForUser(user.getId(), null, 0,Integer.MAX_VALUE);
             if (userAffiliations != null && !userAffiliations.isEmpty()) {
 
                 user.setAffiliations(new HashSet<Organization>(userAffiliations));
@@ -1060,7 +1060,7 @@ public class ModifyUser {
                         // r.getRoleId());
                        /* UserRoleEntity ur = getUserRole(r, currentUserRole);
                         if (ur == null) {*/
-                            roleDataService.addUserToRole(user.getUserId(),
+                            roleDataService.addUserToRole(user.getId(),
                                     userId);
                        // }
                         /*
@@ -1123,19 +1123,19 @@ public class ModifyUser {
         }
         // check the current supervisor - if different - remove it and add the
         // new one.
-        List<UserEntity> supervisorList = userMgr.getSuperiors(user.getUserId(), 0, Integer.MAX_VALUE);
+        List<UserEntity> supervisorList = userMgr.getSuperiors(user.getId(), 0, Integer.MAX_VALUE);
         for (UserEntity s : supervisorList) {
             log.debug("looking to match supervisor ids = "
-                    + s.getUserId() + " "
-                    + supervisor.getSupervisor().getUserId());
-            if (s.getUserId()
-                    .equalsIgnoreCase(supervisor.getSupervisor().getUserId())) {
+                    + s.getId() + " "
+                    + supervisor.getSupervisor().getId());
+            if (s.getId()
+                    .equalsIgnoreCase(supervisor.getSupervisor().getId())) {
                 return;
             }
-            userMgr.removeSupervisor(s.getUserId(), user.getUserId());
+            userMgr.removeSupervisor(s.getId(), user.getId());
         }
         log.debug("adding supervisor: "
-                + supervisor.getSupervisor().getUserId());
+                + supervisor.getSupervisor().getId());
         supervisor.setEmployee(user);
         final SupervisorEntity entity = supervisorDozerConverter.convertToEntity(supervisor, true);
         userMgr.addSupervisor(entity);

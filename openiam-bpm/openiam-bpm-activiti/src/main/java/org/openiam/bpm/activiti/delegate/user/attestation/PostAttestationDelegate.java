@@ -51,10 +51,15 @@ public class PostAttestationDelegate extends AbstractEntitlementsDelegate {
 
 	private void sendNotificationRequest(final UserEntity supervisor, final UserEntity employee) {
 		final NotificationRequest request = new NotificationRequest();
-        request.setUserId(supervisor.getUserId());
+        request.setUserId(supervisor.getId());
         request.setNotificationType("ATTESTATION_REQUEST_DONE");
         request.getParamList().add(new NotificationParam("EMPLOYEE", employee));
         request.getParamList().add(new NotificationParam("SUPERVISOR", supervisor));
         mailService.sendNotification(request);
+	}
+	
+	@Override
+	protected ActivitiConstants getTargetVariable() {
+		return ActivitiConstants.EMPLOYEE_ID;
 	}
 }

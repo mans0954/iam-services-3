@@ -354,7 +354,7 @@ public class PasswordServiceImpl implements PasswordService {
 
 		PolicyObjectAssocEntity policyAssocEntity = null;
 
-		log.info("User type and classifcation=" + user.getUserId() + " "
+		log.info("User type and classifcation=" + user.getId() + " "
 				+ user.getUserTypeInd());
 
 		if (user.getClassification() != null) {
@@ -387,10 +387,10 @@ public class PasswordServiceImpl implements PasswordService {
 		}
 		//  set by ORGANIZATION
 
-		if (user.getUserId() != null) {
+		if (user.getId() != null) {
 
 			List<OrganizationEntity> orgEntity = organizationDAO
-					.getOrganizationsForUser(user.getUserId(), null, 0, 10);
+					.getOrganizationsForUser(user.getId(), null, 0, 10);
 
 			for (OrganizationEntity organization : orgEntity) {
 

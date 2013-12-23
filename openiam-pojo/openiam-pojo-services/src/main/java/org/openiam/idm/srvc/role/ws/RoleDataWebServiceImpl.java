@@ -168,20 +168,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
         AuditLogBuilder auditBuilder = auditLogProvider.getAuditLogBuilder();
         auditBuilder.setAction(AuditAction.ADD_GROUP_TO_ROLE).setTargetGroup(groupId).setAuditDescription(String.format("Add group to  role: %s", roleId));
 		try {
-			if(roleId == null || groupId == null) {
-				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "GroupId or RoleId  is null or empty");
-			}
-			
-			final RoleEntity role =  roleDataService.getRole(roleId, null);
-			final GroupEntity group = groupService.getGroup(groupId);
-			if(role == null || group == null) {
-				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND, "No Group or Role objects  are found");
-			}
-			
-			if(role.hasGroup(group.getId())) {
-				throw new BasicDataServiceException(ResponseCode.RELATIONSHIP_EXISTS, String.format("Group %s has already been added to role: %s", groupId, roleId));
-			}
-			
+			roleDataService.validateGroup2RoleAddition(roleId, groupId);
 			roleDataService.addGroupToRole(roleId, groupId);
             auditBuilder.succeed();
 		} catch(BasicDataServiceException e) {
@@ -808,6 +795,38 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
             auditBuilder.fail().setException(e);
         } finally {
             auditLogService.enqueue(auditBuilder);
+        }
+		return response;
+	}
+
+	@Override
+	public Response canAddChildRole(String roleId, String childRoleId) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			roleDataService.validateRole2RoleAddition(roleId, childRoleId);
+		} catch(BasicDataServiceException e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+		} catch(Throwable e) {
+			LOG.error("Exception", e);
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
+        }
+		return response;
+	}
+
+	@Override
+	public Response validateGroup2RoleAddition(String roleId, String groupId) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			roleDataService.validateGroup2RoleAddition(roleId, groupId);
+		} catch(BasicDataServiceException e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+		} catch(Throwable e) {
+			LOG.error("Exception", e);
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
         }
 		return response;
 	}

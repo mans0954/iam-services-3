@@ -117,6 +117,10 @@ public interface RoleDataWebService {
     @WebMethod
     Response addGroupToRole(@WebParam(name = "roleId", targetNamespace = "") String roleId,
                             @WebParam(name = "groupId", targetNamespace = "") String groupId);
+    
+    @WebMethod
+    Response validateGroup2RoleAddition(@WebParam(name = "roleId", targetNamespace = "") String roleId,
+                            			@WebParam(name = "groupId", targetNamespace = "") String groupId);
 
     /**
      * Removes the association between a single group and role.
@@ -318,6 +322,10 @@ public interface RoleDataWebService {
     @WebMethod
     public Response addChildRole(final @WebParam(name="roleId", targetNamespace="") String roleId,
     						     final @WebParam(name="parentRoleId", targetNamespace="") String childRoleId);
+    
+    @WebMethod
+    public Response canAddChildRole(final @WebParam(name="roleId", targetNamespace="") String roleId,
+    						        final @WebParam(name="parentRoleId", targetNamespace="") String childRoleId);
 
     /**
      * Remove Role specified by childRoleId from the membership list of Group specified by roleId

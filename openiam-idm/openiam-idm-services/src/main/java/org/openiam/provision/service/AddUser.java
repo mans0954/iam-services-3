@@ -109,12 +109,12 @@ public class AddUser {
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
-        if (newUser == null || newUser.getUserId() == null) {
+        if (newUser == null || newUser.getId() == null) {
             resp.setStatus(ResponseStatus.FAILURE);
             return resp;
         }
-        user.setUserId(newUser.getUserId());
-        log.debug("User id=" + newUser.getUserId()
+        user.setId(newUser.getId());
+        log.debug("User id=" + newUser.getId()
                 + " created in openiam repository");
 
         code = addSupervisors(user);
@@ -131,19 +131,19 @@ public class AddUser {
             resp.setErrorCode(ResponseCode.FAIL_ENCRYPTION);
             return resp;
         }
-        code = addGroups(user, newUser.getUserId());
+        code = addGroups(user, newUser.getId());
         if (code != ResponseCode.SUCCESS) {
             resp.setStatus(ResponseStatus.FAILURE);
             resp.setErrorCode(code);
             return resp;
         }
-        code = addRoles(user, newUser.getUserId());
+        code = addRoles(user, newUser.getId());
         if (code != ResponseCode.SUCCESS) {
             resp.setStatus(ResponseStatus.FAILURE);
             resp.setErrorCode(code);
             return resp;
         }
-        code = addAffiliations(user, newUser.getUserId());
+        code = addAffiliations(user, newUser.getId());
         if (code != ResponseCode.SUCCESS) {
             resp.setStatus(ResponseStatus.FAILURE);
             resp.setErrorCode(code);
@@ -158,7 +158,7 @@ public class AddUser {
         if (CollectionUtils.isNotEmpty(superiors)) {
             for (User s : superiors) {
                 try {
-                    userMgr.addSuperior(s.getUserId(), u.getUserId());
+                    userMgr.addSuperior(s.getId(), u.getId());
                     log.info("created user supervisor");
 
                 } catch (Exception e) {
@@ -176,12 +176,12 @@ public class AddUser {
                 lg.setFirstTimeLogin(1);
                 lg.setIsLocked(0);
                 lg.setCreateDate(new Date(System.currentTimeMillis()));
-                lg.setUserId(u.getUserId());
+                lg.setUserId(u.getId());
                 lg.setStatus(LoginStatusEnum.ACTIVE);
                 // encrypt the password
                 if (lg.getPassword() != null) {
                     String pswd = lg.getPassword();
-                    lg.setPassword(loginManager.encryptPassword(u.getUserId(),
+                    lg.setPassword(loginManager.encryptPassword(u.getId(),
                             pswd));
                 }
                 loginManager.addLogin(loginDozerConverter.convertToEntity(lg,
@@ -256,7 +256,7 @@ public class AddUser {
                 if (org.getId() == null) {
                     return ResponseCode.OBJECT_ID_INVALID;
                 }
-                orgManager.addUserToOrg(org.getId(), user.getUserId());
+                orgManager.addUserToOrg(org.getId(), user.getId());
                 /*
                 logList.add(auditHelper.createLogObject("ADD AFFILIATION",
                         user.getRequestorDomain(), user.getRequestorLogin(),

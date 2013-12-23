@@ -184,7 +184,7 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
 
             if(StringUtils.isNotBlank(userId)){
             criteria.createAlias("users", "u")
-                    .add(Restrictions.eq("u.userId", userId));
+                    .add(Restrictions.eq("u.id", userId));
         }
 
         if(StringUtils.isNotBlank(roleId)){

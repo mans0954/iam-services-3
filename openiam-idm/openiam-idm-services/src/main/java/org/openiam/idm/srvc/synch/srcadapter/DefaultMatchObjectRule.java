@@ -81,7 +81,7 @@ public class DefaultMatchObjectRule implements MatchObjectRule {
 
         if (userList != null && !userList.isEmpty()) {
 			System.out.println("User matched with existing user...");
-			return new User(userList.get(0).getUserId());
+			return new User(userList.get(0).getId());
 		}
 		return null;
 	}

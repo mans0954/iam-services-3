@@ -568,4 +568,23 @@ public class RoleDataServiceImpl implements RoleDataService {
 	public Role getRoleDTO(String id) {
 		return roleDozerConverter.convertToDTO(roleDao.findById(id), true);
 	}
+	
+	@Override
+	@Transactional
+	public void validateGroup2RoleAddition(String roleId, String groupId)
+			throws BasicDataServiceException {
+		if(roleId == null || groupId == null) {
+			throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "GroupId or RoleId  is null or empty");
+		}
+		
+		final RoleEntity role = roleDao.findById(roleId);
+		final GroupEntity group = groupDAO.findById(groupId);
+		if(role == null || group == null) {
+			throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND, "No Group or Role objects  are found");
+		}
+		
+		if(role.hasGroup(group.getId())) {
+			throw new BasicDataServiceException(ResponseCode.RELATIONSHIP_EXISTS, String.format("Group %s has already been added to role: %s", groupId, roleId));
+		}
+	}
 }

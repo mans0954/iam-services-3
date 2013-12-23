@@ -153,7 +153,7 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
 
         if(StringUtils.isNotBlank(userId)){
             criteria.createAlias("users", "u")
-                    .add(Restrictions.eq("u.userId", userId));
+                    .add(Restrictions.eq("u.id", userId));
         }
 
         if(StringUtils.isNotBlank(groupId)){
@@ -217,7 +217,7 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
 	private Criteria getRolesForUserCriteria(final String userId, final Set<String> filter) {
 		return getCriteria()
 	               .createAlias("users", "u")
-	               .add(Restrictions.eq("u.userId", userId));
+	               .add(Restrictions.eq("u.id", userId));
 	}
 
     private List<RoleEntity> getList(Criteria criteria, int from, int size){

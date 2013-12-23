@@ -233,7 +233,7 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
         // send message into to audit log
 
         log("AUTHENTICATION", "AUTHENTICATION", "SUCCESS", null, domainId,
-                user.getUserId(), principal, null, null, clientIP, nodeIP);
+                user.getId(), principal, null, null, clientIP, nodeIP);
 
         return sub;
     }

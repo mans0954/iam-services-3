@@ -84,7 +84,7 @@ public class UserProfileServiceImpl implements UserProfileService {
 		entityValidator.isValid(userEntity);
         pageTemplateService.validate(request);
 		
-        final UserEntity dbEntity = userManager.getUser(request.getUser().getUserId());
+        final UserEntity dbEntity = userManager.getUser(request.getUser().getId());
         
         final List<EmailAddressEntity> emailList = emailAddressDozerConverter.convertToEntityList(request.getEmails(), true);	 
         final List<AddressEntity> addressList = addressDozerConverter.convertToEntityList(request.getAddresses(), true);

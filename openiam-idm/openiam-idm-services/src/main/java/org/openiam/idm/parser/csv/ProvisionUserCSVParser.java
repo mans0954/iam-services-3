@@ -118,7 +118,7 @@ public class ProvisionUserCSVParser extends
             break;
         case uid:
         case userId:
-            user.setUserId(objValue);
+            user.setId(objValue);
             break;
         case userTypeInd:
             user.setUserTypeInd(objValue);
@@ -286,7 +286,7 @@ public class ProvisionUserCSVParser extends
             break;
         case uid:
         case userId:
-            objValue = toString(user.getUserId());
+            objValue = toString(user.getId());
             break;
         case userTypeInd:
             objValue = toString(user.getUserTypeInd());

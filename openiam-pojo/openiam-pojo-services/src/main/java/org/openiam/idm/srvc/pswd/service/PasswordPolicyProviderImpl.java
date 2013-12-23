@@ -48,7 +48,7 @@ public class PasswordPolicyProviderImpl implements PasswordPolicyProvider {
 
         PolicyObjectAssocEntity policyAssocEntity = null;
 
-        log.info(String.format("User type and classifcation=%s %s", user.getUserId(), user.getUserTypeInd()));
+        log.info(String.format("User type and classifcation=%s %s", user.getId(), user.getUserTypeInd()));
 
         if (user.getClassification() != null) {
             log.info("Looking for associate by classification.");
@@ -82,10 +82,10 @@ public class PasswordPolicyProviderImpl implements PasswordPolicyProvider {
         }
         //  set by ORGANIZATION
 
-        if (user.getUserId() != null) {
+        if (user.getId() != null) {
 
             List<OrganizationEntity> orgEntity = organizationDAO
-                    .getOrganizationsForUser(user.getUserId(), null, 0, 10);
+                    .getOrganizationsForUser(user.getId(), null, 0, 10);
 
             for (OrganizationEntity organization : orgEntity) {
 

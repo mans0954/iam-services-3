@@ -4,6 +4,7 @@ package org.openiam.idm.srvc.res.dto;
 
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.BaseObject;
+import org.openiam.base.KeyNameDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -25,8 +26,6 @@ import org.openiam.idm.srvc.user.dto.User;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "Resource", propOrder = {
         "resourceType",
-        "id",
-        "name",
         "description",
         "displayOrder",
         "URL",
@@ -46,11 +45,9 @@ import org.openiam.idm.srvc.user.dto.User;
         User.class
 })
 @DozerDTOCorrespondence(ResourceEntity.class)
-public class Resource extends BaseObject {
+public class Resource extends KeyNameDTO {
 
-    private String id;
     private ResourceType resourceType;
-    private String name;
     private String description;
     private Integer displayOrder;
     private String URL;
@@ -74,14 +71,6 @@ public class Resource extends BaseObject {
     public Resource() {
     }
 
-    public String getId() {
-        return this.id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
     public ResourceType getResourceType() {
         return this.resourceType;
     }
@@ -96,14 +85,6 @@ public class Resource extends BaseObject {
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    public String getName() {
-        return this.name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public Integer getDisplayOrder() {

@@ -67,7 +67,7 @@ public class PolicyMapTransformScript extends AbstractTransformScript {
 
     private void populateUser(LineObject rowObj, ProvisionUser pUser) {
         if (isNewUser) {
-            pUser.setUserId(null);
+            pUser.setId(null);
         }
         if (principalList == null) {
             principalList = new ArrayList<Login>();

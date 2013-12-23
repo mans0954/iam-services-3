@@ -66,8 +66,8 @@ public class AttestationInitializer {
 				}
 				
 				for(final UserEntity supevisor : supervisords) {
-					if(supevisor != null && supevisor.getUserId() != null) {
-						supervisorIds.add(supevisor.getUserId());
+					if(supevisor != null && supevisor.getId() != null) {
+						supervisorIds.add(supevisor.getId());
 					}
 				}
 				

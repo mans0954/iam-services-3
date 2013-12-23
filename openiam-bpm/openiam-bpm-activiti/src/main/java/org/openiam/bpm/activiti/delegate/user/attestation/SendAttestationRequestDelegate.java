@@ -41,7 +41,7 @@ public class SendAttestationRequestDelegate extends AbstractEntitlementsDelegate
 			for(final String candidateId : candidateUsersIds) {
 				final UserEntity supervisor = getUserEntity(candidateId);
 				if(supervisor != null) {
-					sendNotificationRequest(supervisor, employee);
+					sendNotificationRequest(supervisor, employee, execution);
 				}
 			}
 		}
@@ -49,17 +49,17 @@ public class SendAttestationRequestDelegate extends AbstractEntitlementsDelegate
 		LOG.info(String.format("Took %s ms to send attestation requests for user %s", sw.getTime(), employeeId));
 	}
 
-	private void sendNotificationRequest(final UserEntity supervisor, final UserEntity employee) {
+	private void sendNotificationRequest(final UserEntity supervisor, final UserEntity employee, final DelegateExecution execution) {
 		final NotificationRequest request = new NotificationRequest();
-        request.setUserId(supervisor.getUserId());
-        request.setNotificationType(getNotificationType());
+        request.setUserId(supervisor.getId());
+        request.setNotificationType(getNotificationType(execution));
         request.getParamList().add(new NotificationParam("EMPLOYEE", employee));
         request.getParamList().add(new NotificationParam("SUPERVISOR", supervisor));
         mailService.sendNotification(request);
 	}
-
+	
 	@Override
-	protected String getNotificationType() {
-		return "ATTESTATION_REQUEST";
+	protected ActivitiConstants getTargetVariable() {
+		return ActivitiConstants.EMPLOYEE_ID;
 	}
 }

@@ -86,6 +86,8 @@ public interface RoleDataService {
      * @param roleId The roleId which is to be added to the group.
      */
     public void addGroupToRole(String roleId, String groupId);
+    
+    public void validateGroup2RoleAddition(String roleId, String groupId) throws BasicDataServiceException;
 
     /**
      * Removes the association between a single group and role.

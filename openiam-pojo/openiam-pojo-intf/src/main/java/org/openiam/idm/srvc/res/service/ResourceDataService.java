@@ -225,6 +225,10 @@ public interface ResourceDataService {
 			@WebParam(name = "resourceId", targetNamespace = "") final String resourceId,
 			@WebParam(name = "memberResourceId", targetNamespace = "") final String memberResourceId);
 
+	@WebMethod
+	Response validateAddChildResource(@WebParam(name = "resourceId", targetNamespace = "") final String resourceId,
+									  @WebParam(name = "childResourceId", targetNamespace = "") final String childResourceId);
+	
 	/**
 	 * Removes a child resource from a  parent
 	 * @param resourceId - the parent resource ID

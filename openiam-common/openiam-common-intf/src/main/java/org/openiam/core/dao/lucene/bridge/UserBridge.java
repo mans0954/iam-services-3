@@ -14,7 +14,7 @@ public class UserBridge implements TwoWayStringBridge {
 	public String objectToString(Object object) {
 		String retVal = null;
 		if(object instanceof UserEntity) {
-			retVal = ((UserEntity)object).getUserId();
+			retVal = ((UserEntity)object).getId();
 		}
 		return retVal;
 	}
@@ -22,7 +22,7 @@ public class UserBridge implements TwoWayStringBridge {
 	@Override
 	public Object stringToObject(String stringValue) {
 		final UserEntity entity = new UserEntity();
-		entity.setUserId(stringValue);
+		entity.setId(stringValue);
 		return entity;
 	}
 }

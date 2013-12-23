@@ -3,6 +3,7 @@ package org.openiam.bpm.activiti.groovy;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 import org.openiam.util.SpringContextProvider;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -16,7 +17,7 @@ public class DefaultNewEntityApproverIdentifier {
 		SpringContextProvider.resolveProperties(this);
 	}
 	
-	public Set<String> getApprovers() {
+	public Set<String> getApprovers(final String requestorId, final AssociationType type) {
 		final Set<String> approvers = new HashSet<String>();
 		approvers.add(defaultApproverUser);
 		return approvers;

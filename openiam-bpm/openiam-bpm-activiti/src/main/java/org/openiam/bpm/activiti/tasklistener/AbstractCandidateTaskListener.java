@@ -51,6 +51,4 @@ public abstract class AbstractCandidateTaskListener extends AbstractActivitiJob 
 		
 		delegateTask.setOwner(taskOwner);
 	}
-	
-	public abstract String getTargetUserId(final DelegateExecution execution);
 }

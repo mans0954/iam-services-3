@@ -459,18 +459,14 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
 	}
 
 	@Override
-	public Response addChildResource(final String parentResourceId, final String childResourceId) {
+	public Response addChildResource(final String resourceId, final String childResourceId) {
 		final Response response = new Response(ResponseStatus.SUCCESS);
         AuditLogBuilder auditBuilder = auditLogProvider.getAuditLogBuilder();
-        auditBuilder.setAction(AuditAction.ADD_CHILD_RESOURCE).setTargetResource(parentResourceId)
-                    .setAuditDescription(String.format("Add child resource: %s to resource: %s", childResourceId, parentResourceId));
+        auditBuilder.setAction(AuditAction.ADD_CHILD_RESOURCE).setTargetResource(resourceId)
+                    .setAuditDescription(String.format("Add child resource: %s to resource: %s", childResourceId, resourceId));
 		try {
-			if (StringUtils.isBlank(parentResourceId)
-					|| StringUtils.isBlank(childResourceId)) {
-				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Parent ResourceId or Child ResourceId is null");
-			}
-			resourceService.validateResource2ResourceAddition(parentResourceId, childResourceId);
-			resourceService.addChildResource(parentResourceId, childResourceId);
+			resourceService.validateResource2ResourceAddition(resourceId, childResourceId);
+			resourceService.addChildResource(resourceId, childResourceId);
             auditBuilder.succeed();
 		} catch(BasicDataServiceException e) {
 			response.setResponseValue(e.getResponseValue());
@@ -799,5 +795,21 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
 	public List<ResourceType> findResourceTypes(final ResourceTypeSearchBean searchBean, int from, int size) {
 		final List<ResourceTypeEntity> entityList = resourceService.findResourceTypes(searchBean, from, size);
 		return resourceTypeConverter.convertToDTOList(entityList, searchBean.isDeepCopy());
+	}
+
+	@Override
+	public Response validateAddChildResource(String resourceId, String childResourceId) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			resourceService.validateResource2ResourceAddition(resourceId, childResourceId);
+		} catch (BasicDataServiceException e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+		} catch (Throwable e) {
+			log.error("Exception", e);
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
+        }
+		return response;
 	}
 }
