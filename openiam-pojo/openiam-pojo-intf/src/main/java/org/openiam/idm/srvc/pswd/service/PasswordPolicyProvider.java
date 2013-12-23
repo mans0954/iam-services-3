@@ -12,8 +12,8 @@ import org.openiam.idm.srvc.user.domain.UserEntity;
  */
 public interface PasswordPolicyProvider {
 
-    public Policy getPasswordPolicyByUser(String domainId, String userId);
-    public Policy getPasswordPolicyByUser(String domainId, UserEntity user);
+    public Policy getPasswordPolicyByUser(String userId);
+    public Policy getPasswordPolicyByUser(UserEntity user);
 
     public Policy getGlobalPasswordPolicy();
 }

@@ -108,7 +108,7 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
 		PolicyEntity passwordPolicy = null;
 		if(StringUtils.isNotBlank(userId)) {
 			final UserEntity user = userDAO.findById(userId);
-			passwordPolicy = policyService.getPasswordPolicyForUser(domainId, user);
+			passwordPolicy = policyService.getPasswordPolicyForUser(user);
 		}
 		if(passwordPolicy == null) {
 			final SecurityDomainEntity securityDomainEntity = securityDomainDAO.findById(domainId);

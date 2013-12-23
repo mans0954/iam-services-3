@@ -130,11 +130,12 @@ public class PasswordServiceImpl implements PasswordService {
 	 * org.openiam.idm.srvc.policy.pswd.PasswordService#isPasswordValid(org.
 	 * openiam.idm.srvc.policy.dto.Password)
 	 */
+    @Override
 	public PasswordValidationResponse isPasswordValid(Password pswd)
 			throws ObjectNotFoundException {
 		PasswordValidationResponse retVal = new PasswordValidationResponse(ResponseStatus.SUCCESS);
 		
-		Policy pswdPolicy = getPasswordPolicy(pswd.getDomainId(),
+		Policy pswdPolicy = getPasswordPolicy(
 				pswd.getPrincipal(), pswd.getManagedSysId());
 
 		if (pswdPolicy == null) {
@@ -166,7 +167,7 @@ public class PasswordServiceImpl implements PasswordService {
 			UserEntity user, LoginEntity lg) throws ObjectNotFoundException {
 		PasswordValidationResponse retVal = new PasswordValidationResponse(ResponseStatus.SUCCESS);
 		
-		Policy pswdPolicy = passwordPolicyProvider.getPasswordPolicyByUser(pswd.getDomainId(), user);
+		Policy pswdPolicy = passwordPolicyProvider.getPasswordPolicyByUser(user);
 
 		if (pswdPolicy == null) {
 			retVal.setErrorCode(ResponseCode.PASSWORD_POLICY_NOT_FOUND);
@@ -200,7 +201,7 @@ public class PasswordServiceImpl implements PasswordService {
 		final PasswordValidationResponse retVal = new PasswordValidationResponse(ResponseStatus.SUCCESS);
 		Policy pswdPolicy = policy;
 		if (pswdPolicy == null) {
-			pswdPolicy = passwordPolicyProvider.getPasswordPolicyByUser(pswd.getDomainId(), user);
+			pswdPolicy = passwordPolicyProvider.getPasswordPolicyByUser(user);
 		}
 
 		if (pswdPolicy == null) {
@@ -233,7 +234,8 @@ public class PasswordServiceImpl implements PasswordService {
 	 * org.openiam.idm.srvc.pswd.service.PasswordService#daysToPasswordExpiration
 	 * (java.lang.String, java.lang.String, java.lang.String)
 	 */
-	public int daysToPasswordExpiration(String domainId, String principal,
+    @Override
+	public int daysToPasswordExpiration(String principal,
 			String managedSysId) {
 
 		long DAY = 86400000L;
@@ -242,8 +244,7 @@ public class PasswordServiceImpl implements PasswordService {
 
 		// Date curDate = new Date(System.currentTimeMillis());
 
-		LoginEntity lg = loginManager.getLoginByManagedSys(domainId, principal,
-				managedSysId);
+		LoginEntity lg = loginManager.getLoginByManagedSys(principal, managedSysId);
 		if (lg == null) {
 			return -1;
 		}
@@ -270,12 +271,13 @@ public class PasswordServiceImpl implements PasswordService {
 	 * org.openiam.idm.srvc.pswd.service.PasswordService#isPasswordChangeAllowed
 	 * (java.lang.String, java.lang.String, java.lang.String)
 	 */
-	public boolean isPasswordChangeAllowed(String domainId, String principal,
+    @Override
+	public boolean isPasswordChangeAllowed(String principal,
 			String managedSysId) {
 
 		boolean enabled = false;
 		// get the policy
-		Policy policy = getPasswordPolicy(domainId, principal, managedSysId);
+		Policy policy = getPasswordPolicy(principal, managedSysId);
 
 		log.info("Password policy=" + policy);
 
@@ -294,7 +296,7 @@ public class PasswordServiceImpl implements PasswordService {
 
 		}
 		if (enabled) {
-			int changeCount = passwordChangeCount(domainId, principal,
+			int changeCount = passwordChangeCount(principal,
 					managedSysId);
 			int changesAllowed = Integer.parseInt(attribute.getValue1());
 
@@ -313,11 +315,11 @@ public class PasswordServiceImpl implements PasswordService {
 	 * org.openiam.idm.srvc.pswd.service.PasswordService#passwordChangeCountByDate
 	 * (java.lang.String, java.lang.String, java.lang.String)
 	 */
-	public int passwordChangeCount(String domainId, String principal,
+    @Override
+	public int passwordChangeCount(String principal,
 			String managedSysId) {
 
-		LoginEntity lg = loginManager.getLoginByManagedSys(domainId, principal,
-				managedSysId);
+		LoginEntity lg = loginManager.getLoginByManagedSys(principal, managedSysId);
 		if (lg == null) {
 			return -1;
 		}
@@ -332,23 +334,21 @@ public class PasswordServiceImpl implements PasswordService {
 	 * org.openiam.idm.srvc.pswd.service.PasswordService#getPasswordPolicy(org
 	 * .openiam.idm.srvc.user.dto.User)
 	 */
-	public Policy getPasswordPolicy(String domainId, String principal,
-			String managedSysId) {
+    @Override
+	public Policy getPasswordPolicy(String principal, String managedSysId) {
 		// Find a password policy for this user
 		// order of search, type, classification, domain, global
 
 		// get the user for this principal
-		final LoginEntity lg = loginManager.getLoginByManagedSys(domainId,
-				principal, managedSysId);
+		final LoginEntity lg = loginManager.getLoginByManagedSys(principal, managedSysId);
 		log.info(String.format("login=%s", lg));
 		final UserEntity user = userManager.getUser(lg.getUserId());
 
-		return passwordPolicyProvider.getPasswordPolicyByUser(domainId, user);
+		return passwordPolicyProvider.getPasswordPolicyByUser(user);
 	}
 
 	@Override
-	public PolicyEntity getPasswordPolicyForUser(final String domainId,
-			final UserEntity user) {
+	public PolicyEntity getPasswordPolicyForUser(final UserEntity user) {
 		// Find a password policy for this user
 		// order of search, type, classification, domain, global
 
@@ -377,14 +377,14 @@ public class PasswordServiceImpl implements PasswordService {
 			}
 		}
 
-		if (domainId != null) {
-			log.info("Looking for associate by domain.");
-			policyAssocEntity = policyObjectAssocDao.findAssociationByLevel(
-					"DOMAIN", domainId);
-			if (policyAssocEntity != null) {
-				return getPolicyEntity(policyAssocEntity);
-			}
-		}
+//		if (domainId != null) {
+//			log.info("Looking for associate by domain.");
+//			policyAssocEntity = policyObjectAssocDao.findAssociationByLevel(
+//					"DOMAIN", domainId);
+//			if (policyAssocEntity != null) {
+//				return getPolicyEntity(policyAssocEntity);
+//			}
+//		}
 		//  set by ORGANIZATION
 
 		if (user.getUserId() != null) {
@@ -569,7 +569,7 @@ public class PasswordServiceImpl implements PasswordService {
 			return resp;
 		}
 
-		Policy pl = getPasswordPolicy(request.getDomainId(),
+		Policy pl = getPasswordPolicy(
 				request.getPrincipal(), request.getManagedSysId());
 		if (pl == null) {
 			log.warn("can't generate password reset token - can't get password policy");
@@ -586,9 +586,7 @@ public class PasswordServiceImpl implements PasswordService {
 			expirationDays = 3;
 		}
 
-		LoginEntity l = loginManager.getLoginByManagedSys(
-				request.getDomainId(), request.getPrincipal(),
-				request.getManagedSysId());
+		LoginEntity l = loginManager.getLoginByManagedSys(request.getPrincipal(), request.getManagedSysId());
 
 		long expireDate = getExpirationTime(expirationDays);
 

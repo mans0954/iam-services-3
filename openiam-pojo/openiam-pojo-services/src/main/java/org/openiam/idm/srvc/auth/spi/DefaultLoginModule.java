@@ -215,7 +215,7 @@ public class DefaultLoginModule extends AbstractLoginModule {
                 sub.setDaysToPwdExp(daysToExp);
             }
             // check password policy if it is necessary to change it after reset
-            Policy pwdPlcy = passwordManager.getPasswordPolicy(domainId, lg.getLogin(), lg.getManagedSysId());
+            Policy pwdPlcy = passwordManager.getPasswordPolicy(lg.getLogin(), lg.getManagedSysId());
             String chngPwdAttr = getPolicyAttribute(pwdPlcy.getPolicyAttributes(),"CHNG_PSWD_ON_RESET");
             if(lg.getResetPassword()>0 && StringUtils.isNotBlank(chngPwdAttr)){
                 throw new AuthenticationException(
@@ -316,7 +316,7 @@ public class DefaultLoginModule extends AbstractLoginModule {
             return null;
         }
 
-        Policy plcy = passwordManager.getPasswordPolicy(lg.getDomainId(), lg.getLogin(), lg.getManagedSysId());
+        Policy plcy = passwordManager.getPasswordPolicy(lg.getLogin(), lg.getManagedSysId());
         if (plcy == null) {
             return null;
         }

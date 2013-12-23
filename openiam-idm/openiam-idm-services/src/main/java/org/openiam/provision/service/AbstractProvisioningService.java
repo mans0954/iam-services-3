@@ -349,7 +349,6 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
             Login primaryIdentity = new Login();
             primaryIdentity.setOperation(AttributeOperationEnum.ADD);
             // init values
-            primaryIdentity.setDomainId(sysConfiguration.getDefaultSecurityDomain());
             primaryIdentity.setManagedSysId(sysConfiguration.getDefaultManagedSysId());
 
             try {
@@ -368,9 +367,9 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                             if (attr.getAttributeName().equalsIgnoreCase("PASSWORD")) {
                                 primaryIdentity.setPassword(output);
                             }
-                            if (attr.getAttributeName().equalsIgnoreCase("DOMAIN")) {
-                                primaryIdentity.setDomainId(output);
-                            }
+//                            if (attr.getAttributeName().equalsIgnoreCase("DOMAIN")) {
+//                                primaryIdentity.setDomainId(output);
+//                            }
                         }
                     }
                 }
@@ -1178,14 +1177,13 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         ProvisionUserResponse resp = new ProvisionUserResponse();
 
         Password password = new Password();
-        password.setDomainId(primaryLogin.getDomainId());
         password.setManagedSysId(primaryLogin.getManagedSysId());
         password.setPassword(primaryLogin.getPassword());
         password.setPrincipal(primaryLogin.getLogin());
 
         Policy passwordPolicy = user.getPasswordPolicy();
         if (passwordPolicy == null) {
-            passwordPolicy = passwordPolicyProvider.getPasswordPolicyByUser(primaryLogin.getDomainId(),
+            passwordPolicy = passwordPolicyProvider.getPasswordPolicyByUser(
                     userDozerConverter.convertToEntity(user.getUser(), true));
         }
 

@@ -183,7 +183,7 @@ public class UserMgr implements UserDataService {
     @Override
     @Transactional(readOnly = true)
     public UserEntity getUserByPrincipal(String securityDomain, String principal, String managedSysId, boolean dependants) {
-        LoginEntity login = loginDao.getRecord(principal, managedSysId, securityDomain);
+        LoginEntity login = loginDao.getRecord(principal, managedSysId);
         if (login == null) {
             return null;
         }
@@ -1558,7 +1558,6 @@ public class UserMgr implements UserDataService {
 
         if (principalList != null && !principalList.isEmpty()) {
             for (LoginEntity lg : principalList) {
-                lg.setDomainId(sysConfiguration.getDefaultSecurityDomain());
                 lg.setManagedSysId(sysConfiguration.getDefaultManagedSysId());
                 lg.setFirstTimeLogin(1);
                 lg.setIsLocked(0);

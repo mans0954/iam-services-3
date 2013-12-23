@@ -23,18 +23,10 @@ package org.openiam.idm.srvc.pswd.service;
 
 import org.openiam.exception.ObjectNotFoundException;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
-import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.policy.domain.PolicyEntity;
 import org.openiam.idm.srvc.policy.dto.Policy;
-import org.openiam.idm.srvc.pswd.dto.Password;
-import org.openiam.idm.srvc.pswd.dto.PasswordResetTokenRequest;
-import org.openiam.idm.srvc.pswd.dto.PasswordResetTokenResponse;
-import org.openiam.idm.srvc.pswd.dto.PasswordValidationResponse;
+import org.openiam.idm.srvc.pswd.dto.*;
 import org.openiam.idm.srvc.user.domain.UserEntity;
-import org.openiam.idm.srvc.user.dto.User;
-import org.openiam.idm.srvc.pswd.dto.ValidatePasswordResetTokenResponse;
-
-import org.openiam.base.ws.Response;
 
 
 /**
@@ -80,40 +72,36 @@ public interface PasswordService {
     /**
      * Determines if the user is allowed to change their password based on the policy and the number of times that password
      * has already been changed.
-     * @param domainId
      * @param principal
      * @param managedSysId
      * @return
      */
-    boolean isPasswordChangeAllowed(String domainId, String principal, String managedSysId);
+    boolean isPasswordChangeAllowed(String principal, String managedSysId);
 
     /**
      * Number of days in which the password will expire for this user
-     * @param domainId
      * @param principal
      * @param managedSysId
      * @return
      */
-    int daysToPasswordExpiration(String domainId, String principal, String managedSysId);
+    int daysToPasswordExpiration(String principal, String managedSysId);
 
     /**
      * Number of times the password has changed today
-     * @param domainId
      * @param principal
      * @param managedSysId
      * @return
      */
-    int passwordChangeCount(String domainId, String principal, String managedSysId);
+    int passwordChangeCount(String principal, String managedSysId);
 
 
     /**
      * Returns the password policy for this user based on their identity
-     * @param domainId
      * @param principal
      * @param managedSysId
      * @return
      */
-    Policy getPasswordPolicy(String domainId, String principal, String managedSysId);
+    Policy getPasswordPolicy(String principal, String managedSysId);
 
 //    /**
 //     * Returns the global password policy
@@ -132,11 +120,10 @@ public interface PasswordService {
     
     /**
      * This method exists to REPLACE <b>getPasswordPolicyByUser</b>.  The functionality is the same.
-     * @param domainId
      * @param user
      * @return
      */
-    PolicyEntity getPasswordPolicyForUser(final String domainId, final UserEntity user);
+    PolicyEntity getPasswordPolicyForUser(final UserEntity user);
 
     /**
      * Checks to see if a password exists in the history log based on the policy

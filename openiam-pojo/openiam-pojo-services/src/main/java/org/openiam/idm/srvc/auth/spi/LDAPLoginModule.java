@@ -227,8 +227,7 @@ public class LDAPLoginModule extends AbstractLoginModule {
         tokenParam.put("TOKEN_ISSUER", tokenIssuer);
         tokenParam.put("PRINCIPAL", principal);
 
-        lg = loginManager.getLoginByManagedSys(securityDomain.getDomainId(),
-                distinguishedName, managedSysId);
+        lg = loginManager.getLoginByManagedSys(distinguishedName, managedSysId);
 
         if (lg == null) {
             log("AUTHENTICATION", "AUTHENTICATION", "FAIL",

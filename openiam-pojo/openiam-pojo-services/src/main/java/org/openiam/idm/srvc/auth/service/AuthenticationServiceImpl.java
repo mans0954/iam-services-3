@@ -280,8 +280,7 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
 	
 	            }
 	
-	            lg = loginManager.getLoginByManagedSys(secDomainId, principal,
-	                    secDomain.getAuthSysId());
+	            lg = loginManager.getLoginByManagedSys(principal, secDomain.getAuthSysId());
 	
 	            if (lg == null) {
 	            	auditBuilder.fail().setFailureReason(
@@ -469,9 +468,7 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
                 "TOKEN_ISSUER");
 
         // get the userId of this token
-        LoginEntity lg = loginManager.getLoginByManagedSys(
-                sysConfiguration.getDefaultSecurityDomain(), principal,
-                sysConfiguration.getDefaultManagedSysId());
+        LoginEntity lg = loginManager.getLoginByManagedSys(principal, sysConfiguration.getDefaultManagedSysId());
 
         if (lg == null) {
             resp.setStatus(ResponseStatus.FAILURE);

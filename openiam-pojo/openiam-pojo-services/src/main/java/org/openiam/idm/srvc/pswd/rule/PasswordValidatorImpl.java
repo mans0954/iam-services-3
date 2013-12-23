@@ -93,7 +93,7 @@ public class PasswordValidatorImpl implements PasswordValidator {
     public void validate(Policy pswdPolicy, Password password)
             throws ObjectNotFoundException, IOException, PasswordRuleException {
         // get the user object for the principal
-        LoginEntity lg = loginDao.getRecord(password.getPrincipal(), password.getManagedSysId(), password.getDomainId());
+        LoginEntity lg = loginDao.getRecord(password.getPrincipal(), password.getManagedSysId());
         UserEntity usr = userDao.findById(lg.getUserId());
 
         validateForUser(pswdPolicy, password, usr, lg);
@@ -118,7 +118,7 @@ public class PasswordValidatorImpl implements PasswordValidator {
         // get the user object for the principal if they are null
         LoginEntity lg = login;
         if (lg == null) {
-        	lg = loginDao.getRecord(password.getPrincipal(), password.getManagedSysId(), password.getDomainId());
+        	lg = loginDao.getRecord(password.getPrincipal(), password.getManagedSysId());
         }
         UserEntity usr = user;
         if (usr == null) {

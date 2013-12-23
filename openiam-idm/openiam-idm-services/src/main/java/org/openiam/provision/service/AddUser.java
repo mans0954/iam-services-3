@@ -299,8 +299,6 @@ public class AddUser {
             EmailAddress primaryEmail = new EmailAddress();
 
             // init values
-            primaryIdentity.setDomainId(sysConfiguration
-                    .getDefaultSecurityDomain());
             primaryIdentity.setManagedSysId(sysConfiguration
                     .getDefaultManagedSysId());
 
@@ -320,10 +318,10 @@ public class AddUser {
                                         "PASSWORD")) {
                                     primaryIdentity.setPassword(output);
                                 }
-                                if (attr.getAttributeName().equalsIgnoreCase(
-                                        "DOMAIN")) {
-                                    primaryIdentity.setDomainId(output);
-                                }
+//                                if (attr.getAttributeName().equalsIgnoreCase(
+//                                        "DOMAIN")) {
+//                                    primaryIdentity.setDomainId(output);
+//                                }
                             }
                             if (objectType.equals("EMAIL")) {
                                 primaryEmail.setEmailAddress(output);

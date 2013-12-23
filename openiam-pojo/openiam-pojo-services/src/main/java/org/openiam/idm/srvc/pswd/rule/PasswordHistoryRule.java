@@ -22,24 +22,16 @@
 package org.openiam.idm.srvc.pswd.rule;
 
 
-import java.util.List;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.ws.ResponseCode;
-import org.openiam.exception.EncryptionException;
 import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
 import org.openiam.idm.srvc.pswd.domain.PasswordHistoryEntity;
 import org.openiam.idm.srvc.pswd.dto.Password;
-import org.openiam.idm.srvc.pswd.dto.PasswordHistory;
-import org.openiam.idm.srvc.pswd.service.PasswordService;
-import org.openiam.idm.srvc.service.service.ServiceDAOImpl;
-import org.springframework.beans.factory.BeanFactory;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.springframework.core.io.FileSystemResource;
-import org.springframework.core.io.Resource;
+
+import java.util.List;
 
 /**
  * Validates a password to ensure that is conforms to the history rules.
@@ -67,7 +59,6 @@ public class PasswordHistoryRule extends AbstractPasswordRule {
 		if (enabled) {			
 			log.info("password history rule is enabled.");
 			Password pswd = new Password();
-			pswd.setDomainId(lg.getDomainId());
 			pswd.setManagedSysId(lg.getManagedSysId());
 			pswd.setPrincipal(lg.getLogin());
 			pswd.setPassword(password);

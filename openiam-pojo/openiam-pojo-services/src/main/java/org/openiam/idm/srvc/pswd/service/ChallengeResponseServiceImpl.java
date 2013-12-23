@@ -118,7 +118,7 @@ public class ChallengeResponseServiceImpl implements ChallengeResponseService {
 		 int requiredCorrect = newAnswerList.size();
 
 		 final UserEntity user = userDAO.findById(userId);
-	     final PolicyEntity policy = passwordMgr.getPasswordPolicyForUser(domainId, user);
+	     final PolicyEntity policy = passwordMgr.getPasswordPolicyForUser(user);
 	     final PolicyAttributeEntity attr = policy.getAttribute("QUEST_ANSWER_CORRECT");
 
 	     if (attr != null) {
