@@ -9,10 +9,9 @@ import org.openiam.connector.type.response.ObjectResponse;
 import org.openiam.provision.type.ExtensibleObject;
 import org.springframework.stereotype.Service;
 
-
-
 @Service("testScimCommand")
-public class TestScimCommand<ExtObject extends ExtensibleObject> extends AbstractScimCommand<RequestType<ExtObject>, ObjectResponse> {
+public class TestScimCommand<ExtObject extends ExtensibleObject> extends
+		AbstractScimCommand<RequestType<ExtObject>, ObjectResponse> {
 	@Override
 	public ObjectResponse execute(RequestType<ExtObject> crudRequest)
 			throws ConnectorDataException {
@@ -20,8 +19,9 @@ public class TestScimCommand<ExtObject extends ExtensibleObject> extends Abstrac
 		response.setStatus(StatusCodeType.SUCCESS);
 		ConnectorConfiguration config = getConfiguration(
 				crudRequest.getTargetID(), ConnectorConfiguration.class);
-		HttpURLConnection con = super.getConnection(config.getManagedSys(), "/v1/Users");
+		HttpURLConnection con = super.getConnection(config.getManagedSys(),
+				"/v1/Users");
 		con.disconnect();
 		return response;
-	}    
+	}
 }

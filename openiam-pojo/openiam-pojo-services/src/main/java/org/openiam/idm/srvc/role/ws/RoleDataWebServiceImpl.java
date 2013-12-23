@@ -236,13 +236,13 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 	}
 
 	@Override
-	public List<Role> getRolesInGroup(final String groupId, String requesterId, final int from, final int size) {
+	public List<Role> getRolesInGroup(final String groupId, String requesterId, boolean deepFlag, final int from, final int size) {
         List<Role> roleList = null;
         AuditLogBuilder auditBuilder = auditLogProvider.getAuditLogBuilder();
         auditBuilder.setAction(AuditAction.GET_ROLE_IN_GROUP).setRequestorUserId(requesterId).setTargetGroup(groupId);
         try{
             final List<RoleEntity> entityList = roleDataService.getRolesInGroup(groupId, requesterId, from, size);
-            roleList = roleDozerConverter.convertToDTOList(entityList, false);
+            roleList = roleDozerConverter.convertToDTOList(entityList, deepFlag);
             auditBuilder.succeed();
         } catch(Throwable e) {
             auditBuilder.fail().setException(e);
@@ -568,13 +568,13 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 	}
 
 	@Override
-	public List<Role> getRolesForResource(final String resourceId, String requesterId, final int from, final int size) {
+	public List<Role> getRolesForResource(final String resourceId, String requesterId, boolean deepFlag,  final int from, final int size) {
         List<Role> roleList = null;
         AuditLogBuilder auditBuilder = auditLogProvider.getAuditLogBuilder();
         auditBuilder.setAction(AuditAction.GET_ROLE_FOR_RESOURCE).setRequestorUserId(requesterId).setTargetResource(resourceId);
         try{
             final List<RoleEntity> entityList = roleDataService.getRolesForResource(resourceId, requesterId, from, size);
-            roleList = roleDozerConverter.convertToDTOList(entityList, false);
+            roleList = roleDozerConverter.convertToDTOList(entityList, deepFlag);
             auditBuilder.succeed();
         } catch(Throwable e) {
             auditBuilder.fail().setException(e);

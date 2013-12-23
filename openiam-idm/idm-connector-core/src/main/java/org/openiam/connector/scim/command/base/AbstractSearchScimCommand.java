@@ -10,6 +10,8 @@ import org.openiam.connector.type.ObjectValue;
 import org.openiam.connector.type.constant.ErrorCode;
 import org.openiam.connector.type.constant.StatusCodeType;
 import org.openiam.connector.type.request.SearchRequest;
+import org.openiam.connector.type.response.ObjectResponse;
+
 import org.openiam.connector.type.response.SearchResponse;
 import org.openiam.provision.type.ExtensibleObject;
 
@@ -33,29 +35,12 @@ public abstract class AbstractSearchScimCommand<ExtObject extends ExtensibleObje
 		ConnectorConfiguration config = getConfiguration(
 				searchRequest.getTargetID(), ConnectorConfiguration.class);
 		HttpURLConnection con = this.getConnection(config.getManagedSys(),
-				"Users/" + dataId);
+				"/v1/Users/" + dataId);
 		try {
 			final ObjectValue resultObject = new ObjectValue();
 			resultObject.setObjectIdentity(dataId);
-			final String responseStr = searchObject(con, dataId);
-
-			if (log.isDebugEnabled()) {
-				log.debug(String.format("Response= %s", responseStr));
-			}
-
-			if (responseStr != null) {
-				// response.getObjectList().add(resultObject);
-				response.setStatus(StatusCodeType.SUCCESS);
-			} else {
-				response.setStatus(StatusCodeType.FAILURE);
-				log.debug("LOOKUP successful without results.");
-				// throw new
-				// ConnectorDataException(ErrorCode.NO_RESULTS_RETURNED);
-			}
-			// else
-			// throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR,
-			// "Principal not found");
-
+			ObjectResponse objectResponse = searchObject(con, dataId);
+			response.setStatus(objectResponse.getStatus());
 			return response;
 		} catch (Throwable e) {
 			log.error(e.getMessage(), e);
@@ -66,6 +51,6 @@ public abstract class AbstractSearchScimCommand<ExtObject extends ExtensibleObje
 		}
 	}
 
-	protected abstract String searchObject(HttpURLConnection con, String dataId)
-			throws Exception;
+	protected abstract ObjectResponse searchObject(HttpURLConnection con,
+			String dataId) throws Exception;
 }

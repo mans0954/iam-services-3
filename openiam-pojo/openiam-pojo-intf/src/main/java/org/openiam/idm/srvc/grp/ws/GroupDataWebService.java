@@ -231,6 +231,7 @@ public interface GroupDataWebService {
     @WebMethod
     public List<Group> getGroupsForResource(final @WebParam(name = "resourceId") String resourceId,
                                             final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
+                                            final @WebParam(name = "deepFlag", targetNamespace = "") boolean deepFlag,
     										final @WebParam(name = "from", targetNamespace = "") int from,
     										final @WebParam(name = "size", targetNamespace = "") int size);
 
@@ -250,13 +251,15 @@ public interface GroupDataWebService {
      * @param requesterId -  the User ID who request this operation.  This param is required if delegation filter is set
      * @param from - where to start in the paged list
      * @param size - how many to return
+     * @param deepFlag - if true then it shows that returned Groups contain other objects that are directly entitled to returned Groups
      * @return a paged List of Groups directly entitled to the Role specified by the roleId
      */
     @WebMethod
     public List<Group> getGroupsForRole(final @WebParam(name = "roleId") String roleId,
                                         final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
     									final @WebParam(name = "from", targetNamespace = "") int from,
-    									final @WebParam(name = "size", targetNamespace = "") int size);
+    									final @WebParam(name = "size", targetNamespace = "") int size,
+                                        final @WebParam(name = "deepFlag", targetNamespace = "") boolean deepFlag);
 
     /**
      * Gets the number of Groups directly entitled to this Role specified by the roleId

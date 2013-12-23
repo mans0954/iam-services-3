@@ -273,6 +273,9 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
 			if(CollectionUtils.isNotEmpty(searchBean.getExcludeResourceTypes())) {
 				criteria.add(Restrictions.not(Restrictions.in("resourceType.id", searchBean.getExcludeResourceTypes())));
 			}
+            if(StringUtils.isNotEmpty(searchBean.getResourceTypeId())) {
+                criteria.add(Restrictions.eq("resourceType.id", searchBean.getResourceTypeId()));
+            }
 			
 			if(CollectionUtils.isNotEmpty(searchBean.getAttributes())) {
 				criteria.createAlias("resourceProps", "prop");

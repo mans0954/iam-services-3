@@ -489,13 +489,13 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
     }
 
     @Override
-	public List<Group> getGroupsForResource(final String resourceId, final String requesterId, final int from, final int size) {
+	public List<Group> getGroupsForResource(final String resourceId, final String requesterId, final boolean deepFlag, final int from, final int size) {
         List<Group> groupList = null;
         AuditLogBuilder auditBuilder = auditLogProvider.getAuditLogBuilder();
         auditBuilder.setAction(AuditAction.GET_GROUP_FOR_RESOURCE).setRequestorUserId(requesterId).setTargetResource(resourceId);
         try{
             final List<GroupEntity> groupEntityList =  groupManager.getGroupsForResource(resourceId,requesterId, from, size);
-            groupList = groupDozerConverter.convertToDTOList(groupEntityList, false);
+            groupList = groupDozerConverter.convertToDTOList(groupEntityList, deepFlag);
             auditBuilder.succeed();
         } catch(Throwable e) {
             auditBuilder.fail().setException(e);
@@ -522,13 +522,13 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
 	}
 
 	@Override
-	public List<Group> getGroupsForRole(final String roleId, final String requesterId, final int from, final int size) {
+	public List<Group> getGroupsForRole(final String roleId, final String requesterId, final int from, final int size, boolean deepFlag) {
         List<Group> groupList = null;
         AuditLogBuilder auditBuilder = auditLogProvider.getAuditLogBuilder();
         auditBuilder.setAction(AuditAction.GET_GROUP_FOR_ROLE).setRequestorUserId(requesterId).setTargetRole(roleId);
         try{
             final List<GroupEntity> groupEntityList =  groupManager.getGroupsForRole(roleId,requesterId, from, size);
-            groupList = groupDozerConverter.convertToDTOList(groupEntityList, false);
+            groupList = groupDozerConverter.convertToDTOList(groupEntityList, deepFlag);
             auditBuilder.succeed();
         } catch(Throwable e) {
             auditBuilder.fail().setException(e);
