@@ -72,9 +72,11 @@ public interface AuthProviderWebService {
     public Integer getNumOfAuthProviderBeans(@WebParam(name = "searchBean", targetNamespace = "") AuthProviderSearchBean searchBean);
 
     @WebMethod
-    public Response addAuthProvider(@WebParam(name = "provider", targetNamespace = "")AuthProvider provider);
+    public Response addAuthProvider(@WebParam(name = "provider", targetNamespace = "")AuthProvider provider,
+    							    @WebParam(name = "requestorId", targetNamespace = "")final String requestorId);
     @WebMethod
-    public Response updateAuthProvider(@WebParam(name = "provider", targetNamespace = "")AuthProvider provider);
+    public Response updateAuthProvider(@WebParam(name = "provider", targetNamespace = "")AuthProvider provider,
+    								   @WebParam(name = "requestorId", targetNamespace = "")final String requestorId);
     @WebMethod
     public Response deleteAuthProvider(@WebParam(name = "providerId", targetNamespace = "")String providerId);
     @WebMethod

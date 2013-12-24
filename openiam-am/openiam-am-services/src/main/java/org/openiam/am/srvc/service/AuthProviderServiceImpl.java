@@ -158,7 +158,7 @@ public class AuthProviderServiceImpl implements AuthProviderService {
     }
     @Override
     @Transactional
-    public void addAuthProvider(AuthProviderEntity provider) throws Exception{
+    public void addAuthProvider(AuthProviderEntity provider, final String requestorId) throws Exception{
         if(provider==null)
             throw new NullPointerException("provider is null");
         if(provider.getProviderType()==null || provider.getProviderType().trim().isEmpty())
@@ -181,7 +181,7 @@ public class AuthProviderServiceImpl implements AuthProviderService {
         resource.setResourceType(resourceType);
         resource.setId(null);
         
-        resourceService.save(resource, null);
+        resourceService.save(resource, requestorId);
         provider.setProviderId(null);
         provider.setResource(resource);
         //provider.setResourceId(resource.getResourceId());
@@ -201,7 +201,7 @@ public class AuthProviderServiceImpl implements AuthProviderService {
 
     @Override
     @Transactional
-    public void updateAuthProvider(AuthProviderEntity provider) throws Exception{
+    public void updateAuthProvider(AuthProviderEntity provider, final String requestorId) throws Exception{
         if(provider==null)
             throw new NullPointerException("provider is null");
         if(provider.getProviderType()==null || provider.getProviderType().trim().isEmpty())
@@ -225,11 +225,11 @@ public class AuthProviderServiceImpl implements AuthProviderService {
             entity.setSignRequest(provider.isSignRequest());
 
             // get resource for provider
-            //if(provider.getResource()!=null){
-            //    final ResourceEntity resource = entity.getResource();
-            //   resource.setURL(provider.getResource().getURL());
-            //   resourceService.save(resource, null);
-            //}
+            if(provider.getResource()!=null){
+                final ResourceEntity resource = entity.getResource();
+               resource.setURL(provider.getResource().getURL());
+               //resourceService.save(resource, null);
+            }
         }
         
         entity.setProviderAttributeSet(null);
