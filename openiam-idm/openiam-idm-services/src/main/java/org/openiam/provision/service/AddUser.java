@@ -31,7 +31,6 @@ import org.openiam.dozer.converter.SupervisorDozerConverter;
 import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.exception.EncryptionException;
 import org.openiam.exception.ScriptEngineException;
-import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
@@ -418,71 +417,33 @@ public class AddUser {
 
     }
 
-    /**
-     * If the user has selected roles that are in multiple domains, we need to
-     * make sure that they identities for each of these domains
-     * 
-     * @param primaryIdentity
-     * @param roleList
-     */
-    public void validateIdentitiesExistforSecurityDomain(Login primaryIdentity,
-            List<Role> roleList) {
-        if (roleList == null || roleList.isEmpty()) {
-            return;
-        }
 
-        List<LoginEntity> identityList = loginManager
-                .getLoginByUser(primaryIdentity.getUserId());
 
-        for (Role r : roleList) {
-
-            String secDomain = r.getServiceId();
-            if (!identityInDomain(secDomain, identityList)) {
-                addIdentity(secDomain, primaryIdentity);
-            }
-
-        }
-
-    }
-
-    private boolean identityInDomain(String secDomain,
-            List<LoginEntity> identityList) {
-        for (LoginEntity l : identityList) {
-            if (l.getDomainId().equalsIgnoreCase(secDomain)) {
-                return true;
-            }
-
-        }
-        return false;
-
-    }
-
-    private void addIdentity(String secDomain, Login primaryIdentity) {
-        if (loginManager.getLoginByManagedSys(secDomain,
-                primaryIdentity.getLogin(), primaryIdentity.getManagedSysId()) == null) {
-
-            LoginEntity newLg = new LoginEntity();
-            newLg.setDomainId(secDomain);
-            newLg.setLogin(primaryIdentity.getLogin());
-            newLg.setManagedSysId(primaryIdentity.getManagedSysId());
-            newLg.setAuthFailCount(0);
-            newLg.setFirstTimeLogin(primaryIdentity.getFirstTimeLogin());
-            newLg.setIsLocked(primaryIdentity.getIsLocked());
-            newLg.setLastAuthAttempt(primaryIdentity.getLastAuthAttempt());
-            newLg.setGracePeriod(primaryIdentity.getGracePeriod());
-            newLg.setPassword(primaryIdentity.getPassword());
-            newLg.setPasswordChangeCount(primaryIdentity
-                    .getPasswordChangeCount());
-            newLg.setStatus(primaryIdentity.getStatus());
-            newLg.setIsLocked(primaryIdentity.getIsLocked());
-            newLg.setUserId(primaryIdentity.getUserId());
-            newLg.setResetPassword(primaryIdentity.getResetPassword());
-
-            log.debug("Adding identity = " + newLg);
-
-            loginManager.addLogin(newLg);
-        }
-
-    }
+//    private void addIdentity(String secDomain, Login primaryIdentity) {
+//        if (loginManager.getLoginByManagedSys(
+//                primaryIdentity.getLogin(), primaryIdentity.getManagedSysId()) == null) {
+//
+//            LoginEntity newLg = new LoginEntity();
+//            newLg.setLogin(primaryIdentity.getLogin());
+//            newLg.setManagedSysId(primaryIdentity.getManagedSysId());
+//            newLg.setAuthFailCount(0);
+//            newLg.setFirstTimeLogin(primaryIdentity.getFirstTimeLogin());
+//            newLg.setIsLocked(primaryIdentity.getIsLocked());
+//            newLg.setLastAuthAttempt(primaryIdentity.getLastAuthAttempt());
+//            newLg.setGracePeriod(primaryIdentity.getGracePeriod());
+//            newLg.setPassword(primaryIdentity.getPassword());
+//            newLg.setPasswordChangeCount(primaryIdentity
+//                    .getPasswordChangeCount());
+//            newLg.setStatus(primaryIdentity.getStatus());
+//            newLg.setIsLocked(primaryIdentity.getIsLocked());
+//            newLg.setUserId(primaryIdentity.getUserId());
+//            newLg.setResetPassword(primaryIdentity.getResetPassword());
+//
+//            log.debug("Adding identity = " + newLg);
+//
+//            loginManager.addLogin(newLg);
+//        }
+//
+//    }
 
 }

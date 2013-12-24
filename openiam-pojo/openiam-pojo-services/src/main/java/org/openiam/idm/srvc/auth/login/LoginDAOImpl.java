@@ -140,12 +140,6 @@ public class LoginDAOImpl extends BaseDaoImpl<LoginEntity, String> implements
         return c.list();
     }
 
-    String loginQry = " UPDATE org.openiam.idm.srvc.auth.domain.LoginEntity l  "
-            + " SET l.isLocked = 0 "
-            + "       where l.domainId = :domain and  "
-            + "             l.isLocked = :status and "
-            + "             l.lastAuthAttempt <= :policyTime";
-
     /*
      * (non-Javadoc)
      * 

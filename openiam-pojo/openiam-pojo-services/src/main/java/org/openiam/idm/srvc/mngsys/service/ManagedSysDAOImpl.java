@@ -14,8 +14,6 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-import static org.hibernate.criterion.Example.create;
-
 /**
  * Home object for domain model class ManagedSys.
  * @see org.openiam.idm.srvc.mngsys.service
@@ -53,26 +51,25 @@ public class ManagedSysDAOImpl extends BaseDaoImpl<ManagedSysEntity, String> imp
 						}
 					}
 				}
-				if(StringUtils.isNotBlank(example.getDomainId())) {
-					criteria.add(Restrictions.eq("domainId", example.getDomainId()));;
-				}
 			}
 		}
 		return criteria;
 	}
 
 	@SuppressWarnings(value = "unchecked")
+    @Override
 	public List<ManagedSysEntity> findbyConnectorId(String connectorId) {
 		Criteria criteria = getCriteria().add(Restrictions.eq("connectorId",connectorId)).addOrder(Order.asc("managedSysId"));
 		return (List<ManagedSysEntity>)criteria.list();
 	}
 
-	@SuppressWarnings(value = "unchecked")
-	public List<ManagedSysEntity> findbyDomain(String domainId) {
-        Criteria criteria = getCriteria().add(Restrictions.eq("domainId",domainId)).addOrder(Order.asc("managedSysId"));
-		return (List<ManagedSysEntity>)criteria.list();
-	}
+//	@SuppressWarnings(value = "unchecked")
+//	public List<ManagedSysEntity> findbyDomain(String domainId) {
+//        Criteria criteria = getCriteria().add(Restrictions.eq("domainId",domainId)).addOrder(Order.asc("managedSysId"));
+//		return (List<ManagedSysEntity>)criteria.list();
+//	}
 
+    @Override
     @SuppressWarnings(value = "unchecked")
 	public List<ManagedSysEntity> findAllManagedSys() {
         Criteria criteria = getCriteria().addOrder(Order.asc("name"));
@@ -82,6 +79,7 @@ public class ManagedSysDAOImpl extends BaseDaoImpl<ManagedSysEntity, String> imp
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.mngsys.service.ManagedSysDAO#findByName(java.lang.String)
 	 */
+    @Override
     @SuppressWarnings(value = "unchecked")
     public ManagedSysEntity findByName(String name) {
         Criteria criteria = getCriteria().add(Restrictions.eq("name",name)).addOrder(Order.asc("name")).addOrder(Order.asc("managedSysId"));
@@ -95,6 +93,7 @@ public class ManagedSysDAOImpl extends BaseDaoImpl<ManagedSysEntity, String> imp
         }
 	}
 
+    @Override
     @SuppressWarnings(value = "unchecked")
     public ManagedSysEntity findByResource(String resourceId, String status) {
         Criteria criteria = getCriteria()

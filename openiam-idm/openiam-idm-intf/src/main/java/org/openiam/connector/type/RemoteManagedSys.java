@@ -21,12 +21,12 @@ public class RemoteManagedSys extends ManagedSysDto {
     public RemoteManagedSys() {
     }
 
-    public RemoteManagedSys(String managedSysId, String connectorId, String domainId) {
-        super(managedSysId, connectorId, domainId);
+    public RemoteManagedSys(String managedSysId, String connectorId) {
+        super(managedSysId, connectorId);
     }
 
-    public RemoteManagedSys(String managedSysId, String name, String description, String status, String connectorId, String domainId, String hostUrl, Integer port, String commProtocol, String userId, String pswd, Date startDate, Date endDate) {
-        super(managedSysId, name, description, status, connectorId, domainId, hostUrl, port, commProtocol, userId, pswd, startDate, endDate);
+    public RemoteManagedSys(String managedSysId, String name, String description, String status, String connectorId, String hostUrl, Integer port, String commProtocol, String userId, String pswd, Date startDate, Date endDate) {
+        super(managedSysId, name, description, status, connectorId, hostUrl, port, commProtocol, userId, pswd, startDate, endDate);
     }
 
     public String getScriptName() {

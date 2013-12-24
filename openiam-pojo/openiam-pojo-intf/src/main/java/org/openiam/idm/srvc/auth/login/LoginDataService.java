@@ -63,7 +63,6 @@ public interface LoginDataService {
     /**
      * Returns a decrypted password.
      *
-     * @param domainId
      * @param principal
      * @param sysId
      * @return
@@ -73,7 +72,6 @@ public interface LoginDataService {
     /**
      * determines if the new passowrd is equal to the current password that is associated with this principal
      *
-     * @param domainId
      * @param principal
      * @param sysId
      * @param newPassword
@@ -84,7 +82,6 @@ public interface LoginDataService {
     /**
      * Checks to see if a login exists for a user - domain - managed system combination
      *
-     * @param domainId
      * @param principal
      * @param sysId
      * @return
@@ -95,7 +92,6 @@ public interface LoginDataService {
      * Sets the password for a principal. The password needs to be encrypted externally. this allow for flexiblity in
      * supporting alternate approaches to encryption.
      *
-     * @param domainId
      * @param principal
      * @param sysId
      * @param password
@@ -106,7 +102,6 @@ public interface LoginDataService {
     /**
      * Sets a new password for the identity and updates the support attributes such as locked account flag.
      *
-     * @param domainId
      * @param principal
      * @param sysId
      * @param password

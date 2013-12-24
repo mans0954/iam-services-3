@@ -25,11 +25,6 @@ import org.openiam.idm.srvc.policy.service.PolicyDataService;
 import org.openiam.idm.srvc.pswd.domain.PasswordHistoryEntity;
 import org.openiam.idm.srvc.pswd.service.PasswordHistoryDAO;
 import org.openiam.idm.srvc.pswd.service.PasswordPolicyProvider;
-import org.openiam.idm.srvc.pswd.service.PasswordService;
-import org.openiam.idm.srvc.secdomain.domain.SecurityDomainEntity;
-import org.openiam.idm.srvc.secdomain.dto.SecurityDomain;
-import org.openiam.idm.srvc.secdomain.service.SecurityDomainDAO;
-import org.openiam.idm.srvc.secdomain.service.SecurityDomainDataService;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.idm.srvc.user.service.UserDAO;
@@ -49,9 +44,6 @@ public class LoginDataServiceImpl implements LoginDataService {
     
 	@Autowired
 	protected LoginAttributeDAO loginAttrDao;
-    
-	@Autowired
-	protected SecurityDomainDataService secDomainService;
     
 	@Autowired
 	protected UserDAO userDao;
@@ -76,9 +68,6 @@ public class LoginDataServiceImpl implements LoginDataService {
 
     @Autowired
     protected LoginDozerConverter loginDozerConverter;
-
-    @Autowired
-    protected SecurityDomainDAO secDomainDao;
 
     boolean encrypt = true; // default encryption setting
     private static final Log log = LogFactory
@@ -216,11 +205,6 @@ public class LoginDataServiceImpl implements LoginDataService {
         Calendar expCal = Calendar.getInstance();
         LoginEntity lg = getLoginByManagedSys(login, sysId);
 
-        // SecurityDomain securityDomain =
-        // secDomainService.getSecurityDomain(domainId);
-        // Policy plcy =
-        // policyDao.findById(securityDomain.getPasswordPolicyId());
-//        Policy plcy = passwordPolicyProvider.getPasswordPolicy(domainId, login, sysId);
         Policy plcy = passwordPolicyProvider.getPasswordPolicyByUser(lg.getUserId());
 
         String pswdExpValue = getPolicyAttribute(plcy.getPolicyAttributes(), "PWD_EXPIRATION");
@@ -278,16 +262,10 @@ public class LoginDataServiceImpl implements LoginDataService {
     @Transactional
     public boolean resetPassword(String login, String sysId, String password) {
 
-        // SecurityDomain securityDomain =
-        // secDomainService.getSecurityDomain(domainId);
-        // Policy plcy =
-        // policyDao.findById(securityDomain.getPasswordPolicyId());
-
         LoginEntity lg = getLoginByManagedSys(login, sysId);
         UserEntity user = userDao.findById(lg.getUserId());
 
 
-//        Policy plcy = passwordPolicyProvider.getPasswordPolicy(login, sysId);
         Policy plcy = passwordPolicyProvider.getPasswordPolicyByUser(user);
 
         String pswdExpValue = getPolicyAttribute(plcy.getPolicyAttributes(),
@@ -297,8 +275,6 @@ public class LoginDataServiceImpl implements LoginDataService {
         String gracePeriod = getPolicyAttribute(plcy.getPolicyAttributes(),
                 "PWD_EXP_GRACE");
 
-//        LoginEntity lg = getLoginByManagedSys(login, sysId);
-//        UserEntity user = userDao.findById(lg.getUserId());
         user.setSecondaryStatus(null);
         userDao.update(user);
 
@@ -484,12 +460,10 @@ public class LoginDataServiceImpl implements LoginDataService {
         }
         // since each security domain may have different authn policies, loop
         // through each domain
-        SecurityDomainEntity secDom = secDomainDao.findById(sysConfiguration.getDefaultSecurityDomain());
-
 //        final List<SecurityDomain> securityDomainList = secDomainService
 //                .getAllDomainsWithExclude("IDM");
 //        for (SecurityDomain secDom : securityDomainList) {
-            String authnPolicy = secDom.getAuthnPolicyId();
+            String authnPolicy = sysConfiguration.getDefaultAuthPolicyId();
             if (authnPolicy != null) {
                 Policy plcy = policyDataService.getPolicy(authnPolicy);
                 String autoUnlockTime = getPolicyAttribute(

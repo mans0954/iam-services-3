@@ -1,17 +1,5 @@
 package org.openiam.idm.srvc.user.service;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.ListUtils;
 import org.apache.commons.lang.StringUtils;
@@ -22,11 +10,7 @@ import org.openiam.base.BaseConstants;
 import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.core.dao.UserKeyDao;
-import org.openiam.dozer.converter.AddressDozerConverter;
-import org.openiam.dozer.converter.EmailAddressDozerConverter;
-import org.openiam.dozer.converter.PhoneDozerConverter;
-import org.openiam.dozer.converter.UserAttributeDozerConverter;
-import org.openiam.dozer.converter.UserDozerConverter;
+import org.openiam.dozer.converter.*;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.*;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
@@ -40,11 +24,7 @@ import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
 import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
-import org.openiam.idm.srvc.continfo.service.AddressDAO;
-import org.openiam.idm.srvc.continfo.service.EmailAddressDAO;
-import org.openiam.idm.srvc.continfo.service.EmailSearchDAO;
-import org.openiam.idm.srvc.continfo.service.PhoneDAO;
-import org.openiam.idm.srvc.continfo.service.PhoneSearchDAO;
+import org.openiam.idm.srvc.continfo.service.*;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.service.GroupDAO;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
@@ -73,6 +53,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.*;
 
 /**
  * Service interface that clients will access to gain information about users
@@ -182,7 +164,7 @@ public class UserMgr implements UserDataService {
 
     @Override
     @Transactional(readOnly = true)
-    public UserEntity getUserByPrincipal(String securityDomain, String principal, String managedSysId, boolean dependants) {
+    public UserEntity getUserByPrincipal(String principal, String managedSysId, boolean dependants) {
         LoginEntity login = loginDao.getRecord(principal, managedSysId);
         if (login == null) {
             return null;

@@ -20,13 +20,12 @@
  */
 package org.openiam.idm.srvc.auth.spi;
 
-import java.util.Date;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.base.SysConfiguration;
 import org.openiam.exception.AuthenticationException;
 import org.openiam.exception.EncryptionException;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
-import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.dto.Subject;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.auth.service.AuthenticationConstants;
@@ -36,15 +35,14 @@ import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.policy.service.PolicyDataService;
 import org.openiam.idm.srvc.pswd.service.PasswordService;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
-import org.openiam.idm.srvc.secdomain.domain.SecurityDomainEntity;
-import org.openiam.idm.srvc.secdomain.dto.SecurityDomain;
 import org.openiam.idm.srvc.user.domain.UserEntity;
-import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.util.encrypt.Cryptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+
+import java.util.Date;
 
 /**
  * @author suneet
@@ -74,8 +72,10 @@ public abstract class AbstractLoginModule implements LoginModule {
     
     @Autowired
     protected PolicyDataService policyDataService;
+
+    @Autowired
+    protected SysConfiguration sysConfiguration;
     
-    protected SecurityDomainEntity securityDomain;
     protected UserEntity user;
     protected LoginEntity lg;
     protected String authPolicyId;
@@ -178,18 +178,17 @@ public abstract class AbstractLoginModule implements LoginModule {
      * @param actionId
      * @param actionStatus
      * @param reason
-     * @param domainId
      * @param userId
      * @param principal
      * @param linkedLogId
      * @param clientId
      */
     public void log(String objectTypeId, String actionId, String actionStatus,
-            String reason, String domainId, String userId, String principal,
+            String reason, String userId, String principal,
             String linkedLogId, String clientId, String clientIP, String nodeIP) {
     	/*
         IdmAuditLog log = new IdmAuditLog(objectTypeId, actionId, actionStatus,
-                reason, domainId, userId, principal, linkedLogId, clientId);
+                reason,  userId, principal, linkedLogId, clientId);
 
         log.setHost(clientIP);
         log.setNodeIP(nodeIP);
@@ -209,8 +208,8 @@ public abstract class AbstractLoginModule implements LoginModule {
     public void setAuthPolicyId(String authPolicyId) {
         this.authPolicyId = authPolicyId;
     }
-    
-    public void setSecurityDomain(final SecurityDomainEntity securityDomain) {
-    	this.securityDomain = securityDomain;
+
+    public void setSysConfiguration(SysConfiguration sysConfiguration) {
+        this.sysConfiguration = sysConfiguration;
     }
 }

@@ -103,12 +103,12 @@ public interface PasswordService {
      */
     Policy getPasswordPolicy(String principal, String managedSysId);
 
-//    /**
-//     * Returns the global password policy
-//     *
-//     * @return
-//     */
-//    Policy getGlobalPasswordPolicy();
+    /**
+     * Returns the global password policy
+     *
+     * @return
+     */
+    Policy getGlobalPasswordPolicy();
 
 //    /**
 //     * Gets the password policy based on the User object
@@ -123,7 +123,7 @@ public interface PasswordService {
      * @param user
      * @return
      */
-    PolicyEntity getPasswordPolicyForUser(final UserEntity user);
+    Policy getPasswordPolicyForUser(final UserEntity user);
 
     /**
      * Checks to see if a password exists in the history log based on the policy

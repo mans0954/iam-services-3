@@ -61,7 +61,6 @@ public class DefaultLoginModule extends AbstractLoginModule {
                 log.debug("Executing password authentication");
                 final AuthenticationRequest authenticatedRequest = new AuthenticationRequest();
     			//authenticatedRequest.setClientIP(request.getRemoteAddr());
-    			authenticatedRequest.setDomainId(jaasConfiguration.getSecurityDomain());
     			authenticatedRequest.setPassword(password);
     			authenticatedRequest.setPrincipal(username);
     			try {

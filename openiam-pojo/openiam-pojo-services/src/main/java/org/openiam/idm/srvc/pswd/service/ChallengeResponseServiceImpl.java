@@ -1,20 +1,12 @@
 package org.openiam.idm.srvc.pswd.service;
 
-import java.util.Date;
-import java.util.List;
-
 import org.apache.commons.lang.StringUtils;
 import org.openiam.idm.searchbeans.IdentityAnswerSearchBean;
 import org.openiam.idm.searchbeans.IdentityQuestionSearchBean;
-import org.openiam.idm.srvc.policy.domain.PolicyAttributeEntity;
-import org.openiam.idm.srvc.policy.domain.PolicyEntity;
 import org.openiam.idm.srvc.policy.dto.Policy;
-import org.openiam.idm.srvc.policy.service.PolicyDAO;
+import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
 import org.openiam.idm.srvc.pswd.domain.IdentityQuestionEntity;
 import org.openiam.idm.srvc.pswd.domain.UserIdentityAnswerEntity;
-import org.openiam.idm.srvc.pswd.dto.UserIdentityAnswer;
-import org.openiam.idm.srvc.secdomain.domain.SecurityDomainEntity;
-import org.openiam.idm.srvc.secdomain.service.SecurityDomainDAO;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.idm.srvc.user.service.UserDataService;
@@ -22,6 +14,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Date;
+import java.util.List;
 
 @Service
 @Transactional
@@ -46,8 +41,8 @@ public class ChallengeResponseServiceImpl implements ChallengeResponseService {
     private PasswordService passwordMgr;
 	
 	@Override
-	public Integer getNumOfRequiredQuestions(String userId, String domainId) {
-		return getResponseValidator().getNumOfRequiredQuestions(userId, domainId);
+	public Integer getNumOfRequiredQuestions(String userId) {
+		return getResponseValidator().getNumOfRequiredQuestions(userId);
 	}
 
 	@Override
@@ -60,7 +55,7 @@ public class ChallengeResponseServiceImpl implements ChallengeResponseService {
 			IdentityQuestionSearchBean searchBean, int from, int size) {
 		return getResponseValidator().findQuestionBeans(searchBean, from, size);
 	}
-
+    @Override
 	public IdentityQuestionEntity getQuestion(final String questionId)
 	{
 		return getResponseValidator().getQuestion(questionId);
@@ -114,12 +109,12 @@ public class ChallengeResponseServiceImpl implements ChallengeResponseService {
 	}
 
 	@Override
-	public boolean isResponseValid(String domainId, String userId, List<UserIdentityAnswerEntity> newAnswerList) {
+	public boolean isResponseValid(String userId, List<UserIdentityAnswerEntity> newAnswerList) {
 		 int requiredCorrect = newAnswerList.size();
 
 		 final UserEntity user = userDAO.findById(userId);
-	     final PolicyEntity policy = passwordMgr.getPasswordPolicyForUser(user);
-	     final PolicyAttributeEntity attr = policy.getAttribute("QUEST_ANSWER_CORRECT");
+	     final Policy policy = passwordMgr.getPasswordPolicyForUser(user);
+	     final PolicyAttribute attr = policy.getAttribute("QUEST_ANSWER_CORRECT");
 
 	     if (attr != null) {
 	    	 if (StringUtils.isNotBlank(attr.getValue1())) {
@@ -134,7 +129,7 @@ public class ChallengeResponseServiceImpl implements ChallengeResponseService {
 	 }
 
 	@Override
-	public boolean isUserAnsweredSecurityQuestions(final String userId, final String domainId) {
-		return getResponseValidator().isUserAnsweredSecurityQuestions(userId, domainId);
+	public boolean isUserAnsweredSecurityQuestions(final String userId) {
+		return getResponseValidator().isUserAnsweredSecurityQuestions(userId);
 	}
 }

@@ -41,12 +41,11 @@ public interface UserDataService {
      * refers to a principal that is associated with a particular target system.
      * User 0 to use the default principal ID.
      * 
-     * @param securityDomain
      * @param principal
      * @param managedSysId
      * @return
      */
-    public UserEntity getUserByPrincipal(String securityDomain, String principal, String managedSysId, boolean dependants);
+    public UserEntity getUserByPrincipal(String principal, String managedSysId, boolean dependants);
 
     public void addUser(UserEntity user) throws Exception;
 

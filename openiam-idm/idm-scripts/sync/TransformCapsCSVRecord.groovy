@@ -28,8 +28,6 @@ public class TransformCapsCSVRecord extends AbstractTransformScript {
 
     static String BASE_URL = "http://localhost:9090/openiam-esb/idmsrvc"
 
-    static String DOMAIN = "USR_SEC_DOMAIN"
-
     @Override
     void init() {}
 

@@ -6,12 +6,9 @@ import org.apache.commons.lang.StringUtils;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.bpm.activiti.delegate.core.AbstractActivitiJob;
 import org.openiam.bpm.util.ActivitiConstants;
-import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
-import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.provision.dto.ProvisionUser;
-import org.springframework.beans.factory.annotation.Autowired;
 
 public class SaveLogin extends AbstractActivitiJob {
 	
@@ -31,7 +28,6 @@ public class SaveLogin extends AbstractActivitiJob {
 					if(StringUtils.equals(l.getLoginId(), loginObj.getLoginId())) {
 						l.setLogin(loginObj.getLogin());
 						l.setManagedSysId(loginObj.getManagedSysId());
-						l.setDomainId(loginObj.getDomainId());
 						l.setOperation(AttributeOperationEnum.REPLACE);
 						break;
 					}
@@ -42,7 +38,6 @@ public class SaveLogin extends AbstractActivitiJob {
 			loginDTO.setUserId(loginObj.getUserId());
 			loginDTO.setLogin(loginObj.getLogin());
 			loginDTO.setManagedSysId(loginObj.getManagedSysId());
-			loginDTO.setDomainId(loginObj.getDomainId());
 			loginDTO.setOperation(AttributeOperationEnum.ADD);
 			pUser.addPrincipal(loginDTO);
 		}

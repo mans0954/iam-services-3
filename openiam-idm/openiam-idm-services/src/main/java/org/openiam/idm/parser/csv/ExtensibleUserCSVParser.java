@@ -7,8 +7,6 @@ import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.recon.dto.ReconciliationObject;
 import org.openiam.idm.srvc.recon.result.dto.ReconciliationResultField;
-import org.openiam.idm.srvc.user.dto.User;
-import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleUser;
 import org.springframework.stereotype.Service;
@@ -70,7 +68,6 @@ public class ExtensibleUserCSVParser extends AbstractCSVParser<ExtensibleUser, U
             case emailAddress:
             case showInSearch:
             case alternateContactId:
-            case securityDomain:
             case userOwnerId:
             case datePasswordChanged:
             case dateITPolicyApproved:

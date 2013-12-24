@@ -20,12 +20,6 @@
  */
 package org.openiam.idm.srvc.auth.spi;
 
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -33,7 +27,6 @@ import org.openiam.exception.AuthenticationException;
 import org.openiam.idm.srvc.auth.context.AuthenticationContext;
 import org.openiam.idm.srvc.auth.context.PasswordCredential;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
-import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.dto.SSOToken;
 import org.openiam.idm.srvc.auth.dto.Subject;
 import org.openiam.idm.srvc.auth.service.AuthenticationConstants;
@@ -44,6 +37,8 @@ import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+
+import java.util.*;
 
 /**
  * DefaultLoginModule provides basic password based authentication using the OpenIAM repository.
@@ -80,6 +75,7 @@ public class DefaultLoginModule extends AbstractLoginModule {
      * org.openiam.idm.srvc.auth.spi.LoginModule#login(org.openiam.idm.srvc.
      * auth.context.AuthenticationContext)
      */
+    @Override
     public Subject login(AuthenticationContext authContext) throws Exception {
 
         Subject sub = new Subject();
@@ -95,16 +91,15 @@ public class DefaultLoginModule extends AbstractLoginModule {
                 .getCredential();
 
         String principal = cred.getPrincipal();
-        String domainId = cred.getDomainId();
         String password = cred.getPassword();
 
         if (user != null && user.getStatus() != null) {
             log.debug("-User Status=" + user.getStatus());
             if (user.getStatus().equals(UserStatusEnum.PENDING_START_DATE)) {
                 if (!pendingInitialStartDateCheck(user, curDate)) {
-                    log("AUTHENTICATION", "AUTHENTICATION", "FAIL",
-                            "INVALID_USER_STATUS", domainId, null, principal,
-                            null, null, clientIP, nodeIP);
+//                    log("AUTHENTICATION", "AUTHENTICATION", "FAIL",
+//                            "INVALID_USER_STATUS", domainId, null, principal,
+//                            null, null, clientIP, nodeIP);
                     throw new AuthenticationException(
                             AuthenticationConstants.RESULT_INVALID_USER_STATUS);
                 }
@@ -113,9 +108,9 @@ public class DefaultLoginModule extends AbstractLoginModule {
                     && !user.getStatus().equals(
                             UserStatusEnum.PENDING_INITIAL_LOGIN)) {
                 // invalid status
-                log("AUTHENTICATION", "AUTHENTICATION", "FAIL",
-                        "INVALID_USER_STATUS", domainId, null, principal, null,
-                        null, clientIP, nodeIP);
+//                log("AUTHENTICATION", "AUTHENTICATION", "FAIL",
+//                        "INVALID_USER_STATUS", domainId, null, principal, null,
+//                        null, clientIP, nodeIP);
                 throw new AuthenticationException(
                         AuthenticationConstants.RESULT_INVALID_USER_STATUS);
             }
@@ -126,19 +121,14 @@ public class DefaultLoginModule extends AbstractLoginModule {
         }
 
         log.debug("Authentication policyid="
-                + securityDomain.getAuthnPolicyId());
+                + sysConfiguration.getDefaultAuthPolicyId());
         // get the authentication lock out policy
-        Policy plcy = policyDataService.getPolicy(securityDomain
-                .getAuthnPolicyId());
-        String attrValue = getPolicyAttribute(plcy.getPolicyAttributes(),
-                "FAILED_AUTH_COUNT");
+        Policy plcy = policyDataService.getPolicy(sysConfiguration.getDefaultAuthPolicyId());
+        String attrValue = getPolicyAttribute(plcy.getPolicyAttributes(), "FAILED_AUTH_COUNT");
 
-        String tokenType = getPolicyAttribute(plcy.getPolicyAttributes(),
-                "TOKEN_TYPE");
-        String tokenLife = getPolicyAttribute(plcy.getPolicyAttributes(),
-                "TOKEN_LIFE");
-        String tokenIssuer = getPolicyAttribute(plcy.getPolicyAttributes(),
-                "TOKEN_ISSUER");
+        String tokenType = getPolicyAttribute(plcy.getPolicyAttributes(), "TOKEN_TYPE");
+        String tokenLife = getPolicyAttribute(plcy.getPolicyAttributes(), "TOKEN_LIFE");
+        String tokenIssuer = getPolicyAttribute(plcy.getPolicyAttributes(), "TOKEN_ISSUER");
 
         Map tokenParam = new HashMap();
         tokenParam.put("TOKEN_TYPE", tokenType);
@@ -147,8 +137,7 @@ public class DefaultLoginModule extends AbstractLoginModule {
         tokenParam.put("PRINCIPAL", principal);
 
         // check the password
-        String decryptPswd = this.decryptPassword(lg.getUserId(),
-                lg.getPassword());
+        String decryptPswd = this.decryptPassword(lg.getUserId(), lg.getPassword());
         if (decryptPswd != null && !decryptPswd.equals(password)) {
 
             // if failed auth count is part of the polices, then do the
@@ -173,17 +162,17 @@ public class DefaultLoginModule extends AbstractLoginModule {
                     user.setSecondaryStatus(UserStatusEnum.LOCKED);
                     userManager.updateUser(user);
 
-                    log("AUTHENTICATION", "AUTHENTICATION", "FAIL",
-                            "ACCOUNT_LOCKED", domainId, null, principal, null,
-                            null, clientIP, nodeIP);
+//                    log("AUTHENTICATION", "AUTHENTICATION", "FAIL",
+//                            "ACCOUNT_LOCKED", domainId, null, principal, null,
+//                            null, clientIP, nodeIP);
                     throw new AuthenticationException(
                             AuthenticationConstants.RESULT_LOGIN_LOCKED);
                 } else {
                     // update the counter save the record
                     loginManager.updateLogin(lg);
-                    log("AUTHENTICATION", "AUTHENTICATION", "FAIL",
-                            "INVALID_PASSWORD", domainId, null, principal,
-                            null, null, clientIP, nodeIP);
+//                    log("AUTHENTICATION", "AUTHENTICATION", "FAIL",
+//                            "INVALID_PASSWORD", domainId, null, principal,
+//                            null, null, clientIP, nodeIP);
 
                     throw new AuthenticationException(
                             AuthenticationConstants.RESULT_INVALID_PASSWORD);
@@ -191,9 +180,9 @@ public class DefaultLoginModule extends AbstractLoginModule {
             } else {
                 log.debug("No auth fail password policy value found");
 
-                log("AUTHENTICATION", "AUTHENTICATION", "FAIL",
-                        "INVALID_PASSWORD", domainId, null, principal, null,
-                        null, clientIP, nodeIP);
+//                log("AUTHENTICATION", "AUTHENTICATION", "FAIL",
+//                        "INVALID_PASSWORD", domainId, null, principal, null,
+//                        null, clientIP, nodeIP);
 
                 throw new AuthenticationException(
                         AuthenticationConstants.RESULT_INVALID_PASSWORD);
@@ -204,9 +193,9 @@ public class DefaultLoginModule extends AbstractLoginModule {
             log.debug("Validating the state of the password - expired or not");
             int pswdResult = passwordExpired(lg, curDate);
             if (pswdResult == AuthenticationConstants.RESULT_PASSWORD_EXPIRED) {
-                log("AUTHENTICATION", "AUTHENTICATION", "FAIL",
-                        "PASSWORD_EXPIRED", domainId, null, principal, null,
-                        null, clientIP, nodeIP);
+//                log("AUTHENTICATION", "AUTHENTICATION", "FAIL",
+//                        "PASSWORD_EXPIRED", domainId, null, principal, null,
+//                        null, clientIP, nodeIP);
                 throw new AuthenticationException(
                         AuthenticationConstants.RESULT_PASSWORD_EXPIRED);
             }
@@ -256,15 +245,14 @@ public class DefaultLoginModule extends AbstractLoginModule {
         sub.setUserId(lg.getUserId());
         sub.setPrincipal(principal);
         sub.setSsoToken(token(lg.getUserId(), tokenParam));
-        sub.setDomainId(domainId);
         setResultCode(lg, sub, curDate);
 
 
 
         // send message into to audit log
 
-        log("AUTHENTICATION", "AUTHENTICATION", "SUCCESS", null, domainId,
-                user.getId(), principal, null, null, clientIP, nodeIP);
+//        log("AUTHENTICATION", "AUTHENTICATION", "SUCCESS", null, domainId,
+//                user.getId(), principal, null, null, clientIP, nodeIP);
 
         return sub;
     }

@@ -67,10 +67,6 @@ public interface AuthenticationContext {
 
     public void setManagedSysId(String managedSysId);
 
-    public String getDomainId();
-
-    public void setDomainId(String domainId);
-
     public String getClientIP();
 
     public void setClientIP(String clientIP);

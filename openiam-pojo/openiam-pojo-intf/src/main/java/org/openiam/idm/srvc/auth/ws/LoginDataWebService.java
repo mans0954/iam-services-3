@@ -73,7 +73,6 @@ public interface LoginDataWebService {
      * Sets the password for a login. The password needs to be encrypted externally. this allow for flexiblity in
      * supporting alternate approaches to encryption.
      *
-     * @param domainId
      * @param principal
      * @param managedSysId
      * @param password

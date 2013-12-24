@@ -20,27 +20,12 @@
  */
 package org.openiam.idm.srvc.auth.spi;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-import javax.naming.Context;
-import javax.naming.NamingEnumeration;
-import javax.naming.NamingException;
-import javax.naming.directory.Attributes;
-import javax.naming.directory.SearchControls;
-import javax.naming.directory.SearchResult;
-import javax.naming.ldap.InitialLdapContext;
-import javax.naming.ldap.LdapContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.exception.AuthenticationException;
 import org.openiam.idm.srvc.auth.context.AuthenticationContext;
 import org.openiam.idm.srvc.auth.context.PasswordCredential;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
-import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.dto.SSOToken;
 import org.openiam.idm.srvc.auth.dto.Subject;
 import org.openiam.idm.srvc.auth.service.AuthenticationConstants;
@@ -54,6 +39,16 @@ import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+
+import javax.naming.Context;
+import javax.naming.NamingEnumeration;
+import javax.naming.NamingException;
+import javax.naming.directory.Attributes;
+import javax.naming.directory.SearchControls;
+import javax.naming.directory.SearchResult;
+import javax.naming.ldap.InitialLdapContext;
+import javax.naming.ldap.LdapContext;
+import java.util.*;
 
 /**
  * LDAPLoginModule provides basic password based authentication using an LDAP directory.
@@ -135,6 +130,7 @@ public class LDAPLoginModule extends AbstractLoginModule {
      * org.openiam.idm.srvc.auth.spi.LoginModule#login(org.openiam.idm.srvc.
      * auth.context.AuthenticationContext)
      */
+    @Override
     public Subject login(AuthenticationContext authContext) throws Exception {
 
         Subject sub = new Subject();
@@ -162,7 +158,6 @@ public class LDAPLoginModule extends AbstractLoginModule {
                 .getCredential();
 
         String principal = cred.getPrincipal();
-        String domainId = cred.getDomainId();
         String password = cred.getPassword();
         String distinguishedName = null;
 
@@ -175,8 +170,8 @@ public class LDAPLoginModule extends AbstractLoginModule {
         LdapContext ldapCtx = connect(adminUserName, adminPassword);
         NamingEnumeration ne = search(ldapCtx, principal);
         if (ne == null) {
-            log("AUTHENTICATION", "AUTHENTICATION", "FAIL", "INVALID LOGIN",
-                    domainId, null, principal, null, null, clientIP, nodeIP);
+//            log("AUTHENTICATION", "AUTHENTICATION", "FAIL", "INVALID LOGIN",
+//                    domainId, null, principal, null, null, clientIP, nodeIP);
             throw new AuthenticationException(
                     AuthenticationConstants.RESULT_INVALID_LOGIN);
         }
@@ -190,8 +185,8 @@ public class LDAPLoginModule extends AbstractLoginModule {
 
         } catch (NamingException e) {
             log.error(e);
-            log("AUTHENTICATION", "AUTHENTICATION", "FAIL", "INVALID LOGIN",
-                    domainId, null, principal, null, null, clientIP, nodeIP);
+//            log("AUTHENTICATION", "AUTHENTICATION", "FAIL", "INVALID LOGIN",
+//                    domainId, null, principal, null, null, clientIP, nodeIP);
             throw new AuthenticationException(
                     AuthenticationConstants.RESULT_INVALID_LOGIN);
 
@@ -200,26 +195,21 @@ public class LDAPLoginModule extends AbstractLoginModule {
         log.debug("Distinguished name=" + distinguishedName);
 
         if (distinguishedName == null || distinguishedName.length() == 0) {
-            log("AUTHENTICATION", "AUTHENTICATION", "FAIL", "INVALID LOGIN",
-                    domainId, null, principal, null, null, clientIP, nodeIP);
+//            log("AUTHENTICATION", "AUTHENTICATION", "FAIL", "INVALID LOGIN",
+//                    domainId, null, principal, null, null, clientIP, nodeIP);
             throw new AuthenticationException(
                     AuthenticationConstants.RESULT_INVALID_LOGIN);
         }
 
         log.debug("Authentication policyid="
-                + securityDomain.getAuthnPolicyId());
+                + sysConfiguration.getDefaultAuthPolicyId());
         // get the authentication lock out policy
-        Policy plcy = policyDataService.getPolicy(securityDomain
-                .getAuthnPolicyId());
-        String attrValue = getPolicyAttribute(plcy.getPolicyAttributes(),
-                "FAILED_AUTH_COUNT");
+        Policy plcy = policyDataService.getPolicy(sysConfiguration.getDefaultAuthPolicyId());
+        String attrValue = getPolicyAttribute(plcy.getPolicyAttributes(), "FAILED_AUTH_COUNT");
 
-        String tokenType = getPolicyAttribute(plcy.getPolicyAttributes(),
-                "TOKEN_TYPE");
-        String tokenLife = getPolicyAttribute(plcy.getPolicyAttributes(),
-                "TOKEN_LIFE");
-        String tokenIssuer = getPolicyAttribute(plcy.getPolicyAttributes(),
-                "TOKEN_ISSUER");
+        String tokenType = getPolicyAttribute(plcy.getPolicyAttributes(), "TOKEN_TYPE");
+        String tokenLife = getPolicyAttribute(plcy.getPolicyAttributes(), "TOKEN_LIFE");
+        String tokenIssuer = getPolicyAttribute(plcy.getPolicyAttributes(), "TOKEN_ISSUER");
 
         Map tokenParam = new HashMap();
         tokenParam.put("TOKEN_TYPE", tokenType);
@@ -230,9 +220,9 @@ public class LDAPLoginModule extends AbstractLoginModule {
         lg = loginManager.getLoginByManagedSys(distinguishedName, managedSysId);
 
         if (lg == null) {
-            log("AUTHENTICATION", "AUTHENTICATION", "FAIL",
-                    "MATCHING IDENTITY NOT FOUND", domainId, null, principal,
-                    null, null, clientIP, nodeIP);
+//            log("AUTHENTICATION", "AUTHENTICATION", "FAIL",
+//                    "MATCHING IDENTITY NOT FOUND", domainId, null, principal,
+//                    null, null, clientIP, nodeIP);
             throw new AuthenticationException(
                     AuthenticationConstants.RESULT_INVALID_LOGIN);
         }
@@ -242,9 +232,9 @@ public class LDAPLoginModule extends AbstractLoginModule {
         // try to login to AD with this user
         LdapContext tempCtx = connect(distinguishedName, password);
         if (tempCtx == null) {
-            log("AUTHENTICATION", "AUTHENTICATION", "FAIL",
-                    "RESULT_INVALID_PASSWORD", domainId, null, principal, null,
-                    null, clientIP, nodeIP);
+//            log("AUTHENTICATION", "AUTHENTICATION", "FAIL",
+//                    "RESULT_INVALID_PASSWORD", domainId, null, principal, null,
+//                    null, clientIP, nodeIP);
             // update the auth fail count
             if (attrValue != null && attrValue.length() > 0) {
 
@@ -266,17 +256,17 @@ public class LDAPLoginModule extends AbstractLoginModule {
                     user.setSecondaryStatus(UserStatusEnum.LOCKED);
                     userManager.updateUser(user);
 
-                    log("AUTHENTICATION", "AUTHENTICATION", "FAIL",
-                            "ACCOUNT_LOCKED", domainId, null, principal, null,
-                            null, clientIP, nodeIP);
+//                    log("AUTHENTICATION", "AUTHENTICATION", "FAIL",
+//                            "ACCOUNT_LOCKED", domainId, null, principal, null,
+//                            null, clientIP, nodeIP);
                     throw new AuthenticationException(
                             AuthenticationConstants.RESULT_LOGIN_LOCKED);
                 } else {
                     // update the counter save the record
                     loginManager.updateLogin(lg);
-                    log("AUTHENTICATION", "AUTHENTICATION", "FAIL",
-                            "INVALID_PASSWORD", domainId, null, principal,
-                            null, null, clientIP, nodeIP);
+//                    log("AUTHENTICATION", "AUTHENTICATION", "FAIL",
+//                            "INVALID_PASSWORD", domainId, null, principal,
+//                            null, null, clientIP, nodeIP);
 
                     throw new AuthenticationException(
                             AuthenticationConstants.RESULT_INVALID_PASSWORD);
@@ -334,9 +324,9 @@ public class LDAPLoginModule extends AbstractLoginModule {
         if (user.getStatus() != null) {
             if (user.getStatus().equals(UserStatusEnum.PENDING_START_DATE)) {
                 if (!pendingInitialStartDateCheck(user, curDate)) {
-                    log("AUTHENTICATION", "AUTHENTICATION", "FAIL",
-                            "INVALID USER STATUS", domainId, null, principal,
-                            null, null, clientIP, nodeIP);
+//                    log("AUTHENTICATION", "AUTHENTICATION", "FAIL",
+//                            "INVALID USER STATUS", domainId, null, principal,
+//                            null, null, clientIP, nodeIP);
                     throw new AuthenticationException(
                             AuthenticationConstants.RESULT_INVALID_USER_STATUS);
                 }
@@ -345,9 +335,9 @@ public class LDAPLoginModule extends AbstractLoginModule {
                     && !user.getStatus().equals(
                             UserStatusEnum.PENDING_INITIAL_LOGIN)) {
                 // invalid status
-                log("AUTHENTICATION", "AUTHENTICATION", "FAIL",
-                        "INVALID USER STATUS", domainId, null, principal, null,
-                        null, clientIP, nodeIP);
+//                log("AUTHENTICATION", "AUTHENTICATION", "FAIL",
+//                        "INVALID USER STATUS", domainId, null, principal, null,
+//                        null, clientIP, nodeIP);
                 throw new AuthenticationException(
                         AuthenticationConstants.RESULT_INVALID_USER_STATUS);
             }
@@ -356,8 +346,8 @@ public class LDAPLoginModule extends AbstractLoginModule {
 
         int pswdResult = passwordExpired(lg, curDate);
         if (pswdResult == AuthenticationConstants.RESULT_PASSWORD_EXPIRED) {
-            log("AUTHENTICATION", "AUTHENTICATION", "FAIL", "PASSWORD_EXPIRED",
-                    domainId, null, principal, null, null, clientIP, nodeIP);
+//            log("AUTHENTICATION", "AUTHENTICATION", "FAIL", "PASSWORD_EXPIRED",
+//                    domainId, null, principal, null, null, clientIP, nodeIP);
             throw new AuthenticationException(
                     AuthenticationConstants.RESULT_PASSWORD_EXPIRED);
         }
@@ -403,14 +393,13 @@ public class LDAPLoginModule extends AbstractLoginModule {
         sub.setUserId(lg.getUserId());
         sub.setPrincipal(distinguishedName);
         sub.setSsoToken(token(lg.getUserId(), tokenParam));
-        sub.setDomainId(domainId);
         setResultCode(lg, sub, curDate);
 
         // send message into to audit log
 
-        log("AUTHENTICATION", "AUTHENTICATION", "SUCCESS", null, domainId,
-                user.getId(), distinguishedName, null, null, clientIP,
-                nodeIP);
+//        log("AUTHENTICATION", "AUTHENTICATION", "SUCCESS", null, domainId,
+//                user.getId(), distinguishedName, null, null, clientIP,
+//                nodeIP);
 
         return sub;
     }

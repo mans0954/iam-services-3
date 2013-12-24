@@ -12,7 +12,6 @@ public class RoleSearchBeanConverter implements SearchBeanConverter<RoleEntity, 
 		final RoleEntity entity = new RoleEntity();
 		entity.setName(searchBean.getName());
 		entity.setId(searchBean.getKey());
-		entity.setServiceId(searchBean.getServiceId());
 		return entity;
 	}
 

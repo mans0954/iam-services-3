@@ -25,9 +25,6 @@ import org.openiam.idm.searchbeans.IdentityAnswerSearchBean;
 import org.openiam.idm.searchbeans.IdentityQuestionSearchBean;
 import org.openiam.idm.srvc.pswd.domain.IdentityQuestionEntity;
 import org.openiam.idm.srvc.pswd.domain.UserIdentityAnswerEntity;
-import org.openiam.idm.srvc.pswd.dto.ChallengeResponseUser;
-import org.openiam.idm.srvc.pswd.dto.IdentityQuestion;
-import org.openiam.idm.srvc.pswd.dto.UserIdentityAnswer;
 
 import java.util.List;
 
@@ -48,6 +45,6 @@ public interface ChallengeResponseValidator {
     public void saveAnswer(final UserIdentityAnswerEntity answer) throws Exception;
     public void deleteAnswer(final String answerId) throws Exception;
     public void saveAnswers(List<UserIdentityAnswerEntity> answerList) throws Exception;
-    public boolean isUserAnsweredSecurityQuestions(final String userId, final String domainId);
-    public Integer getNumOfRequiredQuestions(final String userId, final String domainId);
+    public boolean isUserAnsweredSecurityQuestions(final String userId);
+    public Integer getNumOfRequiredQuestions(final String userId);
 }

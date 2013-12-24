@@ -23,13 +23,10 @@ package org.openiam.idm.srvc.pswd.rule;
 
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
-import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.policy.dto.Policy;
-import org.openiam.idm.srvc.pswd.dto.PasswordValidationResponse;
 import org.openiam.idm.srvc.pswd.service.PasswordHistoryDAO;
 import org.openiam.idm.srvc.user.domain.UserEntity;
-import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.util.encrypt.Cryptor;
 
 /**
@@ -49,7 +46,6 @@ public abstract class AbstractPasswordRule {
 	protected PasswordHistoryDAO passwordHistoryDao;
 	protected Cryptor cryptor;
     protected KeyManagementService keyManagementService;
-    protected String domainId;
 
 	public abstract void validate() throws PasswordRuleException; 
 	
@@ -140,13 +136,4 @@ public abstract class AbstractPasswordRule {
 		this.skipPasswordFrequencyCheck = skipPasswordFrequencyCheck;
 	}
 
-	public String getDomainId() {
-		return domainId;
-	}
-
-	public void setDomainId(String domainId) {
-		this.domainId = domainId;
-	}
-    
-    
 }

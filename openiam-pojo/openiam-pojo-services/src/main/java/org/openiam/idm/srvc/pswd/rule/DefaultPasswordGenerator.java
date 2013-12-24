@@ -31,7 +31,8 @@ public class DefaultPasswordGenerator implements GeneratePassword {
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.policy.pswd.GeneratePassword#generatePassword(java.lang.String)
 	 */
-	public String generatePassword(String domainid) {
+    @Override
+	public String generatePassword() {
 		// TODO Auto-generated method stub
 		return null;
 	}

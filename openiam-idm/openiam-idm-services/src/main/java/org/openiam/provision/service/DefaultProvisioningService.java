@@ -254,7 +254,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             auditBuilderAddChild.setRequestorUserId(systemUserId).setTargetUser(null).setAction(AuditAction.PROVISIONING_DELETE);
             auditBuilder.addChild(auditBuilderAddChild);
 
-            ProvisionUserResponse response = deleteUser(primaryIdentity.getDomainId(), sysConfiguration
+            ProvisionUserResponse response = deleteUser(sysConfiguration
                     .getDefaultManagedSysId(), primaryIdentity.getLogin(),status,requestorId);
             if(response != null && response.isSuccess()) {
                 auditBuilder.succeed().setAuditDescription("User primary identity: "+primaryIdentity.getLogin());
@@ -276,12 +276,9 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
      */
     @Override
     @Transactional
-    public ProvisionUserResponse deleteUser(String securityDomain,
-            String managedSystemId, String principal, UserStatusEnum status,
+    public ProvisionUserResponse deleteUser(String managedSystemId, String principal, UserStatusEnum status,
             String requestorId) {
         log.debug("----deleteUser called.------");
-
-
 
         ProvisionUserResponse response = new ProvisionUserResponse(
                 ResponseStatus.SUCCESS);
@@ -300,8 +297,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         String requestId = "R" + UUIDGen.getUUID();
 
         // get the user object associated with this principal
-        final LoginEntity login = loginManager.getLoginByManagedSys(
-                securityDomain, principal, managedSystemId);
+        final LoginEntity login = loginManager.getLoginByManagedSys(principal, managedSystemId);
         if (login == null) {
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(ResponseCode.PRINCIPAL_NOT_FOUND);
@@ -327,7 +323,6 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         bindingMap.put(TARGET_SYSTEM_IDENTITY, login.getLogin());
         bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS, IDENTITY_EXIST);
         bindingMap.put(TARGET_SYS_RES_ID, null);
-        bindingMap.put(TARGET_SYS_SECURITY_DOMAIN, login.getDomainId());
 
         if (callPreProcessor("DELETE", pUser, bindingMap) != ProvisioningConstants.SUCCESS) {
             response.setStatus(ResponseStatus.FAILURE);
@@ -367,7 +362,6 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             bindingMap.put(TARGET_SYSTEM_IDENTITY, login.getLogin());
             bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS, IDENTITY_EXIST);
             bindingMap.put(TARGET_SYS_RES_ID, resourceId);
-            bindingMap.put(TARGET_SYS_SECURITY_DOMAIN, login.getDomainId());
 
             if (resourceId != null) {
                 res = resourceDataService.getResource(resourceId);
@@ -473,7 +467,6 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                 bindingMap.put(TARGET_SYS_MANAGED_SYS_ID, mSys.getManagedSysId());
                                 bindingMap.put(TARGET_SYS_RES_ID, resourceId);
                                 bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS, IDENTITY_EXIST);
-                                bindingMap.put(TARGET_SYS_SECURITY_DOMAIN, l.getDomainId());
 
                                 if (resourceId != null) {
                                     resource = resourceDataService
@@ -567,7 +560,6 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         bindingMap.put(TARGET_SYSTEM_IDENTITY, login.getLogin());
         bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS, null);
         bindingMap.put(TARGET_SYS_RES_ID, null);
-        bindingMap.put(TARGET_SYS_SECURITY_DOMAIN, login.getDomainId());
 
         if (callPostProcessor("DELETE", pUser, bindingMap) != ProvisioningConstants.SUCCESS) {
             response.setStatus(ResponseStatus.FAILURE);
@@ -894,8 +886,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 }
             }
             // validate that this identity does not already exist
-            LoginEntity dupPrincipal = loginManager.getLoginByManagedSys(
-                    primaryLogin.getDomainId(), primaryLogin.getLogin(),
+            LoginEntity dupPrincipal = loginManager.getLoginByManagedSys( primaryLogin.getLogin(),
                     primaryLogin.getManagedSysId());
 
             if (dupPrincipal != null) {
@@ -1173,11 +1164,11 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             // determine if this identity exists in IDM or not
             // if not, do an ADD otherwise, do an UPDATE
 
-            if (mLg != null && mLg.getLoginId() != null) {
-                bindingMap.put(TARGET_SYS_SECURITY_DOMAIN, mLg.getDomainId());
-            } else {
-                bindingMap.put(TARGET_SYS_SECURITY_DOMAIN, mSys.getDomainId());
-            }
+//            if (mLg != null && mLg.getLoginId() != null) {
+//                bindingMap.put(TARGET_SYS_SECURITY_DOMAIN, mLg.getDomainId());
+//            } else {
+//                bindingMap.put(TARGET_SYS_SECURITY_DOMAIN, mSys.getDomainId());
+//            }
 
             if (mLg != null) {
                 log.debug("PROCESSING IDENTITY =" + mLg);
@@ -1202,7 +1193,6 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     log.debug(" - PrimaryIdentity for build new identity for target system = " + primaryIdentity);
 
                     mLg.setLogin(newPrincipalName);
-                    mLg.setDomainId(primaryIdentity.getDomainId());
                     mLg.setManagedSysId(managedSysId);
                     mLg.setPassword(primaryIdentity.getPassword());
                     mLg.setUserId(primaryIdentity.getUserId());
@@ -1222,7 +1212,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
             bindingMap.put(TARGET_SYSTEM_ATTRIBUTES, null);
             bindingMap.put(TARGET_SYSTEM_IDENTITY, isMngSysIdentityExistsInOpeniam ? mLg.getLogin() : null);
-            bindingMap.put( TARGET_SYS_SECURITY_DOMAIN, isMngSysIdentityExistsInOpeniam ? mLg.getDomainId() : null);
+//            bindingMap.put( TARGET_SYS_SECURITY_DOMAIN, isMngSysIdentityExistsInOpeniam ? mLg.getDomainId() : null);
 
             // Identity of current target system
             Login targetSysLogin = loginDozerConverter.convertToDTO(mLg, false);
@@ -1303,8 +1293,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             final String requestId = "R" + UUIDGen.getUUID();
 
             // get the user object associated with this principal
-            final LoginEntity login = loginManager.getLoginByManagedSys(
-                    passwordSync.getSecurityDomain(), passwordSync.getPrincipal(),
+            final LoginEntity login = loginManager.getLoginByManagedSys(passwordSync.getPrincipal(),
                     passwordSync.getManagedSystemId());
             if (login == null) {
                 auditBuilderResetPasswdChildLog.fail().setFailureReason(ResponseCode.PRINCIPAL_NOT_FOUND);
@@ -1342,8 +1331,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 response.setErrorCode(ResponseCode.FAIL_ENCRYPTION);
                 return response;
             }
-            final boolean retval = loginManager.resetPassword(
-                    passwordSync.getSecurityDomain(), passwordSync.getPrincipal(),
+            final boolean retval = loginManager.resetPassword(passwordSync.getPrincipal(),
                     passwordSync.getManagedSystemId(), encPassword);
 
             if (retval) {
@@ -1402,8 +1390,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
                                     log.debug("Sync allowed for sys="
                                             + managedSysId);
-                                    loginManager.resetPassword(lg.getDomainId(),
-                                            lg.getLogin(), lg.getManagedSysId(),
+                                    loginManager.resetPassword(lg.getLogin(), lg.getManagedSysId(),
                                             encPassword);
 
                                     ManagedSystemObjectMatchEntity matchObj = null;
@@ -1558,8 +1545,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 	        final String requestId = "R" + UUIDGen.getUUID();
 
 	        // get the user object associated with this principal
-	        final LoginEntity login = loginManager.getLoginByManagedSys(
-	                passwordSync.getSecurityDomain(), passwordSync.getPrincipal(),
+	        final LoginEntity login = loginManager.getLoginByManagedSys(passwordSync.getPrincipal(),
 	                passwordSync.getManagedSystemId());
 	        if (login == null) {
 	        	auditLog.fail().setFailureReason(ResponseCode.PRINCIPAL_NOT_FOUND);
@@ -1587,7 +1573,6 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
 	        // validate the password against password policy
 	        final Password pswd = new Password();
-	        pswd.setDomainId(passwordSync.getSecurityDomain());
 	        pswd.setManagedSysId(passwordSync.getManagedSystemId());
 	        pswd.setPrincipal(passwordSync.getPrincipal());
 	        pswd.setPassword(passwordSync.getPassword());
@@ -1626,8 +1611,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 	            if (StringUtils.equalsIgnoreCase(l.getManagedSysId(),
 	                    passwordSync.getManagedSystemId())) {
 
-	                final boolean retval = loginManager.setPassword(
-	                        l.getDomainId(), l.getLogin(),
+	                final boolean retval = loginManager.setPassword(l.getLogin(),
 	                        passwordSync.getManagedSystemId(), encPassword,
 	                        passwordSync.isPreventChangeCountIncrement());
 	                if (retval) {
@@ -1708,8 +1692,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 	                            }
 
 	                            // update the password in openiam
-	                            loginManager.setPassword(lg.getDomainId(), lg
-	                                    .getLogin(), lg.getManagedSysId(),
+	                            loginManager.setPassword(lg.getLogin(), lg.getManagedSysId(),
 	                                    encPassword, passwordSync
 	                                            .isPreventChangeCountIncrement());
 

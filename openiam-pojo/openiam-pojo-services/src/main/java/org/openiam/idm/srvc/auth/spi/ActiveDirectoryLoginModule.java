@@ -20,19 +20,6 @@
  */
 package org.openiam.idm.srvc.auth.spi;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Map;
-import java.util.Set;
-import javax.naming.Context;
-import javax.naming.NamingEnumeration;
-import javax.naming.NamingException;
-import javax.naming.directory.Attributes;
-import javax.naming.directory.SearchControls;
-import javax.naming.directory.SearchResult;
-import javax.naming.ldap.InitialLdapContext;
-import javax.naming.ldap.LdapContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.exception.AuthenticationException;
@@ -48,10 +35,21 @@ import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.springframework.beans.factory.annotation.Value;
-// import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
-// import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+
+import javax.naming.Context;
+import javax.naming.NamingEnumeration;
+import javax.naming.NamingException;
+import javax.naming.directory.Attributes;
+import javax.naming.directory.SearchControls;
+import javax.naming.directory.SearchResult;
+import javax.naming.ldap.InitialLdapContext;
+import javax.naming.ldap.LdapContext;
+import java.util.*;
+
+// import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
+// import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 
 /**
  * DefaultLoginModule provides basic password based authentication using the OpenIAM repository.
@@ -107,6 +105,7 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
      * org.openiam.idm.srvc.auth.spi.LoginModule#login(org.openiam.idm.srvc.
      * auth.context.AuthenticationContext)
      */
+    @Override
     public Subject login(AuthenticationContext authContext) throws Exception {
 
         String clientIP = authContext.getClientIP();
@@ -122,16 +121,15 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
                 .getCredential();
 
         String principal = cred.getPrincipal();
-        String domainId = cred.getDomainId();
         String password = cred.getPassword();
 
         if (user != null && user.getStatus() != null) {
             log.debug("User Status=" + user.getStatus());
             if (user.getStatus().equals(UserStatusEnum.PENDING_START_DATE)) {
                 if (!pendingInitialStartDateCheck(user, curDate)) {
-                    log("AUTHENTICATION", "AUTHENTICATION", "FAIL",
-                            "INVALID_USER_STATUS", domainId, null, principal,
-                            null, null, clientIP, nodeIP);
+//                    log("AUTHENTICATION", "AUTHENTICATION", "FAIL",
+//                            "INVALID_USER_STATUS", domainId, null, principal,
+//                            null, null, clientIP, nodeIP);
                     throw new AuthenticationException(
                             AuthenticationConstants.RESULT_INVALID_USER_STATUS);
                 }
@@ -140,9 +138,9 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
                     && !user.getStatus().equals(
                             UserStatusEnum.PENDING_INITIAL_LOGIN)) {
                 // invalid status
-                log("AUTHENTICATION", "AUTHENTICATION", "FAIL",
-                        "INVALID_USER_STATUS", domainId, null, principal, null,
-                        null, clientIP, nodeIP);
+//                log("AUTHENTICATION", "AUTHENTICATION", "FAIL",
+//                        "INVALID_USER_STATUS", domainId, null, principal, null,
+//                        null, clientIP, nodeIP);
                 throw new AuthenticationException(
                         AuthenticationConstants.RESULT_INVALID_USER_STATUS);
             }
@@ -167,8 +165,8 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
         log.info("Distinguished name=" + distinguishedName);
 
         if (distinguishedName == null) {
-            log("AUTHENTICATION", "AUTHENTICATION", "FAIL", "INVALID_LOGIN",
-                    domainId, null, principal, null, null, clientIP, nodeIP);
+//            log("AUTHENTICATION", "AUTHENTICATION", "FAIL", "INVALID_LOGIN",
+//                    domainId, null, principal, null, null, clientIP, nodeIP);
             throw new AuthenticationException(
                     AuthenticationConstants.RESULT_INVALID_LOGIN);
 
@@ -176,27 +174,23 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
         // try to login to AD with this user
         LdapContext tempCtx = connect(distinguishedName, password);
         if (tempCtx == null) {
-            log("AUTHENTICATION", "AUTHENTICATION", "FAIL", "INVALID_PASSWORD",
-                    domainId, null, principal, null, null, clientIP, nodeIP);
+//            log("AUTHENTICATION", "AUTHENTICATION", "FAIL", "INVALID_PASSWORD",
+//                    domainId, null, principal, null, null, clientIP, nodeIP);
             throw new AuthenticationException(
                     AuthenticationConstants.RESULT_INVALID_PASSWORD);
 
         }
 
         log.debug("Authentication policyid="
-                + securityDomain.getAuthnPolicyId());
+                + sysConfiguration.getDefaultAuthPolicyId());
         // get the authentication lock out policy
-        Policy plcy = policyDataService.getPolicy(securityDomain
-                .getAuthnPolicyId());
-        String attrValue = getPolicyAttribute(plcy.getPolicyAttributes(),
-                "FAILED_AUTH_COUNT");
+        Policy plcy = policyDataService.getPolicy(sysConfiguration
+                .getDefaultAuthPolicyId());
+        String attrValue = getPolicyAttribute(plcy.getPolicyAttributes(), "FAILED_AUTH_COUNT");
 
-        String tokenType = getPolicyAttribute(plcy.getPolicyAttributes(),
-                "TOKEN_TYPE");
-        String tokenLife = getPolicyAttribute(plcy.getPolicyAttributes(),
-                "TOKEN_LIFE");
-        String tokenIssuer = getPolicyAttribute(plcy.getPolicyAttributes(),
-                "TOKEN_ISSUER");
+        String tokenType = getPolicyAttribute(plcy.getPolicyAttributes(), "TOKEN_TYPE");
+        String tokenLife = getPolicyAttribute(plcy.getPolicyAttributes(), "TOKEN_LIFE");
+        String tokenIssuer = getPolicyAttribute(plcy.getPolicyAttributes(), "TOKEN_ISSUER");
 
         Map tokenParam = new HashMap();
         tokenParam.put("TOKEN_TYPE", tokenType);
@@ -227,13 +221,12 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
         sub.setUserId(lg.getUserId());
         sub.setPrincipal(principal);
         sub.setSsoToken(token(lg.getUserId(), tokenParam));
-        sub.setDomainId(domainId);
         setResultCode(lg, sub, curDate);
 
         // send message into to audit log
 
-        log("AUTHENTICATION", "AUTHENTICATION", "SUCCESS", null, domainId,
-                user.getId(), principal, null, null, clientIP, nodeIP);
+//        log("AUTHENTICATION", "AUTHENTICATION", "SUCCESS", null, domainId,
+//                user.getId(), principal, null, null, clientIP, nodeIP);
 
         return sub;
     }
@@ -248,8 +241,7 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
         log.info("Connecting to AD using principal=" + userName);
 
         envDC.put(Context.PROVIDER_URL, host);
-        envDC.put(Context.INITIAL_CONTEXT_FACTORY,
-                "com.sun.jndi.ldap.LdapCtxFactory");
+        envDC.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
         envDC.put(Context.SECURITY_AUTHENTICATION, "simple"); // simple
         envDC.put(Context.SECURITY_PRINCIPAL, userName); // "administrator@diamelle.local"
         envDC.put(Context.SECURITY_CREDENTIALS, password);

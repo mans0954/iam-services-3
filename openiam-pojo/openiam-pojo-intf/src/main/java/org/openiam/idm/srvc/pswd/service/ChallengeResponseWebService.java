@@ -44,8 +44,7 @@ import java.util.List;
 public interface ChallengeResponseWebService {
     
 	@WebMethod
-	public Integer getNumOfRequiredQuestions(@WebParam(name = "userId", targetNamespace = "") final String userId, 
-											 @WebParam(name = "domainId", targetNamespace = "") final String domainId);
+	public Integer getNumOfRequiredQuestions(@WebParam(name = "userId", targetNamespace = "") final String userId);
 	@WebMethod
 	public Integer count(@WebParam(name = "searchBean", targetNamespace = "") final IdentityQuestionSearchBean searchBean);
 
@@ -89,9 +88,9 @@ public interface ChallengeResponseWebService {
      * @throws RemoteException
      */
 	@WebMethod
-    boolean isResponseValid(String domainId, String userId, List<UserIdentityAnswer> answerList);
+    boolean isResponseValid(String userId, List<UserIdentityAnswer> answerList);
     
 	@WebMethod
-    public boolean isUserAnsweredSecurityQuestions(final String userId, final String domainId);
+    public boolean isUserAnsweredSecurityQuestions(final String userId);
 
 }

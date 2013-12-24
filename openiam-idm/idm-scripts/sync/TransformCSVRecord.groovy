@@ -20,7 +20,6 @@ import java.text.ParseException
 
 public class TransformCSVRecord extends AbstractTransformScript {
 
-    static String DOMAIN = "USR_SEC_DOMAIN"
 
     @Override
     void init() {}

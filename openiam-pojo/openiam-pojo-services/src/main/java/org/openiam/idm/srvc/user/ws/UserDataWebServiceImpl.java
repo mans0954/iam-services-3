@@ -527,8 +527,8 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 
     @Override
     @Transactional(readOnly = true)
-    public User getUserByPrincipal(String securityDomain, String principal, String managedSysId, boolean dependants) {
-        final UserEntity user = userManager.getUserByPrincipal(securityDomain, principal, managedSysId, dependants);
+    public User getUserByPrincipal(String principal, String managedSysId, boolean dependants) {
+        final UserEntity user = userManager.getUserByPrincipal(principal, managedSysId, dependants);
         return userDozerConverter.convertToDTO(user, dependants);
     }
 

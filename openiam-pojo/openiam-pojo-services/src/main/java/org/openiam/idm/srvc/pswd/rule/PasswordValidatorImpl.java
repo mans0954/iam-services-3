@@ -35,19 +35,15 @@ import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.policy.domain.PolicyDefParamEntity;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
-import org.openiam.idm.srvc.policy.dto.PolicyDefParam;
-import org.openiam.idm.srvc.policy.service.PolicyDAO;
 import org.openiam.idm.srvc.policy.service.PolicyDefParamDAO;
 import org.openiam.idm.srvc.pswd.dto.Password;
 import org.openiam.idm.srvc.pswd.service.PasswordHistoryDAO;
-import org.openiam.idm.srvc.secdomain.service.SecurityDomainDataService;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.script.ScriptIntegration;
 import org.openiam.util.encrypt.Cryptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 /**
@@ -90,6 +86,7 @@ public class PasswordValidatorImpl implements PasswordValidator {
      * org.openiam.idm.srvc.pswd.rule.PasswordValidator#validate(org.openiam
      * .idm.srvc.pswd.dto.Password)
      */
+    @Override
     public void validate(Policy pswdPolicy, Password password)
             throws ObjectNotFoundException, IOException, PasswordRuleException {
         // get the user object for the principal
@@ -155,7 +152,6 @@ public class PasswordValidatorImpl implements PasswordValidator {
                     }
                     
                     // -- set the parameters
-                    rule.setDomainId(password.getDomainId());
                     rule.setSkipPasswordFrequencyCheck(password.isSkipPasswordFrequencyCheck());
                     rule.setPassword(password.getPassword());
                     rule.setPrincipal(password.getPrincipal());

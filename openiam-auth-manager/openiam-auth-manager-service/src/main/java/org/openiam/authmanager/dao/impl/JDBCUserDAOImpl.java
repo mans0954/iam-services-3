@@ -1,26 +1,22 @@
 package org.openiam.authmanager.dao.impl;
 
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.util.Date;
-import java.util.List;
-
-import javax.annotation.PostConstruct;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openiam.authmanager.common.model.InternalAuthroizationUser;
 import org.openiam.authmanager.common.model.AuthorizationManagerLoginId;
 import org.openiam.authmanager.common.model.AuthorizationUser;
+import org.openiam.authmanager.common.model.InternalAuthroizationUser;
 import org.openiam.authmanager.dao.UserDAO;
 import org.openiam.core.dao.AbstractJDBCDao;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.core.support.JdbcDaoSupport;
 import org.springframework.stereotype.Repository;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Date;
+import java.util.List;
 
 @Repository("jdbcUserDao")
 public class JDBCUserDAOImpl extends AbstractJDBCDao implements UserDAO {
@@ -91,7 +87,6 @@ public class JDBCUserDAOImpl extends AbstractJDBCDao implements UserDAO {
 	@Override
 	public InternalAuthroizationUser getFullUser(AuthorizationManagerLoginId loginId) {
 		final Object[] params = new Object[] {
-			StringUtils.lowerCase(loginId.getDomain()),
 			StringUtils.lowerCase(loginId.getLogin()),
 			StringUtils.lowerCase(loginId.getManagedSysId())
 		};
@@ -120,7 +115,6 @@ public class JDBCUserDAOImpl extends AbstractJDBCDao implements UserDAO {
 			final InternalAuthroizationUser user = new InternalAuthroizationUser();;
 			while(rs.next()) {
 				final String userId = rs.getString("L_USER_ID");
-				final String domain = rs.getString("L_SERVICE_ID");
 				final String login = rs.getString("L_LOGIN");
 				final String managedSysId = rs.getString("L_MANAGED_SYS_ID");
 				final String groupId = rs.getString("GM_GROUP_ID");
@@ -128,7 +122,7 @@ public class JDBCUserDAOImpl extends AbstractJDBCDao implements UserDAO {
 				final String resourceId = rs.getString("RESM_RESOURCE_ID");
 				
 				user.setUserId(userId);
-				user.addLoginId(new AuthorizationManagerLoginId(domain, login, managedSysId));
+				user.addLoginId(new AuthorizationManagerLoginId(login, managedSysId));
 				user.addGroupId(groupId);
 				user.addRoleId(roleId);
 				user.addResourceId(resourceId);
@@ -149,7 +143,6 @@ public class JDBCUserDAOImpl extends AbstractJDBCDao implements UserDAO {
 			final String userId = rs.getString("USER_ID");
 			
 			final AuthorizationManagerLoginId loginId = new AuthorizationManagerLoginId();
-			loginId.setDomain(serviceId);
 			loginId.setLogin(login);
 			loginId.setManagedSysId(managedSysId);
 			loginId.setUserId(userId);

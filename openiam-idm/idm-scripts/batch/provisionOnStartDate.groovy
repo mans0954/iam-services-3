@@ -43,7 +43,6 @@ if (userList != null) {
 
         pUser.lastUpdatedBy = "3000"
         pUser.requestorLogin = "IDM_SERVER";
-        pUser.requestorDomain = "IDM";
 
         provision.modifyUser(pUser)
 
