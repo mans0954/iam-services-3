@@ -7,6 +7,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -17,6 +18,8 @@ import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.connector.type.constant.ErrorCode;
 import org.openiam.connector.type.request.CrudRequest;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
+import org.openiam.idm.srvc.msg.dto.NotificationParam;
+import org.openiam.idm.srvc.msg.dto.NotificationRequest;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
 import org.openiam.provision.type.ExtensibleUser;
@@ -33,8 +36,6 @@ public class AddUserRestCommand extends AbstractAddRestCommand<ExtensibleUser> {
 	@Override
 	protected void addObject(CrudRequest<ExtensibleUser> crudRequest,
 			HttpURLConnection connection) throws ConnectorDataException {
-
-		log.info("Inside AddUserSciamCommand");
 
 		String identifiedBy = null;
 		ExtensibleObject obj = crudRequest.getExtensibleObject();
@@ -71,42 +72,27 @@ public class AddUserRestCommand extends AbstractAddRestCommand<ExtensibleUser> {
 						"No password specified");
 
 			try {
-				// connection.setDoOutput(true);
-				// connection
-				// .setRequestProperty("Content-Type", "application/xml");
-				// connection.setRequestProperty("Accept", "application/json");
-
-				// token.setTimestamp(System.currentTimeMillis());
-				// String encrypted =token.getPassword();
-				// String encrypted = TestRSA.encrypt(token);
-
-				// connection.setRequestProperty("Authorization", "Bearer "
-				// + encrypted);
-
+				
 				long nanoTime = System.nanoTime();
-
-				String response = makeCall(
+				Map<String, String> user = objectToAttributes(
+						crudRequest.getObjectIdentity(),
+						crudRequest.getExtensibleObject());
+				String commandHandler = this
+						.getCommandScriptHandler(crudRequest.getTargetID());
+				String scriptName = this.getScriptName(commandHandler);
+				String argsName = this.getArgs(commandHandler, user);
+				final NotificationRequest notificationRequest = new NotificationRequest();
+				notificationRequest.getParamList().add(
+						new NotificationParam("IDENTITY", crudRequest
+								.getObjectIdentity()));
+				notificationRequest.getParamList().add(
+						new NotificationParam("PSWD", identifiedBy));
+				Map<String, Object> bindingMap = new HashMap<String, Object>();
+				bindingMap.put("req", notificationRequest);
+				String msg = createMessage(bindingMap, scriptName);
+				makeCall(
 						connection,
-						"<User xmlns=\"urn:scim:schemas:core:1.0\" "
-								+ "xmlns:enterprise=\"urn:scim:schemas:extension:enterprise:1.0\">"
-								+ "<userName>"
-								+ crudRequest.getObjectIdentity()
-								+ "</userName>"
-								+ "<password>"
-								+ identifiedBy
-								+ "</password>"
-								+ "<preferredLanguage>en_US</preferredLanguage>"
-								+ "<emails>"
-								+ "<email>"
-								+ "<value>a"
-								+ crudRequest.getObjectIdentity()
-								+ "@test.com</value>"
-								+ "<primary>true</primary>"
-								+ "</email>"
-								+ "</emails>"
-								+ "<addresses><address><country>FI</country></address></addresses>"
-								+ "<enterprise:gender>male</enterprise:gender>"
-								+ "</User>");
+						msg);
 
 			} catch (Exception e) {
 				log.error(e.getMessage(), e);
@@ -116,4 +102,8 @@ public class AddUserRestCommand extends AbstractAddRestCommand<ExtensibleUser> {
 		}
 	}
 
+	@Override
+	protected String getCommandScriptHandler(String mSysId) {
+		return managedSysService.getManagedSysById(mSysId).getAddHandler();
+	}
 }

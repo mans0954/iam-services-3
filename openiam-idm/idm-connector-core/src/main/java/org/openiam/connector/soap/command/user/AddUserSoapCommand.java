@@ -7,6 +7,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -84,6 +85,14 @@ public class AddUserSoapCommand extends AbstractAddSoapCommand<ExtensibleUser> {
 				// + encrypted);
 
 				long nanoTime = System.nanoTime();
+				
+				Map<String, String> user = objectToAttributes(
+						crudRequest.getObjectIdentity(),
+						crudRequest.getExtensibleObject());
+				String commandHandler = this
+						.getCommandScriptHandler(crudRequest.getTargetID());
+				String scriptName = this.getScriptName(commandHandler);
+				String argsName = this.getArgs(commandHandler, user);
 
 				String response = makeCall(
 						connection,
@@ -115,5 +124,8 @@ public class AddUserSoapCommand extends AbstractAddSoapCommand<ExtensibleUser> {
 			}
 		}
 	}
-
+	 @Override
+	    protected String getCommandScriptHandler(String mSysId) {
+	        return managedSysService.getManagedSysById(mSysId).getAddHandler();
+	    }
 }

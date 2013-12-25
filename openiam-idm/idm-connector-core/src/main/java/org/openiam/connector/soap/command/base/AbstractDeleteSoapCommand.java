@@ -32,7 +32,7 @@ public abstract class AbstractDeleteSoapCommand<ExtObject extends ExtensibleObje
         ConnectorConfiguration config =  getConfiguration(deleteRequestType.getTargetID(), ConnectorConfiguration.class);
         HttpURLConnection con = getConnection(config.getManagedSys(), "/v1/Users/" + dataId);
         try {
-            deleteObject(dataId, con);
+            deleteObject(deleteRequestType, con);
             return response;
         }  catch(Throwable e) {
             log.error(e.getMessage(),e);
@@ -42,5 +42,5 @@ public abstract class AbstractDeleteSoapCommand<ExtObject extends ExtensibleObje
         }
     }
 
-    protected abstract void deleteObject(String dataId,  HttpURLConnection con)throws ConnectorDataException;
+    protected abstract void deleteObject(CrudRequest<ExtObject> deleteRequestType,  HttpURLConnection con)throws ConnectorDataException;
 }
