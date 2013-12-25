@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 
 import org.apache.commons.lang.StringUtils;
+import org.openiam.base.AdminResourceDTO;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.KeyNameDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
@@ -50,12 +51,10 @@ import org.openiam.idm.srvc.user.dto.User;
         "selected",
         "operation",
         "parentOrganizations",
-        "childOrganizations",
-        "adminResourceId",
-        "adminResourceName"
+        "childOrganizations"
 })
 @DozerDTOCorrespondence(OrganizationEntity.class)
-public class Organization extends KeyNameDTO implements Serializable, Comparable<Organization> {
+public class Organization extends AdminResourceDTO implements Serializable, Comparable<Organization> {
 
     private static final long serialVersionUID = -6297113958697455428L;
 
@@ -98,10 +97,6 @@ public class Organization extends KeyNameDTO implements Serializable, Comparable
 
     private Set<Organization> parentOrganizations;
     private Set<Organization> childOrganizations;
-    
-    private String adminResourceId;
-    private String adminResourceName;
-    
     
     /**
      * default constructor
@@ -370,22 +365,6 @@ public class Organization extends KeyNameDTO implements Serializable, Comparable
 
 	public void setOrganizationTypeName(String organizationTypeName) {
 		this.organizationTypeName = organizationTypeName;
-	}
-	
-	 public String getAdminResourceId() {
-		return adminResourceId;
-	}
-
-	public void setAdminResourceId(String adminResourceId) {
-		this.adminResourceId = adminResourceId;
-	}
-
-	public String getAdminResourceName() {
-		return adminResourceName;
-	}
-
-	public void setAdminResourceName(String adminResourceName) {
-		this.adminResourceName = adminResourceName;
 	}
 
     @Override

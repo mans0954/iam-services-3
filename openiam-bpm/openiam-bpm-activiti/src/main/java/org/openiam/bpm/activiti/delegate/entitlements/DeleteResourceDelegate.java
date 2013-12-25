@@ -4,6 +4,7 @@ import org.activiti.engine.delegate.DelegateExecution;
 import org.openiam.base.ws.Response;
 import org.openiam.bpm.activiti.delegate.core.AbstractActivitiJob;
 import org.openiam.bpm.util.ActivitiConstants;
+import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -18,8 +19,11 @@ public class DeleteResourceDelegate extends AbstractActivitiJob {
 
 	@Override
 	public void execute(DelegateExecution execution) throws Exception {
-		final String resourceId = getStringVariable(execution, ActivitiConstants.RESOURCE_ID);
-		final Response wsReponse = resourceService.deleteResource(resourceId);
+		Response wsResponse = null;
+		final Resource resource = getObjectVariable(execution, ActivitiConstants.RESOURCE, Resource.class);
+		if(resource != null) {
+			wsResponse = resourceService.deleteResource(resource.getId());
+		}
 		//TODO:  validate
 	}
 

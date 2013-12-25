@@ -2,6 +2,7 @@ package org.openiam.idm.srvc.res.dto;
 
 // Generated Mar 8, 2009 12:54:32 PM by Hibernate Tools 3.2.2.GA
 
+import org.openiam.base.AdminResourceDTO;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.BaseObject;
 import org.openiam.base.KeyNameDTO;
@@ -36,23 +37,19 @@ import org.openiam.idm.srvc.user.dto.User;
         "parentResources",
         "minAuthLevel",
         "isPublic",
-        "operation",
-        "adminResourceId",
-        "adminResourceName"
+        "operation"
 })
 @XmlSeeAlso({
         Role.class,
         User.class
 })
 @DozerDTOCorrespondence(ResourceEntity.class)
-public class Resource extends KeyNameDTO {
+public class Resource extends AdminResourceDTO {
 
     private ResourceType resourceType;
     private String description;
     private Integer displayOrder;
     private String URL;
-    private String adminResourceId;
-    private String adminResourceName;
 
     private Set<Resource> parentResources = new HashSet<Resource>(0);
     private Set<Resource> childResources = new HashSet<Resource>(0);
@@ -136,22 +133,6 @@ public class Resource extends KeyNameDTO {
 
 	public void setIsPublic(boolean isPublic) {
 		this.isPublic = isPublic;
-	}
-
-    public String getAdminResourceId() {
-		return adminResourceId;
-	}
-
-	public void setAdminResourceId(String adminResourceId) {
-		this.adminResourceId = adminResourceId;
-	}
-
-	public String getAdminResourceName() {
-		return adminResourceName;
-	}
-
-	public void setAdminResourceName(String adminResourceName) {
-		this.adminResourceName = adminResourceName;
 	}
 
 	public AttributeOperationEnum getOperation() {

@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.role.dto;
 
+import org.openiam.base.AdminResourceDTO;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.BaseObject;
 import org.openiam.base.KeyNameDTO;
@@ -59,9 +60,7 @@ import java.util.*;
         "parentRoles",
         "resources",
         "managedSysId",
-        "managedSysName",
-        "adminResourceId",
-        "adminResourceName"
+        "managedSysName"
 })
 @XmlRootElement(name = "Role")
 @XmlSeeAlso({
@@ -71,7 +70,7 @@ import java.util.*;
         Resource.class
 })
 @DozerDTOCorrespondence(RoleEntity.class)
-public class Role extends KeyNameDTO implements Comparable<Role> {
+public class Role extends AdminResourceDTO implements Comparable<Role> {
 
     /**
      *
@@ -97,9 +96,6 @@ public class Role extends KeyNameDTO implements Comparable<Role> {
     protected Boolean selected = new Boolean(false);
 
     private String serviceId;
-    
-    private String adminResourceId;
-    private String adminResourceName;
 
     private Set<Role> parentRoles;
     private Set<Role> childRoles;
@@ -294,22 +290,6 @@ public class Role extends KeyNameDTO implements Comparable<Role> {
 
 	public void setManagedSysName(String managedSysName) {
 		this.managedSysName = managedSysName;
-	}
-
-    public String getAdminResourceId() {
-		return adminResourceId;
-	}
-
-	public void setAdminResourceId(String adminResourceId) {
-		this.adminResourceId = adminResourceId;
-	}
-
-	public String getAdminResourceName() {
-		return adminResourceName;
-	}
-
-	public void setAdminResourceName(String adminResourceName) {
-		this.adminResourceName = adminResourceName;
 	}
 
 	@Override
