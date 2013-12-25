@@ -24,10 +24,10 @@ public class JDBCUserDAOImpl extends AbstractJDBCDao implements UserDAO {
 	private static final Log log = LogFactory.getLog(JDBCUserDAOImpl.class);
 	
 	private String GET_ALL_USERS_LOGGED_IN_AFTER = "SELECT USER_ID AS USER_ID FROM %s.LOGIN WHERE LAST_LOGIN >= ?";
-	private String GET_ALL_LOGINS_WITH_LAST_LOGIN_AFTER = "SELECT SERVICE_ID AS SERVICE_ID, LOGIN AS LOGIN, MANAGED_SYS_ID AS MANAGED_SYS_ID, USER_ID AS USER_ID FROM %s.LOGIN WHERE USER_ID IN( SELECT USER_ID FROM %s.LOGIN WHERE LAST_LOGIN >= ? )";
+	private String GET_ALL_LOGINS_WITH_LAST_LOGIN_AFTER = "SELECT LOGIN AS LOGIN, MANAGED_SYS_ID AS MANAGED_SYS_ID, USER_ID AS USER_ID FROM %s.LOGIN WHERE USER_ID IN( SELECT USER_ID FROM %s.LOGIN WHERE LAST_LOGIN >= ? )";
 	private static final String GET_FULLY_POPULATED_USER_RS_LIST = "SELECT " +
 												    			   "	l.USER_ID AS L_USER_ID, " +
-												    			   "	l.SERVICE_ID AS L_SERVICE_ID, l.LOGIN AS L_LOGIN, l.MANAGED_SYS_ID AS L_MANAGED_SYS_ID, " +
+												    			   "	l.LOGIN AS L_LOGIN, l.MANAGED_SYS_ID AS L_MANAGED_SYS_ID, " +
 												    			   "	gm.GRP_ID AS GM_GROUP_ID, " +
 												    			   "	rm.ROLE_ID AS RM_ROLE_ID, " +
 												    			   "	resm.RESOURCE_ID AS RESM_RESOURCE_ID " +
@@ -42,7 +42,7 @@ public class JDBCUserDAOImpl extends AbstractJDBCDao implements UserDAO {
 	
 	private String GET_FULLY_POPULATED_USER_BY_ID = GET_FULLY_POPULATED_USER_RS_LIST + "WHERE l.USER_ID=?";
 	private String GET_FULLY_POPULATED_USER_BY_LOGIN_ID = GET_FULLY_POPULATED_USER_RS_LIST + "WHERE l.USER_ID IN (" +
-				"SELECT USER_ID FROM %s.LOGIN WHERE lower(SERVICE_ID)=? AND lower(LOGIN)=? AND lower(MANAGED_SYS_ID)=?)";
+				"SELECT USER_ID FROM %s.LOGIN WHERE lower(LOGIN)=? AND lower(MANAGED_SYS_ID)=?)";
 	
 	private static final ResultSetExtractor<InternalAuthroizationUser> internalAuthorizationuserMapper = new InternalAuthroizationUserMapper();
 	private static final RowMapper<AuthorizationUser> userMapper = new UserMapper();
@@ -137,7 +137,7 @@ public class JDBCUserDAOImpl extends AbstractJDBCDao implements UserDAO {
 	private static class LoginIdMapper implements RowMapper<AuthorizationManagerLoginId> {
 		@Override
 		public AuthorizationManagerLoginId mapRow(ResultSet rs, int rowNum) throws SQLException {
-			final String serviceId = rs.getString("SERVICE_ID");
+//			final String serviceId = rs.getString("SERVICE_ID");
 			final String login = rs.getString("LOGIN");
 			final String managedSysId = rs.getString("MANAGED_SYS_ID");
 			final String userId = rs.getString("USER_ID");

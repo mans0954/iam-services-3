@@ -363,7 +363,6 @@
                                                org.openiam.idm.srvc.policy.domain*,
                                                org.openiam.idm.srvc.audit.domain*,
                                                org.openiam.idm.srvc.pswd.domain*,
-                                               org.openiam.idm.srvc.secdomain.domain*,
                                                org.openiam.idm.srvc.lang.domain*,
                                                org.openiam.idm.srvc.report.domain*,
                                                org.openiam.idm.srvc.prov*,

@@ -37,7 +37,6 @@ import java.util.List;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "PasswordSync", propOrder = {
-    "securityDomain",
     "managedSystemId",
     "principal",
     "password",
