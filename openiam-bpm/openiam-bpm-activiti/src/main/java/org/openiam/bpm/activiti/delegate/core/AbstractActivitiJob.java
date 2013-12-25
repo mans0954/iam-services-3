@@ -201,7 +201,12 @@ public abstract class AbstractActivitiJob implements JavaDelegate, TaskListener 
 				}
 			}
 		}
-		return getStringVariable(execution, targetVariable);
+		
+		String retVal = null;
+		if(targetVariable != null) {
+			retVal = getStringVariable(execution, targetVariable);
+		}
+		return retVal;
 	}
 	
 	protected String getNotificationType(final DelegateExecution execution) {
