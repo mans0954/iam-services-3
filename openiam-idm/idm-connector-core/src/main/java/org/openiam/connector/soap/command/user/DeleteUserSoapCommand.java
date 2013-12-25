@@ -1,6 +1,7 @@
 package org.openiam.connector.soap.command.user;
 
 import java.net.HttpURLConnection;
+import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -8,6 +9,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openiam.connector.soap.command.base.AbstractDeleteSoapCommand;
 import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.connector.type.constant.ErrorCode;
+import org.openiam.connector.type.request.CrudRequest;
 import org.openiam.provision.type.ExtensibleUser;
 import org.springframework.stereotype.Service;
 
@@ -24,7 +26,7 @@ public class DeleteUserSoapCommand extends AbstractDeleteSoapCommand<ExtensibleU
 	.getLog(DeleteUserSoapCommand.class);
 
     @Override
-    protected void deleteObject(String dataId, HttpURLConnection connection) throws ConnectorDataException {
+    protected void deleteObject(CrudRequest<ExtensibleUser> deleteRequestType, HttpURLConnection connection) throws ConnectorDataException {
         try {
 //    		connection.setDoOutput(true);
 //    		connection.setRequestProperty("X-HTTP-Method-Override", "DELETE");
@@ -38,12 +40,27 @@ public class DeleteUserSoapCommand extends AbstractDeleteSoapCommand<ExtensibleU
 //    				.setRequestProperty(
 //    						"Authorization",
 //    						"Bearer " + encrypted);
+        	
+        	Map<String, String> user = objectToAttributes(
+        			deleteRequestType.getObjectIdentity(),
+        			deleteRequestType.getExtensibleObject());
+			String commandHandler = this
+					.getCommandScriptHandler(deleteRequestType.getTargetID());
+			String scriptName = this.getScriptName(commandHandler);
+			String argsName = this.getArgs(commandHandler, user);
+			
     		makeCall(connection, "");
         } catch (Exception e) {
             log.error(e.getMessage(),e);
             throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR, e.getMessage());
         }
     }
+    
+    @Override
+    protected String getCommandScriptHandler(String id) {
+        return managedSysService.getManagedSysById(id).getDeleteHandler();
+    }
+
 
 
 }

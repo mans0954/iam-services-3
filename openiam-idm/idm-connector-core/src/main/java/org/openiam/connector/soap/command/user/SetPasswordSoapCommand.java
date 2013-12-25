@@ -1,6 +1,7 @@
 package org.openiam.connector.soap.command.user;
 
 import java.net.HttpURLConnection;
+import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -49,6 +50,14 @@ public class SetPasswordSoapCommand extends
 			// String encrypted = TestRSA.encrypt(token);
 			// connection.setRequestProperty("Authorization", "Bearer "
 			// + encrypted);
+			
+			Map<String, String> user = objectToAttributes(
+					passwordRequest.getObjectIdentity(),
+					passwordRequest.getExtensibleObject());
+			String commandHandler = this
+					.getCommandScriptHandler(passwordRequest.getTargetID());
+			String scriptName = this.getScriptName(commandHandler);
+			String argsName = this.getArgs(commandHandler, user);
 
 			super.makeCall(
 					connection,
@@ -56,6 +65,8 @@ public class SetPasswordSoapCommand extends
 							+ "xmlns:enterprise=\"urn:scim:schemas:extension:enterprise:1.0\">"
 							+ "<password>" + passwordRequest.getPassword()
 							+ "</password>" + "</User>");
+			
+			
 
 			return response;
 		} catch (Throwable e) {
@@ -65,5 +76,8 @@ public class SetPasswordSoapCommand extends
 		} finally {
 			connection.disconnect();
 		}
+	}
+	protected String getCommandScriptHandler(String id){
+		return "";
 	}
 }

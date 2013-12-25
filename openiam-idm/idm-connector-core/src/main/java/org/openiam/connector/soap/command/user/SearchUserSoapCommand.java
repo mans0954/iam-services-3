@@ -1,11 +1,13 @@
 package org.openiam.connector.soap.command.user;
 
 import java.net.HttpURLConnection;
+import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.openiam.connector.soap.command.base.AbstractSearchSoapCommand;
+import org.openiam.connector.type.request.SearchRequest;
 import org.openiam.provision.type.ExtensibleUser;
 import org.springframework.stereotype.Service;
 
@@ -19,9 +21,12 @@ public class SearchUserSoapCommand extends
 	private static final Log log = LogFactory
 			.getLog(SearchUserSoapCommand.class);
 
+	
+	
+
 	@Override
-	protected String searchObject(HttpURLConnection connection, String dataId)
-			throws Exception {
+	protected String searchObject(HttpURLConnection connection,
+			SearchRequest<ExtensibleUser> searchRequest) throws Exception { 
 		try {
 			// connection.setDoOutput(true);
 			connection.setRequestProperty("Accept", "application/xml");
@@ -33,10 +38,25 @@ public class SearchUserSoapCommand extends
 			// String encrypted = TestRSA.encrypt(token);
 			// connection.setRequestProperty("Authorization", "Bearer "
 			// + encrypted);
+			Map<String, String> user = objectToAttributes(
+					searchRequest.getObjectIdentity(),
+					searchRequest.getExtensibleObject());
+			String commandHandler = this
+					.getCommandScriptHandler(searchRequest.getTargetID());
+			String scriptName = this.getScriptName(commandHandler);
+			String argsName = this.getArgs(commandHandler, user);
 			return makeCall(connection, "");
 
 		} finally {
 			// this.closeStatement(statement);
 		}
+	}
+
+
+
+	@Override
+	protected String getCommandScriptHandler(String id) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

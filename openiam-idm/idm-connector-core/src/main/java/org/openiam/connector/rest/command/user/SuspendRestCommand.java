@@ -13,4 +13,9 @@ public class SuspendRestCommand extends AbstractRestAccountStatusCommand {
 	protected String getNewAccountStatus() {
 		return AccountStatus.LOCKED.toString();
 	}
+
+	@Override
+	protected String getCommandScriptHandler(String id) {
+		return managedSysService.getManagedSysById(id).getSuspendHandler();
+	}
 }

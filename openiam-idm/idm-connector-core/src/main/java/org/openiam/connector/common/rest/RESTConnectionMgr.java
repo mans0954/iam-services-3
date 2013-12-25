@@ -26,22 +26,20 @@ public class RESTConnectionMgr {
     public RESTConnectionMgr() {
     }
 
-	public HttpURLConnection  connect(ManagedSysDto managedSys, String appendToUrl) throws   Exception {
-    	// SCIM URL of the form "http://localhost:8080/scim" to which /v1/Users will be appended
+	public HttpURLConnection  connect(ManagedSysDto managedSys,String encrypted) throws   Exception {
+    	// REST URL of the form "http://localhost:8080/rest/v1/Users will be appended
         final String url = managedSys.getConnectionString() ;
-		HttpURLConnection connection = (HttpURLConnection) new URL(url + appendToUrl).openConnection();
+          HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
 		connection.setDoOutput(true);
 		connection.setRequestProperty("Content-Type", "application/xml");
 		connection.setRequestProperty("Accept", "application/json");
 
-	    //String encrypted =token.getPassword();
-		String encrypted = "";
 		connection
 				.setRequestProperty(
 						"Authorization",
 						"Bearer " + encrypted);
 
-		connection.connect();
+		//connection.connect();
 		return connection;
 	}
 }

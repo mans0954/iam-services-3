@@ -8,6 +8,7 @@ import org.openiam.connector.type.constant.ErrorCode;
 import org.openiam.connector.type.constant.StatusCodeType;
 import org.openiam.connector.type.request.CrudRequest;
 import org.openiam.connector.type.response.ObjectResponse;
+import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 
 import org.openiam.provision.type.ExtensibleObject;
 
@@ -27,24 +28,18 @@ public abstract class AbstractModifyRestCommand<ExtObject extends ExtensibleObje
 			throws ConnectorDataException {
 		final ObjectResponse response = new ObjectResponse();
 		response.setStatus(StatusCodeType.SUCCESS);
-
 		ConnectorConfiguration config = getConfiguration(
 				crudRequest.getTargetID(), ConnectorConfiguration.class);
+		
 		String resourceId = config.getResourceId();
 
 		if (crudRequest.getObjectIdentity() == null)
 			throw new ConnectorDataException(ErrorCode.INVALID_CONFIGURATION,
 					"No identity sent");
+		ManagedSysEntity managedSys = config.getManagedSys();
+		managedSys.setConnectionString(managedSys.getConnectionString() + "/" + crudRequest.getObjectIdentity());
 
-		// final ExtObject extObject = crudRequest.getExtensibleObject();
-		//
-		// if(log.isDebugEnabled()) {
-		// log.debug(String.format("ExtensibleObject in Modify Request=%s",
-		// extObject));
-		// }
-
-		HttpURLConnection con = this.getConnection(config.getManagedSys(),
-				"Users/" + crudRequest.getObjectIdentity());
+		HttpURLConnection con = this.getConnection(managedSys);
 		try {
 			modifyObject(crudRequest, con);
 			// TODO check how to handle attribute map
