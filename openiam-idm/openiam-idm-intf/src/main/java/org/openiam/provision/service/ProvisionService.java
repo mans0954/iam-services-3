@@ -205,4 +205,9 @@ public interface ProvisionService {
     public List<String> getAttributesList(
             @WebParam(name = "managedSysId", targetNamespace = "") String managedSysId);
 
+    @WebMethod
+    public Response syncPasswordFromSrc(
+            @WebParam(name = "passwordSync", targetNamespace = "")
+            PasswordSync passwordSync);
+
 }
