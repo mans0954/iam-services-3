@@ -28,25 +28,30 @@ public class MetadataTypeDAOImpl extends
         BaseDaoImpl<MetadataTypeEntity, String> implements MetadataTypeDAO {
 
     @Override
-	protected Criteria getExampleCriteria(final MetadataTypeEntity entity) {
-    	final Criteria criteria = getCriteria();
-    	if(StringUtils.isNotBlank(entity.getMetadataTypeId())) {
-    		criteria.add(Restrictions.eq(getPKfieldName(), entity.getMetadataTypeId()));
-    	} else {
-    		criteria.add(Restrictions.eq("active", entity.isActive()));
-    		criteria.add(Restrictions.eq("syncManagedSys", entity.isSyncManagedSys()));
-    		
-    		if(StringUtils.isNotBlank(entity.getGrouping())) {
-    			criteria.add(Restrictions.eq("grouping", entity.getGrouping()));
-    		}
-    	}
-    	return criteria;
-	}
+    protected Criteria getExampleCriteria(final MetadataTypeEntity entity) {
+        final Criteria criteria = getCriteria();
+        if (StringUtils.isNotBlank(entity.getMetadataTypeId())) {
+            criteria.add(Restrictions.eq(getPKfieldName(),
+                    entity.getMetadataTypeId()));
+        } else {
+            if (entity.isActive() != null)
+                criteria.add(Restrictions.eq("active", entity.isActive()));
+            if (entity.isSyncManagedSys() != null)
+                criteria.add(Restrictions.eq("syncManagedSys",
+                        entity.isSyncManagedSys()));
+            if (StringUtils.isNotBlank(entity.getGrouping())) {
+                criteria.add(Restrictions.eq("grouping", entity.getGrouping()));
+            }
+        }
+        return criteria;
+    }
 
-	@SuppressWarnings("unchecked")
+    @SuppressWarnings("unchecked")
     @Override
     public List<MetadataTypeEntity> findTypesInCategory(String categoryId) {
-    	final Criteria criteria = getCriteria().createAlias("categories", "category").add(Restrictions.eq("category.categoryId", categoryId));
+        final Criteria criteria = getCriteria().createAlias("categories",
+                "category").add(
+                Restrictions.eq("category.categoryId", categoryId));
         return criteria.list();
     }
 
