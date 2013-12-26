@@ -1910,4 +1910,185 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             return null;
         }
     }
+
+    public Response syncPasswordFromSrc(PasswordSync passwordSync) {
+        // ManagedSystemId where this event originated.
+        // Ensure that we dont send the event back to this system
+
+        log.debug("----syncPasswo8rdFromSrc called.------");
+        long curTime = System.currentTimeMillis();
+
+        Response response = new Response(ResponseStatus.SUCCESS);
+
+        String requestId = "R" + UUIDGen.getUUID();
+
+        // get the user object associated with this principal
+        LoginEntity login = loginManager.getLoginByManagedSys(
+                passwordSync.getSecurityDomain(), passwordSync.getPrincipal(),
+                passwordSync.getManagedSystemId());
+
+        if (login == null) {
+            /*
+            auditHelper.addLog("SET PASSWORD",
+                    passwordSync.getRequestorDomain(),
+                    passwordSync.getRequestorLogin(), "IDM SERVICE",
+                    passwordSync.getRequestorId(), "PASSWORD", "PASSWORD",
+                    null, null, "FAILURE", null, null, null, requestId,
+                    ResponseCode.PRINCIPAL_NOT_FOUND.toString(), null, null,
+                    passwordSync.getRequestClientIP(),
+                    passwordSync.getPrincipal(),
+                    passwordSync.getSecurityDomain());
+            */
+
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(ResponseCode.PRINCIPAL_NOT_FOUND);
+            return response;
+        }
+        // check if the user active
+        String userId = login.getUserId();
+        if (userId == null) {
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(ResponseCode.USER_NOT_FOUND);
+            return response;
+        }
+        UserEntity usr = userMgr.getUser(userId);
+        if (usr == null) {
+            /*
+            auditHelper.addLog("SET PASSWORD",
+                    passwordSync.getRequestorDomain(),
+                    passwordSync.getRequestorLogin(), "IDM SERVICE",
+                    passwordSync.getRequestorId(), "PASSWORD", "PASSWORD",
+                    null, null, "FAILURE", null, null, null, requestId,
+                    ResponseCode.USER_NOT_FOUND.toString(), null, null,
+                    passwordSync.getRequestClientIP(),
+                    passwordSync.getPrincipal(),
+                    passwordSync.getSecurityDomain());
+            */
+
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(ResponseCode.USER_NOT_FOUND);
+            return response;
+        }
+
+        // do not check the password policy
+        // assume that the system that accepted the password already checked
+        // this.
+
+        String encPassword = null;
+
+        try {
+            encPassword = loginManager.encryptPassword(userId, passwordSync.getPassword());
+        } catch (EncryptionException e) {
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(ResponseCode.FAIL_ENCRYPTION);
+            return response;
+        }
+
+        // make sure all primary identity records were updated
+        List<LoginEntity> principalList = loginManager.getLoginByUser(login.getUserId());
+        for (LoginEntity l : principalList) {
+            // if managedsysId is equal to the source or the openiam default
+            // ID, then only update the database
+            // otherwise do a sync
+            if (l.getManagedSysId().equalsIgnoreCase(passwordSync.getManagedSystemId()) ||
+                    l.getManagedSysId().equalsIgnoreCase(sysConfiguration.getDefaultManagedSysId())) {
+
+                log.debug("Updating password for " + l);
+
+                boolean retval = loginManager.setPassword(l.getDomainId(), l.getLogin(), l.getManagedSysId(),
+                        encPassword, passwordSync.isPreventChangeCountIncrement());
+                if (retval) {
+                    log.debug("-Password changed in openiam repository for user:"
+                            + passwordSync.getPrincipal());
+                    /*
+                    auditHelper.addLog("SET PASSWORD", passwordSync
+                            .getRequestorDomain(), passwordSync
+                            .getRequestorLogin(), "IDM SERVICE", passwordSync
+                            .getRequestorId(), "PASSWORD", "PASSWORD", usr
+                            .getUserId(), null, "SUCCESS", null, null, null,
+                            requestId, null, null, null, passwordSync
+                            .getRequestClientIP(),
+                            l.getId().getLogin(), l.getId().getDomainId());
+                    */
+
+                    // update the user object that the password was changed
+                    usr.setDatePasswordChanged(new Date(curTime));
+                    // reset any locks that may be in place
+                    if (usr.getSecondaryStatus() == UserStatusEnum.LOCKED) {
+                        usr.setSecondaryStatus(null);
+                    }
+                    userMgr.updateUserWithDependent(usr, false);
+
+                } else {
+                    /*
+                    auditHelper.addLog("SET PASSWORD", passwordSync
+                            .getRequestorDomain(), passwordSync
+                            .getRequestorLogin(), "IDM SERVICE", passwordSync
+                            .getRequestorId(), "PASSWORD", "PASSWORD", usr
+                            .getUserId(), null, "FAILURE", null, null, null,
+                            requestId, null, null, null, passwordSync
+                            .getRequestClientIP(),
+                            l.getId().getLogin(), l.getId().getDomainId());
+                    */
+                    Response resp = new Response();
+                    resp.setStatus(ResponseStatus.FAILURE);
+                    resp.setErrorCode(ResponseCode.PRINCIPAL_NOT_FOUND);
+                }
+            } else {
+
+                log.debug("Synchronizing password from: " + l);
+
+                // determine if you should sync the password or not
+                String managedSysId = l.getManagedSysId();
+                final ManagedSysEntity mSys = managedSystemService
+                        .getManagedSysById(managedSysId);
+                final ResourceEntity res = resourceService
+                        .findResourceById(mSys.getResourceId());
+
+                // check the sync flag
+
+                if (syncAllowed(res)) {
+
+                    log.debug("Sync allowed for sys=" + managedSysId);
+
+                    // update the password in openiam
+                    loginManager.setPassword(l.getDomainId(), l.getLogin(), l.getManagedSysId(),
+                            encPassword, passwordSync.isPreventChangeCountIncrement());
+
+                    // update the target system
+
+                    final ProvisionConnectorEntity connector = connectorService
+                            .getProvisionConnectorsById(mSys.getConnectorId());
+
+                    ManagedSystemObjectMatchEntity matchObj = null;
+                    final List<ManagedSystemObjectMatchEntity> matcheList = managedSystemService
+                            .managedSysObjectParam(managedSysId,
+                                    "USER");
+
+                    if (CollectionUtils.isNotEmpty(matcheList)) {
+                        matchObj = matcheList.get(0);
+                    }
+
+                    // exclude the system where this event occured.
+                    ResponseType resp = resetPassword(requestId, loginDozerConverter.convertToDTO(login, false), passwordSync.getPassword(), managedSysDozerConverter.convertToDTO(mSys, false),
+                            objectMatchDozerConverter.convertToDTO(matchObj, false));
+                    if (resp != null && resp.getStatus() == StatusCodeType.SUCCESS) {
+                        response.setStatus(ResponseStatus.SUCCESS);
+                    } else {
+                        response.setErrorText(resp.getErrorMsgAsStr());
+                        response.setStatus(ResponseStatus.FAILURE);
+                    }
+
+                } else {
+                    log.debug("Sync not allowed for sys=" + managedSysId);
+                }
+
+            }
+        }
+
+        response.setStatus(ResponseStatus.SUCCESS);
+        return response;
+
+    }
+
 }
