@@ -33,6 +33,8 @@ public abstract class AbstractGoogleAppsCommand<Request extends RequestType, Res
                 if (strs != null && strs.length > 1) {
                     user.setObjectId(strs[0]);
                 }
+                user.getAttributes().add(
+                        new ExtensibleAttribute("login", strs[0]));
             }
         }
         return user;
@@ -44,7 +46,7 @@ public abstract class AbstractGoogleAppsCommand<Request extends RequestType, Res
         for (ExtensibleAttribute a : user.getAttributes()) {
             googleUser.put(a.getName(), a.getValue());
         }
-        googleUser.put("userEmail", id + "@" + domain);
+        googleUser.put("userEmail", id.toLowerCase() + "@" + domain);
         return googleUser;
     }
 }

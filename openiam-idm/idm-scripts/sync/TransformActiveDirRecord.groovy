@@ -50,7 +50,6 @@ public class TransformActiveDirRecord extends AbstractTransformScript {
 		populateObject(rowObj, pUser)
 
 		pUser.setStatus(UserStatusEnum.ACTIVE)
-		pUser.securityDomain = "0"
 		// Add default role
 		if (assignDefaultRole) {
             addRole(pUser, defaultRole)

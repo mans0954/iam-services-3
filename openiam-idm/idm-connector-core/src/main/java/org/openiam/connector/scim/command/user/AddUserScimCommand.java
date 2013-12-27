@@ -72,18 +72,10 @@ public class AddUserScimCommand extends AbstractAddScimCommand<ExtensibleUser> {
 						"No password specified");
 
 			try {
-				// connection.setDoOutput(true);
-				// connection
-				// .setRequestProperty("Content-Type", "application/xml");
-				// connection.setRequestProperty("Accept", "application/json");
 
 				S token = new S();
 				token.setTimestamp(System.currentTimeMillis());
-				// String encrypted =token.getPassword();
 				String encrypted = TestRSA.encrypt(token);
-				System.out.println("encrypted=" + encrypted);
-				// connection.setRequestProperty("Authorization", "Bearer "
-				// + encrypted);
 
 				long nanoTime = System.nanoTime();
 				connection.connect();

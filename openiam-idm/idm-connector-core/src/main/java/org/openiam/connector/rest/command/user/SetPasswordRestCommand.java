@@ -1,6 +1,8 @@
 package org.openiam.connector.rest.command.user;
 
 import java.net.HttpURLConnection;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -13,6 +15,9 @@ import org.openiam.connector.type.constant.ErrorCode;
 import org.openiam.connector.type.constant.StatusCodeType;
 import org.openiam.connector.type.request.PasswordRequest;
 import org.openiam.connector.type.response.ResponseType;
+import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
+import org.openiam.idm.srvc.msg.dto.NotificationParam;
+import org.openiam.idm.srvc.msg.dto.NotificationRequest;
 import org.springframework.stereotype.Service;
 
 /**
@@ -34,30 +39,33 @@ public class SetPasswordRestCommand extends
 		final String principalName = passwordRequest.getObjectIdentity();
 		ConnectorConfiguration config = getConfiguration(
 				passwordRequest.getTargetID(), ConnectorConfiguration.class);
-
-		HttpURLConnection connection = this.getConnection(
-				config.getManagedSys(), "Users/" + principalName + "/password");
+		ManagedSysEntity managedSys = config.getManagedSys();
+		managedSys.setConnectionString(managedSys.getConnectionString() + "/" + principalName + "/password" );
+		HttpURLConnection connection = getConnection(managedSys);
+		
 		try {
 
-//			connection.setDoOutput(true);
 			connection.setRequestProperty("X-HTTP-Method-Override", "PATCH");
 			connection.setRequestProperty("If-Match", principalName);
 
-	
-//			token.setTimestamp(System.currentTimeMillis());
-			// TODO check how to get original password
-//			token.setPassword("foobar");
-//		    String encrypted =token.getPassword();
-			//String encrypted = TestRSA.encrypt(token);
-			// connection.setRequestProperty("Authorization", "Bearer "
-			// + encrypted);
+			Map<String, String> user = objectToAttributes(
+					passwordRequest.getObjectIdentity(),
+					passwordRequest.getExtensibleObject());
+			String commandHandler = this
+					.getCommandScriptHandler(passwordRequest.getTargetID());
+			String scriptName = this.getScriptName(commandHandler);
+			String argsName = this.getArgs(commandHandler, user);
+			final NotificationRequest notificationRequest = new NotificationRequest();
 
-			super.makeCall(
-					connection,
-					"<User xmlns=\"urn:scim:schemas:core:1.0\" "
-							+ "xmlns:enterprise=\"urn:scim:schemas:extension:enterprise:1.0\">"
-							+ "<password>" + passwordRequest.getPassword()
-							+ "</password>" + "</User>");
+			notificationRequest.getParamList()
+					.add(new NotificationParam("PSWD", passwordRequest
+							.getPassword()));
+			Map<String, Object> bindingMap = new HashMap<String, Object>();
+			bindingMap.put("req", notificationRequest);
+			String msg = createMessage(bindingMap, scriptName);
+			connection.setRequestProperty("X-HTTP-Method-Override", "PATCH");
+			connection.setRequestProperty("If-Match", principalName);
+			super.makeCall(connection, msg);
 
 			return response;
 		} catch (Throwable e) {
@@ -68,4 +76,9 @@ public class SetPasswordRestCommand extends
 			connection.disconnect();
 		}
 	}
+
+	protected String getCommandScriptHandler(String id) {
+		return managedSysService.getManagedSysById(id).getPasswordHandler();
+	}
+
 }

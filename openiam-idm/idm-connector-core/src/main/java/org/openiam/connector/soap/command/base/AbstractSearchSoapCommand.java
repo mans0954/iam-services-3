@@ -37,7 +37,7 @@ public abstract class AbstractSearchSoapCommand<ExtObject extends ExtensibleObje
 		try {
 			final ObjectValue resultObject = new ObjectValue();
 			resultObject.setObjectIdentity(dataId);
-			final String responseStr = searchObject(con, dataId);
+			final String responseStr = searchObject(con, searchRequest);
 
 			if (log.isDebugEnabled()) {
 				log.debug(String.format("Response= %s", responseStr));
@@ -66,6 +66,6 @@ public abstract class AbstractSearchSoapCommand<ExtObject extends ExtensibleObje
 		}
 	}
 
-	protected abstract String searchObject(HttpURLConnection con, String dataId)
+	protected abstract String searchObject(HttpURLConnection con, SearchRequest<ExtObject> searchRequest)
 			throws Exception;
 }

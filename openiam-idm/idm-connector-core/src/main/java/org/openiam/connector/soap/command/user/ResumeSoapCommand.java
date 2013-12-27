@@ -16,4 +16,10 @@ public class ResumeSoapCommand extends AbstractSoapAccountStatusCommand {
     protected String getNewAccountStatus() {
             return AccountStatus.UNLOCKED.toString();
     }
+
+	@Override
+	protected String getCommandScriptHandler(String id) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

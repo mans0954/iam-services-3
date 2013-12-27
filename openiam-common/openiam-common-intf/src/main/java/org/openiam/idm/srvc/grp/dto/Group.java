@@ -1,6 +1,7 @@
 package org.openiam.idm.srvc.grp.dto;
 
 
+import org.openiam.base.AdminResourceDTO;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.BaseObject;
 import org.openiam.base.KeyNameDTO;
@@ -30,18 +31,11 @@ import java.util.*;
         "description",
         "lastUpdate",
         "lastUpdatedBy",
-        //"provisionMethod",
-        //"provisionObjName",
         "status",
-        //"metadataTypeId",
-        //"ownerId",
-        //"internalGroupId",
         "operation",
         "parentGroups",
         "childGroups",
-        "resources",
-        "adminResourceId",
-        "adminResourceName"
+        "resources"
 })
 @XmlRootElement(name = "Group")
 @XmlSeeAlso({
@@ -51,7 +45,7 @@ import java.util.*;
         User.class
 })
 @DozerDTOCorrespondence(GroupEntity.class)
-public class Group extends KeyNameDTO implements Serializable {
+public class Group extends AdminResourceDTO implements Serializable {
 
     private static final long serialVersionUID = 7657568959406790313L;
 
@@ -69,9 +63,6 @@ public class Group extends KeyNameDTO implements Serializable {
     @XmlSchemaType(name = "dateTime")
     protected Date lastUpdate;
     protected String lastUpdatedBy;
-    
-    private String adminResourceId;
-    private String adminResourceName;
     
     private Set<Group> parentGroups;
     private Set<Group> childGroups;
@@ -231,22 +222,6 @@ public class Group extends KeyNameDTO implements Serializable {
 
 	public void setManagedSysName(String managedSysName) {
 		this.managedSysName = managedSysName;
-	}
-
-	public String getAdminResourceId() {
-		return adminResourceId;
-	}
-
-	public void setAdminResourceId(String adminResourceId) {
-		this.adminResourceId = adminResourceId;
-	}
-
-	public String getAdminResourceName() {
-		return adminResourceName;
-	}
-
-	public void setAdminResourceName(String adminResourceName) {
-		this.adminResourceName = adminResourceName;
 	}
 
 	@Override

@@ -1,18 +1,17 @@
 package org.openiam.idm.srvc.role.dto;
 
+import org.openiam.base.AdminResourceDTO;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.KeyNameDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
+import org.openiam.idm.srvc.user.dto.User;
 
 import javax.xml.bind.annotation.*;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.*;
 
 
 /**
@@ -59,9 +58,7 @@ import java.util.Set;
         "parentRoles",
         "resources",
         "managedSysId",
-        "managedSysName",
-        "adminResourceId",
-        "adminResourceName"
+        "managedSysName"
 })
 @XmlRootElement(name = "Role")
 @XmlSeeAlso({
@@ -71,7 +68,7 @@ import java.util.Set;
         Resource.class
 })
 @DozerDTOCorrespondence(RoleEntity.class)
-public class Role extends KeyNameDTO implements Comparable<Role> {
+public class Role extends AdminResourceDTO implements Comparable<Role> {
 
     /**
      *
@@ -95,9 +92,6 @@ public class Role extends KeyNameDTO implements Comparable<Role> {
 
     protected String status;
     protected Boolean selected = new Boolean(false);
-
-    private String adminResourceId;
-    private String adminResourceName;
 
     private Set<Role> parentRoles;
     private Set<Role> childRoles;
@@ -284,22 +278,6 @@ public class Role extends KeyNameDTO implements Comparable<Role> {
 
 	public void setManagedSysName(String managedSysName) {
 		this.managedSysName = managedSysName;
-	}
-
-    public String getAdminResourceId() {
-		return adminResourceId;
-	}
-
-	public void setAdminResourceId(String adminResourceId) {
-		this.adminResourceId = adminResourceId;
-	}
-
-	public String getAdminResourceName() {
-		return adminResourceName;
-	}
-
-	public void setAdminResourceName(String adminResourceName) {
-		this.adminResourceName = adminResourceName;
 	}
 
 	@Override

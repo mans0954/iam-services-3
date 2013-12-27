@@ -7,6 +7,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -85,6 +86,14 @@ public class ModifyUserSoapCommand extends
 				// String encrypted = TestRSA.encrypt(token);
 				// connection.setRequestProperty("Authorization", "Bearer "
 				// + encrypted);
+				
+				Map<String, String> user = objectToAttributes(
+						crudRequest.getObjectIdentity(),
+						crudRequest.getExtensibleObject());
+				String commandHandler = this
+						.getCommandScriptHandler(crudRequest.getTargetID());
+				String scriptName = this.getScriptName(commandHandler);
+				String argsName = this.getArgs(commandHandler, user);
 
 				makeCall(
 						connection,
@@ -113,5 +122,10 @@ public class ModifyUserSoapCommand extends
 			}
 		}
 	}
+	
+	 @Override
+	    protected String getCommandScriptHandler(String id) {
+	        return managedSysService.getManagedSysById(id).getModifyHandler();
+	    }
 
 }

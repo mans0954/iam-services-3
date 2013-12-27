@@ -41,7 +41,6 @@ public class TransformCapsCSVRecord extends AbstractTransformScript {
         populateObject(rowObj, pUser)
 
         pUser.status = UserStatusEnum.ACTIVE
-        pUser.securityDomain = "0"
 
         return TransformScript.NO_DELETE
     }

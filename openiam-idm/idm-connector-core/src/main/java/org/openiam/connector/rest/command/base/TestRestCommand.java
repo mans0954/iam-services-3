@@ -1,18 +1,19 @@
 package org.openiam.connector.rest.command.base;
 
+import java.io.IOException;
 import java.net.HttpURLConnection;
 import org.openiam.connector.common.data.ConnectorConfiguration;
 import org.openiam.connector.type.ConnectorDataException;
+import org.openiam.connector.type.constant.ErrorCode;
 import org.openiam.connector.type.constant.StatusCodeType;
 import org.openiam.connector.type.request.RequestType;
 import org.openiam.connector.type.response.ObjectResponse;
 import org.openiam.provision.type.ExtensibleObject;
 import org.springframework.stereotype.Service;
 
-
-
 @Service("testRestCommand")
-public class TestRestCommand<ExtObject extends ExtensibleObject> extends AbstractRestCommand<RequestType<ExtObject>, ObjectResponse> {
+public class TestRestCommand<ExtObject extends ExtensibleObject> extends
+		AbstractRestCommand<RequestType<ExtObject>, ObjectResponse> {
 	@Override
 	public ObjectResponse execute(RequestType<ExtObject> crudRequest)
 			throws ConnectorDataException {
@@ -20,8 +21,20 @@ public class TestRestCommand<ExtObject extends ExtensibleObject> extends Abstrac
 		response.setStatus(StatusCodeType.SUCCESS);
 		ConnectorConfiguration config = getConfiguration(
 				crudRequest.getTargetID(), ConnectorConfiguration.class);
-		HttpURLConnection con = super.getConnection(config.getManagedSys(), "/v1/Users");
+		HttpURLConnection con = super.getConnection(config.getManagedSys());
+		try {
+			con.connect();
+		} catch (IOException e) {
+			e.printStackTrace();
+			throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR,"Could not connect");
+		}
 		con.disconnect();
 		return response;
-	}    
+	}
+
+	@Override
+	protected String getCommandScriptHandler(String id) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

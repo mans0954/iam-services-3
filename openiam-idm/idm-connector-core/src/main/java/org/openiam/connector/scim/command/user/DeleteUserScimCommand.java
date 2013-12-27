@@ -33,7 +33,6 @@ public class DeleteUserScimCommand extends AbstractDeleteScimCommand<ExtensibleU
     	    token.setTimestamp(System.currentTimeMillis());
     	    //TODO check how to get this
     	    token.setPassword("foobar");
-    	    //String encrypted =token.getPassword();
     		String encrypted = TestRSA.encrypt(token);
     		connection
     				.setRequestProperty(

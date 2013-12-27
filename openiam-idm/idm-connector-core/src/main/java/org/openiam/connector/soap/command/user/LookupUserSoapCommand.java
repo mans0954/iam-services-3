@@ -1,11 +1,14 @@
 package org.openiam.connector.soap.command.user;
 
 import java.net.HttpURLConnection;
+import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.openiam.connector.soap.command.base.AbstractSearchSoapCommand;
+import org.openiam.connector.type.request.LookupRequest;
+import org.openiam.connector.type.request.SearchRequest;
 import org.openiam.provision.type.ExtensibleUser;
 import org.springframework.stereotype.Service;
 
@@ -19,9 +22,14 @@ public class LookupUserSoapCommand extends
 	private static final Log log = LogFactory
 			.getLog(LookupUserSoapCommand.class);
 
+	
+	protected String getCommandScriptHandler(String id){
+		return "";
+	}
+
 	@Override
-	protected String searchObject(HttpURLConnection connection, String dataId)
-			throws Exception {
+	protected String searchObject(HttpURLConnection con,
+			SearchRequest<ExtensibleUser> searchRequest) throws Exception {
 		try {
 			// connection.setDoOutput(true);
 			// connection.setRequestProperty("Accept", "application/xml");
@@ -35,10 +43,19 @@ public class LookupUserSoapCommand extends
 			// .setRequestProperty(
 			// "Authorization",
 			// "Bearer " + encrypted);
-			return makeCall(connection, "");
+			
+			Map<String, String> user = objectToAttributes(
+					searchRequest.getObjectIdentity(),
+					searchRequest.getExtensibleObject());
+			String commandHandler = this
+					.getCommandScriptHandler(searchRequest.getTargetID());
+			String scriptName = this.getScriptName(commandHandler);
+			String argsName = this.getArgs(commandHandler, user);
+			return makeCall(con, "");
 
 		} finally {
 			// this.closeStatement(statement);
 		}
 	}
+
 }

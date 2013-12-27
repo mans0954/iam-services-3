@@ -379,7 +379,6 @@ public class AddUser {
             // EmailAddress primaryEmail = new EmailAddress();
 
             // init values
-            // primaryID.setDomainId(sysConfiguration.getDefaultSecurityDomain());
             // primaryID.setManagedSysId(sysConfiguration.getDefaultManagedSysId());
 
             try {

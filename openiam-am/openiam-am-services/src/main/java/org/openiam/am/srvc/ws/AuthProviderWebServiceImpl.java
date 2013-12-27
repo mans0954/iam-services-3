@@ -225,7 +225,7 @@ public class AuthProviderWebServiceImpl implements AuthProviderWebService {
     }
 
     @Override
-    public Response addAuthProvider(AuthProvider provider) {
+    public Response addAuthProvider(AuthProvider provider, final String requestorId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
             if(provider==null)
@@ -245,7 +245,7 @@ public class AuthProviderWebServiceImpl implements AuthProviderWebService {
             validateAndSyncProviderAttributes(provider);
 
             final AuthProviderEntity entity = authProviderDozerConverter.convertToEntity(provider, true);
-            authProviderService.addAuthProvider(entity);
+            authProviderService.addAuthProvider(entity, requestorId);
             response.setResponseValue(entity.getProviderId());
         } catch(BasicDataServiceException e) {
         	log.error(e.getMessage(), e);
@@ -290,7 +290,7 @@ public class AuthProviderWebServiceImpl implements AuthProviderWebService {
     }
 
     @Override
-    public Response updateAuthProvider(AuthProvider provider) {
+    public Response updateAuthProvider(AuthProvider provider, final String requestorId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
             if(provider==null)
@@ -308,7 +308,7 @@ public class AuthProviderWebServiceImpl implements AuthProviderWebService {
             validateAndSyncProviderAttributes(provider);
 
             final AuthProviderEntity entity = authProviderDozerConverter.convertToEntity(provider, true);
-            authProviderService.updateAuthProvider(entity);
+            authProviderService.updateAuthProvider(entity, requestorId);
             response.setResponseValue(entity.getProviderId());
         } catch(BasicDataServiceException e) {
         	log.error(e.getMessage(), e);

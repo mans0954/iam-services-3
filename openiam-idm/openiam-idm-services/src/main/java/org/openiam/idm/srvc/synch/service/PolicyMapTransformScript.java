@@ -40,7 +40,6 @@ public class PolicyMapTransformScript extends AbstractTransformScript {
         System.out.println("Synching object with Policy Maps for: " + rowObj );
 
         pUser.setStatus(UserStatusEnum.ACTIVE);
-//        pUser.securityDomain = "0";
 
         // this configure the loading Pre/Post groovy scrips, should be switch off for performance
         pUser.setSkipPostProcessor(true);
