@@ -1,37 +1,22 @@
 package org.openiam.provision.service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.id.UUIDGen;
-import org.openiam.dozer.converter.AddressDozerConverter;
-import org.openiam.dozer.converter.EmailAddressDozerConverter;
-import org.openiam.dozer.converter.LoginDozerConverter;
-import org.openiam.dozer.converter.PhoneDozerConverter;
-import org.openiam.dozer.converter.SupervisorDozerConverter;
-import org.openiam.dozer.converter.UserDozerConverter;
+import org.openiam.dozer.converter.*;
 import org.openiam.exception.EncryptionException;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
-import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
 import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.service.GroupDataService;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.service.OrganizationDataService;
@@ -49,6 +34,8 @@ import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.*;
 
 /**
  * Helper class for the modifyUser operation in the Provisioning Service.
@@ -782,8 +769,7 @@ public class ModifyUser {
                             loginManager.changeIdentityName(newLg
                                     .getLogin(), newLg.getPassword(), newLg
                                     .getUserId(), newLg
-                                    .getManagedSysId(), newLg
-                                    .getDomainId());
+                                    .getManagedSysId());
                             principalList.add(newLg);
                         } else {
                             log.debug("Updating Identity in IDM repository");
@@ -826,8 +812,7 @@ public class ModifyUser {
                         }
                         loginManager.changeIdentityName(newLg
                                 .getLogin(), newLg.getPassword(), newLg
-                                .getUserId(), newLg.getManagedSysId(),
-                                newLg.getDomainId());
+                                .getUserId(), newLg.getManagedSysId());
                         // loginManager.addLogin(newLg);
 
                         // we cannot send the encrypted password to the
@@ -1313,112 +1298,103 @@ public class ModifyUser {
         return rList;
     }
 
-    /**
-     * If the user has selected roles that are in multiple domains, we need to make sure that they identities for
-     * each of these domains
-     *
-     * @param primaryIdentity
-     * @param roleList
-     */
+//    public void validateIdentitiesExistforSecurityDomain(Login primaryIdentity,
+//            List<Role> roleList) {
+//
+//        log.debug("validateIdentitiesExistforSecurityDomain");
+//
+//        List<LoginEntity> identityList = loginManager.getLoginByUser(primaryIdentity
+//                .getUserId());
+//        String managedSysId = primaryIdentity.getManagedSysId();
+//
+//        log.debug("Identitylist =" + identityList);
+//
+//        for (Role r : roleList) {
+//            String secDomain = r.getServiceId();
+//            if (!identityInDomain(secDomain, managedSysId, identityList)) {
+//
+//                log.debug("Adding identity to :" + secDomain);
+//
+//                addIdentity(secDomain, primaryIdentity);
+//            }
+//        }
+//
+//        // determine if we should remove an identity
+//        for (LoginEntity l : identityList) {
+//            if (l.getManagedSysId().equalsIgnoreCase(managedSysId)) {
+//                boolean found = false;
+//                for (Role r : roleList) {
+//                    if (r.getServiceId().equalsIgnoreCase(
+//                            l.getDomainId())) {
+//                        found = true;
+//                    }
+//
+//                }
+//                if (!found) {
+//                    if (l.getManagedSysId().equalsIgnoreCase("0")) {
+//                        // primary identity - do not delete. Just disable its
+//                        // status
+//                        log.debug("Primary identity - chagne its status");
+//                        l.setStatus(LoginStatusEnum.INACTIVE);
+//                        loginManager.updateLogin(l);
+//
+//                    } else {
+//
+//                        log.debug("Removing identity for  :" + l);
+//                        loginManager.removeLogin(l.getDomainId(), l
+//                                .getLogin(), l
+//                                .getManagedSysId());
+//                    }
+//                }
+//            }
+//
+//        }
+//
+//    }
 
-    public void validateIdentitiesExistforSecurityDomain(Login primaryIdentity,
-            List<Role> roleList) {
+//    private boolean identityInDomain(String secDomain, String managedSysId,
+//            List<LoginEntity> identityList) {
+//
+//        log.debug("IdentityinDomain =" + secDomain + "-" + managedSysId);
+//
+//        for (LoginEntity l : identityList) {
+//            if (l.getDomainId().equalsIgnoreCase(secDomain)
+//                    && l.getManagedSysId()
+//                            .equalsIgnoreCase(managedSysId)) {
+//                return true;
+//            }
+//
+//        }
+//        return false;
+//
+//    }
 
-        log.debug("validateIdentitiesExistforSecurityDomain");
-
-        List<LoginEntity> identityList = loginManager.getLoginByUser(primaryIdentity
-                .getUserId());
-        String managedSysId = primaryIdentity.getManagedSysId();
-
-        log.debug("Identitylist =" + identityList);
-
-        for (Role r : roleList) {
-            String secDomain = r.getServiceId();
-            if (!identityInDomain(secDomain, managedSysId, identityList)) {
-
-                log.debug("Adding identity to :" + secDomain);
-
-                addIdentity(secDomain, primaryIdentity);
-            }
-        }
-
-        // determine if we should remove an identity
-        for (LoginEntity l : identityList) {
-            if (l.getManagedSysId().equalsIgnoreCase(managedSysId)) {
-                boolean found = false;
-                for (Role r : roleList) {
-                    if (r.getServiceId().equalsIgnoreCase(
-                            l.getDomainId())) {
-                        found = true;
-                    }
-
-                }
-                if (!found) {
-                    if (l.getManagedSysId().equalsIgnoreCase("0")) {
-                        // primary identity - do not delete. Just disable its
-                        // status
-                        log.debug("Primary identity - chagne its status");
-                        l.setStatus(LoginStatusEnum.INACTIVE);
-                        loginManager.updateLogin(l);
-
-                    } else {
-
-                        log.debug("Removing identity for  :" + l);
-                        loginManager.removeLogin(l.getDomainId(), l
-                                .getLogin(), l
-                                .getManagedSysId());
-                    }
-                }
-            }
-
-        }
-
-    }
-
-    private boolean identityInDomain(String secDomain, String managedSysId,
-            List<LoginEntity> identityList) {
-
-        log.debug("IdentityinDomain =" + secDomain + "-" + managedSysId);
-
-        for (LoginEntity l : identityList) {
-            if (l.getDomainId().equalsIgnoreCase(secDomain)
-                    && l.getManagedSysId()
-                            .equalsIgnoreCase(managedSysId)) {
-                return true;
-            }
-
-        }
-        return false;
-
-    }
-
-    private void addIdentity(String secDomain, Login primaryIdentity) {
-        if (loginManager.getLoginByManagedSys(secDomain, primaryIdentity
-                .getLogin(), primaryIdentity.getManagedSysId()) == null) {
-
-        	LoginEntity newLg = new LoginEntity();
-            newLg.setDomainId(secDomain);
-            newLg.setLogin(primaryIdentity.getLogin());
-            newLg.setManagedSysId(primaryIdentity.getManagedSysId());
-            newLg.setAuthFailCount(0);
-            newLg.setFirstTimeLogin(primaryIdentity.getFirstTimeLogin());
-            newLg.setIsLocked(primaryIdentity.getIsLocked());
-            newLg.setLastAuthAttempt(primaryIdentity.getLastAuthAttempt());
-            newLg.setGracePeriod(primaryIdentity.getGracePeriod());
-            newLg.setPassword(primaryIdentity.getPassword());
-            newLg.setPasswordChangeCount(primaryIdentity
-                    .getPasswordChangeCount());
-            newLg.setStatus(primaryIdentity.getStatus());
-            newLg.setIsLocked(primaryIdentity.getIsLocked());
-            newLg.setUserId(primaryIdentity.getUserId());
-            newLg.setResetPassword(primaryIdentity.getResetPassword());
-
-            log.debug("Adding identity = " + newLg);
-
-            loginManager.addLogin(newLg);
-        }
-
-    }
+//    private void addIdentity(String secDomain, Login primaryIdentity) {
+//        if (loginManager.getLoginByManagedSys(primaryIdentity
+//                .getLogin(), primaryIdentity.getManagedSysId()) == null) {
+//
+//        	LoginEntity newLg = new LoginEntity();
+//            newLg.setLogin(primaryIdentity.getLogin());
+//            newLg.setManagedSysId(primaryIdentity.getManagedSysId());
+//            newLg.setAuthFailCount(0);
+//            newLg.setFirstTimeLogin(primaryIdentity.getFirstTimeLogin());
+//            newLg.setIsLocked(primaryIdentity.getIsLocked());
+//            newLg.setLastAuthAttempt(primaryIdentity.getLastAuthAttempt());
+//            newLg.setGracePeriod(primaryIdentity.getGracePeriod());
+//            newLg.setPassword(primaryIdentity.getPassword());
+//            newLg.setPasswordChangeCount(primaryIdentity
+//                    .getPasswordChangeCount());
+//            newLg.setStatus(primaryIdentity.getStatus());
+//            newLg.setIsLocked(primaryIdentity.getIsLocked());
+//            newLg.setUserId(primaryIdentity.getUserId());
+//            newLg.setResetPassword(primaryIdentity.getResetPassword());
+//
+//            log.debug("Adding identity = " + newLg);
+//
+//            loginManager.addLogin(newLg);
+//        }
+//
+//    }
 
     public List<Role> getRoleList() {
         return roleList;

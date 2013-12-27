@@ -25,10 +25,6 @@ import org.openiam.idm.srvc.policy.service.PolicyDataService;
 import org.openiam.idm.srvc.pswd.domain.PasswordHistoryEntity;
 import org.openiam.idm.srvc.pswd.service.PasswordHistoryDAO;
 import org.openiam.idm.srvc.pswd.service.PasswordPolicyProvider;
-import org.openiam.idm.srvc.pswd.service.PasswordService;
-import org.openiam.idm.srvc.secdomain.dto.SecurityDomain;
-import org.openiam.idm.srvc.secdomain.service.SecurityDomainDAO;
-import org.openiam.idm.srvc.secdomain.service.SecurityDomainDataService;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.idm.srvc.user.service.UserDAO;
@@ -48,9 +44,6 @@ public class LoginDataServiceImpl implements LoginDataService {
     
 	@Autowired
 	protected LoginAttributeDAO loginAttrDao;
-    
-	@Autowired
-	protected SecurityDomainDataService secDomainService;
     
 	@Autowired
 	protected UserDAO userDao;
@@ -82,6 +75,7 @@ public class LoginDataServiceImpl implements LoginDataService {
 
     @Deprecated
     @Transactional
+    @Override
     public void addLogin(LoginEntity login) {
         if (login == null) {
             throw new NullPointerException("Login is null");
@@ -94,17 +88,14 @@ public class LoginDataServiceImpl implements LoginDataService {
         loginDao.save(login);
     }
     @Transactional(readOnly = true)
-    public LoginEntity getLoginByManagedSys(String domainId, String login,
-            String sysId) {
-        if (domainId == null) {
-            throw new NullPointerException("domainId is null");
-        }
+    @Override
+    public LoginEntity getLoginByManagedSys(String login, String sysId) {
         if (login == null) {
             throw new NullPointerException("Login is null");
         }
-
-        return loginDao.getRecord(login, sysId, domainId);
+        return loginDao.getRecord(login, sysId);
     }
+    @Override
     @Transactional(readOnly = true)
     public List<LoginEntity> getLoginDetailsByManagedSys(String principalName,
             String managedSysId) {
@@ -116,11 +107,11 @@ public class LoginDataServiceImpl implements LoginDataService {
         }
         return loginDao.findLoginByManagedSys(principalName, managedSysId);
     }
-
-    public String getPassword(String domainId, String login, String sysId)
+    @Override
+    public String getPassword(String login, String sysId)
             throws Exception {
 
-    	LoginEntity lg = getLoginByManagedSys(domainId, login, sysId);
+    	LoginEntity lg = getLoginByManagedSys(login, sysId);
         if (lg != null && lg.getPassword() != null) {
             try {
                 return cryptor.decrypt(keyManagementService.getUserKey(
@@ -130,21 +121,19 @@ public class LoginDataServiceImpl implements LoginDataService {
                 throw new IllegalArgumentException(
                         "Unable to decrypt the password. ");
             }
-
         }
-
         return null;
     }
 
     /**
      * Checks to see if a sourceLogin exists for a user - domain - managed system combination
-     * @param domainId
      * @param principal
      * @param sysId
      * @return
      */
-    public boolean loginExists(String domainId, String principal, String sysId) {
-    	LoginEntity lg = getLoginByManagedSys(domainId, principal, sysId);
+    @Override
+    public boolean loginExists(String principal, String sysId) {
+    	LoginEntity lg = getLoginByManagedSys(principal, sysId);
         if (lg == null) {
             return false;
         }
@@ -153,17 +142,13 @@ public class LoginDataServiceImpl implements LoginDataService {
 
     /**
      * determines if the new passowrd is equal to the current password that is associated with this principal
-     * @param domainId
      * @param principal
      * @param sysId
      * @param newPassword
      * @return
      */
-    public boolean isPasswordEq(String domainId, String principal,
-            String sysId, String newPassword) throws Exception {
-        if (domainId == null) {
-            throw new NullPointerException("domainId is null");
-        }
+    @Override
+    public boolean isPasswordEq(String principal, String sysId, String newPassword) throws Exception {
         if (principal == null) {
             throw new NullPointerException("principal is null");
         }
@@ -173,7 +158,7 @@ public class LoginDataServiceImpl implements LoginDataService {
         if (newPassword == null) {
             return false;
         }
-        String oldPassword = getPassword(domainId, principal, sysId);
+        String oldPassword = getPassword(principal, sysId);
         if (oldPassword != null) {
             if (oldPassword.equals(newPassword)) {
                 return true;
@@ -181,11 +166,14 @@ public class LoginDataServiceImpl implements LoginDataService {
         }
         return false;
     }
+
+    @Override
     @Transactional(readOnly = true)
     public Integer count(LoginSearchBean searchBean){
         return loginSearchDAO.count(searchBean);
     }
 
+    @Override
     @Transactional(readOnly = true)
     public List<LoginEntity> findBeans(LoginSearchBean searchBean, Integer from, Integer size){
     	List<LoginEntity> retVal = null;
@@ -204,32 +192,24 @@ public class LoginDataServiceImpl implements LoginDataService {
     /**
      * Sets the password for a sourceLogin. The password needs to be encrypted externally. this allow for flexiblity in
      * supporting alternate approaches to encryption.
-     * @param domainId
      * @param login
      * @param sysId
      * @param password
      * @return
      */
+    @Override
     @Transactional
-    public boolean setPassword(String domainId, String login, String sysId,
+    public boolean setPassword(String login, String sysId,
             String password, boolean preventChangeCountIncrement) {
         Calendar cal = Calendar.getInstance();
         Calendar expCal = Calendar.getInstance();
-        LoginEntity lg = getLoginByManagedSys(domainId, login, sysId);
+        LoginEntity lg = getLoginByManagedSys(login, sysId);
 
-        // SecurityDomain securityDomain =
-        // secDomainService.getSecurityDomain(domainId);
-        // Policy plcy =
-        // policyDao.findById(securityDomain.getPasswordPolicyId());
-//        Policy plcy = passwordPolicyProvider.getPasswordPolicy(domainId, login, sysId);
-        Policy plcy = passwordPolicyProvider.getPasswordPolicyByUser(domainId, lg.getUserId());
+        Policy plcy = passwordPolicyProvider.getPasswordPolicyByUser(lg.getUserId());
 
-        String pswdExpValue = getPolicyAttribute(plcy.getPolicyAttributes(),
-                "PWD_EXPIRATION");
-        String changePswdOnReset = getPolicyAttribute(
-                plcy.getPolicyAttributes(), "CHNG_PSWD_ON_RESET");
-        String gracePeriod = getPolicyAttribute(plcy.getPolicyAttributes(),
-                "PWD_EXP_GRACE");
+        String pswdExpValue = getPolicyAttribute(plcy.getPolicyAttributes(), "PWD_EXPIRATION");
+        String changePswdOnReset = getPolicyAttribute( plcy.getPolicyAttributes(), "CHNG_PSWD_ON_RESET");
+        String gracePeriod = getPolicyAttribute(plcy.getPolicyAttributes(), "PWD_EXP_GRACE");
 
 
         lg.setPassword(password);
@@ -278,21 +258,15 @@ public class LoginDataServiceImpl implements LoginDataService {
         return false;
 
     }
+    @Override
     @Transactional
-    public boolean resetPassword(String domainId, String login, String sysId,
-            String password) {
+    public boolean resetPassword(String login, String sysId, String password) {
 
-        // SecurityDomain securityDomain =
-        // secDomainService.getSecurityDomain(domainId);
-        // Policy plcy =
-        // policyDao.findById(securityDomain.getPasswordPolicyId());
-
-        LoginEntity lg = getLoginByManagedSys(domainId, login, sysId);
+        LoginEntity lg = getLoginByManagedSys(login, sysId);
         UserEntity user = userDao.findById(lg.getUserId());
 
 
-//        Policy plcy = passwordPolicyProvider.getPasswordPolicy(domainId, login, sysId);
-        Policy plcy = passwordPolicyProvider.getPasswordPolicyByUser(domainId, user);
+        Policy plcy = passwordPolicyProvider.getPasswordPolicyByUser(user);
 
         String pswdExpValue = getPolicyAttribute(plcy.getPolicyAttributes(),
                 "NUM_DAYS_FORGOT_PASSWORD_TOKEN_VALID");
@@ -301,8 +275,6 @@ public class LoginDataServiceImpl implements LoginDataService {
         String gracePeriod = getPolicyAttribute(plcy.getPolicyAttributes(),
                 "PWD_EXP_GRACE");
 
-//        LoginEntity lg = getLoginByManagedSys(domainId, login, sysId);
-//        UserEntity user = userDao.findById(lg.getUserId());
         user.setSecondaryStatus(null);
         userDao.update(user);
 
@@ -338,6 +310,7 @@ public class LoginDataServiceImpl implements LoginDataService {
         return false;
     }
 
+    @Override
     public String encryptPassword(String userId, String password)
             throws EncryptionException {
         if (password != null) {
@@ -350,6 +323,7 @@ public class LoginDataServiceImpl implements LoginDataService {
         return null;
     }
 
+    @Override
     public String decryptPassword(String userId, String password)
             throws EncryptionException {
         if (password != null) {
@@ -359,6 +333,8 @@ public class LoginDataServiceImpl implements LoginDataService {
         }
         return null;
     }
+
+    @Override
     @Transactional(readOnly = true)
     public List<LoginEntity> getLoginByUser(String userId) {
 
@@ -374,20 +350,23 @@ public class LoginDataServiceImpl implements LoginDataService {
         
         return loginList;
     }
-    @Transactional(readOnly = true)
-    public List<LoginEntity> getLoginByDomain(String domain) {
-        if (domain == null) {
-            throw new NullPointerException("domain is null");
-        }
-        List<LoginEntity> loginList = loginDao.findLoginByDomain(domain);
-        if (loginList == null || loginList.size() == 0) {
-            return null;
-        }
-        return loginList;
-    }
+
+//    @Transactional(readOnly = true)
+//    public List<LoginEntity> getLoginByDomain(String domain) {
+//        if (domain == null) {
+//            throw new NullPointerException("domain is null");
+//        }
+//        List<LoginEntity> loginList = loginDao.findLoginByDomain(domain);
+//        if (loginList == null || loginList.size() == 0) {
+//            return null;
+//        }
+//        return loginList;
+//    }
+
+    @Override
     @Transactional
-    public void lockLogin(String domainId, String principal, String sysId) {
-        final LoginEntity lg = getLoginByManagedSys(domainId, principal, sysId);
+    public void lockLogin(String principal, String sysId) {
+        final LoginEntity lg = getLoginByManagedSys(principal, sysId);
         // get the user object
         UserEntity user = userDao.findById(lg.getUserId());
 
@@ -399,9 +378,11 @@ public class LoginDataServiceImpl implements LoginDataService {
         userDao.update(user);
 
     }
+
+    @Override
     @Transactional
-    public void unLockLogin(String domainId, String principal, String sysId) {
-    	LoginEntity lg = getLoginByManagedSys(domainId, principal, sysId);
+    public void unLockLogin(String principal, String sysId) {
+    	LoginEntity lg = getLoginByManagedSys(principal, sysId);
         // get the user object
         UserEntity user = userDao.findById(lg.getUserId());
 
@@ -413,18 +394,21 @@ public class LoginDataServiceImpl implements LoginDataService {
         userDao.update(user);
 
     }
+
+    @Override
     @Transactional
-    public void removeLogin(String serviceId, String login, String managedSysId) {
+    public void removeLogin(String login, String managedSysId) {
         if (login == null) {
             throw new NullPointerException("Login is null");
         }
 
-        LoginEntity loginEntity = loginDao.getRecord(login, managedSysId, serviceId);
+        LoginEntity loginEntity = loginDao.getRecord(login, managedSysId);
         loginDao.delete(loginEntity);
     }
+
+    @Override
     @Transactional
-    public int changeIdentityName(String newPrincipalName, String newPassword,
-            String userId, String managedSysId, String domainId) {
+    public int changeIdentityName(String newPrincipalName, String newPassword, String userId, String managedSysId) {
         if (userId == null) {
             throw new NullPointerException("userId is null");
         }
@@ -436,6 +420,8 @@ public class LoginDataServiceImpl implements LoginDataService {
                 managedSysId);
 
     }
+
+    @Override
     @Transactional
     public void updateLogin(LoginEntity login) {
         if (login == null) {
@@ -460,6 +446,8 @@ public class LoginDataServiceImpl implements LoginDataService {
         return null;
 
     }
+
+    @Override
     @Transactional
     public void bulkUnLock(UserStatusEnum status) {
         log.info("bulk unlock called.");
@@ -472,27 +460,30 @@ public class LoginDataServiceImpl implements LoginDataService {
         }
         // since each security domain may have different authn policies, loop
         // through each domain
-        final List<SecurityDomain> securityDomainList = secDomainService
-                .getAllDomainsWithExclude("IDM");
-        for (SecurityDomain secDom : securityDomainList) {
-            String authnPolicy = secDom.getAuthnPolicyId();
+//        final List<SecurityDomain> securityDomainList = secDomainService
+//                .getAllDomainsWithExclude("IDM");
+//        for (SecurityDomain secDom : securityDomainList) {
+            String authnPolicy = sysConfiguration.getDefaultAuthPolicyId();
             if (authnPolicy != null) {
                 Policy plcy = policyDataService.getPolicy(authnPolicy);
                 String autoUnlockTime = getPolicyAttribute(
                         plcy.getPolicyAttributes(), "AUTO_UNLOCK_TIME");
                 if (autoUnlockTime != null) {
-                    loginDao.bulkUnlock(secDom.getDomainId(), status,
-                            Integer.parseInt(autoUnlockTime));
+                    loginDao.bulkUnlock(status, Integer.parseInt(autoUnlockTime));
                 }
             }
 
-        }
+//        }
 
     }
+
+    @Override
     @Transactional(readOnly = true)
     public List<LoginEntity> getLockedUserSince(Date lastExecTime) {
         return loginDao.findLockedUsers(lastExecTime);
     }
+
+    @Override
     @Transactional(readOnly = true)
     public List<LoginEntity> getInactiveUsers(int startDays, int endDays) {
         String primaryManagedSys = sysConfiguration.getDefaultManagedSysId();
@@ -502,6 +493,8 @@ public class LoginDataServiceImpl implements LoginDataService {
 
         return loginList;
     }
+
+    @Override
     @Transactional(readOnly = true)
     public List<LoginEntity> getUserNearPswdExpiration(int expDays) {
         List<LoginEntity> loginList = loginDao.findUserNearPswdExp(expDays);
@@ -515,6 +508,7 @@ public class LoginDataServiceImpl implements LoginDataService {
      * @param 
      * @return
      */
+    @Override
     @Transactional(readOnly = true)
     public List<LoginEntity> getUsersNearPswdExpiration() {
         Policy plcy =passwordPolicyProvider.getGlobalPasswordPolicy();
@@ -527,11 +521,15 @@ public class LoginDataServiceImpl implements LoginDataService {
         List<LoginEntity> loginList = loginDao.findUserNearPswdExp(daysToExpiration);
         return loginList;
     }
+
+    @Override
     @Transactional(readOnly = true)
     public List<LoginEntity> usersWithPasswordExpYesterday() {
         List<LoginEntity> loginList = loginDao.findUserPswdExpYesterday();
         return loginList;
     }
+
+    @Override
     @Transactional(readOnly = true)
     public LoginEntity getPrimaryIdentity(String userId) {
        
@@ -553,11 +551,15 @@ public class LoginDataServiceImpl implements LoginDataService {
         }
         return null;
     }
+
+    @Override
     @Transactional
     public int bulkResetPasswordChangeCount() {
         return loginDao.bulkResetPasswordChangeCount();
 
     }
+
+    @Override
     @Transactional(readOnly = true)
     public List<LoginEntity> getAllLoginByManagedSys(String managedSysId) {
         if (managedSysId == null) {
@@ -565,6 +567,8 @@ public class LoginDataServiceImpl implements LoginDataService {
         }
         return loginDao.findAllLoginByManagedSys(managedSysId);
     }
+
+    @Override
     @Transactional(readOnly = true)
     public LoginEntity getPasswordResetToken(String token) {
         return loginDao.findByPasswordResetToken(token);
@@ -585,6 +589,8 @@ public class LoginDataServiceImpl implements LoginDataService {
 			loginDao.delete(entity);
 		}
 	}
+
+    @Override
     @Transactional
     public void activateDeactivateLogin(String loginId, LoginStatusEnum status){
         final LoginEntity entity = loginDao.findById(loginId);
@@ -594,9 +600,11 @@ public class LoginDataServiceImpl implements LoginDataService {
         }
     }
 
+    @Override
     public void evict(LoginEntity entity) {
         loginDao.evict(entity);
     }
+
 	@Override
 	public Login getLoginDTO(String loginId) {
 		return loginDozerConverter.convertToDTO(loginDao.findById(loginId), true);

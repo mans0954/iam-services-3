@@ -9,7 +9,6 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "AuthenticationRequest", propOrder = {
-        "domainId",
         "principal",
         "password",
         "clientIP",
@@ -17,7 +16,6 @@ import javax.xml.bind.annotation.XmlType;
         "requestSource"
 })
 public class AuthenticationRequest {
-    String domainId;
     String principal;
     String password;
     String clientIP;
@@ -27,21 +25,12 @@ public class AuthenticationRequest {
     public AuthenticationRequest() {
     }
 
-    public AuthenticationRequest(String domainId, String principal, String password, String clientIP, String nodeIP) {
-        this.domainId = domainId;
+    public AuthenticationRequest(String principal, String password, String clientIP, String nodeIP) {
         this.principal = principal;
         this.password = password;
         this.clientIP = clientIP;
         this.nodeIP = nodeIP;
 
-    }
-
-    public String getDomainId() {
-        return domainId;
-    }
-
-    public void setDomainId(String domainId) {
-        this.domainId = domainId;
     }
 
     public String getPrincipal() {

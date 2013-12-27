@@ -35,7 +35,6 @@ import java.util.*;
         "attributeValue",
         "attributeElementId",
         "userId",
-        "domainId",
         "showInSearch",
         "locationCd",
         "classification",
@@ -74,7 +73,6 @@ public class UserSearchBean extends AbstractSearchBean<User, String> implements 
     protected String attributeValue;
     protected String attributeElementId;
     protected String userId;
-    protected String domainId;
     protected String locationCd;
     protected Integer showInSearch;
     protected Integer maxResultSize;
@@ -293,14 +291,6 @@ public class UserSearchBean extends AbstractSearchBean<User, String> implements 
 
     public void setUserId(String userId) {
         this.userId = userId;
-    }
-
-    public String getDomainId() {
-        return domainId;
-    }
-
-    public void setDomainId(String domainId) {
-        this.domainId = domainId;
     }
 
     public String getLocationCd() {

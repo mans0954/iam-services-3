@@ -2,11 +2,9 @@ package org.openiam.idm.srvc.role.service;
 
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.RoleSearchBean;
-import org.openiam.idm.srvc.role.domain.RoleAttributeEntity;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.domain.RolePolicyEntity;
 import org.openiam.idm.srvc.role.dto.Role;
-import org.openiam.idm.srvc.user.domain.UserEntity;
 
 import java.util.List;
 
@@ -79,7 +77,7 @@ public interface RoleDataService {
      * For example:
      * <p/>
      * <code>
-     * roleService.addRoleToGroup(domainId, roleId, groupId);<br>
+     * roleService.addRoleToGroup(roleId, groupId);<br>
      * </code>
      *
      * @param groupId  The group for which the roleId is to be added .
@@ -111,7 +109,7 @@ public interface RoleDataService {
      * For example:
      * <p/>
      * <code>
-     * roleService.addUserToRole(domainId, roleId, userId);<br>
+     * roleService.addUserToRole(roleId, userId);<br>
      * </code>
      *
      * @param roleId   The roleId to which the user will be associated.

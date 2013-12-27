@@ -56,7 +56,6 @@ public class TestURIFederationServiceImpl extends AbstractTestNGSpringContextTes
 		
 		final LoginEntity login = new LoginEntity();
 		login.setManagedSysId("0");
-		login.setDomainId("USR_SEC_DOMAIN");
 		login.setLogin(RandomStringUtils.randomAlphabetic(7));
 		login.setUserId(userEntity.getId());
 		loginDAO.save(login);

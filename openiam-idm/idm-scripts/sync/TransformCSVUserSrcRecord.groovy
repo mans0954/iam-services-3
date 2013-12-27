@@ -86,8 +86,7 @@ public class TransformCSVUserSrcRecord extends AbstractTransformScript {
 			
 		}
 		
-		pUser.securityDomain = "0"
-		
+
 		println("User status = " + pUser.status);
 	
 		// associate the user to an organization

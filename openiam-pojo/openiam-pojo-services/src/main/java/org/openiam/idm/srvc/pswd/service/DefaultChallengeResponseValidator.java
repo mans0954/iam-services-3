@@ -21,9 +21,6 @@
  */
 package org.openiam.idm.srvc.pswd.service;
 
-import java.util.LinkedList;
-import java.util.List;
-
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -37,20 +34,20 @@ import org.openiam.idm.searchbeans.IdentityAnswerSearchBean;
 import org.openiam.idm.searchbeans.IdentityQuestionSearchBean;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
-import org.openiam.idm.srvc.policy.domain.PolicyAttributeEntity;
-import org.openiam.idm.srvc.policy.domain.PolicyEntity;
-import org.openiam.idm.srvc.policy.service.PolicyDAO;
+import org.openiam.idm.srvc.policy.dto.Policy;
+import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
 import org.openiam.idm.srvc.pswd.domain.IdentityQuestionEntity;
 import org.openiam.idm.srvc.pswd.domain.UserIdentityAnswerEntity;
 import org.openiam.idm.srvc.searchbean.converter.IdentityAnswerSearchBeanConverter;
 import org.openiam.idm.srvc.searchbean.converter.IdentityQuestionSearchBeanConverter;
-import org.openiam.idm.srvc.secdomain.domain.SecurityDomainEntity;
-import org.openiam.idm.srvc.secdomain.service.SecurityDomainDAO;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.service.UserDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Default implementation of the challenge response validator. This implementation uses the information stored in the OpenIAM repository
@@ -82,16 +79,10 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
     
     @Autowired
     private UserDAO userDAO;
-    
+
     @Autowired
-    private PasswordService policyService;
+    private PasswordService passwordService;
     
-    @Autowired
-    private PolicyDAO policyDAO;
-    
-    @Autowired
-    private SecurityDomainDAO securityDomainDAO;
-	
 	private static final Log log = LogFactory.getLog(DefaultChallengeResponseValidator.class);
 	
 	@Override
@@ -104,34 +95,31 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
 	}
 	
 	@Override
-	public Integer getNumOfRequiredQuestions(final String userId, final String domainId) {
-		PolicyEntity passwordPolicy = null;
+	public Integer getNumOfRequiredQuestions(final String userId) {
+		Policy passwordPolicy = null;
 		if(StringUtils.isNotBlank(userId)) {
 			final UserEntity user = userDAO.findById(userId);
-			passwordPolicy = policyService.getPasswordPolicyForUser(domainId, user);
+			passwordPolicy = passwordService.getPasswordPolicyForUser(user);
 		}
 		if(passwordPolicy == null) {
-			final SecurityDomainEntity securityDomainEntity = securityDomainDAO.findById(domainId);
-			if(securityDomainEntity != null) {
-				passwordPolicy = policyDAO.findById(securityDomainEntity.getPasswordPolicyId());
-			}
+            passwordPolicy = passwordService.getGlobalPasswordPolicy();
 		}
 		
 		Integer count = null;
 		if(passwordPolicy != null) {
-			PolicyAttributeEntity countAttr = passwordPolicy.getAttribute("QUEST_COUNT");
+			PolicyAttribute countAttr = passwordPolicy.getAttribute("QUEST_COUNT");
 			try {
 				count = Integer.valueOf(countAttr.getValue1());
 			} catch(Throwable e) {
-				
+				log.warn("Cannot parse policy attribute value");
 			}
 		}
 		return count;
 	}
 	
 	@Override
-	public boolean isUserAnsweredSecurityQuestions(final String userId, final String domainId) {
-		final Integer numOfRequiredQuestions = getNumOfRequiredQuestions(userId, domainId);
+	public boolean isUserAnsweredSecurityQuestions(final String userId) {
+		final Integer numOfRequiredQuestions = getNumOfRequiredQuestions(userId);
 		final List<UserIdentityAnswerEntity> answerList = answersByUser(userId);
 		
 		

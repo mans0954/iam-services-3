@@ -10,9 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
-import org.springframework.test.context.testng.AbstractTransactionalTestNGSpringContextTests;
-import org.springframework.test.context.transaction.TransactionConfiguration;
-import org.springframework.transaction.annotation.Transactional;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -31,7 +28,6 @@ public class RenewTokenTest extends AbstractTestNGSpringContextTests {
     private static String token=null;
     private static AtomicInteger counter=new AtomicInteger(0);
     private static String tokenType="SSOToken";
-    private static final String securityDomain="USR_SEC_DOMAIN";
     private static final String login="sysadmin";
     private static final String password="passwd00";
 
@@ -39,7 +35,6 @@ public class RenewTokenTest extends AbstractTestNGSpringContextTests {
     protected void setUp() throws Exception {
         final AuthenticationRequest authenticatedRequest = new AuthenticationRequest();
         authenticatedRequest.setClientIP("127.0.0.1");
-        authenticatedRequest.setDomainId(securityDomain);
         authenticatedRequest.setPassword(password);
         authenticatedRequest.setPrincipal(login);
 

@@ -6,7 +6,6 @@ import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.service.OrganizationDAO;
 import org.openiam.idm.srvc.policy.domain.PolicyObjectAssocEntity;
 import org.openiam.idm.srvc.policy.dto.Policy;
-import org.openiam.idm.srvc.policy.service.PolicyDAO;
 import org.openiam.idm.srvc.policy.service.PolicyDataService;
 import org.openiam.idm.srvc.policy.service.PolicyObjectAssocDAO;
 import org.openiam.idm.srvc.user.domain.UserEntity;
@@ -37,12 +36,12 @@ public class PasswordPolicyProviderImpl implements PasswordPolicyProvider {
     protected UserDataService userManager;
 
 
-
-    public Policy getPasswordPolicyByUser(String domainId, String userId){
-        return getPasswordPolicyByUser(domainId, userManager.getUser(userId));
+    @Override
+    public Policy getPasswordPolicyByUser(String userId){
+        return getPasswordPolicyByUser(userManager.getUser(userId));
     }
-
-    public Policy getPasswordPolicyByUser(String domainId, UserEntity user){
+    @Override
+    public Policy getPasswordPolicyByUser(UserEntity user){
         // Find a password policy for this user
         // order of search, type, classification, domain, global
 
@@ -71,15 +70,6 @@ public class PasswordPolicyProviderImpl implements PasswordPolicyProvider {
             }
         }
 
-        if (domainId != null) {
-            log.info("Looking for associate by domain.");
-            policyAssocEntity = policyObjectAssocDao.findAssociationByLevel(
-                    "DOMAIN", domainId);
-            log.info(String.format("Association found: %s", policyAssocEntity));
-            if (policyAssocEntity != null) {
-                return getPolicy(policyAssocEntity);
-            }
-        }
         //  set by ORGANIZATION
 
         if (user.getId() != null) {
@@ -121,6 +111,7 @@ public class PasswordPolicyProviderImpl implements PasswordPolicyProvider {
      *
      * @return
      */
+    @Override
     public Policy getGlobalPasswordPolicy() {
         log.info("Fetching global association password policy.");
         PolicyObjectAssocEntity policyAssocEntity = policyObjectAssocDao

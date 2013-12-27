@@ -16,7 +16,6 @@ import java.util.Set;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "Login", propOrder = {
-		"domainId",
         "login",
         "lowerCaseLogin",
         "managedSysId",
@@ -63,7 +62,6 @@ public class Login implements java.io.Serializable {
     protected AttributeOperationEnum operation = AttributeOperationEnum.NO_CHANGE;
     
     private String loginId;
-    private String domainId;
     private String login;
     private String lowerCaseLogin;
     private String managedSysId;
@@ -393,14 +391,6 @@ public class Login implements java.io.Serializable {
         this.managedSysName = managedSysName;
     }
 
-	public String getDomainId() {
-		return domainId;
-	}
-
-	public void setDomainId(String domainId) {
-		this.domainId = domainId;
-	}
-
 	public String getLogin() {
 		return login;
 	}
@@ -471,8 +461,6 @@ public class Login implements java.io.Serializable {
 		result = prime
 				* result
 				+ ((currentLoginHost == null) ? 0 : currentLoginHost.hashCode());
-		result = prime * result
-				+ ((domainId == null) ? 0 : domainId.hashCode());
 		result = prime * result + firstTimeLogin;
 		result = prime * result
 				+ ((gracePeriod == null) ? 0 : gracePeriod.hashCode());
@@ -562,11 +550,6 @@ public class Login implements java.io.Serializable {
 			if (other.currentLoginHost != null)
 				return false;
 		} else if (!currentLoginHost.equals(other.currentLoginHost))
-			return false;
-		if (domainId == null) {
-			if (other.domainId != null)
-				return false;
-		} else if (!domainId.equals(other.domainId))
 			return false;
 		if (firstTimeLogin != other.firstTimeLogin)
 			return false;

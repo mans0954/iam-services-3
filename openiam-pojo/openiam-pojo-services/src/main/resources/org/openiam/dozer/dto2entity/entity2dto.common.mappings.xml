@@ -170,11 +170,6 @@
             <b>managedSys</b>
         </field>
 	</mapping>
-	<mapping>
-		<class-a>org.openiam.idm.srvc.secdomain.domain.SecurityDomainEntity
-		</class-a>
-		<class-b>org.openiam.idm.srvc.secdomain.dto.SecurityDomain</class-b>
-	</mapping>
 
 	<mapping>
 		<class-a>org.openiam.idm.srvc.lang.domain.LanguageMappingEntity

@@ -188,6 +188,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
     private static final Log log = LogFactory
             .getLog(ReconciliationServiceImpl.class);
 
+    @Override
     public ReconciliationConfig addConfig(ReconciliationConfig config) {
         if (config == null) {
             throw new IllegalArgumentException("config parameter is null");
@@ -227,6 +228,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
         }
     }
 
+    @Override
     @Transactional
     public void updateConfig(ReconciliationConfig config) {
         if (config == null) {
@@ -245,6 +247,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
         this.saveSituationSet(sitSet, config.getReconConfigId());
     }
 
+    @Override
     @Transactional
     public void removeConfigByResourceId(String resourceId) {
         if (resourceId == null) {
@@ -254,6 +257,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
 
     }
 
+    @Override
     @Transactional
     public void removeConfig(String configId) {
         if (configId == null) {
@@ -264,6 +268,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
 
     }
 
+    @Override
     @Transactional(readOnly = true)
     public ReconciliationConfig getConfigByResource(String resourceId) {
         if (resourceId == null) {
@@ -277,7 +282,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
             return reconConfigDozerMapper.convertToDTO(result, true);
 
     }
-
+    @Override
     public ReconciliationConfig getConfigById(String configId) {
         if (configId == null) {
             throw new IllegalArgumentException("configId parameter is null");
@@ -289,6 +294,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
             return reconConfigDozerMapper.convertToDTO(result, true);
     }
 
+    @Override
     public ReconciliationResponse startReconciliation(
             ReconciliationConfig config) {
 
@@ -690,7 +696,6 @@ public class ReconciliationServiceImpl implements ReconciliationService {
                     ProvisionUser newUser = new ProvisionUser(u);
                     if (principal == null) {
                         principal = new Login();
-                        principal.setDomainId(mSys.getDomainId());
                         principal.setLogin(targetUserPrincipal);
                         principal.setManagedSysId(managedSysId);
                         principal.setOperation(AttributeOperationEnum.ADD);
@@ -730,7 +735,6 @@ public class ReconciliationServiceImpl implements ReconciliationService {
                         .get(ReconciliationCommand.SYS_EXISTS__IDM_NOT_EXISTS);
                 if (command != null) {
                     Login l = new Login();
-                    l.setDomainId(mSys.getDomainId());
                     l.setLogin(targetUserPrincipal);
                     l.setManagedSysId(managedSysId);
                     l.setOperation(AttributeOperationEnum.ADD);
@@ -738,8 +742,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
                     newUser.setSrcSystemId(managedSysId);
                     // ADD Target user principal
                     newUser.getPrincipalList().add(l);
-                    LoginEntity idmLogin = loginManager.getLoginByManagedSys(
-                            mSys.getDomainId(), targetUserPrincipal, "0");
+                    LoginEntity idmLogin = loginManager.getLoginByManagedSys(targetUserPrincipal, "0");
                     if (idmLogin != null) {
                         newUser.getPrincipalList().add(
                                 loginDozerConverter

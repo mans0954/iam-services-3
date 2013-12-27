@@ -278,7 +278,7 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
                 }
             }
             /* Login */
-            if (searchBean.getPrincipal() != null || StringUtils.isNotEmpty(searchBean.getDomainId())
+            if (searchBean.getPrincipal() != null
                     || StringUtils.isNotEmpty(searchBean.getLoggedIn())) {
                 criteria.createAlias("principalList", "lg");
                 if (searchBean.getPrincipal() != null) {
@@ -288,9 +288,6 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
                     if (StringUtils.isNotEmpty(searchBean.getPrincipal().getManagedSysId())) {
                         criteria.add(Restrictions.eq("lg.managedSysId", searchBean.getPrincipal().getManagedSysId()));
                     }
-                }
-                if (StringUtils.isNotEmpty(searchBean.getDomainId())) {
-                    criteria.add(Restrictions.eq("lg.domainId", searchBean.getDomainId()));
                 }
                 if (StringUtils.isNotEmpty(searchBean.getLoggedIn())) {
                     if ("YES".equalsIgnoreCase(searchBean.getLoggedIn())) {

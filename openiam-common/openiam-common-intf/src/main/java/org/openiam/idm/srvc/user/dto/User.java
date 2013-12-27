@@ -72,7 +72,6 @@ import java.util.*;
         "showInSearch",
         "principalList",
         "alternateContactId",
-        "securityDomain",
         "userOwnerId",
         "datePasswordChanged",
         "dateChallengeRespChanged",
@@ -181,8 +180,6 @@ public class User extends KeyDTO {
     protected List<Login> principalList = new LinkedList<Login>();
 
     protected String alternateContactId;
-
-    protected String securityDomain;
 
     protected String userOwnerId;
 
@@ -879,14 +876,6 @@ public class User extends KeyDTO {
         this.alternateContactId = alternateContactId;
     }
 
-    public String getSecurityDomain() {
-        return securityDomain;
-    }
-
-    public void setSecurityDomain(String securityDomain) {
-        this.securityDomain = securityDomain;
-    }
-
 	public void updateUser(User newUser) {
         if (newUser.getBirthdate() != null) {
             if (newUser.getBirthdate().equals(BaseConstants.NULL_DATE)) {
@@ -1256,8 +1245,6 @@ public class User extends KeyDTO {
         if (login != null ? !login.equals(user.login) : user.login != null) return false;
         if (maidenName != null ? !maidenName.equals(user.maidenName) : user.maidenName != null) return false;
         if (nickname != null ? !nickname.equals(user.nickname) : user.nickname != null) return false;
-        if (securityDomain != null ? !securityDomain.equals(user.securityDomain) : user.securityDomain != null)
-            return false;
         if (startDate != null ? !startDate.equals(user.startDate) : user.startDate != null) return false;
         if (title != null ? !title.equals(user.title) : user.title != null) return false;
         if (id != null ? !id.equals(user.id) : user.id != null) return false;
@@ -1281,7 +1268,6 @@ public class User extends KeyDTO {
         result = 31 * result + (nickname != null ? nickname.hashCode() : 0);
         result = 31 * result + (maidenName != null ? maidenName.hashCode() : 0);
         result = 31 * result + (email != null ? email.hashCode() : 0);
-        result = 31 * result + (securityDomain != null ? securityDomain.hashCode() : 0);
         result = 31 * result + (userOwnerId != null ? userOwnerId.hashCode() : 0);
         result = 31 * result + (login != null ? login.hashCode() : 0);
         return result;

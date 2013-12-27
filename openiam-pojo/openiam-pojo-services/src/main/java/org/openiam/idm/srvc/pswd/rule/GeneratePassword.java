@@ -30,8 +30,7 @@ public interface GeneratePassword {
 
 	/**
 	 * Method autogenerates a password.
-	 * @param domainid
 	 * @return
 	 */
-	String generatePassword(String domainid);
+	String generatePassword();
 }

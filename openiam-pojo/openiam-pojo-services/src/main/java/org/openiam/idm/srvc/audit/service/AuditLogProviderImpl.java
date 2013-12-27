@@ -1,8 +1,7 @@
 package org.openiam.idm.srvc.audit.service;
 
-import net.sf.ehcache.Cache;
-import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Element;
+import org.apache.log4j.Logger;
 import org.openiam.idm.srvc.audit.domain.AuditLogBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -17,6 +16,8 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class AuditLogProviderImpl implements AuditLogProvider  {
+    private static Logger log = Logger.getLogger(AuditLogProviderImpl.class);
+
     @Autowired
     @Qualifier("auditLogBuilderCache")
     private net.sf.ehcache.Ehcache auditLogBuilderCache;
@@ -26,6 +27,8 @@ public class AuditLogProviderImpl implements AuditLogProvider  {
 
     public AuditLogBuilder getAuditLogBuilder() {
         final long threadId = Thread.currentThread().getId();
+        log.info("CURRENT THREAD ID="+threadId);
+
         Element chachedElement = auditLogBuilderCache.get(threadId);
 
         AuditLogBuilder value = (chachedElement != null ) ? (AuditLogBuilder)chachedElement.getObjectValue():null;

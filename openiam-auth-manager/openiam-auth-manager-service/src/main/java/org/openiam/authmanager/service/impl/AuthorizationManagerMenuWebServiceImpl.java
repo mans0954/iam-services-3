@@ -1,12 +1,5 @@
 package org.openiam.authmanager.service.impl;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-
-import javax.jws.WebService;
-
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.StopWatch;
@@ -31,6 +24,12 @@ import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
 import org.openiam.idm.srvc.res.service.ResourceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import javax.jws.WebService;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 @WebService(endpointInterface = "org.openiam.authmanager.service.AuthorizationManagerMenuWebService", 
 	targetNamespace = "urn:idm.openiam.org/srvc/authorizationmanager/menu/service", 
@@ -62,9 +61,9 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 			} else if(request.getLoginId() != null) {
 				final AuthorizationManagerLoginId login = request.getLoginId();
 				if(StringUtils.isNotEmpty(request.getMenuRoot())) {
-					retVal = menuService.getMenuTree(request.getMenuRoot(), login.getDomain(), login.getLogin(), login.getManagedSysId());
+					retVal = menuService.getMenuTree(request.getMenuRoot(), login.getLogin(), login.getManagedSysId());
 				} else {
-					retVal = menuService.getMenuTreeByName(request.getMenuName(), login.getDomain(), login.getLogin(), login.getManagedSysId());
+					retVal = menuService.getMenuTreeByName(request.getMenuName(), login.getLogin(), login.getManagedSysId());
 				}
 			}
 		}

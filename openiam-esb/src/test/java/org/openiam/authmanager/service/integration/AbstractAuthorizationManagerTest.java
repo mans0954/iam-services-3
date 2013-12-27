@@ -260,7 +260,7 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractTestNGSpr
 		final List<AuthorizationManagerLoginId> loginIdList = new LinkedList<AuthorizationManagerLoginId>();
 		if(user != null && CollectionUtils.isNotEmpty(user.getPrincipalList())) {
 			for(final Login login : user.getPrincipalList()) {
-				final AuthorizationManagerLoginId authManagerLoginId = new AuthorizationManagerLoginId(login.getDomainId(), login.getLogin(), login.getManagedSysId());
+				final AuthorizationManagerLoginId authManagerLoginId = new AuthorizationManagerLoginId( login.getLogin(), login.getManagedSysId());
 				loginIdList.add(authManagerLoginId);
 			}
 		}

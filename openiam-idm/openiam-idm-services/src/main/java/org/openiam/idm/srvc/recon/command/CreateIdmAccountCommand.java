@@ -72,7 +72,6 @@ public class CreateIdmAccountCommand implements ReconciliationCommand {
                         if(idmLogin == null){
                             idmLogin = new Login();
                             idmLogin.setOperation(AttributeOperationEnum.ADD);
-                            idmLogin.setDomainId(login.getDomainId());
                             idmLogin.setLogin(login.getLogin());
                             idmLogin.setManagedSysId("0");
                             pUser.getPrincipalList().add(idmLogin);

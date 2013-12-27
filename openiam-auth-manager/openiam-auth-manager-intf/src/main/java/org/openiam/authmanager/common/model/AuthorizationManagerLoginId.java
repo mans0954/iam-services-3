@@ -1,16 +1,14 @@
 package org.openiam.authmanager.common.model;
 
-import java.io.Serializable;
-
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+import java.io.Serializable;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "AuthorizationManagerLoginId", propOrder = {
         "login",
-        "domain",
         "managedSysId"
 })
 public class AuthorizationManagerLoginId implements Serializable {
@@ -21,15 +19,13 @@ public class AuthorizationManagerLoginId implements Serializable {
 	private String userId;
 	
 	private String login;
-	private String domain;
 	private String managedSysId;
 	
 	public AuthorizationManagerLoginId() {
 		
 	}
 	
-	public AuthorizationManagerLoginId(final String domain, final String login, final String managedSysId) {
-		this.domain = domain;
+	public AuthorizationManagerLoginId(final String login, final String managedSysId) {
 		this.login = login;
 		this.managedSysId = managedSysId;
 	}
@@ -50,14 +46,6 @@ public class AuthorizationManagerLoginId implements Serializable {
 		this.login = login;
 	}
 	
-	public String getDomain() {
-		return domain;
-	}
-	
-	public void setDomain(String domain) {
-		this.domain = domain;
-	}
-	
 	public String getManagedSysId() {
 		return managedSysId;
 	}
@@ -70,7 +58,6 @@ public class AuthorizationManagerLoginId implements Serializable {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((domain == null) ? 0 : domain.hashCode());
 		result = prime * result + ((login == null) ? 0 : login.hashCode());
 		result = prime * result
 				+ ((managedSysId == null) ? 0 : managedSysId.hashCode());
@@ -87,11 +74,6 @@ public class AuthorizationManagerLoginId implements Serializable {
 		if (getClass() != obj.getClass())
 			return false;
 		AuthorizationManagerLoginId other = (AuthorizationManagerLoginId) obj;
-		if (domain == null) {
-			if (other.domain != null)
-				return false;
-		} else if (!domain.equals(other.domain))
-			return false;
 		if (login == null) {
 			if (other.login != null)
 				return false;
@@ -113,8 +95,8 @@ public class AuthorizationManagerLoginId implements Serializable {
 	@Override
 	public String toString() {
 		return String.format(
-				"LoginId [userId=%s, login=%s, domain=%s, managedSysId=%s]",
-				userId, login, domain, managedSysId);
+				"LoginId [userId=%s, login=%s, managedSysId=%s]",
+				userId, login, managedSysId);
 	}
 	
 	

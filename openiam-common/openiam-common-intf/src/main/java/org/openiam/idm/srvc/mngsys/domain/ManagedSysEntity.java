@@ -38,8 +38,6 @@ public class ManagedSysEntity implements Serializable {
     private String status;
     @Column(name = "CONNECTOR_ID", length = 32, nullable = false)
     private String connectorId;
-    @Column(name = "DOMAIN_ID", length = 20, nullable = false)
-    private String domainId;
     @Column(name = "HOST_URL", length = 80)
     private String hostUrl;
     @Column(name = "PORT")
@@ -153,14 +151,6 @@ public class ManagedSysEntity implements Serializable {
 
     public void setConnectorId(String connectorId) {
         this.connectorId = connectorId;
-    }
-
-    public String getDomainId() {
-        return domainId;
-    }
-
-    public void setDomainId(String domainId) {
-        this.domainId = domainId;
     }
 
     public String getHostUrl() {
@@ -415,9 +405,6 @@ public class ManagedSysEntity implements Serializable {
         if (description != null ? !description.equals(that.description)
                 : that.description != null)
             return false;
-        if (domainId != null ? !domainId.equals(that.domainId)
-                : that.domainId != null)
-            return false;
         if (driverUrl != null ? !driverUrl.equals(that.driverUrl)
                 : that.driverUrl != null)
             return false;
@@ -503,7 +490,6 @@ public class ManagedSysEntity implements Serializable {
         result = 31 * result + (status != null ? status.hashCode() : 0);
         result = 31 * result
                 + (connectorId != null ? connectorId.hashCode() : 0);
-        result = 31 * result + (domainId != null ? domainId.hashCode() : 0);
         result = 31 * result + (hostUrl != null ? hostUrl.hashCode() : 0);
         result = 31 * result + (port != null ? port.hashCode() : 0);
         result = 31 * result

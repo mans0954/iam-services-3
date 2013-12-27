@@ -78,7 +78,6 @@ public class TestDozerConversion extends AbstractTestNGSpringContextTests {
 		user.setPrincipalList(principalList);
 		user.setRequestClientIP(rs(2));
 		user.setSecondaryStatus(UserStatusEnum.ACTIVE);
-		user.setSecurityDomain(rs(2));
 		user.setSex(rs(2));
 		user.setShowInSearch(2);
 		user.setStartDate(new Date());
@@ -276,7 +275,6 @@ public class TestDozerConversion extends AbstractTestNGSpringContextTests {
 		//Assert.assertEquals(original.getRequestorDomain(), copy.getRequestorDomain());
 		Assert.assertEquals(original.getRequestorLogin(), copy.getRequestorLogin());
 		Assert.assertEquals(original.getSecondaryStatus(), copy.getSecondaryStatus());
-		Assert.assertEquals(original.getSecurityDomain(), copy.getSecurityDomain());
 		Assert.assertEquals(original.getSex(), copy.getSex());
 		Assert.assertEquals(original.getShowInSearch(), copy.getShowInSearch());
 		Assert.assertEquals(original.getStartDate(), copy.getStartDate());

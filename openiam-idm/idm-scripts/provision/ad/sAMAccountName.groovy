@@ -1,16 +1,10 @@
 
 def loginManager = context.getBean("loginManager")
 
-// DEFAULT SECURITY DOMAIN
-def secDomain = "USR_SEC_DOMAIN";
-
 ctr = 1;
 
 loginID=user.firstName + "." + user.lastName
 
-if (securityDomain != null) {
-	secDomain = securityDomain;	
-}
 
 
 if (loginID.length() > 17) {
@@ -22,7 +16,7 @@ if (loginID.length() > 17) {
 		
 		origLoginID = loginId;
 		
-		while ( loginManager.loginExists( secDomain, loginID, managedSysId )) {
+		while ( loginManager.loginExists( loginID, managedSysId )) {
 		  strCtrSize = String.valueOf(ctr)
 			loginId=   origLoginID + ctr;
 			ctr++

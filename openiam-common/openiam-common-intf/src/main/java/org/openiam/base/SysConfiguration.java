@@ -9,7 +9,8 @@ package org.openiam.base;
  */
 public class SysConfiguration {
     protected String defaultManagedSysId = null;
-    protected String defaultSecurityDomain = null;
+    protected String defaultAuthPolicyId = null;
+    protected String defaultPswdPolicyId = null;
     protected Boolean developmentMode = false;
     protected boolean provisionServiceFlag = true;
 
@@ -21,12 +22,20 @@ public class SysConfiguration {
         this.defaultManagedSysId = defaultManagedSysId;
     }
 
-    public String getDefaultSecurityDomain() {
-        return defaultSecurityDomain;
+    public String getDefaultAuthPolicyId() {
+        return defaultAuthPolicyId;
     }
 
-    public void setDefaultSecurityDomain(String defaultSecurityDomain) {
-        this.defaultSecurityDomain = defaultSecurityDomain;
+    public void setDefaultAuthPolicyId(String defaultAuthPolicyId) {
+        this.defaultAuthPolicyId = defaultAuthPolicyId;
+    }
+
+    public String getDefaultPswdPolicyId() {
+        return defaultPswdPolicyId;
+    }
+
+    public void setDefaultPswdPolicyId(String defaultPswdPolicyId) {
+        this.defaultPswdPolicyId = defaultPswdPolicyId;
     }
 
     public Boolean isDevelopmentMode() {

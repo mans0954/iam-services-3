@@ -12,7 +12,6 @@ public class JaasConfiguration {
     private static JaasConfiguration jaasConfiguration=null;
 
     private static final String SERVICE_BASE_URL_KEY = "openiam.service_base_url";
-    private static final String SECURITY_DOMAIN_KEY = "openiam.securityDomain";
     private static final String MANAGE_SYS_ID_KEY = "openiam.managedSysId";
 
     Properties properties = null;
@@ -35,9 +34,6 @@ public class JaasConfiguration {
 
     public String getServiceBaseUrl(){
         return this.getProperty(SERVICE_BASE_URL_KEY);
-    }
-    public String getSecurityDomain(){
-        return this.getProperty(SECURITY_DOMAIN_KEY);
     }
     public String getManageSysId(){
         return this.getProperty(MANAGE_SYS_ID_KEY);

@@ -73,10 +73,7 @@ public class LdapV3 implements Directory {
         try {
 
              // get the current password for the user.
-            LoginEntity login = loginManager.getLoginByManagedSys(
-                    sysConfiguration.getDefaultSecurityDomain(),
-                    ldapName,
-                    targetID);
+            LoginEntity login = loginManager.getLoginByManagedSys(ldapName, targetID);
             String encPassword = login.getPassword();
             String decPassword = loginManager.decryptPassword(login.getUserId(),encPassword);
 

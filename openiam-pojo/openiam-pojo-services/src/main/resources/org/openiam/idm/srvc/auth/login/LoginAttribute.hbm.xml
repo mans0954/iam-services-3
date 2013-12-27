@@ -14,11 +14,6 @@
          <generator class="uuid" />
         </id>
 
-        <property name="domainId" type="string">
-            <column name="SERVICE_ID" length="20">
-                <comment></comment>
-            </column>
-        </property>
         <property name="login" type="string">
             <column name="LOGIN" length="320">
                 <comment></comment>
