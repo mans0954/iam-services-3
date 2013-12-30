@@ -52,6 +52,10 @@ public class IdmAuditLogDAOImpl extends BaseDaoImpl<IdmAuditLogEntity, String> i
             } else if(auditSearch.getTo() != null) {
                 criteria.add(Restrictions.lt("timestamp", auditSearch.getTo()));
             }
+
+            if(StringUtils.isNotBlank(auditSearch.getManagedSysId())) {
+                criteria.add(Restrictions.eq("managedSysId", auditSearch.getManagedSysId()));
+            }
         }
         return criteria;
     }
