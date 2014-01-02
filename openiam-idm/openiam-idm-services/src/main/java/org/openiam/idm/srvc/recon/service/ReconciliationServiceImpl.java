@@ -183,8 +183,6 @@ public class ReconciliationServiceImpl implements ReconciliationService {
     @Autowired
     protected AuditLogService auditLogService;
 
-    private static String DATETIME_FORMAT = "yyyy.MM.dd 'at' HH:mm:ss z";
-
     private static final Log log = LogFactory
             .getLog(ReconciliationServiceImpl.class);
 
@@ -297,6 +295,8 @@ public class ReconciliationServiceImpl implements ReconciliationService {
         Date startDate = new Date();
         AuditLogBuilder auditBuilder = new AuditLogBuilder();
         auditBuilder.setRequestorUserId(systemUserId).setTargetUser(null).setAction(AuditAction.RECONCILIATION);
+        auditBuilder.setTargetManagedSys(config.getManagedSysId());
+        auditBuilder.setSource(config.getReconConfigId());
 
         auditLogProvider.persist(auditBuilder);
 

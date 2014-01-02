@@ -53,7 +53,10 @@ public class AuditLogBuilder implements Serializable {
 		entity.setSource((source!=null)?source.value():AuditSource.ESB.value());
 		return this;
 	}
-
+    public AuditLogBuilder setSource(String source) {
+        entity.setSource(source);
+        return this;
+    }
 	/**
 	 * Sets the IP address of who made this call
 	 * @param clientIP
@@ -63,6 +66,16 @@ public class AuditLogBuilder implements Serializable {
 		entity.setClientIP(clientIP);
 		return this;
 	}
+
+    /**
+     * Sry correlation source id
+     * @param correlationId
+     * @return
+     */
+    public AuditLogBuilder setCorrelationId(String correlationId) {
+        entity.setCoorelationId(correlationId);
+        return this;
+    }
 
 	/**
 	 * Sets the action that this event represents

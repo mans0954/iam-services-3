@@ -43,6 +43,8 @@ import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.AttributeMapSearchBean;
 import org.openiam.idm.searchbeans.UserSearchBean;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
+import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
+import org.openiam.idm.srvc.audit.constant.AuditSource;
 import org.openiam.idm.srvc.audit.domain.AuditLogBuilder;
 import org.openiam.idm.srvc.audit.service.AuditLogProvider;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
@@ -169,12 +171,18 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
         SyncResponse syncResponse = new SyncResponse(ResponseStatus.SUCCESS);
 
         log.debug("-startSynchronization CALLED.^^^^^^^^");
-        final AuditLogBuilder auditBuilder = auditLogProvider.getAuditLogBuilder();
+
+        AuditLogBuilder auditBuilder = new AuditLogBuilder();
         auditBuilder.setRequestorUserId(systemUserId).setTargetUser(null).setAction(AuditAction.SYNCHRONIZATION);
-        auditBuilder.succeed().setAuditDescription("-startSynchronization CALLED.^^^^^^^^");
+        auditBuilder.setSource(config.getSynchConfigId());
+        auditLogProvider.persist(auditBuilder);
+
+        auditLogService.enqueue(auditBuilder);
+        Date startDate = new Date();
 
         SyncResponse processCheckResponse = addTask(config.getSynchConfigId());
-
+        auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "Synchronization started..." + startDate);
+        auditLogService.enqueue(auditBuilder);
         try {
             if ( processCheckResponse.getStatus() == ResponseStatus.FAILURE ) {
                 return processCheckResponse;
@@ -188,8 +196,9 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
 
             syncResponse = adapt.startSynch(configDTO, auditBuilder);
 			
-			log.debug("SyncReponse updateTime value=" + syncResponse.getLastRecordTime());
-            auditBuilder.succeed().setAuditDescription("SyncReponse updateTime value=" + syncResponse.getLastRecordTime());
+			log.debug("SyncReponse updateTime value=" + newLastExecTime);
+            auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "SyncReponse updateTime value=" + newLastExecTime);
+            auditLogService.enqueue(auditBuilder);
 
             if (syncResponse.getLastRecordTime() == null) {
 			
@@ -204,26 +213,24 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
 			}
 
 		    log.debug("-startSynchronization COMPLETE.^^^^^^^^");
-            auditBuilder.succeed().setAuditDescription("-startSynchronization COMPLETE.^^^^^^^^");
+            auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "-startSynchronization COMPLETE.^^^^^^^^");
+            auditLogService.enqueue(auditBuilder);
 		} catch( ClassNotFoundException cnfe) {
-
             cnfe.printStackTrace();
-
 			log.error(cnfe);
             syncResponse = new SyncResponse(ResponseStatus.FAILURE);
             syncResponse.setErrorCode(ResponseCode.CLASS_NOT_FOUND);
             syncResponse.setErrorText(cnfe.getMessage());
-
+            auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "ERROR: "+cnfe.getMessage());
+            auditLogService.enqueue(auditBuilder);
 		} catch(Exception e) {
-
-
 			log.error(e);
             syncResponse = new SyncResponse(ResponseStatus.FAILURE);
             syncResponse.setErrorText(e.getMessage());
-
+            auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "ERROR: "+e.getMessage());
+            auditLogService.enqueue(auditBuilder);
 		} finally {
             endTask(config.getSynchConfigId());
-            auditLogService.enqueue(auditBuilder);
             return syncResponse;
 
         }
