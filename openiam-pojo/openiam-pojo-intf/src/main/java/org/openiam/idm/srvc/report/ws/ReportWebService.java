@@ -21,6 +21,12 @@ public interface ReportWebService {
     GetReportDataResponse executeQuery(@WebParam(name = "reportName", targetNamespace = "") String reportName, @WebParam(name = "queryParams", targetNamespace = "") @XmlJavaTypeAdapter(PropertyMapAdapter.class) HashMap<String, String> queryParams);
 
     @WebMethod
+    String getReportUrl(@WebParam(name = "reportName", targetNamespace = "") String reportName,
+                @WebParam(name = "queryParams", targetNamespace = "") @XmlJavaTypeAdapter(PropertyMapAdapter.class) HashMap<String, String> queryParams,
+                @WebParam(name = "taskName", targetNamespace = "") String taskName,
+                @WebParam(name = "reportBaseUrl", targetNamespace = "") String reportBaseUrl);
+
+    @WebMethod
     GetAllReportsResponse getReports(@WebParam(name = "from", targetNamespace = "") int from, 
 				@WebParam(name = "size", targetNamespace = "") int size);
 
