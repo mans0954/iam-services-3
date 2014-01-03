@@ -294,6 +294,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
 
         Date startDate = new Date();
         AuditLogBuilder auditBuilder = new AuditLogBuilder();
+
         auditBuilder.setRequestorUserId(systemUserId).setTargetUser(null).setAction(AuditAction.RECONCILIATION);
         auditBuilder.setTargetManagedSys(config.getManagedSysId());
         auditBuilder.setSource(config.getReconConfigId());
