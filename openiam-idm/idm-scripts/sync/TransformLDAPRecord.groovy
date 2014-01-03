@@ -35,7 +35,6 @@ public class TransformLDAPRecord extends AbstractTransformScript {
         addRole(pUser, "End User")
 
 		pUser.status = UserStatusEnum.ACTIVE
-		pUser.securityDomain = "0"
 
 		return TransformScript.NO_DELETE
 	}

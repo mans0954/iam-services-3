@@ -20,7 +20,7 @@ def primaryLogin = lg.login
 def loginId = matchParam.keyField + "=" + primaryLogin + "," + matchParam.baseDn
 if (binding.hasVariable("managedSysId")) {
     def ctr = 0
-    while (loginManager.loginExists( "USR_SEC_DOMAIN", loginId, managedSysId)) {
+    while (loginManager.loginExists( loginId, managedSysId)) {
         strCtrSize = ctr as String
         loginId = matchParam.keyField + "=" +  primaryLogin + ctr + "," + matchParam.baseDn
         ctr++

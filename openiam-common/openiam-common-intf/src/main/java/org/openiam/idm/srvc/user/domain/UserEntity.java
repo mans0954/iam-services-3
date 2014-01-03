@@ -52,7 +52,7 @@ public class UserEntity {
     @Column(name = "USER_ID", length = 32, nullable = false)
     @LuceneId
     @DocumentId
-    private String userId;
+    private String id;
 
     @Column(name = "BIRTHDATE", length = 19)
     private Date birthdate;
@@ -256,12 +256,12 @@ public class UserEntity {
     public UserEntity() {
     }
 
-    public String getUserId() {
-        return userId;
+    public String getId() {
+        return id;
     }
 
-    public void setUserId(String userId) {
-        this.userId = userId;
+    public void setId(String id) {
+        this.id = id;
     }
 
     public Date getBirthdate() {
@@ -965,14 +965,14 @@ public class UserEntity {
         if (createdBy != null ? !createdBy.equals(that.createdBy) : that.createdBy != null) return false;
         if (employeeId != null ? !employeeId.equals(that.employeeId) : that.employeeId != null) return false;
         if (nickname != null ? !nickname.equals(that.nickname) : that.nickname != null) return false;
-        if (userId != null ? !userId.equals(that.userId) : that.userId != null) return false;
+        if (id != null ? !id.equals(that.id) : that.id != null) return false;
 
         return true;
     }
 
     @Override
     public int hashCode() {
-        int result = userId != null ? userId.hashCode() : 0;
+        int result = id != null ? id.hashCode() : 0;
         result = 31 * result + (birthdate != null ? birthdate.hashCode() : 0);
         result = 31 * result + (companyOwnerId != null ? companyOwnerId.hashCode() : 0);
         result = 31 * result + (createDate != null ? createDate.hashCode() : 0);

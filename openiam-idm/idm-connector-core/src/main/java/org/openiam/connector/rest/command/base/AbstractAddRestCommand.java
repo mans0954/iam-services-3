@@ -18,15 +18,15 @@ import org.openiam.provision.type.ExtensibleObject;
  */
 public abstract class AbstractAddRestCommand<ExtObject extends ExtensibleObject>
 		extends AbstractRestCommand<CrudRequest<ExtObject>, ObjectResponse> {
-	private static final Log log = LogFactory
-			.getLog(AbstractRestCommand.class);
+	private static final Log log = LogFactory.getLog(AbstractRestCommand.class);
 
 	@Override
 	public ObjectResponse execute(CrudRequest<ExtObject> crudRequest)
 			throws ConnectorDataException {
 		final ObjectResponse response = new ObjectResponse();
 		response.setStatus(StatusCodeType.SUCCESS);
-      log.info("Inside Scim add Abstract TargetId="+crudRequest.getTargetID());
+		log.info("Inside Rest add Abstract TargetId="
+				+ crudRequest.getTargetID());
 		ConnectorConfiguration config = getConfiguration(
 				crudRequest.getTargetID(), ConnectorConfiguration.class);
 
@@ -34,18 +34,7 @@ public abstract class AbstractAddRestCommand<ExtObject extends ExtensibleObject>
 			throw new ConnectorDataException(ErrorCode.INVALID_CONFIGURATION,
 					"No identity sent");
 
-		 //final ExtObject extObject = crudRequest.getExtensibleObject();
-		
-		// if(log.isDebugEnabled()) {
-		// log.debug(String.format("ExtensibleObject in Add Request=%s",
-		// extObject));
-		// }
-
-		// final List<AttributeMapEntity> attributeMap =
-		// attributeMaps(resourceId);
-		log.info("Inside Rest add Abstract MangeSysId="+config.getManagedSys());
-		HttpURLConnection con = this.getConnection(config.getManagedSys(),
-				"/v1/Users");
+		HttpURLConnection con = this.getConnection(config.getManagedSys());
 		try {
 			addObject(crudRequest, con);
 			return response;

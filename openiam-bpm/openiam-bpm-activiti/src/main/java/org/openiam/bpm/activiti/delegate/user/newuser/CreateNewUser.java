@@ -45,8 +45,8 @@ public class CreateNewUser extends AbstractEntitlementsDelegate {
 		user.setSecondaryStatus(null);
 		
 		final ProvisionUserResponse response = provisionService.addUser(user);
-		if(ResponseStatus.SUCCESS.equals(response.getStatus()) && response.getUser() != null && StringUtils.isNotBlank(response.getUser().getUserId())) {
-			final String userId = response.getUser().getUserId();
+		if(ResponseStatus.SUCCESS.equals(response.getStatus()) && response.getUser() != null && StringUtils.isNotBlank(response.getUser().getId())) {
+			final String userId = response.getUser().getId();
 			execution.setVariable(ActivitiConstants.NEW_USER_ID.getName(), userId);
 		} else {
 			throw new Exception("Could not save User Profile using Provisioning Service - can't continue");

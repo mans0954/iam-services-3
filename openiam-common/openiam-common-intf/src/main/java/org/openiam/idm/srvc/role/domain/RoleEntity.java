@@ -60,10 +60,7 @@ public class RoleEntity implements Serializable {
     
     @Column(name="STATUS",length=20)
     private String status;
-    
-    @Column(name="SERVICE_ID",length=32)
-    private String serviceId;
-    
+
     @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name = "MANAGED_SYS_ID", referencedColumnName = "MANAGED_SYS_ID", insertable = true, updatable = true, nullable=true)
     private ManagedSysEntity managedSystem;
@@ -154,14 +151,6 @@ public class RoleEntity implements Serializable {
 		this.status = status;
 	}
 
-	public String getServiceId() {
-		return serviceId;
-	}
-
-	public void setServiceId(String serviceId) {
-		this.serviceId = serviceId;
-	}
-	
 	public boolean hasGroup(final String groupId) {
 		boolean retVal = false;
 		if(groups != null) {
@@ -357,8 +346,6 @@ public class RoleEntity implements Serializable {
 		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		result = prime * result
 				+ ((name == null) ? 0 : name.hashCode());
-		result = prime * result
-				+ ((serviceId == null) ? 0 : serviceId.hashCode());
 		result = prime * result + ((status == null) ? 0 : status.hashCode());
 		return result;
 	}
@@ -402,11 +389,6 @@ public class RoleEntity implements Serializable {
 				return false;
 		} else if (!name.equals(other.name))
 			return false;
-		if (serviceId == null) {
-			if (other.serviceId != null)
-				return false;
-		} else if (!serviceId.equals(other.serviceId))
-			return false;
 		if (status == null) {
 			if (other.status != null)
 				return false;
@@ -418,9 +400,8 @@ public class RoleEntity implements Serializable {
 	@Override
 	public String toString() {
 		return String
-				.format("RoleEntity [id=%s, name=%s, description=%s, status=%s, serviceId=%s, managedSystem=%s, createDate=%s, createdBy=%s]",
-						id, name, description, status, serviceId,
-						managedSystem, createDate, createdBy);
+				.format("RoleEntity [id=%s, name=%s, description=%s, status=%s, managedSystem=%s, createDate=%s, createdBy=%s]",
+						id, name, description, status, managedSystem, createDate, createdBy);
 	}
 
 

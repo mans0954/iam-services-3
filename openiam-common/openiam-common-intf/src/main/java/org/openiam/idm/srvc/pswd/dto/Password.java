@@ -32,7 +32,6 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "Password", propOrder = {
-        "domainId",
         "principal",
         "password",
         "managedSysId",
@@ -42,7 +41,6 @@ import javax.xml.bind.annotation.XmlType;
 })
 public class Password {
 
-    protected String domainId;
     protected String principal;
     protected String password;
     protected String managedSysId;
@@ -65,14 +63,6 @@ public class Password {
         this.principal = principal;
     }
     */
-
-    public String getDomainId() {
-        return domainId;
-    }
-
-    public void setDomainId(String domainId) {
-        this.domainId = domainId;
-    }
 
     public String getPrincipal() {
         return principal;

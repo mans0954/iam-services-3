@@ -1,6 +1,5 @@
 package org.openiam.idm.srvc.synch.service;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.dozer.converter.RoleDozerConverter;
@@ -41,7 +40,6 @@ public class PolicyMapTransformScript extends AbstractTransformScript {
         System.out.println("Synching object with Policy Maps for: " + rowObj );
 
         pUser.setStatus(UserStatusEnum.ACTIVE);
-        pUser.securityDomain = "0";
 
         // this configure the loading Pre/Post groovy scrips, should be switch off for performance
         pUser.setSkipPostProcessor(true);
@@ -67,7 +65,7 @@ public class PolicyMapTransformScript extends AbstractTransformScript {
 
     private void populateUser(LineObject rowObj, ProvisionUser pUser) {
         if (isNewUser) {
-            pUser.setUserId(null);
+            pUser.setId(null);
         }
         if (principalList == null) {
             principalList = new ArrayList<Login>();

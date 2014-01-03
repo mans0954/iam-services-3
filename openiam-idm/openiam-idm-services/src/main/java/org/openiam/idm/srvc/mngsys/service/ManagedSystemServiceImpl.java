@@ -108,11 +108,11 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
         return managedSysDAO.findbyConnectorId(connectorId);
     }
 
-    @Override
-    @Transactional(readOnly = true)
-    public List<ManagedSysEntity> getManagedSysByDomain(String domainId) {
-        return managedSysDAO.findbyDomain(domainId);
-    }
+//    @Override
+//    @Transactional(readOnly = true)
+//    public List<ManagedSysEntity> getManagedSysByDomain(String domainId) {
+//        return managedSysDAO.findbyDomain(domainId);
+//    }
 
     @Override
     @Transactional(readOnly = true)
@@ -378,6 +378,7 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
         return matchDAO.findBySystemId(managedSystemId, objectType);
     }
 
+    @Override
     @Transactional(readOnly = true)
     public List<AuthProviderEntity> findAuthProvidersByManagedSysId(String managedSysId) {
         return authProviderDao.getByManagedSysId(managedSysId);

@@ -32,7 +32,7 @@ import java.util.Set;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "ManagedSysDto", propOrder = { "managedSysId", "name",
-        "description", "status", "connectorId", "domainId", "hostUrl", "port",
+        "description", "status", "connectorId", "hostUrl", "port",
         "commProtocol", "userId", "pswd", "decryptPassword", "endDate",
         "startDate", "attributeNamesLookup", "resourceId", "primaryRepository",
         "secondaryRepositoryId", "updateSecondary", "mngSysObjectMatchs",
@@ -52,7 +52,6 @@ public class ManagedSysDto implements java.io.Serializable {
     private String description;
     private String status;
     private String connectorId;
-    private String domainId;
     private String hostUrl;
     private Integer port;
     private String commProtocol;
@@ -99,15 +98,13 @@ public class ManagedSysDto implements java.io.Serializable {
     public ManagedSysDto() {
     }
 
-    public ManagedSysDto(String managedSysId, String connectorId,
-            String domainId) {
+    public ManagedSysDto(String managedSysId, String connectorId) {
         this.managedSysId = managedSysId;
         this.connectorId = connectorId;
-        this.domainId = domainId;
     }
 
     public ManagedSysDto(String managedSysId, String name, String description,
-            String status, String connectorId, String domainId, String hostUrl,
+            String status, String connectorId,  String hostUrl,
             Integer port, String commProtocol, String userId, String pswd,
             Date startDate, Date endDate) {
         this.managedSysId = managedSysId;
@@ -115,7 +112,6 @@ public class ManagedSysDto implements java.io.Serializable {
         this.description = description;
         this.status = status;
         this.connectorId = connectorId;
-        this.domainId = domainId;
         this.hostUrl = hostUrl;
         this.port = port;
         this.commProtocol = commProtocol;
@@ -164,14 +160,6 @@ public class ManagedSysDto implements java.io.Serializable {
 
     public void setConnectorId(String connectorId) {
         this.connectorId = connectorId;
-    }
-
-    public String getDomainId() {
-        return this.domainId;
-    }
-
-    public void setDomainId(String domainId) {
-        this.domainId = domainId;
     }
 
     public String getHostUrl() {
@@ -438,8 +426,7 @@ public class ManagedSysDto implements java.io.Serializable {
         return "ManagedSysDto{" + "managedSysId='" + managedSysId + '\''
                 + ", name='" + name + '\'' + ", description='" + description
                 + '\'' + ", status='" + status + '\'' + ", connectorId='"
-                + connectorId + '\'' + ", domainId='" + domainId + '\''
-                + ", hostUrl='" + hostUrl + '\'' + ", port=" + port
+                + connectorId + '\'' + ", hostUrl='" + hostUrl + '\'' + ", port=" + port
                 + ", commProtocol='" + commProtocol + '\'' + ", userId='"
                 + userId + '\'' + ", pswd='" + pswd + '\''
                 + ", decryptPassword='" + decryptPassword + '\''

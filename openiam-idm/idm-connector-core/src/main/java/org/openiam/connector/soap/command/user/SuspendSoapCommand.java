@@ -16,4 +16,10 @@ public class SuspendSoapCommand extends AbstractSoapAccountStatusCommand {
     protected String getNewAccountStatus() {
         return AccountStatus.LOCKED.toString();
     }
+
+	@Override
+	protected String getCommandScriptHandler(String id) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

@@ -22,7 +22,7 @@ public class AddAttestationCandidateUsersTaskListener extends AbstractCandidateT
 	}
 	
 	 @Override
-     public String getTargetUserId(final DelegateExecution execution) {
+     protected String getTargetUserId(final DelegateExecution execution) {
 		 return getStringVariable(execution, ActivitiConstants.EMPLOYEE_ID);
      }
 }

@@ -399,19 +399,6 @@
 			</service>
 		</model>
 
-		<model name="secDomServiceModel">
-			<service name="secDomService">
-				<inbound>
-						<inbound-endpoint address="${webservice.path}SecurityDomainWebService" 		exchange-pattern="request-response">
-						<cxf:jaxws-service />
-					</inbound-endpoint>
-				</inbound>
-				<component>
-					<spring-object bean="secDomainService" />
-				</component>
-			</service>
-		</model>
-
 		<model name="locationServiceModel">
 			<service name="locationService">
 				<inbound>

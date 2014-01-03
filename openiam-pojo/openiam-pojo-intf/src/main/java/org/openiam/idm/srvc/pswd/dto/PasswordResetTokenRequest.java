@@ -32,13 +32,11 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "PasswordResetTokenRequest", propOrder = {
-        "domainId",
         "principal",
         "managedSysId"
 })
 public class PasswordResetTokenRequest {
 
-    protected String domainId;
     protected String principal;
     protected String managedSysId;
 
@@ -48,19 +46,10 @@ public class PasswordResetTokenRequest {
     }
 
 
-    public PasswordResetTokenRequest(String domainId, String principal, String managedSysId) {
+    public PasswordResetTokenRequest(String principal, String managedSysId) {
         super();
-        this.domainId = domainId;
         this.managedSysId = managedSysId;
         this.principal = principal;
-    }
-
-    public String getDomainId() {
-        return domainId;
-    }
-
-    public void setDomainId(String domainId) {
-        this.domainId = domainId;
     }
 
     public String getPrincipal() {
@@ -83,7 +72,6 @@ public class PasswordResetTokenRequest {
     @Override
     public String toString() {
         return "PasswordResetTokenRequest{" +
-                "domainId='" + domainId + '\'' +
                 ", principal='" + principal + '\'' +
                 ", managedSysId='" + managedSysId + '\'' +
                 '}';

@@ -56,8 +56,6 @@ public interface UserDataWebService {
      * Find a User based on his principal, security domain, and the managed
      * system
      * 
-     * @param securityDomain
-     *            - the security domain ID
      * @param principal
      *            - the user's principal (login)
      * @param managedSysId
@@ -69,8 +67,7 @@ public interface UserDataWebService {
      * @return - a User object, or null if not found
      */
     @WebMethod
-    public User getUserByPrincipal(@WebParam(name = "securityDomain", targetNamespace = "") String securityDomain,
-                                   @WebParam(name = "principal", targetNamespace = "") String principal,
+    public User getUserByPrincipal(@WebParam(name = "principal", targetNamespace = "") String principal,
                                    @WebParam(name = "managedSysId", targetNamespace = "") String managedSysId,
                                    @WebParam(name = "dependants", targetNamespace = "") boolean dependants);
 

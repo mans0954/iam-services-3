@@ -1,16 +1,5 @@
 package org.openiam.authmanager.service.impl;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
-
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.StopWatch;
@@ -51,6 +40,8 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.jmx.export.annotation.ManagedOperation;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.*;
 
 @Service("authorizationManagerMenuService")
 //@ManagedResource(objectName="org.openiam.authorization.manager:name=authorizationManagerMenuService")
@@ -215,7 +206,8 @@ public class AuthorizationManagerMenuServiceImpl extends AbstractBaseService imp
 		return String.format("%s:%s", id, url);
 	}
 	
-	@ManagedOperation(description="sweep the Menu Cache")
+	@Override
+    @ManagedOperation(description="sweep the Menu Cache")
 	public void sweep() {
 		final StopWatch sw = new StopWatch();
 		sw.start();
@@ -318,16 +310,18 @@ public class AuthorizationManagerMenuServiceImpl extends AbstractBaseService imp
 	}
 
 	@Override
-	public AuthorizationMenu getMenuTree(final String menuRoot, final String domain, final String login, final String managedSysId) {
-		return getMenu(menuCache.get(menuRoot), null, new AuthorizationManagerLoginId(domain, login, managedSysId));
+	public AuthorizationMenu getMenuTree(final String menuRoot, final String login, final String managedSysId) {
+		return getMenu(menuCache.get(menuRoot), null, new AuthorizationManagerLoginId(login, managedSysId));
 	}
 	
-	public AuthorizationMenu getMenuTreeByName(final String menuRoot, final String userId) {
+	@Override
+    public AuthorizationMenu getMenuTreeByName(final String menuRoot, final String userId) {
 		return getMenu(menuNameCache.get(menuRoot), userId, null);
 	}
 	
-	public AuthorizationMenu getMenuTreeByName(final String menuRoot, final String domain, final String login, final String managedSysId) {
-		return getMenu(menuNameCache.get(menuRoot), null, new AuthorizationManagerLoginId(domain, login, managedSysId));
+	@Override
+    public AuthorizationMenu getMenuTreeByName(final String menuRoot, final String login, final String managedSysId) {
+		return getMenu(menuNameCache.get(menuRoot), null, new AuthorizationManagerLoginId(login, managedSysId));
 	}
 	
 	private AuthorizationMenu getMenu(final AuthorizationMenu menu, final String userId, final AuthorizationManagerLoginId loginId) {

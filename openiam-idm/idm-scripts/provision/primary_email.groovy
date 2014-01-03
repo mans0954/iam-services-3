@@ -12,7 +12,7 @@ if (user.email != null && user.email.length() > 0) {
 	origLoginID = loginID
 
 
-	while ( loginManager.loginExists( "USR_SEC_DOMAIN", loginID, sysId )) {
+	while ( loginManager.loginExists( loginID, sysId )) {
 		loginID=origLoginID + ctr
 		ctr++
 	}

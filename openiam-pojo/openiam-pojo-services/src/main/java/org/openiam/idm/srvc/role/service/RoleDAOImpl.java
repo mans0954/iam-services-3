@@ -7,7 +7,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Criteria;
-import org.hibernate.Query;
 import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Restrictions;
 import org.openiam.core.dao.BaseDaoImpl;
@@ -16,7 +15,6 @@ import org.openiam.idm.searchbeans.SearchBean;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.searchbean.converter.RoleSearchBeanConverter;
-import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -90,10 +88,6 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
 					criteria.add(Restrictions.eq("adminResource.id", entity.getAdminResource().getId()));
 				}
 				
-				if(StringUtils.isNotBlank(entity.getServiceId())) {
-					criteria.add(Restrictions.eq("serviceId", entity.getServiceId()));
-				}
-				
 				if(CollectionUtils.isNotEmpty(entity.getResources())) {
 					final Set<String> resourceIds = new HashSet<String>();
 	            	for(final ResourceEntity resourceRole : entity.getResources()) {
@@ -153,7 +147,7 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
 
         if(StringUtils.isNotBlank(userId)){
             criteria.createAlias("users", "u")
-                    .add(Restrictions.eq("u.userId", userId));
+                    .add(Restrictions.eq("u.id", userId));
         }
 
         if(StringUtils.isNotBlank(groupId)){
@@ -217,7 +211,7 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
 	private Criteria getRolesForUserCriteria(final String userId, final Set<String> filter) {
 		return getCriteria()
 	               .createAlias("users", "u")
-	               .add(Restrictions.eq("u.userId", userId));
+	               .add(Restrictions.eq("u.id", userId));
 	}
 
     private List<RoleEntity> getList(Criteria criteria, int from, int size){

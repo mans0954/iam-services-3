@@ -31,7 +31,6 @@ import org.openiam.dozer.converter.SupervisorDozerConverter;
 import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.exception.EncryptionException;
 import org.openiam.exception.ScriptEngineException;
-import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
@@ -109,12 +108,12 @@ public class AddUser {
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
-        if (newUser == null || newUser.getUserId() == null) {
+        if (newUser == null || newUser.getId() == null) {
             resp.setStatus(ResponseStatus.FAILURE);
             return resp;
         }
-        user.setUserId(newUser.getUserId());
-        log.debug("User id=" + newUser.getUserId()
+        user.setId(newUser.getId());
+        log.debug("User id=" + newUser.getId()
                 + " created in openiam repository");
 
         code = addSupervisors(user);
@@ -131,19 +130,19 @@ public class AddUser {
             resp.setErrorCode(ResponseCode.FAIL_ENCRYPTION);
             return resp;
         }
-        code = addGroups(user, newUser.getUserId());
+        code = addGroups(user, newUser.getId());
         if (code != ResponseCode.SUCCESS) {
             resp.setStatus(ResponseStatus.FAILURE);
             resp.setErrorCode(code);
             return resp;
         }
-        code = addRoles(user, newUser.getUserId());
+        code = addRoles(user, newUser.getId());
         if (code != ResponseCode.SUCCESS) {
             resp.setStatus(ResponseStatus.FAILURE);
             resp.setErrorCode(code);
             return resp;
         }
-        code = addAffiliations(user, newUser.getUserId());
+        code = addAffiliations(user, newUser.getId());
         if (code != ResponseCode.SUCCESS) {
             resp.setStatus(ResponseStatus.FAILURE);
             resp.setErrorCode(code);
@@ -158,7 +157,7 @@ public class AddUser {
         if (CollectionUtils.isNotEmpty(superiors)) {
             for (User s : superiors) {
                 try {
-                    userMgr.addSuperior(s.getUserId(), u.getUserId());
+                    userMgr.addSuperior(s.getId(), u.getId());
                     log.info("created user supervisor");
 
                 } catch (Exception e) {
@@ -176,12 +175,12 @@ public class AddUser {
                 lg.setFirstTimeLogin(1);
                 lg.setIsLocked(0);
                 lg.setCreateDate(new Date(System.currentTimeMillis()));
-                lg.setUserId(u.getUserId());
+                lg.setUserId(u.getId());
                 lg.setStatus(LoginStatusEnum.ACTIVE);
                 // encrypt the password
                 if (lg.getPassword() != null) {
                     String pswd = lg.getPassword();
-                    lg.setPassword(loginManager.encryptPassword(u.getUserId(),
+                    lg.setPassword(loginManager.encryptPassword(u.getId(),
                             pswd));
                 }
                 loginManager.addLogin(loginDozerConverter.convertToEntity(lg,
@@ -256,7 +255,7 @@ public class AddUser {
                 if (org.getId() == null) {
                     return ResponseCode.OBJECT_ID_INVALID;
                 }
-                orgManager.addUserToOrg(org.getId(), user.getUserId());
+                orgManager.addUserToOrg(org.getId(), user.getId());
                 /*
                 logList.add(auditHelper.createLogObject("ADD AFFILIATION",
                         user.getRequestorDomain(), user.getRequestorLogin(),
@@ -299,8 +298,6 @@ public class AddUser {
             EmailAddress primaryEmail = new EmailAddress();
 
             // init values
-            primaryIdentity.setDomainId(sysConfiguration
-                    .getDefaultSecurityDomain());
             primaryIdentity.setManagedSysId(sysConfiguration
                     .getDefaultManagedSysId());
 
@@ -320,10 +317,10 @@ public class AddUser {
                                         "PASSWORD")) {
                                     primaryIdentity.setPassword(output);
                                 }
-                                if (attr.getAttributeName().equalsIgnoreCase(
-                                        "DOMAIN")) {
-                                    primaryIdentity.setDomainId(output);
-                                }
+//                                if (attr.getAttributeName().equalsIgnoreCase(
+//                                        "DOMAIN")) {
+//                                    primaryIdentity.setDomainId(output);
+//                                }
                             }
                             if (objectType.equals("EMAIL")) {
                                 primaryEmail.setEmailAddress(output);
@@ -382,7 +379,6 @@ public class AddUser {
             // EmailAddress primaryEmail = new EmailAddress();
 
             // init values
-            // primaryID.setDomainId(sysConfiguration.getDefaultSecurityDomain());
             // primaryID.setManagedSysId(sysConfiguration.getDefaultManagedSysId());
 
             try {
@@ -420,71 +416,33 @@ public class AddUser {
 
     }
 
-    /**
-     * If the user has selected roles that are in multiple domains, we need to
-     * make sure that they identities for each of these domains
-     * 
-     * @param primaryIdentity
-     * @param roleList
-     */
-    public void validateIdentitiesExistforSecurityDomain(Login primaryIdentity,
-            List<Role> roleList) {
-        if (roleList == null || roleList.isEmpty()) {
-            return;
-        }
 
-        List<LoginEntity> identityList = loginManager
-                .getLoginByUser(primaryIdentity.getUserId());
 
-        for (Role r : roleList) {
-
-            String secDomain = r.getServiceId();
-            if (!identityInDomain(secDomain, identityList)) {
-                addIdentity(secDomain, primaryIdentity);
-            }
-
-        }
-
-    }
-
-    private boolean identityInDomain(String secDomain,
-            List<LoginEntity> identityList) {
-        for (LoginEntity l : identityList) {
-            if (l.getDomainId().equalsIgnoreCase(secDomain)) {
-                return true;
-            }
-
-        }
-        return false;
-
-    }
-
-    private void addIdentity(String secDomain, Login primaryIdentity) {
-        if (loginManager.getLoginByManagedSys(secDomain,
-                primaryIdentity.getLogin(), primaryIdentity.getManagedSysId()) == null) {
-
-            LoginEntity newLg = new LoginEntity();
-            newLg.setDomainId(secDomain);
-            newLg.setLogin(primaryIdentity.getLogin());
-            newLg.setManagedSysId(primaryIdentity.getManagedSysId());
-            newLg.setAuthFailCount(0);
-            newLg.setFirstTimeLogin(primaryIdentity.getFirstTimeLogin());
-            newLg.setIsLocked(primaryIdentity.getIsLocked());
-            newLg.setLastAuthAttempt(primaryIdentity.getLastAuthAttempt());
-            newLg.setGracePeriod(primaryIdentity.getGracePeriod());
-            newLg.setPassword(primaryIdentity.getPassword());
-            newLg.setPasswordChangeCount(primaryIdentity
-                    .getPasswordChangeCount());
-            newLg.setStatus(primaryIdentity.getStatus());
-            newLg.setIsLocked(primaryIdentity.getIsLocked());
-            newLg.setUserId(primaryIdentity.getUserId());
-            newLg.setResetPassword(primaryIdentity.getResetPassword());
-
-            log.debug("Adding identity = " + newLg);
-
-            loginManager.addLogin(newLg);
-        }
-
-    }
+//    private void addIdentity(String secDomain, Login primaryIdentity) {
+//        if (loginManager.getLoginByManagedSys(
+//                primaryIdentity.getLogin(), primaryIdentity.getManagedSysId()) == null) {
+//
+//            LoginEntity newLg = new LoginEntity();
+//            newLg.setLogin(primaryIdentity.getLogin());
+//            newLg.setManagedSysId(primaryIdentity.getManagedSysId());
+//            newLg.setAuthFailCount(0);
+//            newLg.setFirstTimeLogin(primaryIdentity.getFirstTimeLogin());
+//            newLg.setIsLocked(primaryIdentity.getIsLocked());
+//            newLg.setLastAuthAttempt(primaryIdentity.getLastAuthAttempt());
+//            newLg.setGracePeriod(primaryIdentity.getGracePeriod());
+//            newLg.setPassword(primaryIdentity.getPassword());
+//            newLg.setPasswordChangeCount(primaryIdentity
+//                    .getPasswordChangeCount());
+//            newLg.setStatus(primaryIdentity.getStatus());
+//            newLg.setIsLocked(primaryIdentity.getIsLocked());
+//            newLg.setUserId(primaryIdentity.getUserId());
+//            newLg.setResetPassword(primaryIdentity.getResetPassword());
+//
+//            log.debug("Adding identity = " + newLg);
+//
+//            loginManager.addLogin(newLg);
+//        }
+//
+//    }
 
 }

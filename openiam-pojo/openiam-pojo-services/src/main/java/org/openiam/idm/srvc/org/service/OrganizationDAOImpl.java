@@ -57,7 +57,7 @@ public class OrganizationDAOImpl extends
 		final Criteria criteria = getCriteria();
 		if (StringUtils.isNotBlank(userId)) {
 			criteria.createAlias("users", "u").add(
-					Restrictions.eq("u.userId", userId));
+					Restrictions.eq("u.id", userId));
 		}
 
 		if (filter != null && !filter.isEmpty()) {
@@ -102,7 +102,7 @@ public class OrganizationDAOImpl extends
 
 			if (StringUtils.isNotBlank(organizationSearchBean.getUserId())) {
 				criteria.createAlias("users", "u").add(
-						Restrictions.eq("u.userId",
+						Restrictions.eq("u.id",
 								organizationSearchBean.getUserId()));
 			}
 

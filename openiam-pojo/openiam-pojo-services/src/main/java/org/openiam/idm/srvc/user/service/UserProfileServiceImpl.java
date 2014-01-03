@@ -1,16 +1,9 @@
 package org.openiam.idm.srvc.user.service;
 
-import java.util.Iterator;
-import java.util.List;
-
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.base.ws.ResponseCode;
-import org.openiam.dozer.converter.AddressDozerConverter;
-import org.openiam.dozer.converter.EmailAddressDozerConverter;
-import org.openiam.dozer.converter.LoginDozerConverter;
-import org.openiam.dozer.converter.PhoneDozerConverter;
-import org.openiam.dozer.converter.UserDozerConverter;
+import org.openiam.dozer.converter.*;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.login.LoginDAO;
@@ -31,6 +24,9 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Iterator;
+import java.util.List;
 
 @Service("userProfileService")
 @Transactional
@@ -84,7 +80,7 @@ public class UserProfileServiceImpl implements UserProfileService {
 		entityValidator.isValid(userEntity);
         pageTemplateService.validate(request);
 		
-        final UserEntity dbEntity = userManager.getUser(request.getUser().getUserId());
+        final UserEntity dbEntity = userManager.getUser(request.getUser().getId());
         
         final List<EmailAddressEntity> emailList = emailAddressDozerConverter.convertToEntityList(request.getEmails(), true);	 
         final List<AddressEntity> addressList = addressDozerConverter.convertToEntityList(request.getAddresses(), true);
@@ -211,7 +207,7 @@ public class UserProfileServiceImpl implements UserProfileService {
 		for(final LoginEntity loginEntity : principalList) {
 			if(StringUtils.isBlank(loginEntity.getLogin())) {
 				throw new BasicDataServiceException(ResponseCode.LOGIN_REQUIRED);
-			} else if(loginDataService.getLoginByManagedSys(loginEntity.getDomainId(), loginEntity.getLogin(), loginEntity.getManagedSysId()) != null) {
+			} else if(loginDataService.getLoginByManagedSys(loginEntity.getLogin(), loginEntity.getManagedSysId()) != null) {
 				throw new BasicDataServiceException(ResponseCode.LOGIN_EXISTS);
 			}
 		}

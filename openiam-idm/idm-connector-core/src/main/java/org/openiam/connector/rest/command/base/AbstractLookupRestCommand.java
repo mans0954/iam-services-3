@@ -11,6 +11,7 @@ import org.openiam.connector.type.constant.ErrorCode;
 import org.openiam.connector.type.constant.StatusCodeType;
 import org.openiam.connector.type.request.LookupRequest;
 import org.openiam.connector.type.response.SearchResponse;
+import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.provision.type.ExtensibleObject;
 
 /**
@@ -30,35 +31,16 @@ public abstract class AbstractLookupRestCommand<ExtObject extends ExtensibleObje
 
 		final String dataId = searchRequest.getSearchValue();
 		/* targetID - */
-		log.info("Inside Abstract LookUp TargetId="+searchRequest.getTargetID());
 		ConnectorConfiguration config = getConfiguration(
 				searchRequest.getTargetID(), ConnectorConfiguration.class);
-		log.info("Inside Abstract LookUp ManageSysId="+config.getManagedSys());
-		HttpURLConnection con = this.getConnection(config.getManagedSys(),
-				"Users/" + dataId);
+		ManagedSysEntity managedSys = config.getManagedSys();
+		managedSys.setConnectionString(managedSys.getConnectionString() + "/" + dataId);
+		HttpURLConnection con = getConnection(managedSys);
 		try {
 			final ObjectValue resultObject = new ObjectValue();
 			resultObject.setObjectIdentity(dataId);
-			final String responseStr = searchObject(con, dataId);
+			return searchObject(con, searchRequest);
 
-			if (log.isDebugEnabled()) {
-				log.info(String.format("Response= %s", responseStr));
-			}
-
-			if (responseStr != null) {
-				// response.getObjectList().add(resultObject);
-				response.setStatus(StatusCodeType.SUCCESS);
-			} else {
-				response.setStatus(StatusCodeType.FAILURE);
-				log.info("LOOKUP successful without results.");
-				// throw new
-				// ConnectorDataException(ErrorCode.NO_RESULTS_RETURNED);
-			}
-			// else
-			// throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR,
-			// "Principal not found");
-            
-			return response;
 		} catch (Throwable e) {
 			log.error(e.getMessage(), e);
 			throw new ConnectorDataException(ErrorCode.OTHER_ERROR,
@@ -68,6 +50,6 @@ public abstract class AbstractLookupRestCommand<ExtObject extends ExtensibleObje
 		}
 	}
 
-	protected abstract String searchObject(HttpURLConnection con, String dataId)
+	protected abstract SearchResponse searchObject(HttpURLConnection con, LookupRequest<ExtObject> searchRequest)
 			throws Exception;
 }

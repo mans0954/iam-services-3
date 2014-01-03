@@ -35,7 +35,7 @@ public class CreateResourceAccountCommand implements ReconciliationCommand {
 
     public boolean execute(Login login, User user, List<ExtensibleAttribute> attributes) {
         log.debug("Entering CreateResourceAccountCommand");
-        log.debug("Create Resource Account for user: " + user.getUserId());
+        log.debug("Create Resource Account for user: " + user.getId());
         ProvisionUser pUser = new ProvisionUser(user);
         pUser.setSrcSystemId(login.getManagedSysId());
         if(StringUtils.isNotEmpty(config.getScript())){

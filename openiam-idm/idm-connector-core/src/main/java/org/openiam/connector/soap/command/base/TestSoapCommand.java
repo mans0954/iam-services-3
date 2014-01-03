@@ -21,7 +21,14 @@ public class TestSoapCommand<ExtObject extends ExtensibleObject> extends Abstrac
 		ConnectorConfiguration config = getConfiguration(
 				crudRequest.getTargetID(), ConnectorConfiguration.class);
 		HttpURLConnection con = super.getConnection(config.getManagedSys(), "/v1/Users");
+		
 		con.disconnect();
 		return response;
+	}
+
+	@Override
+	protected String getCommandScriptHandler(String id) {
+		// TODO Auto-generated method stub
+		return null;
 	}    
 }

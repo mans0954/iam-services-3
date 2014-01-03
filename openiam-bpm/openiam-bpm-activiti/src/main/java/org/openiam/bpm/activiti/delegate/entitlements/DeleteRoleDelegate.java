@@ -4,6 +4,7 @@ import org.activiti.engine.delegate.DelegateExecution;
 import org.openiam.base.ws.Response;
 import org.openiam.bpm.activiti.delegate.core.AbstractActivitiJob;
 import org.openiam.bpm.util.ActivitiConstants;
+import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.role.ws.RoleDataWebService;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -18,8 +19,11 @@ public class DeleteRoleDelegate extends AbstractActivitiJob {
 	
 	@Override
 	public void execute(DelegateExecution execution) throws Exception {
-		final String roleId = getStringVariable(execution, ActivitiConstants.ROLE_ID);
-		final Response wsReponse = roleService.removeRole(roleId);
+		Response wsResponse = null;
+		final Role role = getObjectVariable(execution, ActivitiConstants.ROLE, Role.class);
+		if(role != null) {
+			wsResponse = roleService.removeRole(role.getId());
+		}
 		//TODO:  validate
 	}
 }

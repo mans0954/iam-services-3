@@ -15,9 +15,6 @@
     <class name="org.openiam.idm.srvc.auth.dto.Login" table="LOGIN" >
         <comment></comment>
         <composite-id name="id" class="org.openiam.idm.srvc.auth.dto.LoginId">
-            <key-property name="domainId" type="string">
-                <column name="SERVICE_ID" length="20" />
-            </key-property>
             <key-property name="login" type="string">
                 <column name="LOGIN" length="320" />
             </key-property>

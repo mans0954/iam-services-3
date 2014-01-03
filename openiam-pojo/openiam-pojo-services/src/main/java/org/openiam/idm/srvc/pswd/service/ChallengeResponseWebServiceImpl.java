@@ -20,13 +20,6 @@
  */
 package org.openiam.idm.srvc.pswd.service;
 
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-
-import javax.jws.WebService;
-
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -35,9 +28,9 @@ import org.openiam.base.id.UUIDGen;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.exception.BasicDataServiceException;
 import org.openiam.dozer.converter.IdentityQuestionDozerConverter;
 import org.openiam.dozer.converter.UserIdentityAnswerDozerConverter;
+import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.IdentityAnswerSearchBean;
 import org.openiam.idm.searchbeans.IdentityQuestionSearchBean;
 import org.openiam.idm.srvc.pswd.domain.IdentityQuestionEntity;
@@ -46,6 +39,12 @@ import org.openiam.idm.srvc.pswd.dto.IdentityQuestion;
 import org.openiam.idm.srvc.pswd.dto.UserIdentityAnswer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import javax.jws.WebService;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 
 @Service("challengeResponse")
 @WebService(endpointInterface = "org.openiam.idm.srvc.pswd.service.ChallengeResponseWebService", targetNamespace = "urn:idm.openiam.org/srvc/pswd/service", portName = "ChallengeResponseWebServicePort", serviceName = "ChallengeResponseWebService")
@@ -65,9 +64,8 @@ public class ChallengeResponseWebServiceImpl implements
 			.getLog(ChallengeResponseWebServiceImpl.class);
 
 	@Override
-	public Integer getNumOfRequiredQuestions(String userId, String domainId) {
-		return challengeResponseService.getNumOfRequiredQuestions(userId,
-				domainId);
+	public Integer getNumOfRequiredQuestions(String userId) {
+		return challengeResponseService.getNumOfRequiredQuestions(userId);
 	}
 
 	@Override
@@ -223,7 +221,7 @@ public class ChallengeResponseWebServiceImpl implements
 		}
 		return response;
 	}
-
+    @Override
 	public Response saveAnswers(List<UserIdentityAnswer> answerList) {
 		final Response response = new Response(ResponseStatus.SUCCESS);
 		try {
@@ -270,18 +268,16 @@ public class ChallengeResponseWebServiceImpl implements
 		}
 		return response;
 	}
-
-	public boolean isResponseValid(String domainId, String userId,
+    @Override
+	public boolean isResponseValid(String userId,
 			List<UserIdentityAnswer> newAnswerList) {
 		final List<UserIdentityAnswerEntity> entityList = answerDozerConverter
 				.convertToEntityList(newAnswerList, true);
-		return challengeResponseService.isResponseValid(domainId, userId,
-				entityList);
-
+		return challengeResponseService.isResponseValid(userId, entityList);
 	}
 
 	@Override
-	public boolean isUserAnsweredSecurityQuestions(final String userId, final String domainId) {
-		return challengeResponseService.isUserAnsweredSecurityQuestions(userId, domainId);
+	public boolean isUserAnsweredSecurityQuestions(final String userId) {
+		return challengeResponseService.isUserAnsweredSecurityQuestions(userId);
 	}
 }

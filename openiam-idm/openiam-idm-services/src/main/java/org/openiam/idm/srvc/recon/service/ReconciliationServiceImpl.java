@@ -99,6 +99,7 @@ import org.openiam.provision.service.ConnectorAdapter;
 import org.openiam.provision.service.ProvisionService;
 import org.openiam.provision.service.ProvisionServiceUtil;
 import org.openiam.provision.type.ExtensibleAttribute;
+import org.openiam.provision.type.ExtensibleObject;
 import org.openiam.provision.type.ExtensibleUser;
 import org.openiam.script.ScriptIntegration;
 import org.openiam.util.MuleContextProvider;
@@ -187,6 +188,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
     private static final Log log = LogFactory
             .getLog(ReconciliationServiceImpl.class);
 
+    @Override
     public ReconciliationConfig addConfig(ReconciliationConfig config) {
         if (config == null) {
             throw new IllegalArgumentException("config parameter is null");
@@ -226,6 +228,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
         }
     }
 
+    @Override
     @Transactional
     public void updateConfig(ReconciliationConfig config) {
         if (config == null) {
@@ -244,6 +247,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
         this.saveSituationSet(sitSet, config.getReconConfigId());
     }
 
+    @Override
     @Transactional
     public void removeConfigByResourceId(String resourceId) {
         if (resourceId == null) {
@@ -253,6 +257,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
 
     }
 
+    @Override
     @Transactional
     public void removeConfig(String configId) {
         if (configId == null) {
@@ -263,6 +268,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
 
     }
 
+    @Override
     @Transactional(readOnly = true)
     public ReconciliationConfig getConfigByResource(String resourceId) {
         if (resourceId == null) {
@@ -276,7 +282,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
             return reconConfigDozerMapper.convertToDTO(result, true);
 
     }
-
+    @Override
     public ReconciliationConfig getConfigById(String configId) {
         if (configId == null) {
             throw new IllegalArgumentException("configId parameter is null");
@@ -288,6 +294,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
             return reconConfigDozerMapper.convertToDTO(result, true);
     }
 
+    @Override
     public ReconciliationResponse startReconciliation(
             ReconciliationConfig config) {
 
@@ -619,7 +626,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
                     String targetUserPrincipal = reconcilationTargetUserObjectToIDM(
                             managedSysId, mSys, situations,
                             extensibleAttributes, config, processedUserIds,
-                            auditBuilder);
+                            auditBuilder, resultBean, attrMap);
 
                     if (StringUtils.isNotEmpty(targetUserPrincipal)) {
                         reconChildLog.succeed().setAuditDescription(
@@ -642,14 +649,18 @@ public class ReconciliationServiceImpl implements ReconciliationService {
             ManagedSysDto mSys, Map<String, ReconciliationCommand> situations,
             List<ExtensibleAttribute> extensibleAttributes,
             ReconciliationConfig config, List<String> processedUserIds,
-            AuditLogBuilder auditBuilder) {
+            AuditLogBuilder auditBuilder, ReconciliationResultBean resultBean,
+            List<AttributeMapEntity> attrMap) {
         String targetUserPrincipal = null;
+        ExtensibleUser eu = new ExtensibleUser();
+        eu.setAttributes(extensibleAttributes);
 
         Map<String, Attribute> attributeMap = new HashMap<String, Attribute>();
         for (ExtensibleAttribute attr : extensibleAttributes) {
             // search principal attribute by KeyField
             attributeMap.put(attr.getName(), attr);
             if (attr.getName().equals(config.getCustomMatchAttr())) {
+                eu.setPrincipalFieldName(attr.getName());
                 targetUserPrincipal = attr.getValue();
                 break;
             }
@@ -661,11 +672,11 @@ public class ReconciliationServiceImpl implements ReconciliationService {
             User usr = matchObjectRule.lookup(config, attributeMap);
 
             if (usr != null) {
-                if (processedUserIds.contains(usr.getUserId())) { // already
+                if (processedUserIds.contains(usr.getId())) { // already
                                                                   // processed
                     return targetUserPrincipal;
                 }
-                User u = userManager.getUserDto(usr.getUserId());
+                User u = userManager.getUserDto(usr.getId());
                 // situation TARGET EXIST, IDM EXIST do modify
                 // check principal list on this ManagedSys exists
                 List<Login> principals = u.getPrincipalList();
@@ -676,6 +687,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
                         break;
                     }
                 }
+
                 // if user exists but don;t have principal for current target
                 // sys
                 ReconciliationCommand command = situations
@@ -684,7 +696,6 @@ public class ReconciliationServiceImpl implements ReconciliationService {
                     ProvisionUser newUser = new ProvisionUser(u);
                     if (principal == null) {
                         principal = new Login();
-                        principal.setDomainId(mSys.getDomainId());
                         principal.setLogin(targetUserPrincipal);
                         principal.setManagedSysId(managedSysId);
                         principal.setOperation(AttributeOperationEnum.ADD);
@@ -715,12 +726,15 @@ public class ReconciliationServiceImpl implements ReconciliationService {
 
                 }
             } else {
+                resultBean.getRows().add(
+                        this.setRowInReconciliationResult(
+                                resultBean.getHeader(), attrMap, null, eu,
+                                ReconciliationResultCase.NOT_EXIST_IN_IDM_DB));
                 // create new user in IDM
                 ReconciliationCommand command = situations
                         .get(ReconciliationCommand.SYS_EXISTS__IDM_NOT_EXISTS);
                 if (command != null) {
                     Login l = new Login();
-                    l.setDomainId(mSys.getDomainId());
                     l.setLogin(targetUserPrincipal);
                     l.setManagedSysId(managedSysId);
                     l.setOperation(AttributeOperationEnum.ADD);
@@ -728,8 +742,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
                     newUser.setSrcSystemId(managedSysId);
                     // ADD Target user principal
                     newUser.getPrincipalList().add(l);
-                    LoginEntity idmLogin = loginManager.getLoginByManagedSys(
-                            mSys.getDomainId(), targetUserPrincipal, "0");
+                    LoginEntity idmLogin = loginManager.getLoginByManagedSys(targetUserPrincipal, "0");
                     if (idmLogin != null) {
                         newUser.getPrincipalList().add(
                                 loginDozerConverter
@@ -810,7 +823,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
                             .getAction())) {
                         User idmUser = getUserFromIDM(header, row);
                         if (idmUser != null) {
-                            userManager.deleteUser(idmUser.getUserId());
+                            userManager.deleteUser(idmUser.getId());
                         }
                     }
                     break;
@@ -1234,7 +1247,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
             // get all groups for user
             List<org.openiam.idm.srvc.grp.dto.Group> curGroupList = groupDozerConverter
                     .convertToDTOList(groupManager.getGroupsForUser(
-                            user.getUserId(), null, -1, -1), false);
+                            user.getId(), null, -1, -1), false);
             String decPassword = "";
             if (primaryIdentity != null) {
                 if (StringUtils.isEmpty(primaryIdentity.getUserId())) {

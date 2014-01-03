@@ -721,7 +721,7 @@ public class UserAttributeHelper {
         newUser.setSecondaryStatus(user.getSecondaryStatus());
         newUser.setSuffix(user.getSuffix());
         newUser.setTitle(user.getTitle());
-        newUser.setUserId(user.getUserId());
+        newUser.setId(user.getId());
         newUser.setUserTypeInd(user.getUserTypeInd());
         newUser.setMailCode(user.getMailCode());
         newUser.setCostCenter(user.getCostCenter());

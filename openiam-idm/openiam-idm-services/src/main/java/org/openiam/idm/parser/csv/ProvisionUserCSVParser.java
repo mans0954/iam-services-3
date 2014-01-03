@@ -1,24 +1,18 @@
 package org.openiam.idm.parser.csv;
 
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
 import org.openiam.am.srvc.constants.CSVSource;
 import org.openiam.am.srvc.constants.UserFields;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.recon.dto.ReconciliationObject;
 import org.openiam.idm.srvc.recon.result.dto.ReconciliationResultField;
-import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.provision.dto.ProvisionUser;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 @Service("provisionUserCSVParser")
 public class ProvisionUserCSVParser extends
@@ -118,7 +112,7 @@ public class ProvisionUserCSVParser extends
             break;
         case uid:
         case userId:
-            user.setUserId(objValue);
+            user.setId(objValue);
             break;
         case userTypeInd:
             user.setUserTypeInd(objValue);
@@ -173,9 +167,6 @@ public class ProvisionUserCSVParser extends
             break;
         case alternateContactId:
             user.setAlternateContactId(objValue);
-            break;
-        case securityDomain:
-            user.setSecurityDomain(objValue);
             break;
         case userOwnerId:
             user.setUserOwnerId(objValue);
@@ -286,7 +277,7 @@ public class ProvisionUserCSVParser extends
             break;
         case uid:
         case userId:
-            objValue = toString(user.getUserId());
+            objValue = toString(user.getId());
             break;
         case userTypeInd:
             objValue = toString(user.getUserTypeInd());
@@ -324,9 +315,6 @@ public class ProvisionUserCSVParser extends
             break;
         case alternateContactId:
             objValue = toString(user.getAlternateContactId());
-            break;
-        case securityDomain:
-            objValue = toString(user.getSecurityDomain());
             break;
         case userOwnerId:
             objValue = toString(user.getUserOwnerId());

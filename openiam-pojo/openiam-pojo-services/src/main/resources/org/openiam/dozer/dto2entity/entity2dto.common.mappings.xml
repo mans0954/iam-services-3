@@ -45,7 +45,7 @@
 			<b>metadataElementId</b>
 		</field>
 		<field>
-			<a>user.userId</a>
+			<a>user.id</a>
 			<b>userId</b>
 		</field>
 	</mapping>
@@ -169,11 +169,6 @@
             <a>managedSys.managedSysId</a>
             <b>managedSys</b>
         </field>
-	</mapping>
-	<mapping>
-		<class-a>org.openiam.idm.srvc.secdomain.domain.SecurityDomainEntity
-		</class-a>
-		<class-b>org.openiam.idm.srvc.secdomain.dto.SecurityDomain</class-b>
 	</mapping>
 
 	<mapping>

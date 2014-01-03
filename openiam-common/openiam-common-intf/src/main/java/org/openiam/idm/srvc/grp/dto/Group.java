@@ -1,8 +1,10 @@
 package org.openiam.idm.srvc.grp.dto;
 
 
+import org.openiam.base.AdminResourceDTO;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.BaseObject;
+import org.openiam.base.KeyNameDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.res.dto.Resource;
@@ -13,6 +15,8 @@ import org.openiam.idm.srvc.user.dto.User;
 
 import javax.xml.bind.annotation.*;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+
+import java.io.Serializable;
 import java.util.*;
 
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -25,22 +29,13 @@ import java.util.*;
         "createDate",
         "createdBy",
         "description",
-        "id",
-        "name",
         "lastUpdate",
         "lastUpdatedBy",
-        //"provisionMethod",
-        //"provisionObjName",
         "status",
-        //"metadataTypeId",
-        //"ownerId",
-        //"internalGroupId",
         "operation",
         "parentGroups",
         "childGroups",
-        "resources",
-        "adminResourceId",
-        "adminResourceName"
+        "resources"
 })
 @XmlRootElement(name = "Group")
 @XmlSeeAlso({
@@ -50,7 +45,7 @@ import java.util.*;
         User.class
 })
 @DozerDTOCorrespondence(GroupEntity.class)
-public class Group extends BaseObject implements java.io.Serializable {
+public class Group extends AdminResourceDTO implements Serializable {
 
     private static final long serialVersionUID = 7657568959406790313L;
 
@@ -58,8 +53,6 @@ public class Group extends BaseObject implements java.io.Serializable {
 
     private String managedSysId;
     private String managedSysName;
-    protected String id;
-    protected String name;
     @XmlSchemaType(name = "dateTime")
     protected Date createDate;
     protected String createdBy;
@@ -70,9 +63,6 @@ public class Group extends BaseObject implements java.io.Serializable {
     @XmlSchemaType(name = "dateTime")
     protected Date lastUpdate;
     protected String lastUpdatedBy;
-    
-    private String adminResourceId;
-    private String adminResourceName;
     
     private Set<Group> parentGroups;
     private Set<Group> childGroups;
@@ -86,26 +76,6 @@ public class Group extends BaseObject implements java.io.Serializable {
     protected Set<GroupAttribute> attributes = new HashSet<GroupAttribute>();
 
     public Group() {
-    }
-
-    public Group(String id) {
-        this.id = id;
-    }
-
-    public String getId() {
-        return this.id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return this.name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public Date getCreateDate() {
@@ -252,22 +222,6 @@ public class Group extends BaseObject implements java.io.Serializable {
 
 	public void setManagedSysName(String managedSysName) {
 		this.managedSysName = managedSysName;
-	}
-
-	public String getAdminResourceId() {
-		return adminResourceId;
-	}
-
-	public void setAdminResourceId(String adminResourceId) {
-		this.adminResourceId = adminResourceId;
-	}
-
-	public String getAdminResourceName() {
-		return adminResourceName;
-	}
-
-	public void setAdminResourceName(String adminResourceName) {
-		this.adminResourceName = adminResourceName;
 	}
 
 	@Override

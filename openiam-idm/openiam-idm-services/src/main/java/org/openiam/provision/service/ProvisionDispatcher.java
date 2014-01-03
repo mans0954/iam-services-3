@@ -8,7 +8,6 @@ import org.apache.commons.logging.LogFactory;
 import org.mule.api.MuleContext;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.BaseAttributeContainer;
-import org.openiam.base.id.UUIDGen;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.connector.type.ConnectorDataException;
@@ -139,8 +138,7 @@ public class ProvisionDispatcher implements Sweepable {
         for (ProvisionDataContainer data : entities) {
             Login identity = data.getIdentity();
 
-            LoginEntity loginEntity = loginManager.getLoginByManagedSys(identity.getDomainId(),
-                    identity.getLogin(), identity.getManagedSysId());
+            LoginEntity loginEntity = loginManager.getLoginByManagedSys(identity.getLogin(), identity.getManagedSysId());
 
 
             if (data.getOperation() == AttributeOperationEnum.DELETE) {

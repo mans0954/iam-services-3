@@ -38,14 +38,14 @@ public class RestCommandFactory extends AbstractCommandFactory {
 	private ConnectorCommand suspendRestCommand;
 	@Autowired
 	@Qualifier("testRestCommand")
-    private ConnectorCommand testRestCommand;
+	private ConnectorCommand testRestCommand;
 
 	public ConnectorCommand getConnectorCommand(CommandType commandType,
 			ExtensibleObjectType extensibleObjectType)
 			throws ConnectorDataException {
 		String error = String.format(ERROR_PATTERN, commandType,
 				extensibleObjectType, "Rest");
-		System.out.println("CommandType="+commandType);
+		//log.info("CommandType=" + commandType);
 		if (ExtensibleObjectType.USER == extensibleObjectType) {
 			switch (commandType) {
 			case ADD:
@@ -62,8 +62,8 @@ public class RestCommandFactory extends AbstractCommandFactory {
 				return suspendRestCommand;
 			case SEARCH:
 				return searchUserRestCommand;
-			 case TEST:
-	            return testRestCommand;
+			case TEST:
+				return testRestCommand;
 			case LOOKUP:
 				return lookupUserRestCommand;
 			default:

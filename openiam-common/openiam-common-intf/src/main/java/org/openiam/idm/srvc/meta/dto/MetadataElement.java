@@ -99,7 +99,7 @@ public class MetadataElement implements Serializable {
 		this.dataType = dataType;
 	}
 
-	public boolean isAuditable() {
+	public boolean getAuditable() {
 		return auditable;
 	}
 
@@ -107,7 +107,7 @@ public class MetadataElement implements Serializable {
 		this.auditable = auditable;
 	}
 
-	public boolean isRequired() {
+	public boolean getRequired() {
 		return required;
 	}
 
@@ -115,11 +115,11 @@ public class MetadataElement implements Serializable {
 		this.required = required;
 	}
 
-	public boolean getIsSelfEditable() {
+	public boolean getSelfEditable() {
 		return selfEditable;
 	}
 
-	public void setIsSelfEditable(boolean selfEditable) {
+	public void setSelfEditable(boolean selfEditable) {
 		this.selfEditable = selfEditable;
 	}
 

@@ -453,6 +453,10 @@ public class ResourceServiceImpl implements ResourceService {
 	@Override
 	@Transactional
 	public void validateResource2ResourceAddition(final String parentId, final String memberId) throws BasicDataServiceException {
+		if (StringUtils.isBlank(parentId) || StringUtils.isBlank(memberId)) {
+			throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Parent ResourceId or Child ResourceId is null");
+		}
+		
 		final ResourceEntity parent = resourceDao.findById(parentId);
 		final ResourceEntity child = resourceDao.findById(memberId);
 		

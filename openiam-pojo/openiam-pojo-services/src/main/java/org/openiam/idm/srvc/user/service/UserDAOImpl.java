@@ -49,7 +49,7 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
 
     @Override
     protected String getPKfieldName() {
-        return "userId";
+        return "id";
     }
 
     @Override
@@ -278,7 +278,7 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
                 }
             }
             /* Login */
-            if (searchBean.getPrincipal() != null || StringUtils.isNotEmpty(searchBean.getDomainId())
+            if (searchBean.getPrincipal() != null
                     || StringUtils.isNotEmpty(searchBean.getLoggedIn())) {
                 criteria.createAlias("principalList", "lg");
                 if (searchBean.getPrincipal() != null) {
@@ -288,9 +288,6 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
                     if (StringUtils.isNotEmpty(searchBean.getPrincipal().getManagedSysId())) {
                         criteria.add(Restrictions.eq("lg.managedSysId", searchBean.getPrincipal().getManagedSysId()));
                     }
-                }
-                if (StringUtils.isNotEmpty(searchBean.getDomainId())) {
-                    criteria.add(Restrictions.eq("lg.domainId", searchBean.getDomainId()));
                 }
                 if (StringUtils.isNotEmpty(searchBean.getLoggedIn())) {
                     if ("YES".equalsIgnoreCase(searchBean.getLoggedIn())) {
@@ -470,7 +467,7 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
     }
 
     public UserEntity findPrimarySupervisor(String employeeId) {
-        Criteria criteria = getCriteria().createAlias("supervisors", "s").add(Restrictions.eq("userId", employeeId))
+        Criteria criteria = getCriteria().createAlias("supervisors", "s").add(Restrictions.eq("id", employeeId))
                         .add(Restrictions.eq("s.isPrimarySuper", true)).setProjection(Projections.property("s.supervisor"));
 
         return (UserEntity) criteria.uniqueResult();
@@ -478,13 +475,13 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
 
     private Criteria getSuperiorsCriteria(String userId) {
         Criteria criteria = getSession().createCriteria(SupervisorEntity.class).setProjection(Projections.property("supervisor"))
-                        .createAlias("employee", "employee").add(Restrictions.eq("employee.userId", userId));
+                        .createAlias("employee", "employee").add(Restrictions.eq("employee.id", userId));
         return criteria;
     }
 
     private Criteria getSubordinatesCriteria(String userId) {
         Criteria criteria = getSession().createCriteria(SupervisorEntity.class).setProjection(Projections.property("employee"))
-                        .createAlias("supervisor", "supervisor").add(Restrictions.eq("supervisor.userId", userId));
+                        .createAlias("supervisor", "supervisor").add(Restrictions.eq("supervisor.id", userId));
         return criteria;
     }
 
@@ -499,15 +496,15 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
                         .add(Restrictions.in("id.supervisorId", userIds));
 
         Disjunction disjunction = Restrictions.disjunction();
-        disjunction.add(Subqueries.propertyIn("userId", superiors)); // exclude
+        disjunction.add(Subqueries.propertyIn("id", superiors)); // exclude
                                                                      // existing
                                                                      // superiors
-        disjunction.add(Subqueries.propertyIn("userId", subordinates)); // exclude
+        disjunction.add(Subqueries.propertyIn("id", subordinates)); // exclude
                                                                         // existing
                                                                         // subordinates
-        disjunction.add(Restrictions.in("userId", userIds)); // exclude itself
+        disjunction.add(Restrictions.in("id", userIds)); // exclude itself
 
-        final Criteria criteria = getCriteria().setProjection(Projections.property("userId")).add(disjunction)
+        final Criteria criteria = getCriteria().setProjection(Projections.property("id")).add(disjunction)
                         .setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY);
 
         return criteria.list();
@@ -518,7 +515,7 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
         List<String> retVal = null;
         if (CollectionUtils.isNotEmpty(roleIds)) {
             final Criteria criteria = getCriteria().createAlias("roles", "role").add(Restrictions.in("role.id", roleIds))
-                            .setProjection(Projections.property("userId"));
+                            .setProjection(Projections.property("id"));
             if (from > -1) {
                 criteria.setFirstResult(from);
             }
@@ -536,7 +533,7 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
         List<String> retVal = null;
         if (CollectionUtils.isNotEmpty(groupIds)) {
             final Criteria criteria = getCriteria().createAlias("groups", "group").add(Restrictions.in("group.id", groupIds))
-                            .setProjection(Projections.property("userId"));
+                            .setProjection(Projections.property("id"));
             if (from > -1) {
                 criteria.setFirstResult(from);
             }
@@ -554,7 +551,7 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
         List<String> retVal = null;
         if (CollectionUtils.isNotEmpty(organizationIds)) {
             final Criteria criteria = getCriteria().createAlias("affiliations", "af").add(Restrictions.in("af.id", organizationIds))
-                            .setProjection(Projections.property("userId"));
+                            .setProjection(Projections.property("id"));
             if (from > -1) {
                 criteria.setFirstResult(from);
             }
@@ -572,7 +569,7 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
         List<String> retVal = null;
         if (CollectionUtils.isNotEmpty(resourceIds)) {
             final Criteria criteria = getCriteria().createAlias("resources", "resource").add(Restrictions.in("resource.id", resourceIds))
-                            .setProjection(Projections.property("userId"));
+                            .setProjection(Projections.property("id"));
             if (from > -1) {
                 criteria.setFirstResult(from);
             }

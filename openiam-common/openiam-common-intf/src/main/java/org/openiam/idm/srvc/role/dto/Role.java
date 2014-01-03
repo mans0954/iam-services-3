@@ -1,7 +1,8 @@
 package org.openiam.idm.srvc.role.dto;
 
+import org.openiam.base.AdminResourceDTO;
 import org.openiam.base.AttributeOperationEnum;
-import org.openiam.base.BaseObject;
+import org.openiam.base.KeyNameDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.res.dto.Resource;
@@ -41,14 +42,11 @@ import java.util.*;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "role", propOrder = {
-        "id",
         "createDate",
-        "serviceId",
         "createdBy",
         "description",
         "groups",
         "roleAttributes",
-        "name",
         "userAssociationMethod",
         "status",
         "childRoles",
@@ -60,9 +58,7 @@ import java.util.*;
         "parentRoles",
         "resources",
         "managedSysId",
-        "managedSysName",
-        "adminResourceId",
-        "adminResourceName"
+        "managedSysName"
 })
 @XmlRootElement(name = "Role")
 @XmlSeeAlso({
@@ -72,7 +68,7 @@ import java.util.*;
         Resource.class
 })
 @DozerDTOCorrespondence(RoleEntity.class)
-public class Role extends BaseObject implements Comparable<Role> {
+public class Role extends AdminResourceDTO implements Comparable<Role> {
 
     /**
      *
@@ -87,22 +83,15 @@ public class Role extends BaseObject implements Comparable<Role> {
     protected String description;
     //@XmlJavaTypeAdapter(GroupSetAdapter.class)
     protected Set<Group> groups = new HashSet<Group>(0);
-    protected String id;
     @XmlJavaTypeAdapter(RoleAttributeSetAdapter.class)
     protected Set<RoleAttribute> roleAttributes = new HashSet<RoleAttribute>(0);
 
     protected Set<RolePolicy> rolePolicy = new HashSet<RolePolicy>();
 
-    protected String name;
     protected int userAssociationMethod = RoleConstant.UN_ASSIGNED;
 
     protected String status;
     protected Boolean selected = new Boolean(false);
-
-    private String serviceId;
-    
-    private String adminResourceId;
-    private String adminResourceName;
 
     private Set<Role> parentRoles;
     private Set<Role> childRoles;
@@ -121,26 +110,6 @@ public class Role extends BaseObject implements Comparable<Role> {
     public Role() {
     }
     
-    public Role(final String id) {
-    	this.id = id;
-    }
-
-    public String getId() {
-		return id;
-	}
-
-	public void setId(String id) {
-		this.id = id;
-	}
-
-	public String getServiceId() {
-		return serviceId;
-	}
-
-	public void setServiceId(String serviceId) {
-		this.serviceId = serviceId;
-	}
-
     public Date getCreateDate() {
         return createDate;
     }
@@ -179,14 +148,6 @@ public class Role extends BaseObject implements Comparable<Role> {
 
     public void setRoleAttributes(Set<RoleAttribute> value) {
         this.roleAttributes = value;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public int getUserAssociationMethod() {
@@ -287,7 +248,7 @@ public class Role extends BaseObject implements Comparable<Role> {
         this.endDate = endDate;
     }
 
-
+    @Override
     public int compareTo(Role o) {
         if (getName() == null || o == null) {
             return Integer.MIN_VALUE;
@@ -319,22 +280,6 @@ public class Role extends BaseObject implements Comparable<Role> {
 		this.managedSysName = managedSysName;
 	}
 
-    public String getAdminResourceId() {
-		return adminResourceId;
-	}
-
-	public void setAdminResourceId(String adminResourceId) {
-		this.adminResourceId = adminResourceId;
-	}
-
-	public String getAdminResourceName() {
-		return adminResourceName;
-	}
-
-	public void setAdminResourceName(String adminResourceName) {
-		this.adminResourceName = adminResourceName;
-	}
-
 	@Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -347,7 +292,6 @@ public class Role extends BaseObject implements Comparable<Role> {
         if (id != null ? !id.equals(role.id) : role.id != null) return false;
         if (name != null ? !name.equals(role.name) : role.name != null) return false;
         if (selected != null ? !selected.equals(role.selected) : role.selected != null) return false;
-        if (serviceId != null ? !serviceId.equals(role.serviceId) : role.serviceId != null) return false;
         if (status != null ? !status.equals(role.status) : role.status != null) return false;
         if (managedSysId != null ? !managedSysId.equals(role.managedSysId) : role.managedSysId != null) return false;
         if (managedSysName != null ? !managedSysName.equals(role.managedSysName) : role.managedSysName != null) return false;
@@ -362,7 +306,6 @@ public class Role extends BaseObject implements Comparable<Role> {
         result = 31 * result + (name != null ? name.hashCode() : 0);
         result = 31 * result + (status != null ? status.hashCode() : 0);
         result = 31 * result + (selected != null ? selected.hashCode() : 0);
-        result = 31 * result + (serviceId != null ? serviceId.hashCode() : 0);
         result = 31 * result + (managedSysId != null ? managedSysId.hashCode() : 0);
         result = 31 * result + (managedSysName != null ? managedSysName.hashCode() : 0);
         return result;

@@ -1,11 +1,19 @@
 package org.openiam.connector.rest.command.user;
 
 import java.net.HttpURLConnection;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.openiam.connector.rest.command.base.AbstractLookupRestCommand;
 import org.openiam.connector.rest.command.base.AbstractSearchRestCommand;
+import org.openiam.connector.type.request.LookupRequest;
+import org.openiam.connector.type.response.ObjectResponse;
+import org.openiam.connector.type.response.SearchResponse;
+import org.openiam.idm.srvc.msg.dto.NotificationParam;
+import org.openiam.idm.srvc.msg.dto.NotificationRequest;
 
 import org.openiam.provision.type.ExtensibleUser;
 import org.springframework.stereotype.Service;
@@ -16,30 +24,48 @@ import org.springframework.stereotype.Service;
  */
 @Service("lookupUserRestCommand")
 public class LookupUserRestCommand extends
-		AbstractSearchRestCommand<ExtensibleUser> {
+		AbstractLookupRestCommand<ExtensibleUser> {
 	private static final Log log = LogFactory
 			.getLog(LookupUserRestCommand.class);
 
 	@Override
-	protected String searchObject(HttpURLConnection connection, String dataId)
-			throws Exception {
+	protected String getCommandScriptHandler(String id) {
+		return managedSysService.getManagedSysById(id).getLookupHandler();
+	}
+
+	@Override
+	protected SearchResponse searchObject(HttpURLConnection con,
+			LookupRequest<ExtensibleUser> searchRequest) throws Exception {
 		try {
-			// connection.setDoOutput(true);
-			// connection.setRequestProperty("Accept", "application/xml");
-			// connection.setRequestProperty("X-HTTP-Method-Override", "GET");
-			// S token = new S();
-			// token.setTimestamp(System.currentTimeMillis());
-			// token.setPassword("foobar");
-			// String encrypted =token.getPassword();
-			// //String encrypted = TestRSA.encrypt(token);
-			// connection
-			// .setRequestProperty(
-			// "Authorization",
-			// "Bearer " + encrypted);
-			return makeCall(connection, "");
+			con.setDoOutput(true);
+			con.setRequestProperty("Accept", "application/xml");
+			con.setRequestProperty("X-HTTP-Method-Override", "GET");
+			
+			Map<String, String> user = objectToAttributes(
+					searchRequest.getObjectIdentity(),
+					searchRequest.getExtensibleObject());
+			String commandHandler = this.getCommandScriptHandler(searchRequest
+					.getTargetID());
+			String scriptName = this.getScriptName(commandHandler);
+			String argsName = this.getArgs(commandHandler, user);
+			final NotificationRequest notificationRequest = new NotificationRequest();
+			notificationRequest.getParamList().add(
+					new NotificationParam("IDENTITY", searchRequest
+							.getObjectIdentity()));
+
+			Map<String, Object> bindingMap = new HashMap<String, Object>();
+			bindingMap.put("req", notificationRequest);
+			String msg = createMessage(bindingMap, scriptName);
+			//con.connect();
+			//return makeCall(con, msg).getErrorMsgAsStr();
+			ObjectResponse objectResponse = makeCall(con, "");
+			SearchResponse response = new SearchResponse();
+			response.setStatus(objectResponse.getStatus());
+			return response;
 
 		} finally {
 			// this.closeStatement(statement);
 		}
 	}
+
 }

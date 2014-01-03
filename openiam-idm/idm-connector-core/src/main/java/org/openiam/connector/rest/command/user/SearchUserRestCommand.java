@@ -1,11 +1,17 @@
 package org.openiam.connector.rest.command.user;
 
 import java.net.HttpURLConnection;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.openiam.connector.rest.command.base.AbstractSearchRestCommand;
+import org.openiam.connector.type.request.SearchRequest;
+import org.openiam.connector.type.response.ObjectResponse;
+import org.openiam.idm.srvc.msg.dto.NotificationParam;
+import org.openiam.idm.srvc.msg.dto.NotificationRequest;
 import org.openiam.provision.type.ExtensibleUser;
 import org.springframework.stereotype.Service;
 
@@ -20,23 +26,33 @@ public class SearchUserRestCommand extends
 			.getLog(SearchUserRestCommand.class);
 
 	@Override
-	protected String searchObject(HttpURLConnection connection, String dataId)
-			throws Exception {
-		try {
-			// connection.setDoOutput(true);
+	protected ObjectResponse searchObject(HttpURLConnection connection,
+			SearchRequest<ExtensibleUser> searchRequest) throws Exception {
+
 			connection.setRequestProperty("Accept", "application/xml");
 			connection.setRequestProperty("X-HTTP-Method-Override", "GET");
+			Map<String, String> user = objectToAttributes(
+					searchRequest.getObjectIdentity(),
+					searchRequest.getExtensibleObject());
+			String commandHandler = this.getCommandScriptHandler(searchRequest
+					.getTargetID());
+			String scriptName = this.getScriptName(commandHandler);
+			String argsName = this.getArgs(commandHandler, user);
+			final NotificationRequest notificationRequest = new NotificationRequest();
+			notificationRequest.getParamList().add(
+					new NotificationParam("IDENTITY", searchRequest
+							.getObjectIdentity()));
 
-			// token.setTimestamp(System.currentTimeMillis());
-			// token.setPassword("foobar");
-			// String encrypted =token.getPassword();
-			// String encrypted = TestRSA.encrypt(token);
-//			connection.setRequestProperty("Authorization", "Bearer "
-//					+ encrypted);
-			return makeCall(connection, "");
+			Map<String, Object> bindingMap = new HashMap<String, Object>();
+			bindingMap.put("req", notificationRequest);
+			String msg = createMessage(bindingMap, scriptName);
+			return makeCall(connection, msg);
 
-		} finally {
-			// this.closeStatement(statement);
-		}
+		
+	}
+
+	@Override
+	protected String getCommandScriptHandler(String id) {
+		return managedSysService.getManagedSysById(id).getSearchHandler();
 	}
 }

@@ -13,6 +13,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.openiam.bpm.activiti.delegate.core.AbstractNotificationDelegate;
 import org.openiam.bpm.activiti.delegate.core.ActivitiHelper;
+import org.openiam.bpm.activiti.delegate.entitlements.RejectEntitlementsNotifierDelegate;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
@@ -33,12 +34,9 @@ import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.thoughtworks.xstream.XStream;
 
-public class RejectProfileProvisionDelegate extends AbstractNotificationDelegate {
+public class RejectProfileProvisionDelegate extends RejectEntitlementsNotifierDelegate {
 	
 	 private static Logger log = Logger.getLogger(RejectProfileProvisionDelegate.class);
-     
-     @Autowired
-     private ActivitiHelper activitiHelper;
 
      public RejectProfileProvisionDelegate() {
     	 super();
@@ -82,7 +80,7 @@ public class RejectProfileProvisionDelegate extends AbstractNotificationDelegate
      private void sendEmail(final UserEntity requestor, final DelegateExecution execution, final User user, final String userId, final String email) {
 	     final NotificationRequest request = new NotificationRequest();
 	     request.setUserId(userId);
-	     request.setNotificationType(getNotificationType());
+	     request.setNotificationType(getNotificationType(execution));
 	     request.setTo(email);
 	     request.getParamList().add(new NotificationParam("REQUEST_REASON", getTaskDescription(execution)));
 	     request.getParamList().add(new NotificationParam("TARGET_USER", user.getDisplayName()));
@@ -91,9 +89,4 @@ public class RejectProfileProvisionDelegate extends AbstractNotificationDelegate
 	     }
 	     mailService.sendNotification(request);
      }
-
-	@Override
-	protected String getNotificationType() {
-		return "REQUEST_REJECTED";
-	}
 }

@@ -16,6 +16,7 @@ import org.openiam.base.ws.ResponseStatus;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.bpm.activiti.delegate.core.AbstractNotificationDelegate;
 import org.openiam.bpm.activiti.delegate.core.ActivitiHelper;
+import org.openiam.bpm.activiti.delegate.entitlements.AcceptEntitlementsNotifierDelegate;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
@@ -44,7 +45,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.thoughtworks.xstream.XStream;
 
-public class AcceptProfileProvisionDelegate extends AbstractNotificationDelegate {
+public class AcceptProfileProvisionDelegate extends AcceptEntitlementsNotifierDelegate {
 
     @Autowired
     private LoginDataService loginDS;
@@ -78,7 +79,7 @@ public class AcceptProfileProvisionDelegate extends AbstractNotificationDelegate
             identity = login.getLogin();
             password = loginDS.decryptPassword(login.getUserId(),login.getPassword());
 		}
-		sendEmail(execution, requestor, newUser, newUser.getUserId(), null, identity, password);
+		sendEmail(execution, requestor, newUser, newUser.getId(), null, identity, password);
     }
     
     private void sendEmails(final DelegateExecution execution,
@@ -110,7 +111,7 @@ public class AcceptProfileProvisionDelegate extends AbstractNotificationDelegate
     					   final String password) {
     	final NotificationRequest request = new NotificationRequest();
 	    request.setUserId(userId);
-	    request.setNotificationType(getNotificationType());
+	    request.setNotificationType(getNotificationType(execution));
 	    request.setTo(email);
 	    request.getParamList().add(new NotificationParam("REQUEST_REASON", getTaskDescription(execution)));
 	    request.getParamList().add(new NotificationParam("TARGET_USER", newUser.getDisplayName()));
@@ -123,9 +124,4 @@ public class AcceptProfileProvisionDelegate extends AbstractNotificationDelegate
 
 	    mailService.sendNotification(request);
     }
-
-	@Override
-	protected String getNotificationType() {
-		return "REQUEST_APPROVED";
-	}
 }

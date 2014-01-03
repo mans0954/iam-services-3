@@ -271,14 +271,14 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
 
 			log.error(String.format(
 					"Send notification failed. Email was null for userId=%s",
-					usr.getUserId()));
+					usr.getId()));
 			return false;
 		}
 
 		if (!isEmailValid(usr.getEmail())) {
 			log.error(String
 					.format("Send notfication failed. Email was is not valid for userId=%s - %s",
-							usr.getUserId(), usr.getEmail()));
+							usr.getId(), usr.getEmail()));
 			return false;
 		}
 		String[] emailDetails = fetchEmailDetails(req.getNotificationType());

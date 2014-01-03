@@ -34,34 +34,19 @@ public interface LoginDataWebService {
     public Response deleteLogin( @WebParam(name = "loginId", targetNamespace = "") String loginId);
 
     @WebMethod
-    public Response removeLogin(
-            @WebParam(name = "domainId", targetNamespace = "")
-            String domainId,
-            @WebParam(name = "principal", targetNamespace = "")
-            String principal,
-            @WebParam(name = "managedSysId", targetNamespace = "")
-            String managedSysId);
+    public Response removeLogin( @WebParam(name = "principal", targetNamespace = "") String principal,
+                                 @WebParam(name = "managedSysId", targetNamespace = "") String managedSysId);
 
     @WebMethod
-    public LoginResponse getLoginByManagedSys(
-            @WebParam(name = "domainId", targetNamespace = "")
-            String domainId,
-            @WebParam(name = "principal", targetNamespace = "")
-            String pricipal,
-            @WebParam(name = "managedSysId", targetNamespace = "")
-            String sysId);
+    public LoginResponse getLoginByManagedSys( @WebParam(name = "principal", targetNamespace = "") String pricipal,
+                                               @WebParam(name = "managedSysId", targetNamespace = "") String sysId);
 
     @WebMethod
-    public LoginResponse getPrincipalByManagedSys(
-            @WebParam(name = "principal", targetNamespace = "")
-            String principalName,
-            @WebParam(name = "managedSysId", targetNamespace = "")
-            String managedSysId);
+    public LoginResponse getPrincipalByManagedSys(@WebParam(name = "principal", targetNamespace = "") String principalName,
+                                                  @WebParam(name = "managedSysId", targetNamespace = "") String managedSysId);
 
     @WebMethod
-    public LoginResponse getPrimaryIdentity(
-            @WebParam(name = "userId", targetNamespace = "")
-            String userId);
+    public LoginResponse getPrimaryIdentity(@WebParam(name = "userId", targetNamespace = "")String userId);
 
     @WebMethod
     public Login findById(@WebParam(name = "loginId", targetNamespace = "") String loginId);
@@ -76,25 +61,18 @@ public interface LoginDataWebService {
     /**
      * Returns a decrypted password.
      *
-     * @param domainId
      * @param principal
      * @param managedSysId
      * @return
      */
     @WebMethod
-    public Response getPassword(
-            @WebParam(name = "domainId", targetNamespace = "")
-            String domainId,
-            @WebParam(name = "principal", targetNamespace = "")
-            String principal,
-            @WebParam(name = "managedSysId", targetNamespace = "")
-            String managedSysId) throws Exception;
+    public Response getPassword(@WebParam(name = "principal", targetNamespace = "") String principal,
+                                @WebParam(name = "managedSysId", targetNamespace = "") String managedSysId) throws Exception;
 
     /**
      * Sets the password for a login. The password needs to be encrypted externally. this allow for flexiblity in
      * supporting alternate approaches to encryption.
      *
-     * @param domainId
      * @param principal
      * @param managedSysId
      * @param password
@@ -116,44 +94,29 @@ public interface LoginDataWebService {
     /**
      * Sets a new password for the identity and updates the support attributes such as locked account flag.
      *
-     * @param domainId
      * @param principal
      * @param managedSysId
      * @param password
      * @return
      */
     @WebMethod
-    public Response resetPassword(
-            @WebParam(name = "domainId", targetNamespace = "")
-            String domainId,
-            @WebParam(name = "principal", targetNamespace = "")
-            String principal,
-            @WebParam(name = "managedSysId", targetNamespace = "")
-            String managedSysId,
-            @WebParam(name = "password", targetNamespace = "")
-            String password);
+    public Response resetPassword(@WebParam(name = "principal", targetNamespace = "") String principal,
+                                  @WebParam(name = "managedSysId", targetNamespace = "") String managedSysId,
+                                  @WebParam(name = "password", targetNamespace = "") String password);
 
     /**
      * Sets a new password for the identity and updates the support attributes such as locked account flag.
      *
-     * @param domainId
      * @param principal
      * @param managedSysId
      * @param password
      * @return
      */
     @WebMethod
-    public Response resetPasswordAndNotifyUser(
-            @WebParam(name = "domainId", targetNamespace = "")
-            String domainId,
-            @WebParam(name = "principal", targetNamespace = "")
-            String principal,
-            @WebParam(name = "managedSysId", targetNamespace = "")
-            String managedSysId,
-            @WebParam(name = "password", targetNamespace = "")
-            String password,
-            @WebParam(name = "notifyUserViaEmail", targetNamespace = "")
-            boolean notifyUserViaEmail);
+    public Response resetPasswordAndNotifyUser(@WebParam(name = "principal", targetNamespace = "") String principal,
+                                               @WebParam(name = "managedSysId", targetNamespace = "") String managedSysId,
+                                               @WebParam(name = "password", targetNamespace = "") String password,
+                                               @WebParam(name = "notifyUserViaEmail", targetNamespace = "") boolean notifyUserViaEmail);
     /**
      * Encrypts the password string.
      *
@@ -176,22 +139,12 @@ public interface LoginDataWebService {
             String userId);
 
     @WebMethod
-    Response lockLogin(
-            @WebParam(name = "domainId", targetNamespace = "")
-            String domainId,
-            @WebParam(name = "principal", targetNamespace = "")
-            String principal,
-            @WebParam(name = "managedSysId", targetNamespace = "")
-            String managedSysId);
+    Response lockLogin(@WebParam(name = "principal", targetNamespace = "") String principal,
+                       @WebParam(name = "managedSysId", targetNamespace = "") String managedSysId);
 
     @WebMethod
-    Response unLockLogin(
-            @WebParam(name = "domainId", targetNamespace = "")
-            String domainId,
-            @WebParam(name = "principal", targetNamespace = "")
-            String principal,
-            @WebParam(name = "managedSysId", targetNamespace = "")
-            String managedSysId);
+    Response unLockLogin(@WebParam(name = "principal", targetNamespace = "") String principal,
+                         @WebParam(name = "managedSysId", targetNamespace = "") String managedSysId);
 
     @WebMethod
     Response activateLogin(@WebParam(name = "loginId", targetNamespace = "") String loginId);
@@ -201,54 +154,39 @@ public interface LoginDataWebService {
 
 
     @WebMethod
-    Response bulkUnLock(
-            @WebParam(name = "status", targetNamespace = "")
-            UserStatusEnum status);
+    Response bulkUnLock(@WebParam(name = "status", targetNamespace = "") UserStatusEnum status);
 
     @WebMethod
     Response bulkResetPasswordChangeCount();
 
-    @WebMethod
-    LoginListResponse getLoginByDomain(
-            @WebParam(name = "domainId", targetNamespace = "")
-            String domainId);
+//    @WebMethod
+//    LoginListResponse getLoginByDomain(
+//            @WebParam(name = "domainId", targetNamespace = "")
+//            String domainId);
 
     /**
      * determines if the new passowrd is equal to the current password that is associated with this principal
      *
-     * @param domainId
      * @param principal
      * @param managedSysId
      * @param newPassword
      * @return
      */
     @WebMethod
-    Response isPasswordEq(
-            @WebParam(name = "domainId", targetNamespace = "")
-            String domainId,
-            @WebParam(name = "principal", targetNamespace = "")
-            String principal,
-            @WebParam(name = "managedSysId", targetNamespace = "")
-            String managedSysId,
-            @WebParam(name = "newPassword", targetNamespace = "")
-            String newPassword) throws Exception;
+    Response isPasswordEq(@WebParam(name = "principal", targetNamespace = "") String principal,
+                          @WebParam(name = "managedSysId", targetNamespace = "") String managedSysId,
+                          @WebParam(name = "newPassword", targetNamespace = "") String newPassword) throws Exception;
 
     /**
      * Checks to see if a login exists for a user - domain - managed system combination
      *
-     * @param domainId
      * @param principal
      * @param managedSysId
      * @return
      */
     @WebMethod
-    Response loginExists(
-            @WebParam(name = "domainId", targetNamespace = "")
-            String domainId,
-            @WebParam(name = "principal", targetNamespace = "")
-            String principal,
-            @WebParam(name = "managedSysId", targetNamespace = "")
-            String managedSysId);
+    Response loginExists(@WebParam(name = "principal", targetNamespace = "") String principal,
+                         @WebParam(name = "managedSysId", targetNamespace = "") String managedSysId);
 
     @WebMethod
     public LoginListResponse getLockedUserSince(
@@ -305,16 +243,9 @@ public interface LoginDataWebService {
      * @return
      */
     @WebMethod
-    public Response changeIdentityName(
-            @WebParam(name = "newPrincipalName", targetNamespace = "")
-            String newPrincipalName,
-            @WebParam(name = "newPassword", targetNamespace = "")
-            String newPassword,
-            @WebParam(name = "userId", targetNamespace = "")
-            String userId,
-            @WebParam(name = "managedSysId", targetNamespace = "")
-            String managedSysId,
-            @WebParam(name = "domainId", targetNamespace = "")
-            String domain);
+    public Response changeIdentityName(@WebParam(name = "newPrincipalName", targetNamespace = "") String newPrincipalName,
+                                       @WebParam(name = "newPassword", targetNamespace = "") String newPassword,
+                                       @WebParam(name = "userId", targetNamespace = "") String userId,
+                                       @WebParam(name = "managedSysId", targetNamespace = "") String managedSysId);
 
 }

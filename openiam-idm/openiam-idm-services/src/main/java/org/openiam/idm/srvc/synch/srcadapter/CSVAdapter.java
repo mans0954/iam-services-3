@@ -292,11 +292,11 @@ public class CSVAdapter extends AbstractSrcAdapter {
                         // initialize the transform script
                         if (usr != null) {
                             transformScript.setNewUser(false);
-                            User u = userManager.getUserDto(usr.getUserId());
+                            User u = userManager.getUserDto(usr.getId());
                             pUser = new ProvisionUser(u);
                             transformScript.setUser(u);
-                            transformScript.setPrincipalList(loginDozerConverter.convertToDTOList(loginManager.getLoginByUser(usr.getUserId()), false));
-                            transformScript.setUserRoleList(roleDataService.getUserRolesAsFlatList(usr.getUserId()));
+                            transformScript.setPrincipalList(loginDozerConverter.convertToDTOList(loginManager.getLoginByUser(usr.getId()), false));
+                            transformScript.setUserRoleList(roleDataService.getUserRolesAsFlatList(usr.getId()));
 
                         } else {
                             transformScript.setNewUser(true);
@@ -322,13 +322,13 @@ public class CSVAdapter extends AbstractSrcAdapter {
                 if (retval != -1) {
                     if (retval == TransformScript.DELETE && pUser.getUser() != null) {
                         auditBuilderTestChild.succeed().setAuditDescription("User login: "+pUser.getLogin()+" [REMOVED]");
-                        provService.deleteByUserId(pUser.getUserId(), UserStatusEnum.REMOVE, systemAccount);
+                        provService.deleteByUserId(pUser.getId(), UserStatusEnum.REMOVE, systemAccount);
                     } else {
                         // call synch
                         if (retval != TransformScript.DELETE) {
                             if (usr != null) {
                                 log.info(" - Updating existing user");
-                                pUser.setUserId(usr.getUserId());
+                                pUser.setId(usr.getId());
                                 try {
                                     provService.modifyUser(pUser);
                                 } catch (Exception e) {
@@ -338,7 +338,7 @@ public class CSVAdapter extends AbstractSrcAdapter {
                                 auditBuilderTestChild.succeed().setAuditDescription("User login: "+pUser.getLogin()+" [MODIFY]");
                             } else {
                                 log.info(" - New user being provisioned");
-                                pUser.setUserId(null);
+                                pUser.setId(null);
                                 try {
                                     provService.addUser(pUser);
                                 } catch (Exception e) {

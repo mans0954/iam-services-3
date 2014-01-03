@@ -57,8 +57,6 @@ public interface WebResourceService {
             String resourceId,
             @WebParam(name = "principalName", targetNamespace = "")
             String principalName,
-            @WebParam(name = "securityDomain", targetNamespace = "")
-            String securityDomain,
             @WebParam(name = "managedSysId", targetNamespace = "")
             String managedSysId);
 

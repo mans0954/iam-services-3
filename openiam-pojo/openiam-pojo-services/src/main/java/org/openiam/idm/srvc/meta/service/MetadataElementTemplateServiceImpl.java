@@ -402,7 +402,7 @@ public class MetadataElementTemplateServiceImpl implements MetadataElementTempla
 	@Override
 	public void validate(UserProfileRequestModel request) throws PageTemplateException {
 		final PageTempate pageTemplate = request.getPageTemplate();
-		final String userId = (request.getUser() != null) ? request.getUser().getUserId() : null;
+		final String userId = (request.getUser() != null) ? request.getUser().getId() : null;
 		final LanguageEntity targetLanguage = getLanguage(request);
 	
 		if(pageTemplate != null) {
@@ -500,7 +500,7 @@ public class MetadataElementTemplateServiceImpl implements MetadataElementTempla
 		final List<UserAttributeEntity> saveList = new LinkedList<UserAttributeEntity>();
 		
 		final PageTempate pageTemplate = request.getPageTemplate();
-		final String userId = request.getUser().getUserId();
+		final String userId = request.getUser().getId();
 		final LanguageEntity targetLanguage = getLanguage(request);
 		
 		if(pageTemplate != null) {

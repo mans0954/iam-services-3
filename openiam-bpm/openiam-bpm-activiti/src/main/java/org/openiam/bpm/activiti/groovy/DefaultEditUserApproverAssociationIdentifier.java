@@ -24,10 +24,10 @@ public class DefaultEditUserApproverAssociationIdentifier extends AbstractApprov
 	}
 	
 	public void calculateApprovers() {
-		final List<UserEntity> supervisors = userDataService.getSuperiors(request.getUser().getUserId(), 0, Integer.MAX_VALUE);
+		final List<UserEntity> supervisors = userDataService.getSuperiors(request.getUser().getId(), 0, Integer.MAX_VALUE);
 		if(CollectionUtils.isNotEmpty(supervisors)) {
 			for(final UserEntity supervisor : supervisors) {
-				approverUserIds.add(supervisor.getUserId());
+				approverUserIds.add(supervisor.getId());
 			}
 		}
 		if(CollectionUtils.isEmpty(approverUserIds)) {

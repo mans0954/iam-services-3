@@ -21,41 +21,31 @@
  */
 package org.openiam.idm.srvc.role.ws;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.exception.BasicDataServiceException;
-import org.openiam.dozer.converter.RoleAttributeDozerConverter;
 import org.openiam.dozer.converter.RoleDozerConverter;
 import org.openiam.dozer.converter.RolePolicyDozerConverter;
 import org.openiam.idm.searchbeans.RoleSearchBean;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.domain.AuditLogBuilder;
 import org.openiam.idm.srvc.base.AbstractBaseService;
-import org.openiam.idm.srvc.grp.domain.GroupEntity;
-import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.service.GroupDataService;
-import org.openiam.idm.srvc.role.domain.RoleAttributeEntity;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.domain.RolePolicyEntity;
 import org.openiam.idm.srvc.role.dto.Role;
-import org.openiam.idm.srvc.role.dto.RoleAttribute;
 import org.openiam.idm.srvc.role.dto.RolePolicy;
 import org.openiam.idm.srvc.role.service.RoleDataService;
-import org.openiam.idm.srvc.secdomain.service.SecurityDomainDAO;
-import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.jws.WebMethod;
 import javax.jws.WebService;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
  * @author suneet
@@ -84,10 +74,6 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
     @Autowired
     private GroupDataService groupService;
     
-    @Autowired
-    private SecurityDomainDAO securityDomainDAO;
-
-
 	@Override
 	public Response validateEdit(Role role) {
 		final Response response = new Response(ResponseStatus.SUCCESS);
@@ -140,14 +126,6 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 			}
 		}
 		
-		if(StringUtils.isBlank(entity.getServiceId())) {
-			throw new BasicDataServiceException(ResponseCode.INVALID_ROLE_DOMAIN, "Security Domain for Role is not set");
-		}
-		
-		if(securityDomainDAO.findById(entity.getServiceId()) == null) {
-			throw new BasicDataServiceException(ResponseCode.INVALID_ROLE_DOMAIN, "Security Domain for Role is not found");
-		}
-		
 		entityValidator.isValid(entity);
 	}
 	
@@ -168,20 +146,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
         AuditLogBuilder auditBuilder = auditLogProvider.getAuditLogBuilder();
         auditBuilder.setAction(AuditAction.ADD_GROUP_TO_ROLE).setTargetGroup(groupId).setAuditDescription(String.format("Add group to  role: %s", roleId));
 		try {
-			if(roleId == null || groupId == null) {
-				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "GroupId or RoleId  is null or empty");
-			}
-			
-			final RoleEntity role =  roleDataService.getRole(roleId, null);
-			final GroupEntity group = groupService.getGroup(groupId);
-			if(role == null || group == null) {
-				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND, "No Group or Role objects  are found");
-			}
-			
-			if(role.hasGroup(group.getId())) {
-				throw new BasicDataServiceException(ResponseCode.RELATIONSHIP_EXISTS, String.format("Group %s has already been added to role: %s", groupId, roleId));
-			}
-			
+			roleDataService.validateGroup2RoleAddition(roleId, groupId);
 			roleDataService.addGroupToRole(roleId, groupId);
             auditBuilder.succeed();
 		} catch(BasicDataServiceException e) {
@@ -808,6 +773,38 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
             auditBuilder.fail().setException(e);
         } finally {
             auditLogService.enqueue(auditBuilder);
+        }
+		return response;
+	}
+
+	@Override
+	public Response canAddChildRole(String roleId, String childRoleId) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			roleDataService.validateRole2RoleAddition(roleId, childRoleId);
+		} catch(BasicDataServiceException e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+		} catch(Throwable e) {
+			LOG.error("Exception", e);
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
+        }
+		return response;
+	}
+
+	@Override
+	public Response validateGroup2RoleAddition(String roleId, String groupId) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			roleDataService.validateGroup2RoleAddition(roleId, groupId);
+		} catch(BasicDataServiceException e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+		} catch(Throwable e) {
+			LOG.error("Exception", e);
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
         }
 		return response;
 	}

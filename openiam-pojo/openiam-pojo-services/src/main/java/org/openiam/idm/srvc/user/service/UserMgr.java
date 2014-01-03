@@ -1,17 +1,5 @@
 package org.openiam.idm.srvc.user.service;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.ListUtils;
 import org.apache.commons.lang.StringUtils;
@@ -22,11 +10,7 @@ import org.openiam.base.BaseConstants;
 import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.core.dao.UserKeyDao;
-import org.openiam.dozer.converter.AddressDozerConverter;
-import org.openiam.dozer.converter.EmailAddressDozerConverter;
-import org.openiam.dozer.converter.PhoneDozerConverter;
-import org.openiam.dozer.converter.UserAttributeDozerConverter;
-import org.openiam.dozer.converter.UserDozerConverter;
+import org.openiam.dozer.converter.*;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.*;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
@@ -40,11 +24,7 @@ import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
 import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
-import org.openiam.idm.srvc.continfo.service.AddressDAO;
-import org.openiam.idm.srvc.continfo.service.EmailAddressDAO;
-import org.openiam.idm.srvc.continfo.service.EmailSearchDAO;
-import org.openiam.idm.srvc.continfo.service.PhoneDAO;
-import org.openiam.idm.srvc.continfo.service.PhoneSearchDAO;
+import org.openiam.idm.srvc.continfo.service.*;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.service.GroupDAO;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
@@ -73,6 +53,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.*;
 
 /**
  * Service interface that clients will access to gain information about users
@@ -182,8 +164,8 @@ public class UserMgr implements UserDataService {
 
     @Override
     @Transactional(readOnly = true)
-    public UserEntity getUserByPrincipal(String securityDomain, String principal, String managedSysId, boolean dependants) {
-        LoginEntity login = loginDao.getRecord(principal, managedSysId, securityDomain);
+    public UserEntity getUserByPrincipal(String principal, String managedSysId, boolean dependants) {
+        LoginEntity login = loginDao.getRecord(principal, managedSysId);
         if (login == null) {
             return null;
         }
@@ -221,7 +203,7 @@ public class UserMgr implements UserDataService {
         while (it.hasNext()) {
             EmailAddressEntity emailAdr = it.next();
             if (emailAdr.getParent() == null) {
-                emailAdr.setParent(userDao.findById(user.getUserId()));
+                emailAdr.setParent(userDao.findById(user.getId()));
             }
         }
 
@@ -232,7 +214,7 @@ public class UserMgr implements UserDataService {
     public void updateUser(UserEntity user) {
         if (user == null)
             throw new NullPointerException("user object is null");
-        if (user.getUserId() == null)
+        if (user.getId() == null)
             throw new NullPointerException("user id is null");
 
         user.setLastUpdate(new Date(System.currentTimeMillis()));
@@ -246,11 +228,11 @@ public class UserMgr implements UserDataService {
     public void updateUserWithDependent(UserEntity user, boolean dependency) {
         if (user == null)
             throw new NullPointerException("user object is null");
-        if (user.getUserId() == null)
+        if (user.getId() == null)
             throw new NullPointerException("user id is null");
         user.setLastUpdate(new Date(System.currentTimeMillis()));
 
-        UserEntity userEntity = userDao.findById(user.getUserId());
+        UserEntity userEntity = userDao.findById(user.getId());
 
         updateUserAttributes(user, userEntity);
 
@@ -266,12 +248,12 @@ public class UserMgr implements UserDataService {
 
         if (user == null)
             throw new NullPointerException("user object is null");
-        if (user.getUserId() == null)
+        if (user.getId() == null)
             throw new NullPointerException("user id is null");
         // Processing emails
         user.setLastUpdate(new Date(System.currentTimeMillis()));
 
-        UserEntity userEntity = userDao.findById(user.getUserId());
+        UserEntity userEntity = userDao.findById(user.getId());
         userEntity.updateUser(userDozerConverter.convertToEntity(user, false));
 
         // Processing emails
@@ -437,7 +419,7 @@ public class UserMgr implements UserDataService {
         // userKeyDao.deleteByUserId(id);
         List<UserEntity> supervisors = getSuperiors(id, 0, Integer.MAX_VALUE);
         for(UserEntity se : supervisors) {
-           removeSupervisor(se.getUserId(), id);
+           removeSupervisor(se.getId(), id);
         }
         userDao.delete(userDao.findById(id));
     }
@@ -633,11 +615,11 @@ public class UserMgr implements UserDataService {
         if (attribute == null)
             throw new NullPointerException("Attribute can not be null");
 
-        if (attribute.getUser() == null || StringUtils.isBlank(attribute.getUser().getUserId())) {
+        if (attribute.getUser() == null || StringUtils.isBlank(attribute.getUser().getId())) {
             throw new NullPointerException("User has not been associated with this attribute.");
         }
 
-        UserEntity userEntity = userDao.findById(attribute.getUser().getUserId());
+        UserEntity userEntity = userDao.findById(attribute.getUser().getId());
         attribute.setUser(userEntity);
 
         MetadataElementEntity element = null;
@@ -655,12 +637,12 @@ public class UserMgr implements UserDataService {
         if (attribute == null)
             throw new NullPointerException("Attribute can not be null");
 
-        if (attribute.getUser() == null || StringUtils.isBlank(attribute.getUser().getUserId())) {
+        if (attribute.getUser() == null || StringUtils.isBlank(attribute.getUser().getId())) {
             throw new NullPointerException("User has not been associated with this attribute.");
         }
         final UserAttributeEntity userAttribute = userAttributeDao.findById(attribute.getId());
         if (userAttribute != null) {
-            UserEntity userEntity = userDao.findById(attribute.getUser().getUserId());
+            UserEntity userEntity = userDao.findById(attribute.getUser().getId());
             attribute.setUser(userEntity);
             attribute.setElement(userAttribute.getElement());
             userAttributeDao.merge(attribute);
@@ -822,7 +804,7 @@ public class UserMgr implements UserDataService {
                     throw new NullPointerException("Address with provided type exists");
                 }
             }
-        UserEntity parent = userDao.findById(val.getParent().getUserId());
+        UserEntity parent = userDao.findById(val.getParent().getId());
         val.setParent(parent);
 
         MetadataTypeEntity type = metadataTypeDAO.findById(val.getMetadataType().getMetadataTypeId());
@@ -869,7 +851,7 @@ public class UserMgr implements UserDataService {
             throw new NullPointerException("userId for the address is not defined.");
 
         final AddressEntity entity = addressDao.findById(val.getAddressId());
-        final UserEntity parent = userDao.findById(val.getParent().getUserId());
+        final UserEntity parent = userDao.findById(val.getParent().getId());
         final MetadataTypeEntity metadataType = (val.getMetadataType() != null && StringUtils.isNotBlank(val.getMetadataType().getMetadataTypeId())) ? metadataTypeDAO
                         .findById(val.getMetadataType().getMetadataTypeId()) : null;
 
@@ -992,7 +974,7 @@ public class UserMgr implements UserDataService {
         MetadataTypeEntity type = metadataTypeDAO.findById(val.getMetadataType().getMetadataTypeId());
         val.setMetadataType(type);
 
-        UserEntity parent = userDao.findById(val.getParent().getUserId());
+        UserEntity parent = userDao.findById(val.getParent().getId());
         val.setParent(parent);
 
         updateDefaultFlagForPhone(val, val.getIsDefault(), parent);
@@ -1034,7 +1016,7 @@ public class UserMgr implements UserDataService {
             throw new NullPointerException("parentId for the address is not defined.");
 
         final PhoneEntity entity = phoneDao.findById(val.getPhoneId());
-        final UserEntity parent = userDao.findById(val.getParent().getUserId());
+        final UserEntity parent = userDao.findById(val.getParent().getId());
         final MetadataTypeEntity metadataType = (val.getMetadataType() != null && StringUtils.isNotBlank(val.getMetadataType().getMetadataTypeId())) ? metadataTypeDAO
                         .findById(val.getMetadataType().getMetadataTypeId()) : null;
 
@@ -1151,7 +1133,7 @@ public class UserMgr implements UserDataService {
         MetadataTypeEntity type = metadataTypeDAO.findById(val.getMetadataType().getMetadataTypeId());
         val.setMetadataType(type);
 
-        UserEntity userEntity = userDao.findById(val.getParent().getUserId());
+        UserEntity userEntity = userDao.findById(val.getParent().getId());
         val.setParent(userEntity);
 
         updateDefaultFlagForEmail(val, val.getIsDefault(), userEntity);
@@ -1194,7 +1176,7 @@ public class UserMgr implements UserDataService {
             throw new NullPointerException("parentId for the address is not defined.");
 
         EmailAddressEntity entity = emailAddressDao.findById(val.getEmailId());
-        UserEntity parent = userDao.findById(val.getParent().getUserId());
+        UserEntity parent = userDao.findById(val.getParent().getId());
         final MetadataTypeEntity metadataType = (val.getMetadataType() != null && StringUtils.isNotBlank(val.getMetadataType().getMetadataTypeId())) ? metadataTypeDAO
                         .findById(val.getMetadataType().getMetadataTypeId()) : null;
 
@@ -1515,10 +1497,10 @@ public class UserMgr implements UserDataService {
     @Override
     @Transactional
     public String saveUserInfo(UserEntity newUserEntity, String supervisorId) throws Exception {
-        String userId = newUserEntity.getUserId();
-        if (newUserEntity.getUserId() != null) {
+        String userId = newUserEntity.getId();
+        if (newUserEntity.getId() != null) {
             // update, need to merge user objects
-            UserEntity origUser = this.getUser(newUserEntity.getUserId(), null);
+            UserEntity origUser = this.getUser(newUserEntity.getId(), null);
             this.mergeUserFields(origUser, newUserEntity);
             userDao.update(origUser);
         } else {
@@ -1526,16 +1508,16 @@ public class UserMgr implements UserDataService {
         }
         if (supervisorId != null) {
             // update supervisor
-            List<UserEntity> supervisorList = this.getSuperiors(newUserEntity.getUserId(), 0, Integer.MAX_VALUE);
+            List<UserEntity> supervisorList = this.getSuperiors(newUserEntity.getId(), 0, Integer.MAX_VALUE);
             for (UserEntity s : supervisorList) {
-                log.debug("looking to match supervisor ids = " + s.getUserId() + " " + supervisorId);
-                if (s.getUserId().equalsIgnoreCase(supervisorId)) {
+                log.debug("looking to match supervisor ids = " + s.getId() + " " + supervisorId);
+                if (s.getId().equalsIgnoreCase(supervisorId)) {
                     break;
                 }
                 // this.removeSupervisor(s.getOrgStructureId());
             }
             log.debug("adding supervisor: " + supervisorId);
-            this.addSuperior(supervisorId, newUserEntity.getUserId());
+            this.addSuperior(supervisorId, newUserEntity.getId());
         }
         return userId;
     }
@@ -1558,17 +1540,16 @@ public class UserMgr implements UserDataService {
 
         if (principalList != null && !principalList.isEmpty()) {
             for (LoginEntity lg : principalList) {
-                lg.setDomainId(sysConfiguration.getDefaultSecurityDomain());
                 lg.setManagedSysId(sysConfiguration.getDefaultManagedSysId());
                 lg.setFirstTimeLogin(1);
                 lg.setIsLocked(0);
                 lg.setCreateDate(new Date(System.currentTimeMillis()));
-                lg.setUserId(newUserEntity.getUserId());
+                lg.setUserId(newUserEntity.getId());
                 lg.setStatus(LoginStatusEnum.ACTIVE);
                 // encrypt the password
                 if (lg.getPassword() != null) {
                     String pswd = lg.getPassword();
-                    lg.setPassword(loginManager.encryptPassword(newUserEntity.getUserId(), pswd));
+                    lg.setPassword(loginManager.encryptPassword(newUserEntity.getId(), pswd));
                 }
                 loginDao.save(lg);
             }
@@ -1598,7 +1579,7 @@ public class UserMgr implements UserDataService {
          * userRole.setUserId(newUserEntity.getUserId());
          * roleDataService.assocUserToRole(userRole); } }
          */
-        return newUserEntity.getUserId();
+        return newUserEntity.getId();
     }
 
     @Transactional
@@ -1957,7 +1938,7 @@ public class UserMgr implements UserDataService {
         if (DelegationFilterHelper.isAllowed(roleId, delegationFilter.getRoleIdSet())) {
             List<UserEntity> users = userDao.getUsersForRole(roleId, delegationFilter, 0, Integer.MAX_VALUE);
             for (UserEntity userEntity : users) {
-                userIds.add(userEntity.getUserId());
+                userIds.add(userEntity.getId());
             }
         }
         return userIds;
@@ -1971,7 +1952,7 @@ public class UserMgr implements UserDataService {
         if (DelegationFilterHelper.isAllowed(groupId, delegationFilter.getRoleIdSet())) {
             List<UserEntity> users = userDao.getUsersForGroup(groupId, delegationFilter, 0, Integer.MAX_VALUE);
             for (UserEntity userEntity : users) {
-                userIds.add(userEntity.getUserId());
+                userIds.add(userEntity.getId());
             }
         }
         return userIds;

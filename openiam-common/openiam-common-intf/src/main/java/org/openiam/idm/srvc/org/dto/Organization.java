@@ -4,7 +4,9 @@ import java.io.Serializable;
 import java.util.HashMap;
 
 import org.apache.commons.lang.StringUtils;
+import org.openiam.base.AdminResourceDTO;
 import org.openiam.base.AttributeOperationEnum;
+import org.openiam.base.KeyNameDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
 
 import javax.xml.bind.annotation.*;
@@ -40,8 +42,6 @@ import org.openiam.idm.srvc.user.dto.User;
         "ldapStr",
         "lstUpdate",
         "lstUpdatedBy",
-        "id",
-        "name",
         "organizationTypeId",
         "organizationTypeName",
         "internalOrgId",
@@ -51,16 +51,13 @@ import org.openiam.idm.srvc.user.dto.User;
         "selected",
         "operation",
         "parentOrganizations",
-        "childOrganizations",
-        "adminResourceId",
-        "adminResourceName"
+        "childOrganizations"
 })
 @DozerDTOCorrespondence(OrganizationEntity.class)
-public class Organization implements Serializable, Comparable<Organization> {
+public class Organization extends AdminResourceDTO implements Serializable, Comparable<Organization> {
 
     private static final long serialVersionUID = -6297113958697455428L;
 
-    protected String id;
 
     protected String alias;
 
@@ -82,8 +79,6 @@ public class Organization implements Serializable, Comparable<Organization> {
 
     protected String lstUpdatedBy;
 
-    protected String name;
-
     protected String internalOrgId;
 
     protected String status;
@@ -102,10 +97,6 @@ public class Organization implements Serializable, Comparable<Organization> {
 
     private Set<Organization> parentOrganizations;
     private Set<Organization> childOrganizations;
-    
-    private String adminResourceId;
-    private String adminResourceName;
-    
     
     /**
      * default constructor
@@ -275,23 +266,6 @@ public class Organization implements Serializable, Comparable<Organization> {
         this.lstUpdatedBy = value;
     }
 
-
-    public String getId() {
-		return id;
-	}
-
-	public void setId(String id) {
-		this.id = id;
-	}
-
-    public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
-
 	/**
      * Gets the value of the status property.
      *
@@ -391,22 +365,6 @@ public class Organization implements Serializable, Comparable<Organization> {
 
 	public void setOrganizationTypeName(String organizationTypeName) {
 		this.organizationTypeName = organizationTypeName;
-	}
-	
-	 public String getAdminResourceId() {
-		return adminResourceId;
-	}
-
-	public void setAdminResourceId(String adminResourceId) {
-		this.adminResourceId = adminResourceId;
-	}
-
-	public String getAdminResourceName() {
-		return adminResourceName;
-	}
-
-	public void setAdminResourceName(String adminResourceName) {
-		this.adminResourceName = adminResourceName;
 	}
 
     @Override

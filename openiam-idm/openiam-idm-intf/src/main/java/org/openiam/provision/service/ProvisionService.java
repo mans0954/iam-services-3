@@ -21,15 +21,7 @@
  */
 package org.openiam.provision.service;
 
-import javax.jws.WebMethod;
-import javax.jws.WebParam;
-import javax.jws.WebService;
-
-import java.util.List;
-
 import org.openiam.base.ws.Response;
-import org.openiam.connector.type.request.LookupRequest;
-
 import org.openiam.idm.srvc.pswd.dto.PasswordValidationResponse;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.provision.dto.AccountLockEnum;
@@ -39,6 +31,11 @@ import org.openiam.provision.resp.LookupUserResponse;
 import org.openiam.provision.resp.PasswordResponse;
 import org.openiam.provision.resp.ProvisionUserResponse;
 import org.openiam.provision.type.ExtensibleAttribute;
+
+import javax.jws.WebMethod;
+import javax.jws.WebParam;
+import javax.jws.WebService;
+import java.util.List;
 
 /**
  * <code>ProvisionService</code> Interface for the Provisioning service which is
@@ -90,7 +87,6 @@ public interface ProvisionService {
      * The deleteUser operation enables the requester to delete an existing user
      * from the appropriate target systems
      *
-     * @param securityDomain -
      * @param managedSystemId - target system
      * @param principal - identity of the user in target system
      * @param status - status od delete operation
@@ -99,7 +95,6 @@ public interface ProvisionService {
      */
     @WebMethod
     public ProvisionUserResponse deleteUser(
-            @WebParam(name = "securityDomain", targetNamespace = "") String securityDomain,
             @WebParam(name = "managedSystemId", targetNamespace = "") String managedSystemId,
             @WebParam(name = "principal", targetNamespace = "") String principal,
             @WebParam(name = "status", targetNamespace = "") UserStatusEnum status,
@@ -204,5 +199,10 @@ public interface ProvisionService {
     @WebMethod
     public List<String> getAttributesList(
             @WebParam(name = "managedSysId", targetNamespace = "") String managedSysId);
+
+    @WebMethod
+    public Response syncPasswordFromSrc(
+            @WebParam(name = "passwordSync", targetNamespace = "")
+            PasswordSync passwordSync);
 
 }

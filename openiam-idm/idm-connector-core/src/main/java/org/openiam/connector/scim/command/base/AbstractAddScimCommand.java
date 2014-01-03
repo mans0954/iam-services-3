@@ -34,16 +34,6 @@ public abstract class AbstractAddScimCommand<ExtObject extends ExtensibleObject>
 			throw new ConnectorDataException(ErrorCode.INVALID_CONFIGURATION,
 					"No identity sent");
 
-		// final ExtObject extObject = crudRequest.getExtensibleObject();
-		//
-		// if(log.isDebugEnabled()) {
-		// log.debug(String.format("ExtensibleObject in Add Request=%s",
-		// extObject));
-		// }
-
-		// final List<AttributeMapEntity> attributeMap =
-		// attributeMaps(resourceId);
-
 		HttpURLConnection con = this.getConnection(config.getManagedSys(),
 				"/v1/Users");
 		try {
