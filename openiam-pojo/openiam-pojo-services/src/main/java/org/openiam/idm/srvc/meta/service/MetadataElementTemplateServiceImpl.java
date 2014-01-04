@@ -586,9 +586,11 @@ public class MetadataElementTemplateServiceImpl implements MetadataElementTempla
 										
 										/* only create if there's a value */
 										if(StringUtils.isNotBlank(elementValue.getValue())) {
+											final String attributeName = (isMultiSelect) ? 
+													String.format("%s_%s", element.getAttributeName(), System.nanoTime()) : element.getAttributeName();
 											final UserAttributeEntity userAttribute = new UserAttributeEntity();
 											userAttribute.setElement(element);
-											userAttribute.setName(String.format("%s_%s", element.getAttributeName(), System.nanoTime()));
+											userAttribute.setName(attributeName);
 											userAttribute.setUser(user);
 											userAttribute.setValue(elementValue.getValue());
 											saveList.add(userAttribute);
