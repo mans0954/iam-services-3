@@ -226,6 +226,8 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 			final String password = loginDS.decryptPassword(primaryLogin.getUserId(), primaryLogin.getPassword());
 			request.setPassword(password);
 			return request;
+		} catch(BasicDataServiceException e) {
+			throw e;
 		} catch(Throwable e) {
 			LOG.error("Unkonwn exception", e);
 			throw new BasicDataServiceException(ResponseCode.FAIL_OTHER);
