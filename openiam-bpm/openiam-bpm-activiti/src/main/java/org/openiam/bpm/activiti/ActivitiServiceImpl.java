@@ -207,6 +207,9 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 			try {
 				identifier = (DefaultNewHireRequestApproverAssociationIdentifier)
 						scriptRunner.instantiateClass(bindingMap, newUserApproverAssociationGroovyScript);
+				if(identifier == null) {
+					throw new Exception("Did not instantiate script - was null");
+				}
 			} catch(Throwable e) {
 				log.error(String.format("Can't instantiate '%s' - using default", newUserApproverAssociationGroovyScript), e);
 				identifier = new DefaultNewHireRequestApproverAssociationIdentifier();
@@ -371,6 +374,9 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 			try {
 				identifier = (DefaultEditUserApproverAssociationIdentifier)
 						scriptRunner.instantiateClass(bindingMap, editUserApproverAssociationGroovyScript);
+				if(identifier == null) {
+					throw new Exception("Did not instantiate script - was null");
+				}
 			} catch(Throwable e) {
 				log.error(String.format("Can't instantiate '%s' - using default", editUserApproverAssociationGroovyScript), e);
 				identifier = new DefaultEditUserApproverAssociationIdentifier();
@@ -481,6 +487,10 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 			try {
 				identifier = (DefaultGenericWorkflowRequestApproverAssociationIdentifier)
 						scriptRunner.instantiateClass(bindingMap, membershipApproverAssociationGroovyScript);
+				
+				if(identifier == null) {
+					throw new Exception("Did not instantiate script - was null");
+				}
 			} catch(Throwable e) {
 				log.error(String.format("Can't instantiate '%s' - using default", membershipApproverAssociationGroovyScript), e);
 				identifier = new DefaultGenericWorkflowRequestApproverAssociationIdentifier();
@@ -830,6 +840,9 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 		DefaultNewEntityApproverIdentifier identifier = null;
 		try {
 			identifier = (DefaultNewEntityApproverIdentifier)scriptRunner.instantiateClass(null, newEntityApproverGroovyScript);
+			if(identifier == null) {
+				throw new Exception("Did not instantiate script - was null");
+			}
 		} catch(Throwable e) {
 			identifier = new DefaultNewEntityApproverIdentifier();
 		}
