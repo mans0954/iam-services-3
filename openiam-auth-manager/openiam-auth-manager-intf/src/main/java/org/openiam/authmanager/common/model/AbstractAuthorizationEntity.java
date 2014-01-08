@@ -1,7 +1,5 @@
 package org.openiam.authmanager.common.model;
 
-import java.io.Serializable;
-
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlTransient;
@@ -30,7 +28,7 @@ public abstract class AbstractAuthorizationEntity {
 
 	private String name;
 	private String id;
-	
+
 	@XmlTransient
 	private int bitSetIdx = -1;
 	
