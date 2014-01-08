@@ -6,6 +6,12 @@ import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
 /**
  * Created with IntelliJ IDEA.
  * User: alexander
@@ -21,15 +27,25 @@ public class AuditLogProviderImpl implements AuditLogProvider  {
     @Autowired
     private AuditLogService auditLogService;
 
+    private final Map<String, AuditLogBuilder> idmAuditLogMap = new ConcurrentHashMap<String, AuditLogBuilder>();
+
+    @Override
+    public AuditLogBuilder getAuditLogBuilder(String id) {
+        return idmAuditLogMap.get(id);
+    }
+
+    @Override
+    public void remove(String auditLogId) {
+        idmAuditLogMap.remove(auditLogId);
+    }
 
     @Override
     public AuditLogBuilder persist(AuditLogBuilder auditLogBuilder) {
         IdmAuditLogEntity auditLogEntity = auditLogBuilder.getEntity();
-        if(StringUtils.isEmpty(auditLogEntity.getId())) {
-          String id = auditLogService.save(auditLogEntity);
-          auditLogEntity = auditLogService.findById(id);
-          auditLogBuilder.setEntity(auditLogEntity);
-        }
+        String auditLogEntityId = auditLogService.save(auditLogEntity);
+        auditLogEntity.setId(auditLogEntityId);
+        auditLogBuilder.setEntity(auditLogEntity);
+        idmAuditLogMap.put(auditLogEntityId, auditLogBuilder);
         return auditLogBuilder;
     }
 

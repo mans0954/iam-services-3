@@ -66,7 +66,7 @@ public class AuditLogServiceImpl implements AuditLogService {
     
     private void prepare(final IdmAuditLogEntity log, final String coorelationId) {
     	if(log != null) {
-    		if(log.getId() == null) {
+    		if(log.getId() == null || log.getHash() == null) {
                 log.setHash(hash.HexEncodedHash(log.concat()));
                 log.setCoorelationId(coorelationId);
             }

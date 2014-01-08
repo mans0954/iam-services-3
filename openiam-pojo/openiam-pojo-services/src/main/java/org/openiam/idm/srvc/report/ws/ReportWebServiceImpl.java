@@ -51,7 +51,7 @@ public class ReportWebServiceImpl implements ReportWebService {
 	private static final Log log = LogFactory
 			.getLog(ReportWebServiceImpl.class);
 
-    private static final String DEFAULT_REPORT_TASK = "run";
+    private static final String DEFAULT_REPORT_TASK = "frameset";
     private static final String REPORT_PARAMETER_NAME = "__report";
 
 	@Autowired

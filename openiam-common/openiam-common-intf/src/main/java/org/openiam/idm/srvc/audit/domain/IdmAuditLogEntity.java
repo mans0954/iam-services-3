@@ -79,7 +79,7 @@ public class IdmAuditLogEntity implements Serializable {
     private String coorelationId;
     
     @OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL, mappedBy = "log")
-    private Set<IdmAuditLogCustomEntity> customRecords;
+    private Set<IdmAuditLogCustomEntity> customRecords = new HashSet<IdmAuditLogCustomEntity>();
     
     @OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL, mappedBy = "log")
     private Set<AuditLogTargetEntity> targets;
@@ -89,24 +89,26 @@ public class IdmAuditLogEntity implements Serializable {
             joinColumns = {@JoinColumn(name = "OPENIAM_MEMBER_LOG_ID")},
             inverseJoinColumns = {@JoinColumn(name = "OPENIAM_LOG_ID")})
     @Fetch(FetchMode.SUBSELECT)
-    private Set<IdmAuditLogEntity> parentLogs;
-    
-    @ManyToMany(cascade=CascadeType.ALL,fetch=FetchType.LAZY)
+    private Set<IdmAuditLogEntity> parentLogs = new HashSet<IdmAuditLogEntity>();
+
+    @ManyToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
     @JoinTable(name = "OPENIAM_LOG_LOG_MEMBERSHIP",
             joinColumns = {@JoinColumn(name = "OPENIAM_LOG_ID")},
             inverseJoinColumns = {@JoinColumn(name = "OPENIAM_MEMBER_LOG_ID")})
     @Fetch(FetchMode.SUBSELECT)
-    private Set<IdmAuditLogEntity> childLogs;
+    private Set<IdmAuditLogEntity> childLogs = new HashSet<IdmAuditLogEntity>();
     
     public void addChild(final IdmAuditLogEntity entity) {
     	if(entity != null) {
-    		if(this.childLogs == null) {
-    			this.childLogs = new HashSet<IdmAuditLogEntity>();
-    		}
     		this.childLogs.add(entity);
     	}
     }
-    
+
+    public void addParent(final IdmAuditLogEntity entity) {
+        if(entity != null) {
+            this.parentLogs.add(entity);
+        }
+    }
     public void addCustomRecord(final String key, final String value) {
     	if(key != null && value != null) {
     		if(customRecords == null) {
@@ -287,11 +289,9 @@ public class IdmAuditLogEntity implements Serializable {
         if (coorelationId != null ? !coorelationId.equals(that.coorelationId) : that.coorelationId != null)
             return false;
         if (hash != null ? !hash.equals(that.hash) : that.hash != null) return false;
-        if (id != null ? !id.equals(that.id) : that.id != null) return false;
         if (managedSysId != null ? !managedSysId.equals(that.managedSysId) : that.managedSysId != null) return false;
         if (nodeIP != null ? !nodeIP.equals(that.nodeIP) : that.nodeIP != null) return false;
         if (principal != null ? !principal.equals(that.principal) : that.principal != null) return false;
-        if (result != null ? !result.equals(that.result) : that.result != null) return false;
         if (sessionID != null ? !sessionID.equals(that.sessionID) : that.sessionID != null) return false;
         if (source != null ? !source.equals(that.source) : that.source != null) return false;
         if (timestamp != null ? !timestamp.equals(that.timestamp) : that.timestamp != null) return false;
@@ -302,20 +302,18 @@ public class IdmAuditLogEntity implements Serializable {
 
     @Override
     public int hashCode() {
-        int result1 = id != null ? id.hashCode() : 0;
-        result1 = 31 * result1 + (userId != null ? userId.hashCode() : 0);
-        result1 = 31 * result1 + (principal != null ? principal.hashCode() : 0);
-        result1 = 31 * result1 + (managedSysId != null ? managedSysId.hashCode() : 0);
-        result1 = 31 * result1 + (timestamp != null ? timestamp.hashCode() : 0);
-        result1 = 31 * result1 + (source != null ? source.hashCode() : 0);
-        result1 = 31 * result1 + (clientIP != null ? clientIP.hashCode() : 0);
-        result1 = 31 * result1 + (nodeIP != null ? nodeIP.hashCode() : 0);
-        result1 = 31 * result1 + (action != null ? action.hashCode() : 0);
-        result1 = 31 * result1 + (result != null ? result.hashCode() : 0);
-        result1 = 31 * result1 + (hash != null ? hash.hashCode() : 0);
-        result1 = 31 * result1 + (sessionID != null ? sessionID.hashCode() : 0);
-        result1 = 31 * result1 + (coorelationId != null ? coorelationId.hashCode() : 0);
-        return result1;
+        int result = userId != null ? userId.hashCode() : 0;
+        result = 31 * result + (principal != null ? principal.hashCode() : 0);
+        result = 31 * result + (managedSysId != null ? managedSysId.hashCode() : 0);
+        result = 31 * result + (timestamp != null ? timestamp.hashCode() : 0);
+        result = 31 * result + (source != null ? source.hashCode() : 0);
+        result = 31 * result + (clientIP != null ? clientIP.hashCode() : 0);
+        result = 31 * result + (nodeIP != null ? nodeIP.hashCode() : 0);
+        result = 31 * result + (action != null ? action.hashCode() : 0);
+        result = 31 * result + (hash != null ? hash.hashCode() : 0);
+        result = 31 * result + (sessionID != null ? sessionID.hashCode() : 0);
+        result = 31 * result + (coorelationId != null ? coorelationId.hashCode() : 0);
+        return result;
     }
 
     @Override

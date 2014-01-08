@@ -48,7 +48,7 @@ import org.openiam.idm.srvc.user.dto.User;
                                               "superiors", "srcSystemId", "provisionModel", "securityDomain", "notifyTargetSystems",
                                               "emailCredentialsToNewUsers", "emailCredentialsToSupervisor", "provisionOnStartDate",
                                               "addInitialPasswordToHistory", "passwordPolicy", "skipPreprocessor",
-                                              "skipPostProcessor"})
+                                              "skipPostProcessor","parentAuditLogId"})
 public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
     /**
      *
@@ -84,6 +84,8 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
     boolean skipPreprocessor = false;
     boolean skipPostProcessor = false;
 
+    //AuditLogEntity ID of parent AuditLog
+    private String parentAuditLogId;
     /*
      * ID of the system where this request came from. If this value is set, then
      * in the modify operation, that resource will not be updated.
@@ -236,36 +238,15 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
     public void setSrcSystemId(String srcSystemId) {
         this.srcSystemId = srcSystemId;
     }
-    /*
-    public List<Group> getMemberOfGroups() {
-        return memberOfGroups;
+
+    public String getParentAuditLogId() {
+        return parentAuditLogId;
     }
 
-    public void setMemberOfGroups(List<Group> memberOfGroups) {
-        this.memberOfGroups = memberOfGroups;
+    public void setParentAuditLogId(String parentAuditLogId) {
+        this.parentAuditLogId = parentAuditLogId;
     }
 
-    public List<Role> getMemberOfRoles() {
-        return memberOfRoles;
-    }
-
-    public List<Role> getActiveMemberOfRoles() {
-        List<Role> activeRoleList = new ArrayList<Role>();
-        if (memberOfRoles != null) {
-            for (Role r : memberOfRoles) {
-                if (r.getOperation() != AttributeOperationEnum.DELETE) {
-                    activeRoleList.add(r);
-                }
-            }
-            return activeRoleList;
-        }
-        return null;
-    }
-
-    public void setMemberOfRoles(List<Role> memberOfRoles) {
-        this.memberOfRoles = memberOfRoles;
-    }
-    */
     public Set<User> getSuperiors() {
         return superiors;
     }
@@ -349,24 +330,7 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
     public void setEmailCredentialsToSupervisor(boolean emailCredentialsToSupervisor) {
         this.emailCredentialsToSupervisor = emailCredentialsToSupervisor;
     }
-    /*
-    public List<Organization> getUserAffiliations() {
-        return userAffiliations;
-    }
 
-    public void addUserAffiliation(final Organization organization) {
-        if (organization != null) {
-            if (this.userAffiliations == null) {
-                this.userAffiliations = new LinkedList<Organization>();
-            }
-            this.userAffiliations.add(organization);
-        }
-    }
-
-    public void setUserAffiliations(List<Organization> userAffiliations) {
-        this.userAffiliations = userAffiliations;
-    }
-    */
     public boolean isProvisionOnStartDate() {
         return provisionOnStartDate;
     }
@@ -382,16 +346,6 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
     public void setAddInitialPasswordToHistory(boolean addInitialPasswordToHistory) {
         this.addInitialPasswordToHistory = addInitialPasswordToHistory;
     }
-
-    /*
-    public List<UserResourceAssociation> getUserResourceList() {
-        return userResourceList;
-    }
-
-    public void setUserResourceList(List<UserResourceAssociation> userResourceList) {
-        this.userResourceList = userResourceList;
-    }
-    */
 
     public Policy getPasswordPolicy() {
         return passwordPolicy;
@@ -417,166 +371,7 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         this.skipPostProcessor = skipPostProcessor;
     }
 
-    /*
-    public void updateMissingUserAttributes(User user) {
-
-        if (birthdate == null) {
-            birthdate = user.getBirthdate();
-        }
-        if (companyOwnerId == null) {
-            companyOwnerId = user.getCompanyOwnerId();
-        }
-        if (createDate == null) {
-            createDate = user.getCreateDate();
-        }
-        if (createdBy == null) {
-            createdBy = user.getCreatedBy();
-        }
-        if (employeeId == null) {
-            employeeId = user.getEmployeeId();
-        }
-        if (employeeType == null) {
-            employeeType = user.getEmployeeType();
-        }
-
-        if (firstName == null) {
-            firstName = user.getFirstName();
-        }
-        if (jobCode == null) {
-            jobCode = user.getJobCode();
-        }
-        if (lastName == null) {
-            lastName = user.getLastName();
-        }
-        if (lastUpdate == null) {
-            lastUpdate = user.getLastUpdate();
-        }
-        if (lastUpdatedBy == null) {
-            lastUpdatedBy = user.getLastUpdatedBy();
-        }
-        if (locationCd == null) {
-            locationCd = user.getLocationCd();
-        }
-        if (locationName == null) {
-            locationName = user.getLocationName();
-        }
-        if (metadataTypeId == null) {
-            metadataTypeId = user.getMetadataTypeId();
-        }
-        if (classification == null) {
-            classification = user.getClassification();
-        }
-        if (middleInit == null) {
-            middleInit = user.getMiddleInit();
-        }
-        if (prefix == null) {
-            prefix = user.getPrefix();
-        }
-        if (sex == null) {
-            sex = user.getSex();
-        }
-        if (status == null) {
-            status = user.getStatus();
-        }
-        if (secondaryStatus == null) {
-            secondaryStatus = user.getSecondaryStatus();
-        }
-        if (suffix == null) {
-            suffix = user.getSuffix();
-        }
-        if (title == null) {
-            title = user.getTitle();
-        }
-        if (userTypeInd == null) {
-            userTypeInd = user.getUserTypeInd();
-        }
-        if (mailCode == null) {
-            mailCode = user.getMailCode();
-        }
-        if (costCenter == null) {
-            costCenter = user.getCostCenter();
-        }
-        if (startDate == null) {
-            startDate = user.getStartDate();
-        }
-        if (lastDate == null) {
-            lastDate = user.getLastDate();
-        }
-        if (nickname == null) {
-            nickname = user.getNickname();
-        }
-        if (maidenName == null) {
-            maidenName = user.getMaidenName();
-        }
-        if (passwordTheme == null) {
-            passwordTheme = user.getPasswordTheme();
-        }
-        if (email == null) {
-            email = user.getEmail();
-        }
-        if (showInSearch == null) {
-            showInSearch = user.getShowInSearch();
-        }
-
-        if (alternateContactId == null) {
-            alternateContactId = user.getAlternateContactId();
-        }
-
-        if (createdBy == null) {
-            createdBy = user.getCreatedBy();
-        }
-        if (startDate == null) {
-            startDate = user.getStartDate();
-        }
-        if (lastDate == null) {
-            lastDate = user.getLastDate();
-        }
-
-        if (userOwnerId == null) {
-            userOwnerId = user.getUserOwnerId();
-        }
-        if (dateChallengeRespChanged == null) {
-            dateChallengeRespChanged = user.getDateChallengeRespChanged();
-        }
-        if (datePasswordChanged == null) {
-            datePasswordChanged = user.getDatePasswordChanged();
-        }
-        if (dateITPolicyApproved == null) {
-            dateITPolicyApproved = user.getDateITPolicyApproved();
-        }
-    }
-    */
-    /*
-    public void addMemberGroup(final Group group) {
-        if (group != null) {
-            if (this.memberOfGroups == null) {
-                this.memberOfGroups = new LinkedList<Group>();
-            }
-            this.memberOfGroups.add(group);
-        }
-    }
-
-    public void addMemberRole(final Role role) {
-        if (role != null) {
-            if (this.memberOfRoles == null) {
-                this.memberOfRoles = new LinkedList<Role>();
-            }
-            this.memberOfRoles.add(role);
-        }
-    }
-    */
-    /*
-    public void addResourceUserAssociation(final UserResourceAssociation association) {
-        if (association != null) {
-            if (this.userResourceList == null) {
-                this.userResourceList = new LinkedList<UserResourceAssociation>();
-            }
-            this.userResourceList.add(association);
-        }
-    }
-    */
-
-    // HACK
+    // temporary solution
     public Organization getPrimaryOrganization() {
         Organization retVal = null;
         if (CollectionUtils.isNotEmpty(affiliations)) {

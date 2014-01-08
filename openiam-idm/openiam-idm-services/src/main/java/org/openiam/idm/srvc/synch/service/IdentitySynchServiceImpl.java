@@ -165,7 +165,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
 		
 	}
 
-    @Transactional
+    //@Transactional
 	public SyncResponse startSynchronization(SynchConfigEntity config) {
 
         SyncResponse syncResponse = new SyncResponse(ResponseStatus.SUCCESS);
@@ -177,7 +177,6 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
         auditBuilder.setSource(config.getSynchConfigId());
         auditLogProvider.persist(auditBuilder);
 
-        auditLogService.enqueue(auditBuilder);
         Date startDate = new Date();
 
         SyncResponse processCheckResponse = addTask(config.getSynchConfigId());
@@ -230,6 +229,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
             auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "ERROR: "+e.getMessage());
             auditLogService.enqueue(auditBuilder);
 		} finally {
+            auditLogProvider.remove(auditBuilder.getEntity().getId());
             endTask(config.getSynchConfigId());
             return syncResponse;
 

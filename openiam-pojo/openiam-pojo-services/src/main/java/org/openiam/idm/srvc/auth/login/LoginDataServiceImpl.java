@@ -217,11 +217,6 @@ public class LoginDataServiceImpl implements LoginDataService {
         Calendar expCal = Calendar.getInstance();
         LoginEntity lg = getLoginByManagedSys(domainId, login, sysId);
 
-        // SecurityDomain securityDomain =
-        // secDomainService.getSecurityDomain(domainId);
-        // Policy plcy =
-        // policyDao.findById(securityDomain.getPasswordPolicyId());
-//        Policy plcy = passwordPolicyProvider.getPasswordPolicy(domainId, login, sysId);
         Policy plcy = passwordPolicyProvider.getPasswordPolicyByUser(domainId, lg.getUserId());
 
         String pswdExpValue = getPolicyAttribute(plcy.getPolicyAttributes(),

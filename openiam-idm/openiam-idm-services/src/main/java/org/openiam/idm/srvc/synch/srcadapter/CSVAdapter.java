@@ -35,6 +35,7 @@ import org.openiam.base.ws.ResponseStatus;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
 import org.openiam.idm.srvc.audit.domain.AuditLogBuilder;
+import org.openiam.idm.srvc.audit.service.AuditLogProvider;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.idm.srvc.synch.dto.Attribute;
 import org.openiam.idm.srvc.synch.dto.LineObject;
@@ -89,6 +90,9 @@ public class CSVAdapter extends AbstractSrcAdapter {
     private Boolean useRemoteFilestorage;
     @Autowired
     protected AuditLogService auditLogService;
+
+    @Autowired
+    private AuditLogProvider auditLogProvider;
 
     @Autowired
     private RemoteFileStorageManager remoteFileStorageManager;
@@ -287,11 +291,11 @@ public class CSVAdapter extends AbstractSrcAdapter {
 
             log.info(" - Row Attr..." + rowAttr);
             //
-            auditLogBuilder.addAttribute(AuditAttributeName.DESCRIPTION, " - Row Attr..." + rowAttr);
+            auditLogBuilder.addAttribute(AuditAttributeName.DESCRIPTION, " - Row Attrs:" + row);
             auditLogService.enqueue(auditLogBuilder);
 
             User usr = matchRule.lookup(config, rowAttr);
-            auditLogBuilder.addAttribute(AuditAttributeName.DESCRIPTION, " Lookup User in repository: " + usr);
+            auditLogBuilder.addAttribute(AuditAttributeName.DESCRIPTION, " Lookup User in repository: " + usr != null ? "FOUND" : "NOT FOUND");
             auditLogService.enqueue(auditLogBuilder);
             //@todo - Update lookup so that an exception is thrown
             // when lookup fails due to bad matching.
@@ -301,6 +305,7 @@ public class CSVAdapter extends AbstractSrcAdapter {
             // transform
             int retval = -1;
             ProvisionUser pUser = new ProvisionUser();
+
             if (transformScripts != null && transformScripts.size() > 0) {
                 for (TransformScript transformScript : transformScripts) {
                     synchronized (mutex) {
@@ -331,7 +336,7 @@ public class CSVAdapter extends AbstractSrcAdapter {
                     }
                     log.info(" - Execute complete transform script");
                 }
-
+                pUser.setParentAuditLogId(auditLogBuilder.getEntity().getId());
                 if (retval != -1) {
                     if (retval == TransformScript.DELETE && pUser.getUser() != null) {
                         auditLogBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "User login: "+pUser.getLogin()+" [REMOVED]");
@@ -362,7 +367,7 @@ public class CSVAdapter extends AbstractSrcAdapter {
                                     auditLogService.enqueue(auditLogBuilder);
                                     log.error(e);
                                 }
-                                auditLogBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "User login: " +pUser.getLogin()+" [ADD] ");
+                                auditLogBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "User: " +(pUser.getFirstName() + " " + pUser.getLastName())+" [ADD] ");
                                 auditLogService.enqueue(auditLogBuilder);
                             }
                         }

@@ -23,7 +23,9 @@ public class AuditLogBuilder implements Serializable {
 		entity = new IdmAuditLogEntity();
 		entity.setTimestamp(new Date());
 	}
-
+    public AuditLogBuilder(IdmAuditLogEntity auditLogEntity) {
+        entity = auditLogEntity;
+    }
 	/**
 	 * Sets the user id of who triggered this event
 	 * @param userId - the caller
@@ -179,7 +181,7 @@ public class AuditLogBuilder implements Serializable {
 	}
 	
 	/**
-	 * Adds a child builder
+	 * Add a child builder
 	 * @param builder
 	 * @return this
 	 */
@@ -189,7 +191,18 @@ public class AuditLogBuilder implements Serializable {
 		}
 		return this;
 	}
-	
+
+    /**
+     * Add a parent builder
+     * @param builder
+     * @return this
+     */
+    public AuditLogBuilder addParent(final AuditLogBuilder builder) {
+        if(builder != null) {
+            entity.addParent(builder.getEntity());
+        }
+        return this;
+    }
 	public AuditLogBuilder addAttributeAsJson(final AuditAttributeName key, final Object o, final CustomJacksonMapper mapper) {
 		if(mapper != null) {
 			entity.addCustomRecord(key.name(), mapper.mapToStringQuietly(o));
