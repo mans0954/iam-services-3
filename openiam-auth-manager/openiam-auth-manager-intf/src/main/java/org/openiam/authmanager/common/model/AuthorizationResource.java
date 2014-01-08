@@ -1,20 +1,17 @@
 package org.openiam.authmanager.common.model;
 
-import java.io.Serializable;
-import java.util.BitSet;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "AuthorizationResource", propOrder = {
+        "resourceTypeId",
+        "description",
         "inheritFromParent",
         "isPublic"
 })
@@ -24,7 +21,11 @@ public class AuthorizationResource extends AbstractAuthorizationEntity implement
 	
 	@XmlTransient
 	private Set<AuthorizationResource> parentResources;
-	
+
+    private String resourceTypeId;
+
+    private String description;
+
 	private boolean inheritFromParent = true;
 	
 	private boolean isPublic = false;
@@ -55,10 +56,24 @@ public class AuthorizationResource extends AbstractAuthorizationEntity implement
 		}
 		parentResources.add(resource);
 	}
-	
-	
-	
-	public Set<AuthorizationResource> getParentResources() {
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getResourceTypeId() {
+        return resourceTypeId;
+    }
+
+    public void setResourceTypeId(String resourceTypeId) {
+        this.resourceTypeId = resourceTypeId;
+    }
+
+    public Set<AuthorizationResource> getParentResources() {
 		return parentResources;
 	}
 
