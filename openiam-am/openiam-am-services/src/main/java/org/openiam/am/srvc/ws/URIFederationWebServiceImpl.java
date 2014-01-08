@@ -56,10 +56,10 @@ public class URIFederationWebServiceImpl implements URIFederationWebService {
 			} else {
 				wsResponse.fail();
 				wsResponse.setLoginError(loginResponse.getAuthErrorCode());
-				wsResponse.setOpeniamPrincipal(loginRequest.getPrincipal());
 				LOG.warn(String.format("Login attempt unsuccessful for principal '%s', proxyURI '%s', loginRequest: '%s', loginResponse: '%s'", 
 										principal, proxyURI, loginRequest, loginResponse));
 			}
+			wsResponse.setOpeniamPrincipal(loginRequest.getPrincipal());
 		} catch(BasicDataServiceException e) {
 			wsResponse.fail();
 			wsResponse.setErrorText(e.getMessage());
