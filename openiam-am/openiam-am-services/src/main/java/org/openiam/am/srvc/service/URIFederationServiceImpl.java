@@ -38,6 +38,9 @@ import org.openiam.authmanager.service.AuthorizationManagerService;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.exception.BasicDataServiceException;
+import org.openiam.idm.srvc.auth.domain.LoginEntity;
+import org.openiam.idm.srvc.auth.dto.AuthenticationRequest;
+import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.script.ScriptIntegration;
 import org.openiam.thread.Sweepable;
 import org.springframework.beans.BeansException;
@@ -78,6 +81,9 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 	
 	@Autowired
 	private URIPatternMetaValueDozerConverter patternValueDozerConverter;
+	
+	@Autowired
+	private LoginDataService loginDS;
 	
     @Autowired
     @Qualifier("configurableGroovyScriptEngine")
@@ -189,6 +195,41 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 	@ManagedOperation(description="Test Federation agains parameters")
 	public String federateProxyURIJMX(final String userId, final int authLevel, final String proxyURI) {
 		return federateProxyURI(userId, authLevel, proxyURI).toString();
+	}
+	
+
+	@Override
+	public AuthenticationRequest createAuthenticationRequest(final String principal, final String proxyURI) throws BasicDataServiceException {
+		try {
+			final URI uri = new URI(proxyURI);
+			final ContentProviderNode cpNode = contentProviderTree.find(uri);
+			if(cpNode == null) {
+				throw new BasicDataServiceException(ResponseCode.URI_FEDERATION_CONTENT_PROVIDER_NOT_FOUND);
+			}
+			final ContentProvider cp = cpNode.getContentProvider();
+			final String managedSysId = cp.getManagedSysId();
+			final LoginEntity login = loginDS.getLoginByManagedSys(principal, managedSysId);
+			if(login == null) {
+				LOG.error(String.format("Proxy identity not found for principal '%s', proxyURI: '%s", principal, proxyURI));
+				throw new BasicDataServiceException(ResponseCode.IDENTITY_NOT_FOUND);
+			}
+				
+			final LoginEntity primaryLogin = loginDS.getPrimaryIdentity(login.getUserId());
+			if(primaryLogin == null) {
+				LOG.error(String.format("Primary identity not found for principal '%s', proxyURI: '%s", principal, proxyURI));
+				throw new BasicDataServiceException(ResponseCode.IDENTITY_NOT_FOUND);
+			}
+				
+			final AuthenticationRequest request = new AuthenticationRequest();
+			request.setPrincipal(primaryLogin.getLogin());
+			
+			final String password = loginDS.decryptPassword(primaryLogin.getUserId(), primaryLogin.getPassword());
+			request.setPassword(password);
+			return request;
+		} catch(Throwable e) {
+			LOG.error("Unkonwn exception", e);
+			throw new BasicDataServiceException(ResponseCode.FAIL_OTHER);
+		}
 	}
 
 	@Override
