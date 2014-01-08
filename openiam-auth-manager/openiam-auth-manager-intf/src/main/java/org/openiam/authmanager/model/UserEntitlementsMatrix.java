@@ -1,21 +1,20 @@
 package org.openiam.authmanager.model;
 
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-
 import org.apache.commons.collections.CollectionUtils;
 import org.openiam.authmanager.common.model.AuthorizationGroup;
 import org.openiam.authmanager.common.model.AuthorizationResource;
 import org.openiam.authmanager.common.model.AuthorizationRole;
 import org.openiam.authmanager.ws.request.AuthorizationMatrixAdapter;
+
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "EntitlementsMatrix", propOrder = {
@@ -27,12 +26,15 @@ import org.openiam.authmanager.ws.request.AuthorizationMatrixAdapter;
 	"groupIds",
 	"resourceIds",
 	"resourceToResourceMap",
+    "resourceToGroupMap",
+    "resourceToRoleMap",
 	"groupToGroupMap",
-	"roleToRoleMap",
 	"groupToRoleMap",
 	"groupToResourceMap",
 	"roleToResourceMap",
-	"publicResourceIds"
+    "roleToGroupMap",
+    "roleToRoleMap",
+    "publicResourceIds"
 })
 public class UserEntitlementsMatrix implements Serializable {
 	private String userId;
@@ -49,19 +51,29 @@ public class UserEntitlementsMatrix implements Serializable {
 	private Map<String, Set<String>> groupToGroupMap;
 	
 	@XmlJavaTypeAdapter(AuthorizationMatrixAdapter.class)
-	private Map<String, Set<String>> roleToRoleMap;
-	
-	@XmlJavaTypeAdapter(AuthorizationMatrixAdapter.class)
 	private Map<String, Set<String>> groupToRoleMap;
-	
+
+    @XmlJavaTypeAdapter(AuthorizationMatrixAdapter.class)
+    private Map<String, Set<String>> groupToResourceMap;
+
+    @XmlJavaTypeAdapter(AuthorizationMatrixAdapter.class)
+    private Map<String, Set<String>> roleToRoleMap;
+
+    @XmlJavaTypeAdapter(AuthorizationMatrixAdapter.class)
+    private Map<String, Set<String>> roleToGroupMap;
+
+    @XmlJavaTypeAdapter(AuthorizationMatrixAdapter.class)
+    private Map<String, Set<String>> roleToResourceMap;
+
 	@XmlJavaTypeAdapter(AuthorizationMatrixAdapter.class)
 	private Map<String, Set<String>> resourceToResourceMap;
-	
-	@XmlJavaTypeAdapter(AuthorizationMatrixAdapter.class)
-	private Map<String, Set<String>> groupToResourceMap;
-	
-	@XmlJavaTypeAdapter(AuthorizationMatrixAdapter.class)
-	private Map<String, Set<String>> roleToResourceMap;
+
+    @XmlJavaTypeAdapter(AuthorizationMatrixAdapter.class)
+    private Map<String, Set<String>> resourceToGroupMap;
+
+    @XmlJavaTypeAdapter(AuthorizationMatrixAdapter.class)
+    private Map<String, Set<String>> resourceToRoleMap;
+
 	
 	public void setGroupToGroupMap(final Map<String, Set<AuthorizationGroup>> groupToGroupMap) {
 		if(groupToGroupMap != null) {
@@ -119,7 +131,26 @@ public class UserEntitlementsMatrix implements Serializable {
 			}
 		}
 	}
-	
+
+    public void setRoleToGroupMap(final Map<String, Set<AuthorizationGroup>> roleToGroupMap) {
+        if(roleToGroupMap != null) {
+            if(this.roleToGroupMap == null) {
+                this.roleToGroupMap = new HashMap<String, Set<String>>();
+            }
+            for(final String roleId : roleToGroupMap.keySet()) {
+                final Set<AuthorizationGroup> groups = roleToGroupMap.get(roleId);
+                if(CollectionUtils.isNotEmpty(groups)) {
+                    if(!this.roleToGroupMap.containsKey(roleId)) {
+                        this.roleToGroupMap.put(roleId, new HashSet<String>());
+                    }
+                    for(final AuthorizationGroup group : groups) {
+                        this.roleToGroupMap.get(roleId).add(group.getId());
+                    }
+                }
+            }
+        }
+    }
+
 	public void setRoleToResourceMap(Map<String, Set<AuthorizationResource>> roleToResourceMap) {
 		if(roleToResourceMap != null) {
 			if(this.roleToResourceMap == null) {
@@ -176,6 +207,44 @@ public class UserEntitlementsMatrix implements Serializable {
 			}
 		}
 	}
+
+    public void setResourceToGroupMap(Map<String, Set<AuthorizationGroup>> resourceToGroupMap) {
+        if(resourceToGroupMap != null) {
+            if(this.resourceToGroupMap == null) {
+                this.resourceToGroupMap = new HashMap<String, Set<String>>();
+            }
+            for(final String resourceId : resourceToGroupMap.keySet()) {
+                final Set<AuthorizationGroup> groups = resourceToGroupMap.get(resourceId);
+                if(CollectionUtils.isNotEmpty(groups)) {
+                    if(!this.resourceToGroupMap.containsKey(resourceId)) {
+                        this.resourceToGroupMap.put(resourceId, new HashSet<String>());
+                    }
+                    for(final AuthorizationGroup group : groups) {
+                        this.resourceToGroupMap.get(resourceId).add(group.getId());
+                    }
+                }
+            }
+        }
+    }
+
+    public void setResourceToRoleMap(Map<String, Set<AuthorizationRole>> resourceToRoleMap) {
+        if(resourceToRoleMap != null) {
+            if(this.resourceToRoleMap == null) {
+                this.resourceToRoleMap = new HashMap<String, Set<String>>();
+            }
+            for(final String resourceId : resourceToRoleMap.keySet()) {
+                final Set<AuthorizationRole> roles = resourceToRoleMap.get(resourceId);
+                if(CollectionUtils.isNotEmpty(roles)) {
+                    if(!this.resourceToRoleMap.containsKey(resourceId)) {
+                        this.resourceToRoleMap.put(resourceId, new HashSet<String>());
+                    }
+                    for(final AuthorizationRole role : roles) {
+                        this.resourceToRoleMap.get(resourceId).add(role.getId());
+                    }
+                }
+            }
+        }
+    }
 	
 	public void setUserId(final String userId) {
 		this.userId = userId;
@@ -281,6 +350,16 @@ public class UserEntitlementsMatrix implements Serializable {
 	public Map<String, Set<String>> getRoleToResourceMap() {
 		return roleToResourceMap;
 	}
-	
-	
+
+    public Map<String, Set<String>> getRoleToGroupMap() {
+        return roleToGroupMap;
+    }
+
+    public Map<String, Set<String>> getResourceToGroupMap() {
+        return resourceToGroupMap;
+    }
+
+    public Map<String, Set<String>> getResourceToRoleMap() {
+        return resourceToRoleMap;
+    }
 }
