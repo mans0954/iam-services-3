@@ -415,10 +415,10 @@ public class AuthorizationManagerAdminServiceImpl implements AuthorizationManage
         final List<GroupGroupXref> xrefs = groupGroupXrefDAO.getList();
         final Map<String, Set<AuthorizationGroup>> groupXrefMap = new HashMap<String, Set<AuthorizationGroup>>();
         for(final GroupGroupXref xref : xrefs) {
-            if(!groupXrefMap.containsKey(xref.getMemberGroupId())) {
-                groupXrefMap.put(xref.getMemberGroupId(), new HashSet<AuthorizationGroup>());
+            if(!groupXrefMap.containsKey(xref.getGroupId())) {
+                groupXrefMap.put(xref.getGroupId(), new HashSet<AuthorizationGroup>());
             }
-            groupXrefMap.get(xref.getMemberGroupId()).add(groupMap.get(xref.getGroupId()));
+            groupXrefMap.get(xref.getGroupId()).add(groupMap.get(xref.getMemberGroupId()));
         }
         return groupXrefMap;
     }
@@ -464,10 +464,10 @@ public class AuthorizationManagerAdminServiceImpl implements AuthorizationManage
 		final List<ResourceResourceXref> resourceResourceXrefs = resourceResourceXrefDAO.getList();
 		Map<String, Set<AuthorizationResource>> resourceXrefMap = new HashMap<String, Set<AuthorizationResource>>();
 		for(final ResourceResourceXref xref : resourceResourceXrefs) {
-			if(!resourceXrefMap.containsKey(xref.getMemberResourceId())) {
-				resourceXrefMap.put(xref.getMemberResourceId(), new HashSet<AuthorizationResource>());
+			if(!resourceXrefMap.containsKey(xref.getResourceId())) {
+				resourceXrefMap.put(xref.getResourceId(), new HashSet<AuthorizationResource>());
 			}
-			resourceXrefMap.get(xref.getMemberResourceId()).add(resourceMap.get(xref.getResourceId()));
+			resourceXrefMap.get(xref.getResourceId()).add(resourceMap.get(xref.getMemberResourceId()));
 		}
 		return resourceXrefMap;
 	}
