@@ -38,6 +38,8 @@ public class DefaultGenericWorkflowRequestApproverAssociationIdentifier extends 
 	public void calculateApprovers() {
 		if(CollectionUtils.isNotEmpty(request.getCustomApproverIds())) {
 			approverUserIds.addAll(request.getCustomApproverIds());
+		} else if(isRequestForEntityCreation(request)) {
+			approverUserIds.addAll(getApproversForEntityCreation(request));
 		} else {
 			List<ApproverAssociationEntity> approverAssocationList = null;
 			
@@ -81,6 +83,11 @@ public class DefaultGenericWorkflowRequestApproverAssociationIdentifier extends 
 			}
 			builder.addAttributeAsJson(AuditAttributeName.APPROVER_ASSOCIATIONS, approverAssocationList, jacksonMapper);
 		}
+		
+		if(CollectionUtils.isNotEmpty(request.getAdditionalApproverIds())) {
+			approverUserIds.addAll(request.getAdditionalApproverIds());
+		}
+		
 		if(CollectionUtils.isEmpty(approverUserIds) && CollectionUtils.isEmpty(approverAssociationIds)) {
 			final String message = "Could not found any approvers - using default user";
 			builder.addWarning(message);

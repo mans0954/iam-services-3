@@ -46,7 +46,6 @@ import org.openiam.exception.BasicDataServiceException;
 import org.openiam.bpm.activiti.groovy.AbstractApproverAssociationIdentifier;
 import org.openiam.bpm.activiti.groovy.DefaultEditUserApproverAssociationIdentifier;
 import org.openiam.bpm.activiti.groovy.DefaultGenericWorkflowRequestApproverAssociationIdentifier;
-import org.openiam.bpm.activiti.groovy.DefaultNewEntityApproverIdentifier;
 import org.openiam.bpm.activiti.groovy.DefaultNewHireRequestApproverAssociationIdentifier;
 import org.openiam.bpm.activiti.model.ActivitiJSONStringWrapper;
 import org.openiam.bpm.request.ActivitiClaimRequest;
@@ -143,9 +142,6 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 	
 	@Value("${org.openiam.activiti.new.user.approver.association.groovy.script}")
 	private String newUserApproverAssociationGroovyScript;
-	
-	@Value("${org.openiam.activiti.new.entity.approver.groovy.script}")
-	private String newEntityApproverGroovyScript;
 	
     @Autowired
     @Qualifier("configurableGroovyScriptEngine")
@@ -833,20 +829,6 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 			response.setErrorText(e.getMessage());
 		}
 		return response;
-	}
-	
-	@Override
-	public Set<String> getDefaultApproversForEntityCreation(final String requestorId, final AssociationType type) {
-		DefaultNewEntityApproverIdentifier identifier = null;
-		try {
-			identifier = (DefaultNewEntityApproverIdentifier)scriptRunner.instantiateClass(null, newEntityApproverGroovyScript);
-			if(identifier == null) {
-				throw new Exception("Did not instantiate script - was null");
-			}
-		} catch(Throwable e) {
-			identifier = new DefaultNewEntityApproverIdentifier();
-		}
-		return identifier.getApprovers(requestorId, type);
 	}
 	
 	@Override
