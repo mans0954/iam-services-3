@@ -193,7 +193,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
     @Override
     public ProvisionUserResponse modifyUser(final ProvisionUser pUser) {
         final List<ProvisionDataContainer> dataList = new LinkedList<ProvisionDataContainer>();
-        final TransactionTemplate transactionTemplate = new TransactionTemplate(platformTransactionManager);
+        TransactionTemplate transactionTemplate = new TransactionTemplate(platformTransactionManager);
 
 
         ProvisionUserResponse res = new ProvisionUserResponse();
@@ -205,9 +205,10 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 @Override
                 public ProvisionUserResponse doInTransaction(TransactionStatus status) {
                     final AuditLogBuilder auditBuilder;
-                    String parentAuditLog = pUser.getParentAuditLogId();
-                    if(parentAuditLog != null) {
-                        auditBuilder = auditLogProvider.getAuditLogBuilder(parentAuditLog);
+                    String parentAuditLogId = pUser.getParentAuditLogId();
+                    if(parentAuditLogId != null) {
+                        IdmAuditLogEntity parentAuditLog = auditLogService.findById(parentAuditLogId);
+                        auditBuilder = parentAuditLog != null ? new AuditLogBuilder(parentAuditLog) : auditLogProvider.getAuditLogBuilder(parentAuditLogId);
                     } else {
                         auditBuilder = auditLogProvider.getAuditLogBuilder();
                         auditLogProvider.persist(auditBuilder);
@@ -217,12 +218,9 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     auditBuilderModifyChild.setRequestorUserId(systemUserId).setTargetUser(null).setAction(AuditAction.PROVISIONING_MODIFY);
                     auditLogProvider.persist(auditBuilderModifyChild);
                     auditBuilder.addChild(auditBuilderModifyChild);
-
                     auditBuilderModifyChild.setAuditDescription("Provisioning modify user: " + pUser.getUserId() +" with principal list: "+pUser.getPrincipalList());
 
                     ProvisionUserResponse tmpRes = addModifyUser(pUser, false, dataList, auditBuilderModifyChild);
-                    auditLogProvider.remove(auditBuilderModifyChild.getEntity().getId());
-                    auditLogService.enqueue(auditBuilderModifyChild);
                     return tmpRes;
                 }
             });
@@ -233,6 +231,8 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             }
         }catch(Throwable t){
           t.printStackTrace();
+        } finally {
+            transactionTemplate = null;
         }
         return res;
     }
@@ -1101,7 +1101,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 for (Resource res : resources) {
                     //skip provisioning for resource if it in NotProvisioning set
                     if(pUser.getNotProvisioninResourcesIds().contains(res.getResourceId())) {
-                        auditLog.addAttribute(AuditAttributeName.DESCRIPTION, "Skip Provisioning for resource: "+res.getName());
+                        auditLog.addAttribute(AuditAttributeName.DESCRIPTION, "Skip Provisioning to resource: "+res.getName());
                         continue;
                     }
                     try {

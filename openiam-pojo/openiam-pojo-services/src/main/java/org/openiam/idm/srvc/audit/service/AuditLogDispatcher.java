@@ -17,10 +17,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jms.core.BrowserCallback;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.TransactionCallback;
-import org.springframework.transaction.support.TransactionTemplate;
 
 @Component("auditLogDispatcher")
 public class AuditLogDispatcher implements Sweepable {
@@ -37,18 +33,11 @@ public class AuditLogDispatcher implements Sweepable {
     private Queue queue;
 
 
-    @Autowired
-    @Qualifier("transactionManager")
-    private PlatformTransactionManager platformTransactionManager;
-
-    private final Object mutext = new Object();
-
     @Override
     public void sweep() {
         jmsTemplate.browse(queue, new BrowserCallback<Object>() {
             @Override
             public Object doInJms(Session session, QueueBrowser browser) throws JMSException {
-              //  synchronized (mutext) {
                 final StopWatch sw = new StopWatch();
                 sw.start();
                     try {
@@ -70,22 +59,13 @@ public class AuditLogDispatcher implements Sweepable {
 
                         if (list.size() > 0) {
                             batchList.add(list);
-                            final TransactionTemplate transactionTemplate = new TransactionTemplate(platformTransactionManager);
-                            transactionTemplate.execute(new TransactionCallback<Object>() {
-                                @Override
-                                public Object doInTransaction(TransactionStatus status) {
-
-                                    for (final Set<IdmAuditLogEntity> entityList : batchList) {
-                                        process(entityList);
-                                    }
-                                    return new Object();
-                                }
-                            });
+                            for (final Set<IdmAuditLogEntity> entityList : batchList) {
+                                process(entityList);
+                            }
                         }
                     } finally {
                         LOG.info(String.format("Done with audit logger sweeper thread.  Took %s ms", sw.getTime()));
                     }
-                //}
                 return null;
             }
         });
@@ -96,30 +76,17 @@ public class AuditLogDispatcher implements Sweepable {
             for (IdmAuditLogEntity auditLogEntity : entityList) {
                 if (StringUtils.isNotEmpty(auditLogEntity.getId())) {
                     IdmAuditLogEntity srcEntity = auditLogDAO.findById(auditLogEntity.getId());
-                    for(IdmAuditLogCustomEntity customEntity : srcEntity.getCustomRecords()) {
-                        if(auditLogEntity.getCustomRecords().contains(customEntity)){
-                        for(IdmAuditLogCustomEntity srcCustomEntity : auditLogEntity.getCustomRecords()) {
-                           if(customEntity.equals(srcCustomEntity)) {
-                              customEntity.setId(srcCustomEntity.getId());
-                               break;
-                           }
-                       }
-                        } else {
-                            auditLogEntity.addCustomRecord(customEntity.getKey(),customEntity.getValue());
-                        }
-
-                    }
-                    for(IdmAuditLogEntity srcChildren : srcEntity.getChildLogs()) {
-                       if(!auditLogEntity.getChildLogs().contains(srcChildren)) {
-                           auditLogEntity.addChild(srcChildren);
-                       }
-                    }
-                    for(IdmAuditLogEntity srcParent : srcEntity.getParentLogs()) {
-                        if(!auditLogEntity.getParentLogs().contains(srcParent)) {
-                            auditLogEntity.addParent(srcParent);
+                    for(IdmAuditLogCustomEntity customEntity : auditLogEntity.getCustomRecords()) {
+                        if(!srcEntity.getCustomRecords().contains(customEntity)){
+                            srcEntity.addCustomRecord(customEntity.getKey(),customEntity.getValue());
                         }
                     }
-                    auditLogDAO.merge(auditLogEntity);
+                    for(IdmAuditLogEntity newChildren : auditLogEntity.getChildLogs()) {
+                       if(!srcEntity.getChildLogs().contains(newChildren)) {
+                           srcEntity.addChild(newChildren);
+                       }
+                    }
+                    auditLogDAO.merge(srcEntity);
                 } else {
                     auditLogDAO.persist(auditLogEntity);
                 }

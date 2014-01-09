@@ -65,11 +65,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jms.core.BrowserCallback;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionCallback;
-import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.jms.*;
 import javax.jms.Queue;
@@ -122,20 +118,13 @@ public class ProvisionDispatcher implements Sweepable {
     @Qualifier("configurableGroovyScriptEngine")
     private ScriptIntegration scriptRunner;
 
-    @Autowired
-    @Qualifier("transactionManager")
-    private PlatformTransactionManager platformTransactionManager;
-
-    private final Object mutext = new Object();
-    //@Transactional
+    @Transactional
     public void sweep() {
-
 
         jmsTemplate.browse(queue, new BrowserCallback<Object>() {
             @Override
             public Object doInJms(Session session, QueueBrowser browser) throws JMSException {
-                synchronized (mutext) {
-                final List<List<ProvisionDataContainer>> batchList = new LinkedList<List<ProvisionDataContainer>>();
+               final List<List<ProvisionDataContainer>> batchList = new LinkedList<List<ProvisionDataContainer>>();
                 List<ProvisionDataContainer> list = new ArrayList<ProvisionDataContainer>(100);
                 Enumeration e = browser.getEnumeration();
                 int count = 0;
@@ -151,10 +140,6 @@ public class ProvisionDispatcher implements Sweepable {
 
                 if (list.size() > 0) {
                     final String parentAuditLogId = list.get(0).getParentAuditLogId();
-                    final TransactionTemplate transactionTemplate = new TransactionTemplate(platformTransactionManager);
-                    transactionTemplate.execute(new TransactionCallback<ProvisionUserResponse>() {
-                        @Override
-                       public ProvisionUserResponse doInTransaction(TransactionStatus status) {
                             final AuditLogBuilder parentAuditBuilder;
                             if (parentAuditLogId != null) {
                                 parentAuditBuilder = new AuditLogBuilder(auditLogService.findById(parentAuditLogId));
@@ -172,13 +157,10 @@ public class ProvisionDispatcher implements Sweepable {
                             for (final List<ProvisionDataContainer> entityList : batchList) {
                                 process(entityList, auditBuilderDispatcherChild);
                             }
-                            auditLogService.enqueue(parentAuditBuilder);
+
                             auditLogProvider.remove(auditBuilderDispatcherChild.getEntity().getId());
-                            return new ProvisionUserResponse(ResponseStatus.SUCCESS);
-                        }
-                    });
                 }
-                }
+
                 return null;
         }
         }
@@ -243,13 +225,11 @@ public class ProvisionDispatcher implements Sweepable {
                     // do provisioning to target system
                     ProvisionUserResponse response = provision(data,auditBuilderDispatcherChild);
                     auditBuilderDispatcherChild.addAttribute(AuditAttributeName.DESCRIPTION, "ADD IDENTITY="+identity+" from MANAGED_SYS_ID="+identity.getManagedSysId() + " status="+response.getStatus()+" details="+response.getErrorText());
-             //       auditLogService.enqueue(auditBuilderDispatcherChild);
                     if (!response.isSuccess()) {
                         loginEntity.setStatus(LoginStatusEnum.FAIL_CREATE);
                     }
                 }  catch (Throwable th) {
                     auditBuilderDispatcherChild.addAttribute(AuditAttributeName.DESCRIPTION, "ADD IDENTITY="+identity+" from MANAGED_SYS_ID="+identity.getManagedSysId() + " status="+LoginStatusEnum.FAIL_CREATE+ " details="+th.getMessage());
-              //      auditLogService.enqueue(auditBuilderDispatcherChild);
                     loginEntity.setStatus(LoginStatusEnum.FAIL_CREATE);
                 }
             } else if (data.getOperation() == AttributeOperationEnum.REPLACE) {
@@ -266,7 +246,6 @@ public class ProvisionDispatcher implements Sweepable {
                     // do provisioning to target system
                     ProvisionUserResponse response = provision(data,auditBuilderDispatcherChild);
                     auditBuilderDispatcherChild.addAttribute(AuditAttributeName.DESCRIPTION, "UPDATE IDENTITY="+identity+" from MANAGED_SYS_ID="+identity.getManagedSysId() + " status="+response.getStatus()+" details="+response.getErrorText());
-         //           auditLogService.enqueue(auditBuilderDispatcherChild);
                     if (!response.isSuccess()) {
                         loginEntity.setStatus(LoginStatusEnum.FAIL_UPDATE);
                         // if we have changed identity for managed sys when rename we have to revert it because failed
@@ -276,7 +255,6 @@ public class ProvisionDispatcher implements Sweepable {
                     }
                 } catch (Throwable th) {
                     auditBuilderDispatcherChild.addAttribute(AuditAttributeName.DESCRIPTION, "UPDATE IDENTITY="+identity+" from MANAGED_SYS_ID="+identity.getManagedSysId() + " status="+LoginStatusEnum.FAIL_UPDATE+ " details="+th.getMessage());
-        //            auditLogService.enqueue(auditBuilderDispatcherChild);
                     loginEntity.setStatus(LoginStatusEnum.FAIL_UPDATE);
                 }
             }

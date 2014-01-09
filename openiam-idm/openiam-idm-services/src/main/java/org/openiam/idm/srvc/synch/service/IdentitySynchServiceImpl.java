@@ -165,7 +165,6 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
 		
 	}
 
-    //@Transactional
 	public SyncResponse startSynchronization(SynchConfigEntity config) {
 
         SyncResponse syncResponse = new SyncResponse(ResponseStatus.SUCCESS);
@@ -181,7 +180,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
 
         SyncResponse processCheckResponse = addTask(config.getSynchConfigId());
         auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "Synchronization started..." + startDate);
-        auditLogService.enqueue(auditBuilder);
+
         try {
             if ( processCheckResponse.getStatus() == ResponseStatus.FAILURE ) {
                 return processCheckResponse;
@@ -197,7 +196,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
 			
 			log.debug("SyncReponse updateTime value=" + newLastExecTime);
             auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "SyncReponse updateTime value=" + newLastExecTime);
-            auditLogService.enqueue(auditBuilder);
+            auditLogProvider.persist(auditBuilder);
 
             if (syncResponse.getLastRecordTime() == null) {
 			
@@ -213,7 +212,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
 
 		    log.debug("-startSynchronization COMPLETE.^^^^^^^^");
             auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "-startSynchronization COMPLETE.^^^^^^^^");
-            auditLogService.enqueue(auditBuilder);
+            auditLogProvider.persist(auditBuilder);
 		} catch( ClassNotFoundException cnfe) {
             cnfe.printStackTrace();
 			log.error(cnfe);
@@ -221,14 +220,14 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
             syncResponse.setErrorCode(ResponseCode.CLASS_NOT_FOUND);
             syncResponse.setErrorText(cnfe.getMessage());
             auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "ERROR: "+cnfe.getMessage());
-            auditLogService.enqueue(auditBuilder);
-		} catch(Exception e) {
+            auditLogProvider.persist(auditBuilder);
+        } catch(Exception e) {
 			log.error(e);
             syncResponse = new SyncResponse(ResponseStatus.FAILURE);
             syncResponse.setErrorText(e.getMessage());
             auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "ERROR: "+e.getMessage());
-            auditLogService.enqueue(auditBuilder);
-		} finally {
+            auditLogProvider.persist(auditBuilder);
+        } finally {
             auditLogProvider.remove(auditBuilder.getEntity().getId());
             endTask(config.getSynchConfigId());
             return syncResponse;
