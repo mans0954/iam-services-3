@@ -175,7 +175,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             });
 
             if (res.isSuccess()) {
-               provQueueService.enqueue(dataList);
+                provQueueService.enqueue(dataList);
             }
         } catch(Throwable t){
             t.printStackTrace();
@@ -1073,11 +1073,11 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     //skip provisioning for resource if it in NotProvisioning set
                     if(pUser.getNotProvisioninResourcesIds().contains(res.getResourceId())) {
                          auditLog.addAttribute(AuditAttributeName.DESCRIPTION, "Skip De-Provisioning for resource: "+res.getName());
-                        continue;
+                         continue;
                     }
                     try {
                     // Protects other resources if one resource failed
-                        ProvisionDataContainer data = deprovisionResource(res, userEntity, requestId);
+                        ProvisionDataContainer data = deprovisionResource(res, userEntity, pUser, requestId);
                         auditLog.addAttribute(AuditAttributeName.DESCRIPTION, "De-Provisioning for resource: "+res.getName());
                         if (data != null) {
                             data.setParentAuditLogId(auditLog.getEntity().getId());
@@ -1295,7 +1295,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         return null;
     }
 
-    private ProvisionDataContainer deprovisionResource(Resource res, UserEntity userEntity, String requestId) {
+    private ProvisionDataContainer deprovisionResource(Resource res, UserEntity userEntity, ProvisionUser pUser, String requestId) {
 
         //ManagedSysDto mSys = managedSysService.getManagedSys(managedSysId);
         ManagedSysDto mSys = managedSysService.getManagedSysByResource(res.getResourceId());
@@ -1315,6 +1315,14 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
         if (mLg != null) {
             Login targetSysLogin = loginDozerConverter.convertToDTO(mLg, false);
+            for (Login l : pUser.getPrincipalList()) { // saving Login properties from pUser
+                if (l.getLoginId()!=null && l.getLoginId().equals(targetSysLogin.getLoginId())) {
+                    targetSysLogin.setOperation(l.getOperation());
+                    targetSysLogin.setOrigPrincipalName(l.getOrigPrincipalName());
+                    targetSysLogin.setInitialStatus(l.getStatus());
+                }
+            }
+
             ProvisionDataContainer data = new ProvisionDataContainer();
             data.setRequestId(requestId);
             data.setResourceId(res.getResourceId());
