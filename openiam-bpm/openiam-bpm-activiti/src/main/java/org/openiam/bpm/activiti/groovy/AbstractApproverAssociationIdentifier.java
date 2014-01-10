@@ -1,10 +1,15 @@
 package org.openiam.bpm.activiti.groovy;
 
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.openiam.bpm.request.ActivitiRequestDecision;
+import org.openiam.bpm.request.GenericWorkflowRequest;
+import org.openiam.bpm.util.ActivitiRequestType;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 import org.openiam.idm.srvc.mngsys.service.ApproverAssociationDAO;
@@ -56,5 +61,34 @@ public abstract class AbstractApproverAssociationIdentifier {
 	
 	public List<String> getApproverIds() {
 		return approverUserIds;
+	}
+	
+	protected boolean isRequestForEntityCreation(final GenericWorkflowRequest request) {
+		boolean retVal = false;
+		if(request.getActivitiRequestType() != null) {
+			switch(ActivitiRequestType.getByName(request.getActivitiRequestType())) {
+				case NEW_GROUP:
+					retVal = true;
+					break;
+				case NEW_ROLE:
+					retVal = true;
+					break;
+				case NEW_ORGANIZATION:
+					retVal = true;
+					break;
+				case NEW_RESOURCE:
+					retVal = true;
+					break;
+				default:
+					break;
+			}
+		}
+		return retVal;
+	}
+	
+	protected Set<String> getApproversForEntityCreation(final GenericWorkflowRequest request) {
+		final Set<String> approvers = new HashSet<String>();
+		approvers.add(defaultApproverUserId);
+		return approvers;
 	}
 }

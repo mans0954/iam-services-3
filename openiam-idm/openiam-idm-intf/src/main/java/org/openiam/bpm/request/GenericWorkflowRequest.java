@@ -32,7 +32,8 @@ import org.openiam.idm.srvc.mngsys.domain.AssociationType;
     "customApproverAssociationIds",
     "customApproverIds",
     "userCentricUserId",
-    "jsonSerializedParams"
+    "jsonSerializedParams",
+    "additionalApproverIds"
 })
 public class GenericWorkflowRequest extends BaseObject {
 
@@ -50,6 +51,8 @@ public class GenericWorkflowRequest extends BaseObject {
 	private List<String> customApproverAssociationIds;
 	private Set<String> customApproverIds;
 	private String userCentricUserId;
+	
+	private Set<String> additionalApproverIds;
 
 	public String getActivitiRequestType() {
 		return activitiRequestType;
@@ -176,6 +179,12 @@ public class GenericWorkflowRequest extends BaseObject {
 	public void setMemberAssociationType(AssociationType memberAssociationType) {
 		this.memberAssociationType = memberAssociationType;
 	}
-	
-	
+
+	public Set<String> getAdditionalApproverIds() {
+		return additionalApproverIds;
+	}
+
+	public void setAdditionalApproverIds(Set<String> additionalApproverIds) {
+		this.additionalApproverIds = additionalApproverIds;
+	}
 }
