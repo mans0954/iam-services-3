@@ -1023,7 +1023,16 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 loginDozerConverter.convertToDTO(primaryIdentityEntity, false) : null;
 
         if (primaryIdentity == null) { // Try to generate a new primary identity from scratch
-            primaryIdentity = buildPrimaryPrincipal(bindingMap, scriptRunner);
+            LoginEntity entity = loginDozerConverter.convertToEntity(buildPrimaryPrincipal(bindingMap, scriptRunner), false);
+            try {
+                entity.setUserId(userEntity.getUserId());
+                userEntity.getPrincipalList().add(entity);
+                entity.setPassword(loginManager.encryptPassword(entity.getUserId(), entity.getPassword()));
+                primaryIdentity = loginDozerConverter.convertToDTO(entity, false);
+            } catch (EncryptionException ee) {
+                log.error(ee);
+                ee.printStackTrace();
+            }
         }
 
         String decPassword = "";
@@ -1265,8 +1274,8 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             }
 
             bindingMap.put(TARGET_SYSTEM_ATTRIBUTES, null);
-            bindingMap.put(TARGET_SYSTEM_IDENTITY, isMngSysIdentityExistsInOpeniam ? mLg.getLogin() : null);
-            bindingMap.put( TARGET_SYS_SECURITY_DOMAIN, isMngSysIdentityExistsInOpeniam ? mLg.getDomainId() : null);
+            bindingMap.put(TARGET_SYSTEM_IDENTITY, mLg.getLogin());
+            bindingMap.put( TARGET_SYS_SECURITY_DOMAIN, mLg.getDomainId());
 
             // Identity of current target system
             Login targetSysLogin = loginDozerConverter.convertToDTO(mLg, false);

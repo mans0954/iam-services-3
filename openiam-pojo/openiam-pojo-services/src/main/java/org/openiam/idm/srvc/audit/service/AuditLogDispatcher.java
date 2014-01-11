@@ -76,17 +76,19 @@ public class AuditLogDispatcher implements Sweepable {
             for (IdmAuditLogEntity auditLogEntity : entityList) {
                 if (StringUtils.isNotEmpty(auditLogEntity.getId())) {
                     IdmAuditLogEntity srcEntity = auditLogDAO.findById(auditLogEntity.getId());
-                    for(IdmAuditLogCustomEntity customEntity : auditLogEntity.getCustomRecords()) {
-                        if(!srcEntity.getCustomRecords().contains(customEntity)){
-                            srcEntity.addCustomRecord(customEntity.getKey(),customEntity.getValue());
+                    if (srcEntity != null) {
+                        for(IdmAuditLogCustomEntity customEntity : auditLogEntity.getCustomRecords()) {
+                            if(!srcEntity.getCustomRecords().contains(customEntity)){
+                                srcEntity.addCustomRecord(customEntity.getKey(),customEntity.getValue());
+                            }
                         }
+                        for(IdmAuditLogEntity newChildren : auditLogEntity.getChildLogs()) {
+                           if(!srcEntity.getChildLogs().contains(newChildren)) {
+                               srcEntity.addChild(newChildren);
+                           }
+                        }
+                        auditLogDAO.merge(srcEntity);
                     }
-                    for(IdmAuditLogEntity newChildren : auditLogEntity.getChildLogs()) {
-                       if(!srcEntity.getChildLogs().contains(newChildren)) {
-                           srcEntity.addChild(newChildren);
-                       }
-                    }
-                    auditLogDAO.merge(srcEntity);
                 } else {
                     auditLogDAO.persist(auditLogEntity);
                 }

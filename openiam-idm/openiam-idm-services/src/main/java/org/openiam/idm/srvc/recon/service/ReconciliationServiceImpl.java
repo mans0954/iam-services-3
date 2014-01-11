@@ -21,7 +21,6 @@
  */
 package org.openiam.idm.srvc.recon.service;
 
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -1190,30 +1189,43 @@ public class ReconciliationServiceImpl implements ReconciliationService {
     }
 
     private void getValuesForExtensibleUser(ExtensibleUser fromIDM, User user,
-            List<AttributeMapEntity> attrMap, LoginEntity primaryIdentity) {
+            List<AttributeMapEntity> attrMap, LoginEntity identity) {
         Map<String, Object> bindingMap = new HashMap<String, Object>();
         try {
             bindingMap.put("user", new ProvisionUser(user));
-            bindingMap.put("sysId", sysConfiguration.getDefaultManagedSysId());
+            bindingMap.put("managedSysId", identity.getManagedSysId());
+
             // get all groups for user
             List<org.openiam.idm.srvc.grp.dto.Group> curGroupList = groupDozerConverter.convertToDTOList(
                     groupManager.getGroupsForUser(user.getUserId(), null, -1,
                             -1), false);
+
+            Login primaryIdentity = null;
+            for (Login l  : user.getPrincipalList()) {
+                if (l.getManagedSysId().equalsIgnoreCase(sysConfiguration.getDefaultManagedSysId())) {
+                    primaryIdentity = l;
+                    break;
+                }
+            }
+
             String decPassword = "";
             if (primaryIdentity != null) {
-                if (StringUtils.isEmpty(primaryIdentity.getUserId())) {
-                    throw new IllegalArgumentException(
-                            "primaryIdentity userId can not be empty");
-                }
                 String password = primaryIdentity.getPassword();
                 if (password != null) {
-                    decPassword = loginManager.decryptPassword(
-                            primaryIdentity.getUserId(), password);
+                    decPassword = loginManager.decryptPassword(primaryIdentity.getUserId(), password);
                     bindingMap.put("password", decPassword);
                 }
                 bindingMap.put("lg", primaryIdentity);
-
             }
+
+            if (identity != null) {
+                if (StringUtils.isEmpty(identity.getUserId())) {
+                    throw new IllegalArgumentException(
+                            "Identity userId can not be empty");
+                }
+                bindingMap.put("targetSystemIdentity", identity.getLogin());
+            }
+
             // make the role and group list before these updates available to
             // the
             // attribute policies
