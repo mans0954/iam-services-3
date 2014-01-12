@@ -1,6 +1,8 @@
 package org.openiam.idm.searchbeans;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+import org.openiam.base.Tuple;
 import org.openiam.idm.srvc.grp.dto.Group;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -8,20 +10,26 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 import java.io.Serializable;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "GroupSearchBean", propOrder = {
         "keySet",
         "name",
-        "isRootsOnly"
+        "isRootsOnly",
+        "managedSysId",
+        "attributes"
 })
 public class GroupSearchBean extends AbstractSearchBean<Group, String> implements SearchBean<Group, String>, Serializable {
 
 	private static final long serialVersionUID = 1L;
     private Set<String> keySet;
 	private String name;
+	private String managedSysId;
 	private boolean isRootsOnly;
+	private List<Tuple<String, String>> attributes;
 	
 	public String getName() {
 		return name;
@@ -37,6 +45,32 @@ public class GroupSearchBean extends AbstractSearchBean<Group, String> implement
 
 	public void setIsRootsOnly(boolean isRootsOnly) {
 		this.isRootsOnly = isRootsOnly;
+	}
+
+	public String getManagedSysId() {
+		return managedSysId;
+	}
+
+	public void setManagedSysId(String managedSysId) {
+		this.managedSysId = managedSysId;
+	}
+	
+	public void addAttribute(final String key, final String value) {
+		if(StringUtils.isNotBlank(key) || StringUtils.isNotBlank(value)) {
+			if(this.attributes == null) {
+				this.attributes = new LinkedList<Tuple<String,String>>();
+			}
+			final Tuple<String, String> tuple = new Tuple<String, String>(key, value);
+			this.attributes.add(tuple);
+		}
+	}
+
+	public List<Tuple<String, String>> getAttributes() {
+		return attributes;
+	}
+
+	public void setAttributes(List<Tuple<String, String>> attributes) {
+		this.attributes = attributes;
 	}
 
 	@Override
