@@ -39,7 +39,7 @@ public class SearchUserGoogleCommand
                     password, domain);
             List<ObjectValue> objList = new ArrayList<ObjectValue>();
             for (GenericEntry u : googleUsers) {
-                ExtensibleObject o = this.googleToExtensibleAttributes(u
+                ExtensibleObject o = this.googleUserToExtensibleAttributes(u
                         .getAllProperties());
                 ObjectValue ov = new ObjectValue();
                 ov.setAttributeList(o.getAttributes());
