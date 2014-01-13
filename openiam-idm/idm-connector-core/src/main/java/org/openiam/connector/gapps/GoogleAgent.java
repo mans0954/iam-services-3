@@ -81,8 +81,14 @@ public class GoogleAgent {
 
     public GenericEntry getEntity(String adminEmail, String password, String domain, String entity, String URL)
 	    throws AppsForYourDomainException, MalformedURLException, IOException, ServiceException {
-	return this.getService(adminEmail, password, domain).getEntry(
-		new URL(URL + domain + "/" + entity + "@" + domain), GenericEntry.class);
+	if (!StringUtils.hasText(entity))
+	    return null;
+	String id = entity;
+	if (entity.contains("@")) {
+	    id = entity.split("@")[0];
+	}
+	return this.getService(adminEmail, password, domain).getEntry(new URL(URL + domain + "/" + id + "@" + domain),
+		GenericEntry.class);
     }
 
     public GenericEntry getUser(String adminEmail, String password, String domain, String email)
@@ -95,7 +101,7 @@ public class GoogleAgent {
 	return this.getEntity(adminEmail, password, domain, group, APP_URL_GROUP);
     }
 
-    public void addUser(String adminEmail, String password, String domain, Map<String, String> googleUserProps)
+    public String addUser(String adminEmail, String password, String domain, Map<String, String> googleUserProps)
 	    throws AppsForYourDomainException, AuthenticationException, MalformedURLException, IOException,
 	    ServiceException {
 	GenericEntry entry = new GenericEntry();
@@ -104,7 +110,9 @@ public class GoogleAgent {
 	entry.addProperty("isSuspended", "false");
 
 	GenericEntry newE = this.getService(adminEmail, password, domain).insert(new URL(APP_URL_USER + domain), entry);
-	log.info("Google connector add run:" + newE.getAllProperties().get("userEmail"));
+	if (googleUserProps.get("groups") != null)
+	    log.info("Google connector add run:" + newE.getAllProperties().get("userEmail"));
+	return newE.getAllProperties().get("userEmail");
     }
 
     public void addGroup(String adminEmail, String password, String domain, Map<String, String> googleGroupProps)

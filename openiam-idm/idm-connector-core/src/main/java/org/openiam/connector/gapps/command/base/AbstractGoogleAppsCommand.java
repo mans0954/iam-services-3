@@ -57,7 +57,8 @@ public abstract class AbstractGoogleAppsCommand<Request extends RequestType, Res
     protected Map<String, String> extensibleUserToGoogle(ExtensibleObject user, String id, String domain) {
 	Map<String, String> googleUser = new HashMap<String, String>();
 	for (ExtensibleAttribute a : user.getAttributes()) {
-	    googleUser.put(a.getName(), a.getValue());
+	    if (a.getValue() != null && !a.isMultivalued())
+		googleUser.put(a.getName(), a.getValue());
 	}
 	googleUser.put("userEmail", id.toLowerCase() + "@" + domain);
 	return googleUser;
