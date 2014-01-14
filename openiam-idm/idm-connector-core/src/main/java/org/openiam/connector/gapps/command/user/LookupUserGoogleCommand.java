@@ -37,7 +37,7 @@ public class LookupUserGoogleCommand
             GenericEntry googleUser = client.getUser(adminEmail, password,
                     domain, searchRequest.getSearchValue());
             List<ObjectValue> objList = new ArrayList<ObjectValue>();
-            ExtensibleObject o = this.googleToExtensibleAttributes(googleUser
+            ExtensibleObject o = this.googleUserToExtensibleAttributes(googleUser
                     .getAllProperties());
             ObjectValue ov = new ObjectValue();
             ov.setAttributeList(o.getAttributes());

@@ -7,6 +7,7 @@ import org.apache.commons.lang.StringUtils;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Restrictions;
+import org.openiam.base.Tuple;
 import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.idm.searchbeans.GroupSearchBean;
 import org.openiam.idm.searchbeans.SearchBean;
@@ -46,6 +47,20 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
             }else if(StringUtils.isNotBlank(groupSearchBean.getKey())) {
                 criteria.add(Restrictions.eq(getPKfieldName(), groupSearchBean.getKey()));
             }
+            
+            if(CollectionUtils.isNotEmpty(groupSearchBean.getAttributes())) {
+				criteria.createAlias("attributes", "prop");
+				for(final Tuple<String, String> attribute : groupSearchBean.getAttributes()) {
+					if(StringUtils.isNotBlank(attribute.getKey()) && StringUtils.isNotBlank(attribute.getValue())) {
+						criteria.add(Restrictions.and(Restrictions.eq("prop.name", attribute.getKey()), 
+								Restrictions.eq("prop.value", attribute.getValue())));
+					} else if(StringUtils.isNotBlank(attribute.getKey())) {
+						criteria.add(Restrictions.eq("prop.name", attribute.getKey()));
+					} else if(StringUtils.isNotBlank(attribute.getValue())) {
+						criteria.add(Restrictions.eq("prop.value", attribute.getValue()));
+					}
+				}
+			}
         }
         return criteria;
     }
@@ -79,6 +94,10 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
 			
 			if(group.getAdminResource() != null && StringUtils.isNotBlank(group.getAdminResource().getId())) {
 				criteria.add(Restrictions.eq("adminResource.id", group.getAdminResource().getId()));
+			}
+			
+			if(group.getManagedSystem() != null && StringUtils.isNotBlank(group.getManagedSystem().getManagedSysId())) {
+				criteria.add(Restrictions.eq("managedSystem.managedSysId", group.getManagedSystem().getManagedSysId()));
 			}
             
             if(CollectionUtils.isNotEmpty(group.getResources())) {

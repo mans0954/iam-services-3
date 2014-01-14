@@ -120,6 +120,23 @@ public class ResourceEntity {
     public ResourceEntity(String id) {
     	this.id = id;
     }
+    
+    public void addRole(final RoleEntity entity) {
+    	if(entity != null) {
+    		if(this.roles == null) {
+    			this.roles = new HashSet<RoleEntity>();
+    		}
+    		this.roles.add(entity);
+    	}
+    }
+    
+    public void remove(final RoleEntity entity) {
+    	if(entity != null) {
+    		if(this.roles != null) {
+    			this.roles.remove(entity);
+    		}
+    	}
+    }
   
     public Set<RoleEntity> getRoles() {
         return roles;
@@ -199,6 +216,23 @@ public class ResourceEntity {
 
     public void setResourceProps(Set<ResourcePropEntity> resourceProps) {
         this.resourceProps = resourceProps;
+    }
+    
+    public void addGroup(final GroupEntity entity) {
+    	if(entity != null) {
+    		if(this.groups == null) {
+    			this.groups = new HashSet<GroupEntity>();
+    		}
+    		this.groups.add(entity);
+    	}
+    }
+    
+    public void remove(final GroupEntity entity) {
+    	if(entity != null) {
+    		if(this.groups != null) {
+    			this.groups.remove(entity);
+    		}
+    	}
     }
 
     public Set<GroupEntity> getGroups() {

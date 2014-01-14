@@ -371,34 +371,38 @@ public class ResourceServiceImpl implements ResourceService {
 	@Override
     @Transactional
 	public void addResourceGroup(String resourceId, String groupId) {
-		ResourceEntity resourceEntity = resourceDao.findById(resourceId);
-        GroupEntity groupEntity = groupDao.findById(groupId);
-        resourceEntity.getGroups().add(groupEntity);
+		final ResourceEntity entity = resourceDao.findById(resourceId);
+		final GroupEntity groupEntity = groupDao.findById(groupId);
+        entity.addGroup(groupEntity);
+        resourceDao.save(entity);
 	}
 
 	@Override
     @Transactional
 	public void deleteResourceGroup(String resourceId, String groupId) {
-        ResourceEntity resourceEntity = resourceDao.findById(resourceId);
-        GroupEntity groupEntity = groupDao.findById(groupId);
-        resourceEntity.getGroups().remove(groupEntity);
+        final ResourceEntity entity = resourceDao.findById(resourceId);
+        final GroupEntity groupEntity = groupDao.findById(groupId);
+        entity.remove(groupEntity);
+        resourceDao.save(entity);
 	}
 
 	@Override
     @Transactional
     public void addResourceToRole(String resourceId, String roleId) {
-        ResourceEntity resourceEntity = resourceDao.findById(resourceId);
-        RoleEntity roleEntity = roleDao.findById(roleId);
-        resourceEntity.getRoles().add(roleEntity);
+		final ResourceEntity entity = resourceDao.findById(resourceId);
+		final RoleEntity roleEntity = roleDao.findById(roleId);
+		entity.addRole(roleEntity);
+        resourceDao.save(entity);
 	}
 
 
 	@Override
     @Transactional
 	public void deleteResourceRole(String resourceId, String roleId) {
-        ResourceEntity resourceEntity = resourceDao.findById(resourceId);
-        RoleEntity roleEntity = roleDao.findById(roleId);
-        resourceEntity.getRoles().remove(roleEntity);
+		final ResourceEntity entity = resourceDao.findById(resourceId);
+		final RoleEntity roleEntity = roleDao.findById(roleId);
+		entity.remove(roleEntity);
+        resourceDao.save(entity);
 	}
 
 	@Override
