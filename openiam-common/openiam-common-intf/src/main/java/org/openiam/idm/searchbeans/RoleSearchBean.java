@@ -14,7 +14,8 @@ import java.util.Set;
 @XmlType(name = "RoleSearchBean", propOrder = {
         "keySet",
         "name",
-        "isRootsOnly"
+        "isRootsOnly",
+        "managedSysId"
 })
 public class RoleSearchBean extends AbstractSearchBean<Role, String> implements SearchBean<Role, String>, Serializable {
 
