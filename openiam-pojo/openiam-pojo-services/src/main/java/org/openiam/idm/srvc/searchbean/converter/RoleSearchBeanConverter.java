@@ -1,6 +1,8 @@
 package org.openiam.idm.srvc.searchbean.converter;
 
+import org.apache.commons.lang.StringUtils;
 import org.openiam.idm.searchbeans.RoleSearchBean;
+import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.springframework.stereotype.Component;
 
@@ -12,6 +14,12 @@ public class RoleSearchBeanConverter implements SearchBeanConverter<RoleEntity, 
 		final RoleEntity entity = new RoleEntity();
 		entity.setName(searchBean.getName());
 		entity.setId(searchBean.getKey());
+
+        if(StringUtils.isNotBlank(searchBean.getManagedSysId())){
+            ManagedSysEntity mngsys = new ManagedSysEntity();
+            mngsys.setManagedSysId(searchBean.getManagedSysId());
+            entity.setManagedSystem(mngsys);
+        }
 		return entity;
 	}
 
