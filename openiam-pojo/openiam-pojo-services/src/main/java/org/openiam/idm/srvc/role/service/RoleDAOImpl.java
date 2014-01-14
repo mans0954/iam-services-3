@@ -83,6 +83,10 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
 	                    }
 	                }
 	            }
+
+                if(entity.getManagedSystem()!=null && StringUtils.isNotBlank(entity.getManagedSystem().getManagedSysId())){
+                    criteria.add(Restrictions.eq("managedSystem.managedSysId", entity.getManagedSystem().getManagedSysId()));
+                }
 				
 				if(entity.getAdminResource() != null && StringUtils.isNotBlank(entity.getAdminResource().getId())) {
 					criteria.add(Restrictions.eq("adminResource.id", entity.getAdminResource().getId()));

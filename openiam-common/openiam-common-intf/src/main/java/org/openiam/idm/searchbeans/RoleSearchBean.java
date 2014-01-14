@@ -21,6 +21,7 @@ public class RoleSearchBean extends AbstractSearchBean<Role, String> implements 
 	private static final long serialVersionUID = 1L;
     private Set<String> keySet;
 	private String name;
+    private String managedSysId;
 	private Boolean isRootsOnly;
 	
 	public String getName() {
@@ -39,13 +40,22 @@ public class RoleSearchBean extends AbstractSearchBean<Role, String> implements 
 		this.isRootsOnly = isRootsOnly;
 	}
 
-	@Override
+    public String getManagedSysId() {
+        return managedSysId;
+    }
+
+    public void setManagedSysId(String managedSysId) {
+        this.managedSysId = managedSysId;
+    }
+
+    @Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
 		result = prime * result
 				+ ((isRootsOnly == null) ? 0 : isRootsOnly.hashCode());
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
+        result = prime * result + ((managedSysId == null) ? 0 : managedSysId.hashCode());
 		return result;
 	}
 
@@ -68,6 +78,11 @@ public class RoleSearchBean extends AbstractSearchBean<Role, String> implements 
 				return false;
 		} else if (!name.equals(other.name))
 			return false;
+        if (managedSysId == null) {
+            if (other.managedSysId != null)
+                return false;
+        } else if (!managedSysId.equals(other.managedSysId))
+            return false;
 		return true;
 	}
 
