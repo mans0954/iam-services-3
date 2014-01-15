@@ -40,7 +40,9 @@ import org.openiam.exception.EncryptionException;
 import org.openiam.exception.ObjectNotFoundException;
 import org.openiam.exception.ScriptEngineException;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
+import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
 import org.openiam.idm.srvc.audit.domain.AuditLogBuilder;
+import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
@@ -138,8 +140,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
     @Override
     public ProvisionUserResponse addUser(final ProvisionUser pUser) {
         final List<ProvisionDataContainer> dataList = new LinkedList<ProvisionDataContainer>();
-        final AuditLogBuilder auditBuilder=auditLogProvider.getAuditLogBuilder();
-        auditBuilder.setRequestorUserId(systemUserId).setTargetUser(null).setAction(AuditAction.PROVISIONING);
+
         ProvisionUserResponse res = new ProvisionUserResponse();
         res.setStatus(ResponseStatus.FAILURE);
          try {
@@ -149,23 +150,34 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             res = transactionTemplate.execute(new TransactionCallback<ProvisionUserResponse>() {
                 @Override
                 public ProvisionUserResponse doInTransaction(TransactionStatus status) {
-                    auditBuilder.setAuditDescription("Provisioning add new user");
-                    AuditLogBuilder auditBuilderAddChild = new AuditLogBuilder();
+                    final AuditLogBuilder auditBuilder;
+                    String parentAuditLog = pUser.getParentAuditLogId();
+                    if(parentAuditLog != null) {
+                        auditBuilder = auditLogProvider.getAuditLogBuilder(parentAuditLog);
+                    } else {
+                        auditBuilder = auditLogProvider.getAuditLogBuilder();
+                        auditLogProvider.persist(auditBuilder);
+                    }
+
+                    final AuditLogBuilder auditBuilderAddChild = new AuditLogBuilder();
                     auditBuilderAddChild.setRequestorUserId(systemUserId).setTargetUser(null).setAction(AuditAction.PROVISIONING_ADD);
-                    ProvisionUserResponse tmpRes = addModifyUser(pUser, true, dataList, auditBuilderAddChild);
+                    auditLogProvider.persist(auditBuilderAddChild);
                     auditBuilder.addChild(auditBuilderAddChild);
+
+                    auditBuilderAddChild.setAuditDescription("Provisioning add user: " + pUser.getId() +" with principal list: "+pUser.getPrincipalList());
+
+                    ProvisionUserResponse tmpRes = addModifyUser(pUser, true, dataList, auditBuilderAddChild);
+                    auditLogService.enqueue(auditBuilder);
+                    auditLogProvider.remove(auditBuilderAddChild.getEntity().getId());
                     return tmpRes;
                 }
             });
 
             if (res.isSuccess()) {
-                auditBuilder.succeed().setAuditDescription("User: " + res.getUser().getLogin());
                 provQueueService.enqueue(dataList);
-            } else {
-                auditBuilder.fail().setFailureReason(res.getErrorCode()).setFailureReason(res.getErrorText());
             }
-        } finally {
-            auditLogService.enqueue(auditBuilder);
+        } catch(Throwable t){
+            t.printStackTrace();
         }
         return res;
     }
@@ -180,20 +192,34 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
     @Override
     public ProvisionUserResponse modifyUser(final ProvisionUser pUser) {
         final List<ProvisionDataContainer> dataList = new LinkedList<ProvisionDataContainer>();
-        final TransactionTemplate transactionTemplate = new TransactionTemplate(platformTransactionManager);
-        final AuditLogBuilder auditBuilder = auditLogProvider.getAuditLogBuilder();
-        auditBuilder.setRequestorUserId(systemUserId).setTargetUser(null).setAction(AuditAction.PROVISIONING);
+        TransactionTemplate transactionTemplate = new TransactionTemplate(platformTransactionManager);
+
+
         ProvisionUserResponse res = new ProvisionUserResponse();
         res.setStatus(ResponseStatus.SUCCESS);
+
         try {
+
             res = transactionTemplate.execute(new TransactionCallback<ProvisionUserResponse>() {
                 @Override
                 public ProvisionUserResponse doInTransaction(TransactionStatus status) {
-                    auditBuilder.setAuditDescription("Provisioning modify user: " + pUser.getId());
-                    AuditLogBuilder auditBuilderModifyChild = new AuditLogBuilder();
+                    final AuditLogBuilder auditBuilder;
+                    String parentAuditLogId = pUser.getParentAuditLogId();
+                    if (parentAuditLogId != null) {
+                        IdmAuditLogEntity parentAuditLog = auditLogService.findById(parentAuditLogId);
+                        auditBuilder = parentAuditLog != null ? new AuditLogBuilder(parentAuditLog) : auditLogProvider.getAuditLogBuilder(parentAuditLogId);
+                    } else {
+                        auditBuilder = auditLogProvider.getAuditLogBuilder();
+                        auditLogProvider.persist(auditBuilder);
+                    }
+
+                    final AuditLogBuilder auditBuilderModifyChild = new AuditLogBuilder();
                     auditBuilderModifyChild.setRequestorUserId(systemUserId).setTargetUser(null).setAction(AuditAction.PROVISIONING_MODIFY);
-                    ProvisionUserResponse tmpRes = addModifyUser(pUser, false, dataList, auditBuilderModifyChild);
+                    auditLogProvider.persist(auditBuilderModifyChild);
                     auditBuilder.addChild(auditBuilderModifyChild);
+                    auditBuilderModifyChild.setAuditDescription("Provisioning modify user: " + pUser.getId() + " with principal list: " + pUser.getPrincipalList());
+
+                    ProvisionUserResponse tmpRes = addModifyUser(pUser, false, dataList, auditBuilderModifyChild);
                     return tmpRes;
                 }
             });
@@ -201,11 +227,11 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             if (res.isSuccess()) {
                 provQueueService.enqueue(dataList);
 
-            } else {
-                auditBuilder.fail().setFailureReason(res.getErrorCode()).setFailureReason(res.getErrorText());
             }
+        }catch(Throwable t){
+          t.printStackTrace();
         } finally {
-            auditLogService.enqueue(auditBuilder);
+            transactionTemplate = null;
         }
         return res;
     }
@@ -225,7 +251,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         Date startDate = user.getStartDate();
 
         if (startDate == null) {
-            // no startDate specified = assume that we can provision now
+            // no startDate++ specified = assume that we can provision now
             return true;
         }
 
@@ -767,8 +793,10 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
         if (isAdd) {
             log.debug("--- DEFAULT PROVISIONING SERVICE: addUser called ---");
+            auditLog.addAttribute(AuditAttributeName.DESCRIPTION, "--- DEFAULT PROVISIONING SERVICE: addUser called ---");
         } else {
             log.debug("--- DEFAULT PROVISIONING SERVICE: modifyUser called ---");
+            auditLog.addAttribute(AuditAttributeName.DESCRIPTION, "--- DEFAULT PROVISIONING SERVICE: modifyUser called ---");
         }
 
         UserEntity userEntity = !isAdd ? userMgr.getUser(pUser.getId()) : new UserEntity();
@@ -802,10 +830,12 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         bindingMap.put(TARGET_SYSTEM_IDENTITY, null);
         if (!isAdd) {
             ProvisionUser u = new ProvisionUser(userDozerConverter.convertToDTO(userEntity, true));
-            setCurrentSuperiors(u); // TODO: Consider the possibility to add and update superiors by cascade from UserEntity
+            setCurrentSuperiors(u);
             bindingMap.put("userBeforeModify", u);
         }
-        if (callPreProcessor(isAdd ? "ADD" : "MODIFY", pUser, bindingMap) != ProvisioningConstants.SUCCESS) {
+        int callPreProcessor = callPreProcessor(isAdd ? "ADD" : "MODIFY", pUser, bindingMap);
+        auditLog.addAttribute(AuditAttributeName.DESCRIPTION, "callPreProcessor result="+(callPreProcessor==1 ? "SUCCESS" : "FAIL"));
+        if (callPreProcessor != ProvisioningConstants.SUCCESS) {
             auditLog.fail().setFailureReason("PreProcessor error.");
             resp.setStatus(ResponseStatus.FAILURE);
             resp.setErrorCode(ResponseCode.FAIL_PREPROCESSOR);
@@ -816,7 +846,8 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
         if (!isAdd) {
             // get the current roles
-            List<Role> curRoleList = roleDataService.getUserRolesAsFlatList(pUser.getId()); //TODO: do we need children roles?
+            List<Role> curRoleList = roleDataService.getUserRolesAsFlatList(pUser.getId());
+
             // get all groups for user
             List<Group> curGroupList = groupDozerConverter.convertToDTOList(
                     groupManager.getGroupsForUser(pUser.getId(), null, -1, -1), false);
@@ -833,6 +864,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             LoginEntity curPrimaryIdentity = getPrimaryIdentity(sysConfiguration.getDefaultManagedSysId(), curPrincipalList);
             if (curPrimaryIdentity == null && pUser.getPrincipalList() == null) {
                 log.debug("Primary identity not found...");
+                auditLog.addAttribute(AuditAttributeName.DESCRIPTION, "Primary identity not found...");
                 resp.setStatus(ResponseStatus.FAILURE);
                 resp.setErrorCode(ResponseCode.PRINCIPAL_NOT_FOUND);
                 return resp;
@@ -892,7 +924,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             if (dupPrincipal != null) {
                 // identity exists
                 auditLog.fail().setFailureReason(ResponseCode.DUPLICATE_PRINCIPAL+": "+dupPrincipal);
-
+                auditLog.addAttribute(AuditAttributeName.DESCRIPTION, ResponseCode.DUPLICATE_PRINCIPAL+": "+dupPrincipal.getLogin());
                 resp.setStatus(ResponseStatus.FAILURE);
                 resp.setErrorCode(ResponseCode.DUPLICATE_PRINCIPAL);
                 return resp;
@@ -928,6 +960,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 pUser.setId(userEntity.getId());
             } catch (Exception e) {
                 auditLog.fail().setFailureReason("Exception while creating user: "+e.getMessage());
+                auditLog.addAttribute(AuditAttributeName.DESCRIPTION, "Exception while creating user: "+e.getMessage());
                 log.error("Exception while creating user", e);
                 resp.setStatus(ResponseStatus.FAILURE);
                 resp.setErrorCode(ResponseCode.FAIL_OTHER);
@@ -980,7 +1013,16 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 loginDozerConverter.convertToDTO(primaryIdentityEntity, false) : null;
 
         if (primaryIdentity == null) { // Try to generate a new primary identity from scratch
-            primaryIdentity = buildPrimaryPrincipal(bindingMap, scriptRunner);
+            LoginEntity entity = loginDozerConverter.convertToEntity(buildPrimaryPrincipal(bindingMap, scriptRunner), false);
+            try {
+                entity.setUserId(userEntity.getId());
+                userEntity.getPrincipalList().add(entity);
+                entity.setPassword(loginManager.encryptPassword(entity.getUserId(), entity.getPassword()));
+                primaryIdentity = loginDozerConverter.convertToDTO(entity, false);
+            } catch (EncryptionException ee) {
+                log.error(ee);
+                ee.printStackTrace();
+            }
         }
 
         String decPassword = "";
@@ -1004,6 +1046,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
         } else {
             auditLog.fail().setFailureReason(ResponseCode.PRINCIPAL_NOT_FOUND);
+            auditLog.addAttribute(AuditAttributeName.DESCRIPTION, "Primary identity not found for user=" + userEntity.getId());
             log.debug("Primary identity not found for user=" + userEntity.getId());
             resp.setStatus(ResponseStatus.FAILURE);
             resp.setErrorCode(ResponseCode.PRINCIPAL_NOT_FOUND);
@@ -1016,7 +1059,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         log.debug("Binding active roles to scripting");
         log.debug("- role set -> " + roleSet);
         log.debug("- Primary Identity : " + primaryIdentity);
-
+        auditLog.addAttribute(AuditAttributeName.DESCRIPTION, "- Primary Identity: " + primaryIdentity.getLogin());
         ProvisionUser finalProvUser = new ProvisionUser(userDozerConverter.convertToDTO(userEntity, true));
 
         // deprovision resources
@@ -1028,17 +1071,20 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 for (Resource res : resources) {
                     //skip provisioning for resource if it in NotProvisioning set
                     if(pUser.getNotProvisioninResourcesIds().contains(res.getId())) {
-                         auditLog.succeed().setAuditDescription("Skip De-Provisioning for resource: "+res.getName());
+                         auditLog.addAttribute(AuditAttributeName.DESCRIPTION, "Skip De-Provisioning for resource: "+res.getName());
                          continue;
                     }
                     try {
                     // Protects other resources if one resource failed
-                        ProvisionDataContainer data = deprovisionResource(res, userEntity, requestId);
+                        ProvisionDataContainer data = deprovisionResource(res, userEntity, pUser, requestId);
+                        auditLog.addAttribute(AuditAttributeName.DESCRIPTION, "De-Provisioning for resource: "+res.getName());
                         if (data != null) {
+                            data.setParentAuditLogId(auditLog.getEntity().getId());
                             dataList.add(data);
                         }
                     } catch (Throwable tw) {
                         auditLog.fail().setFailureReason("Deprovisioning resource : "+res.getName() +" for user with primary identity: "+primaryIdentity+". Exception: "+tw.getMessage());
+                        auditLog.addAttribute(AuditAttributeName.DESCRIPTION, "Deprovisioning resource : "+res.getName() +" for user with primary identity: "+primaryIdentity+". Exception: "+tw.getMessage());
                         log.error(res, tw);
                     }
                 }
@@ -1054,7 +1100,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 for (Resource res : resources) {
                     //skip provisioning for resource if it in NotProvisioning set
                     if(pUser.getNotProvisioninResourcesIds().contains(res.getId())) {
-                        auditLog.succeed().setAuditDescription("Skip Provisioning for resource: "+res.getName());
+                        auditLog.addAttribute(AuditAttributeName.DESCRIPTION, "Skip Provisioning to resource: "+res.getName());
                         continue;
                     }
                     try {
@@ -1069,11 +1115,14 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                        // Protects other resources if one resource failed
                         Map<String, Object> tmpMap = new HashMap<String, Object>(bindingMap); // prevent bindingMap rewrite in dataList
                         ProvisionDataContainer data = provisionResource(isAdd, res, userEntity, pUser, tmpMap, primaryIdentity, requestId);
+                        auditLog.addAttribute(AuditAttributeName.DESCRIPTION, "Provisioning for resource: "+res.getName());
                         if (data != null) {
+                            data.setParentAuditLogId(auditLog.getEntity().getId());
                             dataList.add(data);
                         }
                     } catch (Throwable tw) {
                         auditLog.fail().setFailureReason("Provisioning resource : "+res.getName() +" for user with primary identity: "+primaryIdentity+". Exception: "+tw.getMessage());
+                        auditLog.addAttribute(AuditAttributeName.DESCRIPTION, "Provisioning resource : "+res.getName() +" for user with primary identity: "+primaryIdentity+". Exception: "+tw.getMessage());
                         log.error(res, tw);
                     }
                 }
@@ -1095,11 +1144,12 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 }
             }
         }
-
-        if (callPostProcessor(isAdd ? "ADD" : "MODIFY", finalProvUser, bindingMap) != ProvisioningConstants.SUCCESS) {
-            auditLog.fail().setFailureReason("PostProcessor error.");
+        int callPostProcessorResult = callPostProcessor(isAdd ? "ADD" : "MODIFY", finalProvUser, bindingMap);
+        auditLog.addAttribute(AuditAttributeName.DESCRIPTION, "callPostProcessor result="+(callPostProcessorResult==1 ? "SUCCESS" : "FAIL"));
+        if (callPostProcessorResult != ProvisioningConstants.SUCCESS) {
             resp.setStatus(ResponseStatus.FAILURE);
             resp.setErrorCode(ResponseCode.FAIL_POSTPROCESSOR);
+            auditLog.addAttribute(AuditAttributeName.DESCRIPTION, "PostProcessor error.");
             return resp;
         }
         /* Response object */
@@ -1108,8 +1158,10 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
         if (isAdd) {
             log.debug("DEFAULT PROVISIONING SERVICE: addUser complete");
+            auditLog.addAttribute(AuditAttributeName.DESCRIPTION, "DEFAULT PROVISIONING SERVICE: addUser complete");
         } else {
             log.debug("DEFAULT PROVISIONING SERVICE: modifyUser complete");
+            auditLog.addAttribute(AuditAttributeName.DESCRIPTION, "DEFAULT PROVISIONING SERVICE: modifyUser complete");
         }
         auditLog.succeed();
         resp.setStatus(ResponseStatus.SUCCESS);
@@ -1211,8 +1263,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             }
 
             bindingMap.put(TARGET_SYSTEM_ATTRIBUTES, null);
-            bindingMap.put(TARGET_SYSTEM_IDENTITY, isMngSysIdentityExistsInOpeniam ? mLg.getLogin() : null);
-//            bindingMap.put( TARGET_SYS_SECURITY_DOMAIN, isMngSysIdentityExistsInOpeniam ? mLg.getDomainId() : null);
+            bindingMap.put(TARGET_SYSTEM_IDENTITY, mLg != null ? mLg.getLogin() : null);
 
             // Identity of current target system
             Login targetSysLogin = loginDozerConverter.convertToDTO(mLg, false);
@@ -1241,7 +1292,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         return null;
     }
 
-    private ProvisionDataContainer deprovisionResource(Resource res, UserEntity userEntity, String requestId) {
+    private ProvisionDataContainer deprovisionResource(Resource res, UserEntity userEntity, ProvisionUser pUser, String requestId) {
 
         //ManagedSysDto mSys = managedSysService.getManagedSys(managedSysId);
         ManagedSysDto mSys = managedSysService.getManagedSysByResource(res.getId());
@@ -1261,6 +1312,14 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
         if (mLg != null) {
             Login targetSysLogin = loginDozerConverter.convertToDTO(mLg, false);
+            for (Login l : pUser.getPrincipalList()) { // saving Login properties from pUser
+                if (l.getLoginId()!=null && l.getLoginId().equals(targetSysLogin.getLoginId())) {
+                    targetSysLogin.setOperation(l.getOperation());
+                    targetSysLogin.setOrigPrincipalName(l.getOrigPrincipalName());
+                    targetSysLogin.setInitialStatus(l.getStatus());
+                }
+            }
+
             ProvisionDataContainer data = new ProvisionDataContainer();
             data.setRequestId(requestId);
             data.setResourceId(res.getId());

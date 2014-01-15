@@ -21,7 +21,6 @@
  */
 package org.openiam.idm.srvc.recon.service;
 
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -70,6 +69,7 @@ import org.openiam.idm.srvc.mngsys.ws.ProvisionConnectorWebService;
 import org.openiam.idm.srvc.msg.service.MailService;
 import org.openiam.idm.srvc.recon.command.ReconciliationCommandFactory;
 import org.openiam.idm.srvc.recon.domain.ReconciliationConfigEntity;
+import org.openiam.idm.srvc.recon.dto.ReconExecStatusOptions;
 import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
 import org.openiam.idm.srvc.recon.dto.ReconciliationResponse;
 import org.openiam.idm.srvc.recon.dto.ReconciliationSituation;
@@ -99,7 +99,6 @@ import org.openiam.provision.service.ConnectorAdapter;
 import org.openiam.provision.service.ProvisionService;
 import org.openiam.provision.service.ProvisionServiceUtil;
 import org.openiam.provision.type.ExtensibleAttribute;
-import org.openiam.provision.type.ExtensibleObject;
 import org.openiam.provision.type.ExtensibleUser;
 import org.openiam.script.ScriptIntegration;
 import org.openiam.util.MuleContextProvider;
@@ -112,7 +111,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @author suneet
- * 
+ *
  */
 @Service
 public class ReconciliationServiceImpl implements ReconciliationService {
@@ -183,12 +182,9 @@ public class ReconciliationServiceImpl implements ReconciliationService {
     @Autowired
     protected AuditLogService auditLogService;
 
-    private static String DATETIME_FORMAT = "yyyy.MM.dd G 'at' HH:mm:ss z";
-
     private static final Log log = LogFactory
             .getLog(ReconciliationServiceImpl.class);
 
-    @Override
     public ReconciliationConfig addConfig(ReconciliationConfig config) {
         if (config == null) {
             throw new IllegalArgumentException("config parameter is null");
@@ -209,7 +205,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
 
     @Transactional
     private void saveSituationSet(Set<ReconciliationSituation> sitSet,
-            String configId) {
+                                  String configId) {
         if (sitSet != null) {
             for (ReconciliationSituation s : sitSet) {
                 if (StringUtils.isEmpty(s.getReconConfigId())) {
@@ -228,7 +224,6 @@ public class ReconciliationServiceImpl implements ReconciliationService {
         }
     }
 
-    @Override
     @Transactional
     public void updateConfig(ReconciliationConfig config) {
         if (config == null) {
@@ -247,7 +242,6 @@ public class ReconciliationServiceImpl implements ReconciliationService {
         this.saveSituationSet(sitSet, config.getReconConfigId());
     }
 
-    @Override
     @Transactional
     public void removeConfigByResourceId(String resourceId) {
         if (resourceId == null) {
@@ -257,7 +251,6 @@ public class ReconciliationServiceImpl implements ReconciliationService {
 
     }
 
-    @Override
     @Transactional
     public void removeConfig(String configId) {
         if (configId == null) {
@@ -268,7 +261,6 @@ public class ReconciliationServiceImpl implements ReconciliationService {
 
     }
 
-    @Override
     @Transactional(readOnly = true)
     public ReconciliationConfig getConfigByResource(String resourceId) {
         if (resourceId == null) {
@@ -282,7 +274,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
             return reconConfigDozerMapper.convertToDTO(result, true);
 
     }
-    @Override
+
     public ReconciliationConfig getConfigById(String configId) {
         if (configId == null) {
             throw new IllegalArgumentException("configId parameter is null");
@@ -294,41 +286,34 @@ public class ReconciliationServiceImpl implements ReconciliationService {
             return reconConfigDozerMapper.convertToDTO(result, true);
     }
 
-    @Override
     public ReconciliationResponse startReconciliation(
             ReconciliationConfig config) {
 
-        Date startDate = new Date();
-        SimpleDateFormat DATE_FORMAT = new SimpleDateFormat(DATETIME_FORMAT);
-        final AuditLogBuilder auditBuilder = auditLogProvider
-                .getAuditLogBuilder();
-        auditBuilder.setRequestorUserId(systemUserId).setTargetUser(null)
-                .setAction(AuditAction.RECONCILIATION);
-        auditBuilder.addAttribute(AuditAttributeName.CREATED_DATE,
-                new Date().toString());
-        auditBuilder.addAttribute(AuditAttributeName.START_RECONCILIATION_DATE,
-                DATE_FORMAT.format(startDate));
+        ReconciliationConfigEntity configEntity = reconConfigDao.findById(config.getReconConfigId());
 
-        auditBuilder.setAuditDescription("Reconciliation for configId="
-                + config.getReconConfigId() + " - resource="
-                + config.getResourceId());
+        Date startDate = new Date();
+        AuditLogBuilder auditBuilder = new AuditLogBuilder();
+
+        auditBuilder.setRequestorUserId(systemUserId).setTargetUser(null).setAction(AuditAction.RECONCILIATION);
+        auditBuilder.setTargetManagedSys(config.getManagedSysId());
+        auditBuilder.setSource(config.getReconConfigId());
+
+        auditLogProvider.persist(auditBuilder);
+
+        auditLogService.enqueue(auditBuilder);
         try {
 
             log.debug("Reconciliation started for configId="
                     + config.getReconConfigId() + " - resource="
                     + config.getResourceId());
 
-            // TODO AUDITLOG StartReconciliation
             // have resource
-            AuditLogBuilder reconChildLog = new AuditLogBuilder();
-            reconChildLog.setRequestorUserId(systemUserId).setTargetUser(null)
-                    .setAction(AuditAction.RECONCILIATION);
+            auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "Reconciliation started..."+startDate);
+            auditLogService.enqueue(auditBuilder);
 
-            auditBuilder.setAuditDescription("Reconciliation started.."
-                    + startDate);
-            auditBuilder.addChild(reconChildLog);
-            reconChildLog.addAttribute(AuditAttributeName.CREATED_DATE,
-                    startDate.toString());
+            configEntity.setExecStatus(ReconExecStatusOptions.STARTED);
+            //reconConfigDao.persist(configEntity);
+            reconConfigDao.save(configEntity);
 
             Resource res = resourceDataService.getResource(config
                     .getResourceId());
@@ -345,10 +330,8 @@ public class ReconciliationServiceImpl implements ReconciliationService {
                 sysDto = managedSysDozerConverter.convertToDTO(mSys, true);
                 if (sysDto != null && sysDto.getPswd() != null) {
                     try {
-                        final byte[] bytes = keyManagementService.getUserKey(
-                                systemUserId, KeyName.password.name());
-                        sysDto.setDecryptPassword(cryptor.decrypt(bytes,
-                                mSys.getPswd()));
+                        final byte[] bytes = keyManagementService.getUserKey(systemUserId, KeyName.password.name());
+                        sysDto.setDecryptPassword(cryptor.decrypt(bytes, mSys.getPswd()));
                     } catch (Exception e) {
                         log.error("Can't decrypt", e);
                     }
@@ -368,21 +351,20 @@ public class ReconciliationServiceImpl implements ReconciliationService {
                     .getProvisionConnector(sysDto.getConnectorId());
 
             if (connector.getServiceUrl().contains("CSV")) {
-                auditBuilder
-                        .setAuditDescription("CSV Processing started for configId="
-                                + config.getReconConfigId()
-                                + " - resource="
-                                + config.getResourceId());
+                auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION,"CSV Processing started for configId="
+                        + config.getReconConfigId() + " - resource="
+                        + config.getResourceId());
+                auditLogService.enqueue(auditBuilder);
+
                 // reconciliation into TargetSystem directional
                 log.debug("Start recon");
                 connectorAdapter.reconcileResource(sysDto, config,
                         MuleContextProvider.getCtx());
                 log.debug("end recon");
-                auditBuilder
-                        .setAuditDescription("CSV Processing finished for configId="
-                                + config.getReconConfigId()
-                                + " - resource="
-                                + config.getResourceId());
+                auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION,"CSV Processing finished for configId="
+                        + config.getReconConfigId() + " - resource="
+                        + config.getResourceId());
+                auditLogService.enqueue(auditBuilder);
                 return new ReconciliationResponse(ResponseStatus.SUCCESS);
             }
             ReconciliationResultBean resultBean = new ReconciliationResultBean();
@@ -409,31 +391,36 @@ public class ReconciliationServiceImpl implements ReconciliationService {
             UserSearchBean searchBean;
             if (StringUtils.isNotBlank(config.getMatchScript())) {
                 Map<String, Object> bindingMap = new HashMap<String, Object>();
-                bindingMap.put(
-                        AbstractProvisioningService.TARGET_SYS_MANAGED_SYS_ID,
-                        mSys.getManagedSysId());
+                bindingMap.put(AbstractProvisioningService.TARGET_SYS_MANAGED_SYS_ID, mSys.getManagedSysId());
                 bindingMap.put("searchFilter", config.getSearchFilter());
                 bindingMap.put("updatedSince", config.getUpdatedSince());
-                IDMSearchScript searchScript = (IDMSearchScript) scriptRunner
-                        .instantiateClass(bindingMap, config.getMatchScript());
+                IDMSearchScript searchScript = (IDMSearchScript)scriptRunner.instantiateClass(bindingMap, config.getMatchScript());
                 searchBean = searchScript.createUserSearchBean(bindingMap);
             } else {
                 searchBean = new UserSearchBean();
+            }
+            // checking for STOP status
+            configEntity = reconConfigDao.get(config.getReconConfigId());
+            reconConfigDao.refresh(configEntity);
+            if(configEntity.getExecStatus() == ReconExecStatusOptions.STOPPING) {
+                configEntity.setExecStatus(ReconExecStatusOptions.STOPPED);
+                auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION,"Reconciliation was manually stopped at "
+                        + new Date());
+                auditLogService.enqueue(auditBuilder);
+                return new ReconciliationResponse(ResponseStatus.SUCCESS);
             }
             if (searchBean != null) {
                 if (searchBean.getPrincipal() == null) {
                     searchBean.setPrincipal(new LoginSearchBean());
                 }
-                searchBean.getPrincipal().setManagedSysId(
-                        mSys.getManagedSysId());
-                List<UserEntity> idmUsers = userManager.getByExample(
-                        searchBean, 0, Integer.MAX_VALUE);
+                searchBean.getPrincipal().setManagedSysId(mSys.getManagedSysId());
+                List<UserEntity> idmUsers = userManager
+                        .getByExample(searchBean, 0, Integer.MAX_VALUE);
 
                 if (CollectionUtils.isNotEmpty(idmUsers)) {
                     for (UserEntity u : idmUsers) {
                         for (LoginEntity l : u.getPrincipalList()) {
-                            if (l.getManagedSysId().equals(
-                                    mSys.getManagedSysId())) {
+                            if (l.getManagedSysId().equals(mSys.getManagedSysId())) {
                                 idmIdentities.add(l);
                                 break;
                             }
@@ -444,105 +431,100 @@ public class ReconciliationServiceImpl implements ReconciliationService {
 
             List<String> processedUserIds = new ArrayList<String>();
             int usersCount = idmIdentities.size();
-            reconChildLog.setAuditDescription("Starting processing for '"
-                    + usersCount + "' users");
-            reconChildLog
-                    .addAttribute(AuditAttributeName.ALL_RECONCILE_IDM_USERS,
-                            "" + usersCount);
+            auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION,"Starting processing '"+usersCount + "' users from Repository to "+mSys.getName());
+            auditLogService.enqueue(auditBuilder);
 
+            int counter = 0;
             for (LoginEntity identity : idmIdentities) {
+                counter++;
                 if (identity.getUserId() != null) {
-                    processedUserIds.add(identity.getUserId()); // Collect user
-                                                                // IDs to avoid
-                                                                // double
-                                                                // processing
-                    reconChildLog = new AuditLogBuilder();
-                    reconChildLog.setRequestorUserId(systemUserId)
-                            .setTargetUser(null)
-                            .setAction(AuditAction.RECONCILIATION_IDM_USER);
-                    startDate = new Date();
-                    auditBuilder.addChild(reconChildLog);
-                    reconChildLog.addAttribute(AuditAttributeName.CREATED_DATE,
-                            startDate.toString());
+                    //checking for STOPING status for every 10 users
+                    if(counter == 10){
+                        configEntity = reconConfigDao.get(config.getReconConfigId());
+                        reconConfigDao.refresh(configEntity);
+                        if(configEntity.getExecStatus() == ReconExecStatusOptions.STOPPING) {
+                            configEntity.setExecStatus(ReconExecStatusOptions.STOPPED);
+                            auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION,"Reconciliation was manually stopped at "
+                                    + new Date());
+                            auditLogService.enqueue(auditBuilder);
+                            return new ReconciliationResponse(ResponseStatus.SUCCESS);
+                        }
+                        counter = 0;
+                    }
+                    processedUserIds.add(identity.getUserId()); // Collect user IDs to avoid double processing
+                    auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION,"starting reconciliation for user: " + identity);
+                    auditLogService.enqueue(auditBuilder);
 
-                    // TODO AUDITLOG start processing IDM user to TargetSys X
-                    reconciliationIDMUserToTargetSys(resultBean, attrMap,
-                            identity, sysDto, situations,
-                            config.getManualReconciliationFlag());
+                    reconciliationIDMUserToTargetSys(resultBean, attrMap, identity,
+                            sysDto, situations, config.getManualReconciliationFlag(), auditBuilder);
 
-                    // TODO AUDITLOG stop processing IDM user to TargetSys X
-                    reconChildLog.succeed().setAuditDescription(
-                            "reconciled user: " + identity);
+                    auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION,"finished reconciliation for user: " + identity);
+                    auditLogService.enqueue(auditBuilder);
                 }
             }
-            reconChildLog = new AuditLogBuilder();
-            reconChildLog.setRequestorUserId(systemUserId).setTargetUser(null)
-                    .setAction(AuditAction.RECONCILIATION);
-            startDate = new Date();
-            auditBuilder.addChild(reconChildLog);
-            reconChildLog.addAttribute(AuditAttributeName.CREATED_DATE,
-                    startDate.toString());
-            reconChildLog
-                    .setAuditDescription("Finished processing from IDM to target system ");
-
+            auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION,"Reconciliation from Repository to target system: "+mSys.getName() + " is complete.");
+            auditLogService.enqueue(auditBuilder);
             // 2. Do reconciliation users from Target Managed System to IDM
             // search for all Roles and Groups related with resource
             // GET Users from ConnectorAdapter by BaseDN and query rules
 
-            // TODO AUDITLOG starting processing TargetSys users to IDM
-            reconChildLog = new AuditLogBuilder();
-            reconChildLog.setRequestorUserId(systemUserId).setTargetUser(null)
-                    .setAction(AuditAction.RECONCILIATION);
-            startDate = new Date();
-            auditBuilder.addChild(reconChildLog);
-            reconChildLog.addAttribute(AuditAttributeName.CREATED_DATE,
-                    startDate.toString());
-            reconChildLog
-                    .setAuditDescription("Starting processing from target system to IDM ");
+            auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION,"Starting processing from target system: "+mSys.getName()+" to Repository");
+            auditLogService.enqueue(auditBuilder);
+            // checking for STOPPING status
+            configEntity = reconConfigDao.get(config.getReconConfigId());
+            reconConfigDao.refresh(configEntity);
+            if(configEntity.getExecStatus() == ReconExecStatusOptions.STOPPING) {
+                configEntity.setExecStatus(ReconExecStatusOptions.STOPPED);
+                auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION,"Reconciliation was manually stopped at "
+                        + new Date());
+                auditLogService.enqueue(auditBuilder);
+                return new ReconciliationResponse(ResponseStatus.SUCCESS);
+            }
+            processingTargetToIDM(config, managedSysId,
+                    sysDto, situations, connector, keyField, baseDnField, processedUserIds, auditBuilder);
 
-            processingTargetToIDM(resultBean, attrMap, config, managedSysId,
-                    sysDto, situations, connector, keyField, baseDnField,
-                    processedUserIds, auditBuilder);
+            auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION,"Reconciliation from target system: "+mSys.getName()+" to Repository is complete.");
+            auditLogService.enqueue(auditBuilder);
 
-            reconChildLog = new AuditLogBuilder();
-            reconChildLog.setRequestorUserId(systemUserId).setTargetUser(null)
-                    .setAction(AuditAction.RECONCILIATION);
-            startDate = new Date();
-            auditBuilder.addChild(reconChildLog);
-            reconChildLog.addAttribute(AuditAttributeName.CREATED_DATE,
-                    startDate.toString());
-            reconChildLog.succeed().setAuditDescription(
-                    "Finished processing from target system to IDM ");
-            // TODO AUDITLOG stop processing TargetSys users to IDM
             this.saveReconciliationResults(config.getResourceId(), resultBean);
 
-            // TODO AUDITLOG stop processing Reconciliation
+            configEntity.setLastExecTime(startDate);
+            configEntity.setExecStatus(ReconExecStatusOptions.FINISHED);
+
+            auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION,"Reconciliation for target system: "+mSys.getName()+" is complete.");
+            auditLogService.enqueue(auditBuilder);
+
             this.sendMail(config, res);
         } catch (Exception e) {
             log.error(e);
             e.printStackTrace();
+            auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION,"Error: "+e.getMessage());
+            auditLogService.enqueue(auditBuilder);
             ReconciliationResponse resp = new ReconciliationResponse(
                     ResponseStatus.FAILURE);
             resp.setErrorText(e.getMessage());
+            configEntity.setExecStatus(ReconExecStatusOptions.FAILED);
             return resp;
+
         } finally {
-            auditBuilder.addAttribute(
-                    AuditAttributeName.START_RECONCILIATION_DATE,
-                    DATE_FORMAT.format(new Date()));
-            auditLogService.enqueue(auditBuilder);
+            //   auditLogService.enqueue(auditBuilder);
+            reconConfigDao.save(configEntity);
         }
 
         return new ReconciliationResponse(ResponseStatus.SUCCESS);
     }
 
     private ReconciliationResponse processingTargetToIDM(
-            ReconciliationResultBean resultBean,
-            List<AttributeMapEntity> attrMap, ReconciliationConfig config,
-            String managedSysId, ManagedSysDto mSys,
+            ReconciliationConfig config,
+            String managedSysId,
+            ManagedSysDto mSys,
             Map<String, ReconciliationCommand> situations,
-            ProvisionConnectorDto connector, String keyField,
-            String baseDnField, List<String> processedUserIds,
-            AuditLogBuilder auditBuilder) throws ScriptEngineException {
+            ProvisionConnectorDto connector,
+            String keyField,
+            String baseDnField,
+            List<String> processedUserIds,
+            AuditLogBuilder auditBuilder)
+            throws ScriptEngineException {
 
         if (config == null) {
             log.error("Reconciliation config is null");
@@ -575,8 +557,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
         searchRequest.setSearchQuery(searchQuery);
         searchRequest.setTargetID(managedSysId);
         searchRequest.setHostUrl(mSys.getHostUrl());
-        searchRequest.setHostPort((mSys.getPort() != null) ? mSys.getPort()
-                .toString() : null);
+        searchRequest.setHostPort((mSys.getPort()!=null)? mSys.getPort().toString() : null);
         searchRequest.setHostLoginId(mSys.getUserId());
         searchRequest.setHostLoginPassword(mSys.getDecryptPassword());
         searchRequest.setExtensibleObject(new ExtensibleUser());
@@ -592,109 +573,101 @@ public class ReconciliationServiceImpl implements ReconciliationService {
                     .getObjectList();
             if (usersFromRemoteSys != null) {
 
-                // AUDITLOG COUNT of proccessing users from target sys
-                AuditLogBuilder reconChildLog = new AuditLogBuilder();
-                reconChildLog.setRequestorUserId(systemUserId)
-                        .setTargetUser(null)
-                        .setAction(AuditAction.RECONCILIATION);
-                Date startDate = new Date();
-                auditBuilder.setAuditDescription("Reconciliation started.."
-                        + startDate);
-                auditBuilder.addChild(reconChildLog);
-                reconChildLog.addAttribute(AuditAttributeName.CREATED_DATE,
-                        startDate.toString());
-                reconChildLog.addAttribute(
-                        AuditAttributeName.ALL_RECONCILE_SOURCE_USERS, ""
-                                + usersFromRemoteSys.size());
-
+                //AUDITLOG  COUNT of proccessing users from target sys
+                int counter = 0;
                 for (ObjectValue userValue : usersFromRemoteSys) {
-                    // AUDITLOG start processing user Y from target systems to
-                    // IDM
-                    reconChildLog = new AuditLogBuilder();
-                    reconChildLog.setRequestorUserId(systemUserId)
-                            .setTargetUser(null)
-                            .setAction(AuditAction.RECONCILIATION_SOURCE_USER);
-                    startDate = new Date();
-                    auditBuilder.addChild(reconChildLog);
-                    reconChildLog.addAttribute(AuditAttributeName.CREATED_DATE,
-                            startDate.toString());
+                    counter++;
+                    //AUDITLOG  start processing user Y from target systems  to IDM
 
+                    //checking for STOPPING status every 10 users
+                    if(counter == 10) {
+                        ReconciliationConfigEntity configEntity = reconConfigDao.findById(config.getReconConfigId());
+                        reconConfigDao.refresh(configEntity);
+                        if(configEntity.getExecStatus() == ReconExecStatusOptions.STOPPING) {
+                            configEntity.setExecStatus(ReconExecStatusOptions.STOPPED);
+                            auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION,"Reconciliation was manually stopped at "
+                                    + new Date());
+                            auditLogService.enqueue(auditBuilder);
+                            return new ReconciliationResponse(ResponseStatus.SUCCESS);
+                        }
+                        counter++;
+                    }
                     List<ExtensibleAttribute> extensibleAttributes = userValue
                             .getAttributeList() != null ? userValue
                             .getAttributeList()
                             : new LinkedList<ExtensibleAttribute>();
                     String targetUserPrincipal = reconcilationTargetUserObjectToIDM(
                             managedSysId, mSys, situations,
-                            extensibleAttributes, config, processedUserIds,
-                            auditBuilder, resultBean, attrMap);
+                            extensibleAttributes,
+                            config, processedUserIds,
+                            auditBuilder);
 
-                    if (StringUtils.isNotEmpty(targetUserPrincipal)) {
-                        reconChildLog.succeed().setAuditDescription(
-                                "reconciled user: " + targetUserPrincipal);
+                    if(StringUtils.isNotEmpty(targetUserPrincipal)) {
+                        auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION,"reconciled user: " + targetUserPrincipal);
+                        auditLogService.enqueue(auditBuilder);
                     } else {
-                        reconChildLog.fail().setAuditDescription(
-                                "reconciled user: "
-                                        + userValue.getObjectIdentity());
+                        auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION,"reconciled user: " + userValue.getObjectIdentity());
+                        auditLogService.enqueue(auditBuilder);
                     }
                 }
             }
         } else {
             log.debug(searchResponse.getErrorMessage());
+            auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION,"Error: "+searchResponse);
+            auditLogService.enqueue(auditBuilder);
         }
-        return new ReconciliationResponse(ResponseStatus.FAILURE);
+        return new ReconciliationResponse(ResponseStatus.SUCCESS);
     }
 
     // Reconciliation processingTargetToIDM
-    private String reconcilationTargetUserObjectToIDM(String managedSysId,
-            ManagedSysDto mSys, Map<String, ReconciliationCommand> situations,
+    private String reconcilationTargetUserObjectToIDM(
+            String managedSysId,
+            ManagedSysDto mSys,
+            Map<String, ReconciliationCommand> situations,
             List<ExtensibleAttribute> extensibleAttributes,
-            ReconciliationConfig config, List<String> processedUserIds,
-            AuditLogBuilder auditBuilder, ReconciliationResultBean resultBean,
-            List<AttributeMapEntity> attrMap) {
+            ReconciliationConfig config,
+            List<String> processedUserIds,
+            AuditLogBuilder auditBuilder) {
         String targetUserPrincipal = null;
-        ExtensibleUser eu = new ExtensibleUser();
-        eu.setAttributes(extensibleAttributes);
 
-        Map<String, Attribute> attributeMap = new HashMap<String, Attribute>();
+        Map<String, Attribute>  attributeMap = new HashMap<String,Attribute>();
         for (ExtensibleAttribute attr : extensibleAttributes) {
             // search principal attribute by KeyField
-            attributeMap.put(attr.getName(), attr);
-            if (attr.getName().equals(config.getCustomMatchAttr())) {
-                eu.setPrincipalFieldName(attr.getName());
+            attributeMap.put(attr.getName(),attr);
+            if(attr.getName().equals(config.getCustomMatchAttr())) {
                 targetUserPrincipal = attr.getValue();
                 break;
             }
         }
 
+        if (StringUtils.isBlank(targetUserPrincipal)) {
+            throw new IllegalArgumentException("Target system Principal can not be defined with Match Attribute Name: " + config.getCustomMatchAttr());
+        }
+
         try {
-            MatchObjectRule matchObjectRule = matchRuleFactory.create(config
-                    .getCustomIdentityMatchScript());
+            MatchObjectRule matchObjectRule = matchRuleFactory.create(config.getCustomIdentityMatchScript());
             User usr = matchObjectRule.lookup(config, attributeMap);
 
-            if (usr != null) {
-                if (processedUserIds.contains(usr.getId())) { // already
-                                                                  // processed
+            if(usr != null) {
+                if (processedUserIds.contains(usr.getId())) { // already processed
                     return targetUserPrincipal;
                 }
                 User u = userManager.getUserDto(usr.getId());
-                // situation TARGET EXIST, IDM EXIST do modify
-                // check principal list on this ManagedSys exists
+                //situation TARGET EXIST, IDM EXIST do modify
+                //check principal list on this ManagedSys exists
                 List<Login> principals = u.getPrincipalList();
                 Login principal = null;
-                for (Login l : principals) {
-                    if (l.getManagedSysId().equals(managedSysId)) {
+                for(Login l : principals) {
+                    if(l.getManagedSysId().equals(managedSysId)) {
                         principal = l;
                         break;
                     }
                 }
-
-                // if user exists but don;t have principal for current target
-                // sys
-                ReconciliationCommand command = situations
-                        .get(ReconciliationCommand.IDM_EXISTS__SYS_EXISTS);
-                if (command != null) {
+                // if user exists but don;t have principal for current target sys
+                ReconciliationCommand command = situations.get(ReconciliationCommand.IDM_EXISTS__SYS_EXISTS);
+                if(command != null) {
                     ProvisionUser newUser = new ProvisionUser(u);
-                    if (principal == null) {
+                    if(principal == null) {
                         principal = new Login();
                         principal.setLogin(targetUserPrincipal);
                         principal.setManagedSysId(managedSysId);
@@ -705,32 +678,14 @@ public class ReconciliationServiceImpl implements ReconciliationService {
                     newUser.setSrcSystemId(managedSysId);
 
                     log.debug("Call command for IDM Match Found");
-                    AuditLogBuilder reconChildLog = new AuditLogBuilder();
-                    reconChildLog.setRequestorUserId(systemUserId)
-                            .setTargetUser(null)
-                            .setAction(AuditAction.RECONCILIATION);
-                    Date startDate = new Date();
-                    auditBuilder
-                            .setAuditDescription("IDM_EXISTS__SYS_EXISTS for user= "
-                                    + targetUserPrincipal);
-                    auditBuilder.addChild(reconChildLog);
-                    reconChildLog.addAttribute(AuditAttributeName.CREATED_DATE,
-                            startDate.toString());
-                    reconChildLog.addAttribute(
-                            AuditAttributeName.ALL_RECONCILE_SITUATION,
-                            "IDM_EXISTS__SYS_EXISTS for user= "
-                                    + targetUserPrincipal);
-                    // AUDIT LOG Y user processing IDM_EXISTS__SYS_EXISTS
-                    // situation
+                    auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION,"IDM_EXISTS__SYS_EXISTS for user= "+targetUserPrincipal);
+                    auditLogService.enqueue(auditBuilder);
+                    // AUDIT LOG   Y user processing   IDM_EXISTS__SYS_EXISTS   situation
                     command.execute(principal, newUser, extensibleAttributes);
 
                 }
-            } else {
-                resultBean.getRows().add(
-                        this.setRowInReconciliationResult(
-                                resultBean.getHeader(), attrMap, null, eu,
-                                ReconciliationResultCase.NOT_EXIST_IN_IDM_DB));
-                // create new user in IDM
+            }  else {
+                //create new user in IDM
                 ReconciliationCommand command = situations
                         .get(ReconciliationCommand.SYS_EXISTS__IDM_NOT_EXISTS);
                 if (command != null) {
@@ -745,29 +700,15 @@ public class ReconciliationServiceImpl implements ReconciliationService {
                     LoginEntity idmLogin = loginManager.getLoginByManagedSys(targetUserPrincipal, "0");
                     if (idmLogin != null) {
                         newUser.getPrincipalList().add(
-                                loginDozerConverter
-                                        .convertToDTO(idmLogin, true));
+                                loginDozerConverter.convertToDTO(idmLogin,
+                                        true));
                     }
 
                     log.debug("Call command for Match Not Found");
+                    auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION,"SYS_EXISTS__IDM_NOT_EXISTS for user= "+targetUserPrincipal);
+                    auditLogService.enqueue(auditBuilder);
 
-                    AuditLogBuilder reconChildLog = new AuditLogBuilder();
-                    reconChildLog.setRequestorUserId(systemUserId)
-                            .setTargetUser(null)
-                            .setAction(AuditAction.RECONCILIATION);
-                    Date startDate = new Date();
-                    auditBuilder
-                            .setAuditDescription("SYS_EXISTS__IDM_NOT_EXISTS for user= "
-                                    + targetUserPrincipal);
-                    auditBuilder.addChild(reconChildLog);
-                    reconChildLog.addAttribute(AuditAttributeName.CREATED_DATE,
-                            startDate.toString());
-                    reconChildLog.addAttribute(
-                            AuditAttributeName.ALL_RECONCILE_SITUATION,
-                            "SYS_EXISTS__IDM_NOT_EXISTS for user= "
-                                    + targetUserPrincipal);
-                    // AUDIT LOG Y user processing SYS_EXISTS__IDM_NOT_EXISTS
-                    // situation
+                    // AUDIT LOG   Y user processing   SYS_EXISTS__IDM_NOT_EXISTS   situation
                     command.execute(l, newUser, extensibleAttributes);
                 }
             }
@@ -780,7 +721,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
 
     @Override
     public String manualReconciliation(ReconciliationResultBean reconciledBean,
-            String resourceId) throws Exception {
+                                       String resourceId) throws Exception {
         ReconciliationConfig config = this.getConfigByResource(resourceId);
         ManagedSysEntity mSys = managedSysService.getManagedSysByResource(
                 resourceId, "ACTIVE");
@@ -793,53 +734,53 @@ public class ReconciliationServiceImpl implements ReconciliationService {
                     .getRows();
             for (ReconciliationResultRow row : reconciledRows) {
                 switch (row.getCaseReconciliation()) {
-                case NOT_EXIST_IN_IDM_DB:
-                    if (row.getAction() == null) {
-                        continue;
-                    }
-                    User u = this.convertObject(header, row.getFields(),
-                            User.class, false);
-                    if (ReconciliationResultAction.ADD_TO_IDM.equals(row
-                            .getAction())) {
-                        provisionService.addUser(new ProvisionUser(u));
-                    }
-                    if (ReconciliationResultAction.REMOVE_FROM_TARGET
-                            .equals(row.getAction())) {
-                        // REMOVETE From Target system
-                        // provisionService.de(managedSysDozerConverter
-                        // .convertToDTO(mSys, false), u);
-                    }
-                    break;
-                case NOT_EXIST_IN_RESOURCE:
-                    if (ReconciliationResultAction.ADD_TO_TARGET.equals(row
-                            .getAction())) {
-                        User idmUser = this.getUserFromIDM(header, row);
-                        if (idmUser != null) {
-                            provisionService
-                                    .addUser(new ProvisionUser(idmUser));
+                    case NOT_EXIST_IN_IDM_DB:
+                        if (row.getAction() == null) {
+                            continue;
                         }
-                    }
-                    if (ReconciliationResultAction.REMOVE_FROM_IDM.equals(row
-                            .getAction())) {
-                        User idmUser = getUserFromIDM(header, row);
-                        if (idmUser != null) {
-                            userManager.deleteUser(idmUser.getId());
+                        User u = this.convertObject(header, row.getFields(),
+                                User.class, false);
+                        if (ReconciliationResultAction.ADD_TO_IDM.equals(row
+                                .getAction())) {
+                            provisionService.addUser(new ProvisionUser(u));
                         }
-                    }
-                    break;
-                case MATCH_FOUND_DIFFERENT:
-                    User fromIDM = this.getUserFromIDM(header, row);
-                    if (fromIDM != null) {
-                        // merge idm and reconciled Users
-                        fromIDM = userCSVParser.addObjectByReconResltFields(
-                                header, row.getFields(), fromIDM);
-                        // userManager.updateUserWithDependent(userDozerConverter
-                        // .convertToEntity(fromIDM, true),true);
-                        provisionService.modifyUser(new ProvisionUser(fromIDM));
-                    }
-                    break;
-                default:
-                    break;
+                        if (ReconciliationResultAction.REMOVE_FROM_TARGET
+                                .equals(row.getAction())) {
+                            // REMOVETE From Target system
+                            // provisionService.de(managedSysDozerConverter
+                            // .convertToDTO(mSys, false), u);
+                        }
+                        break;
+                    case NOT_EXIST_IN_RESOURCE:
+                        if (ReconciliationResultAction.ADD_TO_TARGET.equals(row
+                                .getAction())) {
+                            User idmUser = this.getUserFromIDM(header, row);
+                            if (idmUser != null) {
+                                provisionService
+                                        .addUser(new ProvisionUser(idmUser));
+                            }
+                        }
+                        if (ReconciliationResultAction.REMOVE_FROM_IDM.equals(row
+                                .getAction())) {
+                            User idmUser = getUserFromIDM(header, row);
+                            if (idmUser != null) {
+                                provisionService.deleteByUserId(idmUser.getId(), UserStatusEnum.REMOVE, systemUserId);
+                            }
+                        }
+                        break;
+                    case MATCH_FOUND_DIFFERENT:
+                        User fromIDM = this.getUserFromIDM(header, row);
+                        if (fromIDM != null) {
+                            // merge idm and reconciled Users
+                            fromIDM = userCSVParser.addObjectByReconResltFields(
+                                    header, row.getFields(), fromIDM);
+                            // userManager.updateUserWithDependent(userDozerConverter
+                            // .convertToEntity(fromIDM, true),true);
+                            provisionService.modifyUser(new ProvisionUser(fromIDM));
+                        }
+                        break;
+                    default:
+                        break;
                 }
             }
         } else {
@@ -853,7 +794,8 @@ public class ReconciliationServiceImpl implements ReconciliationService {
             List<AttributeMapEntity> attrMap, final LoginEntity identity,
             final ManagedSysDto mSys,
             final Map<String, ReconciliationCommand> situations,
-            boolean isManualRecon) {
+            boolean isManualRecon,
+            AuditLogBuilder auditBuilder) {
 
         User user = userManager.getUserDto(identity.getUserId());
         Login idDto = loginDozerConverter.convertToDTO(identity, true);
@@ -862,21 +804,24 @@ public class ReconciliationServiceImpl implements ReconciliationService {
         List<ExtensibleAttribute> requestedExtensibleAttributes = new ArrayList<ExtensibleAttribute>();
 
         for (AttributeMapEntity ame : attrMap) {
-            if ("USER".equalsIgnoreCase(ame.getMapForObjectType())
-                    && "ACTIVE".equalsIgnoreCase(ame.getStatus())) {
-                requestedExtensibleAttributes.add(new ExtensibleAttribute(ame
-                        .getAttributeName(), null));
+            if ("USER".equalsIgnoreCase(ame.getMapForObjectType()) && "ACTIVE".equalsIgnoreCase(ame.getStatus())) {
+                requestedExtensibleAttributes.add(new ExtensibleAttribute(ame.getAttributeName(), null));
             }
         }
 
         String principal = identity.getLogin();
         log.debug("looking up identity in resource: " + principal);
+        auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION,"looking up identity in resource: " + principal);
+        auditLogService.enqueue(auditBuilder);
+
         LookupUserResponse lookupResp = provisionService.getTargetSystemUser(
-                principal, mSys.getManagedSysId(),
-                requestedExtensibleAttributes);
+                principal, mSys.getManagedSysId(), requestedExtensibleAttributes);
 
         log.debug("Lookup status for " + principal + " ="
                 + lookupResp.getStatus());
+        auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION,"Lookup status for " + principal + " ="
+                + lookupResp.getStatus());
+        auditLogService.enqueue(auditBuilder);
 
         boolean userFoundInTargetSystem = lookupResp.getStatus() == ResponseStatus.SUCCESS;
         ExtensibleUser fromIDM = new ExtensibleUser();
@@ -906,9 +851,9 @@ public class ReconciliationServiceImpl implements ReconciliationService {
                         log.debug("Call command for: Record in resource but deleted in IDM");
                         ProvisionUser provisionUser = new ProvisionUser(user);
                         provisionUser.setSrcSystemId(mSys.getManagedSysId());
+                        auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION,"SYS_EXISTS__IDM_NOT_EXISTS for user= "+principal);
+                        auditLogService.enqueue(auditBuilder);
 
-                        // TODO AUDIT LOG X user processing
-                        // IDM_DELETED__SYS_EXISTS situation
                         command.execute(idDto, provisionUser,
                                 extensibleAttributes);
                     }
@@ -928,8 +873,9 @@ public class ReconciliationServiceImpl implements ReconciliationService {
                         ProvisionUser provisionUser = new ProvisionUser(user);
                         provisionUser.setSrcSystemId(mSys.getManagedSysId());
 
-                        // TODO AUDIT LOG X user processing
-                        // IDM_EXISTS__SYS_EXISTS situation
+                        auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION,"IDM_EXISTS__SYS_EXISTS for user= "+principal);
+                        auditLogService.enqueue(auditBuilder);
+
                         command.execute(idDto, provisionUser,
                                 extensibleAttributes);
                     }
@@ -954,8 +900,9 @@ public class ReconciliationServiceImpl implements ReconciliationService {
                         ProvisionUser provisionUser = new ProvisionUser(user);
                         provisionUser.setSrcSystemId(mSys.getManagedSysId());
 
-                        // TODO AUDIT LOG X user processing
-                        // IDM_EXISTS__SYS_NOT_EXISTS situation
+                        auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION,"IDM_EXISTS__SYS_NOT_EXISTS for user= "+principal);
+                        auditLogService.enqueue(auditBuilder);
+
                         command.execute(idDto, provisionUser,
                                 extensibleAttributes);
                     }
@@ -988,7 +935,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
     }
 
     private User getUserFromIDM(List<ReconciliationResultField> header,
-            ReconciliationResultRow row) throws InstantiationException,
+                                ReconciliationResultRow row) throws InstantiationException,
             IllegalAccessException {
         UserSearchBean searchBean = this.convertObject(header, row.getFields(),
                 UserSearchBean.class, true);
@@ -1079,7 +1026,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
 
     @Override
     public String getReconciliationReport(ReconciliationConfig config,
-            String reportType) {
+                                          String reportType) {
         String fileName = StringUtils.isEmpty(config.getResourceId()) ? ""
                 : config.getResourceId() + ".rcndat";
         if (StringUtils.isEmpty(fileName))
@@ -1102,7 +1049,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
     }
 
     private void saveReconciliationResults(String fileName,
-            ReconciliationResultBean resultBean) {
+                                           ReconciliationResultBean resultBean) {
         int i = 0;
         resultBean.getHeader().setRowId(i++);
         for (ReconciliationResultRow row : resultBean.getRows()) {
@@ -1151,7 +1098,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
             if (org.springframework.util.StringUtils.hasText(searchBean
                     .getSearchFieldName())
                     && org.springframework.util.StringUtils.hasText(searchBean
-                            .getSearchFieldValue())) {
+                    .getSearchFieldValue())) {
                 List<ReconciliationResultRow> filteredRows = new ArrayList<ReconciliationResultRow>();
                 Integer searchIndex = null;
                 for (int i = 0; i < resultBean.getHeader().getFields().size(); i++) {
@@ -1179,7 +1126,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
             if (org.springframework.util.StringUtils.hasText(searchBean
                     .getOrderBy())
                     && org.springframework.util.StringUtils.hasText(searchBean
-                            .getOrderByFieldName())) {
+                    .getOrderByFieldName())) {
                 Integer searchIndex = null;
                 for (int i = 0; i < resultBean.getHeader().getFields().size(); i++) {
                     ReconciliationResultField field = resultBean.getHeader()
@@ -1223,8 +1170,8 @@ public class ReconciliationServiceImpl implements ReconciliationService {
     }
 
     private <T> T convertObject(List<ReconciliationResultField> header,
-            List<ReconciliationResultField> fields, Class<T> clazz,
-            boolean onlyKeyField) throws InstantiationException,
+                                List<ReconciliationResultField> fields, Class<T> clazz,
+                                boolean onlyKeyField) throws InstantiationException,
             IllegalAccessException {
         if (clazz.getSimpleName().equals(userCSVParser.getObjectSimlpeClass())) {
             return (T) userCSVParser.getObjectByReconResltFields(header,
@@ -1239,30 +1186,43 @@ public class ReconciliationServiceImpl implements ReconciliationService {
     }
 
     private void getValuesForExtensibleUser(ExtensibleUser fromIDM, User user,
-            List<AttributeMapEntity> attrMap, LoginEntity primaryIdentity) {
+                                            List<AttributeMapEntity> attrMap, LoginEntity identity) {
         Map<String, Object> bindingMap = new HashMap<String, Object>();
         try {
             bindingMap.put("user", new ProvisionUser(user));
-            bindingMap.put("sysId", sysConfiguration.getDefaultManagedSysId());
+            bindingMap.put("managedSysId", identity.getManagedSysId());
+
             // get all groups for user
-            List<org.openiam.idm.srvc.grp.dto.Group> curGroupList = groupDozerConverter
-                    .convertToDTOList(groupManager.getGroupsForUser(
-                            user.getId(), null, -1, -1), false);
+            List<org.openiam.idm.srvc.grp.dto.Group> curGroupList = groupDozerConverter.convertToDTOList(
+                    groupManager.getGroupsForUser(user.getId(), null, -1,
+                            -1), false);
+
+            Login primaryIdentity = null;
+            for (Login l  : user.getPrincipalList()) {
+                if (l.getManagedSysId().equalsIgnoreCase(sysConfiguration.getDefaultManagedSysId())) {
+                    primaryIdentity = l;
+                    break;
+                }
+            }
+
             String decPassword = "";
             if (primaryIdentity != null) {
-                if (StringUtils.isEmpty(primaryIdentity.getUserId())) {
-                    throw new IllegalArgumentException(
-                            "primaryIdentity userId can not be empty");
-                }
                 String password = primaryIdentity.getPassword();
                 if (password != null) {
-                    decPassword = loginManager.decryptPassword(
-                            primaryIdentity.getUserId(), password);
+                    decPassword = loginManager.decryptPassword(primaryIdentity.getUserId(), password);
                     bindingMap.put("password", decPassword);
                 }
                 bindingMap.put("lg", primaryIdentity);
-
             }
+
+            if (identity != null) {
+                if (StringUtils.isEmpty(identity.getUserId())) {
+                    throw new IllegalArgumentException(
+                            "Identity userId can not be empty");
+                }
+                bindingMap.put("targetSystemIdentity", identity.getLogin());
+            }
+
             // make the role and group list before these updates available to
             // the
             // attribute policies

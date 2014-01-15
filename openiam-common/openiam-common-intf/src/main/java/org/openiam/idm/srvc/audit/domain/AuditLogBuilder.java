@@ -23,7 +23,9 @@ public class AuditLogBuilder implements Serializable {
 		entity = new IdmAuditLogEntity();
 		entity.setTimestamp(new Date());
 	}
-
+    public AuditLogBuilder(IdmAuditLogEntity auditLogEntity) {
+        entity = auditLogEntity;
+    }
 	/**
 	 * Sets the user id of who triggered this event
 	 * @param userId - the caller
@@ -53,7 +55,10 @@ public class AuditLogBuilder implements Serializable {
 		entity.setSource((source!=null)?source.value():AuditSource.ESB.value());
 		return this;
 	}
-
+    public AuditLogBuilder setSource(String source) {
+        entity.setSource(source);
+        return this;
+    }
 	/**
 	 * Sets the IP address of who made this call
 	 * @param clientIP
@@ -63,6 +68,16 @@ public class AuditLogBuilder implements Serializable {
 		entity.setClientIP(clientIP);
 		return this;
 	}
+
+    /**
+     * Sry correlation source id
+     * @param correlationId
+     * @return
+     */
+    public AuditLogBuilder setCorrelationId(String correlationId) {
+        entity.setCoorelationId(correlationId);
+        return this;
+    }
 
 	/**
 	 * Sets the action that this event represents
@@ -166,7 +181,7 @@ public class AuditLogBuilder implements Serializable {
 	}
 	
 	/**
-	 * Adds a child builder
+	 * Add a child builder
 	 * @param builder
 	 * @return this
 	 */
@@ -176,7 +191,18 @@ public class AuditLogBuilder implements Serializable {
 		}
 		return this;
 	}
-	
+
+    /**
+     * Add a parent builder
+     * @param builder
+     * @return this
+     */
+    public AuditLogBuilder addParent(final AuditLogBuilder builder) {
+        if(builder != null) {
+            entity.addParent(builder.getEntity());
+        }
+        return this;
+    }
 	public AuditLogBuilder addAttributeAsJson(final AuditAttributeName key, final Object o, final CustomJacksonMapper mapper) {
 		if(mapper != null) {
 			entity.addCustomRecord(key.name(), mapper.mapToStringQuietly(o));
@@ -191,7 +217,7 @@ public class AuditLogBuilder implements Serializable {
 	 * @return this
 	 */
 	public AuditLogBuilder addAttribute(final AuditAttributeName key, final String value) {
-		entity.addCustomRecord(key.name(), value);
+        entity.addCustomRecord(key.name(), value);
 		return this;
 	}
 

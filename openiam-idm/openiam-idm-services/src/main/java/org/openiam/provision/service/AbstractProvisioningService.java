@@ -922,16 +922,18 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         // Processing principals
         List<Login> principals = pUser.getPrincipalList();
         if (CollectionUtils.isNotEmpty(principals)) {
-            for (Login e : principals) {
+              for (final Iterator<Login> iter = principals.iterator(); iter.hasNext(); ) {
+                final Login e = iter.next();
                 if (e.getOperation() == null) {
                     continue;
                 }
                 if (e.getOperation().equals(AttributeOperationEnum.DELETE)) {
                     List<LoginEntity> entities = userEntity.getPrincipalList();
-                    if (CollectionUtils.isNotEmpty(entities))  {
-                        for (LoginEntity en : entities) {
+                    if (CollectionUtils.isNotEmpty(entities)) {
+                        for (final Iterator<LoginEntity> it = entities.iterator(); it.hasNext(); ) {
+                            final LoginEntity en = it.next();
                             if (en.getLoginId().equals(e.getLoginId())) {
-                                userEntity.getPrincipalList().remove(en);
+                                it.remove();
                             }
                         }
                     }
@@ -947,13 +949,15 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     }
 
                 } else if (e.getOperation().equals(AttributeOperationEnum.REPLACE)) {
-                    List<LoginEntity> entities = userEntity.getPrincipalList();
+                    List<LoginEntity> entities = new ArrayList<LoginEntity>(userEntity.getPrincipalList());
                     if (CollectionUtils.isNotEmpty(entities)) {
-                        for (LoginEntity en : entities) {
+                        for (final Iterator<LoginEntity> it = entities.iterator(); it.hasNext(); ) {
+                            final LoginEntity en = it.next();
                             if (en.getLoginId().equals(e.getLoginId())) {
                                 if(!en.getLogin().equals(e.getLogin())) {
                                     e.setOrigPrincipalName(en.getLogin());
                                 }
+                                it.remove();
                                 userEntity.getPrincipalList().remove(en);
                                 loginManager.evict(en);
                                 LoginEntity entity = loginDozerConverter.convertToEntity(e, false);
