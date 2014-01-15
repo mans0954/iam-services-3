@@ -24,4 +24,15 @@ public class SearchResponse extends ResponseType
     public void setObjectList(List<ObjectValue> objectList) {
         this.objectList = objectList;
     }
+
+    @Override
+    public String toString() {
+        return "SearchResponse{" +
+                "objectList=" + objectList +
+                ", errorMessage=" + errorMessage +
+                ", status=" + status +
+                ", requestID='" + requestID + '\'' +
+                ", error=" + error +
+                '}';
+    }
 }

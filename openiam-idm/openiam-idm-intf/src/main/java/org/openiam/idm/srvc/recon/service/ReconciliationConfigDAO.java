@@ -19,4 +19,5 @@ public interface ReconciliationConfigDAO extends
 
     public void removeByResourceId(java.lang.String resourceId);
 
+    public ReconciliationConfigEntity get(String id);
 }
