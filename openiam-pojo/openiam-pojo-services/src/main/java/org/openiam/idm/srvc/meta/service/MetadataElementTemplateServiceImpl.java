@@ -272,7 +272,7 @@ public class MetadataElementTemplateServiceImpl implements MetadataElementTempla
 			/*
 			 * If the user is unknown (self registration), the template is public, it's an admin request, or if the user is entitled to the template, create one
 			 */
-			if(entity.isPublic() || isAdminRequest || isEntitled(userId, entity.getResource().getResourceId())) {
+			if(entity.isPublic() || isAdminRequest || isEntitled(userId, entity.getResource().getId())) {
 				final String templateId = entity.getId();
 				template = new PageTempate();
 				template.setTemplateId(templateId);
@@ -283,7 +283,7 @@ public class MetadataElementTemplateServiceImpl implements MetadataElementTempla
 						
 						final MetadataElementEntity elementEntity = elementDAO.findById(elementId);
 						if(elementEntity != null) {
-							if(elementEntity.isPublic() || isAdminRequest || isEntitled(userId, elementEntity.getResource().getResourceId())) {
+							if(elementEntity.isPublic() || isAdminRequest || isEntitled(userId, elementEntity.getResource().getId())) {
 								final PageElement pageElement = new PageElement(elementEntity, order);
 								
 								if(targetLanguage != null) {
@@ -388,7 +388,7 @@ public class MetadataElementTemplateServiceImpl implements MetadataElementTempla
 	}
 	
 	private boolean isEntitled(final String userId, final ResourceEntity resource) {
-		return resource == null || isEntitled(userId, resource.getResourceId());
+		return resource == null || isEntitled(userId, resource.getId());
 	}
 	
 	private boolean isEntitled(final String userId, final MetadataElementPageTemplateEntity template) {
@@ -402,7 +402,7 @@ public class MetadataElementTemplateServiceImpl implements MetadataElementTempla
 	@Override
 	public void validate(UserProfileRequestModel request) throws PageTemplateException {
 		final PageTempate pageTemplate = request.getPageTemplate();
-		final String userId = (request.getUser() != null) ? request.getUser().getUserId() : null;
+		final String userId = (request.getUser() != null) ? request.getUser().getId() : null;
 		final LanguageEntity targetLanguage = getLanguage(request);
 	
 		if(pageTemplate != null) {
@@ -500,7 +500,7 @@ public class MetadataElementTemplateServiceImpl implements MetadataElementTempla
 		final List<UserAttributeEntity> saveList = new LinkedList<UserAttributeEntity>();
 		
 		final PageTempate pageTemplate = request.getPageTemplate();
-		final String userId = request.getUser().getUserId();
+		final String userId = request.getUser().getId();
 		final LanguageEntity targetLanguage = getLanguage(request);
 		
 		if(pageTemplate != null) {

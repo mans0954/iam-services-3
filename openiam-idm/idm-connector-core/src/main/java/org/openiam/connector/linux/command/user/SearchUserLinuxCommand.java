@@ -22,8 +22,7 @@ public class SearchUserLinuxCommand extends
         try {
             String result = ssh.executeCommand(searchUserQuery);
             if (StringUtils.hasText(result)) {
-                return Arrays.asList(result.replaceAll(NOBODY_LINUX_USER, "")
-                        .split("\n"));
+                return Arrays.asList(result.split("\n"));
             }
         } catch (Exception e) {
             log.error(e.getMessage(), e);

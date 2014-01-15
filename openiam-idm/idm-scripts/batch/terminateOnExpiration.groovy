@@ -49,8 +49,7 @@ if (userList != null ) {
 			pUser.lastDate = search.lastDate
 			
 			pUser.requestorLogin ="IDM_SERVER";
-      		pUser.requestorDomain = "IDM";
-        
+
 			//provision.modifyUser(pUser)
 			provision.deleteByUserId(
             pUser,

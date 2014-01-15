@@ -27,7 +27,7 @@ public class DefaultMatchObjectRule implements MatchObjectRule {
 
     @Autowired
     private UserDozerConverter userDozerConverter;
-	
+
 	private String matchAttrName = null;
 	private String matchAttrValue = null;
 
@@ -46,14 +46,14 @@ public class DefaultMatchObjectRule implements MatchObjectRule {
 			searchBean.setUserId(matchAttrValue);
 			//search.setUserId(matchAttrValue);
 
-		} else if (matchAttrName.equalsIgnoreCase("PRINCIPAL")) {
+        } else if (matchAttrName.equalsIgnoreCase("PRINCIPAL")) {
             LoginSearchBean lsb = new LoginSearchBean();
             lsb.setLogin(matchAttrValue);
             lsb.setManagedSysId(matchConfig.getManagedSysId());
-			searchBean.setPrincipal(lsb);
-			//search.setPrincipal(matchAttrValue);
+            searchBean.setPrincipal(lsb);
+            //search.setPrincipal(matchAttrValue);
 
-		} else if (matchAttrName.equalsIgnoreCase("EMAIL")) {
+        } else if (matchAttrName.equalsIgnoreCase("EMAIL")) {
 			searchBean.setEmailAddress(matchAttrValue);
 			//search.setEmailAddress(matchAttrValue);
 
@@ -64,7 +64,7 @@ public class DefaultMatchObjectRule implements MatchObjectRule {
 		} else if (matchAttrName.equalsIgnoreCase("ATTRIBUTE")) {
 			System.out.println("- cofiguring search by attribute..");
 			System.out.println("- match attr=.." + matchConfig.getMatchSrcFieldName());
-		
+
 			// get the attribute value from the data_set
 			System.out.println("- src field value=.." + matchAttrValue);
 			matchAttrName = matchConfig.getMatchSrcFieldName();
@@ -81,7 +81,7 @@ public class DefaultMatchObjectRule implements MatchObjectRule {
 
         if (userList != null && !userList.isEmpty()) {
 			System.out.println("User matched with existing user...");
-			return new User(userList.get(0).getUserId());
+			return new User(userList.get(0).getId());
 		}
 		return null;
 	}

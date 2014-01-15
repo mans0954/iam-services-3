@@ -120,7 +120,6 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
     public static final String TARGET_SYS_RES_ID = "resourceId";
     public static final String TARGET_SYS_RES = "RESOURCE";
     public static final String TARGET_SYS_MANAGED_SYS_ID = "managedSysId";
-    public static final String TARGET_SYS_SECURITY_DOMAIN = "securityDomain";
 
     public static final String IDENTITY = "IDENTITY";
     public static final String IDENTITY_NEW = "NEW";
@@ -252,7 +251,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
             List<NotificationParam> msgParams = new LinkedList<NotificationParam>();
             msgParams.add(new NotificationParam(MailTemplateParameters.SERVICE_HOST.value(), serviceHost));
             msgParams.add(new NotificationParam(MailTemplateParameters.SERVICE_CONTEXT.value(), serviceContext));
-            msgParams.add(new NotificationParam(MailTemplateParameters.USER_ID.value(), user.getUserId()));
+            msgParams.add(new NotificationParam(MailTemplateParameters.USER_ID.value(), user.getId()));
             msgParams.add(new NotificationParam(MailTemplateParameters.PASSWORD.value(), password));
             msgParams.add(new NotificationParam(MailTemplateParameters.IDENTITY.value(), principal));
             msgParams.add(new NotificationParam(MailTemplateParameters.FIRST_NAME.value(), user.getFirstName()));
@@ -262,7 +261,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
             msgProp.put("SERVICE_HOST", serviceHost);
             msgProp.put("SERVICE_CONTEXT", serviceContext);
             NotificationRequest  notificationRequest = new NotificationRequest();
-            notificationRequest.setUserId(user.getUserId());
+            notificationRequest.setUserId(user.getId());
             notificationRequest.setParamList(msgParams);
             notificationRequest.setNotificationType(PASSWORD_EMAIL_NOTIFICATION);
 
@@ -283,7 +282,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
             List<NotificationParam> msgParams = new LinkedList<NotificationParam>();
             msgParams.add(new NotificationParam(MailTemplateParameters.SERVICE_HOST.value(), serviceHost));
             msgParams.add(new NotificationParam(MailTemplateParameters.SERVICE_CONTEXT.value(), serviceContext));
-            msgParams.add(new NotificationParam(MailTemplateParameters.USER_ID.value(), user.getUserId()));
+            msgParams.add(new NotificationParam(MailTemplateParameters.USER_ID.value(), user.getId()));
             msgParams.add(new NotificationParam(MailTemplateParameters.IDENTITY.value(), identity));
             msgParams.add(new NotificationParam(MailTemplateParameters.PASSWORD.value(), password));
             msgParams.add(new NotificationParam(MailTemplateParameters.FIRST_NAME.value(), user.getFirstName()));
@@ -293,7 +292,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
             msgProp.put("SERVICE_HOST", serviceHost);
             msgProp.put("SERVICE_CONTEXT", serviceContext);
             NotificationRequest  notificationRequest = new NotificationRequest();
-            notificationRequest.setUserId(user.getUserId());
+            notificationRequest.setUserId(user.getId());
             notificationRequest.setParamList(msgParams);
             notificationRequest.setNotificationType(NEW_USER_EMAIL_NOTIFICATION);
 
@@ -313,7 +312,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
             List<NotificationParam> msgParams = new LinkedList<NotificationParam>();
             msgParams.add(new NotificationParam(MailTemplateParameters.SERVICE_HOST.value(), serviceHost));
             msgParams.add(new NotificationParam(MailTemplateParameters.SERVICE_CONTEXT.value(), serviceContext));
-            msgParams.add(new NotificationParam(MailTemplateParameters.USER_ID.value(), user.getUserId()));
+            msgParams.add(new NotificationParam(MailTemplateParameters.USER_ID.value(), user.getId()));
             msgParams.add(new NotificationParam(MailTemplateParameters.IDENTITY.value(), identity));
             msgParams.add(new NotificationParam(MailTemplateParameters.PASSWORD.value(), password));
             msgParams.add(new NotificationParam(MailTemplateParameters.USER_NAME.value(), name));
@@ -324,7 +323,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
             msgProp.put("SERVICE_HOST", serviceHost);
             msgProp.put("SERVICE_CONTEXT", serviceContext);
             NotificationRequest notificationRequest = new NotificationRequest();
-            notificationRequest.setUserId(user.getUserId());
+            notificationRequest.setUserId(user.getId());
             notificationRequest.setNotificationType(NEW_USER_EMAIL_SUPERVISOR_NOTIFICATION);
             notificationRequest.setParamList(msgParams);
             client.sendAsync("vm://notifyUserByEmailMessage",notificationRequest, msgProp);
@@ -349,7 +348,6 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
             Login primaryIdentity = new Login();
             primaryIdentity.setOperation(AttributeOperationEnum.ADD);
             // init values
-            primaryIdentity.setDomainId(sysConfiguration.getDefaultSecurityDomain());
             primaryIdentity.setManagedSysId(sysConfiguration.getDefaultManagedSysId());
 
             try {
@@ -368,9 +366,9 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                             if (attr.getAttributeName().equalsIgnoreCase("PASSWORD")) {
                                 primaryIdentity.setPassword(output);
                             }
-                            if (attr.getAttributeName().equalsIgnoreCase("DOMAIN")) {
-                                primaryIdentity.setDomainId(output);
-                            }
+//                            if (attr.getAttributeName().equalsIgnoreCase("DOMAIN")) {
+//                                primaryIdentity.setDomainId(output);
+//                            }
                         }
                     }
                 }
@@ -770,7 +768,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
 
     public void updateSupervisors(UserEntity userEntity, ProvisionUser pUser) {
         // Processing supervisors
-        String userId = userEntity.getUserId();
+        String userId = userEntity.getId();
         Set<User> superiors = pUser.getSuperiors();
 
         if (CollectionUtils.isNotEmpty(superiors)) {
@@ -779,21 +777,21 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     continue;
                 }
                 if (e.getOperation().equals(AttributeOperationEnum.DELETE)) {
-                    List<SupervisorEntity> supervisorList = userMgr.getSupervisors(userId);
+                    List<UserEntity> supervisorList = userMgr.getSuperiors(userId, 0, Integer.MAX_VALUE);
                     if (CollectionUtils.isNotEmpty(supervisorList)) {
-                        for (SupervisorEntity se : supervisorList) {
-                            if (se.getSupervisor().getUserId().equals(e.getUserId())) {
-                                userMgr.removeSupervisor(se.getOrgStructureId());
+                        for (UserEntity se : supervisorList) {
+                            if (se.getId().equals(e.getId())) {
+                                userMgr.removeSupervisor(se.getId(), userId);
                                 log.info(String.format("Removed a supervisor user %s from user %s",
-                                        e.getUserId(), userId));
+                                        e.getId(), userId));
                             }
                         }
                     }
 
                 } else if (e.getOperation().equals(AttributeOperationEnum.ADD)) {
-                    userMgr.addSuperior(e.getUserId(), userId);
+                    userMgr.addSuperior(e.getId(), userId);
                     log.info(String.format("Adding a supervisor user %s for user %s",
-                            e.getUserId(), userId));
+                            e.getId(), userId));
 
                 } else if (e.getOperation().equals(AttributeOperationEnum.REPLACE)) {
                     throw new UnsupportedOperationException("Operation 'REPLACE' is not supported for supervisors");
@@ -810,11 +808,11 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     return;
 
                 } else if (operation == AttributeOperationEnum.ADD) {
-                    GroupEntity groupEntity = groupManager.getGroup(g.getGrpId());
+                    GroupEntity groupEntity = groupManager.getGroup(g.getId());
                     userEntity.getGroups().add(groupEntity);
 
                 } else if (operation == AttributeOperationEnum.DELETE) {
-                    GroupEntity groupEntity = groupManager.getGroup(g.getGrpId());
+                    GroupEntity groupEntity = groupManager.getGroup(g.getId());
                     userEntity.getGroups().remove(groupEntity);
 
                 } else if (operation == AttributeOperationEnum.REPLACE) {
@@ -833,14 +831,14 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     return;
 
                 } else if (operation == AttributeOperationEnum.ADD) {
-                    RoleEntity roleEntity = roleDataService.getRole(r.getRoleId());
+                    RoleEntity roleEntity = roleDataService.getRole(r.getId());
                     if (userEntity.getRoles().contains(roleEntity)) {
                         throw new IllegalArgumentException("Role with this name alreday exists");
                     }
                     userEntity.getRoles().add(roleEntity);
 
                 } else if (operation == AttributeOperationEnum.DELETE) {
-                    RoleEntity re = roleDataService.getRole(r.getRoleId());
+                    RoleEntity re = roleDataService.getRole(r.getId());
                     userEntity.getRoles().remove(re);
                     deleteRoleSet.add(roleDozerConverter.convertToDTO(re, true));
 
@@ -892,11 +890,11 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                 if (operation == null) {
                     return;
                 } else if (operation == AttributeOperationEnum.ADD) {
-                    ResourceEntity organizationEntity = resourceService.findResourceById(r.getResourceId());
+                    ResourceEntity organizationEntity = resourceService.findResourceById(r.getId());
                     userEntity.getResources().add(organizationEntity);
 
                 } else if (operation == AttributeOperationEnum.DELETE) {
-                    ResourceEntity re = resourceService.findResourceById(r.getResourceId());
+                    ResourceEntity re = resourceService.findResourceById(r.getId());
                     userEntity.getResources().remove(re);
                     deleteResourceSet.add(resourceDozerConverter.convertToDTO(re, true));
 
@@ -906,7 +904,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
             }
         }
         for (ResourceEntity rue : userEntity.getResources()) {
-            ResourceEntity e = resourceService.findResourceById(rue.getResourceId());
+            ResourceEntity e = resourceService.findResourceById(rue.getId());
             resourceSet.add(resourceDozerConverter.convertToDTO(e, false));
         }
     }
@@ -942,9 +940,9 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                 } else if (e.getOperation().equals(AttributeOperationEnum.ADD)) {
                     LoginEntity entity = loginDozerConverter.convertToEntity(e, false);
                     try {
-                        entity.setUserId(userEntity.getUserId());
+                        entity.setUserId(userEntity.getId());
                         userEntity.getPrincipalList().add(entity);
-                        entity.setPassword(loginManager.encryptPassword(userEntity.getUserId(), e.getPassword()));
+                        entity.setPassword(loginManager.encryptPassword(userEntity.getId(), e.getPassword()));
                     } catch (EncryptionException ee) {
                         log.error(ee);
                         ee.printStackTrace();
@@ -1182,14 +1180,13 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         ProvisionUserResponse resp = new ProvisionUserResponse();
 
         Password password = new Password();
-        password.setDomainId(primaryLogin.getDomainId());
         password.setManagedSysId(primaryLogin.getManagedSysId());
         password.setPassword(primaryLogin.getPassword());
         password.setPrincipal(primaryLogin.getLogin());
 
         Policy passwordPolicy = user.getPasswordPolicy();
         if (passwordPolicy == null) {
-            passwordPolicy = passwordPolicyProvider.getPasswordPolicyByUser(primaryLogin.getDomainId(),
+            passwordPolicy = passwordPolicyProvider.getPasswordPolicyByUser(
                     userDozerConverter.convertToEntity(user.getUser(), true));
         }
 
@@ -1215,8 +1212,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
     }
 
     protected void setCurrentSuperiors(ProvisionUser pUser) {
-        if (StringUtils.isNotEmpty(pUser.getUserId())) {
-            List<UserEntity> entities = userMgr.getSuperiors(pUser.getUserId(), -1, -1);
+        if (StringUtils.isNotEmpty(pUser.getId())) {
+            List<UserEntity> entities = userMgr.getSuperiors(pUser.getId(), -1, -1);
             List<User> superiors = userDozerConverter.convertToDTOList(entities, true);
             if (CollectionUtils.isNotEmpty(superiors)) {
                 pUser.setSuperiors(new HashSet<User>(superiors));

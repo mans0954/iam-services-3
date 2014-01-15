@@ -200,7 +200,7 @@
 
         <outbound-endpoint address="http://#[header:INBOUND:serviceName]"
                            exchange-pattern="request-response"
-                           responseTimeout="72000000">
+                		   responseTimeout="72000000">
 
             <cxf:jaxws-client serviceClass="org.openiam.connector.ConnectorService"
                               operation="search">

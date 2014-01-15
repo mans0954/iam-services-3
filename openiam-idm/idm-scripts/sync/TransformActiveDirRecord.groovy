@@ -24,7 +24,6 @@ public class TransformActiveDirRecord extends AbstractTransformScript {
     void init() {}
 
     /* constants - maps to a managed sys id*/
-    String DOMAIN = "USR_SEC_DOMAIN"
     String AD_MANAGED_SYS_ID = "110"
     
     String defaultRole = "End User"
@@ -51,7 +50,6 @@ public class TransformActiveDirRecord extends AbstractTransformScript {
 		populateObject(rowObj, pUser)
 
 		pUser.setStatus(UserStatusEnum.ACTIVE)
-		pUser.securityDomain = "0"
 		// Add default role
 		if (assignDefaultRole) {
             addRole(pUser, defaultRole)
@@ -173,7 +171,6 @@ public class TransformActiveDirRecord extends AbstractTransformScript {
                 /*  AD primary identity  */
                 def lg = new Login()
                 lg.operation = AttributeOperationEnum.ADD
-                lg.domainId = DOMAIN
                 lg.login = attrVal.value
                 lg.managedSysId = "0"
                 pUser.principalList.add(lg)
@@ -181,7 +178,6 @@ public class TransformActiveDirRecord extends AbstractTransformScript {
                 /*  AD target system identity  */
                 Login lg2 = new Login()
                 lg2.operation = AttributeOperationEnum.ADD
-                lg2.domainId = DOMAIN
                 lg2.login = attrVal.value
                 lg2.managedSysId = AD_MANAGED_SYS_ID
                 pUser.principalList.add(lg2)

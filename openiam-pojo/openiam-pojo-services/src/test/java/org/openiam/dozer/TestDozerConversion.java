@@ -78,7 +78,6 @@ public class TestDozerConversion extends AbstractTestNGSpringContextTests {
 		user.setPrincipalList(principalList);
 		user.setRequestClientIP(rs(2));
 		user.setSecondaryStatus(UserStatusEnum.ACTIVE);
-		user.setSecurityDomain(rs(2));
 		user.setSex(rs(2));
 		user.setShowInSearch(2);
 		user.setStartDate(new Date());
@@ -87,7 +86,7 @@ public class TestDozerConversion extends AbstractTestNGSpringContextTests {
 
 		user.setTitle(rs(2));
 		user.setUserAttributes(new HashMap<String, UserAttribute>());
-		user.setUserId(rs(2));
+		user.setId(rs(2));
 		
 		final Set<UserNote> userNotes = new HashSet<UserNote>();
 		userNotes.add(new UserNote(rs(2), rs(2), rs(2), rs(2), null, rs(2)));
@@ -276,7 +275,6 @@ public class TestDozerConversion extends AbstractTestNGSpringContextTests {
 		//Assert.assertEquals(original.getRequestorDomain(), copy.getRequestorDomain());
 		Assert.assertEquals(original.getRequestorLogin(), copy.getRequestorLogin());
 		Assert.assertEquals(original.getSecondaryStatus(), copy.getSecondaryStatus());
-		Assert.assertEquals(original.getSecurityDomain(), copy.getSecurityDomain());
 		Assert.assertEquals(original.getSex(), copy.getSex());
 		Assert.assertEquals(original.getShowInSearch(), copy.getShowInSearch());
 		Assert.assertEquals(original.getStartDate(), copy.getStartDate());
@@ -289,7 +287,7 @@ public class TestDozerConversion extends AbstractTestNGSpringContextTests {
 		} else {
 			Assert.assertTrue(MapUtils.isEmpty(copy.getUserAttributes()));
 		}
-		Assert.assertEquals(original.getUserId(), copy.getUserId());
+		Assert.assertEquals(original.getId(), copy.getId());
 		
 		
 		if(isDeep) {

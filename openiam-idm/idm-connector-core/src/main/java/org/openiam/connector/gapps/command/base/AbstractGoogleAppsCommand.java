@@ -1,31 +1,74 @@
 package org.openiam.connector.gapps.command.base;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.openiam.connector.common.command.AbstractCommand;
 import org.openiam.connector.type.request.RequestType;
 import org.openiam.connector.type.response.ResponseType;
-import org.openiam.connector.common.command.AbstractCommand;
-import org.springframework.beans.factory.annotation.Value;
+import org.openiam.provision.type.ExtensibleAttribute;
+import org.openiam.provision.type.ExtensibleGroup;
+import org.openiam.provision.type.ExtensibleObject;
+import org.openiam.provision.type.ExtensibleUser;
+import org.openiam.script.ScriptIntegration;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
-import java.io.File;
+public abstract class AbstractGoogleAppsCommand<Request extends RequestType, Response extends ResponseType> extends
+	AbstractCommand<Request, Response> {
+    @Autowired
+    @Qualifier("configurableGroovyScriptEngine")
+    protected ScriptIntegration scriptRunner;
 
-public abstract class AbstractGoogleAppsCommand<Request extends RequestType, Response extends ResponseType> extends AbstractCommand<Request, Response> {
-    @Value("${KEYSTORE}")
-    private String trustStore;
-
-    @Value("${KEYSTORE_PSWD}")
-    private String trustStorePassword;
-
-    protected static final String APPS_FEEDS_URL_BASE = "https://apps-apis.google.com/a/feeds/";
-
-    protected static final String GOOGLE_APPS_USER_SERVICE ="gdata-sample-AppsForYourDomain-UserService";
-
-    public void init() {
-        String filename = System.getProperty("java.home")
-                + "/lib/security/cacerts".replace('/', File.separatorChar);
-        System.out.println("filenname=" + filename);
-        String password = "changeit";
-        System.setProperty("javax.net.ssl.trustStore", trustStore);
-        System.setProperty("javax.net.ssl.trustStorePassword", trustStorePassword);
+    protected ExtensibleUser googleUserToExtensibleAttributes(Map<String, String> googleUser) {
+	ExtensibleUser user = new ExtensibleUser();
+	user.setAttributes(new ArrayList<ExtensibleAttribute>());
+	for (String key : googleUser.keySet()) {
+	    user.getAttributes().add(new ExtensibleAttribute(key, googleUser.get(key)));
+	    if ("userEmail".equals(key)) {
+		String email = googleUser.get(key);
+		String[] strs = email.split("@");
+		if (strs != null && strs.length > 1) {
+		    user.setObjectId(strs[0]);
+		}
+		user.getAttributes().add(new ExtensibleAttribute("login", strs[0]));
+	    }
+	}
+	return user;
     }
 
+    protected ExtensibleGroup googleGroupToExtensibleAttributes(Map<String, String> googleGroup) {
+	ExtensibleGroup gr = new ExtensibleGroup();
+	gr.setAttributes(new ArrayList<ExtensibleAttribute>());
+	for (String key : googleGroup.keySet()) {
+	    gr.getAttributes().add(new ExtensibleAttribute(key, googleGroup.get(key)));
+	    if ("groupId".equals(key)) {
+		String id = googleGroup.get(key);
+		String[] strs = id.split("@");
+		if (strs != null && strs.length > 1) {
+		    gr.setObjectId(strs[0]);
+		}
+	    }
+	}
+	return gr;
+    }
 
+    protected Map<String, String> extensibleUserToGoogle(ExtensibleObject user, String id, String domain) {
+	Map<String, String> googleUser = new HashMap<String, String>();
+	for (ExtensibleAttribute a : user.getAttributes()) {
+	    if (a.getValue() != null && !a.isMultivalued())
+		googleUser.put(a.getName(), a.getValue());
+	}
+	googleUser.put("userEmail", id.toLowerCase() + "@" + domain);
+	return googleUser;
+    }
+
+    protected Map<String, String> extensibleGroupToGoogle(ExtensibleGroup group, String id, String domain) {
+	Map<String, String> googleUser = new HashMap<String, String>();
+	for (ExtensibleAttribute a : group.getAttributes()) {
+	    googleUser.put(a.getName(), a.getValue());
+	}
+	return googleUser;
+    }
 }

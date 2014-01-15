@@ -13,6 +13,14 @@
 	<mapping>
 		<class-a>org.openiam.idm.srvc.res.domain.ResourceEntity</class-a>
 		<class-b>org.openiam.idm.srvc.res.dto.Resource</class-b>
+		<field>
+			<a>adminResource.id</a>
+			<b>adminResourceId</b>
+		</field>
+		<field>
+        	<a>adminResource.name</a>
+        	<b>adminResourceName</b>
+        </field>
 		<field-exclude>
 			<a>parentResources</a>
 			<b>parentResources</b>
@@ -36,6 +44,10 @@
 		<field-exclude>
 			<a>users</a>
 			<b>users</b>
+		</field-exclude>
+		<field-exclude>
+			<a>approverAssociations</a>
+			<b>approverAssociations</b>
 		</field-exclude>
 	</mapping>
 
@@ -82,6 +94,14 @@
             <a>affiliations</a>
             <b>affiliations</b>
         </field-exclude>
+        <field-exclude>
+            <a>supervisors</a>
+            <b>supervisors</b>
+        </field-exclude>
+        <field-exclude>
+            <a>subordinates</a>
+            <b>subordinates</b>
+        </field-exclude>
 	</mapping>
 
 	<mapping>
@@ -101,6 +121,14 @@
 	<mapping>
 		<class-a>org.openiam.idm.srvc.grp.domain.GroupEntity</class-a>
 		<class-b>org.openiam.idm.srvc.grp.dto.Group</class-b>
+		<field>
+			<a>adminResource.id</a>
+			<b>adminResourceId</b>
+		</field>
+		<field>
+			<a>adminResource.name</a>
+			<b>adminResourceName</b>
+		</field>
 		<field-exclude>
 			<a>parentGroups</a>
 			<b>parentGroups</b>
@@ -129,11 +157,23 @@
 			<a>managedSystem.name</a>
 			<b>managedSysName</b>
 		</field>
+		<field-exclude>
+			<a>approverAssociations</a>
+			<b>approverAssociations</b>
+		</field-exclude>
 	</mapping>
 
 	<mapping>
 		<class-a>org.openiam.idm.srvc.role.domain.RoleEntity</class-a>
 		<class-b>org.openiam.idm.srvc.role.dto.Role</class-b>
+		<field>
+			<a>adminResource.id</a>
+			<b>adminResourceId</b>
+		</field>
+		<field>
+			<a>adminResource.name</a>
+			<b>adminResourceName</b>
+		</field>
 		<field-exclude>
 			<a>groups</a>
 			<b>groups</b>
@@ -166,6 +206,10 @@
 			<a>managedSystem.name</a>
 			<b>managedSysName</b>
 		</field>
+		<field-exclude>
+			<a>approverAssociations</a>
+			<b>approverAssociations</b>
+		</field-exclude>
 	</mapping>
 
 	<mapping>
@@ -186,7 +230,7 @@
 		</class-a>
 		<class-b>org.openiam.idm.srvc.meta.dto.MetadataElement</class-b>
 		<field>
-			<a>resource.resourceId</a>
+			<a>resource.id</a>
 			<b>resourceId</b>
 		</field>
 		<field>
@@ -282,7 +326,7 @@
 		<class-b>org.openiam.idm.srvc.meta.dto.MetadataElementPageTemplate
 		</class-b>
 		<field>
-			<a>resource.resourceId</a>
+			<a>resource.id</a>
 			<b>resourceId</b>
 		</field>
 		<field-exclude>
@@ -377,6 +421,14 @@
 	<mapping>
 		<class-a>org.openiam.idm.srvc.org.domain.OrganizationEntity</class-a>
 		<class-b>org.openiam.idm.srvc.org.dto.Organization</class-b>
+		<field>
+			<a>adminResource.id</a>
+			<b>adminResourceId</b>
+		</field>
+		<field>
+			<a>adminResource.name</a>
+			<b>adminResourceName</b>
+		</field>
 		<field-exclude>
 			<a>attributes</a>
 			<b>attributes</b>
@@ -400,6 +452,10 @@
 		<field-exclude>
 			<a>affiliations</a>
 			<b>affiliations</b>
+		</field-exclude>
+		<field-exclude>
+			<a>approverAssociations</a>
+			<b>approverAssociations</b>
 		</field-exclude>
 	</mapping>
 	<mapping>
@@ -548,7 +604,7 @@
 			<b>isPublic</b>
 		</field>
 		<field>
-			<a>resource.resourceId</a>
+			<a>resource.id</a>
 			<b>resourceId</b>
 		</field>
 		<field>
@@ -563,6 +619,10 @@
 			<a>pageTemplates</a>
 			<b>pageTemplates</b>
 		</field-exclude>
+		<field>
+			<a>uiTheme.id</a>
+			<b>themeId</b>
+		</field>
 	</mapping>
 	<mapping>
 		<class-a>org.openiam.idm.srvc.recon.domain.ReconciliationConfigEntity
@@ -614,4 +674,157 @@
 			<b>organizations</b>
 		</field-exclude>
 	</mapping>
+	
+	 <mapping>
+        <class-a>org.openiam.am.srvc.domain.AuthProviderEntity</class-a>
+        <class-b>org.openiam.am.srvc.dto.AuthProvider</class-b>
+        <field-exclude>
+            <a>providerAttributeSet</a>
+            <b>providerAttributeSet</b>
+        </field-exclude>
+        <field-exclude>
+            <a>resourceAttributeMap</a>
+            <b>resourceAttributeMap</b>
+        </field-exclude>
+        <field>
+            <a>resource.id</a>
+            <b>resourceId</b>
+        </field>
+    </mapping>
+
+    <mapping>
+        <class-a>org.openiam.am.srvc.domain.ContentProviderEntity</class-a>
+        <class-b>org.openiam.am.srvc.dto.ContentProvider</class-b>
+        <field>
+            <a>id</a>
+            <b>id</b>
+        </field>
+        <field>
+            <a>name</a>
+            <b>name</b>
+        </field>
+        <field>
+            <a>isPublic</a>
+            <b>isPublic</b>
+        </field>
+        <field>
+            <a>domainPattern</a>
+            <b>domainPattern</b>
+        </field>
+        <field>
+            <a>isSSL</a>
+            <b>isSSL</b>
+        </field>
+        <field>
+            <a>resource.id</a>
+            <b>resourceId</b>
+        </field>
+        <field>
+            <a>resource.name</a>
+            <b>resourceName</b>
+        </field>
+        <field-exclude>
+            <a>minAuthLevel</a>
+            <b>authLevel</b>
+        </field-exclude>
+        <field-exclude>
+            <a>serverSet</a>
+            <b>serverSet</b>
+        </field-exclude>
+        <field-exclude>
+            <a>patternSet</a>
+            <b>patternSet</b>
+        </field-exclude>
+        <field>
+        	<a>managedSystem.managedSysId</a>
+        	<b>managedSysId</b>
+        </field>
+        <field>
+			<a>resource.url</a>
+			<b>url</b>
+		</field>
+		<field>
+			<a>uiTheme.id</a>
+			<b>themeId</b>
+		</field>
+    </mapping>
+
+    <mapping>
+        <class-a>org.openiam.am.srvc.domain.URIPatternMetaValueEntity</class-a>
+        <class-b>org.openiam.am.srvc.dto.URIPatternMetaValue</class-b>
+        <field>
+            <a>id</a>
+            <b>id</b>
+        </field>
+        <field>
+            <a>name</a>
+            <b>name</b>
+        </field>
+        <field>
+            <a>staticValue</a>
+            <b>staticValue</b>
+        </field>
+        <field>
+        	<a>groovyScript</a>
+        	<b>groovyScript</b>
+        </field>
+        <field-exclude>
+            <a>amAttribute</a>
+            <b>amAttribute</b>
+        </field-exclude>
+        <field>
+            <a>metaEntity.id</a>
+            <b>metaEntityId</b>
+        </field>
+    </mapping>
+
+    <mapping>
+        <class-a>org.openiam.am.srvc.domain.URIPatternMetaEntity</class-a>
+        <class-b>org.openiam.am.srvc.dto.URIPatternMeta</class-b>
+        <field>
+            <a>id</a>
+            <b>id</b>
+        </field>
+        <field>
+            <a>name</a>
+            <b>name</b>
+        </field>
+        <field>
+            <a>pattern.id</a>
+            <b>uriPatternId</b>
+        </field>
+        <field-exclude>
+            <a>metaType</a>
+            <b>metaType</b>
+        </field-exclude>
+        <field-exclude>
+            <a>metaValueSet</a>
+            <b>metaValueSet</b>
+        </field-exclude>
+    </mapping>
+    
+    <mapping>
+    	<class-a>org.openiam.idm.srvc.ui.theme.domain.UIThemeEntity</class-a>
+    	<class-b>org.openiam.idm.srvc.ui.theme.dto.UITheme</class-b>
+    	<field>
+    		<a>id</a>
+    		<b>id</b>
+    	</field>
+    	<field>
+    		<a>name</a>
+    		<b>name</b>
+    	</field>
+    	<field>
+    		<a>url</a>
+    		<b>url</b>
+    	</field>
+    	<field-exclude>
+    		<a>contentProviders</a>
+    		<b>contentProviders</b>
+    	</field-exclude>
+    	<field-exclude>
+    		<a>uriPatterns</a>
+    		<b>uriPatterns</b>
+    	</field-exclude>
+    </mapping>
 </mappings>

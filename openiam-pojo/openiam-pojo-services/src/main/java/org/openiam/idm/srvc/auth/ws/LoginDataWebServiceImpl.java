@@ -59,12 +59,11 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
 			}
 			
 			if(StringUtils.isBlank(principal.getManagedSysId()) ||
-			   StringUtils.isBlank(principal.getDomainId()) || 
 			   StringUtils.isBlank(principal.getLogin())) {
 				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
 			}
 			
-			final LoginEntity currentEntity = loginDS.getLoginByManagedSys(principal.getDomainId(), principal.getLogin(), principal.getManagedSysId());
+			final LoginEntity currentEntity = loginDS.getLoginByManagedSys(principal.getLogin(), principal.getManagedSysId());
 			if(currentEntity != null) {
 				if(StringUtils.isBlank(principal.getLoginId())) {
 					throw new BasicDataServiceException(ResponseCode.LOGIN_EXISTS);
@@ -94,12 +93,11 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
 			}
 			
 			if(StringUtils.isBlank(principal.getManagedSysId()) ||
-			   StringUtils.isBlank(principal.getDomainId()) || 
 			   StringUtils.isBlank(principal.getLogin())) {
 				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
 			}
 			
-			final LoginEntity currentEntity = loginDS.getLoginByManagedSys(principal.getDomainId(), principal.getLogin(), principal.getManagedSysId());
+			final LoginEntity currentEntity = loginDS.getLoginByManagedSys(principal.getLogin(), principal.getManagedSysId());
 			if(currentEntity != null) {
 				if(StringUtils.isBlank(principal.getLoginId())) {
 					throw new BasicDataServiceException(ResponseCode.LOGIN_EXISTS);
@@ -130,6 +128,7 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.auth.ws.LoginDataWebService#decryptPassword(java.lang.String)
 	 */
+    @Override
 	public Response decryptPassword(String userId, String password) {
 		String pswd = null;
 		
@@ -151,6 +150,7 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.auth.ws.LoginDataWebService#encryptPassword(java.lang.String)
 	 */
+    @Override
 	public Response encryptPassword(String userId, String password) {
 		Response resp = new Response(ResponseStatus.SUCCESS);
 		String pswd = null;
@@ -171,25 +171,26 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.auth.ws.LoginDataWebService#getLoginByDomain(java.lang.String)
 	 */
-	public LoginListResponse getLoginByDomain(String domainId) {
-		LoginListResponse resp = new LoginListResponse(ResponseStatus.SUCCESS);
-		List<LoginEntity> lgList = loginDS.getLoginByDomain(domainId);
-		if (lgList == null ) {
-			resp.setStatus(ResponseStatus.FAILURE);
-		}else {
-			resp.setPrincipalList(loginDozerConverter.convertToDTOList(lgList, false)); 
-		}
-		return resp;
-	}
+//    @Override
+//	public LoginListResponse getLoginByDomain(String domainId) {
+//		LoginListResponse resp = new LoginListResponse(ResponseStatus.SUCCESS);
+//		List<LoginEntity> lgList = loginDS.getLoginByDomain(domainId);
+//		if (lgList == null ) {
+//			resp.setStatus(ResponseStatus.FAILURE);
+//		}else {
+//			resp.setPrincipalList(loginDozerConverter.convertToDTOList(lgList, false));
+//		}
+//		return resp;
+//	}
 
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.auth.ws.LoginDataWebService#getLoginByManagedSys(java.lang.String, java.lang.String, java.lang.String)
 	 */
-	public LoginResponse getLoginByManagedSys(String domainId, String principal,
-			String sysId) {
+    @Override
+	public LoginResponse getLoginByManagedSys(String principal, String sysId) {
 		
 		LoginResponse resp = new LoginResponse(ResponseStatus.SUCCESS);
-		LoginEntity lg = loginDS.getLoginByManagedSys(domainId, principal, sysId);
+		LoginEntity lg = loginDS.getLoginByManagedSys(principal, sysId);
 		if (lg == null ) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		}else {
@@ -200,6 +201,7 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
 
 	}
 
+    @Override
     public LoginResponse getPrincipalByManagedSys(String principalName,
                                                   String managedSysId) {
         final LoginResponse resp = new LoginResponse(ResponseStatus.SUCCESS);
@@ -215,6 +217,7 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
     /* (non-Javadoc)
       * @see org.openiam.idm.srvc.auth.ws.LoginDataWebService#getLoginByUser(java.lang.String)
       */
+    @Override
 	public LoginListResponse getLoginByUser(String userId) {
 		
 		log.info("getLoginByUser userId=" + userId);
@@ -232,11 +235,11 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.auth.ws.LoginDataWebService#getPassword(java.lang.String, java.lang.String, java.lang.String)
 	 */
-	public Response getPassword(String domainId, String principal,
-			String managedSysId) throws Exception {
+    @Override
+	public Response getPassword(String principal, String managedSysId) throws Exception {
 		
 		Response resp = new Response(ResponseStatus.SUCCESS);
-		String pswd = loginDS.getPassword(domainId, principal, managedSysId);
+		String pswd = loginDS.getPassword(principal, managedSysId);
 		if (pswd == null) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		}
@@ -248,15 +251,17 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.auth.ws.LoginDataWebService#lockLogin(java.lang.String, java.lang.String, java.lang.String)
 	 */
-	public Response lockLogin(String domainId, String principal,
+    @Override
+	public Response lockLogin(String principal,
 			String managedSysId) {
 		
 		Response resp = new Response(ResponseStatus.SUCCESS);
-		loginDS.lockLogin(domainId, principal, managedSysId);
+		loginDS.lockLogin(principal, managedSysId);
 		return resp;
 		
 	}
 
+    @Override
     public Response activateLogin(final String loginId){
         final LoginResponse resp = new LoginResponse(ResponseStatus.SUCCESS);
         try {
@@ -277,6 +282,7 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
         return resp;
     }
 
+    @Override
     public Response deActivateLogin(final String loginId){
         final LoginResponse resp = new LoginResponse(ResponseStatus.SUCCESS);
         try {
@@ -300,6 +306,7 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.auth.ws.LoginDataWebService#bulkUnLock(org.openiam.idm.srvc.user.dto.UserStatusEnum)
 	 */
+    @Override
 	public Response bulkUnLock(UserStatusEnum status) {
 		
 		Response resp = new Response(ResponseStatus.SUCCESS);
@@ -311,33 +318,36 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.auth.ws.LoginDataWebService#removeLogin(java.lang.String, java.lang.String)
 	 */
-	public Response removeLogin(String domainId, String principal, String managedSysId) {
+    @Override
+	public Response removeLogin(String principal, String managedSysId) {
 		Response resp = new Response(ResponseStatus.SUCCESS);
-		loginDS.removeLogin(domainId, principal, managedSysId);
+		loginDS.removeLogin(principal, managedSysId);
 		return resp;
 	}
 
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.auth.ws.LoginDataWebService#resetPassword(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
 	 */
-	public Response resetPassword(String domainId, String principal,String managedSysId, String password) {
-		return resetPasswordAndNotifyUser(domainId, principal, managedSysId, password, false);
+    @Override
+	public Response resetPassword(String principal,String managedSysId, String password) {
+		return resetPasswordAndNotifyUser(principal, managedSysId, password, false);
 	}
 
     /* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.auth.ws.LoginDataWebService#resetPassword(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
 	 */
-    public Response resetPasswordAndNotifyUser(String domainId, String principal,String managedSysId, String password, boolean notifyUserViaEmail) {
+    @Override
+    public Response resetPasswordAndNotifyUser(String principal,String managedSysId, String password, boolean notifyUserViaEmail) {
 
         Response resp = new Response(ResponseStatus.SUCCESS);
-        boolean result = loginDS.resetPassword(domainId, principal, managedSysId, password);
+        boolean result = loginDS.resetPassword(principal, managedSysId, password);
         if (!result) {
             resp.setStatus(ResponseStatus.FAILURE);
         }
 
         if(notifyUserViaEmail){
             // send email to user with password
-            LoginEntity loginEntity = loginDS.getLoginByManagedSys(domainId, principal, managedSysId);
+            LoginEntity loginEntity = loginDS.getLoginByManagedSys(principal, managedSysId);
             if(loginEntity!=null){
 
                 Response respPwd = this.decryptPassword(loginEntity.getUserId(), password);
@@ -347,13 +357,13 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
                     String pwd = (String)respPwd.getResponseValue();
                     if(user!=null){
                         NotificationRequest request = new NotificationRequest();
-                        request.setUserId(user.getUserId());
+                        request.setUserId(user.getId());
                         request.setNotificationType("USER_PASSWORD_EMAIL");
 
 
                         List<NotificationParam> paramList = new LinkedList<NotificationParam>();
 
-                        paramList.add(new NotificationParam(MailTemplateParameters.USER_ID.value(), user.getUserId()));
+                        paramList.add(new NotificationParam(MailTemplateParameters.USER_ID.value(), user.getId()));
                         paramList.add(new NotificationParam(MailTemplateParameters.IDENTITY.value(), principal));
                         paramList.add(new NotificationParam(MailTemplateParameters.PASSWORD.value(), pwd));
                         paramList.add(new NotificationParam(MailTemplateParameters.FIRST_NAME.value(), user.getFirstName()));
@@ -389,21 +399,20 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.auth.ws.LoginDataWebService#unLockLogin(java.lang.String, java.lang.String, java.lang.String)
 	 */
-	public Response unLockLogin(String domainId, String principal,
-			String managedSysId) {
+    @Override
+	public Response unLockLogin(String principal, String managedSysId) {
 		
 		Response resp = new Response(ResponseStatus.SUCCESS);
-		loginDS.unLockLogin(domainId, principal, managedSysId);
+		loginDS.unLockLogin(principal, managedSysId);
 		return resp;
 		
 	}
-	
-	public Response isPasswordEq( 
-			String domainId, String principal, 
-			String managedSysId ,  String newPassword) throws Exception {
+
+    @Override
+	public Response isPasswordEq(String principal, String managedSysId ,  String newPassword) throws Exception {
 		
 		Response resp = new Response(ResponseStatus.SUCCESS);
-		boolean retval = loginDS.isPasswordEq(domainId, principal, managedSysId, newPassword);
+		boolean retval = loginDS.isPasswordEq(principal, managedSysId, newPassword);
 		resp.setResponseValue(new Boolean(retval));
 		if (!retval) {
 			resp.setStatus(ResponseStatus.FAILURE);
@@ -413,14 +422,14 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
 	
 	/**
 	 * Checks to see if a login exists for a user - domain - managed system combination
-	 * @param domainId
 	 * @param principal
 	 * @param managedSysId
 	 * @return
 	 */
-	public Response loginExists( String domainId, String principal, String managedSysId ) {
+    @Override
+	public Response loginExists(String principal, String managedSysId ) {
 		Response resp = new Response(ResponseStatus.SUCCESS);
-		boolean retval = loginDS.loginExists(domainId, principal, managedSysId);
+		boolean retval = loginDS.loginExists(principal, managedSysId);
 		resp.setResponseValue(new Boolean(retval));
 		if (!retval) {
 			resp.setStatus(ResponseStatus.FAILURE);
@@ -441,6 +450,7 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.auth.ws.LoginDataWebService#getPrimaryIdentity(java.lang.String)
 	 */
+    @Override
 	public LoginResponse getPrimaryIdentity(String userId) {
 		LoginResponse resp = new LoginResponse(ResponseStatus.SUCCESS);
 		LoginEntity lg = loginDS.getPrimaryIdentity(userId);
@@ -463,6 +473,7 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
         return loginDozerConverter.convertToDTOList(loginDS.findBeans(searchBean, from, size), false);
     }
 
+    @Override
     public Integer count(LoginSearchBean searchBean){
         return loginDS.count(searchBean);
     }
@@ -470,6 +481,7 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.auth.ws.LoginDataWebService#bulkResetPasswordChangeCount()
 	 */
+    @Override
 	public Response bulkResetPasswordChangeCount() {
 		Response resp = new Response(ResponseStatus.SUCCESS);
 		int rowCount =  loginDS.bulkResetPasswordChangeCount();
@@ -481,6 +493,7 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.auth.ws.LoginDataWebService#getLockedUserSince(java.util.Date)
 	 */
+    @Override
 	public LoginListResponse getLockedUserSince(Date lastExecTime) {
 		log.info("getLockedUserSince " );
 		
@@ -497,6 +510,7 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.auth.ws.LoginDataWebService#getInactiveUsers(int, int)
 	 */
+    @Override
 	public LoginListResponse getInactiveUsers(int startDays, int endDays) {
 		
 		LoginListResponse resp = new LoginListResponse(ResponseStatus.SUCCESS);
@@ -513,6 +527,7 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.auth.ws.LoginDataWebService#getUserNearPswdExpiration(int)
 	 */
+    @Override
 	public LoginListResponse getUserNearPswdExpiration(int expDays) {
 		LoginListResponse resp = new LoginListResponse(ResponseStatus.SUCCESS);
 		List<LoginEntity> lgList = loginDS.getUserNearPswdExpiration(expDays);
@@ -531,6 +546,7 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
      * @param 
      * @return
      */
+    @Override
     public LoginListResponse getUsersNearPswdExpiration(){
 		LoginListResponse resp = new LoginListResponse(ResponseStatus.SUCCESS);
 		List<LoginEntity> lgList = loginDS.getUsersNearPswdExpiration();
@@ -542,15 +558,15 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
 		return resp;
 	}
 
+    @Override
 	public Response changeIdentityName(
 			String newPrincipalName, 
 			String newPassword, 
 			String userId, 
-			String managedSysId,
-			String domainId) {
+			String managedSysId) {
 		
 		LoginResponse resp = new LoginResponse(ResponseStatus.SUCCESS);
-		int retval = this.loginDS.changeIdentityName(newPrincipalName, newPassword, userId, managedSysId, domainId);
+		int retval = this.loginDS.changeIdentityName(newPrincipalName, newPassword, userId, managedSysId);
 		if (retval > 0) {
 			resp.setResponseValue(new Integer(retval));
 		}else {
@@ -560,7 +576,7 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
 		return resp;
 	}
 
-
+    @Override
     public LoginListResponse getAllLoginByManagedSys(String managedSysId) {
         LoginListResponse resp = new LoginListResponse(ResponseStatus.SUCCESS);
 		List<LoginEntity> lgList = loginDS.getAllLoginByManagedSys(managedSysId);

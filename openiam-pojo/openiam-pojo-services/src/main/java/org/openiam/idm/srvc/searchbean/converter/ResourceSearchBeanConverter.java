@@ -14,12 +14,12 @@ public class ResourceSearchBeanConverter implements SearchBeanConverter<Resource
 	@Override
 	public ResourceEntity convert(ResourceSearchBean searchBean) {
 		final ResourceEntity resource = new ResourceEntity();
-		resource.setResourceId(searchBean.getKey());
+		resource.setId(searchBean.getKey());
 		resource.setName(searchBean.getName());
 		
 		if(searchBean.getResourceTypeId() != null && searchBean.getResourceTypeId().trim().length() > 0) {
 			final ResourceTypeEntity type = new ResourceTypeEntity();
-			type.setResourceTypeId(searchBean.getResourceTypeId());
+			type.setId(searchBean.getResourceTypeId());
 			resource.setResourceType(type);
 		}
 		return resource;

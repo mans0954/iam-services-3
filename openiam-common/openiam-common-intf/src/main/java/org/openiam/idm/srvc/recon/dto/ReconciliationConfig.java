@@ -87,8 +87,8 @@ public class ReconciliationConfig implements MatchConfig, java.io.Serializable {
     }
 
     public ReconciliationConfig(String reconConfigId, String resourceId, String managedSysId,
-            String mode, String frequency, String status,
-            Integer attributeLevelCheck, Integer updateChangedAttribute) {
+                                String mode, String frequency, String status,
+                                Integer attributeLevelCheck, Integer updateChangedAttribute) {
         this.reconConfigId = reconConfigId;
         this.resourceId = resourceId;
         this.managedSysId = managedSysId;

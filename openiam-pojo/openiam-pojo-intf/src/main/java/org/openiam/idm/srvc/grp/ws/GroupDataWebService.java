@@ -22,6 +22,12 @@ import java.util.List;
 @WebService(targetNamespace = "urn:idm.openiam.org/srvc/grp/service", name = "GroupDataWebService")
 public interface GroupDataWebService {
    
+	@WebMethod
+	public Response validateEdit(final Group group);
+	
+	@WebMethod
+	public Response validateDelete(final String groupId);
+	
 	/**
      * This method creates a new group or update existed one. For example:
      * <p/>
@@ -38,7 +44,8 @@ public interface GroupDataWebService {
      * otherwise it contains error code.
      */
     @WebMethod
-    public Response saveGroup(final @WebParam(name = "group", targetNamespace = "") Group group);
+    public Response saveGroup(final @WebParam(name = "group", targetNamespace = "") Group group,
+    						  final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
     /**
      * This method retrieves an existing group object. Dependent objects such as
@@ -55,7 +62,7 @@ public interface GroupDataWebService {
     /**
      * This method removes group from openIAM database for a particular groupId.
      *
-     * @param groupId The grpId to be removed.
+     * @param groupId The id to be removed.
      * @return - a Response Object which contains operation status.
      */
     @WebMethod
@@ -76,6 +83,7 @@ public interface GroupDataWebService {
      *
      * @param groupId - the Group ID
      * @param requesterId - the User ID who request this operation.  This param is required if delegation filter is set
+     * @param deepFlag - shows that method returns Group List with all sub collections
      * @param from - where to start in the list
      * @param size - how many to return
      * @return a paged List of Group objects. Returns null if no groups are found.
@@ -83,6 +91,7 @@ public interface GroupDataWebService {
     @WebMethod
     public List<Group> getChildGroups(final @WebParam(name = "groupId", targetNamespace = "") String groupId,
                                       final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
+                                      final @WebParam(name = "deepFlag", targetNamespace = "") Boolean deepFlag,
     								  final @WebParam(name = "from", targetNamespace = "") int from,
     								  final @WebParam(name = "size", targetNamespace = "") int size);
     /**
@@ -191,6 +200,7 @@ public interface GroupDataWebService {
      * Gets a paged List of Groups directly entitled to the User specified by the userId
      * @param userId - the User ID
      * @param requesterId -  the User ID who request this operation.  This param is required if delegation filter is set
+     * @param deepFlag - shows that method returns Group List with all sub collections
      * @param from - where to start in the paged list
      * @param size - how many to return
      * @return a paged List of Groups directly entitled to the User specified by the userId
@@ -198,6 +208,7 @@ public interface GroupDataWebService {
     @WebMethod
     public List<Group> getGroupsForUser(@WebParam(name = "userId", targetNamespace = "") String userId,
                                         @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
+                                        @WebParam(name="deepFlag", targetNamespace="") Boolean deepFlag,
                                         @WebParam(name = "from") int from,
                                         @WebParam(name = "size") int size);
     /**
@@ -220,6 +231,7 @@ public interface GroupDataWebService {
     @WebMethod
     public List<Group> getGroupsForResource(final @WebParam(name = "resourceId") String resourceId,
                                             final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
+                                            final @WebParam(name = "deepFlag", targetNamespace = "") boolean deepFlag,
     										final @WebParam(name = "from", targetNamespace = "") int from,
     										final @WebParam(name = "size", targetNamespace = "") int size);
 
@@ -239,13 +251,15 @@ public interface GroupDataWebService {
      * @param requesterId -  the User ID who request this operation.  This param is required if delegation filter is set
      * @param from - where to start in the paged list
      * @param size - how many to return
+     * @param deepFlag - if true then it shows that returned Groups contain other objects that are directly entitled to returned Groups
      * @return a paged List of Groups directly entitled to the Role specified by the roleId
      */
     @WebMethod
     public List<Group> getGroupsForRole(final @WebParam(name = "roleId") String roleId,
                                         final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
     									final @WebParam(name = "from", targetNamespace = "") int from,
-    									final @WebParam(name = "size", targetNamespace = "") int size);
+    									final @WebParam(name = "size", targetNamespace = "") int size,
+                                        final @WebParam(name = "deepFlag", targetNamespace = "") boolean deepFlag);
 
     /**
      * Gets the number of Groups directly entitled to this Role specified by the roleId
@@ -268,7 +282,10 @@ public interface GroupDataWebService {
     public Response addChildGroup(final @WebParam(name = "groupId") String groupId, 
     							  final @WebParam(name = "childGroupId") String childGroupId);
 
-
+    @WebMethod
+    public Response validateGroup2GroupAddition(final @WebParam(name = "groupId") String groupId, 
+			  									final @WebParam(name = "childGroupId") String childGroupId);
+    
     /**
      * Remove Group specified by childGroupId from the membership list of Group specified by groupId
      * @param groupId - the Group ID from which another group specified by childGroupId will be deleted

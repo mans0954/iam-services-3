@@ -17,7 +17,8 @@ supervisorSet?.each { s->
     def identity = loginManager.getByUserIdManagedSys(s.getUserId(), managedSysId)
     if (identity) {
         println("Adding supervisor id " + s.getUserId() + " --> " + identity.login)
-        attributeContainer.attributeList.add(new BaseAttribute(identity.login, identity.login, s.operation))
+        def id = matchParam.keyField + '=' + identity.login + ',' + matchParam.baseDn
+        attributeContainer.attributeList.add(new BaseAttribute(id, id, s.operation))
     } else {
         println("Adding supervisor id " + s.getUserId() + " failed, no identity found for supervisor user")
     }
@@ -28,7 +29,8 @@ oldSupervisorSet?.each { s->
         def identity = loginManager.getByUserIdManagedSys(s.getUserId(), managedSysId)
         if (identity) {
             println("Deleting supervisor id " + s.getUserId() + " --> " + identity.login)
-            attributeContainer.attributeList.add(new BaseAttribute(identity.login, identity.login, s.operation))
+            def id = matchParam.keyField + '=' + identity.login + ',' + matchParam.baseDn
+            attributeContainer.attributeList.add(new BaseAttribute(id, id, s.operation))
         } else {
             println("Deleting supervisor id " + s.getUserId() + " failed, no identity found for supervisor user")
         }

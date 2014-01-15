@@ -260,6 +260,19 @@ public class AuditLogBuilder implements Serializable {
 	}
 	
 	/**
+	 * Sets the reason for success
+	 * @param reason
+	 * @return
+	 */
+	public AuditLogBuilder setSuccessReason(final String reason) {
+		return addAttribute(AuditAttributeName.SUCCESS_REASON, reason);
+	}
+	
+	public AuditLogBuilder setURL(final String url) {
+		return addAttribute(AuditAttributeName.URL, url);
+	}
+	
+	/**
 	 * Convenience method for Web Service calls to set caller information
 	 * @param baseObject
 	 * @return this

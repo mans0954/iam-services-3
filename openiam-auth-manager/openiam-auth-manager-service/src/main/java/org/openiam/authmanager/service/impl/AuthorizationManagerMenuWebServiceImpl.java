@@ -1,12 +1,5 @@
 package org.openiam.authmanager.service.impl;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-
-import javax.jws.WebService;
-
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.StopWatch;
@@ -31,6 +24,12 @@ import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
 import org.openiam.idm.srvc.res.service.ResourceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import javax.jws.WebService;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 @WebService(endpointInterface = "org.openiam.authmanager.service.AuthorizationManagerMenuWebService", 
 	targetNamespace = "urn:idm.openiam.org/srvc/authorizationmanager/menu/service", 
@@ -62,9 +61,9 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 			} else if(request.getLoginId() != null) {
 				final AuthorizationManagerLoginId login = request.getLoginId();
 				if(StringUtils.isNotEmpty(request.getMenuRoot())) {
-					retVal = menuService.getMenuTree(request.getMenuRoot(), login.getDomain(), login.getLogin(), login.getManagedSysId());
+					retVal = menuService.getMenuTree(request.getMenuRoot(), login.getLogin(), login.getManagedSysId());
 				} else {
-					retVal = menuService.getMenuTreeByName(request.getMenuName(), login.getDomain(), login.getLogin(), login.getManagedSysId());
+					retVal = menuService.getMenuTreeByName(request.getMenuName(), login.getLogin(), login.getManagedSysId());
 				}
 			}
 		}
@@ -227,11 +226,11 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 					}
 					final List<ResourceEntity> resourceList = resourceService.findResourcesByIds(changedMenuMap.keySet());
 					for(final ResourceEntity resource : resourceList) {
-						final AuthorizationMenu menu = changedMenuMap.get(resource.getResourceId());	
+						final AuthorizationMenu menu = changedMenuMap.get(resource.getId());	
 						
 						final ResourceEntity existingResource = resourceService.findResourceByName(menu.getName());
 						/* check that, if the user changed the name of the menu, it doesn't conflict with another resource with the same name */
-						if(existingResource != null && !existingResource.getResourceId().equals(resource.getResourceId())) {
+						if(existingResource != null && !existingResource.getId().equals(resource.getId())) {
 							throw new AuthorizationMenuException(ResponseCode.NAME_TAKEN, resource.getName());
 						}
 						
@@ -261,13 +260,13 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 				final Map<String, ResourceEntity> resourceToCreateMap = new HashMap<String, ResourceEntity>();
 				final Map<String, ResourceEntity> resourceToDeleteMap = new HashMap<String, ResourceEntity>();
 				for(final ResourceEntity resource : resourcesToUpdate) {
-					resourcesToUpdateMap.put(resource.getResourceId(), resource);
+					resourcesToUpdateMap.put(resource.getId(), resource);
 				}
 				for(final ResourceEntity resource : resourcesToCreate) {
-					resourceToCreateMap.put(resource.getResourceId(), resource);
+					resourceToCreateMap.put(resource.getId(), resource);
 				}
 				for(final ResourceEntity resource : resourcesToDelete) {
-					resourceToDeleteMap.put(resource.getResourceId(), resource);
+					resourceToDeleteMap.put(resource.getId(), resource);
 				}
 				
 				/* set new xrefs, if any */
@@ -288,7 +287,7 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 					for(final ResourceResourceXref xref : deletedXrefs) {
 						if(!resourcesToUpdateMap.containsKey(xref.getResourceId())) {
 							final ResourceEntity resource = resourceService.findResourceById(xref.getResourceId());
-							resourcesToUpdateMap.put(resource.getResourceId(), resource);
+							resourcesToUpdateMap.put(resource.getId(), resource);
 						}
 						final ResourceEntity resource = resourcesToUpdateMap.get(xref.getResourceId());
 						final ResourceEntity toDelete = resourceToDeleteMap.get(xref.getMemberResourceId());
@@ -431,7 +430,7 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 	
 
 	@Override
-	public boolean isUserAuthenticatedToMenuWithURL(final String userId, final String url, final boolean defaultResult) {
-		return menuService.isUserAuthenticatedToMenuWithURL(userId, url, defaultResult);
+	public boolean isUserAuthenticatedToMenuWithURL(final String userId, final String url, final String menuId, final boolean defaultResult) {
+		return menuService.isUserAuthenticatedToMenuWithURL(userId, url, menuId, defaultResult);
 	}
 }

@@ -46,28 +46,7 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
 		if(searchBean != null && searchBean instanceof ResourceSearchBean) {
 			final ResourceSearchBean resourceSearchBean = (ResourceSearchBean)searchBean;
 			criteria = getExampleCriteria(resourceSearchBeanConverter.convert(resourceSearchBean));
-			
-			if(Boolean.TRUE.equals(resourceSearchBean.getRootsOnly())) {
-				criteria.add(Restrictions.isEmpty("parentResources"));
-			}
-			
-			if(CollectionUtils.isNotEmpty(resourceSearchBean.getExcludeResourceTypes())) {
-				criteria.add(Restrictions.not(Restrictions.in("resourceType.resourceTypeId", resourceSearchBean.getExcludeResourceTypes())));
-			}
-			
-			if(CollectionUtils.isNotEmpty(resourceSearchBean.getAttributes())) {
-				criteria.createAlias("resourceProps", "prop");
-				for(final Tuple<String, String> attribute : resourceSearchBean.getAttributes()) {
-					if(StringUtils.isNotBlank(attribute.getKey()) && StringUtils.isNotBlank(attribute.getValue())) {
-						criteria.add(Restrictions.and(Restrictions.eq("prop.name", attribute.getKey()), 
-								Restrictions.eq("prop.propValue", attribute.getValue())));
-					} else if(StringUtils.isNotBlank(attribute.getKey())) {
-						criteria.add(Restrictions.eq("prop.name", attribute.getKey()));
-					} else if(StringUtils.isNotBlank(attribute.getValue())) {
-						criteria.add(Restrictions.eq("prop.propValue", attribute.getValue()));
-					}
-				}
-			}
+			addSearchBeanCriteria(criteria, resourceSearchBean);
 		}
 		return criteria;
 	}
@@ -75,9 +54,9 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
 	@Override
 	protected Criteria getExampleCriteria(final ResourceEntity resource) {
 		final Criteria criteria = getCriteria();
-		if (StringUtils.isNotBlank(resource.getResourceId())) {
+		if (StringUtils.isNotBlank(resource.getId())) {
 			criteria.add(Restrictions.eq(getPKfieldName(),
-					resource.getResourceId()));
+					resource.getId()));
 		} else {
 			if (StringUtils.isNotEmpty(resource.getName())) {
 				String resourceName = resource.getName();
@@ -99,12 +78,15 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
 					}
 				}
 			}
+			
+			if(resource.getAdminResource() != null && StringUtils.isNotBlank(resource.getAdminResource().getId())) {
+				criteria.add(Restrictions.eq("adminResource.id", resource.getAdminResource().getId()));
+			}
 
 			if (resource.getResourceType() != null) {
 				final ResourceTypeEntity type = resource.getResourceType();
-				if (StringUtils.isNotBlank(type.getResourceTypeId())) {
-					criteria.add(Restrictions.eq("resourceType.resourceTypeId",
-							type.getResourceTypeId()));
+				if (StringUtils.isNotBlank(type.getId())) {
+					criteria.add(Restrictions.eq("resourceType.id", type.getId()));
 				}
 			}
 
@@ -113,14 +95,14 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
 				for (final ResourceEntity parent : resource
 						.getParentResources()) {
 					if (parent != null
-							&& StringUtils.isNotBlank(parent.getResourceId())) {
-						parentResourceIds.add(parent.getResourceId());
+							&& StringUtils.isNotBlank(parent.getId())) {
+						parentResourceIds.add(parent.getId());
 					}
 				}
 
 				if (CollectionUtils.isNotEmpty(parentResourceIds)) {
 					criteria.createAlias("parentResources", "parent").add(
-							Restrictions.in("parent.resourceId",
+							Restrictions.in("parent.id",
 									parentResourceIds));
 				}
 			}
@@ -129,14 +111,14 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
 				final Set<String> childResoruceIds = new HashSet<String>();
 				for (final ResourceEntity child : resource.getChildResources()) {
 					if (child != null
-							&& StringUtils.isNotBlank(child.getResourceId())) {
-						childResoruceIds.add(child.getResourceId());
+							&& StringUtils.isNotBlank(child.getId())) {
+						childResoruceIds.add(child.getId());
 					}
 				}
 
 				if (CollectionUtils.isNotEmpty(childResoruceIds)) {
 					criteria.createAlias("childResources", "child").add(
-							Restrictions.in("child.resourceId",
+							Restrictions.in("child.id",
 									childResoruceIds));
 				}
 			}
@@ -170,20 +152,21 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
 		return (ResourceEntity) criteria.uniqueResult();
 	}
 
-	public List<ResourceEntity> getResourcesByType(String resourceTypeId) {
+	public List<ResourceEntity> getResourcesByType(String id) {
 		Criteria criteria = getCriteria().createAlias("resourceType", "rt")
-				.add(Restrictions.eq("rt.resourceTypeId", resourceTypeId))
+				.add(Restrictions.eq("rt.id", id))
 				.addOrder(Order.asc("displayOrder"));
 		return (List<ResourceEntity>) criteria.list();
 	}
 
 	public List<ResourceEntity> getResourcesForRole(final String roleId,
-			final int from, final int size) {
+			final int from, final int size, final ResourceSearchBean searchBean) {
 		final Criteria criteria = getCriteria()
 				.createAlias("roles", "rr")
-				.add(Restrictions.eq("rr.roleId", roleId))
+				.add(Restrictions.eq("rr.id", roleId))
 				.addOrder(Order.asc("name"));
-
+		addSearchBeanCriteria(criteria, searchBean);
+		
 		if (from > -1) {
 			criteria.setFirstResult(from);
 		}
@@ -198,28 +181,30 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
 	}
 
 	@Override
-	public int getNumOfResourcesForRole(String roleId) {
+	public int getNumOfResourcesForRole(String roleId, final ResourceSearchBean searchBean) {
 		final Criteria criteria = getCriteria()
 				.createAlias("roles", "rr")
-				.add(Restrictions.eq("rr.roleId", roleId))
+				.add(Restrictions.eq("rr.id", roleId))
 				.setProjection(rowCount());
-
+		addSearchBeanCriteria(criteria, searchBean);
+		
 		return ((Number) criteria.uniqueResult()).intValue();
 	}
 
 	@Override
 	protected String getPKfieldName() {
-		return "resourceId";
+		return "id";
 	}
 
 	@Override
 	public List<ResourceEntity> getResourcesForGroup(final String groupId,
-			final int from, final int size) {
+			final int from, final int size, final ResourceSearchBean searchBean) {
 		final Criteria criteria = getCriteria()
 				.createAlias("groups", "rg")
-				.add(Restrictions.eq("rg.grpId", groupId))
+				.add(Restrictions.eq("rg.id", groupId))
 				.addOrder(Order.asc("name"));
-
+		addSearchBeanCriteria(criteria, searchBean);
+		
 		if (from > -1) {
 			criteria.setFirstResult(from);
 		}
@@ -234,25 +219,27 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
 	}
 
 	@Override
-	public int getNumOfResourcesForGroup(final String groupId) {
+	public int getNumOfResourcesForGroup(final String groupId, final ResourceSearchBean searchBean) {
 		final Criteria criteria = getCriteria()
 				.createAlias("groups", "rg")
-				.add(Restrictions.eq("rg.grpId", groupId))
+				.add(Restrictions.eq("rg.id", groupId))
 				.setProjection(rowCount());
-
+		addSearchBeanCriteria(criteria, searchBean);
+		
 		return ((Number) criteria.uniqueResult()).intValue();
 	}
 
 	private Criteria getResourceForUserCriteria(final String userId) {
-		return getCriteria().createAlias("users", "ru").add(
-				Restrictions.eq("ru.userId", userId));
+		final Criteria criteria = getCriteria().createAlias("users", "ru").add(Restrictions.eq("ru.id", userId));
+		return criteria;
 	}
 
 	@Override
 	public List<ResourceEntity> getResourcesForUser(final String userId,
-			final int from, final int size) {
+			final int from, final int size, final ResourceSearchBean searchBean) {
 		final Criteria criteria = getResourceForUserCriteria(userId);
-
+		addSearchBeanCriteria(criteria, searchBean);
+		
 		if (from > -1) {
 			criteria.setFirstResult(from);
 		}
@@ -264,10 +251,45 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
 		return criteria.list();
 	}
 
+    public List<ResourceEntity> getResourcesForUserByType(final String userId, String resourceTypeId, final ResourceSearchBean searchBean){
+        final Criteria criteria = getResourceForUserCriteria(userId);
+        addSearchBeanCriteria(criteria, searchBean);
+        criteria.createAlias("resourceType", "rt").add(Restrictions.eq("rt.id", resourceTypeId));
+        return criteria.list();
+    }
 	@Override
-	public int getNumOfResourcesForUser(String userId) {
-		final Criteria criteria = getResourceForUserCriteria(userId)
-				.setProjection(rowCount());
+	public int getNumOfResourcesForUser(String userId, final ResourceSearchBean searchBean) {
+		final Criteria criteria = getResourceForUserCriteria(userId).setProjection(rowCount());
+		addSearchBeanCriteria(criteria, searchBean);
 		return ((Number) criteria.uniqueResult()).intValue();
+	}
+	
+	private void addSearchBeanCriteria(final Criteria criteria, final ResourceSearchBean searchBean) {
+		if(searchBean != null && criteria != null) {
+			if(Boolean.TRUE.equals(searchBean.getRootsOnly())) {
+				criteria.add(Restrictions.isEmpty("parentResources"));
+			}
+			
+			if(CollectionUtils.isNotEmpty(searchBean.getExcludeResourceTypes())) {
+				criteria.add(Restrictions.not(Restrictions.in("resourceType.id", searchBean.getExcludeResourceTypes())));
+			}
+            if(StringUtils.isNotEmpty(searchBean.getResourceTypeId())) {
+                criteria.add(Restrictions.eq("resourceType.id", searchBean.getResourceTypeId()));
+            }
+			
+			if(CollectionUtils.isNotEmpty(searchBean.getAttributes())) {
+				criteria.createAlias("resourceProps", "prop");
+				for(final Tuple<String, String> attribute : searchBean.getAttributes()) {
+					if(StringUtils.isNotBlank(attribute.getKey()) && StringUtils.isNotBlank(attribute.getValue())) {
+						criteria.add(Restrictions.and(Restrictions.eq("prop.name", attribute.getKey()), 
+								Restrictions.eq("prop.propValue", attribute.getValue())));
+					} else if(StringUtils.isNotBlank(attribute.getKey())) {
+						criteria.add(Restrictions.eq("prop.name", attribute.getKey()));
+					} else if(StringUtils.isNotBlank(attribute.getValue())) {
+						criteria.add(Restrictions.eq("prop.propValue", attribute.getValue()));
+					}
+				}
+			}
+		}
 	}
 }

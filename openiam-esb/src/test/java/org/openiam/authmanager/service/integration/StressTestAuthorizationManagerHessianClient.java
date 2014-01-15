@@ -100,21 +100,21 @@ public class StressTestAuthorizationManagerHessianClient extends AbstractTestNGS
 	private class RoleThread extends Thread {
 		
 		private String userId;
-		private String roleId;
+		private String id;
 		private boolean hasAccess;
 		
-		public RoleThread(final String userId, final String roleId, boolean hasAccess) {
+		public RoleThread(final String userId, final String id, boolean hasAccess) {
 			this.userId = userId;
-			this.roleId = roleId;
+			this.id = id;
 			this.hasAccess = hasAccess;
 		}
 		
 		@Override
 		public void run() {
-			final boolean result = authClient.isUserWithIdMemberOfRoleWithId(userId, roleId);
+			final boolean result = authClient.isUserWithIdMemberOfRoleWithId(userId, id);
 			Assert.assertEquals(result, hasAccess);
 			if(result != hasAccess) {
-				log.error(String.format("Failed:  userId: %s,  roleId: %s, result: %s", userId, roleId, result));
+				log.error(String.format("Failed:  userId: %s,  roleId: %s, result: %s", userId, id, result));
 			}
 		}
 	}

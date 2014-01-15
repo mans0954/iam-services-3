@@ -90,8 +90,8 @@ public class TestGroupConversion extends AbstractTestNGSpringContextTests {
 		group.setCreateDate(new Date());
 		group.setCreatedBy(rs(2));
 		group.setDescription(rs(2));
-		group.setGrpId(rs(2));
-		group.setGrpName(rs(2));
+		group.setId(rs(2));
+		group.setName(rs(2));
 		//group.setInternalGroupId(rs(2));
 		group.setLastUpdate(new Date());
 		group.setLastUpdatedBy(rs(2));
@@ -99,7 +99,6 @@ public class TestGroupConversion extends AbstractTestNGSpringContextTests {
 		//group.setOwnerId(rs(2));
 		//group.setProvisionMethod(rs(2));
 		//group.setProvisionObjName(rs(2));
-		group.setStatus(rs(2));
 		return group;
 	}
 	
@@ -118,7 +117,7 @@ public class TestGroupConversion extends AbstractTestNGSpringContextTests {
 		role.setCreateDate(new Date());
 		role.setCreatedBy(rs(2));
 		role.setDescription(rs(2));
-		role.setRoleName(rs(2));
+		role.setName(rs(2));
 		role.setStatus(rs(2));
 		final Set<RolePolicyEntity> rolePolicySet = new HashSet<RolePolicyEntity>();
 		rolePolicySet.add(createRolePolicy());
@@ -173,8 +172,8 @@ public class TestGroupConversion extends AbstractTestNGSpringContextTests {
 	private void compareGroup(final GroupEntity original, final GroupEntity copy, final boolean isDeep) {
 		Assert.assertEquals(original.getCreatedBy(), copy.getCreatedBy());
 		Assert.assertEquals(original.getDescription(), copy.getDescription());
-		Assert.assertEquals(original.getGrpId(), copy.getGrpId());
-		Assert.assertEquals(original.getGrpName(), copy.getGrpName());
+		Assert.assertEquals(original.getId(), copy.getId());
+		Assert.assertEquals(original.getName(), copy.getName());
 		//Assert.assertEquals(original.getInternalGroupId(), copy.getInternalGroupId());
 		Assert.assertEquals(original.getLastUpdatedBy(), copy.getLastUpdatedBy());
 		Assert.assertEquals(original.getLastUpdate(), copy.getLastUpdate());
@@ -182,13 +181,12 @@ public class TestGroupConversion extends AbstractTestNGSpringContextTests {
 		//Assert.assertEquals(original.getOwnerId(), copy.getOwnerId());
 		//Assert.assertEquals(original.getProvisionMethod(), copy.getProvisionMethod());
 		//Assert.assertEquals(original.getProvisionObjName(), copy.getProvisionObjName());
-		Assert.assertEquals(original.getStatus(), copy.getStatus());
 	}
 	
 	private void compareRole(final RoleEntity original, final RoleEntity copy, final boolean isDeep) {
 		Assert.assertEquals(original.getCreatedBy(), copy.getCreatedBy());
 		Assert.assertEquals(original.getDescription(), copy.getDescription());
-		Assert.assertEquals(original.getRoleName(), copy.getRoleName());
+		Assert.assertEquals(original.getName(), copy.getName());
 		Assert.assertEquals(original.getStatus(), copy.getStatus());
 		
 		if(isDeep) {

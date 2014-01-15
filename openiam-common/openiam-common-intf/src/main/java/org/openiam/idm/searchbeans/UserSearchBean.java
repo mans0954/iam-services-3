@@ -35,7 +35,6 @@ import java.util.*;
         "attributeValue",
         "attributeElementId",
         "userId",
-        "domainId",
         "showInSearch",
         "locationCd",
         "classification",
@@ -74,7 +73,6 @@ public class UserSearchBean extends AbstractSearchBean<User, String> implements 
     protected String attributeValue;
     protected String attributeElementId;
     protected String userId;
-    protected String domainId;
     protected String locationCd;
     protected Integer showInSearch;
     protected Integer maxResultSize;
@@ -117,37 +115,37 @@ public class UserSearchBean extends AbstractSearchBean<User, String> implements 
     public void setOrganizationIdList(Set<String> organizationIdList) {
         this.organizationIdList = organizationIdList;
     }
-    
+
     public void addOrganizationIdList(final List<String> organizationIdList) {
-    	if(organizationIdList != null) {
-    		if(this.organizationIdList==null) {
-    			this.organizationIdList = new HashSet<String>();
-    		}
-    		
-    		for(final String organizationId : organizationIdList) {
-    			if(!this.organizationIdList.contains(organizationId)) {
-    				this.organizationIdList.add(organizationId);
-    			}
-    		}
-    	}
+        if(organizationIdList != null) {
+            if(this.organizationIdList==null) {
+                this.organizationIdList = new HashSet<String>();
+            }
+
+            for(final String organizationId : organizationIdList) {
+                if(!this.organizationIdList.contains(organizationId)) {
+                    this.organizationIdList.add(organizationId);
+                }
+            }
+        }
     }
 
     public void addOrganizationId(String organizationId){
-         if(organizationIdList==null) {
-             organizationIdList = new HashSet<String>();
-         }
+        if(organizationIdList==null) {
+            organizationIdList = new HashSet<String>();
+        }
         organizationIdList.add(organizationId);
     }
-   
+
     public boolean isDelAdmin() {
-		return delAdmin;
-	}
+        return delAdmin;
+    }
 
-	public void setDelAdmin(boolean delAdmin) {
-		this.delAdmin = delAdmin;
-	}
+    public void setDelAdmin(boolean delAdmin) {
+        this.delAdmin = delAdmin;
+    }
 
-	public String getFirstName() {
+    public String getFirstName() {
         return firstName;
     }
 
@@ -172,22 +170,22 @@ public class UserSearchBean extends AbstractSearchBean<User, String> implements 
     }
 
     public String getAccountStatus() {
-		return accountStatus;
-	}
+        return accountStatus;
+    }
 
-	public void setAccountStatus(String accountStatus) {
-		this.accountStatus = accountStatus;
-	}
+    public void setAccountStatus(String accountStatus) {
+        this.accountStatus = accountStatus;
+    }
 
-	public String getUserStatus() {
-		return userStatus;
-	}
+    public String getUserStatus() {
+        return userStatus;
+    }
 
-	public void setUserStatus(String userStatus) {
-		this.userStatus = userStatus;
-	}
+    public void setUserStatus(String userStatus) {
+        this.userStatus = userStatus;
+    }
 
-	public String getPhoneAreaCd() {
+    public String getPhoneAreaCd() {
         return phoneAreaCd;
     }
 
@@ -211,27 +209,27 @@ public class UserSearchBean extends AbstractSearchBean<User, String> implements 
         this.employeeId = employeeId;
     }
 
-	public Set<String> getGroupIdSet() {
-		return groupIdSet;
-	}
+    public Set<String> getGroupIdSet() {
+        return groupIdSet;
+    }
 
     public void setGroupIdSet(Set<String> groupIdSet) {
         this.groupIdSet=groupIdSet;
     }
-	
-	public void addGroupId(final String groupId) {
-		if(StringUtils.isNotBlank(groupId)) {
-			if(this.groupIdSet == null) {
-				this.groupIdSet = new HashSet<String>();
-			}
-			this.groupIdSet.add(StringUtils.trimToNull(groupId));
-		}
-		
-	}
 
-	public Set<String> getRoleIdSet() {
-		return roleIdSet;
-	}
+    public void addGroupId(final String groupId) {
+        if(StringUtils.isNotBlank(groupId)) {
+            if(this.groupIdSet == null) {
+                this.groupIdSet = new HashSet<String>();
+            }
+            this.groupIdSet.add(StringUtils.trimToNull(groupId));
+        }
+
+    }
+
+    public Set<String> getRoleIdSet() {
+        return roleIdSet;
+    }
 
     public void setRoleIdSet(Set<String> roleIdSet) {
         this.roleIdSet=roleIdSet;
@@ -239,15 +237,15 @@ public class UserSearchBean extends AbstractSearchBean<User, String> implements 
 
 
     public void addRoleId(final String roleId) {
-		if(StringUtils.isNotBlank(roleId)) {
-			if(this.roleIdSet == null) {
-				this.roleIdSet = new HashSet<String>();
-			}
-			this.roleIdSet.add(StringUtils.trimToNull(roleId));
-		}
-	}
+        if(StringUtils.isNotBlank(roleId)) {
+            if(this.roleIdSet == null) {
+                this.roleIdSet = new HashSet<String>();
+            }
+            this.roleIdSet.add(StringUtils.trimToNull(roleId));
+        }
+    }
 
-	public String getEmailAddress() {
+    public String getEmailAddress() {
         return emailAddress;
     }
 
@@ -293,14 +291,6 @@ public class UserSearchBean extends AbstractSearchBean<User, String> implements 
 
     public void setUserId(String userId) {
         this.userId = userId;
-    }
-
-    public String getDomainId() {
-        return domainId;
-    }
-
-    public void setDomainId(String domainId) {
-        this.domainId = domainId;
     }
 
     public String getLocationCd() {
@@ -407,28 +397,28 @@ public class UserSearchBean extends AbstractSearchBean<User, String> implements 
         this.attributeList = attributeList;
     }
 
-	public String getEmployeeType() {
-		return employeeType;
-	}
+    public String getEmployeeType() {
+        return employeeType;
+    }
 
-	public void setEmployeeType(String employeeType) {
-		this.employeeType = employeeType;
-	}
+    public void setEmployeeType(String employeeType) {
+        this.employeeType = employeeType;
+    }
 
-	public Set<String> getResourceIdSet() {
-		return resourceIdSet;
-	}
+    public Set<String> getResourceIdSet() {
+        return resourceIdSet;
+    }
 
-	public void setResourceIdSet(Set<String> resourceIdSet) {
-		this.resourceIdSet = resourceIdSet;
-	}
+    public void setResourceIdSet(Set<String> resourceIdSet) {
+        this.resourceIdSet = resourceIdSet;
+    }
 
-	public void addResourceId(final String resourceId) {
-		if(resourceId != null) {
-			if(this.resourceIdSet == null) {
-				this.resourceIdSet = new HashSet<String>();
-			}
-			this.resourceIdSet.add(resourceId);
-		}
-	}
+    public void addResourceId(final String resourceId) {
+        if(resourceId != null) {
+            if(this.resourceIdSet == null) {
+                this.resourceIdSet = new HashSet<String>();
+            }
+            this.resourceIdSet.add(resourceId);
+        }
+    }
 }

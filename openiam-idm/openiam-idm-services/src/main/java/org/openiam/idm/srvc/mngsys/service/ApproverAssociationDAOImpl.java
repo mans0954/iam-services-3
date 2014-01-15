@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.mngsys.service;
 
+import java.util.Collections;
 import java.util.List;
 import javax.naming.InitialContext;
 
@@ -12,6 +13,7 @@ import org.hibernate.LockMode;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
 import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
@@ -61,6 +63,7 @@ public class ApproverAssociationDAOImpl extends BaseDaoImpl<ApproverAssociationE
 			if(entity.getApproverLevel() != null) {
 				criteria.add(Restrictions.eq("approverLevel", entity.getApproverLevel()));
 			}
+			criteria.addOrder(Order.asc("approverLevel"));
 		}
 		return criteria;
 	}
@@ -72,9 +75,13 @@ public class ApproverAssociationDAOImpl extends BaseDaoImpl<ApproverAssociationE
 
 	@Override
 	public List<ApproverAssociationEntity> getByAssociation(final String associationId, final AssociationType associationType) {
-		final ApproverAssociationEntity example = new ApproverAssociationEntity();
-		example.setAssociationEntityId(associationId);
-		example.setAssociationType(associationType);
-		return getByExample(example);
+		if(StringUtils.isNotBlank(associationId) && associationType != null) {
+			final ApproverAssociationEntity example = new ApproverAssociationEntity();
+			example.setAssociationEntityId(associationId);
+			example.setAssociationType(associationType);
+			return getByExample(example);
+		} else {
+			return Collections.EMPTY_LIST;
+		}
 	}
 }

@@ -11,13 +11,11 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "PasswordCredential", propOrder = {
-        "domainId",
         "principal",
         "password"
 })
 public class PasswordCredential extends BaseCredential {
 
-    String domainId;
     String principal;
     String password;
 
@@ -25,18 +23,9 @@ public class PasswordCredential extends BaseCredential {
 
     }
 
-    public void setCredentials(String domainId, String principal, String password) {
-        this.domainId = domainId;
+    public void setCredentials(String principal, String password) {
         this.password = password;
         this.principal = principal;
-    }
-
-    public String getDomainId() {
-        return domainId;
-    }
-
-    public void setDomainId(String domainId) {
-        this.domainId = domainId;
     }
 
     public String getPrincipal() {

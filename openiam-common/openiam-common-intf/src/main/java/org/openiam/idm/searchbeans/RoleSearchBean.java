@@ -14,15 +14,15 @@ import java.util.Set;
 @XmlType(name = "RoleSearchBean", propOrder = {
         "keySet",
         "name",
-        "serviceId",
-        "isRootsOnly"
+        "isRootsOnly",
+        "managedSysId"
 })
 public class RoleSearchBean extends AbstractSearchBean<Role, String> implements SearchBean<Role, String>, Serializable {
 
 	private static final long serialVersionUID = 1L;
     private Set<String> keySet;
 	private String name;
-	private String serviceId;
+    private String managedSysId;
 	private Boolean isRootsOnly;
 	
 	public String getName() {
@@ -41,23 +41,22 @@ public class RoleSearchBean extends AbstractSearchBean<Role, String> implements 
 		this.isRootsOnly = isRootsOnly;
 	}
 
-	public String getServiceId() {
-		return serviceId;
-	}
+    public String getManagedSysId() {
+        return managedSysId;
+    }
 
-	public void setServiceId(String serviceId) {
-		this.serviceId = serviceId;
-	}
+    public void setManagedSysId(String managedSysId) {
+        this.managedSysId = managedSysId;
+    }
 
-	@Override
+    @Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
 		result = prime * result
 				+ ((isRootsOnly == null) ? 0 : isRootsOnly.hashCode());
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
-		result = prime * result
-				+ ((serviceId == null) ? 0 : serviceId.hashCode());
+        result = prime * result + ((managedSysId == null) ? 0 : managedSysId.hashCode());
 		return result;
 	}
 
@@ -80,19 +79,19 @@ public class RoleSearchBean extends AbstractSearchBean<Role, String> implements 
 				return false;
 		} else if (!name.equals(other.name))
 			return false;
-		if (serviceId == null) {
-			if (other.serviceId != null)
-				return false;
-		} else if (!serviceId.equals(other.serviceId))
-			return false;
+        if (managedSysId == null) {
+            if (other.managedSysId != null)
+                return false;
+        } else if (!managedSysId.equals(other.managedSysId))
+            return false;
 		return true;
 	}
 
 	@Override
 	public String toString() {
 		return String.format(
-				"RoleSearchBean [keySet=%s, name=%s, serviceId=%s, isRootsOnly=%s]", keySet, name,
-				serviceId, isRootsOnly);
+				"RoleSearchBean [keySet=%s, name=%s, isRootsOnly=%s]", keySet, name,
+				isRootsOnly);
 	}
 
     @Override

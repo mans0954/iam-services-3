@@ -1,6 +1,7 @@
 package org.openiam.bpm.activiti.delegate.user.newuser;
 
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -13,7 +14,9 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.bpm.util.ActivitiConstants;
-import org.openiam.bpm.request.RequestorInformation;
+import org.openiam.bpm.activiti.delegate.core.AbstractNotificationDelegate;
+import org.openiam.bpm.activiti.delegate.core.ActivitiHelper;
+import org.openiam.bpm.activiti.delegate.entitlements.AcceptEntitlementsNotifierDelegate;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
@@ -24,11 +27,8 @@ import org.openiam.idm.srvc.mngsys.service.ApproverAssociationDAO;
 import org.openiam.idm.srvc.msg.dto.NotificationParam;
 import org.openiam.idm.srvc.msg.dto.NotificationRequest;
 import org.openiam.idm.srvc.msg.service.MailService;
-import org.openiam.idm.srvc.prov.request.domain.ProvisionRequestEntity;
 import org.openiam.idm.srvc.prov.request.domain.RequestApproverEntity;
-import org.openiam.idm.srvc.prov.request.dto.ProvisionRequest;
 import org.openiam.idm.srvc.prov.request.dto.RequestUser;
-import org.openiam.idm.srvc.prov.request.service.RequestDataService;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.NewUserProfileRequestModel;
 import org.openiam.idm.srvc.user.dto.Supervisor;
@@ -45,36 +45,83 @@ import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.thoughtworks.xstream.XStream;
 
-public class AcceptProfileProvisionDelegate implements JavaDelegate {
+public class AcceptProfileProvisionDelegate extends AcceptEntitlementsNotifierDelegate {
 
-	private static Logger log = Logger.getLogger(AcceptProfileProvisionDelegate.class);
-	
-	@Autowired
-	@Qualifier("provRequestService")
-	private RequestDataService provRequestService;
+    @Autowired
+    private LoginDataService loginDS;
 	
 	public AcceptProfileProvisionDelegate() {
-		SpringContextProvider.autowire(this);
+		super();
 	}
-	
-	public static final String APPROVE_STATUS = "APPROVED";
 	
 	@Override
-	public void execute(DelegateExecution execution) throws Exception {
-		final String comment = (String)execution.getVariable(ActivitiConstants.COMMENT);
-		final String lastCaller = (String)execution.getVariable(ActivitiConstants.EXECUTOR_ID);
-		final String provisionRequestId = (String)execution.getVariable(ActivitiConstants.PROVISION_REQUEST_ID);
+    public void execute(final DelegateExecution execution) throws Exception {
+		final String reqeustorId = getRequestorId(execution);
+		final String newUserId = getStringVariable(execution, ActivitiConstants.NEW_USER_ID);
+            
+		final UserEntity newUser = getUserEntity(newUserId);
+		final UserEntity requestor = getUserEntity(reqeustorId);    
 		
-		final ProvisionRequestEntity provisionRequest = provRequestService.getRequest(provisionRequestId);
-		final Date currentDate = new Date();
-		provisionRequest.setStatusDate(currentDate);
-		provisionRequest.setStatus(APPROVE_STATUS);
+		/* notify the approvers */
+		final Set<String> userIds = new HashSet<String>();
+		final Set<String> emails = new HashSet<String>();
+        
+		userIds.addAll(activitiHelper.getOnAcceptUserIds(execution, newUserId, getSupervisorsForUser(newUser)));
+		userIds.remove(newUserId); /* don't send to target user just quite yet */
+		
+		sendEmails(execution, requestor, newUser, userIds, emails, null, null);
+		
+		String identity = null;
+		String password = null;
 
-		final NewUserProfileRequestModel profileModel = (NewUserProfileRequestModel)new XStream().fromXML(provisionRequest.getRequestXML());
-		profileModel.getUser().setUserId(null);
-		profileModel.getUser().setStatus(UserStatusEnum.PENDING_INITIAL_LOGIN);
-		provisionRequest.setRequestXML(new XStream().toXML(profileModel));
-		provRequestService.updateRequest(provisionRequest);
-	}
+		final LoginEntity login = loginDS.getPrimaryIdentity(newUserId);
+		if (login != null) {
+            identity = login.getLogin();
+            password = loginDS.decryptPassword(login.getUserId(),login.getPassword());
+		}
+		sendEmail(execution, requestor, newUser, newUser.getId(), null, identity, password);
+    }
+    
+    private void sendEmails(final DelegateExecution execution,
+    						final UserEntity requestor, 
+    						final UserEntity newUser, 
+    						final Set<String> userIds, 
+    						final Set<String> emailAddresses, 
+    						final String identity, 
+    						final String password) {
+            if(CollectionUtils.isNotEmpty(userIds)) {
+                    for(final String userId : userIds) {
+                            sendEmail(execution, requestor, newUser, userId, null, identity, password);
+                    }
+            }
+            
+            if(CollectionUtils.isNotEmpty(emailAddresses)) {
+                    for(final String email : emailAddresses) {
+                            sendEmail(execution, requestor, newUser, null, email, identity, password);
+                    }
+            }
+    }
+    
+    private void sendEmail(final DelegateExecution execution,
+    					   final UserEntity requestor, 
+    					   final UserEntity newUser, 
+    					   final String userId, 
+    					   final String email, 
+    					   final String identity, 
+    					   final String password) {
+    	final NotificationRequest request = new NotificationRequest();
+	    request.setUserId(userId);
+	    request.setNotificationType(getNotificationType(execution));
+	    request.setTo(email);
+	    request.getParamList().add(new NotificationParam("REQUEST_REASON", getTaskDescription(execution)));
+	    request.getParamList().add(new NotificationParam("TARGET_USER", newUser.getDisplayName()));
+	    request.getParamList().add(new NotificationParam("IDENTITY", identity));
+	    request.getParamList().add(new NotificationParam("PSWD", password));
+	    if(requestor != null) {
+	    	request.getParamList().add(new NotificationParam("REQUESTOR", requestor.getDisplayName()));
+	     }
 
+
+	    mailService.sendNotification(request);
+    }
 }

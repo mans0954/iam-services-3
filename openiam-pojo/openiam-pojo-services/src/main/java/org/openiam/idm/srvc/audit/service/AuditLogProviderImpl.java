@@ -1,16 +1,14 @@
 package org.openiam.idm.srvc.audit.service;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+
 import org.openiam.idm.srvc.audit.domain.AuditLogBuilder;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.Collection;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 /**
  * Created with IntelliJ IDEA.
@@ -22,7 +20,11 @@ import java.util.concurrent.ConcurrentMap;
 @Component
 public class AuditLogProviderImpl implements AuditLogProvider  {
 
+
     private final static ThreadLocal<AuditLogBuilder> auditLogBuilderThreadLocal = new ThreadLocal<AuditLogBuilder>();
+
+    private static Logger log = Logger.getLogger(AuditLogProviderImpl.class);
+
 
     @Autowired
     private AuditLogService auditLogService;
@@ -49,7 +51,9 @@ public class AuditLogProviderImpl implements AuditLogProvider  {
         return auditLogBuilder;
     }
 
-    public AuditLogBuilder getAuditLogBuilder () {
+    public AuditLogBuilder getAuditLogBuilder() {
+        final long threadId = Thread.currentThread().getId();
+        log.info("CURRENT THREAD ID="+threadId);
 
         AuditLogBuilder value = auditLogBuilderThreadLocal.get();
         if(value == null) {

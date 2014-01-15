@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.org.domain;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -8,6 +9,7 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
+import javax.persistence.Cacheable;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -25,23 +27,32 @@ import javax.persistence.MapKeyColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
 import javax.persistence.Table;
+import javax.validation.constraints.Size;
+
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.org.dto.Organization;
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Where;
 import org.hibernate.search.annotations.DocumentId;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.dto.OrganizationAttribute;
+import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 
 @Entity
 @Table(name = "COMPANY")
+@Cacheable
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @DozerDTOCorrespondence(Organization.class)
-public class OrganizationEntity {
+public class OrganizationEntity implements Serializable {
     @Id
     @GeneratedValue(generator="system-uuid")
     @GenericGenerator(name="system-uuid", strategy = "uuid")
@@ -50,6 +61,7 @@ public class OrganizationEntity {
     private String id;
 
     @Column(name="ALIAS", length=100)
+    @Size(max = 100, message = "organization.alias.too.long")
     private String alias;
 
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "organization", fetch = FetchType.LAZY)
@@ -64,9 +76,11 @@ public class OrganizationEntity {
     private String createdBy;
 
     @Column(name="DESCRIPTION", length=100)
+    @Size(max = 100, message = "organization.description.too.long")
     private String description;
 
     @Column(name="DOMAIN_NAME", length=40)
+    @Size(max = 40, message = "organization.domain.name.too.long")
     private String domainName;
 
     @Column(name="LDAP_STR")
@@ -79,7 +93,8 @@ public class OrganizationEntity {
     private String lstUpdatedBy;
 
     @Column(name="COMPANY_NAME", length=200)
-    private String organizationName;
+    @Size(max = 200, message = "organization.name.too.long")
+    private String name;
 
     @Column(name="INTERNAL_COMPANY_ID")
     private String internalOrgId;
@@ -92,9 +107,11 @@ public class OrganizationEntity {
     private OrganizationTypeEntity organizationType;
 
     @Column(name="ABBREVIATION", length=20)
+    @Size(max = 20, message = "organization.abbreviation.too.long")
     private String abbreviation;
 
     @Column(name="SYMBOL", length=10)
+    @Size(max = 10, message = "organization.symbol.too.long")
     private String symbol;
     
 	@ManyToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
@@ -114,6 +131,14 @@ public class OrganizationEntity {
 	@ManyToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
     @JoinTable(name = "USER_AFFILIATION", joinColumns = { @JoinColumn(name = "COMPANY_ID") }, inverseJoinColumns = { @JoinColumn(name = "USER_ID") })
 	private Set<UserEntity> users;
+	
+	@ManyToOne(fetch = FetchType.EAGER,cascade={CascadeType.ALL})
+    @JoinColumn(name="ADMIN_RESOURCE_ID", referencedColumnName = "RESOURCE_ID", insertable = true, updatable = true, nullable=true)
+	private ResourceEntity adminResource;
+	
+	@OneToMany(cascade = {CascadeType.ALL}, fetch = FetchType.LAZY, mappedBy="associationEntityId", orphanRemoval=true)
+	@Where(clause="ASSOCIATION_TYPE='ORGANIZATION'")
+	private Set<ApproverAssociationEntity> approverAssociations;
 
     public OrganizationEntity() {
     }
@@ -198,13 +223,13 @@ public class OrganizationEntity {
         this.lstUpdatedBy = lstUpdatedBy;
     }
 
-    public String getOrganizationName() {
-        return organizationName;
-    }
+    public String getName() {
+		return name;
+	}
 
-    public void setOrganizationName(String organizationName) {
-        this.organizationName = organizationName;
-    }
+	public void setName(String name) {
+		this.name = name;
+	}
 
     public String getInternalOrgId() {
         return internalOrgId;
@@ -308,7 +333,33 @@ public class OrganizationEntity {
         this.users = users;
     }
 
-    @Override
+    public ResourceEntity getAdminResource() {
+		return adminResource;
+	}
+
+	public void setAdminResource(ResourceEntity adminResource) {
+		this.adminResource = adminResource;
+	}
+	
+	public Set<ApproverAssociationEntity> getApproverAssociations() {
+		return approverAssociations;
+	}
+
+	public void setApproverAssociations(
+			Set<ApproverAssociationEntity> approverAssociations) {
+		this.approverAssociations = approverAssociations;
+	}
+	
+	public void addApproverAssociation(final ApproverAssociationEntity entity) {
+		if(entity != null) {
+			if(this.approverAssociations == null) {
+				this.approverAssociations = new HashSet<ApproverAssociationEntity>();
+			}
+			this.approverAssociations.add(entity);
+		}
+	}
+
+	@Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
@@ -319,7 +370,7 @@ public class OrganizationEntity {
         if (createdBy != null ? !createdBy.equals(that.createdBy) : that.createdBy != null) return false;
         if (domainName != null ? !domainName.equals(that.domainName) : that.domainName != null) return false;
         if (id != null ? !id.equals(that.id) : that.id != null) return false;
-        if (organizationName != null ? !organizationName.equals(that.organizationName) : that.organizationName != null)
+        if (name != null ? !name.equals(that.name) : that.name != null)
             return false;
 
         return true;
@@ -331,7 +382,7 @@ public class OrganizationEntity {
         result = 31 * result + (createDate != null ? createDate.hashCode() : 0);
         result = 31 * result + (createdBy != null ? createdBy.hashCode() : 0);
         result = 31 * result + (domainName != null ? domainName.hashCode() : 0);
-        result = 31 * result + (organizationName != null ? organizationName.hashCode() : 0);
+        result = 31 * result + (name != null ? name.hashCode() : 0);
         return result;
     }
 }

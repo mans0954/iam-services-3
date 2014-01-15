@@ -57,7 +57,7 @@ public class OrganizationDAOImpl extends
 		final Criteria criteria = getCriteria();
 		if (StringUtils.isNotBlank(userId)) {
 			criteria.createAlias("users", "u").add(
-					Restrictions.eq("u.userId", userId));
+					Restrictions.eq("u.id", userId));
 		}
 
 		if (filter != null && !filter.isEmpty()) {
@@ -69,14 +69,14 @@ public class OrganizationDAOImpl extends
 	public List<OrganizationEntity> findRootOrganizations() {
 		final Criteria criteria = getCriteria().add(
 				Restrictions.isNull("parentId")).addOrder(
-				Order.asc("organizationName"));
+				Order.asc("name"));
 		// .setFetchMode("attributes", FetchMode.JOIN);
 		return criteria.list();
 	}
 
 	public List<OrganizationEntity> findAllOrganization() {
 		Criteria criteria = getCriteria().addOrder(
-				Order.asc("organizationName"));
+				Order.asc("name"));
 		// .setFetchMode("attributes", FetchMode.JOIN);
 		return criteria.list();
 	}
@@ -102,7 +102,7 @@ public class OrganizationDAOImpl extends
 
 			if (StringUtils.isNotBlank(organizationSearchBean.getUserId())) {
 				criteria.createAlias("users", "u").add(
-						Restrictions.eq("u.userId",
+						Restrictions.eq("u.id",
 								organizationSearchBean.getUserId()));
 			}
 
@@ -135,46 +135,40 @@ public class OrganizationDAOImpl extends
 		if (StringUtils.isNotBlank(organization.getId())) {
 			criteria.add(Restrictions.eq(getPKfieldName(), organization.getId()));
 		} else {
-			if (StringUtils.isNotEmpty(organization.getOrganizationName())) {
-				String organizationName = organization.getOrganizationName();
+			if (StringUtils.isNotEmpty(organization.getName())) {
+				String name = organization.getName();
 				MatchMode matchMode = null;
-				if (StringUtils.indexOf(organizationName, "*") == 0) {
+				if (StringUtils.indexOf(name, "*") == 0) {
 					matchMode = MatchMode.START;
-					organizationName = organizationName.substring(1);
+					name = name.substring(1);
 				}
-				if (StringUtils.isNotEmpty(organizationName)
-						&& StringUtils.indexOf(organizationName, "*") == organizationName
-								.length() - 1) {
-					organizationName = organizationName.substring(0,
-							organizationName.length() - 1);
-					matchMode = (matchMode == MatchMode.START) ? MatchMode.ANYWHERE
-							: MatchMode.END;
+				if (StringUtils.isNotEmpty(name) && StringUtils.indexOf(name, "*") == name.length() - 1) {
+					name = name.substring(0, name.length() - 1);
+					matchMode = (matchMode == MatchMode.START) ? MatchMode.ANYWHERE : MatchMode.END;
 				}
 
-				if (StringUtils.isNotEmpty(organizationName)) {
+				if (StringUtils.isNotEmpty(name)) {
 					if (matchMode != null) {
-						criteria.add(Restrictions.ilike("organizationName",
-								organizationName, matchMode));
+						criteria.add(Restrictions.ilike("name", name, matchMode));
 					} else {
-						criteria.add(Restrictions.eq("organizationName",
-								organizationName));
+						criteria.add(Restrictions.eq("name", name));
 					}
 				}
 			}
 
-			if (organization.getOrganizationType() != null
-					&& StringUtils.isNotBlank(organization
-							.getOrganizationType().getId())) {
-				criteria.add(Restrictions.eq("organizationType.id",
-						organization.getOrganizationType().getId()));
+			if (organization.getOrganizationType() != null && StringUtils.isNotBlank(organization.getOrganizationType().getId())) {
+				criteria.add(Restrictions.eq("organizationType.id", organization.getOrganizationType().getId()));
 			}
 
 			if (StringUtils.isNotBlank(organization.getInternalOrgId())) {
-				criteria.add(Restrictions.eq("internalOrgId",
-						organization.getInternalOrgId()));
+				criteria.add(Restrictions.eq("internalOrgId", organization.getInternalOrgId()));
+			}
+			
+			if(organization.getAdminResource() != null && StringUtils.isNotBlank(organization.getAdminResource().getId())) {
+				criteria.add(Restrictions.eq("adminResource.id", organization.getAdminResource().getId()));
 			}
 		}
-		criteria.addOrder(Order.asc("organizationName"));
+		criteria.addOrder(Order.asc("name"));
 		return criteria;
 	}
 
@@ -231,7 +225,7 @@ public class OrganizationDAOImpl extends
 		if (size > -1) {
 			criteria.setMaxResults(size);
 		}
-		criteria.addOrder(Order.asc("organizationName"));
+		criteria.addOrder(Order.asc("name"));
 		return criteria.list();
 	}
 

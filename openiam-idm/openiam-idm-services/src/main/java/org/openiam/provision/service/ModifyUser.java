@@ -1,37 +1,22 @@
 package org.openiam.provision.service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.id.UUIDGen;
-import org.openiam.dozer.converter.AddressDozerConverter;
-import org.openiam.dozer.converter.EmailAddressDozerConverter;
-import org.openiam.dozer.converter.LoginDozerConverter;
-import org.openiam.dozer.converter.PhoneDozerConverter;
-import org.openiam.dozer.converter.SupervisorDozerConverter;
-import org.openiam.dozer.converter.UserDozerConverter;
+import org.openiam.dozer.converter.*;
 import org.openiam.exception.EncryptionException;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
-import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
 import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.service.GroupDataService;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.service.OrganizationDataService;
@@ -49,6 +34,8 @@ import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.*;
 
 /**
  * Helper class for the modifyUser operation in the Provisioning Service.
@@ -136,7 +123,7 @@ public class ModifyUser {
 
             log.debug("- Adding original addressSet to the user object");
 
-            List<Address> addressList = addressDozerConverter.convertToDTOList(userMgr.getAddressList(user.getUserId()), true);
+            List<Address> addressList = addressDozerConverter.convertToDTOList(userMgr.getAddressList(user.getId()), true);
             if (addressList != null && !addressList.isEmpty()) {
 
                 user.setAddresses(new HashSet<Address>(addressList));
@@ -151,7 +138,7 @@ public class ModifyUser {
 
             log.debug("- Adding original emailSet to the user object");
 
-            List<EmailAddress> emailList = emailAddressDozerConverter.convertToDTOList(userMgr.getEmailAddressList(user.getUserId()), true);
+            List<EmailAddress> emailList = emailAddressDozerConverter.convertToDTOList(userMgr.getEmailAddressList(user.getId()), true);
             if (emailList != null && !emailList.isEmpty()) {
 
                 user.setEmailAddresses(new HashSet<EmailAddress>(emailList));
@@ -166,7 +153,7 @@ public class ModifyUser {
 
             log.debug("- Adding original phoneSet to the user object");
 
-            List<Phone> phoneList = phoneDozerConverter.convertToDTOList(userMgr.getPhoneList(user.getUserId()), true);
+            List<Phone> phoneList = phoneDozerConverter.convertToDTOList(userMgr.getPhoneList(user.getId()), true);
             if (phoneList != null && !phoneList.isEmpty()) {
 
                 user.setPhones(new HashSet<Phone>(phoneList));
@@ -181,7 +168,7 @@ public class ModifyUser {
 
             log.debug("- Adding original user attributes to the user object");
 
-            User u = userDozerConverter.convertToDTO(userMgr.getUser(user.getUserId()), true);
+            User u = userDozerConverter.convertToDTO(userMgr.getUser(user.getId()), true);
             if (u.getUserAttributes() != null) {
                 user.setUserAttributes(u.getUserAttributes());
             }
@@ -195,7 +182,7 @@ public class ModifyUser {
             log.debug("- Adding original affiliationList to the user object");
 
             List<Organization> userAffiliations = orgManager
-                    .getOrganizationsForUser(user.getUserId(), null, 0,Integer.MAX_VALUE);
+                    .getOrganizationsForUser(user.getId(), null, 0,Integer.MAX_VALUE);
             if (userAffiliations != null && !userAffiliations.isEmpty()) {
 
                 user.setAffiliations(new HashSet<Organization>(userAffiliations));
@@ -367,18 +354,18 @@ public class ModifyUser {
 
     }
 
-    private Group getGroup(String grpId, List<Group> origGroupList) {
+    private Group getGroup(String id, List<Group> origGroupList) {
         for (Group g : origGroupList) {
-            if (g.getGrpId().equalsIgnoreCase(grpId)) {
+            if (g.getId().equalsIgnoreCase(id)) {
                 return g;
             }
         }
         return null;
     }
 
-    private Role getRole(String roleId, List<Role> roleList) {
+    private Role getRole(String id, List<Role> roleList) {
         for (Role rl : roleList) {
-            if (rl.getRoleId().equals(roleId)) {
+            if (rl.getId().equals(id)) {
                 return rl;
             }
         }
@@ -598,7 +585,7 @@ public class ModifyUser {
             for (Group g : newGroupList) {
                 g.setOperation(AttributeOperationEnum.ADD);
                 groupList.add(g);
-                this.userMgr.addUserToGroup(g.getGrpId(), userId);
+                this.userMgr.addUserToGroup(g.getId(), userId);
             }
             return;
         }
@@ -617,12 +604,12 @@ public class ModifyUser {
         // else add with operation 2
         for (Group g : newGroupList) {
             if (g.getOperation() == AttributeOperationEnum.DELETE) {
-                log.debug("removing Group :" + g.getGrpId());
+                log.debug("removing Group :" + g.getId());
                 // get the email object from the original set of emails so that
                 // we can remove it
-                Group grp = getGroup(g.getGrpId(), origGroupList);
+                Group grp = getGroup(g.getId(), origGroupList);
                 if (grp != null) {
-                    this.userMgr.removeUserFromGroup(grp.getGrpId(),
+                    this.userMgr.removeUserFromGroup(grp.getId(),
                             userId);
                 }
                 groupList.add(grp);
@@ -631,13 +618,13 @@ public class ModifyUser {
                 // if it is - see if it has changed
                 // if it is not - add it.
                 log.debug("evaluate Group");
-                Group origGroup = getGroup(g.getGrpId(), origGroupList);
+                Group origGroup = getGroup(g.getId(), origGroupList);
                 if (origGroup == null) {
                     g.setOperation(AttributeOperationEnum.ADD);
                     groupList.add(g);
-                    userMgr.addUserToGroup(g.getGrpId(), userId);
+                    userMgr.addUserToGroup(g.getId(), userId);
                 } else {
-                    if (g.getGrpId().equals(origGroup.getGrpId())) {
+                    if (g.getId().equals(origGroup.getId())) {
                         // not changed
                         g.setOperation(AttributeOperationEnum.NO_CHANGE);
                         groupList.add(g);
@@ -648,7 +635,7 @@ public class ModifyUser {
         // if a value is in original list and not in the new list - then add it
         // on
         for (Group g : origGroupList) {
-            Group newGroup = getGroup(g.getGrpId(), newGroupList);
+            Group newGroup = getGroup(g.getId(), newGroupList);
             if (newGroup == null) {
                 g.setOperation(AttributeOperationEnum.NO_CHANGE);
                 groupList.add(g);
@@ -782,8 +769,7 @@ public class ModifyUser {
                             loginManager.changeIdentityName(newLg
                                     .getLogin(), newLg.getPassword(), newLg
                                     .getUserId(), newLg
-                                    .getManagedSysId(), newLg
-                                    .getDomainId());
+                                    .getManagedSysId());
                             principalList.add(newLg);
                         } else {
                             log.debug("Updating Identity in IDM repository");
@@ -826,8 +812,7 @@ public class ModifyUser {
                         }
                         loginManager.changeIdentityName(newLg
                                 .getLogin(), newLg.getPassword(), newLg
-                                .getUserId(), newLg.getManagedSysId(),
-                                newLg.getDomainId());
+                                .getUserId(), newLg.getManagedSysId());
                         // loginManager.addLogin(newLg);
 
                         // we cannot send the encrypted password to the
@@ -860,7 +845,7 @@ public class ModifyUser {
             return true;
         }
         for (Resource r : deleteResourceList) {
-        	final ManagedSysEntity mSys = managedSysService.getManagedSysByResource(r.getResourceId(), "ACTIVE");
+        	final ManagedSysEntity mSys = managedSysService.getManagedSysByResource(r.getId(), "ACTIVE");
             final String mSysId = (mSys != null) ? mSys.getManagedSysId() : null;
             if(StringUtils.equalsIgnoreCase(l.getManagedSysId(), mSysId)) {
                 return false;
@@ -950,7 +935,7 @@ public class ModifyUser {
                 rl.setOperation(AttributeOperationEnum.ADD);
                 roleList.add(rl);
 
-                roleDataService.addUserToRole(rl.getRoleId(), userId);
+                roleDataService.addUserToRole(rl.getId(), userId);
                 
                 /*
                 logList.add(auditHelper.createLogObject("ADD ROLE", pUser
@@ -988,9 +973,9 @@ public class ModifyUser {
             if (r.getOperation() == AttributeOperationEnum.DELETE) {
                 // get the email object from the original set of emails so that
                 // we can remove it
-                Role rl = getRole(r.getRoleId(), origRoleList);
+                Role rl = getRole(r.getId(), origRoleList);
                 if (rl != null) {
-                    roleDataService.removeUserFromRole(rl.getRoleId(), userId);
+                    roleDataService.removeUserFromRole(rl.getId(), userId);
                     /*
                     logList.add(auditHelper.createLogObject("REMOVE ROLE",
                             pUser.getRequestorDomain(), pUser.getUser()
@@ -1017,14 +1002,14 @@ public class ModifyUser {
                 // if it is - see if it has changed
                 // if it is not - add it.
 
-                Role origRole = getRole(r.getRoleId(), origRoleList);
+                Role origRole = getRole(r.getId(), origRoleList);
 
                 log.debug("OrigRole found=" + origRole);
 
                 if (origRole == null) {
                     r.setOperation(AttributeOperationEnum.ADD);
                     roleList.add(r);
-                    roleDataService.addUserToRole(r.getRoleId(), userId);
+                    roleDataService.addUserToRole(r.getId(), userId);
                     /*
                     logList.add(auditHelper.createLogObject("ADD ROLE", pUser.getUser()
                             .getRequestorDomain(), pUser.getRequestorLogin(),
@@ -1043,7 +1028,7 @@ public class ModifyUser {
                     log.debug("checking if no_change or replace");
                     // if (r.equals(origRole)) {
                     // UserRole uRole = userRoleAttrEq(r, currentUserRole);
-                    if (r.getRoleId().equals(origRole.getRoleId())
+                    if (r.getId().equals(origRole.getId())
                             && userRoleAttrEq(r, origRole)) {
                         // not changed
                         log.debug("- no_change ");
@@ -1060,7 +1045,7 @@ public class ModifyUser {
                         // r.getRoleId());
                        /* UserRoleEntity ur = getUserRole(r, currentUserRole);
                         if (ur == null) {*/
-                            roleDataService.addUserToRole(user.getUserId(),
+                            roleDataService.addUserToRole(user.getId(),
                                     userId);
                        // }
                         /*
@@ -1083,7 +1068,7 @@ public class ModifyUser {
         // if a value is in original list and not in the new list - then add it
         // on
         for (Role rl : origRoleList) {
-            Role newRole = getRole(rl.getRoleId(), newRoleList);
+            Role newRole = getRole(rl.getId(), newRoleList);
             if (newRole == null) {
                 rl.setOperation(AttributeOperationEnum.NO_CHANGE);
                 roleList.add(rl);
@@ -1123,19 +1108,19 @@ public class ModifyUser {
         }
         // check the current supervisor - if different - remove it and add the
         // new one.
-        List<SupervisorEntity> supervisorList = userMgr.getSupervisors(user.getUserId());
-        for (SupervisorEntity s : supervisorList) {
+        List<UserEntity> supervisorList = userMgr.getSuperiors(user.getId(), 0, Integer.MAX_VALUE);
+        for (UserEntity s : supervisorList) {
             log.debug("looking to match supervisor ids = "
-                    + s.getSupervisor().getUserId() + " "
-                    + supervisor.getSupervisor().getUserId());
-            if (s.getSupervisor().getUserId()
-                    .equalsIgnoreCase(supervisor.getSupervisor().getUserId())) {
+                    + s.getId() + " "
+                    + supervisor.getSupervisor().getId());
+            if (s.getId()
+                    .equalsIgnoreCase(supervisor.getSupervisor().getId())) {
                 return;
             }
-            userMgr.removeSupervisor(s.getOrgStructureId());
+            userMgr.removeSupervisor(s.getId(), user.getId());
         }
         log.debug("adding supervisor: "
-                + supervisor.getSupervisor().getUserId());
+                + supervisor.getSupervisor().getId());
         supervisor.setEmployee(user);
         final SupervisorEntity entity = supervisorDozerConverter.convertToEntity(supervisor, true);
         userMgr.addSupervisor(entity);
@@ -1298,9 +1283,7 @@ public class ModifyUser {
                     log.debug("- Evaluating delRl = " + delRl);
                     if (delRl != null) {
 
-                        if (!found
-                                && r.getRoleId().equalsIgnoreCase(
-                                        delRl.getRoleId())) {
+                        if (!found && r.getId().equalsIgnoreCase(delRl.getId())) {
                             found = true;
                         }
 
@@ -1315,112 +1298,103 @@ public class ModifyUser {
         return rList;
     }
 
-    /**
-     * If the user has selected roles that are in multiple domains, we need to make sure that they identities for
-     * each of these domains
-     *
-     * @param primaryIdentity
-     * @param roleList
-     */
+//    public void validateIdentitiesExistforSecurityDomain(Login primaryIdentity,
+//            List<Role> roleList) {
+//
+//        log.debug("validateIdentitiesExistforSecurityDomain");
+//
+//        List<LoginEntity> identityList = loginManager.getLoginByUser(primaryIdentity
+//                .getUserId());
+//        String managedSysId = primaryIdentity.getManagedSysId();
+//
+//        log.debug("Identitylist =" + identityList);
+//
+//        for (Role r : roleList) {
+//            String secDomain = r.getServiceId();
+//            if (!identityInDomain(secDomain, managedSysId, identityList)) {
+//
+//                log.debug("Adding identity to :" + secDomain);
+//
+//                addIdentity(secDomain, primaryIdentity);
+//            }
+//        }
+//
+//        // determine if we should remove an identity
+//        for (LoginEntity l : identityList) {
+//            if (l.getManagedSysId().equalsIgnoreCase(managedSysId)) {
+//                boolean found = false;
+//                for (Role r : roleList) {
+//                    if (r.getServiceId().equalsIgnoreCase(
+//                            l.getDomainId())) {
+//                        found = true;
+//                    }
+//
+//                }
+//                if (!found) {
+//                    if (l.getManagedSysId().equalsIgnoreCase("0")) {
+//                        // primary identity - do not delete. Just disable its
+//                        // status
+//                        log.debug("Primary identity - chagne its status");
+//                        l.setStatus(LoginStatusEnum.INACTIVE);
+//                        loginManager.updateLogin(l);
+//
+//                    } else {
+//
+//                        log.debug("Removing identity for  :" + l);
+//                        loginManager.removeLogin(l.getDomainId(), l
+//                                .getLogin(), l
+//                                .getManagedSysId());
+//                    }
+//                }
+//            }
+//
+//        }
+//
+//    }
 
-    public void validateIdentitiesExistforSecurityDomain(Login primaryIdentity,
-            List<Role> roleList) {
+//    private boolean identityInDomain(String secDomain, String managedSysId,
+//            List<LoginEntity> identityList) {
+//
+//        log.debug("IdentityinDomain =" + secDomain + "-" + managedSysId);
+//
+//        for (LoginEntity l : identityList) {
+//            if (l.getDomainId().equalsIgnoreCase(secDomain)
+//                    && l.getManagedSysId()
+//                            .equalsIgnoreCase(managedSysId)) {
+//                return true;
+//            }
+//
+//        }
+//        return false;
+//
+//    }
 
-        log.debug("validateIdentitiesExistforSecurityDomain");
-
-        List<LoginEntity> identityList = loginManager.getLoginByUser(primaryIdentity
-                .getUserId());
-        String managedSysId = primaryIdentity.getManagedSysId();
-
-        log.debug("Identitylist =" + identityList);
-
-        for (Role r : roleList) {
-            String secDomain = r.getServiceId();
-            if (!identityInDomain(secDomain, managedSysId, identityList)) {
-
-                log.debug("Adding identity to :" + secDomain);
-
-                addIdentity(secDomain, primaryIdentity);
-            }
-        }
-
-        // determine if we should remove an identity
-        for (LoginEntity l : identityList) {
-            if (l.getManagedSysId().equalsIgnoreCase(managedSysId)) {
-                boolean found = false;
-                for (Role r : roleList) {
-                    if (r.getServiceId().equalsIgnoreCase(
-                            l.getDomainId())) {
-                        found = true;
-                    }
-
-                }
-                if (!found) {
-                    if (l.getManagedSysId().equalsIgnoreCase("0")) {
-                        // primary identity - do not delete. Just disable its
-                        // status
-                        log.debug("Primary identity - chagne its status");
-                        l.setStatus(LoginStatusEnum.INACTIVE);
-                        loginManager.updateLogin(l);
-
-                    } else {
-
-                        log.debug("Removing identity for  :" + l);
-                        loginManager.removeLogin(l.getDomainId(), l
-                                .getLogin(), l
-                                .getManagedSysId());
-                    }
-                }
-            }
-
-        }
-
-    }
-
-    private boolean identityInDomain(String secDomain, String managedSysId,
-            List<LoginEntity> identityList) {
-
-        log.debug("IdentityinDomain =" + secDomain + "-" + managedSysId);
-
-        for (LoginEntity l : identityList) {
-            if (l.getDomainId().equalsIgnoreCase(secDomain)
-                    && l.getManagedSysId()
-                            .equalsIgnoreCase(managedSysId)) {
-                return true;
-            }
-
-        }
-        return false;
-
-    }
-
-    private void addIdentity(String secDomain, Login primaryIdentity) {
-        if (loginManager.getLoginByManagedSys(secDomain, primaryIdentity
-                .getLogin(), primaryIdentity.getManagedSysId()) == null) {
-
-        	LoginEntity newLg = new LoginEntity();
-            newLg.setDomainId(secDomain);
-            newLg.setLogin(primaryIdentity.getLogin());
-            newLg.setManagedSysId(primaryIdentity.getManagedSysId());
-            newLg.setAuthFailCount(0);
-            newLg.setFirstTimeLogin(primaryIdentity.getFirstTimeLogin());
-            newLg.setIsLocked(primaryIdentity.getIsLocked());
-            newLg.setLastAuthAttempt(primaryIdentity.getLastAuthAttempt());
-            newLg.setGracePeriod(primaryIdentity.getGracePeriod());
-            newLg.setPassword(primaryIdentity.getPassword());
-            newLg.setPasswordChangeCount(primaryIdentity
-                    .getPasswordChangeCount());
-            newLg.setStatus(primaryIdentity.getStatus());
-            newLg.setIsLocked(primaryIdentity.getIsLocked());
-            newLg.setUserId(primaryIdentity.getUserId());
-            newLg.setResetPassword(primaryIdentity.getResetPassword());
-
-            log.debug("Adding identity = " + newLg);
-
-            loginManager.addLogin(newLg);
-        }
-
-    }
+//    private void addIdentity(String secDomain, Login primaryIdentity) {
+//        if (loginManager.getLoginByManagedSys(primaryIdentity
+//                .getLogin(), primaryIdentity.getManagedSysId()) == null) {
+//
+//        	LoginEntity newLg = new LoginEntity();
+//            newLg.setLogin(primaryIdentity.getLogin());
+//            newLg.setManagedSysId(primaryIdentity.getManagedSysId());
+//            newLg.setAuthFailCount(0);
+//            newLg.setFirstTimeLogin(primaryIdentity.getFirstTimeLogin());
+//            newLg.setIsLocked(primaryIdentity.getIsLocked());
+//            newLg.setLastAuthAttempt(primaryIdentity.getLastAuthAttempt());
+//            newLg.setGracePeriod(primaryIdentity.getGracePeriod());
+//            newLg.setPassword(primaryIdentity.getPassword());
+//            newLg.setPasswordChangeCount(primaryIdentity
+//                    .getPasswordChangeCount());
+//            newLg.setStatus(primaryIdentity.getStatus());
+//            newLg.setIsLocked(primaryIdentity.getIsLocked());
+//            newLg.setUserId(primaryIdentity.getUserId());
+//            newLg.setResetPassword(primaryIdentity.getResetPassword());
+//
+//            log.debug("Adding identity = " + newLg);
+//
+//            loginManager.addLogin(newLg);
+//        }
+//
+//    }
 
     public List<Role> getRoleList() {
         return roleList;

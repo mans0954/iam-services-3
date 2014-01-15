@@ -105,8 +105,8 @@ public class ReconciliationConfigEntity implements java.io.Serializable {
     }
 
     public ReconciliationConfigEntity(String reconConfigId, String resourceId,  String managedSysId,
-            String mode, String frequency, String status,
-            Integer attributeLevelCheck, Integer updateChangedAttribute) {
+                                      String mode, String frequency, String status,
+                                      Integer attributeLevelCheck, Integer updateChangedAttribute) {
         this.reconConfigId = reconConfigId;
         this.resourceId = resourceId;
         this.managedSysId = managedSysId;

@@ -152,6 +152,7 @@
         <mysql.version>5.1.6</mysql.version>
         <testng.version>6.1.1</testng.version>
         <opensaml.version>2.4.1</opensaml.version>
+        <httpclient.version>4.3.1</httpclient.version>
         <xalan.serializer>2.7.1</xalan.serializer>
         <aopalliance.version>1.0</aopalliance.version>
         <asm.version>2.2.3</asm.version>

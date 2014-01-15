@@ -66,12 +66,11 @@ public class TestCrossEntityConversion extends AbstractTestNGSpringContextTests 
 	private void confirmSimple(final Resource resource, final ResourceEntity entity) {
 		Assert.assertEquals(resource.getDescription(), entity.getDescription());
 		Assert.assertEquals(resource.getDisplayOrder(), entity.getDisplayOrder());
-		Assert.assertEquals(resource.getDomain(), entity.getDomain());
 		Assert.assertEquals(resource.getIsPublic(), entity.getIsPublic());
 		//Assert.assertEquals(resource.getIsSSL(), entity.getIsSSL());
 		Assert.assertEquals(resource.getMinAuthLevel(), entity.getMinAuthLevel());
 		Assert.assertEquals(resource.getName(), entity.getName());
-		Assert.assertEquals(resource.getResourceId(), entity.getResourceId());
+		Assert.assertEquals(resource.getId(), entity.getId());
 		Assert.assertEquals(resource.getURL(), entity.getURL());
 		confirm(resource.getResourceType(), entity.getResourceType());
 	}
@@ -80,8 +79,7 @@ public class TestCrossEntityConversion extends AbstractTestNGSpringContextTests 
 		Assert.assertEquals(resourceType.getDescription(), entity.getDescription());
 		Assert.assertEquals(resourceType.getMetadataTypeId(), entity.getMetadataTypeId());
 		Assert.assertEquals(resourceType.getProcessName(), entity.getProcessName());
-		Assert.assertEquals(resourceType.getResourceTypeId(), entity.getResourceTypeId());
-		Assert.assertEquals(resourceType.getProvisionResource(), entity.getProvisionResource());
+		Assert.assertEquals(resourceType.getId(), entity.getId());
 	}
 	
 	private ResourceEntity createDeepResourceEntity() {
@@ -129,12 +127,11 @@ public class TestCrossEntityConversion extends AbstractTestNGSpringContextTests 
 		final ResourceEntity entity = new ResourceEntity();
 		entity.setDescription(rs(2));
 		entity.setDisplayOrder(3);
-		entity.setDomain(rs(2));
 		entity.setIsPublic(true);
 		//entity.setIsSSL(true);
 		entity.setMinAuthLevel(rs(2));
 		entity.setName(rs(2));
-		entity.setResourceId(rs(2));
+		entity.setId(rs(2));
 		entity.setResourceType(createResourceTypeEntity());
 		entity.setURL(rs(2));
 		return entity;
@@ -145,8 +142,7 @@ public class TestCrossEntityConversion extends AbstractTestNGSpringContextTests 
 		entity.setDescription(rs(2));
 		entity.setMetadataTypeId(rs(2));
 		entity.setProcessName(rs(2));
-		entity.setProvisionResource(2);
-		entity.setResourceTypeId(rs(2));
+		entity.setId(rs(2));
 		return entity;
 	}
 	

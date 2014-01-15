@@ -1,9 +1,12 @@
 package org.openiam.idm.srvc.org.dto;
 
+import java.io.Serializable;
 import java.util.HashMap;
 
 import org.apache.commons.lang.StringUtils;
+import org.openiam.base.AdminResourceDTO;
 import org.openiam.base.AttributeOperationEnum;
+import org.openiam.base.KeyNameDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
 
 import javax.xml.bind.annotation.*;
@@ -39,8 +42,6 @@ import org.openiam.idm.srvc.user.dto.User;
         "ldapStr",
         "lstUpdate",
         "lstUpdatedBy",
-        "id",
-        "organizationName",
         "organizationTypeId",
         "organizationTypeName",
         "internalOrgId",
@@ -53,11 +54,10 @@ import org.openiam.idm.srvc.user.dto.User;
         "childOrganizations"
 })
 @DozerDTOCorrespondence(OrganizationEntity.class)
-public class Organization implements java.io.Serializable, Comparable<Organization> {
+public class Organization extends AdminResourceDTO implements Serializable, Comparable<Organization> {
 
     private static final long serialVersionUID = -6297113958697455428L;
 
-    protected String id;
 
     protected String alias;
 
@@ -79,8 +79,6 @@ public class Organization implements java.io.Serializable, Comparable<Organizati
 
     protected String lstUpdatedBy;
 
-    protected String organizationName;
-
     protected String internalOrgId;
 
     protected String status;
@@ -99,6 +97,7 @@ public class Organization implements java.io.Serializable, Comparable<Organizati
 
     private Set<Organization> parentOrganizations;
     private Set<Organization> childOrganizations;
+    
     /**
      * default constructor
      */
@@ -267,34 +266,7 @@ public class Organization implements java.io.Serializable, Comparable<Organizati
         this.lstUpdatedBy = value;
     }
 
-
-    public String getId() {
-		return id;
-	}
-
-	public void setId(String id) {
-		this.id = id;
-	}
-
 	/**
-     * Gets the value of the organizationName property.
-     *
-     * @return possible object is {@link String }
-     */
-    public String getOrganizationName() {
-        return organizationName;
-    }
-
-    /**
-     * Sets the value of the organizationName property.
-     *
-     * @param value allowed object is {@link String }
-     */
-    public void setOrganizationName(String value) {
-        this.organizationName = value;
-    }
-
-    /**
      * Gets the value of the status property.
      *
      * @return possible object is {@link String }
@@ -369,10 +341,10 @@ public class Organization implements java.io.Serializable, Comparable<Organizati
 	}
 
 	public int compareTo(Organization o) {
-        if (getOrganizationName() == null || o == null) {
+        if (getName() == null || o == null) {
             return Integer.MIN_VALUE;
         }
-        return getOrganizationName().compareTo(o.getOrganizationName());
+        return getName().compareTo(o.getName());
     }
 
 	public String getOrganizationTypeId() {
@@ -407,7 +379,7 @@ public class Organization implements java.io.Serializable, Comparable<Organizati
         if (createdBy != null ? !createdBy.equals(that.createdBy) : that.createdBy != null) return false;
         if (domainName != null ? !domainName.equals(that.domainName) : that.domainName != null) return false;
         if (id != null ? !id.equals(that.id) : that.id != null) return false;
-        if (organizationName != null ? !organizationName.equals(that.organizationName) : that.organizationName != null)
+        if (name != null ? !name.equals(that.name) : that.name != null)
             return false;
 
         return true;
@@ -420,7 +392,7 @@ public class Organization implements java.io.Serializable, Comparable<Organizati
         result = 31 * result + (createdBy != null ? createdBy.hashCode() : 0);
         result = 31 * result + (domainName != null ? domainName.hashCode() : 0);
         result = 31 * result + (createDate != null ? createDate.hashCode() : 0);
-        result = 31 * result + (organizationName != null ? organizationName.hashCode() : 0);
+        result = 31 * result + (name != null ? name.hashCode() : 0);
         return result;
     }
 }

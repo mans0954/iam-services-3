@@ -8,7 +8,9 @@ import java.util.Set;
 
 import org.activiti.engine.delegate.DelegateExecution;
 import org.apache.commons.collections.CollectionUtils;
+import org.openiam.bpm.activiti.delegate.core.AbstractNotificationDelegate;
 import org.openiam.bpm.util.ActivitiConstants;
+import org.openiam.bpm.util.ActivitiRequestType;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.msg.dto.NotificationParam;
 import org.openiam.idm.srvc.msg.dto.NotificationRequest;
@@ -17,21 +19,61 @@ import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.service.UserDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 
-public class AcceptEntitlementsNotifierDelegate extends AbstractEntitlementsDelegate {
-
-	@Autowired
-	private UserDAO userDAO;
+public class AcceptEntitlementsNotifierDelegate extends AbstractNotificationDelegate {
 	
-	private static Map<String, String> NOTIFICATION_MAP = new HashMap<String, String>();
+	private static final Map<ActivitiRequestType, String> NOTIFICATION_MAP = new HashMap<ActivitiRequestType, String>();
 	static {
-		NOTIFICATION_MAP.put("ADD_USER_TO_ROLE", "ADD_USER_TO_ROLE_ACCEPT_NOTIFY");
-		NOTIFICATION_MAP.put("REMOVE_USER_FROM_ROLE", "REMOVE_USER_FROM_ROLE_ACCEPT_NOTIFY");
-		NOTIFICATION_MAP.put("ADD_USER_TO_GROUP", "ADD_USER_TO_GROUP_ACCEPT_NOTIFY");
-		NOTIFICATION_MAP.put("REMOVE_USER_FROM_GROUP", "REMOVE_USER_FROM_GROUP_ACCEPT_NOTIFY");
-		NOTIFICATION_MAP.put("ENTITLE_USER_TO_RESOURCE", "ENTITLE_USER_TO_RESOURCE_ACCEPT_NOTIFY");
-		NOTIFICATION_MAP.put("DISENTITLE_USER_FROM_RESOURCE", "DISENTITLE_USER_FROM_RESOURCE_ACCEPT_NOTIFY");
-		NOTIFICATION_MAP.put("DELETE_LOGIN", "DELETE_LOGIN_ACCEPT_NOTIFY");
-		NOTIFICATION_MAP.put("ADD_UPDATE_LOGIN", "ADD_UPDATE_LOGIN_ACCEPT_NOTIFY");
+		NOTIFICATION_MAP.put(ActivitiRequestType.ADD_USER_TO_ROLE, "ADD_USER_TO_ROLE_ACCEPT_NOTIFY");
+		NOTIFICATION_MAP.put(ActivitiRequestType.REMOVE_USER_FROM_ROLE, "REMOVE_USER_FROM_ROLE_ACCEPT_NOTIFY");
+		NOTIFICATION_MAP.put(ActivitiRequestType.ADD_USER_TO_GROUP, "ADD_USER_TO_GROUP_ACCEPT_NOTIFY");
+		NOTIFICATION_MAP.put(ActivitiRequestType.REMOVE_USER_FROM_GROUP, "REMOVE_USER_FROM_GROUP_ACCEPT_NOTIFY");
+		NOTIFICATION_MAP.put(ActivitiRequestType.ENTITLE_USER_TO_RESOURCE, "ENTITLE_USER_TO_RESOURCE_ACCEPT_NOTIFY");
+		NOTIFICATION_MAP.put(ActivitiRequestType.DISENTITLE_USR_FROM_RESOURCE, "DISENTITLE_USER_FROM_RESOURCE_ACCEPT_NOTIFY");
+		
+		NOTIFICATION_MAP.put(ActivitiRequestType.REMOVE_SUPERIOR, "REMOVE_SUPERIOR_ACCEPT");
+		NOTIFICATION_MAP.put(ActivitiRequestType.ADD_SUPERIOR, "ADD_SUPERIOR_ACCEPT");
+		NOTIFICATION_MAP.put(ActivitiRequestType.DELETE_LOGIN, "DELETE_LOGIN_ACCEPT_NOTIFY");
+		NOTIFICATION_MAP.put(ActivitiRequestType.SAVE_LOGIN, "ADD_UPDATE_LOGIN_ACCEPT_NOTIFY");
+		
+		NOTIFICATION_MAP.put(ActivitiRequestType.ADD_USER_TO_ORG, "ADD_USER_TO_ORG_ACCEPT_NOTIFY");
+		NOTIFICATION_MAP.put(ActivitiRequestType.REMOVE_USER_FROM_ORG, "REMOVE_USER_FROM_ORG_ACCEPT_NOTIFY");
+		
+		NOTIFICATION_MAP.put(ActivitiRequestType.EDIT_USER, "EDIT_USER_NOTIFY_ACCEPT");
+		
+		NOTIFICATION_MAP.put(ActivitiRequestType.EDIT_RESOURCE, "EDIT_RESOURCE_ACCEPT");
+		NOTIFICATION_MAP.put(ActivitiRequestType.DELETE_RESOURCE, "DELETE_RESOURCE_ACCEPT");
+		NOTIFICATION_MAP.put(ActivitiRequestType.NEW_RESOURCE, "NEW_RESOURCE_ACCEPT");
+		
+		NOTIFICATION_MAP.put(ActivitiRequestType.NEW_GROUP, "NEW_GROUP_ACCEPT");
+		NOTIFICATION_MAP.put(ActivitiRequestType.EDIT_GROUP, "EDIT_GROUP_ACCEPT");
+		NOTIFICATION_MAP.put(ActivitiRequestType.DELETE_GROUP, "DELETE_GROUP_ACCEPT");
+		
+		NOTIFICATION_MAP.put(ActivitiRequestType.NEW_ROLE, "NEW_ROLE_ACCEPT");
+		NOTIFICATION_MAP.put(ActivitiRequestType.EDIT_ROLE, "EDIT_ROLE_ACCEPT");
+		NOTIFICATION_MAP.put(ActivitiRequestType.DELETE_ROLE, "DELETE_ROLE_ACCEPT");
+		
+		NOTIFICATION_MAP.put(ActivitiRequestType.NEW_ORGANIZATION, "NEW_ORGANIZTION_ACCEPT");
+		NOTIFICATION_MAP.put(ActivitiRequestType.EDIT_ORGANIZATION, "EDIT_ORGANIZTION_ACCEPT");
+		NOTIFICATION_MAP.put(ActivitiRequestType.DELETE_ORGANIZATION, "DELETE_ORGANIZATION_ACCEPT");
+		
+		NOTIFICATION_MAP.put(ActivitiRequestType.SELF_REGISTRATION, "REQUEST_APPROVED");
+		NOTIFICATION_MAP.put(ActivitiRequestType.NEW_HIRE_WITH_APPROVAL, "REQUEST_APPROVED");
+		NOTIFICATION_MAP.put(ActivitiRequestType.NEW_HIRE_NO_APPROVAL, "REQUEST_APPROVED");
+		
+		
+		NOTIFICATION_MAP.put(ActivitiRequestType.ADD_GROUP_TO_GROUP, "ADD_GROUP_TO_GROUP_APPROVED");
+		NOTIFICATION_MAP.put(ActivitiRequestType.ADD_ROLE_TO_GROUP, "ADD_ROLE_TO_GROUP_APPROVED");
+		NOTIFICATION_MAP.put(ActivitiRequestType.ENTITLE_RESOURCE_TO_GROUP, "ENTITLE_RESOURCE_TO_GROUP_APPROVED");
+		NOTIFICATION_MAP.put(ActivitiRequestType.ADD_ROLE_TO_ROLE, "ADD_ROLE_TO_ROLE_APPROVED");
+		NOTIFICATION_MAP.put(ActivitiRequestType.ENTITLE_RESOURCE_TO_ROLE, "ENTITLE_RESOURCE_TO_ROLE_APPROVED");
+		NOTIFICATION_MAP.put(ActivitiRequestType.ADD_RESOURCE_TO_RESOURCE, "ADD_RESOURCE_TO_RESOURCE_APPROVED");
+		
+		NOTIFICATION_MAP.put(ActivitiRequestType.REMOVE_GROUP_FROM_GROUP, "REMOVE_GROUP_FROM_GROUP_APPROVED");
+		NOTIFICATION_MAP.put(ActivitiRequestType.REMOVE_ROLE_FROM_GROUP, "REMOVE_ROLE_FROM_GROUP_APPROVED");
+		NOTIFICATION_MAP.put(ActivitiRequestType.DISENTITLE_RESOURCE_FROM_GROUP, "DISENTITLE_RESOURCE_FROM_GROUP_APPROVED");
+		NOTIFICATION_MAP.put(ActivitiRequestType.REMOVE_ROLE_FROM_ROLE, "REMOVE_ROLE_FROM_ROLE_APPROVED");
+		NOTIFICATION_MAP.put(ActivitiRequestType.DISENTITLE_RESOURCE_FROM_ROLE, "DISENTITLE_RESOURCE_FROM_ROLE_APPROVED");
+		NOTIFICATION_MAP.put(ActivitiRequestType.REMOVE_RESOURCE_FROM_RESOURCE, "REMOVE_RESOURCE_FROM_RESOURCE_APPROVED");
 	}
 	
 	public AcceptEntitlementsNotifierDelegate() {
@@ -43,35 +85,31 @@ public class AcceptEntitlementsNotifierDelegate extends AbstractEntitlementsDele
 	public void execute(DelegateExecution execution) throws Exception {
 		final Set<String> userIds = new HashSet<String>();
 		
-		final String taskName = (String)execution.getVariable(ActivitiConstants.TASK_NAME);
-		final String taskDescription = (String)execution.getVariable(ActivitiConstants.TASK_DESCRIPTION);
-		final String comment = (String)execution.getVariable(ActivitiConstants.COMMENT);
-		final String targetUserId = (String)execution.getVariable(ActivitiConstants.MEMBER_ASSOCIATION_ID);
-		final UserEntity targetUser = userDAO.findById(targetUserId);
+		final String targetUserId = getTargetUserId(execution);
+		final UserEntity targetUser = getUserEntity(targetUserId);
 		
-		final String taskOwner = (String)execution.getVariable(ActivitiConstants.TASK_OWNER);
-		final UserEntity owner = userDAO.findById(taskOwner);
-		
+		final String taskOwner = getRequestorId(execution);
 		userIds.add(taskOwner);
-		
-		final List<ApproverAssociationEntity> approverAssociationEntities = getApproverAssociations(execution);
-		if(CollectionUtils.isNotEmpty(approverAssociationEntities)) {
-			for(final ApproverAssociationEntity association : approverAssociationEntities) {
-				userIds.addAll(getNotifyUserIds(association.getOnRejectEntityType(), association.getOnRejectEntityId(), targetUserId));
-			}
-		}
+		userIds.add(targetUserId);
+		userIds.addAll(activitiHelper.getOnAcceptUserIds(execution, targetUserId, null));
 		
 		for(final String toNotifyUserId : userIds) {
-			final UserEntity toNotify = userDAO.findById(toNotifyUserId);
+			final UserEntity toNotify = getUserEntity(toNotifyUserId);
 			if(toNotify != null) {
-				sendNotification(toNotify, owner, targetUser, comment, taskName, taskDescription);
+				sendNotification(toNotify, targetUser, execution);
 			}
 		}
 	}
-
+	
 	@Override
-	protected String getNotificationType() {
-		return NOTIFICATION_MAP.get(getOperation());
+	protected String getNotificationType(final DelegateExecution execution) {
+		String operation = super.getNotificationType(execution);
+		if(operation == null) {
+			final ActivitiRequestType requestType = getRequestType(execution);
+			if(requestType != null) {
+				operation = NOTIFICATION_MAP.get(requestType);
+			}
+		}
+		return operation;
 	}
-
 }

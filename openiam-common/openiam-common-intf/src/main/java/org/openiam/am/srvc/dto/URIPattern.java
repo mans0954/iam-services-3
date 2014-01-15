@@ -21,7 +21,8 @@ import java.util.Set;
         "resourceId",
         "resourceName",
         "metaEntitySet",
-        "pageTemplates"
+        "pageTemplates",
+        "themeId"
 })
 @DozerDTOCorrespondence(URIPatternEntity.class)
 public class URIPattern implements Serializable {
@@ -36,6 +37,8 @@ public class URIPattern implements Serializable {
     private String resourceName;
 	private Set<URIPatternMeta> metaEntitySet;
 	private Set<MetadataElementPageTemplate> pageTemplates;
+	private String themeId;
+	
 	public String getId() {
 		return id;
 	}
@@ -99,21 +102,24 @@ public class URIPattern implements Serializable {
 	public void setContentProviderName(String contentProviderName) {
 		this.contentProviderName = contentProviderName;
 	}
+	
+	public String getThemeId() {
+		return themeId;
+	}
+	public void setThemeId(String themeId) {
+		this.themeId = themeId;
+	}
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result
-				+ ((authLevel == null) ? 0 : authLevel.hashCode());
-		result = prime
-				* result
-				+ ((contentProviderId == null) ? 0 : contentProviderId
-						.hashCode());
+		result = prime * result + ((authLevel == null) ? 0 : authLevel.hashCode());
+		result = prime * result + ((contentProviderId == null) ? 0 : contentProviderId.hashCode());
 		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		result = prime * result + (isPublic ? 1231 : 1237);
 		result = prime * result + ((pattern == null) ? 0 : pattern.hashCode());
-		result = prime * result
-				+ ((resourceId == null) ? 0 : resourceId.hashCode());
+		result = prime * result + ((resourceId == null) ? 0 : resourceId.hashCode());
+		result = prime * result + ((themeId == null) ? 0 : themeId.hashCode());
 		return result;
 	}
 	@Override
@@ -151,6 +157,12 @@ public class URIPattern implements Serializable {
 			if (other.resourceId != null)
 				return false;
 		} else if (!resourceId.equals(other.resourceId))
+			return false;
+		
+		if (themeId == null) {
+			if (other.themeId != null)
+				return false;
+		} else if (!themeId.equals(other.themeId))
 			return false;
 		return true;
 	}

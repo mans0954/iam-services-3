@@ -310,7 +310,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
             // all the provisioning service
             for ( User user :  searchResult) {
 
-                log.debug("Migrating user: " + user.getUserId() + " " + user.getLastName());
+                log.debug("Migrating user: " + user.getId() + " " + user.getLastName());
 
                 ProvisionUser pUser = new ProvisionUser(user);
 
@@ -337,7 +337,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
                     Set<Resource> resourceSet = new HashSet<Resource>();
 
                     Resource resource = new Resource();
-                    resource.setResourceId(config.getTargetResource());
+                    resource.setId(config.getTargetResource());
 
                     if ("ADD".equalsIgnoreCase(config.getOperation())) {
                         // add to resourceList
@@ -421,7 +421,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
             roleId = st.nextToken();
         }
         Role r = new Role();
-        r.setRoleId(roleId);
+        r.setId(roleId);
 
         return r;
     }
@@ -440,7 +440,6 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
 
             searchResult = userDozerConverter.convertToDTOList(userManager.findBeans(searchBean), true);
 
-
             if (searchResult == null) {
                 resp.setStatus(ResponseStatus.FAILURE);
                 return resp;
@@ -448,12 +447,12 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
 
             // create role object to show role membership
             Role rl = new Role();
-            rl.setRoleId(roleId);
+            rl.setId(roleId);
 
             // all the provisioning service
             for ( User user :  searchResult) {
 
-                log.debug("Updating the user since this role's configuration has changed.: " + user.getUserId() + " " + user.getLastName());
+                log.debug("Updating the user since this role's configuration has changed.: " + user.getId() + " " + user.getLastName());
 
                 ProvisionUser pUser = new ProvisionUser(user);
 

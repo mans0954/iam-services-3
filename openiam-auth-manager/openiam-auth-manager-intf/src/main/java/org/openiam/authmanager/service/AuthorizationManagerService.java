@@ -14,6 +14,7 @@ import org.openiam.authmanager.model.ResourceEntitlementToken;
 
 public interface AuthorizationManagerService {
 
+	public boolean isEntitled(final String userId, final String resourceId);
 	public boolean isEntitled(final String userId, final AuthorizationResource resource);
 	public boolean isEntitled(final AuthorizationManagerLoginId loginId, final AuthorizationResource resource);
 	public boolean isMemberOf(final String userId, final AuthorizationGroup group);

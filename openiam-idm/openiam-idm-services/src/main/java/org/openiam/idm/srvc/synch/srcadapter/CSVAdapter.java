@@ -32,7 +32,7 @@ import org.openiam.base.id.UUIDGen;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.idm.srvc.audit.constant.AuditAction;
+
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
 import org.openiam.idm.srvc.audit.domain.AuditLogBuilder;
 import org.openiam.idm.srvc.audit.service.AuditLogProvider;
@@ -307,11 +307,11 @@ public class CSVAdapter extends AbstractSrcAdapter {
                         // initialize the transform script
                         if (usr != null) {
                             transformScript.setNewUser(false);
-                            User u = userManager.getUserDto(usr.getUserId());
+                            User u = userManager.getUserDto(usr.getId());
                             pUser = new ProvisionUser(u);
                             transformScript.setUser(u);
-                            transformScript.setPrincipalList(loginDozerConverter.convertToDTOList(loginManager.getLoginByUser(usr.getUserId()), false));
-                            transformScript.setUserRoleList(roleDataService.getUserRolesAsFlatList(usr.getUserId()));
+                            transformScript.setPrincipalList(loginDozerConverter.convertToDTOList(loginManager.getLoginByUser(usr.getId()), false));
+                            transformScript.setUserRoleList(roleDataService.getUserRolesAsFlatList(usr.getId()));
 
                         } else {
                             transformScript.setNewUser(true);
@@ -335,13 +335,13 @@ public class CSVAdapter extends AbstractSrcAdapter {
                     if (retval == TransformScript.DELETE && pUser.getUser() != null) {
                         auditLogBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "User login: "+(pUser.getFirstName()+" "+pUser.getLastName())+" [REMOVED]");
                         auditLogProvider.persist(auditLogBuilder);
-                        provService.deleteByUserId(pUser.getUserId(), UserStatusEnum.REMOVE, systemAccount);
+                        provService.deleteByUserId(pUser.getId(), UserStatusEnum.REMOVE, systemAccount);
                     } else {
                         // call synch
                         if (retval != TransformScript.DELETE) {
                             if (usr != null) {
                                 log.info(" - Updating existing user");
-                                pUser.setUserId(usr.getUserId());
+                                pUser.setId(usr.getId());
                                 try {
                                     provService.modifyUser(pUser);
                                 } catch (Exception e) {
@@ -353,7 +353,7 @@ public class CSVAdapter extends AbstractSrcAdapter {
                             //    auditLogProvider.persist(auditLogBuilder);
                             } else {
                                 log.info(" - New user being provisioned");
-                                pUser.setUserId(null);
+                                pUser.setId(null);
                                 try {
                                     provService.addUser(pUser);
                                 } catch (Exception e) {

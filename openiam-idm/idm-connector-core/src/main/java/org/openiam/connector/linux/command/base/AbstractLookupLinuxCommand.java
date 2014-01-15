@@ -8,16 +8,19 @@ import org.openiam.connector.type.response.SearchResponse;
 import org.openiam.connector.linux.ssh.SSHAgent;
 import org.openiam.provision.type.ExtensibleObject;
 
-public abstract class AbstractLookupLinuxCommand<ExtObject extends ExtensibleObject> extends AbstractLinuxCommand<LookupRequest<ExtObject>, SearchResponse>  {
+public abstract class AbstractLookupLinuxCommand<ExtObject extends ExtensibleObject>
+        extends AbstractLinuxCommand<LookupRequest<ExtObject>, SearchResponse> {
     @Override
-    public SearchResponse execute(LookupRequest<ExtObject> lookupRequest) throws ConnectorDataException {
+    public SearchResponse execute(LookupRequest<ExtObject> lookupRequest)
+            throws ConnectorDataException {
         SearchResponse responseType = new SearchResponse();
         responseType.setRequestID(lookupRequest.getRequestID());
         responseType.setStatus(StatusCodeType.SUCCESS);
 
         SSHAgent ssh = getSSHAgent(lookupRequest.getTargetID());
         try {
-            if(!lookupObject(lookupRequest.getSearchValue(), ssh))
+            if (!lookupObject(lookupRequest.getSearchValue(), ssh,
+                    responseType, lookupRequest.getTargetID()))
                 throw new ConnectorDataException(ErrorCode.NO_SUCH_IDENTIFIER);
 
             return responseType;
@@ -29,5 +32,7 @@ public abstract class AbstractLookupLinuxCommand<ExtObject extends ExtensibleObj
         }
     }
 
-    protected abstract boolean lookupObject(String id, SSHAgent ssh) throws ConnectorDataException;
+    protected abstract boolean lookupObject(String id, SSHAgent ssh,
+            SearchResponse responseType, String mSysId)
+            throws ConnectorDataException;
 }

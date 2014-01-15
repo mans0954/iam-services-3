@@ -1,16 +1,5 @@
 package org.openiam.authmanager.service.impl;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
-
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.StopWatch;
@@ -29,6 +18,10 @@ import org.openiam.authmanager.service.AuthorizationManagerAdminService;
 import org.openiam.authmanager.service.AuthorizationManagerMenuService;
 import org.openiam.authmanager.service.AuthorizationManagerService;
 import org.openiam.authmanager.ws.request.MenuEntitlementsRequest;
+import org.openiam.idm.srvc.audit.constant.AuditAction;
+import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
+import org.openiam.idm.srvc.audit.domain.AuditLogBuilder;
+import org.openiam.idm.srvc.base.AbstractBaseService;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.service.GroupDAO;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
@@ -48,9 +41,11 @@ import org.springframework.jmx.export.annotation.ManagedOperation;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.*;
+
 @Service("authorizationManagerMenuService")
 //@ManagedResource(objectName="org.openiam.authorization.manager:name=authorizationManagerMenuService")
-public class AuthorizationManagerMenuServiceImpl implements AuthorizationManagerMenuService, InitializingBean, ApplicationContextAware, Sweepable/*, Runnable*/ {
+public class AuthorizationManagerMenuServiceImpl extends AbstractBaseService implements AuthorizationManagerMenuService, InitializingBean, ApplicationContextAware, Sweepable/*, Runnable*/ {
 
 	private ApplicationContext ctx;
 	
@@ -61,6 +56,7 @@ public class AuthorizationManagerMenuServiceImpl implements AuthorizationManager
 	private Map<String, AuthorizationMenu> menuCache;
 	private Map<String, AuthorizationMenu> menuNameCache;
 	private Map<String, AuthorizationMenu> urlCache;
+	private Map<String, AuthorizationMenu> urlIdCache;
 	
 	@Autowired
 	@Qualifier("jdbcResourceResourceXrefDAO")
@@ -206,7 +202,12 @@ public class AuthorizationManagerMenuServiceImpl implements AuthorizationManager
 		return tempMenuTreeMap;
 	}
 	
-	@ManagedOperation(description="sweep the Menu Cache")
+	private String getURLCacheId(final String id, final String url) {
+		return String.format("%s:%s", id, url);
+	}
+	
+	@Override
+    @ManagedOperation(description="sweep the Menu Cache")
 	public void sweep() {
 		final StopWatch sw = new StopWatch();
 		sw.start();
@@ -217,15 +218,21 @@ public class AuthorizationManagerMenuServiceImpl implements AuthorizationManager
 			tempMenuNameMap.put(menu.getName(), menu);
 		}
 		
-		final Map<String, AuthorizationMenu> tempURLCache = new HashMap<String, AuthorizationMenu>();
+		final Map<String, AuthorizationMenu> tempURLIDCache = new HashMap<String, AuthorizationMenu>();
 		for(final AuthorizationMenu menu : tempMenuTreeMap.values()) {
-			tempURLCache.put(menu.getUrl(), menu);
+			tempURLIDCache.put(getURLCacheId(menu.getId(), menu.getUrl()), menu);
+		}
+		
+		final Map<String, AuthorizationMenu> tempUrlCache = new HashMap<String, AuthorizationMenu>();
+		for(final AuthorizationMenu menu : tempMenuTreeMap.values()) {
+			tempUrlCache.put(menu.getUrl(), menu);
 		}
 		
 		synchronized(this) {
 			menuCache = tempMenuTreeMap;
 			menuNameCache = tempMenuNameMap;
-			urlCache = tempURLCache;
+			urlIdCache = tempURLIDCache;
+			urlCache = tempUrlCache;
 		}
 		sw.stop();
 		log.debug(String.format("Done creating menu trees. Took: %s ms", sw.getTime()));
@@ -303,16 +310,18 @@ public class AuthorizationManagerMenuServiceImpl implements AuthorizationManager
 	}
 
 	@Override
-	public AuthorizationMenu getMenuTree(final String menuRoot, final String domain, final String login, final String managedSysId) {
-		return getMenu(menuCache.get(menuRoot), null, new AuthorizationManagerLoginId(domain, login, managedSysId));
+	public AuthorizationMenu getMenuTree(final String menuRoot, final String login, final String managedSysId) {
+		return getMenu(menuCache.get(menuRoot), null, new AuthorizationManagerLoginId(login, managedSysId));
 	}
 	
-	public AuthorizationMenu getMenuTreeByName(final String menuRoot, final String userId) {
+	@Override
+    public AuthorizationMenu getMenuTreeByName(final String menuRoot, final String userId) {
 		return getMenu(menuNameCache.get(menuRoot), userId, null);
 	}
 	
-	public AuthorizationMenu getMenuTreeByName(final String menuRoot, final String domain, final String login, final String managedSysId) {
-		return getMenu(menuNameCache.get(menuRoot), null, new AuthorizationManagerLoginId(domain, login, managedSysId));
+	@Override
+    public AuthorizationMenu getMenuTreeByName(final String menuRoot, final String login, final String managedSysId) {
+		return getMenu(menuNameCache.get(menuRoot), null, new AuthorizationManagerLoginId(login, managedSysId));
 	}
 	
 	private AuthorizationMenu getMenu(final AuthorizationMenu menu, final String userId, final AuthorizationManagerLoginId loginId) {
@@ -517,17 +526,28 @@ public class AuthorizationManagerMenuServiceImpl implements AuthorizationManager
     }
 
 	@Override
-	public boolean isUserAuthenticatedToMenuWithURL(final String userId, final String url, final boolean defaultResult) {
+	public boolean isUserAuthenticatedToMenuWithURL(final String userId, final String url, final String menuId, final boolean defaultResult) {
 		boolean retVal = defaultResult;
-		final AuthorizationMenu menu = urlCache.get(url);
-		if(menu != null) {
-			if(menu.getIsPublic()) {
-				retVal = true;
-			} else {
-				final AuthorizationResource resource = new AuthorizationResource();
-				resource.setId(menu.getId());
-				retVal = authManager.isEntitled(userId, resource);
+		final AuditLogBuilder builder = auditLogProvider.getAuditLogBuilder().setAction(AuditAction.MENU_AUTHORIZATON).setTargetUser(userId).setURL(url).addAttribute(AuditAttributeName.MENU_ID, menuId);
+		final AuthorizationMenu menu = StringUtils.isNotBlank(menuId) ? urlIdCache.get(getURLCacheId(menuId, url)) : urlCache.get(url);
+		try {
+			if(menu != null) {
+				if(menu.getIsPublic()) {
+					builder.setSuccessReason("Is Public");
+					retVal = true;
+				} else {
+					final AuthorizationResource resource = new AuthorizationResource();
+					resource.setId(menu.getId());
+					retVal = authManager.isEntitled(userId, resource);
+				}
 			}
+			if(retVal) {
+				builder.succeed();
+			} else {
+				builder.fail().setFailureReason("Unauthorized");
+			}
+		} finally {
+			auditLogService.enqueue(builder);
 		}
 		return retVal;
 	}

@@ -2,6 +2,7 @@ package org.openiam.idm.srvc.res.service;
 
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.ResourceSearchBean;
+import org.openiam.idm.searchbeans.ResourceTypeSearchBean;
 import org.openiam.idm.srvc.res.dto.*;
 import org.openiam.idm.srvc.role.dto.Role;
 
@@ -12,7 +13,23 @@ import java.util.List;
 
 @WebService(targetNamespace = "urn:idm.openiam.org/srvc/res/service", name = "ResourceDataWebService")
 public interface ResourceDataService {
+	
+	@WebMethod
+	Response validateDelete(final @WebParam(name = "resourceId", targetNamespace = "") String resourceId);
 
+	/**
+	 * Validate if the resource can be created
+	 * @param resource - the Resource
+	 * @return
+	 */
+	@WebMethod
+	Response validateEdit(final @WebParam(name = "resource", targetNamespace = "") Resource resource);
+	
+	/**
+	 * Deletes a Resoruce
+	 * @param resourceId - the resource id
+	 * @return
+	 */
 	@WebMethod
 	Response deleteResource(
 			@WebParam(name = "resourceId", targetNamespace = "") final String resourceId);
@@ -26,7 +43,8 @@ public interface ResourceDataService {
 	 */
 	@WebMethod
 	Response saveResource(
-			@WebParam(name = "resource", targetNamespace = "") Resource resource);
+			final @WebParam(name = "resource", targetNamespace = "") Resource resource, 
+			final @WebParam(name = "userId", targetNamespace = "") String requestorId);
 
 	/**
 	 * Find a resource.
@@ -46,6 +64,9 @@ public interface ResourceDataService {
 	 */
 	@WebMethod
 	List<ResourceType> getAllResourceTypes();
+	
+	@WebMethod
+	public List<ResourceType> findResourceTypes(final ResourceTypeSearchBean searchBean, final int from, final int size);
 
 	/**
 	 * Add a resource property.
@@ -108,7 +129,8 @@ public interface ResourceDataService {
 	 */
 	@WebMethod
 	int getNumOfResourcesForRole(
-			@WebParam(name = "roleId", targetNamespace = "") String roleId);
+			@WebParam(name = "roleId", targetNamespace = "") String roleId, 
+			@WebParam(name = "searchBean", targetNamespace = "") ResourceSearchBean searchBean);
 
 	/**
 	 * Gets a List of Resources that a Role is entitled to
@@ -121,7 +143,8 @@ public interface ResourceDataService {
 	List<Resource> getResourcesForRole(
 			@WebParam(name = "roleId", targetNamespace = "") String roleId,
 			@WebParam(name = "from", targetNamespace = "") int from,
-			@WebParam(name = "size", targetNamespace = "") int size);
+			@WebParam(name = "size", targetNamespace = "") int size,
+			@WebParam(name = "searchBean", targetNamespace = "") ResourceSearchBean searchBean);
 
 	/**
 	 * Search a Resource
@@ -148,6 +171,7 @@ public interface ResourceDataService {
 	/**
 	 * Find the child resources of a particular Resource
 	 * @param resourceId - resource ID
+     * @param deepFlag - shows that method returns Resource collection with all sub collections
 	 * @param from - where to start
 	 * @param size - how many to return
 	 * @return
@@ -155,10 +179,11 @@ public interface ResourceDataService {
 	@WebMethod
 	List<Resource> getChildResources(
 			@WebParam(name = "resourceId", targetNamespace = "") final String resourceId,
+            @WebParam(name = "deepFlag", targetNamespace = "") final Boolean deepFlag,
 			@WebParam(name = "from", targetNamespace = "") int from,
 			@WebParam(name = "size", targetNamespace = "") int size);
 
-	/**
+   	/**
 	 * Gets the number of child resources for a particular Resource
 	 * @param resourceId - the resource ID
 	 * @return
@@ -200,6 +225,10 @@ public interface ResourceDataService {
 			@WebParam(name = "resourceId", targetNamespace = "") final String resourceId,
 			@WebParam(name = "memberResourceId", targetNamespace = "") final String memberResourceId);
 
+	@WebMethod
+	Response validateAddChildResource(@WebParam(name = "resourceId", targetNamespace = "") final String resourceId,
+									  @WebParam(name = "childResourceId", targetNamespace = "") final String childResourceId);
+	
 	/**
 	 * Removes a child resource from a  parent
 	 * @param resourceId - the parent resource ID
@@ -262,7 +291,8 @@ public interface ResourceDataService {
 	 */
 	@WebMethod
 	int getNumOfResourceForGroup(
-			@WebParam(name = "groupId", targetNamespace = "") String groupId);
+			@WebParam(name = "groupId", targetNamespace = "") String groupId, 
+			@WebParam(name = "searchBean", targetNamespace = "") ResourceSearchBean searchBean);
 
 	/**
 	 * Gets Resources that a Group is entitled to
@@ -275,7 +305,8 @@ public interface ResourceDataService {
 	List<Resource> getResourcesForGroup(
 			@WebParam(name = "groupId", targetNamespace = "") String groupId,
 			@WebParam(name = "from", targetNamespace = "") int from,
-			@WebParam(name = "size", targetNamespace = "") int size);
+			@WebParam(name = "size", targetNamespace = "") int size,
+			@WebParam(name = "searchBean", targetNamespace = "") ResourceSearchBean searchBean);
 
 	/**
 	 * Gets the number of Resources that a User is Entitled to
@@ -284,7 +315,8 @@ public interface ResourceDataService {
 	 */
 	@WebMethod
 	int getNumOfResourceForUser(
-			@WebParam(name = "userId", targetNamespace = "") String userId);
+			@WebParam(name = "userId", targetNamespace = "") String userId, 
+			@WebParam(name = "searchBean", targetNamespace = "") ResourceSearchBean searchBean);
 
 	/**
 	 * Gets Resources that a User is entitled to
@@ -297,8 +329,19 @@ public interface ResourceDataService {
 	List<Resource> getResourcesForUser(
 			@WebParam(name = "userId", targetNamespace = "") String userId,
 			@WebParam(name = "from", targetNamespace = "") int from,
-			@WebParam(name = "size", targetNamespace = "") int size);
+			@WebParam(name = "size", targetNamespace = "") int size,
+			@WebParam(name = "searchBean", targetNamespace = "") ResourceSearchBean searchBean);
 
+    /**
+     * Gets Resources that a User is entitled to by Resource type
+     * @param userId - the User ID
+     * @param resourceTypeId - resource type ID
+     * @return
+     */
+    @WebMethod
+    public List<Resource> getResourcesForUserByType(@WebParam(name = "userId", targetNamespace = "") final String userId,
+                                                    @WebParam(name = "resourceTypeId", targetNamespace = "") final String resourceTypeId,
+                                                    @WebParam(name = "searchBean", targetNamespace = "") ResourceSearchBean searchBean);
 	/**
 	 * Tells the caller if the user can be entitled to this resource
 	 * @param userId - the User ID

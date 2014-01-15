@@ -56,8 +56,7 @@ public class AttributeListBuilder {
 
     public ExtensibleUser buildFromRules(ProvisionUser pUser,
             List<AttributeMap> attrMap, ScriptIntegration se,
-            String managedSysId, String domainId,
-            Map<String, Object> bindingMap, String createdBy) {
+            String managedSysId, Map<String, Object> bindingMap, String createdBy) {
 
         final ExtensibleUser extUser = new ExtensibleUser();
 
@@ -70,7 +69,6 @@ public class AttributeListBuilder {
             final Login identity = new Login();
 
             // init values
-            identity.setDomainId(domainId);
             identity.setManagedSysId(managedSysId);
 
             for (final AttributeMap attr : attrMap) {
@@ -199,8 +197,7 @@ public class AttributeListBuilder {
 
 
     public Login buildIdentity(List<AttributeMap> attrMap,
-            ScriptIntegration se, String managedSysId, String domainId,
-            Map<String, Object> bindingMap, String createdBy) {
+            ScriptIntegration se, String managedSysId, Map<String, Object> bindingMap, String createdBy) {
 
         Login newIdentity = new Login();
 
@@ -231,7 +228,6 @@ public class AttributeListBuilder {
         if (newIdentity.getLogin() == null) {
             return null;
         }
-        newIdentity.setDomainId(domainId);
         newIdentity.setManagedSysId(managedSysId);
         newIdentity.setAuthFailCount(0);
         newIdentity.setCreateDate(new Date(System.currentTimeMillis()));
@@ -245,8 +241,7 @@ public class AttributeListBuilder {
 
     public ExtensibleUser buildModifyFromRules(ProvisionUser pUser,
             Login currentIdentity, List<AttributeMap> attrMap,
-            ScriptIntegration se, String managedSysId, String domainId,
-            Map<String, Object> bindingMap, String createdBy) {
+            ScriptIntegration se, String managedSysId, Map<String, Object> bindingMap, String createdBy) {
 
         ExtensibleUser extUser = new ExtensibleUser();
 

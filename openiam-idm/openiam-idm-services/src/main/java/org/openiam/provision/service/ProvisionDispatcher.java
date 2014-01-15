@@ -8,7 +8,6 @@ import org.apache.commons.logging.LogFactory;
 import org.mule.api.MuleContext;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.BaseAttributeContainer;
-import org.openiam.base.id.UUIDGen;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.connector.type.ConnectorDataException;
@@ -172,8 +171,8 @@ public class ProvisionDispatcher implements Sweepable {
         for (ProvisionDataContainer data : entities) {
             Login identity = data.getIdentity();
 
-            LoginEntity loginEntity = loginManager.getLoginByManagedSys(identity.getDomainId(),
-                    identity.getLogin(), identity.getManagedSysId());
+            LoginEntity loginEntity = loginManager.getLoginByManagedSys(identity.getLogin(), identity.getManagedSysId());
+
 
 
 
@@ -268,7 +267,7 @@ public class ProvisionDispatcher implements Sweepable {
         ResourceEntity resEntity = resourceService.findResourceById(data.getResourceId());
         Resource res = resourceDozerConverter.convertToDTO(resEntity, true);
         ManagedSysDto mSys = managedSysDozerConverter.convertToDTO(
-                managedSystemService.getManagedSysByResource(res.getResourceId(), "ACTIVE"), true);
+                managedSystemService.getManagedSysByResource(res.getId(), "ACTIVE"), true);
         ProvisionConnectorEntity connectorEntity = connectorService.getProvisionConnectorsById(mSys.getConnectorId());
         if (connectorEntity == null) {
             return null;
@@ -302,7 +301,7 @@ public class ProvisionDispatcher implements Sweepable {
         ResourceEntity resEntity = resourceService.findResourceById(data.getResourceId());
         Resource res = resourceDozerConverter.convertToDTO(resEntity, true);
         ManagedSysDto mSys = managedSysDozerConverter.convertToDTO(
-                managedSystemService.getManagedSysByResource(res.getResourceId(), "ACTIVE"), true);
+                managedSystemService.getManagedSysByResource(res.getId(), "ACTIVE"), true);
         String managedSysId = (mSys != null) ? mSys.getManagedSysId() : null;
         ProvisionUser targetSysProvUser = data.getProvUser();
 

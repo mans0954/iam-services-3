@@ -113,4 +113,29 @@
         <class-a>org.openiam.idm.srvc.auth.domain.LoginEntity</class-a>
         <class-b>org.openiam.idm.srvc.auth.domain.LoginEntity</class-b>
     </mapping>
+    
+    <mapping>
+		<class-a>org.openiam.am.srvc.domain.AuthAttributeEntity</class-a>
+		<class-b>org.openiam.am.srvc.domain.AuthAttributeEntity</class-b>
+	</mapping>
+
+    <mapping>
+        <class-a>org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity</class-a>
+        <class-b>org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity</class-b>
+    </mapping>
+    <mapping>
+        <class-a>org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity</class-a>
+        <class-b>org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity</class-b>
+    </mapping>
+
+    <mapping>
+        <class-a>org.openiam.am.srvc.domain.AuthLevelEntity</class-a>
+        <class-b>org.openiam.am.srvc.domain.AuthLevelEntity</class-b>
+    </mapping>
+
+    <mapping>
+        <class-a>org.openiam.am.srvc.domain.URIPatternMetaTypeEntity</class-a>
+        <class-b>org.openiam.am.srvc.domain.URIPatternMetaTypeEntity</class-b>
+    </mapping>
+
 </mappings>

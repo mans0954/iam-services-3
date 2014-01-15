@@ -55,7 +55,8 @@
 	
 	<bean id="sysConfiguration" class="org.openiam.base.SysConfiguration">
 		<property name="defaultManagedSysId" value="${openiam.default_managed_sys}" />
-		<property name="defaultSecurityDomain" value="${openiam.default_sec_domain}" />
+        <property name="defaultAuthPolicyId" value="${org.openiam.default.auth.policy}" />
+        <property name="defaultPswdPolicyId" value="${org.openiam.default.password.policy}" />
         <property name="developmentMode" value="${openiam.development_mode}" />
         <property name="provisionServiceFlag" value="${org.openiam.provision.service.flag}" />
 	</bean>
@@ -173,9 +174,6 @@
 	
 	<!-- SecurityDomain Beans -->
 
-	<bean id="secDomainDAO" class="org.openiam.idm.srvc.secdomain.service.SecurityDomainDAOImpl" >
-		<property name="sessionFactory" ref="sessionFactory"></property>		
-	</bean>	
 
 	<!-- Notification and Message Delivery Beans --> 
 	<bean id="messageWS" class="org.openiam.idm.srvc.msg.ws.SysMessageWebServiceImpl" >

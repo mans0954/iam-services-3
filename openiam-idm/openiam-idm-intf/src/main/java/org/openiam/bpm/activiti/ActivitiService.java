@@ -1,6 +1,7 @@
 package org.openiam.bpm.activiti;
 
 import java.util.List;
+import java.util.Set;
 
 import javax.jws.WebMethod;
 import javax.jws.WebService;
@@ -16,7 +17,7 @@ import org.openiam.bpm.response.TaskHistoryWrapper;
 import org.openiam.bpm.response.TaskListWrapper;
 import org.openiam.bpm.response.TaskWrapper;
 import org.openiam.idm.srvc.meta.dto.SaveTemplateProfileResponse;
-import org.openiam.idm.srvc.prov.request.dto.ProvisionRequest;
+import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 import org.openiam.idm.srvc.user.dto.NewUserProfileRequestModel;
 import org.openiam.idm.srvc.user.dto.UserProfileRequestModel;
 import org.openiam.provision.dto.ProvisionUser;
@@ -49,7 +50,7 @@ public interface ActivitiService {
 	public TaskWrapper getTask(final String taskId);
 	
 	@WebMethod
-	public TaskWrapper getTaskFromHistory(final String taskId);
+	public TaskWrapper getTaskFromHistory(final String executionId, final String taskId);
 	
 	@WebMethod
 	public List<TaskWrapper> getHistory(final HistorySearchBean searchBean, final int from, final int size);

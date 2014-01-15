@@ -96,7 +96,8 @@
 
 	<bean id="sysConfiguration" class="org.openiam.base.SysConfiguration">
 		<property name="defaultManagedSysId" value="${openiam.default_managed_sys}" />
-		<property name="defaultSecurityDomain" value="${openiam.default_sec_domain}" />
+        <property name="defaultAuthPolicyId" value="${org.openiam.default.auth.policy}" />
+        <property name="defaultPswdPolicyId" value="${org.openiam.default.password.policy}" />
         <property name="developmentMode" value="${openiam.development_mode}" />
         <property name="provisionServiceFlag" value="${org.openiam.provision.service.flag}" />
 	</bean>
@@ -360,11 +361,11 @@
                                                org.openiam.idm.srvc.policy.domain*,
                                                org.openiam.idm.srvc.audit.domain*,
                                                org.openiam.idm.srvc.pswd.domain*,
-                                               org.openiam.idm.srvc.secdomain.domain*,
                                                org.openiam.idm.srvc.lang.domain*,
                                                org.openiam.idm.srvc.report.domain*,
                                                org.openiam.idm.srvc.prov*,
-                                               org.openiam.idm.srvc.batch.domain*
+                                               org.openiam.idm.srvc.batch.domain*,
+                                               org.openiam.idm.srvc.ui*
                                                " />
 
 	</bean>
@@ -410,6 +411,15 @@
 		<property name="sessionFactory" ref="sessionFactory" />
 	</bean>
 
+	<bean id="httpClient" class="org.openiam.http.client.OpenIAMHttpClient">
+		<constructor-arg index="0">
+			<bean class="org.apache.http.impl.conn.PoolingClientConnectionManager">
+				<property name="defaultMaxPerRoute" value="${org.openiam.http.client.max.per.route}" />
+				<property name="maxTotal" value="${org.openiam.http.client.max.total}" />
+			</bean>
+		</constructor-arg>
+	</bean>
+
 	<!-- enable the configuration of transactional behavior based on annotations -->
 	<tx:annotation-driven transaction-manager="transactionManager" />
 
@@ -446,11 +456,4 @@
             <value>AuditLogBuilderCache</value>
         </property>
     </bean>
-
-
-
-
-
-
 </beans>
-

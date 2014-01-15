@@ -12,12 +12,14 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.JoinColumns;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
 import javax.persistence.Table;
+import javax.validation.constraints.Size;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -25,8 +27,10 @@ import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
+import org.hibernate.annotations.Where;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
+import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
@@ -42,35 +46,26 @@ public class ResourceEntity {
     @GeneratedValue(generator = "system-uuid")
     @GenericGenerator(name = "system-uuid", strategy = "uuid")
     @Column(name = "RESOURCE_ID", length = 32)
-    private String resourceId;
+    private String id;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "RESOURCE_TYPE_ID")
     private ResourceTypeEntity resourceType;
 
     @Column(name = "NAME", length = 150)
+    @Size(max = 150, message = "resource.name.too.long")
     private String name;
 
     @Column(name = "DESCRIPTION", length = 100)
+    @Size(max = 100, message = "resource.description.too.long")
     private String description;
-
-    @Column(name = "BRANCH_ID", length = 20)
-    private String branchId;
-
-    @Column(name = "CATEGORY_ID", length = 20)
-    private String categoryId;
 
     @Column(name = "DISPLAY_ORDER")
     private Integer displayOrder;
 
     @Column(name = "URL", length = 255)
+    @Size(max = 255, message = "resource.url.too.long")
     private String URL;
-
-    @Column(name = "RES_OWNER_USER_ID")
-    private String resOwnerUserId;
-
-    @Column(name = "RES_OWNER_GROUP_ID")
-    private String resOwnerGroupId;
 
     @ManyToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
     @JoinTable(name = "res_to_res_membership",
@@ -107,20 +102,40 @@ public class ResourceEntity {
     @Column(name = "MIN_AUTH_LEVEL")
     private String minAuthLevel;
 
-    @Column(name = "DOMAIN")
-    private String domain;
-
     @Column(name = "IS_PUBLIC")
     @Type(type = "yes_no")
     private boolean isPublic = true;
-
-    /*
-    @Column(name = "IS_SSL")
-    @Type(type = "yes_no")
-    private boolean isSSL = false;
-    */
     
+	@ManyToOne(fetch = FetchType.EAGER,cascade={CascadeType.ALL})
+    @JoinColumn(name="ADMIN_RESOURCE_ID", referencedColumnName = "RESOURCE_ID", insertable = true, updatable = true, nullable=true)
+	private ResourceEntity adminResource;
+	
+	@OneToMany(cascade = {CascadeType.ALL}, fetch = FetchType.LAZY, mappedBy="associationEntityId", orphanRemoval=true)
+	@Where(clause="ASSOCIATION_TYPE='RESOURCE'")
+	private Set<ApproverAssociationEntity> approverAssociations;
+
     public ResourceEntity() {
+    }
+    
+    public ResourceEntity(String id) {
+    	this.id = id;
+    }
+    
+    public void addRole(final RoleEntity entity) {
+    	if(entity != null) {
+    		if(this.roles == null) {
+    			this.roles = new HashSet<RoleEntity>();
+    		}
+    		this.roles.add(entity);
+    	}
+    }
+    
+    public void remove(final RoleEntity entity) {
+    	if(entity != null) {
+    		if(this.roles != null) {
+    			this.roles.remove(entity);
+    		}
+    	}
     }
   
     public Set<RoleEntity> getRoles() {
@@ -131,12 +146,12 @@ public class ResourceEntity {
         this.roles = roles;
     }
 
-    public String getResourceId() {
-        return resourceId;
+    public String getId() {
+        return id;
     }
 
-    public void setResourceId(String resourceId) {
-        this.resourceId = resourceId;
+    public void setId(String id) {
+        this.id = id;
     }
 
     public ResourceTypeEntity getResourceType() {
@@ -163,22 +178,6 @@ public class ResourceEntity {
         this.description = description;
     }
 
-    public String getBranchId() {
-        return branchId;
-    }
-
-    public void setBranchId(String branchId) {
-        this.branchId = branchId;
-    }
-
-    public String getCategoryId() {
-        return categoryId;
-    }
-
-    public void setCategoryId(String categoryId) {
-        this.categoryId = categoryId;
-    }
-
     public Integer getDisplayOrder() {
         return displayOrder;
     }
@@ -193,22 +192,6 @@ public class ResourceEntity {
 
     public void setURL(String URL) {
         this.URL = URL;
-    }
-
-    public String getResOwnerUserId() {
-        return resOwnerUserId;
-    }
-
-    public void setResOwnerUserId(String resOwnerUserId) {
-        this.resOwnerUserId = resOwnerUserId;
-    }
-
-    public String getResOwnerGroupId() {
-        return resOwnerGroupId;
-    }
-
-    public void setResOwnerGroupId(String resOwnerGroupId) {
-        this.resOwnerGroupId = resOwnerGroupId;
     }
 
     public Set<ResourceEntity> getParentResources() {
@@ -234,6 +217,23 @@ public class ResourceEntity {
     public void setResourceProps(Set<ResourcePropEntity> resourceProps) {
         this.resourceProps = resourceProps;
     }
+    
+    public void addGroup(final GroupEntity entity) {
+    	if(entity != null) {
+    		if(this.groups == null) {
+    			this.groups = new HashSet<GroupEntity>();
+    		}
+    		this.groups.add(entity);
+    	}
+    }
+    
+    public void remove(final GroupEntity entity) {
+    	if(entity != null) {
+    		if(this.groups != null) {
+    			this.groups.remove(entity);
+    		}
+    	}
+    }
 
     public Set<GroupEntity> getGroups() {
         return groups;
@@ -251,14 +251,6 @@ public class ResourceEntity {
         this.minAuthLevel = minAuthLevel;
     }
 
-    public String getDomain() {
-        return domain;
-    }
-
-    public void setDomain(String domain) {
-        this.domain = domain;
-    }
-
     public boolean getIsPublic() {
         return isPublic;
     }
@@ -266,23 +258,30 @@ public class ResourceEntity {
     public void setIsPublic(boolean aPublic) {
         isPublic = aPublic;
     }
-
-    /*
-    public boolean getIsSSL() {
-        return isSSL;
-    }
-
-    public void setIsSSL(boolean SSL) {
-        isSSL = SSL;
-    }
-    */
     
-    public Set<UserEntity> getUsers() {
+    public ResourceEntity getAdminResource() {
+		return adminResource;
+	}
+
+	public void setAdminResource(ResourceEntity adminResource) {
+		this.adminResource = adminResource;
+	}
+
+	public Set<UserEntity> getUsers() {
         return users;
     }
 
     public void setUsers(Set<UserEntity> users) {
         this.users = users;
+    }
+    
+    public void addUser(final UserEntity user) {
+    	if(user != null) {
+    		if(this.users == null) {
+    			this.users = new HashSet<UserEntity>();
+    		}
+    		this.users.add(user);
+    	}
     }
 
     public void addParentResource(final ResourceEntity resource) {
@@ -315,7 +314,7 @@ public class ResourceEntity {
 		if(resourceId != null && childResources != null) {
 			for(final Iterator<ResourceEntity> it = childResources.iterator(); it.hasNext();) {
 				final ResourceEntity resource = it.next();
-				if(resource.getResourceId().equals(resourceId)) {
+				if(resource.getId().equals(resourceId)) {
 					it.remove();
 					break;
 				}
@@ -350,19 +349,33 @@ public class ResourceEntity {
     	this.resourceProps.add(property);
     }
 
+	public Set<ApproverAssociationEntity> getApproverAssociations() {
+		return approverAssociations;
+	}
+
+	public void setApproverAssociations(
+			Set<ApproverAssociationEntity> approverAssociations) {
+		this.approverAssociations = approverAssociations;
+	}
+	
+	public void addApproverAssociation(final ApproverAssociationEntity entity) {
+		if(entity != null) {
+			if(this.approverAssociations == null) {
+				this.approverAssociations = new HashSet<ApproverAssociationEntity>();
+			}
+			this.approverAssociations.add(entity);
+		}
+	}
+
 	@Override
     public String toString() {
         return "Resource{" +
-                "resourceId='" + resourceId + '\'' +
+                "resourceId='" + id + '\'' +
                 ", resourceType=" + resourceType +
                 ", name='" + name + '\'' +
                 ", description='" + description + '\'' +
-                ", branchId='" + branchId + '\'' +
-                ", categoryId='" + categoryId + '\'' +
                 ", displayOrder=" + displayOrder +
                 ", URL='" + URL + '\'' +
-                ", resOwnerUserId='" + resOwnerUserId + '\'' +
-                ", resOwnerGroupId='" + resOwnerGroupId + '\'' +
                 '}';
     }
 
@@ -376,22 +389,16 @@ public class ResourceEntity {
         if (isPublic != that.isPublic) return false;
         //if (isSSL != that.isSSL) return false;
         if (URL != null ? !URL.equals(that.URL) : that.URL != null) return false;
-        if (branchId != null ? !branchId.equals(that.branchId) : that.branchId != null) return false;
-        if (categoryId != null ? !categoryId.equals(that.categoryId) : that.categoryId != null) return false;
-        if (domain != null ? !domain.equals(that.domain) : that.domain != null) return false;
         if (name != null ? !name.equals(that.name) : that.name != null) return false;
-        if (resourceId != null ? !resourceId.equals(that.resourceId) : that.resourceId != null) return false;
+        if (id != null ? !id.equals(that.id) : that.id != null) return false;
 
         return true;
     }
 
     @Override
     public int hashCode() {
-        int result = resourceId != null ? resourceId.hashCode() : 0;
+        int result = id != null ? id.hashCode() : 0;
         result = 31 * result + (name != null ? name.hashCode() : 0);
-        result = 31 * result + (branchId != null ? branchId.hashCode() : 0);
-        result = 31 * result + (categoryId != null ? categoryId.hashCode() : 0);
-        result = 31 * result + (domain != null ? domain.hashCode() : 0);
         result = 31 * result + (isPublic ? 1 : 0);
         //result = 31 * result + (isSSL ? 1 : 0)
         return result;

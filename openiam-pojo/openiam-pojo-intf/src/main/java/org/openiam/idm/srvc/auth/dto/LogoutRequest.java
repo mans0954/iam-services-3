@@ -9,22 +9,12 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "LogoutRequest", propOrder = {
-        "domainId",
         "principal"
 })
 public class LogoutRequest {
-    String domainId;
     String principal;
 
     public LogoutRequest() {
-    }
-
-    public String getDomainId() {
-        return domainId;
-    }
-
-    public void setDomainId(String domainId) {
-        this.domainId = domainId;
     }
 
     public String getPrincipal() {

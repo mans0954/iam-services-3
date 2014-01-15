@@ -10,12 +10,12 @@ public interface ManagedSysDAO extends BaseDao<ManagedSysEntity, String> {
 
 	 List<ManagedSysEntity> findbyConnectorId(String connectorId);
 
-	 /**
-	  * Lists all managed systems belonging to a domain.
-	  * @param domainId
-	  * @return
-	  */
-	 List<ManagedSysEntity> findbyDomain(String domainId);
+//	 /**
+//	  * Lists all managed systems belonging to a domain.
+//	  * @param domainId
+//	  * @return
+//	  */
+//	 List<ManagedSysEntity> findbyDomain(String domainId);
 	 
 	 List<ManagedSysEntity> findAllManagedSys();
 	 

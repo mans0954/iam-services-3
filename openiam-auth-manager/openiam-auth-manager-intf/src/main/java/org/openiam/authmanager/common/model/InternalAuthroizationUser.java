@@ -43,28 +43,32 @@ public class InternalAuthroizationUser {
 		if(loginIds == null) {
 			loginIds = new HashSet<AuthorizationManagerLoginId>();
 		}
-		loginIds.add(loginId);
+		if(loginId!=null)
+			loginIds.add(loginId);
 	}
 	
 	public void addResourceId(final String resourceId) {
 		if(resourceIds == null) {
 			resourceIds = new HashSet<String>();
 		}
-		resourceIds.add(resourceId);
+		if(resourceId!=null)
+			resourceIds.add(resourceId);
 	}
 	
 	public void addRoleId(final String roleId) {
 		if(roleIds == null) {
 			roleIds = new HashSet<String>();
 		}
-		roleIds.add(roleId);
+		if(roleId!=null)
+			roleIds.add(roleId);
 	}
 	
 	public void addGroupId(final String groupId) {
 		if(groupIds == null) {
 			groupIds = new HashSet<String>();
 		}
-		groupIds.add(groupId);
+		if(groupId!=null)
+			groupIds.add(groupId);
 	}
 
 	@Override

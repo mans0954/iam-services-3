@@ -47,9 +47,7 @@ public class TransformSrcRecord extends AbstractTransformScript {
 			pUser.setUserId(null);
 		}
 		pUser.setStatus(UserStatusEnum.ACTIVE);
-		pUser.securityDomain = "0"
-		
-	
+
 		
 		// Set role based on a job code
 		

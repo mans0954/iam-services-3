@@ -26,7 +26,6 @@ if (objectType == "USER") {
     if (isNewUser) {
 
         def l = new Login()
-        l.domainId = "USR_SEC_DOMAIN"
         l.login = attribute.value
         l.managedSysId = "0"
 

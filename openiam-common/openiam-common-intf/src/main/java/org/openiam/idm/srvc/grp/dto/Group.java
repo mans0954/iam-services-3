@@ -1,8 +1,10 @@
 package org.openiam.idm.srvc.grp.dto;
 
 
+import org.openiam.base.AdminResourceDTO;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.BaseObject;
+import org.openiam.base.KeyNameDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.res.dto.Resource;
@@ -13,6 +15,8 @@ import org.openiam.idm.srvc.user.dto.User;
 
 import javax.xml.bind.annotation.*;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+
+import java.io.Serializable;
 import java.util.*;
 
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -25,16 +29,9 @@ import java.util.*;
         "createDate",
         "createdBy",
         "description",
-        "grpId",
-        "grpName",
         "lastUpdate",
         "lastUpdatedBy",
-        //"provisionMethod",
-        //"provisionObjName",
         "status",
-        //"metadataTypeId",
-        //"ownerId",
-        //"internalGroupId",
         "operation",
         "parentGroups",
         "childGroups",
@@ -48,7 +45,7 @@ import java.util.*;
         User.class
 })
 @DozerDTOCorrespondence(GroupEntity.class)
-public class Group extends BaseObject implements java.io.Serializable {
+public class Group extends AdminResourceDTO implements Serializable {
 
     private static final long serialVersionUID = 7657568959406790313L;
 
@@ -56,27 +53,16 @@ public class Group extends BaseObject implements java.io.Serializable {
 
     private String managedSysId;
     private String managedSysName;
-    protected String grpId;
-    protected String grpName;
     @XmlSchemaType(name = "dateTime")
     protected Date createDate;
     protected String createdBy;
     protected String companyId;
-    /*
-    protected String ownerId;
-    protected String provisionMethod;
-    protected String provisionObjName;
-    */
     protected String description;
 
     protected String status;
     @XmlSchemaType(name = "dateTime")
     protected Date lastUpdate;
     protected String lastUpdatedBy;
-    /*
-    protected String metadataTypeId;
-    protected String internalGroupId = null;
-    */
     
     private Set<Group> parentGroups;
     private Set<Group> childGroups;
@@ -90,26 +76,6 @@ public class Group extends BaseObject implements java.io.Serializable {
     protected Set<GroupAttribute> attributes = new HashSet<GroupAttribute>();
 
     public Group() {
-    }
-
-    public Group(String grpId) {
-        this.grpId = grpId;
-    }
-
-    public String getGrpId() {
-        return this.grpId;
-    }
-
-    public void setGrpId(String grpId) {
-        this.grpId = grpId;
-    }
-
-    public String getGrpName() {
-        return this.grpName;
-    }
-
-    public void setGrpName(String grpName) {
-        this.grpName = grpName;
     }
 
     public Date getCreateDate() {
@@ -135,24 +101,6 @@ public class Group extends BaseObject implements java.io.Serializable {
     public void setCompanyId(String companyId) {
         this.companyId = companyId;
     }
-
-    /*
-    public String getProvisionMethod() {
-        return this.provisionMethod;
-    }
-
-    public void setProvisionMethod(String provisionMethod) {
-        this.provisionMethod = provisionMethod;
-    }
-
-    public String getProvisionObjName() {
-        return this.provisionObjName;
-    }
-
-    public void setProvisionObjName(String provisionObjName) {
-        this.provisionObjName = provisionObjName;
-    }
-    */
 
     public Set<Role> getRoles() {
         return this.roles;
@@ -198,26 +146,6 @@ public class Group extends BaseObject implements java.io.Serializable {
         this.lastUpdatedBy = lastUpdatedBy;
     }
 
-    /*
-    public String getMetadataTypeId() {
-        return metadataTypeId;
-    }
-
-    public void setMetadataTypeId(String metadataTypeId) {
-        this.metadataTypeId = metadataTypeId;
-    }
-	*/
-
-    /*
-    public String getOwnerId() {
-        return ownerId;
-    }
-
-    public void setOwnerId(String ownerId) {
-        this.ownerId = ownerId;
-    }
-	*/
-
     public void setGroupStatus(GroupStatus status) {
         this.status = status.toString();
     }
@@ -229,16 +157,6 @@ public class Group extends BaseObject implements java.io.Serializable {
     public void setStatus(String status) {
         this.status = status;
     }
-
-    /*
-    public String getInternalGroupId() {
-        return internalGroupId;
-    }
-
-    public void setInternalGroupId(String internalGroupId) {
-        this.internalGroupId = internalGroupId;
-    }
-    */
 
     public AttributeOperationEnum getOperation() {
         return operation;
@@ -316,8 +234,8 @@ public class Group extends BaseObject implements java.io.Serializable {
 				+ ((createdBy == null) ? 0 : createdBy.hashCode());
 		result = prime * result
 				+ ((description == null) ? 0 : description.hashCode());
-		result = prime * result + ((grpId == null) ? 0 : grpId.hashCode());
-		result = prime * result + ((grpName == null) ? 0 : grpName.hashCode());
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result
 				+ ((lastUpdate == null) ? 0 : lastUpdate.hashCode());
 		result = prime * result
@@ -358,15 +276,15 @@ public class Group extends BaseObject implements java.io.Serializable {
 				return false;
 		} else if (!description.equals(other.description))
 			return false;
-		if (grpId == null) {
-			if (other.grpId != null)
+		if (id == null) {
+			if (other.id != null)
 				return false;
-		} else if (!grpId.equals(other.grpId))
+		} else if (!id.equals(other.id))
 			return false;
-		if (grpName == null) {
-			if (other.grpName != null)
+		if (name == null) {
+			if (other.name != null)
 				return false;
-		} else if (!grpName.equals(other.grpName))
+		} else if (!name.equals(other.name))
 			return false;
 		if (lastUpdate == null) {
 			if (other.lastUpdate != null)
@@ -406,9 +324,9 @@ public class Group extends BaseObject implements java.io.Serializable {
 	@Override
 	public String toString() {
 		return String
-				.format("Group [operation=%s, managedSysId=%s, managedSysName=%s, grpId=%s, grpName=%s, createDate=%s, createdBy=%s, description=%s, status=%s, lastUpdate=%s, lastUpdatedBy=%s]",
-						operation, managedSysId, managedSysName, grpId,
-						grpName, createDate, createdBy, description, status,
+				.format("Group [operation=%s, managedSysId=%s, managedSysName=%s, id=%s, name=%s, createDate=%s, createdBy=%s, description=%s, status=%s, lastUpdate=%s, lastUpdatedBy=%s]",
+						operation, managedSysId, managedSysName, id,
+						name, createDate, createdBy, description, status,
 						lastUpdate, lastUpdatedBy);
 	}
 

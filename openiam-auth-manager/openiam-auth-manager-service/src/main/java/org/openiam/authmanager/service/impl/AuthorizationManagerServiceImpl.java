@@ -180,7 +180,8 @@ public class AuthorizationManagerServiceImpl implements AuthorizationManagerServ
 	/**
 	 * This function sweeps through the database, and compiles the new entitlement mappings
 	 */
-	@ManagedOperation(description="sweep the Authorization Cache")
+	@Override
+    @ManagedOperation(description="sweep the Authorization Cache")
 	public void sweep() {
 		log.info(String.format("Starting Authorization Manager Refresh.  ThreadId: %s.  Spring Context: %s:%s", Thread.currentThread().getId(), ctx.getId(), ctx.getDisplayName()));
 		final StopWatch sw = new StopWatch();
@@ -482,17 +483,16 @@ public class AuthorizationManagerServiceImpl implements AuthorizationManagerServ
 		}
 	}
 	
-	private String createLoginIdKey(final String domainId, final String login, final String managedSysId) {
-		return createLoginIdKey(new AuthorizationManagerLoginId(domainId, login, managedSysId));
+	private String createLoginIdKey(final String login, final String managedSysId) {
+		return createLoginIdKey(new AuthorizationManagerLoginId(login, managedSysId));
 	}
 	
 	private String createLoginIdKey(final AuthorizationManagerLoginId loginId) {
 		clean(loginId);
-		return String.format("%s:%s:%s", loginId.getDomain(), loginId.getLogin(), loginId.getManagedSysId());
+		return String.format("%s:%s", loginId.getLogin(), loginId.getManagedSysId());
 	}
 	
 	private void clean(final AuthorizationManagerLoginId loginId) {
-		loginId.setDomain(StringUtils.trimToNull(StringUtils.lowerCase(loginId.getDomain())));
 		loginId.setLogin(StringUtils.trimToNull(StringUtils.lowerCase(loginId.getLogin())));
 		loginId.setManagedSysId(StringUtils.trimToNull(StringUtils.lowerCase(loginId.getManagedSysId())));
 	}
@@ -839,6 +839,13 @@ public class AuthorizationManagerServiceImpl implements AuthorizationManagerServ
 	public void afterPropertiesSet() throws Exception {
 		sweep();
 		//service.submit(this);
+	}
+
+	@Override
+	public boolean isEntitled(String userId, String resourceId) {
+		final AuthorizationResource resource = new AuthorizationResource();
+		resource.setId(resourceId);
+		return isEntitled(userId, resource);
 	}
 
 	/*

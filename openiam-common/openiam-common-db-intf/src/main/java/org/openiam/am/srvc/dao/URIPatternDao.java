@@ -9,4 +9,5 @@ public interface URIPatternDao extends BaseDao<URIPatternEntity, String> {
     void deleteByProvider(String providerId);
     void deleteById(String patternId);
     public List<URIPatternEntity> getByResourceId(final String resourceId);
+    public List<URIPatternEntity> getURIPatternsForContentProviderMatchingPattern(final String contentProviderId, final String pattern);
 }

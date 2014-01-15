@@ -19,8 +19,8 @@ import java.util.List;
  */
 
 public interface GroupDataService {
-    public GroupEntity getGroup(final String grpId);
-    public GroupEntity getGroup(final String grpId, final String requesterId);
+    public GroupEntity getGroup(final String id);
+    public GroupEntity getGroup(final String id, final String requesterId);
     public GroupEntity getGroupByName(final String groupName, final String requesterId);
     public List<Group> getCompiledGroupsForUser(final String userId);
     /**
@@ -44,7 +44,7 @@ public interface GroupDataService {
     public int countBeans(final GroupSearchBean searchBean, final String requesterId);
 
 
-	public void saveGroup(final GroupEntity group) throws BasicDataServiceException;
+	public void saveGroup(final GroupEntity group, final String requestorId) throws BasicDataServiceException;
 	
 	public void deleteGroup(final String groupId);
 

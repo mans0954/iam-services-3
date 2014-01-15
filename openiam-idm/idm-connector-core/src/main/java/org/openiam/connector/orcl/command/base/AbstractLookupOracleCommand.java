@@ -32,6 +32,7 @@ public abstract class AbstractLookupOracleCommand<ExtObject extends ExtensibleOb
 
         try {
             final ObjectValue resultObject = new ObjectValue();
+       
             resultObject.setObjectIdentity(dataId);
             final ResultSet rs = lookupObject(con, dataId);
 
@@ -51,9 +52,10 @@ public abstract class AbstractLookupOracleCommand<ExtObject extends ExtensibleOb
                 }
                 response.getObjectList().add(resultObject);
                 response.setStatus(StatusCodeType.SUCCESS);
-            } else
-                throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR, "Principal not found");
-
+            }else {
+            	response.setStatus(StatusCodeType.FAILURE);
+                log.debug("LOOKUP successful without results.");
+            }
             return response;
         } catch(Throwable e) {
             log.error(e.getMessage(),e);

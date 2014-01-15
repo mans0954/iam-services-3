@@ -16,7 +16,6 @@ import java.util.Set;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "Login", propOrder = {
-		"domainId",
         "login",
         "lowerCaseLogin",
         "managedSysId",
@@ -63,7 +62,6 @@ public class Login implements java.io.Serializable {
     protected AttributeOperationEnum operation = AttributeOperationEnum.NO_CHANGE;
     
     private String loginId;
-    private String domainId;
     private String login;
     private String lowerCaseLogin;
     private String managedSysId;
@@ -392,14 +390,6 @@ public class Login implements java.io.Serializable {
     public void setManagedSysName(String managedSysName) {
         this.managedSysName = managedSysName;
     }
-
-	public String getDomainId() {
-		return domainId;
-	}
-
-	public void setDomainId(String domainId) {
-		this.domainId = domainId;
-	}
 
 	public String getLogin() {
 		return login;
