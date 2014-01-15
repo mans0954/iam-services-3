@@ -9,6 +9,7 @@ import javax.persistence.*;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.idm.srvc.recon.dto.ReconExecStatusOptions;
 import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
 
 // Generated May 29, 2010 8:20:09 PM by Hibernate Tools 3.2.2.GA
@@ -66,6 +67,13 @@ public class ReconciliationConfigEntity implements java.io.Serializable {
     private String customMatchAttr;
     @Column(name="CUSTOM_MATCH_SRC_ATTR",length=40)
     private String matchSrcFieldName;
+
+    @Column(name="LAST_EXEC_TIME",length=19)
+    @Temporal(TemporalType.TIMESTAMP)
+    private java.util.Date lastExecTime;
+    @Column(name = "EXEC_STATUS", length = 20)
+    @Enumerated(EnumType.STRING)
+    private ReconExecStatusOptions execStatus;
 
    /* @Column(name="LAST_EXEC_TIME",length=19)
     @Temporal(TemporalType.DATE)
@@ -256,5 +264,21 @@ public class ReconciliationConfigEntity implements java.io.Serializable {
 
     public void setMatchSrcFieldName(String matchSrcFieldName) {
         this.matchSrcFieldName = matchSrcFieldName;
+    }
+
+    public Date getLastExecTime() {
+        return lastExecTime;
+    }
+
+    public void setLastExecTime(Date lastExecTime) {
+        this.lastExecTime = lastExecTime;
+    }
+
+    public ReconExecStatusOptions getExecStatus() {
+        return execStatus;
+    }
+
+    public void setExecStatus(ReconExecStatusOptions execStatus) {
+        this.execStatus = execStatus;
     }
 }

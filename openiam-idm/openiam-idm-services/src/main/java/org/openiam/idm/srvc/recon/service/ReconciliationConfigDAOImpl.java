@@ -21,6 +21,10 @@ public class ReconciliationConfigDAOImpl extends
         BaseDaoImpl<ReconciliationConfigEntity, String> implements
         ReconciliationConfigDAO {
 
+    public ReconciliationConfigEntity get(String id) {
+        return (ReconciliationConfigEntity)getSession().get(ReconciliationConfigEntity.class,id);
+    }
+
     public ReconciliationConfigEntity findByResourceId(
             java.lang.String resourceId) throws HibernateException {
         Criteria criteria = this.getCriteria().add(

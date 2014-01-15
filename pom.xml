@@ -417,6 +417,12 @@
                 <artifactId>cxf-rt-frontend-simple</artifactId>
                 <version>${cxf.version}</version>
             </dependency>
+            <!-- apache httpclient -->
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpclient</artifactId>
+                <version>4.2.6</version>
+            </dependency>
             <!-- org.apache dependencies -->
             <dependency>
                 <groupId>org.apache.geronimo.specs</groupId>

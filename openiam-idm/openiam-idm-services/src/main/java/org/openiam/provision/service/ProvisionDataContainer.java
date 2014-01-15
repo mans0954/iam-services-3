@@ -15,6 +15,7 @@ public class ProvisionDataContainer implements Serializable {
     private Login identity;
     private ProvisionUser provUser;
     private Map<String, Object> bindingMap;
+    private String parentAuditLogId;
 
     public String getRequestId() {
         return requestId;
@@ -62,5 +63,13 @@ public class ProvisionDataContainer implements Serializable {
 
     public void setBindingMap(Map<String, Object> bindingMap) {
         this.bindingMap = bindingMap;
+    }
+
+    public String getParentAuditLogId() {
+        return parentAuditLogId;
+    }
+
+    public void setParentAuditLogId(String parentAuditLogId) {
+        this.parentAuditLogId = parentAuditLogId;
     }
 }
