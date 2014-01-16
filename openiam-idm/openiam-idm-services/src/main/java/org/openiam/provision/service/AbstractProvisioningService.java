@@ -236,7 +236,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         String result = null;
         if( managedSys.getPswd()!=null){
             try {
-                result = cryptor.decrypt(keyManagementService.getUserKey(systemUserId, KeyName.password.name()), managedSys.getPswd());
+                result = cryptor.decrypt(keyManagementService.getUserKey(systemUserId, KeyName.password.name()),managedSys.getPswd());
             } catch (Exception e) {
                 log.error(e);
                 throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR, e.getMessage());
@@ -244,7 +244,18 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         }
         return result;
     }
-
+    protected String getDecryptedPassword(final String userId, final String encodedPassword) {
+        String result = null;
+        if(StringUtils.isNotEmpty(encodedPassword)) {
+            try {
+                result = cryptor.decrypt(keyManagementService.getUserKey(userId, KeyName.password.name()),encodedPassword);
+            } catch (Exception e) {
+                log.error(e);
+                e.printStackTrace();
+            }
+        }
+        return result;
+    }
     protected void sendResetPasswordToUser(UserEntity user, String principal, String password) {
         try {
             MuleClient client = new MuleClient(MuleContextProvider.getCtx());
@@ -1147,8 +1158,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
 
     }
     
-    protected ResponseType setPassword(String requestId, Login login,
-                                                                      String newPasswordSync,
+    protected ResponseType setPassword(String requestId, Login login, String prevDecPassword,
+                                                                      String newDecPasswordSync,
                                                                       ManagedSysDto mSys,
                                                                       ManagedSystemObjectMatch matchObj) {
 
@@ -1167,11 +1178,10 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         req.setHostUrl(mSys.getHostUrl());
         req.setBaseDN((matchObj != null) ? matchObj.getBaseDn() : null);
         req.setOperation("SET_PASSWORD");
-        req.setPassword(newPasswordSync);
-
-        ResponseType respType = connectorAdapter.setPasswordRequest(mSys, req, MuleContextProvider.getCtx());
-
+        req.setPassword(newDecPasswordSync);
         req.setScriptHandler(mSys.getPasswordHandler());
+        req.setCurrentPassword(prevDecPassword);
+        ResponseType respType = connectorAdapter.setPasswordRequest(mSys, req, MuleContextProvider.getCtx());
 
         return respType;
 
