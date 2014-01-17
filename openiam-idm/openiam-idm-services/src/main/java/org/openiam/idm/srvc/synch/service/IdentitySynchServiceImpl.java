@@ -183,15 +183,14 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
         auditBuilder.setSource(config.getSynchConfigId());
         auditLogProvider.persist(auditBuilder);
 
-        Map<String, Object> bindingMap = new HashMap<String, Object>();
-        bindingMap.put("config", config);
-
-        log.debug("-PRE synchronization script CALLED.^^^^^^^^");
         String preScriptUrl = config.getPreSyncScript();
         if (StringUtils.isNotBlank(preScriptUrl)) {
+            log.debug("-PRE synchronization script CALLED.^^^^^^^^");
+            Map<String, Object> bindingMap = new HashMap<String, Object>();
+            bindingMap.put("config", config);
             try {
-                SyncConstants ret = (SyncConstants)scriptRunner.execute(bindingMap, preScriptUrl);
-                if (ret.equals(SyncConstants.FAIL)) {
+                int ret = (Integer)scriptRunner.execute(bindingMap, preScriptUrl);
+                if (ret == SyncConstants.FAIL) {
                     syncResponse.setStatus(ResponseStatus.FAILURE);
                     syncResponse.setErrorCode(ResponseCode.SYNCHRONIZATION_PRE_SRIPT_FAILURE);
                     return syncResponse;
@@ -239,22 +238,6 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
 		    log.debug("-startSynchronization COMPLETE.^^^^^^^^");
             auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "-startSynchronization COMPLETE.^^^^^^^^");
             auditLogProvider.persist(auditBuilder);
-
-            log.debug("-POST synchronization script CALLED.^^^^^^^^");
-            String postScriptUrl = config.getPreSyncScript();
-            if (StringUtils.isNotBlank(postScriptUrl)) {
-                try {
-                    SyncConstants ret = (SyncConstants)scriptRunner.execute(bindingMap, postScriptUrl);
-                    if (ret.equals(SyncConstants.FAIL)) {
-                        syncResponse.setStatus(ResponseStatus.FAILURE);
-                        syncResponse.setErrorCode(ResponseCode.SYNCHRONIZATION_POST_SRIPT_FAILURE);
-                        return syncResponse;
-                    }
-                    log.debug("-POST synchronization script COMPLETE.^^^^^^^^");
-                } catch(Exception e) {
-                    log.error(e);
-                }
-            }
 
 		} catch( ClassNotFoundException cnfe) {
             cnfe.printStackTrace();

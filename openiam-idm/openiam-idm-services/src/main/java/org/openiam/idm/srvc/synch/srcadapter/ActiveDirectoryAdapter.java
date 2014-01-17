@@ -34,12 +34,14 @@ import org.apache.commons.csv.CSVStrategy;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.ws.Response;
+import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.idm.srvc.audit.domain.AuditLogBuilder;
 import org.openiam.idm.srvc.synch.dto.Attribute;
 import org.openiam.idm.srvc.synch.dto.LineObject;
 import org.openiam.idm.srvc.synch.dto.SyncResponse;
 import org.openiam.idm.srvc.synch.dto.SynchConfig;
+import org.openiam.idm.srvc.synch.service.SyncConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -108,6 +110,12 @@ public class ActiveDirectoryAdapter extends AbstractSrcAdapter{
 		
 		//while (parser.)
         log.debug("Active Directory SYNCHRONIZATION COMPLETE^^^^^^^^");
+
+        if (SyncConstants.FAIL == postSync(config, auditLogBuilder)) {
+            SyncResponse syncResponse = new SyncResponse(ResponseStatus.FAILURE);
+            syncResponse.setErrorCode(ResponseCode.SYNCHRONIZATION_POST_SRIPT_FAILURE);
+            return syncResponse;
+        }
 
         return new SyncResponse(ResponseStatus.SUCCESS);
 	}

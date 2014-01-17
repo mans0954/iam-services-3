@@ -32,9 +32,7 @@ import org.openiam.idm.srvc.synch.dto.Attribute;
 import org.openiam.idm.srvc.synch.dto.LineObject;
 import org.openiam.idm.srvc.synch.dto.SyncResponse;
 import org.openiam.idm.srvc.synch.dto.SynchConfig;
-import org.openiam.idm.srvc.synch.service.MatchObjectRule;
-import org.openiam.idm.srvc.synch.service.TransformScript;
-import org.openiam.idm.srvc.synch.service.ValidationScript;
+import org.openiam.idm.srvc.synch.service.*;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.provision.dto.ProvisionUser;
@@ -42,7 +40,6 @@ import org.openiam.provision.resp.ProvisionUserResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.openiam.script.ScriptIntegration;
-import org.openiam.idm.srvc.synch.service.WSOperationCommand;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -271,6 +268,12 @@ public class WSAdapter extends AbstractSrcAdapter { // implements SourceAdapter
 		}
 		
 		log.debug("WS SYNCH COMPLETE.^^^^^^^^");
+
+        if (SyncConstants.FAIL == postSync(config, auditLogBuilder)) {
+            SyncResponse syncResponse = new SyncResponse(ResponseStatus.FAILURE);
+            syncResponse.setErrorCode(ResponseCode.SYNCHRONIZATION_POST_SRIPT_FAILURE);
+            return syncResponse;
+        }
 
 		SyncResponse resp = new SyncResponse(ResponseStatus.SUCCESS);
 		resp.setLastRecordTime(mostRecentRecord);
