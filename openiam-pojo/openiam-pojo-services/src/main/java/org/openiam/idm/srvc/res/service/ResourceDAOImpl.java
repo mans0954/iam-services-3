@@ -1,32 +1,28 @@
 package org.openiam.idm.srvc.res.service;
 
-import static org.hibernate.criterion.Projections.rowCount;
-
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.hibernate.*;
+import org.hibernate.Criteria;
 import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Order;
-
 import org.hibernate.criterion.Restrictions;
-
 import org.openiam.base.Tuple;
 import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.idm.searchbeans.ResourceSearchBean;
 import org.openiam.idm.searchbeans.SearchBean;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.domain.ResourceTypeEntity;
-import org.openiam.idm.srvc.res.dto.Resource;
-import org.openiam.idm.srvc.role.service.RoleDAO;
 import org.openiam.idm.srvc.searchbean.converter.ResourceSearchBeanConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import static org.hibernate.criterion.Projections.rowCount;
 
 /**
  * DAO Implementation for Resources.
@@ -58,6 +54,10 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
 			criteria.add(Restrictions.eq(getPKfieldName(),
 					resource.getId()));
 		} else {
+            if(resource.getRisk() != null) {
+                criteria.add(Restrictions.eq("risk", resource.getRisk()));
+            }
+
 			if (StringUtils.isNotEmpty(resource.getName())) {
 				String resourceName = resource.getName();
 				MatchMode matchMode = null;
@@ -151,14 +151,14 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
 		Criteria criteria = getCriteria().add(Restrictions.eq("name", name));
 		return (ResourceEntity) criteria.uniqueResult();
 	}
-
+    @Override
 	public List<ResourceEntity> getResourcesByType(String id) {
 		Criteria criteria = getCriteria().createAlias("resourceType", "rt")
 				.add(Restrictions.eq("rt.id", id))
 				.addOrder(Order.asc("displayOrder"));
 		return (List<ResourceEntity>) criteria.list();
 	}
-
+    @Override
 	public List<ResourceEntity> getResourcesForRole(final String roleId,
 			final int from, final int size, final ResourceSearchBean searchBean) {
 		final Criteria criteria = getCriteria()
@@ -250,7 +250,7 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
 
 		return criteria.list();
 	}
-
+    @Override
     public List<ResourceEntity> getResourcesForUserByType(final String userId, String resourceTypeId, final ResourceSearchBean searchBean){
         final Criteria criteria = getResourceForUserCriteria(userId);
         addSearchBeanCriteria(criteria, searchBean);

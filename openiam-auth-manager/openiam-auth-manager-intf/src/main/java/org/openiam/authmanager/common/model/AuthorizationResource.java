@@ -13,7 +13,8 @@ import java.util.Set;
         "resourceTypeId",
         "description",
         "inheritFromParent",
-        "isPublic"
+        "isPublic",
+        "risk"
 })
 public class AuthorizationResource extends AbstractAuthorizationEntity implements Serializable  {
 
@@ -29,6 +30,8 @@ public class AuthorizationResource extends AbstractAuthorizationEntity implement
 	private boolean inheritFromParent = true;
 	
 	private boolean isPublic = false;
+
+    private String risk;
 	
 	/*
 	private BitSet linearBitSet = new BitSet();
@@ -77,7 +80,15 @@ public class AuthorizationResource extends AbstractAuthorizationEntity implement
 		return parentResources;
 	}
 
-	/**
+    public String getRisk() {
+        return risk;
+    }
+
+    public void setRisk(String risk) {
+        this.risk = risk;
+    }
+
+    /**
 	 * Compiles this Resource against it's Resource Membership
 	 */
 	@Override

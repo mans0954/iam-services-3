@@ -1,18 +1,18 @@
 package org.openiam.idm.searchbeans;
 
+import org.apache.commons.lang.StringUtils;
+import org.openiam.base.Tuple;
+import org.openiam.idm.srvc.res.dto.Resource;
+import org.openiam.idm.srvc.res.dto.ResourceRisk;
+
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlType;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlType;
-
-import org.apache.commons.lang.StringUtils;
-import org.openiam.base.Tuple;
-import org.openiam.idm.srvc.res.dto.Resource;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "ResourceSearchBean", propOrder = {
@@ -20,7 +20,8 @@ import org.openiam.idm.srvc.res.dto.Resource;
         "resourceTypeId",
         "rootsOnly",
         "attributes",
-        "excludeResourceTypes"
+        "excludeResourceTypes",
+        "risk"
 })
 public class ResourceSearchBean extends AbstractSearchBean<Resource, String> implements SearchBean<Resource, String>, Serializable {
 
@@ -31,6 +32,7 @@ public class ResourceSearchBean extends AbstractSearchBean<Resource, String> imp
 	private Boolean rootsOnly;
 	private List<Tuple<String, String>> attributes;
 	private Set<String> excludeResourceTypes;
+    private ResourceRisk risk;
 	
 	public String getName() {
 		return name;
@@ -90,4 +92,12 @@ public class ResourceSearchBean extends AbstractSearchBean<Resource, String> imp
 			this.excludeResourceTypes.add(excludeResourceType);
 		}
 	}
+
+    public ResourceRisk getRisk() {
+        return risk;
+    }
+
+    public void setRisk(ResourceRisk risk) {
+        this.risk = risk;
+    }
 }

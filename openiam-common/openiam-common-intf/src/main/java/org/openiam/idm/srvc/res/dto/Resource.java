@@ -4,9 +4,11 @@ package org.openiam.idm.srvc.res.dto;
 
 import org.openiam.base.AdminResourceDTO;
 import org.openiam.base.AttributeOperationEnum;
-import org.openiam.base.BaseObject;
-import org.openiam.base.KeyNameDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.idm.srvc.grp.dto.Group;
+import org.openiam.idm.srvc.res.domain.ResourceEntity;
+import org.openiam.idm.srvc.role.dto.Role;
+import org.openiam.idm.srvc.user.dto.User;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -15,11 +17,6 @@ import javax.xml.bind.annotation.XmlType;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
-
-import org.openiam.idm.srvc.grp.dto.Group;
-import org.openiam.idm.srvc.res.domain.ResourceEntity;
-import org.openiam.idm.srvc.role.dto.Role;
-import org.openiam.idm.srvc.user.dto.User;
 
 /**
  * Resources are items that need to be managed or protected. These can be both logic and physical in nature.
@@ -37,7 +34,8 @@ import org.openiam.idm.srvc.user.dto.User;
         "parentResources",
         "minAuthLevel",
         "isPublic",
-        "operation"
+        "operation",
+        "risk"
 })
 @XmlSeeAlso({
         Role.class,
@@ -61,6 +59,8 @@ public class Resource extends AdminResourceDTO {
     private Set<Group> groups = new HashSet<Group>(0);
     private String minAuthLevel;
     private boolean isPublic = true;
+    private ResourceRisk risk;
+
     //private boolean isSSL = false;
 
     protected AttributeOperationEnum operation = AttributeOperationEnum.NO_CHANGE;
@@ -151,6 +151,7 @@ public class Resource extends AdminResourceDTO {
                 ", name='" + name + '\'' +
                 ", description='" + description + '\'' +
                 ", displayOrder=" + displayOrder +
+                ", risk=" + risk +
                 ", URL='" + URL + '\'' +
                 '}';
     }
@@ -194,8 +195,16 @@ public class Resource extends AdminResourceDTO {
 	public void setChildResources(Set<Resource> childResources) {
 		this.childResources = childResources;
 	}
-	
-	@Override
+
+    public ResourceRisk getRisk() {
+        return risk;
+    }
+
+    public void setRisk(ResourceRisk risk) {
+        this.risk = risk;
+    }
+
+    @Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
