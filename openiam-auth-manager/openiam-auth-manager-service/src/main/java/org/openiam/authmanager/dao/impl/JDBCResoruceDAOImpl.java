@@ -19,9 +19,9 @@ public class JDBCResoruceDAOImpl extends AbstractJDBCDao implements ResourceDAO 
 	private static final RowMapper<AuthorizationResource> rowMapper = new ResourceMapper();
 	private static final RowMapper<AuthorizationMenu> menuMapper = new MenuMapper();
 	
-	private String GET_ALL = "SELECT RESOURCE_ID AS RESOURCE_ID, RESOURCE_TYPE_ID AS RESOURCE_TYPE_ID, NAME AS NAME, DESCRIPTION AS DESCRIPTION, IS_PUBLIC AS IS_PUBLIC FROM %s.RES";
-	private String GET_ALL_MENUS = "SELECT RESOURCE_ID AS RESOURCE_ID, URL AS MENU_URL, NAME AS MENU_NAME, DISPLAY_ORDER AS DISPLAY_ORDER, IS_PUBLIC AS IS_PUBLIC FROM %s.RES WHERE RESOURCE_TYPE_ID = ?";
-	private String GET_AUTH_MENU_BY_ID = "SELECT RESOURCE_ID AS RESOURCE_ID, URL AS MENU_URL, NAME AS MENU_NAME, DISPLAY_ORDER AS DISPLAY_ORDER, IS_PUBLIC AS IS_PUBLIC FROM %s.RES WHERE RESOURCE_TYPE_ID = ? AND RESOURCE_ID = ?";
+	private String GET_ALL = "SELECT RESOURCE_ID AS RESOURCE_ID, RESOURCE_TYPE_ID AS RESOURCE_TYPE_ID, NAME AS NAME, DESCRIPTION AS DESCRIPTION, IS_PUBLIC AS IS_PUBLIC, RISK AS RISK FROM %s.RES";
+	private String GET_ALL_MENUS = "SELECT RESOURCE_ID AS RESOURCE_ID, URL AS MENU_URL, NAME AS MENU_NAME, DISPLAY_ORDER AS DISPLAY_ORDER, IS_PUBLIC AS IS_PUBLIC, RISK AS RISK FROM %s.RES WHERE RESOURCE_TYPE_ID = ?";
+	private String GET_AUTH_MENU_BY_ID = "SELECT RESOURCE_ID AS RESOURCE_ID, URL AS MENU_URL, NAME AS MENU_NAME, DISPLAY_ORDER AS DISPLAY_ORDER, IS_PUBLIC AS IS_PUBLIC, RISK AS RISK FROM %s.RES WHERE RESOURCE_TYPE_ID = ? AND RESOURCE_ID = ?";
 	
 	@Override
 	protected void initSqlStatements() {
@@ -67,6 +67,7 @@ public class JDBCResoruceDAOImpl extends AbstractJDBCDao implements ResourceDAO 
 			menu.setUrl(rs.getString("MENU_URL"));
 			menu.setName(rs.getString("MENU_NAME"));
 			menu.setDisplayOrder(rs.getInt("DISPLAY_ORDER"));
+            menu.setRisk(rs.getString("RISK"));
 			menu.setIsPublic("Y".equals(rs.getString("IS_PUBLIC")));
 			return menu;
 		}
@@ -82,6 +83,7 @@ public class JDBCResoruceDAOImpl extends AbstractJDBCDao implements ResourceDAO 
 			resource.setName(rs.getString("NAME"));
             resource.setDescription(rs.getString("DESCRIPTION"));
             resource.setResourceTypeId(rs.getString("RESOURCE_TYPE_ID"));
+            resource.setRisk(rs.getString("RISK"));
 			resource.setPublic("Y".equals(rs.getString("IS_PUBLIC")));
 			return resource;
 		}
