@@ -58,10 +58,6 @@ import java.io.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Reads a CSV file for use during the synchronization process
@@ -133,55 +129,12 @@ public class CSVAdapter extends AbstractSrcAdapter {
             final MatchObjectRule matchRule = matchRuleFactory.create(config.getCustomMatchRule());
             //Get Header
             final LineObject rowHeader = populateTemplate(rows[0]);
-            rows = Arrays.copyOfRange(rows, 1, rows.length);
-            // Multithreading
-            int allRowsCount = rows.length;
 
-            auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "Rows for processing: "+allRowsCount);
+            auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "Rows for processing: "+rows.length);
 
-            if (allRowsCount > 0) {
-                int threadCoount = THREAD_COUNT;
-                int rowsInOneExecutors = allRowsCount / threadCoount;
-                int remains = rowsInOneExecutors > 0 ? allRowsCount % (rowsInOneExecutors * threadCoount) : 0;
-                if (remains != 0) {
-                    threadCoount++;
-                }
-                log.debug("Thread count = " + threadCoount + "; Rows in one thread = " + rowsInOneExecutors + "; Remains rows = " + remains);
-                System.out.println("Thread count = " + threadCoount + "; Rows in one thread = " + rowsInOneExecutors + "; Remains rows = " + remains);
+            if (rows.length > 0) {
+                proccess(config, provService, rows, validationScript, transformScripts, matchRule, rowHeader,0, auditBuilder);
 
-                List<Future> results = new LinkedList<Future>();
-                final ExecutorService service = Executors.newCachedThreadPool();
-                for (int i = 0; i < threadCoount; i++) {
-                    final int startIndex = i * rowsInOneExecutors;
-                    int shiftIndex = threadCoount > THREAD_COUNT && i == threadCoount - 1 ? remains : rowsInOneExecutors;
-
-                    final String[][] part = Arrays.copyOfRange(rows, startIndex, startIndex + shiftIndex);
-                    results.add(service.submit(new Runnable() {
-                        @Override
-                        public void run() {
-                            proccess(config, provService, part, validationScript, transformScripts, matchRule, rowHeader, startIndex, auditBuilder);
-                        }
-                    }));
-                    //Give 30sec time for thread to be UP (load all cache and begin the work)
-                    Thread.sleep(THREAD_DELAY_BEFORE_START);
-                }
-                Runtime.getRuntime().addShutdownHook(new Thread() {
-                    public void run() {
-                        service.shutdown();
-                        try {
-                            if (!service.awaitTermination(SHUTDOWN_TIME, TimeUnit.MILLISECONDS)) { //optional *
-                                log.warn("Executor did not terminate in the specified time."); //optional *
-                                List<Runnable> droppedTasks = service.shutdownNow(); //optional **
-                                log.warn("Executor was abruptly shut down. " + droppedTasks.size() + " tasks will not be executed."); //optional **
-                            }
-                        } catch (InterruptedException e) {
-                            log.error(e);
-                            SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
-                            resp.setErrorCode(ResponseCode.INTERRUPTED_EXCEPTION);
-                        }
-                    }
-                });
-                waitUntilWorkDone(results);
             }
         } catch (FileNotFoundException fe) {
             fe.printStackTrace();
@@ -209,14 +162,6 @@ public class CSVAdapter extends AbstractSrcAdapter {
             SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
             resp.setErrorCode(ResponseCode.IO_EXCEPTION);
             return resp;
-        } catch (InterruptedException e) {
-            log.error(e);
-            /*
-            synchStartLog.updateSynchAttributes("FAIL", ResponseCode.INTERRUPTED_EXCEPTION.toString(), e.toString());
-            auditHelper.logEvent(synchStartLog);
-			*/
-            SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
-            resp.setErrorCode(ResponseCode.INTERRUPTED_EXCEPTION);
         } catch (SftpException sftpe) {
             log.error(sftpe);
             /*
@@ -248,7 +193,6 @@ public class CSVAdapter extends AbstractSrcAdapter {
         log.debug("CSV SYNCHRONIZATION COMPLETE^^^^^^^^");
 
         auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "CSV SYNCHRONIZATION COMPLETE^^^^^^^^");
-        auditLogProvider.persist(auditBuilder);
         return new SyncResponse(ResponseStatus.SUCCESS);
     }
 
@@ -346,11 +290,10 @@ public class CSVAdapter extends AbstractSrcAdapter {
                                     provService.modifyUser(pUser);
                                 } catch (Exception e) {
                                     auditLogBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "Error: User login: " +(pUser.getFirstName()+" "+pUser.getLastName())+" [MODIFY] " + e.getMessage());
-                                   auditLogProvider.persist(auditLogBuilder);
+                                    auditLogProvider.persist(auditLogBuilder);
                                     log.error(e);
                                 }
                                 auditLogBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "User login: " +(pUser.getFirstName()+" "+pUser.getLastName())+" [MODIFY] ");
-                            //    auditLogProvider.persist(auditLogBuilder);
                             } else {
                                 log.info(" - New user being provisioned");
                                 pUser.setUserId(null);
@@ -370,7 +313,6 @@ public class CSVAdapter extends AbstractSrcAdapter {
             }
             // show the user object
             ctr++;
-            auditLogService.enqueue(auditLogBuilder);
             //ADD the sleep pause to give other threads possibility to be alive
             try {
                 Thread.sleep(50);
