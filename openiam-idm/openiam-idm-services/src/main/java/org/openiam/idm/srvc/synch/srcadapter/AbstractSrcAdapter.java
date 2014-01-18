@@ -5,12 +5,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.mule.api.MuleContext;
 import org.mule.api.MuleException;
 import org.mule.api.context.MuleContextAware;
 import org.mule.module.client.MuleClient;
+import org.openiam.base.ws.ResponseCode;
+import org.openiam.base.ws.ResponseStatus;
 import org.openiam.dozer.converter.LoginDozerConverter;
 import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.idm.srvc.audit.domain.AuditLogBuilder;
@@ -20,9 +23,11 @@ import org.openiam.idm.srvc.synch.dto.SyncResponse;
 import org.openiam.idm.srvc.synch.dto.SynchConfig;
 import org.openiam.idm.srvc.synch.service.IdentitySynchService;
 import org.openiam.idm.srvc.synch.service.SourceAdapter;
+import org.openiam.idm.srvc.synch.service.SyncConstants;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.service.ProvisionService;
+import org.openiam.script.ScriptIntegration;
 import org.openiam.util.MuleContextProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -60,6 +65,9 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
     protected MatchRuleFactory matchRuleFactory;
     @Autowired
     protected IdentitySynchService synchService;
+    @Autowired
+    @Qualifier("configurableGroovyScriptEngine")
+    protected ScriptIntegration scriptRunner;
 
     @Value("${org.openiam.idm.system.user.id}")
     protected String systemUserId;
@@ -71,6 +79,23 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
     private String serviceContext;
 
     public abstract SyncResponse startSynch(SynchConfig config, AuditLogBuilder auditLogBuilder);
+
+    public int postSync(SynchConfig config, AuditLogBuilder auditLogBuilder) {
+        String postScriptUrl = config.getPostSyncScript();
+        if (StringUtils.isNotBlank(postScriptUrl)) {
+            log.debug("-POST synchronization script CALLED.^^^^^^^^");
+            Map<String, Object> bindingMap = new HashMap<String, Object>();
+            bindingMap.put("config", config);
+            try {
+                int ret = (Integer)scriptRunner.execute(bindingMap, postScriptUrl);
+                log.debug("-POST synchronization script COMPLETE.^^^^^^^^");
+                return ret;
+            } catch(Exception e) {
+                log.error(e);
+            }
+        }
+        return SyncConstants.SUCCESS;
+    }
 
     public void addUser(ProvisionUser pUser) {
         long startTime = System.currentTimeMillis();

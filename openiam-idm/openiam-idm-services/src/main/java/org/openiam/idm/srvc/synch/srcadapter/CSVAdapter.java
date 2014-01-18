@@ -42,6 +42,7 @@ import org.openiam.idm.srvc.synch.dto.LineObject;
 import org.openiam.idm.srvc.synch.dto.SyncResponse;
 import org.openiam.idm.srvc.synch.dto.SynchConfig;
 import org.openiam.idm.srvc.synch.service.MatchObjectRule;
+import org.openiam.idm.srvc.synch.service.SyncConstants;
 import org.openiam.idm.srvc.synch.service.TransformScript;
 import org.openiam.idm.srvc.synch.service.ValidationScript;
 import org.openiam.idm.srvc.user.dto.User;
@@ -191,6 +192,12 @@ public class CSVAdapter extends AbstractSrcAdapter {
         }
 
         log.debug("CSV SYNCHRONIZATION COMPLETE^^^^^^^^");
+
+        if (SyncConstants.FAIL == postSync(config, auditBuilder)) {
+            SyncResponse syncResponse = new SyncResponse(ResponseStatus.FAILURE);
+            syncResponse.setErrorCode(ResponseCode.SYNCHRONIZATION_POST_SRIPT_FAILURE);
+            return syncResponse;
+        }
 
         auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "CSV SYNCHRONIZATION COMPLETE^^^^^^^^");
         return new SyncResponse(ResponseStatus.SUCCESS);
