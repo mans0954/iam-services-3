@@ -14,6 +14,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.lang.RandomStringUtils;
 import org.openiam.am.srvc.dto.AuthLevel;
+import org.openiam.am.srvc.dto.AuthLevelGrouping;
 import org.openiam.am.srvc.dto.ContentProvider;
 import org.openiam.am.srvc.dto.URIPattern;
 import org.openiam.am.srvc.ws.ContentProviderWebService;
@@ -100,11 +101,10 @@ public class TestPageTemplateService extends AbstractTestNGSpringContextTests {
 	 protected void setUp() throws Exception {
 		 final List<Language> languageList = languageWS.getAll();
 		 
-		 final AuthLevel firstAuthLevel = contentProviderWS.getAuthLevelList().get(0);
+		 final AuthLevelGrouping firstAuthLevel = contentProviderWS.getAuthLevelGroupingList().get(0);
 		 
 		 final ContentProvider contentProvider = new ContentProvider();
 		 contentProvider.setDomainPattern(RandomStringUtils.randomAlphanumeric(4));
-		 contentProvider.setAuthLevel(firstAuthLevel);
 		 contentProvider.setIsPublic(true);
 		 contentProvider.setIsSSL(false);
 		 contentProvider.setName(RandomStringUtils.randomAlphanumeric(4));
@@ -115,7 +115,6 @@ public class TestPageTemplateService extends AbstractTestNGSpringContextTests {
 		 Assert.assertNotNull(cp);
 		 
 		 final URIPattern uriPattern = new URIPattern();
-		 uriPattern.setAuthLevel(firstAuthLevel);
 		 uriPattern.setContentProviderId(cp.getId());
 		 uriPattern.setIsPublic(true);
 		 uriPattern.setPattern("/*");

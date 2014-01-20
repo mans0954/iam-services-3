@@ -596,8 +596,8 @@
 			<b>pattern</b>
 		</field>
 		<field-exclude>
-			<a>minAuthLevel</a>
-			<b>authLevel</b>
+			<a>groupingXrefs</a>
+			<b>groupingXrefs</b>
 		</field-exclude>
 		<field>
 			<a>isPublic</a>
@@ -724,8 +724,8 @@
             <b>resourceName</b>
         </field>
         <field-exclude>
-            <a>minAuthLevel</a>
-            <b>authLevel</b>
+            <a>groupingXrefs</a>
+            <b>groupingXrefs</b>
         </field-exclude>
         <field-exclude>
             <a>serverSet</a>
@@ -825,6 +825,37 @@
     	<field-exclude>
     		<a>uriPatterns</a>
     		<b>uriPatterns</b>
+    	</field-exclude>
+    </mapping>
+    
+    <mapping>
+    	<class-a>org.openiam.am.srvc.domain.AuthLevelGroupingEntity</class-a>
+    	<class-b>org.openiam.am.srvc.dto.AuthLevelGrouping</class-b>
+    	<field>
+    		<a>id</a>
+    		<b>id</b>
+    	</field>
+    	<field>
+    		<a>name</a>
+    		<b>name</b>
+    	</field>
+    	<field
+			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentObjectConverter"
+			custom-converter-param="dto2entityDeepDozerMapper">
+    		<a>authLevel</a>
+    		<b>authLevel</b>
+    	</field>
+    	<field-exclude>
+    		<a>attributes</a>
+    		<b>attributes</b>
+    	</field-exclude>
+    	<field-exclude>
+    		<a>patternXrefs</a>
+    		<b>patternXrefs</b>
+    	</field-exclude>
+    	<field-exclude>
+    		<a>contentProviderXrefs</a>
+    		<b>contentProviderXrefs</b>
     	</field-exclude>
     </mapping>
 </mappings>

@@ -1,5 +1,7 @@
 package org.openiam.am.srvc.dto;
 
+import org.openiam.am.srvc.comparator.AuthLevelGroupingXrefComparator;
+import org.openiam.am.srvc.domain.AuthLevelGroupingURIPatternXrefEntity;
 import org.openiam.am.srvc.domain.URIPatternEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.meta.dto.MetadataElementPageTemplate;
@@ -8,6 +10,9 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -15,14 +20,14 @@ import java.util.Set;
         "id",
         "contentProviderId",
         "contentProviderName",
-        "authLevel",
         "pattern",
         "isPublic",
         "resourceId",
         "resourceName",
         "metaEntitySet",
         "pageTemplates",
-        "themeId"
+        "themeId",
+        "groupingXrefs"
 })
 @DozerDTOCorrespondence(URIPatternEntity.class)
 public class URIPattern implements Serializable {
@@ -31,13 +36,13 @@ public class URIPattern implements Serializable {
 	private String contentProviderId;
 	private String contentProviderName;
 	private String pattern;
-	private AuthLevel authLevel;
 	private boolean isPublic;
 	private String resourceId;
     private String resourceName;
 	private Set<URIPatternMeta> metaEntitySet;
 	private Set<MetadataElementPageTemplate> pageTemplates;
 	private String themeId;
+	private Set<AuthLevelGroupingURIPatternXref> groupingXrefs;
 	
 	public String getId() {
 		return id;
@@ -56,12 +61,6 @@ public class URIPattern implements Serializable {
 	}
 	public void setPattern(String pattern) {
 		this.pattern = pattern;
-	}
-	public AuthLevel getAuthLevel() {
-		return authLevel;
-	}
-	public void setAuthLevel(AuthLevel authLevel) {
-		this.authLevel = authLevel;
 	}
 	public boolean getIsPublic() {
 		return isPublic;
@@ -109,11 +108,26 @@ public class URIPattern implements Serializable {
 	public void setThemeId(String themeId) {
 		this.themeId = themeId;
 	}
+	
+	public List<AuthLevelGroupingURIPatternXref> getOrderedGroupingXrefs() {
+		List<AuthLevelGroupingURIPatternXref> sorted = null;
+		if(groupingXrefs != null) {
+			sorted = new ArrayList<AuthLevelGroupingURIPatternXref>(groupingXrefs);
+			Collections.sort(sorted, new AuthLevelGroupingXrefComparator());
+		}
+		return sorted;
+	}
+	
+	public Set<AuthLevelGroupingURIPatternXref> getGroupingXrefs() {
+		return groupingXrefs;
+	}
+	public void setGroupingXrefs(Set<AuthLevelGroupingURIPatternXref> groupingXrefs) {
+		this.groupingXrefs = groupingXrefs;
+	}
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((authLevel == null) ? 0 : authLevel.hashCode());
 		result = prime * result + ((contentProviderId == null) ? 0 : contentProviderId.hashCode());
 		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		result = prime * result + (isPublic ? 1231 : 1237);
@@ -131,11 +145,6 @@ public class URIPattern implements Serializable {
 		if (getClass() != obj.getClass())
 			return false;
 		URIPattern other = (URIPattern) obj;
-		if (authLevel == null) {
-			if (other.authLevel != null)
-				return false;
-		} else if (!authLevel.equals(other.authLevel))
-			return false;
 		if (contentProviderId == null) {
 			if (other.contentProviderId != null)
 				return false;
@@ -169,9 +178,8 @@ public class URIPattern implements Serializable {
 	@Override
 	public String toString() {
 		return String
-				.format("URIPattern [id=%s, contentProviderId=%s, pattern=%s, authLevel=%s, isPublic=%s, resourceId=%s]",
-						id, contentProviderId, pattern, authLevel, isPublic,
-						resourceId);
+				.format("URIPattern [id=%s, contentProviderId=%s, pattern=%s, isPublic=%s, resourceId=%s]",
+						id, contentProviderId, pattern, isPublic, resourceId);
 	}
 	
 	

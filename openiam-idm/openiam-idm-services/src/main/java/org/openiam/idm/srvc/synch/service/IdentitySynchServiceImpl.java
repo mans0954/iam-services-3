@@ -196,7 +196,6 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
 			
 			log.debug("SyncReponse updateTime value=" + newLastExecTime);
             auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "SyncReponse updateTime value=" + newLastExecTime);
-            auditLogProvider.persist(auditBuilder);
 
             if (syncResponse.getLastRecordTime() == null) {
 			

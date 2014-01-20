@@ -108,5 +108,20 @@ public class DefaultNewHireRequestApproverAssociationIdentifier extends Abstract
 				}
 			}
 		}
+		
+		if(CollectionUtils.isEmpty(approverAssociationIds) && CollectionUtils.isEmpty(approverUserIds)) {
+			/* get default approver assocaitions */
+			final List<ApproverAssociationEntity> defaultApproverAssociations = getDefaultApproverAssociations();
+			if(CollectionUtils.isNotEmpty(defaultApproverAssociations)) {
+				for(final ApproverAssociationEntity entity : defaultApproverAssociations) {
+					approverAssociationIds.add(entity.getId());
+				}
+			}
+			
+			/* if no default approvers, just use sysadmin */
+			if(CollectionUtils.isEmpty(approverAssociationIds)) {
+				approverUserIds.add(defaultApproverUserId);
+			}
+		}
 	}
 }

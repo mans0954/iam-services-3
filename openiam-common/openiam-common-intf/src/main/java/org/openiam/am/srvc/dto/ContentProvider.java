@@ -1,6 +1,8 @@
 package org.openiam.am.srvc.dto;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.openiam.am.srvc.comparator.AuthLevelGroupingXrefComparator;
+import org.openiam.am.srvc.domain.AuthLevelGroupingContentProviderXrefEntity;
 import org.openiam.am.srvc.domain.ContentProviderEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 
@@ -10,6 +12,7 @@ import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -19,7 +22,6 @@ import java.util.concurrent.atomic.AtomicInteger;
         "id",
         "name",
         "isPublic",
-        "authLevel",
         "domainPattern",
         "isSSL",
         /*"contextPath",*/
@@ -29,7 +31,8 @@ import java.util.concurrent.atomic.AtomicInteger;
         "serverSet",
         "managedSysId",
         "url",
-        "themeId"
+        "themeId",
+        "groupingXrefs"
 })
 @DozerDTOCorrespondence(ContentProviderEntity.class)
 public class ContentProvider implements Serializable {
@@ -37,7 +40,6 @@ public class ContentProvider implements Serializable {
 	private String id;
 	private String name;
 	private boolean isPublic;
-	private AuthLevel authLevel;
 	private String domainPattern;
 	private Boolean isSSL;
 	private String managedSysId;
@@ -48,6 +50,7 @@ public class ContentProvider implements Serializable {
 	private String url;
 	private Set<ContentProviderServer> serverSet;
 	private String themeId;
+	private Set<AuthLevelGroupingContentProviderXref> groupingXrefs;
 	
 	/*
 	 * federation variables.  Internal use only
@@ -75,12 +78,6 @@ public class ContentProvider implements Serializable {
 	}
 	public void setIsPublic(boolean isPublic) {
 		this.isPublic = isPublic;
-	}
-	public AuthLevel getAuthLevel() {
-		return authLevel;
-	}
-	public void setAuthLevel(AuthLevel authLevel) {
-		this.authLevel = authLevel;
 	}
 	public String getDomainPattern() {
 		return domainPattern;
@@ -167,11 +164,26 @@ public class ContentProvider implements Serializable {
 		this.themeId = themeId;
 	}
 	
+	public List<AuthLevelGroupingContentProviderXref> getOrderedGroupingXrefs() {
+		List<AuthLevelGroupingContentProviderXref> sorted = null;
+		if(groupingXrefs != null) {
+			sorted = new ArrayList<AuthLevelGroupingContentProviderXref>(groupingXrefs);
+			Collections.sort(sorted, new AuthLevelGroupingXrefComparator());
+		}
+		return sorted;
+	}
+	
+	public Set<AuthLevelGroupingContentProviderXref> getGroupingXrefs() {
+		return groupingXrefs;
+	}
+	public void setGroupingXrefs(
+			Set<AuthLevelGroupingContentProviderXref> groupingXrefs) {
+		this.groupingXrefs = groupingXrefs;
+	}
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((authLevel == null) ? 0 : authLevel.hashCode());
 		result = prime * result + ((domainPattern == null) ? 0 : domainPattern.hashCode());
 		/*
         result = prime * result
@@ -195,11 +207,6 @@ public class ContentProvider implements Serializable {
 		if (getClass() != obj.getClass())
 			return false;
 		ContentProvider other = (ContentProvider) obj;
-		if (authLevel == null) {
-			if (other.authLevel != null)
-				return false;
-		} else if (!authLevel.equals(other.authLevel))
-			return false;
 		if (domainPattern == null) {
 			if (other.domainPattern != null)
 				return false;
@@ -251,9 +258,8 @@ public class ContentProvider implements Serializable {
 	@Override
 	public String toString() {
 		return String
-				.format("ContentProvider [id=%s, name=%s, isPublic=%s, authLevel=%s, domainPattern=%s, isSSL=%s, resourceId=%s]",
-						id, name, isPublic, authLevel, domainPattern, isSSL,
-						resourceId);
+				.format("ContentProvider [id=%s, name=%s, isPublic=%s, domainPattern=%s, isSSL=%s, resourceId=%s]",
+						id, name, isPublic, domainPattern, isSSL, resourceId);
 	}
 	
 	

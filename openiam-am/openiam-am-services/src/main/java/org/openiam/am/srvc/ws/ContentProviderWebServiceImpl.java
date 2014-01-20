@@ -55,10 +55,13 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
 
     @Autowired
     private URIPatternMetaTypeDozerConverter uriPatternMetaTypeDozerConverter;
+    
+    @Autowired
+    private AuthLevelGroupingDozerConverter authLevelGroupingDozerConverter;
 
     @Override
-    public List<AuthLevel> getAuthLevelList(){
-         return authLevelDozerConverter.convertToDTOList(contentProviderService.getAuthLevelList(), false);
+    public List<AuthLevelGrouping> getAuthLevelGroupingList() {
+    	return authLevelGroupingDozerConverter.convertToDTOList(contentProviderService.getAuthLevelGroupingList(), true);
     }
 
     @Override
@@ -92,11 +95,12 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
             if (provider.getDomainPattern()==null || StringUtils.isBlank(provider.getDomainPattern())) {
                 throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_DOMAIN_PATERN_NOT_SET);
             }
-            if (provider.getAuthLevel()==null || StringUtils.isBlank(provider.getAuthLevel().getId())) {
-                throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_AUTH_LEVEL_NOT_SET);
-            }
             if(StringUtils.isBlank(provider.getManagedSysId())) {
             	throw new  BasicDataServiceException(ResponseCode.MANAGED_SYSTEM_NOT_SET);
+            }
+            
+            if(CollectionUtils.isEmpty(provider.getGroupingXrefs())) {
+            	throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_AUTH_LEVEL_NOT_SET);
             }
 
 //            UNIQUE KEY `UNIQUE_CP_NAME` (`CONTENT_PROVIDER_NAME`),
@@ -134,11 +138,11 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
                 }
             }
             final ContentProviderEntity contentProvider = contentProviderDozerConverter.convertToEntity(provider,true);
-            final ContentProviderEntity entity = contentProviderService.saveContentProvider(contentProvider);
-            response.setResponseValue(contentProviderDozerConverter.convertToDTO(entity, true));
+            contentProviderService.saveContentProvider(contentProvider);
+            response.setResponseValue(contentProvider.getId());
 
         } catch(BasicDataServiceException e) {
-            log.info(e);
+            log.info(e.getMessage(), e);
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(e.getCode());
         } catch(Throwable e) {
@@ -153,7 +157,7 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
     public Response deleteContentProvider(String providerId){
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
-            if (providerId==null || providerId.trim().isEmpty())
+            if(StringUtils.isBlank(providerId))
                 throw new  BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
 
             contentProviderService.deleteContentProvider(providerId);
@@ -196,9 +200,9 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
         try {
             if (contentProviderServer == null)
                 throw new  BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
-            if (contentProviderServer.getServerURL()==null || contentProviderServer.getServerURL().trim().isEmpty())
+            if (StringUtils.isBlank(contentProviderServer.getServerURL()))
                 throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_SERVER_URL_NOT_SET);
-            if (contentProviderServer.getContentProviderId()==null || contentProviderServer.getContentProviderId().trim().isEmpty())
+            if (StringUtils.isBlank(contentProviderServer.getContentProviderId()))
                 throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_NOT_SET);
 
             ContentProviderServerEntity example = new ContentProviderServerEntity();
@@ -228,7 +232,7 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
     public Response deleteProviderServer(String contentProviderServerId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
-            if (contentProviderServerId==null || contentProviderServerId.trim().isEmpty())
+            if (StringUtils.isBlank(contentProviderServerId))
                 throw new  BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
 
             contentProviderService.deleteProviderServer(contentProviderServerId);
@@ -298,9 +302,12 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
             if (StringUtils.isBlank(pattern.getContentProviderId())) {
                 throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_NOT_SET);
             }
-            if (pattern.getAuthLevel()==null || StringUtils.isBlank(pattern.getAuthLevel().getId())) {
-                throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_AUTH_LEVEL_NOT_SET);
+            
+            /*
+            if(CollectionUtils.isEmpty(pattern.getGroupingXrefs())) {
+            	throw new BasicDataServiceException(ResponseCode.URI_PATTERN_AUTH_LEVEL_NOT_SET);
             }
+            */
             
             final List<URIPatternEntity> entityList = 
             		contentProviderService.getURIPatternsForContentProviderMatchingPattern(pattern.getContentProviderId(), pattern.getPattern());
@@ -323,8 +330,9 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
                 throw new  BasicDataServiceException(ResponseCode.URI_PATTERN_INVALID);
             }
 
-            URIPatternEntity entity = contentProviderService.saveURIPattern(uriPatternDozerConverter.convertToEntity(pattern,true));
-            response.setResponseValue(uriPatternDozerConverter.convertToDTO(entity, true));
+            final URIPatternEntity entity = uriPatternDozerConverter.convertToEntity(pattern,true);
+            contentProviderService.saveURIPattern(entity);
+            response.setResponseValue(entity.getId());
 
         } catch(BasicDataServiceException e) {
             log.error(e.getMessage(), e);
@@ -342,7 +350,7 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
     public Response deleteProviderPattern(@WebParam(name = "providerId", targetNamespace = "") String providerId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
-            if (providerId==null || providerId.trim().isEmpty())
+            if (StringUtils.isBlank(providerId))
                 throw new  BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
 
             contentProviderService.deleteProviderPattern(providerId);
@@ -463,7 +471,7 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
     public Response deleteMetaDataForPattern(@WebParam(name = "metaId", targetNamespace = "") String metaId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
-            if (metaId==null || metaId.trim().isEmpty())
+            if (StringUtils.isBlank(metaId))
                 throw new  BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
 
             contentProviderService.deleteMetaDataForPattern(metaId);

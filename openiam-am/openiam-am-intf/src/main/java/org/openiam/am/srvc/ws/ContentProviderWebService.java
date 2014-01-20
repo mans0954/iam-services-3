@@ -12,8 +12,9 @@ import java.util.List;
 
 @WebService(targetNamespace = "urn:idm.openiam.org/srvc/am/service", name = "ContentProviderWebService")
 public interface ContentProviderWebService {
+   
     @WebMethod
-    List<AuthLevel> getAuthLevelList();
+    List<AuthLevelGrouping> getAuthLevelGroupingList();
 
     /**
      * Add or update ContentProvider object.

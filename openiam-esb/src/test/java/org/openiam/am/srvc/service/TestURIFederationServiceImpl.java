@@ -63,7 +63,6 @@ public class TestURIFederationServiceImpl extends AbstractTestNGSpringContextTes
 		final ResourceEntity cpResource = getCPResource();
 		final ContentProviderEntity cpEntity = new ContentProviderEntity();
 		cpEntity.setDomainPattern("www.testng.com");
-		cpEntity.setMinAuthLevel(authLevelDAO.findById("PASSWORD_AUTH"));
 		cpEntity.setName(RandomStringUtils.randomAlphabetic(7));
 		cpEntity.setResource(cpResource);
 		//cpEntity.setResourceId(cpResource.getResourceId());
