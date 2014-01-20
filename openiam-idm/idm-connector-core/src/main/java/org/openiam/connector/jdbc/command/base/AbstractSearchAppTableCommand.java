@@ -1,12 +1,15 @@
 package org.openiam.connector.jdbc.command.base;
 
+import org.apache.cxf.common.util.StringUtils;
 import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.connector.type.ObjectValue;
 import org.openiam.connector.type.constant.ErrorCode;
 import org.openiam.connector.type.constant.StatusCodeType;
 import org.openiam.connector.type.request.LookupRequest;
+import org.openiam.connector.type.request.SearchRequest;
 import org.openiam.connector.type.response.SearchResponse;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
+import org.openiam.idm.srvc.mngsys.dto.PolicyMapObjectTypeOptions;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
 import org.openiam.connector.jdbc.command.data.AppTableConfiguration;
@@ -14,24 +17,21 @@ import org.openiam.connector.jdbc.command.data.AppTableConfiguration;
 import java.sql.*;
 import java.util.List;
 
-public abstract class AbstractLookupAppTableCommand<ExtObject extends ExtensibleObject> extends
-	AbstractAppTableCommand<LookupRequest<ExtObject>, SearchResponse> {
+public abstract class AbstractSearchAppTableCommand<ExtObject extends ExtensibleObject> extends
+	AbstractAppTableCommand<SearchRequest<ExtObject>, SearchResponse> {
     @Override
-    public SearchResponse execute(LookupRequest<ExtObject> lookupRequest) throws ConnectorDataException {
+    public SearchResponse execute(SearchRequest<ExtObject> searchRequest) throws ConnectorDataException {
 	final SearchResponse response = new SearchResponse();
 	response.setStatus(StatusCodeType.SUCCESS);
 
-	final String principalName = lookupRequest.getSearchValue();
-	AppTableConfiguration configuration = this.getConfiguration(lookupRequest.getTargetID());
+	final String searchQuery = searchRequest.getSearchQuery();
+	AppTableConfiguration configuration = this.getConfiguration(searchRequest.getTargetID());
 	Connection con = this.getConnection(configuration.getManagedSys());
-
-	final ObjectValue objectValue = new ObjectValue();
-	objectValue.setObjectIdentity(principalName);
 
 	try {
 
 	    final PreparedStatement statement = createSelectStatement(con, configuration.getResourceId(),
-		    configuration.getTableName(), principalName);
+		    configuration.getTableName(), searchQuery);
 	    if (log.isDebugEnabled()) {
 		log.debug("Executing lookup query");
 	    }
@@ -43,65 +43,55 @@ public abstract class AbstractLookupAppTableCommand<ExtObject extends Extensible
 	    if (log.isDebugEnabled()) {
 		log.debug(String.format("Query contains column count = %s", columnCount));
 	    }
-
-	    if (rs.next()) {
+	    while (rs.next()) {
+		ObjectValue objectValue = new ObjectValue();
 		for (int colIndx = 1; colIndx <= columnCount; colIndx++) {
-
 		    final ExtensibleAttribute extAttr = new ExtensibleAttribute();
-
 		    extAttr.setName(rsMetadata.getColumnName(colIndx));
-
 		    setColumnValue(extAttr, colIndx, rsMetadata, rs);
 		    objectValue.getAttributeList().add(extAttr);
 		}
-
 		response.getObjectList().add(objectValue);
-	    } else {
-		throw new ConnectorDataException(ErrorCode.NO_SUCH_IDENTIFIER, "Principal not found");
 	    }
-	    this.closeStatement(statement);
+	    statement.close();
 	    response.setStatus(StatusCodeType.SUCCESS);
 	    return response;
 	} catch (SQLException se) {
 	    log.error(se.getMessage(), se);
 	    throw new ConnectorDataException(ErrorCode.SQL_ERROR, se.getMessage());
 	} finally {
+
 	    this.closeConnection(con);
 	}
     }
 
     private PreparedStatement createSelectStatement(final Connection con, final String resourceId,
-	    final String tableName, final String principalName) throws ConnectorDataException {
+	    final String tableName, final String searchQuery) throws ConnectorDataException {
 	final List<AttributeMapEntity> attrMap = attributeMaps(resourceId);
 	if (attrMap == null)
 	    throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR, "Attribute Map is null");
 
 	PreparedStatement statement = null;
 	try {
-	    int colCount = 0;
-	    String principalFieldName = null;
-	    String principalFieldDataType = null;
 	    final StringBuilder columnList = new StringBuilder();
 	    for (AttributeMapEntity atr : attrMap) {
-		final String objectType = atr.getMapForObjectType();
-		if (compareObjectTypeWithId(objectType)) {
-		    principalFieldName = atr.getAttributeName();
-		    principalFieldDataType = atr.getDataType().getValue();
-		} else if (compareObjectTypeWithObject(objectType)) {
-		    if (colCount > 0) {
-			columnList.append(",");
-		    }
+		if (PolicyMapObjectTypeOptions.PRINCIPAL.name().equals(atr.getMapForObjectType())
+			|| PolicyMapObjectTypeOptions.USER.name().equals(atr.getMapForObjectType())) {
 		    columnList.append(atr.getAttributeName());
-		    colCount++;
+		    columnList.append(",");
 		}
 	    }
-
-	    final String sql = String.format(SELECT_SQL, columnList, tableName, principalFieldName);
+	    columnList.deleteCharAt(columnList.length() - 1);
+	    String sql = null;
+	    if (StringUtils.isEmpty(searchQuery) || "*".equals(searchQuery)) {
+		sql = String.format(SELECT_ALL_SQL, columnList, tableName);
+	    } else {
+		sql = String.format(SELECT_ALL_SQL_QUERY, columnList, tableName, searchQuery);
+	    }
 	    if (log.isDebugEnabled()) {
 		log.debug(String.format("SQL: %s", sql));
 	    }
 	    statement = con.prepareStatement(sql);
-	    setStatement(statement, 1, principalFieldDataType, principalName);
 	    return statement;
 
 	} catch (SQLException e) {
@@ -167,8 +157,7 @@ public abstract class AbstractLookupAppTableCommand<ExtObject extends Extensible
 	}
     }
 
-    protected abstract boolean compareObjectTypeWithId(String objectType);
+    abstract protected boolean compareObjectTypeWithId(String objectType);
 
-    protected abstract boolean compareObjectTypeWithObject(String objectType);
-
+    abstract protected boolean compareObjectTypeWithObject(String objectType);
 }

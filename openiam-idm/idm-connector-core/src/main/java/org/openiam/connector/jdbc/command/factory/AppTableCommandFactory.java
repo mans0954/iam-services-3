@@ -33,32 +33,43 @@ public class AppTableCommandFactory extends AbstractCommandFactory {
     @Autowired
     @Qualifier("suspendAppTableCommand")
     private ConnectorCommand suspendAppTableCommand;
+    @Autowired
+    @Qualifier("searchUserAppTableCommand")
+    private ConnectorCommand searchUserAppTableCommand;
+    @Autowired
+    @Qualifier("testUserAppTableCommand")
+    private ConnectorCommand testUserAppTableCommand;
 
-    public ConnectorCommand getConnectorCommand(CommandType commandType, ExtensibleObjectType extensibleObjectType) throws ConnectorDataException {
-        String error = String.format(ERROR_PATTERN, commandType, extensibleObjectType, "APP TABLE");
-        if(ExtensibleObjectType.USER==extensibleObjectType){
-            switch (commandType){
-                case ADD:
-                    return addUserAppTableCommand;
-                case DELETE:
-                    return deleteUserAppTableCommand;
-                case RESUME:
-                    return resumeAppTableCommand;
-                case SET_PASSWORD:
-                    return setPasswordAppTableCommand;
-                case SUSPEND:
-                    return suspendAppTableCommand;
-                case MODIFY:
-                    return modifyUserAppTableCommand;
-                case LOOKUP:
-                    return lookupUserAppTableCommand;
-                default:
-                    throw new ConnectorDataException(ErrorCode.OPERATION_NOT_SUPPORTED_EXCEPTION, error);
-            }
-        } else if(ExtensibleObjectType.GROUP==extensibleObjectType){
-            throw new ConnectorDataException(ErrorCode.OPERATION_NOT_SUPPORTED_EXCEPTION, error);
-        } else {
-            throw new ConnectorDataException(ErrorCode.OPERATION_NOT_SUPPORTED_EXCEPTION, error);
-        }
+    public ConnectorCommand getConnectorCommand(CommandType commandType, ExtensibleObjectType extensibleObjectType)
+	    throws ConnectorDataException {
+	String error = String.format(ERROR_PATTERN, commandType, extensibleObjectType, "APP TABLE");
+	if (ExtensibleObjectType.USER == extensibleObjectType) {
+	    switch (commandType) {
+	    case ADD:
+		return addUserAppTableCommand;
+	    case DELETE:
+		return deleteUserAppTableCommand;
+	    case RESUME:
+		return resumeAppTableCommand;
+	    case SET_PASSWORD:
+		return setPasswordAppTableCommand;
+	    case SUSPEND:
+		return suspendAppTableCommand;
+	    case MODIFY:
+		return modifyUserAppTableCommand;
+	    case LOOKUP:
+		return lookupUserAppTableCommand;
+	    case TEST:
+		return testUserAppTableCommand;
+	    case SEARCH:
+		return searchUserAppTableCommand;
+	    default:
+		throw new ConnectorDataException(ErrorCode.OPERATION_NOT_SUPPORTED_EXCEPTION, error);
+	    }
+	} else if (ExtensibleObjectType.GROUP == extensibleObjectType) {
+	    throw new ConnectorDataException(ErrorCode.OPERATION_NOT_SUPPORTED_EXCEPTION, error);
+	} else {
+	    throw new ConnectorDataException(ErrorCode.OPERATION_NOT_SUPPORTED_EXCEPTION, error);
+	}
     }
 }
