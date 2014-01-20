@@ -265,12 +265,6 @@ public class RDBMSAdapter extends AbstractSrcAdapter {
 
         log.debug("RDBMS SYNCH COMPLETE.^^^^^^^^");
 
-        if (SyncConstants.FAIL == postSync(config, auditLogBuilder)) {
-            SyncResponse syncResponse = new SyncResponse(ResponseStatus.FAILURE);
-            syncResponse.setErrorCode(ResponseCode.SYNCHRONIZATION_POST_SRIPT_FAILURE);
-            return syncResponse;
-        }
-
         closeConnection();
 
         return new SyncResponse(ResponseStatus.SUCCESS);

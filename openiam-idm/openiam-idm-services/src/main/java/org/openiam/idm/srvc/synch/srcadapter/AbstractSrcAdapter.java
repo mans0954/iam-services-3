@@ -80,23 +80,6 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
 
     public abstract SyncResponse startSynch(SynchConfig config, AuditLogBuilder auditLogBuilder);
 
-    public int postSync(SynchConfig config, AuditLogBuilder auditLogBuilder) {
-        String postScriptUrl = config.getPostSyncScript();
-        if (StringUtils.isNotBlank(postScriptUrl)) {
-            log.debug("-POST synchronization script CALLED.^^^^^^^^");
-            Map<String, Object> bindingMap = new HashMap<String, Object>();
-            bindingMap.put("config", config);
-            try {
-                int ret = (Integer)scriptRunner.execute(bindingMap, postScriptUrl);
-                log.debug("-POST synchronization script COMPLETE.^^^^^^^^");
-                return ret;
-            } catch(Exception e) {
-                log.error(e);
-            }
-        }
-        return SyncConstants.SUCCESS;
-    }
-
     public void addUser(ProvisionUser pUser) {
         long startTime = System.currentTimeMillis();
 

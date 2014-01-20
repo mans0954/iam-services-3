@@ -193,12 +193,6 @@ public class CSVAdapter extends AbstractSrcAdapter {
 
         log.debug("CSV SYNCHRONIZATION COMPLETE^^^^^^^^");
 
-        if (SyncConstants.FAIL == postSync(config, auditBuilder)) {
-            SyncResponse syncResponse = new SyncResponse(ResponseStatus.FAILURE);
-            syncResponse.setErrorCode(ResponseCode.SYNCHRONIZATION_POST_SRIPT_FAILURE);
-            return syncResponse;
-        }
-
         auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "CSV SYNCHRONIZATION COMPLETE^^^^^^^^");
         return new SyncResponse(ResponseStatus.SUCCESS);
     }

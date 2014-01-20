@@ -187,7 +187,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
         if (StringUtils.isNotBlank(preScriptUrl)) {
             log.debug("-PRE synchronization script CALLED.^^^^^^^^");
             Map<String, Object> bindingMap = new HashMap<String, Object>();
-            bindingMap.put("config", config);
+            bindingMap.put("config", synchConfigDozerConverter.convertToDTO(config, false));
             try {
                 int ret = (Integer)scriptRunner.execute(bindingMap, preScriptUrl);
                 if (ret == SyncConstants.FAIL) {
@@ -196,6 +196,10 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
                     return syncResponse;
                 }
                 log.debug("-PRE synchronization script COMPLETE.^^^^^^^^");
+                if (ret == SyncConstants.SKIP) {
+                    return syncResponse;
+                }
+
             } catch(Exception e) {
                 log.error(e);
             }
@@ -219,7 +223,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
 
             syncResponse = adapt.startSynch(configDTO, auditBuilder);
 			
-			log.debug("SyncReponse updateTime value=" + newLastExecTime);
+ 			log.debug("SyncReponse updateTime value=" + newLastExecTime);
             auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "SyncReponse updateTime value=" + newLastExecTime);
 
             if (syncResponse.getLastRecordTime() == null) {
@@ -237,6 +241,24 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
 		    log.debug("-startSynchronization COMPLETE.^^^^^^^^");
             auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "-startSynchronization COMPLETE.^^^^^^^^");
             auditLogProvider.persist(auditBuilder);
+
+            String postScriptUrl = config.getPostSyncScript();
+            if (StringUtils.isNotBlank(postScriptUrl)) {
+                log.debug("-POST synchronization script CALLED.^^^^^^^^");
+                Map<String, Object> bindingMap = new HashMap<String, Object>();
+                bindingMap.put("config", synchConfigDozerConverter.convertToDTO(config, false));
+                try {
+                    int ret = (Integer)scriptRunner.execute(bindingMap, postScriptUrl);
+                    if (ret == SyncConstants.FAIL) {
+                        syncResponse.setStatus(ResponseStatus.FAILURE);
+                        syncResponse.setErrorCode(ResponseCode.SYNCHRONIZATION_POST_SRIPT_FAILURE);
+                        return syncResponse;
+                    }
+                    log.debug("-POST synchronization script COMPLETE.^^^^^^^^");
+                } catch(Exception e) {
+                    log.error(e);
+                }
+            }
 
 		} catch( ClassNotFoundException cnfe) {
             cnfe.printStackTrace();

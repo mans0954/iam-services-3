@@ -358,12 +358,6 @@ public class LdapAdapter extends AbstractSrcAdapter { // implements SourceAdapte
 
         log.debug("LDAP SYNCHRONIZATION COMPLETE^^^^^^^^");
 
-        if (SyncConstants.FAIL == postSync(config, auditLogBuilder)) {
-            SyncResponse syncResponse = new SyncResponse(ResponseStatus.FAILURE);
-            syncResponse.setErrorCode(ResponseCode.SYNCHRONIZATION_POST_SRIPT_FAILURE);
-            return syncResponse;
-        }
-
         SyncResponse resp = new SyncResponse(ResponseStatus.SUCCESS);
         //resp.setLastRecordTime(mostRecentRecord);
         resp.setLastRecProcessed(lastRecProcessed);

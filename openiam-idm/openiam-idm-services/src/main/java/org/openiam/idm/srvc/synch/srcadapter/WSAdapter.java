@@ -269,12 +269,6 @@ public class WSAdapter extends AbstractSrcAdapter { // implements SourceAdapter
 		
 		log.debug("WS SYNCH COMPLETE.^^^^^^^^");
 
-        if (SyncConstants.FAIL == postSync(config, auditLogBuilder)) {
-            SyncResponse syncResponse = new SyncResponse(ResponseStatus.FAILURE);
-            syncResponse.setErrorCode(ResponseCode.SYNCHRONIZATION_POST_SRIPT_FAILURE);
-            return syncResponse;
-        }
-
 		SyncResponse resp = new SyncResponse(ResponseStatus.SUCCESS);
 		resp.setLastRecordTime(mostRecentRecord);
 		return resp;
