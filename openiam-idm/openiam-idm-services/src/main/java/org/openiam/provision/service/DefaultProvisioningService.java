@@ -230,8 +230,6 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             }
         }catch(Throwable t){
           t.printStackTrace();
-        } finally {
-            transactionTemplate = null;
         }
         return res;
     }

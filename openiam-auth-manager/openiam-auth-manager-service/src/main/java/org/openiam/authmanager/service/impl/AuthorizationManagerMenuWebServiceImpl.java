@@ -21,6 +21,7 @@ import org.openiam.base.ws.ResponseStatus;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
+import org.openiam.idm.srvc.res.dto.ResourceRisk;
 import org.openiam.idm.srvc.res.service.ResourceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -312,6 +313,7 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 		resource.setURL(menu.getUrl());
 		resource.setName(menu.getName());
 		resource.setDisplayOrder(menu.getDisplayOrder());
+        resource.setRisk(ResourceRisk.valueOf(menu.getRisk()));
 		resource.setIsPublic(menu.getIsPublic());
 		resource.setResourceType(resourceService.findResourceTypeById(AuthorizationConstants.MENU_ITEM_RESOURCE_TYPE));
 		
@@ -340,6 +342,7 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 		resource.setURL(menu.getUrl());
 		resource.setName(menu.getName());
 		resource.setDisplayOrder(menu.getDisplayOrder());
+        resource.setRisk(ResourceRisk.valueOf(menu.getRisk()));
 		resource.setIsPublic(menu.getIsPublic());
 		
 		ResourcePropEntity displayNameProp = resource.getResourceProperty(AuthorizationConstants.MENU_ITEM_DISPLAY_NAME_PROPERTY);
