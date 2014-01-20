@@ -6,7 +6,7 @@ import java.util.List;
 
 public interface ContentProviderService {
 
-    List<AuthLevelEntity> getAuthLevelList();
+    List<AuthLevelGroupingEntity> getAuthLevelGroupingList();
 
     ContentProviderEntity getContentProvider(String providerId);
 
@@ -14,7 +14,7 @@ public interface ContentProviderService {
 
     List<ContentProviderEntity> findBeans(ContentProviderEntity example, Integer from, Integer size);
 
-    ContentProviderEntity saveContentProvider(ContentProviderEntity providerEntity);
+    void saveContentProvider(ContentProviderEntity providerEntity);
 
     void deleteContentProvider(String providerId);
 
@@ -32,7 +32,7 @@ public interface ContentProviderService {
 
     URIPatternEntity getURIPattern(String patternId);
 
-    URIPatternEntity saveURIPattern(URIPatternEntity uriPatternEntity);
+    void saveURIPattern(URIPatternEntity uriPatternEntity);
 
     void deleteProviderPattern(String providerId);
 

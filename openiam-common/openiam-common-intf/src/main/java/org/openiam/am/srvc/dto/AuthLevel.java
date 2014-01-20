@@ -11,14 +11,14 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "AuthLevel", propOrder = {
         "id",
         "name",
-        "level"
+        "requiresAuthentication"
 })
 @DozerDTOCorrespondence(AuthLevelEntity.class)
 public class AuthLevel {
 
 	private String id;
 	private String name;
-	private int level;
+	private boolean requiresAuthentication = true;
 //    @XmlTransient
 //    private Set<ContentProvider> contentProviderSet;
 	
@@ -37,46 +37,22 @@ public class AuthLevel {
 	public void setName(String name) {
 		this.name = name;
 	}
-	
-	public int getLevel() {
-		return level;
-	}
-	
-	public void setLevel(int level) {
-		this.level = level;
-	}
-	
-	public boolean gt(final int level) {
-		return (this.level > level);
-	}
-	
-	public boolean gte(final int level) {
-		return (this.level >= level);
-	}
-	
-	public boolean lt(final int level) {
-		return (this.level < level);
-	}
-	
-	public boolean lte(final int level) {
-		return (this.level <= level);
+
+	public boolean isRequiresAuthentication() {
+		return requiresAuthentication;
 	}
 
-//    public Set<ContentProvider> getContentProviderSet() {
-//        return contentProviderSet;
-//    }
-//
-//    public void setContentProviderSet(Set<ContentProvider> contentProviderSet) {
-//        this.contentProviderSet = contentProviderSet;
-//    }
+	public void setRequiresAuthentication(boolean requiresAuthentication) {
+		this.requiresAuthentication = requiresAuthentication;
+	}
 
-    @Override
+	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((id == null) ? 0 : id.hashCode());
-		result = prime * result + level;
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		result = prime * result + (requiresAuthentication ? 1231 : 1237);
 		return result;
 	}
 
@@ -94,20 +70,21 @@ public class AuthLevel {
 				return false;
 		} else if (!id.equals(other.id))
 			return false;
-		if (level != other.level)
-			return false;
 		if (name == null) {
 			if (other.name != null)
 				return false;
 		} else if (!name.equals(other.name))
+			return false;
+		if (requiresAuthentication != other.requiresAuthentication)
 			return false;
 		return true;
 	}
 
 	@Override
 	public String toString() {
-		return String.format("AuthLevel [id=%s, name=%s, level=%s]", id, name,
-				level);
+		return String.format(
+				"AuthLevel [id=%s, name=%s, requiresAuthentication=%s]", id,
+				name, requiresAuthentication);
 	}
 	
 	

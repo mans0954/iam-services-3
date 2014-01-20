@@ -36,10 +36,6 @@ public class ContentProviderEntity implements Serializable {
 	@Type(type = "yes_no")
 	private boolean isPublic;
 	
-	@ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
-    @JoinColumn(name="MIN_AUTH_LEVEL", referencedColumnName = "AUTH_LEVEL_ID")
-	private AuthLevelEntity minAuthLevel;
-	
 	@Column(name = "DOMAIN_PATTERN", length = 100, nullable = false)
 	private String domainPattern;
 	
@@ -74,6 +70,11 @@ public class ContentProviderEntity implements Serializable {
 	
 	@OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL, mappedBy = "contentProvider")
 	private Set<URIPatternEntity> patternSet;
+	
+	@OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "contentProvider", fetch = FetchType.LAZY)
+	@OrderBy("order ASC")
+	private Set<AuthLevelGroupingContentProviderXrefEntity> groupingXrefs;
+	
 
 	public String getId() {
 		return id;
@@ -97,14 +98,6 @@ public class ContentProviderEntity implements Serializable {
 
 	public void setIsPublic(boolean isPublic) {
 		this.isPublic = isPublic;
-	}
-
-	public AuthLevelEntity getMinAuthLevel() {
-		return minAuthLevel;
-	}
-
-	public void setMinAuthLevel(AuthLevelEntity minAuthLevel) {
-		this.minAuthLevel = minAuthLevel;
 	}
 
 	public String getDomainPattern() {
@@ -185,6 +178,15 @@ public class ContentProviderEntity implements Serializable {
 		this.managedSystem = managedSystem;
 	}
 
+	public Set<AuthLevelGroupingContentProviderXrefEntity> getGroupingXrefs() {
+		return groupingXrefs;
+	}
+
+	public void setGroupingXrefs(
+			Set<AuthLevelGroupingContentProviderXrefEntity> groupingXrefs) {
+		this.groupingXrefs = groupingXrefs;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -198,8 +200,6 @@ public class ContentProviderEntity implements Serializable {
         result = prime * result
                  + ((contextPath == null) ? 0 : contextPath.hashCode());
 		*/
-		result = prime * result
-				+ ((minAuthLevel == null) ? 0 : minAuthLevel.hashCode());
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result
 				+ ((resource == null) ? 0 : resource.hashCode());
@@ -240,11 +240,6 @@ public class ContentProviderEntity implements Serializable {
 			if (other.isSSL != null)
 				return false;
 		} else if (!isSSL.equals(other.isSSL))
-			return false;
-		if (minAuthLevel == null) {
-			if (other.minAuthLevel != null)
-				return false;
-		} else if (!minAuthLevel.equals(other.minAuthLevel))
 			return false;
 		if (name == null) {
 			if (other.name != null)

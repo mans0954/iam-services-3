@@ -2,8 +2,10 @@ package org.openiam.am.srvc.service;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -12,21 +14,32 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.StopWatch;
 import org.apache.log4j.Logger;
+import org.openiam.am.srvc.dao.AuthLevelGroupingDao;
 import org.openiam.am.srvc.dao.ContentProviderDao;
+import org.openiam.am.srvc.domain.AuthLevelEntity;
+import org.openiam.am.srvc.domain.AuthLevelGroupingEntity;
 import org.openiam.am.srvc.domain.ContentProviderEntity;
 import org.openiam.am.srvc.domain.URIPatternEntity;
 import org.openiam.am.srvc.domain.URIPatternMetaEntity;
 import org.openiam.am.srvc.domain.URIPatternMetaValueEntity;
+import org.openiam.am.srvc.dozer.converter.AuthLevelGroupingDozerConverter;
 import org.openiam.am.srvc.dozer.converter.ContentProviderDozerConverter;
 import org.openiam.am.srvc.dozer.converter.URIPatternDozerConverter;
 import org.openiam.am.srvc.dozer.converter.URIPatternMetaDozerConverter;
 import org.openiam.am.srvc.dozer.converter.URIPatternMetaValueDozerConverter;
+import org.openiam.am.srvc.dto.AuthLevel;
+import org.openiam.am.srvc.dto.AuthLevelAttribute;
+import org.openiam.am.srvc.dto.AuthLevelGrouping;
+import org.openiam.am.srvc.dto.AuthLevelGroupingContentProviderXref;
+import org.openiam.am.srvc.dto.AuthLevelGroupingURIPatternXref;
 import org.openiam.am.srvc.dto.ContentProvider;
 import org.openiam.am.srvc.dto.URIPattern;
 import org.openiam.am.srvc.dto.URIPatternMeta;
 import org.openiam.am.srvc.dto.URIPatternMetaType;
 import org.openiam.am.srvc.dto.URIPatternMetaValue;
 import org.openiam.am.srvc.groovy.URIFederationGroovyProcessor;
+import org.openiam.am.srvc.uriauth.dto.URIAuthLevelAttribute;
+import org.openiam.am.srvc.uriauth.dto.URIAuthLevelToken;
 import org.openiam.am.srvc.uriauth.dto.URIFederationResponse;
 import org.openiam.am.srvc.uriauth.dto.URIPatternRuleToken;
 import org.openiam.am.srvc.uriauth.model.ContentProviderNode;
@@ -64,6 +77,8 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 
 	private ContentProviderTree contentProviderTree;
 	
+	private Map<String, AuthLevelGrouping> groupingMap;
+	
 	@Autowired
 	private ContentProviderDao contentProviderDAO;
 	
@@ -85,9 +100,15 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 	@Autowired
 	private LoginDataService loginDS;
 	
+	@Autowired
+	private AuthLevelGroupingDao authLevelGroupingDAO;
+	
     @Autowired
     @Qualifier("configurableGroovyScriptEngine")
     private ScriptIntegration scriptRunner;
+    
+    @Autowired
+    private AuthLevelGroupingDozerConverter authLevelGroupingDozerConverter;
 	
 	@Override
 	public void afterPropertiesSet() throws Exception {
@@ -111,71 +132,88 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 					
 					/* dont' cache CPs who don't have servers */
 					if(CollectionUtils.isNotEmpty(cpEntity.getServerSet())) {
-						/* convert the content provider to a DTO */
-						final ContentProvider cp = cpDozerConverter.convertToDTO(cpEntity, true);
-						if(CollectionUtils.isNotEmpty(cpEntity.getPatternSet())) {
-							
-							/* process the URI patterns, but converting any subcollections to DTOs manually, since our Dozer converter will only go 2 levels deep */
-							final Map<String, URIPattern> uriPatternMap = new LinkedHashMap<String, URIPattern>();
-							for(final URIPatternEntity uriEntity : cpEntity.getPatternSet()) {
+						if(CollectionUtils.isNotEmpty(cpEntity.getGroupingXrefs())) {
+							/* convert the content provider to a DTO */
+							final ContentProvider cp = cpDozerConverter.convertToDTO(cpEntity, true);
+							if(CollectionUtils.isNotEmpty(cpEntity.getPatternSet())) {
 								
-								/* convert pattern */
-								final URIPattern pattern = patternDozerConverter.convertToDTO(uriEntity, true);
-								uriPatternMap.put(pattern.getId(), pattern);
-								if(CollectionUtils.isNotEmpty(pattern.getMetaEntitySet())) {
+								/* process the URI patterns, but converting any subcollections to DTOs manually, since our Dozer converter will only go 2 levels deep */
+								final Map<String, URIPattern> uriPatternMap = new LinkedHashMap<String, URIPattern>();
+								for(final URIPatternEntity uriEntity : cpEntity.getPatternSet()) {
 									
-									/* convert meta */
-									final Map<String, URIPatternMeta> metaMap = new LinkedHashMap<String, URIPatternMeta>();
-									for(final URIPatternMetaEntity metaEntity : uriEntity.getMetaEntitySet()) {
-										final URIPatternMeta meta = patternMetaDozerConverter.convertToDTO(metaEntity, true);
+									/* convert pattern */
+									final URIPattern pattern = patternDozerConverter.convertToDTO(uriEntity, true);
+									uriPatternMap.put(pattern.getId(), pattern);
+									if(CollectionUtils.isNotEmpty(pattern.getMetaEntitySet())) {
 										
-										/* check that the spring bean exists */
-										final URIPatternMetaType type = meta.getMetaType();
-										if(type != null && StringUtils.isNotBlank(type.getSpringBeanName())) {
-											final String springBeanName = type.getSpringBeanName();
-											try {
-												final URIPatternRule rule = ctx.getBean(springBeanName, URIPatternRule.class);
-												LOG.info(String.format("Spring Bean %s will be used for URI Pattern %s", springBeanName, pattern));
-												metaMap.put(meta.getId(), meta);
-										
-												/* convert values */
-												if(CollectionUtils.isNotEmpty(metaEntity.getMetaValueSet())) {
-													final Map<String, URIPatternMetaValue> valueMap = new LinkedHashMap<String, URIPatternMetaValue>();
-													for(final URIPatternMetaValueEntity valueEntity : metaEntity.getMetaValueSet()) {
-														final URIPatternMetaValue value = patternValueDozerConverter.convertToDTO(valueEntity, true);
-														if(StringUtils.isNotBlank(value.getGroovyScript())) {
-															try {
-																final URIFederationGroovyProcessor processor = (URIFederationGroovyProcessor)scriptRunner.instantiateClass(null, value.getGroovyScript());
-																if(processor != null) {
-																	value.setGroovyProcessor(processor);
+										/* convert meta */
+										final Map<String, URIPatternMeta> metaMap = new LinkedHashMap<String, URIPatternMeta>();
+										for(final URIPatternMetaEntity metaEntity : uriEntity.getMetaEntitySet()) {
+											final URIPatternMeta meta = patternMetaDozerConverter.convertToDTO(metaEntity, true);
+											
+											/* check that the spring bean exists */
+											final URIPatternMetaType type = meta.getMetaType();
+											if(type != null && StringUtils.isNotBlank(type.getSpringBeanName())) {
+												final String springBeanName = type.getSpringBeanName();
+												try {
+													final URIPatternRule rule = ctx.getBean(springBeanName, URIPatternRule.class);
+													LOG.info(String.format("Spring Bean %s will be used for URI Pattern %s", springBeanName, pattern));
+													metaMap.put(meta.getId(), meta);
+											
+													/* convert values */
+													if(CollectionUtils.isNotEmpty(metaEntity.getMetaValueSet())) {
+														final Map<String, URIPatternMetaValue> valueMap = new LinkedHashMap<String, URIPatternMetaValue>();
+														for(final URIPatternMetaValueEntity valueEntity : metaEntity.getMetaValueSet()) {
+															final URIPatternMetaValue value = patternValueDozerConverter.convertToDTO(valueEntity, true);
+															if(StringUtils.isNotBlank(value.getGroovyScript())) {
+																try {
+																	final URIFederationGroovyProcessor processor = (URIFederationGroovyProcessor)scriptRunner.instantiateClass(null, value.getGroovyScript());
+																	if(processor != null) {
+																		value.setGroovyProcessor(processor);
+																	}
+																} catch(Throwable e) {
+																	LOG.warn(String.format("Can't define groovy script for rule %s.  This groovy script wont' be used", value.getName()), e);
 																}
-															} catch(Throwable e) {
-																LOG.warn(String.format("Can't define groovy script for rule %s.  This groovy script wont' be used", value.getName()), e);
 															}
+															valueMap.put(value.getId(), value);
 														}
-														valueMap.put(value.getId(), value);
+														meta.setMetaValueSet(new LinkedHashSet<URIPatternMetaValue>(valueMap.values()));
 													}
-													meta.setMetaValueSet(new LinkedHashSet<URIPatternMetaValue>(valueMap.values()));
+												} catch(NoSuchBeanDefinitionException e) {
+													LOG.warn(String.format("Spring Bean '%s' on URI Pattern %s will not be used", springBeanName, pattern), e);
+												} catch(BeanNotOfRequiredTypeException e) {
+													LOG.warn(String.format("Spring Bean '%s' on URI Pattern %s will not be used", springBeanName, pattern), e);
 												}
-											} catch(NoSuchBeanDefinitionException e) {
-												LOG.warn(String.format("Spring Bean '%s' on URI Pattern %s will not be used", springBeanName, pattern), e);
-											} catch(BeanNotOfRequiredTypeException e) {
-												LOG.warn(String.format("Spring Bean '%s' on URI Pattern %s will not be used", springBeanName, pattern), e);
 											}
 										}
+										
+										pattern.setMetaEntitySet(new LinkedHashSet<URIPatternMeta>(metaMap.values()));
 									}
-									
-									pattern.setMetaEntitySet(new LinkedHashSet<URIPatternMeta>(metaMap.values()));
 								}
+								cp.setPatternSet(new LinkedHashSet<URIPattern>(uriPatternMap.values()));
 							}
-							cp.setPatternSet(new LinkedHashSet<URIPattern>(uriPatternMap.values()));
+							tempTree.addContentProvider(cp);
+						} else {
+							LOG.error(String.format("Content Provider %s will not be used - there are no Auth Level Grouping xrefs", cpEntity.getName()));
 						}
-						tempTree.addContentProvider(cp);
+					} else {
+						LOG.error(String.format("Content Provider %s will not be used - there are no Content Provider Servers", cpEntity.getName()));
 					}
 				}
 			}
+			
+			final List<AuthLevelGroupingEntity> groupingEntityList = authLevelGroupingDAO.findAll();
+			final Map<String, AuthLevelGrouping> tempGroupingMap = new HashMap<String, AuthLevelGrouping>();
+			if(CollectionUtils.isNotEmpty(groupingEntityList)) {
+				for(final AuthLevelGroupingEntity entity : groupingEntityList) {
+					final AuthLevelGrouping grouping = authLevelGroupingDozerConverter.convertToDTO(entity, true);
+					tempGroupingMap.put(grouping.getId(), grouping);
+				}
+			}
+			
 			synchronized(this) {
 				contentProviderTree = tempTree;
+				groupingMap = tempGroupingMap;
 			}
 		} catch(Throwable e) {
 			LOG.error("Can't refresh content provider cache", e);
@@ -239,13 +277,17 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 		final URIFederationResponse response = new URIFederationResponse();
 		final StopWatch sw = new StopWatch();
 		sw.start();
+		
+		ContentProvider cp = null;
+		URIPattern uriPattern = null;
+		final List<AuthLevelGrouping> groupingList = new LinkedList<AuthLevelGrouping>();
 		try {
 			final URI uri = new URI(proxyURI);
 			final ContentProviderNode cpNode = contentProviderTree.find(uri);
 			if(cpNode == null) {
 				throw new BasicDataServiceException(ResponseCode.URI_FEDERATION_CONTENT_PROVIDER_NOT_FOUND);
 			}
-			final ContentProvider cp = cpNode.getContentProvider();
+			cp = cpNode.getContentProvider();
 			if(!cp.getIsPublic() && !isEntitled(userId, cp.getResourceId())) {
 				throw new BasicDataServiceException(ResponseCode.URI_FEDERATION_NOT_ENTITLED_TO_CONTENT_PROVIDER);
 			}
@@ -253,23 +295,14 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 			final URIPatternSearchResult uriPatternToken = (cpNode.getPatternTree() != null) ? cpNode.getPatternTree().find(uri) : null;
 			
 			/* means that no matching pattern has been found for this URI (i.e. none configured) - check against the CP */
-			if(uriPatternToken == null || !uriPatternToken.hasPatterns()) {
-				/* means that the Content Provider Auth Level is higher than the current for this user */
-				if(cp.getAuthLevel().gt(authLevel)) {
-					response.setRequiredAuthLevel(cp.getAuthLevel().getLevel());
-					throw new BasicDataServiceException(ResponseCode.URI_FEDERATION_AUTH_LEVEL_DOES_NOT_MEET_MIN_AUTH_LEVEL_ON_CP);
-				}
-			} else {
+			if(uriPatternToken != null && uriPatternToken.hasPatterns()) {
+				
 				/* check entitlements and auth level on patterns */
 				for(final URIPattern pattern : uriPatternToken.getFoundPatterns()) {
 					if(!pattern.getIsPublic() && !isEntitled(userId, pattern.getResourceId())) {
 						throw new BasicDataServiceException(ResponseCode.URI_FEDERATION_NOT_ENTITLED_TO_PATTERN, pattern.getPattern());
 					}
-				
-					if(pattern.getAuthLevel().gt(authLevel)) {
-						response.setRequiredAuthLevel(pattern.getAuthLevel().getLevel());
-						throw new BasicDataServiceException(ResponseCode.URI_FEDERATION_AUTH_LEVEL_DOES_NOT_MEET_MIN_AUTH_LEVEL_ON_PATTERN, pattern.getId());
-					}
+					//TODO:  set auth levels here
 				}
 			
 				/* do rule processes */
@@ -293,12 +326,45 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 							}
 						}
 					}
-					response.setPatternId(pattern.getId());
+					uriPattern = pattern;
 				}
 			}
 			
-			response.setCpId(cp.getId());
-			response.setServer(cp.getNextServer());
+			if(uriPattern != null && CollectionUtils.isNotEmpty(uriPattern.getGroupingXrefs())) {
+				for(final AuthLevelGroupingURIPatternXref xref : uriPattern.getOrderedGroupingXrefs()) {
+					final String groupingId = xref.getId().getGroupingId();
+					final AuthLevelGrouping grouping = groupingMap.get(groupingId);
+					if(grouping != null) {
+						groupingList.add(grouping);
+					}
+				}
+			} else {
+				if(CollectionUtils.isNotEmpty(cp.getGroupingXrefs())) {
+					for(final AuthLevelGroupingContentProviderXref xref : cp.getOrderedGroupingXrefs()) {
+						final String groupingId = xref.getId().getGroupingId();
+						final AuthLevelGrouping grouping = groupingMap.get(groupingId);
+						if(grouping != null) {
+							groupingList.add(grouping);
+						}
+					}
+				}
+			}
+			
+			if(CollectionUtils.isEmpty(groupingList)) {
+				throw new BasicDataServiceException(ResponseCode.FAIL_OTHER);
+			}
+			
+			boolean requiresAuthentication = false;
+			for(final AuthLevelGrouping grouping : groupingList) {
+				if(grouping.getAuthLevel().isRequiresAuthentication()) {
+					requiresAuthentication = true;
+				}
+			}
+			
+			if(StringUtils.isEmpty(userId) && requiresAuthentication) {
+				throw new BasicDataServiceException(ResponseCode.UNAUTHORIZED);
+			}
+			
 			response.setStatus(ResponseStatus.SUCCESS);
 		} catch(BasicDataServiceException e) {
 			response.setErrorCode(e.getCode());
@@ -314,6 +380,34 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 			response.setStatus(ResponseStatus.FAILURE);
 			LOG.error("Unkonwn error while processing proxy request", e);
 		} finally {
+			if(uriPattern != null) {
+				response.setPatternId(uriPattern.getId());
+			}
+			if(cp != null) {
+				response.setCpId(cp.getId());
+				response.setServer(cp.getNextServer());
+			}
+			if(CollectionUtils.isNotEmpty(groupingList)) {
+				for(final AuthLevelGrouping grouping : groupingList) {
+					final AuthLevel level = grouping.getAuthLevel();
+					final Set<AuthLevelAttribute> attributes = grouping.getAttributes();
+					
+					final URIAuthLevelToken token = new URIAuthLevelToken();
+					token.setAuthLevelId(level.getId());
+					if(CollectionUtils.isNotEmpty(attributes)) {
+						for(final AuthLevelAttribute attribute : attributes) {
+							final URIAuthLevelAttribute attributeToken = new URIAuthLevelAttribute();
+							attributeToken.setName(attribute.getName());
+							attributeToken.setValue(attribute.getValueAsString());
+							attributeToken.setValueAsByteArray(attribute.getValueAsByteArray());
+							attributeToken.setTypeId(attribute.getType().getMetadataTypeId());
+							attributeToken.setTypeName(attribute.getType().getDescription());
+							token.addAttribute(attributeToken);
+						}
+					}
+					response.addAuthLevelToken(token);
+				}
+			}
 			sw.stop();
 			if(LOG.isDebugEnabled()) {
 				LOG.debug(String.format("URI Fedration took: %s ms", sw.getTime()));

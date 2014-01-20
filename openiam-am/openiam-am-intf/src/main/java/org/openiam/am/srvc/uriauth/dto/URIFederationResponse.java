@@ -23,8 +23,8 @@ import org.openiam.base.ws.ResponseStatus;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "URIFederationResponse", propOrder = {
-	"requiredAuthLevel",
 	"ruleTokenList",
+	"authLevelTokenList",
 	"server",
 	"patternId",
 	"cpId"
@@ -36,7 +36,7 @@ public class URIFederationResponse extends Response {
 	 */
 	private static final long serialVersionUID = 1L;
 	
-	private Integer requiredAuthLevel;
+	private List<URIAuthLevelToken> authLevelTokenList;
 	private List<URIPatternRuleToken> ruleTokenList;
 	private ContentProviderServer server;
 	private String patternId;
@@ -49,14 +49,6 @@ public class URIFederationResponse extends Response {
 	public void setStatus(ResponseStatus status) {
 		this.status = status;
 	}
-
-	public Integer getRequiredAuthLevel() {
-		return requiredAuthLevel;
-	}
-
-	public void setRequiredAuthLevel(Integer requiredAuthLevel) {
-		this.requiredAuthLevel = requiredAuthLevel;
-	}
 	
 	public void addRuleToken(final URIPatternRuleToken token) {
 		if(token != null) {
@@ -64,6 +56,23 @@ public class URIFederationResponse extends Response {
 				this.ruleTokenList = new LinkedList<URIPatternRuleToken>();
 			}
 			this.ruleTokenList.add(token);
+		}
+	}
+
+	public List<URIAuthLevelToken> getAuthLevelTokenList() {
+		return authLevelTokenList;
+	}
+
+	public void setAuthLevelTokenList(List<URIAuthLevelToken> authLevelTokenList) {
+		this.authLevelTokenList = authLevelTokenList;
+	}
+	
+	public void addAuthLevelToken(final URIAuthLevelToken token) {
+		if(token != null) {
+			if(authLevelTokenList == null) {
+				authLevelTokenList = new LinkedList<URIAuthLevelToken>();
+			}
+			authLevelTokenList.add(token);
 		}
 	}
 
@@ -98,8 +107,8 @@ public class URIFederationResponse extends Response {
 	@Override
 	public String toString() {
 		return String
-				.format("URIFederationResponse [requiredAuthLevel=%s, ruleTokenList=%s, server=%s, status=%s, errorCode=%s, errorText=%s, responseValue=%s]",
-						requiredAuthLevel, ruleTokenList, server, status,
+				.format("URIFederationResponse [ruleTokenList=%s, server=%s, status=%s, errorCode=%s, errorText=%s, responseValue=%s]",
+						ruleTokenList, server, status,
 						errorCode, errorText, responseValue);
 	}
 
