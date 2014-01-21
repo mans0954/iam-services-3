@@ -11,15 +11,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class AuthLevelDaoImpl extends BaseDaoImpl<AuthLevelEntity, String> implements AuthLevelDao {
 
-	
-	
-	@Override
-	public List<AuthLevelEntity> findAll() {
-		final Criteria criteria = getCriteria();
-		criteria.addOrder(Order.asc("level"));
-		return criteria.list();
-	}
-
 	@Override
 	protected String getPKfieldName() {
 		return "id";
