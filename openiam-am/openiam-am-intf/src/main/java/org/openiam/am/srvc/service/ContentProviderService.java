@@ -1,10 +1,24 @@
 package org.openiam.am.srvc.service;
 
 import org.openiam.am.srvc.domain.*;
+import org.openiam.am.srvc.dto.AuthLevelGrouping;
+import org.openiam.exception.BasicDataServiceException;
 
 import java.util.List;
 
 public interface ContentProviderService {
+	
+	public List<AuthLevelEntity> getAuthLevelList();
+	
+	public void deleteAuthLevelGrouping(final String id);
+	
+	public void saveAuthLevelGrouping(final AuthLevelGroupingEntity entity);
+	
+	public void validateDeleteAuthLevelGrouping(final String id) throws BasicDataServiceException;
+	
+	public void validateSaveAuthLevelGrouping(final AuthLevelGroupingEntity entity) throws BasicDataServiceException;
+	
+	public AuthLevelGroupingEntity getAuthLevelGrouping(final String id);
 
     List<AuthLevelGroupingEntity> getAuthLevelGroupingList();
 

@@ -5,4 +5,5 @@ import org.openiam.core.dao.BaseDao;
 
 public interface AuthLevelGroupingDao extends BaseDao<AuthLevelGroupingEntity, String> {
 
+	public AuthLevelGroupingEntity findByName(final String name);
 }

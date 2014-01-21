@@ -4,6 +4,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.am.srvc.domain.AuthLevelGroupingEntity;
 import org.openiam.am.srvc.domain.ContentProviderEntity;
 import org.openiam.am.srvc.domain.ContentProviderServerEntity;
 import org.openiam.am.srvc.domain.URIPatternEntity;
@@ -58,7 +59,56 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
     
     @Autowired
     private AuthLevelGroupingDozerConverter authLevelGroupingDozerConverter;
+    
+    @Override
+    public Response saveAuthLevelGrouping(final AuthLevelGrouping grouping) {
+    	final Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+        	final AuthLevelGroupingEntity entity = authLevelGroupingDozerConverter.convertToEntity(grouping, true);
+        	contentProviderService.validateSaveAuthLevelGrouping(entity);
+        	contentProviderService.saveAuthLevelGrouping(entity);
+        	response.setResponseValue(entity.getId());
+        } catch(BasicDataServiceException e) {
+            log.info(e.getMessage(), e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(e.getCode());
+        } catch(Throwable e) {
+            log.error(e.getMessage(), e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorText(e.getMessage());
+        }
+        return response;
+    }
 
+	@Override
+	public Response deleteAuthLevelGrouping(String id) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+        	contentProviderService.validateDeleteAuthLevelGrouping(id);
+        	contentProviderService.deleteAuthLevelGrouping(id);
+        } catch(BasicDataServiceException e) {
+            log.info(e.getMessage(), e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(e.getCode());
+        } catch(Throwable e) {
+            log.error(e.getMessage(), e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorText(e.getMessage());
+        }
+        return response;
+	}
+
+	@Override
+	public AuthLevelGrouping getAuthLevelGrouping(String id) {
+		final AuthLevelGroupingEntity entity = contentProviderService.getAuthLevelGrouping(id);
+		return authLevelGroupingDozerConverter.convertToDTO(entity, true);
+	}
+
+	@Override
+    public List<AuthLevel> getAuthLevelList() {
+		return authLevelDozerConverter.convertToDTOList(contentProviderService.getAuthLevelList(), false);
+	}
+	
     @Override
     public List<AuthLevelGrouping> getAuthLevelGroupingList() {
     	return authLevelGroupingDozerConverter.convertToDTOList(contentProviderService.getAuthLevelGroupingList(), true);
