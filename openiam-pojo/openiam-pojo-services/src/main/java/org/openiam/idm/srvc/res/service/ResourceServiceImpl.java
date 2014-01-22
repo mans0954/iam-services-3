@@ -1,11 +1,5 @@
 package org.openiam.idm.srvc.res.service;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
@@ -18,7 +12,6 @@ import org.openiam.am.srvc.domain.URIPatternEntity;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.dozer.converter.ResourceDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
-import org.openiam.idm.searchbeans.OrganizationSearchBean;
 import org.openiam.idm.searchbeans.ResourceSearchBean;
 import org.openiam.idm.searchbeans.ResourceTypeSearchBean;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
@@ -30,7 +23,6 @@ import org.openiam.idm.srvc.meta.service.MetadataElementPageTemplateDAO;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
-import org.openiam.idm.srvc.mngsys.service.ApproverAssociationDAO;
 import org.openiam.idm.srvc.mngsys.service.ManagedSysDAO;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.service.OrganizationDAO;
@@ -40,12 +32,16 @@ import org.openiam.idm.srvc.res.domain.ResourceTypeEntity;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.service.RoleDAO;
-import org.openiam.idm.srvc.searchbean.converter.ResourceSearchBeanConverter;
 import org.openiam.idm.srvc.user.service.UserDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Service
 public class ResourceServiceImpl implements ResourceService {
@@ -480,10 +476,10 @@ public class ResourceServiceImpl implements ResourceService {
 			throw new BasicDataServiceException(ResponseCode.CANT_ADD_YOURSELF_AS_CHILD);
 		}
 		
-		if(parent.getResourceType() != null && child.getResourceType() != null &&
-		  !parent.getResourceType().equals(child.getResourceType())) {
-			throw new BasicDataServiceException(ResponseCode.RESOURCE_TYPES_NOT_EQUAL);
-		}
+//		if(parent.getResourceType() != null && child.getResourceType() != null &&
+//		  !parent.getResourceType().equals(child.getResourceType())) {
+//			throw new BasicDataServiceException(ResponseCode.RESOURCE_TYPES_NOT_EQUAL);
+//		}
 		
 		if(parent.getResourceType() != null && !parent.getResourceType().isSupportsHierarchy()) {
 			throw new BasicDataServiceException(ResponseCode.RESOURCE_TYPE_NOT_SUPPORTS_HIERARCHY, parent.getResourceType().getDescription());
