@@ -152,12 +152,13 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 @Override
                 public ProvisionUserResponse doInTransaction(TransactionStatus status) {
                     final AuditLogBuilder auditBuilder;
-                    String parentAuditLog = pUser.getParentAuditLogId();
-                    if(parentAuditLog != null) {
-                        auditBuilder = auditLogProvider.getAuditLogBuilder(parentAuditLog);
+                    String parentAuditLogId = pUser.getParentAuditLogId();
+                    if(parentAuditLogId != null) {
+                        IdmAuditLogEntity parentAuditLog = auditLogService.findById(parentAuditLogId);
+                        auditBuilder = parentAuditLog != null ? new AuditLogBuilder(parentAuditLog) : auditLogProvider.getAuditLogBuilder(parentAuditLogId);
                     } else {
-                        auditBuilder = auditLogProvider.getAuditLogBuilder();
-                        auditLogProvider.persist(auditBuilder);
+                        auditBuilder = new AuditLogBuilder();
+                        auditBuilder.setRequestorUserId(systemUserId).setTargetUser(null).setAction(AuditAction.PROVISIONING);
                     }
 
                     final AuditLogBuilder auditBuilderAddChild = new AuditLogBuilder();
@@ -210,8 +211,8 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                         IdmAuditLogEntity parentAuditLog = auditLogService.findById(parentAuditLogId);
                         auditBuilder = parentAuditLog != null ? new AuditLogBuilder(parentAuditLog) : auditLogProvider.getAuditLogBuilder(parentAuditLogId);
                     } else {
-                        auditBuilder = auditLogProvider.getAuditLogBuilder();
-                        auditLogProvider.persist(auditBuilder);
+                        auditBuilder = new AuditLogBuilder();
+                        auditBuilder.setRequestorUserId(systemUserId).setTargetUser(null).setAction(AuditAction.PROVISIONING);
                     }
 
                     final AuditLogBuilder auditBuilderModifyChild = new AuditLogBuilder();
