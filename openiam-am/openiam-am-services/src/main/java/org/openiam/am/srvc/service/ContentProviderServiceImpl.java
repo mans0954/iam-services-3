@@ -12,6 +12,8 @@ import org.openiam.am.srvc.dto.AuthLevelGrouping;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.exception.BasicDataServiceException;
+import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
+import org.openiam.idm.srvc.meta.service.MetadataTypeDAO;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.service.ManagedSysDAO;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
@@ -67,6 +69,12 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
     
     @Autowired
     private AuthLevelDao authLevelDAO;
+    
+    @Autowired
+    private AuthLevelAttributeDAO authLevelAttributeDAO;
+    
+    @Autowired
+    private MetadataTypeDAO typeDAO;
 
     @Override
     public List<AuthLevelEntity> getAuthLevelList() {
@@ -617,5 +625,46 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
 				throw new BasicDataServiceException(ResponseCode.NAME_TAKEN);
 			}
 		}
+	}
+
+	@Override
+	@Transactional
+	public void saveAuthLevelAttibute(AuthLevelAttributeEntity entity) {
+		if(entity != null) {
+			if(StringUtils.isBlank(entity.getId())) {
+				entity.setId(null);
+				if(entity.getGrouping() != null) {
+					final AuthLevelGroupingEntity grouping = authLevelGroupingDAO.findById(entity.getGrouping().getId());
+					entity.setGrouping(grouping);
+				}
+				if(entity.getType() != null) {
+					final MetadataTypeEntity type = typeDAO.findById(entity.getType().getMetadataTypeId());
+					entity.setType(type);
+				}
+				authLevelAttributeDAO.save(entity);
+			} else {
+				final AuthLevelAttributeEntity dbEntity = authLevelAttributeDAO.findById(entity.getId());
+				if(dbEntity != null) {
+					dbEntity.setValueAsByteArray(entity.getValueAsByteArray());
+					dbEntity.setValueAsString(entity.getValueAsString());
+					authLevelAttributeDAO.update(dbEntity);
+				}
+			}
+		}
+	}
+
+	@Override
+	@Transactional
+	public void deleteAuthLevelAttribute(String id) {
+		final AuthLevelAttributeEntity entity = authLevelAttributeDAO.findById(id);
+		if(entity != null) {
+			authLevelAttributeDAO.delete(entity);
+		}
+	}
+
+	@Override
+	@Transactional
+	public AuthLevelAttributeEntity getAuthLevelAttribute(String id) {
+		return authLevelAttributeDAO.findById(id);
 	}
 }

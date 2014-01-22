@@ -41,8 +41,11 @@ public class AuthLevelAttributeEntity implements Serializable {
     private String name;
     
     @Lob
-    @Column(name = "VALUE", length = 300)
+    @Column(name = "VALUE_AS_BYTE_ARRAY")
     private byte[] valueAsByteArray;
+    
+    @Column(name="VALUE_AS_STRING", length=300)
+    private String valueAsString;
     
     public AuthLevelAttributeEntity() {
     	
@@ -87,6 +90,14 @@ public class AuthLevelAttributeEntity implements Serializable {
 	public void setValueAsByteArray(byte[] valueAsByteArray) {
 		this.valueAsByteArray = valueAsByteArray;
 	}
+	
+	public String getValueAsString() {
+		return valueAsString;
+	}
+
+	public void setValueAsString(String valueAsString) {
+		this.valueAsString = valueAsString;
+	}
 
 	@Override
 	public int hashCode() {
@@ -98,6 +109,7 @@ public class AuthLevelAttributeEntity implements Serializable {
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result + ((type == null) ? 0 : type.hashCode());
 		result = prime * result + ((valueAsByteArray == null) ? 0 : valueAsByteArray.hashCode());
+		result = prime * result + ((valueAsString == null) ? 0 : valueAsString.hashCode());
 		return result;
 	}
 
@@ -134,6 +146,11 @@ public class AuthLevelAttributeEntity implements Serializable {
 			if (other.valueAsByteArray != null)
 				return false;
 		} else if (!valueAsByteArray.equals(other.valueAsByteArray))
+			return false;
+		if (valueAsString == null) {
+			if (other.valueAsString != null)
+				return false;
+		} else if (!valueAsString.equals(other.valueAsString))
 			return false;
 		return true;
 	}

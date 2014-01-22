@@ -71,7 +71,6 @@ public class AuthLevelAttribute implements Serializable {
 
 	public void setValueAsByteArray(byte[] valueAsByteArray) {
 		this.valueAsByteArray = valueAsByteArray;
-		setInternalValueAsString();
 	}
 	
 	public String getValueAsString() {
@@ -82,14 +81,6 @@ public class AuthLevelAttribute implements Serializable {
 		this.valueAsString = valueAsString;
 	}
 	
-	private void setInternalValueAsString() {
-		try {
-			this.valueAsString = new String(valueAsByteArray, "UTF-8");
-		} catch(Throwable e) {
-			
-		}
-	}
-
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -100,6 +91,7 @@ public class AuthLevelAttribute implements Serializable {
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result + ((type == null) ? 0 : type.hashCode());
 		result = prime * result + ((valueAsByteArray == null) ? 0 : valueAsByteArray.hashCode());
+		result = prime * result + ((valueAsString == null) ? 0 : valueAsString.hashCode());
 		return result;
 	}
 	
@@ -138,6 +130,11 @@ public class AuthLevelAttribute implements Serializable {
 			if (other.valueAsByteArray != null)
 				return false;
 		} else if (!valueAsByteArray.equals(other.valueAsByteArray))
+			return false;
+		if (valueAsString == null) {
+			if (other.valueAsString != null)
+				return false;
+		} else if (!valueAsString.equals(other.valueAsString))
 			return false;
 		return true;
 	}

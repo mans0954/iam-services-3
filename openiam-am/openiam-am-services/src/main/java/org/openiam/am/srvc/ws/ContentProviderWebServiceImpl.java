@@ -4,6 +4,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.am.srvc.domain.AuthLevelAttributeEntity;
 import org.openiam.am.srvc.domain.AuthLevelGroupingEntity;
 import org.openiam.am.srvc.domain.ContentProviderEntity;
 import org.openiam.am.srvc.domain.ContentProviderServerEntity;
@@ -59,6 +60,56 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
     
     @Autowired
     private AuthLevelGroupingDozerConverter authLevelGroupingDozerConverter;
+    
+    @Autowired
+    private AuthLevelAttributeDozerConverter authLevelAttributeDozerConverter;
+
+	@Override
+	public AuthLevelAttribute getAuthLevelAttribute(String id) {
+		final AuthLevelAttributeEntity entity = contentProviderService.getAuthLevelAttribute(id);
+		return authLevelAttributeDozerConverter.convertToDTO(entity, true);
+	}
+
+	@Override
+	public Response saveAuthLevelAttribute(AuthLevelAttribute attribute) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+        	if(attribute == null) {
+        		throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+        	}
+        	final AuthLevelAttributeEntity entity = authLevelAttributeDozerConverter.convertToEntity(attribute, true);
+        	contentProviderService.saveAuthLevelAttibute(entity);
+        } catch(BasicDataServiceException e) {
+            log.info(e.getMessage(), e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(e.getCode());
+        } catch(Throwable e) {
+            log.error(e.getMessage(), e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorText(e.getMessage());
+        }
+        return response;
+	}
+
+	@Override
+	public Response deleteAuthLevelAttribute(String id) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+        	if(id == null) {
+        		throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+        	}
+        	contentProviderService.deleteAuthLevelAttribute(id);
+        } catch(BasicDataServiceException e) {
+            log.info(e.getMessage(), e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(e.getCode());
+        } catch(Throwable e) {
+            log.error(e.getMessage(), e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorText(e.getMessage());
+        }
+        return response;
+	}
     
     @Override
     public Response saveAuthLevelGrouping(final AuthLevelGrouping grouping) {

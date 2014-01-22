@@ -14,6 +14,15 @@ import java.util.List;
 public interface ContentProviderWebService {
    
 	@WebMethod
+	public AuthLevelAttribute getAuthLevelAttribute(final String id);
+	
+	@WebMethod
+	public Response saveAuthLevelAttribute(final AuthLevelAttribute attribute);
+	
+	@WebMethod
+	public Response deleteAuthLevelAttribute(final String id);
+	
+	@WebMethod
 	public Response saveAuthLevelGrouping(final AuthLevelGrouping grouping);
 	
 	@WebMethod

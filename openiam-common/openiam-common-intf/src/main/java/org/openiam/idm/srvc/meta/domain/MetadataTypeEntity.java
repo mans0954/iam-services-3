@@ -55,6 +55,10 @@ public class MetadataTypeEntity implements Serializable {
     @Type(type = "yes_no")
     private boolean syncManagedSys;
 
+    @Column(name = "IS_BINARY")
+    @Type(type = "yes_no")
+    private boolean isBinary;
+    
     @Column(name = "GROUPING", length = 100)
     private String grouping;
 
@@ -132,59 +136,61 @@ public class MetadataTypeEntity implements Serializable {
 	this.grouping = grouping;
     }
 
-    @Override
-    public int hashCode() {
-	final int prime = 31;
-	int result = 1;
-	result = prime * result + (active ? 1231 : 1237);
-	result = prime * result + ((categories == null) ? 0 : categories.hashCode());
-	result = prime * result + ((description == null) ? 0 : description.hashCode());
-	result = prime * result + ((elementAttributes == null) ? 0 : elementAttributes.hashCode());
-	result = prime * result + ((grouping == null) ? 0 : grouping.hashCode());
-	result = prime * result + ((metadataTypeId == null) ? 0 : metadataTypeId.hashCode());
-	result = prime * result + (syncManagedSys ? 1231 : 1237);
-	return result;
-    }
+	public boolean isBinary() {
+		return isBinary;
+	}
 
-    @Override
-    public boolean equals(Object obj) {
-	if (this == obj)
-	    return true;
-	if (obj == null)
-	    return false;
-	if (getClass() != obj.getClass())
-	    return false;
-	MetadataTypeEntity other = (MetadataTypeEntity) obj;
-	if (active != other.active)
-	    return false;
-	if (categories == null) {
-	    if (other.categories != null)
-		return false;
-	} else if (!categories.equals(other.categories))
-	    return false;
-	if (description == null) {
-	    if (other.description != null)
-		return false;
-	} else if (!description.equals(other.description))
-	    return false;
-	if (elementAttributes == null) {
-	    if (other.elementAttributes != null)
-		return false;
-	} else if (!elementAttributes.equals(other.elementAttributes))
-	    return false;
-	if (grouping == null) {
-	    if (other.grouping != null)
-		return false;
-	} else if (!grouping.equals(other.grouping))
-	    return false;
-	if (metadataTypeId == null) {
-	    if (other.metadataTypeId != null)
-		return false;
-	} else if (!metadataTypeId.equals(other.metadataTypeId))
-	    return false;
-	if (syncManagedSys != other.syncManagedSys)
-	    return false;
-	return true;
-    }
+	public void setBinary(boolean isBinary) {
+		this.isBinary = isBinary;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + (active ? 1231 : 1237);
+		result = prime * result
+				+ ((description == null) ? 0 : description.hashCode());
+		result = prime * result
+				+ ((grouping == null) ? 0 : grouping.hashCode());
+		result = prime * result + (isBinary ? 1231 : 1237);
+		result = prime * result
+				+ ((metadataTypeId == null) ? 0 : metadataTypeId.hashCode());
+		result = prime * result + (syncManagedSys ? 1231 : 1237);
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		MetadataTypeEntity other = (MetadataTypeEntity) obj;
+		if (active != other.active)
+			return false;
+		if (description == null) {
+			if (other.description != null)
+				return false;
+		} else if (!description.equals(other.description))
+			return false;
+		if (grouping == null) {
+			if (other.grouping != null)
+				return false;
+		} else if (!grouping.equals(other.grouping))
+			return false;
+		if (isBinary != other.isBinary)
+			return false;
+		if (metadataTypeId == null) {
+			if (other.metadataTypeId != null)
+				return false;
+		} else if (!metadataTypeId.equals(other.metadataTypeId))
+			return false;
+		if (syncManagedSys != other.syncManagedSys)
+			return false;
+		return true;
+	}
 
 }

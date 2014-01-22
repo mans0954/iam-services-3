@@ -10,6 +10,12 @@ public interface ContentProviderService {
 	
 	public List<AuthLevelEntity> getAuthLevelList();
 	
+	public void deleteAuthLevelAttribute(final String id);
+	
+	public AuthLevelAttributeEntity getAuthLevelAttribute(final String id);
+	
+	public void saveAuthLevelAttibute(final AuthLevelAttributeEntity entity);
+	
 	public void deleteAuthLevelGrouping(final String id);
 	
 	public void saveAuthLevelGrouping(final AuthLevelGroupingEntity entity);
