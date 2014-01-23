@@ -1,6 +1,7 @@
 package org.openiam.am.srvc.ws;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -23,6 +24,8 @@ import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.exception.BasicDataServiceException;
+import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
+import org.openiam.idm.srvc.meta.service.MetadataTypeDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -62,6 +65,9 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
     private AuthLevelGroupingDozerConverter authLevelGroupingDozerConverter;
     
     @Autowired
+    private MetadataTypeDAO metadataTypeDAO;
+    
+    @Autowired
     private AuthLevelAttributeDozerConverter authLevelAttributeDozerConverter;
 
 	@Override
@@ -77,8 +83,37 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
         	if(attribute == null) {
         		throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
         	}
+        	
+        	if(StringUtils.isBlank(attribute.getName())) {
+        		throw new BasicDataServiceException(ResponseCode.NO_NAME);
+        	}
+        	
+        	if(attribute.getType() == null || StringUtils.isBlank(attribute.getType().getMetadataTypeId())) {
+        		throw new BasicDataServiceException(ResponseCode.TYPE_REQUIRED);
+        	}
+        	
+        	final MetadataTypeEntity type = metadataTypeDAO.findById(attribute.getType().getMetadataTypeId());
+        	if(type == null) {
+        		throw new BasicDataServiceException(ResponseCode.TYPE_REQUIRED);
+        	}
+        	
+        	if(attribute.getGrouping() == null || StringUtils.isBlank(attribute.getGrouping().getId())) {
+        		throw new BasicDataServiceException(ResponseCode.GROUPING_REQUIRED);
+        	}
+        	
+        	if(type.isBinary()) {
+        		attribute.setValueAsString(null);
+        	} else {
+        		attribute.setValueAsByteArray(null);
+        	}
+        	
+        	if(StringUtils.isBlank(attribute.getValueAsString()) && ArrayUtils.isEmpty(attribute.getValueAsByteArray())) {
+        		throw new BasicDataServiceException(ResponseCode.VALUE_REQUIRED);
+        	}
+        	
         	final AuthLevelAttributeEntity entity = authLevelAttributeDozerConverter.convertToEntity(attribute, true);
         	contentProviderService.saveAuthLevelAttibute(entity);
+        	response.setResponseValue(entity.getId());
         } catch(BasicDataServiceException e) {
             log.info(e.getMessage(), e);
             response.setStatus(ResponseStatus.FAILURE);

@@ -631,20 +631,23 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
 	@Transactional
 	public void saveAuthLevelAttibute(AuthLevelAttributeEntity entity) {
 		if(entity != null) {
+			MetadataTypeEntity type = null;
+			if(entity.getType() != null) {
+				type = typeDAO.findById(entity.getType().getMetadataTypeId());
+			}
 			if(StringUtils.isBlank(entity.getId())) {
 				entity.setId(null);
 				if(entity.getGrouping() != null) {
 					final AuthLevelGroupingEntity grouping = authLevelGroupingDAO.findById(entity.getGrouping().getId());
 					entity.setGrouping(grouping);
 				}
-				if(entity.getType() != null) {
-					final MetadataTypeEntity type = typeDAO.findById(entity.getType().getMetadataTypeId());
-					entity.setType(type);
-				}
+				
+				entity.setType(type);
 				authLevelAttributeDAO.save(entity);
 			} else {
 				final AuthLevelAttributeEntity dbEntity = authLevelAttributeDAO.findById(entity.getId());
 				if(dbEntity != null) {
+					dbEntity.setType(type);
 					dbEntity.setValueAsByteArray(entity.getValueAsByteArray());
 					dbEntity.setValueAsString(entity.getValueAsString());
 					authLevelAttributeDAO.update(dbEntity);
