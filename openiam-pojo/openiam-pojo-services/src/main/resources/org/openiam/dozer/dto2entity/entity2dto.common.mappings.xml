@@ -474,5 +474,9 @@
     		<a>valueAsByteArray</a>
     		<b>valueAsByteArray</b>
     	</field>
+    	<field>
+    		<a>valueAsString</a>
+    		<b>valueAsString</b>
+    	</field>
     </mapping>
 </mappings>

@@ -58,4 +58,7 @@ public interface ResourceService {
     public void validateResourceDeletion(final String resourceId) throws BasicDataServiceException;
     
     public List<ResourceTypeEntity> findResourceTypes(ResourceTypeSearchBean searchBean, int from, int size);
+
+    int countResourceTypes(ResourceTypeSearchBean searchBean);
+    void deleteResourceType(String resourceTypeId);
 }

@@ -8,14 +8,15 @@ import org.springframework.stereotype.Component;
 @Component
 public class ResourceTypeSearchBeanConverter implements SearchBeanConverter<ResourceTypeEntity, ResourceTypeSearchBean> {
 
-	@Override
-	public ResourceTypeEntity convert(final ResourceTypeSearchBean searchBean) {
-		final ResourceTypeEntity entity = new ResourceTypeEntity();
-		if(searchBean != null) {
-			entity.setId(StringUtils.trimToNull(searchBean.getKey()));
-			entity.setSearchable(searchBean.isSearchable());
-		}
-		return entity;
+    @Override
+    public ResourceTypeEntity convert(final ResourceTypeSearchBean searchBean) {
+	final ResourceTypeEntity entity = new ResourceTypeEntity();
+	if (searchBean != null) {
+	    entity.setId(StringUtils.trimToNull(searchBean.getKey()));
+	    entity.setSearchable(searchBean.isSearchable());
+	    entity.setDescription(searchBean.getDescription());
 	}
+	return entity;
+    }
 
 }
