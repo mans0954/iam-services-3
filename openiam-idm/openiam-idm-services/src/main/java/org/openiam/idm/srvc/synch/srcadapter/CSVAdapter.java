@@ -288,6 +288,7 @@ public class CSVAdapter extends AbstractSrcAdapter {
                                 log.info(" - Updating existing user");
                                 pUser.setUserId(usr.getUserId());
                                 try {
+                                    pUser.setParentAuditLogId(auditLogBuilder.getEntity().getId());
                                     provService.modifyUser(pUser);
                                 } catch (Exception e) {
                                     auditLogBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "Error: User login: " +(pUser.getFirstName()+" "+pUser.getLastName())+" [MODIFY] " + e.getMessage());
