@@ -398,7 +398,7 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 						for(final AuthLevelAttribute attribute : attributes) {
 							final URIAuthLevelAttribute attributeToken = new URIAuthLevelAttribute();
 							attributeToken.setName(attribute.getName());
-							attributeToken.setValue(attribute.getValueAsString());
+							attributeToken.setValueAsString(attribute.getValueAsString());
 							attributeToken.setValueAsByteArray(attribute.getValueAsByteArray());
 							attributeToken.setTypeId(attribute.getType().getMetadataTypeId());
 							attributeToken.setTypeName(attribute.getType().getDescription());

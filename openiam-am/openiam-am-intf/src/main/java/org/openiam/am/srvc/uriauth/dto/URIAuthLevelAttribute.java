@@ -1,6 +1,7 @@
 package org.openiam.am.srvc.uriauth.dto;
 
 import java.io.Serializable;
+import java.util.Arrays;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -9,7 +10,7 @@ import javax.xml.bind.annotation.XmlType;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "URIAuthLevelAttribute", propOrder = {
 	"name",
-	"value",
+	"valueAsString",
 	"valueAsByteArray",
 	"typeName",
 	"typeId"
@@ -17,7 +18,7 @@ import javax.xml.bind.annotation.XmlType;
 public class URIAuthLevelAttribute implements Serializable {
 
 	private String name;
-	private String value;
+	private String valueAsString;
 	private byte[] valueAsByteArray;
 	private String typeName;
 	private String typeId;
@@ -34,12 +35,12 @@ public class URIAuthLevelAttribute implements Serializable {
 		this.name = name;
 	}
 
-	public String getValue() {
-		return value;
+	public String getValueAsString() {
+		return valueAsString;
 	}
 
-	public void setValue(String value) {
-		this.value = value;
+	public void setValueAsString(String valueAsString) {
+		this.valueAsString = valueAsString;
 	}
 
 	public byte[] getValueAsByteArray() {
@@ -74,7 +75,9 @@ public class URIAuthLevelAttribute implements Serializable {
 		result = prime * result + ((typeId == null) ? 0 : typeId.hashCode());
 		result = prime * result
 				+ ((typeName == null) ? 0 : typeName.hashCode());
-		result = prime * result + ((value == null) ? 0 : value.hashCode());
+		result = prime * result + Arrays.hashCode(valueAsByteArray);
+		result = prime * result
+				+ ((valueAsString == null) ? 0 : valueAsString.hashCode());
 		return result;
 	}
 
@@ -102,10 +105,12 @@ public class URIAuthLevelAttribute implements Serializable {
 				return false;
 		} else if (!typeName.equals(other.typeName))
 			return false;
-		if (value == null) {
-			if (other.value != null)
+		if (!Arrays.equals(valueAsByteArray, other.valueAsByteArray))
+			return false;
+		if (valueAsString == null) {
+			if (other.valueAsString != null)
 				return false;
-		} else if (!value.equals(other.value))
+		} else if (!valueAsString.equals(other.valueAsString))
 			return false;
 		return true;
 	}
@@ -113,9 +118,10 @@ public class URIAuthLevelAttribute implements Serializable {
 	@Override
 	public String toString() {
 		return String
-				.format("URIAuthLevelAttribute [name=%s, value=%s, typeName=%s, typeId=%s]",
-						name, value, typeName, typeId);
+				.format("URIAuthLevelAttribute [name=%s, valueAsString=%s, valueAsByteArray=%s, typeName=%s, typeId=%s]",
+						name, valueAsString, Arrays.toString(valueAsByteArray),
+						typeName, typeId);
 	}
-	
+
 	
 }
