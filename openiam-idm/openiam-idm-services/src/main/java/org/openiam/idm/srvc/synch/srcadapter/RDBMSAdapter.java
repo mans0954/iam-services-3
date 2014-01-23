@@ -329,6 +329,7 @@ public class RDBMSAdapter extends AbstractSrcAdapter {
                             transformScript.setNewUser(false);
                             User u = userManager.getUserDto(usr.getUserId());
                             pUser = new ProvisionUser(u);
+                            setCurrentSuperiors(pUser);
                             transformScript.setUser(u);
                             transformScript.setPrincipalList(loginDozerConverter.convertToDTOList(loginManager.getLoginByUser(usr.getUserId()), false));
                             transformScript.setUserRoleList(roleDataService.getUserRolesAsFlatList(usr.getUserId()));
