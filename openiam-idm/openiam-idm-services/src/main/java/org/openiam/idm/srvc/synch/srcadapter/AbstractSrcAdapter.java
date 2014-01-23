@@ -1,10 +1,12 @@
 package org.openiam.idm.srvc.synch.srcadapter;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -24,14 +26,18 @@ import org.openiam.idm.srvc.synch.dto.SynchConfig;
 import org.openiam.idm.srvc.synch.service.IdentitySynchService;
 import org.openiam.idm.srvc.synch.service.SourceAdapter;
 import org.openiam.idm.srvc.synch.service.SyncConstants;
+import org.openiam.idm.srvc.user.domain.UserEntity;
+import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.service.ProvisionService;
 import org.openiam.script.ScriptIntegration;
 import org.openiam.util.MuleContextProvider;
+import org.openiam.util.SpringContextProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
 
 /**
  * Abstract class which all Source System adapters must extend
@@ -142,6 +148,16 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
                 }
             }
             Thread.sleep(500);
+        }
+    }
+
+    protected void setCurrentSuperiors(ProvisionUser pUser) {
+        if (StringUtils.isNotEmpty(pUser.getUserId())) {
+            List<UserEntity> entities = userManager.getSuperiors(pUser.getUserId(), -1, -1);
+            List<User> superiors = userDozerConverter.convertToDTOList(entities, true);
+            if (CollectionUtils.isNotEmpty(superiors)) {
+                pUser.setSuperiors(new HashSet<User>(superiors));
+            }
         }
     }
 
