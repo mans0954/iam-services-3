@@ -35,14 +35,25 @@ public class ResourceTypeEntity {
     @Type(type = "yes_no")
     private boolean supportsHierarchy = true;
 
-    @Column(name = "URL", length = 512)
+    @Column(name = "URL", length = 12288)
     private String url;
+
+    @Column(name = "IMAGE_TYPE", length = 16)
+    private String imageType;
 
     @Column(name = "SEARCHABLE")
     @Type(type = "yes_no")
     private boolean searchable = true;
 
     public ResourceTypeEntity() {
+    }
+
+    public String getImageType() {
+	return imageType;
+    }
+
+    public void setImageType(String imageType) {
+	this.imageType = imageType;
     }
 
     public String getId() {

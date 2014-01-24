@@ -14,7 +14,7 @@ import org.openiam.idm.srvc.res.domain.ResourceTypeEntity;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "ResourceType", propOrder = { "id", "description", "provisionResource", "processName",
-	"supportsHierarchy", "searchable", "url" })
+	"supportsHierarchy", "searchable", "url", "imageType" })
 @DozerDTOCorrespondence(ResourceTypeEntity.class)
 public class ResourceType implements java.io.Serializable {
 
@@ -25,8 +25,17 @@ public class ResourceType implements java.io.Serializable {
     private boolean supportsHierarchy;
     private boolean searchable = true;
     private String url;
+    private String imageType;
 
     public ResourceType() {
+    }
+
+    public String getImageType() {
+	return imageType;
+    }
+
+    public void setImageType(String imageType) {
+	this.imageType = imageType;
     }
 
     public String getId() {
