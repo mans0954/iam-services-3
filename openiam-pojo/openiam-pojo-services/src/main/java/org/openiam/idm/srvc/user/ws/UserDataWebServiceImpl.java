@@ -1186,4 +1186,17 @@ public class UserDataWebServiceImpl implements UserDataWebService{
         }
         return response;
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<User> getUserByLastDate(Date lastDate) {
+        List<User> resultList = Collections.EMPTY_LIST;
+        try {
+            List<UserEntity> userList = userManager.getUserByLastDate(lastDate);
+            resultList = userDozerConverter.convertToDTOList(userList, true);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
+        return resultList;
+    }
 }
