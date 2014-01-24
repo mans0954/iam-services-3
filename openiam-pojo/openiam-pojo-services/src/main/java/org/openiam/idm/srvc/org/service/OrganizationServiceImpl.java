@@ -1,12 +1,5 @@
 package org.openiam.idm.srvc.org.service;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
@@ -22,8 +15,6 @@ import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
-import org.openiam.idm.srvc.role.domain.RoleAttributeEntity;
-import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
 import org.openiam.idm.srvc.user.service.UserDAO;
@@ -33,6 +24,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.*;
 
 @Service("organizationService")
 @Transactional
@@ -316,23 +309,23 @@ public class OrganizationServiceImpl implements OrganizationService {
         Set<String> filterData = null;
         if (StringUtils.isNotBlank(requesterId)) {
             Map<String, UserAttribute> requesterAttributes = userDataService.getUserAttributesDto(requesterId);
-
-            if (StringUtils.isNotBlank(organizationTypeId)) {
-            	filterData = new HashSet<String>(DelegationFilterHelper.getOrgIdFilterFromString(requesterAttributes));
-                //classification = OrgClassificationEnum.valueOf(orgClassification);
-            	/*
-                switch (classification) {
-	                case ORGANIZATION:
-	                    filterData = new HashSet<String>(DelegationFilterHelper.getOrgIdFilterFromString(requesterAttributes));
-	                    break;
-	                default:
-	                    filterData = getFullOrgFilterList(requesterAttributes);
-	                    break;
-                }
-                */
-            } else {
-                filterData = getFullOrgFilterList(requesterAttributes);
-            }
+            filterData = getFullOrgFilterList(requesterAttributes);
+//            if (StringUtils.isNotBlank(organizationTypeId)) {
+//            	filterData = new HashSet<String>(DelegationFilterHelper.getOrgIdFilterFromString(requesterAttributes));
+//                //classification = OrgClassificationEnum.valueOf(orgClassification);
+//            	/*
+//                switch (classification) {
+//	                case ORGANIZATION:
+//	                    filterData = new HashSet<String>(DelegationFilterHelper.getOrgIdFilterFromString(requesterAttributes));
+//	                    break;
+//	                default:
+//	                    filterData = getFullOrgFilterList(requesterAttributes);
+//	                    break;
+//                }
+//                */
+//            } else {
+//                filterData = getFullOrgFilterList(requesterAttributes);
+//            }
         }
 
         return filterData;
@@ -340,6 +333,8 @@ public class OrganizationServiceImpl implements OrganizationService {
 
     private Set<String> getFullOrgFilterList(Map<String, UserAttribute> attrMap) {
         List<String> filterData = DelegationFilterHelper.getOrgIdFilterFromString(attrMap);
+        filterData.addAll(DelegationFilterHelper.getDeptFilterFromString(attrMap));
+        filterData.addAll(DelegationFilterHelper.getDivisionFilterFromString(attrMap));
         return new HashSet<String>(filterData);
     }
 
