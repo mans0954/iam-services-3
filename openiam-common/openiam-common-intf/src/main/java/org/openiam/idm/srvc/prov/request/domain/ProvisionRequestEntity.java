@@ -4,17 +4,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
+import javax.persistence.*;
 
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
@@ -54,8 +44,9 @@ public class ProvisionRequestEntity {
 	
 	@Column(name = "REQUEST_TYPE", length = 20)
 	private String requestType;
-	
-	@Column(name = "REQUEST_XML", length = 65535)
+
+    @Lob
+	@Column(name = "REQUEST_XML")
 	private String requestXML;
 	
 	@Column(name = "MANAGED_RESOURCE_ID", length = 32)
