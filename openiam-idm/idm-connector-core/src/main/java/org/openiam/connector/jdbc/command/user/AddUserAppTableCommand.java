@@ -9,13 +9,13 @@ import org.openiam.connector.jdbc.command.base.AbstractAddAppTableCommand;
 import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.connector.type.constant.ErrorCode;
 import org.openiam.provision.type.ExtensibleAttribute;
-import org.openiam.provision.type.ExtensibleUser;
+import org.openiam.provision.type.ExtensibleObject;
 import org.springframework.stereotype.Service;
 
 @Service("addUserAppTableCommand")
-public class AddUserAppTableCommand extends AbstractAddAppTableCommand<ExtensibleUser> {
+public class AddUserAppTableCommand extends AbstractAddAppTableCommand<ExtensibleObject> {
     @Override
-    protected void addObject(Connection con, String principalName, ExtensibleUser object, String tableName)
+    protected void addObject(Connection con, String principalName, ExtensibleObject object, String tableName)
             throws ConnectorDataException {
         // build sql
         final StringBuilder columns = new StringBuilder("");
@@ -67,11 +67,14 @@ public class AddUserAppTableCommand extends AbstractAddAppTableCommand<Extensibl
             }
 
             statement = con.prepareStatement(sql);
-
             // set the parameters
 
+            for (int i = 0; i < ctr; i++) {
+                setStatement(statement, i + 1, attrList.get(i).getDataType(), attrList.get(i).getValue());
+            }
+
             if (object.getPrincipalFieldName() != null) {
-                setStatement(statement, ctr, object.getPrincipalFieldDataType(), principalName);
+                setStatement(statement, ctr + 1, object.getPrincipalFieldDataType(), principalName);
             }
             statement.executeUpdate();
         } catch (SQLException e) {
