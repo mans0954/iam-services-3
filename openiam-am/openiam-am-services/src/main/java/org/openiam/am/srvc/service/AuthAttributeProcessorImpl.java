@@ -26,13 +26,17 @@ public class AuthAttributeProcessorImpl implements AuthAttributeProcessor {
 	@Override
 	@Transactional
 	public String process(final String reflectionKey, final String userId, final String managedSysId) throws Exception {
-		LoginEntity identityObject = loginManager.getByUserIdManagedSys(userId, managedSysId);
-		final UserEntity user = userManager.getUser(userId);
+		if(userId != null) {
+			LoginEntity identityObject = loginManager.getByUserIdManagedSys(userId, managedSysId);
+			final UserEntity user = userManager.getUser(userId);
 		
-		EnumMap<AmAttributes, Object> objectMap = new EnumMap<AmAttributes, Object>(AmAttributes.class);
-        objectMap.put(AmAttributes.Login, identityObject);
-        objectMap.put(AmAttributes.User, user);
-        return process(reflectionKey, objectMap);
+			EnumMap<AmAttributes, Object> objectMap = new EnumMap<AmAttributes, Object>(AmAttributes.class);
+			objectMap.put(AmAttributes.Login, identityObject);
+			objectMap.put(AmAttributes.User, user);
+			return process(reflectionKey, objectMap);
+		} else {
+			return "";
+		}
 	}
 
 	
