@@ -11,9 +11,9 @@ import org.openiam.idm.srvc.res.dto.ResourceType;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "ResourceTypeSearchBean", propOrder = { "searchable", "description", "provisionResource", "processName" })
 public class ResourceTypeSearchBean extends AbstractSearchBean<ResourceType, String> implements
-	SearchBean<ResourceType, String>, Serializable {
+        SearchBean<ResourceType, String>, Serializable {
 
-    private boolean searchable = true;
+    private Boolean searchable;
     private String description;
     private Integer provisionResource;
     private String processName;
@@ -21,35 +21,35 @@ public class ResourceTypeSearchBean extends AbstractSearchBean<ResourceType, Str
     public ResourceTypeSearchBean() {
     }
 
-    public boolean isSearchable() {
-	return searchable;
+    public Boolean isSearchable() {
+        return searchable;
     }
 
-    public void setSearchable(boolean searchable) {
-	this.searchable = searchable;
+    public void setSearchable(Boolean searchable) {
+        this.searchable = searchable;
     }
 
     public String getDescription() {
-	return description;
+        return description;
     }
 
     public void setDescription(String description) {
-	this.description = description;
+        this.description = description;
     }
 
     public Integer getProvisionResource() {
-	return provisionResource;
+        return provisionResource;
     }
 
     public void setProvisionResource(Integer provisionResource) {
-	this.provisionResource = provisionResource;
+        this.provisionResource = provisionResource;
     }
 
     public String getProcessName() {
-	return processName;
+        return processName;
     }
 
     public void setProcessName(String processName) {
-	this.processName = processName;
+        this.processName = processName;
     }
 }
