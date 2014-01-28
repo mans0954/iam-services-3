@@ -10,13 +10,18 @@ public class ResourceTypeSearchBeanConverter implements SearchBeanConverter<Reso
 
     @Override
     public ResourceTypeEntity convert(final ResourceTypeSearchBean searchBean) {
-	final ResourceTypeEntity entity = new ResourceTypeEntity();
-	if (searchBean != null) {
-	    entity.setId(StringUtils.trimToNull(searchBean.getKey()));
-	    entity.setSearchable(searchBean.isSearchable());
-	    entity.setDescription(searchBean.getDescription());
-	}
-	return entity;
+        final ResourceTypeEntity entity = new ResourceTypeEntity();
+        if (searchBean != null) {
+            entity.setId(StringUtils.trimToNull(searchBean.getKey()));
+            if (searchBean.isSearchable() == null) {
+                entity.setSelectAll(true);
+            } else {
+                entity.setSearchable(searchBean.isSearchable());
+                entity.setSelectAll(false);
+            }
+            entity.setDescription(searchBean.getDescription());
+        }
+        return entity;
     }
 
 }
