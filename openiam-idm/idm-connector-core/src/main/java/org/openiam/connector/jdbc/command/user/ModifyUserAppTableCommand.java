@@ -1,7 +1,6 @@
 package org.openiam.connector.jdbc.command.user;
 
 import org.apache.commons.lang.StringUtils;
-import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.connector.jdbc.command.base.AbstractModifyAppTableCommand;
 import org.openiam.provision.type.ExtensibleUser;
 import org.springframework.stereotype.Service;
