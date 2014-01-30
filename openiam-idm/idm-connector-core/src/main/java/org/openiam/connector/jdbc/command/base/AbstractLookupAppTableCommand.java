@@ -1,5 +1,14 @@
 package org.openiam.connector.jdbc.command.base;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Types;
+import java.util.List;
+
+import org.openiam.connector.jdbc.command.data.AppTableConfiguration;
 import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.connector.type.ObjectValue;
 import org.openiam.connector.type.constant.ErrorCode;
@@ -9,12 +18,9 @@ import org.openiam.connector.type.response.SearchResponse;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
-import org.openiam.connector.jdbc.command.data.AppTableConfiguration;
 
-import java.sql.*;
-import java.util.List;
-
-public abstract class AbstractLookupAppTableCommand<ExtObject extends ExtensibleObject> extends AbstractAppTableCommand<LookupRequest<ExtObject>, SearchResponse> {
+public abstract class AbstractLookupAppTableCommand<ExtObject extends ExtensibleObject> extends
+        AbstractAppTableCommand<LookupRequest<ExtObject>, SearchResponse> {
     @Override
     public SearchResponse execute(LookupRequest<ExtObject> lookupRequest) throws ConnectorDataException {
         final SearchResponse response = new SearchResponse();
@@ -29,8 +35,9 @@ public abstract class AbstractLookupAppTableCommand<ExtObject extends Extensible
 
         try {
 
-            final PreparedStatement statement = createSelectStatement(con, configuration.getResourceId(), configuration.getTableName(), principalName);
-            if(log.isDebugEnabled()) {
+            final PreparedStatement statement = createSelectStatement(con, configuration.getResourceId(),
+                    configuration.getTableName(), principalName);
+            if (log.isDebugEnabled()) {
                 log.debug("Executing lookup query");
             }
 
@@ -38,8 +45,8 @@ public abstract class AbstractLookupAppTableCommand<ExtObject extends Extensible
             final ResultSetMetaData rsMetadata = rs.getMetaData();
             int columnCount = rsMetadata.getColumnCount();
 
-            if(log.isDebugEnabled()) {
-                log.debug(String.format("Query contains column count = %s",columnCount));
+            if (log.isDebugEnabled()) {
+                log.debug(String.format("Query contains column count = %s", columnCount));
             }
 
             if (rs.next()) {
@@ -57,7 +64,7 @@ public abstract class AbstractLookupAppTableCommand<ExtObject extends Extensible
             } else {
                 throw new ConnectorDataException(ErrorCode.NO_SUCH_IDENTIFIER, "Principal not found");
             }
-
+            this.closeStatement(statement);
             response.setStatus(StatusCodeType.SUCCESS);
             return response;
         } catch (SQLException se) {
@@ -68,12 +75,13 @@ public abstract class AbstractLookupAppTableCommand<ExtObject extends Extensible
         }
     }
 
-    private PreparedStatement createSelectStatement(final Connection con, final String resourceId, final String tableName, final String principalName) throws ConnectorDataException {
+    private PreparedStatement createSelectStatement(final Connection con, final String resourceId,
+            final String tableName, final String principalName) throws ConnectorDataException {
         final List<AttributeMapEntity> attrMap = attributeMaps(resourceId);
         if (attrMap == null)
             throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR, "Attribute Map is null");
 
-        PreparedStatement statement=null;
+        PreparedStatement statement = null;
         try {
             int colCount = 0;
             String principalFieldName = null;
@@ -81,7 +89,7 @@ public abstract class AbstractLookupAppTableCommand<ExtObject extends Extensible
             final StringBuilder columnList = new StringBuilder();
             for (AttributeMapEntity atr : attrMap) {
                 final String objectType = atr.getMapForObjectType();
-                if(compareObjectTypeWithId(objectType)) {
+                if (compareObjectTypeWithId(objectType)) {
                     principalFieldName = atr.getAttributeName();
                     principalFieldDataType = atr.getDataType().getValue();
                 } else if (compareObjectTypeWithObject(objectType)) {
@@ -94,7 +102,7 @@ public abstract class AbstractLookupAppTableCommand<ExtObject extends Extensible
             }
 
             final String sql = String.format(SELECT_SQL, columnList, tableName, principalFieldName);
-            if(log.isDebugEnabled()) {
+            if (log.isDebugEnabled()) {
                 log.debug(String.format("SQL: %s", sql));
             }
             statement = con.prepareStatement(sql);
@@ -104,8 +112,6 @@ public abstract class AbstractLookupAppTableCommand<ExtObject extends Extensible
         } catch (SQLException e) {
             log.error(e.getMessage(), e);
             throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR, e.getMessage());
-        } finally {
-            this.closeStatement(statement);
         }
 
     }
@@ -115,12 +121,12 @@ public abstract class AbstractLookupAppTableCommand<ExtObject extends Extensible
 
         final int fieldType = rsMetadata.getColumnType(colIndx);
 
-        if(log.isDebugEnabled()) {
+        if (log.isDebugEnabled()) {
             log.debug(String.format("column type = %s", fieldType));
         }
 
         if (fieldType == Types.INTEGER) {
-            if(log.isDebugEnabled()) {
+            if (log.isDebugEnabled()) {
                 log.debug("type = Integer");
             }
             extAttr.setDataType("INTEGER");
@@ -128,7 +134,7 @@ public abstract class AbstractLookupAppTableCommand<ExtObject extends Extensible
         }
 
         if (fieldType == Types.FLOAT || fieldType == Types.NUMERIC) {
-            if(log.isDebugEnabled()) {
+            if (log.isDebugEnabled()) {
                 log.debug("type = Float");
             }
             extAttr.setDataType("FLOAT");
@@ -137,7 +143,7 @@ public abstract class AbstractLookupAppTableCommand<ExtObject extends Extensible
         }
 
         if (fieldType == Types.DATE) {
-            if(log.isDebugEnabled()) {
+            if (log.isDebugEnabled()) {
                 log.debug("type = Date");
             }
             extAttr.setDataType("DATE");
@@ -147,15 +153,16 @@ public abstract class AbstractLookupAppTableCommand<ExtObject extends Extensible
 
         }
         if (fieldType == Types.TIMESTAMP) {
-            if(log.isDebugEnabled()) {
+            if (log.isDebugEnabled()) {
                 log.debug("type = Timestamp");
             }
             extAttr.setDataType("TIMESTAMP");
-            extAttr.setValue(String.valueOf(rs.getTimestamp(colIndx).getTime()));
+            if (rs.getTimestamp(colIndx) != null)
+                extAttr.setValue(String.valueOf(rs.getTimestamp(colIndx).getTime()));
 
         }
         if (fieldType == Types.VARCHAR || fieldType == Types.CHAR) {
-            if(log.isDebugEnabled()) {
+            if (log.isDebugEnabled()) {
                 log.debug("type = Varchar");
             }
             extAttr.setDataType("STRING");
@@ -167,6 +174,7 @@ public abstract class AbstractLookupAppTableCommand<ExtObject extends Extensible
     }
 
     protected abstract boolean compareObjectTypeWithId(String objectType);
+
     protected abstract boolean compareObjectTypeWithObject(String objectType);
 
 }
