@@ -49,8 +49,7 @@ import javax.naming.NamingException;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
-import javax.naming.ldap.InitialLdapContext;
-import javax.naming.ldap.LdapContext;
+import javax.naming.ldap.*;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -82,8 +81,8 @@ public class LdapAdapter extends AbstractSrcAdapter { // implements SourceAdapte
     public SyncResponse startSynch(SynchConfig config, AuditLogBuilder auditLogBuilder) {
         // rule used to match object from source system to data in IDM
         MatchObjectRule matchRule = null;
-       // String changeLog = null;
-       // Date mostRecentRecord = null;
+        // String changeLog = null;
+        // Date mostRecentRecord = null;
         long mostRecentRecord = 0L;
         String lastRecProcessed = null;
         //java.util.Date lastExec = null;
@@ -100,7 +99,7 @@ public class LdapAdapter extends AbstractSrcAdapter { // implements SourceAdapte
         // happen atomically. It is possible for two threads, started by Quartz, to reach this point at
         // the same time for the same task.
         synchronized (runningTask) {
-            if(runningTask.contains(config.getSynchConfigId())) {
+            if (runningTask.contains(config.getSynchConfigId())) {
                 log.debug("**** Synchronization Configuration " + config.getName() + " is already running");
 
                 SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
@@ -138,208 +137,263 @@ public class LdapAdapter extends AbstractSrcAdapter { // implements SourceAdapte
             }
             // get the last execution time
             if (config.getLastRecProcessed() != null) {
-			    lastRecProcessed =  config.getLastRecProcessed() ;
-		    }
+                lastRecProcessed = config.getLastRecProcessed();
+            }
 
             // get change log field
             if (config.getSynchType().equalsIgnoreCase("INCREMENTAL")) {
                 if (lastRecProcessed != null) {
                     // update the search filter so that it has the new time
-                    String ldapFilterQuery =  config.getQuery();
+                    String ldapFilterQuery = config.getQuery();
                     // replace wildcards with the last exec time
 
-                    config.setQuery(  ldapFilterQuery.replace("?", lastRecProcessed ) );
+                    config.setQuery(ldapFilterQuery.replace("?", lastRecProcessed));
 
                     log.debug("Updated ldap filter = " + config.getQuery());
                 }
             }
 
             int ctr = 0;
+           //pagging int PAGE_SIZE = 100;      //Y
 
-            NamingEnumeration results = search(config);
-            while (results != null && results.hasMore()) {
-                SearchResult sr = (SearchResult) results.next();
-                Attributes attrs = sr.getAttributes();
+            List<String> ouByParent = new LinkedList<String>();
+            if(config.getBaseDn().contains(";")) {
+              for (String basedn : config.getBaseDn().split(";")){
+                  ouByParent.add(basedn.trim());
+              }
+            } else {
+                ouByParent.add(config.getBaseDn().trim());
+            }
+            int pageSize = 0;
+            int totalRecords = 0;
+            int successRecords = 0;
 
-                LineObject rowObj = new LineObject();
+            for (String baseou : ouByParent) {
+                byte[] cookie = null;
+                int recordsInOUCounter = 0;
 
-                log.debug("-New Row to Synchronize --" + ctr++);
+                    pageSize++;
+                    recordsInOUCounter++;
+                    log.debug("========== New Page number " + pageSize + " for processing, Processed: "+totalRecords+" records");
+                    NamingEnumeration results = search(baseou, config.getQuery());
 
-                if (attrs != null) {
-                   // try {
-                        for (NamingEnumeration ae = attrs.getAll(); ae.hasMore();) {
+                    while (results != null && results.hasMoreElements()) {
+                        totalRecords++;
 
-                            javax.naming.directory.Attribute attr = (javax.naming.directory.Attribute) ae.next();
+                        SearchResult sr = (SearchResult) results.nextElement();
+                        log.debug("SearchResultElement   : " + sr.getName());
+                        log.debug("      Attributes: " + sr.getAttributes());
+                        LineObject rowObj = new LineObject();
 
-                            List<String> valueList = new ArrayList<String>();
+                        log.debug("-New Row to Synchronize --" + ctr++);
+                        Attributes attrs = sr.getAttributes();
 
-                            String key = attr.getID();
 
-                            log.debug("attribute id=: " + key);
+                        if (attrs != null) {
 
-                            for (NamingEnumeration e = attr.getAll(); e.hasMore();) {
-                                Object o = e.next();
-                                if (o.toString() != null) {
-                                    valueList.add(o.toString());
-                                    log.debug("- value:=" + o.toString());
+                            for (NamingEnumeration ae = attrs.getAll(); ae.hasMore(); ) {
+
+                                javax.naming.directory.Attribute attr = (javax.naming.directory.Attribute) ae.next();
+
+                                List<String> valueList = new ArrayList<String>();
+
+                                String key = attr.getID();
+
+                                log.debug("attribute id=: " + key);
+
+                                for (NamingEnumeration e = attr.getAll(); e.hasMore(); ) {
+                                    Object o = e.next();
+                                    if (o.toString() != null) {
+                                        valueList.add(o.toString());
+                                        log.debug("- value:=" + o.toString());
+                                    }
                                 }
-                            }
-                            if (valueList.size() > 0) {
-                                org.openiam.idm.srvc.synch.dto.Attribute rowAttr = new org.openiam.idm.srvc.synch.dto.Attribute();
-                                rowAttr.populateAttribute(key, valueList);
-                                rowObj.put(key, rowAttr);
-                            }else {
-                               log.debug("- value is null");
-                            }
-                        }
-                }
-
-                LastRecordTime lrt = getRowTime(rowObj);
-
-                if (mostRecentRecord < lrt.mostRecentRecord) {
-                    mostRecentRecord = lrt.mostRecentRecord;
-                    lastRecProcessed = lrt.generalizedTime;
-                }
-
-                log.debug("STarting validation and transformation..");
-
-                // start the synch process
-                // 1) Validate the data
-                // 2) Transform it
-                // 3) if not delete - then match the object and determine if its a new object or its an udpate
-                try {
-                    // validate
-                    if (config.getValidationRule() != null && config.getValidationRule().length() > 0) {
-                        ValidationScript script = SynchScriptFactory.createValidationScript(config.getValidationRule());
-                        int retval = script.isValid(rowObj);
-                        if (retval == ValidationScript.NOT_VALID) {
-                            log.error("Row Object Faied Validation=" + rowObj.toString());
-                            // log this object in the exception log
-
-                            continue;
-                        }
-                        if (retval == ValidationScript.SKIP) {
-                            continue;
-                        }
-                    }
-
-                    // check if the user exists or not
-                    Map<String, Attribute> rowAttr = rowObj.getColumnMap();
-                    //
-                    matchRule = matchRuleFactory.create(config.getCustomMatchRule());
-                    User usr = matchRule.lookup(config, rowAttr);
-
-                    // transform
-                    int retval = -1;
-                    ProvisionUser pUser = new ProvisionUser();
-                    List<TransformScript> transformScripts = SynchScriptFactory.createTransformationScript(config);
-                    if (transformScripts != null && transformScripts.size() > 0) {
-                        for (TransformScript transformScript : transformScripts) {
-                            transformScript.init();
-                            pUser = new ProvisionUser();
-                            // initialize the transform script
-                            if (usr != null) {
-                                transformScript.setNewUser(false);
-                                User u = userManager.getUserDto(usr.getUserId());
-                                pUser = new ProvisionUser(u);
-                                setCurrentSuperiors(pUser);
-                                transformScript.setUser(u);
-                                transformScript.setPrincipalList(loginDozerConverter.convertToDTOList(loginManager.getLoginByUser(usr.getUserId()), false));
-                                transformScript.setUserRoleList(roleDataService.getUserRolesAsFlatList(usr.getUserId()));
-
-                            } else {
-                                transformScript.setNewUser(true);
-                                transformScript.setUser(null);
-                                transformScript.setPrincipalList(null);
-                                transformScript.setUserRoleList(null);
-                            }
-
-                            log.info(" - Execute transform script");
-
-                            //Disable PRE and POST processors/performance optimizations
-                            pUser.setSkipPreprocessor(true);
-                            pUser.setSkipPostProcessor(true);
-                            retval = transformScript.execute(rowObj, pUser);
-                            log.debug("Transform result=" + retval);
-                        }
-                        /*
-                        pUser.setSessionId(synchStartLog.getSessionId());
-						*/
-                        if (retval == TransformScript.DELETE && usr != null) {
-                            log.debug("deleting record - " + usr.getUserId());
-                            ProvisionUserResponse userResp = provService.deleteByUserId(usr.getUserId(), UserStatusEnum.DELETED, systemAccount);
-
-                        } else {
-                            // call synch
-                            if (retval != TransformScript.DELETE) {
-                                System.out.println("Provisioning user=" + pUser.getLastName());
-                                if (usr != null) {
-                                    log.debug("updating existing user...systemId=" + pUser.getUserId());
-                                    pUser.setUserId(usr.getUserId());
-                                    ProvisionUserResponse userResp = provService.modifyUser(pUser);
-
+                                if (valueList.size() > 0) {
+                                    org.openiam.idm.srvc.synch.dto.Attribute rowAttr = new org.openiam.idm.srvc.synch.dto.Attribute();
+                                    rowAttr.populateAttribute(key, valueList);
+                                    rowObj.put(key, rowAttr);
                                 } else {
-                                    log.debug("adding new user...");
-                                    pUser.setUserId(null);
-                                    ProvisionUserResponse userResp = provService.addUser(pUser);
+                                    log.debug("- value is null");
                                 }
                             }
                         }
-                    }
-                    // show the user object
 
-                } catch (ClassNotFoundException cnfe) {
+                        LastRecordTime lrt = getRowTime(rowObj);
 
-                    if(runningTask.contains(config.getSynchConfigId())) {
-                        runningTask.remove(config.getSynchConfigId());
-                    }
+                        if (mostRecentRecord < lrt.mostRecentRecord) {
+                            mostRecentRecord = lrt.mostRecentRecord;
+                            lastRecProcessed = lrt.generalizedTime;
+                        }
 
-                    log.error(cnfe);
+
+                        log.debug("STarting validation and transformation..");
+
+                        // start the synch process
+                        // 1) Validate the data
+                        // 2) Transform it
+                        // 3) if not delete - then match the object and determine if its a new object or its an udpate
+                       try {
+                            // validate
+                            if (config.getValidationRule() != null && config.getValidationRule().length() > 0) {
+                                ValidationScript script = SynchScriptFactory.createValidationScript(config.getValidationRule());
+                                int retval = script.isValid(rowObj);
+                                if (retval == ValidationScript.NOT_VALID) {
+                                    log.error("Row Object Faied Validation=" + rowObj.toString());
+                                    // log this object in the exception log
+
+                                    continue;
+                                }
+                                if (retval == ValidationScript.SKIP) {
+                                    continue;
+                                }
+                            }
+
+                            // check if the user exists or not
+                            Map<String, Attribute> rowAttr = rowObj.getColumnMap();
+                            //
+                            matchRule = matchRuleFactory.create(config.getCustomMatchRule());
+                            User usr = matchRule.lookup(config, rowAttr);
+
+                            // transform
+                            int retval = -1;
+                            ProvisionUser pUser = new ProvisionUser();
+                            List<TransformScript> transformScripts = SynchScriptFactory.createTransformationScript(config);
+                            if (transformScripts != null && transformScripts.size() > 0) {
+                                for (TransformScript transformScript : transformScripts) {
+                                    transformScript.init();
+                                    pUser = new ProvisionUser();
+                                    // initialize the transform script
+                                    if (usr != null) {
+                                        transformScript.setNewUser(false);
+                                        User u = userManager.getUserDto(usr.getUserId());
+                                        pUser = new ProvisionUser(u);
+                                        setCurrentSuperiors(pUser);
+                                        transformScript.setUser(u);
+                                        transformScript.setPrincipalList(loginDozerConverter.convertToDTOList(loginManager.getLoginByUser(usr.getUserId()), false));
+                                        transformScript.setUserRoleList(roleDataService.getUserRolesAsFlatList(usr.getUserId()));
+
+                                    } else {
+                                        transformScript.setNewUser(true);
+                                        transformScript.setUser(null);
+                                        transformScript.setPrincipalList(null);
+                                        transformScript.setUserRoleList(null);
+                                    }
+
+                                    log.info(" - Execute transform script");
+
+                                    //Disable PRE and POST processors/performance optimizations
+                                    pUser.setSkipPreprocessor(true);
+                                    pUser.setSkipPostProcessor(true);
+                                    retval = transformScript.execute(rowObj, pUser);
+                                    log.debug("Transform result=" + retval);
+                                }
+
+                                if (retval != -1) {
+                                    successRecords++;
+                                    if (retval == TransformScript.DELETE && usr != null) {
+                                        log.debug("deleting record - " + usr.getUserId());
+                                        ProvisionUserResponse userResp = provService.deleteByUserId(usr.getUserId(), UserStatusEnum.DELETED, systemAccount);
+
+                                    } else {
+                                        // call synch
+                                        if (retval != TransformScript.DELETE) {
+                                            System.out.println("Provisioning user=" + pUser.getLastName());
+                                            if (usr != null) {
+                                                log.debug("updating existing user...systemId=" + pUser.getUserId());
+                                                pUser.setUserId(usr.getUserId());
+                                                ProvisionUserResponse userResp = provService.modifyUser(pUser);
+
+                                            } else {
+                                                log.debug("adding new user...");
+                                                pUser.setUserId(null);
+                                                ProvisionUserResponse userResp = provService.addUser(pUser);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            // show the user object
+
+                        } catch (ClassNotFoundException cnfe) {
+
+                            if (runningTask.contains(config.getSynchConfigId())) {
+                                runningTask.remove(config.getSynchConfigId());
+                            }
+
+                            log.error(cnfe);
                     /*
                     synchStartLog.updateSynchAttributes("FAIL",ResponseCode.CLASS_NOT_FOUND.toString() , cnfe.toString());
                     auditHelper.logEvent(synchStartLog);
 					*/
-                    SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
-                    resp.setErrorCode(ResponseCode.CLASS_NOT_FOUND);
-                    resp.setErrorText(cnfe.toString());
-                    return resp;
-                }  catch (IOException fe ) {
+                            SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
+                            resp.setErrorCode(ResponseCode.CLASS_NOT_FOUND);
+                            resp.setErrorText(cnfe.toString());
+                            return resp;
+                        } catch (IOException fe) {
 
-                    if(runningTask.contains(config.getSynchConfigId())) {
-                        runningTask.remove(config.getSynchConfigId());
-                    }
+                            if (runningTask.contains(config.getSynchConfigId())) {
+                                runningTask.remove(config.getSynchConfigId());
+                            }
 
-                    log.error(fe);
+                            log.error(fe);
                     /*
                     synchStartLog.updateSynchAttributes("FAIL",ResponseCode.FILE_EXCEPTION.toString() , fe.toString());
                     auditHelper.logEvent(synchStartLog);
 					*/
-                    SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
-                    resp.setErrorCode(ResponseCode.FILE_EXCEPTION);
-                    resp.setErrorText(fe.toString());
-                    return resp;
+                            SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
+                            resp.setErrorCode(ResponseCode.FILE_EXCEPTION);
+                            resp.setErrorText(fe.toString());
+                            return resp;
 
-                } catch (Exception e ) {
+                        } catch (Exception e) {
 
-                    if(runningTask.contains(config.getSynchConfigId())) {
-                        runningTask.remove(config.getSynchConfigId());
-                    }
+                            if (runningTask.contains(config.getSynchConfigId())) {
+                                runningTask.remove(config.getSynchConfigId());
+                            }
 
-                    log.error(e);
+                            log.error(e);
                     /*
                     synchStartLog.updateSynchAttributes("FAIL",ResponseCode.FAIL_OTHER.toString() , e.toString());
                     auditHelper.logEvent(synchStartLog);
 					*/
-                    SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
-                    resp.setErrorCode(ResponseCode.FAIL_OTHER);
-                    resp.setErrorText(e.toString());
-                    return resp;
-                }
-            }
+                            SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
+                            resp.setErrorCode(ResponseCode.FAIL_OTHER);
+                            resp.setErrorText(e.toString());
+                            return resp;
+                        }
+                    }
 
+// Examine the paged results control response
+                    Control[] controls = ctx.getResponseControls();
+                    if (controls != null) {
+                        log.debug("Controls size = "+controls.length);
+                        for (Control c : controls) {
+                            log.debug("Control = "+c);
+                            if (c instanceof PagedResultsResponseControl) {
+                                PagedResultsResponseControl prrc = (PagedResultsResponseControl)c;
+                                log.debug("PagedResultsResponseControl = [" + prrc.getID() + "," + prrc.getCookie() + "," + prrc.getResultSize() + "," + prrc.getEncodedValue() + "," + prrc.isCritical() + "]");
+                                cookie = prrc.getCookie();
+//                                break;
+                            }
+                        }
+                    } else {
+                        //  log.debug("Controls is NULL reset cookie");
+                        //  cookie = null;
+                    }
+                    log.debug("Search page result cookie = "+cookie);
+                    if(cookie != null) {
+         //               ctx.setRequestControls(new Control[]{ new PagedResultsControl(PAGE_SIZE, cookie, Control.NONCRITICAL) });
+                    }
+
+                    log.debug("========== Finished processing of Page number " + pageSize + ", Processed: "+totalRecords+" records, "+" Success Records: "+successRecords +"");
+            //    } while (cookie != null);
+
+                log.debug("Search ldap result OU=" + baseou + " found = " + recordsInOUCounter + " records.");
+            }
+            ctx.close();
         } catch (NamingException ne) {
 
-            if(runningTask.contains(config.getSynchConfigId())) {
+            if (runningTask.contains(config.getSynchConfigId())) {
                 runningTask.remove(config.getSynchConfigId());
             }
 
@@ -353,6 +407,29 @@ public class LdapAdapter extends AbstractSrcAdapter { // implements SourceAdapte
             resp.setErrorText(ne.toString());
             return resp;
 
+        } catch (IOException eioex) {
+            if (runningTask.contains(config.getSynchConfigId())) {
+                runningTask.remove(config.getSynchConfigId());
+            }
+
+            log.error(eioex);
+            /*
+            synchStartLog.updateSynchAttributes("FAIL",ResponseCode.DIRECTORY_NAMING_EXCEPTION.toString() , ne.toString());
+            auditHelper.logEvent(synchStartLog);
+			*/
+            SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
+            resp.setErrorCode(ResponseCode.INTERNAL_ERROR);
+            resp.setErrorText(eioex.toString());
+            return resp;
+        } finally {
+            try {
+                ctx.close();
+            } catch (NamingException ne) {
+                if (runningTask.contains(config.getSynchConfigId())) {
+                    runningTask.remove(config.getSynchConfigId());
+                }
+                log.error(ne);
+            }
         }
 
         runningTask.remove(config.getSynchConfigId());
@@ -368,11 +445,11 @@ public class LdapAdapter extends AbstractSrcAdapter { // implements SourceAdapte
 
     public Response testConnection(SynchConfig config) {
         try {
-            if(connect(config)){
+            if (connect(config)) {
                 closeConnection();
                 Response resp = new Response(ResponseStatus.SUCCESS);
                 return resp;
-            }else{
+            } else {
                 Response resp = new Response(ResponseStatus.FAILURE);
                 resp.setErrorCode(ResponseCode.FAIL_CONNECTION);
                 return resp;
@@ -389,19 +466,19 @@ public class LdapAdapter extends AbstractSrcAdapter { // implements SourceAdapte
         }
     }
 
-    private LastRecordTime getRowTime(LineObject rowObj)  {
+    private LastRecordTime getRowTime(LineObject rowObj) {
         Attribute atr = rowObj.get("modifyTimestamp");
 
-       if (atr != null && atr.getValue() != null) {
-             return getTime(atr);
-       }
-       atr = rowObj.get("createTimestamp");
+        if (atr != null && atr.getValue() != null) {
+            return getTime(atr);
+        }
+        atr = rowObj.get("createTimestamp");
 
-       if (atr != null && atr.getValue() != null) {
-             return getTime(atr);
-       }
+        if (atr != null && atr.getValue() != null) {
+            return getTime(atr);
+        }
 
-       return new LastRecordTime();
+        return new LastRecordTime();
     }
 
     private LastRecordTime getTime(Attribute atr) {
@@ -413,30 +490,31 @@ public class LdapAdapter extends AbstractSrcAdapter { // implements SourceAdapte
             i = s.indexOf("-");
         }
         if (i > 0) {
-            lrt.mostRecentRecord =  Long.parseLong( s.substring(0,i) );
+            lrt.mostRecentRecord = Long.parseLong(s.substring(0, i));
             lrt.generalizedTime = atr.getValue();
             return lrt;
 
         }
-        lrt.mostRecentRecord =  Long.parseLong( s );
+        lrt.mostRecentRecord = Long.parseLong(s);
         lrt.generalizedTime = atr.getValue();
 
         return lrt;
     }
 
-    private NamingEnumeration search(SynchConfig config) throws NamingException {
+    private NamingEnumeration search(String baseDn, String searchFilter) throws NamingException, IOException {
 
-       // String attrIds[] = {"1.1", "+", "*"};
-
-        String attrIds[] = {"1.1", "+", "*", "accountUnlockTime", "aci", "aclRights", "aclRightsInfo", "altServer", "attributeTypes", "changeHasReplFixupOp", "changeIsReplFixupOp", "copiedFrom", "copyingFrom", "createTimestamp", "creatorsName", "deletedEntryAttrs", "dITContentRules", "dITStructureRules", "dncomp", "ds-pluginDigest", "ds-pluginSignature", "ds6ruv", "dsKeyedPassword", "entrydn", "entryid", "hasSubordinates", "idmpasswd", "isMemberOf", "ldapSchemas", "ldapSyntaxes", "matchingRules", "matchingRuleUse", "modDNEnabledSuffixes", "modifiersName", "modifyTimestamp", "nameForms", "namingContexts", "nsAccountLock", "nsBackendSuffix", "nscpEntryDN", "nsds5ReplConflict", "nsIdleTimeout", "nsLookThroughLimit", "nsRole", "nsRoleDN", "nsSchemaCSN", "nsSizeLimit", "nsTimeLimit", "nsUniqueId", "numSubordinates", "objectClasses", "parentid", "passwordAllowChangeTime", "passwordExpirationTime", "passwordExpWarned", "passwordHistory", "passwordPolicySubentry", "passwordRetryCount", "pwdAccountLockedTime", "pwdChangedTime", "pwdFailureTime", "pwdGraceUseTime", "pwdHistory", "pwdLastAuthTime", "pwdPolicySubentry", "pwdReset", "replicaIdentifier", "replicationCSN", "retryCountResetTime", "subschemaSubentry", "supportedControl", "supportedExtension", "supportedLDAPVersion", "supportedSASLMechanisms", "supportedSSLCiphers", "targetUniqueId", "vendorName", "vendorVersion"};
+      //  String attrIds[] = {"1.1", "+", "*"};
+       String attrIds[] = {"objectClass"};
+        // String attrIds[] = {"1.1", "+", "*", "accountUnlockTime", "aci", "aclRights", "aclRightsInfo", "altServer", "attributeTypes", "changeHasReplFixupOp", "changeIsReplFixupOp", "copiedFrom", "copyingFrom", "createTimestamp", "creatorsName", "deletedEntryAttrs", "dITContentRules", "dITStructureRules", "dncomp", "ds-pluginDigest", "ds-pluginSignature", "ds6ruv", "dsKeyedPassword", "entrydn", "entryid", "hasSubordinates", "idmpasswd", "isMemberOf", "ldapSchemas", "ldapSyntaxes", "matchingRules", "matchingRuleUse", "modDNEnabledSuffixes", "modifiersName", "modifyTimestamp", "nameForms", "namingContexts", "nsAccountLock", "nsBackendSuffix", "nscpEntryDN", "nsds5ReplConflict", "nsIdleTimeout", "nsLookThroughLimit", "nsRole", "nsRoleDN", "nsSchemaCSN", "nsSizeLimit", "nsTimeLimit", "nsUniqueId", "numSubordinates", "objectClasses", "parentid", "passwordAllowChangeTime", "passwordExpirationTime", "passwordExpWarned", "passwordHistory", "passwordPolicySubentry", "passwordRetryCount", "pwdAccountLockedTime", "pwdChangedTime", "pwdFailureTime", "pwdGraceUseTime", "pwdHistory", "pwdLastAuthTime", "pwdPolicySubentry", "pwdReset", "replicaIdentifier", "replicationCSN", "retryCountResetTime", "subschemaSubentry", "supportedControl", "supportedExtension", "supportedLDAPVersion", "supportedSASLMechanisms", "supportedSSLCiphers", "targetUniqueId", "vendorName", "vendorVersion"};
 
         SearchControls searchCtls = new SearchControls();
+        searchCtls.setTimeLimit(0);
+        searchCtls.setCountLimit(10000);
         searchCtls.setSearchScope(SearchControls.SUBTREE_SCOPE);
         searchCtls.setReturningAttributes(attrIds);
 
-        String searchFilter = config.getQuery();
-
-        return ctx.search(config.getBaseDn(), searchFilter, searchCtls);
+        log.debug("Search: base dn=" + baseDn + ", filter= " + searchFilter);
+        return ctx.search(baseDn, searchFilter, searchCtls);
     }
 
     private boolean connect(SynchConfig config) throws NamingException {
@@ -452,6 +530,8 @@ public class LdapAdapter extends AbstractSrcAdapter { // implements SourceAdapte
         envDC.put(Context.SECURITY_AUTHENTICATION, "simple"); // simple
         envDC.put(Context.SECURITY_PRINCIPAL, config.getSrcLoginId());  //"administrator@diamelle.local"
         envDC.put(Context.SECURITY_CREDENTIALS, config.getSrcPassword());
+    //    envDC.put(Context.BATCHSIZE, "100");
+     //   envDC.put("com.sun.jndi.ldap.read.timeout", "60000");
 
         if (hostUrl.toLowerCase().contains("ldaps")) {
             envDC.put(Context.SECURITY_PROTOCOL, "SSL");

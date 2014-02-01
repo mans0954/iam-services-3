@@ -113,11 +113,10 @@ public class CSVAdapter extends AbstractSrcAdapter {
             String csvFileName = config.getFileName();
             if(useRemoteFilestorage) {
                 InputStream is = remoteFileStorageManager.downloadFile(SYNC_DIR, csvFileName);
-                parser = new CSVParser(new InputStreamReader(is));
+                parser = new CSVParser(new InputStreamReader(is, "UTF-8"));
             } else {
-                File file = new File(uploadRoot + File.separator + SYNC_DIR + File.separator + csvFileName);
-                reader = new FileReader(file);
-                parser = new CSVParser(reader, CSVStrategy.EXCEL_STRATEGY);
+                String fileName = uploadRoot + File.separator + SYNC_DIR + File.separator + csvFileName;
+                parser = new CSVParser(new InputStreamReader( new FileInputStream(fileName), "UTF-8"), CSVStrategy.EXCEL_STRATEGY);
             }
 
             String[][] rows = parser.getAllValues();

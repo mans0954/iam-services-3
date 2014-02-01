@@ -159,6 +159,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     } else {
                         auditBuilder = new AuditLogBuilder();
                         auditBuilder.setRequestorUserId(systemUserId).setTargetUser(null).setAction(AuditAction.PROVISIONING);
+                        auditLogProvider.persist(auditBuilder);
                     }
 
                     final AuditLogBuilder auditBuilderAddChild = new AuditLogBuilder();
@@ -213,6 +214,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     } else {
                         auditBuilder = new AuditLogBuilder();
                         auditBuilder.setRequestorUserId(systemUserId).setTargetUser(null).setAction(AuditAction.PROVISIONING);
+                        auditLogProvider.persist(auditBuilder);
                     }
 
                     final AuditLogBuilder auditBuilderModifyChild = new AuditLogBuilder();
