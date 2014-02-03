@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>org.openiam</groupId>
+    <artifactId>openiam-subscription</artifactId>
+    <name>openiam-subscription</name>
+    <version>3.0.0</version>
+    <packaging>war</packaging>
+    <description>OpenIAM report subcsription service.</description>
+
+    <properties>
+        <spring.version>3.1.1.RELEASE</spring.version>
+        <birt.version>4.2.0</birt.version>
+        <log4j.version>1.2.16</log4j.version>
+        <aopalliance.version>1.0</aopalliance.version>
+        <openiam.esb.version>3.0.0</openiam.esb.version>
+        <javax.jms.version>1.1</javax.jms.version>
+        <cxf.version>2.5.1</cxf.version>
+        <quartz.version>1.5.2</quartz.version>
+        <maven-surefire-plugin.version>2.4.2</maven-surefire-plugin.version>
+        <skipTests>true</skipTests>
+    </properties>
+
+
+    <dependencies>
+        <dependency>
+            <groupId>aopalliance</groupId>
+            <artifactId>aopalliance</artifactId>
+            <version>${aopalliance.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.openiam</groupId>
+            <artifactId>openiam-auth-manager-service</artifactId>
+            <version>${openiam.esb.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.openiam</groupId>
+            <artifactId>openiam-idm-intf</artifactId>
+            <version>${openiam.esb.version}</version>
+        <exclusions>
+                <exclusion>
+                    <groupId>org.springframework</groupId>
+                    <artifactId>spring-web</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-core</artifactId>
+            <version>${spring.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+            <version>${spring.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context-support</artifactId>
+            <version>${spring.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-web</artifactId>
+            <version>${spring.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>quartz</groupId>
+            <artifactId>quartz</artifactId>
+            <version>${quartz.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>javax.jms</groupId>
+            <artifactId>jms</artifactId>
+            <version>${javax.jms.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <version>${log4j.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.eclipse.birt.runtime</groupId>
+            <artifactId>viewservlets</artifactId>
+            <version>${birt.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.cxf</groupId>
+            <artifactId>cxf-rt-core</artifactId>
+            <version>${cxf.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.cxf</groupId>
+            <artifactId>cxf-common-utilities</artifactId>
+            <version>${cxf.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.cxf</groupId>
+            <artifactId>cxf-rt-frontend-jaxws</artifactId>
+            <version>${cxf.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.cxf</groupId>
+            <artifactId>cxf-rt-transports-http</artifactId>
+            <version>${cxf.version}</version>
+        </dependency>
+
+    </dependencies>
+
+    <build>
+        <finalName>openiam-subscription</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${maven-surefire-plugin.version}</version>
+                <configuration>
+                    <skipTests>${skipTests}</skipTests>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
