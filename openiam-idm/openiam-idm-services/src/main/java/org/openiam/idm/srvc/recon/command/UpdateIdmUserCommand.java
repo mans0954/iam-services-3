@@ -1,14 +1,18 @@
 package org.openiam.idm.srvc.recon.command;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.ws.ResponseStatus;
+import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.recon.dto.ReconciliationSituation;
 import org.openiam.idm.srvc.recon.service.PopulationScript;
 import org.openiam.idm.srvc.recon.service.ReconciliationCommand;
+import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
+import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.resp.LookupUserResponse;
 import org.openiam.provision.resp.ProvisionUserResponse;
@@ -16,9 +20,12 @@ import org.openiam.provision.service.AbstractProvisioningService;
 import org.openiam.provision.service.ProvisionService;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.script.ScriptIntegration;
+import org.openiam.util.SpringContextProvider;
+import org.springframework.context.ApplicationContext;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -41,6 +48,7 @@ public class UpdateIdmUserCommand implements ReconciliationCommand {
             log.debug("Can't update IDM user from non-existent resource...");
         } else {
             ProvisionUser pUser = new ProvisionUser(user);
+            setCurrentSuperiors(pUser);
             pUser.setSrcSystemId(login.getManagedSysId());
             if(StringUtils.isNotEmpty(config.getScript())){
                 try {
@@ -62,5 +70,20 @@ public class UpdateIdmUserCommand implements ReconciliationCommand {
             return response.isSuccess();
         }
         return false;
+    }
+
+    protected void setCurrentSuperiors(ProvisionUser pUser) {
+        if (StringUtils.isNotEmpty(pUser.getUserId())) {
+
+            ApplicationContext appContext = SpringContextProvider.getApplicationContext();
+            UserDataService userMgr = (UserDataService)appContext.getBean("userManager");
+            UserDozerConverter userDozerConverter = (UserDozerConverter)appContext.getBean("userDozerConverter");
+
+            List<UserEntity> entities = userMgr.getSuperiors(pUser.getUserId(), -1, -1);
+            List<User> superiors = userDozerConverter.convertToDTOList(entities, true);
+            if (CollectionUtils.isNotEmpty(superiors)) {
+                pUser.setSuperiors(new HashSet<User>(superiors));
+            }
+        }
     }
 }

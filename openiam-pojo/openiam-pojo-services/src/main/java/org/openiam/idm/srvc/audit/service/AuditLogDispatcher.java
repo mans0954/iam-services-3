@@ -17,6 +17,10 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jms.core.BrowserCallback;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.transaction.support.TransactionTemplate;
 
 @Component("auditLogDispatcher")
 public class AuditLogDispatcher implements Sweepable {
@@ -32,43 +36,60 @@ public class AuditLogDispatcher implements Sweepable {
     @Qualifier(value = "logQueue")
     private Queue queue;
 
+    @Autowired
+    @Qualifier("transactionManager")
+    private PlatformTransactionManager platformTransactionManager;
+    private final Object mutex = new Object();
 
     @Override
     public void sweep() {
         jmsTemplate.browse(queue, new BrowserCallback<Object>() {
             @Override
             public Object doInJms(Session session, QueueBrowser browser) throws JMSException {
-                final StopWatch sw = new StopWatch();
+              synchronized (mutex){
+
+               final StopWatch sw = new StopWatch();
                 sw.start();
                     try {
                         LOG.info("Starting audit log sweeper thread");
 
                         final List<Set<IdmAuditLogEntity>> batchList = new LinkedList<Set<IdmAuditLogEntity>>();
-                        Set<IdmAuditLogEntity> list = new HashSet<IdmAuditLogEntity>();
+                        Set<IdmAuditLogEntity> set = new HashSet<IdmAuditLogEntity>();
+                        batchList.add(set);
                         Enumeration e = browser.getEnumeration();
                         int count = 0;
                         while (e.hasMoreElements()) {
                             IdmAuditLogEntity message = (IdmAuditLogEntity) ((ObjectMessage) jmsTemplate.receive(queue)).getObject();
-                            list.add(message);
+                            set.add(message);
                             if (count++ >= 100) {
-                                batchList.add(list);
-                                list = new HashSet<IdmAuditLogEntity>();
+                                set = new HashSet<IdmAuditLogEntity>();
+                                batchList.add(set);
                             }
                             e.nextElement();
                         }
 
-                        if (list.size() > 0) {
-                            batchList.add(list);
-                            for (final Set<IdmAuditLogEntity> entityList : batchList) {
-                                process(entityList);
-                            }
+
+                        if (batchList.size() > 0 && batchList.get(0) != null && batchList.get(0).size() > 0) {
+                           TransactionTemplate transactionTemplate = new TransactionTemplate(platformTransactionManager);
+                            transactionTemplate.setPropagationBehavior(TransactionTemplate.PROPAGATION_REQUIRED);
+                            Boolean result = transactionTemplate.execute(new TransactionCallback<Boolean>() {
+                                @Override
+                                public Boolean doInTransaction(TransactionStatus status) {
+                                    for (final Set<IdmAuditLogEntity> entityList : batchList) {
+                                        process(entityList);
+                                    }
+                                    return true;
+                                }});
+
                         }
                     } finally {
                         LOG.info(String.format("Done with audit logger sweeper thread.  Took %s ms", sw.getTime()));
                     }
                 return null;
             }
+        }
         });
+
     }
 
     private void process(final Collection<IdmAuditLogEntity> entityList) {

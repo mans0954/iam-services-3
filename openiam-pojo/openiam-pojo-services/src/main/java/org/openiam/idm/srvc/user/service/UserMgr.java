@@ -2200,4 +2200,10 @@ public class UserMgr implements UserDataService {
         return true;
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<UserEntity> getUserByLastDate(Date lastDate) {
+        return userDao.getUserByLastDate(lastDate);
+    }
+
 }

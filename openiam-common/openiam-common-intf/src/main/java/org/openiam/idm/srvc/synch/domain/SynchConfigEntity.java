@@ -46,6 +46,10 @@ public class SynchConfigEntity implements Serializable {
     //private String deleteRule;
     @Column(name="PROCESS_RULE",length=80)
     private String processRule;
+    @Column(name="PRE_SYNC_SCRIPT",length=80)
+    private String preSyncScript;
+    @Column(name="POST_SYNC_SCRIPT",length=80)
+    private String postSyncScript;
     @Column(name="VALIDATION_RULE",length=80)
     private String validationRule;
     @Column(name="USE_POLICY_MAP")
@@ -320,6 +324,22 @@ public class SynchConfigEntity implements Serializable {
         this.synchAdapter = synchAdapter;
     }
 
+    public String getPreSyncScript() {
+        return preSyncScript;
+    }
+
+    public void setPreSyncScript(String preSyncScript) {
+        this.preSyncScript = preSyncScript;
+    }
+
+    public String getPostSyncScript() {
+        return postSyncScript;
+    }
+
+    public void setPostSyncScript(String postSyncScript) {
+        this.postSyncScript = postSyncScript;
+    }
+
     public String getValidationRule() {
         return validationRule;
     }
@@ -399,6 +419,8 @@ public class SynchConfigEntity implements Serializable {
                 ", synchFrequency='" + synchFrequency + '\'' +
                 ", synchType='" + synchType + '\'' +
                 ", processRule='" + processRule + '\'' +
+                ", preSyncScript='" + preSyncScript + '\'' +
+                ", postSyncScript='" + postSyncScript + '\'' +
                 ", validationRule='" + validationRule + '\'' +
                 ", transformationRule='" + transformationRule + '\'' +
                 ", usePolicyMap='" + usePolicyMap + '\'' +
@@ -472,6 +494,8 @@ public class SynchConfigEntity implements Serializable {
         if (policyMapBeforeTransformation != that.policyMapBeforeTransformation) return false;
         if (updateAttribute != null ? !updateAttribute.equals(that.updateAttribute) : that.updateAttribute != null)
             return false;
+        if (!preSyncScript.equals(that.preSyncScript)) return false;
+        if (!postSyncScript.equals(that.postSyncScript)) return false;
         if (!validationRule.equals(that.validationRule)) return false;
         if (wsScript != null ? !wsScript.equals(that.wsScript) : that.wsScript != null) return false;
         if (wsUrl != null ? !wsUrl.equals(that.wsUrl) : that.wsUrl != null) return false;
@@ -492,6 +516,8 @@ public class SynchConfigEntity implements Serializable {
         result = 31 * result + (synchFrequency != null ? synchFrequency.hashCode() : 0);
         result = 31 * result + (synchType != null ? synchType.hashCode() : 0);
         result = 31 * result + (processRule != null ? processRule.hashCode() : 0);
+        result = 31 * result + preSyncScript.hashCode();
+        result = 31 * result + postSyncScript.hashCode();
         result = 31 * result + validationRule.hashCode();
         result = 31 * result + (usePolicyMap ? 1231 : 1237);
         result = 31 * result + (useTransformationScript ? 1231 : 1237);
