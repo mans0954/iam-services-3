@@ -18,6 +18,7 @@ public class ReportSubCriteriaParamDaoImpl extends BaseDaoImpl<ReportSubCriteria
         return "id";
     }
 
+
     @Override
     @SuppressWarnings("unchecked")
     public List<ReportSubCriteriaParamEntity> findByReportInfoId(String reportInfoId) {

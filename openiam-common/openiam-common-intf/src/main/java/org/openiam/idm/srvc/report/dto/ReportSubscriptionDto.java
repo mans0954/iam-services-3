@@ -6,6 +6,7 @@ import org.openiam.idm.srvc.report.domain.ReportSubscriptionEntity;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
+import java.io.Serializable;
 
 /**
  * This DTO used in reporting system to transferring Report information to WS clients
@@ -24,7 +25,7 @@ import javax.xml.bind.annotation.XmlType;
         "userId"
 })
 @DozerDTOCorrespondence(ReportSubscriptionEntity.class)
-public class ReportSubscriptionDto {
+public class ReportSubscriptionDto implements Serializable {
     public String getDeliveryAudience() {
 		return deliveryAudience;
 	}
