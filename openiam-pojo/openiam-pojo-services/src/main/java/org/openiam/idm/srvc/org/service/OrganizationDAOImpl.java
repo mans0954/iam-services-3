@@ -4,12 +4,13 @@ import org.apache.commons.lang.StringUtils;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Order;
-import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
+import org.hibernate.transform.Transformers;
 import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.idm.searchbeans.OrganizationSearchBean;
 import org.openiam.idm.searchbeans.SearchBean;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
+import org.openiam.idm.srvc.org.dto.Org2OrgXref;
 import org.openiam.idm.srvc.searchbean.converter.OrganizationSearchBeanConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -28,14 +29,14 @@ public class OrganizationDAOImpl extends
 
 	@Autowired
 	private OrganizationSearchBeanConverter organizationSearchBeanConverter;
-
+    @Override
 	public int getNumOfOrganizationsForUser(final String userId,
 			final Set<String> filter) {
 		final Criteria criteria = getOrganizationsForUserCriteria(userId,
 				filter).setProjection(rowCount());
 		return ((Number) criteria.uniqueResult()).intValue();
 	}
-
+    @Override
 	public List<OrganizationEntity> getOrganizationsForUser(
 			final String userId, final Set<String> filter, final int from,
 			final int size) {
@@ -65,7 +66,7 @@ public class OrganizationDAOImpl extends
 		}
 		return criteria;
 	}
-
+    @Override
 	public List<OrganizationEntity> findRootOrganizations() {
 		final Criteria criteria = getCriteria().add(
 				Restrictions.isNull("parentId")).addOrder(
@@ -73,7 +74,7 @@ public class OrganizationDAOImpl extends
 		// .setFetchMode("attributes", FetchMode.JOIN);
 		return criteria.list();
 	}
-
+    @Override
 	public List<OrganizationEntity> findAllOrganization() {
 		Criteria criteria = getCriteria().addOrder(
 				Order.asc("name"));
@@ -248,4 +249,11 @@ public class OrganizationDAOImpl extends
 		}
 		return criteria;
 	}
+
+    @Override
+    public List<Org2OrgXref> getOrgToOrgXrefList(){
+        return this.getSession().createSQLQuery("SELECT COMPANY_ID as organizationId, MEMBER_COMPANY_ID as memberOrganizationId FROM COMPANY_TO_COMPANY_MEMBERSHIP")
+                .addScalar("organizationId").addScalar("memberOrganizationId")
+                .setResultTransformer(Transformers.aliasToBean(Org2OrgXref.class)).list();
+    }
 }
