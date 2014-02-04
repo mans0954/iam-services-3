@@ -1,29 +1,28 @@
 package org.openiam.idm.searchbeans;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import org.apache.commons.lang.StringUtils;
+import org.openiam.idm.srvc.org.dto.OrganizationType;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
-
-import org.apache.commons.lang.StringUtils;
-import org.openiam.idm.srvc.org.dto.OrganizationType;
+import java.util.HashSet;
+import java.util.Set;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "OrganizationTypeSearchBean", propOrder = {
 	"keySet",
 	"name",
 	"parentIds",
-	"childIds"
+	"childIds",
+    "excludeIds"
 })
 public class OrganizationTypeSearchBean extends AbstractSearchBean<OrganizationType, String> implements SearchBean<OrganizationType, String> {
 
 	private Set<String> keySet;
 	private Set<String> parentIds;
 	private Set<String> childIds;
+    private Set<String> excludeIds;
 	private String name;
 	
 	
@@ -59,8 +58,25 @@ public class OrganizationTypeSearchBean extends AbstractSearchBean<OrganizationT
 	public void setChildIds(Set<String> childIds) {
 		this.childIds = childIds;
 	}
-	
-	public void addChildId(final String childId) {
+
+    public Set<String> getExcludeIds() {
+        return excludeIds;
+    }
+
+    public void setExcludeIds(Set<String> excludeIds) {
+        this.excludeIds = excludeIds;
+    }
+    public void addExcludeId(final String excludeId) {
+        if(StringUtils.isNotBlank(excludeId)) {
+            if(this.excludeIds == null) {
+                this.excludeIds = new HashSet<String>();
+            }
+            this.excludeIds.add(excludeId);
+        }
+    }
+
+
+    public void addChildId(final String childId) {
 		if(StringUtils.isNotBlank(childId)) {
 			if(this.childIds == null) {
 				this.childIds = new HashSet<String>();

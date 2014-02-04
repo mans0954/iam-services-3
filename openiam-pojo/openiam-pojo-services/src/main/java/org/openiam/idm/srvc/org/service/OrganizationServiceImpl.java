@@ -25,6 +25,7 @@ import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.srvc.user.util.DelegationFilterHelper;
 import org.openiam.thread.Sweepable;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -34,7 +35,7 @@ import java.util.*;
 
 @Service("organizationService")
 @Transactional
-public class OrganizationServiceImpl implements OrganizationService, Sweepable {
+public class OrganizationServiceImpl implements OrganizationService, InitializingBean,Sweepable {
     private static final Log log = LogFactory.getLog(OrganizationServiceImpl.class);
 	@Autowired
 	private OrganizationTypeDAO orgTypeDAO;
@@ -67,6 +68,15 @@ public class OrganizationServiceImpl implements OrganizationService, Sweepable {
     private ResourceTypeDAO resourceTypeDao;
 
     private Map<String, Set<String>> organizationTree;
+
+
+
+    @Value("${org.openiam.delegation.filter.organization}")
+    private String organizationTypeId;
+    @Value("${org.openiam.delegation.filter.division}")
+    private String divisionTypeId;
+    @Value("${org.openiam.delegation.filter.department}")
+    private String departmentTypeId;
 
     @Override
     public OrganizationEntity getOrganization(String orgId) {
@@ -328,35 +338,29 @@ public class OrganizationServiceImpl implements OrganizationService, Sweepable {
     public Set<String> getDelegationFilter(Map<String, UserAttribute> attrMap, String organizationTypeId) {
         Set<String> filterData = new HashSet<String>();
         if(attrMap!=null && !attrMap.isEmpty()){
-            //            if (StringUtils.isNotBlank(organizationTypeId)) {
-//            	filterData = new HashSet<String>(DelegationFilterHelper.getOrgIdFilterFromString(requesterAttributes));
-//                //classification = OrgClassificationEnum.valueOf(orgClassification);
-//            	/*
-//                switch (classification) {
-//	                case ORGANIZATION:
-//	                    filterData = new HashSet<String>(DelegationFilterHelper.getOrgIdFilterFromString(requesterAttributes));
-//	                    break;
-//	                default:
-//	                    filterData = getFullOrgFilterList(requesterAttributes);
-//	                    break;
-//                }
-//                */
-//            } else {
-//                filterData = getFullOrgFilterList(requesterAttributes);
-//            }
-
             boolean isUseOrgInhFlag = DelegationFilterHelper.isUseOrgInhFilterSet(attrMap);
 
-            if(DelegationFilterHelper.isOrgFilterSet(attrMap)){
-                filterData = this.getOrgTreeFlatList(DelegationFilterHelper.getOrgIdFilterFromString(attrMap), isUseOrgInhFlag);
-            }
-            if(DelegationFilterHelper.isDeptFilterSet(attrMap)){
-                filterData = this.getOrgTreeFlatList(DelegationFilterHelper.getDeptFilterFromString(attrMap), isUseOrgInhFlag);
-            }
-            if(DelegationFilterHelper.isDivisionFilterSet(attrMap)){
-                filterData = this.getOrgTreeFlatList(DelegationFilterHelper.getDivisionFilterFromString(attrMap), isUseOrgInhFlag);
+            if (StringUtils.isNotBlank(organizationTypeId)) {
+                if(organizationTypeId.equals(this.organizationTypeId)){
+                    this.getOrgTreeFlatList(DelegationFilterHelper.getOrgIdFilterFromString(attrMap), isUseOrgInhFlag);
+                } else if(organizationTypeId.equals(this.divisionTypeId)){
+                    filterData = this.getOrgTreeFlatList(DelegationFilterHelper.getDivisionFilterFromString(attrMap), isUseOrgInhFlag);
+                } else if(organizationTypeId.equals(this.departmentTypeId)){
+                    filterData = this.getOrgTreeFlatList(DelegationFilterHelper.getDeptFilterFromString(attrMap), isUseOrgInhFlag);
+                } else {
+                    filterData = getFullOrgFilterList(attrMap, isUseOrgInhFlag);
+                }
+            } else {
+                filterData = getFullOrgFilterList(attrMap, isUseOrgInhFlag);
             }
         }
+        return filterData;
+    }
+
+    private Set<String> getFullOrgFilterList(Map<String, UserAttribute> attrMap, boolean isUseOrgInhFlag){
+        Set<String> filterData = this.getOrgTreeFlatList(DelegationFilterHelper.getOrgIdFilterFromString(attrMap), isUseOrgInhFlag);
+        filterData.addAll(this.getOrgTreeFlatList(DelegationFilterHelper.getDeptFilterFromString(attrMap), isUseOrgInhFlag));
+        filterData.addAll(this.getOrgTreeFlatList(DelegationFilterHelper.getDivisionFilterFromString(attrMap), isUseOrgInhFlag));
         return filterData;
     }
 
@@ -470,4 +474,8 @@ public class OrganizationServiceImpl implements OrganizationService, Sweepable {
         return result;
     }
 
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        sweep();
+    }
 }

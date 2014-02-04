@@ -1,20 +1,23 @@
 package org.openiam.idm.srvc.org.service;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.OrganizationTypeSearchBean;
-import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationTypeEntity;
-import org.openiam.idm.srvc.role.domain.RoleEntity;
+import org.openiam.idm.srvc.user.dto.UserAttribute;
+import org.openiam.idm.srvc.user.service.UserDataService;
+import org.openiam.idm.srvc.user.util.DelegationFilterHelper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @Service
 @Transactional
@@ -22,6 +25,12 @@ public class OrganizationTypeServiceImpl implements OrganizationTypeService {
 
 	@Autowired
 	private OrganizationTypeDAO organizationTypeDAO;
+
+    @Autowired
+    private UserDataService userDataService;
+
+    @Value("${org.openiam.delegation.filter.organization}")
+    private String organizationTypeId;
 
 	@Override
 	public OrganizationTypeEntity findById(String id) {
@@ -37,12 +46,15 @@ public class OrganizationTypeServiceImpl implements OrganizationTypeService {
 	}
 
 	@Override
-	public List<OrganizationTypeEntity> findBeans(final OrganizationTypeSearchBean searchBean, int from, int size) {
-		return organizationTypeDAO.getByExample(searchBean, from, size);
+	public List<OrganizationTypeEntity> findBeans(final OrganizationTypeSearchBean searchBean, String requesterId, int from, int size) {
+        setExcludeOrgType(searchBean, requesterId);
+
+        return organizationTypeDAO.getByExample(searchBean, from, size);
 	}
 
-	@Override
-	public int count(final OrganizationTypeSearchBean searchBean) {
+    @Override
+	public int count(final OrganizationTypeSearchBean searchBean, String requesterId) {
+        setExcludeOrgType(searchBean, requesterId);
 		return organizationTypeDAO.count(searchBean);
 	}
 
@@ -144,4 +156,13 @@ public class OrganizationTypeServiceImpl implements OrganizationTypeService {
 		}
 		return retval;
 	}
+
+    private void setExcludeOrgType(OrganizationTypeSearchBean searchBean, String requesterId) {
+        if(StringUtils.isNotBlank(requesterId)){
+            Map<String, UserAttribute> requesterAttributes = userDataService.getUserAttributesDto(requesterId);
+            if(DelegationFilterHelper.isOrgFilterSet(requesterAttributes)){
+                searchBean.addExcludeId(organizationTypeId);
+            }
+        }
+    }
 }

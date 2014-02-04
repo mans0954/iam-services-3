@@ -1,15 +1,13 @@
 package org.openiam.idm.srvc.org.service;
 
-import java.util.List;
+import org.openiam.base.ws.Response;
+import org.openiam.idm.searchbeans.OrganizationTypeSearchBean;
+import org.openiam.idm.srvc.org.dto.OrganizationType;
 
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebService;
-
-import org.openiam.base.ws.Response;
-import org.openiam.idm.searchbeans.OrganizationTypeSearchBean;
-import org.openiam.idm.srvc.org.dto.Organization;
-import org.openiam.idm.srvc.org.dto.OrganizationType;
+import java.util.List;
 
 @WebService(targetNamespace = "urn:idm.openiam.org/srvc/org/service", name = "OrganizationTypeDataService")
 public interface OrganizationTypeDataService {
@@ -19,11 +17,13 @@ public interface OrganizationTypeDataService {
 	
 	@WebMethod
 	public List<OrganizationType> findBeans(final @WebParam(name = "searchBean", targetNamespace = "") OrganizationTypeSearchBean searchBean,
+                                            final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
 											final @WebParam(name = "from", targetNamespace = "") int from,
 											final @WebParam(name = "size", targetNamespace = "") int size);
 	
 	@WebMethod
-	public int count(final @WebParam(name = "searchBean", targetNamespace = "") OrganizationTypeSearchBean searchBean);
+	public int count(final @WebParam(name = "searchBean", targetNamespace = "") OrganizationTypeSearchBean searchBean,
+                     final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 	
 	@WebMethod
 	public Response save(final @WebParam(name = "entity", targetNamespace = "") OrganizationType type);
