@@ -792,4 +792,29 @@ public class ReportWebServiceImpl implements ReportWebService {
         response.setStatus(ResponseStatus.FAILURE);
         return response;
     }
+
+    @Override
+    public Response runAllActiveSubscriptions() {
+        final List<ReportSubscriptionEntity> reportSubscriptions = reportDataService
+                .getAllActiveSubscribedReports();
+
+        for(ReportSubscriptionEntity reportSubscription : reportSubscriptions) {
+
+            final ReportSubscriptionDto reportSubscriptionDto = reportSubscriptionDozerConverter
+                    .convertToDTO(reportSubscription, true);
+
+            if (reportSubscriptionDto != null) {
+                try {
+                    jmsTemplate.send(queue, new MessageCreator() {
+                        public javax.jms.Message createMessage(Session session) throws JMSException {
+                            return session.createObjectMessage(reportSubscriptionDto);
+                        }
+                    });
+                } catch (JmsException e) {
+                    log.error("Failed to schedule report generation ", e);
+                }
+            }
+        }
+        return new Response(ResponseStatus.SUCCESS);
+    }
 }

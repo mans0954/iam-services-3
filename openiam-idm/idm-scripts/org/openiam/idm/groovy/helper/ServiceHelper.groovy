@@ -20,6 +20,7 @@ import org.openiam.idm.srvc.org.service.OrganizationDataService;
 import org.openiam.idm.srvc.grp.ws.GroupDataWebService;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.role.ws.RoleDataWebService;
+import org.openiam.idm.srvc.report.ws.ReportWebService;
 import org.openiam.script.GroovyScriptEngineIntegration as GSE
 
 
@@ -252,7 +253,21 @@ class ServiceHelper {
 					ReconciliationWebService.class);
 		}
 	
-
+		static ReportWebService reportService() {
+            String BASE_URL = GSE.SERVICE_HOST + GSE.IDM_WS_PATH;
+			
+			String serviceUrl = BASE_URL + "/ReportWebService"
+			String port ="ReportWebServicePort"
+			String nameSpace = "urn:idm.openiam.org/srvc/report/service"
+			
+			Service service = Service.create(QName.valueOf(serviceUrl))
+				
+			service.addPort(new QName(nameSpace,port),
+					SOAPBinding.SOAP11HTTP_BINDING,	serviceUrl)
+			
+			return service.getPort(new QName(nameSpace,	port),
+					ReportWebService.class);
+		}
 	
 
 	// prov

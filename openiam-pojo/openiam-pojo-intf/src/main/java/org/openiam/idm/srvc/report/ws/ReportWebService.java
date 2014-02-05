@@ -106,4 +106,7 @@ public interface ReportWebService {
     @WebMethod
     Response runSubscription(@WebParam(name = "reportId", targetNamespace = "") String reportId);
 
+    @WebMethod
+    Response runAllActiveSubscriptions();
+
 }
