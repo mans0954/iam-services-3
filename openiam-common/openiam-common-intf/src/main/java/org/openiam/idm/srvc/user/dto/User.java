@@ -9,6 +9,7 @@ import org.openiam.base.BaseConstants;
 import org.openiam.base.KeyDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.auth.dto.Login;
+import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
 import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
@@ -588,6 +589,21 @@ public class User extends KeyDTO {
     public void setEmailAddresses(Set<EmailAddress> emailAddresses) {
         this.emailAddresses = emailAddresses;
     }
+    
+    /*
+    public EmailAddress getPrimaryEmailAddress() {
+    	EmailAddress defaultEmail = null;
+        if(this.emailAddresses!=null && !this.emailAddresses.isEmpty()){
+            for (EmailAddress email: this.emailAddresses){
+                   if(email.getIsDefault()){
+                       defaultEmail = email;
+                       break;
+                   }
+            }
+        }
+        return defaultEmail;
+    }
+    */
 
     public EmailAddress getEmailByName(String name) {
         Iterator<EmailAddress> emailIt = emailAddresses.iterator();
@@ -753,6 +769,8 @@ public class User extends KeyDTO {
         this.resources = resources;
     }
 
+    
+    //this field is mapped from Dozer 
     public String getEmail() {
         return email;
     }
