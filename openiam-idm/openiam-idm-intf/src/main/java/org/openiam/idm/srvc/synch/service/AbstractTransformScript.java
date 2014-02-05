@@ -16,6 +16,7 @@ public abstract class AbstractTransformScript implements TransformScript {
 	protected List<Role> userRoleList;
 	protected boolean isNewUser = false;
     protected ApplicationContext context;
+    protected String synchConfigId;
 
 	public User getUser() {
 		return user;
@@ -41,6 +42,10 @@ public abstract class AbstractTransformScript implements TransformScript {
 	public void setNewUser(boolean isNewUser) {
 		this.isNewUser = isNewUser;
 	}
+    @Override
+    public void setSynchConfigId(String synchConfigId) {
+        this.synchConfigId = synchConfigId;
+    }
     @Override
     public void setApplicationContext(ApplicationContext context) throws BeansException {
         this.context = context;

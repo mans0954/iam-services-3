@@ -21,6 +21,7 @@ import javax.xml.bind.annotation.XmlType;
 		"loadMatchOnly",
 		"updateAttribute",
 		"synchFrequency",
+        "companyId",
 		"synchType",
 		"processRule",
         "preSyncScript",
@@ -65,6 +66,7 @@ public class SynchConfig implements MatchConfig, java.io.Serializable {
 	private Integer loadMatchOnly;
 	private Integer updateAttribute;
 	private String synchFrequency;
+    private String companyId;
 	private String synchType;
 	//private String deleteRule;
 	private String processRule;
@@ -175,7 +177,15 @@ public class SynchConfig implements MatchConfig, java.io.Serializable {
 		this.synchFrequency = synchFrequency;
 	}
 
-	public String getProcessRule() {
+    public String getCompanyId() {
+        return companyId;
+    }
+
+    public void setCompanyId(String companyId) {
+        this.companyId = companyId;
+    }
+
+    public String getProcessRule() {
 		return this.processRule;
 	}
 
@@ -390,6 +400,7 @@ public class SynchConfig implements MatchConfig, java.io.Serializable {
                 ", loadMatchOnly=" + loadMatchOnly +
                 ", updateAttribute=" + updateAttribute +
                 ", synchFrequency='" + synchFrequency + '\'' +
+                ", companyId='" + companyId + '\'' +
                 ", synchType='" + synchType + '\'' +
                 ", processRule='" + processRule + '\'' +
                 ", preSyncScript='" + preSyncScript + '\'' +
