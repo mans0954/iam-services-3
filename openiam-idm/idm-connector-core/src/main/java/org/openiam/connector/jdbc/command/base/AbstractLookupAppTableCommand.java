@@ -36,7 +36,7 @@ public abstract class AbstractLookupAppTableCommand<ExtObject extends Extensible
         try {
 
             final PreparedStatement statement = createSelectStatement(con, configuration.getResourceId(),
-                    configuration.getTableName(), principalName);
+                    this.getTableName(configuration, this.getObjectType()), principalName);
             if (log.isDebugEnabled()) {
                 log.debug("Executing lookup query");
             }
@@ -174,7 +174,5 @@ public abstract class AbstractLookupAppTableCommand<ExtObject extends Extensible
     }
 
     protected abstract boolean compareObjectTypeWithId(String objectType);
-
-    protected abstract boolean compareObjectTypeWithObject(String objectType);
 
 }

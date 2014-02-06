@@ -20,7 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service("resumeAppTableCommand")
-public class ResumeAppTableCommand extends AbstractAppTableCommand<SuspendResumeRequest, ResponseType> {
+public class ResumeUserAppTableCommand extends AbstractAppTableCommand<SuspendResumeRequest, ResponseType> {
     @Autowired
     private LoginDataService loginManager;
 
@@ -45,8 +45,8 @@ public class ResumeAppTableCommand extends AbstractAppTableCommand<SuspendResume
             final LoginEntity login = loginList.get(0);
             final String encPassword = login.getPassword();
             final String decPassword = loginManager.decryptPassword(login.getUserId(), encPassword);
-            statement = createSetPasswordStatement(con, configuration.getResourceId(), configuration.getTableName(),
-                    principalName, decPassword);
+            statement = createSetPasswordStatement(con, configuration.getResourceId(),
+                    this.getTableName(configuration, this.getObjectType()), principalName, decPassword);
 
             statement.executeUpdate();
 
@@ -64,5 +64,10 @@ public class ResumeAppTableCommand extends AbstractAppTableCommand<SuspendResume
             this.closeStatement(statement);
             this.closeConnection(con);
         }
+    }
+
+    @Override
+    protected String getObjectType() {
+        return "USER";
     }
 }

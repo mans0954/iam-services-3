@@ -1,11 +1,11 @@
-package org.openiam.connector.jdbc.command.user;
+package org.openiam.connector.jdbc.command.group;
 
 import org.apache.commons.lang.StringUtils;
 import org.openiam.connector.jdbc.command.base.AbstractSearchAppTableCommand;
 import org.openiam.provision.type.ExtensibleUser;
 import org.springframework.stereotype.Service;
 
-@Service("searchUserAppTableCommand")
+@Service("searchGroupAppTableCommand")
 public class SearchAppTableCommand extends AbstractSearchAppTableCommand<ExtensibleUser> {
 
     @Override
@@ -14,8 +14,8 @@ public class SearchAppTableCommand extends AbstractSearchAppTableCommand<Extensi
     }
 
     @Override
-    protected boolean compareObjectTypeWithObject(String objectType) {
-        return StringUtils.equalsIgnoreCase(objectType, "USER");
+    protected String getObjectType() {
+        return "GROUP";
     }
 
 }

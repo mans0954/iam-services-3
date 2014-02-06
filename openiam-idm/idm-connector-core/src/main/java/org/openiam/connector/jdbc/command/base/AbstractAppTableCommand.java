@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
@@ -25,8 +26,7 @@ import org.openiam.provision.type.ExtensibleObject;
 
 public abstract class AbstractAppTableCommand<Request extends RequestType, Response extends ResponseType> extends
         AbstractJDBCCommand<Request, Response> {
-    private static final String TABLE_NAME_PROP = "TABLE_NAME";
-
+    protected static final String INSERT_SQL = "INSERT INTO %s (%s) VALUES (%s)";
     protected static final String DATE_FORMAT = "MM/dd/yyyy";
     protected static final String SELECT_SQL = "SELECT %s FROM %s WHERE %s=?";
     protected static final String SELECT_ALL_SQL = "SELECT %s FROM %s";
@@ -34,18 +34,73 @@ public abstract class AbstractAppTableCommand<Request extends RequestType, Respo
     protected static final String DELETE_SQL = "DELETE FROM %s WHERE %s=?";
     protected static final String UPDATE_SQL = "UPDATE %s SET %s=? WHERE %s=?";
 
+    protected String getTableName(AppTableConfiguration config, String objectType) throws ConnectorDataException {
+        String result = "";
+        switch (objectType.toLowerCase()) {
+        case "user":
+            result = config.getUserTableName();
+            break;
+        case "group":
+            result = config.getGroupTableName();
+            break;
+        case "role":
+            result = config.getRoleTableName();
+            break;
+        case "email":
+            result = config.getEmailTableName();
+            break;
+        default:
+            throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR);
+        }
+        return result;
+    }
+
+    protected abstract String getObjectType();
+
+    protected boolean compareObjectTypeWithObject(String objectType) {
+        return StringUtils.equalsIgnoreCase(objectType, this.getObjectType());
+    }
+
+    protected List<ExtensibleAttribute> getExtensibleAttributeByType(String type, List<ExtensibleAttribute> attrList) {
+        if (attrList == null || StringUtils.isEmpty(type))
+            return null;
+        List<ExtensibleAttribute> list = new ArrayList<ExtensibleAttribute>();
+        for (ExtensibleAttribute ea : attrList) {
+            if (type.equalsIgnoreCase(ea.getObjectType()) || "PRINCIPAL".equalsIgnoreCase(ea.getObjectType())) {
+                list.add(ea);
+            }
+        }
+        return list;
+
+    }
+
     protected AppTableConfiguration getConfiguration(String targetID) throws ConnectorDataException {
+        final String USER_TABLE = "USER_TABLE";
+        final String GROUP_TABLE = "GROUP_TABLE";
+        final String ROLE_TABLE = "ROLE_TABLE";
+        final String EMAIL_TABLE = "EMAIL_TABLE";
+
         AppTableConfiguration configuration = super.getConfiguration(targetID, AppTableConfiguration.class);
 
-        final ResourceProp prop = configuration.getResource().getResourceProperty(TABLE_NAME_PROP);
-        if (prop == null)
+        final ResourceProp userProp = configuration.getResource().getResourceProperty(USER_TABLE);
+        if (userProp == null)
             throw new ConnectorDataException(ErrorCode.INVALID_CONFIGURATION, "No TABLE_NAME property found");
 
-        final String tableName = prop.getPropValue();
+        final String tableName = userProp.getPropValue();
         if (StringUtils.isBlank(tableName))
             throw new ConnectorDataException(ErrorCode.INVALID_CONFIGURATION, "TABLE NAME is not defined.");
+        configuration.setUserTableName(tableName);
+        // additional properties
+        final ResourceProp groupProp = configuration.getResource().getResourceProperty(GROUP_TABLE);
+        if (groupProp != null)
+            configuration.setGroupTableName(groupProp.getPropValue());
+        final ResourceProp roleProp = configuration.getResource().getResourceProperty(ROLE_TABLE);
+        if (roleProp != null)
+            configuration.setGroupTableName(roleProp.getPropValue());
+        final ResourceProp emailProp = configuration.getResource().getResourceProperty(EMAIL_TABLE);
+        if (emailProp != null)
+            configuration.setGroupTableName(emailProp.getPropValue());
 
-        configuration.setTableName(tableName);
         return configuration;
     }
 
