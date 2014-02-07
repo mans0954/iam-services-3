@@ -33,7 +33,10 @@ import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
+import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
 import org.openiam.idm.srvc.audit.domain.AuditLogBuilder;
+import org.openiam.idm.srvc.audit.service.AuditLogProvider;
+import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.idm.srvc.synch.dto.Attribute;
 import org.openiam.idm.srvc.synch.dto.LineObject;
 import org.openiam.idm.srvc.synch.dto.SyncResponse;
@@ -55,10 +58,6 @@ import java.io.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Reads a CSV file for use during the synchronization process
@@ -85,14 +84,22 @@ public class CSVAdapter extends AbstractSrcAdapter {
 
     @Value("${org.openiam.upload.remote.use}")
     private Boolean useRemoteFilestorage;
+    @Autowired
+    protected AuditLogService auditLogService;
+
+    @Autowired
+    private AuditLogProvider auditLogProvider;
 
     @Autowired
     private RemoteFileStorageManager remoteFileStorageManager;
 
-    public SyncResponse startSynch(final SynchConfig config, final AuditLogBuilder auditLogBuilder) {
+    public SyncResponse startSynch(final SynchConfig config, final AuditLogBuilder auditBuilder) {
         log.debug("CSV startSynch CALLED.^^^^^^^^");
         System.out.println("CSV startSynch CALLED.^^^^^^^^");
-        auditLogBuilder.succeed().setAuditDescription("CSV startSynch CALLED.^^^^^^^^");
+
+        auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "CSV startSynch CALLED.^^^^^^^^");
+        auditLogProvider.persist(auditBuilder);
+
         Reader reader = null;
 
         final ProvisionService provService = (ProvisionService) SpringContextProvider.getBean("defaultProvision");
@@ -122,64 +129,19 @@ public class CSVAdapter extends AbstractSrcAdapter {
             final MatchObjectRule matchRule = matchRuleFactory.create(config.getCustomMatchRule());
             //Get Header
             final LineObject rowHeader = populateTemplate(rows[0]);
-            rows = Arrays.copyOfRange(rows, 1, rows.length);
-            // Multithreading
-            int allRowsCount = rows.length;
-            if (allRowsCount > 0) {
-                int threadCoount = THREAD_COUNT;
-                int rowsInOneExecutors = allRowsCount / threadCoount;
-                int remains = rowsInOneExecutors > 0 ? allRowsCount % (rowsInOneExecutors * threadCoount) : 0;
-                if (remains != 0) {
-                    threadCoount++;
-                }
-                log.debug("Thread count = " + threadCoount + "; Rows in one thread = " + rowsInOneExecutors + "; Remains rows = " + remains);
-                System.out.println("Thread count = " + threadCoount + "; Rows in one thread = " + rowsInOneExecutors + "; Remains rows = " + remains);
-                List<Future> results = new LinkedList<Future>();
-                final ExecutorService service = Executors.newCachedThreadPool();
-                for (int i = 0; i < threadCoount; i++) {
-                    final int startIndex = i * rowsInOneExecutors;
-                    int shiftIndex = threadCoount > THREAD_COUNT && i == threadCoount - 1 ? remains : rowsInOneExecutors;
 
-                    final String[][] part = Arrays.copyOfRange(rows, startIndex, startIndex + shiftIndex);
-                    results.add(service.submit(new Runnable() {
-                        @Override
-                        public void run() {
-                            proccess(config, provService, part, validationScript, transformScripts, matchRule, rowHeader, startIndex, auditLogBuilder);
-                        }
-                    }));
-                    //Give 30sec time for thread to be UP (load all cache and begin the work)
-                    Thread.sleep(THREAD_DELAY_BEFORE_START);
-                }
-                Runtime.getRuntime().addShutdownHook(new Thread() {
-                    public void run() {
-                        service.shutdown();
-                        try {
-                            if (!service.awaitTermination(SHUTDOWN_TIME, TimeUnit.MILLISECONDS)) { //optional *
-                                log.warn("Executor did not terminate in the specified time."); //optional *
-                                List<Runnable> droppedTasks = service.shutdownNow(); //optional **
-                                log.warn("Executor was abruptly shut down. " + droppedTasks.size() + " tasks will not be executed."); //optional **
-                            }
-                        } catch (InterruptedException e) {
-                            log.error(e);
-                            /*
-                            synchStartLog.updateSynchAttributes("FAIL", ResponseCode.INTERRUPTED_EXCEPTION.toString(), e.toString());
-                            auditHelper.logEvent(synchStartLog);
-							*/
-                            SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
-                            resp.setErrorCode(ResponseCode.INTERRUPTED_EXCEPTION);
-                        }
-                    }
-                });
-                waitUntilWorkDone(results);
+            auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "Rows for processing: "+rows.length);
+
+            if (rows.length > 0) {
+                proccess(config, provService, rows, validationScript, transformScripts, matchRule, rowHeader,0, auditBuilder);
+
             }
         } catch (FileNotFoundException fe) {
             fe.printStackTrace();
 
             log.error(fe);
-            /*
-            synchStartLog.updateSynchAttributes("FAIL", ResponseCode.FILE_EXCEPTION.toString(), fe.toString());
-            auditHelper.logEvent(synchStartLog);
-			*/
+            auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "FileNotFoundException: "+fe.getMessage());
+            auditLogProvider.persist(auditBuilder);
             SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
             resp.setErrorCode(ResponseCode.FILE_EXCEPTION);
             return resp;
@@ -187,10 +149,7 @@ public class CSVAdapter extends AbstractSrcAdapter {
         } catch (ClassNotFoundException cnfe) {
 
             log.error(cnfe);
-            /*
-            synchStartLog.updateSynchAttributes("FAIL", ResponseCode.CLASS_NOT_FOUND.toString(), cnfe.toString());
-            auditHelper.logEvent(synchStartLog);
-			*/
+
             SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
             resp.setErrorCode(ResponseCode.CLASS_NOT_FOUND);
             return resp;
@@ -203,14 +162,6 @@ public class CSVAdapter extends AbstractSrcAdapter {
             SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
             resp.setErrorCode(ResponseCode.IO_EXCEPTION);
             return resp;
-        } catch (InterruptedException e) {
-            log.error(e);
-            /*
-            synchStartLog.updateSynchAttributes("FAIL", ResponseCode.INTERRUPTED_EXCEPTION.toString(), e.toString());
-            auditHelper.logEvent(synchStartLog);
-			*/
-            SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
-            resp.setErrorCode(ResponseCode.INTERRUPTED_EXCEPTION);
         } catch (SftpException sftpe) {
             log.error(sftpe);
             /*
@@ -241,6 +192,7 @@ public class CSVAdapter extends AbstractSrcAdapter {
 
         log.debug("CSV SYNCHRONIZATION COMPLETE^^^^^^^^");
 
+        auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "CSV SYNCHRONIZATION COMPLETE^^^^^^^^");
         return new SyncResponse(ResponseStatus.SUCCESS);
     }
 
@@ -250,6 +202,7 @@ public class CSVAdapter extends AbstractSrcAdapter {
             //populate the data object
 
             LineObject rowObj = rowHeader.copy();
+
             populateRowObject(rowObj, row);
             log.info(" - Validation being called");
 
@@ -274,9 +227,14 @@ public class CSVAdapter extends AbstractSrcAdapter {
 
             log.info(" - Row Attr..." + rowAttr);
             //
+            StringBuilder rowAsStr = new StringBuilder();
+            for(String col : row) {
+               rowAsStr.append(col).append(",");
+            }
+            auditLogBuilder.addAttribute(AuditAttributeName.DESCRIPTION, " - Row Attrs:" + rowAsStr.toString());
 
             User usr = matchRule.lookup(config, rowAttr);
-
+            auditLogBuilder.addAttribute(AuditAttributeName.DESCRIPTION, " Lookup User in repository: " + usr != null ? "FOUND" : "NOT FOUND");
             //@todo - Update lookup so that an exception is thrown
             // when lookup fails due to bad matching.
 
@@ -285,6 +243,7 @@ public class CSVAdapter extends AbstractSrcAdapter {
             // transform
             int retval = -1;
             ProvisionUser pUser = new ProvisionUser();
+
             if (transformScripts != null && transformScripts.size() > 0) {
                 for (TransformScript transformScript : transformScripts) {
                     synchronized (mutex) {
@@ -315,13 +274,11 @@ public class CSVAdapter extends AbstractSrcAdapter {
                     }
                     log.info(" - Execute complete transform script");
                 }
-
-                AuditLogBuilder auditBuilderTestChild = new AuditLogBuilder();
-                auditBuilderTestChild.setRequestorUserId(systemUserId).setTargetUser(pUser.getLogin()).setAction(AuditAction.SYNCH_USER);
-                auditLogBuilder.addChild(auditBuilderTestChild);
+                pUser.setParentAuditLogId(auditLogBuilder.getEntity().getId());
                 if (retval != -1) {
                     if (retval == TransformScript.DELETE && pUser.getUser() != null) {
-                        auditBuilderTestChild.succeed().setAuditDescription("User login: "+pUser.getLogin()+" [REMOVED]");
+                        auditLogBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "User login: "+(pUser.getFirstName()+" "+pUser.getLastName())+" [REMOVED]");
+                        auditLogProvider.persist(auditLogBuilder);
                         provService.deleteByUserId(pUser.getUserId(), UserStatusEnum.REMOVE, systemAccount);
                     } else {
                         // call synch
@@ -332,25 +289,26 @@ public class CSVAdapter extends AbstractSrcAdapter {
                                 try {
                                     provService.modifyUser(pUser);
                                 } catch (Exception e) {
-                                    auditBuilderTestChild.fail().setAuditDescription("User login: "+pUser.getLogin()+" [MODIFY]");
+                                    auditLogBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "Error: User login: " +(pUser.getFirstName()+" "+pUser.getLastName())+" [MODIFY] " + e.getMessage());
+                                    auditLogProvider.persist(auditLogBuilder);
                                     log.error(e);
                                 }
-                                auditBuilderTestChild.succeed().setAuditDescription("User login: "+pUser.getLogin()+" [MODIFY]");
+                                auditLogBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "User login: " +(pUser.getFirstName()+" "+pUser.getLastName())+" [MODIFY] ");
                             } else {
                                 log.info(" - New user being provisioned");
                                 pUser.setUserId(null);
                                 try {
                                     provService.addUser(pUser);
                                 } catch (Exception e) {
-                                    auditBuilderTestChild.fail().setAuditDescription("User login: "+pUser.getLogin()+" [ADD]");
+                                    auditLogBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "Error: User login: " +(pUser.getFirstName()+" "+pUser.getLastName())+" [ADD] " + e.getMessage());
                                     log.error(e);
                                 }
-                                auditBuilderTestChild.succeed().setAuditDescription("User login: "+pUser.getLogin()+" [ADD]");
+                                auditLogBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "User: " +(pUser.getFirstName() + " " + pUser.getLastName())+" [ADD] ");
                             }
                         }
                     }
                 } else {
-                    auditBuilderTestChild.fail().setAuditDescription("User login: "+pUser.getLogin());
+                    auditLogBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "Fail: User login: " +pUser.getLogin());
                 }
             }
             // show the user object

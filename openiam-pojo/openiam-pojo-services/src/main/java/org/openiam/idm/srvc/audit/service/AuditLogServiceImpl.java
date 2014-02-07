@@ -66,9 +66,12 @@ public class AuditLogServiceImpl implements AuditLogService {
     
     private void prepare(final IdmAuditLogEntity log, final String coorelationId) {
     	if(log != null) {
-    		log.setHash(hash.HexEncodedHash(log.concat()));
+    		if(log.getId() == null || log.getHash() == null) {
+                log.setHash(hash.HexEncodedHash(log.concat()));
+                log.setCoorelationId(coorelationId);
+            }
     		log.setNodeIP(nodeIP);
-    		log.setCoorelationId(coorelationId);
+
     		if(CollectionUtils.isNotEmpty(log.getChildLogs())) {
     			for(final IdmAuditLogEntity entity : log.getChildLogs()) {
     				prepare(entity, coorelationId);
@@ -126,4 +129,12 @@ public class AuditLogServiceImpl implements AuditLogService {
 	public IdmAuditLogEntity findById(String id) {
 		return logDAO.findById(id);
 	}
+
+    @Override
+    @Transactional
+    public String save(IdmAuditLogEntity auditLogEntity) {
+        this.prepare(auditLogEntity,UUIDGen.getUUID());
+        logDAO.save(auditLogEntity);
+        return auditLogEntity.getId();
+    }
 }

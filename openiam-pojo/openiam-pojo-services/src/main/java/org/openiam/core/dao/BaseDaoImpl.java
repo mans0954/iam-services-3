@@ -198,7 +198,12 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
     		getSession().saveOrUpdate(entity);
     	}
     }
-
+    @Transactional
+    public void refresh(T entity) {
+        if(entity != null) {
+            getSession().refresh(entity);
+        }
+    }
     @Transactional
     public  T add(T entity){
         if(entity!=null){

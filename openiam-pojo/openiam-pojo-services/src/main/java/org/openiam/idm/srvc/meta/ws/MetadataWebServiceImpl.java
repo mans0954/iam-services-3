@@ -153,6 +153,19 @@ public class MetadataWebServiceImpl implements MetadataWebService {
 				throw new BasicDataServiceException(ResponseCode.METADATA_TYPE_MISSING);
 			}
 			
+			final List<MetadataElementEntity> entityList = metadataService.findElementByName(entity.getAttributeName());
+			if(CollectionUtils.isNotEmpty(entityList)) {
+				if(StringUtils.isBlank(entity.getId())) {
+					throw new BasicDataServiceException(ResponseCode.NAME_TAKEN);
+				} else {
+					for(final MetadataElementEntity nameEntity : entityList) {
+						if(!StringUtils.equals(nameEntity.getId(), entity.getId())) {
+							throw new BasicDataServiceException(ResponseCode.NAME_TAKEN);
+						}
+					}
+				}
+			}
+			
 			metadataService.save(entity);
 			response.setResponseValue(entity.getId());
 			response.setStatus(ResponseStatus.SUCCESS);

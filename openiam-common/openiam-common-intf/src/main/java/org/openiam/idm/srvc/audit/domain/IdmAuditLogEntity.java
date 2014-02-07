@@ -79,7 +79,7 @@ public class IdmAuditLogEntity implements Serializable {
     private String coorelationId;
     
     @OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL, mappedBy = "log")
-    private Set<IdmAuditLogCustomEntity> customRecords;
+    private Set<IdmAuditLogCustomEntity> customRecords = new HashSet<IdmAuditLogCustomEntity>();
     
     @OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL, mappedBy = "log")
     private Set<AuditLogTargetEntity> targets;
@@ -89,24 +89,26 @@ public class IdmAuditLogEntity implements Serializable {
             joinColumns = {@JoinColumn(name = "OPENIAM_MEMBER_LOG_ID")},
             inverseJoinColumns = {@JoinColumn(name = "OPENIAM_LOG_ID")})
     @Fetch(FetchMode.SUBSELECT)
-    private Set<IdmAuditLogEntity> parentLogs;
-    
-    @ManyToMany(cascade=CascadeType.ALL,fetch=FetchType.LAZY)
+    private Set<IdmAuditLogEntity> parentLogs = new HashSet<IdmAuditLogEntity>();
+
+    @ManyToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
     @JoinTable(name = "OPENIAM_LOG_LOG_MEMBERSHIP",
             joinColumns = {@JoinColumn(name = "OPENIAM_LOG_ID")},
             inverseJoinColumns = {@JoinColumn(name = "OPENIAM_MEMBER_LOG_ID")})
     @Fetch(FetchMode.SUBSELECT)
-    private Set<IdmAuditLogEntity> childLogs;
+    private Set<IdmAuditLogEntity> childLogs = new HashSet<IdmAuditLogEntity>();
     
     public void addChild(final IdmAuditLogEntity entity) {
     	if(entity != null) {
-    		if(this.childLogs == null) {
-    			this.childLogs = new HashSet<IdmAuditLogEntity>();
-    		}
     		this.childLogs.add(entity);
     	}
     }
-    
+
+    public void addParent(final IdmAuditLogEntity entity) {
+        if(entity != null) {
+            this.parentLogs.add(entity);
+        }
+    }
     public void addCustomRecord(final String key, final String value) {
     	if(key != null && value != null) {
     		if(customRecords == null) {
@@ -116,6 +118,7 @@ public class IdmAuditLogEntity implements Serializable {
     		entity.setKey(key);
     		entity.setValue(value);
     		entity.setLog(this);
+            entity.setTimestamp(new Date().getTime());
     		customRecords.add(entity);
     	}
     }
@@ -274,110 +277,46 @@ public class IdmAuditLogEntity implements Serializable {
 		return String.format("%s-%s-%s-%s-%s-%s-%s-%s-%s-%s-%s", action, clientIP, principal, nodeIP, result, source, timestamp, userId, sessionID, managedSysId, coorelationId);
 	}
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((action == null) ? 0 : action.hashCode());
-		result = prime * result
-				+ ((clientIP == null) ? 0 : clientIP.hashCode());
-		result = prime * result + ((hash == null) ? 0 : hash.hashCode());
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
-		result = prime * result + ((nodeIP == null) ? 0 : nodeIP.hashCode());
-		result = prime * result
-				+ ((this.result == null) ? 0 : this.result.hashCode());
-		result = prime * result + ((source == null) ? 0 : source.hashCode());
-		result = prime * result
-				+ ((timestamp == null) ? 0 : timestamp.hashCode());
-		result = prime * result + ((userId == null) ? 0 : userId.hashCode());
-		result = prime * result + ((principal == null) ? 0 : principal.hashCode());
-		result = prime * result + ((managedSysId == null) ? 0 : managedSysId.hashCode());
-		result = prime * result + ((sessionID == null) ? 0 : sessionID.hashCode());
-		result = prime * result + ((coorelationId == null) ? 0 : coorelationId.hashCode());
-		return result;
-	}
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		IdmAuditLogEntity other = (IdmAuditLogEntity) obj;
-		if (action == null) {
-			if (other.action != null)
-				return false;
-		} else if (!action.equals(other.action))
-			return false;
-		if (clientIP == null) {
-			if (other.clientIP != null)
-				return false;
-		} else if (!clientIP.equals(other.clientIP))
-			return false;
-		if (hash == null) {
-			if (other.hash != null)
-				return false;
-		} else if (!hash.equals(other.hash))
-			return false;
-		if (id == null) {
-			if (other.id != null)
-				return false;
-		} else if (!id.equals(other.id))
-			return false;
-		if (nodeIP == null) {
-			if (other.nodeIP != null)
-				return false;
-		} else if (!nodeIP.equals(other.nodeIP))
-			return false;
-		if (result == null) {
-			if (other.result != null)
-				return false;
-		} else if (!result.equals(other.result))
-			return false;
-		if (source == null) {
-			if (other.source != null)
-				return false;
-		} else if (!source.equals(other.source))
-			return false;
-		if (timestamp == null) {
-			if (other.timestamp != null)
-				return false;
-		} else if (!timestamp.equals(other.timestamp))
-			return false;
-		if (userId == null) {
-			if (other.userId != null)
-				return false;
-		} else if (!userId.equals(other.userId))
-			return false;
-		if (principal == null) {
-			if (other.principal != null)
-				return false;
-		} else if (!principal.equals(other.principal))
-			return false;
-		
-		if (sessionID == null) {
-			if (other.sessionID != null)
-				return false;
-		} else if (!sessionID.equals(other.sessionID))
-			return false;
-		
-		if (managedSysId == null) {
-			if (other.managedSysId != null)
-				return false;
-		} else if (!managedSysId.equals(other.managedSysId))
-			return false;
-		
-		if (coorelationId == null) {
-			if (other.coorelationId != null)
-				return false;
-		} else if (!coorelationId.equals(other.coorelationId))
-			return false;
-		return true;
-	}
+        IdmAuditLogEntity that = (IdmAuditLogEntity) o;
 
-	@Override
+        if (action != null ? !action.equals(that.action) : that.action != null) return false;
+        if (clientIP != null ? !clientIP.equals(that.clientIP) : that.clientIP != null) return false;
+        if (coorelationId != null ? !coorelationId.equals(that.coorelationId) : that.coorelationId != null)
+            return false;
+        if (hash != null ? !hash.equals(that.hash) : that.hash != null) return false;
+        if (managedSysId != null ? !managedSysId.equals(that.managedSysId) : that.managedSysId != null) return false;
+        if (nodeIP != null ? !nodeIP.equals(that.nodeIP) : that.nodeIP != null) return false;
+        if (principal != null ? !principal.equals(that.principal) : that.principal != null) return false;
+        if (sessionID != null ? !sessionID.equals(that.sessionID) : that.sessionID != null) return false;
+        if (source != null ? !source.equals(that.source) : that.source != null) return false;
+        if (timestamp != null ? !timestamp.equals(that.timestamp) : that.timestamp != null) return false;
+        if (userId != null ? !userId.equals(that.userId) : that.userId != null) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = userId != null ? userId.hashCode() : 0;
+        result = 31 * result + (principal != null ? principal.hashCode() : 0);
+        result = 31 * result + (managedSysId != null ? managedSysId.hashCode() : 0);
+        result = 31 * result + (timestamp != null ? timestamp.hashCode() : 0);
+        result = 31 * result + (source != null ? source.hashCode() : 0);
+        result = 31 * result + (clientIP != null ? clientIP.hashCode() : 0);
+        result = 31 * result + (nodeIP != null ? nodeIP.hashCode() : 0);
+        result = 31 * result + (action != null ? action.hashCode() : 0);
+        result = 31 * result + (hash != null ? hash.hashCode() : 0);
+        result = 31 * result + (sessionID != null ? sessionID.hashCode() : 0);
+        result = 31 * result + (coorelationId != null ? coorelationId.hashCode() : 0);
+        return result;
+    }
+
+    @Override
 	public String toString() {
 		return String
 				.format("IdmAuditLogEntity [id=%s, userId=%s, principal=%s, timestamp=%s, source=%s, clientIP=%s, nodeIP=%s, action=%s, result=%s, hash=%s]",

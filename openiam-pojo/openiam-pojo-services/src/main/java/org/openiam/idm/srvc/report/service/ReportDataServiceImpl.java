@@ -118,7 +118,7 @@ public class ReportDataServiceImpl implements ReportDataService {
     	if (StringUtils.isBlank(reportParam.getId()))
     		reportParam = criteriaParamDao.add(reportParam);
     	else
-    		criteriaParamDao.update(reportParam);
+    		criteriaParamDao.merge(reportParam);
     	return reportParam;
     	
     }

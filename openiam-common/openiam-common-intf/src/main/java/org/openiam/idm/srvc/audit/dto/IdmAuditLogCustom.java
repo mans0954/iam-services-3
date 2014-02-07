@@ -1,13 +1,11 @@
 package org.openiam.idm.srvc.audit.dto;
 
 import java.io.Serializable;
-import java.util.Set;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 import org.openiam.dozer.DozerDTOCorrespondence;
-import org.openiam.idm.srvc.audit.constant.CustomIdmAuditLogType;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogCustomEntity;
 
 /**
@@ -18,7 +16,8 @@ import org.openiam.idm.srvc.audit.domain.IdmAuditLogCustomEntity;
 	"id",
 	"logId",
 	"key",
-	"value"
+	"value",
+    "timestamp"
 })
 @DozerDTOCorrespondence(IdmAuditLogCustomEntity.class)
 public class IdmAuditLogCustom implements Serializable {
@@ -27,7 +26,8 @@ public class IdmAuditLogCustom implements Serializable {
 	private String logId;
 	private String key;
 	private String value;
-	
+    private long timestamp;
+
 	public String getId() {
 		return id;
 	}
@@ -60,50 +60,39 @@ public class IdmAuditLogCustom implements Serializable {
 		this.value = value;
 	}
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
-		result = prime * result + ((key == null) ? 0 : key.hashCode());
-		result = prime * result + ((logId == null) ? 0 : logId.hashCode());
-		result = prime * result + ((value == null) ? 0 : value.hashCode());
-		return result;
-	}
+    public long getTimestamp() {
+        return timestamp;
+    }
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		IdmAuditLogCustom other = (IdmAuditLogCustom) obj;
-		if (id == null) {
-			if (other.id != null)
-				return false;
-		} else if (!id.equals(other.id))
-			return false;
-		if (key == null) {
-			if (other.key != null)
-				return false;
-		} else if (!key.equals(other.key))
-			return false;
-		if (logId == null) {
-			if (other.logId != null)
-				return false;
-		} else if (!logId.equals(other.logId))
-			return false;
-		if (value == null) {
-			if (other.value != null)
-				return false;
-		} else if (!value.equals(other.value))
-			return false;
-		return true;
-	}
+    public void setTimestamp(long timestamp) {
+        this.timestamp = timestamp;
+    }
 
-	@Override
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        IdmAuditLogCustom that = (IdmAuditLogCustom) o;
+
+        if (timestamp != that.timestamp) return false;
+        if (key != null ? !key.equals(that.key) : that.key != null) return false;
+        if (logId != null ? !logId.equals(that.logId) : that.logId != null) return false;
+        if (value != null ? !value.equals(that.value) : that.value != null) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = logId != null ? logId.hashCode() : 0;
+        result = 31 * result + (key != null ? key.hashCode() : 0);
+        result = 31 * result + (value != null ? value.hashCode() : 0);
+        result = 31 * result + (int) (timestamp ^ (timestamp >>> 32));
+        return result;
+    }
+
+    @Override
 	public String toString() {
 		return String.format(
 				"IdmAuditLogCustom [id=%s, logId=%s, key=%s, value=%s]",

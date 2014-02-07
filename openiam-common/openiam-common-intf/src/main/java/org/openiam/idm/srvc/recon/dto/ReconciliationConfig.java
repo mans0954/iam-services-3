@@ -16,14 +16,10 @@ import org.springframework.format.annotation.DateTimeFormat;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "ReconciliationConfig", propOrder = { "reconConfigId",
         "resourceId", "managedSysId", "frequency", "status", "situationSet", "reportPath",
-        "separator", "endOfLine", "notificationEmailAddress",
-        "manualReconciliationFlag","targetSystemMatchScript","targetSystemSearchFilter",
-        "matchScript","searchFilter","updatedSince",
-        "customIdentityMatchScript",
-        "scriptHandler",
-        "matchFieldName",
-        "customMatchAttr",
-        "matchSrcFieldName"})
+        "separator", "endOfLine", "notificationEmailAddress","manualReconciliationFlag",
+        "targetSystemMatchScript","targetSystemSearchFilter","matchScript","searchFilter","updatedSince",
+        "customIdentityMatchScript","scriptHandler","matchFieldName",
+        "customMatchAttr","matchSrcFieldName","lastExecTime","execStatus"})
 
 @DozerDTOCorrespondence(ReconciliationConfigEntity.class)
 public class ReconciliationConfig implements MatchConfig, java.io.Serializable {
@@ -60,6 +56,9 @@ public class ReconciliationConfig implements MatchConfig, java.io.Serializable {
     private String matchSrcFieldName;
     @XmlElement
     private String scriptHandler;
+    @XmlSchemaType(name = "dateTime")
+    private Date lastExecTime;
+    private ReconExecStatusOptions execStatus;
 
     @Transient
     private String reportPath;
@@ -255,5 +254,21 @@ public class ReconciliationConfig implements MatchConfig, java.io.Serializable {
 
     public void setMatchSrcFieldName(String matchSrcFieldName) {
         this.matchSrcFieldName = matchSrcFieldName;
+    }
+
+    public Date getLastExecTime() {
+        return lastExecTime;
+    }
+
+    public void setLastExecTime(Date lastExecTime) {
+        this.lastExecTime = lastExecTime;
+    }
+
+    public ReconExecStatusOptions getExecStatus() {
+        return execStatus;
+    }
+
+    public void setExecStatus(ReconExecStatusOptions execStatus) {
+        this.execStatus = execStatus;
     }
 }

@@ -1,14 +1,17 @@
 package org.openiam.idm.srvc.report.ws;
 
+import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import javax.jws.WebParam;
 import javax.jws.WebService;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.http.client.utils.URIBuilder;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
@@ -48,6 +51,9 @@ public class ReportWebServiceImpl implements ReportWebService {
 	private static final Log log = LogFactory
 			.getLog(ReportWebServiceImpl.class);
 
+    private static final String DEFAULT_REPORT_TASK = "frameset";
+    private static final String REPORT_PARAMETER_NAME = "__report";
+
 	@Autowired
 	private ReportInfoDozerConverter reportInfoDozerConverter;
 	@Autowired
@@ -86,6 +92,30 @@ public class ReportWebServiceImpl implements ReportWebService {
 
 		return response;
 	}
+
+    @Override
+    public String getReportUrl(final String reportName, final HashMap<String, String> queryParams,
+                               final String taskName, final String reportBaseUrl) {
+        try {
+            ReportInfoEntity report = reportDataService.getReportByName(reportName);
+            if (report == null) {
+                log.debug("Report couldn't be found. Report name = " + reportName);
+                return null;
+            }
+            String taskPath = StringUtils.isNotBlank(taskName) ? taskName : DEFAULT_REPORT_TASK;
+            String reportDesignName = report.getReportUrl();
+            URIBuilder uriBuilder = new URIBuilder(reportBaseUrl);
+            uriBuilder.setPath(uriBuilder.getPath() + taskPath);
+            uriBuilder.setParameter(REPORT_PARAMETER_NAME, reportDesignName);
+            for (Map.Entry<String, String> entry : queryParams.entrySet()  ) {
+                uriBuilder.addParameter(entry.getKey(), entry.getValue());
+            }
+            return uriBuilder.toString();
+        } catch (URISyntaxException ex) {
+            log.error(ex);
+            return null;
+        }
+    }
 
 	@Override
 	public GetAllReportsResponse getReports(final int from, final int size) {

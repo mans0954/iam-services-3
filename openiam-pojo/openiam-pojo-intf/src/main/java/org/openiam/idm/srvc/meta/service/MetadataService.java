@@ -40,6 +40,8 @@ public interface MetadataService {
      */
 	public List<MetadataTypeEntity> getTypesInCategory(String categoryId);
 	
+	public List<MetadataElementEntity> findElementByName(final String name);
+	
 	public List<MetadataElementEntity> findBeans(final MetadataElementSearchBean searchBean, final int from, final int size);
 	
 	public List<MetadataTypeEntity> findBeans(final MetadataTypeSearchBean searchBean, final int from, final int size);
