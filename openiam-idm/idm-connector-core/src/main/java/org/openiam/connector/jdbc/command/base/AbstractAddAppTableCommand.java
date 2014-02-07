@@ -7,6 +7,7 @@ import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.cxf.common.util.StringUtils;
+import org.openiam.base.BaseAttribute;
 import org.openiam.connector.jdbc.command.data.AppTableConfiguration;
 import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.connector.type.constant.ErrorCode;
@@ -34,12 +35,7 @@ public abstract class AbstractAddAppTableCommand<ExtObject extends ExtensibleObj
         }
         Connection con = getConnection(configuration.getManagedSys());
         try {
-            if ("USER".equalsIgnoreCase(this.getObjectType())) {
-                addObject(con, principalName, extObject, configuration, "USER");
-                addObject(con, principalName, extObject, configuration, "GROUP");
-            } else {
-                addObject(con, principalName, extObject, configuration, this.getObjectType());
-            }
+            addObject(con, principalName, extObject, configuration, this.getObjectType());
             return response;
         } catch (ConnectorDataException e) {
             log.error(e.getMessage(), e);
@@ -56,10 +52,10 @@ public abstract class AbstractAddAppTableCommand<ExtObject extends ExtensibleObj
         final StringBuilder values = new StringBuilder("");
         String sql = "";
         int ctr = 0;
-        final List<ExtensibleAttribute> attrList = getExtensibleAttributeByType(objectType, object.getAttributes());
+        final List<ExtensibleAttribute> attrList = object.getAttributes();
         if (!CollectionUtils.isEmpty(attrList) && !StringUtils.isEmpty(this.getTableName(config, objectType))) {
             try {
-                if (identityExists(con, this.getTableName(config, "USER"), principalName, object)) {
+                if (identityExists(con, this.getTableName(config, objectType), principalName, object)) {
                     if (log.isDebugEnabled()) {
                         log.debug(String.format("%s exists. Returning success to the connector", principalName));
                     }
@@ -70,13 +66,22 @@ public abstract class AbstractAddAppTableCommand<ExtObject extends ExtensibleObj
                 }
 
                 for (final ExtensibleAttribute att : attrList) {
-                    if (ctr != 0) {
-                        columns.append(",");
-                        values.append(",");
+                    if (att.getAttributeContainer() != null
+                            && !CollectionUtils.isEmpty(att.getAttributeContainer().getAttributeList())) {
+                        for (BaseAttribute a : att.getAttributeContainer().getAttributeList()) {
+                            String supportedObjType = a.getName();
+                            ExtensibleObject ea = this.createNewExtensibleObject(a);
+                            this.addObject(con, ea.getObjectId(), ea, config, supportedObjType);
+                        }
+                    } else {
+                        if (ctr != 0) {
+                            columns.append(",");
+                            values.append(",");
+                        }
+                        ctr++;
+                        columns.append(att.getName());
+                        values.append("?");
                     }
-                    ctr++;
-                    columns.append(att.getName());
-                    values.append("?");
                 }
                 // add the primary key
 

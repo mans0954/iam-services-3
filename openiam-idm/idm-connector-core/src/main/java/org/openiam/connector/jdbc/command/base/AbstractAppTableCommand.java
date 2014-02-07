@@ -11,7 +11,10 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.openiam.base.BaseAttribute;
+import org.openiam.base.BaseProperty;
 import org.openiam.connector.common.jdbc.AbstractJDBCCommand;
 import org.openiam.connector.jdbc.command.data.AppTableConfiguration;
 import org.openiam.connector.type.ConnectorDataException;
@@ -53,6 +56,42 @@ public abstract class AbstractAppTableCommand<Request extends RequestType, Respo
             throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR);
         }
         return result;
+    }
+
+    public ExtensibleObject createNewExtensibleObject(BaseAttribute ba) {
+        if (ba == null || CollectionUtils.isEmpty(ba.getProperties()))
+            return null;
+
+        ExtensibleObject newEO = new ExtensibleObject();
+        newEO.setAttributes(new ArrayList<ExtensibleAttribute>());
+        for (BaseProperty prop : ba.getProperties()) {
+            if ("1".equals(this.getAttribute(prop.getAttribute(), "principal"))) {
+                newEO.setObjectId(prop.getValue());
+                newEO.setPrincipalFieldName(prop.getName());
+                newEO.setPrincipalFieldDataType(this.getAttribute(prop.getAttribute(), "dataType"));
+            } else {
+                ExtensibleAttribute ea = new ExtensibleAttribute(prop.getName(), prop.getValue());
+                ea.setDataType(this.getAttribute(prop.getAttribute(), "dataType"));
+                newEO.getAttributes().add(ea);
+            }
+        }
+        return newEO;
+    }
+
+    public String getAttribute(String attributes, String key) {
+        String res = "";
+        String[] attrs = StringUtils.split(attributes, ';');
+        if (attrs != null || attrs.length > 0) {
+            for (String attr : attrs) {
+                if (attr.toLowerCase().contains(key.toLowerCase())) {
+                    String[] values = StringUtils.split(attr, '=');
+                    if (values != null || values.length == 2) {
+                        res = values[1].trim();
+                    }
+                }
+            }
+        }
+        return res;
     }
 
     protected abstract String getObjectType();
