@@ -21,8 +21,11 @@ import javax.xml.bind.annotation.XmlType;
 		"loadMatchOnly",
 		"updateAttribute",
 		"synchFrequency",
+        "companyId",
 		"synchType",
 		"processRule",
+        "preSyncScript",
+        "postSyncScript",
 		"validationRule",
         "usePolicyMap",
         "useTransformationScript",
@@ -63,9 +66,12 @@ public class SynchConfig implements MatchConfig, java.io.Serializable {
 	private Integer loadMatchOnly;
 	private Integer updateAttribute;
 	private String synchFrequency;
+    private String companyId;
 	private String synchType;
 	//private String deleteRule;
 	private String processRule;
+    private String preSyncScript;
+    private String postSyncScript;
 	private String validationRule;
     private Boolean usePolicyMap;
     private Boolean useTransformationScript;
@@ -171,7 +177,15 @@ public class SynchConfig implements MatchConfig, java.io.Serializable {
 		this.synchFrequency = synchFrequency;
 	}
 
-	public String getProcessRule() {
+    public String getCompanyId() {
+        return companyId;
+    }
+
+    public void setCompanyId(String companyId) {
+        this.companyId = companyId;
+    }
+
+    public String getProcessRule() {
 		return this.processRule;
 	}
 
@@ -293,7 +307,23 @@ public class SynchConfig implements MatchConfig, java.io.Serializable {
 		this.synchAdapter = synchAdapter;
 	}
 
-	public String getValidationRule() {
+    public String getPreSyncScript() {
+        return preSyncScript;
+    }
+
+    public void setPreSyncScript(String preSyncScript) {
+        this.preSyncScript = preSyncScript;
+    }
+
+    public String getPostSyncScript() {
+        return postSyncScript;
+    }
+
+    public void setPostSyncScript(String postSyncScript) {
+        this.postSyncScript = postSyncScript;
+    }
+
+    public String getValidationRule() {
 		return validationRule;
 	}
 
@@ -370,8 +400,11 @@ public class SynchConfig implements MatchConfig, java.io.Serializable {
                 ", loadMatchOnly=" + loadMatchOnly +
                 ", updateAttribute=" + updateAttribute +
                 ", synchFrequency='" + synchFrequency + '\'' +
+                ", companyId='" + companyId + '\'' +
                 ", synchType='" + synchType + '\'' +
                 ", processRule='" + processRule + '\'' +
+                ", preSyncScript='" + preSyncScript + '\'' +
+                ", postSyncScript='" + postSyncScript + '\'' +
                 ", validationRule='" + validationRule + '\'' +
                 ", usePolicyMap='" + usePolicyMap.toString() + '\'' +
                 ", useTransformationScript='" + useTransformationScript.toString() + '\'' +

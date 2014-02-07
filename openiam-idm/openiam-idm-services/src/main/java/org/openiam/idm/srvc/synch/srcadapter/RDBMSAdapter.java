@@ -34,6 +34,7 @@ import org.openiam.idm.srvc.synch.dto.LineObject;
 import org.openiam.idm.srvc.synch.dto.SyncResponse;
 import org.openiam.idm.srvc.synch.dto.SynchConfig;
 import org.openiam.idm.srvc.synch.service.MatchObjectRule;
+import org.openiam.idm.srvc.synch.service.SyncConstants;
 import org.openiam.idm.srvc.synch.service.TransformScript;
 import org.openiam.idm.srvc.synch.service.ValidationScript;
 import org.openiam.idm.srvc.synch.util.DatabaseUtil;
@@ -328,6 +329,7 @@ public class RDBMSAdapter extends AbstractSrcAdapter {
                             transformScript.setNewUser(false);
                             User u = userManager.getUserDto(usr.getUserId());
                             pUser = new ProvisionUser(u);
+                            setCurrentSuperiors(pUser);
                             transformScript.setUser(u);
                             transformScript.setPrincipalList(loginDozerConverter.convertToDTOList(loginManager.getLoginByUser(usr.getUserId()), false));
                             transformScript.setUserRoleList(roleDataService.getUserRolesAsFlatList(usr.getUserId()));
