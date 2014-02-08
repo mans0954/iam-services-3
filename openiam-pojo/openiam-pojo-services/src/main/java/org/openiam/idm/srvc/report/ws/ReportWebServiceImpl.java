@@ -6,6 +6,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import javax.jms.JMSException;
+import javax.jms.Queue;
+import javax.jms.Session;
 import javax.jws.WebParam;
 import javax.jws.WebService;
 import org.apache.commons.lang.StringUtils;
@@ -33,6 +36,10 @@ import org.openiam.idm.srvc.report.dto.ReportInfoDto;
 import org.openiam.idm.srvc.report.dto.ReportParamTypeDto;
 import org.openiam.idm.srvc.report.service.ReportDataService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.jms.JmsException;
+import org.springframework.jms.core.JmsTemplate;
+import org.springframework.jms.core.MessageCreator;
 import org.springframework.stereotype.Service;
 
 /**
@@ -66,6 +73,12 @@ public class ReportWebServiceImpl implements ReportWebService {
 	private ReportParamTypeDozerConverter paramTypeDozerConverter;
 	@Autowired
 	private ReportDataService reportDataService;
+
+    @Autowired
+    private JmsTemplate jmsTemplate;
+    @Autowired
+    @Qualifier(value = "subsQueue")
+    private Queue queue;
 
 	@Override
 	public GetReportDataResponse executeQuery(final String reportName,
@@ -461,7 +474,30 @@ public class ReportWebServiceImpl implements ReportWebService {
 		reportsResponse.setReports(reportDtos);
 		return reportsResponse;
 	}
-	
+
+    @Override
+    public GetSubCriteriaParamReportResponse getSubscribedReportParametersByReportId(
+            @WebParam(name = "reportId", targetNamespace = "") String reportId) {
+        GetSubCriteriaParamReportResponse response = new GetSubCriteriaParamReportResponse();
+        if (!StringUtils.isEmpty(reportId)) {
+            List<ReportSubCriteriaParamEntity> params = reportDataService
+                    .getSubReportParametersByReportId(reportId);
+            List<ReportSubCriteriaParamDto> paramsDtos = new LinkedList<ReportSubCriteriaParamDto>();
+            if (params != null) {
+                paramsDtos = criteriaSubParamDozerConverter.convertToDTOList(
+                        params, false);
+            }
+            response.setParameters(paramsDtos);
+            response.setStatus(ResponseStatus.SUCCESS);
+        } else {
+            response.setErrorCode(ResponseCode.INVALID_ARGUMENTS);
+            response.setErrorText("Invalid parameter list: reportId="
+                    + reportId);
+            response.setStatus(ResponseStatus.FAILURE);
+        }
+        return response;
+    }
+
 	public List<ReportCriteriaParamDto> getAllReportCriteriaParam(){
 		List<ReportCriteriaParamDto> reportCriteriaParam = criteriaParamDozerConverter.convertToDTOList(reportDataService.getAllReportParameters(), false);
 		return reportCriteriaParam;
@@ -733,4 +769,52 @@ public class ReportWebServiceImpl implements ReportWebService {
 		return response;
 	}
 
+    @Override
+    public Response runSubscription(@WebParam(name = "reportId", targetNamespace = "") String reportId) {
+        final ReportSubscriptionEntity reportSubscriptionEntity = reportDataService
+                .getSubscriptionReportById(reportId);
+        final ReportSubscriptionDto reportSubscriptionDto = reportSubscriptionDozerConverter
+                .convertToDTO(reportSubscriptionEntity, true);
+
+        Response response = new Response();
+        if (reportSubscriptionDto != null) {
+            try {
+                jmsTemplate.send(queue, new MessageCreator() {
+                    public javax.jms.Message createMessage(Session session) throws JMSException {
+                        return session.createObjectMessage(reportSubscriptionDto);
+                    }
+                });
+                response.setStatus(ResponseStatus.SUCCESS);
+                return response;
+            } catch (JmsException e) {
+            }
+        }
+        response.setStatus(ResponseStatus.FAILURE);
+        return response;
+    }
+
+    @Override
+    public Response runAllActiveSubscriptions() {
+        final List<ReportSubscriptionEntity> reportSubscriptions = reportDataService
+                .getAllActiveSubscribedReports();
+
+        for(ReportSubscriptionEntity reportSubscription : reportSubscriptions) {
+
+            final ReportSubscriptionDto reportSubscriptionDto = reportSubscriptionDozerConverter
+                    .convertToDTO(reportSubscription, true);
+
+            if (reportSubscriptionDto != null) {
+                try {
+                    jmsTemplate.send(queue, new MessageCreator() {
+                        public javax.jms.Message createMessage(Session session) throws JMSException {
+                            return session.createObjectMessage(reportSubscriptionDto);
+                        }
+                    });
+                } catch (JmsException e) {
+                    log.error("Failed to schedule report generation ", e);
+                }
+            }
+        }
+        return new Response(ResponseStatus.SUCCESS);
+    }
 }

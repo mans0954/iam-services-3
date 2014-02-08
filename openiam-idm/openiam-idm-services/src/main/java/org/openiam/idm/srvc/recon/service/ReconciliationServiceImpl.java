@@ -681,7 +681,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
                     // AUDIT LOG   Y user processing   IDM_EXISTS__SYS_EXISTS   situation
                     command.execute(principal, newUser, extensibleAttributes);
 
-                }
+               }
             }  else {
                 //create new user in IDM
                 ReconciliationCommand command = situations
@@ -692,6 +692,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
                     l.setManagedSysId(managedSysId);
                     l.setOperation(AttributeOperationEnum.ADD);
                     ProvisionUser newUser = new ProvisionUser();
+                    newUser.setParentAuditLogId(auditBuilder.getEntity().getId());
                     newUser.setSrcSystemId(managedSysId);
                     // ADD Target user principal
                     newUser.getPrincipalList().add(l);
@@ -848,6 +849,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
                     if (command != null) {
                         log.debug("Call command for: Record in resource but deleted in IDM");
                         ProvisionUser provisionUser = new ProvisionUser(user);
+                        provisionUser.setParentAuditLogId(auditBuilder.getEntity().getId());
                         provisionUser.setSrcSystemId(mSys.getManagedSysId());
                         auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION,"SYS_EXISTS__IDM_NOT_EXISTS for user= "+principal);
                         auditLogService.enqueue(auditBuilder);
@@ -869,6 +871,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
                     if (command != null) {
                         log.debug("Call command for: Record in resource and in IDM");
                         ProvisionUser provisionUser = new ProvisionUser(user);
+                        provisionUser.setParentAuditLogId(auditBuilder.getEntity().getId());
                         provisionUser.setSrcSystemId(mSys.getManagedSysId());
 
                         auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION,"IDM_EXISTS__SYS_EXISTS for user= "+principal);
@@ -896,6 +899,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
                     if (command != null) {
                         log.debug("Call command for: Record in resource and in IDM");
                         ProvisionUser provisionUser = new ProvisionUser(user);
+                        provisionUser.setParentAuditLogId(auditBuilder.getEntity().getId());
                         provisionUser.setSrcSystemId(mSys.getManagedSysId());
 
                         auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION,"IDM_EXISTS__SYS_NOT_EXISTS for user= "+principal);
@@ -1024,7 +1028,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
 
     @Override
     public String getReconciliationReport(ReconciliationConfig config,
-                                          String reportType) {
+            String reportType) {
         String fileName = StringUtils.isEmpty(config.getResourceId()) ? ""
                 : config.getResourceId() + ".rcndat";
         if (StringUtils.isEmpty(fileName))
@@ -1047,7 +1051,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
     }
 
     private void saveReconciliationResults(String fileName,
-                                           ReconciliationResultBean resultBean) {
+            ReconciliationResultBean resultBean) {
         int i = 0;
         resultBean.getHeader().setRowId(i++);
         for (ReconciliationResultRow row : resultBean.getRows()) {
@@ -1060,7 +1064,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
         StringBuilder message = new StringBuilder();
         if (!StringUtils.isEmpty(config.getNotificationEmailAddress())) {
             message.append("Resource: " + res.getName() + ".\n");
-            message.append("Uploaded CSV file: " + res.getId()
+            message.append("Uploaded CSV file: " + res.getResourceId()
                     + ".csv was successfully reconciled.\n");
             mailService.sendEmails(null,
                     new String[] { config.getNotificationEmailAddress() },
@@ -1096,7 +1100,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
             if (org.springframework.util.StringUtils.hasText(searchBean
                     .getSearchFieldName())
                     && org.springframework.util.StringUtils.hasText(searchBean
-                    .getSearchFieldValue())) {
+                            .getSearchFieldValue())) {
                 List<ReconciliationResultRow> filteredRows = new ArrayList<ReconciliationResultRow>();
                 Integer searchIndex = null;
                 for (int i = 0; i < resultBean.getHeader().getFields().size(); i++) {
@@ -1124,7 +1128,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
             if (org.springframework.util.StringUtils.hasText(searchBean
                     .getOrderBy())
                     && org.springframework.util.StringUtils.hasText(searchBean
-                    .getOrderByFieldName())) {
+                            .getOrderByFieldName())) {
                 Integer searchIndex = null;
                 for (int i = 0; i < resultBean.getHeader().getFields().size(); i++) {
                     ReconciliationResultField field = resultBean.getHeader()
@@ -1168,8 +1172,8 @@ public class ReconciliationServiceImpl implements ReconciliationService {
     }
 
     private <T> T convertObject(List<ReconciliationResultField> header,
-                                List<ReconciliationResultField> fields, Class<T> clazz,
-                                boolean onlyKeyField) throws InstantiationException,
+            List<ReconciliationResultField> fields, Class<T> clazz,
+            boolean onlyKeyField) throws InstantiationException,
             IllegalAccessException {
         if (clazz.getSimpleName().equals(userCSVParser.getObjectSimlpeClass())) {
             return (T) userCSVParser.getObjectByReconResltFields(header,
@@ -1184,7 +1188,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
     }
 
     private void getValuesForExtensibleUser(ExtensibleUser fromIDM, User user,
-                                            List<AttributeMapEntity> attrMap, LoginEntity identity) {
+            List<AttributeMapEntity> attrMap, LoginEntity identity) {
         Map<String, Object> bindingMap = new HashMap<String, Object>();
         try {
             bindingMap.put("user", new ProvisionUser(user));
@@ -1192,7 +1196,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
 
             // get all groups for user
             List<org.openiam.idm.srvc.grp.dto.Group> curGroupList = groupDozerConverter.convertToDTOList(
-                    groupManager.getGroupsForUser(user.getId(), null, -1,
+                    groupManager.getGroupsForUser(user.getUserId(), null, -1,
                             -1), false);
 
             Login primaryIdentity = null;

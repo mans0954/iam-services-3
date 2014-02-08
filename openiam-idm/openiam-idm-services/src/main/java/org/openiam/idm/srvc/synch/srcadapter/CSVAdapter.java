@@ -42,6 +42,7 @@ import org.openiam.idm.srvc.synch.dto.LineObject;
 import org.openiam.idm.srvc.synch.dto.SyncResponse;
 import org.openiam.idm.srvc.synch.dto.SynchConfig;
 import org.openiam.idm.srvc.synch.service.MatchObjectRule;
+import org.openiam.idm.srvc.synch.service.SyncConstants;
 import org.openiam.idm.srvc.synch.service.TransformScript;
 import org.openiam.idm.srvc.synch.service.ValidationScript;
 import org.openiam.idm.srvc.user.dto.User;
@@ -100,23 +101,23 @@ public class CSVAdapter extends AbstractSrcAdapter {
         auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "CSV startSynch CALLED.^^^^^^^^");
         auditLogProvider.persist(auditBuilder);
 
-        Reader reader = null;
+        InputStreamReader isr = null;
 
         final ProvisionService provService = (ProvisionService) SpringContextProvider.getBean("defaultProvision");
 
         String requestId = UUIDGen.getUUID();
 
-
         try {
             CSVParser parser;
             String csvFileName = config.getFileName();
             if(useRemoteFilestorage) {
-                InputStream is = remoteFileStorageManager.downloadFile(SYNC_DIR, csvFileName);
-                parser = new CSVParser(new InputStreamReader(is));
+                isr = new InputStreamReader(remoteFileStorageManager.downloadFile(SYNC_DIR, csvFileName), "UTF-8");
+                parser = new CSVParser(isr);
+
             } else {
-                File file = new File(uploadRoot + File.separator + SYNC_DIR + File.separator + csvFileName);
-                reader = new FileReader(file);
-                parser = new CSVParser(reader, CSVStrategy.EXCEL_STRATEGY);
+                String fileName = uploadRoot + File.separator + SYNC_DIR + File.separator + csvFileName;
+                isr = new InputStreamReader( new FileInputStream(fileName), "UTF-8");
+                parser = new CSVParser(isr, CSVStrategy.EXCEL_STRATEGY);
             }
 
             String[][] rows = parser.getAllValues();
@@ -181,9 +182,9 @@ public class CSVAdapter extends AbstractSrcAdapter {
             resp.setErrorCode(ResponseCode.FILE_EXCEPTION);
             jsche.printStackTrace();
         } finally {
-            if (reader != null) {
+            if (isr != null) {
                 try {
-                    reader.close();
+                    isr.close();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -253,6 +254,7 @@ public class CSVAdapter extends AbstractSrcAdapter {
                             transformScript.setNewUser(false);
                             User u = userManager.getUserDto(usr.getId());
                             pUser = new ProvisionUser(u);
+                            setCurrentSuperiors(pUser);
                             transformScript.setUser(u);
                             transformScript.setPrincipalList(loginDozerConverter.convertToDTOList(loginManager.getLoginByUser(usr.getId()), false));
                             transformScript.setUserRoleList(roleDataService.getUserRolesAsFlatList(usr.getId()));
@@ -287,6 +289,7 @@ public class CSVAdapter extends AbstractSrcAdapter {
                                 log.info(" - Updating existing user");
                                 pUser.setId(usr.getId());
                                 try {
+                                    pUser.setParentAuditLogId(auditLogBuilder.getEntity().getId());
                                     provService.modifyUser(pUser);
                                 } catch (Exception e) {
                                     auditLogBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "Error: User login: " +(pUser.getFirstName()+" "+pUser.getLastName())+" [MODIFY] " + e.getMessage());

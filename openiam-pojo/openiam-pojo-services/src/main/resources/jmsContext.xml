@@ -41,4 +41,7 @@
 	<jee:jndi-lookup id="logQueue" jndi-name="queue/log" expected-type="javax.jms.Queue" />
 
     <jee:jndi-lookup id="provQueue" jndi-name="queue/prov" expected-type="javax.jms.Queue" />
+
+    <jee:jndi-lookup id="subsQueue" jndi-name="queue/subs" expected-type="javax.jms.Queue" />
+
 </beans>

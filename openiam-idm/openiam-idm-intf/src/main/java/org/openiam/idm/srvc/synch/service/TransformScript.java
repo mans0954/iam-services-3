@@ -54,5 +54,5 @@ public interface TransformScript extends ApplicationContextAware {
     void setUserRoleList(List<Role> userRoleList) ;
     boolean isNewUser();
     void setNewUser(boolean isNewUser);
-
+    void setSynchConfigId(String synchConfigId);
 }

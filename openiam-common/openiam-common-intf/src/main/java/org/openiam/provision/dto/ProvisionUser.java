@@ -152,6 +152,9 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         resources = user.getResources();
         setPassword(user.getPassword());
         setLogin(user.getLogin());
+        if(user instanceof ProvisionUser) {
+          this.parentAuditLogId = ((ProvisionUser)user).getParentAuditLogId();
+        }
     }
 
     public User getUser() {

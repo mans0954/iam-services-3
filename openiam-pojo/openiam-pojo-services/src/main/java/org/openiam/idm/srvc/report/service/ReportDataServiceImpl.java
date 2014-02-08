@@ -175,6 +175,12 @@ public class ReportDataServiceImpl implements ReportDataService {
 
     @Override
     @Transactional
+    public List<ReportSubCriteriaParamEntity> getSubReportParametersByReportId(String reportId) {
+        return subCriteriaParamDao.findByReportInfoId(reportId);
+    }
+
+    @Override
+    @Transactional
     public Integer getReportCount() {
         return reportDao.countAll().intValue();
     }
