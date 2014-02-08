@@ -1064,7 +1064,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
         StringBuilder message = new StringBuilder();
         if (!StringUtils.isEmpty(config.getNotificationEmailAddress())) {
             message.append("Resource: " + res.getName() + ".\n");
-            message.append("Uploaded CSV file: " + res.getResourceId()
+            message.append("Uploaded CSV file: " + res.getId()
                     + ".csv was successfully reconciled.\n");
             mailService.sendEmails(null,
                     new String[] { config.getNotificationEmailAddress() },
@@ -1196,7 +1196,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
 
             // get all groups for user
             List<org.openiam.idm.srvc.grp.dto.Group> curGroupList = groupDozerConverter.convertToDTOList(
-                    groupManager.getGroupsForUser(user.getUserId(), null, -1,
+                    groupManager.getGroupsForUser(user.getId(), null, -1,
                             -1), false);
 
             Login primaryIdentity = null;

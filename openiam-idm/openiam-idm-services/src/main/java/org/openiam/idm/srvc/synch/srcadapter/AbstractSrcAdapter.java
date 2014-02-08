@@ -152,8 +152,8 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
     }
 
     protected void setCurrentSuperiors(ProvisionUser pUser) {
-        if (StringUtils.isNotEmpty(pUser.getUserId())) {
-            List<UserEntity> entities = userManager.getSuperiors(pUser.getUserId(), -1, -1);
+        if (StringUtils.isNotEmpty(pUser.getId())) {
+            List<UserEntity> entities = userManager.getSuperiors(pUser.getId(), -1, -1);
             List<User> superiors = userDozerConverter.convertToDTOList(entities, true);
             if (CollectionUtils.isNotEmpty(superiors)) {
                 pUser.setSuperiors(new HashSet<User>(superiors));

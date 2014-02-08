@@ -73,13 +73,13 @@ public class UpdateIdmUserCommand implements ReconciliationCommand {
     }
 
     protected void setCurrentSuperiors(ProvisionUser pUser) {
-        if (StringUtils.isNotEmpty(pUser.getUserId())) {
+        if (StringUtils.isNotEmpty(pUser.getId())) {
 
             ApplicationContext appContext = SpringContextProvider.getApplicationContext();
             UserDataService userMgr = (UserDataService)appContext.getBean("userManager");
             UserDozerConverter userDozerConverter = (UserDozerConverter)appContext.getBean("userDozerConverter");
 
-            List<UserEntity> entities = userMgr.getSuperiors(pUser.getUserId(), -1, -1);
+            List<UserEntity> entities = userMgr.getSuperiors(pUser.getId(), -1, -1);
             List<User> superiors = userDozerConverter.convertToDTOList(entities, true);
             if (CollectionUtils.isNotEmpty(superiors)) {
                 pUser.setSuperiors(new HashSet<User>(superiors));

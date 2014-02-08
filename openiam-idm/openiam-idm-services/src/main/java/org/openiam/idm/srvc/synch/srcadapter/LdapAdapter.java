@@ -33,7 +33,6 @@ import org.openiam.idm.srvc.synch.dto.LineObject;
 import org.openiam.idm.srvc.synch.dto.SyncResponse;
 import org.openiam.idm.srvc.synch.dto.SynchConfig;
 import org.openiam.idm.srvc.synch.service.MatchObjectRule;
-import org.openiam.idm.srvc.synch.service.SyncConstants;
 import org.openiam.idm.srvc.synch.service.TransformScript;
 import org.openiam.idm.srvc.synch.service.ValidationScript;
 import org.openiam.idm.srvc.user.dto.User;
@@ -49,8 +48,10 @@ import javax.naming.NamingException;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
+import javax.naming.ldap.Control;
 import javax.naming.ldap.InitialLdapContext;
 import javax.naming.ldap.LdapContext;
+import javax.naming.ldap.PagedResultsResponseControl;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -266,12 +267,12 @@ public class LdapAdapter extends AbstractSrcAdapter { // implements SourceAdapte
                                     // initialize the transform script
                                     if (usr != null) {
                                         transformScript.setNewUser(false);
-                                        User u = userManager.getUserDto(usr.getUserId());
+                                        User u = userManager.getUserDto(usr.getId());
                                         pUser = new ProvisionUser(u);
                                         setCurrentSuperiors(pUser);
                                         transformScript.setUser(u);
-                                        transformScript.setPrincipalList(loginDozerConverter.convertToDTOList(loginManager.getLoginByUser(usr.getUserId()), false));
-                                        transformScript.setUserRoleList(roleDataService.getUserRolesAsFlatList(usr.getUserId()));
+                                        transformScript.setPrincipalList(loginDozerConverter.convertToDTOList(loginManager.getLoginByUser(usr.getId()), false));
+                                        transformScript.setUserRoleList(roleDataService.getUserRolesAsFlatList(usr.getId()));
 
                                     } else {
                                         transformScript.setNewUser(true);
@@ -292,21 +293,21 @@ public class LdapAdapter extends AbstractSrcAdapter { // implements SourceAdapte
                                 if (retval != -1) {
                                     successRecords++;
                                     if (retval == TransformScript.DELETE && usr != null) {
-                                        log.debug("deleting record - " + usr.getUserId());
-                                        ProvisionUserResponse userResp = provService.deleteByUserId(usr.getUserId(), UserStatusEnum.DELETED, systemAccount);
+                                        log.debug("deleting record - " + usr.getId());
+                                        ProvisionUserResponse userResp = provService.deleteByUserId(usr.getId(), UserStatusEnum.DELETED, systemAccount);
 
                                     } else {
                                         // call synch
                                         if (retval != TransformScript.DELETE) {
                                             System.out.println("Provisioning user=" + pUser.getLastName());
                                             if (usr != null) {
-                                                log.debug("updating existing user...systemId=" + pUser.getUserId());
-                                                pUser.setUserId(usr.getUserId());
+                                                log.debug("updating existing user...systemId=" + pUser.getId());
+                                                pUser.setId(usr.getId());
                                                 ProvisionUserResponse userResp = provService.modifyUser(pUser);
 
                                             } else {
                                                 log.debug("adding new user...");
-                                                pUser.setUserId(null);
+                                                pUser.setId(null);
                                                 ProvisionUserResponse userResp = provService.addUser(pUser);
                                             }
                                         }
