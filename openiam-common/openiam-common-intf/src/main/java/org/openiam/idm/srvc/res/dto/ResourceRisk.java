@@ -17,4 +17,17 @@ public enum ResourceRisk {
     ResourceRisk(String val) {
         value = val;
     }
+    
+    public static ResourceRisk getByValue(final String val) {
+    	ResourceRisk retVal = null;
+    	if(val != null) {
+    		for(final ResourceRisk risk : ResourceRisk.values()) {
+    			if(val.equals(risk.value)) {
+    				retVal = risk;
+    				break;
+    			}
+    		}
+    	}
+    	return retVal;
+    }
 }
