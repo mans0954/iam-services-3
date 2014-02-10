@@ -26,6 +26,7 @@ import java.util.Set;
 	"groupIds",
 	"resourceIds",
 	"resourceToResourceMap",
+    "childResToParentResMap",
     "resourceToGroupMap",
     "resourceToRoleMap",
 	"groupToGroupMap",
@@ -67,6 +68,9 @@ public class UserEntitlementsMatrix implements Serializable {
 
 	@XmlJavaTypeAdapter(AuthorizationMatrixAdapter.class)
 	private Map<String, Set<String>> resourceToResourceMap;
+
+    @XmlJavaTypeAdapter(AuthorizationMatrixAdapter.class)
+    private Map<String, Set<String>> childResToParentResMap;
 
     @XmlJavaTypeAdapter(AuthorizationMatrixAdapter.class)
     private Map<String, Set<String>> resourceToGroupMap;
@@ -207,6 +211,27 @@ public class UserEntitlementsMatrix implements Serializable {
 			}
 		}
 	}
+
+    public void setChildResourceToParentResourceMap(Map<String, Set<AuthorizationResource>> childResToParentResMap) {
+        if(childResToParentResMap != null) {
+            if(this.childResToParentResMap == null) {
+                this.childResToParentResMap = new HashMap<String, Set<String>>();
+            }
+            for(final String childResourceId : childResToParentResMap.keySet()) {
+                final Set<AuthorizationResource> parentResources = childResToParentResMap.get(childResourceId);
+                if(CollectionUtils.isNotEmpty(parentResources)) {
+                    if(!this.childResToParentResMap.containsKey(childResourceId)) {
+                        this.childResToParentResMap.put(childResourceId, new HashSet<String>());
+                    }
+                    for(final AuthorizationResource resource : parentResources) {
+                        this.childResToParentResMap.get(childResourceId).add(resource.getId());
+                    }
+                }
+            }
+        }
+    }
+
+
 
     public void setResourceToGroupMap(Map<String, Set<AuthorizationGroup>> resourceToGroupMap) {
         if(resourceToGroupMap != null) {
@@ -361,5 +386,9 @@ public class UserEntitlementsMatrix implements Serializable {
 
     public Map<String, Set<String>> getResourceToRoleMap() {
         return resourceToRoleMap;
+    }
+
+    public Map<String, Set<String>> getChildResToParentResMap() {
+        return childResToParentResMap;
     }
 }
