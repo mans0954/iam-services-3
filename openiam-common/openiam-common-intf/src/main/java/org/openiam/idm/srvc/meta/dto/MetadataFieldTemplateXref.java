@@ -1,13 +1,15 @@
 package org.openiam.idm.srvc.meta.dto;
 
+import java.util.Map;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
 import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.idm.srvc.lang.dto.LanguageMapping;
 import org.openiam.idm.srvc.meta.domain.MetadataElementPageTemplateEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataFieldTemplateXrefEntity;
-import org.openiam.idm.srvc.meta.domain.MetadataFieldTemplateXrefIDEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataTemplateTypeFieldEntity;
 
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -17,17 +19,19 @@ import org.openiam.idm.srvc.meta.domain.MetadataTemplateTypeFieldEntity;
 	"template",
 	"required",
 	"editable",
-	"displayOrder"
+	"displayOrder",
+	"languageMap"
 })
 @DozerDTOCorrespondence(MetadataFieldTemplateXrefEntity.class)
 public class MetadataFieldTemplateXref {
 
-	private MetadataFieldTemplateXrefID id;
+	private String id;
 	private MetadataTemplateTypeField field;
 	private MetadataElementPageTemplate template;
 	private boolean required;
 	private boolean editable = true;
 	private Integer displayOrder;
+	private Map<String, LanguageMapping> languageMap;
 	
 	public MetadataTemplateTypeField getField() {
 		return field;
@@ -47,10 +51,10 @@ public class MetadataFieldTemplateXref {
 	public void setRequired(boolean required) {
 		this.required = required;
 	}
-	public MetadataFieldTemplateXrefID getId() {
+	public String getId() {
 		return id;
 	}
-	public void setId(MetadataFieldTemplateXrefID id) {
+	public void setId(String id) {
 		this.id = id;
 	}
 	
@@ -69,6 +73,15 @@ public class MetadataFieldTemplateXref {
 	public void setDisplayOrder(Integer displayOrder) {
 		this.displayOrder = displayOrder;
 	}
+	
+	public Map<String, LanguageMapping> getLanguageMap() {
+		return languageMap;
+	}
+
+	public void setLanguageMap(Map<String, LanguageMapping> languageMap) {
+		this.languageMap = languageMap;
+	}
+	
 	@Override
 	public int hashCode() {
 		final int prime = 31;

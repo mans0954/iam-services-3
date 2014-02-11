@@ -270,6 +270,7 @@ public class ProvisionDispatcher implements Sweepable {
                     loginEntity.setStatus(LoginStatusEnum.FAIL_UPDATE);
                 }
             }
+            loginManager.updateLogin(loginEntity);
         }
     }
 

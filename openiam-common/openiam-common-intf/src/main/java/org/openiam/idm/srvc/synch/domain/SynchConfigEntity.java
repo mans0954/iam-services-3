@@ -41,11 +41,17 @@ public class SynchConfigEntity implements Serializable {
     private Integer updateAttribute;
     @Column(name="SYNCH_FREQUENCY",length=20)
     private String synchFrequency;
+    @Column(name = "COMPANY_ID", length = 32)
+    private String companyId;
     @Column(name="SYNCH_TYPE",length=20)
     private String synchType;
     //private String deleteRule;
     @Column(name="PROCESS_RULE",length=80)
     private String processRule;
+    @Column(name="PRE_SYNC_SCRIPT",length=80)
+    private String preSyncScript;
+    @Column(name="POST_SYNC_SCRIPT",length=80)
+    private String postSyncScript;
     @Column(name="VALIDATION_RULE",length=80)
     private String validationRule;
     @Column(name="USE_POLICY_MAP")
@@ -174,6 +180,14 @@ public class SynchConfigEntity implements Serializable {
 
     public void setSynchFrequency(String synchFrequency) {
         this.synchFrequency = synchFrequency;
+    }
+
+    public String getCompanyId() {
+        return companyId;
+    }
+
+    public void setCompanyId(String companyId) {
+        this.companyId = companyId;
     }
 
     public String getProcessRule() {
@@ -320,6 +334,22 @@ public class SynchConfigEntity implements Serializable {
         this.synchAdapter = synchAdapter;
     }
 
+    public String getPreSyncScript() {
+        return preSyncScript;
+    }
+
+    public void setPreSyncScript(String preSyncScript) {
+        this.preSyncScript = preSyncScript;
+    }
+
+    public String getPostSyncScript() {
+        return postSyncScript;
+    }
+
+    public void setPostSyncScript(String postSyncScript) {
+        this.postSyncScript = postSyncScript;
+    }
+
     public String getValidationRule() {
         return validationRule;
     }
@@ -397,8 +427,11 @@ public class SynchConfigEntity implements Serializable {
                 ", loadMatchOnly=" + loadMatchOnly +
                 ", updateAttribute=" + updateAttribute +
                 ", synchFrequency='" + synchFrequency + '\'' +
+                ", companyId='" + companyId + '\'' +
                 ", synchType='" + synchType + '\'' +
                 ", processRule='" + processRule + '\'' +
+                ", preSyncScript='" + preSyncScript + '\'' +
+                ", postSyncScript='" + postSyncScript + '\'' +
                 ", validationRule='" + validationRule + '\'' +
                 ", transformationRule='" + transformationRule + '\'' +
                 ", usePolicyMap='" + usePolicyMap + '\'' +
@@ -465,6 +498,7 @@ public class SynchConfigEntity implements Serializable {
         if (!synchAdapter.equals(that.synchAdapter)) return false;
         if (synchFrequency != null ? !synchFrequency.equals(that.synchFrequency) : that.synchFrequency != null)
             return false;
+        if (companyId != null ? !companyId.equals(that.companyId) : that.companyId != null) return false;
         if (synchType != null ? !synchType.equals(that.synchType) : that.synchType != null) return false;
         if (!transformationRule.equals(that.transformationRule)) return false;
         if (usePolicyMap != that.usePolicyMap) return false;
@@ -472,6 +506,8 @@ public class SynchConfigEntity implements Serializable {
         if (policyMapBeforeTransformation != that.policyMapBeforeTransformation) return false;
         if (updateAttribute != null ? !updateAttribute.equals(that.updateAttribute) : that.updateAttribute != null)
             return false;
+        if (!preSyncScript.equals(that.preSyncScript)) return false;
+        if (!postSyncScript.equals(that.postSyncScript)) return false;
         if (!validationRule.equals(that.validationRule)) return false;
         if (wsScript != null ? !wsScript.equals(that.wsScript) : that.wsScript != null) return false;
         if (wsUrl != null ? !wsUrl.equals(that.wsUrl) : that.wsUrl != null) return false;
@@ -490,8 +526,11 @@ public class SynchConfigEntity implements Serializable {
         result = 31 * result + (loadMatchOnly != null ? loadMatchOnly.hashCode() : 0);
         result = 31 * result + (updateAttribute != null ? updateAttribute.hashCode() : 0);
         result = 31 * result + (synchFrequency != null ? synchFrequency.hashCode() : 0);
+        result = 31 * result + (companyId != null ? companyId.hashCode() : 0);
         result = 31 * result + (synchType != null ? synchType.hashCode() : 0);
         result = 31 * result + (processRule != null ? processRule.hashCode() : 0);
+        result = 31 * result + preSyncScript.hashCode();
+        result = 31 * result + postSyncScript.hashCode();
         result = 31 * result + validationRule.hashCode();
         result = 31 * result + (usePolicyMap ? 1231 : 1237);
         result = 31 * result + (useTransformationScript ? 1231 : 1237);

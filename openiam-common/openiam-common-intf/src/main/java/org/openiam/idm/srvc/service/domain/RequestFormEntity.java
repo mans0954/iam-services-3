@@ -3,26 +3,18 @@ package org.openiam.idm.srvc.service.domain;
 import java.io.Serializable;
 import java.util.Date;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.EmbeddedId;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
+import javax.persistence.*;
 
 @Entity
 @Table(name = "REQUEST_FORM")
 public class RequestFormEntity implements Serializable {
 
 	@EmbeddedId
+    @AttributeOverride(name="serviceId", column=@Column(name="SERVICE_ID"))
     private RequestFormEntityId id;
     
     @ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
-	@JoinColumn(name="SERVICE_ID", referencedColumnName = "SERVICE_ID")
+	@JoinColumn(name="SERVICE_ID", referencedColumnName = "SERVICE_ID", insertable = false, updatable = false)
     private ServiceEntity service;
     
     @Column(name = "IS_DEFAULT")

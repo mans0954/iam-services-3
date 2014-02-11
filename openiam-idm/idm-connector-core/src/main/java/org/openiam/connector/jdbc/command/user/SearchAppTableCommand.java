@@ -10,12 +10,12 @@ public class SearchAppTableCommand extends AbstractSearchAppTableCommand<Extensi
 
     @Override
     protected boolean compareObjectTypeWithId(String objectType) {
-	return StringUtils.equalsIgnoreCase(objectType, "principal");
+        return StringUtils.equalsIgnoreCase(objectType, "principal");
     }
 
     @Override
     protected boolean compareObjectTypeWithObject(String objectType) {
-	return StringUtils.equalsIgnoreCase(objectType, "USER");
+        return StringUtils.equalsIgnoreCase(objectType, "USER");
     }
 
 }

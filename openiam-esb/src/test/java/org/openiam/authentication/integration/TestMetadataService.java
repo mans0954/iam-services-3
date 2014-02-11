@@ -32,7 +32,6 @@ import org.openiam.idm.srvc.meta.dto.MetadataElement;
 import org.openiam.idm.srvc.meta.dto.MetadataElementPageTemplate;
 import org.openiam.idm.srvc.meta.dto.MetadataElementPageTemplateXref;
 import org.openiam.idm.srvc.meta.dto.MetadataFieldTemplateXref;
-import org.openiam.idm.srvc.meta.dto.MetadataFieldTemplateXrefID;
 import org.openiam.idm.srvc.meta.dto.MetadataTemplateType;
 import org.openiam.idm.srvc.meta.dto.MetadataTemplateTypeField;
 import org.openiam.idm.srvc.meta.dto.MetadataType;
@@ -213,7 +212,7 @@ public class TestMetadataService extends AbstractTestNGSpringContextTests {
 			fieldXref.setField(field);
 			fieldXref.setRequired(true);
 			//fieldXref.setTemplate(template);
-			fieldXref.setId(new MetadataFieldTemplateXrefID(field.getId(), template.getId()));
+			//fieldXref.setId(new MetadataFieldTemplateXrefID(field.getId(), template.getId()));
 			template.addFieldXref(fieldXref);
 		}
 		

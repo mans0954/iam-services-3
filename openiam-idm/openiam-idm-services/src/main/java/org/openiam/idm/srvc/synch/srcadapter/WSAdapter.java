@@ -32,9 +32,7 @@ import org.openiam.idm.srvc.synch.dto.Attribute;
 import org.openiam.idm.srvc.synch.dto.LineObject;
 import org.openiam.idm.srvc.synch.dto.SyncResponse;
 import org.openiam.idm.srvc.synch.dto.SynchConfig;
-import org.openiam.idm.srvc.synch.service.MatchObjectRule;
-import org.openiam.idm.srvc.synch.service.TransformScript;
-import org.openiam.idm.srvc.synch.service.ValidationScript;
+import org.openiam.idm.srvc.synch.service.*;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.provision.dto.ProvisionUser;
@@ -42,7 +40,6 @@ import org.openiam.provision.resp.ProvisionUserResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.openiam.script.ScriptIntegration;
-import org.openiam.idm.srvc.synch.service.WSOperationCommand;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -173,6 +170,7 @@ public class WSAdapter extends AbstractSrcAdapter { // implements SourceAdapter
                                 transformScript.setNewUser(false);
                                 User u = userManager.getUserDto(usr.getId());
                                 pUser = new ProvisionUser(u);
+                                setCurrentSuperiors(pUser);
                                 transformScript.setUser(u);
                                 transformScript.setPrincipalList(loginDozerConverter.convertToDTOList(loginManager.getLoginByUser(usr.getId()), false));
                                 transformScript.setUserRoleList(roleDataService.getUserRolesAsFlatList(usr.getId()));

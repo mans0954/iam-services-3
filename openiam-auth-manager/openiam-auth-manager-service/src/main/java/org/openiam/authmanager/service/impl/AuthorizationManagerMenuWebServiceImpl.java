@@ -303,6 +303,7 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 			response.setErrorCode(e.getResponseCode());
 			response.setProblematicMenuName(e.getMenuName());
 		} catch(Throwable e) {
+			log.error("Can't save menu tree", e);
 			response.setStatus(ResponseStatus.FAILURE);
 		}
 		return response;
@@ -342,7 +343,7 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 		resource.setURL(menu.getUrl());
 		resource.setName(menu.getName());
 		resource.setDisplayOrder(menu.getDisplayOrder());
-        resource.setRisk(ResourceRisk.valueOf(menu.getRisk()));
+        resource.setRisk(ResourceRisk.getByValue(menu.getRisk()));
 		resource.setIsPublic(menu.getIsPublic());
 		
 		ResourcePropEntity displayNameProp = resource.getResourceProperty(AuthorizationConstants.MENU_ITEM_DISPLAY_NAME_PROPERTY);

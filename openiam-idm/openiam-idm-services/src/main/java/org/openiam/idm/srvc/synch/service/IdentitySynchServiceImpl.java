@@ -28,6 +28,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Transformer;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.mule.api.MuleContext;
@@ -62,8 +63,10 @@ import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.service.ProvisionService;
+import org.openiam.script.ScriptIntegration;
 import org.openiam.util.MuleContextProvider;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -103,6 +106,10 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
     private AuditLogService auditLogService;
     @Value("${org.openiam.idm.system.user.id}")
     private String systemUserId;
+
+    @Autowired
+    @Qualifier("configurableGroovyScriptEngine")
+    protected ScriptIntegration scriptRunner;
 
 	private static final Log log = LogFactory.getLog(IdentitySynchServiceImpl.class);
 
@@ -176,6 +183,28 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
         auditBuilder.setSource(config.getSynchConfigId());
         auditLogProvider.persist(auditBuilder);
 
+        String preScriptUrl = config.getPreSyncScript();
+        if (StringUtils.isNotBlank(preScriptUrl)) {
+            log.debug("-PRE synchronization script CALLED.^^^^^^^^");
+            Map<String, Object> bindingMap = new HashMap<String, Object>();
+            bindingMap.put("config", synchConfigDozerConverter.convertToDTO(config, false));
+            try {
+                int ret = (Integer)scriptRunner.execute(bindingMap, preScriptUrl);
+                if (ret == SyncConstants.FAIL) {
+                    syncResponse.setStatus(ResponseStatus.FAILURE);
+                    syncResponse.setErrorCode(ResponseCode.SYNCHRONIZATION_PRE_SRIPT_FAILURE);
+                    return syncResponse;
+                }
+                log.debug("-PRE synchronization script COMPLETE.^^^^^^^^");
+                if (ret == SyncConstants.SKIP) {
+                    return syncResponse;
+                }
+
+            } catch(Exception e) {
+                log.error(e);
+            }
+        }
+
         Date startDate = new Date();
 
         SyncResponse processCheckResponse = addTask(config.getSynchConfigId());
@@ -194,7 +223,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
 
             syncResponse = adapt.startSynch(configDTO, auditBuilder);
 			
-			log.debug("SyncReponse updateTime value=" + newLastExecTime);
+ 			log.debug("SyncReponse updateTime value=" + newLastExecTime);
             auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "SyncReponse updateTime value=" + newLastExecTime);
 
             if (syncResponse.getLastRecordTime() == null) {
@@ -212,6 +241,25 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
 		    log.debug("-startSynchronization COMPLETE.^^^^^^^^");
             auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "-startSynchronization COMPLETE.^^^^^^^^");
             auditLogProvider.persist(auditBuilder);
+
+            String postScriptUrl = config.getPostSyncScript();
+            if (StringUtils.isNotBlank(postScriptUrl)) {
+                log.debug("-POST synchronization script CALLED.^^^^^^^^");
+                Map<String, Object> bindingMap = new HashMap<String, Object>();
+                bindingMap.put("config", synchConfigDozerConverter.convertToDTO(config, false));
+                try {
+                    int ret = (Integer)scriptRunner.execute(bindingMap, postScriptUrl);
+                    if (ret == SyncConstants.FAIL) {
+                        syncResponse.setStatus(ResponseStatus.FAILURE);
+                        syncResponse.setErrorCode(ResponseCode.SYNCHRONIZATION_POST_SRIPT_FAILURE);
+                        return syncResponse;
+                    }
+                    log.debug("-POST synchronization script COMPLETE.^^^^^^^^");
+                } catch(Exception e) {
+                    log.error(e);
+                }
+            }
+
 		} catch( ClassNotFoundException cnfe) {
             cnfe.printStackTrace();
 			log.error(cnfe);

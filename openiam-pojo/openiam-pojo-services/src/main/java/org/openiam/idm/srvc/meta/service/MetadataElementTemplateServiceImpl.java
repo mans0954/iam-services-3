@@ -19,6 +19,7 @@ import org.openiam.am.srvc.dao.URIPatternDao;
 import org.openiam.am.srvc.domain.URIPatternEntity;
 import org.openiam.authmanager.common.model.AuthorizationResource;
 import org.openiam.authmanager.service.AuthorizationManagerService;
+import org.openiam.base.service.AbstractLanguageService;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.idm.searchbeans.MetadataElementPageTemplateSearchBean;
 import org.openiam.idm.searchbeans.MetadataTemplateTypeFieldSearchBean;
@@ -29,10 +30,10 @@ import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataElementPageTemplateEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataElementPageTemplateXrefEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataFieldTemplateXrefEntity;
-import org.openiam.idm.srvc.meta.domain.MetadataFieldTemplateXrefIDEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataTemplateTypeEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataTemplateTypeFieldEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataValidValueEntity;
+import org.openiam.idm.srvc.meta.domain.WhereClauseConstants;
 import org.openiam.idm.srvc.meta.domain.pk.MetadataElementPageTemplateXrefIdEntity;
 import org.openiam.idm.srvc.meta.dto.PageElement;
 import org.openiam.idm.srvc.meta.dto.PageElementValidValue;
@@ -57,7 +58,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service("metadataElementTemplateService")
-public class MetadataElementTemplateServiceImpl implements MetadataElementTemplateService {
+public class MetadataElementTemplateServiceImpl extends AbstractLanguageService  implements MetadataElementTemplateService {
 	
 	@Autowired
 	private MetadataElementPageTemplateDAO pageTemplateDAO;
@@ -190,17 +191,19 @@ public class MetadataElementTemplateServiceImpl implements MetadataElementTempla
 			if(CollectionUtils.isNotEmpty(entity.getFieldXrefs())) {
 				for(final MetadataFieldTemplateXrefEntity xref : entity.getFieldXrefs()) {
 					if(xref != null) {
-						final MetadataFieldTemplateXrefIDEntity id = xref.getId();
-						final String fieldId = id.getFieldId();
-						if(id != null && StringUtils.isNotBlank(fieldId) && templateType.getField(fieldId) != null) {
-							final MetadataFieldTemplateXrefEntity dbXref = uiFieldXrefDAO.findById(id);
-							boolean isRequired = templateType.getField(id.getFieldId()).isRequired() ? true : xref.isRequired();
+						final Map<String, LanguageMappingEntity> languageMap = xref.getLanguageMap();
+						final String fieldId = xref.getField().getId();
+						if(StringUtils.isNotBlank(fieldId) && templateType.getField(fieldId) != null) {
+							final MetadataFieldTemplateXrefEntity dbXref = uiFieldXrefDAO.findById(xref.getId());
+							boolean isRequired = templateType.getField(fieldId).isRequired() ? true : xref.isRequired();
 							if(dbXref != null) {
 								dbXref.setRequired(isRequired);
 								dbXref.setEditable(xref.isEditable());
 								dbXref.setDisplayOrder(xref.getDisplayOrder());
+								dbXref.setLanguageMap(mergeLanguageMaps(dbXref.getLanguageMap(), languageMap));
 								fieldXrefs.add(dbXref);
 							} else {
+								xref.setId(null);
 								xref.setRequired(isRequired);
 								xref.setTemplate(entity);
 								xref.setField(uiFieldDAO.findById(fieldId));
@@ -216,6 +219,16 @@ public class MetadataElementTemplateServiceImpl implements MetadataElementTempla
 				pageTemplateDAO.save(entity);
 			} else {
 				pageTemplateDAO.merge(entity);
+			}
+		}
+	}
+	
+	private void doCollectionArithmetic(final MetadataFieldTemplateXrefEntity xref) {
+		if(xref != null) {
+			if(xref.getLanguageMap() != null) {
+				for(final LanguageMappingEntity entity : xref.getLanguageMap().values()) {
+					setReferenceType(entity, WhereClauseConstants.METADATA_FIELD_TEMPLATE_XREF_ENTITY, xref.getId());
+				}
 			}
 		}
 	}

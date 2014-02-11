@@ -472,6 +472,18 @@ public class AuthorizationManagerAdminServiceImpl implements AuthorizationManage
 		return resourceXrefMap;
 	}
 
+    private Map<String, Set<AuthorizationResource>> getChildResource2ParentResourceMap(final Map<String, AuthorizationResource> resourceMap) {
+        final List<ResourceResourceXref> resourceResourceXrefs = resourceResourceXrefDAO.getList();
+        Map<String, Set<AuthorizationResource>> resourceXrefMap = new HashMap<String, Set<AuthorizationResource>>();
+        for(final ResourceResourceXref xref : resourceResourceXrefs) {
+            if(!resourceXrefMap.containsKey(xref.getMemberResourceId())) {
+                resourceXrefMap.put(xref.getMemberResourceId(), new HashSet<AuthorizationResource>());
+            }
+            resourceXrefMap.get(xref.getMemberResourceId()).add(resourceMap.get(xref.getResourceId()));
+        }
+        return resourceXrefMap;
+    }
+
     private Map<String, Set<AuthorizationRole>> getResource2RoleMap(final Map<String, AuthorizationRole> roleMap) {
         final List<ResourceRoleXref> resourceRoleXrefs = resourceRoleXrefDAO.getList();
         Map<String, Set<AuthorizationRole>> resource2RoleMap = new HashMap<String, Set<AuthorizationRole>>();
@@ -518,6 +530,7 @@ public class AuthorizationManagerAdminServiceImpl implements AuthorizationManage
 				final Map<String, AuthorizationRole> roleMap = getRoleMap();
 				
 				final Map<String, Set<AuthorizationResource>> resource2ResourceMap = getResource2ResourceMap(resourceMap);
+                final Map<String, Set<AuthorizationResource>> childResource2ParentResourceMap = getChildResource2ParentResourceMap(resourceMap);
                 final Map<String, Set<AuthorizationRole>> resource2RoleMap = getResource2RoleMap(roleMap);
                 final Map<String, Set<AuthorizationGroup>> resource2GroupMap = getResource2GroupMap(groupMap);
 				for(final String resourceId : resourceMap.keySet()) {
@@ -544,6 +557,7 @@ public class AuthorizationManagerAdminServiceImpl implements AuthorizationManage
 				matrix.setGroupToRoleMap(group2RoleMap);
 
 				matrix.setResourceToResourceMap(resource2ResourceMap);
+                matrix.setChildResourceToParentResourceMap(childResource2ParentResourceMap);
                 matrix.setResourceToGroupMap(resource2GroupMap);
                 matrix.setResourceToRoleMap(resource2RoleMap);
 

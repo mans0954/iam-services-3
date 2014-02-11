@@ -1,9 +1,8 @@
 package org.openiam.idm.srvc.cat.domain;
 
 import java.io.Serializable;
-import javax.persistence.EmbeddedId;
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import javax.persistence.*;
+
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.cat.dto.CategoryType;
 
@@ -18,6 +17,10 @@ public class CategoryTypeEntity implements Serializable {
     private CategoryTypeEmbeddableId id;
 
     @EmbeddedId
+    @AttributeOverrides({
+            @AttributeOverride(name="typeId", column=@Column(name="TYPE_ID")),
+            @AttributeOverride(name="categoryId", column=@Column(name="CATEGORY_ID"))
+    })
     public CategoryTypeEmbeddableId getId() {
         return id;
     }

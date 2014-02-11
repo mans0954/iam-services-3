@@ -1290,14 +1290,6 @@ public class UserMgr implements UserDataService {
         addSupervisor(supervisorEntity);
     }
 
-    // @Override
-    // @Transactional
-    // public void updateSupervisor(SupervisorEntity supervisor) {
-    // if (supervisor == null)
-    // throw new NullPointerException("supervisor is null");
-    // supervisorDao.update(supervisor);
-    // }
-
     @Override
     @Transactional
     public void removeSupervisor(final String supervisorId, final String employeeId) {
