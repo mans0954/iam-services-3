@@ -242,9 +242,7 @@
 			<a>template</a>
 			<b>template</b>
 		</field>
-		<field
-			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentObjectConverter"
-			custom-converter-param="dto2entityShallowDozerMapper">
+		<field>
 			<a>id</a>
 			<b>id</b>
 		</field>
@@ -252,11 +250,12 @@
 			<a>required</a>
 			<b>required</b>
 		</field>
-	</mapping>
-	
-	<mapping>
-		<class-a>org.openiam.idm.srvc.meta.domain.MetadataFieldTemplateXrefIDEntity</class-a>
-		<class-b>org.openiam.idm.srvc.meta.dto.MetadataFieldTemplateXrefID</class-b>
+		<field
+			custom-converter="org.openiam.dozer.crossentity.CrossEntityMapConverterWithKeyString"
+			custom-converter-param="dto2entityShallowDozerMapper">
+			<a>languageMap</a>
+			<b>languageMap</b>
+		</field>
 	</mapping>
 	
 	<mapping>

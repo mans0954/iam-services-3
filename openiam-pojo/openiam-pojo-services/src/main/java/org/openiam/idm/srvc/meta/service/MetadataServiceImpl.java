@@ -16,6 +16,7 @@ import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.base.service.AbstractLanguageService;
 import org.openiam.dozer.converter.MetaDataElementDozerConverter;
 import org.openiam.dozer.converter.MetaDataTypeDozerConverter;
 import org.openiam.idm.searchbeans.MetadataElementSearchBean;
@@ -46,7 +47,7 @@ import org.springframework.transaction.annotation.Transactional;
  * @version 1
  */
 @Service("metadataService")
-public class MetadataServiceImpl implements MetadataService {
+public class MetadataServiceImpl extends AbstractLanguageService implements MetadataService {
 
     @Autowired
     private MetadataTypeDAO metadataTypeDao;
@@ -171,72 +172,6 @@ public class MetadataServiceImpl implements MetadataService {
 		}
 	}
 	
-	/* assumes same referenceId and referenceType */
-	private Map<String, LanguageMappingEntity> mergeLanguageMaps(final Map<String, LanguageMappingEntity> persistentMap, Map<String, LanguageMappingEntity> transientMap) {
-		//final Map<String, Set<String>> deleteMap = new HashMap<String, Set<String>>();
-		
-		transientMap = (transientMap != null) ? transientMap : new HashMap<String, LanguageMappingEntity>();
-		final Map<String, LanguageMappingEntity> retVal = (persistentMap != null) ? persistentMap : new HashMap<String, LanguageMappingEntity>();
-		
-		/* remove empty strings */
-		for(final Iterator<Entry<String, LanguageMappingEntity>> it = transientMap.entrySet().iterator(); it.hasNext();) {
-			final Entry<String, LanguageMappingEntity> entry = it.next();
-			final LanguageMappingEntity entity = entry.getValue();
-			if(StringUtils.isBlank(entity.getValue())) {
-				it.remove();
-			}
-		}
-		
-		/* update existing entries */
-		for(final LanguageMappingEntity transientEntry : transientMap.values()) {
-			for(final LanguageMappingEntity persistentEntry : retVal.values()) {
-				if(StringUtils.equals(transientEntry.getLanguageId(), persistentEntry.getLanguageId())) {
-					persistentEntry.setValue(transientEntry.getValue());
-				}
-			}
-		}
-		
-		/* remove old entries */
-		for(final Iterator<Entry<String, LanguageMappingEntity>> it = retVal.entrySet().iterator(); it.hasNext();) {
-			final Entry<String, LanguageMappingEntity> entry = it.next();
-			final LanguageMappingEntity persistentEntry = entry.getValue();
-			boolean contains = false;
-			for(final LanguageMappingEntity transientEntry : transientMap.values()) {
-				if(StringUtils.equals(transientEntry.getLanguageId(), persistentEntry.getLanguageId())) {
-					contains = true;
-				}
-			}
-			
-			if(!contains) {
-				it.remove();
-			}
-		}
-		
-		/* add new entries */
-		for(final LanguageMappingEntity transientEntry : transientMap.values()) {
-			boolean found = false;
-			for(final LanguageMappingEntity persistentEntry : retVal.values()) {
-				if(StringUtils.isNotEmpty(transientEntry.getValue())) {
-					if(StringUtils.equals(transientEntry.getLanguageId(), persistentEntry.getLanguageId())) {
-						found = true;
-						break;
-					}
-				}
-			}
-			if(!found) {
-				retVal.put(transientEntry.getLanguageId(), transientEntry);
-			}
-		}
-		
-		/*
-		for(final String referenceType : deleteMap.keySet()) {
-			languageMappingDAO.deleteByReferenceTypeAndIds(deleteMap.get(referenceType), referenceType);
-		}
-		*/
-		
-		return retVal;
-	}
-	
 	private Set<MetadataValidValueEntity> mergeValidValues(final Set<MetadataValidValueEntity> persistentSet, Set<MetadataValidValueEntity> transientSet) {
 		final Set<MetadataValidValueEntity> retval = (persistentSet != null) ? persistentSet : new HashSet<MetadataValidValueEntity>();
 		transientSet = (transientSet != null) ? transientSet : new HashSet<MetadataValidValueEntity>();
@@ -315,13 +250,6 @@ public class MetadataServiceImpl implements MetadataService {
 		}
 	}
 	
-	private void setReferenceType(final LanguageMappingEntity entity, final String referenceType, final String referenceId) {
-		if(entity != null) {
-			entity.setReferenceType(referenceType);
-			entity.setReferenceId(referenceId);
-		}
-	}
-
 	@Override
 	@Transactional
 	public void save(MetadataTypeEntity entity) {
