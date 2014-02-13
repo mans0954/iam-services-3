@@ -154,25 +154,29 @@ public class ProvisionDispatcher implements Sweepable {
                             public Boolean doInTransaction(TransactionStatus status) {
                                 final String parentAuditLogId = batchList.get(0).get(0).getParentAuditLogId();
                                 final AuditLogBuilder parentAuditBuilder;
-                                if (parentAuditLogId != null) {
-                                    parentAuditBuilder = new AuditLogBuilder(auditLogService.findById(parentAuditLogId));
-                                } else {
-                                    parentAuditBuilder = auditLogProvider.getAuditLogBuilder();
-                                    auditLogProvider.persist(parentAuditBuilder);
-                                }
-
                                 AuditLogBuilder auditBuilderDispatcherChild = new AuditLogBuilder();
                                 auditBuilderDispatcherChild.setRequestorUserId(systemUserId).setTargetUser(null).setAction(AuditAction.PROVISIONING_DISPATCHER);
-                                auditLogProvider.persist(auditBuilderDispatcherChild);
 
-                                parentAuditBuilder.addChild(auditBuilderDispatcherChild);
-                                auditLogProvider.persist(parentAuditBuilder);
+                                if (parentAuditLogId != null) {
+                                    parentAuditBuilder = new AuditLogBuilder(auditLogService.findById(parentAuditLogId));
+                                    parentAuditBuilder.addChild(auditBuilderDispatcherChild);
+                                } else {
+                                    parentAuditBuilder = auditLogProvider.getAuditLogBuilder();
+                                    parentAuditBuilder.addChild(auditBuilderDispatcherChild);
+                                }
+
+                               // AuditLogBuilder auditBuilderDispatcherChild = new AuditLogBuilder();
+                               // auditBuilderDispatcherChild.setRequestorUserId(systemUserId).setTargetUser(null).setAction(AuditAction.PROVISIONING_DISPATCHER);
+                              //  auditLogProvider.persist(auditBuilderDispatcherChild);
+
+                               // parentAuditBuilder.addChild(auditBuilderDispatcherChild);
+                                //auditLogProvider.persist(parentAuditBuilder);
 
                                 for (final List<ProvisionDataContainer> entityList : batchList) {
                                     process(entityList, auditBuilderDispatcherChild);
                                 }
 
-                                auditLogProvider.remove(auditBuilderDispatcherChild.getEntity().getId());
+                               // auditLogProvider.remove(auditBuilderDispatcherChild.getEntity().getId());
                                 return true;
                             }
                         });
@@ -271,7 +275,6 @@ public class ProvisionDispatcher implements Sweepable {
                     loginEntity.setStatus(LoginStatusEnum.FAIL_UPDATE);
                 }
             }
-            loginManager.updateLogin(loginEntity);
         }
     }
 

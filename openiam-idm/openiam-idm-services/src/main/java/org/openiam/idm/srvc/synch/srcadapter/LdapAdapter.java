@@ -166,14 +166,13 @@ public class LdapAdapter extends AbstractSrcAdapter { // implements SourceAdapte
             }
             int pageSize = 0;
             int totalRecords = 0;
+            int validRecords = 0;
             int successRecords = 0;
-
             for (String baseou : ouByParent) {
                 byte[] cookie = null;
                 int recordsInOUCounter = 0;
 
                     pageSize++;
-                    recordsInOUCounter++;
                     log.debug("========== New Page number " + pageSize + " for processing, Processed: "+totalRecords+" records");
                     NamingEnumeration results = search(baseou, config.getQuery());
 
@@ -246,6 +245,7 @@ public class LdapAdapter extends AbstractSrcAdapter { // implements SourceAdapte
                                 if (retval == ValidationScript.SKIP) {
                                     continue;
                                 }
+                                validRecords++;
                             }
 
                             // check if the user exists or not
@@ -287,7 +287,7 @@ public class LdapAdapter extends AbstractSrcAdapter { // implements SourceAdapte
                                     retval = transformScript.execute(rowObj, pUser);
                                     log.debug("Transform result=" + retval);
                                 }
-
+                                recordsInOUCounter++;
                                 if (retval != -1) {
                                     successRecords++;
                                     if (retval == TransformScript.DELETE && usr != null) {
@@ -385,7 +385,7 @@ public class LdapAdapter extends AbstractSrcAdapter { // implements SourceAdapte
          //               ctx.setRequestControls(new Control[]{ new PagedResultsControl(PAGE_SIZE, cookie, Control.NONCRITICAL) });
                     }
 
-                    log.debug("========== Finished processing of Page number " + pageSize + ", Processed: "+totalRecords+" records, "+" Success Records: "+successRecords +"");
+                    log.debug("========== Finished processing of Page number " + pageSize + ", Processed: "+totalRecords+" records, " + " Valid Records:" +validRecords+ " Success Processed Records: " + successRecords +"");
             //    } while (cookie != null);
 
                 log.debug("Search ldap result OU=" + baseou + " found = " + recordsInOUCounter + " records.");
@@ -503,9 +503,9 @@ public class LdapAdapter extends AbstractSrcAdapter { // implements SourceAdapte
 
     private NamingEnumeration search(String baseDn, String searchFilter) throws NamingException, IOException {
 
-      //  String attrIds[] = {"1.1", "+", "*"};
-       String attrIds[] = {"objectClass"};
-        // String attrIds[] = {"1.1", "+", "*", "accountUnlockTime", "aci", "aclRights", "aclRightsInfo", "altServer", "attributeTypes", "changeHasReplFixupOp", "changeIsReplFixupOp", "copiedFrom", "copyingFrom", "createTimestamp", "creatorsName", "deletedEntryAttrs", "dITContentRules", "dITStructureRules", "dncomp", "ds-pluginDigest", "ds-pluginSignature", "ds6ruv", "dsKeyedPassword", "entrydn", "entryid", "hasSubordinates", "idmpasswd", "isMemberOf", "ldapSchemas", "ldapSyntaxes", "matchingRules", "matchingRuleUse", "modDNEnabledSuffixes", "modifiersName", "modifyTimestamp", "nameForms", "namingContexts", "nsAccountLock", "nsBackendSuffix", "nscpEntryDN", "nsds5ReplConflict", "nsIdleTimeout", "nsLookThroughLimit", "nsRole", "nsRoleDN", "nsSchemaCSN", "nsSizeLimit", "nsTimeLimit", "nsUniqueId", "numSubordinates", "objectClasses", "parentid", "passwordAllowChangeTime", "passwordExpirationTime", "passwordExpWarned", "passwordHistory", "passwordPolicySubentry", "passwordRetryCount", "pwdAccountLockedTime", "pwdChangedTime", "pwdFailureTime", "pwdGraceUseTime", "pwdHistory", "pwdLastAuthTime", "pwdPolicySubentry", "pwdReset", "replicaIdentifier", "replicationCSN", "retryCountResetTime", "subschemaSubentry", "supportedControl", "supportedExtension", "supportedLDAPVersion", "supportedSASLMechanisms", "supportedSSLCiphers", "targetUniqueId", "vendorName", "vendorVersion"};
+        String attrIds[] = {"objectClass", "*"};
+        //TimeOut Error String attrIds[] = {"objectClass",""1.1,"+","*"};
+      //  TimeOut Error String attrIds[] = {"objectClass", "*", "accountUnlockTime", "aci", "aclRights", "aclRightsInfo", "altServer", "attributeTypes", "changeHasReplFixupOp", "changeIsReplFixupOp", "copiedFrom", "copyingFrom", "createTimestamp", "creatorsName", "deletedEntryAttrs", "dITContentRules", "dITStructureRules", "dncomp", "ds-pluginDigest", "ds-pluginSignature", "ds6ruv", "dsKeyedPassword", "entrydn", "entryid", "hasSubordinates", "idmpasswd", "isMemberOf", "ldapSchemas", "ldapSyntaxes", "matchingRules", "matchingRuleUse", "modDNEnabledSuffixes", "modifiersName", "modifyTimestamp", "nameForms", "namingContexts", "nsAccountLock", "nsBackendSuffix", "nscpEntryDN", "nsds5ReplConflict", "nsIdleTimeout", "nsLookThroughLimit", "nsRole", "nsRoleDN", "nsSchemaCSN", "nsSizeLimit", "nsTimeLimit", "nsUniqueId", "numSubordinates", "objectClasses", "parentid", "passwordAllowChangeTime", "passwordExpirationTime", "passwordExpWarned", "passwordHistory", "passwordPolicySubentry", "passwordRetryCount", "pwdAccountLockedTime", "pwdChangedTime", "pwdFailureTime", "pwdGraceUseTime", "pwdHistory", "pwdLastAuthTime", "pwdPolicySubentry", "pwdReset", "replicaIdentifier", "replicationCSN", "retryCountResetTime", "subschemaSubentry", "supportedControl", "supportedExtension", "supportedLDAPVersion", "supportedSASLMechanisms", "supportedSSLCiphers", "targetUniqueId", "vendorName", "vendorVersion"};
 
         SearchControls searchCtls = new SearchControls();
         searchCtls.setTimeLimit(0);

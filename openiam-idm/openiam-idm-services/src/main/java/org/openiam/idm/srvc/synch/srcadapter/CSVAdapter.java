@@ -32,7 +32,6 @@ import org.openiam.base.id.UUIDGen;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
 import org.openiam.idm.srvc.audit.domain.AuditLogBuilder;
 import org.openiam.idm.srvc.audit.service.AuditLogProvider;
@@ -42,7 +41,6 @@ import org.openiam.idm.srvc.synch.dto.LineObject;
 import org.openiam.idm.srvc.synch.dto.SyncResponse;
 import org.openiam.idm.srvc.synch.dto.SynchConfig;
 import org.openiam.idm.srvc.synch.service.MatchObjectRule;
-import org.openiam.idm.srvc.synch.service.SyncConstants;
 import org.openiam.idm.srvc.synch.service.TransformScript;
 import org.openiam.idm.srvc.synch.service.ValidationScript;
 import org.openiam.idm.srvc.user.dto.User;
@@ -113,7 +111,6 @@ public class CSVAdapter extends AbstractSrcAdapter {
             if(useRemoteFilestorage) {
                 isr = new InputStreamReader(remoteFileStorageManager.downloadFile(SYNC_DIR, csvFileName), "UTF-8");
                 parser = new CSVParser(isr);
-
             } else {
                 String fileName = uploadRoot + File.separator + SYNC_DIR + File.separator + csvFileName;
                 isr = new InputStreamReader( new FileInputStream(fileName), "UTF-8");
@@ -186,7 +183,7 @@ public class CSVAdapter extends AbstractSrcAdapter {
                 try {
                     isr.close();
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    // skip ;
                 }
             }
         }

@@ -157,9 +157,10 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                         IdmAuditLogEntity parentAuditLog = auditLogService.findById(parentAuditLogId);
                         auditBuilder = parentAuditLog != null ? new AuditLogBuilder(parentAuditLog) : auditLogProvider.getAuditLogBuilder(parentAuditLogId);
                     } else {
-                        auditBuilder = new AuditLogBuilder();
+                      //  auditBuilder = new AuditLogBuilder();
+                     //   auditBuilder.setRequestorUserId(systemUserId).setTargetUser(null).setAction(AuditAction.PROVISIONING);
+                        auditBuilder = auditLogProvider.getAuditLogBuilder();
                         auditBuilder.setRequestorUserId(systemUserId).setTargetUser(null).setAction(AuditAction.PROVISIONING);
-                        auditLogProvider.persist(auditBuilder);
                     }
 
                     final AuditLogBuilder auditBuilderAddChild = new AuditLogBuilder();
