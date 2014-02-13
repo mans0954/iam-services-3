@@ -35,7 +35,7 @@ import java.util.*;
 
 @Service("organizationService")
 @Transactional
-public class OrganizationServiceImpl implements OrganizationService, InitializingBean,Sweepable {
+public class OrganizationServiceImpl implements OrganizationService, InitializingBean, Sweepable {
     private static final Log log = LogFactory.getLog(OrganizationServiceImpl.class);
 	@Autowired
 	private OrganizationTypeDAO orgTypeDAO;
