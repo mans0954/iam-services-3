@@ -201,12 +201,17 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
 								dbXref.setEditable(xref.isEditable());
 								dbXref.setDisplayOrder(xref.getDisplayOrder());
 								dbXref.setLanguageMap(mergeLanguageMaps(dbXref.getLanguageMap(), languageMap));
+								doCollectionArithmetic(dbXref);
 								fieldXrefs.add(dbXref);
 							} else {
 								xref.setId(null);
 								xref.setRequired(isRequired);
 								xref.setTemplate(entity);
 								xref.setField(uiFieldDAO.findById(fieldId));
+								xref.setLanguageMap(null);
+								uiFieldXrefDAO.save(xref);
+								xref.setLanguageMap(mergeLanguageMaps(xref.getLanguageMap(), languageMap));
+								doCollectionArithmetic(xref);
 								fieldXrefs.add(xref);
 							}
 						}
