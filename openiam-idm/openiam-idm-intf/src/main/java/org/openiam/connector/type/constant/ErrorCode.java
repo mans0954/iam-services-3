@@ -7,8 +7,8 @@ import javax.xml.bind.annotation.XmlType;
 /**
  * <p>
  * Java class for ErrorCode.
- *
- *
+ * 
+ * 
  */
 @XmlType(name = "ErrorCode")
 @XmlEnum
@@ -141,7 +141,13 @@ public enum ErrorCode {
     CSV_ERROR("csv error"),
 
     @XmlEnumValue("ldap error")
-    LDAP_ERROR("ldap error");
+    LDAP_ERROR("ldap error"),
+
+    @XmlEnumValue("script name not defined")
+    SCRIPT_NAME_NOT_DEFINED("script name not defined"),
+
+    @XmlEnumValue("command type not defined")
+    COMMAND_TYPE_NOT_DEFINED("command type not defined");
 
     private final String value;
 
@@ -163,4 +169,3 @@ public enum ErrorCode {
     }
 
 }
-
