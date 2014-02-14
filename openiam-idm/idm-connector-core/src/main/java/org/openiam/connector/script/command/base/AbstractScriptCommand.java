@@ -1,6 +1,5 @@
 package org.openiam.connector.script.command.base;
 
-import org.apache.commons.lang.StringUtils;
 import org.openiam.connector.common.command.AbstractCommand;
 import org.openiam.connector.common.constants.CommandType;
 import org.openiam.connector.common.data.ConnectorConfiguration;
@@ -31,10 +30,6 @@ public abstract class AbstractScriptCommand<Request extends RequestType, Respons
     protected Response runCommand(String targetID, Request request) throws ConnectorDataException {
         try {
             ConnectorConfiguration configuration = this.getConfiguration(targetID, ConnectorConfiguration.class);
-            String scriptName = configuration.getManagedSys().getConnectionString();
-            if (StringUtils.isEmpty(scriptName)) {
-                throw new ConnectorDataException(ErrorCode.SCRIPT_NAME_NOT_DEFINED);
-            }
             String connectorPath = "/connector/" + getFileName(configuration.getManagedSys());
             AbstractCommand<Request, Response> cmd = (AbstractCommand<Request, Response>) scriptRunner
                     .instantiateClass(null, connectorPath);
