@@ -77,6 +77,12 @@ public class AuditLogDispatcher implements Sweepable {
                                 public Boolean doInTransaction(TransactionStatus status) {
                                     for (final Set<IdmAuditLogEntity> entityList : batchList) {
                                         process(entityList);
+                                        try {
+                                            // to give other threads chance to be executed
+                                            Thread.sleep(100);
+                                        } catch (InterruptedException e1) {
+                                            LOG.warn(e1.getMessage());
+                                        }
                                     }
                                     return true;
                                 }});
