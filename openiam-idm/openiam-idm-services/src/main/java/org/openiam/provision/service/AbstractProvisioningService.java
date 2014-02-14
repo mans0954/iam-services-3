@@ -1156,6 +1156,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
 
         req.setScriptHandler(mSys.getPasswordHandler());
 
+        log.debug("Reset password request will be sent for user login " + login.getLogin());
         return connectorAdapter.resetPasswordRequest(mSys, req, MuleContextProvider.getCtx());
 
     }
