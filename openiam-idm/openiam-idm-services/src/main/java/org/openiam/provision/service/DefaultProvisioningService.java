@@ -165,14 +165,14 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
                     final AuditLogBuilder auditBuilderAddChild = new AuditLogBuilder();
                     auditBuilderAddChild.setRequestorUserId(systemUserId).setTargetUser(null).setAction(AuditAction.PROVISIONING_ADD);
-                    auditLogProvider.persist(auditBuilderAddChild);
+                 //   auditLogProvider.persist(auditBuilderAddChild);
                     auditBuilder.addChild(auditBuilderAddChild);
 
                     auditBuilderAddChild.setAuditDescription("Provisioning add user: " + pUser.getUserId() +" with principal list: "+pUser.getPrincipalList());
 
                     ProvisionUserResponse tmpRes = addModifyUser(pUser, true, dataList, auditBuilderAddChild);
-                    auditLogService.enqueue(auditBuilder);
-                    auditLogProvider.remove(auditBuilderAddChild.getEntity().getId());
+                 //   auditLogService.enqueue(auditBuilder);
+               //     auditLogProvider.remove(auditBuilderAddChild.getEntity().getId());
                     return tmpRes;
                 }
             });

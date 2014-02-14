@@ -107,10 +107,10 @@ public class ProvisionDispatcher implements Sweepable {
     protected LoginDataService loginManager;
     @Autowired
     protected ProvisionConnectorService connectorService;
-    @Autowired
-    private AuditLogProvider auditLogProvider;
-    @Autowired
-    protected AuditLogService auditLogService;
+  //  @Autowired
+  //  private AuditLogProvider auditLogProvider;
+ //   @Autowired
+    //protected AuditLogService auditLogService;
 
     @Autowired
     @Qualifier("cryptor")
@@ -152,28 +152,29 @@ public class ProvisionDispatcher implements Sweepable {
                         Boolean res = transactionTemplate.execute(new TransactionCallback<Boolean>() {
                             @Override
                             public Boolean doInTransaction(TransactionStatus status) {
-                                final String parentAuditLogId = batchList.get(0).get(0).getParentAuditLogId();
-                                final AuditLogBuilder parentAuditBuilder;
-                                AuditLogBuilder auditBuilderDispatcherChild = new AuditLogBuilder();
-                                auditBuilderDispatcherChild.setRequestorUserId(systemUserId).setTargetUser(null).setAction(AuditAction.PROVISIONING_DISPATCHER);
-
-                                if (parentAuditLogId != null) {
-                                    parentAuditBuilder = new AuditLogBuilder(auditLogService.findById(parentAuditLogId));
-                                    parentAuditBuilder.addChild(auditBuilderDispatcherChild);
-                                } else {
-                                    parentAuditBuilder = auditLogProvider.getAuditLogBuilder();
-                                    parentAuditBuilder.addChild(auditBuilderDispatcherChild);
-                                }
-
+                               // final String parentAuditLogId = batchList.get(0).get(0).getParentAuditLogId();
+                               // final AuditLogBuilder parentAuditBuilder;
                                // AuditLogBuilder auditBuilderDispatcherChild = new AuditLogBuilder();
                                // auditBuilderDispatcherChild.setRequestorUserId(systemUserId).setTargetUser(null).setAction(AuditAction.PROVISIONING_DISPATCHER);
+
+                              //  if (parentAuditLogId != null) {
+                                  //  parentAuditBuilder = new AuditLogBuilder(auditLogService.findById(parentAuditLogId));
+                                  //  parentAuditBuilder.addChild(auditBuilderDispatcherChild);
+                              //  } else {
+                                  //  parentAuditBuilder = auditLogProvider.getAuditLogBuilder();
+                                  //  parentAuditBuilder.addChild(auditBuilderDispatcherChild);
+                               // }
+
+                                //AuditLogBuilder auditBuilderDispatcherChild = new AuditLogBuilder();
+                             //   auditBuilderDispatcherChild.setRequestorUserId(systemUserId).setTargetUser(null).setAction(AuditAction.PROVISIONING_DISPATCHER);
                               //  auditLogProvider.persist(auditBuilderDispatcherChild);
 
                                // parentAuditBuilder.addChild(auditBuilderDispatcherChild);
                                 //auditLogProvider.persist(parentAuditBuilder);
 
                                 for (final List<ProvisionDataContainer> entityList : batchList) {
-                                    process(entityList, auditBuilderDispatcherChild);
+                                    // process(entityList, auditBuilderDispatcherChild);
+                                    process(entityList);
                                 }
 
                                // auditLogProvider.remove(auditBuilderDispatcherChild.getEntity().getId());
@@ -191,11 +192,13 @@ public class ProvisionDispatcher implements Sweepable {
 
     }
 
-    private void process(List<ProvisionDataContainer> entities, final AuditLogBuilder auditBuilderDispatcherChild) {
+    private void process(List<ProvisionDataContainer> entities) {
         for (ProvisionDataContainer data : entities) {
             Login identity = data.getIdentity();
-
             LoginEntity loginEntity = loginDozerConverter.convertToEntity(identity, true);
+            if(identity.getLoginId() != null) {
+                loginManager.evict(loginEntity);
+            }
 
             if (data.getOperation() == AttributeOperationEnum.DELETE) {
 
@@ -204,7 +207,7 @@ public class ProvisionDispatcher implements Sweepable {
                     loginEntity.setStatus(LoginStatusEnum.INACTIVE);
                     // do de-provisioning
                     StatusCodeType statusCodeType = deprovision(data).getStatus();
-                    auditBuilderDispatcherChild.addAttribute(AuditAttributeName.DESCRIPTION, "DELETE IDENTITY=" + identity + " from MANAGED_SYS_ID=" + identity.getManagedSysId() + " status=" + statusCodeType);
+                 //   auditBuilderDispatcherChild.addAttribute(AuditAttributeName.DESCRIPTION, "DELETE IDENTITY=" + identity + " from MANAGED_SYS_ID=" + identity.getManagedSysId() + " status=" + statusCodeType);
                     if (StatusCodeType.SUCCESS.equals(statusCodeType)) {
                         loginEntity.setStatus(LoginStatusEnum.INACTIVE);
                         loginEntity.setAuthFailCount(0);
@@ -224,7 +227,7 @@ public class ProvisionDispatcher implements Sweepable {
                         loginEntity.setStatus(LoginStatusEnum.FAIL_UPDATE);
                     }
                 } catch (Throwable th) {
-                    auditBuilderDispatcherChild.addAttribute(AuditAttributeName.DESCRIPTION, "DELETE IDENTITY=" + identity + " from MANAGED_SYS_ID=" + identity.getManagedSysId() + " status=" + th.getMessage());
+                 //   auditBuilderDispatcherChild.addAttribute(AuditAttributeName.DESCRIPTION, "DELETE IDENTITY=" + identity + " from MANAGED_SYS_ID=" + identity.getManagedSysId() + " status=" + th.getMessage());
                     loginEntity.setStatus(LoginStatusEnum.FAIL_UPDATE);
                 }
             } else if (data.getOperation() == AttributeOperationEnum.ADD) {
@@ -240,13 +243,13 @@ public class ProvisionDispatcher implements Sweepable {
 
                     data.getIdentity().setStatus(loginEntity.getStatus());
                     // do provisioning to target system
-                    ProvisionUserResponse response = provision(data, auditBuilderDispatcherChild);
-                    auditBuilderDispatcherChild.addAttribute(AuditAttributeName.DESCRIPTION, "ADD IDENTITY=" + identity + " from MANAGED_SYS_ID=" + identity.getManagedSysId() + " status=" + response.getStatus() + " details=" + response.getErrorText());
+                    ProvisionUserResponse response = provision(data);
+               //     auditBuilderDispatcherChild.addAttribute(AuditAttributeName.DESCRIPTION, "ADD IDENTITY=" + identity + " from MANAGED_SYS_ID=" + identity.getManagedSysId() + " status=" + response.getStatus() + " details=" + response.getErrorText());
                     if (!response.isSuccess()) {
                         loginEntity.setStatus(LoginStatusEnum.FAIL_CREATE);
                     }
                 } catch (Throwable th) {
-                    auditBuilderDispatcherChild.addAttribute(AuditAttributeName.DESCRIPTION, "ADD IDENTITY=" + identity + " from MANAGED_SYS_ID=" + identity.getManagedSysId() + " status=" + LoginStatusEnum.FAIL_CREATE + " details=" + th.getMessage());
+              //      auditBuilderDispatcherChild.addAttribute(AuditAttributeName.DESCRIPTION, "ADD IDENTITY=" + identity + " from MANAGED_SYS_ID=" + identity.getManagedSysId() + " status=" + LoginStatusEnum.FAIL_CREATE + " details=" + th.getMessage());
                     loginEntity.setStatus(LoginStatusEnum.FAIL_CREATE);
                 }
             } else if (data.getOperation() == AttributeOperationEnum.REPLACE) {
@@ -261,8 +264,8 @@ public class ProvisionDispatcher implements Sweepable {
                     }
                     data.getIdentity().setStatus(loginEntity.getStatus());
                     // do provisioning to target system
-                    ProvisionUserResponse response = provision(data, auditBuilderDispatcherChild);
-                    auditBuilderDispatcherChild.addAttribute(AuditAttributeName.DESCRIPTION, "UPDATE IDENTITY=" + identity + " from MANAGED_SYS_ID=" + identity.getManagedSysId() + " status=" + response.getStatus() + " details=" + response.getErrorText());
+                    ProvisionUserResponse response = provision(data);
+                //    auditBuilderDispatcherChild.addAttribute(AuditAttributeName.DESCRIPTION, "UPDATE IDENTITY=" + identity + " from MANAGED_SYS_ID=" + identity.getManagedSysId() + " status=" + response.getStatus() + " details=" + response.getErrorText());
                     if (!response.isSuccess()) {
                         loginEntity.setStatus(LoginStatusEnum.FAIL_UPDATE);
                         // if we have changed identity for managed sys when rename we have to revert it because failed
@@ -271,7 +274,7 @@ public class ProvisionDispatcher implements Sweepable {
                         }
                     }
                 } catch (Throwable th) {
-                    auditBuilderDispatcherChild.addAttribute(AuditAttributeName.DESCRIPTION, "UPDATE IDENTITY=" + identity + " from MANAGED_SYS_ID=" + identity.getManagedSysId() + " status=" + LoginStatusEnum.FAIL_UPDATE + " details=" + th.getMessage());
+               //     auditBuilderDispatcherChild.addAttribute(AuditAttributeName.DESCRIPTION, "UPDATE IDENTITY=" + identity + " from MANAGED_SYS_ID=" + identity.getManagedSysId() + " status=" + LoginStatusEnum.FAIL_UPDATE + " details=" + th.getMessage());
                     loginEntity.setStatus(LoginStatusEnum.FAIL_UPDATE);
                 }
             }
@@ -311,7 +314,7 @@ public class ProvisionDispatcher implements Sweepable {
 
     }
 
-    private ProvisionUserResponse provision(ProvisionDataContainer data, final AuditLogBuilder auditBuilderDispatcherChild) {
+    private ProvisionUserResponse provision(ProvisionDataContainer data) {
 
         String requestId = data.getRequestId();
         ProvisionUserResponse response = new ProvisionUserResponse();
@@ -354,7 +357,7 @@ public class ProvisionDispatcher implements Sweepable {
                 if (ppScript != null) {
                     int executePreProcessResult = executePreProcess(ppScript, bindingMap, targetSysProvUser,
                             isExistedInTargetSystem ? "MODIFY" : "ADD");
-                    auditBuilderDispatcherChild.addAttribute(AuditAttributeName.DESCRIPTION, "executePreProcessResult: " + (isExistedInTargetSystem ? "[MODIFY]" : "[ADD] = ") + executePreProcessResult);
+      //              auditBuilderDispatcherChild.addAttribute(AuditAttributeName.DESCRIPTION, "executePreProcessResult: " + (isExistedInTargetSystem ? "[MODIFY]" : "[ADD] = ") + executePreProcessResult);
                     if (executePreProcessResult == ProvisioningConstants.FAIL) {
                         response.setStatus(ResponseStatus.FAILURE);
                         response.setErrorCode(ResponseCode.FAIL_PREPROCESSOR);
@@ -365,7 +368,7 @@ public class ProvisionDispatcher implements Sweepable {
 
             if (!isExistedInTargetSystem) {
 
-                connectorSuccess = requestAddModify(targetSysLogin, requestId, mSys, matchObj, extUser, true, auditBuilderDispatcherChild);
+                connectorSuccess = requestAddModify(targetSysLogin, requestId, mSys, matchObj, extUser, true);
 
             } else { // if user exists in target system
 
@@ -378,7 +381,7 @@ public class ProvisionDispatcher implements Sweepable {
                             "ORIG_IDENTITY", targetSysLogin.getOrigPrincipalName(),
                             AttributeOperationEnum.REPLACE.getValue(), "String"));
                 }
-                connectorSuccess = requestAddModify(targetSysLogin, requestId, mSys, matchObj, extUser, false, auditBuilderDispatcherChild);
+                connectorSuccess = requestAddModify(targetSysLogin, requestId, mSys, matchObj, extUser, false);
             }
 
             // post processing
@@ -389,7 +392,7 @@ public class ProvisionDispatcher implements Sweepable {
                 if (ppScript != null) {
                     int executePostProcessResult = executePostProcess(ppScript, bindingMap, targetSysProvUser,
                             isExistedInTargetSystem ? "MODIFY" : "ADD", connectorSuccess);
-                    auditBuilderDispatcherChild.addAttribute(AuditAttributeName.DESCRIPTION, "executePostProcessResult " + (isExistedInTargetSystem ? "[MODIFY]" : "[ADD] =") + executePostProcessResult);
+         //           auditBuilderDispatcherChild.addAttribute(AuditAttributeName.DESCRIPTION, "executePostProcessResult " + (isExistedInTargetSystem ? "[MODIFY]" : "[ADD] =") + executePostProcessResult);
                     if (executePostProcessResult == ProvisioningConstants.FAIL) {
                         response.setStatus(ResponseStatus.FAILURE);
                         response.setErrorCode(ResponseCode.FAIL_POSTPROCESSOR);
@@ -413,7 +416,7 @@ public class ProvisionDispatcher implements Sweepable {
     }
 
     private boolean requestAddModify(Login mLg, String requestId, ManagedSysDto mSys,
-                                     ManagedSystemObjectMatch matchObj, ExtensibleUser extUser, boolean isAdd, final AuditLogBuilder auditBuilderDispatcherChild) {
+                                     ManagedSystemObjectMatch matchObj, ExtensibleUser extUser, boolean isAdd) {
 
         CrudRequest<ExtensibleUser> userReq = new CrudRequest<ExtensibleUser>();
         userReq.setObjectIdentity(mLg.getLogin());
@@ -437,7 +440,7 @@ public class ProvisionDispatcher implements Sweepable {
 
         ObjectResponse resp = isAdd ? connectorAdapter.addRequest(mSys, userReq, MuleContextProvider.getCtx()) :
                 connectorAdapter.modifyRequest(mSys, userReq, MuleContextProvider.getCtx());
-        auditBuilderDispatcherChild.addAttribute(AuditAttributeName.DESCRIPTION, (isAdd ? "ADD IDENTITY = " : "MODIFY IDENTITY = ") + resp.getStatus() + " details:" + resp.getErrorMsgAsStr());
+        //auditBuilderDispatcherChild.addAttribute(AuditAttributeName.DESCRIPTION, (isAdd ? "ADD IDENTITY = " : "MODIFY IDENTITY = ") + resp.getStatus() + " details:" + resp.getErrorMsgAsStr());
         return resp.getStatus() != StatusCodeType.FAILURE;
     }
 

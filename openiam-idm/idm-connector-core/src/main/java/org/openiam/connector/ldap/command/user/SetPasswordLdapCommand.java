@@ -65,6 +65,7 @@ public class SetPasswordLdapCommand extends AbstractLdapCommand<PasswordRequest,
 
             NamingEnumeration results = null;
             try {
+                log.debug("Looking for user with identity=" +  identity + " in " +  objectBaseDN);
                 results = lookupSearch(matchObj, ldapctx, identity, null, objectBaseDN);
             } catch (NameNotFoundException nnfe) {
                 log.debug("results=NULL");
@@ -94,9 +95,13 @@ public class SetPasswordLdapCommand extends AbstractLdapCommand<PasswordRequest,
                 }
             }
             if (StringUtils.isNotEmpty(ldapName)) {
+                log.debug("New password will be set for user " + ldapName);
                 Directory dirSpecificImp = DirectorySpecificImplFactory.create(config.getManagedSys().getHandler5());
                 ModificationItem[] mods = dirSpecificImp.setPassword(passwordRequest);
                 ldapctx.modifyAttributes(ldapName, mods);
+                log.debug("New password has been set for user " + ldapName);
+            } else {
+                log.debug("DN for user with identity=" + identity + " was not found");
             }
 
         } catch (NamingException ne) {
