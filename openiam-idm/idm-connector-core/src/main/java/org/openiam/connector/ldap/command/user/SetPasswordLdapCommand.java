@@ -68,13 +68,14 @@ public class SetPasswordLdapCommand extends AbstractLdapCommand<PasswordRequest,
                 log.debug("Looking for user with identity=" +  identity + " in " +  objectBaseDN);
                 results = lookupSearch(matchObj, ldapctx, identity, null, objectBaseDN);
             } catch (NameNotFoundException nnfe) {
-                log.debug("results=NULL");
+                log.debug(" results=NULL");
                 log.debug(" results has more elements=0");
                 respType.setStatus(StatusCodeType.FAILURE);
                 return respType;
             }
 
             String ldapName = null;
+            System.out.println();
             while (results != null && results.hasMoreElements()) {
                 SearchResult sr = (SearchResult) results.next();
                 Attributes attrs = sr.getAttributes();
