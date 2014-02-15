@@ -341,13 +341,18 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
 				if(CollectionUtils.isNotEmpty(entity.getFieldXrefs())) {
 					for(final MetadataFieldTemplateXrefEntity xref : entity.getFieldXrefs()) {
 						final MetadataTemplateTypeFieldEntity field = xref.getField();
-						final TemplateUIField uiField = new TemplateUIField();
-						uiField.setId(field.getId());
-						uiField.setName(field.getName());
-						uiField.setRequired(xref.isRequired());
-						uiField.setEditable(xref.isEditable());
-						uiField.setDisplayOrder(xref.getDisplayOrder());
-						template.addUIField(uiField);
+						if(targetLanguage != null) {
+							final String displayName = xref.getDisplayName(targetLanguage);
+							if(displayName != null) {
+								final TemplateUIField uiField = new TemplateUIField();
+								uiField.setId(field.getId());
+								uiField.setName(displayName);
+								uiField.setRequired(xref.isRequired());
+								uiField.setEditable(xref.isEditable());
+								uiField.setDisplayOrder(xref.getDisplayOrder());
+								template.addUIField(uiField);
+							}
+						}
 					}
 				}
 			}

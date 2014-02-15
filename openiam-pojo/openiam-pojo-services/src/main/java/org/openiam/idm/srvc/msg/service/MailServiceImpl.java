@@ -121,8 +121,8 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
 		}
 		try {
 			mailSender.send(message);
-		} catch (Exception e) {
-			log.error(e.toString());
+		} catch (Throwable e) {
+			log.error("can't send email", e);
 		}
 	}
 
