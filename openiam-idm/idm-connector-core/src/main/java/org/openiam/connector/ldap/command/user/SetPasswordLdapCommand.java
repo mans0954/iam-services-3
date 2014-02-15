@@ -81,12 +81,14 @@ public class SetPasswordLdapCommand extends AbstractLdapCommand<PasswordRequest,
                 if (attrs != null) {
                     for (NamingEnumeration ae = attrs.getAll(); ae.hasMore();) {
                         Attribute attr = (Attribute) ae.next();
+                        log.debug("=== Attr Name: " + attr.getID());
                         if ("entrydn".equalsIgnoreCase(attr.getID())) {
                             NamingEnumeration e = attr.getAll();
                             while (e.hasMore()) {
                                 Object o = e.next();
                                 if (o instanceof String) {
                                     ldapName = o.toString();
+                                    log.debug("=== Attr Value: " + attr.getID());
                                 }
                             }
                             break;

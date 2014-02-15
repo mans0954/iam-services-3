@@ -267,6 +267,9 @@ public abstract class AbstractLdapCommand<Request extends RequestType, Response 
 
         SearchControls searchCtls = new SearchControls();
         searchCtls.setReturningAttributes(attrIds);
+        searchCtls.setSearchScope(SearchControls.SUBTREE_SCOPE);
+        searchCtls.setTimeLimit(0);
+        searchCtls.setCountLimit(10000);
 
         String searchFilter = matchObj.getSearchFilter();
         // replace the place holder in the search filter
