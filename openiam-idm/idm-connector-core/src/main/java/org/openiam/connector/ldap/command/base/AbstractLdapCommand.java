@@ -285,7 +285,6 @@ public abstract class AbstractLdapCommand<Request extends RequestType, Response 
         log.debug("Search Filter=" + searchFilter);
         log.debug("Searching BaseDN=" + objectBaseDN);
 
-        System.out.println("searching ... ");
         return ctx.search(objectBaseDN, searchFilter, searchCtls);
     }
 

@@ -75,7 +75,6 @@ public class SetPasswordLdapCommand extends AbstractLdapCommand<PasswordRequest,
             }
 
             String ldapName = null;
-            System.out.println();
             while (results != null && results.hasMoreElements()) {
                 SearchResult sr = (SearchResult) results.next();
                 Attributes attrs = sr.getAttributes();
@@ -89,7 +88,7 @@ public class SetPasswordLdapCommand extends AbstractLdapCommand<PasswordRequest,
                                 Object o = e.next();
                                 if (o instanceof String) {
                                     ldapName = o.toString();
-                                    log.debug("=== Attr Value: " + attr.getID());
+                                    log.debug("=== Attr Value: " + ldapName);
                                 }
                             }
                             break;
