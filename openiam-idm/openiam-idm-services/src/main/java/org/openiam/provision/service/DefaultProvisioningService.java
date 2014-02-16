@@ -1478,10 +1478,10 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                         matchObj = matcheList.get(0);
                                     }
 
-                                    System.out.println("============== Connector Reset Password send request: "+new Date());
+                                    System.out.println("============== Connector Reset Password call: "+new Date());
                                     ResponseType resp = resetPassword(requestId, loginDozerConverter.convertToDTO(lg, false), password,
                                             managedSysDozerConverter.convertToDTO(mSys, false), objectMatchDozerConverter.convertToDTO(matchObj, false));
-                                    System.out.println("============== Connector Reset Password get response: "+new Date());
+                                    System.out.println("============== Connector Reset Password get : "+new Date());
 
                                     if(resp != null && resp.getStatus() == StatusCodeType.SUCCESS) {
                                         auditBuilderResetPasswdChildLog.succeed().setAuditDescription("Reset password for resource: " + res.getName() + " for user: " + lg.getLogin());
