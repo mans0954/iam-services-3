@@ -166,7 +166,7 @@
 		<class-b>org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch
 		</class-b>
         <field>
-            <a>managedSys.managedSysId</a>
+            <a>managedSys.id</a>
             <b>managedSys</b>
         </field>
 	</mapping>
