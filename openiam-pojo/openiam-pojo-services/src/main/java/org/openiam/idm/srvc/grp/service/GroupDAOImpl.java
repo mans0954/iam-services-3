@@ -96,8 +96,8 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
 				criteria.add(Restrictions.eq("adminResource.id", group.getAdminResource().getId()));
 			}
 			
-			if(group.getManagedSystem() != null && StringUtils.isNotBlank(group.getManagedSystem().getManagedSysId())) {
-				criteria.add(Restrictions.eq("managedSystem.managedSysId", group.getManagedSystem().getManagedSysId()));
+			if(group.getManagedSystem() != null && StringUtils.isNotBlank(group.getManagedSystem().getId())) {
+				criteria.add(Restrictions.eq("managedSystem.id", group.getManagedSystem().getId()));
 			}
             
             if(CollectionUtils.isNotEmpty(group.getResources())) {

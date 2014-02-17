@@ -316,7 +316,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
 
             ManagedSysEntity mSys = managedSysService.getManagedSysByResource(
                     res.getId(), "ACTIVE");
-            String managedSysId = (mSys != null) ? mSys.getManagedSysId()
+            String managedSysId = (mSys != null) ? mSys.getId()
                     : null;
             // have resource
             auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "Reconciliation for target system: " + mSys.getName() + " is started..."+startDate);
@@ -390,7 +390,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
             UserSearchBean searchBean;
             if (StringUtils.isNotBlank(config.getMatchScript())) {
                 Map<String, Object> bindingMap = new HashMap<String, Object>();
-                bindingMap.put(AbstractProvisioningService.TARGET_SYS_MANAGED_SYS_ID, mSys.getManagedSysId());
+                bindingMap.put(AbstractProvisioningService.TARGET_SYS_MANAGED_SYS_ID, mSys.getId());
                 bindingMap.put("searchFilter", config.getSearchFilter());
                 bindingMap.put("updatedSince", config.getUpdatedSince());
                 IDMSearchScript searchScript = (IDMSearchScript)scriptRunner.instantiateClass(bindingMap, config.getMatchScript());
@@ -412,14 +412,14 @@ public class ReconciliationServiceImpl implements ReconciliationService {
                 if (searchBean.getPrincipal() == null) {
                     searchBean.setPrincipal(new LoginSearchBean());
                 }
-                searchBean.getPrincipal().setManagedSysId(mSys.getManagedSysId());
+                searchBean.getPrincipal().setManagedSysId(mSys.getId());
                 List<UserEntity> idmUsers = userManager
                         .getByExample(searchBean, 0, Integer.MAX_VALUE);
 
                 if (CollectionUtils.isNotEmpty(idmUsers)) {
                     for (UserEntity u : idmUsers) {
                         for (LoginEntity l : u.getPrincipalList()) {
-                            if (l.getManagedSysId().equals(mSys.getManagedSysId())) {
+                            if (l.getManagedSysId().equals(mSys.getId())) {
                                 idmIdentities.add(l);
                                 break;
                             }
@@ -535,7 +535,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
 
         Map<String, Object> bindingMap = new HashMap<String, Object>();
         bindingMap.put(AbstractProvisioningService.TARGET_SYS_MANAGED_SYS_ID,
-                mSys.getManagedSysId());
+                mSys.getId());
         bindingMap.put("baseDnField", baseDnField);
         bindingMap.put("searchFilter", config.getTargetSystemSearchFilter());
         bindingMap.put("updatedSince", config.getUpdatedSince());
@@ -814,7 +814,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
         auditLogService.enqueue(auditBuilder);
 
         LookupUserResponse lookupResp = provisionService.getTargetSystemUser(
-                principal, mSys.getManagedSysId(), requestedExtensibleAttributes);
+                principal, mSys.getId(), requestedExtensibleAttributes);
 
         log.debug("Lookup status for " + principal + " ="
                 + lookupResp.getStatus());
@@ -850,7 +850,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
                         log.debug("Call command for: Record in resource but deleted in IDM");
                         ProvisionUser provisionUser = new ProvisionUser(user);
                         provisionUser.setParentAuditLogId(auditBuilder.getEntity().getId());
-                        provisionUser.setSrcSystemId(mSys.getManagedSysId());
+                        provisionUser.setSrcSystemId(mSys.getId());
                         auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION,"SYS_EXISTS__IDM_NOT_EXISTS for user= "+principal);
                         auditLogService.enqueue(auditBuilder);
 
@@ -872,7 +872,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
                         log.debug("Call command for: Record in resource and in IDM");
                         ProvisionUser provisionUser = new ProvisionUser(user);
                         provisionUser.setParentAuditLogId(auditBuilder.getEntity().getId());
-                        provisionUser.setSrcSystemId(mSys.getManagedSysId());
+                        provisionUser.setSrcSystemId(mSys.getId());
 
                         auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION,"IDM_EXISTS__SYS_EXISTS for user= "+principal);
                         auditLogService.enqueue(auditBuilder);
@@ -900,7 +900,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
                         log.debug("Call command for: Record in resource and in IDM");
                         ProvisionUser provisionUser = new ProvisionUser(user);
                         provisionUser.setParentAuditLogId(auditBuilder.getEntity().getId());
-                        provisionUser.setSrcSystemId(mSys.getManagedSysId());
+                        provisionUser.setSrcSystemId(mSys.getId());
 
                         auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION,"IDM_EXISTS__SYS_NOT_EXISTS for user= "+principal);
                         auditLogService.enqueue(auditBuilder);

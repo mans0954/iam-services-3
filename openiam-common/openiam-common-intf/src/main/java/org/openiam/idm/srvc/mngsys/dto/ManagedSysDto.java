@@ -31,7 +31,7 @@ import java.util.Set;
  * can also be forms
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "ManagedSysDto", propOrder = { "managedSysId", "name",
+@XmlType(name = "ManagedSysDto", propOrder = { "id", "name",
         "description", "status", "connectorId", "hostUrl", "port",
         "commProtocol", "userId", "pswd", "decryptPassword", "endDate",
         "startDate", "attributeNamesLookup", "resourceId", "primaryRepository",
@@ -47,7 +47,7 @@ public class ManagedSysDto implements java.io.Serializable {
 	 * 
 	 */
     private static final long serialVersionUID = -648884785253890053L;
-    private String managedSysId;
+    private String id;
     private String name;
     private String description;
     private String status;
@@ -98,16 +98,16 @@ public class ManagedSysDto implements java.io.Serializable {
     public ManagedSysDto() {
     }
 
-    public ManagedSysDto(String managedSysId, String connectorId) {
-        this.managedSysId = managedSysId;
+    public ManagedSysDto(String id, String connectorId) {
+        this.id = id;
         this.connectorId = connectorId;
     }
 
-    public ManagedSysDto(String managedSysId, String name, String description,
+    public ManagedSysDto(String id, String name, String description,
             String status, String connectorId,  String hostUrl,
             Integer port, String commProtocol, String userId, String pswd,
             Date startDate, Date endDate) {
-        this.managedSysId = managedSysId;
+        this.id = id;
         this.name = name;
         this.description = description;
         this.status = status;
@@ -122,12 +122,12 @@ public class ManagedSysDto implements java.io.Serializable {
 
     }
 
-    public String getManagedSysId() {
-        return this.managedSysId;
+    public String getId() {
+        return this.id;
     }
 
-    public void setManagedSysId(String managedSysId) {
-        this.managedSysId = managedSysId;
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getName() {
@@ -423,7 +423,7 @@ public class ManagedSysDto implements java.io.Serializable {
 
     @Override
     public String toString() {
-        return "ManagedSysDto{" + "managedSysId='" + managedSysId + '\''
+        return "ManagedSysDto{" + "managedSysId='" + id + '\''
                 + ", name='" + name + '\'' + ", description='" + description
                 + '\'' + ", status='" + status + '\'' + ", connectorId='"
                 + connectorId + '\'' + ", hostUrl='" + hostUrl + '\'' + ", port=" + port

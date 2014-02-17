@@ -206,8 +206,8 @@ public class RoleDataServiceImpl implements RoleDataService {
     @Transactional
 	public void saveRole(final RoleEntity role, final String requestorId) throws BasicDataServiceException {
 		if(role != null && entityValidator.isValid(role)) {
-			if(role.getManagedSystem() != null && role.getManagedSystem().getManagedSysId() != null) {
-				role.setManagedSystem(managedSysDAO.findById(role.getManagedSystem().getManagedSysId()));
+			if(role.getManagedSystem() != null && role.getManagedSystem().getId() != null) {
+				role.setManagedSystem(managedSysDAO.findById(role.getManagedSystem().getId()));
 			} else {
 				role.setManagedSystem(null);
 			}

@@ -17,7 +17,7 @@ public class RoleSearchBeanConverter implements SearchBeanConverter<RoleEntity, 
 
         if(StringUtils.isNotBlank(searchBean.getManagedSysId())){
             ManagedSysEntity mngsys = new ManagedSysEntity();
-            mngsys.setManagedSysId(searchBean.getManagedSysId());
+            mngsys.setId(searchBean.getManagedSysId());
             entity.setManagedSystem(mngsys);
         }
 		return entity;

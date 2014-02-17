@@ -30,7 +30,7 @@ public class LookupUserGoogleCommand
         ManagedSysEntity mSys = managedSysService
                 .getManagedSysById(searchRequest.getTargetID());
         String adminEmail = mSys.getUserId();
-        String password = this.getPassword(mSys.getManagedSysId());
+        String password = this.getPassword(mSys.getId());
         String domain = mSys.getHostUrl();
         try {
             GoogleAgent client = new GoogleAgent();

@@ -29,7 +29,7 @@ public class ManagedSysEntity implements Serializable {
     @GeneratedValue(generator = "system-uuid")
     @GenericGenerator(name = "system-uuid", strategy = "uuid")
     @Column(name = "MANAGED_SYS_ID", length = 32, nullable = false)
-    private String managedSysId;
+    private String id;
     @Column(name = "NAME", length = 40)
     private String name;
     @Column(name = "DESCRIPTION", length = 80)
@@ -113,12 +113,12 @@ public class ManagedSysEntity implements Serializable {
         this.rules = rules;
     }
 
-    public String getManagedSysId() {
-        return managedSysId;
+    public String getId() {
+        return id;
     }
 
-    public void setManagedSysId(String managedSysId) {
-        this.managedSysId = managedSysId;
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getName() {
@@ -420,8 +420,8 @@ public class ManagedSysEntity implements Serializable {
         if (lookupHandler != null ? !lookupHandler.equals(that.lookupHandler)
                 : that.lookupHandler != null)
             return false;
-        if (managedSysId != null ? !managedSysId.equals(that.managedSysId)
-                : that.managedSysId != null)
+        if (id != null ? !id.equals(that.id)
+                : that.id != null)
             return false;
         if (modifyHandler != null ? !modifyHandler.equals(that.modifyHandler)
                 : that.modifyHandler != null)
@@ -483,7 +483,7 @@ public class ManagedSysEntity implements Serializable {
 
     @Override
     public int hashCode() {
-        int result = managedSysId != null ? managedSysId.hashCode() : 0;
+        int result = id != null ? id.hashCode() : 0;
         result = 31 * result + (name != null ? name.hashCode() : 0);
         result = 31 * result
                 + (description != null ? description.hashCode() : 0);

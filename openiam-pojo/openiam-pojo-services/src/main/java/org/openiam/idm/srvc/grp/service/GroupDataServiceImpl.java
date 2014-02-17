@@ -203,8 +203,8 @@ public class GroupDataServiceImpl implements GroupDataService {
 	public void saveGroup(final GroupEntity group, final String requestorId) throws BasicDataServiceException {
 		if(group != null && entityValidator.isValid(group)) {
 			
-			if(group.getManagedSystem() != null && group.getManagedSystem().getManagedSysId() != null) {
-				group.setManagedSystem(managedSysDAO.findById(group.getManagedSystem().getManagedSysId()));
+			if(group.getManagedSystem() != null && group.getManagedSystem().getId() != null) {
+				group.setManagedSystem(managedSysDAO.findById(group.getManagedSystem().getId()));
 			} else {
 				group.setManagedSystem(null);
 			}
