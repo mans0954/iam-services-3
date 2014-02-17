@@ -5,6 +5,7 @@ import org.openiam.base.BaseAttribute;
 import org.openiam.connector.ldap.command.base.AbstractCrudLdapCommand;
 import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.connector.type.constant.ErrorCode;
+import org.openiam.connector.type.constant.StatusCodeType;
 import org.openiam.connector.type.request.CrudRequest;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
@@ -16,6 +17,8 @@ import org.openiam.connector.ldap.dirtype.DirectorySpecificImplFactory;
 import org.openiam.provision.type.ExtensibleUser;
 import org.springframework.stereotype.Service;
 
+import javax.naming.NameNotFoundException;
+import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.*;
 import javax.naming.ldap.LdapContext;
@@ -155,18 +158,41 @@ public class ModifyUserLdapCommand extends AbstractCrudLdapCommand<ExtensibleUse
             log.debug("ModifyAttribute array=" + mods);
 
             //Important!!! For save and modify we need to create DN format
-            String identityDN = matchObj.getKeyField() + "=" + identity + "," + objectBaseDN;
-            log.debug("Modifying users in ldap.." + identityDN);
-            ldapctx.modifyAttributes(identityDN, mods);
+//            String identityDN = matchObj.getKeyField() + "=" + identity + "," + objectBaseDN;
 
-            if (groupMembershipEnabled) {
-                dirSpecificImp.updateAccountMembership(targetMembershipList, identity, identityDN,
-                        matchObj, ldapctx, crudRequest.getExtensibleObject());
+            NamingEnumeration results = null;
+            try {
+                log.debug("Looking for user with identity=" +  identity + " in " +  objectBaseDN);
+                results = lookupSearch(matchObj, ldapctx, identity, null, objectBaseDN);
+
+            } catch (NameNotFoundException nnfe) {
+                log.debug("results=NULL");
+                log.debug(" results has more elements=0");
+                return;
             }
 
-            if (supervisorMembershipEnabled) {
-                dirSpecificImp.updateSupervisorMembership(supervisorMembershipList, identity, identityDN,
-                        matchObj, ldapctx, crudRequest.getExtensibleObject());
+            String identityDN = null;
+            while (results != null && results.hasMoreElements()) {
+                SearchResult sr = (SearchResult) results.next();
+                identityDN = sr.getNameInNamespace();
+                break;
+            }
+
+            if (StringUtils.isNotEmpty(identityDN)) {
+                log.debug("Modifying user in ldap.." + identityDN);
+                ldapctx.modifyAttributes(identityDN, mods);
+
+                if (groupMembershipEnabled) {
+                    dirSpecificImp.updateAccountMembership(targetMembershipList, identity, identityDN,
+                            matchObj, ldapctx, crudRequest.getExtensibleObject());
+                }
+
+                if (supervisorMembershipEnabled) {
+                    dirSpecificImp.updateSupervisorMembership(supervisorMembershipList, identity, identityDN,
+                            matchObj, ldapctx, crudRequest.getExtensibleObject());
+                }
+            } else {
+                log.debug(String.format("User %s is not found in %s", identity, objectBaseDN));
             }
 
         } catch (NamingException ne) {

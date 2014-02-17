@@ -13,7 +13,10 @@ import org.openiam.connector.ldap.dirtype.DirectorySpecificImplFactory;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.springframework.stereotype.Service;
 
+import javax.naming.NameNotFoundException;
+import javax.naming.NamingEnumeration;
 import javax.naming.directory.ModificationItem;
+import javax.naming.directory.SearchResult;
 import javax.naming.ldap.LdapContext;
 import java.text.MessageFormat;
 import java.util.regex.Matcher;
@@ -55,10 +58,28 @@ public class SuspendLdapCommand extends AbstractLdapCommand<SuspendResumeRequest
             // dont try to disable and object that does not exist
 
             //Important!!! For add new record in LDAP we must to create identity in DN format
-            String identityDN = matchObj.getKeyField() + "=" + identity+","+objectBaseDN;
+//            String identityDN = matchObj.getKeyField() + "=" + identity+","+objectBaseDN;
 
-            if (identityExists(identityDN, ldapctx)) {
+            NamingEnumeration results = null;
+            try {
+                log.debug("Looking for user with identity=" +  identity + " in " +  objectBaseDN);
+                results = lookupSearch(matchObj, ldapctx, identity, null, objectBaseDN);
 
+            } catch (NameNotFoundException nnfe) {
+                log.debug("results=NULL");
+                log.debug(" results has more elements=0");
+                respType.setStatus(StatusCodeType.FAILURE);
+                return respType;
+            }
+
+            String identityDN = null;
+            while (results != null && results.hasMoreElements()) {
+                SearchResult sr = (SearchResult) results.next();
+                identityDN = sr.getNameInNamespace();
+                break;
+            }
+
+            if (StringUtils.isNotEmpty(identityDN)) {
                 // Each directory
                 Directory dirSpecificImp  = DirectorySpecificImplFactory.create(config.getManagedSys().getHandler5());
                 log.debug("Directory specific object name = " + dirSpecificImp.getClass().getName());
@@ -66,12 +87,16 @@ public class SuspendLdapCommand extends AbstractLdapCommand<SuspendResumeRequest
 
                 log.debug("Modifying for Suspend.. users in ldap.." + identityDN);
                 ldapctx.modifyAttributes(identityDN, mods);
+            } else {
+                log.debug(String.format("User %s is not found in %s", identity, objectBaseDN));
             }
+
             return respType;
-        }catch(Exception ne) {
+
+        } catch(Exception ne) {
             log.error(ne.getMessage(), ne);
             throw new ConnectorDataException(ErrorCode.NO_SUCH_IDENTIFIER);
-        }finally {
+        } finally {
 	 		/* close the connection to the directory */
             this.closeContext(ldapctx);
         }

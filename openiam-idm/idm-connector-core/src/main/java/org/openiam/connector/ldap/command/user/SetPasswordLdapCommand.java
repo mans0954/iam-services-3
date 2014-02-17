@@ -67,14 +67,15 @@ public class SetPasswordLdapCommand extends AbstractLdapCommand<PasswordRequest,
             try {
                 log.debug("Looking for user with identity=" +  identity + " in " +  objectBaseDN);
                 results = lookupSearch(matchObj, ldapctx, identity, null, objectBaseDN);
+
             } catch (NameNotFoundException nnfe) {
-                log.debug(" results=NULL");
+                log.debug("results=NULL");
                 log.debug(" results has more elements=0");
                 respType.setStatus(StatusCodeType.FAILURE);
                 return respType;
             }
 
-            String ldapName = null;
+            String identityDN = null;
             while (results != null && results.hasMoreElements()) {
                 SearchResult sr = (SearchResult) results.next();
                 Attributes attrs = sr.getAttributes();
@@ -88,22 +89,20 @@ public class SetPasswordLdapCommand extends AbstractLdapCommand<PasswordRequest,
                                 Object o = e.next();
                                 if (o instanceof String) {
                                     ldapName = o.toString();
-                                    log.debug("=== Attr Value: " + ldapName);
+                                    log.debug("=== Attr Value: " + attr.getID());
                                 }
                             }
                             break;
                         }
-                    }
-                }
-            }
-            if (StringUtils.isNotEmpty(ldapName)) {
-                log.debug("New password will be set for user " + ldapName);
+
+            if (StringUtils.isNotEmpty(identityDN)) {
+                log.debug("New password will be set for user " + identityDN);
                 Directory dirSpecificImp = DirectorySpecificImplFactory.create(config.getManagedSys().getHandler5());
                 ModificationItem[] mods = dirSpecificImp.setPassword(passwordRequest);
-                ldapctx.modifyAttributes(ldapName, mods);
-                log.debug("New password has been set for user " + ldapName);
+                ldapctx.modifyAttributes(identityDN, mods);
+                log.debug("New password has been set for user " + identityDN);
             } else {
-                log.debug("DN for user with identity=" + identity + " was not found");
+                log.debug(String.format("User %s is not found in %s", identity, objectBaseDN));
             }
 
         } catch (NamingException ne) {
