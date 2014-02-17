@@ -73,10 +73,23 @@ public class SuspendLdapCommand extends AbstractLdapCommand<SuspendResumeRequest
             }
 
             String identityDN = null;
+            int count = 0;
             while (results != null && results.hasMoreElements()) {
                 SearchResult sr = (SearchResult) results.next();
                 identityDN = sr.getNameInNamespace();
-                break;
+                count++;
+            }
+
+            if (count == 0) {
+                String err = String.format("User %s was not found in %s", identity, objectBaseDN);
+                log.error(err);
+                respType.setStatus(StatusCodeType.FAILURE);
+                return respType;
+            } else if (count > 1) {
+                String err = String.format("More then one user %s was found in %s", identity, objectBaseDN);
+                log.error(err);
+                respType.setStatus(StatusCodeType.FAILURE);
+                return respType;
             }
 
             if (StringUtils.isNotEmpty(identityDN)) {
@@ -87,8 +100,6 @@ public class SuspendLdapCommand extends AbstractLdapCommand<SuspendResumeRequest
 
                 log.debug("Modifying for Suspend.. users in ldap.." + identityDN);
                 ldapctx.modifyAttributes(identityDN, mods);
-            } else {
-                log.debug(String.format("User %s is not found in %s", identity, objectBaseDN));
             }
 
             return respType;

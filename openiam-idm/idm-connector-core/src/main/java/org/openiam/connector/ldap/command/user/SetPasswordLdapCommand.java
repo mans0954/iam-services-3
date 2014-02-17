@@ -76,24 +76,24 @@ public class SetPasswordLdapCommand extends AbstractLdapCommand<PasswordRequest,
             }
 
             String identityDN = null;
+            int count = 0;
             while (results != null && results.hasMoreElements()) {
                 SearchResult sr = (SearchResult) results.next();
-                Attributes attrs = sr.getAttributes();
-                if (attrs != null) {
-                    for (NamingEnumeration ae = attrs.getAll(); ae.hasMore();) {
-                        Attribute attr = (Attribute) ae.next();
-                        log.debug("=== Attr Name: " + attr.getID());
-                        if ("entrydn".equalsIgnoreCase(attr.getID())) {
-                            NamingEnumeration e = attr.getAll();
-                            while (e.hasMore()) {
-                                Object o = e.next();
-                                if (o instanceof String) {
-                                    ldapName = o.toString();
-                                    log.debug("=== Attr Value: " + attr.getID());
-                                }
-                            }
-                            break;
-                        }
+                identityDN = sr.getNameInNamespace();
+                count++;
+            }
+
+            if (count == 0) {
+                String err = String.format("User %s was not found in %s", identity, objectBaseDN);
+                log.error(err);
+                respType.setStatus(StatusCodeType.FAILURE);
+                return respType;
+            } else if (count > 1) {
+                String err = String.format("More then one user %s was found in %s", identity, objectBaseDN);
+                log.error(err);
+                respType.setStatus(StatusCodeType.FAILURE);
+                return respType;
+            }
 
             if (StringUtils.isNotEmpty(identityDN)) {
                 log.debug("New password will be set for user " + identityDN);
@@ -101,8 +101,6 @@ public class SetPasswordLdapCommand extends AbstractLdapCommand<PasswordRequest,
                 ModificationItem[] mods = dirSpecificImp.setPassword(passwordRequest);
                 ldapctx.modifyAttributes(identityDN, mods);
                 log.debug("New password has been set for user " + identityDN);
-            } else {
-                log.debug(String.format("User %s is not found in %s", identity, objectBaseDN));
             }
 
         } catch (NamingException ne) {

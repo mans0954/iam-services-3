@@ -81,10 +81,21 @@ public class DeleteUserLdapCommand extends AbstractCrudLdapCommand<ExtensibleUse
             }
 
             String identityDN = null;
+            int count = 0;
             while (results != null && results.hasMoreElements()) {
                 SearchResult sr = (SearchResult) results.next();
                 identityDN = sr.getNameInNamespace();
-                break;
+                count++;
+            }
+
+            if (count == 0) {
+                String err = String.format("User %s was not found in %s", identity, objectBaseDN);
+                log.error(err);
+                throw new ConnectorDataException(ErrorCode.NO_SUCH_IDENTIFIER, err);
+            } else if (count > 1) {
+                String err = String.format("More then one user %s was found in %s", identity, objectBaseDN);
+                log.error(err);
+                throw new ConnectorDataException(ErrorCode.NO_SUCH_IDENTIFIER, err);
             }
 
             if (StringUtils.isNotEmpty(identityDN)) {
@@ -96,8 +107,6 @@ public class DeleteUserLdapCommand extends AbstractCrudLdapCommand<ExtensibleUse
                     dirSpecificImp.removeSupervisorMemberships(identity, identityDN, matchObj, ldapctx);
                 }
                 dirSpecificImp.delete(deleteRequestType, ldapctx, identityDN, delete);
-            } else {
-                log.debug(String.format("User %s is not found in %s", identity, objectBaseDN));
             }
 
         } catch (NamingException e) {
