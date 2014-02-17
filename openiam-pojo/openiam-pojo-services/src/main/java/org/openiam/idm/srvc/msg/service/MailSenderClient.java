@@ -139,9 +139,8 @@ public class MailSenderClient {
                 Transport.send(message);
                 log.debug("Message successfully sent.");
             }
-        } catch (MessagingException me) {
-            log.error(me);
-            me.printStackTrace();
+        } catch (Throwable e) {
+            log.error("Exception while sending mail", e);
         }
     }
 
