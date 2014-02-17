@@ -17,13 +17,11 @@ public interface OrganizationTypeDataService {
 	
 	@WebMethod
 	public List<OrganizationType> findBeans(final @WebParam(name = "searchBean", targetNamespace = "") OrganizationTypeSearchBean searchBean,
-                                            final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
 											final @WebParam(name = "from", targetNamespace = "") int from,
 											final @WebParam(name = "size", targetNamespace = "") int size);
 	
 	@WebMethod
-	public int count(final @WebParam(name = "searchBean", targetNamespace = "") OrganizationTypeSearchBean searchBean,
-                     final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
+	public int count(final @WebParam(name = "searchBean", targetNamespace = "") OrganizationTypeSearchBean searchBean);
 	
 	@WebMethod
 	public Response save(final @WebParam(name = "entity", targetNamespace = "") OrganizationType type);
@@ -38,4 +36,7 @@ public interface OrganizationTypeDataService {
 	@WebMethod
 	public Response removeChild(final @WebParam(name = "id", targetNamespace = "") String id,
 							 	final @WebParam(name = "childId", targetNamespace = "") String childId);
+
+
+    public List<OrganizationType> findAllowedChildrenByDelegationFilter(final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 }

@@ -54,6 +54,9 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
 
     @Autowired
     private UserDataService userDataService;
+
+    @Autowired
+    private OrganizationTypeService organizationTypeService;
     
     @Autowired
     private OrganizationDozerConverter organizationDozerConverter;
@@ -355,6 +358,38 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
             }
         }
         return filterData;
+    }
+
+    @Override
+    public List<OrganizationEntity> getAllowedParentOrganizationsForType(final String orgTypeId, String requesterId){
+        Set<String> filterData = null;
+        Set<String> allowedOrgTypes = null;
+        if (StringUtils.isNotBlank(requesterId)) {
+            Map<String, UserAttribute> requesterAttributes = userDataService.getUserAttributesDto(requesterId);
+            filterData = getDelegationFilter(requesterAttributes, organizationTypeId);
+            allowedOrgTypes = organizationTypeService.findAllowedChildrenByDelegationFilter(requesterAttributes);
+
+            boolean isOrgFilterSet = DelegationFilterHelper.isOrgFilterSet(requesterAttributes);
+            boolean isDivFilterSet = DelegationFilterHelper.isDivisionFilterSet(requesterAttributes);
+            boolean isDepFilterSet = DelegationFilterHelper.isDeptFilterSet(requesterAttributes);
+            boolean isUseOrgInhFilterSet = DelegationFilterHelper.isUseOrgInhFilterSet(requesterAttributes);
+            if(isOrgFilterSet){
+                allowedOrgTypes.add(organizationTypeId);
+            }
+            if(isDivFilterSet
+                    || (isOrgFilterSet && isUseOrgInhFilterSet)){
+                allowedOrgTypes.add(divisionTypeId);
+            }
+            if(isDepFilterSet
+                    || (isDivFilterSet && isUseOrgInhFilterSet)
+                    || (isOrgFilterSet && isUseOrgInhFilterSet)){
+                allowedOrgTypes.add(departmentTypeId);
+            }
+        }
+        Set<String> allowedParentTypesIds = organizationTypeService.getAllowedParentsIds(orgTypeId);
+        allowedOrgTypes.retainAll(allowedParentTypesIds);
+
+        return orgDao.findAllByTypesAndIds(allowedOrgTypes, filterData);
     }
 
     private Set<String> getFullOrgFilterList(Map<String, UserAttribute> attrMap, boolean isUseOrgInhFlag){

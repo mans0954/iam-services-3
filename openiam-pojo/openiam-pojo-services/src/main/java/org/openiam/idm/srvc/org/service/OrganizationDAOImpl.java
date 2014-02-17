@@ -256,4 +256,18 @@ public class OrganizationDAOImpl extends
                 .addScalar("organizationId").addScalar("memberOrganizationId")
                 .setResultTransformer(Transformers.aliasToBean(Org2OrgXref.class)).list();
     }
+
+    @Override
+    public List<OrganizationEntity> findAllByTypesAndIds(Set<String> allowedOrgTypes, Set<String> filterData){
+        Criteria criteria = getCriteria();
+
+        if(allowedOrgTypes!=null && !allowedOrgTypes.isEmpty()){
+            criteria.add(Restrictions.in("organizationType.id", allowedOrgTypes));
+        }
+
+        if(filterData!=null && !filterData.isEmpty()){
+            criteria.add(Restrictions.in("id", filterData));
+        }
+        return criteria.list();
+    }
 }

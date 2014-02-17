@@ -41,15 +41,21 @@ public class OrganizationTypeDataServiceImpl implements OrganizationTypeDataServ
 	}
 
 	@Override
-	public List<OrganizationType> findBeans(final OrganizationTypeSearchBean searchBean, String requesterId, final int from, final int size) {
-		final List<OrganizationTypeEntity> entityList = organizationTypeService.findBeans(searchBean, requesterId, from, size);
+	public List<OrganizationType> findBeans(final OrganizationTypeSearchBean searchBean, final int from, final int size) {
+		final List<OrganizationTypeEntity> entityList = organizationTypeService.findBeans(searchBean, from, size);
 		return dozerConverter.convertToDTOList(entityList, searchBean.isDeepCopy());
 	}
 
 	@Override
-	public int count(final OrganizationTypeSearchBean searchBean, String requesterId) {
-		return organizationTypeService.count(searchBean, requesterId);
+	public int count(final OrganizationTypeSearchBean searchBean) {
+		return organizationTypeService.count(searchBean);
 	}
+
+    @Override
+    public List<OrganizationType> findAllowedChildrenByDelegationFilter(final String requesterId){
+        final List<OrganizationTypeEntity> entityList =  organizationTypeService.findAllowedChildrenByDelegationFilter(requesterId);
+        return dozerConverter.convertToDTOList(entityList, false);
+    }
 
 	@Override
 	public Response save(final OrganizationType type) {

@@ -184,6 +184,18 @@
                         </bean>
                     </property>
                 </bean>
+
+                <bean class="org.springframework.scheduling.quartz.SimpleTriggerBean">
+                    <property name="startDelay" value="${org.openiam.org.manager.threadsweep}" />
+                    <property name="repeatInterval" value="${org.openiam.org.manager.threadsweep}" />
+                    <property name="jobDetail">
+                        <bean class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+                            <property name="targetObject" ref="organizationTypeServiceImpl" />
+                            <property name="targetMethod" value="sweep" />
+                            <property name="concurrent" value="false" />
+                        </bean>
+                    </property>
+                </bean>
 			</list> 
 		</property> 
 	</bean>
