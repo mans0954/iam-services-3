@@ -527,6 +527,14 @@ public class UserEntity {
                    }
             }
         }
+        if(defaultEmail == null) {
+        	if(this.emailAddresses!=null && !this.emailAddresses.isEmpty()){
+        		final EmailAddressEntity entity = this.emailAddresses.iterator().next();
+        		if(entity != null) {
+        			defaultEmail = entity.getEmailAddress();
+        		}
+        	}
+        }
         return defaultEmail;
     }
 

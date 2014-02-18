@@ -219,7 +219,7 @@
 			<b>roles</b>
 		</field>
 		<field>
-			<a>managedSystem.managedSysId</a>
+			<a>managedSystem.id</a>
 			<b>managedSysId</b>
 		</field>
 		<field>
@@ -280,7 +280,7 @@
 			<b>resources</b>
 		</field>
 		<field>
-			<a>managedSystem.managedSysId</a>
+			<a>managedSystem.id</a>
 			<b>managedSysId</b>
 		</field>
 		<field>
@@ -883,7 +883,7 @@
 			<b>patternSet</b>
 		</field>
 		<field>
-			<a>managedSystem.managedSysId</a>
+			<a>managedSystem.id</a>
 			<b>managedSysId</b>
 		</field>
 		<field>

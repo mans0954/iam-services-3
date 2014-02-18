@@ -16,7 +16,7 @@ public class GroupSearchBeanConverter implements SearchBeanConverter<GroupEntity
 		groupEntity.setName(searchBean.getName());
 		if(StringUtils.isNotBlank(searchBean.getManagedSysId())) {
 			final ManagedSysEntity mSys = new ManagedSysEntity();
-			mSys.setManagedSysId(searchBean.getManagedSysId());
+			mSys.setId(searchBean.getManagedSysId());
 			groupEntity.setManagedSystem(mSys);
 		}
 		return groupEntity;

@@ -167,7 +167,7 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
         /*
         resource.setManagedSysId(entity.getManagedSysId());
         */
-        sys.setManagedSysId(entity.getManagedSysId());
+        sys.setId(entity.getId());
     }
 
     @Override

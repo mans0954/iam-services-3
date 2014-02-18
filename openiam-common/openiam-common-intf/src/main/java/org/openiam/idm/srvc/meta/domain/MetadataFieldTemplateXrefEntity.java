@@ -22,6 +22,7 @@ import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.Where;
 import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.idm.srvc.lang.domain.LanguageEntity;
 import org.openiam.idm.srvc.lang.domain.LanguageMappingEntity;
 import org.openiam.idm.srvc.meta.dto.MetadataFieldTemplateXref;
 
@@ -115,6 +116,20 @@ public class MetadataFieldTemplateXrefEntity implements Serializable {
 
 	public void setLanguageMap(Map<String, LanguageMappingEntity> languageMap) {
 		this.languageMap = languageMap;
+	}
+	
+	
+	public String getDisplayName(final LanguageEntity language) {
+		String name = null;
+		if(language != null) {
+			if(languageMap != null) {
+				final LanguageMappingEntity entity = languageMap.get(language.getLanguageId());
+				if(entity != null) {
+					name = entity.getValue();
+				}
+			}
+		}
+		return name;
 	}
 
 	@Override

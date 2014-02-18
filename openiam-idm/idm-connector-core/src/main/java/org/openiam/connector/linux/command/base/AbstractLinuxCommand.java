@@ -62,7 +62,7 @@ public abstract class AbstractLinuxCommand<Request extends RequestType, Response
             throws ConnectorDataException {
         SSHAgent ssh = null;
         if (managedSys != null) {
-            String managedSysId = managedSys.getManagedSysId();
+            String managedSysId = managedSys.getId();
             if (!(managedSys.getResourceId() == null || managedSys
                     .getResourceId().length() == 0)) {
                 log.debug("ManagedSys found; Name=" + managedSys.getName());

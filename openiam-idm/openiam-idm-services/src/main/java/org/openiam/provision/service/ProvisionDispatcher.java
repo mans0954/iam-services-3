@@ -316,7 +316,7 @@ public class ProvisionDispatcher implements Sweepable {
         Resource res = resourceDozerConverter.convertToDTO(resEntity, true);
         ManagedSysDto mSys = managedSysDozerConverter.convertToDTO(
                 managedSystemService.getManagedSysByResource(res.getId(), "ACTIVE"), true);
-        String managedSysId = (mSys != null) ? mSys.getManagedSysId() : null;
+        String managedSysId = (mSys != null) ? mSys.getId() : null;
         ProvisionUser targetSysProvUser = data.getProvUser();
 
         try {

@@ -58,7 +58,7 @@ public class ContentProviderEntity implements Serializable {
     */
 	
 	@ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
-    @JoinColumn(name="MANAGED_SYS_ID", referencedColumnName = "RESOURCE_ID", insertable = true, updatable = true, nullable=false)
+    @JoinColumn(name="MANAGED_SYS_ID", referencedColumnName = "MANAGED_SYS_ID", insertable = true, updatable = true, nullable=false)
 	private ManagedSysEntity managedSystem;
 	
 	@ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})

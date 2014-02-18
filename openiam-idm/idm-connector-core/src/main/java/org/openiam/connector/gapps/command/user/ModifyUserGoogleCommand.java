@@ -20,7 +20,7 @@ public class ModifyUserGoogleCommand extends
         ManagedSysEntity mSys = managedSysService.getManagedSysById(crudRequest
                 .getTargetID());
         String adminEmail = mSys.getUserId();
-        String password = this.getPassword(mSys.getManagedSysId());
+        String password = this.getPassword(mSys.getId());
         String domain = mSys.getHostUrl();
         try {
             GoogleAgent agent = new GoogleAgent();

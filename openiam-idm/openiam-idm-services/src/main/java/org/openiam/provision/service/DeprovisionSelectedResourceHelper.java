@@ -95,7 +95,7 @@ public class DeprovisionSelectedResourceHelper extends BaseProvisioningHelper {
             log.debug("Resource object = " + res);
 
             ManagedSysDto managedSys = managedSysService.getManagedSysByResource(res.getId());
-            String mSysId = (managedSys != null) ? managedSys.getManagedSysId() : null;
+            String mSysId = (managedSys != null) ? managedSys.getId() : null;
             if (mSysId != null)  {
 
                 if (!mSysId.equalsIgnoreCase(sysConfiguration.getDefaultManagedSysId())) {
@@ -117,12 +117,12 @@ public class DeprovisionSelectedResourceHelper extends BaseProvisioningHelper {
                         ManagedSysDto mSys = managedSysService.getManagedSys(l.getManagedSysId());
 
                         ManagedSystemObjectMatch matchObj = null;
-                        ManagedSystemObjectMatch[] matchObjAry = managedSysService.managedSysObjectParam(mSys.getManagedSysId(), "USER");
+                        ManagedSystemObjectMatch[] matchObjAry = managedSysService.managedSysObjectParam(mSys.getId(), "USER");
                         if (matchObjAry != null && matchObjAry.length > 0) {
                             matchObj = matchObjAry[0];
                         }
                         log.debug("Deleting id=" + l.getLogin());
-                        log.debug("- delete using managed sys id=" + mSys.getManagedSysId());
+                        log.debug("- delete using managed sys id=" + mSys.getId());
 
                         boolean connectorSuccess = false;
 
