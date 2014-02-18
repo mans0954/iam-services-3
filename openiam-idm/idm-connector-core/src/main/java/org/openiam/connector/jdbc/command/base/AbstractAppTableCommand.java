@@ -35,7 +35,7 @@ public abstract class AbstractAppTableCommand<Request extends RequestType, Respo
     protected static final String SELECT_ALL_SQL = "SELECT %s FROM %s";
     protected static final String SELECT_ALL_SQL_QUERY = "SELECT %s FROM %s WHERE %s";
     protected static final String DELETE_SQL = "DELETE FROM %s WHERE %s=?";
-    protected static final String UPDATE_SQL = "UPDATE %s SET %s=? WHERE %s=?";
+    protected static final String UPDATE_SQL = "UPDATE %s SET %s WHERE %s=?";
 
     protected String getTableName(AppTableConfiguration config, String objectType) throws ConnectorDataException {
         String result = "";
@@ -72,6 +72,7 @@ public abstract class AbstractAppTableCommand<Request extends RequestType, Respo
             } else {
                 ExtensibleAttribute ea = new ExtensibleAttribute(prop.getName(), prop.getValue());
                 ea.setDataType(this.getAttribute(prop.getAttribute(), "dataType"));
+                ea.setObjectType(ba.getName());
                 newEO.getAttributes().add(ea);
             }
         }
@@ -265,4 +266,159 @@ public abstract class AbstractAppTableCommand<Request extends RequestType, Respo
             this.closeStatement(statement);
         }
     }
+
+    protected void addObject(Connection con, String principalName, ExtensibleObject object,
+            AppTableConfiguration config, String objectType) throws ConnectorDataException {
+        // build sql
+        final StringBuilder columns = new StringBuilder("");
+        final StringBuilder values = new StringBuilder("");
+        String sql = "";
+        int ctr = 0;
+        final List<ExtensibleAttribute> attrList = object.getAttributes();
+        if (!CollectionUtils.isEmpty(attrList) && !StringUtils.isEmpty(this.getTableName(config, objectType))) {
+            try {
+                if (identityExists(con, this.getTableName(config, objectType), principalName, object)) {
+                    if (log.isDebugEnabled()) {
+                        log.debug(String.format("%s exists. Returning success to the connector", principalName));
+                    }
+                    return;
+                }
+                if (log.isDebugEnabled()) {
+                    log.debug(String.format("Number of attributes to persist in ADD = %s", attrList.size()));
+                }
+
+                for (final ExtensibleAttribute att : attrList) {
+                    if (att.getAttributeContainer() != null
+                            && !CollectionUtils.isEmpty(att.getAttributeContainer().getAttributeList())) {
+                        for (BaseAttribute a : att.getAttributeContainer().getAttributeList()) {
+                            String supportedObjType = a.getName();
+                            ExtensibleObject ea = this.createNewExtensibleObject(a);
+                            this.addObject(con, ea.getObjectId(), ea, config, supportedObjType);
+                        }
+                    } else {
+                        if (ctr != 0) {
+                            columns.append(",");
+                            values.append(",");
+                        }
+                        ctr++;
+                        columns.append(att.getName());
+                        values.append("?");
+                    }
+                }
+                // add the primary key
+
+                if (log.isDebugEnabled()) {
+                    log.debug(String.format("Principal column name=%s", principalName));
+                }
+                if (object.getPrincipalFieldName() != null) {
+                    if (ctr != 0) {
+                        columns.append(",");
+                        values.append(",");
+                    }
+                    columns.append(object.getPrincipalFieldName());
+                    values.append("?");
+                }
+
+                sql = String.format(INSERT_SQL, this.getTableName(config, objectType), columns, values);
+
+                if (log.isDebugEnabled()) {
+                    log.debug(String.format("ADD SQL=%s", sql));
+                }
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+                throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR, e.getMessage());
+            }
+            PreparedStatement statement = null;
+            try {
+                statement = con.prepareStatement(sql);
+                // set the parameters
+                int counter = 1;
+                for (ExtensibleAttribute a : attrList) {
+                    if (a.getObjectType().equalsIgnoreCase(objectType)) {
+                        setStatement(statement, counter++, a.getDataType(), a.getValue());
+                    }
+                }
+                if (object.getPrincipalFieldName() != null) {
+                    setStatement(statement, ctr + 1, object.getPrincipalFieldDataType(), principalName);
+                }
+                statement.executeUpdate();
+            } catch (SQLException e) {
+                log.error(e.getMessage(), e);
+                throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR, e.getMessage());
+            } finally {
+                this.closeStatement(statement);
+            }
+        }
+    }
+
+    protected void modifyObject(Connection con, String principalName, ExtensibleObject object,
+            AppTableConfiguration config, String objectType) throws ConnectorDataException {
+        // build sql
+        final StringBuilder columns = new StringBuilder("");
+        final StringBuilder values = new StringBuilder("");
+        String sql = "";
+        int ctr = 0;
+        final List<ExtensibleAttribute> attrList = object.getAttributes();
+        if (!CollectionUtils.isEmpty(attrList) && !StringUtils.isEmpty(this.getTableName(config, objectType))) {
+            try {
+                if (identityExists(con, this.getTableName(config, objectType), principalName, object)) {
+                    if (log.isDebugEnabled()) {
+                        log.debug(String.format("%s exists. Returning success to the connector", principalName));
+                    }
+
+                    if (log.isDebugEnabled()) {
+                        log.debug(String.format("Number of attributes to persist in ADD = %s", attrList.size()));
+                    }
+
+                    for (final ExtensibleAttribute att : attrList) {
+                        if (att.getAttributeContainer() != null
+                                && !CollectionUtils.isEmpty(att.getAttributeContainer().getAttributeList())) {
+                            for (BaseAttribute a : att.getAttributeContainer().getAttributeList()) {
+                                String supportedObjType = a.getName();
+                                ExtensibleObject ea = this.createNewExtensibleObject(a);
+                                this.modifyObject(con, ea.getObjectId(), ea, config, supportedObjType);
+                            }
+                        } else {
+                            if (ctr != 0) {
+                                columns.append(",");
+                                values.append(",");
+                            }
+                            ctr++;
+                            columns.append(att.getName() + "= ?");
+                        }
+                    }
+                    // add the primary key
+
+                    if (log.isDebugEnabled()) {
+                        log.debug(String.format("Principal column name=%s", principalName));
+                    }
+
+                    sql = String.format(UPDATE_SQL, this.getTableName(config, objectType), columns,
+                            object.getPrincipalFieldName());
+
+                    PreparedStatement statement = con.prepareStatement(sql);
+
+                    int counter = 1;
+                    for (ExtensibleAttribute a : attrList) {
+                        if (a.getObjectType().equalsIgnoreCase(objectType)) {
+                            setStatement(statement, counter++, a.getDataType(), a.getValue());
+                        }
+                    }
+                    if (object.getPrincipalFieldName() != null) {
+                        setStatement(statement, ctr + 1, object.getPrincipalFieldDataType(), principalName);
+                    }
+                    if (log.isDebugEnabled()) {
+                        log.debug(String.format("UPDATE SQL=%s", sql));
+                    }
+                    statement.executeUpdate();
+                } else {
+                    this.addObject(con, principalName, object, config, objectType);
+                }
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+                throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR, e.getMessage());
+            }
+        }
+    }
+
 }
