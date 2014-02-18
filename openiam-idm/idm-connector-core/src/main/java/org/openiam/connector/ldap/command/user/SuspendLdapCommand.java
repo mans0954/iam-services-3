@@ -10,6 +10,7 @@ import org.openiam.connector.type.response.ResponseType;
 import org.openiam.connector.ldap.command.base.AbstractLdapCommand;
 import org.openiam.connector.ldap.dirtype.Directory;
 import org.openiam.connector.ldap.dirtype.DirectorySpecificImplFactory;
+import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.springframework.stereotype.Service;
 
@@ -29,6 +30,7 @@ public class SuspendLdapCommand extends AbstractLdapCommand<SuspendResumeRequest
         ResponseType respType = new ResponseType();
         respType.setStatus(StatusCodeType.SUCCESS);
         ConnectorConfiguration config =  getConfiguration(suspendRequestType.getTargetID(), ConnectorConfiguration.class);
+        ManagedSysEntity managedSys = config.getManagedSys();
         LdapContext ldapctx = this.connect(config.getManagedSys());
 
 
@@ -63,7 +65,7 @@ public class SuspendLdapCommand extends AbstractLdapCommand<SuspendResumeRequest
             NamingEnumeration results = null;
             try {
                 log.debug("Looking for user with identity=" +  identity + " in " +  objectBaseDN);
-                results = lookupSearch(matchObj, ldapctx, identity, null, objectBaseDN);
+                results = lookupSearch(managedSys, matchObj, ldapctx, identity, null, objectBaseDN);
 
             } catch (NameNotFoundException nnfe) {
                 log.debug("results=NULL");

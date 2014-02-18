@@ -163,7 +163,7 @@ public class ModifyUserLdapCommand extends AbstractCrudLdapCommand<ExtensibleUse
             NamingEnumeration results = null;
             try {
                 log.debug("Looking for user with identity=" +  identity + " in " +  objectBaseDN);
-                results = lookupSearch(matchObj, ldapctx, identity, null, objectBaseDN);
+                results = lookupSearch(managedSys, matchObj, ldapctx, identity, null, objectBaseDN);
 
             } catch (NameNotFoundException nnfe) {
                 log.debug("results=NULL");
@@ -194,12 +194,12 @@ public class ModifyUserLdapCommand extends AbstractCrudLdapCommand<ExtensibleUse
                 ldapctx.modifyAttributes(identityDN, mods);
 
                 if (groupMembershipEnabled) {
-                    dirSpecificImp.updateAccountMembership(targetMembershipList, identity, identityDN,
+                    dirSpecificImp.updateAccountMembership(managedSys, targetMembershipList, identity, identityDN,
                             matchObj, ldapctx, crudRequest.getExtensibleObject());
                 }
 
                 if (supervisorMembershipEnabled) {
-                    dirSpecificImp.updateSupervisorMembership(supervisorMembershipList, identity, identityDN,
+                    dirSpecificImp.updateSupervisorMembership(managedSys, supervisorMembershipList, identity, identityDN,
                             matchObj, ldapctx, crudRequest.getExtensibleObject());
                 }
             }

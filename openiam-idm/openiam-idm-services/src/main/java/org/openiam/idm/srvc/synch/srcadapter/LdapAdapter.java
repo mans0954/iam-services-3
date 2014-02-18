@@ -21,12 +21,16 @@
 package org.openiam.idm.srvc.synch.srcadapter;
 
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.id.UUIDGen;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
+import org.openiam.connector.type.constant.StatusCodeType;
+import org.openiam.exception.ScriptEngineException;
 import org.openiam.idm.srvc.audit.domain.AuditLogBuilder;
 import org.openiam.idm.srvc.synch.dto.Attribute;
 import org.openiam.idm.srvc.synch.dto.LineObject;
@@ -40,6 +44,7 @@ import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.resp.ProvisionUserResponse;
+import org.openiam.provision.type.ExtensibleAttribute;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -174,7 +179,7 @@ public class LdapAdapter extends AbstractSrcAdapter { // implements SourceAdapte
 
                     pageSize++;
                     log.debug("========== New Page number " + pageSize + " for processing, Processed: "+totalRecords+" records");
-                    NamingEnumeration results = search(baseou, config.getQuery());
+                    NamingEnumeration results = search(baseou, config);
 
                     while (results != null && results.hasMoreElements()) {
                         totalRecords++;
@@ -501,20 +506,37 @@ public class LdapAdapter extends AbstractSrcAdapter { // implements SourceAdapte
         return lrt;
     }
 
-    private NamingEnumeration search(String baseDn, String searchFilter) throws NamingException, IOException {
+    private NamingEnumeration search(String baseDn, SynchConfig config) throws NamingException, IOException {
 
-        String attrIds[] = {"*", "entrydn"};
+        String attrIds[] = {"*", "modifyTimestamp", "createTimestamp"};
+        if (StringUtils.isNotEmpty(config.getAttributeNamesLookup())) {
+            try {
+                List<String> attrNames = new ArrayList<String>();
+                if (StringUtils.isNotBlank(config.getAttributeNamesLookup())) {
+                    Map<String, Object> bindingMap = new HashMap<String, Object>();
+                    bindingMap.put("config", config);
+                    attrNames = (List)scriptRunner.execute(bindingMap, config.getAttributeNamesLookup());
+                }
+                if (CollectionUtils.isNotEmpty(attrNames)) {
+                    attrIds = attrNames.toArray(new String[0]);
+                }
+
+            } catch (ScriptEngineException e) {
+                log.error("Can't execute script", e);
+            }
+        }
+
         //TimeOut Error String attrIds[] = {"objectClass",""1.1,"+","*"};
       //  TimeOut Error String attrIds[] = {"objectClass", "*", "accountUnlockTime", "aci", "aclRights", "aclRightsInfo", "altServer", "attributeTypes", "changeHasReplFixupOp", "changeIsReplFixupOp", "copiedFrom", "copyingFrom", "createTimestamp", "creatorsName", "deletedEntryAttrs", "dITContentRules", "dITStructureRules", "dncomp", "ds-pluginDigest", "ds-pluginSignature", "ds6ruv", "dsKeyedPassword", "entrydn", "entryid", "hasSubordinates", "idmpasswd", "isMemberOf", "ldapSchemas", "ldapSyntaxes", "matchingRules", "matchingRuleUse", "modDNEnabledSuffixes", "modifiersName", "modifyTimestamp", "nameForms", "namingContexts", "nsAccountLock", "nsBackendSuffix", "nscpEntryDN", "nsds5ReplConflict", "nsIdleTimeout", "nsLookThroughLimit", "nsRole", "nsRoleDN", "nsSchemaCSN", "nsSizeLimit", "nsTimeLimit", "nsUniqueId", "numSubordinates", "objectClasses", "parentid", "passwordAllowChangeTime", "passwordExpirationTime", "passwordExpWarned", "passwordHistory", "passwordPolicySubentry", "passwordRetryCount", "pwdAccountLockedTime", "pwdChangedTime", "pwdFailureTime", "pwdGraceUseTime", "pwdHistory", "pwdLastAuthTime", "pwdPolicySubentry", "pwdReset", "replicaIdentifier", "replicationCSN", "retryCountResetTime", "subschemaSubentry", "supportedControl", "supportedExtension", "supportedLDAPVersion", "supportedSASLMechanisms", "supportedSSLCiphers", "targetUniqueId", "vendorName", "vendorVersion"};
 
         SearchControls searchCtls = new SearchControls();
         searchCtls.setTimeLimit(0);
         searchCtls.setCountLimit(10000);
-        searchCtls.setSearchScope(SearchControls.SUBTREE_SCOPE);
+        searchCtls.setSearchScope(config.getSearchScope().ordinal());
         searchCtls.setReturningAttributes(attrIds);
 
-        log.debug("Search: base dn=" + baseDn + ", filter= " + searchFilter);
-        return ctx.search(baseDn, searchFilter, searchCtls);
+        log.debug("Search: base dn=" + baseDn + ", filter= " + config.getQuery());
+        return ctx.search(baseDn, config.getQuery(), searchCtls);
     }
 
     private boolean connect(SynchConfig config) throws NamingException {
