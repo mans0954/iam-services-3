@@ -5,6 +5,12 @@ import org.openiam.connector.common.data.ConnectorConfiguration;
 public class AppTableConfiguration extends ConnectorConfiguration {
     private String userTableName;
     private String groupTableName;
+    private String userGroupTableName;
+    private String userGroupTableNameUserId;
+    private String userGroupTableNameGroupId;
+    private String groupGroupTableName;
+    private String groupGroupTableNameGroupId;
+    private String groupGroupTableNameGroupChildId;
     private String roleTableName;
     private String emailTableName;
 
@@ -38,5 +44,53 @@ public class AppTableConfiguration extends ConnectorConfiguration {
 
     public String getUserTableName() {
         return userTableName;
+    }
+
+    public String getUserGroupTableName() {
+        return userGroupTableName;
+    }
+
+    public void setUserGroupTableName(String userGroupTableName) {
+        this.userGroupTableName = userGroupTableName;
+    }
+
+    public String getUserGroupTableNameUserId() {
+        return userGroupTableNameUserId;
+    }
+
+    public void setUserGroupTableNameUserId(String userGroupTableNameUserId) {
+        this.userGroupTableNameUserId = userGroupTableNameUserId;
+    }
+
+    public String getUserGroupTableNameGroupId() {
+        return userGroupTableNameGroupId;
+    }
+
+    public void setUserGroupTableNameGroupId(String userGroupTableNameGroupId) {
+        this.userGroupTableNameGroupId = userGroupTableNameGroupId;
+    }
+
+    public String getGroupGroupTableName() {
+        return groupGroupTableName;
+    }
+
+    public void setGroupGroupTableName(String groupGroupTableName) {
+        this.groupGroupTableName = groupGroupTableName;
+    }
+
+    public String getGroupGroupTableNameGroupId() {
+        return groupGroupTableNameGroupId;
+    }
+
+    public void setGroupGroupTableNameGroupId(String groupGroupTableNameGroupId) {
+        this.groupGroupTableNameGroupId = groupGroupTableNameGroupId;
+    }
+
+    public String getGroupGroupTableNameGroupChildId() {
+        return groupGroupTableNameGroupChildId;
+    }
+
+    public void setGroupGroupTableNameGroupChildId(String groupGroupTableNameGroupChildId) {
+        this.groupGroupTableNameGroupChildId = groupGroupTableNameGroupChildId;
     }
 }

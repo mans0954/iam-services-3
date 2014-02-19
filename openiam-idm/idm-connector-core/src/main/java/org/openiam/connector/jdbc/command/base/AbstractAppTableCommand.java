@@ -117,9 +117,14 @@ public abstract class AbstractAppTableCommand<Request extends RequestType, Respo
     protected AppTableConfiguration getConfiguration(String targetID) throws ConnectorDataException {
         final String USER_TABLE = "USER_TABLE";
         final String GROUP_TABLE = "GROUP_TABLE";
+        final String USER_GROUP_MEMBERSHIP = "USER_GROUP_MEMBERSHIP";
+        final String GROUP_GROUP_MEMBERSHIP = "GROUP_GROUP_MEMBERSHIP";
+        final String GROUP_GROUP_MEMBERSHIP_GRP_ID = "GROUP_GROUP_MEMBERSHIP_GRP_ID";
+        final String GROUP_GROUP_MEMBERSHIP_GRP_CHLD_ID = "GROUP_GROUP_MEMBERSHIP_GRP_CHLD_ID";
+        final String USER_GROUP_MEMBERSHIP_GRP_ID = "USER_GROUP_MEMBERSHIP_GRP_ID";
+        final String USER_GROUP_MEMBERSHIP_USR_ID = "USER_GROUP_MEMBERSHIP_USR_ID";
         final String ROLE_TABLE = "ROLE_TABLE";
         final String EMAIL_TABLE = "EMAIL_TABLE";
-
         AppTableConfiguration configuration = super.getConfiguration(targetID, AppTableConfiguration.class);
 
         final ResourceProp userProp = configuration.getResource().getResourceProperty(USER_TABLE);
@@ -140,6 +145,31 @@ public abstract class AbstractAppTableCommand<Request extends RequestType, Respo
         final ResourceProp emailProp = configuration.getResource().getResourceProperty(EMAIL_TABLE);
         if (emailProp != null)
             configuration.setGroupTableName(emailProp.getPropValue());
+
+        final ResourceProp userGroupTName = configuration.getResource().getResourceProperty(USER_GROUP_MEMBERSHIP);
+        if (userGroupTName != null)
+            configuration.setUserGroupTableName(userGroupTName.getPropValue());
+        final ResourceProp userGroupUserId = configuration.getResource().getResourceProperty(
+                USER_GROUP_MEMBERSHIP_USR_ID);
+        if (userGroupUserId != null)
+            configuration.setUserGroupTableNameUserId(userGroupUserId.getPropValue());
+        final ResourceProp userGroupGroupId = configuration.getResource().getResourceProperty(
+                USER_GROUP_MEMBERSHIP_GRP_ID);
+        if (userGroupGroupId != null)
+            configuration.setUserGroupTableNameGroupId(userGroupGroupId.getPropValue());
+
+        final ResourceProp groupGroupTName = configuration.getResource().getResourceProperty(GROUP_GROUP_MEMBERSHIP);
+        if (groupGroupTName != null)
+            configuration.setGroupGroupTableName(groupGroupTName.getPropValue());
+
+        final ResourceProp groupGroupGrpId = configuration.getResource().getResourceProperty(
+                GROUP_GROUP_MEMBERSHIP_GRP_ID);
+        if (groupGroupGrpId != null)
+            configuration.setGroupGroupTableNameGroupId(groupGroupGrpId.getPropValue());
+        final ResourceProp groupGroupGrpChldId = configuration.getResource().getResourceProperty(
+                GROUP_GROUP_MEMBERSHIP_GRP_CHLD_ID);
+        if (groupGroupGrpChldId != null)
+            configuration.setGroupGroupTableNameGroupChildId(groupGroupGrpChldId.getPropValue());
 
         return configuration;
     }

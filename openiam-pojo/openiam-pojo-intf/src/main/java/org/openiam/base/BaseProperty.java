@@ -19,7 +19,7 @@ public class BaseProperty implements Serializable {
     protected String value;
     protected String attribute;
 
-    private BaseProperty() {
+    public BaseProperty() {
         super();
     }
 
