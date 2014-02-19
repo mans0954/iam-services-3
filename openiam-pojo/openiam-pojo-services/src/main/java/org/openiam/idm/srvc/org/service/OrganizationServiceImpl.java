@@ -345,7 +345,7 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
 
             if (StringUtils.isNotBlank(organizationTypeId)) {
                 if(organizationTypeId.equals(this.organizationTypeId)){
-                    this.getOrgTreeFlatList(DelegationFilterHelper.getOrgIdFilterFromString(attrMap), isUseOrgInhFlag);
+                    filterData = this.getOrgTreeFlatList(DelegationFilterHelper.getOrgIdFilterFromString(attrMap), isUseOrgInhFlag);
                 } else if(organizationTypeId.equals(this.divisionTypeId)){
                     filterData = this.getOrgTreeFlatList(DelegationFilterHelper.getDivisionFilterFromString(attrMap), isUseOrgInhFlag);
                 } else if(organizationTypeId.equals(this.departmentTypeId)){
