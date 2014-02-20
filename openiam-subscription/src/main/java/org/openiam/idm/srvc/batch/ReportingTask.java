@@ -112,7 +112,7 @@ public class ReportingTask implements ApplicationContextAware {
             public void run() {
                 try {
                     runReportSubscription(report);
-                } catch (BirtException e) {
+                } catch (Exception e) {
                     log.error(e);
                 }
             }
@@ -137,9 +137,8 @@ public class ReportingTask implements ApplicationContextAware {
                 if("ACTIVE".equals(report.getStatus())) {
                     runReportSubscription(report);
                 }
-            } catch (BirtException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+            } catch (Exception e) {
+                log.error(e);
             }
 		}
 	}
@@ -149,15 +148,19 @@ public class ReportingTask implements ApplicationContextAware {
      * @param report the report subscription entity
      * @throws BirtException
      */
-    private void runReportSubscription(ReportSubscriptionDto report) throws BirtException {
+    private void runReportSubscription(ReportSubscriptionDto report) throws BirtException, IllegalArgumentException {
         ReportInfoDto reportInfo = reportServiceClient
                 .getReport(report.getReportInfoId()).getReport();
 
         final DeliveryMethod deliveryMethod = DeliveryMethod.parseMethod(report.getDeliveryMethod().toUpperCase());
-        final String designFilePath = reportRoot + "/" + reportInfo.getReportUrl();
-        final ReportFormat reportFormat = ReportFormat.parseFormat(report.getDeliveryFormat().toUpperCase());
-        final String outputFileName = getOutputDir(deliveryMethod) + "/" + report.getUserId() +
-                "/" + reportInfo.getReportName() + "." + reportFormat.getExtension();
+        final String designFilePath = reportRoot + File.separator + reportInfo.getReportUrl();
+        final String deliveryFormat = report.getDeliveryFormat();
+
+        final ReportFormat reportFormat = deliveryFormat.startsWith(".")
+                ? ReportFormat.parseExtension(deliveryFormat)
+                : ReportFormat.parseFormat(deliveryFormat.toUpperCase());
+        final String outputFileName = getOutputDir(deliveryMethod) + File.separator + report.getUserId() +
+                File.separator + reportInfo.getReportName() + reportFormat.getExtension();
 
         List<ReportSubCriteriaParamDto> reportParameters = reportServiceClient
                 .getSubscribedReportParametersByReportId(report.getReportId()).getParameters();
@@ -275,7 +278,7 @@ public class ReportingTask implements ApplicationContextAware {
         File reportFile = new File(filePath);
         final String ouputDir = getOutputDir(DeliveryMethod.VIEW);
         for (String userId : userIds){
-            File destDir = new File(ouputDir + "/" + userId);
+            File destDir = new File(ouputDir + File.separator + userId);
             try {
                 FileUtils.copyFileToDirectory(reportFile, destDir);
             } catch (IOException e) {
@@ -286,7 +289,7 @@ public class ReportingTask implements ApplicationContextAware {
 
     public void deleteGeneratedDirs() {
         try {
-            FileUtils.deleteDirectory(new File(reportRoot + "/" + generatedReportsFolder));
+            FileUtils.deleteDirectory(new File(reportRoot + File.separator + generatedReportsFolder));
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -299,7 +302,7 @@ public class ReportingTask implements ApplicationContextAware {
 	}
 
     private String getOutputDir(DeliveryMethod deliveryMethod) {
-        return reportRoot+ "/" + generatedReportsFolder + "/" + deliveryMethod.toString();
+        return reportRoot+ File.separator + generatedReportsFolder + File.separator + deliveryMethod.toString();
     }
 
 /*
@@ -396,7 +399,7 @@ public class ReportingTask implements ApplicationContextAware {
 
 /*
 	public File[] getReportsListForUser(String userId) {
-		File dir = new File(reportRoot + "/" + generatedReportsFolder + "/VIEW/" + userId);
+		File dir = new File(reportRoot + File.separator + generatedReportsFolder + "/VIEW/" + userId);
 		File[] files = dir.listFiles();
 		return files;
 	}
