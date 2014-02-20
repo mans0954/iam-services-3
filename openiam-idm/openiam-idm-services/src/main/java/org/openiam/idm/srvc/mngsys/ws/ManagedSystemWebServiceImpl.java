@@ -134,12 +134,12 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
     		}
 
 
-    		if(StringUtils.isBlank(sys.getManagedSysId())) {
+    		if(StringUtils.isBlank(sys.getId())) {
     			managedSystemService.addManagedSys(sys);
     		}  else {
     			managedSystemService.updateManagedSys(sys);
     		}
-    		response.setResponseValue(sys.getManagedSysId());
+    		response.setResponseValue(sys.getId());
     	} catch (BasicDataServiceException e) {
 			response.setErrorCode(e.getCode());
 			response.setStatus(ResponseStatus.FAILURE);

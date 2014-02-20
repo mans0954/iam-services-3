@@ -28,8 +28,8 @@ public class ManagedSysDAOImpl extends BaseDaoImpl<ManagedSysEntity, String> imp
 	protected Criteria getExampleCriteria(ManagedSysEntity example) {
 		final Criteria criteria = getCriteria();
 		if(example != null) {
-			if(StringUtils.isNotBlank(example.getManagedSysId())) {
-				criteria.add(Restrictions.eq("managedSysId", example.getManagedSysId()));
+			if(StringUtils.isNotBlank(example.getId())) {
+				criteria.add(Restrictions.eq(getPKfieldName(), example.getId()));
 			} else {
 				if(StringUtils.isNotBlank(example.getName())) {
 					String name = example.getName();
@@ -59,13 +59,13 @@ public class ManagedSysDAOImpl extends BaseDaoImpl<ManagedSysEntity, String> imp
 	@SuppressWarnings(value = "unchecked")
     @Override
 	public List<ManagedSysEntity> findbyConnectorId(String connectorId) {
-		Criteria criteria = getCriteria().add(Restrictions.eq("connectorId",connectorId)).addOrder(Order.asc("managedSysId"));
+		Criteria criteria = getCriteria().add(Restrictions.eq("connectorId",connectorId)).addOrder(Order.asc(getPKfieldName()));
 		return (List<ManagedSysEntity>)criteria.list();
 	}
 
 //	@SuppressWarnings(value = "unchecked")
 //	public List<ManagedSysEntity> findbyDomain(String domainId) {
-//        Criteria criteria = getCriteria().add(Restrictions.eq("domainId",domainId)).addOrder(Order.asc("managedSysId"));
+//        Criteria criteria = getCriteria().add(Restrictions.eq("domainId",domainId)).addOrder(Order.asc(getPKfieldName()));
 //		return (List<ManagedSysEntity>)criteria.list();
 //	}
 
@@ -82,7 +82,7 @@ public class ManagedSysDAOImpl extends BaseDaoImpl<ManagedSysEntity, String> imp
     @Override
     @SuppressWarnings(value = "unchecked")
     public ManagedSysEntity findByName(String name) {
-        Criteria criteria = getCriteria().add(Restrictions.eq("name",name)).addOrder(Order.asc("name")).addOrder(Order.asc("managedSysId"));
+        Criteria criteria = getCriteria().add(Restrictions.eq("name",name)).addOrder(Order.asc("name")).addOrder(Order.asc(getPKfieldName()));
         List<ManagedSysEntity> results = (List<ManagedSysEntity>)criteria.list();
         if(CollectionUtils.isNotEmpty(results)) {
             log.info("ManagedSys resultSet = " + results.size());
@@ -115,7 +115,7 @@ public class ManagedSysDAOImpl extends BaseDaoImpl<ManagedSysEntity, String> imp
 	
     @Override
     protected String getPKfieldName() {
-        return "managedSysId";
+        return "id";
     }
 
 	@Override

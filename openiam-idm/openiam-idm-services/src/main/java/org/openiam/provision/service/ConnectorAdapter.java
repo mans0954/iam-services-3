@@ -75,7 +75,7 @@ public class ConnectorAdapter {
                 return resp;
             }
             log.info("ConnectorAdapter:addRequest called. Managed sys ="
-                    + managedSys.getManagedSysId());
+                    + managedSys.getId());
 
             ProvisionConnectorDto connector = connectorService
                     .getProvisionConnector(managedSys.getConnectorId());
@@ -117,7 +117,7 @@ public class ConnectorAdapter {
                 return resp;
             }
             log.debug("ConnectorAdapter:modifyRequest called. Managed sys ="
-                    + managedSys.getManagedSysId());
+                    + managedSys.getId());
 
             ProvisionConnectorDto connector = connectorService
                     .getProvisionConnector(managedSys.getConnectorId());
@@ -162,7 +162,7 @@ public class ConnectorAdapter {
             return resp;
         }
         log.debug("ConnectorAdapter:lookupRequest called. Managed sys ="
-                + managedSys.getManagedSysId());
+                + managedSys.getId());
 
         try {
             ProvisionConnectorDto connector = connectorService
@@ -343,7 +343,7 @@ public class ConnectorAdapter {
             return resp;
         }
         log.info("ConnectorAdapter:deleteRequest called. Managed sys ="
-                + managedSys.getManagedSysId());
+                + managedSys.getId());
 
         try {
 
@@ -388,7 +388,7 @@ public class ConnectorAdapter {
             return resp;
         }
         log.info("ConnectorAdapter:setPasswordRequest called. Managed sys ="
-                + managedSys.getManagedSysId());
+                + managedSys.getId());
         try {
 
             ProvisionConnectorDto connector = connectorService
@@ -434,7 +434,7 @@ public class ConnectorAdapter {
             return resp;
         }
         log.debug("ConnectorAdapter:resetPasswordRequest called. Managed sys ="
-                + managedSys.getManagedSysId());
+                + managedSys.getId());
 
         try {
             ProvisionConnectorDto connector = connectorService
@@ -481,7 +481,7 @@ public class ConnectorAdapter {
             return resp;
         }
         log.debug("ConnectorAdapter:suspendRequest called. Managed sys ="
-                + managedSys.getManagedSysId());
+                + managedSys.getId());
 
         try {
             ProvisionConnectorDto connector = connectorService
@@ -526,7 +526,7 @@ public class ConnectorAdapter {
             return type;
         }
         log.debug("ConnectorAdapter:resumeRequest called. Managed sys ="
-                + managedSys.getManagedSysId());
+                + managedSys.getId());
         try {
             ProvisionConnectorDto connector = connectorService
                     .getProvisionConnector(managedSys.getConnectorId());
@@ -569,7 +569,7 @@ public class ConnectorAdapter {
         }
 
         log.debug("ConnectorAdapter:testConnection called. Managed sys ="
-                + managedSys.getManagedSysId());
+                + managedSys.getId());
 
         try {
             ProvisionConnectorDto connector = connectorService
@@ -581,7 +581,7 @@ public class ConnectorAdapter {
                     && (connector.getServiceUrl() != null && connector
                     .getServiceUrl().length() > 0)) {
                 RequestType<ExtensibleUser> rt = new RequestType<ExtensibleUser>();
-                rt.setTargetID(managedSys.getManagedSysId());
+                rt.setTargetID(managedSys.getId());
                 rt.setScriptHandler(managedSys.getTestConnectionHandler());
                 rt.setHostPort((managedSys.getPort() != null) ? managedSys.getPort().toString() : null);
                 rt.setHostUrl(managedSys.getHostUrl());

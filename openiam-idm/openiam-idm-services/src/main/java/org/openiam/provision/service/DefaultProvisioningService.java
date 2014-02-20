@@ -374,7 +374,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
             ManagedSystemObjectMatch matchObj = null;
             ManagedSystemObjectMatch[] matchObjAry = managedSysService
-                    .managedSysObjectParam(mSys.getManagedSysId(), "USER");
+                    .managedSysObjectParam(mSys.getId(), "USER");
             if (matchObjAry != null && matchObjAry.length > 0) {
                 matchObj = matchObjAry[0];
                 bindingMap.put(MATCH_PARAM, matchObj);
@@ -473,14 +473,14 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                 ManagedSystemObjectMatch matchObj = null;
                                 ManagedSystemObjectMatch[] matchObjAry = managedSysService
                                         .managedSysObjectParam(
-                                                mSys.getManagedSysId(), "USER");
+                                                mSys.getId(), "USER");
                                 if (matchObjAry != null && matchObjAry.length > 0) {
                                     matchObj = matchObjAry[0];
                                     bindingMap.put(MATCH_PARAM, matchObj);
                                 }
                                 log.debug("Deleting id=" + l.getLogin());
                                 log.debug("- delete using managed sys id="
-                                        + mSys.getManagedSysId());
+                                        + mSys.getId());
 
                                 // pre-processing
                                 bindingMap.put(IDENTITY, l);
@@ -491,7 +491,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
                                 // SET PRE ATTRIBUTES FOR TARGET SYS SCRIPT
                                 bindingMap.put(TARGET_SYSTEM_IDENTITY, l.getLogin());
-                                bindingMap.put(TARGET_SYS_MANAGED_SYS_ID, mSys.getManagedSysId());
+                                bindingMap.put(TARGET_SYS_MANAGED_SYS_ID, mSys.getId());
                                 bindingMap.put(TARGET_SYS_RES_ID, resourceId);
                                 bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS, IDENTITY_EXIST);
 
@@ -758,7 +758,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                             if(AccountLockEnum.LOCKED.equals(operation) || AccountLockEnum.LOCKED_ADMIN.equals(operation)) {
                                 final SuspendResumeRequest suspendCommand = new SuspendResumeRequest();
                                 suspendCommand.setObjectIdentity(lg.getLogin());
-                                suspendCommand.setTargetID(managedSys.getManagedSysId());
+                                suspendCommand.setTargetID(managedSys.getId());
                                 suspendCommand.setRequestID("R"
                                         + System.currentTimeMillis());
                                 connectorAdapter.suspendRequest(managedSys,
@@ -766,7 +766,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                             } else {
                                 final SuspendResumeRequest resumeRequest = new SuspendResumeRequest();
                                 resumeRequest.setObjectIdentity(lg.getLogin());
-                                resumeRequest.setTargetID(managedSys.getManagedSysId());
+                                resumeRequest.setTargetID(managedSys.getId());
                                 resumeRequest.setRequestID("R"
                                         + System.currentTimeMillis());
                                 connectorAdapter.resumeRequest(managedSys,
@@ -1173,7 +1173,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
     private ProvisionDataContainer provisionResource(boolean isAdd, Resource res, UserEntity userEntity, ProvisionUser pUser,
             Map<String, Object> bindingMap, Login primaryIdentity, String requestId) {
         ManagedSysDto managedSys = managedSysService.getManagedSysByResource(res.getId());
-        String managedSysId = (managedSys != null) ? managedSys.getManagedSysId() : null;
+        String managedSysId = (managedSys != null) ? managedSys.getId() : null;
         if (managedSysId != null) {
             if (pUser.getSrcSystemId() != null) {
             // we are checking if SrcSystemId is set in ProvisionUser it means we should ignore this resource from provisioning to avoid cyclic. Used in Reconciliation of one managed system to another
@@ -1297,7 +1297,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
         //ManagedSysDto mSys = managedSysService.getManagedSys(managedSysId);
         ManagedSysDto mSys = managedSysService.getManagedSysByResource(res.getId());
-        String managedSysId = (mSys != null) ? mSys.getManagedSysId() : null;
+        String managedSysId = (mSys != null) ? mSys.getId() : null;
         if (mSys == null || mSys.getConnectorId() == null) {
             return null;
         }
@@ -1483,7 +1483,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
                 ManagedSystemObjectMatchEntity matchObj = null;
                 final List<ManagedSystemObjectMatchEntity> matchList = managedSystemService
-                        .managedSysObjectParam(mSys.getManagedSysId(), "USER");
+                        .managedSysObjectParam(mSys.getId(), "USER");
                 if (CollectionUtils.isNotEmpty(matchList)) {
                     matchObj = matchList.get(0);
                 }
@@ -1764,7 +1764,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 	                                ManagedSystemObjectMatchEntity matchObj = null;
 	                                final List<ManagedSystemObjectMatchEntity> matchObjects = managedSystemService
 	                                        .managedSysObjectParam(
-	                                                mSys.getManagedSysId(), "USER");
+	                                                mSys.getId(), "USER");
 	                                if (CollectionUtils.isNotEmpty(matchObjects)) {
 	                                    matchObj = matchObjects.get(0);
 	                                }
@@ -1807,7 +1807,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
 	            ManagedSystemObjectMatchEntity matchObj = null;
 	            final List<ManagedSystemObjectMatchEntity> matchObjects = managedSystemService
-	                    .managedSysObjectParam(mSys.getManagedSysId(), "USER");
+	                    .managedSysObjectParam(mSys.getId(), "USER");
 	            if (CollectionUtils.isNotEmpty(matchObjects)) {
 	                matchObj = matchObjects.get(0);
 	            }
@@ -1933,7 +1933,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         if (mSys == null)
             return null;
         LookupRequest lookupRequest = new LookupRequest();
-        lookupRequest.setTargetID(mSys.getManagedSysId());
+        lookupRequest.setTargetID(mSys.getId());
         lookupRequest.setRequestID(mSys.getResourceId());
         lookupRequest.setHostUrl(mSys.getHostUrl());
         lookupRequest.setHostLoginId(mSys.getUserId());

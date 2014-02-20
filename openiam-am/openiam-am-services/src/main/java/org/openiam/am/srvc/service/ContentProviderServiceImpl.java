@@ -111,7 +111,7 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
     public void saveContentProvider(ContentProviderEntity provider){
        
     	UIThemeEntity theme = null;
-        final ManagedSysEntity managedSys = managedSysDAO.findById(provider.getManagedSystem().getManagedSysId());        
+        final ManagedSysEntity managedSys = managedSysDAO.findById(provider.getManagedSystem().getId());        
         if(provider.getUiTheme() != null) {
         	theme = uiThemeDAO.findById(provider.getUiTheme().getId());
         }

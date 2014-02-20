@@ -21,7 +21,7 @@ public class TestUserGoogleCommand<ExtObject extends ExtensibleObject> extends
         ManagedSysEntity mSys = managedSysService.getManagedSysById(request
                 .getTargetID());
         String adminEmail = mSys.getUserId();
-        String password = this.getPassword(mSys.getManagedSysId());
+        String password = this.getPassword(mSys.getId());
         String domain = mSys.getHostUrl();
         try {
             GoogleAgent client = new GoogleAgent();

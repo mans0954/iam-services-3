@@ -91,7 +91,7 @@ public class LdapConnectionMgr implements ConnectionMgr {
             decryptedPassword = managedSys.getPswd();
             e.printStackTrace();
         }
-        log.debug("connect: Connecting to target system: " + managedSys.getManagedSysId() );
+        log.debug("connect: Connecting to target system: " + managedSys.getId() );
         log.debug("connect: Managed System object : " + managedSys);
 
 		log.info(" directory login = " + managedSys.getUserId() );
