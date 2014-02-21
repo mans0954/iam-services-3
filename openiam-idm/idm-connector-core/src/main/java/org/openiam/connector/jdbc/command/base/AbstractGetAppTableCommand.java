@@ -58,7 +58,7 @@ public abstract class AbstractGetAppTableCommand<ExtObject extends ExtensibleObj
 
             String sql = "";
             if (!StringUtils.isEmpty(principalName) && StringUtils.isEmpty(searchQuery)) {
-                String.format(SELECT_SQL, columnList, tableName, principalFieldName);
+                sql=  String.format(SELECT_SQL, columnList, tableName, principalFieldName);
                 statement = con.prepareStatement(sql);
                 setStatement(statement, 1, principalFieldDataType, principalName);
             } else if (StringUtils.isEmpty(principalName) && !StringUtils.isEmpty(searchQuery)) {

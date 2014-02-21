@@ -36,5 +36,4 @@ public abstract class AbstractAddAppTableCommand<ExtObject extends ExtensibleObj
             this.closeConnection(con);
         }
     }
-
 }

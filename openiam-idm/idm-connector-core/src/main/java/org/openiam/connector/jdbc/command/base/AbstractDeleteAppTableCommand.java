@@ -30,6 +30,12 @@ public abstract class AbstractDeleteAppTableCommand<ExtObject extends Extensible
             final PreparedStatement statement = createDeleteStatement(con, configuration.getResourceId(),
                     this.getTableName(configuration, this.getObjectType()), principalName);
             statement.executeUpdate();
+            try {
+                this.deleteMemberShip(con, configuration, principalName, this.getObjectType());
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+                throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR, e.getMessage());
+            }
             this.closeStatement(statement);
             return response;
         } catch (ConnectorDataException e) {

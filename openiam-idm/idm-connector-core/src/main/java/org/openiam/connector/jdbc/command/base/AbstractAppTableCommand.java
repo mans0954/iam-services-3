@@ -297,7 +297,7 @@ public abstract class AbstractAppTableCommand<Request extends RequestType, Respo
         }
     }
 
-    protected void addObject(Connection con, String principalName, ExtensibleObject object,
+    protected boolean addObject(Connection con, String principalName, ExtensibleObject object,
             AppTableConfiguration config, String objectType) throws ConnectorDataException {
         // build sql
         final StringBuilder columns = new StringBuilder("");
@@ -311,7 +311,7 @@ public abstract class AbstractAppTableCommand<Request extends RequestType, Respo
                     if (log.isDebugEnabled()) {
                         log.debug(String.format("%s exists. Returning success to the connector", principalName));
                     }
-                    return;
+                    return false;
                 }
                 if (log.isDebugEnabled()) {
                     log.debug(String.format("Number of attributes to persist in ADD = %s", attrList.size()));
@@ -324,6 +324,9 @@ public abstract class AbstractAppTableCommand<Request extends RequestType, Respo
                             String supportedObjType = a.getName();
                             ExtensibleObject ea = this.createNewExtensibleObject(a);
                             this.addObject(con, ea.getObjectId(), ea, config, supportedObjType);
+                            this.createMemberShip(con, config, principalName, objectType, ea.getObjectId(),
+                                    supportedObjType);
+
                         }
                     } else {
                         if (ctr != 0) {
@@ -379,6 +382,7 @@ public abstract class AbstractAppTableCommand<Request extends RequestType, Respo
                 this.closeStatement(statement);
             }
         }
+        return true;
     }
 
     protected void modifyObject(Connection con, String principalName, ExtensibleObject object,
@@ -451,4 +455,49 @@ public abstract class AbstractAppTableCommand<Request extends RequestType, Respo
         }
     }
 
+    protected void createMemberShip(Connection con, AppTableConfiguration config, String parentId,
+            String parentObjectType, String childId, String childObjectType) throws Exception {
+        String membershipTable = config.getUserGroupTableName();
+        String membershipUserColumn = config.getUserGroupTableNameUserId();
+        String membershipGroupColumn = config.getUserGroupTableNameGroupId();
+        if (!StringUtils.isEmpty(membershipTable) && !StringUtils.isEmpty(membershipUserColumn)
+                && !StringUtils.isEmpty(membershipGroupColumn) && !StringUtils.isEmpty(childId)
+                && !StringUtils.isEmpty(parentId) && "USER".equalsIgnoreCase(parentObjectType)
+                && "GROUP".equalsIgnoreCase(childObjectType)) {
+            PreparedStatement ps = null;
+            // check is exist
+            String selectSQL = "select count(*) from %s where %s = ? and %s = ?";
+            selectSQL = String.format(selectSQL, membershipTable, membershipUserColumn, membershipGroupColumn);
+            ps = con.prepareStatement(selectSQL);
+            ps.setString(1, parentId);
+            ps.setString(2, childId);
+            ResultSet rs = ps.executeQuery();
+            boolean isExist = false;
+            while (rs.next()) {
+                isExist = rs.getInt(1) > 0;
+            }
+            if (!isExist) {
+                String sql = "INSERT INTO %s (%s,%s) VALUES (?,?)";
+                sql = String.format(sql, membershipTable, membershipUserColumn, membershipGroupColumn);
+                ps = con.prepareStatement(sql);
+                ps.setString(1, parentId);
+                ps.setString(2, childId);
+                ps.executeUpdate();
+            }
+        }
+    }
+
+    protected void deleteMemberShip(Connection con, AppTableConfiguration config, String parentId,
+            String parentObjectType) throws Exception {
+        String membershipTable = config.getUserGroupTableName();
+        String membershipUserColumn = config.getUserGroupTableNameUserId();
+        if (!StringUtils.isEmpty(membershipTable) && !StringUtils.isEmpty(membershipUserColumn)
+                && !StringUtils.isEmpty(parentId) && "USER".equalsIgnoreCase(parentObjectType)) {
+            String sql = "DELETE FROM %s WHERE %s = ?";
+            sql = String.format(sql, membershipTable, membershipUserColumn);
+            PreparedStatement ps = con.prepareStatement(sql);
+            ps.setString(1, parentId);
+            ps.executeUpdate();
+        }
+    }
 }
