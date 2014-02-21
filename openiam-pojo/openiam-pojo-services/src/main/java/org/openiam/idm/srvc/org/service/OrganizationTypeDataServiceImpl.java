@@ -1,26 +1,23 @@
 package org.openiam.idm.srvc.org.service;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import javax.jws.WebService;
-
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.exception.BasicDataServiceException;
 import org.openiam.dozer.converter.OrganizationDozerConverter;
 import org.openiam.dozer.converter.OrganizationTypeDozerBeanConverter;
+import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.OrganizationTypeSearchBean;
 import org.openiam.idm.srvc.org.domain.OrganizationTypeEntity;
 import org.openiam.idm.srvc.org.dto.OrganizationType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import javax.jws.WebService;
+import java.util.List;
 
 @Service("organizationTypeDataService")
 @WebService(targetNamespace = "urn:idm.openiam.org/srvc/org/service", name = "OrganizationTypeDataService")
@@ -53,6 +50,12 @@ public class OrganizationTypeDataServiceImpl implements OrganizationTypeDataServ
 	public int count(final OrganizationTypeSearchBean searchBean) {
 		return organizationTypeService.count(searchBean);
 	}
+
+    @Override
+    public List<OrganizationType> findAllowedChildrenByDelegationFilter(final String requesterId){
+        final List<OrganizationTypeEntity> entityList =  organizationTypeService.findAllowedChildrenByDelegationFilter(requesterId);
+        return dozerConverter.convertToDTOList(entityList, false);
+    }
 
 	@Override
 	public Response save(final OrganizationType type) {

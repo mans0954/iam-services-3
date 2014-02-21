@@ -7,12 +7,13 @@ import java.util.*;
 
 public class DelegationFilterHelper {
     public static final String DLG_FLT_APP="DLG_FLT_APP";
-    //public static final String DLG_FLT_DEPT="DLG_FLT_DEPT";
-    //public static final String DLG_FLT_DIV="DLG_FLT_DIV";
+    public static final String DLG_FLT_DEPT="DLG_FLT_DEPT";
+    public static final String DLG_FLT_DIV="DLG_FLT_DIV";
     public static final String DLG_FLT_GRP="DLG_FLT_GRP";
     public static final String DLG_FLT_ORG="DLG_FLT_ORG";
     public static final String DLG_FLT_ROLE="DLG_FLT_ROLE";
     public static final String DLG_FLT_MNG_RPT="DLG_FLT_MNG_RPT";
+    public static final String DLG_FLT_USE_ORG_INH="DLG_FLT_USE_ORG_INH";
 
     private static final String DLG_FLT_SEPARATOR=",";
 
@@ -27,6 +28,19 @@ public class DelegationFilterHelper {
 
     public static boolean isOrgFilterSet(Map<String, UserAttribute> attrMap) {
         return isFilerSet(attrMap, DLG_FLT_ORG);
+    }
+    public static List<String> getDeptFilterFromString(Map<String, UserAttribute> attrMap) {
+        return getFilterListFromString(attrMap, DLG_FLT_DEPT);
+    }
+    public static boolean isDeptFilterSet(Map<String, UserAttribute> attrMap) {
+        return isFilerSet(attrMap, DLG_FLT_DEPT);
+    }
+
+    public static List<String> getDivisionFilterFromString(Map<String, UserAttribute> attrMap) {
+        return getFilterListFromString(attrMap, DLG_FLT_DIV);
+    }
+    public static boolean isDivisionFilterSet(Map<String, UserAttribute> attrMap) {
+        return isFilerSet(attrMap, DLG_FLT_DIV);
     }
 
     public static List<String> getRoleFilterFromString(Map<String, UserAttribute> attrMap) {
@@ -64,6 +78,15 @@ public class DelegationFilterHelper {
         return isFilterSet;
     }
 
+    public static boolean isUseOrgInhFilterSet(Map<String, UserAttribute> attrMap) {
+        String filterValue = getFilterValue(attrMap, DLG_FLT_USE_ORG_INH);
+        boolean isFilterSet = false;
+        if(StringUtils.isNotEmpty(filterValue)) {
+            isFilterSet = new Boolean(filterValue);
+        }
+        return isFilterSet;
+    }
+
 
     public static String getValueFromList(List<String> values){
         if(values==null)
@@ -83,14 +106,13 @@ public class DelegationFilterHelper {
 
     public static String[] getFilterTypes(){
         return new String[]{DelegationFilterHelper.DLG_FLT_APP,
-        					/*
-                            DelegationFilterHelper.DLG_FLT_DEPT,
+        					DelegationFilterHelper.DLG_FLT_DEPT,
                             DelegationFilterHelper.DLG_FLT_DIV,
-                            */
                             DelegationFilterHelper.DLG_FLT_GRP,
                             DelegationFilterHelper.DLG_FLT_ROLE,
                             DelegationFilterHelper.DLG_FLT_ORG,
-                            DelegationFilterHelper.DLG_FLT_MNG_RPT};
+                            DelegationFilterHelper.DLG_FLT_MNG_RPT,
+                            DelegationFilterHelper.DLG_FLT_USE_ORG_INH};
     }
 
     private static boolean isFilerSet(Map<String, UserAttribute> attrMap, String key){

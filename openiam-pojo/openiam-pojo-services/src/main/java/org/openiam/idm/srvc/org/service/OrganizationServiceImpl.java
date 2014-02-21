@@ -1,15 +1,11 @@
 package org.openiam.idm.srvc.org.service;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.time.StopWatch;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.dozer.converter.OrganizationDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
@@ -19,25 +15,28 @@ import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 import org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
+import org.openiam.idm.srvc.org.dto.Org2OrgXref;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
-import org.openiam.idm.srvc.role.domain.RoleAttributeEntity;
-import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
 import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.srvc.user.util.DelegationFilterHelper;
+import org.openiam.thread.Sweepable;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.*;
+
 @Service("organizationService")
 @Transactional
-public class OrganizationServiceImpl implements OrganizationService {
-
+public class OrganizationServiceImpl implements OrganizationService, InitializingBean, Sweepable {
+    private static final Log log = LogFactory.getLog(OrganizationServiceImpl.class);
 	@Autowired
 	private OrganizationTypeDAO orgTypeDAO;
 	
@@ -55,6 +54,9 @@ public class OrganizationServiceImpl implements OrganizationService {
 
     @Autowired
     private UserDataService userDataService;
+
+    @Autowired
+    private OrganizationTypeService organizationTypeService;
     
     @Autowired
     private OrganizationDozerConverter organizationDozerConverter;
@@ -67,6 +69,17 @@ public class OrganizationServiceImpl implements OrganizationService {
 	
 	@Autowired
     private ResourceTypeDAO resourceTypeDao;
+
+    private Map<String, Set<String>> organizationTree;
+
+
+
+    @Value("${org.openiam.delegation.filter.organization}")
+    private String organizationTypeId;
+    @Value("${org.openiam.delegation.filter.division}")
+    private String divisionTypeId;
+    @Value("${org.openiam.delegation.filter.department}")
+    private String departmentTypeId;
 
     @Override
     public OrganizationEntity getOrganization(String orgId) {
@@ -107,7 +120,7 @@ public class OrganizationServiceImpl implements OrganizationService {
 
     @Override
     public List<OrganizationEntity> findBeans(final OrganizationSearchBean searchBean, String requesterId, int from, int size) {
-        Set<String> filter = getDelegationFilter(requesterId, searchBean.getOrganizationTypeId());
+        Set<String> filter = getDelegationFilter(requesterId, null);
         if (StringUtils.isBlank(searchBean.getKey()))
             searchBean.setKeys(filter);
         else if (!DelegationFilterHelper.isAllowed(searchBean.getKey(), filter)) {
@@ -184,8 +197,9 @@ public class OrganizationServiceImpl implements OrganizationService {
             final OrganizationEntity dbOrg = orgDao.findById(entity.getId());
             if (dbOrg != null) {
             	mergeAttributes(entity, dbOrg);
+                mergeParents(entity, dbOrg);
                 entity.setChildOrganizations(dbOrg.getChildOrganizations());
-                entity.setParentOrganizations(dbOrg.getParentOrganizations());
+//                entity.setParentOrganizations(dbOrg.getParentOrganizations());
                 entity.setUsers(dbOrg.getUsers());
                 entity.setAdminResource(dbOrg.getAdminResource());
                 if(entity.getAdminResource() == null) {
@@ -195,6 +209,7 @@ public class OrganizationServiceImpl implements OrganizationService {
             }
         } else {
         	entity.setAdminResource(getNewAdminResource(entity, requestorId));
+            mergeParents(entity, null);
             orgDao.save(entity);
             entity.addApproverAssociation(createDefaultApproverAssociations(entity, requestorId));
         }
@@ -219,14 +234,43 @@ public class OrganizationServiceImpl implements OrganizationService {
 		association.setApproverEntityType(AssociationType.USER);
 		return association;
 	}
-    
+
+    private void mergeParents(final OrganizationEntity bean, final OrganizationEntity dbObject) {
+        final Set<OrganizationEntity> renewedSet = new HashSet<OrganizationEntity>();
+
+        final Set<OrganizationEntity> beanParents = (bean.getParentOrganizations() != null) ? bean.getParentOrganizations() : new HashSet<OrganizationEntity>();
+        final Set<OrganizationEntity> dbParents = (dbObject!=null && dbObject.getParentOrganizations() != null) ? dbObject.getParentOrganizations() : new HashSet<OrganizationEntity>();
+
+        /* add */
+        for(final Iterator<OrganizationEntity> it = beanParents.iterator(); it.hasNext();) {
+            boolean contains = false;
+            final OrganizationEntity beanParent = it.next();
+            for(final Iterator<OrganizationEntity> dbIt = dbParents.iterator(); dbIt.hasNext();) {
+                final OrganizationEntity dbParent = dbIt.next();
+                if(StringUtils.equals(dbParent.getId(), beanParent.getId())) {
+                    contains = true;
+                    renewedSet.add(dbParent);
+                }
+            }
+
+            if(!contains) {
+                final OrganizationEntity dbParOrg = orgDao.findById(beanParent.getId());
+//                dbParOrg.getChildOrganizations().add(bean);
+                renewedSet.add(dbParOrg);
+            }
+        }
+        bean.setParentOrganizations(renewedSet);
+    }
+
     private void mergeAttributes(final OrganizationEntity bean, final OrganizationEntity dbObject) {
 		
 		final Set<OrganizationAttributeEntity> renewedSet = new HashSet<OrganizationAttributeEntity>();
 		
 		final Set<OrganizationAttributeEntity> beanProps = (bean.getAttributes() != null) ? bean.getAttributes() : new HashSet<OrganizationAttributeEntity>();
 		final Set<OrganizationAttributeEntity> dbProps = (dbObject.getAttributes() != null) ? dbObject.getAttributes() : new HashSet<OrganizationAttributeEntity>();
-			
+
+
+
 		/* update */
 		for(final Iterator<OrganizationAttributeEntity> dbIt = dbProps.iterator(); dbIt.hasNext();) {
 			final OrganizationAttributeEntity dbProp = dbIt.next();
@@ -312,35 +356,82 @@ public class OrganizationServiceImpl implements OrganizationService {
         }
     }
 
-    private Set<String> getDelegationFilter(String requesterId, String organizationTypeId) {
+    @Override
+    public Set<String> getDelegationFilter(String requesterId, String organizationTypeId) {
         Set<String> filterData = null;
         if (StringUtils.isNotBlank(requesterId)) {
             Map<String, UserAttribute> requesterAttributes = userDataService.getUserAttributesDto(requesterId);
+            filterData = getDelegationFilter(requesterAttributes, organizationTypeId);
 
-            if (StringUtils.isNotBlank(organizationTypeId)) {
-            	filterData = new HashSet<String>(DelegationFilterHelper.getOrgIdFilterFromString(requesterAttributes));
-                //classification = OrgClassificationEnum.valueOf(orgClassification);
-            	/*
-                switch (classification) {
-	                case ORGANIZATION:
-	                    filterData = new HashSet<String>(DelegationFilterHelper.getOrgIdFilterFromString(requesterAttributes));
-	                    break;
-	                default:
-	                    filterData = getFullOrgFilterList(requesterAttributes);
-	                    break;
-                }
-                */
-            } else {
-                filterData = getFullOrgFilterList(requesterAttributes);
-            }
         }
 
         return filterData;
     }
 
-    private Set<String> getFullOrgFilterList(Map<String, UserAttribute> attrMap) {
-        List<String> filterData = DelegationFilterHelper.getOrgIdFilterFromString(attrMap);
-        return new HashSet<String>(filterData);
+    @Override
+    public Set<String> getDelegationFilter(Map<String, UserAttribute> attrMap, String organizationTypeId) {
+        Set<String> filterData = new HashSet<String>();
+        if(attrMap!=null && !attrMap.isEmpty()){
+            boolean isUseOrgInhFlag = DelegationFilterHelper.isUseOrgInhFilterSet(attrMap);
+
+            filterData.addAll(this.getOrgTreeFlatList(DelegationFilterHelper.getOrgIdFilterFromString(attrMap), isUseOrgInhFlag));
+            filterData.addAll(this.getOrgTreeFlatList(DelegationFilterHelper.getDeptFilterFromString(attrMap), isUseOrgInhFlag));
+            filterData.addAll(this.getOrgTreeFlatList(DelegationFilterHelper.getDivisionFilterFromString(attrMap), isUseOrgInhFlag));
+
+//            if (StringUtils.isNotBlank(organizationTypeId)) {
+//                if(organizationTypeId.equals(this.organizationTypeId)){
+//                    filterData = this.getOrgTreeFlatList(DelegationFilterHelper.getOrgIdFilterFromString(attrMap), isUseOrgInhFlag);
+//                } else if(organizationTypeId.equals(this.divisionTypeId)){
+//                    filterData = this.getOrgTreeFlatList(DelegationFilterHelper.getDivisionFilterFromString(attrMap), isUseOrgInhFlag);
+//                } else if(organizationTypeId.equals(this.departmentTypeId)){
+//                    filterData = this.getOrgTreeFlatList(DelegationFilterHelper.getDeptFilterFromString(attrMap), isUseOrgInhFlag);
+//                } else {
+//                    filterData = getFullOrgFilterList(attrMap, isUseOrgInhFlag);
+//                }
+//            } else {
+//                filterData = getFullOrgFilterList(attrMap, isUseOrgInhFlag);
+//            }
+        }
+        return filterData;
+    }
+
+    @Override
+    public List<OrganizationEntity> getAllowedParentOrganizationsForType(final String orgTypeId, String requesterId){
+        Set<String> filterData = null;
+        Set<String> allowedOrgTypes = null;
+        if (StringUtils.isNotBlank(requesterId)) {
+            Map<String, UserAttribute> requesterAttributes = userDataService.getUserAttributesDto(requesterId);
+            filterData = getDelegationFilter(requesterAttributes, organizationTypeId);
+            allowedOrgTypes = organizationTypeService.findAllowedChildrenByDelegationFilter(requesterAttributes);
+
+            boolean isOrgFilterSet = DelegationFilterHelper.isOrgFilterSet(requesterAttributes);
+            boolean isDivFilterSet = DelegationFilterHelper.isDivisionFilterSet(requesterAttributes);
+            boolean isDepFilterSet = DelegationFilterHelper.isDeptFilterSet(requesterAttributes);
+            boolean isUseOrgInhFilterSet = DelegationFilterHelper.isUseOrgInhFilterSet(requesterAttributes);
+            if(isOrgFilterSet){
+                allowedOrgTypes.add(organizationTypeId);
+            }
+            if(isDivFilterSet
+                    || (isOrgFilterSet && isUseOrgInhFilterSet)){
+                allowedOrgTypes.add(divisionTypeId);
+            }
+            if(isDepFilterSet
+                    || (isDivFilterSet && isUseOrgInhFilterSet)
+                    || (isOrgFilterSet && isUseOrgInhFilterSet)){
+                allowedOrgTypes.add(departmentTypeId);
+            }
+        }
+        Set<String> allowedParentTypesIds = organizationTypeService.getAllowedParentsIds(orgTypeId);
+        allowedOrgTypes.retainAll(allowedParentTypesIds);
+
+        return orgDao.findAllByTypesAndIds(allowedOrgTypes, filterData);
+    }
+
+    private Set<String> getFullOrgFilterList(Map<String, UserAttribute> attrMap, boolean isUseOrgInhFlag){
+        Set<String> filterData = this.getOrgTreeFlatList(DelegationFilterHelper.getOrgIdFilterFromString(attrMap), isUseOrgInhFlag);
+        filterData.addAll(this.getOrgTreeFlatList(DelegationFilterHelper.getDeptFilterFromString(attrMap), isUseOrgInhFlag));
+        filterData.addAll(this.getOrgTreeFlatList(DelegationFilterHelper.getDivisionFilterFromString(attrMap), isUseOrgInhFlag));
+        return filterData;
     }
 
 	@Override
@@ -388,5 +479,73 @@ public class OrganizationServiceImpl implements OrganizationService {
             }
         }
         return retval;
+    }
+
+    @Override
+    @Transactional
+    public void sweep() {
+        final StopWatch sw = new StopWatch();
+        sw.start();
+        final Map<String, Set<String>> tempOrgTreeMap = getAllOrgMap();
+
+        synchronized(this) {
+            organizationTree = tempOrgTreeMap;
+        }
+        sw.stop();
+        log.debug(String.format("Done creating orgs trees. Took: %s ms", sw.getTime()));
+    }
+
+    private Map<String, Set<String>> getAllOrgMap() {
+        List<Org2OrgXref> xrefList = orgDao.getOrgToOrgXrefList();
+
+        final Map<String, Set<String>> parentOrg2ChildOrgMap = new HashMap<String, Set<String>>();
+        final Map<String, String> child2ParentOrgMap = new HashMap<String, String>();
+
+        for(final Org2OrgXref xref : xrefList) {
+            final String orgId = xref.getOrganizationId();
+            final String memberOrgId = xref.getMemberOrganizationId();
+
+            if(!parentOrg2ChildOrgMap.containsKey(orgId)) {
+                parentOrg2ChildOrgMap.put(orgId, new HashSet<String>());
+            }
+
+            child2ParentOrgMap.put(memberOrgId, orgId);
+            parentOrg2ChildOrgMap.get(orgId).add(memberOrgId);
+        }
+
+        return parentOrg2ChildOrgMap;
+    }
+
+    private Set<String> getOrgTreeFlatList(List<String> rootElementsIdList, boolean isUseOrgInhFlag){
+        List<String> result = new ArrayList<String>();
+        if(isUseOrgInhFlag){
+            if(CollectionUtils.isNotEmpty(rootElementsIdList)){
+                for (String rootElementId : rootElementsIdList){
+                    result.addAll(getOrgTreeFlatList(rootElementId));
+                }
+            }
+        } else {
+            result = rootElementsIdList;
+        }
+        return new HashSet<String>(result);
+    }
+
+    private List<String> getOrgTreeFlatList(String rootId){
+        List<String> result = new ArrayList<String>();
+        if(StringUtils.isNotBlank(rootId)){
+            result.add(rootId);
+            for(int i=0; i<result.size();i++){
+                String curElem = result.get(i);
+                if(this.organizationTree.containsKey(curElem)){
+                    result.addAll(this.organizationTree.get(curElem));
+                }
+            }
+        }
+        return result;
+    }
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        sweep();
     }
 }

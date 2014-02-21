@@ -5,8 +5,11 @@ import org.openiam.idm.searchbeans.OrganizationSearchBean;
 import org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.dto.Organization;
+import org.openiam.idm.srvc.user.dto.UserAttribute;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public interface OrganizationService {
 
@@ -34,4 +37,8 @@ public interface OrganizationService {
 	public void deleteOrganization(final String orgId);
 	
 	public void validateOrg2OrgAddition(String parentId, String memberId) throws BasicDataServiceException;
+
+    public Set<String> getDelegationFilter(String requesterId, String organizationTypeId);
+    public Set<String> getDelegationFilter(Map<String, UserAttribute> attrMap, String organizationTypeId);
+    public List<OrganizationEntity> getAllowedParentOrganizationsForType(final String orgTypeId, String requesterId);
 }
