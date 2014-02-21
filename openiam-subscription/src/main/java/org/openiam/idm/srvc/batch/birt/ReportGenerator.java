@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.batch.birt;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.birt.core.exception.BirtException;
 import org.eclipse.birt.core.framework.Platform;
@@ -7,7 +8,11 @@ import org.eclipse.birt.report.engine.api.*;
 import org.eclipse.core.internal.registry.RegistryProviderFactory;
 import org.openiam.idm.srvc.batch.constants.ReportFormat;
 import org.springframework.stereotype.Component;
+import sun.misc.BASE64Encoder;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Map;
 import java.util.Set;
 
@@ -29,7 +34,7 @@ public class ReportGenerator {
 		IReportEngineFactory factory = (IReportEngineFactory) Platform
 				.createFactoryObject( IReportEngineFactory.EXTENSION_REPORT_ENGINE_FACTORY );
 		IReportEngine engine = factory.createReportEngine( config );
-        //!!
+
 		IReportRunnable design = engine.openReportDesign(designFilePath);
 		IRunAndRenderTask task = engine.createRunAndRenderTask(design); 
 		
@@ -40,8 +45,6 @@ public class ReportGenerator {
 		}
 		task.validateParameters();
 
-		//!!String outputDir = reportRoot+ "/" + generatedReportsFolder + "/" + deliveryMethod + "/" ;
-		//!!String outputFileName = outputDir + userId + "/" + reportName;
         IRenderOption renderOption = getRenderOption(outputFileName, format);
 		task.setRenderOption(renderOption);
 
@@ -59,11 +62,16 @@ public class ReportGenerator {
         switch (format) {
             case HTML:
                 final HTMLRenderOption htmlOption = new HTMLRenderOption();
-                htmlOption.setEmbeddable(false);
+                htmlOption.setSupportedImageFormats("PNG;JPG;BMP");
+                htmlOption.setEmbeddable(true);
+                htmlOption.setImageHandler(new HTMLEmbeddedImageHandler());
                 renderOption = htmlOption;
                 break;
             case PDF:
                 renderOption = new PDFRenderOption();
+                break;
+            case XLS:
+                renderOption = new EXCELRenderOption();
                 break;
             default:
                 return null;
