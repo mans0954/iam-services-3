@@ -1,12 +1,13 @@
 package org.openiam.connector.jdbc.command.user;
 
 import org.apache.commons.lang.StringUtils;
-import org.openiam.connector.jdbc.command.base.AbstractLookupAppTableCommand;
+import org.openiam.connector.jdbc.command.base.AbstractSearchAppTableCommand;
 import org.openiam.provision.type.ExtensibleUser;
 import org.springframework.stereotype.Service;
 
-@Service("lookupUserAppTableCommand")
-public class LookupUserAppTableCommand extends AbstractLookupAppTableCommand<ExtensibleUser> {
+@Service("searchUserAppTableCommand")
+public class SearchUserAppTableCommand extends AbstractSearchAppTableCommand<ExtensibleUser> {
+
     @Override
     protected boolean compareObjectTypeWithId(String objectType) {
         return StringUtils.equalsIgnoreCase(objectType, "principal");
@@ -16,4 +17,5 @@ public class LookupUserAppTableCommand extends AbstractLookupAppTableCommand<Ext
     protected String getObjectType() {
         return "USER";
     }
+
 }

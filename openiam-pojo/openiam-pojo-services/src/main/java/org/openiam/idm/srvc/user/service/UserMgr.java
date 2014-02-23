@@ -494,11 +494,11 @@ public class UserMgr implements UserDataService {
             isRoleFilterSet = DelegationFilterHelper.isRoleFilterSet(requesterAttributes);
             isMngReportFilterSet = DelegationFilterHelper.isMngRptFilterSet(requesterAttributes);
 
-            if (isOrgFilterSet) {
-                if (CollectionUtils.isEmpty(searchBean.getOrganizationIdList())) {
-                    searchBean.addOrganizationIdList(DelegationFilterHelper.getOrgIdFilterFromString(requesterAttributes));
-                }
+//            if (isOrgFilterSet) {
+            if (CollectionUtils.isEmpty(searchBean.getOrganizationIdList())) {
+                searchBean.addOrganizationIdList(organizationService.getDelegationFilter(requesterAttributes, null));
             }
+//            }
 
             if (CollectionUtils.isEmpty(searchBean.getGroupIdSet()) && isGroupFilterSet) {
                 searchBean.setGroupIdSet(new HashSet<String>(DelegationFilterHelper.getGroupFilterFromString(requesterAttributes)));

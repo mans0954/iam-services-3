@@ -116,17 +116,12 @@ public class UserSearchBean extends AbstractSearchBean<User, String> implements 
         this.organizationIdList = organizationIdList;
     }
 
-    public void addOrganizationIdList(final List<String> organizationIdList) {
+    public void addOrganizationIdList(final Collection<String> organizationIdList) {
         if(organizationIdList != null) {
             if(this.organizationIdList==null) {
                 this.organizationIdList = new HashSet<String>();
             }
-
-            for(final String organizationId : organizationIdList) {
-                if(!this.organizationIdList.contains(organizationId)) {
-                    this.organizationIdList.add(organizationId);
-                }
-            }
+            this.organizationIdList.addAll(organizationIdList);
         }
     }
 

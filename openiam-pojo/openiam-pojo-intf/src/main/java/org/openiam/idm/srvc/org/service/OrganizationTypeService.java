@@ -1,11 +1,13 @@
 package org.openiam.idm.srvc.org.service;
 
-import java.util.List;
-
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.OrganizationTypeSearchBean;
-import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationTypeEntity;
+import org.openiam.idm.srvc.user.dto.UserAttribute;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 
 public interface OrganizationTypeService {
@@ -25,6 +27,14 @@ public interface OrganizationTypeService {
 	public void addChild(final String id, final String childId);
 	
 	public void removeChild(final String id, final String childId);
+
+    public List<OrganizationTypeEntity> getAllowedParents(String organizationTypeId);
+
+    public Set<String> getAllowedParentsIds(String organizationTypeId);
+
+    public List<OrganizationTypeEntity> findAllowedChildrenByDelegationFilter(String requesterId);
+
+    public Set<String> findAllowedChildrenByDelegationFilter(Map<String, UserAttribute> userAttributeMap);
 	
 	public void validateOrgType2OrgTypeAddition(String parentId, String memberId) throws BasicDataServiceException;
 }

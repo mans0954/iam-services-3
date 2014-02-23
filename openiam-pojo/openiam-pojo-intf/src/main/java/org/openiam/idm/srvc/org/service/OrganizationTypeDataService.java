@@ -1,15 +1,13 @@
 package org.openiam.idm.srvc.org.service;
 
-import java.util.List;
+import org.openiam.base.ws.Response;
+import org.openiam.idm.searchbeans.OrganizationTypeSearchBean;
+import org.openiam.idm.srvc.org.dto.OrganizationType;
 
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebService;
-
-import org.openiam.base.ws.Response;
-import org.openiam.idm.searchbeans.OrganizationTypeSearchBean;
-import org.openiam.idm.srvc.org.dto.Organization;
-import org.openiam.idm.srvc.org.dto.OrganizationType;
+import java.util.List;
 
 @WebService(targetNamespace = "urn:idm.openiam.org/srvc/org/service", name = "OrganizationTypeDataService")
 public interface OrganizationTypeDataService {
@@ -38,4 +36,7 @@ public interface OrganizationTypeDataService {
 	@WebMethod
 	public Response removeChild(final @WebParam(name = "id", targetNamespace = "") String id,
 							 	final @WebParam(name = "childId", targetNamespace = "") String childId);
+
+
+    public List<OrganizationType> findAllowedChildrenByDelegationFilter(final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 }

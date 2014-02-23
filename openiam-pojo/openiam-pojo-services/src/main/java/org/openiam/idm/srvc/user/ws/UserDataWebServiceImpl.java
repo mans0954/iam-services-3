@@ -21,11 +21,9 @@
  */
 package org.openiam.idm.srvc.user.ws;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
+import javax.jws.WebParam;
 import javax.jws.WebService;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -1164,4 +1162,9 @@ public class UserDataWebServiceImpl implements UserDataWebService {
         }
         return resultList;
     }
+
+//    @Override
+//    public Map<String, UserAttribute> getUserAttributesAsMap(@WebParam(name = "userId", targetNamespace = "") String userId){
+//        return userManager.getUserAttributesDto(userId);
+//    }
 }

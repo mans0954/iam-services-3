@@ -1,4 +1,4 @@
-package org.openiam.connector.jdbc.command.user;
+package org.openiam.connector.jdbc.command.group;
 
 import java.util.List;
 
@@ -10,11 +10,10 @@ import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.provision.type.ExtensibleUser;
 import org.springframework.stereotype.Service;
 
-@Service("deleteUserAppTableCommand")
-public class DeleteUserAppTableCommand extends AbstractDeleteAppTableCommand<ExtensibleUser> {
+@Service("deleteGroupAppTableCommand")
+public class DeleteGroupAppTableCommand extends AbstractDeleteAppTableCommand<ExtensibleUser> {
     @Override
     protected AttributeMapEntity getAttribute(List<AttributeMapEntity> attrMap) throws ConnectorDataException {
-        AttributeMapEntity result = null;
         for (final AttributeMapEntity atr : attrMap) {
             if (StringUtils.equalsIgnoreCase(atr.getMapForObjectType(), "principal")) {
                 return atr;
@@ -25,7 +24,7 @@ public class DeleteUserAppTableCommand extends AbstractDeleteAppTableCommand<Ext
 
     @Override
     protected String getObjectType() {
-        return "USER";
+        return "GROUP";
     }
 
 }

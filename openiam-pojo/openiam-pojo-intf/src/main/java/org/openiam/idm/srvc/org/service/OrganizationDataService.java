@@ -2,8 +2,8 @@ package org.openiam.idm.srvc.org.service;
 
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.OrganizationSearchBean;
+import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.dto.Organization;
-import org.openiam.idm.srvc.org.dto.OrganizationAttribute;
 
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
@@ -104,4 +104,8 @@ public interface OrganizationDataService {
     @WebMethod
     public Response canRemoveUserToOrganization(@WebParam(name = "organizationId", targetNamespace = "") String organizationId,
             									@WebParam(name = "userId", targetNamespace = "") String userId);
+
+    @WebMethod
+    public List<Organization> getAllowedParentOrganizationsForType(@WebParam(name = "orgTypeId", targetNamespace = "") final String orgTypeId,
+                                                                         @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 }
