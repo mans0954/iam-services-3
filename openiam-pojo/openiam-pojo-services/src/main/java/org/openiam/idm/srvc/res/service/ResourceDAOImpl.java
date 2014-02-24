@@ -78,6 +78,27 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
 					}
 				}
 			}
+
+            if (StringUtils.isNotEmpty(resource.getURL())) {
+                String url = resource.getURL();
+                MatchMode matchMode = null;
+                if (StringUtils.indexOf(url, "*") == 0) {
+                    matchMode = MatchMode.END;
+                    url = url.substring(1);
+                }
+                if (StringUtils.isNotEmpty(url) && StringUtils.indexOf(url, "*") == url.length() - 1) {
+                    url = url.substring(0, url.length() - 1);
+                    matchMode = (matchMode == MatchMode.END) ? MatchMode.ANYWHERE : MatchMode.START;
+                }
+
+                if (StringUtils.isNotEmpty(url)) {
+                    if (matchMode != null) {
+                        criteria.add(Restrictions.ilike("URL", url, matchMode));
+                    } else {
+                        criteria.add(Restrictions.eq("URL", url));
+                    }
+                }
+            }
 			
 			if(resource.getAdminResource() != null && StringUtils.isNotBlank(resource.getAdminResource().getId())) {
 				criteria.add(Restrictions.eq("adminResource.id", resource.getAdminResource().getId()));

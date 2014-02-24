@@ -21,7 +21,8 @@ import java.util.Set;
         "rootsOnly",
         "attributes",
         "excludeResourceTypes",
-        "risk"
+        "risk",
+        "URL"
 })
 public class ResourceSearchBean extends AbstractSearchBean<Resource, String> implements SearchBean<Resource, String>, Serializable {
 
@@ -33,6 +34,7 @@ public class ResourceSearchBean extends AbstractSearchBean<Resource, String> imp
 	private List<Tuple<String, String>> attributes;
 	private Set<String> excludeResourceTypes;
     private ResourceRisk risk;
+    private String URL;
 	
 	public String getName() {
 		return name;
@@ -99,5 +101,13 @@ public class ResourceSearchBean extends AbstractSearchBean<Resource, String> imp
 
     public void setRisk(ResourceRisk risk) {
         this.risk = risk;
+    }
+
+    public String getURL() {
+        return URL;
+    }
+
+    public void setURL(String URL) {
+        this.URL = URL;
     }
 }
