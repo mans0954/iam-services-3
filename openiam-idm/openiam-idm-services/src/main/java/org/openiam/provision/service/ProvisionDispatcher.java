@@ -203,7 +203,11 @@ public class ProvisionDispatcher implements Sweepable {
         for (ProvisionDataContainer data : entities) {
             Login identity = data.getIdentity();
 
-            LoginEntity loginEntity = loginDozerConverter.convertToEntity(identity, true);
+            LoginEntity loginEntity = loginManager.getLoginByManagedSys(identity.getLogin(), identity.getManagedSysId());
+            if (loginEntity == null) {
+                loginEntity = loginDozerConverter.convertToEntity(identity, true);
+                log.error(String.format("Identity %s for managed sys %s has't saved yet to a database", identity.getLogin(), identity.getManagedSysId()));
+            }
 
             if (data.getOperation() == AttributeOperationEnum.DELETE) {
 
@@ -301,7 +305,6 @@ public class ProvisionDispatcher implements Sweepable {
                     loginEntity.setStatus(LoginStatusEnum.FAIL_UPDATE);
                 }
             }
-            loginManager.updateLogin(loginEntity);
         }
     }
 
