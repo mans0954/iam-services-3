@@ -39,6 +39,7 @@ import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Type;
 import org.hibernate.annotations.Where;
 import org.hibernate.search.annotations.DocumentId;
 import org.openiam.idm.srvc.org.dto.Organization;
@@ -139,6 +140,10 @@ public class OrganizationEntity implements Serializable {
 	@OneToMany(cascade = {CascadeType.ALL}, fetch = FetchType.LAZY, mappedBy="associationEntityId", orphanRemoval=true)
 	@Where(clause="ASSOCIATION_TYPE='ORGANIZATION'")
 	private Set<ApproverAssociationEntity> approverAssociations;
+	
+	@Column(name = "IS_SELECTABLE")
+    @Type(type = "yes_no")
+	private boolean selectable = true;
 
     public OrganizationEntity() {
     }
@@ -349,6 +354,14 @@ public class OrganizationEntity implements Serializable {
 			Set<ApproverAssociationEntity> approverAssociations) {
 		this.approverAssociations = approverAssociations;
 	}
+
+    public boolean isSelectable() {
+		return selectable;
+	}
+
+	public void setSelectable(boolean selectable) {
+		this.selectable = selectable;
+	}
 	
 	public void addApproverAssociation(final ApproverAssociationEntity entity) {
 		if(entity != null) {
@@ -370,8 +383,8 @@ public class OrganizationEntity implements Serializable {
         if (createdBy != null ? !createdBy.equals(that.createdBy) : that.createdBy != null) return false;
         if (domainName != null ? !domainName.equals(that.domainName) : that.domainName != null) return false;
         if (id != null ? !id.equals(that.id) : that.id != null) return false;
-        if (name != null ? !name.equals(that.name) : that.name != null)
-            return false;
+        if (name != null ? !name.equals(that.name) : that.name != null) return false;
+        if (selectable != that.selectable) return false;
 
         return true;
     }
@@ -383,6 +396,7 @@ public class OrganizationEntity implements Serializable {
         result = 31 * result + (createdBy != null ? createdBy.hashCode() : 0);
         result = 31 * result + (domainName != null ? domainName.hashCode() : 0);
         result = 31 * result + (name != null ? name.hashCode() : 0);
+        result = 31 * result + (selectable ? 1 : 0);
         return result;
     }
 }

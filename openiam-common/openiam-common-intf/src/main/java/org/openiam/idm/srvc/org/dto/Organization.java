@@ -51,7 +51,8 @@ import org.openiam.idm.srvc.user.dto.User;
         "selected",
         "operation",
         "parentOrganizations",
-        "childOrganizations"
+        "childOrganizations",
+        "selectable"
 })
 @DozerDTOCorrespondence(OrganizationEntity.class)
 public class Organization extends AdminResourceDTO implements Serializable, Comparable<Organization> {
@@ -97,6 +98,8 @@ public class Organization extends AdminResourceDTO implements Serializable, Comp
 
     private Set<Organization> parentOrganizations;
     private Set<Organization> childOrganizations;
+    
+    private boolean selectable = true;
     
     /**
      * default constructor
@@ -367,7 +370,15 @@ public class Organization extends AdminResourceDTO implements Serializable, Comp
 		this.organizationTypeName = organizationTypeName;
 	}
 
-    @Override
+    public boolean isSelectable() {
+		return selectable;
+	}
+
+	public void setSelectable(boolean selectable) {
+		this.selectable = selectable;
+	}
+
+	@Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
@@ -379,8 +390,8 @@ public class Organization extends AdminResourceDTO implements Serializable, Comp
         if (createdBy != null ? !createdBy.equals(that.createdBy) : that.createdBy != null) return false;
         if (domainName != null ? !domainName.equals(that.domainName) : that.domainName != null) return false;
         if (id != null ? !id.equals(that.id) : that.id != null) return false;
-        if (name != null ? !name.equals(that.name) : that.name != null)
-            return false;
+        if (name != null ? !name.equals(that.name) : that.name != null) return false;
+        if (selectable != that.selectable) return false;
 
         return true;
     }
@@ -393,6 +404,7 @@ public class Organization extends AdminResourceDTO implements Serializable, Comp
         result = 31 * result + (domainName != null ? domainName.hashCode() : 0);
         result = 31 * result + (createDate != null ? createDate.hashCode() : 0);
         result = 31 * result + (name != null ? name.hashCode() : 0);
+        result = 31 * result + (selectable ? 1 : 0);
         return result;
     }
 }

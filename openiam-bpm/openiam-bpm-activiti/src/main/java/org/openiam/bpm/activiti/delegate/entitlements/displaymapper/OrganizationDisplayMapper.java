@@ -60,6 +60,8 @@ public class OrganizationDisplayMapper extends AbstractActivitiJob {
 			metadataMap.put("LDAP String", organization.getLdapStr());
 		}
 		
+		metadataMap.put("Is Selectable", Boolean.valueOf(organization.isSelectable()).toString());
+		
 		if(StringUtils.isNotBlank(organization.getOrganizationTypeId())) {
 			final OrganizationTypeEntity organizationType = organizationTypeService.findById(organization.getOrganizationTypeId());
 			if(organizationType != null) {
