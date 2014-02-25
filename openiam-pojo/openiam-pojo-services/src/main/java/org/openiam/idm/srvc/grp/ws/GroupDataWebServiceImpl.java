@@ -29,9 +29,7 @@ import org.springframework.stereotype.Service;
 
 import javax.jws.WebMethod;
 import javax.jws.WebService;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * <code>GroupDataServiceImpl</code> provides a service to manage groups as
@@ -430,6 +428,12 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
         try{
             final List<GroupEntity> groupEntityList =  groupManager.findBeans(searchBean, requesterId, from, size);
             groupList = groupDozerConverter.convertToDTOList(groupEntityList, (searchBean.isDeepCopy()));
+            Collections.sort(groupList, new Comparator<Group>(){
+                @Override
+                public int compare(Group o1, Group o2) {
+                    return o1.getGrpName().compareTo(o2.getGrpName());
+                }
+            });
             auditBuilder.succeed();
         } catch(Throwable e) {
             auditBuilder.fail().setException(e);

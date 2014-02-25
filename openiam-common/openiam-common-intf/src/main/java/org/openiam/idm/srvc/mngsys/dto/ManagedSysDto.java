@@ -3,6 +3,7 @@ package org.openiam.idm.srvc.mngsys.dto;
 // Generated Nov 3, 2008 12:14:43 AM by Hibernate Tools 3.2.2.GA
 
 import org.apache.commons.lang.StringUtils;
+import org.openiam.am.srvc.constants.SearchScopeType;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
@@ -34,7 +35,7 @@ import java.util.Set;
 @XmlType(name = "ManagedSysDto", propOrder = { "id", "name",
         "description", "status", "connectorId", "hostUrl", "port",
         "commProtocol", "userId", "pswd", "decryptPassword", "endDate",
-        "startDate", "attributeNamesLookup", "resourceId", "primaryRepository",
+        "startDate", "attributeNamesLookup", "searchScope", "resourceId", "primaryRepository",
         "secondaryRepositoryId", "updateSecondary", "mngSysObjectMatchs",
         "driverUrl", "connectionString", "addHandler", "modifyHandler",
         "deleteHandler", "passwordHandler", "suspendHandler", "searchHandler",
@@ -62,6 +63,7 @@ public class ManagedSysDto implements java.io.Serializable {
     @XmlSchemaType(name = "dateTime")
     private Date endDate;
     private String attributeNamesLookup;
+    private SearchScopeType searchScope = SearchScopeType.SUBTREE_SCOPE;
     private String resourceId;
     private Integer primaryRepository;
     private String secondaryRepositoryId;
@@ -285,6 +287,14 @@ public class ManagedSysDto implements java.io.Serializable {
         this.attributeNamesLookup = attributeNamesLookup;
     }
 
+    public SearchScopeType getSearchScope() {
+        return searchScope;
+    }
+
+    public void setSearchScope(SearchScopeType searchScope) {
+        this.searchScope = searchScope;
+    }
+
     public String getResourceId() {
         return resourceId;
     }
@@ -432,6 +442,7 @@ public class ManagedSysDto implements java.io.Serializable {
                 + ", decryptPassword='" + decryptPassword + '\''
                 + ", startDate=" + startDate + ", endDate=" + endDate
                 + ", attributeNamesLookup='" + attributeNamesLookup + '\''
+                + ", searchScope='" + searchScope + '\''
                 + ", resourceId='" + resourceId + '\'' + ", primaryRepository="
                 + primaryRepository + ", secondaryRepositoryId='"
                 + secondaryRepositoryId + '\'' + ", updateSecondary="

@@ -469,8 +469,9 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
 
     protected int callPreProcessor(String operation, ProvisionUser pUser, Map<String, Object> bindingMap ) {
 
-        ProvisionServicePreProcessor addPreProcessScript;
+        ProvisionServicePreProcessor addPreProcessScript = null;
         if ( pUser != null) {
+            System.out.println("======= callPreProcessor: isSkipPreprocessor="+pUser.isSkipPreprocessor()+", ");
             if (!pUser.isSkipPreprocessor() &&
                     (addPreProcessScript = createProvPreProcessScript(preProcessor, bindingMap)) != null) {
                 addPreProcessScript.setMuleContext(MuleContextProvider.getCtx());
@@ -478,6 +479,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                 return executeProvisionPreProcess(addPreProcessScript, bindingMap, pUser, null, operation);
 
             }
+            System.out.println("======= callPreProcessor: addPreProcessScript="+addPreProcessScript+", ");
         }
         // pre-processor was skipped
         return ProvisioningConstants.SUCCESS;
@@ -1152,6 +1154,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
 
         req.setScriptHandler(mSys.getPasswordHandler());
 
+        log.debug("Reset password request will be sent for user login " + login.getLogin());
         return connectorAdapter.resetPasswordRequest(mSys, req, MuleContextProvider.getCtx());
 
     }

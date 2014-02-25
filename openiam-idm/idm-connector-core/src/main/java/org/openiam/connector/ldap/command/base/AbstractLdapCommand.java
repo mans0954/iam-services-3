@@ -260,13 +260,17 @@ public abstract class AbstractLdapCommand<Request extends RequestType, Response 
         return attrs;
     }
 
-    protected NamingEnumeration lookupSearch(ManagedSystemObjectMatch matchObj, LdapContext ctx,
+    protected NamingEnumeration lookupSearch(ManagedSysEntity managedSys, ManagedSystemObjectMatch matchObj, LdapContext ctx,
                                            String searchValue, String[] attrAry, String objectBaseDN) throws NamingException {
 
-        String attrIds[] = {"1.1", "+", "*", "accountUnlockTime", "aci", "aclRights", "aclRightsInfo", "altServer", "attributeTypes", "changeHasReplFixupOp", "changeIsReplFixupOp", "copiedFrom", "copyingFrom", "createTimestamp", "creatorsName", "deletedEntryAttrs", "dITContentRules", "dITStructureRules", "dncomp", "ds-pluginDigest", "ds-pluginSignature", "ds6ruv", "dsKeyedPassword", "entrydn", "entryid", "hasSubordinates", "idmpasswd", "isMemberOf", "ldapSchemas", "ldapSyntaxes", "matchingRules", "matchingRuleUse", "modDNEnabledSuffixes", "modifiersName", "modifyTimestamp", "nameForms", "namingContexts", "nsAccountLock", "nsBackendSuffix", "nscpEntryDN", "nsds5ReplConflict", "nsIdleTimeout", "nsLookThroughLimit", "nsRole", "nsRoleDN", "nsSchemaCSN", "nsSizeLimit", "nsTimeLimit", "nsUniqueId", "numSubordinates", "objectClasses", "parentid", "passwordAllowChangeTime", "passwordExpirationTime", "passwordExpWarned", "passwordHistory", "passwordPolicySubentry", "passwordRetryCount", "pwdAccountLockedTime", "pwdChangedTime", "pwdFailureTime", "pwdGraceUseTime", "pwdHistory", "pwdLastAuthTime", "pwdPolicySubentry", "pwdReset", "replicaIdentifier", "replicationCSN", "retryCountResetTime", "subschemaSubentry", "supportedControl", "supportedExtension", "supportedLDAPVersion", "supportedSASLMechanisms", "supportedSSLCiphers", "targetUniqueId", "vendorName", "vendorVersion"};
+        // !! TimeOut Error with  Oracle LDAP: String attrIds[] = {"1.1", "+", "*", "accountUnlockTime", "aci", "aclRights", "aclRightsInfo", "altServer", "attributeTypes", "changeHasReplFixupOp", "changeIsReplFixupOp", "copiedFrom", "copyingFrom", "createTimestamp", "creatorsName", "deletedEntryAttrs", "dITContentRules", "dITStructureRules", "dncomp", "ds-pluginDigest", "ds-pluginSignature", "ds6ruv", "dsKeyedPassword", "entrydn", "entryid", "hasSubordinates", "idmpasswd", "isMemberOf", "ldapSchemas", "ldapSyntaxes", "matchingRules", "matchingRuleUse", "modDNEnabledSuffixes", "modifiersName", "modifyTimestamp", "nameForms", "namingContexts", "nsAccountLock", "nsBackendSuffix", "nscpEntryDN", "nsds5ReplConflict", "nsIdleTimeout", "nsLookThroughLimit", "nsRole", "nsRoleDN", "nsSchemaCSN", "nsSizeLimit", "nsTimeLimit", "nsUniqueId", "numSubordinates", "objectClasses", "parentid", "passwordAllowChangeTime", "passwordExpirationTime", "passwordExpWarned", "passwordHistory", "passwordPolicySubentry", "passwordRetryCount", "pwdAccountLockedTime", "pwdChangedTime", "pwdFailureTime", "pwdGraceUseTime", "pwdHistory", "pwdLastAuthTime", "pwdPolicySubentry", "pwdReset", "replicaIdentifier", "replicationCSN", "retryCountResetTime", "subschemaSubentry", "supportedControl", "supportedExtension", "supportedLDAPVersion", "supportedSASLMechanisms", "supportedSSLCiphers", "targetUniqueId", "vendorName", "vendorVersion"};
+        String attrIds[] = {};
 
         SearchControls searchCtls = new SearchControls();
         searchCtls.setReturningAttributes(attrIds);
+        searchCtls.setSearchScope(managedSys.getSearchScope().getValue());
+        searchCtls.setTimeLimit(0);
+        searchCtls.setCountLimit(10000);
 
         String searchFilter = matchObj.getSearchFilter();
         // replace the place holder in the search filter
@@ -284,20 +288,4 @@ public abstract class AbstractLdapCommand<Request extends RequestType, Response 
         return ctx.search(objectBaseDN, searchFilter, searchCtls);
     }
 
-    protected boolean isInDirectory(String identity, String objectBaseDN, ManagedSystemObjectMatch matchObj, LdapContext ldapctx) {
-        String[] attrAry = {"uid", "cn", "fn"};
-        NamingEnumeration results = null;
-        try {
-            //results = search(matchObj, ldapctx, rdn, attrAry);
-            results = lookupSearch(matchObj, ldapctx, identity, attrAry, objectBaseDN);
-            if (results != null && results.hasMoreElements()) {
-                return true;
-            }
-            return false;
-
-        } catch (NamingException ne) {
-            log.error(ne);
-            return false;
-        }
-    }
 }

@@ -80,8 +80,8 @@ public class OrganizationEntity implements Serializable {
     @Size(max = 100, message = "organization.description.too.long")
     private String description;
 
-    @Column(name="DOMAIN_NAME", length=40)
-    @Size(max = 100, message = "organization.domain.name.too.long")
+    @Column(name="DOMAIN_NAME", length=250)
+    @Size(max = 250, message = "organization.domain.name.too.long")
     private String domainName;
 
     @Column(name="LDAP_STR")

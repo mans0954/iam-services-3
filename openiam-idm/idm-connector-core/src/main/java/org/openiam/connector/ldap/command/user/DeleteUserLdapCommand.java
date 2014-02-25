@@ -13,7 +13,10 @@ import org.openiam.connector.ldap.dirtype.DirectorySpecificImplFactory;
 import org.openiam.provision.type.ExtensibleUser;
 import org.springframework.stereotype.Service;
 
+import javax.naming.NameNotFoundException;
+import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
+import javax.naming.directory.SearchResult;
 import javax.naming.ldap.LdapContext;
 import java.text.MessageFormat;
 import java.util.List;
@@ -64,15 +67,48 @@ public class DeleteUserLdapCommand extends AbstractCrudLdapCommand<ExtensibleUse
                 }
             }
             //Important!!! For delete operation need to create identity in DN format
-            String identityDN = matchObj.getKeyField() + "=" + identity+","+objectBaseDN;
-            log.debug("Deleting.. users in ldap.." + identityDN);
-            if (groupMembershipEnabled) {
-                dirSpecificImp.removeAccountMemberships(identity, identityDN, matchObj, ldapctx);
+//            String identityDN = matchObj.getKeyField() + "=" + identity+","+objectBaseDN;
+
+            NamingEnumeration results = null;
+            try {
+                log.debug("Looking for user with identity=" +  identity + " in " +  objectBaseDN);
+                results = lookupSearch(managedSys, matchObj, ldapctx, identity, null, objectBaseDN);
+
+            } catch (NameNotFoundException nnfe) {
+                log.debug("results=NULL");
+                log.debug(" results has more elements=0");
+                return;
             }
-            if (supervisorMembershipEnabled) {
-                dirSpecificImp.removeSupervisorMemberships(identity, identityDN, matchObj, ldapctx);
+
+            String identityDN = null;
+            int count = 0;
+            while (results != null && results.hasMoreElements()) {
+                SearchResult sr = (SearchResult) results.next();
+                identityDN = sr.getNameInNamespace();
+                count++;
             }
-            dirSpecificImp.delete(deleteRequestType, ldapctx, identityDN, delete);
+
+            if (count == 0) {
+                String err = String.format("User %s was not found in %s", identity, objectBaseDN);
+                log.error(err);
+                throw new ConnectorDataException(ErrorCode.NO_SUCH_IDENTIFIER, err);
+            } else if (count > 1) {
+                String err = String.format("More then one user %s was found in %s", identity, objectBaseDN);
+                log.error(err);
+                throw new ConnectorDataException(ErrorCode.NO_SUCH_IDENTIFIER, err);
+            }
+
+            if (StringUtils.isNotEmpty(identityDN)) {
+                log.debug("Deleting.. users in ldap.." + identityDN);
+                if (groupMembershipEnabled) {
+                    dirSpecificImp.removeAccountMemberships(managedSys, identity, identityDN, matchObj, ldapctx);
+                }
+                if (supervisorMembershipEnabled) {
+                    dirSpecificImp.removeSupervisorMemberships(managedSys, identity, identityDN, matchObj, ldapctx);
+                }
+                dirSpecificImp.delete(deleteRequestType, ldapctx, identityDN, delete);
+            }
+
         } catch (NamingException e) {
             log.error(e.getMessage(), e);
             throw new ConnectorDataException(ErrorCode.DIRECTORY_ERROR, e.getMessage());

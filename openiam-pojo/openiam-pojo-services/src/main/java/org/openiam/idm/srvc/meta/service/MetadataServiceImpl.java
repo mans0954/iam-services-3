@@ -78,6 +78,10 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
     @Override
     public List<MetadataElementEntity> getMetadataElementByType(String typeId) {
         final MetadataTypeEntity result = metadataTypeDao.findById(typeId);
+        if(result == null) {
+            log.error("MetadataServiceImpl.getMetadataElementByType.findById (typeId="+typeId+") = NULL");
+            return null;
+        }
         final Map<String, MetadataElementEntity> elementMap = result.getElementAttributes();
         return (elementMap != null) ? new ArrayList<MetadataElementEntity>(elementMap.values()) : null;
     }

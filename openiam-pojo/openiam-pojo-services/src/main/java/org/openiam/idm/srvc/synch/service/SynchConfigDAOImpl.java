@@ -122,6 +122,7 @@ public class SynchConfigDAOImpl extends BaseDaoImpl<SynchConfigEntity, String> i
         example.excludeProperty("useTransformationScript");
         example.excludeProperty("policyMapBeforeTransformation");
         example.excludeProperty("useSystemPath");
+        example.excludeProperty("searchScope");
         return getCriteria().add(example);
     }
 

@@ -12,12 +12,16 @@ import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.connector.ldap.command.base.AbstractLdapCommand;
 import org.openiam.connector.ldap.dirtype.Directory;
 import org.openiam.connector.ldap.dirtype.DirectorySpecificImplFactory;
+import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
+import javax.naming.NameNotFoundException;
+import javax.naming.NamingEnumeration;
 import javax.naming.directory.ModificationItem;
+import javax.naming.directory.SearchResult;
 import javax.naming.ldap.LdapContext;
 import java.text.MessageFormat;
 import java.util.regex.Matcher;
@@ -36,6 +40,7 @@ public class ResumeLdapCommand extends AbstractLdapCommand<SuspendResumeRequest,
         ResponseType respType = new ResponseType();
         respType.setStatus(StatusCodeType.SUCCESS);
         ConnectorConfiguration config =  getConfiguration(resumeRequestType.getTargetID(), ConnectorConfiguration.class);
+        ManagedSysEntity managedSys = config.getManagedSys();
         LdapContext ldapctx = this.connect(config.getManagedSys());
 
         try {
@@ -64,9 +69,41 @@ public class ResumeLdapCommand extends AbstractLdapCommand<SuspendResumeRequest,
             // dont try to disable and object that does not exist
 
             //Important!!! For add new record in LDAP we must to create identity in DN format
-            String identityDN = matchObj.getKeyField() + "=" + identity+","+objectBaseDN;
+//            String identityDN = matchObj.getKeyField() + "=" + identity+","+objectBaseDN;
 
-            if (identityExists(identityDN, ldapctx)) {
+            NamingEnumeration results = null;
+            try {
+                log.debug("Looking for user with identity=" +  identity + " in " +  objectBaseDN);
+                results = lookupSearch(managedSys, matchObj, ldapctx, identity, null, objectBaseDN);
+
+            } catch (NameNotFoundException nnfe) {
+                log.debug("results=NULL");
+                log.debug(" results has more elements=0");
+                respType.setStatus(StatusCodeType.FAILURE);
+                return respType;
+            }
+
+            String identityDN = null;
+            int count = 0;
+            while (results != null && results.hasMoreElements()) {
+                SearchResult sr = (SearchResult) results.next();
+                identityDN = sr.getNameInNamespace();
+                count++;
+            }
+
+            if (count == 0) {
+                String err = String.format("User %s was not found in %s", identity, objectBaseDN);
+                log.error(err);
+                respType.setStatus(StatusCodeType.FAILURE);
+                return respType;
+            } else if (count > 1) {
+                String err = String.format("More then one user %s was found in %s", identity, objectBaseDN);
+                log.error(err);
+                respType.setStatus(StatusCodeType.FAILURE);
+                return respType;
+            }
+
+            if (StringUtils.isNotEmpty(identityDN)) {
 
                 Directory dirSpecificImp  = DirectorySpecificImplFactory.create(config.getManagedSys().getHandler5());
                 dirSpecificImp.setAttributes("LDAP_NAME", identityDN);
@@ -78,11 +115,13 @@ public class ResumeLdapCommand extends AbstractLdapCommand<SuspendResumeRequest,
 
                 ldapctx.modifyAttributes(identityDN, mods);
             }
+
             return respType;
-        }catch(Exception ne) {
+
+        } catch(Exception ne) {
             log.error(ne.getMessage(), ne);
             throw new ConnectorDataException(ErrorCode.NO_SUCH_IDENTIFIER);
-        }finally {
+        } finally {
 	 		/* close the connection to the directory */
            this.closeContext(ldapctx);
         }
