@@ -4,6 +4,7 @@ import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
+import org.openiam.am.srvc.constants.SearchScopeType;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.synch.dto.SynchConfig;
 
@@ -98,6 +99,11 @@ public class SynchConfigEntity implements Serializable {
     private String customMatchAttr;
     @Column(name="BASE_DN",length=50)
     private String baseDn;
+    @Column(name = "ATTRIBUTE_NAMES_LOOKUP", length = 120)
+    private String attributeNamesLookup;
+    @Column(name="SEARCH_SCOPE")
+    @Enumerated(EnumType.ORDINAL)
+    private SearchScopeType searchScope = SearchScopeType.SUBTREE_SCOPE;
     @Column(name="WS_URL",length=100)
     private String wsUrl;
     @Column(name="WS_SCRIPT",length=100)
@@ -390,6 +396,22 @@ public class SynchConfigEntity implements Serializable {
         this.baseDn = baseDn;
     }
 
+    public String getAttributeNamesLookup() {
+        return attributeNamesLookup;
+    }
+
+    public void setAttributeNamesLookup(String attributeNamesLookup) {
+        this.attributeNamesLookup = attributeNamesLookup;
+    }
+
+    public SearchScopeType getSearchScope() {
+        return searchScope;
+    }
+
+    public void setSearchScope(SearchScopeType searchScope) {
+        this.searchScope = searchScope;
+    }
+
     public String getLastRecProcessed() {
         return lastRecProcessed;
     }
@@ -452,6 +474,8 @@ public class SynchConfigEntity implements Serializable {
                 ", customAdatperScript='" + customAdatperScript + '\'' +
                 ", customMatchAttr='" + customMatchAttr + '\'' +
                 ", baseDn='" + baseDn + '\'' +
+                ", attributeNamesLookup='" + attributeNamesLookup + '\'' +
+                ", searchScope='" + searchScope + '\'' +
                 '}';
     }
 
@@ -463,6 +487,8 @@ public class SynchConfigEntity implements Serializable {
         SynchConfigEntity that = (SynchConfigEntity) o;
 
         if (baseDn != null ? !baseDn.equals(that.baseDn) : that.baseDn != null) return false;
+        if (attributeNamesLookup != null ? !attributeNamesLookup.equals(that.attributeNamesLookup) : that.attributeNamesLookup != null) return false;
+        if (searchScope != null ? !searchScope.equals(that.searchScope) : that.searchScope != null) return false;
         if (connectionUrl != null ? !connectionUrl.equals(that.connectionUrl) : that.connectionUrl != null)
             return false;
         if (customAdatperScript != null ? !customAdatperScript.equals(that.customAdatperScript) : that.customAdatperScript != null)
@@ -552,6 +578,8 @@ public class SynchConfigEntity implements Serializable {
         result = 31 * result + (customAdatperScript != null ? customAdatperScript.hashCode() : 0);
         result = 31 * result + (customMatchAttr != null ? customMatchAttr.hashCode() : 0);
         result = 31 * result + (baseDn != null ? baseDn.hashCode() : 0);
+        result = 31 * result + (attributeNamesLookup != null ? attributeNamesLookup.hashCode() : 0);
+        result = 31 * result + (searchScope != null ? searchScope.hashCode() : 0);
         result = 31 * result + (wsUrl != null ? wsUrl.hashCode() : 0);
         result = 31 * result + (wsScript != null ? wsScript.hashCode() : 0);
         return result;

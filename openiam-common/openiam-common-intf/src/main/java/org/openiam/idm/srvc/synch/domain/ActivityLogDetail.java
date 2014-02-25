@@ -23,7 +23,8 @@ public class ActivityLogDetail implements java.io.Serializable {
 	private String msg;
     @Column(name="STATUS",length=20)
 	private String status;
-    @Column(name="DATA_ROW",length=65535)
+    @Lob
+    @Column(name="DATA_ROW")
 	private String dataRow;
 
 	public ActivityLogDetail() {

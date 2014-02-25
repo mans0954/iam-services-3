@@ -3,6 +3,7 @@ package org.openiam.idm.srvc.mngsys.domain;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
+import org.openiam.am.srvc.constants.SearchScopeType;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
@@ -58,6 +59,9 @@ public class ManagedSysEntity implements Serializable {
     private Date endDate;
     @Column(name = "ATTRIBUTE_NAMES_LOOKUP", length = 120)
     private String attributeNamesLookup;
+    @Column(name="SEARCH_SCOPE")
+    @Enumerated(EnumType.ORDINAL)
+    private SearchScopeType searchScope = SearchScopeType.SUBTREE_SCOPE;
     @Column(name = "RESOURCE_ID", length = 32)
     private String resourceId;
     @Column(name = "PRIMARY_REPOSITORY")
@@ -225,6 +229,14 @@ public class ManagedSysEntity implements Serializable {
 
     public void setAttributeNamesLookup(String attributeNamesLookup) {
         this.attributeNamesLookup = attributeNamesLookup;
+    }
+
+    public SearchScopeType getSearchScope() {
+        return searchScope;
+    }
+
+    public void setSearchScope(SearchScopeType searchScope) {
+        this.searchScope = searchScope;
     }
 
     public String getResourceId() {
@@ -463,6 +475,9 @@ public class ManagedSysEntity implements Serializable {
         if (attributeNamesLookup != null ? !attributeNamesLookup.equals(that.attributeNamesLookup)
                 : that.attributeNamesLookup != null)
             return false;
+        if (searchScope != null ? !searchScope.equals(that.searchScope)
+                : that.searchScope != null)
+            return false;
         if (resourceId != null ? !resourceId.equals(that.resourceId)
                 : that.resourceId != null)
             return false;
@@ -513,6 +528,7 @@ public class ManagedSysEntity implements Serializable {
         result = 31 * result + (startDate != null ? startDate.hashCode() : 0);
         result = 31 * result + (endDate != null ? endDate.hashCode() : 0);
         result = 31 * result + (attributeNamesLookup != null ? attributeNamesLookup.hashCode() : 0);
+        result = 31 * result + (searchScope != null ? searchScope.hashCode() : 0);
         result = 31 * result + (resourceId != null ? resourceId.hashCode() : 0);
         result = 31
                 * result

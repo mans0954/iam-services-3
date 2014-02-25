@@ -39,10 +39,10 @@ public class AuthProviderEntity implements Serializable {
     @Column(name="SIGN_REQUEST")
     @Type(type = "yes_no")
     private boolean isSignRequest=false;
-    @Column(name = "PUBLIC_KEY", nullable = true, columnDefinition = "text")
+    @Column(name = "PUBLIC_KEY", nullable = true)
     @Lob
     private byte[] publicKey=null;
-    @Column(name = "PRIVATE_KEY", nullable = true, columnDefinition = "text")
+    @Column(name = "PRIVATE_KEY", nullable = true)
     @Lob
     private byte[] privateKey=null;
 

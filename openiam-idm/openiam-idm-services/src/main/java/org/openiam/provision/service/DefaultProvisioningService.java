@@ -157,21 +157,22 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                         IdmAuditLogEntity parentAuditLog = auditLogService.findById(parentAuditLogId);
                         auditBuilder = parentAuditLog != null ? new AuditLogBuilder(parentAuditLog) : auditLogProvider.getAuditLogBuilder(parentAuditLogId);
                     } else {
-                        auditBuilder = new AuditLogBuilder();
+                      //  auditBuilder = new AuditLogBuilder();
+                     //   auditBuilder.setRequestorUserId(systemUserId).setTargetUser(null).setAction(AuditAction.PROVISIONING);
+                        auditBuilder = auditLogProvider.getAuditLogBuilder();
                         auditBuilder.setRequestorUserId(systemUserId).setTargetUser(null).setAction(AuditAction.PROVISIONING);
-                        auditLogProvider.persist(auditBuilder);
                     }
 
                     final AuditLogBuilder auditBuilderAddChild = new AuditLogBuilder();
                     auditBuilderAddChild.setRequestorUserId(systemUserId).setTargetUser(null).setAction(AuditAction.PROVISIONING_ADD);
-                    auditLogProvider.persist(auditBuilderAddChild);
+                 //   auditLogProvider.persist(auditBuilderAddChild);
                     auditBuilder.addChild(auditBuilderAddChild);
 
                     auditBuilderAddChild.setAuditDescription("Provisioning add user: " + pUser.getUserId() +" with principal list: "+pUser.getPrincipalList());
 
                     ProvisionUserResponse tmpRes = addModifyUser(pUser, true, dataList, auditBuilderAddChild);
-                    auditLogService.enqueue(auditBuilder);
-                    auditLogProvider.remove(auditBuilderAddChild.getEntity().getId());
+                 //   auditLogService.enqueue(auditBuilder);
+               //     auditLogProvider.remove(auditBuilderAddChild.getEntity().getId());
                     return tmpRes;
                 }
             });
@@ -1477,8 +1478,11 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                         matchObj = matcheList.get(0);
                                     }
 
+                                    System.out.println("============== Connector Reset Password call: "+new Date());
                                     ResponseType resp = resetPassword(requestId, loginDozerConverter.convertToDTO(lg, false), password,
                                             managedSysDozerConverter.convertToDTO(mSys, false), objectMatchDozerConverter.convertToDTO(matchObj, false));
+                                    System.out.println("============== Connector Reset Password get : "+new Date());
+
                                     if(resp != null && resp.getStatus() == StatusCodeType.SUCCESS) {
                                         auditBuilderResetPasswdChildLog.succeed().setAuditDescription("Reset password for resource: " + res.getName() + " for user: " + lg.getLogin());
                                     } else {

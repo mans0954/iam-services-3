@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.synch.dto;
 
+import org.openiam.am.srvc.constants.SearchScopeType;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.recon.dto.MatchConfig;
 import org.openiam.idm.srvc.synch.domain.SynchConfigEntity;
@@ -46,6 +47,8 @@ import javax.xml.bind.annotation.XmlType;
 		"customMatchAttr",
 		"customAdatperScript",
 		"baseDn",
+        "attributeNamesLookup",
+        "searchScope",
         "lastRecProcessed",
         "wsScript",
         "wsUrl"
@@ -94,6 +97,8 @@ public class SynchConfig implements MatchConfig, java.io.Serializable {
 	private String customAdatperScript;
 	private String customMatchAttr;
 	private String baseDn;
+    private String attributeNamesLookup;
+    private SearchScopeType searchScope = SearchScopeType.SUBTREE_SCOPE;
 
     private String wsUrl;
     private String wsScript;
@@ -387,6 +392,22 @@ public class SynchConfig implements MatchConfig, java.io.Serializable {
         this.baseDn = baseDn;
     }
 
+    public String getAttributeNamesLookup() {
+        return attributeNamesLookup;
+    }
+
+    public void setAttributeNamesLookup(String attributeNamesLookup) {
+        this.attributeNamesLookup = attributeNamesLookup;
+    }
+
+    public SearchScopeType getSearchScope() {
+        return searchScope;
+    }
+
+    public void setSearchScope(SearchScopeType searchScope) {
+        this.searchScope = searchScope;
+    }
+
     @Override
     public String toString() {
         return "SynchConfig{" +
@@ -425,6 +446,8 @@ public class SynchConfig implements MatchConfig, java.io.Serializable {
                 ", customAdatperScript='" + customAdatperScript + '\'' +
                 ", customMatchAttr='" + customMatchAttr + '\'' +
                 ", baseDn='" + baseDn + '\'' +
+                ", attributeNamesLookup='" + attributeNamesLookup + '\'' +
+                ", searchScope='" + searchScope + '\'' +
                 '}';
     }
 
