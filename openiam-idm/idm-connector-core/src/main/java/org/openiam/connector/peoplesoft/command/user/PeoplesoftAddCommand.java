@@ -36,14 +36,12 @@ public class PeoplesoftAddCommand extends AbstractPeoplesoftCommand<CrudRequest<
         String password = null;
         String status = null;
 
-        schemaName = res.getString("SCHEMA");
-
         final String targetID = request.getTargetID();
         final ManagedSysEntity managedSys = managedSysService.getManagedSysById(targetID);
         if (managedSys == null) {
             throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR);
         }
-
+        String schemaName = managedSys.getHostUrl();
         if (StringUtils.isBlank(managedSys.getResourceId())) {
             throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR, "managed system not linked with resource");
         }
@@ -108,7 +106,7 @@ public class PeoplesoftAddCommand extends AbstractPeoplesoftCommand<CrudRequest<
         Connection con = null;
         try {
             con = this.getConnection(managedSys);
-            symbolicID = getSymbolicID(con);
+            symbolicID = getSymbolicID(con, schemaName);
             if (symbolicID == null) {
                 if (log.isDebugEnabled()) {
                     log.debug(String.format("SymbolicID not found"));
@@ -116,7 +114,7 @@ public class PeoplesoftAddCommand extends AbstractPeoplesoftCommand<CrudRequest<
                 return response;
             }
 
-            int version = (getVersion(con) + 1);
+            int version = (getVersion(con, schemaName) + 1);
 
             // get the required attributes
 
@@ -125,47 +123,47 @@ public class PeoplesoftAddCommand extends AbstractPeoplesoftCommand<CrudRequest<
             // if it does not then create the record - add the users role
             // membership
 
-            if (!identityExists(con, principalName)) {
+            if (!identityExists(con, principalName, schemaName)) {
                 insertUser(con, principalName, displayName, employeeId, email, symbolicID, password, version,
-                        Integer.valueOf(status));
+                        Integer.valueOf(status), schemaName);
             }
             // check if this user already has a role membership
             if (!StringUtils.isBlank(role)) {
-                if (!roleExists(con, principalName, role)) {
-                    addToRole(con, principalName, role);
+                if (!roleExists(con, principalName, role, schemaName)) {
+                    addToRole(con, principalName, role, schemaName);
                 }
             }
 
             if (!StringUtils.isBlank(email)) {
-                if (!emailExists(con, principalName)) {
-                    insertEmail(con, principalName, email);
+                if (!emailExists(con, principalName, schemaName)) {
+                    insertEmail(con, principalName, email, schemaName);
 
                 }
             }
 
-            if (!roleExlatoprExists(con, principalName)) {
-                insertRoleExlatopr(con, principalName, displayName, email, employeeId);
+            if (!roleExlatoprExists(con, principalName, schemaName)) {
+                insertRoleExlatopr(con, principalName, displayName, email, employeeId, schemaName);
             }
 
-            if (!userAttrExists(con, principalName)) {
-                insertUserAttribute(con, principalName);
+            if (!userAttrExists(con, principalName, schemaName)) {
+                insertUserAttribute(con, principalName, schemaName);
 
             }
 
-            if (!pspruhdefnExists(con, principalName)) {
+            if (!pspruhdefnExists(con, principalName, schemaName)) {
                 System.out.println("pspruhdefn DOES NOT Exist - inserting record...");
 
-                insertPSPRUHDEFN(con, principalName, version);
+                insertPSPRUHDEFN(con, principalName, version, schemaName);
 
             }
 
-            if (!pspruhtabExists(con, principalName)) {
-                insertPSPRUHTAB(con, principalName);
+            if (!pspruhtabExists(con, principalName, schemaName)) {
+                insertPSPRUHTAB(con, principalName, schemaName);
 
             }
 
-            if (!psruhtabpgltExists(con, principalName)) {
-                insertPSPRUHTABPGLT(con, principalName);
+            if (!psruhtabpgltExists(con, principalName, schemaName)) {
+                insertPSPRUHTABPGLT(con, principalName, schemaName);
 
             }
         } catch (SQLException se) {

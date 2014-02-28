@@ -1,79 +1,73 @@
-//package org.openiam.connector.peoplesoft.command.user;
-//
-//import org.apache.commons.lang.StringUtils;
-//import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
-//import org.openiam.idm.srvc.res.dto.Resource;
-//import org.openiam.spml2.msg.ErrorCode;
-//import org.openiam.spml2.msg.PSOIdentifierType;
-//import org.openiam.spml2.msg.ResponseType;
-//import org.openiam.spml2.msg.StatusCodeType;
-//import org.openiam.spml2.msg.password.SetPasswordRequestType;
-//import org.openiam.spml2.spi.common.PasswordCommand;
-//
-//import java.sql.Connection;
-//import java.sql.SQLException;
-//
-///**
-// *
-// */
-//public class PeoplesoftPasswordCommand extends AbstractPeoplesoftCommand implements PasswordCommand {
-//    @Override
-//    public ResponseType setPassword(SetPasswordRequestType reqType) {
-//        final ResponseType response = new ResponseType();
-//        response.setStatus(StatusCodeType.SUCCESS);
-//
-//        schemaName = res.getString("SCHEMA");
-//
-//        final String principalName = reqType.getPsoID().getID();
-//
-//        final PSOIdentifierType psoID = reqType.getPsoID();
-//        /* targetID - */
-//        final String targetID = psoID.getTargetID();
-//
-//        final String password = reqType.getPassword();
-//
-//        final ManagedSys managedSys = managedSysService.getManagedSys(targetID);
-//        if (managedSys == null) {
-//            populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_CONFIGURATION, "No managed resource");
-//            return response;
-//        }
-//
-//        if (StringUtils.isBlank(managedSys.getResourceId())) {
-//            populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_CONFIGURATION,
-//                    "ResourceID is not defined in the ManagedSys Object");
-//            return response;
-//        }
-//
-//        final Resource res = resourceDataService.getResource(managedSys.getResourceId());
-//        if (res == null) {
-//            populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_CONFIGURATION,
-//                    "No resource for managed resource found");
-//            return response;
-//        }
-//
-//        Connection con = null;
-//        try {
-//            changePassword(managedSys, principalName, password);
-//        } catch (SQLException se) {
-//            log.error(se);
-//            populateResponse(response, StatusCodeType.FAILURE, ErrorCode.SQL_ERROR, se.toString());
-//        } catch (ClassNotFoundException cnfe) {
-//            log.error(cnfe);
-//            populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_CONFIGURATION, cnfe.toString());
-//        } catch (Throwable e) {
-//            log.error(e);
-//            populateResponse(response, StatusCodeType.FAILURE, ErrorCode.OTHER_ERROR, e.toString());
-//        } finally {
-//            if (con != null) {
-//                try {
-//                    con.close();
-//                } catch (SQLException s) {
-//                    log.error(s);
-//                    populateResponse(response, StatusCodeType.FAILURE, ErrorCode.SQL_ERROR, s.toString());
-//                }
-//            }
-//        }
-//
-//        return response;
-//    }
-// }
+package org.openiam.connector.peoplesoft.command.user;
+
+import java.net.ConnectException;
+import java.sql.Connection;
+import java.sql.SQLException;
+
+import org.apache.commons.lang.StringUtils;
+import org.openiam.connector.peoplesoft.command.base.AbstractPeoplesoftCommand;
+import org.openiam.connector.type.ConnectorDataException;
+import org.openiam.connector.type.constant.ErrorCode;
+import org.openiam.connector.type.constant.StatusCodeType;
+import org.openiam.connector.type.request.PasswordRequest;
+import org.openiam.connector.type.response.ResponseType;
+import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
+import org.openiam.idm.srvc.res.dto.Resource;
+
+/**
+ *
+ */
+public class PeoplesoftPasswordCommand extends AbstractPeoplesoftCommand<PasswordRequest, ResponseType> {
+    @Override
+    public ResponseType execute(PasswordRequest reqType) throws ConnectorDataException {
+        final ResponseType response = new ResponseType();
+        response.setStatus(StatusCodeType.SUCCESS);
+
+        final String principalName = reqType.getObjectIdentity();
+
+        /* targetID - */
+        final String targetID = reqType.getPassword();
+
+        final String password = reqType.getPassword();
+
+        final ManagedSysEntity managedSys = managedSysService.getManagedSysById(targetID);
+        if (managedSys == null) {
+            throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR, "No managed resource");
+        }
+        String schemaName = managedSys.getHostUrl();
+        if (StringUtils.isBlank(managedSys.getResourceId())) {
+            throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR,
+                    "ResourceID is not defined in the ManagedSys Object");
+        }
+
+        final Resource res = resourceDataService.getResource(managedSys.getResourceId());
+        if (res == null) {
+            throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR, "No resource for managed resource found");
+        }
+
+        Connection con = null;
+        try {
+            changePassword(managedSys, principalName, password, schemaName);
+        } catch (SQLException se) {
+            log.error(se);
+            throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR, se.toString());
+        } catch (ClassNotFoundException cnfe) {
+            log.error(cnfe);
+            throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR, cnfe.toString());
+        } catch (Throwable e) {
+            log.error(e);
+            throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR, e.toString());
+        } finally {
+            if (con != null) {
+                try {
+                    con.close();
+                } catch (SQLException s) {
+                    log.error(s);
+                    throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR, s.toString());
+                }
+            }
+        }
+
+        return response;
+    }
+}

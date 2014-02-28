@@ -24,8 +24,6 @@ public class PeoplesoftSuspendCommand extends AbstractPeoplesoftCommand<SuspendR
         response.setStatus(StatusCodeType.SUCCESS);
         Connection con = null;
 
-        schemaName = res.getString("SCHEMA");
-
         final String principalName = request.getObjectIdentity();
 
         /* targetID - */
@@ -36,7 +34,7 @@ public class PeoplesoftSuspendCommand extends AbstractPeoplesoftCommand<SuspendR
             throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR, String.format(
                     "No Managed System with target id: %s", targetID));
         }
-
+        String schemaName = managedSys.getHostUrl();
         if (StringUtils.isBlank(managedSys.getResourceId())) {
             throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR,
                     "ResourceID is not defined in the ManagedSys Object");
@@ -49,7 +47,7 @@ public class PeoplesoftSuspendCommand extends AbstractPeoplesoftCommand<SuspendR
 
         try {
             con = this.getConnection(managedSys);
-            updateUserLock(con, principalName, 1);
+            updateUserLock(con, principalName, 1, schemaName);
         } catch (SQLException se) {
             log.error(se);
             throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR, se.toString());

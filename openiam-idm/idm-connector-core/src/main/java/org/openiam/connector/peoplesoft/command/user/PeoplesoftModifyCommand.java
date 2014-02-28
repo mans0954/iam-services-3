@@ -26,14 +26,11 @@ public class PeoplesoftModifyCommand extends AbstractPeoplesoftCommand<CrudReque
     public ObjectResponse execute(CrudRequest<ExtensibleUser> reqType) throws ConnectorDataException {
         ObjectResponse response = new ObjectResponse();
         Connection con = null;
-        List<BaseAttribute> targetMembershipList = new ArrayList<BaseAttribute>();
 
         String displayName = null;
         String role = null;
         String email = null;
         String employeeId = null;
-        String symbolicID;
-        String password = null;
         String status = null;
 
         String principalName = reqType.getObjectIdentity();
@@ -44,7 +41,7 @@ public class PeoplesoftModifyCommand extends AbstractPeoplesoftCommand<CrudReque
             throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR, String.format(
                     "No Managed System with target id: %s", targetID));
         }
-
+        String schemaName = managedSys.getHostUrl();
         if (principalName != null) {
             principalName = principalName.toUpperCase();
         }
@@ -81,51 +78,51 @@ public class PeoplesoftModifyCommand extends AbstractPeoplesoftCommand<CrudReque
                 }
             }
 
-            int version = (getVersion(con) + 1);
+            int version = (getVersion(con, schemaName) + 1);
 
-            if (identityExists(con, principalName)) {
-                updateUser(con, principalName, displayName, email, Integer.valueOf(status));
+            if (identityExists(con, principalName, schemaName)) {
+                updateUser(con, principalName, displayName, email, Integer.valueOf(status), schemaName);
             }
 
             if (!StringUtils.isBlank(role)) {
-                if (!roleExists(con, principalName, role)) {
-                    addToRole(con, principalName, role);
+                if (!roleExists(con, principalName, role, schemaName)) {
+                    addToRole(con, principalName, role, schemaName);
                 }
             }
 
             if (!StringUtils.isBlank(email)) {
-                if (!emailExists(con, principalName)) {
-                    insertEmail(con, principalName, email);
+                if (!emailExists(con, principalName, schemaName)) {
+                    insertEmail(con, principalName, email, schemaName);
 
                 } else {
 
-                    updateEmail(con, principalName, email);
+                    updateEmail(con, principalName, email, schemaName);
 
                 }
             }
 
-            if (!roleExlatoprExists(con, principalName)) {
-                insertRoleExlatopr(con, principalName, displayName, email, employeeId);
+            if (!roleExlatoprExists(con, principalName, schemaName)) {
+                insertRoleExlatopr(con, principalName, displayName, email, employeeId, schemaName);
             }
 
-            if (!userAttrExists(con, principalName)) {
-                insertUserAttribute(con, principalName);
-
-            }
-
-            if (!pspruhdefnExists(con, principalName)) {
-
-                insertPSPRUHDEFN(con, principalName, version);
+            if (!userAttrExists(con, principalName, schemaName)) {
+                insertUserAttribute(con, principalName, schemaName);
 
             }
 
-            if (!pspruhtabExists(con, principalName)) {
-                insertPSPRUHTAB(con, principalName);
+            if (!pspruhdefnExists(con, principalName, schemaName)) {
+
+                insertPSPRUHDEFN(con, principalName, version, schemaName);
 
             }
 
-            if (!psruhtabpgltExists(con, principalName)) {
-                insertPSPRUHTABPGLT(con, principalName);
+            if (!pspruhtabExists(con, principalName, schemaName)) {
+                insertPSPRUHTAB(con, principalName, schemaName);
+
+            }
+
+            if (!psruhtabpgltExists(con, principalName, schemaName)) {
+                insertPSPRUHTABPGLT(con, principalName, schemaName);
 
             }
 

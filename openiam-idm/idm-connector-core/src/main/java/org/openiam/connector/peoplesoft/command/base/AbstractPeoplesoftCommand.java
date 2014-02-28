@@ -9,6 +9,7 @@ import java.util.ResourceBundle;
 
 import org.mule.util.StringUtils;
 import org.openiam.connector.common.jdbc.AbstractJDBCCommand;
+import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.connector.type.request.RequestType;
 import org.openiam.connector.type.response.ResponseType;
 import org.openiam.exception.EncryptionException;
@@ -110,10 +111,8 @@ public abstract class AbstractPeoplesoftCommand<Request extends RequestType, Res
             + "            (PORTAL_NAME, OPRID, PORTAL_OBJNAME, PORTAL_OBJNAME_PGT,PORTAL_COL_NUM,PORTAL_ROW_NUM,PORTAL_MINIMIZE ) "
             + "            VALUES ('EMPLOYEE' ,?, 'DEFAULT', ? , 1 , 1, 0) ";
 
-    static protected ResourceBundle res = ResourceBundle.getBundle("peoplesoft");
-    static protected String schemaName = null;
-
-    protected boolean identityExists(final Connection connection, final String principalName) throws SQLException {
+    protected boolean identityExists(final Connection connection, final String principalName, final String schemaName)
+            throws SQLException {
         boolean exists = false;
         if (connection != null) {
             if (StringUtils.isNotBlank(principalName)) {
@@ -131,8 +130,8 @@ public abstract class AbstractPeoplesoftCommand<Request extends RequestType, Res
         return exists;
     }
 
-    protected boolean roleExists(final Connection connection, final String principalName, final String roleName)
-            throws SQLException {
+    protected boolean roleExists(final Connection connection, final String principalName, final String roleName,
+            final String schemaName) throws SQLException {
         boolean exists = false;
         if (connection != null) {
             if (StringUtils.isNotBlank(principalName)) {
@@ -150,7 +149,8 @@ public abstract class AbstractPeoplesoftCommand<Request extends RequestType, Res
         return exists;
     }
 
-    public boolean userAttrExists(final Connection connection, final String principalName) throws SQLException {
+    public boolean userAttrExists(final Connection connection, final String principalName, final String schemaName)
+            throws SQLException {
 
         boolean exists = false;
         if (connection != null) {
@@ -168,7 +168,8 @@ public abstract class AbstractPeoplesoftCommand<Request extends RequestType, Res
 
     }
 
-    public boolean emailExists(final Connection connection, final String principalName) throws SQLException {
+    public boolean emailExists(final Connection connection, final String principalName, final String schemaName)
+            throws SQLException {
         boolean exists = false;
         if (connection != null) {
             if (StringUtils.isNotBlank(principalName)) {
@@ -184,7 +185,8 @@ public abstract class AbstractPeoplesoftCommand<Request extends RequestType, Res
         return exists;
     }
 
-    public boolean roleExlatoprExists(final Connection connection, final String principalName) throws SQLException {
+    public boolean roleExlatoprExists(final Connection connection, final String principalName, final String schemaName)
+            throws SQLException {
         boolean exists = false;
         if (connection != null) {
             if (StringUtils.isNotBlank(principalName)) {
@@ -200,7 +202,8 @@ public abstract class AbstractPeoplesoftCommand<Request extends RequestType, Res
         return exists;
     }
 
-    public boolean pspruhdefnExists(final Connection connection, final String principalName) throws SQLException {
+    public boolean pspruhdefnExists(final Connection connection, final String principalName, final String schemaName)
+            throws SQLException {
         boolean exists = false;
         if (connection != null) {
             if (StringUtils.isNotBlank(principalName)) {
@@ -218,7 +221,8 @@ public abstract class AbstractPeoplesoftCommand<Request extends RequestType, Res
         return exists;
     }
 
-    public boolean pspruhtabExists(final Connection connection, final String principalName) throws SQLException {
+    public boolean pspruhtabExists(final Connection connection, final String principalName, final String schemaName)
+            throws SQLException {
         boolean exists = false;
         if (connection != null) {
             if (StringUtils.isNotBlank(principalName)) {
@@ -234,7 +238,8 @@ public abstract class AbstractPeoplesoftCommand<Request extends RequestType, Res
         return exists;
     }
 
-    public boolean psruhtabpgltExists(final Connection connection, final String principalName) throws SQLException {
+    public boolean psruhtabpgltExists(final Connection connection, final String principalName, final String schemaName)
+            throws SQLException {
         boolean exists = false;
         if (connection != null) {
             if (StringUtils.isNotBlank(principalName)) {
@@ -250,7 +255,7 @@ public abstract class AbstractPeoplesoftCommand<Request extends RequestType, Res
         return exists;
     }
 
-    protected int getVersion(Connection connection) throws SQLException {
+    protected int getVersion(Connection connection, final String schemaName) throws SQLException {
 
         if (connection != null) {
             String sql = String.format(SELECT_VERSION, schemaName);
@@ -264,7 +269,7 @@ public abstract class AbstractPeoplesoftCommand<Request extends RequestType, Res
         return 0;
     }
 
-    protected String getSymbolicID(Connection connection) throws SQLException {
+    protected String getSymbolicID(Connection connection, final String schemaName) throws SQLException {
 
         if (connection != null) {
             String sql = String.format(SELECT_SYMBOLIC_ID, schemaName);
@@ -278,8 +283,8 @@ public abstract class AbstractPeoplesoftCommand<Request extends RequestType, Res
         return null;
     }
 
-    protected boolean insertEmail(final Connection connection, final String principalName, String email)
-            throws SQLException {
+    protected boolean insertEmail(final Connection connection, final String principalName, String email,
+            final String schemaName) throws SQLException {
 
         String sql = String.format(INSERT_EMAIL, schemaName);
         PreparedStatement statement = connection.prepareStatement(sql);
@@ -295,7 +300,8 @@ public abstract class AbstractPeoplesoftCommand<Request extends RequestType, Res
 
     }
 
-    protected boolean insertUserAttribute(final Connection connection, final String principalName) throws SQLException {
+    protected boolean insertUserAttribute(final Connection connection, final String principalName,
+            final String schemaName) throws SQLException {
 
         String sql = String.format(INSERT_PSUSERATTR, schemaName);
         PreparedStatement statement = connection.prepareStatement(sql);
@@ -314,7 +320,8 @@ public abstract class AbstractPeoplesoftCommand<Request extends RequestType, Res
     }
 
     protected boolean insertRoleExlatopr(final Connection connection, final String principalName,
-            final String displayName, String email, final String employeeId) throws SQLException {
+            final String displayName, String email, final String employeeId, final String schemaName)
+            throws SQLException {
 
         String sql = String.format(INSERT_ROLEXLATOPR, schemaName);
         PreparedStatement statement = connection.prepareStatement(sql);
@@ -338,7 +345,7 @@ public abstract class AbstractPeoplesoftCommand<Request extends RequestType, Res
     }
 
     protected void updateUser(final Connection connection, final String principalName, final String displayName,
-            final String email, int status) throws SQLException {
+            final String email, int status, final String schemaName) throws SQLException {
 
         if (connection != null) {
             if (StringUtils.isNotBlank(principalName)) {
@@ -359,8 +366,8 @@ public abstract class AbstractPeoplesoftCommand<Request extends RequestType, Res
 
     }
 
-    protected void updateUserLock(final Connection connection, final String principalName, int status)
-            throws SQLException {
+    protected void updateUserLock(final Connection connection, final String principalName, int status,
+            final String schemaName) throws SQLException {
 
         if (connection != null) {
             if (StringUtils.isNotBlank(principalName)) {
@@ -384,8 +391,8 @@ public abstract class AbstractPeoplesoftCommand<Request extends RequestType, Res
 
     }
 
-    protected void updateEmail(final Connection connection, final String principalName, final String email)
-            throws SQLException {
+    protected void updateEmail(final Connection connection, final String principalName, final String email,
+            final String schemaName) throws SQLException {
 
         if (connection != null) {
             if (StringUtils.isNotBlank(principalName)) {
@@ -406,7 +413,7 @@ public abstract class AbstractPeoplesoftCommand<Request extends RequestType, Res
 
     protected boolean insertUser(final Connection connection, final String principalName, final String displayName,
             final String employeeId, final String email, final String symbolicId, final String password, int version,
-            int status) throws SQLException {
+            int status, final String schemaName) throws SQLException {
         boolean exists = false;
 
         String encPassword = null;
@@ -475,8 +482,8 @@ public abstract class AbstractPeoplesoftCommand<Request extends RequestType, Res
         return exists;
     }
 
-    protected boolean insertPSPRUHDEFN(final Connection connection, final String principalName, int version)
-            throws SQLException {
+    protected boolean insertPSPRUHDEFN(final Connection connection, final String principalName, int version,
+            final String schemaName) throws SQLException {
 
         String sql = String.format(INSERT_PSPRUHDEFN, schemaName);
         PreparedStatement statement = connection.prepareStatement(sql);
@@ -494,7 +501,8 @@ public abstract class AbstractPeoplesoftCommand<Request extends RequestType, Res
 
     }
 
-    protected boolean insertPSPRUHTAB(final Connection connection, final String principalName) throws SQLException {
+    protected boolean insertPSPRUHTAB(final Connection connection, final String principalName, final String schemaName)
+            throws SQLException {
 
         String sql = String.format(INSERT_PSPRUHTAB, schemaName);
         PreparedStatement statement = connection.prepareStatement(sql);
@@ -507,7 +515,8 @@ public abstract class AbstractPeoplesoftCommand<Request extends RequestType, Res
 
     }
 
-    protected boolean insertPSPRUHTABPGLT(final Connection connection, final String principalName) throws SQLException {
+    protected boolean insertPSPRUHTABPGLT(final Connection connection, final String principalName,
+            final String schemaName) throws SQLException {
 
         String sql = String.format(INSERT_PSPRUHTABPGLT, schemaName);
         PreparedStatement statement = connection.prepareStatement(sql);
@@ -529,8 +538,8 @@ public abstract class AbstractPeoplesoftCommand<Request extends RequestType, Res
         return str;
     }
 
-    protected boolean addToRole(final Connection connection, final String principalName, final String role)
-            throws SQLException {
+    protected boolean addToRole(final Connection connection, final String principalName, final String role,
+            final String schemaName) throws SQLException {
         boolean exists = false;
         if (connection != null) {
             if (StringUtils.isNotBlank(principalName)) {
@@ -547,13 +556,14 @@ public abstract class AbstractPeoplesoftCommand<Request extends RequestType, Res
         return exists;
     }
 
-    protected boolean changePassword(final ManagedSysDto managedSys, final String principalName, final String password)
-            throws SQLException, ClassNotFoundException {
+    protected boolean changePassword(final ManagedSysEntity managedSys, final String principalName,
+            final String password, final String schemaName) throws SQLException, ClassNotFoundException,
+            ConnectorDataException {
 
         Connection connection = null;
 
         try {
-            connection = connectionMgr.connect(managedSys);
+            connection = this.getConnection(managedSys);
             String sql = String.format(CHANGE_PASSWORD_SQL, schemaName);
 
             final PreparedStatement statement = connection.prepareStatement(sql);

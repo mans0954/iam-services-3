@@ -31,8 +31,6 @@ public class PeoplesoftLookupCommand extends AbstractPeoplesoftCommand<LookupReq
     @Override
     public SearchResponse execute(LookupRequest<ExtensibleObject> request) throws ConnectorDataException {
 
-        schemaName = res.getString("SCHEMA");
-
         if (log.isDebugEnabled()) {
             log.debug("AppTable lookup operation called.");
         }
@@ -49,7 +47,7 @@ public class PeoplesoftLookupCommand extends AbstractPeoplesoftCommand<LookupReq
             throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR, String.format(
                     "No Managed System with target id: %s", targetID));
         }
-
+        String schemaName = managedSys.getHostUrl();
         if (StringUtils.isBlank(managedSys.getResourceId())) {
             throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR,
                     "ResourceID is not defined in the ManagedSys Object");
