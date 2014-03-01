@@ -31,7 +31,7 @@ public class FileWebServiceImpl implements FileWebService {
         try {
             return this.get(fName);
         } catch (Exception e) {
-            e.printStackTrace();
+        	log.error("getFile", e);
 
         }
         return null;
@@ -44,7 +44,7 @@ public class FileWebServiceImpl implements FileWebService {
         try {
             return this.save(fName, value);
         } catch (Exception e) {
-            e.printStackTrace();
+        	log.error("Error in saveFile", e);
 
         }
         return null;

@@ -89,7 +89,7 @@ public class LdapConnectionMgr implements ConnectionMgr {
             decryptedPassword = getDecryptedPassword(managedSys);
         } catch (ConnectorDataException e) {
             decryptedPassword = managedSys.getPswd();
-            e.printStackTrace();
+            log.error("connect", e);
         }
         log.debug("connect: Connecting to target system: " + managedSys.getId() );
         log.debug("connect: Managed System object : " + managedSys);

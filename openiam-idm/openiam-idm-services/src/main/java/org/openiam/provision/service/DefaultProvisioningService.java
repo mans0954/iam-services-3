@@ -180,7 +180,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 provQueueService.enqueue(dataList);
             }
         } catch(Throwable t){
-            t.printStackTrace();
+        	log.error("Can't add user", t);
         }
         return res;
     }

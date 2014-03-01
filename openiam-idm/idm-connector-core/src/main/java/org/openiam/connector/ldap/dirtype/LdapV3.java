@@ -306,7 +306,7 @@ public class LdapV3 implements Directory {
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
+        	log.error("userMembershipList", e);
         }
 
         if (currentMembershipList.isEmpty()) {
@@ -365,7 +365,7 @@ public class LdapV3 implements Directory {
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
+        	log.error("userSupervisorMembershipList", e);
         }
 
         if (currentSupervisorMembershipList.isEmpty()) {
