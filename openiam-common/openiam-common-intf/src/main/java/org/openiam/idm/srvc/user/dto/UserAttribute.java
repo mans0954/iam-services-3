@@ -13,6 +13,9 @@ import javax.xml.bind.annotation.XmlType;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * UserAttribute represents an individual attribute that is associated with a user. A user may
  * have many attributes. A UserAttribute should also be associated
@@ -27,6 +30,8 @@ import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
         "name",
         "userId",
         "value",
+        "values",
+        "isMultivalued",
         "attrGroup",
         "operation",
         "required"/*,
@@ -42,6 +47,10 @@ public class UserAttribute extends BaseObject {
     protected String name;
 
     protected String value;
+
+    protected List<String> values = new ArrayList<String>();
+
+    protected Boolean isMultivalued = Boolean.FALSE;
 
     protected String attrGroup;
 
@@ -124,6 +133,21 @@ public class UserAttribute extends BaseObject {
         this.value = value;
     }
 
+    public List<String> getValues() {
+        return values;
+    }
+
+    public void setValues(List<String> values) {
+        this.values = values;
+    }
+
+    public Boolean getMultivalued() {
+        return isMultivalued;
+    }
+
+    public void setMultivalued(Boolean multivalued) {
+        isMultivalued = multivalued;
+    }
 
     public String getMetadataElementId() {
         return metadataElementId;
@@ -212,6 +236,7 @@ public class UserAttribute extends BaseObject {
 				+ ((required == null) ? 0 : required.hashCode());
 		result = prime * result + ((userId == null) ? 0 : userId.hashCode());
 		result = prime * result + ((value == null) ? 0 : value.hashCode());
+        result = prime * result + ((isMultivalued == null) ? 0 : isMultivalued.hashCode());
 		return result;
 	}
 
@@ -263,11 +288,16 @@ public class UserAttribute extends BaseObject {
 				return false;
 		} else if (!userId.equals(other.userId))
 			return false;
-		if (value == null) {
-			if (other.value != null)
-				return false;
-		} else if (!value.equals(other.value))
-			return false;
+        if (value == null) {
+            if (other.value != null)
+                return false;
+        } else if (!value.equals(other.value))
+            return false;
+        if (isMultivalued == null) {
+            if (other.isMultivalued != null)
+                return false;
+        } else if (!isMultivalued.equals(other.isMultivalued))
+            return false;
 		return true;
 	}
 
