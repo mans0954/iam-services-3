@@ -1692,8 +1692,8 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 	        for (final LoginEntity l : principalList) {
 
 	            // find the openiam identity and update it in openiam DB
-	            if (StringUtils.equalsIgnoreCase(l.getManagedSysId(),
-	                    passwordSync.getManagedSystemId())) {
+	            if (StringUtils.equalsIgnoreCase(l.getManagedSysId(), passwordSync.getManagedSystemId())
+                        && StringUtils.equalsIgnoreCase(l.getDomainId(), passwordSync.getSecurityDomain())) {
 
 	                final boolean retval = loginManager.setPassword(
 	                        l.getDomainId(), l.getLogin(),
