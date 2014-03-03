@@ -55,8 +55,6 @@ public class LdapV3 implements Directory {
     public ModificationItem[] suspend(SuspendResumeRequest request)  {
 
         String scrambledPswd =	passwordGenerator.generatePassword(10);
-        
-        hash.HexEncodedHash( "{ssha}" + hash.hash(scrambledPswd));
 
         ModificationItem[] mods = new ModificationItem[1];
         mods[0] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute("userPassword", scrambledPswd));
