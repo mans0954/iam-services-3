@@ -26,14 +26,17 @@ import org.openiam.idm.srvc.user.dto.User;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author suneet
  *
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "ProvisionUser", propOrder = {
+@XmlType(name = "ProvisionGroup", propOrder = {
         "requestId",
         "srcSystemId"
 })
@@ -43,6 +46,9 @@ public class ProvisionGroup extends org.openiam.idm.srvc.grp.dto.Group {
 	private String requestId;
 	/* ID of the system where this request came from */
     private String srcSystemId;
+
+    @XmlTransient
+    protected Set<String> notProvisioninResourcesIds = new HashSet<String>();
 
     public String getRequestId() {
         return requestId;
@@ -58,5 +64,19 @@ public class ProvisionGroup extends org.openiam.idm.srvc.grp.dto.Group {
 
     public void setSrcSystemId(String srcSystemId) {
         this.srcSystemId = srcSystemId;
+    }
+
+    public Set<String> getNotProvisioninResourcesIds() {
+        return notProvisioninResourcesIds;
+    }
+
+    public void setNotProvisioninResourcesIds(Set<String> notProvisioninResourcesIds) {
+        this.notProvisioninResourcesIds = notProvisioninResourcesIds;
+    }
+
+    public void addNotProvisioninResourcesId(final String notProvisioninResourceId) {
+        if (notProvisioninResourceId != null) {
+            notProvisioninResourcesIds.add(notProvisioninResourceId);
+        }
     }
 }
