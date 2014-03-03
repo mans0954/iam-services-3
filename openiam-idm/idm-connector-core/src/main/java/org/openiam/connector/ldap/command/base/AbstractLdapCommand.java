@@ -272,7 +272,7 @@ public abstract class AbstractLdapCommand<Request extends RequestType, Response 
         searchCtls.setTimeLimit(0);
         searchCtls.setCountLimit(10000);
 
-        String searchFilter = matchObj.getSearchFilter();
+        String searchFilter = matchObj.getSearchFilterUnescapeXml();
         // replace the place holder in the search filter
         if (StringUtils.isNotBlank(searchFilter)) {
             searchFilter = searchFilter.replace("?", searchValue);

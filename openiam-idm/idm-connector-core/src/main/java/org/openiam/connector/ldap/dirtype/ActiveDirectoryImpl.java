@@ -270,7 +270,7 @@ public class ActiveDirectoryImpl implements Directory {
         List<String> currentMembershipList = new ArrayList<String>();
 
         String searchBase = matchObj.getSearchBaseDn();
-        String userSearchFilter = matchObj.getSearchFilter();
+        String userSearchFilter = matchObj.getSearchFilterUnescapeXml();
         // replace the place holder in the search filter
         if (StringUtils.isNotBlank(userSearchFilter)) {
             userSearchFilter = userSearchFilter.replace("?", identity);
@@ -324,7 +324,7 @@ public class ActiveDirectoryImpl implements Directory {
         List<String> currentMembershipList = new ArrayList<String>();
 
         String searchBase = matchObj.getSearchBaseDn();
-        String userSearchFilter = matchObj.getSearchFilter();
+        String userSearchFilter = matchObj.getSearchFilterUnescapeXml();
         // replace the place holder in the search filter
         if (StringUtils.isNotBlank(userSearchFilter)) {
             userSearchFilter = userSearchFilter.replace("?", identity);

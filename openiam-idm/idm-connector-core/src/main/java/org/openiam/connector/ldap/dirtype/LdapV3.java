@@ -329,7 +329,7 @@ public class LdapV3 implements Directory {
         log.debug(" - MembershipObjectDN=" + matchObj.getSearchBaseDn());
 
         String searchBase = matchObj.getSearchBaseDn();
-        String userSearchFilter = matchObj.getSearchFilter();
+        String userSearchFilter = matchObj.getSearchFilterUnescapeXml();
         // replace the place holder in the search filter
         if (StringUtils.isNotBlank(userSearchFilter)) {
             userSearchFilter = userSearchFilter.replace("?", userDN);
