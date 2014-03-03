@@ -605,25 +605,25 @@ public class ProvisionDispatcher implements Sweepable {
                     continue;
                 }
 
-                Object output = "";
-                try {
-                    output = ProvisionServiceUtil.getOutputFromAttrMap(attr, bindingMap, scriptRunner);
-                } catch (ScriptEngineException see) {
-                    log.error("Error in script = '", see);
-                    continue;
-                } catch (MissingPropertyException mpe) {
-                    log.error("Error in script = '", mpe);
-                    continue;
-                }
+
 
                 String objectType = attr.getMapForObjectType();
                 if (objectType != null) {
 
-                    log.debug("buildFromRules: OBJECTTYPE=" + objectType + " SCRIPT OUTPUT=" + output
-                            + " attribute name=" + attr.getAttributeName());
-
-                    if (objectType.equalsIgnoreCase("GROUP") || objectType.equalsIgnoreCase("USER")
+                    if (objectType.equalsIgnoreCase("USER")
                             || objectType.equalsIgnoreCase("PASSWORD")) {
+                        Object output = "";
+                        try {
+                            output = ProvisionServiceUtil.getOutputFromAttrMap(attr, bindingMap, scriptRunner);
+                        } catch (ScriptEngineException see) {
+                            log.error("Error in script = '", see);
+                            continue;
+                        } catch (MissingPropertyException mpe) {
+                            log.error("Error in script = '", mpe);
+                            continue;
+                        }
+                        log.debug("buildFromRules: OBJECTTYPE=" + objectType + " SCRIPT OUTPUT=" + output
+                                + " attribute name=" + attr.getAttributeName());
                         if (output != null) {
                             ExtensibleAttribute newAttr;
                             if (output instanceof String) {

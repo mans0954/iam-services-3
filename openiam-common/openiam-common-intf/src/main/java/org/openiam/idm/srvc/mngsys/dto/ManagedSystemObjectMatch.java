@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.mngsys.dto;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
@@ -86,6 +87,10 @@ public class ManagedSystemObjectMatch implements java.io.Serializable {
 	public String getSearchFilter() {
 		return this.searchFilter;
 	}
+
+    public String getSearchFilterUnescapeXml() {
+        return StringEscapeUtils.unescapeXml(searchFilter);
+    }
 
 	public void setSearchFilter(String searchFilter) {
 		this.searchFilter = searchFilter;

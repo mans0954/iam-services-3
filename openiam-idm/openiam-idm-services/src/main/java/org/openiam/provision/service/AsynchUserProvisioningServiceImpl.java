@@ -27,6 +27,7 @@ import org.mule.module.client.MuleClient;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.util.MuleContextProvider;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -45,6 +46,7 @@ public class AsynchUserProvisioningServiceImpl {
 
     protected static final Log log = LogFactory.getLog(AsynchUserProvisioningServiceImpl.class);
     @Autowired
+    @Qualifier("defaultProvision")
     protected ProvisionService provisionService;
 
     @Value("${openiam.service_base}")
