@@ -52,7 +52,7 @@ public class PageElement implements Serializable {
 		this.elementId = element.getId();
 		this.attributeName = element.getAttributeName();
 		this.required = element.isRequired();
-		this.editable = element.getIsSelfEditable();
+		this.editable = element.getSelfEditable();
 	}
 
 	public Integer getOrder() {

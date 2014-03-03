@@ -236,6 +236,7 @@ public class MetadataElement implements Serializable {
 	public boolean getIsPublic() {
 		return isPublic;
 	}
+
 	public void setIsPublic(boolean isPublic) {
 		this.isPublic = isPublic;
 	}

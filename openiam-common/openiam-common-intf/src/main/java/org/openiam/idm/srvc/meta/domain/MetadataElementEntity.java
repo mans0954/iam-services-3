@@ -165,11 +165,11 @@ public class MetadataElementEntity implements Serializable {
 		this.required = required;
 	}
 
-	public boolean getIsSelfEditable() {
+	public boolean getSelfEditable() {
 		return selfEditable;
 	}
 
-	public void setIsSelfEditable(boolean selfEditable) {
+	public void setSelfEditable(boolean selfEditable) {
 		this.selfEditable = selfEditable;
 	}
 
@@ -267,11 +267,11 @@ public class MetadataElementEntity implements Serializable {
 		this.organizationAttributes = organizationAttributes;
 	}
 
-	public boolean isPublic() {
+	public boolean getIsPublic() {
 		return isPublic;
 	}
 
-	public void setPublic(boolean isPublic) {
+	public void setIsPublic(boolean isPublic) {
 		this.isPublic = isPublic;
 	}
 

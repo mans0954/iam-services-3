@@ -301,7 +301,7 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
 						
 						final MetadataElementEntity elementEntity = elementDAO.findById(elementId);
 						if(elementEntity != null) {
-							if(elementEntity.isPublic() || isAdminRequest || isEntitled(userId, elementEntity.getResource().getId())) {
+							if(elementEntity.getIsPublic() || isAdminRequest || isEntitled(userId, elementEntity.getResource().getId())) {
 								final PageElement pageElement = new PageElement(elementEntity, order);
 								
 								if(targetLanguage != null) {
@@ -419,7 +419,7 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
 	}
 	
 	private boolean isEntitled(final String userId, final MetadataElementEntity element) {
-		return element.isPublic() || isEntitled(userId, element.getResource());
+		return element.getIsPublic() || isEntitled(userId, element.getResource());
 	}
 	
 	@Override
