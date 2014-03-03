@@ -1,17 +1,13 @@
 package org.openiam.idm.srvc.role.domain;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Type;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.role.dto.RoleAttribute;
@@ -39,7 +35,16 @@ public class RoleAttributeEntity implements Serializable {
     
     @Column(name="VALUE")
     private String value;
-    
+
+    @ElementCollection
+    @CollectionTable(name="ROLE_ATTRIBUTE_VALUES", joinColumns=@JoinColumn(name="ROLE_ATTRIBUTE_ID", referencedColumnName="ROLE_ATTR_ID"))
+    @Column(name="VALUE", length = 255)
+    private List<String> values = new ArrayList<String>();
+
+    @Column(name = "IS_MULTIVALUED", nullable = false)
+    @Type(type = "yes_no")
+    private boolean isMultivalued = false;
+
     @Column(name="ATTR_GROUP",length=20)
     private String attrGroup;
 
@@ -83,7 +88,23 @@ public class RoleAttributeEntity implements Serializable {
 		this.value = value;
 	}
 
-	public String getAttrGroup() {
+    public List<String> getValues() {
+        return values;
+    }
+
+    public void setValues(List<String> values) {
+        this.values = values;
+    }
+
+    public boolean isMultivalued() {
+        return isMultivalued;
+    }
+
+    public void setMultivalued(boolean multivalued) {
+        isMultivalued = multivalued;
+    }
+
+    public String getAttrGroup() {
 		return attrGroup;
 	}
 
@@ -106,6 +127,7 @@ public class RoleAttributeEntity implements Serializable {
 		result = prime * result
 				+ ((roleAttrId == null) ? 0 : roleAttrId.hashCode());
 		result = prime * result + ((value == null) ? 0 : value.hashCode());
+        result = prime * result + (isMultivalued ? 1231 : 1237);
 		return result;
 	}
 
@@ -148,6 +170,7 @@ public class RoleAttributeEntity implements Serializable {
 				return false;
 		} else if (!value.equals(other.value))
 			return false;
+        if (isMultivalued != other.isMultivalued) return false;
 		return true;
 	}
 

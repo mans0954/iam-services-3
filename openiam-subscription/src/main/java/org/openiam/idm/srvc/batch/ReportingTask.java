@@ -292,7 +292,7 @@ public class ReportingTask implements ApplicationContextAware {
             FileUtils.deleteDirectory(new File(reportRoot + File.separator + generatedReportsFolder));
         } catch (IOException e) {
             // TODO Auto-generated catch block
-            e.printStackTrace();
+        	log.error("Error in deleteGeneratedDirs", e);
         }
     }
 

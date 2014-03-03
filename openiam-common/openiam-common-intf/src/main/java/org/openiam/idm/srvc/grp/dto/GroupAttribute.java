@@ -8,11 +8,16 @@ import javax.xml.bind.annotation.XmlType;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.grp.domain.GroupAttributeEntity;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "GroupAttribute", propOrder = {
         "id",
         "name",
         "value",
+        "values",
+        "isMultivalued",
         "metadataElementId",
         "groupId"
 })
@@ -24,6 +29,8 @@ public class GroupAttribute implements java.io.Serializable {
 	protected String id;
     protected String name;
     protected String value;
+    protected List<String> values = new ArrayList<String>();
+    protected Boolean isMultivalued = Boolean.FALSE;
     protected String metadataElementId;
     protected String groupId;
 
@@ -66,6 +73,22 @@ public class GroupAttribute implements java.io.Serializable {
         this.value = value;
     }
 
+    public List<String> getValues() {
+        return values;
+    }
+
+    public void setValues(List<String> values) {
+        this.values = values;
+    }
+
+    public Boolean getMultivalued() {
+        return isMultivalued;
+    }
+
+    public void setMultivalued(Boolean multivalued) {
+        isMultivalued = multivalued;
+    }
+
     public String getGroupId() {
         return groupId;
     }
@@ -86,7 +109,9 @@ public class GroupAttribute implements java.io.Serializable {
 						.hashCode());
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result + ((value == null) ? 0 : value.hashCode());
-		return result;
+        result = prime * result + ((isMultivalued == null) ? 0 : isMultivalued.hashCode());
+
+        return result;
 	}
 
 	@Override
@@ -123,6 +148,12 @@ public class GroupAttribute implements java.io.Serializable {
 				return false;
 		} else if (!value.equals(other.value))
 			return false;
+        if (isMultivalued == null) {
+            if (other.isMultivalued != null)
+                return false;
+        } else if (!isMultivalued.equals(other.isMultivalued))
+            return false;
+
 		return true;
 	}
 	

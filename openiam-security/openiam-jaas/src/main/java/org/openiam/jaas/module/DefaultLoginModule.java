@@ -43,7 +43,7 @@ public class DefaultLoginModule extends AbstractLoginModule {
             throw new LoginException(ioe.toString());
         } catch (UnsupportedCallbackException uce) {
             System.out.println("UnsupportedCallbackException - ");
-            uce.printStackTrace();
+            log.error("Error in gatheringUserInfo", uce);
 
             throw new LoginException("Error: " + uce.getCallback().toString() +
                                      " not available to garner authentication information " +

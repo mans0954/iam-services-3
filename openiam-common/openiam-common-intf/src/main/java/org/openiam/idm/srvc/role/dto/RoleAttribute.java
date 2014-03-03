@@ -7,6 +7,9 @@ import javax.xml.bind.annotation.XmlType;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.role.domain.RoleAttributeEntity;
 
+import java.util.ArrayList;
+import java.util.List;
+
 
 /**
  * <p>Java class for roleAttribute.
@@ -36,6 +39,8 @@ import org.openiam.idm.srvc.role.domain.RoleAttributeEntity;
         "metadataElementId",
         "name",
         "value",
+        "values",
+        "isMultivalued",
         "attrGroup"
 })
 @DozerDTOCorrespondence(RoleAttributeEntity.class)
@@ -46,6 +51,8 @@ public class RoleAttribute implements java.io.Serializable {
     protected String metadataElementId;
     protected String name;
     protected String value;
+    protected List<String> values = new ArrayList<String>();
+    protected Boolean isMultivalued = Boolean.FALSE;
     protected String attrGroup;
 
     public RoleAttribute() {
@@ -88,6 +95,22 @@ public class RoleAttribute implements java.io.Serializable {
         this.value = value;
     }
 
+    public List<String> getValues() {
+        return values;
+    }
+
+    public void setValues(List<String> values) {
+        this.values = values;
+    }
+
+    public Boolean getMultivalued() {
+        return isMultivalued;
+    }
+
+    public void setMultivalued(Boolean multivalued) {
+        isMultivalued = multivalued;
+    }
+
     public String getRoleId() {
         return roleId;
     }
@@ -121,7 +144,13 @@ public class RoleAttribute implements java.io.Serializable {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((roleAttrId == null) ? 0 : roleAttrId.hashCode());
-		return result;
+        result = prime * result + ((roleId == null) ? 0 : roleId.hashCode());
+        result = prime * result + ((metadataElementId == null) ? 0 : metadataElementId.hashCode());
+        result = prime * result + ((name == null) ? 0 : name.hashCode());
+        result = prime * result + ((value == null) ? 0 : value.hashCode());
+        result = prime * result + ((isMultivalued == null) ? 0 : isMultivalued.hashCode());
+
+        return result;
 	}
 
 
@@ -164,6 +193,12 @@ public class RoleAttribute implements java.io.Serializable {
 				return false;
 		} else if (!value.equals(other.value))
 			return false;
+        if (isMultivalued == null) {
+            if (other.isMultivalued != null)
+                return false;
+        } else if (!isMultivalued.equals(other.isMultivalued))
+            return false;
+
 		return true;
 	}
 

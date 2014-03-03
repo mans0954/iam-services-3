@@ -1,18 +1,14 @@
 package org.openiam.idm.srvc.grp.domain;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Type;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.grp.dto.GroupAttribute;
-import org.openiam.idm.srvc.role.domain.RoleEntity;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name="GRP_ATTRIBUTES")
@@ -30,6 +26,15 @@ public class GroupAttributeEntity {
 	
 	@Column(name="VALUE")
     private String value;
+
+    @ElementCollection
+    @CollectionTable(name="GROUP_ATTRIBUTE_VALUES", joinColumns=@JoinColumn(name="GROUP_ATTRIBUTE_ID", referencedColumnName="ID"))
+    @Column(name="VALUE", length = 255)
+    private List<String> values = new ArrayList<String>();
+
+    @Column(name = "IS_MULTIVALUED", nullable = false)
+    @Type(type = "yes_no")
+    private boolean isMultivalued = false;
     
     @Column(name="METADATA_ID",length=20)
     private String metadataElementId;
@@ -67,7 +72,23 @@ public class GroupAttributeEntity {
 		this.value = value;
 	}
 
-	public String getMetadataElementId() {
+    public List<String> getValues() {
+        return values;
+    }
+
+    public void setValues(List<String> values) {
+        this.values = values;
+    }
+
+    public boolean isMultivalued() {
+        return isMultivalued;
+    }
+
+    public void setMultivalued(boolean multivalued) {
+        isMultivalued = multivalued;
+    }
+
+    public String getMetadataElementId() {
 		return metadataElementId;
 	}
 
@@ -95,6 +116,7 @@ public class GroupAttributeEntity {
 						.hashCode());
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result + ((value == null) ? 0 : value.hashCode());
+        result = prime * result + (isMultivalued ? 1231 : 1237);
 		return result;
 	}
 
@@ -132,6 +154,7 @@ public class GroupAttributeEntity {
 				return false;
 		} else if (!value.equals(other.value))
 			return false;
+        if (isMultivalued != other.isMultivalued) return false;
 		return true;
 	}
 

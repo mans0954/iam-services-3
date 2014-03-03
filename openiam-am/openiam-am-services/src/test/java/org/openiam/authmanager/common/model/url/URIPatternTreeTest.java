@@ -129,7 +129,7 @@ public class URIPatternTreeTest {
 				try {
 					uriList.add(new URI(uri));
 				} catch(Throwable e) {
-					e.printStackTrace();
+					log.error("getURIArray", e);
 				}
 			}
 		}

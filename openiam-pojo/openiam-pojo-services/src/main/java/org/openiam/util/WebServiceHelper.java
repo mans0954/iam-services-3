@@ -25,8 +25,7 @@ public class WebServiceHelper {
 					serviceUrl);
 			return service.getPort(new QName(serviceNameSpace,port), cls);
 		}catch (Exception e) {
-			e.printStackTrace();
-			log.error(e);
+			log.error("Error in createService", e);
 			return null;
 		}
 		
