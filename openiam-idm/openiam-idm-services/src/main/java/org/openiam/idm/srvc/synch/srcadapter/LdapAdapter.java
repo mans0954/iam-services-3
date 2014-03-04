@@ -537,7 +537,7 @@ public class LdapAdapter extends AbstractSrcAdapter { // implements SourceAdapte
         searchCtls.setSearchScope(config.getSearchScope().ordinal());
         searchCtls.setReturningAttributes(attrIds);
 
-        log.debug("Search: base dn=" + baseDn + ", filter= " + config.getQuery());
+        log.debug("Search: base dn=" + baseDn + ", filter= " + config.getQuery() + ", attributes="+attrIds);
         return ctx.search(baseDn, config.getQuery(), searchCtls);
     }
 
