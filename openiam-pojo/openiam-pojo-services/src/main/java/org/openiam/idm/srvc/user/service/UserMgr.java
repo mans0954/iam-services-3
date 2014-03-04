@@ -15,6 +15,7 @@ import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.*;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
+import org.openiam.idm.srvc.auth.login.AuthStateDAO;
 import org.openiam.idm.srvc.auth.login.LoginDAO;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.auth.login.lucene.LoginSearchDAO;
@@ -33,6 +34,8 @@ import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.meta.service.MetadataElementDAO;
 import org.openiam.idm.srvc.meta.service.MetadataTypeDAO;
 import org.openiam.idm.srvc.org.service.OrganizationService;
+import org.openiam.idm.srvc.pswd.service.PasswordHistoryDAO;
+import org.openiam.idm.srvc.pswd.service.UserIdentityAnswerDAO;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.service.ResourceDAO;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
@@ -135,6 +138,12 @@ public class UserMgr implements UserDataService {
     private MetadataElementDAO metadataElementDAO;
     @Autowired
     private MetadataTypeDAO metadataTypeDAO;
+    @Autowired
+    private PasswordHistoryDAO passwordHistoryDAO;
+    @Autowired
+    private AuthStateDAO authStateDAO;
+    @Autowired
+    private UserIdentityAnswerDAO userIdentityAnswerDAO;
     @Autowired
     private OrganizationService organizationService;
     @Autowired
@@ -421,6 +430,15 @@ public class UserMgr implements UserDataService {
         for(UserEntity se : supervisors) {
            removeSupervisor(se.getId(), id);
         }
+
+        List<LoginEntity> userLogin = loginDao.findUser(id);
+        if(CollectionUtils.isNotEmpty(userLogin)){
+            for(LoginEntity login : userLogin) {
+                passwordHistoryDAO.deleteByLogin(login.getLoginId());
+            }
+        }
+        authStateDAO.deleteByUser(id);
+        userIdentityAnswerDAO.deleteByUser(id);
         userDao.delete(userDao.findById(id));
     }
 

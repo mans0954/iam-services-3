@@ -11,6 +11,7 @@ import org.hibernate.criterion.Restrictions;
 import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.idm.srvc.pswd.domain.UserIdentityAnswerEntity;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 @Repository("identityAnswerDAO")
 public class UserIdentityAnswerDAOImpl extends BaseDaoImpl<UserIdentityAnswerEntity, String> implements UserIdentityAnswerDAO {
@@ -18,10 +19,12 @@ public class UserIdentityAnswerDAOImpl extends BaseDaoImpl<UserIdentityAnswerEnt
 	private static final Log log = LogFactory.getLog(UserIdentityAnswerDAOImpl.class);
 	
 	private static String DELETE_BY_QUESTION_ID = "DELETE FROM %s ans WHERE ans.identityQuestion.id = :questionId";
+    private static String DELETE_BY_USER_ID = "DELETE FROM %s ans WHERE ans.userId = :userId";
 	
 	@PostConstruct
 	public void initSQL() {
 		DELETE_BY_QUESTION_ID = String.format(DELETE_BY_QUESTION_ID, domainClass.getSimpleName());
+        DELETE_BY_USER_ID = String.format(DELETE_BY_USER_ID, domainClass.getSimpleName());
 	}
 
 	@Override
@@ -47,5 +50,11 @@ public class UserIdentityAnswerDAOImpl extends BaseDaoImpl<UserIdentityAnswerEnt
 		query.setParameter("questionId", questionId);
 		query.executeUpdate();
 	}
-
+    @Override
+    @Transactional
+    public void deleteByUser(String userId){
+        final Query query = getSession().createQuery(DELETE_BY_USER_ID);
+        query.setParameter("userId", userId);
+        query.executeUpdate();
+    }
 }

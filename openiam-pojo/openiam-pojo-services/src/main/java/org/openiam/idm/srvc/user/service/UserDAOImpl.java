@@ -521,7 +521,7 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
             }
 
             if (size > -1) {
-                criteria.setFetchSize(size);
+                criteria.setMaxResults(size);
             }
             retVal = criteria.list();
         }
@@ -539,7 +539,7 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
             }
 
             if (size > -1) {
-                criteria.setFetchSize(size);
+                criteria.setMaxResults(size);
             }
             retVal = criteria.list();
         }
@@ -557,7 +557,7 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
             }
 
             if (size > -1) {
-                criteria.setFetchSize(size);
+                criteria.setMaxResults(size);
             }
             retVal = criteria.list();
         }
@@ -575,7 +575,7 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
             }
 
             if (size > -1) {
-                criteria.setFetchSize(size);
+                criteria.setMaxResults(size);
             }
             retVal = criteria.list();
         }
