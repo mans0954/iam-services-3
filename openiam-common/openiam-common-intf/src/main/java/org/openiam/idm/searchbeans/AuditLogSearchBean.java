@@ -15,10 +15,12 @@ import org.openiam.idm.srvc.continfo.dto.Address;
 	"to",
     "action",
     "managedSysId",
-    "source"
+    "source",
+    "userId"
 })
 public class AuditLogSearchBean extends AbstractSearchBean<IdmAuditLog, String> implements SearchBean<IdmAuditLog, String> {
 
+	private String userId;
 	private Date from;
 	private Date to;
 	private String action;
@@ -61,4 +63,10 @@ public class AuditLogSearchBean extends AbstractSearchBean<IdmAuditLog, String> 
     public void setSource(String source) {
         this.source = source;
     }
+	public String getUserId() {
+		return userId;
+	}
+	public void setUserId(String userId) {
+		this.userId = userId;
+	}
 }
