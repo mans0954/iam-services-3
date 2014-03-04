@@ -23,10 +23,8 @@ package org.openiam.idm.srvc.pswd.service;
 
 import org.openiam.core.dao.BaseDao;
 import org.openiam.idm.srvc.pswd.domain.UserIdentityAnswerEntity;
-import org.openiam.idm.srvc.pswd.dto.UserIdentityAnswer;
-
-import java.util.List;
 
 public interface UserIdentityAnswerDAO extends BaseDao<UserIdentityAnswerEntity, String> {
    public void deleteAnswersByQuestionId(final String questionId);
+   public void deleteByUser(String userId);
 }

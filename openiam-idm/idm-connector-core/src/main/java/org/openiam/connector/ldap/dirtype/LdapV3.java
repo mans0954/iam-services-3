@@ -55,8 +55,6 @@ public class LdapV3 implements Directory {
     public ModificationItem[] suspend(SuspendResumeRequest request)  {
 
         String scrambledPswd =	passwordGenerator.generatePassword(10);
-        
-        hash.HexEncodedHash( "{ssha}" + hash.hash(scrambledPswd));
 
         ModificationItem[] mods = new ModificationItem[1];
         mods[0] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute("userPassword", scrambledPswd));
@@ -329,7 +327,7 @@ public class LdapV3 implements Directory {
         log.debug(" - MembershipObjectDN=" + matchObj.getSearchBaseDn());
 
         String searchBase = matchObj.getSearchBaseDn();
-        String userSearchFilter = matchObj.getSearchFilter();
+        String userSearchFilter = matchObj.getSearchFilterUnescapeXml();
         // replace the place holder in the search filter
         if (StringUtils.isNotBlank(userSearchFilter)) {
             userSearchFilter = userSearchFilter.replace("?", userDN);
