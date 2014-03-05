@@ -1,5 +1,6 @@
 package org.openiam.connector.ldap.command.base;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.base.BaseAttribute;
 import org.openiam.connector.type.ConnectorDataException;
