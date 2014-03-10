@@ -63,7 +63,7 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
 	private static final Log log = LogFactory.getLog(MailServiceImpl.class);
 	private static final int SUBJECT_IDX = 0;
 	private static final int SCRIPT_IDX = 1;
-    private static final int IS_HTML_IDX = 2;
+	private static final int IS_HTML_IDX = 2;
 
 	public void sendToAllUsers() {
 		log.warn("sendToAllUsers was called, but is not implemented");
@@ -80,7 +80,7 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see
 	 * org.openiam.idm.srvc.msg.service.MailService#sendWithCC(java.lang.String,
 	 * java.lang.String, java.lang.String, java.lang.String, java.lang.String,
@@ -128,7 +128,7 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see org.openiam.idm.srvc.msg.service.MailService#send(java.lang.String,
 	 * java.lang.String[], java.lang.String[], java.lang.String[],
 	 * java.lang.String, java.lang.String, boolean, java.lang.String[])
@@ -192,15 +192,16 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
 	 * @return
 	 */
 	private boolean isEmailValid(String email) {
-		Pattern pattern = Pattern.compile(MAIL_REGEXP, Pattern.CASE_INSENSITIVE);
+		Pattern pattern = Pattern
+				.compile(MAIL_REGEXP, Pattern.CASE_INSENSITIVE);
 		Matcher matcher = pattern.matcher(email);
 		return matcher.matches();
 	}
 
 	/*
 	 * (non-Javadoc)
-	 *
-    	 * @see
+	 * 
+	 * @see
 	 * org.openiam.idm.srvc.msg.service.MailService#sendNotification(org.openiam
 	 * .idm.srvc.msg.dto.NotificationRequest)
 	 */
@@ -238,7 +239,8 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
 		String emailBody = createEmailBody(bindingMap, emailDetails[SCRIPT_IDX]);
 		if (emailBody != null) {
 			sendEmail(null, req.getTo(), req.getCc(),
-					emailDetails[SUBJECT_IDX], emailBody, null, isHtmlFormat(emailDetails));
+					emailDetails[SUBJECT_IDX], emailBody, null,
+					isHtmlFormat(emailDetails));
 			return true;
 		}
 		return false;
@@ -260,7 +262,8 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
 		}
 		UserEntity usr = userManager.getUser(req.getUserId());
 		if (usr == null) {
-			log.warn(String.format("Can't find user with id '%s", req.getUserId()));
+			log.warn(String.format("Can't find user with id '%s",
+					req.getUserId()));
 			return false;
 		}
 		if (log.isDebugEnabled()) {
@@ -283,7 +286,9 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
 		}
 		String[] emailDetails = fetchEmailDetails(req.getNotificationType());
 		if (emailDetails == null) {
-			log.warn(String.format("Email details were null for notification type '%s'", req.getNotificationType()));
+			log.warn(String.format(
+					"Email details were null for notification type '%s'",
+					req.getNotificationType()));
 			return false;
 		}
 
@@ -301,14 +306,14 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
 		return false;
 	}
 
-    private boolean isHtmlFormat(String[] emailDetails) {
-        boolean ret = false;
-        if (emailDetails != null && emailDetails.length > IS_HTML_IDX) {
-            String flag = emailDetails[IS_HTML_IDX];
-            ret = "Y".equalsIgnoreCase(flag) ||"YES".equalsIgnoreCase(flag);
-        }
-        return ret;
-    }
+	private boolean isHtmlFormat(String[] emailDetails) {
+		boolean ret = false;
+		if (emailDetails != null && emailDetails.length > IS_HTML_IDX) {
+			String flag = emailDetails[IS_HTML_IDX];
+			ret = "Y".equalsIgnoreCase(flag) || "YES".equalsIgnoreCase(flag);
+		}
+		return ret;
+	}
 
 	/**
 	 * @param bindingMap
@@ -368,7 +373,10 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
 	 */
 
 	public void tweetPrivateMessage(String userid, String msg) {
-
+		if (!areTwitterPropsSet()){
+			log.warn("Twitter properties are not set. Please set the same before tweeting.");
+			return;
+		}
 		try {
 			DirectMessage message = getTwitterInstance().sendDirectMessage(
 					userid, msg);
@@ -382,14 +390,17 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see
 	 * org.openiam.idm.srvc.msg.service.MailService#tweetMessage(java.lang.String
 	 * )
 	 */
 	@Override
 	public void tweetMessage(String status) {
-
+		if (!areTwitterPropsSet()){
+			log.warn("Twitter properties are not set. Please set the same before tweeting.");
+			return;
+		}
 		try {
 			Status stat = getTwitterInstance().updateStatus(status);
 			log.info("Status successfully Updated  ");
@@ -401,7 +412,7 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
 		}
 	}
 
-	public Twitter getTwitterInstance() {
+	private Twitter getTwitterInstance() {
 		ConfigurationBuilder cb = new ConfigurationBuilder();
 		cb.setDebugEnabled(true).setOAuthConsumerKey(consumerKey)
 				.setOAuthConsumerSecret(consumerSecret)
@@ -410,6 +421,17 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
 		TwitterFactory tf = new TwitterFactory(cb.build());
 		Twitter twitter = tf.getInstance();
 		return twitter;
+	}
+
+	private boolean areTwitterPropsSet() {
+		boolean areTwitterPropsSet = false;
+		if (StringUtils.isNotBlank(consumerKey)
+				&& StringUtils.isNotBlank(consumerSecret)
+				&& StringUtils.isNotBlank(accessToken)
+				&& StringUtils.isNotBlank(accessTokenSecret)) {
+			areTwitterPropsSet = true;
+		}
+		return areTwitterPropsSet;
 	}
 
 }
