@@ -387,6 +387,8 @@ public class UserMgr implements UserDataService {
                 existingEntity.setElement(incomingEntity.getElement());
                 existingEntity.setName(incomingEntity.getName());
                 existingEntity.setValue(incomingEntity.getValue());
+                existingEntity.setIsMultivalued(incomingEntity.getIsMultivalued());
+                existingEntity.setValues(incomingEntity.getValues());
                 editList.add(existingEntity);
             }
         }

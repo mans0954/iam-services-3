@@ -267,6 +267,8 @@ public class GroupDataServiceImpl implements GroupDataService {
 					dbProp.setMetadataElementId(beanProp.getMetadataElementId());
 					dbProp.setName(beanProp.getName());
 					dbProp.setValue(beanProp.getValue());
+                    dbProp.setIsMultivalued(beanProp.getIsMultivalued());
+                    dbProp.setValues(beanProp.getValues());
 					renewedProperties.add(dbProp);
 					break;
 				}

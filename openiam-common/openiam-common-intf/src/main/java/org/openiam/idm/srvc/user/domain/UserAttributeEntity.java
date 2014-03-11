@@ -122,12 +122,12 @@ public class UserAttributeEntity implements Serializable {
         this.values = values;
     }
 
-    public boolean isMultivalued() {
+    public boolean getIsMultivalued() {
         return isMultivalued;
     }
 
-    public void setMultivalued(boolean multivalued) {
-        isMultivalued = multivalued;
+    public void setIsMultivalued(boolean isMultivalued) {
+        this.isMultivalued = isMultivalued;
     }
 
     public MetadataElementEntity getElement() {
