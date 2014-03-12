@@ -41,15 +41,15 @@ public class ConnectorCommandFactory {
     @Autowired
     @Qualifier("oracleCommandFactory")
     private AbstractCommandFactory oracleCommandFactory;
-    
+
     @Autowired
     @Qualifier("scimCommandFactory")
     private AbstractCommandFactory scimCommandFactory;
-    
+
     @Autowired
     @Qualifier("restCommandFactory")
     private AbstractCommandFactory restCommandFactory;
-    
+
     @Autowired
     @Qualifier("soapCommandFactory")
     private AbstractCommandFactory soapCommandFactory;
@@ -66,39 +66,45 @@ public class ConnectorCommandFactory {
     @Qualifier("shellCommandFactory")
     private AbstractCommandFactory shellCommandFactory;
 
+    @Autowired
+    @Qualifier("peopleSoftCommandFactory")
+    private AbstractCommandFactory peopleSoftCommandFactory;
 
-    public ConnectorCommand getConnectorCommand(CommandType commandType, ExtensibleObjectType extensibleObjectType, ConnectorType connectorType) throws ConnectorDataException {
+    public ConnectorCommand getConnectorCommand(CommandType commandType, ExtensibleObjectType extensibleObjectType,
+            ConnectorType connectorType) throws ConnectorDataException {
         String error = String.format(ERROR_PATTERN, commandType, extensibleObjectType, connectorType);
-       
-        switch (connectorType){
-            case CSV:
-                return csvCommandFactory.getConnectorCommand(commandType, extensibleObjectType);
-            case LDAP:
-                return ldapCommandFactory.getConnectorCommand(commandType, extensibleObjectType);
-            case GOOGLE:
-                return googleAppsCommandFactory.getConnectorCommand(commandType, extensibleObjectType);
-            case LINUX:
-                return linuxCommandFactory.getConnectorCommand(commandType, extensibleObjectType);
-            case MYSQL:
-                return mySQLCommandFactory.getConnectorCommand(commandType, extensibleObjectType);
-            case AT:
-                return appTableCommandFactory.getConnectorCommand(commandType, extensibleObjectType);
-            case ORACLE:
-                return oracleCommandFactory.getConnectorCommand(commandType, extensibleObjectType);
-            case SALES_FORCE:
-                return salesForceCommandFactory.getConnectorCommand(commandType, extensibleObjectType);
-            case SCRIPT:
-                return scriptCommandFactory.getConnectorCommand(commandType, extensibleObjectType);
-            case SHELL:
-                return shellCommandFactory.getConnectorCommand(commandType, extensibleObjectType);
-            case SCIM:
-                return scimCommandFactory.getConnectorCommand(commandType, extensibleObjectType);   
-            case REST:
-                return restCommandFactory.getConnectorCommand(commandType, extensibleObjectType);                
-            case SOAP:
-                return soapCommandFactory.getConnectorCommand(commandType, extensibleObjectType);
-            default:
-                throw new ConnectorDataException(ErrorCode.OPERATION_NOT_SUPPORTED_EXCEPTION, error);
+
+        switch (connectorType) {
+        case CSV:
+            return csvCommandFactory.getConnectorCommand(commandType, extensibleObjectType);
+        case LDAP:
+            return ldapCommandFactory.getConnectorCommand(commandType, extensibleObjectType);
+        case GOOGLE:
+            return googleAppsCommandFactory.getConnectorCommand(commandType, extensibleObjectType);
+        case LINUX:
+            return linuxCommandFactory.getConnectorCommand(commandType, extensibleObjectType);
+        case MYSQL:
+            return mySQLCommandFactory.getConnectorCommand(commandType, extensibleObjectType);
+        case AT:
+            return appTableCommandFactory.getConnectorCommand(commandType, extensibleObjectType);
+        case ORACLE:
+            return oracleCommandFactory.getConnectorCommand(commandType, extensibleObjectType);
+        case SALES_FORCE:
+            return salesForceCommandFactory.getConnectorCommand(commandType, extensibleObjectType);
+        case SCRIPT:
+            return scriptCommandFactory.getConnectorCommand(commandType, extensibleObjectType);
+        case SHELL:
+            return shellCommandFactory.getConnectorCommand(commandType, extensibleObjectType);
+        case SCIM:
+            return scimCommandFactory.getConnectorCommand(commandType, extensibleObjectType);
+        case REST:
+            return restCommandFactory.getConnectorCommand(commandType, extensibleObjectType);
+        case SOAP:
+            return soapCommandFactory.getConnectorCommand(commandType, extensibleObjectType);
+        case PEOPLESOFT:
+            return peopleSoftCommandFactory.getConnectorCommand(commandType, extensibleObjectType);
+        default:
+            throw new ConnectorDataException(ErrorCode.OPERATION_NOT_SUPPORTED_EXCEPTION, error);
         }
     }
 }

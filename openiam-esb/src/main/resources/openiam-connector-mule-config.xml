@@ -78,7 +78,7 @@
 			</component>
 		</service>
 	</model>
-	
+
 	<model name="scimConnectorServiceModel">
 		<service name="scimConnectorService">
 			<inbound>
@@ -92,7 +92,7 @@
 			</component>
 		</service>
 	</model>
-	
+
 	<model name="restConnectorServiceModel">
 		<service name="restConnectorService">
 			<inbound>
@@ -106,7 +106,7 @@
 			</component>
 		</service>
 	</model>
-	
+
 	<model name="soapConnectorServiceModel">
 		<service name="soapConnectorService">
 			<inbound>
@@ -207,6 +207,18 @@
 			</component>
 		</service>
 	</model>
-
+	<model name="PeoplesoftDbConnectorModel">
+		<service name="peoplesoftDbConnector">
+			<inbound>
+				<inbound-endpoint address="${webservice.path}PeoplesoftDbConnector"
+					exchange-pattern="request-response">
+					<cxf:jaxws-service />
+				</inbound-endpoint>
+			</inbound>
+			<component>
+				<spring-object bean="genericPeopleSoftConnector" />
+			</component>
+		</service>
+	</model>
 </mule>
 
