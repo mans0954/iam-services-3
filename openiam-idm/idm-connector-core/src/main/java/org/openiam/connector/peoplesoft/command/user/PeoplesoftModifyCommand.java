@@ -17,9 +17,12 @@ import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
 import org.openiam.provision.type.ExtensibleUser;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Service;
 
 /**
  */
+@Service("modifyUserPeopleSoftCommand")
 public class PeoplesoftModifyCommand extends AbstractPeoplesoftCommand<CrudRequest<ExtensibleUser>, ObjectResponse> {
 
     @Override

@@ -12,11 +12,13 @@ import org.openiam.connector.type.request.SuspendResumeRequest;
 import org.openiam.connector.type.response.ResponseType;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.res.dto.Resource;
+import org.springframework.stereotype.Service;
 
 /**
  * Created with IntelliJ IDEA. User: Lev Date: 8/21/12 Time: 10:50 AM To change
  * this template use File | Settings | File Templates.
  */
+@Service("resumeUserPeopleSoftCommand")
 public class PeoplesoftResumeCommand extends AbstractPeoplesoftCommand<SuspendResumeRequest, ResponseType> {
 
     @Override

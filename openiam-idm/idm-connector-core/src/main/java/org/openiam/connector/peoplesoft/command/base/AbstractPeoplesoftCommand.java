@@ -34,13 +34,6 @@ import org.springframework.beans.factory.annotation.Value;
  */
 public abstract class AbstractPeoplesoftCommand<Request extends RequestType, Response extends ResponseType> extends
         AbstractJDBCCommand<Request, Response> {
-    @Autowired
-    @Qualifier("cryptor")
-    private Cryptor cryptor;
-    @Value("${org.openiam.idm.system.user.id}")
-    private String systemUserId;
-    @Autowired
-    private KeyManagementService keyManagementService;
     private static final String EMPTY_STRING = "";
     private static final String BLANK_SPACE_STRING = " ";
 

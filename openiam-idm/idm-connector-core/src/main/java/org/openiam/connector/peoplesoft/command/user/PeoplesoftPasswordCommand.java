@@ -13,10 +13,12 @@ import org.openiam.connector.type.request.PasswordRequest;
 import org.openiam.connector.type.response.ResponseType;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.res.dto.Resource;
+import org.springframework.stereotype.Service;
 
 /**
  *
  */
+@Service("setPasswordPeopleSoftCommand")
 public class PeoplesoftPasswordCommand extends AbstractPeoplesoftCommand<PasswordRequest, ResponseType> {
     @Override
     public ResponseType execute(PasswordRequest reqType) throws ConnectorDataException {

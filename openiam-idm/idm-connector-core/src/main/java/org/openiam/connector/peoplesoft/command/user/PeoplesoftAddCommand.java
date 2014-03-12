@@ -17,10 +17,12 @@ import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
+import org.springframework.stereotype.Service;
 
 /**
  * Add command for the peoplesoft connector User: Suneet
  */
+@Service("addUserPeopleSoftCommand")
 public class PeoplesoftAddCommand extends AbstractPeoplesoftCommand<CrudRequest<ExtensibleObject>, ObjectResponse> {
 
     @Override

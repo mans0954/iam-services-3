@@ -13,11 +13,13 @@ import org.openiam.connector.type.response.ObjectResponse;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.provision.type.ExtensibleObject;
+import org.springframework.stereotype.Service;
 
 /**
  * Created with IntelliJ IDEA. User: Lev Date: 8/21/12 Time: 10:46 AM To change
  * this template use File | Settings | File Templates.
  */
+@Service("deleteUserPeopleSoftCommand")
 public class PeoplesoftDeleteCommand extends AbstractPeoplesoftCommand<CrudRequest<ExtensibleObject>, ObjectResponse> {
 
     private static final String DROP_USER = "DROP USER \"%s\"";

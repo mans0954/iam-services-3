@@ -19,11 +19,13 @@ import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
+import org.springframework.stereotype.Service;
 
 /**
  * Created with IntelliJ IDEA. User: Lev Date: 8/21/12 Time: 10:48 AM To change
  * this template use File | Settings | File Templates.
  */
+@Service("lookupUserPeopleSoftCommand")
 public class PeoplesoftLookupCommand extends AbstractPeoplesoftCommand<LookupRequest<ExtensibleObject>, SearchResponse> {
 
     private static final String SELECT_USER = "SELECT OPRID, OPRDEFNDESC, EMPLID, EMAILID, SYMBOLICID FROM %sPSOPRDEFN WHERE OPRID=?";
