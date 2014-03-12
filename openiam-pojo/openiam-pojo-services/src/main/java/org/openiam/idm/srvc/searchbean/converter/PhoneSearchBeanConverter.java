@@ -26,6 +26,10 @@ public class PhoneSearchBeanConverter implements SearchBeanConverter<PhoneEntity
             phone.setMetadataType(type);
         }
 
+        if(searchBean.getIsDefault() != null) {
+            phone.setIsDefault(searchBean.getIsDefault());
+        }
+
         return phone;
     }
 }
