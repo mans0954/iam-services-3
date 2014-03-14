@@ -111,16 +111,6 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 		} else {
 			retVal = metadataElementDao.getByExample(searchBean, from, size);
 		}
-		/* otherwise you get javaasist objects */
-		if(language != null) {
-			if(CollectionUtils.isNotEmpty(retVal)) {
-				final List<MetadataElementEntity> unproxiedList = new LinkedList<>();
-				for(final MetadataElementEntity e : retVal) {
-					unproxiedList.add(HibernateUtils.unproxy(e));
-				}
-				retVal = unproxiedList;
-			}
-		}
 		return retVal;
 	}
 	

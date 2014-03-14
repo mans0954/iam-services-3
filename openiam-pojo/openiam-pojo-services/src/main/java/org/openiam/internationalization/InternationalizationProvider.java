@@ -54,7 +54,7 @@ public class InternationalizationProvider {
 			for(final TargetInternationalizedField target : fieldList) {
 				final Field field = target.getField();
 				final BaseIdentity entity = target.getEntity();
-				field.setAccessible(true);
+				//field.setAccessible(true);
 				final InternationalizedCollection metadata = field.getAnnotation(InternationalizedCollection.class);
 				
 				//final Object fieldObject = ReflectionUtils.getField(field, entity);
@@ -69,8 +69,9 @@ public class InternationalizationProvider {
 						} else if(!(targetField.getType().equals(String.class))) {
 							throw new IllegalArgumentException(String.format("Field with name '%s'on class %s must be a String", targetFieldName, entity.getClass().getCanonicalName()));
 						} else {
-							targetField.setAccessible(true);
-							ReflectionUtils.setField(targetField, entity, transientMap.get(languageId).getValue());
+							//targetField.setAccessible(true);
+							//ReflectionUtils.setField(targetField, entity, transientMap.get(languageId).getValue());
+							setValue(targetField, entity, transientMap.get(languageId).getValue());
 						}
 					}
 				}
@@ -93,7 +94,7 @@ public class InternationalizationProvider {
 					}
 				}
 				//ReflectionUtils.setField(field, target.getEntity(), dbMap);
-				setLanguageMap(field, target.getEntity(), dbMap);
+				setValue(field, target.getEntity(), dbMap);
 			}
 		}
 	}
@@ -134,12 +135,12 @@ public class InternationalizationProvider {
 		}
 	}
 	
-	private void setLanguageMap(final Field field, final BaseIdentity entity, final Map<String, LanguageMappingEntity> languageMap) {
+	private void setValue(final Field field, final BaseIdentity entity, final Object obj) {
 		try {
 			final PropertyDescriptor descriptor = new PropertyDescriptor(field.getName(), entity.getClass());
 			final Method method = PropertyUtils.getWriteMethod(descriptor);
 			if(method != null) {
-				ReflectionUtils.invokeMethod(method, entity, languageMap);
+				ReflectionUtils.invokeMethod(method, entity, obj);
 			}
 		} catch(Throwable e) {
 			LOG.error("Can't call method", e);
