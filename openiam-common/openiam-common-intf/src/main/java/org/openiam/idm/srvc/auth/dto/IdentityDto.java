@@ -1,12 +1,10 @@
 package org.openiam.idm.srvc.auth.dto;
 
+import org.openiam.base.AttributeOperationEnum;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.auth.domain.IdentityEntity;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlSchemaType;
-import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.*;
 import java.util.Date;
 
 /**
@@ -15,16 +13,18 @@ import java.util.Date;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "IdentityDto", propOrder = {
         "identity",
-        "identityId",
+        "id",
         "managedSysId",
         "referredObjectId",
         "status",
         "createDate",
-        "createdBy"
+        "createdBy",
+        "operation",
+        "origPrincipalName"
 })
 @DozerDTOCorrespondence(IdentityEntity.class)
 public class IdentityDto implements java.io.Serializable {
-
+    protected AttributeOperationEnum operation = AttributeOperationEnum.NO_CHANGE;
     protected String id;
     protected String identity;
     protected String managedSysId;
@@ -34,6 +34,8 @@ public class IdentityDto implements java.io.Serializable {
     protected String createdBy;
     protected LoginStatusEnum status;
     protected IdentityTypeEnum type;
+
+    protected String origPrincipalName;
 
     public IdentityDto() {
     }
@@ -48,6 +50,14 @@ public class IdentityDto implements java.io.Serializable {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public AttributeOperationEnum getOperation() {
+        return operation;
+    }
+
+    public void setOperation(AttributeOperationEnum operation) {
+        this.operation = operation;
     }
 
     public String getIdentity() {
@@ -104,6 +114,28 @@ public class IdentityDto implements java.io.Serializable {
 
     public void setType(IdentityTypeEnum type) {
         this.type = type;
+    }
+
+    public String getOrigPrincipalName() {
+        return origPrincipalName;
+    }
+
+    public void setOrigPrincipalName(String origPrincipalName) {
+        this.origPrincipalName = origPrincipalName;
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("IdentityDto");
+        sb.append("{identity='").append(identity).append('\'');
+        sb.append(", managedSysId='").append(managedSysId).append('\'');
+        sb.append(", referredObjectId='").append(referredObjectId).append('\'');
+        sb.append(", type=").append(type);
+        sb.append(", origPrincipalName='").append(origPrincipalName).append('\'');
+        sb.append(", status=").append(status);
+        sb.append('}');
+        return sb.toString();
     }
 
     @Override

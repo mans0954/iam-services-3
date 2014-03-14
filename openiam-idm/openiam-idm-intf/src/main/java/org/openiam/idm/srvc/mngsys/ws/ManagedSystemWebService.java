@@ -185,6 +185,8 @@ public interface ManagedSystemWebService {
     List<AttributeMap> getResourceAttributeMaps(
             @WebParam(name = "resourceId", targetNamespace = "") String resourceId);
 
+    List<AttributeMap> getAttributeMapsByManagedSysId(String managedSysId);
+
     @WebMethod
     public List<AttributeMap> findResourceAttributeMaps(
             @WebParam(name = "searchBean", targetNamespace = "") AttributeMapSearchBean searchBean);
