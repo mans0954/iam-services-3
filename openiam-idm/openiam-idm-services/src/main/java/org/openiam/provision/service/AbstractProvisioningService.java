@@ -1012,7 +1012,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
      * Update the list of attributes with the correct operation values so that they can be
      * passed to the connector
      */
-    public ExtensibleObject updateAttributeList(ExtensibleObject extUser,
+    public static ExtensibleObject updateAttributeList(ExtensibleObject extUser,
             Map<String,String> currentValueMap ) {
         if (extUser == null) {
             return null;

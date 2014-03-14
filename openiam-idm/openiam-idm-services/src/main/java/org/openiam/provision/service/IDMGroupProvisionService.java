@@ -14,6 +14,7 @@ import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.connector.type.ConnectorDataException;
+import org.openiam.connector.type.constant.ErrorCode;
 import org.openiam.connector.type.constant.StatusCodeType;
 import org.openiam.connector.type.request.CrudRequest;
 import org.openiam.connector.type.request.LookupRequest;
@@ -32,6 +33,8 @@ import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
 import org.openiam.idm.srvc.auth.login.IdentityService;
 import org.openiam.idm.srvc.base.AbstractBaseService;
+import org.openiam.idm.srvc.key.constant.KeyName;
+import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
@@ -50,6 +53,7 @@ import org.openiam.provision.type.ExtensibleObject;
 import org.openiam.provision.type.ExtensibleUser;
 import org.openiam.script.ScriptIntegration;
 import org.openiam.util.MuleContextProvider;
+import org.openiam.util.encrypt.Cryptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -81,10 +85,6 @@ public class IDMGroupProvisionService extends AbstractBaseService implements Gro
     private PlatformTransactionManager platformTransactionManager;
 
     @Autowired
-    @Qualifier("defaultProvision")
-    private ProvisionService provisionService;
-
-    @Autowired
     private ManagedSystemWebService managedSystemService;
 
     @Autowired
@@ -103,6 +103,13 @@ public class IDMGroupProvisionService extends AbstractBaseService implements Gro
 
     @Autowired
     protected ConnectorAdapter connectorAdapter;
+
+    @Autowired
+    @Qualifier("cryptor")
+    private Cryptor cryptor;
+
+    @Autowired
+    private KeyManagementService keyManagementService;
 
     @Override
     public ProvisionGroupResponse addGroup(@WebParam(name = "group", targetNamespace = "") final ProvisionGroup group) throws Exception {
@@ -219,7 +226,7 @@ public class IDMGroupProvisionService extends AbstractBaseService implements Gro
                             } else { // if user exists in target system
 
                                 // updates the attributes with the correct operation codes
-                                extObj = defaultProvisioningService.updateAttributeList(extObj, currentValueMap);
+                                extObj = DefaultProvisioningService.updateAttributeList(extObj, currentValueMap);
 
                                 if (groupTargetSysIdentity.getOperation() == AttributeOperationEnum.REPLACE
                                         && groupTargetSysIdentity.getOrigPrincipalName() != null) {
@@ -291,7 +298,7 @@ public class IDMGroupProvisionService extends AbstractBaseService implements Gro
         userReq.setHostLoginId(mSys.getUserId());
         String passwordDecoded = mSys.getPswd();
         try {
-            passwordDecoded = defaultProvisioningService.getDecryptedPassword(mSys);
+            passwordDecoded = getDecryptedPassword(mSys);
         } catch (ConnectorDataException e) {
             e.printStackTrace();
         }
@@ -311,7 +318,18 @@ public class IDMGroupProvisionService extends AbstractBaseService implements Gro
         return resp.getStatus() != StatusCodeType.FAILURE;
     }
 
-
+    protected String getDecryptedPassword(ManagedSysDto managedSys) throws ConnectorDataException {
+        String result = null;
+        if( managedSys.getPswd()!=null){
+            try {
+                result = cryptor.decrypt(keyManagementService.getUserKey(systemUserId, KeyName.password.name()),managedSys.getPswd());
+            } catch (Exception e) {
+                log.error(e);
+                throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR, e.getMessage());
+            }
+        }
+        return result;
+    }
 
     private boolean getCurrentObjectAtTargetSystem(String requestId, IdentityDto identityDto, ExtensibleObject extensibleObject,
                                                    ManagedSysDto mSys, ManagedSystemObjectMatch matchObj, Map<String, String> curValueMap) {
@@ -334,7 +352,7 @@ public class IDMGroupProvisionService extends AbstractBaseService implements Gro
         reqType.setHostLoginId(mSys.getUserId());
         String passwordDecoded = mSys.getPswd();
         try {
-            passwordDecoded = defaultProvisioningService.getDecryptedPassword(mSys);
+            passwordDecoded = getDecryptedPassword(mSys);
         } catch (ConnectorDataException e) {
             e.printStackTrace();
         }
