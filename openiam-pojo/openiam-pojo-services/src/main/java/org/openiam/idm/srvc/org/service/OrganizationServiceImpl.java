@@ -280,6 +280,8 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
 					setMetadataTypeOnOrgAttribute(dbProp);
 					dbProp.setName(beanProp.getName());
 					dbProp.setValue(beanProp.getValue());
+                    dbProp.setIsMultivalued(beanProp.getIsMultivalued());
+                    dbProp.setValues(beanProp.getValues());
 					renewedSet.add(dbProp);
 					break;
 				}

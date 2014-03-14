@@ -293,6 +293,8 @@ public class RoleDataServiceImpl implements RoleDataService {
 					dbProp.setMetadataElementId(beanProp.getMetadataElementId());
 					dbProp.setName(beanProp.getName());
 					dbProp.setValue(beanProp.getValue());
+                    dbProp.setIsMultivalued(beanProp.getIsMultivalued());
+                    dbProp.setValues(beanProp.getValues());
 					renewedSet.add(dbProp);
 					break;
 				}

@@ -103,12 +103,12 @@ public class RoleAttribute implements java.io.Serializable {
         this.values = values;
     }
 
-    public Boolean getMultivalued() {
+    public Boolean getIsMultivalued() {
         return isMultivalued;
     }
 
-    public void setMultivalued(Boolean multivalued) {
-        isMultivalued = multivalued;
+    public void setIsMultivalued(Boolean isMultivalued) {
+        this.isMultivalued = isMultivalued;
     }
 
     public String getRoleId() {

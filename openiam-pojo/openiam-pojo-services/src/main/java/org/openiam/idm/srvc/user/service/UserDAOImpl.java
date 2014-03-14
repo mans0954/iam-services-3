@@ -239,7 +239,7 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
                 criteria.add(Restrictions.eq("employeeId", searchBean.getEmployeeId()));
             }
             if (CollectionUtils.isNotEmpty(searchBean.getRoleIdSet())) {
-                criteria.createAlias("roles", "urv");
+                criteria.createAlias("roles", "r");
                 criteria.add(Restrictions.in("r.id", searchBean.getRoleIdSet()));
             }
 
@@ -410,7 +410,7 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
         }
 
         if (StringUtils.isNotEmpty(resourceId)) {
-            criteria.createAlias("resources", "r").add(Restrictions.eq("r.id", resourceId));
+            criteria.createAlias("resources", "res").add(Restrictions.eq("res.id", resourceId));
         }
 
         if (delegationFilter != null) {
