@@ -82,7 +82,7 @@ public class IDMGroupProvisionService extends AbstractBaseService implements Gro
 
     @Autowired
     @Qualifier("defaultProvision")
-    private DefaultProvisioningService defaultProvisioningService;
+    private ProvisionService provisionService;
 
     @Autowired
     private ManagedSystemWebService managedSystemService;
