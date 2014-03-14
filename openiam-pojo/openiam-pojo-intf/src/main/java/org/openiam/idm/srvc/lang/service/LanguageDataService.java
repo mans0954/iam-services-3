@@ -1,8 +1,8 @@
 package org.openiam.idm.srvc.lang.service;
 
-import java.util.List;
-
 import org.openiam.idm.srvc.lang.domain.LanguageEntity;
+
+import java.util.List;
 
 /**
  * <code>LanguageDataService</code> provides a service to manage the
@@ -42,6 +42,12 @@ public interface LanguageDataService {
      * @return
      */
     public List<LanguageEntity> allLanguages();
+    /**
+     * Returns an list of those languages that are in use
+     *
+     * @return
+     */
+    public List<LanguageEntity> getUsedLanguages();
 
     /**
      * Returns the language specified by the language

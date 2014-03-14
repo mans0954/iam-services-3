@@ -54,6 +54,10 @@ public class LanguageDataServiceImpl implements LanguageDataService {
 		return languageDao.findAll();
 	}
 
+    public List<LanguageEntity> getUsedLanguages(){
+        return languageDao.getUsedLanguages();
+    }
+
 	public LanguageEntity getLanguage(String languageId) {
 
 		if (languageId == null) {

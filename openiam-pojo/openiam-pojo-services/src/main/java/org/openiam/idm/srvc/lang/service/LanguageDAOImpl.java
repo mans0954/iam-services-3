@@ -26,6 +26,8 @@ import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.idm.srvc.lang.domain.LanguageEntity;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 /**
  * DAO to manage the list of languages.
  * @see org.openiam.idm.srvc.lang.dto.Language
@@ -60,4 +62,11 @@ public class LanguageDAOImpl extends BaseDaoImpl<LanguageEntity, String> impleme
 		criteria.add(Restrictions.eq("isDefault", true));
 		return (LanguageEntity)criteria.uniqueResult();
 	}
+
+    @Override
+    public List<LanguageEntity> getUsedLanguages(){
+        final Criteria criteria = getCriteria();
+        criteria.add(Restrictions.eq("isUsed", true));
+        return (List<LanguageEntity>)criteria.list();
+    }
 }

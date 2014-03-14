@@ -1,15 +1,22 @@
 package org.openiam.idm.srvc.lang.service;
 
-import java.util.List;
+import org.openiam.idm.srvc.lang.dto.Language;
 
 import javax.jws.WebMethod;
 import javax.jws.WebService;
-
-import org.openiam.idm.srvc.lang.dto.Language;
+import java.util.List;
 
 @WebService(targetNamespace = "urn:idm.openiam.org/srvc/lang/service", name = "LanguageWebService")
 public interface LanguageWebService {
 
 	@WebMethod
 	public List<Language> getAll();
+
+    /**
+     * Returns an list of those languages that are in use
+     *
+     * @return
+     */
+    @WebMethod
+    public List<Language> getUsedLanguages();
 }
