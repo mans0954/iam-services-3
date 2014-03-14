@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -16,11 +17,14 @@ import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hibernate.Hibernate;
 import org.openiam.base.service.AbstractLanguageService;
 import org.openiam.dozer.converter.MetaDataElementDozerConverter;
 import org.openiam.dozer.converter.MetaDataTypeDozerConverter;
+import org.openiam.hibernate.HibernateUtils;
 import org.openiam.idm.searchbeans.MetadataElementSearchBean;
 import org.openiam.idm.searchbeans.MetadataTypeSearchBean;
+import org.openiam.idm.srvc.lang.domain.LanguageEntity;
 import org.openiam.idm.srvc.lang.domain.LanguageMappingEntity;
 import org.openiam.idm.srvc.lang.service.LanguageMappingDAO;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
@@ -36,6 +40,7 @@ import org.openiam.idm.srvc.res.domain.ResourceTypeEntity;
 import org.openiam.idm.srvc.res.service.ResourceDAO;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
 import org.openiam.idm.srvc.searchbean.converter.MetadataTypeSearchBeanConverter;
+import org.openiam.internationalization.LocalizedServiceGet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -97,12 +102,24 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
     }
 
 	@Override
-	public List<MetadataElementEntity> findBeans(final MetadataElementSearchBean searchBean, final int from, final int size) {
+	@LocalizedServiceGet
+	@Transactional
+	public List<MetadataElementEntity> findBeans(final MetadataElementSearchBean searchBean, final int from, final int size, final LanguageEntity language) {
 		List<MetadataElementEntity> retVal = null;
 		if(searchBean.hasMultipleKeys()) {
 			retVal = metadataElementDao.findByIds(searchBean.getKeys());
 		} else {
 			retVal = metadataElementDao.getByExample(searchBean, from, size);
+		}
+		/* otherwise you get javaasist objects */
+		if(language != null) {
+			if(CollectionUtils.isNotEmpty(retVal)) {
+				final List<MetadataElementEntity> unproxiedList = new LinkedList<>();
+				for(final MetadataElementEntity e : retVal) {
+					unproxiedList.add(HibernateUtils.unproxy(e));
+				}
+				retVal = unproxiedList;
+			}
 		}
 		return retVal;
 	}
@@ -123,8 +140,6 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 	@Transactional
 	public void save(MetadataElementEntity entity) {
 		if(entity != null) {
-			final Map<String, LanguageMappingEntity> languageMap = entity.getLanguageMap();
-			final Map<String, LanguageMappingEntity> defaultValueLanguageMap = entity.getDefaultValueLanguageMap();
 			final Set<MetadataValidValueEntity> validValues = entity.getValidValues();
 			
 			if(StringUtils.isBlank(entity.getId())) {
@@ -136,28 +151,17 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 	            entity.setResource(resource);
 				entity.setMetadataType(metadataTypeDao.findById(entity.getMetadataType().getMetadataTypeId()));
 				
-				entity.setLanguageMap(null);
-				entity.setDefaultValueLanguageMap(null);
 				entity.setValidValues(null);
 				entity.setTemplateSet(null);
-				
 				metadataElementDao.save(entity);
-				entity.setLanguageMap(mergeLanguageMaps(entity.getLanguageMap(), languageMap));
-				entity.setDefaultValueLanguageMap(mergeLanguageMaps(entity.getDefaultValueLanguageMap(), defaultValueLanguageMap));
 				entity.setValidValues(mergeValidValues(entity.getValidValues(), validValues));
-				doCollectionsArithmetic(entity);
 			} else {
 				final MetadataElementEntity dbEntity = metadataElementDao.findById(entity.getId());
 				entity.setValidValues(dbEntity.getValidValues());
-				entity.setLanguageMap(dbEntity.getLanguageMap());
-				entity.setDefaultValueLanguageMap(dbEntity.getDefaultValueLanguageMap());
 				entity.setUserAttributes(dbEntity.getUserAttributes());
 				
-				entity.setLanguageMap(mergeLanguageMaps(entity.getLanguageMap(), languageMap));
-				entity.setDefaultValueLanguageMap(mergeLanguageMaps(entity.getDefaultValueLanguageMap(), defaultValueLanguageMap));
 				entity.setValidValues(mergeValidValues(dbEntity.getValidValues(), validValues));
-				doCollectionsArithmetic(entity);
-			
+
 				/* don't let the caller update these */
 				entity.setMetadataType(dbEntity.getMetadataType());
 				entity.setTemplateSet(dbEntity.getTemplateSet());
@@ -223,35 +227,13 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 					if(StringUtils.equals(persistentEntity.getId(), transientEntity.getId())) {
 						persistentEntity.setUiValue(transientEntity.getUiValue());
 						persistentEntity.setDisplayOrder(transientEntity.getDisplayOrder());
-						mergeLanguageMaps(persistentEntity.getLanguageMap(), transientEntity.getLanguageMap());
+						persistentEntity.setLanguageMap(transientEntity.getLanguageMap());
 					}
 				}
 			}
 		}
 		
 		return retval;
-	}
-	
-	private void doCollectionsArithmetic(final MetadataElementEntity entity) {
-		if(MapUtils.isNotEmpty(entity.getLanguageMap())) {
-			for(final LanguageMappingEntity mapValue : entity.getLanguageMap().values()) {
-				setReferenceType(mapValue, WhereClauseConstants.META_ELEMENT_REFERENCE_TYPE, entity.getId());
-			}
-		}
-		if(MapUtils.isNotEmpty(entity.getDefaultValueLanguageMap())) {
-			for(final LanguageMappingEntity mapValue : entity.getDefaultValueLanguageMap().values()) {
-				setReferenceType(mapValue, WhereClauseConstants.META_ELEMENT_DEFAULT_VALUE_REFERENCE_TYPE, entity.getId());
-			}
-		}
-		if(CollectionUtils.isNotEmpty(entity.getValidValues())) {
-			for(final MetadataValidValueEntity validValue : entity.getValidValues()) {
-				if(MapUtils.isNotEmpty(validValue.getLanguageMap())) {
-					for(final LanguageMappingEntity mapValue : validValue.getLanguageMap().values()) {
-						setReferenceType(mapValue, WhereClauseConstants.VALID_VALUES_REFERENCE_TYPE, validValue.getId());
-					}
-				}
-			}
-		}
 	}
 	
 	@Override
@@ -295,17 +277,6 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 			metadataElementDao.delete(entity);
 		}
 	}
-	
-	private void populateLanguageDeleteMap(final Map<String, LanguageMappingEntity> languageMap, final Map<String, Set<String>> languageDeleteMap) {
-		if(MapUtils.isNotEmpty(languageMap)) {
-			for(final LanguageMappingEntity languageEntity : languageMap.values()) {
-				if(!languageDeleteMap.containsKey(languageEntity.getReferenceType())) {
-					languageDeleteMap.put(languageEntity.getReferenceType(), new HashSet<String>());
-				}
-				languageDeleteMap.get(languageEntity.getReferenceType()).add(languageEntity.getReferenceId());
-			}
-		}
-	}
 
 	@Override
 	@Transactional
@@ -337,41 +308,24 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 	//@Override
 	//@Transactional
 	private void save(MetadataValidValueEntity entity) {
-		final Map<String, LanguageMappingEntity> languageMap = entity.getLanguageMap();
 		if(StringUtils.isEmpty(entity.getId())) {
-			entity.setLanguageMap(null);
+			//entity.setLanguageMap(null);
 			//entity.setEntity(metadataElementDao.findById(entity.getEntity().getId()));
 			validValueDAO.save(entity);
-			entity.setLanguageMap(mergeLanguageMaps(entity.getLanguageMap(), languageMap));
 		} else {
 			//final MetadataValidValueEntity dbEntity = validValueDAO.findById(entity.getId());
 			//entity.setEntity(dbEntity.getEntity());
 			//entity.setLanguageMap(mergeLanguageMaps(dbEntity.getLanguageMap(), languageMap));
+			validValueDAO.merge(entity);
 		}
-		setLanguageMetadata(entity);
-		validValueDAO.merge(entity);
+		//validValueDAO.merge(entity);
 	}
 	
-	private void setLanguageMetadata(final MetadataValidValueEntity entity) {
-		if(entity != null) {
-			if(MapUtils.isNotEmpty(entity.getLanguageMap())) {
-				for(final LanguageMappingEntity languageEntity : entity.getLanguageMap().values()) {
-					setReferenceType(languageEntity, WhereClauseConstants.VALID_VALUES_REFERENCE_TYPE, entity.getId());
-				}
-			}
-		}
-	}
-
 	@Override
 	@Transactional
 	public void delteMetaValidValue(String validValueId) {
 		final MetadataValidValueEntity entity = validValueDAO.findById(validValueId);
 		if(entity != null) {
-			final Map<String, Set<String>> languageDeleteMap = new HashMap<String, Set<String>>();
-			populateLanguageDeleteMap(entity.getLanguageMap(), languageDeleteMap);
-			for(final String referenceType : languageDeleteMap.keySet()) {
-				languageMappingDAO.deleteByReferenceTypeAndIds(languageDeleteMap.get(referenceType), referenceType);
-			}
 			validValueDAO.delete(entity);
 		}
 	}
@@ -385,6 +339,6 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 	public List<MetadataElementEntity> findElementByName(String name) {
 		final MetadataElementSearchBean searchBean = new MetadataElementSearchBean();
 		searchBean.setAttributeName(name);
-		return findBeans(searchBean, 0, Integer.MAX_VALUE);
+		return findBeans(searchBean, 0, Integer.MAX_VALUE, null);
 	}
 }

@@ -11,12 +11,14 @@ import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.exception.BasicDataServiceException;
+import org.openiam.dozer.converter.LanguageDozerConverter;
 import org.openiam.dozer.converter.MetadataElementTemplateDozerConverter;
 import org.openiam.dozer.converter.MetadataTemplateTypeDozerConverter;
 import org.openiam.dozer.converter.MetadataTemplateTypeFieldDozerConverter;
 import org.openiam.idm.searchbeans.MetadataElementPageTemplateSearchBean;
 import org.openiam.idm.searchbeans.MetadataTemplateTypeFieldSearchBean;
 import org.openiam.idm.searchbeans.MetadataTemplateTypeSearchBean;
+import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.meta.domain.MetadataElementPageTemplateEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataTemplateTypeEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataTemplateTypeFieldEntity;
@@ -45,7 +47,7 @@ public class MetadataElementTemplateWebServiceImpl implements MetadataElementTem
 	private MetadataElementTemplateDozerConverter templateDozerConverter;
 	
 	@Autowired
-	private MetadataElementTemplateSearchBeanConverter templateSearchBeanConverter;
+	private LanguageDozerConverter languageConverter;
 	
 	@Autowired
 	private MetadataTemplateTypeDozerConverter templateTypeDozerConverter;
@@ -113,15 +115,6 @@ public class MetadataElementTemplateWebServiceImpl implements MetadataElementTem
 			response.setStatus(ResponseStatus.FAILURE);
 		}
 		return response;
-	}
-
-	@Override
-	public MetadataElementPageTemplate findById(final String templateId) {
-		final MetadataElementPageTemplateSearchBean searchBean = new MetadataElementPageTemplateSearchBean();
-		searchBean.setKey(templateId);
-		searchBean.setDeepCopy(true);
-		final List<MetadataElementPageTemplate> foundList = findBeans(searchBean, 0, 1);
-		return (CollectionUtils.isNotEmpty(foundList)) ? foundList.get(0) : null;
 	}
 
 	@Override

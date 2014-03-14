@@ -3,10 +3,12 @@ package org.openiam.idm.srvc.meta.domain;
 import java.io.Serializable;
 import java.util.Map;
 
+import javax.persistence.AttributeOverride;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
+import javax.persistence.EntityListeners;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -15,28 +17,28 @@ import javax.persistence.ManyToOne;
 import javax.persistence.MapKey;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.Where;
+import org.openiam.base.domain.KeyEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.lang.domain.LanguageEntity;
 import org.openiam.idm.srvc.lang.domain.LanguageMappingEntity;
 import org.openiam.idm.srvc.meta.dto.MetadataFieldTemplateXref;
+import org.openiam.internationalization.Internationalized;
+import org.openiam.internationalization.InternationalizedCollection;
 
 @Entity
 @Table(name = "UI_FIELD_TEMPLATE_XREF")
 @DozerDTOCorrespondence(MetadataFieldTemplateXref.class)
-public class MetadataFieldTemplateXrefEntity implements Serializable {
+@AttributeOverride(name = "id", column = @Column(name = "XREF_ID"))
+@Internationalized
+public class MetadataFieldTemplateXrefEntity extends KeyEntity {
 
-    @Id
-    @GeneratedValue(generator = "system-uuid")
-    @GenericGenerator(name = "system-uuid", strategy = "uuid")
-    @Column(name = "XREF_ID", length = 32)
-    private String id;
-	
 	@ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name="UI_FIELD_ID", referencedColumnName = "UI_FIELD_ID", insertable = true, updatable = true)
 	private MetadataTemplateTypeFieldEntity field;
@@ -56,20 +58,14 @@ public class MetadataFieldTemplateXrefEntity implements Serializable {
 	@Column(name = "DISPLAY_ORDER")
 	private Integer displayOrder;
 	
-    @OneToMany(cascade={CascadeType.ALL}, fetch = FetchType.LAZY, mappedBy="referenceId", orphanRemoval=true)
-	@Where(clause="REFERENCE_TYPE='MetadataFieldTemplateXrefEntity'")
-    @MapKey(name = "languageId")
-    @Fetch(FetchMode.SUBSELECT)
+	//@OneToMany(cascade={CascadeType.REMOVE}, fetch = FetchType.LAZY)
+	//@Where(clause="REFERENCE_TYPE='MetadataFieldTemplateXrefEntity'")
+    //@MapKey(name = "languageId")
+    //@Fetch(FetchMode.SUBSELECT)
+	@Transient
+	@InternationalizedCollection(referenceType="MetadataFieldTemplateXrefEntity")
     private Map<String, LanguageMappingEntity> languageMap;
 	
-	public String getId() {
-		return id;
-	}
-
-	public void setId(String id) {
-		this.id = id;
-	}
-
 	public MetadataTemplateTypeFieldEntity getField() {
 		return field;
 	}

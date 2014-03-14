@@ -11,6 +11,8 @@ import org.openiam.base.BaseConstants;
 import org.openiam.base.OrderConstants;
 import org.openiam.idm.searchbeans.AbstractSearchBean;
 import org.openiam.idm.searchbeans.SearchBean;
+import org.openiam.internationalization.LocalizedDatabaseGet;
+import org.openiam.internationalization.LocalizedDatabaseOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.orm.hibernate3.HibernateTemplate;
@@ -79,6 +81,7 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
     }
 
     @Override
+    @LocalizedDatabaseGet
     public List<T> getByExample(T t, int startAt, int size) {
         final Criteria criteria = getExampleCriteria(t);
         if (startAt > -1) {
@@ -93,11 +96,13 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
     }
 
     @Override
+    @LocalizedDatabaseGet
     public List<T> getByExample(final SearchBean searchBean) {
     	return getByExample(searchBean, -1, -1);
     }
 
     @Override
+    @LocalizedDatabaseGet
     public List<T> getByExample(final SearchBean searchBean, int from, int size) {
     	 final Criteria criteria = getExampleCriteria(searchBean);
          if (from > -1) {
@@ -121,6 +126,7 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
     }
 
     @Override
+    @LocalizedDatabaseGet
     public List<T> getByExample(T t) {
         return getByExample(t, -1, -1);
     }
@@ -136,6 +142,7 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
     }
 
     @SuppressWarnings({ "unchecked" })
+    @LocalizedDatabaseGet
     public T findById(PrimaryKey id) {
         if (id == null) {
             return null;
@@ -144,11 +151,13 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
     }
 
     @SuppressWarnings("unchecked")
+    @LocalizedDatabaseGet
     public List<T> findByIds(Collection<PrimaryKey> idCollection) {
         return findByIds(idCollection,-1,-1);
     }
 
     @SuppressWarnings("unchecked")
+    @LocalizedDatabaseGet
     public List<T> findByIds(Collection<PrimaryKey> idCollection,  final int from, final int size) {
         if (CollectionUtils.isEmpty(idCollection)) {
             return (List<T>) Collections.EMPTY_LIST;
@@ -167,6 +176,7 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
     }
 
     @SuppressWarnings({ "unchecked" })
+    @LocalizedDatabaseGet
     public T findById(PrimaryKey id, String... fetchFields) {
         if (id == null) {
             return null;
@@ -193,18 +203,21 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
                 .uniqueResult()).longValue();
     }
     @Transactional
+    @LocalizedDatabaseOperation(saveOrUpdate=true)
     public void save(T entity) {
     	if(entity != null) {
     		getSession().saveOrUpdate(entity);
     	}
     }
     @Transactional
+    @LocalizedDatabaseOperation(saveOrUpdate=true)
     public void refresh(T entity) {
         if(entity != null) {
             getSession().refresh(entity);
         }
     }
     @Transactional
+    @LocalizedDatabaseOperation(saveOrUpdate=true)
     public  T add(T entity){
         if(entity!=null){
         	getSession().persist(entity);
@@ -212,12 +225,14 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
         return entity;
     }
     @Transactional
+    @LocalizedDatabaseOperation(delete=true)
     public void delete(T entity) {
     	if(entity != null) {
     		getSession().delete(entity);
     	}
     }
     @Transactional
+    @LocalizedDatabaseOperation(saveOrUpdate=true)
     public void save(Collection<T> entities) {
         if (entities == null || entities.isEmpty()) {
             return;
@@ -230,6 +245,7 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
 
     @Override
     @Transactional
+    @LocalizedDatabaseOperation(saveOrUpdate=true)
     public void update(T t) {
     	if(t != null) {
     		getSession().update(t);
@@ -238,6 +254,7 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
 
     @Override
     @Transactional
+    @LocalizedDatabaseOperation(saveOrUpdate=true)
     public T merge(T t) {
         try {
             if(t != null) {

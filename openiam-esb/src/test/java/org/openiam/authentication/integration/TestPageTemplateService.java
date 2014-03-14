@@ -97,6 +97,7 @@ public class TestPageTemplateService extends AbstractTestNGSpringContextTests {
 		return templateWebService.findTemplateTypes(searchBean, 0, Integer.MAX_VALUE).get(0);
 	}
 	
+	/*
 	 @BeforeClass
 	 protected void setUp() throws Exception {
 		 final List<Language> languageList = languageWS.getAll();
@@ -160,7 +161,6 @@ public class TestPageTemplateService extends AbstractTestNGSpringContextTests {
 				 saveResponse = metadataWebService.saveMetadataEntity(element);
 				 assertSuccess(saveResponse);
 				 
-				 /* add as xref */
 				 final String elementId = (String)saveResponse.getResponseValue();
 				 template.addMetdataElement(new MetadataElementPageTemplateXref(template.getId(), elementId, idx));
 				 templateWebService.save(template);
@@ -213,6 +213,7 @@ public class TestPageTemplateService extends AbstractTestNGSpringContextTests {
 		 
 		 resourceDataService.deleteResource(template.getResourceId());
 	 }
+	 */
 	 
 	@Test
 	public void testEquality() {

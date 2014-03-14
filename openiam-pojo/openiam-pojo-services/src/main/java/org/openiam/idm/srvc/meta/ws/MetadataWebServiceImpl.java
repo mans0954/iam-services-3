@@ -87,7 +87,7 @@ public class MetadataWebServiceImpl implements MetadataWebService {
     @Override
     public List<MetadataElement> findElementBeans(final MetadataElementSearchBean searchBean, final int from,
                                                   final int size) {
-        final List<MetadataElementEntity> entityList = metadataService.findBeans(searchBean, from, size);
+        final List<MetadataElementEntity> entityList = metadataService.findBeans(searchBean, from, size, null);
         return (entityList != null) ? metaDataElementDozerConverter.convertToDTOList(entityList,
                 searchBean.isDeepCopy()) : null;
     }

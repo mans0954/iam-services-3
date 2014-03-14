@@ -1,6 +1,7 @@
 package org.openiam.idm.srvc.meta.dto;
 
 import org.openiam.am.srvc.dto.URIPattern;
+import org.openiam.base.KeyDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.meta.domain.MetadataElementPageTemplateEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataFieldTemplateXrefEntity;
@@ -15,7 +16,6 @@ import java.util.Set;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "MetaElementPageTemplate", propOrder = {
-        "id",
         "name",
         "metadataTemplateTypeId",
         "metadataTemplateTypeName",
@@ -26,9 +26,7 @@ import java.util.Set;
         "fieldXrefs"
 })
 @DozerDTOCorrespondence(MetadataElementPageTemplateEntity.class)
-public class MetadataElementPageTemplate implements Serializable {
-
-	private String id;
+public class MetadataElementPageTemplate extends KeyDTO {
 	private String metadataTemplateTypeId;
 	private String metadataTemplateTypeName;
 	private String name;
@@ -38,12 +36,6 @@ public class MetadataElementPageTemplate implements Serializable {
 	private boolean isPublic = true;
 	private Set<MetadataFieldTemplateXref> fieldXrefs;
 	
-	public String getId() {
-		return id;
-	}
-	public void setId(String id) {
-		this.id = id;
-	}
 	public String getName() {
 		return name;
 	}

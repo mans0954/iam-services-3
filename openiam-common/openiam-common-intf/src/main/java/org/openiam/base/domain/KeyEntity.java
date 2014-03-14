@@ -1,17 +1,21 @@
-package org.openiam.base;
+package org.openiam.base.domain;
 
 import java.io.Serializable;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlType;
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.MappedSuperclass;
 
-@XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "KeyDTO", propOrder = {
-	"id"
-})
-public abstract class KeyDTO extends BaseObject implements Serializable, BaseIdentity {
+import org.hibernate.annotations.GenericGenerator;
+import org.openiam.base.BaseIdentity;
 
+@MappedSuperclass
+public abstract class KeyEntity implements Serializable, BaseIdentity {
+
+	@Id
+	@GeneratedValue(generator="system-uuid")
+	@GenericGenerator(name="system-uuid", strategy = "uuid")
 	protected String id;
 
 	public String getId() {
@@ -38,7 +42,7 @@ public abstract class KeyDTO extends BaseObject implements Serializable, BaseIde
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		KeyDTO other = (KeyDTO) obj;
+		KeyEntity other = (KeyEntity) obj;
 		if (id == null) {
 			if (other.id != null)
 				return false;
@@ -49,7 +53,7 @@ public abstract class KeyDTO extends BaseObject implements Serializable, BaseIde
 
 	@Override
 	public String toString() {
-		return String.format("KeyDTO [id=%s]", id);
+		return String.format("KeyEntity [id=%s]", id);
 	}
 	
 	
