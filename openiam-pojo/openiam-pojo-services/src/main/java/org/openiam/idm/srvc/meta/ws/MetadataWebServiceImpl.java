@@ -181,7 +181,7 @@ public class MetadataWebServiceImpl implements MetadataWebService {
             Set<String> ids = new HashSet<String>();
             ids.add(id);
             searchBean.setTypeIdSet(ids);
-            List<MetadataElementEntity> list = metadataService.findBeans(searchBean, -1, -1);
+            List<MetadataElementEntity> list = metadataService.findBeans(searchBean, -1, -1, null);
             if (!CollectionUtils.isEmpty(list))
                 throw new BasicDataServiceException(ResponseCode.METATYPE_LINKED_WITH_METAELEMENT);
             metadataService.deleteMetdataType(id);
