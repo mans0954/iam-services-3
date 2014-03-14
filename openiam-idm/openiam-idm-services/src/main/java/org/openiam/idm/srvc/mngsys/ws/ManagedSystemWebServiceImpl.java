@@ -104,6 +104,12 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
     }
 
     @Override
+    public List<AttributeMap> getAttributeMapsByManagedSysId(final String managedSysId) {
+        List<AttributeMapEntity> attributeMaps = managedSystemService.getAttributeMapsByManagedSysId(managedSysId);
+        return attributeMapDozerConverter.convertToDTOList(attributeMaps, true);
+    }
+
+    @Override
     public List<ManagedSysDto> getManagedSystems(
             @WebParam(name = "searchBean", targetNamespace = "") ManagedSysSearchBean searchBean,
             @WebParam(name = "size", targetNamespace = "") Integer size,
