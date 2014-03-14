@@ -1,15 +1,13 @@
 package org.openiam.idm.srvc.lang.service;
 
-import java.util.List;
-
-import javax.jws.WebMethod;
-import javax.jws.WebService;
-
 import org.openiam.dozer.converter.LanguageDozerConverter;
 import org.openiam.idm.srvc.lang.domain.LanguageEntity;
 import org.openiam.idm.srvc.lang.dto.Language;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import javax.jws.WebService;
+import java.util.List;
 
 @Service("languageWebService")
 @WebService(endpointInterface = "org.openiam.idm.srvc.lang.service.LanguageWebService", 
@@ -29,5 +27,10 @@ public class LanguageWebServiceImpl implements LanguageWebService {
 		final List<LanguageEntity> entityList = languageService.allLanguages();
 		return (entityList != null) ? languageDozerConverter.convertToDTOList(entityList, true) : null;
 	}
+    @Override
+    public List<Language> getUsedLanguages(){
+        final List<LanguageEntity> entityList = languageService.getUsedLanguages();
+        return (entityList != null) ? languageDozerConverter.convertToDTOList(entityList, true) : null;
+    }
 
 }

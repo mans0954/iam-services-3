@@ -162,7 +162,15 @@ public class InternationalizationProvider {
 	
 	private Set<TargetInternationalizedField> getTargetFields(final BaseIdentity entity, final Set<VisitedField> visitedSet) {
 		final Set<TargetInternationalizedField> retVal = new HashSet<>();
+		
+		/* 
+		 * you can't just get the class, because an incoming object can be a javassist/cglib object, modified by Hibernate.
+		 * These objects won't have the expected annotations.  Therefore, it is necessary to un-proxy the Class Object.
+		 * If the object is not of type HibernateProxy, the regular classname will be used.  
+		 * See @HibernateProxyHelper.getClassWithoutInitializingProxy
+		 */
 		final Class<?> clazz = HibernateProxyHelper.getClassWithoutInitializingProxy(entity);
+		
 		if(clazz.isAnnotationPresent(Internationalized.class)) {
 			if(clazz.getDeclaredFields() != null) {
 				for(final Field field : clazz.getDeclaredFields()) {
