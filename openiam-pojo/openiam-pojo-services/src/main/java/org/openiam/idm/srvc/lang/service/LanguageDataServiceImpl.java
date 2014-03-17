@@ -82,7 +82,7 @@ public class LanguageDataServiceImpl implements LanguageDataService {
 		if (lg == null) {
 			throw new NullPointerException("lg is null");
 		}
-		final LanguageEntity l = getLanguage(lg.getLanguageId());
+		final LanguageEntity l = getLanguage(lg.getId());
         if(l!=null){
             languageDao.merge(l);
         }

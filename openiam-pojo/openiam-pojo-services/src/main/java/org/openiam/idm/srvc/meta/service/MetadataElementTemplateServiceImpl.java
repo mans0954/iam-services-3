@@ -693,7 +693,7 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
 	private String getElementName(final MetadataElementEntity entity, final LanguageEntity language) {
 		String elementName = null;
 		if(entity != null && language != null && MapUtils.isNotEmpty(entity.getLanguageMap())) {
-			final LanguageMappingEntity mapping = entity.getLanguageMap().get(language.getLanguageId());
+			final LanguageMappingEntity mapping = entity.getLanguageMap().get(language.getId());
 			if(mapping != null) {
 				elementName = mapping.getValue();
 			}
@@ -727,7 +727,7 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
 						if(StringUtils.isNotBlank(validValue.getUiValue())) {
 							validValues.add(validValue.getUiValue());
 						} else if(MapUtils.isNotEmpty(validValue.getLanguageMap())) {
-							final LanguageMappingEntity languageMapping = validValue.getLanguageMap().get(language.getLanguageId());
+							final LanguageMappingEntity languageMapping = validValue.getLanguageMap().get(language.getId());
 							if(languageMapping != null) {
 								validValues.add(languageMapping.getValue());
 							}

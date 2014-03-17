@@ -4,9 +4,11 @@ import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.Where;
+import org.openiam.base.domain.KeyEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.lang.dto.Language;
 
+import javax.persistence.AttributeOverride;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -21,12 +23,9 @@ import java.util.Map;
 @Entity
 @Table(name = "LANGUAGE")
 @DozerDTOCorrespondence(Language.class)
-public class LanguageEntity implements Serializable {
+@AttributeOverride(name = "id", column = @Column(name = "ID"))
+public class LanguageEntity extends KeyEntity {
     private static final long serialVersionUID = 6695606794883491243L;
-
-    @Id
-    @Column(name = "ID", length = 32)
-    private String languageId;
     
     @Column(name = "LANGUAGE", length = 20)
     private String name;
@@ -46,16 +45,6 @@ public class LanguageEntity implements Serializable {
     @MapKey(name = "locale")
     @Fetch(FetchMode.SUBSELECT)
     private Map<String, LanguageLocaleEntity> locales;
-
-
-
-    public String getLanguageId() {
-        return languageId;
-    }
-
-    public void setLanguageId(String languageId) {
-        this.languageId = languageId;
-    }
 
     public String getName() {
         return name;
@@ -107,7 +96,7 @@ public class LanguageEntity implements Serializable {
 		int result = 1;
 		result = prime * result + (isUsed ? 1231 : 1237);
 		result = prime * result
-				+ ((languageId == null) ? 0 : languageId.hashCode());
+				+ ((id == null) ? 0 : id.hashCode());
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		return result;
 	}
@@ -125,10 +114,10 @@ public class LanguageEntity implements Serializable {
 			return false;
 		if (isDefault != other.isDefault)
 			return false;
-		if (languageId == null) {
-			if (other.languageId != null)
+		if (id == null) {
+			if (other.id != null)
 				return false;
-		} else if (!languageId.equals(other.languageId))
+		} else if (!id.equals(other.id))
 			return false;
 		if (name == null) {
 			if (other.name != null)
@@ -140,7 +129,7 @@ public class LanguageEntity implements Serializable {
 
 	@Override
 	public String toString() {
-		return "LanguageEntity [languageId=" + languageId + ", name=" + name
+		return "LanguageEntity [id=" + id + ", name=" + name
 				+ ", isUsed=" + isUsed + "]";
 	}
 

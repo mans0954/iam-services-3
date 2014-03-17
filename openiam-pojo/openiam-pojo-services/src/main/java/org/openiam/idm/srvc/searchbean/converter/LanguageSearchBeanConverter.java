@@ -14,7 +14,7 @@ public class LanguageSearchBeanConverter implements SearchBeanConverter<Language
 	public LanguageEntity convert(final LanguageSearchBean searchBean) {
 		final LanguageEntity entity = new LanguageEntity();
 		entity.setLanguageCode(StringUtils.trimToNull(searchBean.getCode()));
-		entity.setLanguageId(StringUtils.trimToNull(searchBean.getKey()));
+		entity.setId(StringUtils.trimToNull(searchBean.getKey()));
 		return entity;
 	}
 

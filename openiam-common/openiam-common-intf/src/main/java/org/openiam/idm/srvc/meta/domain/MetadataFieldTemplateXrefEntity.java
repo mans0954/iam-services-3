@@ -119,7 +119,7 @@ public class MetadataFieldTemplateXrefEntity extends KeyEntity {
 		String name = null;
 		if(language != null) {
 			if(languageMap != null) {
-				final LanguageMappingEntity entity = languageMap.get(language.getLanguageId());
+				final LanguageMappingEntity entity = languageMap.get(language.getId());
 				if(entity != null) {
 					name = entity.getValue();
 				}

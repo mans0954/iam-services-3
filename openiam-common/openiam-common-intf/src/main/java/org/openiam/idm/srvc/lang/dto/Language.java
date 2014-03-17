@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.lang.dto;
 
+import org.openiam.base.KeyDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.lang.domain.LanguageEntity;
 
@@ -11,7 +12,6 @@ import java.util.Map;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "Language", propOrder = {
-        "languageId",
         "name",
         "locales",
         "isUsed",
@@ -19,23 +19,14 @@ import java.util.Map;
         "isDefault"
 })
 @DozerDTOCorrespondence(LanguageEntity.class)
-public class Language implements Serializable {
+public class Language extends KeyDTO {
         private static final long serialVersionUID = 6695606794883491243L;
-        private String languageId;
         private String name;
         private boolean isUsed=false;
         private String languageCode;
         private boolean isDefault=false;
 
         private Map<String, LanguageLocale> locales;
-
-        public String getLanguageId() {
-            return languageId;
-        }
-
-        public void setLanguageId(String languageId) {
-            this.languageId = languageId;
-        }
 
         public String getName() {
             return name;
@@ -91,7 +82,7 @@ public class Language implements Serializable {
 			int result = 1;
 			result = prime * result + (isUsed ? 1231 : 1237);
 			result = prime * result
-					+ ((languageId == null) ? 0 : languageId.hashCode());
+					+ ((id == null) ? 0 : id.hashCode());
 			result = prime * result + ((name == null) ? 0 : name.hashCode());
 			return result;
 		}
@@ -109,10 +100,10 @@ public class Language implements Serializable {
 				return false;
 			if (isDefault != other.isDefault)
 				return false;
-			if (languageId == null) {
-				if (other.languageId != null)
+			if (id == null) {
+				if (other.id != null)
 					return false;
-			} else if (!languageId.equals(other.languageId))
+			} else if (!id.equals(other.id))
 				return false;
 			if (name == null) {
 				if (other.name != null)
@@ -124,7 +115,7 @@ public class Language implements Serializable {
 
 		@Override
 		public String toString() {
-			return "Language [languageId=" + languageId + ", name=" + name
+			return "Language [id=" + id + ", name=" + name
 					+ ", isUsed=" + isUsed + "]";
 		}
 

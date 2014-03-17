@@ -202,7 +202,7 @@
 		</class-a>
 		<class-b>org.openiam.idm.srvc.lang.dto.LanguageLocale</class-b>
 		<field>
-			<a>language.languageId</a>
+			<a>language.id</a>
 			<b>languageId</b>
 		</field>
 	</mapping>

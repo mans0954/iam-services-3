@@ -70,7 +70,7 @@ public class LanguageDAOImpl extends BaseDaoImpl<LanguageEntity, String> impleme
 
 	@Override
     protected String getPKfieldName() {
-        return "languageId";
+        return "id";
     }
 
 	@Override
