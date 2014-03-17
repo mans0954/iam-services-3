@@ -128,7 +128,7 @@ public class MetadataWebServiceImpl implements MetadataWebService {
             }
             final MetadataTypeEntity entity = metaDataTypeDozerConverter.convertToEntity(dto, true);
             metadataService.save(entity);
-            response.setResponseValue(entity.getMetadataTypeId());
+            response.setResponseValue(entity.getId());
             response.setStatus(ResponseStatus.SUCCESS);
         } catch (BasicDataServiceException e) {
             response.setErrorCode(e.getCode());

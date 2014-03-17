@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import javax.persistence.AttributeOverride;
 import javax.persistence.Cacheable;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -26,6 +27,7 @@ import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
+import org.openiam.base.domain.KeyEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.cat.domain.CategoryEntity;
 import org.openiam.idm.srvc.meta.dto.MetadataType;
@@ -35,15 +37,11 @@ import org.openiam.idm.srvc.meta.dto.MetadataType;
 @Cacheable
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @DozerDTOCorrespondence(MetadataType.class)
-public class MetadataTypeEntity implements Serializable {
+@AttributeOverride(name = "id", column = @Column(name = "TYPE_ID"))
+public class MetadataTypeEntity extends KeyEntity {
 
     private static final long serialVersionUID = 1L;
-    @Id
-    @GeneratedValue(generator = "system-uuid")
-    @GenericGenerator(name = "system-uuid", strategy = "uuid")
-    @Column(name = "TYPE_ID", length = 32)
-    private String metadataTypeId;
-
+  
     @Column(name = "DESCRIPTION", length = 40)
     private String description;
 
@@ -57,7 +55,7 @@ public class MetadataTypeEntity implements Serializable {
 
     @Column(name = "IS_BINARY")
     @Type(type = "yes_no")
-    private boolean isBinary;
+    private boolean binary;
     
     @Column(name = "GROUPING", length = 100)
     private String grouping;
@@ -80,68 +78,64 @@ public class MetadataTypeEntity implements Serializable {
     @Fetch(FetchMode.SUBSELECT)
     private Set<CategoryEntity> categories = new HashSet<CategoryEntity>(0);
 
+    public MetadataTypeEntity() {
+    	super();
+    }
+    
     public Map<String, MetadataElementEntity> getElementAttributes() {
-	return elementAttributes;
+    	return elementAttributes;
     }
 
     public void setElementAttributes(Map<String, MetadataElementEntity> elementAttributes) {
-	this.elementAttributes = elementAttributes;
+    	this.elementAttributes = elementAttributes;
     }
 
     public Set<CategoryEntity> getCategories() {
-	return categories;
+    	return categories;
     }
 
     public void setCategories(Set<CategoryEntity> categories) {
-	this.categories = categories;
-    }
-
-    public String getMetadataTypeId() {
-	return metadataTypeId;
-    }
-
-    public void setMetadataTypeId(String metadataTypeId) {
-	this.metadataTypeId = metadataTypeId;
+    	this.categories = categories;
     }
 
     public String getDescription() {
-	return description;
+    	return description;
     }
 
     public void setDescription(String description) {
-	this.description = description;
+    	this.description = description;
     }
 
     public boolean isActive() {
-	return active;
+    	return active;
     }
 
     public void setActive(boolean active) {
-	this.active = active;
+    	this.active = active;
     }
 
     public boolean isSyncManagedSys() {
-	return syncManagedSys;
+    	return syncManagedSys;
     }
 
     public void setSyncManagedSys(boolean syncManagedSys) {
-	this.syncManagedSys = syncManagedSys;
+    	this.syncManagedSys = syncManagedSys;
     }
 
     public String getGrouping() {
-	return grouping;
+    	return grouping;
     }
 
     public void setGrouping(String grouping) {
-	this.grouping = grouping;
+    	this.grouping = grouping;
     }
-
+    
 	public boolean isBinary() {
-		return isBinary;
+		return binary;
 	}
 
-	public void setBinary(boolean isBinary) {
-		this.isBinary = isBinary;
+	public void setBinary(boolean binary) {
+		this.binary = binary;
 	}
 
 	@Override
@@ -153,9 +147,9 @@ public class MetadataTypeEntity implements Serializable {
 				+ ((description == null) ? 0 : description.hashCode());
 		result = prime * result
 				+ ((grouping == null) ? 0 : grouping.hashCode());
-		result = prime * result + (isBinary ? 1231 : 1237);
+		result = prime * result + (binary ? 1231 : 1237);
 		result = prime * result
-				+ ((metadataTypeId == null) ? 0 : metadataTypeId.hashCode());
+				+ ((id == null) ? 0 : id.hashCode());
 		result = prime * result + (syncManagedSys ? 1231 : 1237);
 		return result;
 	}
@@ -181,12 +175,12 @@ public class MetadataTypeEntity implements Serializable {
 				return false;
 		} else if (!grouping.equals(other.grouping))
 			return false;
-		if (isBinary != other.isBinary)
+		if (binary != other.binary)
 			return false;
-		if (metadataTypeId == null) {
-			if (other.metadataTypeId != null)
+		if (id == null) {
+			if (other.id != null)
 				return false;
-		} else if (!metadataTypeId.equals(other.metadataTypeId))
+		} else if (!id.equals(other.id))
 			return false;
 		if (syncManagedSys != other.syncManagedSys)
 			return false;

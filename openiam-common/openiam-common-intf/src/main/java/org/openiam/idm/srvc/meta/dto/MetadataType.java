@@ -10,6 +10,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
+import org.openiam.base.KeyDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.cat.dto.Category;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
@@ -20,20 +21,18 @@ import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
  * <code>MetadataType</code> represents a metdata type instance.
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "MetadataType", propOrder = { 
-	"metadataTypeId", 
+@XmlType(name = "MetadataType", propOrder = {
 	"description", 
 	"active", 
 	"syncManagedSys",
 	"elementAttributes", 
 	"categories", 
 	"grouping",
-	"isBinary"
+	"binary"
 })
 @DozerDTOCorrespondence(MetadataTypeEntity.class)
-public class MetadataType implements Serializable {
+public class MetadataType extends KeyDTO {
 
-    private String metadataTypeId;
     private String description;
 
     private boolean active;
@@ -41,85 +40,69 @@ public class MetadataType implements Serializable {
 
     private String grouping;
     
-    private boolean isBinary;
+    private boolean binary;
 
     protected Map<String, MetadataElement> elementAttributes = new HashMap<String, MetadataElement>(0);
     protected Set<Category> categories = new HashSet<Category>(0);
 
     public MetadataType() {
+    	super();
     }
-
-    public MetadataType(String metadataTypeId) {
-	this.metadataTypeId = metadataTypeId;
-    }
-
-    public MetadataType(String metadataTypeId, String description) {
-	this.metadataTypeId = metadataTypeId;
-	this.description = description;
-    }
-
-    public String getMetadataTypeId() {
-	return this.metadataTypeId;
-    }
-
-    public void setMetadataTypeId(String metadataTypeId) {
-	this.metadataTypeId = metadataTypeId;
-    }
-
+    
     public String getDescription() {
-	return this.description;
+    	return this.description;
     }
 
     public void setDescription(String description) {
-	this.description = description;
+    	this.description = description;
     }
 
     public Map<String, MetadataElement> getElementAttributes() {
-	return this.elementAttributes;
+    	return this.elementAttributes;
     }
 
     public void setElementAttributes(Map<String, MetadataElement> elementAttributes) {
-	this.elementAttributes = elementAttributes;
+    	this.elementAttributes = elementAttributes;
     }
 
     public Set<Category> getCategories() {
-	return categories;
+    	return categories;
     }
 
     public void setCategories(Set<Category> categories) {
-	this.categories = categories;
+    	this.categories = categories;
     }
 
     public void setActive(boolean active) {
-	this.active = active;
+    	this.active = active;
     }
 
     public void setSyncManagedSys(boolean syncManagedSys) {
-	this.syncManagedSys = syncManagedSys;
+    	this.syncManagedSys = syncManagedSys;
     }
 
     public String getGrouping() {
-	return grouping;
+    	return grouping;
     }
 
     public void setGrouping(String grouping) {
-	this.grouping = grouping;
+    	this.grouping = grouping;
     }
 
     public boolean getActive() {
-	return active;
+    	return active;
     }
 
     public boolean getSyncManagedSys() {
-	return syncManagedSys;
+    	return syncManagedSys;
     }
 
 	public boolean isBinary() {
-		return isBinary;
+		return binary;
 	}
 
-	public void setBinary(boolean isBinary) {
-		this.isBinary = isBinary;
+	public void setBinary(boolean binary) {
+		this.binary = binary;
 	}
 
 	@Override
@@ -131,9 +114,9 @@ public class MetadataType implements Serializable {
 				+ ((description == null) ? 0 : description.hashCode());
 		result = prime * result
 				+ ((grouping == null) ? 0 : grouping.hashCode());
-		result = prime * result + (isBinary ? 1231 : 1237);
+		result = prime * result + (binary ? 1231 : 1237);
 		result = prime * result
-				+ ((metadataTypeId == null) ? 0 : metadataTypeId.hashCode());
+				+ ((id == null) ? 0 : id.hashCode());
 		result = prime * result + (syncManagedSys ? 1231 : 1237);
 		return result;
 	}
@@ -159,12 +142,12 @@ public class MetadataType implements Serializable {
 				return false;
 		} else if (!grouping.equals(other.grouping))
 			return false;
-		if (isBinary != other.isBinary)
+		if (binary != other.binary)
 			return false;
-		if (metadataTypeId == null) {
-			if (other.metadataTypeId != null)
+		if (id == null) {
+			if (other.id != null)
 				return false;
-		} else if (!metadataTypeId.equals(other.metadataTypeId))
+		} else if (!id.equals(other.id))
 			return false;
 		if (syncManagedSys != other.syncManagedSys)
 			return false;

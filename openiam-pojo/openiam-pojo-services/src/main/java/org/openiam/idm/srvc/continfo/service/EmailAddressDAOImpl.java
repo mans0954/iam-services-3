@@ -68,8 +68,8 @@ public class EmailAddressDAOImpl extends BaseDaoImpl<EmailAddressEntity, String>
             }
 
             if (email.getMetadataType() != null) {
-                if (StringUtils.isNotBlank(email.getMetadataType().getMetadataTypeId())) {
-                    criteria.add(Restrictions.eq("metadataType.metadataTypeId", email.getMetadataType().getMetadataTypeId()));
+                if (StringUtils.isNotBlank(email.getMetadataType().getId())) {
+                    criteria.add(Restrictions.eq("metadataType.id", email.getMetadataType().getId()));
                 }
             }
         }

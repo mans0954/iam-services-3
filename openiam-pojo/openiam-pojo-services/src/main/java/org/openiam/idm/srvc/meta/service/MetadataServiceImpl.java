@@ -139,7 +139,7 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 	            resource.setIsPublic(true); /* make public by default */
 	            resourceDAO.save(resource);
 	            entity.setResource(resource);
-				entity.setMetadataType(metadataTypeDao.findById(entity.getMetadataType().getMetadataTypeId()));
+				entity.setMetadataType(metadataTypeDao.findById(entity.getMetadataType().getId()));
 				
 				entity.setValidValues(null);
 				entity.setTemplateSet(null);
@@ -230,14 +230,14 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 	@Transactional
 	public void save(MetadataTypeEntity entity) {
 		if(entity != null) {
-			if(StringUtils.isNotBlank(entity.getMetadataTypeId())) {
-				final MetadataTypeEntity dbEntity = metadataTypeDao.findById(entity.getMetadataTypeId());
+			if(StringUtils.isNotBlank(entity.getId())) {
+				final MetadataTypeEntity dbEntity = metadataTypeDao.findById(entity.getId());
 				if(dbEntity != null) {
 					entity.setCategories(dbEntity.getCategories());
 					entity.setElementAttributes(dbEntity.getElementAttributes());
 				}
 			}
-			if(StringUtils.isBlank(entity.getMetadataTypeId())) {
+			if(StringUtils.isBlank(entity.getId())) {
 				metadataTypeDao.save(entity);
 			} else {
 				metadataTypeDao.merge(entity);

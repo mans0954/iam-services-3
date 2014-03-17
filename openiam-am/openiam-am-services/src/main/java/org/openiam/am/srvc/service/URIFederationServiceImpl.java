@@ -400,7 +400,7 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 							attributeToken.setName(attribute.getName());
 							attributeToken.setValueAsString(attribute.getValueAsString());
 							attributeToken.setValueAsByteArray(attribute.getValueAsByteArray());
-							attributeToken.setTypeId(attribute.getType().getMetadataTypeId());
+							attributeToken.setTypeId(attribute.getType().getId());
 							attributeToken.setTypeName(attribute.getType().getDescription());
 							token.addAttribute(attributeToken);
 						}

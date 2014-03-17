@@ -633,7 +633,7 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
 		if(entity != null) {
 			MetadataTypeEntity type = null;
 			if(entity.getType() != null) {
-				type = typeDAO.findById(entity.getType().getMetadataTypeId());
+				type = typeDAO.findById(entity.getType().getId());
 			}
 			if(StringUtils.isBlank(entity.getId())) {
 				entity.setId(null);

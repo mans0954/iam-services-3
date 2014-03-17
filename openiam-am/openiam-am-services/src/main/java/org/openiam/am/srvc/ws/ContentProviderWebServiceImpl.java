@@ -88,11 +88,11 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
         		throw new BasicDataServiceException(ResponseCode.NO_NAME);
         	}
         	
-        	if(attribute.getType() == null || StringUtils.isBlank(attribute.getType().getMetadataTypeId())) {
+        	if(attribute.getType() == null || StringUtils.isBlank(attribute.getType().getId())) {
         		throw new BasicDataServiceException(ResponseCode.TYPE_REQUIRED);
         	}
         	
-        	final MetadataTypeEntity type = metadataTypeDAO.findById(attribute.getType().getMetadataTypeId());
+        	final MetadataTypeEntity type = metadataTypeDAO.findById(attribute.getType().getId());
         	if(type == null) {
         		throw new BasicDataServiceException(ResponseCode.TYPE_REQUIRED);
         	}

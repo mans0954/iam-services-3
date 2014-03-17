@@ -1,7 +1,5 @@
 package org.openiam.idm.srvc.meta.service;
 
-// Generated Nov 4, 2008 12:11:29 AM by Hibernate Tools 3.2.2.GA
-
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -10,6 +8,7 @@ import org.apache.commons.lang.StringUtils;
 import org.hibernate.Criteria;
 import org.hibernate.Query;
 import org.hibernate.Session;
+import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Restrictions;
 import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.idm.srvc.cat.domain.CategoryEntity;
@@ -17,8 +16,6 @@ import org.openiam.idm.srvc.cat.service.CategoryDAO;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
-
-// import org.apache.log4j.Category;
 
 /**
  * DAO implementation for MetadataType
@@ -28,31 +25,54 @@ public class MetadataTypeDAOImpl extends BaseDaoImpl<MetadataTypeEntity, String>
 
     @Override
     protected Criteria getExampleCriteria(final MetadataTypeEntity entity) {
-	final Criteria criteria = getCriteria();
-	if (StringUtils.isNotBlank(entity.getMetadataTypeId())) {
-	    criteria.add(Restrictions.eq(getPKfieldName(), entity.getMetadataTypeId()));
-	} else {
-	    if (StringUtils.isNotBlank(entity.getDescription())) {
-		criteria.add(Restrictions.eq("description", entity.getDescription()));
-	    }
-	    if (StringUtils.isNotBlank(entity.getGrouping())) {
-		criteria.add(Restrictions.eq("grouping", entity.getGrouping()));
-	    }
-	}
-	return criteria;
+		final Criteria criteria = getCriteria();
+		if (StringUtils.isNotBlank(entity.getId())) {
+		    criteria.add(Restrictions.eq(getPKfieldName(), entity.getId()));
+		} else {
+			/*
+		    if (StringUtils.isNotBlank(entity.getDescription())) {
+		    	criteria.add(Restrictions.eq("description", entity.getDescription()));
+		    }
+		    */
+		    if (StringUtils.isNotBlank(entity.getGrouping())) {
+		    	criteria.add(Restrictions.eq("grouping", entity.getGrouping()));
+		    }
+		    
+		    if (StringUtils.isNotEmpty(entity.getDescription())) {
+				String name = entity.getDescription();
+				MatchMode matchMode = null;
+				if (StringUtils.indexOf(name, "*") == 0) {
+					matchMode = MatchMode.END;
+					name = name.substring(1);
+				}
+				if (StringUtils.isNotEmpty(name) && StringUtils.indexOf(name, "*") == name.length() - 1) {
+					name = name.substring(0, name.length() - 1);
+					matchMode = (matchMode == MatchMode.END) ? MatchMode.ANYWHERE : MatchMode.START;
+				}
+
+				if (StringUtils.isNotEmpty(name)) {
+					if (matchMode != null) {
+						criteria.add(Restrictions.ilike("description", name, matchMode));
+					} else {
+						criteria.add(Restrictions.eq("description", name));
+					}
+				}
+			}
+		}
+		return criteria;
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public List<MetadataTypeEntity> findTypesInCategory(String categoryId) {
-	final Criteria criteria = getCriteria().createAlias("categories", "category").add(
-		Restrictions.eq("category.categoryId", categoryId));
-	return criteria.list();
+		final Criteria criteria = getCriteria().createAlias("categories", "category").add(
+			Restrictions.eq("category.categoryId", categoryId));
+		return criteria.list();
     }
 
     @Override
     protected String getPKfieldName() {
-	return "metadataTypeId";
+    	return "id";
     }
 
 }
