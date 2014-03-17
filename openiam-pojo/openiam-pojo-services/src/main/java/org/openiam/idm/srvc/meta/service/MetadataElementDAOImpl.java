@@ -123,7 +123,7 @@ public class MetadataElementDAOImpl extends BaseDaoImpl<MetadataElementEntity, S
         final Criteria criteria = getCriteria()
         							.createAlias("metadataType", "mt")
         							.createAlias("mt.categories", "ct")
-        							.add(Restrictions.eq("ct.categoryId", categoryType));
+        							.add(Restrictions.eq("ct.id", categoryType));
        return criteria.list();
     }
 

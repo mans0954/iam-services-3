@@ -37,11 +37,6 @@ public class MetadataServiceTouchTest extends
         metadataService.getMetadataElementByType("");
     }
 
-    @Test
-    public void getTypesInCategory() {
-        metadataService.getTypesInCategory("");
-    }
-
     private MetadataType addMetadataTypeRecord() {
         MetadataType type = new MetadataType();
         type.setElementAttributes(new HashMap<String, MetadataElement>(0));

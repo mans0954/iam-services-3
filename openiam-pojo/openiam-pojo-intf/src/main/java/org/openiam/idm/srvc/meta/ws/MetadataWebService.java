@@ -43,16 +43,7 @@ public interface MetadataWebService {
     @WebMethod
     public List<MetadataType> getAllMetadataTypes();
     
-    /**
-     * Returns a list of MetadataTypes that are associated with a Category
-     *
-     * @param categoryId
-     */
-    @WebMethod
-    public List<MetadataType> getTypesInCategory(
-            @WebParam(name = "categoryId", targetNamespace = "")
-            String categoryId);
-
+    
     @WebMethod
     public List<MetadataElement> getAllElementsForCategoryType(
             @WebParam(name = "categoryType", targetNamespace = "")

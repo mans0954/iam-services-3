@@ -8,6 +8,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.openiam.idm.srvc.meta.dto.MetadataType;
 
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -16,7 +17,8 @@ import org.openiam.idm.srvc.meta.dto.MetadataType;
 	"syncManagedSys", 
 	"grouping", 
 	"keySet",
-	"name"
+	"name",
+	"categoryIds"
 })
 public class MetadataTypeSearchBean extends AbstractSearchBean<MetadataType, String> implements SearchBean<MetadataType, String> {
 
@@ -25,6 +27,7 @@ public class MetadataTypeSearchBean extends AbstractSearchBean<MetadataType, Str
     private Boolean syncManagedSys;
     private String grouping;
     private String name;
+    private Set<String> categoryIds;
 
     public Boolean isActive() {
         return active;
@@ -85,6 +88,23 @@ public class MetadataTypeSearchBean extends AbstractSearchBean<MetadataType, Str
 
 	public void setName(String name) {
 		this.name = name;
+	}
+	
+	public void addCategoryId(final String id) {
+		if(StringUtils.isNotBlank(id)) {
+			if(this.categoryIds == null) {
+				this.categoryIds = new HashSet<>();
+			}
+			this.categoryIds.add(id);
+		}
+	}
+
+	public Set<String> getCategoryIds() {
+		return categoryIds;
+	}
+
+	public void setCategoryIds(Set<String> categoryIds) {
+		this.categoryIds = categoryIds;
 	}
 
 	@Override

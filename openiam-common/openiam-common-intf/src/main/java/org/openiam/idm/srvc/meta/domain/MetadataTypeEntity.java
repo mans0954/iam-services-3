@@ -97,6 +97,13 @@ public class MetadataTypeEntity extends KeyEntity {
     public void setCategories(Set<CategoryEntity> categories) {
     	this.categories = categories;
     }
+    
+    public void addCategory(final CategoryEntity entity) {
+    	if(this.categories == null) {
+    		this.categories = new HashSet<>();
+    	}
+    	this.categories.add(entity);
+    }
 
     public String getDescription() {
     	return description;

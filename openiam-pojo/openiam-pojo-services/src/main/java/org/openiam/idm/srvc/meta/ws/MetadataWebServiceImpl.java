@@ -73,12 +73,6 @@ public class MetadataWebServiceImpl implements MetadataWebService {
     }
 
     @Override
-    public List<MetadataType> getTypesInCategory(final String categoryId) {
-        final List<MetadataTypeEntity> entityList = metadataService.getTypesInCategory(categoryId);
-        return (entityList != null) ? metaDataTypeDozerConverter.convertToDTOList(entityList, true) : null;
-    }
-
-    @Override
     public List<MetadataElement> getAllElementsForCategoryType(final String categoryType) {
         final List<MetadataElementEntity> entityList = metadataService.getAllElementsForCategoryType(categoryType);
         return (entityList != null) ? metaDataElementDozerConverter.convertToDTOList(entityList, true) : null;

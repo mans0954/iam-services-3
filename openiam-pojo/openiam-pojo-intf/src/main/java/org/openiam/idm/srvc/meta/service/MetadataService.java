@@ -33,13 +33,6 @@ public interface MetadataService {
 	public List<MetadataElementEntity> getMetadataElementByType(String typeId);
 
 	public List<MetadataElementEntity> getAllElementsForCategoryType(String categoryType);
-
-    /**
-     * Returns a list of MetadataTypes that are associated with a Category
-     *
-     * @param categoryId
-     */
-	public List<MetadataTypeEntity> getTypesInCategory(String categoryId);
 	
 	public List<MetadataElementEntity> findElementByName(final String name);
 	

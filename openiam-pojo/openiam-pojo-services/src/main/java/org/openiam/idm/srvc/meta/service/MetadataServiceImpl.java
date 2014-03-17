@@ -92,11 +92,6 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
     }
 
     @Override
-    public List<MetadataTypeEntity> getTypesInCategory(String categoryId) {
-        return metadataTypeDao.findTypesInCategory(categoryId);
-    }
-
-    @Override
     public List<MetadataElementEntity> getAllElementsForCategoryType(final String categoryType) {
         return metadataElementDao.findbyCategoryType(categoryType);
     }

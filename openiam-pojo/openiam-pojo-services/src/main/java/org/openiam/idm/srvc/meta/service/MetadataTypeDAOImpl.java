@@ -1,9 +1,11 @@
 package org.openiam.idm.srvc.meta.service;
 
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.Criteria;
 import org.hibernate.Query;
@@ -58,6 +60,14 @@ public class MetadataTypeDAOImpl extends BaseDaoImpl<MetadataTypeEntity, String>
 					}
 				}
 			}
+		    
+		    if(CollectionUtils.isNotEmpty(entity.getCategories())) {
+		    	final Set<String> categoryIds = new HashSet<>();
+		    	for(final CategoryEntity category : entity.getCategories()) {
+		    		categoryIds.add(category.getId());
+		    	}
+		    	criteria.createAlias("categories", "category").add(Restrictions.in("category.id", categoryIds));
+		    }
 		}
 		return criteria;
     }
@@ -66,7 +76,7 @@ public class MetadataTypeDAOImpl extends BaseDaoImpl<MetadataTypeEntity, String>
     @Override
     public List<MetadataTypeEntity> findTypesInCategory(String categoryId) {
 		final Criteria criteria = getCriteria().createAlias("categories", "category").add(
-			Restrictions.eq("category.categoryId", categoryId));
+			Restrictions.eq("category.id", categoryId));
 		return criteria.list();
     }
 

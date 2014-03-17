@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
+
+import javax.persistence.AttributeOverride;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -16,19 +18,15 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import org.hibernate.annotations.GenericGenerator;
+import org.openiam.base.domain.KeyEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.cat.dto.Category;
 
 @Entity
 @Table(name = "CATEGORY")
 @DozerDTOCorrespondence(Category.class)
-public class CategoryEntity implements Serializable {
-
-    @Id
-    @GeneratedValue(generator = "system-uuid")
-    @GenericGenerator(name = "system-uuid", strategy = "uuid")
-    @Column(name = "CATEGORY_ID", length = 32)
-    private String categoryId;
+@AttributeOverride(name = "id", column = @Column(name = "CATEGORY_ID"))
+public class CategoryEntity extends KeyEntity {
 
     @Column(name = "CREATED_BY", length = 20)
     private String createdBy;
@@ -63,14 +61,6 @@ public class CategoryEntity implements Serializable {
 
     public CategoryEntity() {
         super();
-    }
-
-    public String getCategoryId() {
-        return this.categoryId;
-    }
-
-    public void setCategoryId(String categoryId) {
-        this.categoryId = categoryId;
     }
 
     public String getCreatedBy() {
@@ -164,7 +154,7 @@ public class CategoryEntity implements Serializable {
         result = prime * result
                 + ((categoryDesc == null) ? 0 : categoryDesc.hashCode());
         result = prime * result
-                + ((categoryId == null) ? 0 : categoryId.hashCode());
+                + ((id == null) ? 0 : id.hashCode());
         result = prime * result
                 + ((categoryName == null) ? 0 : categoryName.hashCode());
         result = prime * result
@@ -197,10 +187,10 @@ public class CategoryEntity implements Serializable {
                 return false;
         } else if (!categoryDesc.equals(other.categoryDesc))
             return false;
-        if (categoryId == null) {
-            if (other.categoryId != null)
+        if (id == null) {
+            if (other.id != null)
                 return false;
-        } else if (!categoryId.equals(other.categoryId))
+        } else if (!id.equals(other.id))
             return false;
         if (categoryName == null) {
             if (other.categoryName != null)

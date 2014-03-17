@@ -35,7 +35,7 @@ public class CategoryTestTouch extends
     public void getCategory() {
         Category cat = new Category();
         cat = categoryDataService.addCategory(cat);
-        categoryDataService.getCategory(cat.getCategoryId());
+        categoryDataService.getCategory(cat.getId());
     }
 
     @Test
@@ -46,8 +46,7 @@ public class CategoryTestTouch extends
     @Test
     public void removeCategory() {
         categoryDataService
-                .removeCategory(categoryDataService.addCategory(new Category())
-                        .getCategoryId(), true);
+                .removeCategory(categoryDataService.addCategory(new Category()).getId(), true);
     }
 
     @Test

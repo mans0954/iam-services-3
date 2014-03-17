@@ -26,7 +26,7 @@ public class CategoryDAOImpl extends BaseDaoImpl<CategoryEntity, String>
      */
     public List<CategoryEntity> findRootCategories() {
         Criteria criteria = getCriteria().add(Restrictions.isNull("parentId"))
-                .addOrder(Order.asc("categoryId"));
+                .addOrder(Order.asc(getPKfieldName()));
         // Session session = sessionFactory.getCurrentSession();
         // Query qry = session
         // .createQuery("from org.openiam.idm.srvc.cat.domain.CategoryEntry cat "
@@ -44,7 +44,7 @@ public class CategoryDAOImpl extends BaseDaoImpl<CategoryEntity, String>
     public List<CategoryEntity> findChildCategories(String parentId) {
         Criteria criteria = getCriteria().add(
                 Restrictions.eq("parentId", parentId)).addOrder(
-                Order.asc("categoryId"));
+                Order.asc(getPKfieldName()));
         return (List<CategoryEntity>) criteria.list();
     }
 
@@ -62,7 +62,7 @@ public class CategoryDAOImpl extends BaseDaoImpl<CategoryEntity, String>
 
     @Override
     protected String getPKfieldName() {
-        return "categoryId";
+        return "id";
     }
 
 }
