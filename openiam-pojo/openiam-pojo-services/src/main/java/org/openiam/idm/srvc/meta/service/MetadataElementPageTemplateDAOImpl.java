@@ -22,7 +22,7 @@ public class MetadataElementPageTemplateDAOImpl extends BaseDaoImpl<MetadataElem
 	protected Criteria getExampleCriteria(final MetadataElementPageTemplateEntity entity) {
 		final Criteria criteria = getCriteria();
 		if(StringUtils.isNotBlank(entity.getId())) {
-			criteria.add(Restrictions.eq("id", entity.getId()));
+			criteria.add(Restrictions.eq(getPKfieldName(), entity.getId()));
 		} else {
 
             if (StringUtils.isNotEmpty(entity.getName())) {

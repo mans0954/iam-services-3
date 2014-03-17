@@ -10,6 +10,7 @@ import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.MetadataElementPageTemplateSearchBean;
 import org.openiam.idm.searchbeans.MetadataTemplateTypeFieldSearchBean;
 import org.openiam.idm.searchbeans.MetadataTemplateTypeSearchBean;
+import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.meta.domain.MetadataTemplateTypeFieldEntity;
 import org.openiam.idm.srvc.meta.dto.MetadataElementPageTemplate;
 import org.openiam.idm.srvc.meta.dto.MetadataTemplateType;
@@ -36,10 +37,6 @@ public interface MetadataElementTemplateWebService {
 	 
 	 @WebMethod
 	 public Response delete(final @WebParam(name = "templateId", targetNamespace = "") String templateId);
-	 
-	 @WebMethod
-	 public MetadataElementPageTemplate findById(final @WebParam(name = "templateId", targetNamespace = "") String templateId);
-	 
 
 	 @WebMethod
 	 public PageTempate getTemplate(final @WebParam(name = "template", targetNamespace = "") TemplateRequest request);

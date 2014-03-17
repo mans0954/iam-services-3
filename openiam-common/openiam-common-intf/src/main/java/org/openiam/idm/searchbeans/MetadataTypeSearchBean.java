@@ -11,16 +11,20 @@ import org.apache.commons.collections.CollectionUtils;
 import org.openiam.idm.srvc.meta.dto.MetadataType;
 
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "MetadataTypeSearchBean", propOrder = { "active",
-        "syncManagedSys", "grouping", "keySet" })
-public class MetadataTypeSearchBean extends
-        AbstractSearchBean<MetadataType, String> implements
-        SearchBean<MetadataType, String> {
+@XmlType(name = "MetadataTypeSearchBean", propOrder = { 
+	"active",
+	"syncManagedSys", 
+	"grouping", 
+	"keySet",
+	"name"
+})
+public class MetadataTypeSearchBean extends AbstractSearchBean<MetadataType, String> implements SearchBean<MetadataType, String> {
 
     private Set<String> keySet;
     private Boolean active;
     private Boolean syncManagedSys;
     private String grouping;
+    private String name;
 
     public Boolean isActive() {
         return active;
@@ -72,8 +76,18 @@ public class MetadataTypeSearchBean extends
     public void setKeys(final Set<String> keySet) {
         this.keySet = keySet;
     }
+    
+    
 
-    @Override
+    public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	@Override
     public String getKey() {
         return (CollectionUtils.isNotEmpty(keySet)) ? keySet.iterator().next()
                 : null;

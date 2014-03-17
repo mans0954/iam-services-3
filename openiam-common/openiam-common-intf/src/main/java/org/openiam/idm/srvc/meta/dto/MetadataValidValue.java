@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.meta.dto;
 
+import org.openiam.base.KeyDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.lang.dto.LanguageMapping;
 import org.openiam.idm.srvc.meta.domain.MetadataValidValueEntity;
@@ -12,27 +13,20 @@ import java.util.Map;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "MetadataValidValue", 
-	propOrder = { 
-		"id",
+	propOrder = {
         "uiValue",
         "metadataEntityId",
         "displayOrder",
         "languageMap"
 })
 @DozerDTOCorrespondence(MetadataValidValueEntity.class)
-public class MetadataValidValue implements Serializable, Comparable<MetadataValidValue> {
+public class MetadataValidValue extends KeyDTO implements Serializable, Comparable<MetadataValidValue> {
 
-	private String id;
 	private String uiValue;
 	private String metadataEntityId;
     private Integer displayOrder;
 	private Map<String, LanguageMapping> languageMap;
-	public String getId() {
-		return id;
-	}
-	public void setId(String id) {
-		this.id = id;
-	}
+	
 	public String getUiValue() {
 		return uiValue;
 	}

@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.meta.dto;
 
+import org.openiam.base.KeyDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.lang.dto.LanguageMapping;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
@@ -23,8 +24,7 @@ import java.util.Set;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "MetadataElement", 
-	propOrder = { 
-		"id",
+	propOrder = {
         "metadataTypeId",
         "description",
         "auditable",
@@ -43,10 +43,9 @@ import java.util.Set;
         "isPublic"
 })
 @DozerDTOCorrespondence(MetadataElementEntity.class)
-public class MetadataElement implements Serializable {
+public class MetadataElement extends KeyDTO implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    private String id;
     private String metadataTypeId;
     private String description;
     private String dataType;
@@ -66,14 +65,6 @@ public class MetadataElement implements Serializable {
 
     public MetadataElement() {
     }
-
-	public String getId() {
-		return id;
-	}
-
-	public void setId(String id) {
-		this.id = id;
-	}
 
 	public String getMetadataTypeId() {
 		return metadataTypeId;

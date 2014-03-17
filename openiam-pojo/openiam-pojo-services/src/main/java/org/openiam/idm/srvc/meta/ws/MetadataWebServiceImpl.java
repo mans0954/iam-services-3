@@ -87,7 +87,7 @@ public class MetadataWebServiceImpl implements MetadataWebService {
     @Override
     public List<MetadataElement> findElementBeans(final MetadataElementSearchBean searchBean, final int from,
                                                   final int size) {
-        final List<MetadataElementEntity> entityList = metadataService.findBeans(searchBean, from, size);
+        final List<MetadataElementEntity> entityList = metadataService.findBeans(searchBean, from, size, null);
         return (entityList != null) ? metaDataElementDozerConverter.convertToDTOList(entityList,
                 searchBean.isDeepCopy()) : null;
     }
@@ -128,7 +128,7 @@ public class MetadataWebServiceImpl implements MetadataWebService {
             }
             final MetadataTypeEntity entity = metaDataTypeDozerConverter.convertToEntity(dto, true);
             metadataService.save(entity);
-            response.setResponseValue(entity.getMetadataTypeId());
+            response.setResponseValue(entity.getId());
             response.setStatus(ResponseStatus.SUCCESS);
         } catch (BasicDataServiceException e) {
             response.setErrorCode(e.getCode());
@@ -181,7 +181,7 @@ public class MetadataWebServiceImpl implements MetadataWebService {
             Set<String> ids = new HashSet<String>();
             ids.add(id);
             searchBean.setTypeIdSet(ids);
-            List<MetadataElementEntity> list = metadataService.findBeans(searchBean, -1, -1);
+            List<MetadataElementEntity> list = metadataService.findBeans(searchBean, -1, -1, null);
             if (!CollectionUtils.isEmpty(list))
                 throw new BasicDataServiceException(ResponseCode.METATYPE_LINKED_WITH_METAELEMENT);
             metadataService.deleteMetdataType(id);

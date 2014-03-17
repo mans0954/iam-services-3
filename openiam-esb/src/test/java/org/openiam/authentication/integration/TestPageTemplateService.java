@@ -97,6 +97,7 @@ public class TestPageTemplateService extends AbstractTestNGSpringContextTests {
 		return templateWebService.findTemplateTypes(searchBean, 0, Integer.MAX_VALUE).get(0);
 	}
 	
+	/*
 	 @BeforeClass
 	 protected void setUp() throws Exception {
 		 final List<Language> languageList = languageWS.getAll();
@@ -160,7 +161,6 @@ public class TestPageTemplateService extends AbstractTestNGSpringContextTests {
 				 saveResponse = metadataWebService.saveMetadataEntity(element);
 				 assertSuccess(saveResponse);
 				 
-				 /* add as xref */
 				 final String elementId = (String)saveResponse.getResponseValue();
 				 template.addMetdataElement(new MetadataElementPageTemplateXref(template.getId(), elementId, idx));
 				 templateWebService.save(template);
@@ -213,6 +213,7 @@ public class TestPageTemplateService extends AbstractTestNGSpringContextTests {
 		 
 		 resourceDataService.deleteResource(template.getResourceId());
 	 }
+	 */
 	 
 	@Test
 	public void testEquality() {
@@ -233,7 +234,7 @@ public class TestPageTemplateService extends AbstractTestNGSpringContextTests {
 	
 	@Test
 	public void testTextCorrectness() {
-		final String languageId = getLanguageByLocale(locale).getLanguageId();
+		final String languageId = getLanguageByLocale(locale).getId();
 		final TemplateRequest request = new TemplateRequest();
 		request.setUserId(userId);
 		request.setLocaleName(locale);
@@ -297,7 +298,7 @@ public class TestPageTemplateService extends AbstractTestNGSpringContextTests {
 	}
 	
 	private Language getLanguageByLocale(final String locale) {
-		final List<Language> languageList = languageWS.getAll();
+		final List<Language> languageList = languageWS.getUsedLanguages();
 		Language language = null;
 		for(final Language l : languageList) {
 			if(l.hasLocale(locale)) {
@@ -323,9 +324,9 @@ public class TestPageTemplateService extends AbstractTestNGSpringContextTests {
 		final Map<String, LanguageMapping> map = new HashMap<String, LanguageMapping>();
 		for(final Language language : languageList) {
 			 final LanguageMapping mapping = new LanguageMapping();
-			 mapping.setLanguageId(language.getLanguageId());
+			 mapping.setLanguageId(language.getId());
 			 mapping.setValue(RandomStringUtils.randomAlphabetic(5));
-			 map.put(language.getLanguageId(), mapping);
+			 map.put(language.getId(), mapping);
 		 }
 		return map;
 	}

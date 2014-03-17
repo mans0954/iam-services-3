@@ -88,6 +88,7 @@ import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.dto.UserResourceAssociation;
 import org.openiam.provision.resp.ProvisionUserResponse;
 import org.openiam.provision.type.ExtensibleAttribute;
+import org.openiam.provision.type.ExtensibleObject;
 import org.openiam.provision.type.ExtensibleUser;
 import org.openiam.script.ScriptIntegration;
 import org.openiam.util.MuleContextProvider;
@@ -1011,7 +1012,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
      * Update the list of attributes with the correct operation values so that they can be
      * passed to the connector
      */
-    public ExtensibleUser updateAttributeList(org.openiam.provision.type.ExtensibleUser extUser,
+    public static ExtensibleObject updateAttributeList(ExtensibleObject extUser,
             Map<String,String> currentValueMap ) {
         if (extUser == null) {
             return null;

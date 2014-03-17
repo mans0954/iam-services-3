@@ -24,7 +24,8 @@
     								      org.openiam.idm.*,
     								      org.openiam.provision.*,
     								      org.openiam.dozer.converter,
-    								      org.openiam.validator" />
+    								      org.openiam.validator,
+    								      org.openiam.internationalization" />
 
 	<bean id="springContextProvider" class="org.openiam.util.SpringContextProvider" />
 
@@ -462,9 +463,9 @@
 	</tx:advice>
 
 
-
-    <!--<aop:aspectj-autoproxy  proxy-target-class="true"/>-->
-    <!--<bean class="org.springframework.aop.aspectj.annotation.AnnotationAwareAspectJAutoProxyCreator" />-->
+	<aop:aspectj-autoproxy  />
+	<!-- <aop:aspectj-autoproxy  proxy-target-class="true"/> -->
+    <!-- <bean class="org.springframework.aop.aspectj.annotation.AnnotationAwareAspectJAutoProxyCreator" /> -->
 
     <bean id="auditCacheManager" class="org.springframework.cache.ehcache.EhCacheManagerFactoryBean">
         <property name="configLocation">

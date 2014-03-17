@@ -39,7 +39,7 @@ public class MetadataElementDAOImpl extends BaseDaoImpl<MetadataElementEntity, S
 			} else {
 				setAttributeNameCriteria(criteria, metaSearchBean.getAttributeName());	
 				if(CollectionUtils.isNotEmpty(metaSearchBean.getTypeIdSet())) {
-					criteria.add(Restrictions.in("metadataType.metadataTypeId", metaSearchBean.getTypeIdSet()));
+					criteria.add(Restrictions.in("metadataType.id", metaSearchBean.getTypeIdSet()));
 				}
 				
 				if(StringUtils.isNotBlank(metaSearchBean.getTemplateId())) {
@@ -63,9 +63,9 @@ public class MetadataElementDAOImpl extends BaseDaoImpl<MetadataElementEntity, S
 				criteria.add(Restrictions.eq("dataType", entity.getDataType()));
 			}
 			
-			if(entity.getMetadataType() != null && StringUtils.isNotBlank(entity.getMetadataType().getMetadataTypeId())) {
-				final String metadataTypeId = entity.getMetadataType().getMetadataTypeId();
-				criteria.add(Restrictions.eq("metadataType.metadataTypeId", metadataTypeId));
+			if(entity.getMetadataType() != null && StringUtils.isNotBlank(entity.getMetadataType().getId())) {
+				final String metadataTypeId = entity.getMetadataType().getId();
+				criteria.add(Restrictions.eq("metadataType.id", metadataTypeId));
 			}
 			
 			if(CollectionUtils.isNotEmpty(entity.getTemplateSet())) {

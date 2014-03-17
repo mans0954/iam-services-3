@@ -15,9 +15,10 @@ public class MetadataTypeSearchBeanConverter implements SearchBeanConverter<Meta
 	public MetadataTypeEntity convert(final MetadataTypeSearchBean searchBean) {
 		final MetadataTypeEntity entity = new MetadataTypeEntity();
 		entity.setActive(searchBean.isActive()==null?false:searchBean.isActive());
-		entity.setMetadataTypeId(StringUtils.trimToNull(searchBean.getKey()));
+		entity.setId(StringUtils.trimToNull(searchBean.getKey()));
 		entity.setSyncManagedSys(searchBean.isSyncManagedSys()==null?false:searchBean.isSyncManagedSys());
 		entity.setGrouping(StringUtils.trimToNull(searchBean.getGrouping()));
+		entity.setDescription(StringUtils.trimToNull(searchBean.getName()));
 		return entity;
 	}
 

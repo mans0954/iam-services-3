@@ -21,6 +21,8 @@
  */
 package org.openiam.idm.srvc.lang.service;
 
+import org.apache.commons.lang.StringUtils;
+import org.openiam.idm.searchbeans.LanguageSearchBean;
 import org.openiam.idm.srvc.lang.domain.LanguageEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -54,6 +56,10 @@ public class LanguageDataServiceImpl implements LanguageDataService {
 		return languageDao.findAll();
 	}
 
+    public List<LanguageEntity> getUsedLanguages(){
+        return languageDao.getUsedLanguages();
+    }
+
 	public LanguageEntity getLanguage(String languageId) {
 
 		if (languageId == null) {
@@ -67,7 +73,7 @@ public class LanguageDataServiceImpl implements LanguageDataService {
 		if (languageId == null) {
 			throw new NullPointerException("languageCd is null");
 		}
-        LanguageEntity lg = getLanguage(languageId);
+        final LanguageEntity lg = getLanguage(languageId);
 		languageDao.delete(lg);
 	}
 
@@ -76,9 +82,14 @@ public class LanguageDataServiceImpl implements LanguageDataService {
 		if (lg == null) {
 			throw new NullPointerException("lg is null");
 		}
-        LanguageEntity l = getLanguage(lg.getLanguageId());
+		final LanguageEntity l = getLanguage(lg.getId());
         if(l!=null){
             languageDao.merge(l);
         }
+	}
+
+	@Override
+	public List<LanguageEntity> findBeans(final LanguageSearchBean searchBean, final int from, final int size) {
+		return languageDao.getByExample(searchBean, from, size);
 	}
 }

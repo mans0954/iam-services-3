@@ -6,6 +6,8 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
+import org.openiam.base.KeyDTO;
+import org.openiam.base.domain.KeyEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.lang.dto.LanguageMapping;
 import org.openiam.idm.srvc.meta.domain.MetadataElementPageTemplateEntity;
@@ -14,7 +16,6 @@ import org.openiam.idm.srvc.meta.domain.MetadataTemplateTypeFieldEntity;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "MetadataFieldTemplateXref", propOrder = {
-	"id",
 	"field",
 	"template",
 	"required",
@@ -23,9 +24,8 @@ import org.openiam.idm.srvc.meta.domain.MetadataTemplateTypeFieldEntity;
 	"languageMap"
 })
 @DozerDTOCorrespondence(MetadataFieldTemplateXrefEntity.class)
-public class MetadataFieldTemplateXref {
+public class MetadataFieldTemplateXref extends KeyDTO {
 
-	private String id;
 	private MetadataTemplateTypeField field;
 	private MetadataElementPageTemplate template;
 	private boolean required;
@@ -50,12 +50,6 @@ public class MetadataFieldTemplateXref {
 	}
 	public void setRequired(boolean required) {
 		this.required = required;
-	}
-	public String getId() {
-		return id;
-	}
-	public void setId(String id) {
-		this.id = id;
 	}
 	
 	public boolean isEditable() {

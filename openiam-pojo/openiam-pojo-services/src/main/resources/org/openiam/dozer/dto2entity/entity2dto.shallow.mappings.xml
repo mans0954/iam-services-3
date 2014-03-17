@@ -234,7 +234,7 @@
 			<b>resourceId</b>
 		</field>
 		<field>
-			<a>metadataType.metadataTypeId</a>
+			<a>metadataType.id</a>
 			<b>metadataTypeId</b>
 		</field>
 		<field-exclude>

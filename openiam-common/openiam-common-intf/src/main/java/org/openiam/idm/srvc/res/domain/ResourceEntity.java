@@ -2,6 +2,7 @@ package org.openiam.idm.srvc.res.domain;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.*;
+import org.openiam.base.domain.KeyEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
@@ -26,13 +27,8 @@ import java.util.Set;
 @Cacheable
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @DozerDTOCorrespondence(Resource.class)
-public class ResourceEntity {
-
-    @Id
-    @GeneratedValue(generator = "system-uuid")
-    @GenericGenerator(name = "system-uuid", strategy = "uuid")
-    @Column(name = "RESOURCE_ID", length = 32)
-    private String id;
+@AttributeOverride(name = "id", column = @Column(name = "RESOURCE_ID"))
+public class ResourceEntity extends KeyEntity {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "RESOURCE_TYPE_ID")
@@ -142,14 +138,6 @@ public class ResourceEntity {
 
     public void setRoles(Set<RoleEntity> roles) {
         this.roles = roles;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
     }
 
     public ResourceTypeEntity getResourceType() {
