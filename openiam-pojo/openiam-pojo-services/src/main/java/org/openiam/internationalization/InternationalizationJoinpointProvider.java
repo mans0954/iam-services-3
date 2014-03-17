@@ -91,10 +91,10 @@ public class InternationalizationJoinpointProvider implements InitializingBean, 
 		if(lastArgument != null) {
 			String languageId = null;
 			if(lastArgument instanceof Language) {
-				languageId = ((Language)lastArgument).getLanguageId();
+				languageId = ((Language)lastArgument).getId();
 			}
 			if(lastArgument instanceof LanguageEntity) {
-				languageId = ((LanguageEntity)lastArgument).getLanguageId();
+				languageId = ((LanguageEntity)lastArgument).getId();
 			}
 			
 			if(returnValue != null) {

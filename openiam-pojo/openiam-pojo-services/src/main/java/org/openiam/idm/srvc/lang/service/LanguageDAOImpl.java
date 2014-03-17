@@ -18,12 +18,17 @@ package org.openiam.idm.srvc.lang.service;
  *  along with OpenIAM.  If not, see <http://www.gnu.org/licenses/>. *
  */
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.Restrictions;
 import org.openiam.core.dao.BaseDaoImpl;
+import org.openiam.idm.searchbeans.LanguageSearchBean;
+import org.openiam.idm.searchbeans.SearchBean;
 import org.openiam.idm.srvc.lang.domain.LanguageEntity;
+import org.openiam.idm.srvc.searchbean.converter.LanguageSearchBeanConverter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -37,9 +42,35 @@ import java.util.List;
 public class LanguageDAOImpl extends BaseDaoImpl<LanguageEntity, String> implements LanguageDAO {
 	private static final Log log = LogFactory.getLog(LanguageDAOImpl.class);
 
+	@Autowired
+	private LanguageSearchBeanConverter converter;
+	
+	
+	
     @Override
+	protected Criteria getExampleCriteria(final LanguageEntity t) {
+		final Criteria criteria = getCriteria();
+		if(t != null) {
+			if(StringUtils.isNotBlank(t.getLanguageCode())) {
+				criteria.add(Restrictions.eq("languageCode", t.getLanguageCode()));
+			}
+		}
+		return criteria;
+	}
+
+	@Override
+	protected Criteria getExampleCriteria(final SearchBean searchBean) {
+		Criteria criteria = getCriteria();
+		if(searchBean != null && (searchBean instanceof LanguageSearchBean)) {
+			final LanguageSearchBean sb = (LanguageSearchBean)searchBean;
+			criteria = getExampleCriteria(converter.convert(sb));
+		}
+		return criteria;
+	}
+
+	@Override
     protected String getPKfieldName() {
-        return "languageId";
+        return "id";
     }
 
 	@Override

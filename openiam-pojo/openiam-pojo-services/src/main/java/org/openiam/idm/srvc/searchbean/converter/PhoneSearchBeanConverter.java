@@ -22,7 +22,7 @@ public class PhoneSearchBeanConverter implements SearchBeanConverter<PhoneEntity
 
         if(searchBean.getMetadataTypeId() != null && searchBean.getMetadataTypeId().trim().length() > 0) {
             final MetadataTypeEntity type = new MetadataTypeEntity();
-            type.setMetadataTypeId(searchBean.getMetadataTypeId());
+            type.setId(searchBean.getMetadataTypeId());
             phone.setMetadataType(type);
         }
 

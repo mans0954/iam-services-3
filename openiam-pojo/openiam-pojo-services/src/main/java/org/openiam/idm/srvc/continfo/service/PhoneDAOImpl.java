@@ -43,8 +43,8 @@ public class PhoneDAOImpl extends BaseDaoImpl<PhoneEntity, String> implements Ph
             }
 
             if (phone.getMetadataType() != null) {
-                if (StringUtils.isNotBlank(phone.getMetadataType().getMetadataTypeId())) {
-                    criteria.add(Restrictions.eq("metadataType.metadataTypeId", phone.getMetadataType().getMetadataTypeId()));
+                if (StringUtils.isNotBlank(phone.getMetadataType().getId())) {
+                    criteria.add(Restrictions.eq("metadataType.id", phone.getMetadataType().getId()));
                 }
             }
 

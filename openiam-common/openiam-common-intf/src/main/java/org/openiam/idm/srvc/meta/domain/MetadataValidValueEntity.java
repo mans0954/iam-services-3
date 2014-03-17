@@ -97,11 +97,13 @@ public class MetadataValidValueEntity extends KeyEntity {
 	public void setLanguageMap(Map<String, LanguageMappingEntity> languageMap) {
 		this.languageMap = languageMap;
 	}
-	
-	
 
 	public String getDisplayName() {
 		return displayName;
+	}
+
+	public void setDisplayName(String displayName) {
+		this.displayName = displayName;
 	}
 
 	@Override

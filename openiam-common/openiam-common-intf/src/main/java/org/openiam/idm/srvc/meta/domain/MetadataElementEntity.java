@@ -136,6 +136,14 @@ public class MetadataElementEntity extends KeyEntity {
 		return defaultValue;
 	}
 
+	public void setDisplayName(String displayName) {
+		this.displayName = displayName;
+	}
+
+	public void setDefaultValue(String defaultValue) {
+		this.defaultValue = defaultValue;
+	}
+
 	public String getDescription() {
 		return description;
 	}

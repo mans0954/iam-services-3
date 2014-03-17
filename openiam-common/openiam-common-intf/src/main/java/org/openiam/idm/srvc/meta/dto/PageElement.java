@@ -48,7 +48,7 @@ public class PageElement implements Serializable {
 	
 	public PageElement(final MetadataElementEntity element, final Integer order) {
 		this.order = order;
-		this.typeId = element.getMetadataType().getMetadataTypeId();
+		this.typeId = element.getMetadataType().getId();
 		this.elementId = element.getId();
 		this.attributeName = element.getAttributeName();
 		this.required = element.isRequired();

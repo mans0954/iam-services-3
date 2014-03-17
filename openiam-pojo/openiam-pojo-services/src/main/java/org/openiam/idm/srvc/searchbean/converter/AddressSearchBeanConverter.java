@@ -23,7 +23,7 @@ public class AddressSearchBeanConverter implements SearchBeanConverter<AddressEn
 
         if(StringUtils.isNotBlank(searchBean.getMetadataTypeId())) {
             final MetadataTypeEntity type = new MetadataTypeEntity();
-            type.setMetadataTypeId(searchBean.getMetadataTypeId());
+            type.setId(searchBean.getMetadataTypeId());
             address.setMetadataType(type);
         }
         return address;

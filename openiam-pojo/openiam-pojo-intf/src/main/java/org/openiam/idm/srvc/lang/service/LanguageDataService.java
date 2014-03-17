@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.lang.service;
 
+import org.openiam.idm.searchbeans.LanguageSearchBean;
 import org.openiam.idm.srvc.lang.domain.LanguageEntity;
 
 import java.util.List;
@@ -58,4 +59,5 @@ public interface LanguageDataService {
     public LanguageEntity getLanguage(String languageCd);
 
 
+    public List<LanguageEntity> findBeans(final LanguageSearchBean searchBean, int from, int size);
 }

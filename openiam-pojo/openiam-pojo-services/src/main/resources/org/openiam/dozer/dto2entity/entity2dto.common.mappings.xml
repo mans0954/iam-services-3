@@ -54,7 +54,7 @@
 		<class-a>org.openiam.idm.srvc.continfo.domain.AddressEntity</class-a>
 		<class-b>org.openiam.idm.srvc.continfo.dto.Address</class-b>
         <field>
-            <a>metadataType.metadataTypeId</a>
+            <a>metadataType.id</a>
             <b>metadataTypeId</b>
         </field>
         <field>
@@ -67,7 +67,7 @@
 		</class-a>
 		<class-b>org.openiam.idm.srvc.continfo.dto.EmailAddress</class-b>
         <field>
-            <a>metadataType.metadataTypeId</a>
+            <a>metadataType.id</a>
             <b>metadataTypeId</b>
         </field>
         <field>
@@ -79,7 +79,7 @@
 		<class-a>org.openiam.idm.srvc.continfo.domain.PhoneEntity</class-a>
 		<class-b>org.openiam.idm.srvc.continfo.dto.Phone</class-b>
         <field>
-            <a>metadataType.metadataTypeId</a>
+            <a>metadataType.id</a>
             <b>metadataTypeId</b>
         </field>
         <field>
@@ -202,7 +202,7 @@
 		</class-a>
 		<class-b>org.openiam.idm.srvc.lang.dto.LanguageLocale</class-b>
 		<field>
-			<a>language.languageId</a>
+			<a>language.id</a>
 			<b>languageId</b>
 		</field>
 	</mapping>
