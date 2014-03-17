@@ -32,7 +32,10 @@ import javax.xml.bind.annotation.XmlType;
 })
 @DozerDTOCorrespondence(ManagedSystemObjectMatchEntity.class)
 public class ManagedSystemObjectMatch implements java.io.Serializable {
-	private String objectSearchId;
+	public static String USER ="USER";
+    public static String GROUP = "GROUP";
+
+    private String objectSearchId;
 	private String managedSys;
 	private String objectType;
 	private String matchMethod;

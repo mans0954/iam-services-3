@@ -7,6 +7,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
+import java.util.List;
+
 @Service("identityManager")
 public class IdentityServiceImpl implements IdentityService {
 
@@ -32,5 +35,29 @@ public class IdentityServiceImpl implements IdentityService {
             identityDto = identityDozerConverter.convertToDTO(identityEntity, true);
         }
         return identityDto;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<IdentityDto> getIdentities(String referredID) {
+        List<IdentityEntity> identityEntities = identityDAO.findByReferredId(referredID);
+        List<IdentityDto> identityDtoList = Collections.EMPTY_LIST;
+        if(identityDtoList != null) {
+            identityDtoList = identityDozerConverter.convertToDTOList(identityEntities, true);
+        }
+        return identityDtoList;
+    }
+
+    @Override
+    @Transactional
+    public void deleteIdentity(String identityID) {
+        IdentityEntity identityEntity = identityDAO.findById(identityID);
+        identityDAO.delete(identityEntity);
+    }
+
+    @Override
+    @Transactional
+    public void updateIdentity(IdentityDto identityDto) {
+        identityDAO.update(identityDozerConverter.convertToEntity(identityDto,true));
     }
 }

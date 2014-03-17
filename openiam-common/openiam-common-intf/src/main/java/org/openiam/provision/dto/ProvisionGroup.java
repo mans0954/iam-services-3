@@ -22,7 +22,6 @@
 package org.openiam.provision.dto;
 
 import org.openiam.idm.srvc.grp.dto.Group;
-import org.openiam.idm.srvc.user.dto.User;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -49,6 +48,30 @@ public class ProvisionGroup extends org.openiam.idm.srvc.grp.dto.Group {
 
     @XmlTransient
     protected Set<String> notProvisioninResourcesIds = new HashSet<String>();
+
+    public ProvisionGroup() {
+        super();
+    }
+
+    public ProvisionGroup(Group group) {
+        this.managedSysId = group.getManagedSysId();
+        this.managedSysName = group.getManagedSysName();
+        this.createDate = group.getCreateDate();
+        this.createdBy = group.getCreatedBy();
+        this.companyId = group.getCompanyId();
+        this.description = group.getDescription();
+
+        this.status = group.getStatus();
+        this.lastUpdate = group.getLastUpdate();
+        this.lastUpdatedBy = group.getLastUpdatedBy();
+
+        this.parentGroups = group.getParentGroups();
+        this.childGroups = group.getChildGroups();
+
+        this.resources = group.getResources();
+        this.roles = group.getRoles();
+        this.attributes = group.getAttributes();
+    }
 
     public String getRequestId() {
         return requestId;

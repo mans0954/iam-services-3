@@ -51,8 +51,8 @@ public class Group extends AdminResourceDTO implements Serializable {
 
     protected AttributeOperationEnum operation = AttributeOperationEnum.NO_CHANGE;
 
-    private String managedSysId;
-    private String managedSysName;
+    protected String managedSysId;
+    protected String managedSysName;
     @XmlSchemaType(name = "dateTime")
     protected Date createDate;
     protected String createdBy;
@@ -63,11 +63,11 @@ public class Group extends AdminResourceDTO implements Serializable {
     @XmlSchemaType(name = "dateTime")
     protected Date lastUpdate;
     protected String lastUpdatedBy;
-    
-    private Set<Group> parentGroups;
-    private Set<Group> childGroups;
 
-    private Set<Resource> resources;
+    protected Set<Group> parentGroups;
+    protected Set<Group> childGroups;
+
+    protected Set<Resource> resources;
 
     @XmlJavaTypeAdapter(RoleSetAdapter.class)
     protected Set<Role> roles = new HashSet<Role>(0);

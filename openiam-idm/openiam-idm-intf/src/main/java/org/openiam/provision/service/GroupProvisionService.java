@@ -48,7 +48,7 @@ public interface GroupProvisionService {
      * from the appropriate target systems
      *
      * @param managedSystemId - target system
-     * @param principal - identity of the group in target system
+     * @param groupId - group ID
      * @param status - status od delete operation
      * @param requestorId - requester
      * @return
@@ -56,7 +56,7 @@ public interface GroupProvisionService {
     @WebMethod
     public ProvisionGroupResponse deleteGroup(
             @WebParam(name = "managedSystemId", targetNamespace = "") String managedSystemId,
-            @WebParam(name = "principal", targetNamespace = "") String principal,
+            @WebParam(name = "groupId", targetNamespace = "") String groupId,
             @WebParam(name = "status", targetNamespace = "") UserStatusEnum status,
             @WebParam(name = "requestorId", targetNamespace = "") String requestorId);
 
