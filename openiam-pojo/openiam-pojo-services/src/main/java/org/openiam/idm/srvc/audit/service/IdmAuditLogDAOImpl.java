@@ -64,6 +64,20 @@ public class IdmAuditLogDAOImpl extends BaseDaoImpl<IdmAuditLogEntity, String> i
             if(StringUtils.isNotBlank(auditSearch.getUserId())) {
             	criteria.add(Restrictions.eq("userId", auditSearch.getUserId()));
             }
+
+            if(StringUtils.isNotBlank(auditSearch.getTargetId())
+            || StringUtils.isNotBlank(auditSearch.getTargetType())) {
+
+                criteria.createAlias("targets", "tar");
+
+                if(StringUtils.isNotBlank(auditSearch.getTargetId())) {
+                    criteria.add(Restrictions.eq("tar.targetId", auditSearch.getTargetId()));
+                }
+
+                if(StringUtils.isNotBlank(auditSearch.getTargetType())) {
+                    criteria.add(Restrictions.eq("tar.targetType", auditSearch.getTargetType()));
+                }
+            }
         }
         return criteria;
     }
