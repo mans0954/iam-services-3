@@ -426,6 +426,12 @@ public class RoleDataServiceImpl implements RoleDataService {
         return roleDao.count(searchBean);
 	}
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<RoleEntity> findRolesByAttributeValue(String attrName, String attrValue) {
+        return roleDao.findRolesByAttributeValue(attrName, attrValue);
+    }
+
 	@Override
     @Transactional(readOnly = true)
 	public List<RoleEntity> getRolesForResource(final String resourceId, final String requesterId, final int from, final int size) {

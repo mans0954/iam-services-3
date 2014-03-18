@@ -5,6 +5,7 @@ import org.openiam.idm.searchbeans.GroupSearchBean;
 import org.openiam.idm.srvc.grp.domain.GroupAttributeEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.dto.Group;
+import org.openiam.idm.srvc.role.domain.RoleEntity;
 
 import java.util.List;
 
@@ -80,5 +81,7 @@ public interface GroupDataService {
     public void validateGroup2GroupAddition(final String parentId, final String memberId) throws BasicDataServiceException;
     
     public Group getGroupDTO(final String groupId);
+
+    public List<GroupEntity> findGroupsByAttributeValue(String attrName, String attrValue);
 
 }

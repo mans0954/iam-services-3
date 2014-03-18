@@ -315,4 +315,8 @@ public interface GroupDataWebService {
 	@WebMethod
 	public Response canRemoveUserFromGroup(final @WebParam(name = "userId", targetNamespace = "")  String userId, 
 										   final @WebParam(name = "groupId", targetNamespace = "") String groupId);
+
+    @WebMethod
+    public List<Group> findGroupsByAttributeValue(final @WebParam(name = "attrName", targetNamespace = "") String attrName,
+                                                  final @WebParam(name = "attrValue", targetNamespace = "") String attrValue);
 }

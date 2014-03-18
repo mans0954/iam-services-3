@@ -108,4 +108,7 @@ public interface OrganizationDataService {
     @WebMethod
     public List<Organization> getAllowedParentOrganizationsForType(@WebParam(name = "orgTypeId", targetNamespace = "") final String orgTypeId,
                                                                          @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
+    @WebMethod
+    public List<Organization> findOrganizationsByAttributeValue(@WebParam(name = "attrName", targetNamespace = "") final String attrName,
+                                                                @WebParam(name = "attrValue", targetNamespace = "") final String attrValue);
 }

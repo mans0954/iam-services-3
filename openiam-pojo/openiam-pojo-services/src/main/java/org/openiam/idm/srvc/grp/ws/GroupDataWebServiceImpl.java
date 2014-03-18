@@ -1,6 +1,5 @@
 package org.openiam.idm.srvc.grp.ws;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -13,8 +12,6 @@ import org.openiam.dozer.converter.GroupDozerConverter;
 import org.openiam.exception.EsbErrorToken;
 import org.openiam.idm.searchbeans.GroupSearchBean;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
-import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
-import org.openiam.idm.srvc.audit.constant.AuditResult;
 import org.openiam.idm.srvc.audit.domain.AuditLogBuilder;
 import org.openiam.idm.srvc.base.AbstractBaseService;
 import org.openiam.idm.srvc.grp.domain.GroupAttributeEntity;
@@ -708,5 +705,11 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
             response.setErrorText(e.getMessage());
         }
         return response;
+    }
+
+    @Override
+    public List<Group> findGroupsByAttributeValue(String attrName, String attrValue) {
+        return groupDozerConverter.convertToDTOList(
+                groupManager.findGroupsByAttributeValue(attrName, attrValue), true);
     }
 }

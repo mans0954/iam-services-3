@@ -463,6 +463,12 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
             throw new BasicDataServiceException(ResponseCode.CANT_ADD_YOURSELF_AS_CHILD);
         }
 	}
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<OrganizationEntity> findOrganizationsByAttributeValue(final String attrName, String attrValue) {
+        return orgDao.findOrganizationsByAttributeValue(attrName, attrValue);
+    }
 	
 	private boolean causesCircularDependency(final OrganizationEntity parent, final OrganizationEntity child, final Set<OrganizationEntity> visitedSet) {
         boolean retval = false;

@@ -236,13 +236,13 @@ public class ProvisionDispatcher implements Sweepable {
                             loginEntity.setPassword(null);
                         }
                     } else {
-                        loginEntity.setStatus(LoginStatusEnum.FAIL_UPDATE);
+                        loginEntity.setStatus(LoginStatusEnum.FAIL_DELETE);
                     }
                 } catch (Throwable th) {
                     auditBuilderDispatcherChild.addAttribute(AuditAttributeName.DESCRIPTION,
                             "DELETE IDENTITY=" + identity + " from MANAGED_SYS_ID=" + identity.getManagedSysId()
                                     + " status=" + th.getMessage());
-                    loginEntity.setStatus(LoginStatusEnum.FAIL_UPDATE);
+                    loginEntity.setStatus(LoginStatusEnum.FAIL_DELETE);
                 }
             } else if (data.getOperation() == AttributeOperationEnum.ADD) {
                 try {

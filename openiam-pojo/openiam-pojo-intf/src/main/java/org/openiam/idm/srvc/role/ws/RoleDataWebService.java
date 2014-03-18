@@ -356,7 +356,7 @@ public interface RoleDataWebService {
      * @return a Response Object, containing the status of this operation. if status is SUCCESS then the User can be added to this Role
      */
     @WebMethod
-   	public Response canAddUserToRole(final @WebParam(name = "userId", targetNamespace = "")  String userId, 
+   	public Response canAddUserToRole(final @WebParam(name = "userId", targetNamespace = "") String userId,
    									 final @WebParam(name = "roleId", targetNamespace = "") String roleId);
 
     /**
@@ -366,6 +366,10 @@ public interface RoleDataWebService {
      * @return a Response Object, containing the status of this operation. if status is SUCCESS then the User can be removed from this Role
      */
    	@WebMethod
-   	public Response canRemoveUserFromRole(final @WebParam(name = "userId", targetNamespace = "")  String userId, 
+   	public Response canRemoveUserFromRole(final @WebParam(name = "userId", targetNamespace = "") String userId,
    										  final @WebParam(name = "roleId", targetNamespace = "") String roleId);
+
+    @WebMethod
+    public List<Role> findRolesByAttributeValue(final @WebParam(name = "attrName", targetNamespace = "") String attrName,
+                                                final @WebParam(name = "attrValue", targetNamespace = "") String attrValue);
 }

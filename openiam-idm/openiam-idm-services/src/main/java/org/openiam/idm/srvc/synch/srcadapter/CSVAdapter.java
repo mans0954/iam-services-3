@@ -133,10 +133,11 @@ public class CSVAdapter extends AbstractSrcAdapter {
 
             auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "Rows for processing: "+rows.length);
 
-            if (rows.length > 0) {
+            if (rows.length > 1) {
+                rows = Arrays.copyOfRange(rows, 1, rows.length);
                 proccess(config, provService, rows, validationScript, transformScripts, matchRule, rowHeader,0, auditBuilder);
-
             }
+
         } catch (FileNotFoundException fe) {
             fe.printStackTrace();
 

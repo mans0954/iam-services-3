@@ -41,4 +41,5 @@ public interface OrganizationService {
     public Set<String> getDelegationFilter(String requesterId, String organizationTypeId);
     public Set<String> getDelegationFilter(Map<String, UserAttribute> attrMap, String organizationTypeId);
     public List<OrganizationEntity> getAllowedParentOrganizationsForType(final String orgTypeId, String requesterId);
+    public List<OrganizationEntity> findOrganizationsByAttributeValue(final String attrName, String attrValue);
 }

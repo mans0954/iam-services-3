@@ -17,6 +17,7 @@ import org.openiam.idm.srvc.searchbean.converter.GroupSearchBeanConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -247,6 +248,16 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
             criteria.setMaxResults(size);
         }
         return criteria.list();
+    }
+
+    public List<GroupEntity> findGroupsByAttributeValue(final String attrName, final String attrValue) {
+        List ret = new ArrayList<GroupEntity>();
+        if (StringUtils.isNotBlank(attrName)) {
+            // Can't use Criteria for @ElementCollection due to Hibernate bug
+            // (org.hibernate.MappingException: collection was not an association)
+            ret = getHibernateTemplate().find("select ga.group from GroupAttributeEntity ga left join ga.values av where ga.name = ? and ((ga.isMultivalued = false and ga.value = ?) or (ga.isMultivalued = true and av in ?))", attrName, attrValue, attrValue);
+        }
+        return ret;
     }
 }
 

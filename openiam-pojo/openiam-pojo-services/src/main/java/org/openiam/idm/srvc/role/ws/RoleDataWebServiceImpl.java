@@ -808,4 +808,10 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
         }
 		return response;
 	}
+
+    @Override
+    public List<Role> findRolesByAttributeValue(String attrName, String attrValue) {
+        return roleDozerConverter.convertToDTOList(
+                roleDataService.findRolesByAttributeValue(attrName, attrValue), true);
+    }
 }

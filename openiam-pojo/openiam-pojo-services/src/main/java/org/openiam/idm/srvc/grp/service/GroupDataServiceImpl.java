@@ -416,4 +416,10 @@ public class GroupDataServiceImpl implements GroupDataService {
 	public Group getGroupDTO(String groupId) {
 		return groupDozerConverter.convertToDTO(groupDao.findById(groupId), true);
 	}
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<GroupEntity> findGroupsByAttributeValue(String attrName, String attrValue) {
+        return groupDao.findGroupsByAttributeValue(attrName, attrValue);
+    }
 }

@@ -361,4 +361,10 @@ public class OrganizationDataServiceImpl extends AbstractBaseService implements 
         final List<Organization> resultList = organizationDozerConverter.convertToDTOList(entityList, false);
         return resultList;
     }
+
+    @Override
+    public List<Organization> findOrganizationsByAttributeValue(String attrName, String attrValue) {
+        return organizationDozerConverter.convertToDTOList(
+                organizationService.findOrganizationsByAttributeValue(attrName, attrValue), true);
+    }
 }
