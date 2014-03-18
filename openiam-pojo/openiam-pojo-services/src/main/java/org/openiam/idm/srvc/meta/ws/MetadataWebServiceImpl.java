@@ -28,6 +28,7 @@ import javax.jws.WebMethod;
 import javax.jws.WebService;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.openiam.base.ws.Response;
@@ -114,6 +115,11 @@ public class MetadataWebServiceImpl implements MetadataWebService {
             if (StringUtils.isBlank(dto.getDescription())) {
                 throw new BasicDataServiceException(ResponseCode.NO_NAME);
             }
+            
+            if(MapUtils.isEmpty(dto.getDisplayNameMap())) {
+            	throw new BasicDataServiceException(ResponseCode.DISPLAY_NAME_REQUIRED);
+            }
+            
             final MetadataTypeEntity entity = metaDataTypeDozerConverter.convertToEntity(dto, true);
             metadataService.save(entity);
             response.setResponseValue(entity.getId());

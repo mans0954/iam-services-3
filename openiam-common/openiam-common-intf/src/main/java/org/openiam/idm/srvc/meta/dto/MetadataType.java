@@ -16,6 +16,7 @@ import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.cat.dto.Category;
 import org.openiam.idm.srvc.lang.domain.LanguageMappingEntity;
 import org.openiam.idm.srvc.lang.dto.Language;
+import org.openiam.idm.srvc.lang.dto.LanguageMapping;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.internationalization.Internationalized;
 import org.openiam.internationalization.InternationalizedCollection;
@@ -54,7 +55,7 @@ public class MetadataType extends KeyDTO {
     protected Set<Category> categories = new HashSet<Category>(0);
     
     @InternationalizedCollection(referenceType="MetadataTypeEntity", targetField="displayName")
-    private Map<String, Language> displayNameMap;
+    private Map<String, LanguageMapping> displayNameMap;
     
     private String displayName;
 
@@ -62,11 +63,11 @@ public class MetadataType extends KeyDTO {
     	super();
     }
   
-    public Map<String, Language> getDisplayNameMap() {
+    public Map<String, LanguageMapping> getDisplayNameMap() {
 		return displayNameMap;
 	}
 
-	public void setDisplayNameMap(Map<String, Language> displayNameMap) {
+	public void setDisplayNameMap(Map<String, LanguageMapping> displayNameMap) {
 		this.displayNameMap = displayNameMap;
 	}
 

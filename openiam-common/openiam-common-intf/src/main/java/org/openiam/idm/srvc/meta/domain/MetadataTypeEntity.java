@@ -87,6 +87,7 @@ public class MetadataTypeEntity extends KeyEntity {
     @InternationalizedCollection(referenceType="MetadataTypeEntity", targetField="displayName")
     private Map<String, LanguageMappingEntity> displayNameMap;
     
+    @Transient
     private String displayName;
 
     public MetadataTypeEntity() {

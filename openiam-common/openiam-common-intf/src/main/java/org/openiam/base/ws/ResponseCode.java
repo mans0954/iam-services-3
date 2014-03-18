@@ -646,7 +646,10 @@ public enum ResponseCode {
     GROUPING_REQUIRED("GROUPING_REQUIRED"),
 
     @XmlEnumValue("VALUE_REQUIRED")
-    VALUE_REQUIRED("VALUE_REQUIRED");
+    VALUE_REQUIRED("VALUE_REQUIRED"),
+    
+    @XmlEnumValue("DISPLAY_NAME_REQUIRED")
+    DISPLAY_NAME_REQUIRED("DISPLAY_NAME_REQUIRED");
     
     private final String value;
 

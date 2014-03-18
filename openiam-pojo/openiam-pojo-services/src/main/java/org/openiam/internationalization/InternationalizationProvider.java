@@ -25,7 +25,10 @@ import org.apache.log4j.Logger;
 import org.hibernate.proxy.HibernateProxyHelper;
 import org.openiam.base.BaseIdentity;
 import org.openiam.base.domain.KeyEntity;
+import org.openiam.idm.srvc.lang.domain.LanguageEntity;
 import org.openiam.idm.srvc.lang.domain.LanguageMappingEntity;
+import org.openiam.idm.srvc.lang.dto.Language;
+import org.openiam.idm.srvc.lang.dto.LanguageMapping;
 import org.openiam.idm.srvc.lang.service.LanguageMappingDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.expression.spel.support.ReflectivePropertyAccessor;
@@ -59,7 +62,7 @@ public class InternationalizationProvider {
 				
 				//final Object fieldObject = ReflectionUtils.getField(field, entity);
 				final Object fieldObject = getMethodCallResult(field, entity);
-				final Map<String, LanguageMappingEntity> transientMap = (Map<String, LanguageMappingEntity>)fieldObject;		
+				final Map transientMap = (Map)fieldObject;		
 				if(transientMap != null && transientMap.containsKey(languageId)) {
 					final String targetFieldName = metadata.targetField();
 					if(StringUtils.isNotBlank(targetFieldName)) {
@@ -71,7 +74,14 @@ public class InternationalizationProvider {
 						} else {
 							//targetField.setAccessible(true);
 							//ReflectionUtils.setField(targetField, entity, transientMap.get(languageId).getValue());
-							setValue(targetField, entity, transientMap.get(languageId).getValue());
+							final Object mapping = transientMap.get(languageId);
+							String value = null;
+							if(mapping instanceof LanguageMapping) {
+								value = ((LanguageMapping)mapping).getValue();
+							} else if(mapping instanceof LanguageMappingEntity) {
+								value = ((LanguageMappingEntity)mapping).getValue();
+							}
+							setValue(targetField, entity, value);
 						}
 					}
 				}
@@ -228,8 +238,14 @@ public class InternationalizationProvider {
 				} else {
 					for(final LanguageMappingEntity dbEntity : dbList) {
 						if(transientMap.containsKey(dbEntity.getLanguageId())) { /* update */
-							dbEntity.setValue(transientMap.get(dbEntity.getLanguageId()).getValue());
-							toUpdate.add(dbEntity);
+							final String value = transientMap.get(dbEntity.getLanguageId()).getValue();
+							/* empty value means delete */
+							if(StringUtils.isBlank(value)) {
+								toDelete.add(dbEntity);
+							} else {
+								dbEntity.setValue(value);
+								toUpdate.add(dbEntity);
+							}
 						} else { /* delete */
 							toDelete.add(dbEntity);
 						}
