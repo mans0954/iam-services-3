@@ -6,6 +6,7 @@ import java.util.List;
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.MetadataElementSearchBean;
 import org.openiam.idm.searchbeans.MetadataTypeSearchBean;
+import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.meta.dto.MetadataElement;
 import org.openiam.idm.srvc.meta.dto.MetadataType;
@@ -39,9 +40,6 @@ public interface MetadataWebService {
     public List<MetadataElement> getMetadataElementByType(
             @WebParam(name = "typeId", targetNamespace = "")
             String typeId);
-
-    @WebMethod
-    public List<MetadataType> getAllMetadataTypes();
     
     
     @WebMethod
@@ -57,7 +55,8 @@ public interface MetadataWebService {
     @WebMethod
     public List<MetadataType> findTypeBeans(final @WebParam(name = "searchBean", targetNamespace = "") MetadataTypeSearchBean searchBean,
     									    final @WebParam(name = "from", targetNamespace = "") int from,
-    									    final @WebParam(name = "size", targetNamespace = "") int size);
+    									    final @WebParam(name = "size", targetNamespace = "") int size,
+    									    final @WebParam(name = "language", targetNamespace = "") Language language);
     
     @WebMethod
     public int countElementBeans(final @WebParam(name = "searchBean", targetNamespace = "") MetadataElementSearchBean searchBean);
@@ -80,6 +79,4 @@ public interface MetadataWebService {
     @WebMethod
     public MetadataElement findElementById(final @WebParam(name = "id", targetNamespace = "") String id);
     
-    @WebMethod
-    public MetadataType findTypeById(final @WebParam(name = "id", targetNamespace = "") String id);
 }

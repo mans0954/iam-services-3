@@ -316,11 +316,6 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 	}
 
 	@Override
-	public List<MetadataTypeEntity> getAllMetadataTypes() {
-		return metadataTypeDao.findAll();
-	}
-
-	@Override
 	public List<MetadataElementEntity> findElementByName(String name) {
 		final MetadataElementSearchBean searchBean = new MetadataElementSearchBean();
 		searchBean.setAttributeName(name);

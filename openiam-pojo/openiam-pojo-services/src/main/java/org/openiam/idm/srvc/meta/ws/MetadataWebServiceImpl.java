@@ -38,11 +38,13 @@ import org.openiam.dozer.converter.MetaDataTypeDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.MetadataElementSearchBean;
 import org.openiam.idm.searchbeans.MetadataTypeSearchBean;
+import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.meta.dto.MetadataElement;
 import org.openiam.idm.srvc.meta.dto.MetadataType;
 import org.openiam.idm.srvc.meta.service.MetadataService;
+import org.openiam.internationalization.LocalizedServiceGet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -87,7 +89,8 @@ public class MetadataWebServiceImpl implements MetadataWebService {
     }
 
     @Override
-    public List<MetadataType> findTypeBeans(final MetadataTypeSearchBean searchBean, final int from, final int size) {
+    @LocalizedServiceGet
+    public List<MetadataType> findTypeBeans(final MetadataTypeSearchBean searchBean, final int from, final int size, final Language language) {
         final List<MetadataTypeEntity> entityList = metadataService.findBeans(searchBean, from, size);
         return (entityList != null) ? metaDataTypeDozerConverter.convertToDTOList(entityList, true) : null;
     }
@@ -98,15 +101,6 @@ public class MetadataWebServiceImpl implements MetadataWebService {
         searchBean.setKey(id);
         searchBean.setDeepCopy(true);
         final List<MetadataElement> dtoList = findElementBeans(searchBean, 0, 1);
-        return (CollectionUtils.isNotEmpty(dtoList)) ? dtoList.get(0) : null;
-    }
-
-    @Override
-    public MetadataType findTypeById(final String id) {
-        final MetadataTypeSearchBean searchBean = new MetadataTypeSearchBean();
-        searchBean.setKey(id);
-        searchBean.setDeepCopy(true);
-        final List<MetadataType> dtoList = findTypeBeans(searchBean, 0, 1);
         return (CollectionUtils.isNotEmpty(dtoList)) ? dtoList.get(0) : null;
     }
 
@@ -218,12 +212,5 @@ public class MetadataWebServiceImpl implements MetadataWebService {
     @Override
     public int countTypeBeans(final MetadataTypeSearchBean searchBean) {
         return metadataService.count(searchBean);
-    }
-
-    @Override
-    @WebMethod
-    public List<MetadataType> getAllMetadataTypes() {
-        final List<MetadataTypeEntity> entityList = metadataService.getAllMetadataTypes();
-        return (entityList != null) ? metaDataTypeDozerConverter.convertToDTOList(entityList, true) : null;
     }
 }

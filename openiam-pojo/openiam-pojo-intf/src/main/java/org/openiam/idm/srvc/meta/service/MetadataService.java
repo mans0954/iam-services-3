@@ -54,6 +54,4 @@ public interface MetadataService {
 	
 	//public void save(final MetadataValidValueEntity entity);
 	public void delteMetaValidValue(final String validValueId);
-	
-	public List<MetadataTypeEntity> getAllMetadataTypes();
 }

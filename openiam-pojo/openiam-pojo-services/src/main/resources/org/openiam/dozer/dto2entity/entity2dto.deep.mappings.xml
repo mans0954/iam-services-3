@@ -512,6 +512,12 @@
 			<a>elementAttributes</a>
 			<b>elementAttributes</b>
 		</field>
+		<field
+			custom-converter="org.openiam.dozer.crossentity.CrossEntityMapConverterWithKeyString"
+			custom-converter-param="dto2entityShallowDozerMapper">
+			<a>displayNameMap</a>
+			<b>displayNameMap</b>
+		</field>
 	</mapping>
 	<mapping>
 		<class-a>org.openiam.idm.srvc.cat.domain.CategoryEntity</class-a>

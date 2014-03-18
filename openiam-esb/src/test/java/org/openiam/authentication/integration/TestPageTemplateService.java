@@ -343,6 +343,6 @@ public class TestPageTemplateService extends AbstractTestNGSpringContextTests {
 		searchBean.setSyncManagedSys(true);
 		searchBean.setSyncManagedSys(false);
 		searchBean.setGrouping("UI_WIDGET");
-		return metadataWebService.findTypeBeans(searchBean, 0, Integer.MAX_VALUE);
+		return metadataWebService.findTypeBeans(searchBean, 0, Integer.MAX_VALUE, null);
 	}
 }

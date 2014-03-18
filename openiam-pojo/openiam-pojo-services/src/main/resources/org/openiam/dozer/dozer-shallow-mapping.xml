@@ -229,6 +229,10 @@
 			<a>elementAttributes</a>
 			<b>elementAttributes</b>
 		</field-exclude>
+		<field-exclude>
+			<a>displayNameMap</a>
+			<b>displayNameMap</b>
+		</field-exclude>
 	</mapping>
 	<mapping>
 		<class-a>org.openiam.idm.srvc.cat.dto.Category</class-a>

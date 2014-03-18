@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import javax.persistence.Transient;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
@@ -13,7 +14,11 @@ import javax.xml.bind.annotation.XmlType;
 import org.openiam.base.KeyDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.cat.dto.Category;
+import org.openiam.idm.srvc.lang.domain.LanguageMappingEntity;
+import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
+import org.openiam.internationalization.Internationalized;
+import org.openiam.internationalization.InternationalizedCollection;
 
 // Generated Nov 4, 2008 12:11:29 AM by Hibernate Tools 3.2.2.GA
 
@@ -28,9 +33,12 @@ import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 	"elementAttributes", 
 	"categories", 
 	"grouping",
-	"binary"
+	"binary",
+	"displayNameMap",
+	"displayName"
 })
 @DozerDTOCorrespondence(MetadataTypeEntity.class)
+@Internationalized
 public class MetadataType extends KeyDTO {
 
     private String description;
@@ -44,12 +52,33 @@ public class MetadataType extends KeyDTO {
 
     protected Map<String, MetadataElement> elementAttributes = new HashMap<String, MetadataElement>(0);
     protected Set<Category> categories = new HashSet<Category>(0);
+    
+    @InternationalizedCollection(referenceType="MetadataTypeEntity", targetField="displayName")
+    private Map<String, Language> displayNameMap;
+    
+    private String displayName;
 
     public MetadataType() {
     	super();
     }
-    
-    public String getDescription() {
+  
+    public Map<String, Language> getDisplayNameMap() {
+		return displayNameMap;
+	}
+
+	public void setDisplayNameMap(Map<String, Language> displayNameMap) {
+		this.displayNameMap = displayNameMap;
+	}
+
+	public String getDisplayName() {
+		return displayName;
+	}
+
+	public void setDisplayName(String displayName) {
+		this.displayName = displayName;
+	}
+
+	public String getDescription() {
     	return this.description;
     }
 

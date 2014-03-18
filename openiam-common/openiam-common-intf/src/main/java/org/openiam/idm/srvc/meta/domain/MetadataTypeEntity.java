@@ -20,6 +20,7 @@ import javax.persistence.ManyToMany;
 import javax.persistence.MapKeyColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -30,7 +31,10 @@ import org.hibernate.annotations.Type;
 import org.openiam.base.domain.KeyEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.cat.domain.CategoryEntity;
+import org.openiam.idm.srvc.lang.domain.LanguageMappingEntity;
 import org.openiam.idm.srvc.meta.dto.MetadataType;
+import org.openiam.internationalization.Internationalized;
+import org.openiam.internationalization.InternationalizedCollection;
 
 @Entity
 @Table(name = "METADATA_TYPE")
@@ -38,6 +42,7 @@ import org.openiam.idm.srvc.meta.dto.MetadataType;
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @DozerDTOCorrespondence(MetadataType.class)
 @AttributeOverride(name = "id", column = @Column(name = "TYPE_ID"))
+@Internationalized
 public class MetadataTypeEntity extends KeyEntity {
 
     private static final long serialVersionUID = 1L;
@@ -77,12 +82,34 @@ public class MetadataTypeEntity extends KeyEntity {
     @JoinTable(name = "CATEGORY_TYPE", joinColumns = { @JoinColumn(name = "TYPE_ID") }, inverseJoinColumns = { @JoinColumn(name = "CATEGORY_ID") })
     @Fetch(FetchMode.SUBSELECT)
     private Set<CategoryEntity> categories = new HashSet<CategoryEntity>(0);
+    
+    @Transient
+    @InternationalizedCollection(referenceType="MetadataTypeEntity", targetField="displayName")
+    private Map<String, LanguageMappingEntity> displayNameMap;
+    
+    private String displayName;
 
     public MetadataTypeEntity() {
     	super();
     }
     
-    public Map<String, MetadataElementEntity> getElementAttributes() {
+    public Map<String, LanguageMappingEntity> getDisplayNameMap() {
+		return displayNameMap;
+	}
+
+	public void setDisplayNameMap(Map<String, LanguageMappingEntity> displayNameMap) {
+		this.displayNameMap = displayNameMap;
+	}
+
+	public String getDisplayName() {
+		return displayName;
+	}
+
+	public void setDisplayName(String displayName) {
+		this.displayName = displayName;
+	}
+
+	public Map<String, MetadataElementEntity> getElementAttributes() {
     	return elementAttributes;
     }
 
