@@ -13,7 +13,6 @@ import org.openiam.idm.srvc.report.domain.ReportSubCriteriaParamEntity;
 import org.openiam.idm.srvc.report.domain.ReportInfoEntity;
 import org.openiam.idm.srvc.report.domain.ReportSubscriptionEntity;
 import org.openiam.exception.ScriptEngineException;
-import org.openiam.idm.srvc.report.domain.ReportParamTypeEntity;
 import org.openiam.idm.srvc.report.dto.ReportDataDto;
 import org.openiam.script.ScriptFactory;
 import org.openiam.script.ScriptIntegration;
@@ -43,6 +42,8 @@ public class ReportDataServiceImpl implements ReportDataService {
     private ReportSubCriteriaParamDao subCriteriaParamDao;
     @Autowired
     private ReportParamTypeDao reportParamTypeDao;
+    @Autowired
+    private ReportParamMetaTypeDao reportParamMetaTypeDao;
     @Autowired
     @Qualifier("configurableGroovyScriptEngine")
     protected ScriptIntegration scriptRunner;
@@ -115,6 +116,13 @@ public class ReportDataServiceImpl implements ReportDataService {
     @Override
     @Transactional
     public ReportCriteriaParamEntity createOrUpdateReportParamInfo(ReportCriteriaParamEntity reportParam){
+
+        final String paramTypeId = reportParam.getType() != null ? reportParam.getType().getId() : null;
+        reportParam.setType(paramTypeId != null ? reportParamTypeDao.findById(paramTypeId) : null);
+
+        final String metaTypeId = reportParam.getMetaType() != null ? reportParam.getMetaType().getId() : null;
+        reportParam.setMetaType(metaTypeId != null ? reportParamMetaTypeDao.findById(metaTypeId) : null);
+
     	if (StringUtils.isBlank(reportParam.getId()))
     		reportParam = criteriaParamDao.add(reportParam);
     	else
@@ -191,7 +199,13 @@ public class ReportDataServiceImpl implements ReportDataService {
     public List<ReportParamTypeEntity> getReportParameterTypes() {
         return reportParamTypeDao.findAll();
     }
-    
+
+    @Override
+    @Transactional
+    public List<ReportParamMetaTypeEntity> getReportParamMetaTypes() {
+        return reportParamMetaTypeDao.findAll();
+    }
+
     @Override
     @Transactional
     public ReportSubscriptionEntity createOrUpdateSubscribedReportInfo(ReportSubscriptionEntity reportSubscriptionEntity){

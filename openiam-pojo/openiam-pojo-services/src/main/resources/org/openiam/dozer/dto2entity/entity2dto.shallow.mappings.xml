@@ -382,7 +382,10 @@
 			<a>type.id</a>
 			<b>typeId</b>
 		</field>
-
+		<field>
+			<a>metaType.id</a>
+			<b>metaTypeId</b>
+		</field>
 		<field>
 			<a>type.name</a>
 			<b>typeName</b>

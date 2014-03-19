@@ -72,6 +72,8 @@ public class ReportWebServiceImpl implements ReportWebService {
 	@Autowired
 	private ReportParamTypeDozerConverter paramTypeDozerConverter;
 	@Autowired
+	private ReportParamMetaTypeDozerConverter paramMetaTypeDozerConverter;
+	@Autowired
 	private ReportDataService reportDataService;
 
     @Autowired
@@ -460,6 +462,21 @@ public class ReportWebServiceImpl implements ReportWebService {
 		response.setStatus(ResponseStatus.SUCCESS);
 		return response;
 	}
+
+    @Override
+    public GetReportParameterMetaTypesResponse getReportParameterMetaTypes() {
+        GetReportParameterMetaTypesResponse response = new GetReportParameterMetaTypesResponse();
+        List<ReportParamMetaTypeEntity> metaTypeEntities = reportDataService
+                .getReportParamMetaTypes();
+        List<ReportParamMetaTypeDto> metaTypeDtos = new LinkedList<ReportParamMetaTypeDto>();
+        if (metaTypeEntities != null && metaTypeEntities.size() > 0) {
+            metaTypeDtos = paramMetaTypeDozerConverter.convertToDTOList(
+                    metaTypeEntities, false);
+        }
+        response.setTypes(metaTypeDtos);
+        response.setStatus(ResponseStatus.SUCCESS);
+        return response;
+    }
 
 	@Override
 	public GetAllSubscribedReportsResponse getSubscribedReports() {

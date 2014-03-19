@@ -52,6 +52,9 @@ public interface ReportWebService {
     GetReportParameterTypesResponse getReportParameterTypes();
 
     @WebMethod
+    GetReportParameterMetaTypesResponse getReportParameterMetaTypes();
+
+    @WebMethod
     GetAllSubscribedReportsResponse getSubscribedReports();
 
     @WebMethod
