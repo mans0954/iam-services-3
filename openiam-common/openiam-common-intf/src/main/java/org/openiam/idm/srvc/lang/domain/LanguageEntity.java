@@ -3,31 +3,25 @@ package org.openiam.idm.srvc.lang.domain;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.Type;
-import org.hibernate.annotations.Where;
 import org.openiam.base.domain.KeyEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.lang.dto.Language;
+import org.openiam.internationalization.Internationalized;
+import org.openiam.internationalization.InternationalizedCollection;
 
-import javax.persistence.AttributeOverride;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.Id;
-import javax.persistence.MapKey;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
-import java.io.Serializable;
+import javax.persistence.*;
 import java.util.Map;
 
 @Entity
 @Table(name = "LANGUAGE")
 @DozerDTOCorrespondence(Language.class)
 @AttributeOverride(name = "id", column = @Column(name = "ID"))
+@Internationalized
 public class LanguageEntity extends KeyEntity {
     private static final long serialVersionUID = 6695606794883491243L;
     
-    @Column(name = "LANGUAGE", length = 20)
+//    @Column(name = "LANGUAGE", length = 20)
+    @Transient
     private String name;
 
     @Column(name = "IS_USED")
@@ -45,6 +39,10 @@ public class LanguageEntity extends KeyEntity {
     @MapKey(name = "locale")
     @Fetch(FetchMode.SUBSELECT)
     private Map<String, LanguageLocaleEntity> locales;
+
+    @Transient
+    @InternationalizedCollection(referenceType="MetadataTypeEntity", targetField="name")
+    private Map<String, LanguageMappingEntity> displayNameMap;
 
     public String getName() {
         return name;
@@ -88,6 +86,14 @@ public class LanguageEntity extends KeyEntity {
 
     public void setLanguageCode(String languageCode) {
         this.languageCode = languageCode;
+    }
+
+    public Map<String, LanguageMappingEntity> getDisplayNameMap() {
+        return displayNameMap;
+    }
+
+    public void setDisplayNameMap(Map<String, LanguageMappingEntity> displayNameMap) {
+        this.displayNameMap = displayNameMap;
     }
 
     @Override

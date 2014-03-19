@@ -21,9 +21,9 @@
  */
 package org.openiam.idm.srvc.lang.service;
 
-import org.apache.commons.lang.StringUtils;
 import org.openiam.idm.searchbeans.LanguageSearchBean;
 import org.openiam.idm.srvc.lang.domain.LanguageEntity;
+import org.openiam.internationalization.LocalizedServiceGet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -59,6 +59,12 @@ public class LanguageDataServiceImpl implements LanguageDataService {
     public List<LanguageEntity> getUsedLanguages(){
         return languageDao.getUsedLanguages();
     }
+    @Override
+    @LocalizedServiceGet
+    @Transactional
+    public List<LanguageEntity> getUsedLanguages(final LanguageEntity language){
+        return languageDao.getUsedLanguages();
+    }
 
 	public LanguageEntity getLanguage(String languageId) {
 
@@ -92,4 +98,11 @@ public class LanguageDataServiceImpl implements LanguageDataService {
 	public List<LanguageEntity> findBeans(final LanguageSearchBean searchBean, final int from, final int size) {
 		return languageDao.getByExample(searchBean, from, size);
 	}
+
+    @Override
+    @LocalizedServiceGet
+    @Transactional
+    public List<LanguageEntity> findBeans(final LanguageSearchBean searchBean, int from, int size, final LanguageEntity language){
+        return languageDao.getByExample(searchBean, from, size);
+    }
 }

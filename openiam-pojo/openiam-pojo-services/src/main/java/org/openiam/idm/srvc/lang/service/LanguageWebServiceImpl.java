@@ -4,6 +4,7 @@ import org.openiam.dozer.converter.LanguageDozerConverter;
 import org.openiam.idm.searchbeans.LanguageSearchBean;
 import org.openiam.idm.srvc.lang.domain.LanguageEntity;
 import org.openiam.idm.srvc.lang.dto.Language;
+import org.openiam.internationalization.LocalizedServiceGet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -24,7 +25,15 @@ public class LanguageWebServiceImpl implements LanguageWebService {
 	private LanguageDozerConverter languageDozerConverter;
 	
     @Override
+    @LocalizedServiceGet
     public List<Language> getUsedLanguages(){
+        final List<LanguageEntity> entityList = languageService.getUsedLanguages();
+        return (entityList != null) ? languageDozerConverter.convertToDTOList(entityList, true) : null;
+    }
+
+    @Override
+    @LocalizedServiceGet
+    public List<Language> getUsedLanguagesLocalized(final Language language){
         final List<LanguageEntity> entityList = languageService.getUsedLanguages();
         return (entityList != null) ? languageDozerConverter.convertToDTOList(entityList, true) : null;
     }
@@ -34,5 +43,14 @@ public class LanguageWebServiceImpl implements LanguageWebService {
 		final List<LanguageEntity> entityList = languageService.findBeans(searchBean, from, size);
 		return languageDozerConverter.convertToDTOList(entityList, searchBean.isDeepCopy());
 	}
+
+
+
+    @Override
+    @LocalizedServiceGet
+    public List<Language> findBeansLocalized(final LanguageSearchBean searchBean, final int from, final int size, final Language language) {
+        final List<LanguageEntity> entityList = languageService.findBeans(searchBean, from, size);
+        return languageDozerConverter.convertToDTOList(entityList, searchBean.isDeepCopy());
+    }
 
 }

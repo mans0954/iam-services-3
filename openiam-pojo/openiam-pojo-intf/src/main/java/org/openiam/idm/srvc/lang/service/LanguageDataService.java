@@ -49,6 +49,7 @@ public interface LanguageDataService {
      * @return
      */
     public List<LanguageEntity> getUsedLanguages();
+    public List<LanguageEntity> getUsedLanguages(final LanguageEntity language);
 
     /**
      * Returns the language specified by the language
@@ -60,4 +61,5 @@ public interface LanguageDataService {
 
 
     public List<LanguageEntity> findBeans(final LanguageSearchBean searchBean, int from, int size);
+    public List<LanguageEntity> findBeans(final LanguageSearchBean searchBean, int from, int size, final LanguageEntity language);
 }
