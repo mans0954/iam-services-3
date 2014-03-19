@@ -28,8 +28,6 @@ import org.springframework.stereotype.Service;
 @Service("lookupUserPeopleSoftCommand")
 public class PeoplesoftLookupCommand extends AbstractPeoplesoftCommand<LookupRequest<ExtensibleObject>, SearchResponse> {
 
-    private static final String SELECT_USER = "SELECT OPRID, OPRDEFNDESC, EMPLID, EMAILID, SYMBOLICID FROM %sPSOPRDEFN WHERE OPRID=?";
-
     @Override
     public SearchResponse execute(LookupRequest<ExtensibleObject> request) throws ConnectorDataException {
 
@@ -60,114 +58,14 @@ public class PeoplesoftLookupCommand extends AbstractPeoplesoftCommand<LookupReq
             throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR, "No resource for managed resource found");
         }
 
-        Connection con = null;
-
         try {
-            final ObjectValue resultObject = new ObjectValue();
-            resultObject.setObjectIdentity(principalName);
-            con = this.getConnection(managedSys);
-
-            String sql = String.format(SELECT_USER, schemaName);
-            final PreparedStatement statement = con.prepareStatement(sql);
-            statement.setString(1, principalName);
-
-            final ResultSet rs = statement.executeQuery();
-            final ResultSetMetaData rsMetadata = rs.getMetaData();
-            int columnCount = rsMetadata.getColumnCount();
-
-            if (log.isDebugEnabled()) {
-                log.debug(String.format("Query contains column count = %s", columnCount));
-            }
-
-            if (rs.next()) {
-                for (int colIndx = 1; colIndx <= columnCount; colIndx++) {
-                    final ExtensibleAttribute extAttr = new ExtensibleAttribute();
-                    extAttr.setName(rsMetadata.getColumnName(colIndx));
-                    setColumnValue(extAttr, colIndx, rsMetadata, rs);
-                    resultObject.getAttributeList().add(extAttr);
-                }
-                response.getObjectList().add(resultObject);
-                response.setStatus(StatusCodeType.SUCCESS);
-            } else {
-                if (log.isDebugEnabled()) {
-                    log.debug("Principal not found");
-                }
-                response.setStatus(StatusCodeType.FAILURE);
-                return response;
-            }
-        } catch (SQLException se) {
-            log.error(se);
-            throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR, se.toString());
+            response.setObjectList(this.getObjectValues(principalName, null, schemaName, managedSys));
+            response.setStatus(StatusCodeType.SUCCESS);
         } catch (Throwable e) {
             log.error(e);
             throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR, e.toString());
-        } finally {
-            if (con != null) {
-                try {
-                    con.close();
-                } catch (SQLException s) {
-                    log.error(s);
-                    throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR, s.toString());
-                }
-            }
         }
         return response;
-    }
-
-    private void setColumnValue(ExtensibleAttribute extAttr, int colIndx, ResultSetMetaData rsMetadata, ResultSet rs)
-            throws SQLException {
-
-        final int fieldType = rsMetadata.getColumnType(colIndx);
-
-        if (log.isDebugEnabled()) {
-            log.debug(String.format("column type = %s", fieldType));
-        }
-
-        if (fieldType == Types.INTEGER) {
-            if (log.isDebugEnabled()) {
-                log.debug("type = Integer");
-            }
-            extAttr.setDataType("INTEGER");
-            extAttr.setValue(String.valueOf(rs.getInt(colIndx)));
-        }
-
-        if (fieldType == Types.FLOAT || fieldType == Types.NUMERIC) {
-            if (log.isDebugEnabled()) {
-                log.debug("type = Float");
-            }
-            extAttr.setDataType("FLOAT");
-            extAttr.setValue(String.valueOf(rs.getFloat(colIndx)));
-
-        }
-
-        if (fieldType == Types.DATE) {
-            if (log.isDebugEnabled()) {
-                log.debug("type = Date");
-            }
-            extAttr.setDataType("DATE");
-            if (rs.getDate(colIndx) != null) {
-                extAttr.setValue(String.valueOf(rs.getDate(colIndx).getTime()));
-            }
-
-        }
-        if (fieldType == Types.TIMESTAMP) {
-            if (log.isDebugEnabled()) {
-                log.debug("type = Timestamp");
-            }
-            extAttr.setDataType("TIMESTAMP");
-            extAttr.setValue(String.valueOf(rs.getTimestamp(colIndx).getTime()));
-
-        }
-        if (fieldType == Types.VARCHAR || fieldType == Types.CHAR) {
-            if (log.isDebugEnabled()) {
-                log.debug("type = Varchar");
-            }
-            extAttr.setDataType("STRING");
-            if (rs.getString(colIndx) != null) {
-                extAttr.setValue(rs.getString(colIndx));
-            }
-
-        }
     }
 
 }

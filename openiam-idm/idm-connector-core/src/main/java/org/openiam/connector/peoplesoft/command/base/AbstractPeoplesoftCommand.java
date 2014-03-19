@@ -4,12 +4,19 @@ import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Types;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
 
 import org.mule.util.StringUtils;
 import org.openiam.connector.common.jdbc.AbstractJDBCCommand;
 import org.openiam.connector.type.ConnectorDataException;
+import org.openiam.connector.type.ObjectValue;
+import org.openiam.connector.type.constant.ErrorCode;
+import org.openiam.connector.type.constant.StatusCodeType;
 import org.openiam.connector.type.request.RequestType;
 import org.openiam.connector.type.response.ResponseType;
 import org.openiam.exception.EncryptionException;
@@ -17,6 +24,7 @@ import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
+import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.util.encrypt.Cryptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -577,10 +585,127 @@ public abstract class AbstractPeoplesoftCommand<Request extends RequestType, Res
         }
     }
 
+    protected List<ObjectValue> getObjectValues(String principalName, String searchQuery, String schemaName,
+            ManagedSysEntity managedSys) throws ConnectorDataException {
+        List<ObjectValue> resultList = new ArrayList<ObjectValue>();
+        final String SELECT_USER = "SELECT OPRID, OPRDEFNDESC, EMPLID, EMAILID, SYMBOLICID FROM %sPSOPRDEFN WHERE OPRID=?";
+        final String SELECT_USERS = "SELECT OPRID, OPRDEFNDESC, EMPLID, EMAILID, SYMBOLICID FROM %sPSOPRDEFN %s";
+        Connection con = null;
+        try {
+            con = this.getConnection(managedSys);
+
+            String sql = null;
+            PreparedStatement statement = null;
+            // prepare statements
+            if (!StringUtils.isEmpty(principalName)) {
+                sql = String.format(SELECT_USER, schemaName);
+                statement = con.prepareStatement(sql);
+                statement.setString(1, principalName);
+            } else if (searchQuery != null) {
+                sql = String.format(SELECT_USERS, schemaName, searchQuery);
+                statement = con.prepareStatement(sql);
+            } else {
+                throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR, "not defined searchQuery and principalName");
+            }
+            final ResultSet rs = statement.executeQuery();
+            final ResultSetMetaData rsMetadata = rs.getMetaData();
+            int columnCount = rsMetadata.getColumnCount();
+
+            if (log.isDebugEnabled()) {
+                log.debug(String.format("Query contains column count = %s", columnCount));
+            }
+
+            if (rs.next()) {
+                ObjectValue resultObject = new ObjectValue();
+                for (int colIndx = 1; colIndx <= columnCount; colIndx++) {
+                    final ExtensibleAttribute extAttr = new ExtensibleAttribute();
+                    extAttr.setName(rsMetadata.getColumnName(colIndx));
+                    setColumnValue(extAttr, colIndx, rsMetadata, rs);
+                    resultObject.getAttributeList().add(extAttr);
+                }
+                resultObject.setObjectIdentity(rs.getString("OPRID"));
+                resultList.add(resultObject);
+            } else {
+                if (log.isDebugEnabled()) {
+                    log.debug("Principal not found");
+                }
+            }
+        } catch (SQLException se) {
+            log.error(se);
+            throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR, se.toString());
+        } finally {
+            if (con != null) {
+                try {
+                    con.close();
+                } catch (SQLException s) {
+                    log.error(s);
+                    throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR, s.toString());
+                }
+            }
+        }
+        return resultList;
+    }
+
     public String encryptPassword(String password) throws EncryptionException {
         if (password != null) {
             return cryptor.encrypt(keyManagementService.getUserKey(systemUserId, KeyName.password.name()), password);
         }
         return null;
+    }
+
+    private void setColumnValue(ExtensibleAttribute extAttr, int colIndx, ResultSetMetaData rsMetadata, ResultSet rs)
+            throws SQLException {
+
+        final int fieldType = rsMetadata.getColumnType(colIndx);
+
+        if (log.isDebugEnabled()) {
+            log.debug(String.format("column type = %s", fieldType));
+        }
+
+        if (fieldType == Types.INTEGER) {
+            if (log.isDebugEnabled()) {
+                log.debug("type = Integer");
+            }
+            extAttr.setDataType("INTEGER");
+            extAttr.setValue(String.valueOf(rs.getInt(colIndx)));
+        }
+
+        if (fieldType == Types.FLOAT || fieldType == Types.NUMERIC) {
+            if (log.isDebugEnabled()) {
+                log.debug("type = Float");
+            }
+            extAttr.setDataType("FLOAT");
+            extAttr.setValue(String.valueOf(rs.getFloat(colIndx)));
+
+        }
+
+        if (fieldType == Types.DATE) {
+            if (log.isDebugEnabled()) {
+                log.debug("type = Date");
+            }
+            extAttr.setDataType("DATE");
+            if (rs.getDate(colIndx) != null) {
+                extAttr.setValue(String.valueOf(rs.getDate(colIndx).getTime()));
+            }
+
+        }
+        if (fieldType == Types.TIMESTAMP) {
+            if (log.isDebugEnabled()) {
+                log.debug("type = Timestamp");
+            }
+            extAttr.setDataType("TIMESTAMP");
+            extAttr.setValue(String.valueOf(rs.getTimestamp(colIndx).getTime()));
+
+        }
+        if (fieldType == Types.VARCHAR || fieldType == Types.CHAR) {
+            if (log.isDebugEnabled()) {
+                log.debug("type = Varchar");
+            }
+            extAttr.setDataType("STRING");
+            if (rs.getString(colIndx) != null) {
+                extAttr.setValue(rs.getString(colIndx));
+            }
+
+        }
     }
 }
