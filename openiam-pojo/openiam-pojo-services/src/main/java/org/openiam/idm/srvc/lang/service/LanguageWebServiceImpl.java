@@ -25,7 +25,6 @@ public class LanguageWebServiceImpl implements LanguageWebService {
 	private LanguageDozerConverter languageDozerConverter;
 	
     @Override
-    @LocalizedServiceGet
     public List<Language> getUsedLanguages(){
         final List<LanguageEntity> entityList = languageService.getUsedLanguages();
         return (entityList != null) ? languageDozerConverter.convertToDTOList(entityList, true) : null;

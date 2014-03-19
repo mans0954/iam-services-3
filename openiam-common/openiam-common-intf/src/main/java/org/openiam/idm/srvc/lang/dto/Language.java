@@ -17,7 +17,8 @@ import java.util.Map;
         "locales",
         "isUsed",
         "languageCode",
-        "isDefault"
+        "isDefault",
+        "displayNameMap"
 })
 @DozerDTOCorrespondence(LanguageEntity.class)
 @Internationalized
