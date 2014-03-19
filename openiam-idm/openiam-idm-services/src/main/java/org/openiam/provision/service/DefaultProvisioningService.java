@@ -376,7 +376,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             ManagedSysDto mSys = managedSysService.getManagedSys(managedSystemId);
 
             ManagedSystemObjectMatch matchObj = null;
-            ManagedSystemObjectMatch[] matchObjAry = managedSysService.managedSysObjectParam(mSys.getId(), "USER");
+            ManagedSystemObjectMatch[] matchObjAry = managedSysService.managedSysObjectParam(mSys.getId(), ManagedSystemObjectMatch.USER);
             if (matchObjAry != null && matchObjAry.length > 0) {
                 matchObj = matchObjAry[0];
                 bindingMap.put(MATCH_PARAM, matchObj);
@@ -468,7 +468,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
                                 ManagedSystemObjectMatch matchObj = null;
                                 ManagedSystemObjectMatch[] matchObjAry = managedSysService.managedSysObjectParam(
-                                        mSys.getId(), "USER");
+                                        mSys.getId(), ManagedSystemObjectMatch.USER);
                                 if (matchObjAry != null && matchObjAry.length > 0) {
                                     matchObj = matchObjAry[0];
                                     bindingMap.put(MATCH_PARAM, matchObj);
@@ -1211,7 +1211,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             }
 
             ManagedSystemObjectMatch matchObj = null;
-            ManagedSystemObjectMatch[] matchObjAry = managedSysService.managedSysObjectParam(managedSysId, "USER");
+            ManagedSystemObjectMatch[] matchObjAry = managedSysService.managedSysObjectParam(managedSysId, ManagedSystemObjectMatch.USER);
             if (matchObjAry != null && matchObjAry.length > 0) {
                 matchObj = matchObjAry[0];
                 bindingMap.put(MATCH_PARAM, matchObj);

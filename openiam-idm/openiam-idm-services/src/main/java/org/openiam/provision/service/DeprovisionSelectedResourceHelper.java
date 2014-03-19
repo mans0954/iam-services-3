@@ -117,7 +117,7 @@ public class DeprovisionSelectedResourceHelper extends BaseProvisioningHelper {
                         ManagedSysDto mSys = managedSysService.getManagedSys(l.getManagedSysId());
 
                         ManagedSystemObjectMatch matchObj = null;
-                        ManagedSystemObjectMatch[] matchObjAry = managedSysService.managedSysObjectParam(mSys.getId(), "USER");
+                        ManagedSystemObjectMatch[] matchObjAry = managedSysService.managedSysObjectParam(mSys.getId(), ManagedSystemObjectMatch.USER);
                         if (matchObjAry != null && matchObjAry.length > 0) {
                             matchObj = matchObjAry[0];
                         }

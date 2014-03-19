@@ -32,7 +32,7 @@ public class LookupUserLdapCommand extends AbstractLookupLdapCommand<ExtensibleU
     @Override
     protected boolean lookup(ManagedSysEntity managedSys, LookupRequest<ExtensibleUser> lookupRequest, SearchResponse respType, LdapContext ldapctx) throws ConnectorDataException {
         boolean found=false;
-        ManagedSystemObjectMatch matchObj = getMatchObject(lookupRequest.getTargetID(), "USER");
+        ManagedSystemObjectMatch matchObj = getMatchObject(lookupRequest.getTargetID(), ManagedSystemObjectMatch.USER);
         String resourceId = managedSys.getResourceId();
 
         log.debug("Resource id = " + resourceId);

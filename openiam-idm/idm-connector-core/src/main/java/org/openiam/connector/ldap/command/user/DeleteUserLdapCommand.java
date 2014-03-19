@@ -29,7 +29,7 @@ public class DeleteUserLdapCommand extends AbstractCrudLdapCommand<ExtensibleUse
     @Override
     protected void performObjectOperation(ManagedSysEntity managedSys, CrudRequest<ExtensibleUser> deleteRequestType,  LdapContext ldapctx) throws ConnectorDataException {
         String delete = "DELETE";
-        ManagedSystemObjectMatch matchObj = getMatchObject(deleteRequestType.getTargetID(), "USER");
+        ManagedSystemObjectMatch matchObj = getMatchObject(deleteRequestType.getTargetID(), ManagedSystemObjectMatch.USER);
         try {
             Set<ResourceProp> rpSet = getResourceAttributes(managedSys.getResourceId());
             ResourceProp rpOnDelete = getResourceAttr(rpSet,"ON_DELETE");

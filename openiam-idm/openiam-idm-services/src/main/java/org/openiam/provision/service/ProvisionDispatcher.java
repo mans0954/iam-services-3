@@ -362,7 +362,7 @@ public class ProvisionDispatcher implements Sweepable {
             List<AttributeMap> attrMap = attributeMapDozerConverter.convertToDTOList(attrMapEntities, true);
             ManagedSystemObjectMatch matchObj = null;
             List<ManagedSystemObjectMatchEntity> objList = managedSystemService.managedSysObjectParam(managedSysId,
-                    "USER");
+                    ManagedSystemObjectMatch.USER);
             if (CollectionUtils.isNotEmpty(objList)) {
                 matchObj = managedSystemObjectMatchDozerConverter.convertToDTO(objList.get(0), false);
             }

@@ -35,7 +35,7 @@ public class ModifyUserLdapCommand extends AbstractCrudLdapCommand<ExtensibleUse
     @Override
     protected void performObjectOperation(ManagedSysEntity managedSys, CrudRequest<ExtensibleUser> crudRequest,
                                           LdapContext ldapctx) throws ConnectorDataException {
-        ManagedSystemObjectMatch matchObj = getMatchObject(crudRequest.getTargetID(), "USER");
+        ManagedSystemObjectMatch matchObj = getMatchObject(crudRequest.getTargetID(), ManagedSystemObjectMatch.USER);
 
         List<BaseAttribute> targetMembershipList = new ArrayList<BaseAttribute>();
         List<BaseAttribute> supervisorMembershipList = new ArrayList<BaseAttribute>();

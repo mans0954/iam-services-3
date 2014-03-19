@@ -57,6 +57,19 @@
 		</service>
 	</model>
 
+    <model name="GroupProvisionServiceModel">
+        <service name="GroupProvisionService">
+            <inbound>
+                <inbound-endpoint address="${webservice.path}GroupProvisioningService"
+                                  exchange-pattern="request-response">
+                    <cxf:jaxws-service />
+                </inbound-endpoint>
+            </inbound>
+            <component>
+                <spring-object bean="groupProvision" />
+            </component>
+        </service>
+    </model>
 
 	<model name="AsynchProvisionServiceModel">
 		<service name="AsynchProvisionService">
