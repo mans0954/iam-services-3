@@ -4,6 +4,7 @@ import org.openiam.idm.searchbeans.LanguageSearchBean;
 import org.openiam.idm.srvc.lang.dto.Language;
 
 import javax.jws.WebMethod;
+import javax.jws.WebParam;
 import javax.jws.WebService;
 import java.util.List;
 
@@ -17,7 +18,19 @@ public interface LanguageWebService {
      */
     @WebMethod
     public List<Language> getUsedLanguages();
-    
     @WebMethod
-    public List<Language> findBeans(final LanguageSearchBean searchBean, int from, int size);
+    public List<Language> getUsedLanguagesLocalized(final @WebParam(name = "language", targetNamespace = "") Language language);
+
+
+    @WebMethod
+    public List<Language> findBeans(final  @WebParam(name = "searchBean", targetNamespace = "")  LanguageSearchBean searchBean,
+                                    final  @WebParam(name = "from", targetNamespace = "")  int from,
+                                    final  @WebParam(name = "size", targetNamespace = "")  int size);
+
+
+    @WebMethod
+    public List<Language> findBeansLocalized(final  @WebParam(name = "searchBean", targetNamespace = "")  LanguageSearchBean searchBean,
+                                    final  @WebParam(name = "from", targetNamespace = "")  int from,
+                                    final  @WebParam(name = "size", targetNamespace = "")  int size,
+                                    final  @WebParam(name = "language", targetNamespace = "")  Language language);
 }

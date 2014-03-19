@@ -28,6 +28,7 @@ import org.openiam.idm.searchbeans.LanguageSearchBean;
 import org.openiam.idm.searchbeans.SearchBean;
 import org.openiam.idm.srvc.lang.domain.LanguageEntity;
 import org.openiam.idm.srvc.searchbean.converter.LanguageSearchBeanConverter;
+import org.openiam.internationalization.LocalizedDatabaseGet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -74,6 +75,7 @@ public class LanguageDAOImpl extends BaseDaoImpl<LanguageEntity, String> impleme
     }
 
 	@Override
+    @LocalizedDatabaseGet
 	public LanguageEntity getByLocale(String locale) {
 		final Criteria criteria = getCriteria();
 		criteria.createAlias("locales", "locale").add( Restrictions.eq("locale.locale", locale));
@@ -81,6 +83,7 @@ public class LanguageDAOImpl extends BaseDaoImpl<LanguageEntity, String> impleme
 	}
 
 	@Override
+    @LocalizedDatabaseGet
 	public LanguageEntity getByCode(String languageCode) {
 		final Criteria criteria = getCriteria();
 		criteria.add(Restrictions.eq("languageCode", languageCode));
@@ -88,6 +91,7 @@ public class LanguageDAOImpl extends BaseDaoImpl<LanguageEntity, String> impleme
 	}
 	
 	@Override
+    @LocalizedDatabaseGet
 	public LanguageEntity getDefaultLanguage() {
 		final Criteria criteria = getCriteria();
 		criteria.add(Restrictions.eq("isDefault", true));
@@ -95,6 +99,7 @@ public class LanguageDAOImpl extends BaseDaoImpl<LanguageEntity, String> impleme
 	}
 
     @Override
+    @LocalizedDatabaseGet
     public List<LanguageEntity> getUsedLanguages(){
         final Criteria criteria = getCriteria();
         criteria.add(Restrictions.eq("isUsed", true));

@@ -578,6 +578,10 @@
 			<a>locales</a>
 			<b>locales</b>
 		</field-exclude>
+        <field-exclude>
+            <a>displayNameMap</a>
+            <b>displayNameMap</b>
+        </field-exclude>
 	</mapping>
 
 	<mapping>

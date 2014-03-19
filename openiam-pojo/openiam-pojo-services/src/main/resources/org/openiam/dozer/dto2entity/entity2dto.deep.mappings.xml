@@ -702,12 +702,16 @@
 	<mapping>
 		<class-a>org.openiam.idm.srvc.lang.domain.LanguageEntity</class-a>
 		<class-b>org.openiam.idm.srvc.lang.dto.Language</class-b>
-		<field
-			custom-converter="org.openiam.dozer.crossentity.CrossEntityMapConverterWithKeyString"
-			custom-converter-param="dto2entityShallowDozerMapper">
+		<field custom-converter="org.openiam.dozer.crossentity.CrossEntityMapConverterWithKeyString"
+			   custom-converter-param="dto2entityShallowDozerMapper">
 			<a>locales</a>
 			<b>locales</b>
 		</field>
+        <field  custom-converter="org.openiam.dozer.crossentity.CrossEntityMapConverterWithKeyString"
+                custom-converter-param="dto2entityShallowDozerMapper">
+            <a>displayNameMap</a>
+            <b>displayNameMap</b>
+        </field>
 	</mapping>
 
 	<mapping>
