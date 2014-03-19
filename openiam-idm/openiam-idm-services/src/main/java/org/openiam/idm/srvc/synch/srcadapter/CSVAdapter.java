@@ -277,7 +277,7 @@ public class CSVAdapter extends AbstractSrcAdapter {
                     }
                     log.info(" - Execute complete transform script");
                 }
-                pUser.setParentAuditLogId(auditLogBuilder.getEntity().getId());
+//                pUser.setParentAuditLogId(auditLogBuilder.getEntity().getId()); //TODO: causes transient object exception
                 if (retval != -1) {
                     if (retval == TransformScript.DELETE && pUser.getUser() != null) {
                         auditLogBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "User login: "+(pUser.getFirstName()+" "+pUser.getLastName())+" [REMOVED]");
