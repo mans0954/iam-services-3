@@ -22,6 +22,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.hibernate.annotations.common.reflection.ReflectionUtil;
 import org.hibernate.proxy.HibernateProxyHelper;
 import org.openiam.base.BaseIdentity;
 import org.openiam.base.domain.KeyEntity;
@@ -171,6 +172,20 @@ public class InternationalizationProvider {
 		return retVal;
 	}
 	
+	private List<Field> getDeclaredFields(final Class<?> clazz) {
+		final List<Field> resultList = new LinkedList<>();
+		if(clazz != null) {
+			if(clazz.getDeclaredFields() != null) {
+				for(final Field field : clazz.getDeclaredFields()) {
+					resultList.add(field);
+				}
+			}
+			
+			resultList.addAll(getDeclaredFields(clazz.getSuperclass()));
+		}
+		return resultList;
+	}
+	
 	private Set<TargetInternationalizedField> getTargetFields(final BaseIdentity entity, final Set<VisitedField> visitedSet) {
 		final Set<TargetInternationalizedField> retVal = new HashSet<>();
 		
@@ -183,8 +198,9 @@ public class InternationalizationProvider {
 		final Class<?> clazz = HibernateProxyHelper.getClassWithoutInitializingProxy(entity);
 		
 		if(clazz.isAnnotationPresent(Internationalized.class)) {
-			if(clazz.getDeclaredFields() != null) {
-				for(final Field field : clazz.getDeclaredFields()) {
+			final List<Field> resultList = getDeclaredFields(clazz);
+			if(resultList != null) {
+				for(final Field field : resultList) {
 					final VisitedField visitedField = new VisitedField(clazz, field, entity);
 					if(!visitedSet.contains(visitedField)) {
 						visitedSet.add(visitedField);
