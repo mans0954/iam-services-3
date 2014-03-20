@@ -3,13 +3,13 @@
     <parent>
         <groupId>org.openiam</groupId>
         <artifactId>openiam-pojo</artifactId>
-        <version>3.0.0</version>
+        <version>3.1.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.openiam</groupId>
     <artifactId>openiam-pojo-intf</artifactId>
     <name>openiam-pojo-intf</name>
-    <version>3.0.0</version>
+    <version>3.1.0</version>
     <description>OpenIAM IDM Services Interfaces and DTOs</description>
 
     <build>
@@ -215,7 +215,7 @@
         <dependency>
             <groupId>org.openiam</groupId>
             <artifactId>openiam-common-intf</artifactId>
-            <version>3.0.0</version>
+            <version>3.1.0</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
