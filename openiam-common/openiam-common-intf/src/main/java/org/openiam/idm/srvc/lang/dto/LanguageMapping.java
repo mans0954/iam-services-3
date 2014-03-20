@@ -1,13 +1,12 @@
 package org.openiam.idm.srvc.lang.dto;
 
-import java.io.Serializable;
+import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.idm.srvc.lang.domain.LanguageMappingEntity;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
-
-import org.openiam.dozer.DozerDTOCorrespondence;
-import org.openiam.idm.srvc.lang.domain.LanguageMappingEntity;
+import java.io.Serializable;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "LanguageMapping", propOrder = {
@@ -18,7 +17,7 @@ import org.openiam.idm.srvc.lang.domain.LanguageMappingEntity;
         "value"
 })
 @DozerDTOCorrespondence(LanguageMappingEntity.class)
-public class LanguageMapping implements Serializable {
+public class LanguageMapping implements Serializable, Cloneable {
 	private String id;
 	private String languageId;
 	private String referenceId;
@@ -110,6 +109,9 @@ public class LanguageMapping implements Serializable {
 				+ ", referenceId=" + referenceId + ", referenceType="
 				+ referenceType + ", value=" + value + "]";
 	}
-	
+    @Override
+    public LanguageMapping clone() throws CloneNotSupportedException {
+        return (LanguageMapping)super.clone();
+    }
 	
 }

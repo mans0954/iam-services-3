@@ -9,6 +9,7 @@ import org.openiam.internationalization.InternationalizedCollection;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
+import java.util.HashMap;
 import java.util.Map;
 
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -22,7 +23,7 @@ import java.util.Map;
 })
 @DozerDTOCorrespondence(LanguageEntity.class)
 @Internationalized
-public class Language extends KeyDTO {
+public class Language extends KeyDTO implements Cloneable {
         private static final long serialVersionUID = 6695606794883491243L;
         private String name;
         private boolean isUsed=false;
@@ -133,6 +134,30 @@ public class Language extends KeyDTO {
 					+ ", isUsed=" + isUsed + "]";
 		}
 
-		
-		
+    @Override
+    public Language clone() throws CloneNotSupportedException {
+        Language cloned = (Language)super.clone();
+
+        if(locales!=null){
+            Map<String, LanguageLocale> clonedLocales = new HashMap<>();
+            for(String key: this.locales.keySet()){
+                LanguageLocale locale = this.locales.get(key);
+                if(locale!=null)
+                    clonedLocales.put(key, locale.clone());
+            }
+            cloned.setLocales(clonedLocales);
+        }
+
+        if(displayNameMap!=null){
+            Map<String, LanguageMapping> clonedDisplayNameMap = new HashMap<>();
+            for(String key: this.displayNameMap.keySet()){
+                LanguageMapping nameMap = this.displayNameMap.get(key);
+                if(nameMap!=null)
+                    clonedDisplayNameMap.put(key, nameMap.clone());
+            }
+            cloned.setDisplayNameMap(clonedDisplayNameMap);
+        }
+
+        return cloned;
+    }
 }
