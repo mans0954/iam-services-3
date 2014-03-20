@@ -28,7 +28,6 @@ import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
-import org.openiam.base.domain.AbstractDisplayNameEntity;
 import org.openiam.base.domain.KeyEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.cat.domain.CategoryEntity;
@@ -44,7 +43,7 @@ import org.openiam.internationalization.InternationalizedCollection;
 @DozerDTOCorrespondence(MetadataType.class)
 @AttributeOverride(name = "id", column = @Column(name = "TYPE_ID"))
 @Internationalized
-public class MetadataTypeEntity extends AbstractDisplayNameEntity {
+public class MetadataTypeEntity extends KeyEntity {
 
     private static final long serialVersionUID = 1L;
   
@@ -83,6 +82,13 @@ public class MetadataTypeEntity extends AbstractDisplayNameEntity {
     @JoinTable(name = "CATEGORY_TYPE", joinColumns = { @JoinColumn(name = "TYPE_ID") }, inverseJoinColumns = { @JoinColumn(name = "CATEGORY_ID") })
     @Fetch(FetchMode.SUBSELECT)
     private Set<CategoryEntity> categories = new HashSet<CategoryEntity>(0);
+    
+    @Transient
+    @InternationalizedCollection(referenceType="MetadataTypeEntity", targetField="displayName")
+    private Map<String, LanguageMappingEntity> displayNameMap;
+    
+    @Transient
+    private String displayName;
     
     public MetadataTypeEntity() {
     	super();
@@ -149,6 +155,22 @@ public class MetadataTypeEntity extends AbstractDisplayNameEntity {
 
 	public void setBinary(boolean binary) {
 		this.binary = binary;
+	}
+	
+	public Map<String, LanguageMappingEntity> getDisplayNameMap() {
+		return displayNameMap;
+	}
+
+	public void setDisplayNameMap(Map<String, LanguageMappingEntity> displayNameMap) {
+		this.displayNameMap = displayNameMap;
+	}
+
+	public String getDisplayName() {
+		return displayName;
+	}
+
+	public void setDisplayName(String displayName) {
+		this.displayName = displayName;
 	}
 
 	@Override

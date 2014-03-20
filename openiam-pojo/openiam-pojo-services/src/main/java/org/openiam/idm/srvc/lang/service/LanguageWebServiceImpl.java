@@ -23,31 +23,17 @@ public class LanguageWebServiceImpl implements LanguageWebService {
 	
 	@Autowired
 	private LanguageDozerConverter languageDozerConverter;
-	
+
     @Override
-    public List<Language> getUsedLanguages(){
+    @LocalizedServiceGet
+    public List<Language> getUsedLanguages(final Language language){
         final List<LanguageEntity> entityList = languageService.getUsedLanguages();
         return (entityList != null) ? languageDozerConverter.convertToDTOList(entityList, true) : null;
     }
 
     @Override
     @LocalizedServiceGet
-    public List<Language> getUsedLanguagesLocalized(final Language language){
-        final List<LanguageEntity> entityList = languageService.getUsedLanguages();
-        return (entityList != null) ? languageDozerConverter.convertToDTOList(entityList, true) : null;
-    }
-
-	@Override
-	public List<Language> findBeans(final LanguageSearchBean searchBean, final int from, final int size) {
-		final List<LanguageEntity> entityList = languageService.findBeans(searchBean, from, size);
-		return languageDozerConverter.convertToDTOList(entityList, searchBean.isDeepCopy());
-	}
-
-
-
-    @Override
-    @LocalizedServiceGet
-    public List<Language> findBeansLocalized(final LanguageSearchBean searchBean, final int from, final int size, final Language language) {
+    public List<Language> findBeans(final LanguageSearchBean searchBean, final int from, final int size, final Language language) {
         final List<LanguageEntity> entityList = languageService.findBeans(searchBean, from, size);
         return languageDozerConverter.convertToDTOList(entityList, searchBean.isDeepCopy());
     }

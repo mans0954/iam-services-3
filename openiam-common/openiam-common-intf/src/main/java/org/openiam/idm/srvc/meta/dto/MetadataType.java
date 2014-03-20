@@ -11,7 +11,6 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
-import org.openiam.base.AbstractDisplayNameDTO;
 import org.openiam.base.KeyDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.cat.dto.Category;
@@ -33,11 +32,13 @@ import org.openiam.internationalization.InternationalizedCollection;
 	"elementAttributes", 
 	"categories", 
 	"grouping",
-	"binary"
+	"binary",
+	"displayNameMap",
+	"displayName"
 })
 @DozerDTOCorrespondence(MetadataTypeEntity.class)
 @Internationalized
-public class MetadataType extends AbstractDisplayNameDTO {
+public class MetadataType extends KeyDTO {
 
     private String description;
 
@@ -50,6 +51,11 @@ public class MetadataType extends AbstractDisplayNameDTO {
 
     protected Map<String, MetadataElement> elementAttributes = new HashMap<String, MetadataElement>(0);
     protected Set<Category> categories = new HashSet<Category>(0);
+    
+    @InternationalizedCollection(referenceType="MetadataTypeEntity", targetField="displayName")
+    private Map<String, LanguageMapping> displayNameMap;
+	    
+    private String displayName;
     
     public MetadataType() {
     	super();
@@ -110,6 +116,22 @@ public class MetadataType extends AbstractDisplayNameDTO {
 	public void setBinary(boolean binary) {
 		this.binary = binary;
 	}
+	
+	 public Map<String, LanguageMapping> getDisplayNameMap() {
+		 return displayNameMap;
+	 }
+
+	 public void setDisplayNameMap(Map<String, LanguageMapping> displayNameMap) {
+		 this.displayNameMap = displayNameMap;
+	 }
+
+	 public String getDisplayName() {
+		 return displayName;
+	 }
+
+	 public void setDisplayName(String displayName) {
+		 this.displayName = displayName;
+	 }
 
 	@Override
 	public int hashCode() {
