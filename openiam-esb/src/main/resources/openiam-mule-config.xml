@@ -98,18 +98,6 @@
 			</service>
 		</model>
 
-		<model name="referenceDataWebServiceModel">
-			<service name="referenceDataWebService">
-				<inbound>
-						<inbound-endpoint address="${webservice.path}ReferenceDataWebService" 		exchange-pattern="request-response">
-						<cxf:jaxws-service />
-					</inbound-endpoint>
-				</inbound>
-				<component>
-					<spring-object bean="refDataService" />
-				</component>
-			</service>
-		</model>
 
 		<model name="authenticationServiceModel">
 			<service name="authenticationService">

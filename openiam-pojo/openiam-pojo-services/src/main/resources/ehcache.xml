@@ -77,11 +77,6 @@
 	    overflowToDisk="true"
     />         
      
-    <cache name="org.openiam.idm.srvc.cd.dto.ReferenceData"
-        maxElementsInMemory="2000"
-        eternal="false"
-        overflowToDisk="false" 
-     />
     <cache name="org.openiam.idm.srvc.orgpolicy.dto.OrgPolicy"
         maxElementsInMemory="50"
         eternal="false"
