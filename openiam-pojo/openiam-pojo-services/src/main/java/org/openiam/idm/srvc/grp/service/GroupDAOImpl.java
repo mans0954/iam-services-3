@@ -5,12 +5,12 @@ package org.openiam.idm.srvc.grp.service;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.Criteria;
-import org.hibernate.criterion.MatchMode;
-import org.hibernate.criterion.Restrictions;
+import org.hibernate.criterion.*;
 import org.openiam.base.Tuple;
 import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.idm.searchbeans.GroupSearchBean;
 import org.openiam.idm.searchbeans.SearchBean;
+import org.openiam.idm.srvc.grp.domain.GroupAttributeEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.searchbean.converter.GroupSearchBeanConverter;
@@ -48,20 +48,22 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
             }else if(StringUtils.isNotBlank(groupSearchBean.getKey())) {
                 criteria.add(Restrictions.eq(getPKfieldName(), groupSearchBean.getKey()));
             }
-            
+
             if(CollectionUtils.isNotEmpty(groupSearchBean.getAttributes())) {
-				criteria.createAlias("attributes", "prop");
-				for(final Tuple<String, String> attribute : groupSearchBean.getAttributes()) {
-					if(StringUtils.isNotBlank(attribute.getKey()) && StringUtils.isNotBlank(attribute.getValue())) {
-						criteria.add(Restrictions.and(Restrictions.eq("prop.name", attribute.getKey()), 
-								Restrictions.eq("prop.value", attribute.getValue())));
-					} else if(StringUtils.isNotBlank(attribute.getKey())) {
-						criteria.add(Restrictions.eq("prop.name", attribute.getKey()));
-					} else if(StringUtils.isNotBlank(attribute.getValue())) {
-						criteria.add(Restrictions.eq("prop.value", attribute.getValue()));
-					}
-				}
-			}
+                for(final Tuple<String, String> attribute : groupSearchBean.getAttributes()) {
+                    DetachedCriteria crit = DetachedCriteria.forClass(GroupAttributeEntity.class);
+                    if(StringUtils.isNotBlank(attribute.getKey()) && StringUtils.isNotBlank(attribute.getValue())) {
+                        crit.add(Restrictions.and(Restrictions.eq("name", attribute.getKey()),
+                                Restrictions.eq("value", attribute.getValue())));
+                    } else if(StringUtils.isNotBlank(attribute.getKey())) {
+                        crit.add(Restrictions.eq("name", attribute.getKey()));
+                    } else if(StringUtils.isNotBlank(attribute.getValue())) {
+                        crit.add(Restrictions.eq("value", attribute.getValue()));
+                    }
+                    crit.setProjection(Projections.property("group.id"));
+                    criteria.add(Subqueries.propertyIn("id", crit));
+                }
+            }
         }
         return criteria;
     }
