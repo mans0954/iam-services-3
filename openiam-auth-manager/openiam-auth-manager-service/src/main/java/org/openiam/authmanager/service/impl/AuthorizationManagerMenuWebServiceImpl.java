@@ -19,6 +19,7 @@ import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.exception.BasicDataServiceException;
+import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
 import org.openiam.idm.srvc.res.dto.ResourceRisk;
@@ -48,23 +49,23 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 	private ResourceService resourceService;
 	
 	@Override
-	public AuthorizationMenu getMenuTreeForUserId(final MenuRequest request) {
+	public AuthorizationMenu getMenuTreeForUserId(final MenuRequest request, final Language langauge) {
 		final StopWatch sw = new StopWatch();
 		sw.start();
 		AuthorizationMenu retVal = null;
 		if(request != null) {
 			if(StringUtils.isNotEmpty(request.getUserId())) {
 				if(StringUtils.isNotEmpty(request.getMenuRoot())) {
-					retVal = menuService.getMenuTree(request.getMenuRoot(), request.getUserId());
+					retVal = menuService.getMenuTree(request.getMenuRoot(), request.getUserId(), langauge);
 				} else {
-					retVal = menuService.getMenuTreeByName(request.getMenuName(), request.getUserId());
+					retVal = menuService.getMenuTreeByName(request.getMenuName(), request.getUserId(), langauge);
 				}
 			} else if(request.getLoginId() != null) {
 				final AuthorizationManagerLoginId login = request.getLoginId();
 				if(StringUtils.isNotEmpty(request.getMenuRoot())) {
-					retVal = menuService.getMenuTree(request.getMenuRoot(), login.getLogin(), login.getManagedSysId());
+					retVal = menuService.getMenuTree(request.getMenuRoot(), login.getLogin(), login.getManagedSysId(), langauge);
 				} else {
-					retVal = menuService.getMenuTreeByName(request.getMenuName(), login.getLogin(), login.getManagedSysId());
+					retVal = menuService.getMenuTreeByName(request.getMenuName(), login.getLogin(), login.getManagedSysId(), langauge);
 				}
 			}
 		}
@@ -76,14 +77,14 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 	}
 
 	@Override
-	public AuthorizationMenu getMenuTree(final String menuId) {
-		return menuService.getMenuTree(menuId);
+	public AuthorizationMenu getMenuTree(final String menuId, final Language langauge) {
+		return menuService.getMenuTree(menuId, langauge);
 	}
 	
 
 	@Override
-	public AuthorizationMenu getNonCachedMenuTree(final String menuId, final String principalId, final String principalType) {
-		return menuService.getNonCachedMenuTree(menuId, principalId, principalType);
+	public AuthorizationMenu getNonCachedMenuTree(final String menuId, final String principalId, final String principalType, final Language langauge) {
+		return menuService.getNonCachedMenuTree(menuId, principalId, principalType, langauge);
 	}
 	
 	@Override
@@ -128,7 +129,7 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 		
 		try {
 			setParents(null, root);
-			final AuthorizationMenu currentRoot = menuService.getMenuTree(root.getId());
+			final AuthorizationMenu currentRoot = menuService.getMenuTree(root.getId(), null);
 			
 			final List<AuthorizationMenu> changedMenus = new LinkedList<AuthorizationMenu>();
 			final List<AuthorizationMenu> newMenus = new LinkedList<AuthorizationMenu>();

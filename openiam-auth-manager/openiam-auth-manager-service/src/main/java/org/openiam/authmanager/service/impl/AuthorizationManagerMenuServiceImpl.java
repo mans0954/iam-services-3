@@ -24,6 +24,7 @@ import org.openiam.idm.srvc.audit.domain.AuditLogBuilder;
 import org.openiam.idm.srvc.base.AbstractBaseService;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.service.GroupDAO;
+import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
@@ -107,7 +108,7 @@ public class AuthorizationManagerMenuServiceImpl extends AbstractBaseService imp
 		final StringBuilder sb = new StringBuilder();
 		try {
 			if(rootName != null) {
-				final AuthorizationMenu root = getMenuTree(rootName, userId);
+				final AuthorizationMenu root = getMenuTree(rootName, userId, null);
 				if(root == null) {
 					sb.append(String.format("No menu with root '%s'", rootName));
 				} else {
@@ -138,13 +139,13 @@ public class AuthorizationManagerMenuServiceImpl extends AbstractBaseService imp
 	}
 	
 	@Override
-	public AuthorizationMenu getMenuTree(final String menuId) {
+	public AuthorizationMenu getMenuTree(final String menuId, final Language langauge) {
 		return getAllMenuTress().get(menuId);
 	}
 	
 	@Override
-	public AuthorizationMenu getNonCachedMenuTree(String menuId, String principalId, String principalType) {
-		final AuthorizationMenu menu = getMenuTree(menuId);
+	public AuthorizationMenu getNonCachedMenuTree(String menuId, String principalId, String principalType, final Language langauge) {
+		final AuthorizationMenu menu = getMenuTree(menuId, langauge);
 		ResourceEntitlementToken token = null;
 		if(menu != null) {
 			if(StringUtils.equalsIgnoreCase("user", principalType)) {
@@ -305,22 +306,22 @@ public class AuthorizationManagerMenuServiceImpl extends AbstractBaseService imp
 	}
 	
 	@Override
-	public AuthorizationMenu getMenuTree(final String menuRoot, final String userId) {
+	public AuthorizationMenu getMenuTree(final String menuRoot, final String userId, final Language langauge) {
 		return getMenu(menuCache.get(menuRoot), userId, null);
 	}
 
 	@Override
-	public AuthorizationMenu getMenuTree(final String menuRoot, final String login, final String managedSysId) {
+	public AuthorizationMenu getMenuTree(final String menuRoot, final String login, final String managedSysId, final Language langauge) {
 		return getMenu(menuCache.get(menuRoot), null, new AuthorizationManagerLoginId(login, managedSysId));
 	}
 	
 	@Override
-    public AuthorizationMenu getMenuTreeByName(final String menuRoot, final String userId) {
+    public AuthorizationMenu getMenuTreeByName(final String menuRoot, final String userId, final Language langauge) {
 		return getMenu(menuNameCache.get(menuRoot), userId, null);
 	}
 	
 	@Override
-    public AuthorizationMenu getMenuTreeByName(final String menuRoot, final String login, final String managedSysId) {
+    public AuthorizationMenu getMenuTreeByName(final String menuRoot, final String login, final String managedSysId, final Language langauge) {
 		return getMenu(menuNameCache.get(menuRoot), null, new AuthorizationManagerLoginId(login, managedSysId));
 	}
 	

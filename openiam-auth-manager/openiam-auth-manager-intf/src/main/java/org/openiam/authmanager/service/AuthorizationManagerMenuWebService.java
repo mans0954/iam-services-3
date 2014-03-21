@@ -9,6 +9,7 @@ import org.openiam.authmanager.ws.request.MenuEntitlementsRequest;
 import org.openiam.authmanager.ws.request.MenuRequest;
 import org.openiam.authmanager.ws.response.MenuSaveResponse;
 import org.openiam.base.ws.Response;
+import org.openiam.idm.srvc.lang.dto.Language;
 
 @WebService(targetNamespace = "urn:idm.openiam.org/srvc/authorizationmanager/menu/service", name = "AuthorizationManagerMenuWebService")
 public interface AuthorizationManagerMenuWebService {
@@ -22,11 +23,15 @@ public interface AuthorizationManagerMenuWebService {
 	
 	@WebMethod
 	public AuthorizationMenu getMenuTreeForUserId(
-			@WebParam(name = "request", targetNamespace = "") final MenuRequest request
+			final @WebParam(name = "request", targetNamespace = "") MenuRequest request,
+			final @WebParam(name="language", targetNamespace = "") Language language
 	);
 	
 	@WebMethod
-	public AuthorizationMenu getMenuTree(@WebParam(name = "menuId", targetNamespace = "") final String menuId);
+	public AuthorizationMenu getMenuTree(
+			@WebParam(name = "menuId", targetNamespace = "") final String menuId,
+			final @WebParam(name="language", targetNamespace = "") Language language
+	);
 	
 	/**
 	 * Called after the menu tree has been validated
@@ -53,7 +58,8 @@ public interface AuthorizationManagerMenuWebService {
 	@WebMethod
 	public AuthorizationMenu getNonCachedMenuTree(final @WebParam(name="menuId", targetNamespace = "") String menuId,
 												  final @WebParam(name="principalId", targetNamespace = "") String principalId,
-												  final @WebParam(name="principalType", targetNamespace = "") String principalType);
+												  final @WebParam(name="principalType", targetNamespace = "") String principalType,
+												  final @WebParam(name="language", targetNamespace = "") Language language);
 	
 	@WebMethod
 	public Response entitle(final @WebParam(name="menuEntitlementsRequest", targetNamespace = "") MenuEntitlementsRequest menuEntitlementsRequest);
