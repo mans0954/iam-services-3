@@ -72,11 +72,11 @@ public class LanguageEntity extends KeyEntity {
 		this.isUsed = isUsed;
 	}
 
-    public boolean isDefault() {
+    public boolean getIsDefault() {
 		return isDefault;
 	}
 
-	public void setDefault(boolean isDefault) {
+	public void setIsDefault(boolean isDefault) {
 		this.isDefault = isDefault;
 	}
 

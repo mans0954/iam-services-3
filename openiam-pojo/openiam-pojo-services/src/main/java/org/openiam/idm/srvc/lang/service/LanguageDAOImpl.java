@@ -51,8 +51,12 @@ public class LanguageDAOImpl extends BaseDaoImpl<LanguageEntity, String> impleme
     protected Criteria getExampleCriteria(final LanguageEntity t) {
         final Criteria criteria = getCriteria();
         if (t != null) {
-            if (StringUtils.isNotBlank(t.getLanguageCode())) {
-                criteria.add(Restrictions.eq("languageCode", t.getLanguageCode()));
+            if (!StringUtils.isEmpty(t.getId())) {
+                criteria.add(Restrictions.eq("id", t.getId()));
+            } else {
+                if (StringUtils.isNotBlank(t.getLanguageCode())) {
+                    criteria.add(Restrictions.eq("languageCode", t.getLanguageCode()));
+                }
             }
         }
         return criteria;
