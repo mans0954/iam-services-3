@@ -62,6 +62,10 @@ public class MetadataTypeEntity extends KeyEntity {
     @Type(type = "yes_no")
     private boolean binary;
     
+    @Column(name = "IS_SENSITIVE")
+    @Type(type = "yes_no")
+    private boolean sensitive;
+    
     @Column(name = "GROUPING", length = 100)
     private String grouping;
 
@@ -171,6 +175,14 @@ public class MetadataTypeEntity extends KeyEntity {
 
 	public void setDisplayName(String displayName) {
 		this.displayName = displayName;
+	}
+
+	public boolean isSensitive() {
+		return sensitive;
+	}
+
+	public void setSensitive(boolean sensitive) {
+		this.sensitive = sensitive;
 	}
 
 	@Override

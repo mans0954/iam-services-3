@@ -249,8 +249,11 @@ public class InternationalizationProvider {
 					for(final String languageId : transientMap.keySet()) {
 						final LanguageMappingEntity entity = transientMap.get(languageId);
 						setMetadata(entity, object, languageId, metadata);
+						if(StringUtils.isNotBlank(entity.getValue())) {
+							toSave.add(entity);
+						}
 					}
-					toSave = transientMap.values();
+					//toSave = transientMap.values();
 				} else {
 					for(final LanguageMappingEntity dbEntity : dbList) {
 						if(transientMap.containsKey(dbEntity.getLanguageId())) { /* update */
@@ -278,7 +281,9 @@ public class InternationalizationProvider {
 						}
 						if(!contains) { /* new */
 							setMetadata(transientEntity, object, languageId, metadata);
-							toSave.add(transientEntity);
+							if(StringUtils.isNotBlank(transientEntity.getValue())) {
+								toSave.add(transientEntity);
+							}
 						}
 					}
 				}

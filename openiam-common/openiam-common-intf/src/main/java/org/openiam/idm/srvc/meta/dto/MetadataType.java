@@ -15,7 +15,6 @@ import org.openiam.base.KeyDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.cat.dto.Category;
 import org.openiam.idm.srvc.lang.domain.LanguageMappingEntity;
-import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.lang.dto.LanguageMapping;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.internationalization.Internationalized;
@@ -34,7 +33,8 @@ import org.openiam.internationalization.InternationalizedCollection;
 	"grouping",
 	"binary",
 	"displayNameMap",
-	"displayName"
+	"displayName",
+	"sensitive"
 })
 @DozerDTOCorrespondence(MetadataTypeEntity.class)
 @Internationalized
@@ -48,6 +48,8 @@ public class MetadataType extends KeyDTO {
     private String grouping;
     
     private boolean binary;
+    
+    private boolean sensitive;
 
     protected Map<String, MetadataElement> elementAttributes = new HashMap<String, MetadataElement>(0);
     protected Set<Category> categories = new HashSet<Category>(0);
@@ -132,6 +134,14 @@ public class MetadataType extends KeyDTO {
 	 public void setDisplayName(String displayName) {
 		 this.displayName = displayName;
 	 }
+	 
+	public boolean isSensitive() {
+		return sensitive;
+	}
+
+	public void setSensitive(boolean sensitive) {
+		this.sensitive = sensitive;
+	}
 
 	@Override
 	public int hashCode() {
