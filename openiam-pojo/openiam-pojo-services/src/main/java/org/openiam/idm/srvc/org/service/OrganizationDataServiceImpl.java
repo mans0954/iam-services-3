@@ -173,7 +173,7 @@ public class OrganizationDataServiceImpl extends AbstractBaseService implements 
         }
         
         if(StringUtils.isBlank(organization.getOrganizationTypeId())) {
-            throw new BasicDataServiceException(ResponseCode.CLASSIFICATION_NOT_SET);
+            throw new BasicDataServiceException(ResponseCode.ORGANIZATION_TYPE_NOT_SET);
         }
         
         final OrganizationEntity entity = organizationDozerConverter.convertToEntity(organization, true);

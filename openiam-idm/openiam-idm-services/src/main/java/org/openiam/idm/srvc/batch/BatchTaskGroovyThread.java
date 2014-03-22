@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.batch;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -29,6 +30,7 @@ public class BatchTaskGroovyThread extends AbstractBatchTaskThread {
 
     @Override
     protected void doRun() {
+        Date startDate = new Date();
         String requestId = UUIDGen.getUUID();
         final Map<String, Object> bindingMap = new HashMap<String, Object>();
         bindingMap.put("context", ctx);
@@ -44,11 +46,15 @@ public class BatchTaskGroovyThread extends AbstractBatchTaskThread {
         try {
             Integer output = (Integer) scriptRunner.execute(bindingMap,
                     entity.getTaskUrl());
+
             if (output.intValue() == 0) {
                 this.logSuccess();
             } else {
                 this.logFail(null);
             }
+
+            entity.setLastExecTime(startDate);
+
         } catch (Throwable e) {
             LOG.error(e);
             this.logFail(e);
