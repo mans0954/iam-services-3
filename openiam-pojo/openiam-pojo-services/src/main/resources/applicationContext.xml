@@ -111,7 +111,21 @@
 	<bean id="defaultLoginModuleManager" class="org.openiam.idm.srvc.auth.spi.DefaultLoginModule">
 	</bean>
 
-	<bean id="configurableGroovyScriptEngine" class="${org.openiam.groovy.script.engine}" />
+	<bean id="targetConfigurableGroovyScriptEngine" class="${org.openiam.groovy.script.engine}" />
+
+    <bean id="baseTransactionProxy" class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean"
+          abstract="true">
+        <property name="transactionManager" ref="transactionManager"/>
+        <property name="transactionAttributes">
+            <props>
+                <prop key="execute">PROPAGATION_REQUIRED</prop>
+            </props>
+        </property>
+    </bean>
+
+    <bean id="configurableGroovyScriptEngine" parent="baseTransactionProxy">
+        <property name="target" ref="targetConfigurableGroovyScriptEngine"/>
+    </bean>
 
 	<!-- QueryDataService -->
 	<bean id="queryWS" class="org.openiam.idm.srvc.qry.ws.QueryDataWebServiceImpl">
