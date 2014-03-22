@@ -124,6 +124,10 @@ public class InternationalizationJoinpointProvider implements InitializingBean, 
 		for(final Object obj : joinpoint.getArgs()) {
 			if(obj instanceof KeyEntity) {
 				internationalizationProvider.doSaveUpdate((KeyEntity)obj);
+			} else if(obj instanceof Collection) {
+				for(final Object o : (Collection)obj) {
+					internationalizationProvider.doSaveUpdate((KeyEntity)o);
+				}
 			}
 		}
 	}

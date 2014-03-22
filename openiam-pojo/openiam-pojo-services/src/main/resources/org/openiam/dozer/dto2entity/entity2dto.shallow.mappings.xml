@@ -49,6 +49,10 @@
 			<a>approverAssociations</a>
 			<b>approverAssociations</b>
 		</field-exclude>
+		<field-exclude>
+			<a>displayNameMap</a>
+			<b>displayNameMap</b>
+		</field-exclude>
 	</mapping>
 
 	<mapping>

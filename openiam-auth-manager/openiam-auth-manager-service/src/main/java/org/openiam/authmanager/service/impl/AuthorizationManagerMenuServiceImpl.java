@@ -17,6 +17,7 @@ import org.openiam.authmanager.model.ResourceEntitlementToken;
 import org.openiam.authmanager.service.AuthorizationManagerAdminService;
 import org.openiam.authmanager.service.AuthorizationManagerMenuService;
 import org.openiam.authmanager.service.AuthorizationManagerService;
+import org.openiam.authmanager.util.AuthorizationConstants;
 import org.openiam.authmanager.ws.request.MenuEntitlementsRequest;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
@@ -24,7 +25,9 @@ import org.openiam.idm.srvc.audit.domain.AuditLogBuilder;
 import org.openiam.idm.srvc.base.AbstractBaseService;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.service.GroupDAO;
+import org.openiam.idm.srvc.lang.domain.LanguageMappingEntity;
 import org.openiam.idm.srvc.lang.dto.Language;
+import org.openiam.idm.srvc.lang.service.LanguageMappingDAO;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
@@ -84,6 +87,9 @@ public class AuthorizationManagerMenuServiceImpl extends AbstractBaseService imp
 	private AuthorizationManagerService authManager;
 	
 	@Autowired
+	private LanguageMappingDAO languageMappingDAO;
+	
+	@Autowired
 	private AuthorizationManagerAdminService authManagerAdminService;
 	
 	@Autowired
@@ -139,13 +145,13 @@ public class AuthorizationManagerMenuServiceImpl extends AbstractBaseService imp
 	}
 	
 	@Override
-	public AuthorizationMenu getMenuTree(final String menuId, final Language langauge) {
+	public AuthorizationMenu getMenuTree(final String menuId) {
 		return getAllMenuTress().get(menuId);
 	}
 	
 	@Override
-	public AuthorizationMenu getNonCachedMenuTree(String menuId, String principalId, String principalType, final Language langauge) {
-		final AuthorizationMenu menu = getMenuTree(menuId, langauge);
+	public AuthorizationMenu getNonCachedMenuTree(String menuId, String principalId, String principalType) {
+		final AuthorizationMenu menu = getMenuTree(menuId);
 		ResourceEntitlementToken token = null;
 		if(menu != null) {
 			if(StringUtils.equalsIgnoreCase("user", principalType)) {
@@ -183,8 +189,8 @@ public class AuthorizationManagerMenuServiceImpl extends AbstractBaseService imp
 	}
 	
 	private final Map<String, AuthorizationMenu> getAllMenuTress() {
+		final List<AuthorizationMenu> tempMenuList = resourceDAO.getAuthorizationMenus();		
 		final List<ResourceProp> tempResourcePropertyList = resourcePropDAO.getList();
-		final List<AuthorizationMenu> tempMenuList = resourceDAO.getAuthorizationMenus();
 		
 		final Map<String, List<ResourceProp>> tempResourcePropMap = new HashMap<String, List<ResourceProp>>();
 		for(final ResourceProp prop : tempResourcePropertyList) {
@@ -194,10 +200,27 @@ public class AuthorizationManagerMenuServiceImpl extends AbstractBaseService imp
 			tempResourcePropMap.get(prop.getResourceId()).add(prop);
 		}
 		
+		final Set<String> idSet = new HashSet<>();
+		if(CollectionUtils.isNotEmpty(tempMenuList)) {
+			for(final AuthorizationMenu menu : tempMenuList) {
+				idSet.add(menu.getId());
+			}
+		}
+		final List<LanguageMappingEntity> languageMappings = languageMappingDAO.getByReferenceIdsAndType(idSet, ResourceEntity.class.getSimpleName());
+		final Map<String, List<LanguageMappingEntity>> languageMappingMap = new HashMap<String, List<LanguageMappingEntity>>();
+		if(CollectionUtils.isNotEmpty(languageMappings)) {
+			for(final LanguageMappingEntity mapping : languageMappings) {
+				if(!languageMappingMap.containsKey(mapping.getReferenceId())) {
+					languageMappingMap.put(mapping.getReferenceId(), new LinkedList<LanguageMappingEntity>());
+				}
+				languageMappingMap.get(mapping.getReferenceId()).add(mapping);
+			}
+		}
+		
 		final Map<String, AuthorizationMenu> tempMenuMap = new HashMap<String, AuthorizationMenu>();
 		for(final AuthorizationMenu menu : tempMenuList) {
 			tempMenuMap.put(menu.getId(), menu);
-			menu.afterPropertiesSet(tempResourcePropMap.get(menu.getId()));
+			menu.afterPropertiesSet(tempResourcePropMap.get(menu.getId()), languageMappingMap.get(menu.getId()));
 		}
 		final Map<String, AuthorizationMenu> tempMenuTreeMap = createMenuTrees(tempMenuMap);
 		return tempMenuTreeMap;
@@ -306,22 +329,22 @@ public class AuthorizationManagerMenuServiceImpl extends AbstractBaseService imp
 	}
 	
 	@Override
-	public AuthorizationMenu getMenuTree(final String menuRoot, final String userId, final Language langauge) {
+	public AuthorizationMenu getMenuTree(final String menuRoot, final String userId) {
 		return getMenu(menuCache.get(menuRoot), userId, null);
 	}
 
 	@Override
-	public AuthorizationMenu getMenuTree(final String menuRoot, final String login, final String managedSysId, final Language langauge) {
+	public AuthorizationMenu getMenuTree(final String menuRoot, final String login, final String managedSysId) {
 		return getMenu(menuCache.get(menuRoot), null, new AuthorizationManagerLoginId(login, managedSysId));
 	}
 	
 	@Override
-    public AuthorizationMenu getMenuTreeByName(final String menuRoot, final String userId, final Language langauge) {
+    public AuthorizationMenu getMenuTreeByName(final String menuRoot, final String userId) {
 		return getMenu(menuNameCache.get(menuRoot), userId, null);
 	}
 	
 	@Override
-    public AuthorizationMenu getMenuTreeByName(final String menuRoot, final String login, final String managedSysId, final Language langauge) {
+    public AuthorizationMenu getMenuTreeByName(final String menuRoot, final String login, final String managedSysId) {
 		return getMenu(menuNameCache.get(menuRoot), null, new AuthorizationManagerLoginId(login, managedSysId));
 	}
 	

@@ -1,6 +1,7 @@
 package org.openiam.authmanager.service.impl;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.StopWatch;
 import org.apache.commons.logging.Log;
@@ -19,7 +20,9 @@ import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.exception.BasicDataServiceException;
+import org.openiam.idm.srvc.lang.domain.LanguageMappingEntity;
 import org.openiam.idm.srvc.lang.dto.Language;
+import org.openiam.idm.srvc.lang.dto.LanguageMapping;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
 import org.openiam.idm.srvc.res.dto.ResourceRisk;
@@ -29,6 +32,7 @@ import org.springframework.stereotype.Service;
 
 import javax.jws.WebService;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -56,16 +60,16 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 		if(request != null) {
 			if(StringUtils.isNotEmpty(request.getUserId())) {
 				if(StringUtils.isNotEmpty(request.getMenuRoot())) {
-					retVal = menuService.getMenuTree(request.getMenuRoot(), request.getUserId(), langauge);
+					retVal = menuService.getMenuTree(request.getMenuRoot(), request.getUserId());
 				} else {
-					retVal = menuService.getMenuTreeByName(request.getMenuName(), request.getUserId(), langauge);
+					retVal = menuService.getMenuTreeByName(request.getMenuName(), request.getUserId());
 				}
 			} else if(request.getLoginId() != null) {
 				final AuthorizationManagerLoginId login = request.getLoginId();
 				if(StringUtils.isNotEmpty(request.getMenuRoot())) {
-					retVal = menuService.getMenuTree(request.getMenuRoot(), login.getLogin(), login.getManagedSysId(), langauge);
+					retVal = menuService.getMenuTree(request.getMenuRoot(), login.getLogin(), login.getManagedSysId());
 				} else {
-					retVal = menuService.getMenuTreeByName(request.getMenuName(), login.getLogin(), login.getManagedSysId(), langauge);
+					retVal = menuService.getMenuTreeByName(request.getMenuName(), login.getLogin(), login.getManagedSysId());
 				}
 			}
 		}
@@ -73,18 +77,38 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 		if(log.isDebugEnabled()) {
 			log.debug(String.format("getMenuTreeForUserId: request: %s, time: %s ms", request, sw.getTime()));
 		}
+		localize(retVal, langauge);
 		return retVal;
+		
 	}
 
 	@Override
-	public AuthorizationMenu getMenuTree(final String menuId, final Language langauge) {
-		return menuService.getMenuTree(menuId, langauge);
+	public AuthorizationMenu getMenuTree(final String menuId, final Language language) {
+		final AuthorizationMenu menu = menuService.getMenuTree(menuId);
+		localize(menu, language);
+		return menu;
 	}
 	
 
 	@Override
-	public AuthorizationMenu getNonCachedMenuTree(final String menuId, final String principalId, final String principalType, final Language langauge) {
-		return menuService.getNonCachedMenuTree(menuId, principalId, principalType, langauge);
+	public AuthorizationMenu getNonCachedMenuTree(final String menuId, final String principalId, final String principalType, final Language language) {
+		final AuthorizationMenu menu = menuService.getNonCachedMenuTree(menuId, principalId, principalType);
+		localize(menu, language);
+		return menu;
+	}
+	
+	private void localize(final AuthorizationMenu menu, final Language language) {
+		if(menu != null && language != null) {
+			menu.localize(language);
+			
+			AuthorizationMenu sibling = menu.getNextSibling();
+			while(sibling != null) {
+				localize(sibling, language);
+				sibling = sibling.getNextSibling();
+			}
+			
+			localize(menu.getFirstChild(), language);
+		}
 	}
 	
 	@Override
@@ -129,7 +153,7 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 		
 		try {
 			setParents(null, root);
-			final AuthorizationMenu currentRoot = menuService.getMenuTree(root.getId(), null);
+			final AuthorizationMenu currentRoot = menuService.getMenuTree(root.getId());
 			
 			final List<AuthorizationMenu> changedMenus = new LinkedList<AuthorizationMenu>();
 			final List<AuthorizationMenu> newMenus = new LinkedList<AuthorizationMenu>();
@@ -318,12 +342,14 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
         resource.setRisk(ResourceRisk.valueOf(menu.getRisk()));
 		resource.setIsPublic(menu.getIsPublic());
 		resource.setResourceType(resourceService.findResourceTypeById(AuthorizationConstants.MENU_ITEM_RESOURCE_TYPE));
-		
+		resource.setDisplayNameMap(convert(menu.getDisplayNameMap()));
+		/*
 		final ResourcePropEntity displayNameProp = new ResourcePropEntity();
 		displayNameProp.setResource(resource);
 		displayNameProp.setName(AuthorizationConstants.MENU_ITEM_DISPLAY_NAME_PROPERTY);
 		displayNameProp.setPropValue(menu.getDisplayName());
 		resource.addResourceProperty(displayNameProp);
+		*/
 		
 		final ResourcePropEntity iconProp = new ResourcePropEntity();
 		iconProp.setResource(resource);
@@ -346,8 +372,9 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 		resource.setDisplayOrder(menu.getDisplayOrder());
         resource.setRisk(ResourceRisk.getByValue(menu.getRisk()));
 		resource.setIsPublic(menu.getIsPublic());
+		resource.setDisplayNameMap(convert(menu.getDisplayNameMap()));
 		
-		ResourcePropEntity displayNameProp = resource.getResourceProperty(AuthorizationConstants.MENU_ITEM_DISPLAY_NAME_PROPERTY);
+		//ResourcePropEntity displayNameProp = resource.getResourceProperty(AuthorizationConstants.MENU_ITEM_DISPLAY_NAME_PROPERTY);
 		ResourcePropEntity iconProp = resource.getResourceProperty(AuthorizationConstants.MENU_ITEM_ICON_PROPERTY);
 		ResourcePropEntity visibleProp = resource.getResourceProperty(AuthorizationConstants.MENU_ITEM_IS_VISIBLE);
 		
@@ -361,6 +388,7 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 			resource.addResourceProperty(visibleProp);
 		}
 		
+		/*
 		if(displayNameProp != null) {
 			displayNameProp.setPropValue(menu.getDisplayName());
 		} else {
@@ -370,6 +398,7 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 			displayNameProp.setPropValue(menu.getDisplayName());
 			resource.addResourceProperty(displayNameProp);
 		}
+		*/
 		
 		if(iconProp != null) {
 			iconProp.setPropValue(menu.getIcon());
@@ -433,6 +462,22 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 		return response;
 	}
 	
+	private Map<String, LanguageMappingEntity> convert(final Map<String, LanguageMapping> transientMap) {
+		final Map<String, LanguageMappingEntity> convertedMap = new HashMap<>();
+		if(MapUtils.isNotEmpty(transientMap)) {
+			for(final String key : transientMap.keySet()) {
+				final LanguageMapping mapping = transientMap.get(key);
+				final LanguageMappingEntity entity = new LanguageMappingEntity();
+				entity.setId(mapping.getId());
+				entity.setLanguageId(mapping.getLanguageId());
+				entity.setReferenceId(mapping.getReferenceId());
+				entity.setReferenceType(mapping.getReferenceType());
+				entity.setValue(mapping.getValue());
+				convertedMap.put(key, entity);
+			}
+		}
+		return convertedMap;
+	}
 
 	@Override
 	public boolean isUserAuthenticatedToMenuWithURL(final String userId, final String url, final String menuId, final boolean defaultResult) {

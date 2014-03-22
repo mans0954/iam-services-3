@@ -10,4 +10,6 @@ import org.openiam.idm.srvc.lang.domain.LanguageMappingEntity;
 public interface LanguageMappingDAO extends BaseDao<LanguageMappingEntity, String> {
 
 	public List<LanguageMappingEntity> getByReferenceIdAndType(final String referenceId, final String referenceType);
+	
+	public List<LanguageMappingEntity> getByReferenceIdsAndType(final Collection<String> referenceIds, final String referenceType);
 }

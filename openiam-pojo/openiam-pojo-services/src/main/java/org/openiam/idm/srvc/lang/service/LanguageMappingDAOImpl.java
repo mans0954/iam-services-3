@@ -55,4 +55,16 @@ public class LanguageMappingDAOImpl extends BaseDaoImpl<LanguageMappingEntity, S
 		example.setReferenceType(referenceType);
 		return getByExample(example);
 	}
+
+	@Override
+	public List<LanguageMappingEntity> getByReferenceIdsAndType(Collection<String> referenceIds, String referenceType) {
+		final Criteria criteria = getCriteria();
+		if(CollectionUtils.isNotEmpty(referenceIds)) {
+			criteria.add(Restrictions.in("referenceId", referenceIds));
+		}
+		if(StringUtils.isNotBlank(referenceType)) {
+			criteria.add(Restrictions.eq("referenceType", referenceType));
+		}
+		return criteria.list();
+	}
 }
