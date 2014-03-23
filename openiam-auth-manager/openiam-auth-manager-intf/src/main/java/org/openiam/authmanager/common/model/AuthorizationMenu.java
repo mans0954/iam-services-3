@@ -274,6 +274,7 @@ public class AuthorizationMenu implements Serializable {
 		return result;
 	}
 
+	
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -283,11 +284,13 @@ public class AuthorizationMenu implements Serializable {
 		if (getClass() != obj.getClass())
 			return false;
 		AuthorizationMenu other = (AuthorizationMenu) obj;
+		/*
 		if (displayName == null) {
 			if (other.displayName != null)
 				return false;
 		} else if (!displayName.equals(other.displayName))
 			return false;
+		*/
 		if (displayOrder == null) {
 			if (other.displayOrder != null)
 				return false;
@@ -371,6 +374,14 @@ public class AuthorizationMenu implements Serializable {
 		if(isPublic != other.isPublic) {
 			return false;
 		}
+		
+		if (displayNameMap == null) {
+			if (other.displayNameMap != null)
+				return false;
+		} else if (!displayNameMap.equals(other.displayNameMap))
+			return false;
+
+		
 		return true;
 	}
 	
