@@ -96,15 +96,6 @@ public class MetadataWebServiceImpl implements MetadataWebService {
     }
 
     @Override
-    public MetadataElement findElementById(final String id) {
-        final MetadataElementSearchBean searchBean = new MetadataElementSearchBean();
-        searchBean.setKey(id);
-        searchBean.setDeepCopy(true);
-        final List<MetadataElement> dtoList = findElementBeans(searchBean, 0, 1);
-        return (CollectionUtils.isNotEmpty(dtoList)) ? dtoList.get(0) : null;
-    }
-
-    @Override
     public Response saveMetadataType(final MetadataType dto) {
         final Response response = new Response();
         try {

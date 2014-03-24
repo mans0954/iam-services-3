@@ -231,7 +231,8 @@ public class AuthorizationManagerMenuServiceImpl extends AbstractBaseService imp
 	}
 	
 	@Override
-    @ManagedOperation(description="sweep the Menu Cache")
+	@Transactional
+    //@ManagedOperation(description="sweep the Menu Cache")
 	public void sweep() {
 		final StopWatch sw = new StopWatch();
 		sw.start();
