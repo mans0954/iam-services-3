@@ -70,18 +70,6 @@ public class MetadataWebServiceImpl implements MetadataWebService {
     private static Logger LOG = Logger.getLogger(MetadataWebServiceImpl.class);
 
     @Override
-    public List<MetadataElement> getMetadataElementByType(final String typeId) {
-        final List<MetadataElementEntity> entityList = metadataService.getMetadataElementByType(typeId);
-        return (entityList != null) ? metaDataElementDozerConverter.convertToDTOList(entityList, true) : null;
-    }
-
-    @Override
-    public List<MetadataElement> getAllElementsForCategoryType(final String categoryType) {
-        final List<MetadataElementEntity> entityList = metadataService.getAllElementsForCategoryType(categoryType);
-        return (entityList != null) ? metaDataElementDozerConverter.convertToDTOList(entityList, true) : null;
-    }
-
-    @Override
     public List<MetadataElement> findElementBeans(final MetadataElementSearchBean searchBean, final int from, final int size) {
         final List<MetadataElementEntity> entityList = metadataService.findBeans(searchBean, from, size, null);
         return (entityList != null) ? metaDataElementDozerConverter.convertToDTOList(entityList,

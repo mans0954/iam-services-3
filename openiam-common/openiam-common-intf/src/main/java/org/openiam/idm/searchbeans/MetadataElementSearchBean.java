@@ -20,7 +20,8 @@ import org.openiam.idm.srvc.meta.dto.MetadataElement;
 	"selfEditable",
 	"templateId",
 	"keySet",
-	"excludedGroupings"
+	"excludedGroupings",
+	"categoryTypes"
 })
 public class MetadataElementSearchBean extends AbstractSearchBean<MetadataElement, String> implements SearchBean<MetadataElement, String> {
 
@@ -32,6 +33,7 @@ public class MetadataElementSearchBean extends AbstractSearchBean<MetadataElemen
 	private boolean selfEditable;
 	private String templateId;
 	private Set<String> excludedGroupings;
+	private Set<String> categoryTypes;
 	
 	public Set<String> getTypeIdSet() {
 		return typeIdSet;
@@ -119,6 +121,22 @@ public class MetadataElementSearchBean extends AbstractSearchBean<MetadataElemen
 	}
 	public void setExcludedGroupings(Set<String> excludedGroupings) {
 		this.excludedGroupings = excludedGroupings;
+	}
+	
+	public void addCategoryType(final String category) {
+		if(StringUtils.isNotBlank(category)) {
+			if(this.categoryTypes == null) {
+				this.categoryTypes = new HashSet<>();
+			}
+			this.categoryTypes.add(category);
+		}
+	}
+	
+	public Set<String> getCategoryTypes() {
+		return categoryTypes;
+	}
+	public void setCategoryTypes(Set<String> categoryTypes) {
+		this.categoryTypes = categoryTypes;
 	}
 	@Override
 	public String getKey() {

@@ -9,9 +9,7 @@ import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
  *
  * @author suneet
  */
-public interface MetadataElementDAO extends
-        BaseDao<MetadataElementEntity, String> {
-    List<MetadataElementEntity> findbyCategoryType(String categoryType);
+public interface MetadataElementDAO extends BaseDao<MetadataElementEntity, String> {
 
     public List<MetadataElementEntity> getByResourceId(final String resourceId);
 }

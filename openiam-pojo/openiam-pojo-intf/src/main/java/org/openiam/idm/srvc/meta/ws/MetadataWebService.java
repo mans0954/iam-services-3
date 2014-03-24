@@ -27,26 +27,7 @@ import javax.jws.WebService;
  */
 @WebService
 public interface MetadataWebService {
-
-    /**
-     * Gets the Metadata Element based on the Type Id.It also returns the MetadataOptions
-     * with the MetadataElements.
-     *
-     * @param typeId the MetadataType for which the MetadataElements are required.
-     * @return the Map which contains MetadataId as Key and MetadataElementValue
-     *         objects as Values.
-     */
-    @WebMethod
-    public List<MetadataElement> getMetadataElementByType(
-            @WebParam(name = "typeId", targetNamespace = "")
-            String typeId);
     
-    
-    @WebMethod
-    public List<MetadataElement> getAllElementsForCategoryType(
-            @WebParam(name = "categoryType", targetNamespace = "")
-            String categoryType);
-
     @WebMethod
     public List<MetadataElement> findElementBeans(final @WebParam(name = "searchBean", targetNamespace = "") MetadataElementSearchBean searchBean,
     									   final @WebParam(name = "from", targetNamespace = "") int from,

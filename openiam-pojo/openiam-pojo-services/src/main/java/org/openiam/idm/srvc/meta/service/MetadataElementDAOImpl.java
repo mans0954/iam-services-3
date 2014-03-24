@@ -44,7 +44,14 @@ public class MetadataElementDAOImpl extends BaseDaoImpl<MetadataElementEntity, S
 				
 				//TODO:  Bug in Hibernate - metadataType.grouping throws org.hibernate.QueryException: could not resolve property
 				if(CollectionUtils.isNotEmpty(metaSearchBean.getExcludedGroupings())) {
+					//criteria.createAlias("metadataType", "mt").add(Restrictions.not(Restrictions.in("mt.grouping", metaSearchBean.getExcludedGroupings())));
 					//criteria.add(Restrictions.not(Restrictions.in("metadataType.grouping", metaSearchBean.getExcludedGroupings())));
+				}
+				
+				if(CollectionUtils.isNotEmpty(metaSearchBean.getCategoryTypes())) {
+					criteria.createAlias("metadataType", "mt")
+							.createAlias("mt.categories", "ct")
+							.add(Restrictions.in("ct.id", metaSearchBean.getCategoryTypes()));
 				}
 				
 				if(StringUtils.isNotBlank(metaSearchBean.getTemplateId())) {
@@ -121,16 +128,6 @@ public class MetadataElementDAOImpl extends BaseDaoImpl<MetadataElementEntity, S
             }
         }
 	}
-
-	@SuppressWarnings("unchecked")
-    @Override
-    public List<MetadataElementEntity> findbyCategoryType(String categoryType) {
-        final Criteria criteria = getCriteria()
-        							.createAlias("metadataType", "mt")
-        							.createAlias("mt.categories", "ct")
-        							.add(Restrictions.eq("ct.id", categoryType));
-       return criteria.list();
-    }
 
     @Override
     protected String getPKfieldName() {
