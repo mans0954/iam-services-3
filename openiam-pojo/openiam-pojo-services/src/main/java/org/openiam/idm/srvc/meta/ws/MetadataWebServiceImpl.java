@@ -70,7 +70,8 @@ public class MetadataWebServiceImpl implements MetadataWebService {
     private static Logger LOG = Logger.getLogger(MetadataWebServiceImpl.class);
 
     @Override
-    public List<MetadataElement> findElementBeans(final MetadataElementSearchBean searchBean, final int from, final int size) {
+    @LocalizedServiceGet
+    public List<MetadataElement> findElementBeans(final MetadataElementSearchBean searchBean, final int from, final int size, final Language language) {
         final List<MetadataElementEntity> entityList = metadataService.findBeans(searchBean, from, size, null);
         return (entityList != null) ? metaDataElementDozerConverter.convertToDTOList(entityList,
                 searchBean.isDeepCopy()) : null;

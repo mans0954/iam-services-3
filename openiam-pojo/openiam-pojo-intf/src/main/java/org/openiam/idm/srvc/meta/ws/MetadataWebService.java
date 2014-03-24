@@ -31,7 +31,8 @@ public interface MetadataWebService {
     @WebMethod
     public List<MetadataElement> findElementBeans(final @WebParam(name = "searchBean", targetNamespace = "") MetadataElementSearchBean searchBean,
     									   final @WebParam(name = "from", targetNamespace = "") int from,
-    									   final @WebParam(name = "size", targetNamespace = "") int size);
+    									   final @WebParam(name = "size", targetNamespace = "") int size,
+    									   final @WebParam(name = "language", targetNamespace = "") Language language);
     
     @WebMethod
     public List<MetadataType> findTypeBeans(final @WebParam(name = "searchBean", targetNamespace = "") MetadataTypeSearchBean searchBean,
