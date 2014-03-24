@@ -8,6 +8,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.openiam.idm.srvc.meta.dto.MetadataElement;
 
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -18,7 +19,8 @@ import org.openiam.idm.srvc.meta.dto.MetadataElement;
 	"attributeName",
 	"selfEditable",
 	"templateId",
-	"keySet"
+	"keySet",
+	"excludedGroupings"
 })
 public class MetadataElementSearchBean extends AbstractSearchBean<MetadataElement, String> implements SearchBean<MetadataElement, String> {
 
@@ -29,9 +31,18 @@ public class MetadataElementSearchBean extends AbstractSearchBean<MetadataElemen
 	private String attributeName;
 	private boolean selfEditable;
 	private String templateId;
+	private Set<String> excludedGroupings;
 	
 	public Set<String> getTypeIdSet() {
 		return typeIdSet;
+	}
+	public void addTypeId(final String typeId) {
+		if(StringUtils.isNotBlank(typeId)) {
+			if(this.typeIdSet == null) {
+				this.typeIdSet = new HashSet<>();
+			}
+			this.typeIdSet.add(typeId);
+		}
 	}
 	public void setTypeIdSet(Set<String> typeIdSet) {
 		this.typeIdSet = typeIdSet;
@@ -94,6 +105,21 @@ public class MetadataElementSearchBean extends AbstractSearchBean<MetadataElemen
 		this.keySet = keySet;
 	}
 	
+	public void addExcludedGrouping(final String grouping) {
+		if(StringUtils.isNotBlank(grouping)) {
+			if(this.excludedGroupings == null) {
+				this.excludedGroupings = new HashSet<>();
+			}
+			this.excludedGroupings.add(grouping);
+		}
+	}
+	
+	public Set<String> getExcludedGroupings() {
+		return excludedGroupings;
+	}
+	public void setExcludedGroupings(Set<String> excludedGroupings) {
+		this.excludedGroupings = excludedGroupings;
+	}
 	@Override
 	public String getKey() {
 		return (CollectionUtils.isNotEmpty(keySet)) ? keySet.iterator().next() : null;

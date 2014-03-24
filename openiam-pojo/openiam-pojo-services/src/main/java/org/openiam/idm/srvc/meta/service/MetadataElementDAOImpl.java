@@ -42,6 +42,11 @@ public class MetadataElementDAOImpl extends BaseDaoImpl<MetadataElementEntity, S
 					criteria.add(Restrictions.in("metadataType.id", metaSearchBean.getTypeIdSet()));
 				}
 				
+				//TODO:  Bug in Hibernate - metadataType.grouping throws org.hibernate.QueryException: could not resolve property
+				if(CollectionUtils.isNotEmpty(metaSearchBean.getExcludedGroupings())) {
+					//criteria.add(Restrictions.not(Restrictions.in("metadataType.grouping", metaSearchBean.getExcludedGroupings())));
+				}
+				
 				if(StringUtils.isNotBlank(metaSearchBean.getTemplateId())) {
 					final Set<String> templateIdSet = new HashSet<String>();	
 					templateIdSet.add(metaSearchBean.getTemplateId());
@@ -95,7 +100,7 @@ public class MetadataElementDAOImpl extends BaseDaoImpl<MetadataElementEntity, S
 	}
 	
 	private void setAttributeNameCriteria(final Criteria criteria, final String attributeName) {
-		if (StringUtils.isNotEmpty(attributeName)) {
+		if (StringUtils.isNotBlank(attributeName)) {
             String name = attributeName;
             MatchMode matchMode = null;
             if (StringUtils.indexOf(name, "*") == 0) {

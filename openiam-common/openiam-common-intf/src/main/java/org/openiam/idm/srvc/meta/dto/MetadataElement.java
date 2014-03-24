@@ -6,6 +6,8 @@ import org.openiam.idm.srvc.lang.dto.LanguageMapping;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 import org.openiam.idm.srvc.org.dto.OrganizationAttribute;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
+import org.openiam.internationalization.Internationalized;
+import org.openiam.internationalization.InternationalizedCollection;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -40,9 +42,11 @@ import java.util.Set;
         "resourceId",
         "userAttributes",
         "organizationAttributes",
-        "isPublic"
+        "isPublic",
+        "displayName"
 })
 @DozerDTOCorrespondence(MetadataElementEntity.class)
+@Internationalized
 public class MetadataElement extends KeyDTO implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -54,6 +58,8 @@ public class MetadataElement extends KeyDTO implements Serializable {
     private String attributeName;
     private boolean selfEditable;
     private Set<MetadataElementPageTemplateXref> templateSet;
+    
+    @InternationalizedCollection(referenceType="MetadataElementEntity", targetField="displayName")
     private Map<String, LanguageMapping> languageMap;
     private Set<MetadataValidValue> validValues;
     private String staticDefaultValue;
@@ -62,6 +68,7 @@ public class MetadataElement extends KeyDTO implements Serializable {
     private String resourceId;
     private boolean isPublic = true;
     private Set<OrganizationAttribute> organizationAttributes;
+    private String displayName;
 
     public MetadataElement() {
     }
@@ -230,6 +237,14 @@ public class MetadataElement extends KeyDTO implements Serializable {
 
 	public void setIsPublic(boolean isPublic) {
 		this.isPublic = isPublic;
+	}
+
+	public String getDisplayName() {
+		return displayName;
+	}
+
+	public void setDisplayName(String displayName) {
+		this.displayName = displayName;
 	}
 
 	@Override
