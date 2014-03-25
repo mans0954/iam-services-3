@@ -9,6 +9,7 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
+import javax.persistence.AttributeOverride;
 import javax.persistence.Cacheable;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -30,6 +31,7 @@ import javax.persistence.Table;
 import javax.validation.constraints.Size;
 
 import org.hibernate.annotations.GenericGenerator;
+import org.openiam.base.domain.KeyEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.org.dto.Organization;
@@ -53,14 +55,9 @@ import org.openiam.idm.srvc.user.domain.UserEntity;
 @Cacheable
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @DozerDTOCorrespondence(Organization.class)
-public class OrganizationEntity implements Serializable {
-    @Id
-    @GeneratedValue(generator="system-uuid")
-    @GenericGenerator(name="system-uuid", strategy = "uuid")
-    @Column(name="COMPANY_ID", length=32, nullable = false)
-    @DocumentId
-    private String id;
-
+@AttributeOverride(name = "id", column = @Column(name = "COMPANY_ID"))
+public class OrganizationEntity extends KeyEntity {
+    
     @Column(name="ALIAS", length=100)
     @Size(max = 100, message = "organization.alias.too.long")
     private String alias;
@@ -147,14 +144,6 @@ public class OrganizationEntity implements Serializable {
 
     public OrganizationEntity() {
     }
-
-    public String getId() {
-		return id;
-	}
-
-	public void setId(String id) {
-		this.id = id;
-	}
 
 	public String getAlias() {
         return alias;

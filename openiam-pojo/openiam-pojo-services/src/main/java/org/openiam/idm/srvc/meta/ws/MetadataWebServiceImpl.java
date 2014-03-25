@@ -34,6 +34,7 @@ import org.apache.log4j.Logger;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
+import org.openiam.dozer.converter.LanguageDozerConverter;
 import org.openiam.dozer.converter.MetaDataElementDozerConverter;
 import org.openiam.dozer.converter.MetaDataTypeDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
@@ -66,15 +67,17 @@ public class MetadataWebServiceImpl implements MetadataWebService {
 
     @Autowired
     private MetaDataElementDozerConverter metaDataElementDozerConverter;
+    
+    @Autowired
+    private LanguageDozerConverter languageConverter;
 
     private static Logger LOG = Logger.getLogger(MetadataWebServiceImpl.class);
 
     @Override
     @LocalizedServiceGet
     public List<MetadataElement> findElementBeans(final MetadataElementSearchBean searchBean, final int from, final int size, final Language language) {
-        final List<MetadataElementEntity> entityList = metadataService.findBeans(searchBean, from, size, null);
-        return (entityList != null) ? metaDataElementDozerConverter.convertToDTOList(entityList,
-                searchBean.isDeepCopy()) : null;
+        final List<MetadataElementEntity> entityList = metadataService.findBeans(searchBean, from, size, languageConverter.convertToEntity(language, false));
+        return (entityList != null) ? metaDataElementDozerConverter.convertToDTOList(entityList,searchBean.isDeepCopy()) : null;
     }
 
     @Override

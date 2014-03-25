@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import javax.persistence.AttributeOverride;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -20,19 +21,15 @@ import org.apache.commons.lang.StringUtils;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.GenericGenerator;
+import org.openiam.base.domain.KeyEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.org.dto.OrganizationType;
 
 @Entity
 @Table(name="ORGANIZATION_TYPE")
 @DozerDTOCorrespondence(OrganizationType.class)
-public class OrganizationTypeEntity {
-
-	@Id
-    @GeneratedValue(generator="system-uuid")
-    @GenericGenerator(name="system-uuid", strategy = "uuid")
-    @Column(name="ORG_TYPE_ID", length=32, nullable = false)
-	private String id;
+@AttributeOverride(name = "id", column = @Column(name = "ORG_TYPE_ID"))
+public class OrganizationTypeEntity extends KeyEntity {
 	
 	@Column(name="NAME", length=100, nullable = false)
 	private String name;
@@ -56,14 +53,6 @@ public class OrganizationTypeEntity {
 	
 	@OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "organizationType", fetch = FetchType.LAZY)
 	private Set<OrganizationEntity> organizations;
-
-	public String getId() {
-		return id;
-	}
-
-	public void setId(String id) {
-		this.id = id;
-	}
 
 	public String getName() {
 		return name;

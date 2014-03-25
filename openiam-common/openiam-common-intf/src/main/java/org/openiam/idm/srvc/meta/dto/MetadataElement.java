@@ -27,6 +27,7 @@ import java.util.Set;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "MetadataElement", 
 	propOrder = {
+		"metadataTypeName",
         "metadataTypeId",
         "description",
         "auditable",
@@ -50,6 +51,7 @@ import java.util.Set;
 public class MetadataElement extends KeyDTO implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    private String metadataTypeName;
     private String metadataTypeId;
     private String description;
     private String dataType;
@@ -245,6 +247,14 @@ public class MetadataElement extends KeyDTO implements Serializable {
 
 	public void setDisplayName(String displayName) {
 		this.displayName = displayName;
+	}
+
+	public String getMetadataTypeName() {
+		return metadataTypeName;
+	}
+
+	public void setMetadataTypeName(String metadataTypeName) {
+		this.metadataTypeName = metadataTypeName;
 	}
 
 	@Override

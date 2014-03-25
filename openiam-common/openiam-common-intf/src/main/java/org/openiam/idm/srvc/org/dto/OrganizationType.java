@@ -6,12 +6,12 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
+import org.openiam.base.KeyDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.org.domain.OrganizationTypeEntity;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "OrganizationType", propOrder = {
-	"id",
 	"name",
 	"description",
 	"parentTypes",
@@ -19,21 +19,14 @@ import org.openiam.idm.srvc.org.domain.OrganizationTypeEntity;
 	"organizations"
 })
 @DozerDTOCorrespondence(OrganizationTypeEntity.class)
-public class OrganizationType {
+public class OrganizationType extends KeyDTO {
 
-	private String id;
 	private String name;
 	private String description;
 	private Set<OrganizationType> parentTypes;
 	private Set<OrganizationType> childTypes;
 	private Set<Organization> organizations;
-	
-	public String getId() {
-		return id;
-	}
-	public void setId(String id) {
-		this.id = id;
-	}
+
 	public String getName() {
 		return name;
 	}

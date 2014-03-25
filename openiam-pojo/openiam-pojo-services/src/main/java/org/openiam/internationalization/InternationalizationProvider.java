@@ -220,6 +220,8 @@ public class InternationalizationProvider {
 											retVal.addAll(getTargetFields((KeyEntity)o, visitedSet));
 										}
 									}
+								} else if(fieldObject instanceof KeyEntity) {
+									retVal.addAll(getTargetFields((KeyEntity)fieldObject, visitedSet));
 								}
 							}
 						}

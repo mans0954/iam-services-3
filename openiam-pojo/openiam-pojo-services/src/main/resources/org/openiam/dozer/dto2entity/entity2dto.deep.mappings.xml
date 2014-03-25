@@ -352,6 +352,10 @@
 			<a>metadataType.id</a>
 			<b>metadataTypeId</b>
 		</field>
+		<field>
+			<a>metadataType.displayName</a>
+			<b>metadataTypeName</b>
+		</field>
 		<field
 			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
 			custom-converter-param="dto2entityShallowDozerMapper">

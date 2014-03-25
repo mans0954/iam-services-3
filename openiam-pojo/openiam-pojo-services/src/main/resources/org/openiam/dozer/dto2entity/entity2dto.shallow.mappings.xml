@@ -245,6 +245,10 @@
 			<a>metadataType.id</a>
 			<b>metadataTypeId</b>
 		</field>
+		<field>
+			<a>metadataType.displayName</a>
+			<b>metadataTypeName</b>
+		</field>
 		<field-exclude>
 			<a>templateSet</a>
 			<b>templateSet</b>
@@ -253,10 +257,12 @@
 			<a>defaultValueLanguageMap</a>
 			<b>defaultValueLanguageMap</b>
 		</field-exclude>
-		<field-exclude>
+		<field
+			custom-converter="org.openiam.dozer.crossentity.CrossEntityMapConverterWithKeyString"
+			custom-converter-param="dto2entityShallowDozerMapper">
 			<a>languageMap</a>
 			<b>languageMap</b>
-		</field-exclude>
+		</field>
 		<field-exclude>
 			<a>validValues</a>
 			<b>validValues</b>
