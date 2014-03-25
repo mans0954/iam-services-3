@@ -11,6 +11,7 @@ import org.openiam.connector.type.request.PasswordRequest;
 import org.openiam.connector.type.request.SuspendResumeRequest;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
+import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.idm.srvc.pswd.service.PasswordGenerator;
 import org.openiam.provision.type.ExtensibleObject;
@@ -54,8 +55,6 @@ public class LdapV3 implements Directory {
     public ModificationItem[] suspend(SuspendResumeRequest request)  {
 
         String scrambledPswd =	passwordGenerator.generatePassword(10);
-        
-        hash.HexEncodedHash( "{ssha}" + hash.hash(scrambledPswd));
 
         ModificationItem[] mods = new ModificationItem[1];
         mods[0] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute("userPassword", scrambledPswd));
@@ -108,9 +107,9 @@ public class LdapV3 implements Directory {
 
     /* Group membership functions */
 
-    public void removeAccountMemberships( String identity, String identityDN, ManagedSystemObjectMatch matchObj, LdapContext ldapctx ) {
+    public void removeAccountMemberships(ManagedSysEntity managedSys, String identity, String identityDN, ManagedSystemObjectMatch matchObj, LdapContext ldapctx ) {
 
-        List<String> currentMembershipList = userMembershipList(identityDN, matchObj, ldapctx);
+        List<String> currentMembershipList = userMembershipList(managedSys, identityDN, matchObj, ldapctx);
 
         // remove membership
         if (currentMembershipList != null) {
@@ -127,9 +126,9 @@ public class LdapV3 implements Directory {
         }
     }
 
-    public void removeSupervisorMemberships( String identity, String identityDN, ManagedSystemObjectMatch matchObj, LdapContext ldapctx ) {
+    public void removeSupervisorMemberships(ManagedSysEntity managedSys, String identity, String identityDN, ManagedSystemObjectMatch matchObj, LdapContext ldapctx ) {
 
-        List<String> currentSupervisorMembershipList = userSupervisorMembershipList(identity, matchObj, ldapctx);
+        List<String> currentSupervisorMembershipList = userSupervisorMembershipList(managedSys, identity, matchObj, ldapctx);
 
         // remove membership
         if (currentSupervisorMembershipList != null) {
@@ -147,11 +146,11 @@ public class LdapV3 implements Directory {
         }
     }
 
-    public void updateAccountMembership(List<BaseAttribute> targetMembershipList, String identity, String identityDN,
+    public void updateAccountMembership(ManagedSysEntity managedSys, List<BaseAttribute> targetMembershipList, String identity, String identityDN,
                                         ManagedSystemObjectMatch matchObj,  LdapContext ldapctx,
                                         ExtensibleObject obj) {
 
-        List<String> currentMembershipList = userMembershipList(identityDN, matchObj, ldapctx);
+        List<String> currentMembershipList = userMembershipList(managedSys, identityDN, matchObj, ldapctx);
 
         log.debug("Current ldap role membership:" + currentMembershipList);
 
@@ -204,10 +203,10 @@ public class LdapV3 implements Directory {
         }
     }
 
-    public void updateSupervisorMembership(List<BaseAttribute> supervisorMembershipList, String identity, String identityDN,
+    public void updateSupervisorMembership(ManagedSysEntity managedSys, List<BaseAttribute> supervisorMembershipList, String identity, String identityDN,
                                            ManagedSystemObjectMatch matchObj, LdapContext ldapctx, ExtensibleObject obj) {
 
-        List<String> currentSupervisorMembershipList = userSupervisorMembershipList(identity, matchObj, ldapctx);
+        List<String> currentSupervisorMembershipList = userSupervisorMembershipList(managedSys, identity, matchObj, ldapctx);
 
         log.debug("Current ldap supervisor membership:" + currentSupervisorMembershipList);
 
@@ -277,7 +276,7 @@ public class LdapV3 implements Directory {
         return false;
     }
 
-    protected List<String> userMembershipList(String userDN, ManagedSystemObjectMatch matchObj, LdapContext ldapctx) {
+    protected List<String> userMembershipList(ManagedSysEntity managedSys, String userDN, ManagedSystemObjectMatch matchObj, LdapContext ldapctx) {
 
         List<String> currentMembershipList = new ArrayList<String>();
 
@@ -294,7 +293,7 @@ public class LdapV3 implements Directory {
 
             String userReturnedAtts[]={"uniqueMember"};
             ctls.setReturningAttributes(userReturnedAtts);
-            ctls.setSearchScope(SearchControls.SUBTREE_SCOPE); // Search object only
+            ctls.setSearchScope(managedSys.getSearchScope().getValue());
 
             NamingEnumeration answer = ldapctx.search(searchBase, userSearchFilter, ctls);
 
@@ -319,7 +318,7 @@ public class LdapV3 implements Directory {
     }
 
     protected List<String> userSupervisorMembershipList(
-            String userDN, ManagedSystemObjectMatch matchObj, LdapContext ldapctx) {
+            ManagedSysEntity managedSys, String userDN, ManagedSystemObjectMatch matchObj, LdapContext ldapctx) {
 
         List<String> currentSupervisorMembershipList = new ArrayList<String>();
 
@@ -328,7 +327,7 @@ public class LdapV3 implements Directory {
         log.debug(" - MembershipObjectDN=" + matchObj.getSearchBaseDn());
 
         String searchBase = matchObj.getSearchBaseDn();
-        String userSearchFilter = matchObj.getSearchFilter();
+        String userSearchFilter = matchObj.getSearchFilterUnescapeXml();
         // replace the place holder in the search filter
         if (StringUtils.isNotBlank(userSearchFilter)) {
             userSearchFilter = userSearchFilter.replace("?", userDN);
@@ -340,7 +339,7 @@ public class LdapV3 implements Directory {
 
             String userReturnedAtts[]={"manager"};
             ctls.setReturningAttributes(userReturnedAtts);
-            ctls.setSearchScope(SearchControls.SUBTREE_SCOPE); // Search object only
+            ctls.setSearchScope(managedSys.getSearchScope().getValue());
 
             NamingEnumeration answer = ldapctx.search(searchBase, userSearchFilter, ctls);
 

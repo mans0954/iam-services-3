@@ -524,7 +524,7 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
             }
 
             if (size > -1) {
-                criteria.setFetchSize(size);
+                criteria.setMaxResults(size);
             }
             retVal = criteria.list();
         }
@@ -542,7 +542,7 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
             }
 
             if (size > -1) {
-                criteria.setFetchSize(size);
+                criteria.setMaxResults(size);
             }
             retVal = criteria.list();
         }
@@ -560,7 +560,7 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
             }
 
             if (size > -1) {
-                criteria.setFetchSize(size);
+                criteria.setMaxResults(size);
             }
             retVal = criteria.list();
         }
@@ -578,7 +578,7 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
             }
 
             if (size > -1) {
-                criteria.setFetchSize(size);
+                criteria.setMaxResults(size);
             }
             retVal = criteria.list();
         }
@@ -622,5 +622,16 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
         disjunction.add(Restrictions.isNull("systemFlag")).add(Restrictions.ne("systemFlag", "1"));
         criteria.add(disjunction);
         return criteria;
+    }
+
+    @Override
+    public List<UserEntity> getUserByLastDate(Date lastDate) {
+        if (lastDate != null) {
+            List<UserEntity> retVal = new ArrayList<UserEntity>();
+            final Criteria criteria = getCriteria().add(
+                    Restrictions.lt("lastDate", lastDate));
+            return criteria.list();
+        } else
+            return null;
     }
 }

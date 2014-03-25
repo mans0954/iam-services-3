@@ -6,19 +6,21 @@ import javax.xml.bind.annotation.XmlType;
 import org.openiam.base.ws.Response;
 import org.openiam.idm.srvc.report.dto.ReportSubCriteriaParamDto;
 
+import java.util.List;
+
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "", propOrder = {
-        "report"
+        "parameters"
 })
 public class GetSubCriteriaParamReportResponse extends Response {
 
-    protected ReportSubCriteriaParamDto report;
+    protected List<ReportSubCriteriaParamDto> parameters;
 
-    public ReportSubCriteriaParamDto getReport() {
-        return report;
+    public List<ReportSubCriteriaParamDto> getParameters() {
+        return parameters;
     }
 
-    public void setReport(ReportSubCriteriaParamDto report) {
-        this.report = report;
+    public void setParameters(List<ReportSubCriteriaParamDto> parameters) {
+        this.parameters = parameters;
     }
 }

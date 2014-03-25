@@ -152,24 +152,27 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 @Override
                 public ProvisionUserResponse doInTransaction(TransactionStatus status) {
                     final AuditLogBuilder auditBuilder;
-                    String parentAuditLog = pUser.getParentAuditLogId();
-                    if(parentAuditLog != null) {
-                        auditBuilder = auditLogProvider.getAuditLogBuilder(parentAuditLog);
+                    String parentAuditLogId = pUser.getParentAuditLogId();
+                    if(parentAuditLogId != null) {
+                        IdmAuditLogEntity parentAuditLog = auditLogService.findById(parentAuditLogId);
+                        auditBuilder = parentAuditLog != null ? new AuditLogBuilder(parentAuditLog) : auditLogProvider.getAuditLogBuilder(parentAuditLogId);
                     } else {
+                      //  auditBuilder = new AuditLogBuilder();
+                     //   auditBuilder.setRequestorUserId(systemUserId).setTargetUser(null).setAction(AuditAction.PROVISIONING);
                         auditBuilder = auditLogProvider.getAuditLogBuilder();
-                        auditLogProvider.persist(auditBuilder);
+                        auditBuilder.setRequestorUserId(systemUserId).setTargetUser(null).setAction(AuditAction.PROVISIONING);
                     }
 
                     final AuditLogBuilder auditBuilderAddChild = new AuditLogBuilder();
                     auditBuilderAddChild.setRequestorUserId(systemUserId).setTargetUser(null).setAction(AuditAction.PROVISIONING_ADD);
-                    auditLogProvider.persist(auditBuilderAddChild);
+                 //   auditLogProvider.persist(auditBuilderAddChild);
                     auditBuilder.addChild(auditBuilderAddChild);
 
                     auditBuilderAddChild.setAuditDescription("Provisioning add user: " + pUser.getUserId() +" with principal list: "+pUser.getPrincipalList());
 
                     ProvisionUserResponse tmpRes = addModifyUser(pUser, true, dataList, auditBuilderAddChild);
-                    auditLogService.enqueue(auditBuilder);
-                    auditLogProvider.remove(auditBuilderAddChild.getEntity().getId());
+                 //   auditLogService.enqueue(auditBuilder);
+               //     auditLogProvider.remove(auditBuilderAddChild.getEntity().getId());
                     return tmpRes;
                 }
             });
@@ -210,7 +213,8 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                         IdmAuditLogEntity parentAuditLog = auditLogService.findById(parentAuditLogId);
                         auditBuilder = parentAuditLog != null ? new AuditLogBuilder(parentAuditLog) : auditLogProvider.getAuditLogBuilder(parentAuditLogId);
                     } else {
-                        auditBuilder = auditLogProvider.getAuditLogBuilder();
+                        auditBuilder = new AuditLogBuilder();
+                        auditBuilder.setRequestorUserId(systemUserId).setTargetUser(null).setAction(AuditAction.PROVISIONING);
                         auditLogProvider.persist(auditBuilder);
                     }
 
@@ -1474,8 +1478,11 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                         matchObj = matcheList.get(0);
                                     }
 
+                                    System.out.println("============== Connector Reset Password call: "+new Date());
                                     ResponseType resp = resetPassword(requestId, loginDozerConverter.convertToDTO(lg, false), password,
                                             managedSysDozerConverter.convertToDTO(mSys, false), objectMatchDozerConverter.convertToDTO(matchObj, false));
+                                    System.out.println("============== Connector Reset Password get : "+new Date());
+
                                     if(resp != null && resp.getStatus() == StatusCodeType.SUCCESS) {
                                         auditBuilderResetPasswdChildLog.succeed().setAuditDescription("Reset password for resource: " + res.getName() + " for user: " + lg.getLogin());
                                     } else {
@@ -1621,12 +1628,15 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 	        final LoginEntity login = loginManager.getLoginByManagedSys(
 	                passwordSync.getSecurityDomain(), passwordSync.getPrincipal(),
 	                passwordSync.getManagedSystemId());
+
 	        if (login == null) {
 	        	auditLog.fail().setFailureReason(ResponseCode.PRINCIPAL_NOT_FOUND);
 	            response.fail();
 	            response.setErrorCode(ResponseCode.PRINCIPAL_NOT_FOUND);
 	            return response;
 	        }
+
+            String prevDecodedPasswordCurrentMngSys = getDecryptedPassword(login.getUserId(), login.getPassword());
 	        // check if the user active
 	        final String userId = login.getUserId();
 	        if (userId == null) {
@@ -1678,13 +1688,12 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 	        // make sure that update all the primary identity records
 	        final List<LoginEntity> principalList = loginManager
 	                .getLoginByUser(login.getUserId());
-	        // List<Login> identityList =
-	        // loginManager.getLoginByUser(usr.getUserId()) ;
+
 	        for (final LoginEntity l : principalList) {
 
 	            // find the openiam identity and update it in openiam DB
-	            if (StringUtils.equalsIgnoreCase(l.getManagedSysId(),
-	                    passwordSync.getManagedSystemId())) {
+	            if (StringUtils.equalsIgnoreCase(l.getManagedSysId(), passwordSync.getManagedSystemId())
+                        && StringUtils.equalsIgnoreCase(l.getDomainId(), passwordSync.getSecurityDomain())) {
 
 	                final boolean retval = loginManager.setPassword(
 	                        l.getDomainId(), l.getLogin(),
@@ -1705,6 +1714,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 	                    response.setStatus(ResponseStatus.FAILURE);
 	                    response.setErrorCode(ResponseCode.PRINCIPAL_NOT_FOUND);
 	                }
+                    break;
 	            }
 	        }
 
@@ -1766,7 +1776,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 	                                    }
 	                                }
 	                            }
-
+                                String prevDecodedPassword = getDecryptedPassword(lg.getUserId(), lg.getPassword());
 	                            // update the password in openiam
 	                            loginManager.setPassword(lg.getDomainId(), lg
 	                                    .getLogin(), lg.getManagedSysId(),
@@ -1774,9 +1784,6 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 	                                            .isPreventChangeCountIncrement());
 
 	                            if (StringUtils.isNotEmpty(mSys.getConnectorId())) {
-	                                final ProvisionConnectorEntity connector = connectorService
-	                                        .getProvisionConnectorsById(mSys
-	                                                .getConnectorId());
 
 	                                ManagedSystemObjectMatchEntity matchObj = null;
 	                                final List<ManagedSystemObjectMatchEntity> matchObjects = managedSystemService
@@ -1786,7 +1793,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 	                                    matchObj = matchObjects.get(0);
 	                                }
 
-                                    ResponseType resp = setPassword(requestId, loginDozerConverter.convertToDTO(lg,false), passwordSync.getPassword(), managedSysDozerConverter.convertToDTO(mSys, false),
+                                    ResponseType resp = setPassword(requestId, loginDozerConverter.convertToDTO(lg,false), prevDecodedPassword, passwordSync.getPassword(), managedSysDozerConverter.convertToDTO(mSys, false),
                                             objectMatchDozerConverter.convertToDTO(matchObj,false));
 
 	                                    if (resp.getStatus() == StatusCodeType.SUCCESS) {
@@ -1821,8 +1828,6 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 	            // just the update the managed system that was specified.
 	            final ManagedSysEntity mSys = managedSystemService
 	                    .getManagedSysById(passwordSync.getManagedSystemId());
-	            final ProvisionConnectorEntity connector = connectorService
-	                    .getProvisionConnectorsById(mSys.getConnectorId());
 
 	            ManagedSystemObjectMatchEntity matchObj = null;
 	            final List<ManagedSystemObjectMatchEntity> matchObjects = managedSystemService
@@ -1853,7 +1858,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 	                }
 	            }
 
-                setPassword(requestId, loginDozerConverter.convertToDTO(login,false), passwordSync.getPassword(), managedSysDozerConverter.convertToDTO(mSys, false),
+                setPassword(requestId, loginDozerConverter.convertToDTO(login,false), prevDecodedPasswordCurrentMngSys, passwordSync.getPassword(), managedSysDozerConverter.convertToDTO(mSys, false),
                         objectMatchDozerConverter.convertToDTO(matchObj,false));
 	            // post-process
 	            if (resource != null) {

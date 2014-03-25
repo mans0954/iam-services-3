@@ -4,6 +4,7 @@ import org.openiam.base.BaseAttribute;
 import org.openiam.connector.type.request.CrudRequest;
 import org.openiam.connector.type.request.PasswordRequest;
 import org.openiam.connector.type.request.SuspendResumeRequest;
+import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.provision.type.ExtensibleObject;
 
@@ -44,15 +45,15 @@ public interface Directory {
 
     void delete(CrudRequest reqType, LdapContext ldapctx, String ldapName, String onDelete) throws NamingException;
 
-    void removeAccountMemberships(String identity, String identityDN,
+    void removeAccountMemberships(ManagedSysEntity managedSys, String identity, String identityDN,
                                   ManagedSystemObjectMatch matchObj, LdapContext ldapctx);
 
-    void removeSupervisorMemberships(String identity, String identityDN,
+    void removeSupervisorMemberships(ManagedSysEntity managedSys, String identity, String identityDN,
                                      ManagedSystemObjectMatch matchObj, LdapContext ldapctx);
 
-    void updateAccountMembership(List<BaseAttribute> targetMembershipList, String identity, String identityDN,
+    void updateAccountMembership(ManagedSysEntity managedSys, List<BaseAttribute> targetMembershipList, String identity, String identityDN,
                                  ManagedSystemObjectMatch matchObj, LdapContext ldapctx, ExtensibleObject obj);
 
-    void updateSupervisorMembership(List<BaseAttribute> supervisorMembershipList, String identity, String identityDN,
+    void updateSupervisorMembership(ManagedSysEntity managedSys, List<BaseAttribute> supervisorMembershipList, String identity, String identityDN,
                                     ManagedSystemObjectMatch matchObj, LdapContext ldapctx, ExtensibleObject obj);
 }

@@ -53,7 +53,10 @@ public interface ReportWebService {
 
     @WebMethod
     GetAllSubscribedReportsResponse getSubscribedReports();
-    
+
+    @WebMethod
+    GetSubCriteriaParamReportResponse getSubscribedReportParametersByReportId(@WebParam(name = "reportId", targetNamespace = "") String reportId);
+
     @WebMethod
     GetAllSubCriteriaParamReportsResponse getSubCriteriaParamReports();
 
@@ -99,5 +102,11 @@ public interface ReportWebService {
     
     @WebMethod
     public List<ReportCriteriaParamDto> getAllReportCriteriaParam();
+
+    @WebMethod
+    Response runSubscription(@WebParam(name = "reportId", targetNamespace = "") String reportId);
+
+    @WebMethod
+    Response runAllActiveSubscriptions();
 
 }

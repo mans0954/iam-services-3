@@ -9,6 +9,7 @@ import org.openiam.base.BaseAttribute;
 import org.openiam.connector.type.request.CrudRequest;
 import org.openiam.connector.type.request.PasswordRequest;
 import org.openiam.connector.type.request.SuspendResumeRequest;
+import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
@@ -92,9 +93,9 @@ public class ActiveDirectoryImpl implements Directory {
 
     }
 
-    public void removeAccountMemberships( String identity, String identityDN, ManagedSystemObjectMatch matchObj, LdapContext ldapctx ) {
+    public void removeAccountMemberships(ManagedSysEntity managedSys, String identity, String identityDN, ManagedSystemObjectMatch matchObj, LdapContext ldapctx ) {
 
-        List<String> currentMembershipList = userMembershipList(identity, matchObj, ldapctx);
+        List<String> currentMembershipList = userMembershipList(managedSys, identity, matchObj, ldapctx);
 
         // remove membership
         if (currentMembershipList != null) {
@@ -112,9 +113,9 @@ public class ActiveDirectoryImpl implements Directory {
 
     }
 
-    public void removeSupervisorMemberships( String identity, String identityDN, ManagedSystemObjectMatch matchObj, LdapContext ldapctx ) {
+    public void removeSupervisorMemberships(ManagedSysEntity managedSys, String identity, String identityDN, ManagedSystemObjectMatch matchObj, LdapContext ldapctx ) {
 
-        List<String> currentSupervisorMembershipList = userSupervisorMembershipList(identity, matchObj, ldapctx);
+        List<String> currentSupervisorMembershipList = userSupervisorMembershipList(managedSys, identity, matchObj, ldapctx);
 
         // remove membership
         if (currentSupervisorMembershipList != null) {
@@ -133,11 +134,11 @@ public class ActiveDirectoryImpl implements Directory {
 
     }
 
-    public void updateAccountMembership(List<BaseAttribute> targetMembershipList, String identity, String identityDN,
+    public void updateAccountMembership(ManagedSysEntity managedSys, List<BaseAttribute> targetMembershipList, String identity, String identityDN,
                                         ManagedSystemObjectMatch matchObj, LdapContext ldapctx,
                                         ExtensibleObject obj) {
 
-        List<String> currentMembershipList = userMembershipList(identity, matchObj, ldapctx);
+        List<String> currentMembershipList = userMembershipList(managedSys, identity, matchObj, ldapctx);
 
         log.debug("- Current Active Dir group membership:" + currentMembershipList);
         log.debug("- Target Active Dir group membership:"  + targetMembershipList);
@@ -191,10 +192,10 @@ public class ActiveDirectoryImpl implements Directory {
         }
     }
 
-    public void updateSupervisorMembership(List<BaseAttribute> supervisorMembershipList, String identity, String identityDN,
+    public void updateSupervisorMembership(ManagedSysEntity managedSys, List<BaseAttribute> supervisorMembershipList, String identity, String identityDN,
                                       ManagedSystemObjectMatch matchObj, LdapContext ldapctx, ExtensibleObject obj) {
 
-        List<String> currentSupervisorMembershipList = userSupervisorMembershipList(identity, matchObj, ldapctx);
+        List<String> currentSupervisorMembershipList = userSupervisorMembershipList(managedSys, identity, matchObj, ldapctx);
 
         log.debug("Current ldap supervisor membership:" + currentSupervisorMembershipList);
 
@@ -264,12 +265,12 @@ public class ActiveDirectoryImpl implements Directory {
 
     }
 
-    protected List<String> userMembershipList(String identity, ManagedSystemObjectMatch matchObj, LdapContext ldapctx) {
+    protected List<String> userMembershipList(ManagedSysEntity managedSys, String identity, ManagedSystemObjectMatch matchObj, LdapContext ldapctx) {
 
         List<String> currentMembershipList = new ArrayList<String>();
 
         String searchBase = matchObj.getSearchBaseDn();
-        String userSearchFilter = matchObj.getSearchFilter();
+        String userSearchFilter = matchObj.getSearchFilterUnescapeXml();
         // replace the place holder in the search filter
         if (StringUtils.isNotBlank(userSearchFilter)) {
             userSearchFilter = userSearchFilter.replace("?", identity);
@@ -281,7 +282,7 @@ public class ActiveDirectoryImpl implements Directory {
 
             String userReturnedAtts[]={"memberOf"};
             ctls.setReturningAttributes(userReturnedAtts);
-            ctls.setSearchScope(SearchControls.SUBTREE_SCOPE); // Search object only
+            ctls.setSearchScope(managedSys.getSearchScope().getValue());
 
             NamingEnumeration answer = ldapctx.search(searchBase, userSearchFilter, ctls);
 
@@ -318,12 +319,12 @@ public class ActiveDirectoryImpl implements Directory {
     }
 
     protected List<String> userSupervisorMembershipList(
-            String identity, ManagedSystemObjectMatch matchObj, LdapContext ldapctx) {
+            ManagedSysEntity managedSys, String identity, ManagedSystemObjectMatch matchObj, LdapContext ldapctx) {
 
         List<String> currentMembershipList = new ArrayList<String>();
 
         String searchBase = matchObj.getSearchBaseDn();
-        String userSearchFilter = matchObj.getSearchFilter();
+        String userSearchFilter = matchObj.getSearchFilterUnescapeXml();
         // replace the place holder in the search filter
         if (StringUtils.isNotBlank(userSearchFilter)) {
             userSearchFilter = userSearchFilter.replace("?", identity);
@@ -335,7 +336,7 @@ public class ActiveDirectoryImpl implements Directory {
 
             String userReturnedAtts[]={"manager"};
             ctls.setReturningAttributes(userReturnedAtts);
-            ctls.setSearchScope(SearchControls.SUBTREE_SCOPE); // Search object only
+            ctls.setSearchScope(managedSys.getSearchScope().getValue());
 
             NamingEnumeration answer = ldapctx.search(searchBase, userSearchFilter, ctls);
 

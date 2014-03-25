@@ -23,7 +23,6 @@ package org.openiam.idm.srvc.pswd.service;
 
 import org.openiam.core.dao.BaseDao;
 import org.openiam.idm.srvc.pswd.domain.PasswordHistoryEntity;
-import org.openiam.idm.srvc.pswd.dto.PasswordHistory;
 
 import java.util.List;
 
@@ -34,4 +33,6 @@ public interface PasswordHistoryDAO extends BaseDao<PasswordHistoryEntity, Strin
     List<PasswordHistoryEntity> getSublist(int startPos,int size);
 
     Long getCount();
+
+    void deleteByLogin(String loginId);
 }

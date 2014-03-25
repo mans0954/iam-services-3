@@ -43,13 +43,13 @@ import org.openiam.idm.srvc.user.domain.UserEntity;
 @DozerDTOCorrespondence(Organization.class)
 public class OrganizationEntity {
     @Id
-    @GeneratedValue(generator="system-uuid")
-    @GenericGenerator(name="system-uuid", strategy = "uuid")
-    @Column(name="COMPANY_ID", length=32, nullable = false)
+    @GeneratedValue(generator = "system-uuid")
+    @GenericGenerator(name = "system-uuid", strategy = "uuid")
+    @Column(name = "COMPANY_ID", length = 32, nullable = false)
     @DocumentId
     private String id;
 
-    @Column(name="ALIAS", length=100)
+    @Column(name = "ALIAS", length = 100)
     private String alias;
 
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "organization", fetch = FetchType.LAZY)
@@ -57,76 +57,72 @@ public class OrganizationEntity {
     @Fetch(FetchMode.SUBSELECT)
     private Set<OrganizationAttributeEntity> attributes;
 
-    @Column(name="CREATE_DATE", length=19)
+    @Column(name = "CREATE_DATE", length = 19)
     private Date createDate;
 
-    @Column(name="CREATED_BY", length=20)
+    @Column(name = "CREATED_BY", length = 20)
     private String createdBy;
 
-    @Column(name="DESCRIPTION", length=100)
+    @Column(name = "DESCRIPTION", length = 100)
     private String description;
 
-    @Column(name="DOMAIN_NAME", length=40)
+    @Column(name = "DOMAIN_NAME", length = 250)
     private String domainName;
 
-    @Column(name="LDAP_STR")
+    @Column(name = "LDAP_STR")
     private String ldapStr;
 
-    @Column(name="LST_UPDATE", length=19)
+    @Column(name = "LST_UPDATE", length = 19)
     private Date lstUpdate;
 
-    @Column(name="LST_UPDATED_BY", length=20)
+    @Column(name = "LST_UPDATED_BY", length = 20)
     private String lstUpdatedBy;
 
-    @Column(name="COMPANY_NAME", length=200)
+    @Column(name = "COMPANY_NAME", length = 200)
     private String organizationName;
 
-    @Column(name="INTERNAL_COMPANY_ID")
+    @Column(name = "INTERNAL_COMPANY_ID")
     private String internalOrgId;
 
-    @Column(name="STATUS", length=20)
+    @Column(name = "STATUS", length = 20)
     private String status;
-    
-    @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+
+    @ManyToOne(cascade = { CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH })
     @JoinColumn(name = "ORG_TYPE_ID", referencedColumnName = "ORG_TYPE_ID", insertable = true, updatable = true)
     private OrganizationTypeEntity organizationType;
 
-    @Column(name="ABBREVIATION", length=20)
+    @Column(name = "ABBREVIATION", length = 20)
     private String abbreviation;
 
-    @Column(name="SYMBOL", length=10)
+    @Column(name = "SYMBOL", length = 10)
     private String symbol;
-    
-	@ManyToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
-    @JoinTable(name="COMPANY_TO_COMPANY_MEMBERSHIP",
-        joinColumns={@JoinColumn(name="MEMBER_COMPANY_ID")},
-        inverseJoinColumns={@JoinColumn(name="COMPANY_ID")})
+
+    @ManyToMany(cascade = { CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH }, fetch = FetchType.LAZY)
+    @JoinTable(name = "COMPANY_TO_COMPANY_MEMBERSHIP", joinColumns = { @JoinColumn(name = "MEMBER_COMPANY_ID") }, inverseJoinColumns = { @JoinColumn(name = "COMPANY_ID") })
     @Fetch(FetchMode.SUBSELECT)
     private Set<OrganizationEntity> parentOrganizations;
-    
-	@ManyToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
-    @JoinTable(name="COMPANY_TO_COMPANY_MEMBERSHIP",
-        joinColumns={@JoinColumn(name="COMPANY_ID")},
-        inverseJoinColumns={@JoinColumn(name="MEMBER_COMPANY_ID")})
+
+    @ManyToMany(cascade = { CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH }, fetch = FetchType.LAZY)
+    @JoinTable(name = "COMPANY_TO_COMPANY_MEMBERSHIP", joinColumns = { @JoinColumn(name = "COMPANY_ID") }, inverseJoinColumns = { @JoinColumn(name = "MEMBER_COMPANY_ID") })
     @Fetch(FetchMode.SUBSELECT)
     private Set<OrganizationEntity> childOrganizations;
 
-	@ManyToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
+    @ManyToMany(cascade = { CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH }, fetch = FetchType.LAZY)
     @JoinTable(name = "USER_AFFILIATION", joinColumns = { @JoinColumn(name = "COMPANY_ID") }, inverseJoinColumns = { @JoinColumn(name = "USER_ID") })
-	private Set<UserEntity> users;
+    private Set<UserEntity> users;
 
     public OrganizationEntity() {
     }
 
     public String getId() {
-		return id;
-	}
+        return id;
+    }
 
-	public void setId(String id) {
-		this.id = id;
-	}
+    public void setId(String id) {
+        this.id = id;
+    }
 
-	public String getAlias() {
+    public String getAlias() {
         return alias;
     }
 
@@ -221,16 +217,16 @@ public class OrganizationEntity {
     public void setStatus(String status) {
         this.status = status;
     }
-    
+
     public OrganizationTypeEntity getOrganizationType() {
-		return organizationType;
-	}
+        return organizationType;
+    }
 
-	public void setOrganizationType(OrganizationTypeEntity organizationType) {
-		this.organizationType = organizationType;
-	}
+    public void setOrganizationType(OrganizationTypeEntity organizationType) {
+        this.organizationType = organizationType;
+    }
 
-	public String getAbbreviation() {
+    public String getAbbreviation() {
         return abbreviation;
     }
 
@@ -246,59 +242,59 @@ public class OrganizationEntity {
         this.symbol = symbol;
     }
 
-	public Set<OrganizationEntity> getParentOrganizations() {
-		return parentOrganizations;
-	}
+    public Set<OrganizationEntity> getParentOrganizations() {
+        return parentOrganizations;
+    }
 
-	public void setParentOrganizations(Set<OrganizationEntity> parentOrganizations) {
-		this.parentOrganizations = parentOrganizations;
-	}
+    public void setParentOrganizations(Set<OrganizationEntity> parentOrganizations) {
+        this.parentOrganizations = parentOrganizations;
+    }
 
-	public Set<OrganizationEntity> getChildOrganizations() {
-		return childOrganizations;
-	}
+    public Set<OrganizationEntity> getChildOrganizations() {
+        return childOrganizations;
+    }
 
-	public void setChildOrganizations(Set<OrganizationEntity> childOrganizations) {
-		this.childOrganizations = childOrganizations;
-	}
-	
-	public void addChildOrganization(final OrganizationEntity entity) {
-		if(entity != null) {
-			if(childOrganizations == null) {
-				childOrganizations = new LinkedHashSet<OrganizationEntity>();
-			}
-			childOrganizations.add(entity);
-		}
-	}
-	
-	public void removeChildOrganization(final String organizationId) {
-		if(organizationId != null) {
-			if(childOrganizations != null) {
-				for(final Iterator<OrganizationEntity> it = childOrganizations.iterator(); it.hasNext();) {
-					final OrganizationEntity entity = it.next();
-					if(entity.getId().equals(organizationId)) {
-						it.remove();
-						break;
-					}
-				}
-			}
-		}
-	}
-	
-	public boolean hasChildOrganization(final String organizationId) {
-		boolean retval = false;
-		if(organizationId != null) {
-			if(childOrganizations != null) {
-				for(final OrganizationEntity entity : childOrganizations) {
-					if(entity.getId().equals(organizationId)) {
-						retval = true;
-						break;
-					}
-				}
-			}
-		}
-		return retval;
-	}
+    public void setChildOrganizations(Set<OrganizationEntity> childOrganizations) {
+        this.childOrganizations = childOrganizations;
+    }
+
+    public void addChildOrganization(final OrganizationEntity entity) {
+        if (entity != null) {
+            if (childOrganizations == null) {
+                childOrganizations = new LinkedHashSet<OrganizationEntity>();
+            }
+            childOrganizations.add(entity);
+        }
+    }
+
+    public void removeChildOrganization(final String organizationId) {
+        if (organizationId != null) {
+            if (childOrganizations != null) {
+                for (final Iterator<OrganizationEntity> it = childOrganizations.iterator(); it.hasNext();) {
+                    final OrganizationEntity entity = it.next();
+                    if (entity.getId().equals(organizationId)) {
+                        it.remove();
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    public boolean hasChildOrganization(final String organizationId) {
+        boolean retval = false;
+        if (organizationId != null) {
+            if (childOrganizations != null) {
+                for (final OrganizationEntity entity : childOrganizations) {
+                    if (entity.getId().equals(organizationId)) {
+                        retval = true;
+                        break;
+                    }
+                }
+            }
+        }
+        return retval;
+    }
 
     public Set<UserEntity> getUsers() {
         return users;
@@ -310,15 +306,21 @@ public class OrganizationEntity {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
 
         OrganizationEntity that = (OrganizationEntity) o;
 
-        if (createDate != null ? !createDate.equals(that.createDate) : that.createDate != null) return false;
-        if (createdBy != null ? !createdBy.equals(that.createdBy) : that.createdBy != null) return false;
-        if (domainName != null ? !domainName.equals(that.domainName) : that.domainName != null) return false;
-        if (id != null ? !id.equals(that.id) : that.id != null) return false;
+        if (createDate != null ? !createDate.equals(that.createDate) : that.createDate != null)
+            return false;
+        if (createdBy != null ? !createdBy.equals(that.createdBy) : that.createdBy != null)
+            return false;
+        if (domainName != null ? !domainName.equals(that.domainName) : that.domainName != null)
+            return false;
+        if (id != null ? !id.equals(that.id) : that.id != null)
+            return false;
         if (organizationName != null ? !organizationName.equals(that.organizationName) : that.organizationName != null)
             return false;
 

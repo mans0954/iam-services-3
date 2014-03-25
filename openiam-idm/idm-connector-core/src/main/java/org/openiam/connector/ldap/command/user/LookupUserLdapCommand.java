@@ -69,7 +69,7 @@ public class LookupUserLdapCommand extends AbstractLookupLdapCommand<ExtensibleU
 
                 NamingEnumeration results = null;
                 try {
-                    results = lookupSearch(matchObj, ldapctx, identity, attrAry, objectBaseDN);
+                    results = lookupSearch(managedSys, matchObj, ldapctx, identity, attrAry, objectBaseDN);
                 } catch (NameNotFoundException nnfe) {
                     log.debug("results=NULL");
                     log.debug(" results has more elements=0");

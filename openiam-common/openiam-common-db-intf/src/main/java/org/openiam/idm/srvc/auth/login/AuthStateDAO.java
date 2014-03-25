@@ -32,4 +32,5 @@ import org.openiam.idm.srvc.auth.domain.AuthStateEntity;
 public interface AuthStateDAO extends BaseDao<AuthStateEntity, String> {
 
 	public void saveAuthState(final AuthStateEntity authState);
+    public void deleteByUser(String userId);
 }

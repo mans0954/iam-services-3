@@ -72,14 +72,17 @@ public class SynchScriptFactory {
 
             TransformScript transformScript = new PolicyMapTransformScript(attrMap);
             transformScript.setApplicationContext(SpringContextProvider.getApplicationContext());
+            transformScript.setSynchConfigId(config.getSynchConfigId());
             scripts.add(transformScript);
 
         }
         if (config.getUseTransformationScript() && StringUtils.isNotBlank(config.getTransformationRule())) {
+            TransformScript script = (TransformScript)createScript(config.getTransformationRule());
+            script.setSynchConfigId(config.getSynchConfigId());
             if (config.getPolicyMapBeforeTransformation()) {
-                scripts.addLast((TransformScript)createScript(config.getTransformationRule()));
+                scripts.addLast(script);
             } else {
-                scripts.addFirst((TransformScript)createScript(config.getTransformationRule()));
+                scripts.addFirst(script);
             }
         }
 
