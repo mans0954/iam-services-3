@@ -86,7 +86,7 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
     @Override
     @LocalizedServiceGet
     public OrganizationEntity getOrganization(String orgId, final LanguageEntity langauge) {
-        return getOrganization(orgId, null);
+        return getOrganization(orgId, null, langauge);
     }
 
     @Override
