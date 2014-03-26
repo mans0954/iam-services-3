@@ -79,7 +79,7 @@ public class DeprovisionSelectedResourceHelper extends BaseProvisioningHelper {
             bindingMap.put("IDENTITY", lg);
             //bindingMap.put("RESOURCE", res);
 
-            Resource res = resourceDataService.getResource(resourceId);
+            Resource res = resourceDataService.getResource(resourceId, null);
             if (res != null) {
                 String preProcessScript = getResProperty(res.getResourceProps(), "PRE_PROCESS");
                 if (preProcessScript != null && !preProcessScript.isEmpty()) {

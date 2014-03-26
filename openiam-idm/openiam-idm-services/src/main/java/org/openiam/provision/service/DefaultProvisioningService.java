@@ -393,7 +393,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             bindingMap.put(TARGET_SYS_RES_ID, resourceId);
 
             if (resourceId != null) {
-                res = resourceDataService.getResource(resourceId);
+                res = resourceDataService.getResource(resourceId, null);
                 if (res != null) {
                     String preProcessScript = getResProperty(res.getResourceProps(), "PRE_PROCESS");
                     if (preProcessScript != null && !preProcessScript.isEmpty()) {
@@ -490,7 +490,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                 bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS, IDENTITY_EXIST);
 
                                 if (resourceId != null) {
-                                    resource = resourceDataService.getResource(resourceId);
+                                    resource = resourceDataService.getResource(resourceId, null);
                                     if (resource != null) {
                                         bindingMap.put(TARGET_SYS_RES, resource);
 
@@ -716,7 +716,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         if (CollectionUtils.isNotEmpty(roleList)) {
             for (final RoleEntity role : roleList) {
                 final List<Resource> resourceList = resourceDataService.getResourcesForRole(role.getId(), 0,
-                        Integer.MAX_VALUE, null);
+                        Integer.MAX_VALUE, null, null);
                 if (CollectionUtils.isNotEmpty(resourceList)) {
                     for (final Resource resource : resourceList) {
                         ManagedSysDto managedSys = managedSysService.getManagedSysByResource(resource.getId());

@@ -21,11 +21,13 @@ import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
 import org.openiam.idm.srvc.audit.domain.AuditLogBuilder;
 import org.openiam.idm.srvc.base.AbstractBaseService;
+import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
 import org.openiam.idm.srvc.res.domain.ResourceTypeEntity;
 import org.openiam.idm.srvc.res.dto.*;
 import org.openiam.idm.srvc.user.service.UserDataService;
+import org.openiam.internationalization.LocalizedServiceGet;
 import org.openiam.util.DozerMappingType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -50,7 +52,9 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
 
     private static final Log log = LogFactory.getLog(ResourceDataServiceImpl.class);
 
-    public Resource getResource(String resourceId) {
+    @Override
+    @LocalizedServiceGet
+    public Resource getResource(final String resourceId, final Language language) {
         Resource resource = null;
         AuditLogBuilder auditBuilder = auditLogProvider.getAuditLogBuilder();
         auditBuilder.setAction(AuditAction.GET_RESOURCE).setTargetResource(resourceId);
@@ -95,7 +99,8 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
     }
 
     @Override
-    public List<Resource> findBeans(final ResourceSearchBean searchBean, final int from, final int size) {
+    @LocalizedServiceGet
+    public List<Resource> findBeans(final ResourceSearchBean searchBean, final int from, final int size, final Language language) {
         List<Resource> resourceList = null;
         AuditLogBuilder auditBuilder = auditLogProvider.getAuditLogBuilder();
         auditBuilder.setAction(AuditAction.SEARCH_RESOURCE);
@@ -215,7 +220,9 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
         return response;
     }
 
-    public List<ResourceType> getAllResourceTypes() {
+    @Override
+    @LocalizedServiceGet
+    public List<ResourceType> getAllResourceTypes(final Language language) {
         List<ResourceType> resourceTypeList = null;
         AuditLogBuilder auditBuilder = auditLogProvider.getAuditLogBuilder();
         auditBuilder.setAction(AuditAction.GET_ALL_RESOURCE_TYPE);
@@ -446,7 +453,8 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
     }
 
     @Override
-    public List<Resource> getChildResources(final String resourceId, Boolean deepFlag, final int from, final int size) {
+    @LocalizedServiceGet
+    public List<Resource> getChildResources(final String resourceId, Boolean deepFlag, final int from, final int size, final Language language) {
         List<Resource> resourceList = null;
         AuditLogBuilder auditBuilder = auditLogProvider.getAuditLogBuilder();
         auditBuilder.setAction(AuditAction.GET_CHILD_RESOURCE).setTargetResource(resourceId);
@@ -479,7 +487,8 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
     }
 
     @Override
-    public List<Resource> getParentResources(final String resourceId, final int from, final int size) {
+    @LocalizedServiceGet
+    public List<Resource> getParentResources(final String resourceId, final int from, final int size, final Language language) {
         List<Resource> resourceList = null;
         AuditLogBuilder auditBuilder = auditLogProvider.getAuditLogBuilder();
         auditBuilder.setAction(AuditAction.GET_PARENT_RESOURCE).setTargetResource(resourceId);
@@ -702,8 +711,8 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
     }
 
     @Override
-    public List<Resource> getResourcesForRole(final String roleId, final int from, final int size,
-                                              final ResourceSearchBean searchBean) {
+    @LocalizedServiceGet
+    public List<Resource> getResourcesForRole(final String roleId, final int from, final int size, final ResourceSearchBean searchBean, final Language language) {
         List<Resource> resourceList = null;
         AuditLogBuilder auditBuilder = auditLogProvider.getAuditLogBuilder();
         auditBuilder.setAction(AuditAction.GET_RESOURCE_FOR_ROLE).setTargetRole(roleId);
@@ -735,8 +744,8 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
     }
 
     @Override
-    public List<Resource> getResourcesForGroup(final String groupId, final int from, final int size,
-                                               final ResourceSearchBean searchBean) {
+    @LocalizedServiceGet
+    public List<Resource> getResourcesForGroup(final String groupId, final int from, final int size, final ResourceSearchBean searchBean, final Language language) {
         List<Resource> resourceList = null;
         AuditLogBuilder auditBuilder = auditLogProvider.getAuditLogBuilder();
         auditBuilder.setAction(AuditAction.GET_RESOURCE_FOR_GROUP).setTargetGroup(groupId);
@@ -769,8 +778,8 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
     }
 
     @Override
-    public List<Resource> getResourcesForUser(final String userId, final int from, final int size,
-                                              final ResourceSearchBean searchBean) {
+    @LocalizedServiceGet
+    public List<Resource> getResourcesForUser(final String userId, final int from, final int size, final ResourceSearchBean searchBean, final Language language) {
         List<Resource> resourceList = null;
         AuditLogBuilder auditBuilder = auditLogProvider.getAuditLogBuilder();
         auditBuilder.setAction(AuditAction.GET_RESOURCE_FOR_USER).setTargetUser(userId);
@@ -786,8 +795,8 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
     }
 
     @Override
-    public List<Resource> getResourcesForUserByType(final String userId, final String resourceTypeId,
-                                                    final ResourceSearchBean searchBean) {
+    @LocalizedServiceGet
+    public List<Resource> getResourcesForUserByType(final String userId, final String resourceTypeId, final ResourceSearchBean searchBean, final Language language) {
         List<Resource> resourceList = null;
         AuditLogBuilder auditBuilder = auditLogProvider.getAuditLogBuilder();
         auditBuilder.setAction(AuditAction.GET_RESOURCE_FOR_USER_BY_TYPE).setTargetUser(userId)
@@ -862,7 +871,8 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
     }
 
     @Override
-    public List<ResourceType> findResourceTypes(final ResourceTypeSearchBean searchBean, int from, int size) {
+    @LocalizedServiceGet
+    public List<ResourceType> findResourceTypes(final ResourceTypeSearchBean searchBean, final int from, final int size, final Language language) {
         final List<ResourceTypeEntity> entityList = resourceService.findResourceTypes(searchBean, from, size);
         return resourceTypeConverter.convertToDTOList(entityList, searchBean.isDeepCopy());
     }

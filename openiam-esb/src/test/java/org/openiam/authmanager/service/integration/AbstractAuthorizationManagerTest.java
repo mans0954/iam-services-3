@@ -373,7 +373,7 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractTestNGSpr
 	}
 	
 	private void checkResourceMembership(final String userId, final String resourceId) {
-		final Resource resource = resourceServiceClient.getResource(resourceId);
+		final Resource resource = resourceServiceClient.getResource(resourceId, null);
 		final User user = userDataWebService.getUserWithDependent(userId,null, true);
 		
 		checkUser2ResourceEntitlement(user.getId(), null, resource.getId(), null);

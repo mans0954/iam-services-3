@@ -236,6 +236,10 @@
 			<a>approverAssociations</a>
 			<b>approverAssociations</b>
 		</field-exclude>
+		<field-exclude>
+			<a>users</a>
+			<b>users</b>
+		</field-exclude>
 	</mapping>
 
 	<mapping>
@@ -296,6 +300,10 @@
 		<field-exclude>
 			<a>approverAssociations</a>
 			<b>approverAssociations</b>
+		</field-exclude>
+		<field-exclude>
+			<a>users</a>
+			<b>users</b>
 		</field-exclude>
 	</mapping>
 	<mapping>
@@ -584,8 +592,8 @@
 			<b>organizationTypeName</b>
 		</field>
 		<field-exclude>
-			<a>affiliations</a>
-			<b>affiliations</b>
+			<a>users</a>
+			<b>users</b>
 		</field-exclude>
 		<field-exclude>
 			<a>approverAssociations</a>

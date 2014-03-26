@@ -13,6 +13,17 @@
 			<b>entity</b>
 		</field>
 	</mapping>
+	
+	<mapping>
+		<class-a>org.openiam.idm.srvc.res.domain.ResourceTypeEntity</class-a>
+		<class-b>org.openiam.idm.srvc.res.dto.ResourceType</class-b>
+		<field
+			custom-converter="org.openiam.dozer.crossentity.CrossEntityMapConverterWithKeyString"
+			custom-converter-param="dto2entityShallowDozerMapper">
+			<a>displayNameMap</a>
+			<b>displayNameMap</b>
+		</field>
+	</mapping>
 
 	<mapping>
 		<class-a>org.openiam.idm.srvc.res.domain.ResourcePropEntity</class-a>

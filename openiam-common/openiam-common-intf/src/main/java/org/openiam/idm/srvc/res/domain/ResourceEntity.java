@@ -37,6 +37,7 @@ public class ResourceEntity extends KeyEntity {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "RESOURCE_TYPE_ID")
+    @Internationalized
     private ResourceTypeEntity resourceType;
 
     @Column(name = "NAME", length = 150)

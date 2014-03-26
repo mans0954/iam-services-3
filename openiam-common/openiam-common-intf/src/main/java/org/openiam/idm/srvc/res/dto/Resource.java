@@ -51,6 +51,7 @@ import java.util.Set;
 @Internationalized
 public class Resource extends AdminResourceDTO {
 
+	@Internationalized
     private ResourceType resourceType;
     private String description;
     private Integer displayOrder;

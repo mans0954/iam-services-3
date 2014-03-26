@@ -216,12 +216,12 @@ public class InternationalizationProvider {
 							if(fieldObject != null) {
 								if(fieldObject instanceof Collection) {
 									for(final Object o : (Collection)fieldObject) {
-										if(o instanceof KeyEntity) {
-											retVal.addAll(getTargetFields((KeyEntity)o, visitedSet));
+										if(o instanceof BaseIdentity) {
+											retVal.addAll(getTargetFields((BaseIdentity)o, visitedSet));
 										}
 									}
-								} else if(fieldObject instanceof KeyEntity) {
-									retVal.addAll(getTargetFields((KeyEntity)fieldObject, visitedSet));
+								} else if(fieldObject instanceof BaseIdentity) {
+									retVal.addAll(getTargetFields((BaseIdentity)fieldObject, visitedSet));
 								}
 							}
 						}
