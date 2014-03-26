@@ -12,6 +12,7 @@ import org.openiam.idm.searchbeans.SearchBean;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.dto.Org2OrgXref;
 import org.openiam.idm.srvc.searchbean.converter.OrganizationSearchBeanConverter;
+import org.openiam.internationalization.LocalizedDatabaseGet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -30,14 +31,18 @@ public class OrganizationDAOImpl extends
 
 	@Autowired
 	private OrganizationSearchBeanConverter organizationSearchBeanConverter;
+	
     @Override
+    @LocalizedDatabaseGet
 	public int getNumOfOrganizationsForUser(final String userId,
 			final Set<String> filter) {
 		final Criteria criteria = getOrganizationsForUserCriteria(userId,
 				filter).setProjection(rowCount());
 		return ((Number) criteria.uniqueResult()).intValue();
 	}
+    
     @Override
+    @LocalizedDatabaseGet
 	public List<OrganizationEntity> getOrganizationsForUser(
 			final String userId, final Set<String> filter, final int from,
 			final int size) {
@@ -67,22 +72,7 @@ public class OrganizationDAOImpl extends
 		}
 		return criteria;
 	}
-    @Override
-	public List<OrganizationEntity> findRootOrganizations() {
-		final Criteria criteria = getCriteria().add(
-				Restrictions.isNull("parentId")).addOrder(
-				Order.asc("name"));
-		// .setFetchMode("attributes", FetchMode.JOIN);
-		return criteria.list();
-	}
-    @Override
-	public List<OrganizationEntity> findAllOrganization() {
-		Criteria criteria = getCriteria().addOrder(
-				Order.asc("name"));
-		// .setFetchMode("attributes", FetchMode.JOIN);
-		return criteria.list();
-	}
-
+   
 	@Override
 	protected Criteria getExampleCriteria(final SearchBean searchBean) {
 		Criteria criteria = getCriteria();
@@ -180,12 +170,14 @@ public class OrganizationDAOImpl extends
 	}
 
 	@Override
+	@LocalizedDatabaseGet
 	public List<OrganizationEntity> getChildOrganizations(String orgId,
 			Set<String> filter, final int from, final int size) {
 		return getList(getChildOrganizationsCriteria(orgId, filter), from, size);
 	}
 
 	@Override
+	@LocalizedDatabaseGet
 	public List<OrganizationEntity> getParentOrganizations(String orgId,
 			Set<String> filter, final int from, final int size) {
 		return getList(getParentOrganizationsCriteria(orgId, filter), from,
@@ -259,6 +251,7 @@ public class OrganizationDAOImpl extends
     }
 
     @Override
+    @LocalizedDatabaseGet
     public List<OrganizationEntity> findAllByTypesAndIds(Set<String> allowedOrgTypes, Set<String> filterData){
         Criteria criteria = getCriteria();
 
@@ -273,6 +266,7 @@ public class OrganizationDAOImpl extends
     }
 
     @Override
+    @LocalizedDatabaseGet
     public List<OrganizationEntity> findOrganizationsByAttributeValue(final String attrName, final String attrValue) {
         List ret = new ArrayList<OrganizationEntity>();
         if (StringUtils.isNotBlank(attrName)) {

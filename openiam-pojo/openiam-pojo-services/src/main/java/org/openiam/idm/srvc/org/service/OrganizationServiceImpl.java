@@ -10,6 +10,7 @@ import org.openiam.base.ws.ResponseCode;
 import org.openiam.dozer.converter.OrganizationDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.OrganizationSearchBean;
+import org.openiam.idm.srvc.lang.domain.LanguageEntity;
 import org.openiam.idm.srvc.meta.service.MetadataElementDAO;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.mngsys.domain.AssociationType;
@@ -24,6 +25,7 @@ import org.openiam.idm.srvc.user.dto.UserAttribute;
 import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.srvc.user.util.DelegationFilterHelper;
+import org.openiam.internationalization.LocalizedServiceGet;
 import org.openiam.thread.Sweepable;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -82,13 +84,15 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
     private String departmentTypeId;
 
     @Override
-    public OrganizationEntity getOrganization(String orgId) {
+    @LocalizedServiceGet
+    public OrganizationEntity getOrganization(String orgId, final LanguageEntity langauge) {
         return getOrganization(orgId, null);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public OrganizationEntity getOrganization(String orgId, String requesterId) {
+    @LocalizedServiceGet
+    public OrganizationEntity getOrganization(String orgId, String requesterId, final LanguageEntity langauge) {
         if (DelegationFilterHelper.isAllowed(orgId, getDelegationFilter(requesterId, null))) {
             return orgDao.findById(orgId);
         }
@@ -96,10 +100,11 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
     }
 
     @Override
-    public OrganizationEntity getOrganizationByName(final String name, String requesterId) {
+    @LocalizedServiceGet
+    public OrganizationEntity getOrganizationByName(final String name, String requesterId, final LanguageEntity langauge) {
         final OrganizationSearchBean searchBean = new OrganizationSearchBean();
         searchBean.setName(name);
-        final List<OrganizationEntity> foundList = this.findBeans(searchBean, requesterId, 0, 1);
+        final List<OrganizationEntity> foundList = this.findBeans(searchBean, requesterId, 0, 1, null);
         return (CollectionUtils.isNotEmpty(foundList)) ? foundList.get(0) : null;
     }
     
@@ -109,17 +114,14 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
     }
 
     @Override
-    public List<OrganizationEntity> getOrganizationsForUser(String userId, String requesterId, final int from, final int size) {
+    @LocalizedServiceGet
+    public List<OrganizationEntity> getOrganizationsForUser(String userId, String requesterId, final int from, final int size, final LanguageEntity langauge) {
     	return orgDao.getOrganizationsForUser(userId, getDelegationFilter(requesterId, null), from, size);
     }
 
     @Override
-    public List<OrganizationEntity> getAllOrganizations(String requesterId) {
-        return this.findBeans(new OrganizationSearchBean(), requesterId, -1, -1);
-    }
-
-    @Override
-    public List<OrganizationEntity> findBeans(final OrganizationSearchBean searchBean, String requesterId, int from, int size) {
+    @LocalizedServiceGet
+    public List<OrganizationEntity> findBeans(final OrganizationSearchBean searchBean, String requesterId, int from, int size, final LanguageEntity langauge) {
         Set<String> filter = getDelegationFilter(requesterId, null);
         if (StringUtils.isBlank(searchBean.getKey()))
             searchBean.setKeys(filter);
@@ -130,12 +132,14 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
     }
 
     @Override
-    public List<OrganizationEntity> getParentOrganizations(String orgId, String requesterId, int from, int size) {
+    @LocalizedServiceGet
+    public List<OrganizationEntity> getParentOrganizations(String orgId, String requesterId, int from, int size, final LanguageEntity langauge) {
         return orgDao.getParentOrganizations(orgId, getDelegationFilter(requesterId, null), from, size);
     }
 
     @Override
-    public List<OrganizationEntity> getChildOrganizations(String orgId, String requesterId, int from, int size) {
+    @LocalizedServiceGet
+    public List<OrganizationEntity> getChildOrganizations(String orgId, String requesterId, int from, int size, final LanguageEntity langauge) {
         return orgDao.getChildOrganizations(orgId, getDelegationFilter(requesterId, null), from, size);
     }
 
@@ -398,7 +402,8 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
     }
 
     @Override
-    public List<OrganizationEntity> getAllowedParentOrganizationsForType(final String orgTypeId, String requesterId){
+    @LocalizedServiceGet
+    public List<OrganizationEntity> getAllowedParentOrganizationsForType(final String orgTypeId, String requesterId, final LanguageEntity langauge){
         Set<String> filterData = null;
         Set<String> allowedOrgTypes = null;
         if (StringUtils.isNotBlank(requesterId)) {
@@ -437,8 +442,9 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
     }
 
 	@Override
-	public Organization getOrganizationDTO(String orgId) {
-		return organizationDozerConverter.convertToDTO(getOrganization(orgId), true);
+	@LocalizedServiceGet
+	public Organization getOrganizationDTO(String orgId, final LanguageEntity langauge) {
+		return organizationDozerConverter.convertToDTO(getOrganization(orgId, langauge), true);
 	}
 
 	@Override
@@ -466,7 +472,8 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
 
     @Override
     @Transactional(readOnly = true)
-    public List<OrganizationEntity> findOrganizationsByAttributeValue(final String attrName, String attrValue) {
+    @LocalizedServiceGet
+    public List<OrganizationEntity> findOrganizationsByAttributeValue(final String attrName, String attrValue, final LanguageEntity langauge) {
         return orgDao.findOrganizationsByAttributeValue(attrName, attrValue);
     }
 	

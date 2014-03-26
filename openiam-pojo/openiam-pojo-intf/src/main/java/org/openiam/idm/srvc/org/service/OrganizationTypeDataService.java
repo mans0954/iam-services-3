@@ -2,6 +2,7 @@ package org.openiam.idm.srvc.org.service;
 
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.OrganizationTypeSearchBean;
+import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.org.dto.OrganizationType;
 
 import javax.jws.WebMethod;
@@ -18,7 +19,8 @@ public interface OrganizationTypeDataService {
 	@WebMethod
 	public List<OrganizationType> findBeans(final @WebParam(name = "searchBean", targetNamespace = "") OrganizationTypeSearchBean searchBean,
 											final @WebParam(name = "from", targetNamespace = "") int from,
-											final @WebParam(name = "size", targetNamespace = "") int size);
+											final @WebParam(name = "size", targetNamespace = "") int size,
+											final @WebParam(name = "language", targetNamespace = "") Language language);
 	
 	@WebMethod
 	public int count(final @WebParam(name = "searchBean", targetNamespace = "") OrganizationTypeSearchBean searchBean);

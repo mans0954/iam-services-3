@@ -49,6 +49,7 @@ import org.openiam.idm.srvc.org.dto.OrganizationAttribute;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
+import org.openiam.internationalization.Internationalized;
 
 @Entity
 @Table(name = "COMPANY")
@@ -56,6 +57,7 @@ import org.openiam.idm.srvc.user.domain.UserEntity;
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @DozerDTOCorrespondence(Organization.class)
 @AttributeOverride(name = "id", column = @Column(name = "COMPANY_ID"))
+@Internationalized
 public class OrganizationEntity extends KeyEntity {
     
     @Column(name="ALIAS", length=100)
@@ -102,6 +104,7 @@ public class OrganizationEntity extends KeyEntity {
     
     @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name = "ORG_TYPE_ID", referencedColumnName = "ORG_TYPE_ID", insertable = true, updatable = true)
+    @Internationalized
     private OrganizationTypeEntity organizationType;
 
     @Column(name="ABBREVIATION", length=20)

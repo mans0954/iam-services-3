@@ -41,7 +41,7 @@ public class GroupDisplayMapper extends AbstractActivitiJob {
 		}
 		
 		if(StringUtils.isNotBlank(group.getCompanyId())) {
-			final OrganizationEntity entity = organizationService.getOrganization(group.getCompanyId());
+			final OrganizationEntity entity = organizationService.getOrganization(group.getCompanyId(), null);
 			if(entity != null) {
 				metadataMap.put("Organization", entity.getName());
 			}

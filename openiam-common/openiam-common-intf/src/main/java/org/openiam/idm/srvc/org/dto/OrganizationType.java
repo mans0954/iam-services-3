@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.org.dto;
 
+import java.util.Map;
 import java.util.Set;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -8,7 +9,10 @@ import javax.xml.bind.annotation.XmlType;
 
 import org.openiam.base.KeyDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.idm.srvc.lang.dto.LanguageMapping;
 import org.openiam.idm.srvc.org.domain.OrganizationTypeEntity;
+import org.openiam.internationalization.Internationalized;
+import org.openiam.internationalization.InternationalizedCollection;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "OrganizationType", propOrder = {
@@ -16,9 +20,12 @@ import org.openiam.idm.srvc.org.domain.OrganizationTypeEntity;
 	"description",
 	"parentTypes",
 	"childTypes",
-	"organizations"
+	"organizations",
+	"displayNameMap",
+	"displayName"
 })
 @DozerDTOCorrespondence(OrganizationTypeEntity.class)
+@Internationalized
 public class OrganizationType extends KeyDTO {
 
 	private String name;
@@ -26,6 +33,11 @@ public class OrganizationType extends KeyDTO {
 	private Set<OrganizationType> parentTypes;
 	private Set<OrganizationType> childTypes;
 	private Set<Organization> organizations;
+	
+	@InternationalizedCollection(referenceType="MetadataTypeEntity", targetField="displayName")
+    private Map<String, LanguageMapping> displayNameMap;
+	    
+    private String displayName;
 
 	public String getName() {
 		return name;
@@ -58,6 +70,19 @@ public class OrganizationType extends KeyDTO {
 	}
 	public void setOrganizations(Set<Organization> organizations) {
 		this.organizations = organizations;
+	}
+	
+	public Map<String, LanguageMapping> getDisplayNameMap() {
+		return displayNameMap;
+	}
+	public void setDisplayNameMap(Map<String, LanguageMapping> displayNameMap) {
+		this.displayNameMap = displayNameMap;
+	}
+	public String getDisplayName() {
+		return displayName;
+	}
+	public void setDisplayName(String displayName) {
+		this.displayName = displayName;
 	}
 	@Override
 	public int hashCode() {

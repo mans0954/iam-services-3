@@ -6,14 +6,17 @@ import org.apache.commons.logging.LogFactory;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
+import org.openiam.dozer.converter.LanguageDozerConverter;
 import org.openiam.dozer.converter.OrganizationAttributeDozerConverter;
 import org.openiam.dozer.converter.OrganizationDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.OrganizationSearchBean;
 import org.openiam.idm.srvc.base.AbstractBaseService;
+import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.user.service.UserDataService;
+import org.openiam.internationalization.LocalizedServiceGet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -52,11 +55,12 @@ public class OrganizationDataServiceImpl extends AbstractBaseService implements 
     private OrganizationDozerConverter organizationDozerConverter;
 
     @Autowired
-    private OrganizationAttributeDozerConverter organizationAttributeDozerConverter;
+    private LanguageDozerConverter languageConverter;
 
     @Override
-    public Organization getOrganization(final String orgId, String requesterId) {
-        final OrganizationEntity entity = organizationService.getOrganization(orgId, requesterId);
+    @LocalizedServiceGet
+    public Organization getOrganization(final String orgId, String requesterId, final Language language) {
+        final OrganizationEntity entity = organizationService.getOrganization(orgId, requesterId, languageConverter.convertToEntity(language, false));
         return organizationDozerConverter.convertToDTO(entity, true);
     }
     
@@ -66,34 +70,32 @@ public class OrganizationDataServiceImpl extends AbstractBaseService implements 
 	}
     
     @Override
-	public List<Organization> getOrganizationsForUser(final String userId, final String requesterId, final int from, final int size) {
-    	final List<OrganizationEntity> ogranizationEntity = organizationService.getOrganizationsForUser(userId, requesterId, from, size);
+    @LocalizedServiceGet
+	public List<Organization> getOrganizationsForUser(final String userId, final String requesterId, final int from, final int size, final Language language) {
+    	final List<OrganizationEntity> ogranizationEntity = organizationService.getOrganizationsForUser(userId, requesterId, from, size, languageConverter.convertToEntity(language, false));
         return organizationDozerConverter.convertToDTOList(ogranizationEntity, false);
 	}
 
     @Override
-    public List<Organization> getAllOrganizations(String requesterId) {
-        final List<OrganizationEntity> entityList = organizationService.getAllOrganizations(requesterId);
-        return organizationDozerConverter.convertToDTOList(entityList, false);
-    }
-
-    @Override
-    public List<Organization> findBeans(final OrganizationSearchBean searchBean, String requesterId, final int from, final int size) {
-        final List<OrganizationEntity> entityList = organizationService.findBeans(searchBean, requesterId, from, size);
+    @LocalizedServiceGet
+    public List<Organization> findBeans(final OrganizationSearchBean searchBean, final String requesterId, final int from, final int size, final Language language) {
+        final List<OrganizationEntity> entityList = organizationService.findBeans(searchBean, requesterId, from, size, languageConverter.convertToEntity(language, false));
         final List<Organization> resultList = organizationDozerConverter.convertToDTOList(entityList, searchBean.isDeepCopy());
         return resultList;
     }
 
     @Override
-    public List<Organization> getParentOrganizations(String orgId, String requesterId, final int from, final int size) {
-        final List<OrganizationEntity> entityList = organizationService.getParentOrganizations(orgId, requesterId, from, size);
+    @LocalizedServiceGet
+    public List<Organization> getParentOrganizations(String orgId, String requesterId, final int from, final int size, final Language language) {
+        final List<OrganizationEntity> entityList = organizationService.getParentOrganizations(orgId, requesterId, from, size, languageConverter.convertToEntity(language, false));
         final List<Organization> organizationList = organizationDozerConverter.convertToDTOList(entityList, false);
         return organizationList;
     }
 
     @Override
-    public List<Organization> getChildOrganizations(String orgId, String requesterId, final int from, final int size) {
-        final List<OrganizationEntity> entityList = organizationService.getChildOrganizations(orgId, requesterId, from, size);
+    @LocalizedServiceGet
+    public List<Organization> getChildOrganizations(String orgId, String requesterId, final int from, final int size, final Language language) {
+        final List<OrganizationEntity> entityList = organizationService.getChildOrganizations(orgId, requesterId, from, size, languageConverter.convertToEntity(language, false));
         final List<Organization> organizationList = organizationDozerConverter.convertToDTOList(entityList, false);
         return organizationList;
     }
@@ -112,6 +114,32 @@ public class OrganizationDataServiceImpl extends AbstractBaseService implements 
     public int count(final OrganizationSearchBean searchBean, String requesterId) {
         return organizationService.count(searchBean, requesterId);
     }
+    
+    @Override
+    @LocalizedServiceGet
+    public List<Organization> getAllowedParentOrganizationsForType(final String orgTypeId, String requesterId, final Language language){
+        final List<OrganizationEntity> entityList = organizationService.getAllowedParentOrganizationsForType(orgTypeId, requesterId, languageConverter.convertToEntity(language, false));
+        final List<Organization> resultList = organizationDozerConverter.convertToDTOList(entityList, false);
+        return resultList;
+    }
+
+    @Override
+    @LocalizedServiceGet
+    public List<Organization> findOrganizationsByAttributeValue(String attrName, String attrValue, final Language language) {
+        return organizationDozerConverter.convertToDTOList(
+                organizationService.findOrganizationsByAttributeValue(attrName, attrValue, languageConverter.convertToEntity(language, false)), true);
+    }
+    
+
+	@Override
+	@LocalizedServiceGet
+	public List<Organization> getOrganizationsForUserByType(final String userId, final String requesterId, final String organizationTypeId, final Language language) {
+		final OrganizationSearchBean searchBean = new OrganizationSearchBean();
+		searchBean.setUserId(userId);
+		searchBean.setOrganizationTypeId(organizationTypeId);
+		searchBean.setDeepCopy(false);
+		return findBeans(searchBean, requesterId, 0, Integer.MAX_VALUE, language);
+	}
 
     @Override
     public Response addUserToOrg(final String orgId, final String userId) {
@@ -161,7 +189,7 @@ public class OrganizationDataServiceImpl extends AbstractBaseService implements 
             throw new BasicDataServiceException(ResponseCode.ORGANIZATION_NAME_NOT_SET);
         }
 
-        final OrganizationEntity found = organizationService.getOrganizationByName(organization.getName(), null);
+        final OrganizationEntity found = organizationService.getOrganizationByName(organization.getName(), null, null);
         if (found != null) {
             if (StringUtils.isBlank(organization.getId()) && found != null) {
                 throw new BasicDataServiceException(ResponseCode.NAME_TAKEN);
@@ -300,15 +328,6 @@ public class OrganizationDataServiceImpl extends AbstractBaseService implements 
 	}
 
 	@Override
-	public List<Organization> getOrganizationsForUserByType(final String userId, final String requesterId, final String organizationTypeId) {
-		final OrganizationSearchBean searchBean = new OrganizationSearchBean();
-		searchBean.setUserId(userId);
-		searchBean.setOrganizationTypeId(organizationTypeId);
-		searchBean.setDeepCopy(false);
-		return findBeans(searchBean, requesterId, 0, Integer.MAX_VALUE);
-	}
-
-	@Override
 	public Response canAddUserToOrganization(final String organizationId, final String userId) {
 		final Response response = new Response(ResponseStatus.SUCCESS);
 		try {
@@ -355,16 +374,4 @@ public class OrganizationDataServiceImpl extends AbstractBaseService implements 
 		}
 		return response;
 	}
-    @Override
-    public List<Organization> getAllowedParentOrganizationsForType(final String orgTypeId, String requesterId){
-        final List<OrganizationEntity> entityList = organizationService.getAllowedParentOrganizationsForType(orgTypeId, requesterId);
-        final List<Organization> resultList = organizationDozerConverter.convertToDTOList(entityList, false);
-        return resultList;
-    }
-
-    @Override
-    public List<Organization> findOrganizationsByAttributeValue(String attrName, String attrValue) {
-        return organizationDozerConverter.convertToDTOList(
-                organizationService.findOrganizationsByAttributeValue(attrName, attrValue), true);
-    }
 }

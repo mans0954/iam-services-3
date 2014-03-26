@@ -580,7 +580,7 @@
 			<b>organizationTypeId</b>
 		</field>
 		<field>
-			<a>organizationType.name</a>
+			<a>organizationType.displayName</a>
 			<b>organizationTypeName</b>
 		</field>
 		<field-exclude>
@@ -809,8 +809,7 @@
 	</mapping>
 
 	<mapping>
-		<class-a>org.openiam.idm.srvc.org.domain.OrganizationTypeEntity
-		</class-a>
+		<class-a>org.openiam.idm.srvc.org.domain.OrganizationTypeEntity</class-a>
 		<class-b>org.openiam.idm.srvc.org.dto.OrganizationType</class-b>
 		<field
 			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
@@ -829,6 +828,12 @@
 			custom-converter-param="dto2entityShallowDozerMapper">
 			<a>organizations</a>
 			<b>organizations</b>
+		</field>
+		<field
+			custom-converter="org.openiam.dozer.crossentity.CrossEntityMapConverterWithKeyString"
+			custom-converter-param="dto2entityShallowDozerMapper">
+			<a>displayNameMap</a>
+			<b>displayNameMap</b>
 		</field>
 	</mapping>
 	

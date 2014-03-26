@@ -10,8 +10,10 @@ import org.openiam.dozer.converter.OrganizationDozerConverter;
 import org.openiam.dozer.converter.OrganizationTypeDozerBeanConverter;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.OrganizationTypeSearchBean;
+import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.org.domain.OrganizationTypeEntity;
 import org.openiam.idm.srvc.org.dto.OrganizationType;
+import org.openiam.internationalization.LocalizedServiceGet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,7 +43,8 @@ public class OrganizationTypeDataServiceImpl implements OrganizationTypeDataServ
 	}
 
 	@Override
-	public List<OrganizationType> findBeans(final OrganizationTypeSearchBean searchBean, final int from, final int size) {
+	@LocalizedServiceGet
+	public List<OrganizationType> findBeans(final OrganizationTypeSearchBean searchBean, final int from, final int size, final Language language) {
 		final List<OrganizationTypeEntity> entityList = organizationTypeService.findBeans(searchBean, from, size);
 		return dozerConverter.convertToDTOList(entityList, searchBean.isDeepCopy());
 	}

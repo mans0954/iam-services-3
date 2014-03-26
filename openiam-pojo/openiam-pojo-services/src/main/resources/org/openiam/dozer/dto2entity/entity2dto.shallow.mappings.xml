@@ -460,7 +460,7 @@
 			<b>organizationTypeId</b>
 		</field>
 		<field>
-			<a>organizationType.name</a>
+			<a>organizationType.displayName</a>
 			<b>organizationTypeName</b>
 		</field>
 		<field-exclude>
@@ -691,6 +691,12 @@
 			<a>organizations</a>
 			<b>organizations</b>
 		</field-exclude>
+		<field
+			custom-converter="org.openiam.dozer.crossentity.CrossEntityMapConverterWithKeyString"
+			custom-converter-param="dto2entityShallowDozerMapper">
+			<a>displayNameMap</a>
+			<b>displayNameMap</b>
+		</field>
 	</mapping>
 	
 	 <mapping>

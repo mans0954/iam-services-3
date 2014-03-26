@@ -94,7 +94,7 @@ public class NewUserDisplayMapperDelegate extends AbstractUserDisplayMapper {
 		if(CollectionUtils.isNotEmpty(organizationIds)) {
 			int idx = 1;
 			for(final String organizationId : organizationIds) {
-				final OrganizationEntity organization = organizationService.getOrganization(organizationId);
+				final OrganizationEntity organization = organizationService.getOrganization(organizationId, null);
 				if(organization != null) {
 					metadataMap.put(String.format("Organization %s", idx), organization.getName());
 					idx++;
