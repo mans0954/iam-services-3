@@ -21,6 +21,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.jws.WebService;
+import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 //import diamelle.common.continfo.*;
@@ -80,7 +82,11 @@ public class OrganizationDataServiceImpl extends AbstractBaseService implements 
     @LocalizedServiceGet
     public List<Organization> findBeans(final OrganizationSearchBean searchBean, final String requesterId, final int from, final int size, final Language language) {
         final List<OrganizationEntity> entityList = organizationService.findBeans(searchBean, requesterId, from, size, languageConverter.convertToEntity(language, false));
-        final List<Organization> resultList = organizationDozerConverter.convertToDTOList(entityList, searchBean.isDeepCopy());
+        final List<Organization> resultList = new LinkedList<Organization>();
+        for(OrganizationEntity organizationEntity : entityList) {
+            resultList.add(organizationDozerConverter.convertToDTO(organizationEntity,false));
+        }
+
         return resultList;
     }
 
