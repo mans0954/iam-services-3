@@ -85,14 +85,14 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
 
     @Override
     @LocalizedServiceGet
-    public OrganizationEntity getOrganization(String orgId, final LanguageEntity langauge) {
-        return getOrganization(orgId, null, langauge);
+    public OrganizationEntity getOrganizationLocalized(String orgId, final LanguageEntity langauge) {
+        return getOrganizationLocalized(orgId, null, langauge);
     }
 
     @Override
     @Transactional(readOnly = true)
     @LocalizedServiceGet
-    public OrganizationEntity getOrganization(String orgId, String requesterId, final LanguageEntity langauge) {
+    public OrganizationEntity getOrganizationLocalized(String orgId, String requesterId, final LanguageEntity langauge) {
         if (DelegationFilterHelper.isAllowed(orgId, getDelegationFilter(requesterId, null))) {
             return orgDao.findById(orgId);
         }
@@ -444,7 +444,7 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
 	@Override
 	@LocalizedServiceGet
 	public Organization getOrganizationDTO(String orgId, final LanguageEntity langauge) {
-		return organizationDozerConverter.convertToDTO(getOrganization(orgId, langauge), true);
+		return organizationDozerConverter.convertToDTO(getOrganizationLocalized(orgId, langauge), true);
 	}
 
 	@Override
@@ -562,5 +562,53 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
     @Override
     public void afterPropertiesSet() throws Exception {
         sweep();
+    }
+
+
+    @Deprecated
+    public Organization getOrganizationDTO(final String orgId){
+        return this.getOrganizationDTO(orgId, getDefaultLanguage());
+    }
+    @Deprecated
+    public OrganizationEntity getOrganization(String orgId){
+        return this.getOrganization(orgId, null);
+    }
+    @Deprecated
+    public OrganizationEntity getOrganization(final String orgId, String requesterId){
+        return this.getOrganizationLocalized(orgId, requesterId, getDefaultLanguage());
+    }
+    @Deprecated
+    public OrganizationEntity getOrganizationByName(final String name, String requesterId){
+        return this.getOrganizationByName(name, requesterId, getDefaultLanguage());
+    }
+    @Deprecated
+    public List<OrganizationEntity> getOrganizationsForUser(String userId, String requesterId, final int from, final int size){
+        return this.getOrganizationsForUser(userId, requesterId, from, size, getDefaultLanguage());
+    }
+    @Deprecated
+    public List<OrganizationEntity> getParentOrganizations(final String orgId, String requesterId, final int from, final int size){
+        return this.getParentOrganizations(orgId, requesterId, from, size, getDefaultLanguage());
+    }
+    @Deprecated
+    public List<OrganizationEntity> getChildOrganizations(final String orgId, String requesterId, final int from, final int size){
+        return this.getChildOrganizations(orgId, requesterId, from, size, getDefaultLanguage());
+    }
+    @Deprecated
+    public List<OrganizationEntity> findBeans(final OrganizationSearchBean searchBean, String requesterId, final int from, final int size){
+        return this.findBeans(searchBean, requesterId, from, size, getDefaultLanguage());
+    }
+    @Deprecated
+    public List<OrganizationEntity> getAllowedParentOrganizationsForType(final String orgTypeId, String requesterId){
+        return this.getAllowedParentOrganizationsForType(orgTypeId, requesterId, getDefaultLanguage());
+    }
+    @Deprecated
+    public List<OrganizationEntity> findOrganizationsByAttributeValue(final String attrName, String attrValue){
+        return this.findOrganizationsByAttributeValue(attrName, attrValue, getDefaultLanguage());
+    }
+
+    private LanguageEntity getDefaultLanguage(){
+        LanguageEntity lang = new LanguageEntity();
+        lang.setId("1");
+        return lang;
     }
 }
