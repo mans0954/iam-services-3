@@ -1362,11 +1362,8 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
     @Transactional
     public PasswordResponse resetPassword(PasswordSync passwordSync) {
         log.debug("----resetPassword called.------");
-        final AuditLogBuilder auditBuilder = auditLogProvider.getAuditLogBuilder();
-        auditBuilder.setRequestorUserId(systemUserId).setTargetUser(null).setAction(AuditAction.PROVISIONING);
-        AuditLogBuilder auditBuilderResetPasswdChildLog = new AuditLogBuilder();
-        auditBuilderResetPasswdChildLog.setRequestorUserId(systemUserId).setTargetUser(null)
-                .setAction(AuditAction.PROVISIONING_RESETPASSWORD);
+        final AuditLogBuilder auditBuilder = auditLogProvider.getAuditLogBuilder().setRequestorUserId(passwordSync.getRequestorId()).setTargetUser(null).setAction(AuditAction.PROVISIONING);
+        final AuditLogBuilder auditBuilderResetPasswdChildLog = new AuditLogBuilder().setRequestorUserId(passwordSync.getRequestorId()).setTargetUser(null).setAction(AuditAction.PROVISIONING_RESETPASSWORD);
         auditBuilder.addChild(auditBuilderResetPasswdChildLog);
         final PasswordResponse response = new PasswordResponse(ResponseStatus.SUCCESS);
         try {
@@ -1396,6 +1393,9 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 response.setErrorCode(ResponseCode.USER_NOT_FOUND);
                 return response;
             }
+            
+            auditBuilder.setTargetUser(userId);
+            auditBuilderResetPasswdChildLog.setTargetUser(userId);
 
             String password = passwordSync.getPassword();
             if (StringUtils.isEmpty(password)) {
