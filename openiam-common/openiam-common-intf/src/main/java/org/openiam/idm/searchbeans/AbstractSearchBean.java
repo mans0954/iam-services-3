@@ -15,7 +15,7 @@ import javax.xml.bind.annotation.XmlType;
 })
 public class AbstractSearchBean<T, KeyType> {
 
-	private boolean deepCopy = false;
+	private boolean deepCopy = true;
 	private KeyType key;
     private OrderConstants orderBy = OrderConstants.ASC;
     private String sortBy;
