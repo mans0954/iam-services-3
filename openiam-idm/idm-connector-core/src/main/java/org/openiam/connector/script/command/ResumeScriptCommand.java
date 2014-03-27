@@ -22,7 +22,7 @@ public class ResumeScriptCommand extends AbstractScriptCommand<SuspendResumeRequ
 
     @Override
     protected String getFileName(ManagedSysEntity msys) throws Exception {
-        throw new OperationNotSupportedException();
+        return msys.getResumeHandler();
     }
 
 }
