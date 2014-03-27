@@ -2,6 +2,7 @@ package org.openiam.idm.srvc.pswd.domain;
 
 import java.io.Serializable;
 
+import javax.persistence.AttributeOverride;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -13,20 +14,16 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 import org.hibernate.annotations.GenericGenerator;
+import org.openiam.base.domain.KeyEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.pswd.dto.UserIdentityAnswer;
 
 @Entity
 @Table(name = "USER_IDENTITY_ANS")
 @DozerDTOCorrespondence(UserIdentityAnswer.class)
-public class UserIdentityAnswerEntity implements Serializable {
+@AttributeOverride(name = "id", column = @Column(name = "IDENTITY_ANS_ID"))
+public class UserIdentityAnswerEntity extends KeyEntity {
 
-	@Id
-    @GeneratedValue(generator = "system-uuid")
-    @GenericGenerator(name = "system-uuid", strategy = "uuid")
-    @Column(name = "IDENTITY_ANS_ID", length = 32)
-	private String id;
-	
 	@ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name="IDENTITY_QUESTION_ID", referencedColumnName="IDENTITY_QUESTION_ID", insertable = true, updatable = true)
 	private IdentityQuestionEntity identityQuestion;
@@ -36,14 +33,6 @@ public class UserIdentityAnswerEntity implements Serializable {
 	
 	@Column(name = "QUESTION_ANSWER")
 	private String questionAnswer;
-
-	public String getId() {
-		return id;
-	}
-
-	public void setId(String id) {
-		this.id = id;
-	}
 
 	public IdentityQuestionEntity getIdentityQuestion() {
 		return identityQuestion;

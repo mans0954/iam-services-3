@@ -715,6 +715,12 @@
 			<a>active</a>
 			<b>active</b>
 		</field>
+		<field
+			custom-converter="org.openiam.dozer.crossentity.CrossEntityMapConverterWithKeyString"
+			custom-converter-param="dto2entityShallowDozerMapper">
+			<a>displayNameMap</a>
+			<b>displayNameMap</b>
+		</field>
 	</mapping>
 
 	<mapping>

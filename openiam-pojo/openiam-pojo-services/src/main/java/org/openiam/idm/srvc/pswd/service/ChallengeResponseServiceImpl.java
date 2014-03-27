@@ -69,8 +69,8 @@ public class ChallengeResponseServiceImpl implements ChallengeResponseService {
 	}
 
 	@Override
-	public IdentityQuestionEntity saveQuestion(IdentityQuestionEntity entity) throws Exception {
-		return getResponseValidator().saveQuestion(entity);
+	public void saveQuestion(IdentityQuestionEntity entity) throws Exception {
+		getResponseValidator().saveQuestion(entity);
 	}
 
 	@Override
