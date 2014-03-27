@@ -2,6 +2,7 @@ package org.openiam.internationalization;
 
 import java.lang.reflect.Method;
 import java.util.Collection;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.aspectj.lang.JoinPoint;
@@ -147,15 +148,9 @@ public class InternationalizationJoinpointProvider implements InitializingBean, 
 	public void setApplicationContext(final ApplicationContext ctx) throws BeansException {
 		this.ctx = ctx;
 	}
-
+	
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		/*
-		final String[] names = ctx.getBeanDefinitionNames();
-		for(final String beanName : names) {
-			final Object object = ctx.getBean(beanName);
-			LOG.info("Object");
-		}
-		*/
+		
 	}
 }
