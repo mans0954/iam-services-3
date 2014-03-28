@@ -1,6 +1,5 @@
 package org.openiam.idm.srvc.base;
 
-import org.openiam.idm.srvc.audit.service.AuditLogProvider;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.validator.EntityValidator;
 import org.springframework.beans.factory.annotation.Autowired;

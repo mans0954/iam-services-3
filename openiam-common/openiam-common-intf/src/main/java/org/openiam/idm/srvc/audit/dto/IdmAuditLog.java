@@ -230,7 +230,16 @@ public class IdmAuditLog implements Serializable {
     		this.childLogs.add(entity);
     	}
     }
-    
+
+    public void addParent(final IdmAuditLog event) {
+        if(event != null) {
+            if(this.parentLogs == null) {
+                this.parentLogs = new HashSet<IdmAuditLog>();
+            }
+            this.parentLogs.add(event);
+        }
+    }
+
     public void addCustomRecord(final String key, final String value) {
     	if(key != null && value != null) {
     		if(customRecords == null) {

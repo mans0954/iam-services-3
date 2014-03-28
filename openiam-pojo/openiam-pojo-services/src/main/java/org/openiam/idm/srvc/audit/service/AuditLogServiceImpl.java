@@ -22,6 +22,9 @@ import org.openiam.idm.srvc.audit.domain.AuditLogBuilder;
 import org.openiam.idm.srvc.audit.domain.AuditLogTargetEntity;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogCustomEntity;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
+import org.openiam.idm.srvc.audit.dto.AuditLogTarget;
+import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
+import org.openiam.idm.srvc.audit.dto.IdmAuditLogCustom;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.util.encrypt.HashDigest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,7 +67,7 @@ public class AuditLogServiceImpl implements AuditLogService {
     	}
     }
     
-    private void prepare(final IdmAuditLogEntity log, final String coorelationId) {
+    public void prepare(final IdmAuditLog log, final String coorelationId) {
     	if(log != null) {
     		if(log.getId() == null || log.getHash() == null) {
                 log.setHash(hash.HexEncodedHash(log.concat()));
@@ -73,21 +76,21 @@ public class AuditLogServiceImpl implements AuditLogService {
     		log.setNodeIP(nodeIP);
 
     		if(CollectionUtils.isNotEmpty(log.getChildLogs())) {
-    			for(final IdmAuditLogEntity entity : log.getChildLogs()) {
+    			for(final IdmAuditLog entity : log.getChildLogs()) {
     				prepare(entity, coorelationId);
     			}
     		}
     		
     		//required - the UI sends a transient instance to the service, so fix it here
     		if(CollectionUtils.isNotEmpty(log.getCustomRecords())) {
-    			for(final IdmAuditLogCustomEntity entity : log.getCustomRecords()) {
-    				entity.setLog(log);
+    			for(final IdmAuditLogCustom custom : log.getCustomRecords()) {
+                    custom.setLogId(log.getId());
     			}
     		}
     		
     		if(CollectionUtils.isNotEmpty(log.getTargets())) {
-    			for(final AuditLogTargetEntity entity : log.getTargets()) {
-    				entity.setLog(log);
+    			for(final AuditLogTarget target : log.getTargets()) {
+                    target.setLogId(log.getId());
     			}
     		}
     	}
@@ -96,13 +99,13 @@ public class AuditLogServiceImpl implements AuditLogService {
 	@Override
 	public void enqueue(final AuditLogBuilder builder) {
         if(builder!=null){
-		    final IdmAuditLogEntity log = builder.getEntity();
+		    final IdmAuditLog log = builder.getEvent();
 		    prepare(log, UUIDGen.getUUID());
 		    send(log);
         }
 	}
 	
-	 private void send(final IdmAuditLogEntity log) {
+	 private void send(final IdmAuditLog log) {
 		 jmsTemplate.send(queue, new MessageCreator() {
 			 public javax.jms.Message createMessage(Session session) throws JMSException {
 				 javax.jms.Message message = session.createObjectMessage(log);
@@ -133,7 +136,6 @@ public class AuditLogServiceImpl implements AuditLogService {
     @Override
     @Transactional
     public String save(IdmAuditLogEntity auditLogEntity) {
-        this.prepare(auditLogEntity,UUIDGen.getUUID());
         logDAO.save(auditLogEntity);
         return auditLogEntity.getId();
     }

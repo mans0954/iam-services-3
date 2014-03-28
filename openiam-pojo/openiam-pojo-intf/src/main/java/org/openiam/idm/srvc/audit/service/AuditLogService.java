@@ -3,6 +3,7 @@ package org.openiam.idm.srvc.audit.service;
 import org.openiam.idm.searchbeans.AuditLogSearchBean;
 import org.openiam.idm.srvc.audit.domain.AuditLogBuilder;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
+import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 
 import java.util.List;
 
@@ -18,4 +19,6 @@ public interface AuditLogService {
     public int count(final AuditLogSearchBean searchBean);
     public IdmAuditLogEntity findById(final String id);
     public String save(IdmAuditLogEntity auditLogEntity);
+    public void prepare(final IdmAuditLog log, final String coorelationId);
+
 }

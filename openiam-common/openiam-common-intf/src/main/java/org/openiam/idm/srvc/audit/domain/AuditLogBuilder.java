@@ -9,6 +9,7 @@ import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
 import org.openiam.idm.srvc.audit.constant.AuditResult;
 import org.openiam.idm.srvc.audit.constant.AuditSource;
 import org.openiam.idm.srvc.audit.dto.AuditLogBuilderDto;
+import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.util.CustomJacksonMapper;
 
 import java.io.Serializable;
@@ -17,14 +18,14 @@ import java.util.Date;
 @DozerDTOCorrespondence(AuditLogBuilderDto.class)
 public class AuditLogBuilder implements Serializable {
 	
-	private IdmAuditLogEntity entity;
+	private IdmAuditLog event;
 	
 	public AuditLogBuilder() {
-		entity = new IdmAuditLogEntity();
-		entity.setTimestamp(new Date());
+        event = new IdmAuditLog();
+        event.setTimestamp(new Date());
 	}
-    public AuditLogBuilder(IdmAuditLogEntity auditLogEntity) {
-        entity = auditLogEntity;
+    public AuditLogBuilder(IdmAuditLog auditLog) {
+        event = auditLog;
     }
 	/**
 	 * Sets the user id of who triggered this event
@@ -32,7 +33,7 @@ public class AuditLogBuilder implements Serializable {
 	 * @return this
 	 */
 	public AuditLogBuilder setRequestorUserId(String userId) {
-		entity.setUserId(userId);
+        event.setUserId(userId);
 		return this;
 	}
 	
@@ -42,7 +43,7 @@ public class AuditLogBuilder implements Serializable {
 	 * @return this
 	 */
 	public AuditLogBuilder setRequestorPrincipal(String principal) {
-		entity.setPrincipal(principal);
+        event.setPrincipal(principal);
 		return this;
 	}
 
@@ -52,11 +53,11 @@ public class AuditLogBuilder implements Serializable {
 	 * @return this
 	 */
 	public AuditLogBuilder setSource(AuditSource source) {
-		entity.setSource((source!=null)?source.value():AuditSource.ESB.value());
+        event.setSource((source!=null)?source.value():AuditSource.ESB.value());
 		return this;
 	}
     public AuditLogBuilder setSource(String source) {
-        entity.setSource(source);
+        event.setSource(source);
         return this;
     }
 	/**
@@ -65,7 +66,7 @@ public class AuditLogBuilder implements Serializable {
 	 * @return this
 	 */
 	public AuditLogBuilder setClientIP(String clientIP) {
-		entity.setClientIP(clientIP);
+        event.setClientIP(clientIP);
 		return this;
 	}
 
@@ -75,7 +76,7 @@ public class AuditLogBuilder implements Serializable {
      * @return
      */
     public AuditLogBuilder setCorrelationId(String correlationId) {
-        entity.setCoorelationId(correlationId);
+        event.setCoorelationId(correlationId);
         return this;
     }
 
@@ -85,7 +86,7 @@ public class AuditLogBuilder implements Serializable {
 	 * @return this
 	 */
 	public AuditLogBuilder setAction(AuditAction action) {
-		entity.setAction((action!=null)?action.value():null);
+        event.setAction((action!=null)?action.value():null);
 		return this;
 	}
 	
@@ -106,7 +107,7 @@ public class AuditLogBuilder implements Serializable {
 	}
 
 	private AuditLogBuilder setResult(AuditResult result) {
-		entity.setResult((result!=null)?result.value():null);
+        event.setResult((result!=null)?result.value():null);
 		return this;
 	}
 
@@ -116,7 +117,7 @@ public class AuditLogBuilder implements Serializable {
 	 * @return this
 	 */
 	public AuditLogBuilder setTargetUser(final String userId) {
-		entity.addTarget(userId, "USER");
+        event.addTarget(userId, "USER");
 		return this;
 	}
 	
@@ -126,7 +127,7 @@ public class AuditLogBuilder implements Serializable {
 	 * @return this
 	 */
 	public AuditLogBuilder setTargetRole(final String roleId) {
-		entity.addTarget(roleId, "ROLE");
+        event.addTarget(roleId, "ROLE");
 		return this;
 	}
 	
@@ -136,7 +137,7 @@ public class AuditLogBuilder implements Serializable {
 	 * @return this
 	 */
 	public AuditLogBuilder setTargetGroup(final String groupId) {
-		entity.addTarget(groupId, "GROUP");
+        event.addTarget(groupId, "GROUP");
 		return this;
 	}
 	
@@ -146,7 +147,7 @@ public class AuditLogBuilder implements Serializable {
 	 * @return this
 	 */
     public AuditLogBuilder setTargetResource(final String resourceId) {
-    	entity.addTarget(resourceId, "RESOURCE");
+        event.addTarget(resourceId, "RESOURCE");
         return this;
     }
 
@@ -156,7 +157,7 @@ public class AuditLogBuilder implements Serializable {
      * @return this
      */
     public AuditLogBuilder setTargetManagedSys(final String managedSysId) {
-    	entity.addTarget(managedSysId, "MANAGED_SYS");
+        event.addTarget(managedSysId, "MANAGED_SYS");
         return this;
     }
 
@@ -166,7 +167,7 @@ public class AuditLogBuilder implements Serializable {
      * @return this
      */
 	public AuditLogBuilder setManagedSysId(String managedSysId) {
-		entity.setManagedSysId(managedSysId);
+        event.setManagedSysId(managedSysId);
 		return this;
 	}
 	
@@ -176,7 +177,7 @@ public class AuditLogBuilder implements Serializable {
 	 * @return this
 	 */
 	public AuditLogBuilder setSessionID(final String sessionID) {
-		entity.setSessionID(sessionID);
+        event.setSessionID(sessionID);
 		return this;
 	}
 	
@@ -187,7 +188,7 @@ public class AuditLogBuilder implements Serializable {
 	 */
 	public AuditLogBuilder addChild(final AuditLogBuilder builder) {
 		if(builder != null) {
-			entity.addChild(builder.getEntity());
+            event.addChild(builder.getEvent());
 		}
 		return this;
 	}
@@ -199,13 +200,13 @@ public class AuditLogBuilder implements Serializable {
      */
     public AuditLogBuilder addParent(final AuditLogBuilder builder) {
         if(builder != null) {
-            entity.addParent(builder.getEntity());
+            event.addParent(builder.getEvent());
         }
         return this;
     }
 	public AuditLogBuilder addAttributeAsJson(final AuditAttributeName key, final Object o, final CustomJacksonMapper mapper) {
 		if(mapper != null) {
-			entity.addCustomRecord(key.name(), mapper.mapToStringQuietly(o));
+			event.addCustomRecord(key.name(), mapper.mapToStringQuietly(o));
 		}
 		return this;
 	}
@@ -217,7 +218,7 @@ public class AuditLogBuilder implements Serializable {
 	 * @return this
 	 */
 	public AuditLogBuilder addAttribute(final AuditAttributeName key, final String value) {
-        entity.addCustomRecord(key.name(), value);
+        event.addCustomRecord(key.name(), value);
 		return this;
 	}
 
@@ -289,23 +290,23 @@ public class AuditLogBuilder implements Serializable {
 	 * DO NOT CALL THIS METHOD!  Userd <b>only</b> by the AuditLogService to enqueue() events into JMS
 	 * @return
 	 */
-	public IdmAuditLogEntity getEntity() {
-		return entity;
+	public IdmAuditLog getEvent() {
+		return event;
 	}
 	
 	/**
 	 * DO NOT CALL THIS METHOD!  Used <b>only</b> by Dozer!!!!
-	 * @param entity
+	 * @param event
 	 */
-	public void setEntity(final IdmAuditLogEntity entity) {
-		this.entity = entity;
+	public void setEvent(final IdmAuditLog event) {
+		this.event = event;
 	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((entity == null) ? 0 : entity.hashCode());
+		result = prime * result + ((event == null) ? 0 : event.hashCode());
 		return result;
 	}
 
@@ -318,17 +319,17 @@ public class AuditLogBuilder implements Serializable {
 		if (getClass() != obj.getClass())
 			return false;
 		AuditLogBuilder other = (AuditLogBuilder) obj;
-		if (entity == null) {
-			if (other.entity != null)
+		if (event == null) {
+			if (other.event != null)
 				return false;
-		} else if (!entity.equals(other.entity))
+		} else if (!event.equals(other.event))
 			return false;
 		return true;
 	}
 
 	@Override
 	public String toString() {
-		return String.format("AuditLogBuilder [entity=%s]", entity);
+		return String.format("AuditLogBuilder [entity=%s]", event);
 	}
 
 
