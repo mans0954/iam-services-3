@@ -16,7 +16,7 @@ import java.util.List;
  * @author suneet
  *
  */
-@WebService(targetNamespace = "http://www.openiam.org/service/provision", name = "ProvisionControllerService")
+@WebService(targetNamespace = "http://www.openiam.org/service/provision", name = "GroupProvisionControllerServicePort")
 public interface GroupProvisionService {
     /**
      *  The addGroup operation enables a requester to create a new group on the

@@ -6,7 +6,7 @@
 	<groupId>org.openiam</groupId>
 	<artifactId>iam-services</artifactId>
 	<packaging>pom</packaging>
-	<version>3.0.0</version>
+	<version>3.1.0</version>
 
 	<name>OpenIAM Identity Manager</name>
 	<description>openiam is open source Identity and access Management Project</description>
@@ -779,6 +779,17 @@
 					</archive>
 				</configuration>
 			</plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>versions-maven-plugin</artifactId>
+                <version>2.1</version>
+                <configuration>
+                    <includes>
+                        <include>org.openiam:*</include>
+                    </includes>
+                </configuration>
+            </plugin>
 
 		</plugins>
 

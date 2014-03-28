@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.audit.service;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import org.openiam.idm.srvc.audit.domain.AuditLogBuilder;
@@ -31,12 +32,14 @@ public class AuditLogProviderImpl implements AuditLogProvider  {
 
     @Override
     public AuditLogBuilder getAuditLogBuilder(String id) {
-        return idmAuditLogMap.get(id);
+        return (StringUtils.isNotBlank(id)) ? idmAuditLogMap.get(id) : null;
     }
 
     @Override
     public void remove(String auditLogId) {
-        idmAuditLogMap.remove(auditLogId);
+        if (auditLogId != null) {
+            idmAuditLogMap.remove(auditLogId);
+        }
     }
 
     @Override

@@ -2,7 +2,7 @@ package org.openiam.idm.srvc.org.service;
 
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.OrganizationSearchBean;
-import org.openiam.idm.srvc.org.domain.OrganizationEntity;
+import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.org.dto.Organization;
 
 import javax.jws.WebMethod;
@@ -19,46 +19,87 @@ public interface OrganizationDataService {
 	
 	@WebMethod
 	public Response validateDelete(final @WebParam(name = "orgId", targetNamespace = "") String id);
-	
+
     @WebMethod
-    public Organization getOrganization(@WebParam(name = "orgId", targetNamespace = "") String orgId,
-                                        @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
+    @Deprecated
+    public Organization getOrganization(final @WebParam(name = "orgId", targetNamespace = "") String orgId,
+                                        final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
+
+    @WebMethod
+    public Organization getOrganizationLocalized(final @WebParam(name = "orgId", targetNamespace = "") String orgId,
+                                        final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
+                                        final @WebParam(name = "language", targetNamespace = "") Language language);
 
     @WebMethod
     public int getNumOfOrganizationsForUser(@WebParam(name = "userId", targetNamespace = "") String userId,
                                                       	   @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
-    
-    @WebMethod
-    public List<Organization> getOrganizationsForUser(@WebParam(name = "userId", targetNamespace = "") String userId,
-                                                      @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
-                                                      @WebParam(name = "from", targetNamespace = "") int from,
-                                                      @WebParam(name = "size", targetNamespace = "") int size);
-    
-    @WebMethod
-    public List<Organization> getOrganizationsForUserByType(@WebParam(name = "userId", targetNamespace = "") String userId,
-                                                      		@WebParam(name = "requesterId", targetNamespace = "") String requesterId,
-                                                      		@WebParam(name="organizationTypeId", targetNamespace = "") String organizationTypeId);
 
     @WebMethod
-    public List<Organization> getAllOrganizations(@WebParam(name = "requesterId", targetNamespace = "") String requesterId);
+    @Deprecated
+    public List<Organization> getOrganizationsForUser(final @WebParam(name = "userId", targetNamespace = "") String userId,
+                                                               final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
+                                                               final @WebParam(name = "from", targetNamespace = "") int from,
+                                                               final @WebParam(name = "size", targetNamespace = "") int size);
 
     @WebMethod
-    public List<Organization> findBeans(@WebParam(name = "searchBean", targetNamespace = "") OrganizationSearchBean searchBean,
-                                        @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
-                                        @WebParam(name = "from", targetNamespace = "") int from,
-                                        @WebParam(name = "size", targetNamespace = "") int size);
+    public List<Organization> getOrganizationsForUserLocalized(final @WebParam(name = "userId", targetNamespace = "") String userId,
+                                                      final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
+                                                      final @WebParam(name = "from", targetNamespace = "") int from,
+                                                      final @WebParam(name = "size", targetNamespace = "") int size,
+                                                      final @WebParam(name = "language", targetNamespace = "") Language language);
 
     @WebMethod
-    public List<Organization> getParentOrganizations(@WebParam(name = "orgId", targetNamespace = "") String orgId,
-                                                     @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
-                                                     @WebParam(name = "from", targetNamespace = "") int from,
-                                                     @WebParam(name = "size", targetNamespace = "") int size);
+    @Deprecated
+    public List<Organization> getOrganizationsForUserByType(final @WebParam(name = "userId", targetNamespace = "") String userId,
+                                                                     final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
+                                                                     final @WebParam(name="organizationTypeId", targetNamespace = "") String organizationTypeId);
+    @WebMethod
+    public List<Organization> getOrganizationsForUserByTypeLocalized(final @WebParam(name = "userId", targetNamespace = "") String userId,
+                                                      		final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
+                                                      		final @WebParam(name="organizationTypeId", targetNamespace = "") String organizationTypeId,
+                                                      		final @WebParam(name = "language", targetNamespace = "") Language language);
 
     @WebMethod
-    public List<Organization> getChildOrganizations(@WebParam(name = "orgId", targetNamespace = "") String orgId,
-                                                    @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
-                                                    @WebParam(name = "from", targetNamespace = "") int from,
-                                                    @WebParam(name = "size", targetNamespace = "") int size);
+    @Deprecated
+    public List<Organization> findBeans(final @WebParam(name = "searchBean", targetNamespace = "") OrganizationSearchBean searchBean,
+                                                 final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
+                                                 final @WebParam(name = "from", targetNamespace = "") int from,
+                                                 final @WebParam(name = "size", targetNamespace = "") int size);
+
+    @WebMethod
+    public List<Organization> findBeansLocalized(final @WebParam(name = "searchBean", targetNamespace = "") OrganizationSearchBean searchBean,
+    									final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
+                                        final @WebParam(name = "from", targetNamespace = "") int from,
+                                        final @WebParam(name = "size", targetNamespace = "") int size,
+                                        final @WebParam(name = "language", targetNamespace = "") Language language);
+
+    @WebMethod
+    @Deprecated
+    public List<Organization> getParentOrganizations(final @WebParam(name = "orgId", targetNamespace = "") String orgId,
+                                                              final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
+                                                              final @WebParam(name = "from", targetNamespace = "") int from,
+                                                              final @WebParam(name = "size", targetNamespace = "") int size);
+
+    @WebMethod
+    public List<Organization> getParentOrganizationsLocalized(final @WebParam(name = "orgId", targetNamespace = "") String orgId,
+    												 final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
+                                                     final @WebParam(name = "from", targetNamespace = "") int from,
+                                                     final @WebParam(name = "size", targetNamespace = "") int size,
+                                                     final @WebParam(name = "language", targetNamespace = "") Language language);
+
+    @WebMethod
+    @Deprecated
+    public List<Organization> getChildOrganizations(final @WebParam(name = "orgId", targetNamespace = "") String orgId,
+                                                             final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
+                                                             final @WebParam(name = "from", targetNamespace = "") int from,
+                                                             final @WebParam(name = "size", targetNamespace = "") int size);
+
+    @WebMethod
+    public List<Organization> getChildOrganizationsLocalized(final @WebParam(name = "orgId", targetNamespace = "") String orgId,
+    												final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
+                                                    final @WebParam(name = "from", targetNamespace = "") int from,
+                                                    final @WebParam(name = "size", targetNamespace = "") int size,
+                                                    final @WebParam(name = "language", targetNamespace = "") Language language);
 
     @WebMethod
     int count(@WebParam(name="searchBean", targetNamespace="") OrganizationSearchBean searchBean,
@@ -106,9 +147,21 @@ public interface OrganizationDataService {
             									@WebParam(name = "userId", targetNamespace = "") String userId);
 
     @WebMethod
-    public List<Organization> getAllowedParentOrganizationsForType(@WebParam(name = "orgTypeId", targetNamespace = "") final String orgTypeId,
-                                                                         @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
+    @Deprecated
+    public List<Organization> getAllowedParentOrganizationsForType(final @WebParam(name = "orgTypeId", targetNamespace = "") String orgTypeId,
+                                                                   final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
+
     @WebMethod
-    public List<Organization> findOrganizationsByAttributeValue(@WebParam(name = "attrName", targetNamespace = "") final String attrName,
-                                                                @WebParam(name = "attrValue", targetNamespace = "") final String attrValue);
+    public List<Organization> getAllowedParentOrganizationsForTypeLocalized(final @WebParam(name = "orgTypeId", targetNamespace = "") String orgTypeId,
+                                                                   final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
+                                                                   final @WebParam(name = "language", targetNamespace = "") Language language);
+
+    @WebMethod
+    @Deprecated
+    public List<Organization> findOrganizationsByAttributeValue(final @WebParam(name = "attrName", targetNamespace = "") String attrName,
+                                                                         final @WebParam(name = "attrValue", targetNamespace = "") String attrValue);
+    @WebMethod
+    public List<Organization> findOrganizationsByAttributeValueLocalized(final @WebParam(name = "attrName", targetNamespace = "") String attrName,
+                                                                final @WebParam(name = "attrValue", targetNamespace = "") String attrValue,
+                                                                final @WebParam(name = "language", targetNamespace = "") Language language);
 }

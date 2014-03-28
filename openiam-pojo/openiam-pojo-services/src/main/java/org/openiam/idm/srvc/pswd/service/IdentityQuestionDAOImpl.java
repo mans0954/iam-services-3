@@ -20,11 +20,8 @@ public class IdentityQuestionDAOImpl extends BaseDaoImpl<IdentityQuestionEntity,
 	@Override
 	protected Criteria getExampleCriteria(final IdentityQuestionEntity example) {
 		final Criteria criteria = getCriteria();
-		if (example.isActive() !=null){
-			criteria.add(Restrictions.eq("active", example.isActive()));
-		}
-		if (StringUtils.isNotEmpty(example.getQuestionText())) {
-			criteria.add(Restrictions.eq("questionText", example.getQuestionText()));
+		if (example.getActive() !=null){
+			criteria.add(Restrictions.eq("active", example.getActive()));
 		}
 		if(example.getIdentityQuestGrp() != null) {
 			criteria.add(Restrictions.eq("identityQuestGrp.id", example.getIdentityQuestGrp().getId()));

@@ -6,9 +6,12 @@ import org.openiam.base.AdminResourceDTO;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.grp.dto.Group;
+import org.openiam.idm.srvc.lang.dto.LanguageMapping;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.user.dto.User;
+import org.openiam.internationalization.Internationalized;
+import org.openiam.internationalization.InternationalizedCollection;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -16,6 +19,7 @@ import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlType;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -35,15 +39,19 @@ import java.util.Set;
         "minAuthLevel",
         "isPublic",
         "operation",
-        "risk"
+        "risk",
+        "displayNameMap",
+        "displayName"
 })
 @XmlSeeAlso({
         Role.class,
         User.class
 })
 @DozerDTOCorrespondence(ResourceEntity.class)
+@Internationalized
 public class Resource extends AdminResourceDTO {
 
+	@Internationalized
     private ResourceType resourceType;
     private String description;
     private Integer displayOrder;
@@ -60,6 +68,11 @@ public class Resource extends AdminResourceDTO {
     private String minAuthLevel;
     private boolean isPublic = true;
     private ResourceRisk risk;
+    
+    @InternationalizedCollection(referenceType="ResourceEntity", targetField="displayName")
+    private Map<String, LanguageMapping> displayNameMap;
+	    
+    private String displayName;
 
     //private boolean isSSL = false;
 
@@ -204,7 +217,23 @@ public class Resource extends AdminResourceDTO {
         this.risk = risk;
     }
 
-    @Override
+    public Map<String, LanguageMapping> getDisplayNameMap() {
+		return displayNameMap;
+	}
+
+	public void setDisplayNameMap(Map<String, LanguageMapping> displayNameMap) {
+		this.displayNameMap = displayNameMap;
+	}
+
+	public String getDisplayName() {
+		return displayName;
+	}
+
+	public void setDisplayName(String displayName) {
+		this.displayName = displayName;
+	}
+
+	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;

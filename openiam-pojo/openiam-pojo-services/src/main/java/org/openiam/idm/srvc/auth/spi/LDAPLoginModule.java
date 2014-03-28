@@ -148,7 +148,7 @@ public class LDAPLoginModule extends AbstractLoginModule {
                     AuthenticationConstants.RESULT_INVALID_CONFIGURATION);
         }
 
-        Resource res = resourceService.getResource(policyAttribute.getValue1());
+        Resource res = resourceService.getResource(policyAttribute.getValue1(), null);
         Set<ResourceProp> propSet = res.getResourceProps();
         init(propSet);
 

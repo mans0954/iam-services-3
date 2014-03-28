@@ -53,7 +53,7 @@ public class PeoplesoftLookupCommand extends AbstractPeoplesoftCommand<LookupReq
                     "ResourceID is not defined in the ManagedSys Object");
         }
 
-        final Resource res = resourceDataService.getResource(managedSys.getResourceId());
+        final Resource res = resourceDataService.getResource(managedSys.getResourceId(), null);
         if (res == null) {
             throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR, "No resource for managed resource found");
         }

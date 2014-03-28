@@ -21,18 +21,6 @@ import org.openiam.idm.srvc.meta.dto.MetadataType;
  */
 
 public interface MetadataService {
-
-    /**
-     * Gets the Metadata Element based on the Type Id.It also returns the MetadataOptions
-     * with the MetadataElements.
-     *
-     * @param typeId the MetadataType for which the MetadataElements are required.
-     * @return the Map which contains MetadataId as Key and MetadataElementValue
-     *         objects as Values.
-     */
-	public List<MetadataElementEntity> getMetadataElementByType(String typeId);
-
-	public List<MetadataElementEntity> getAllElementsForCategoryType(String categoryType);
 	
 	public List<MetadataElementEntity> findElementByName(final String name);
 	

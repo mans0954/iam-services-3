@@ -50,7 +50,7 @@ public abstract class AbstractSoapCommand<Request extends RequestType, Response 
 		log.info("Inside Get Resource Resource Id="
 				+ managedSys.getResourceId());
 		final Resource res = resourceDataService.getResource(managedSys
-				.getResourceId());
+				.getResourceId(), null);
 		if (res == null)
 			throw new ConnectorDataException(ErrorCode.INVALID_CONFIGURATION,
 					"No resource for managed resource found");

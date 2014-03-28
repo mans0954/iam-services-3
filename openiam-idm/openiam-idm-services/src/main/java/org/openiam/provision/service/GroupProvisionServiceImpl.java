@@ -63,14 +63,17 @@ import javax.jws.WebService;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-@WebService(endpointInterface = "org.openiam.provision.service.GroupProvisionService", targetNamespace = "http://www.openiam.org/service/provision", portName = "IDMObjectProvisionControllerServicePort", serviceName = "IDMGroupProvisioningService")
-@Component("idmGroupProvision")
-public class IDMGroupProvisionService extends AbstractBaseService implements GroupProvisionService {
+@WebService(endpointInterface = "org.openiam.provision.service.GroupProvisionService",
+        targetNamespace = "http://www.openiam.org/service/provision",
+        portName = "GroupProvisionControllerServicePort",
+        serviceName = "GroupProvisionService")
+@Component("groupProvision")
+public class GroupProvisionServiceImpl extends AbstractBaseService implements GroupProvisionService {
 
     @Autowired
     protected ValidateConnectionConfig validateConnectionConfig;
 
-    protected static final Log log = LogFactory.getLog(IDMGroupProvisionService.class);
+    protected static final Log log = LogFactory.getLog(GroupProvisionServiceImpl.class);
 
     @Value("${org.openiam.idm.system.user.id}")
     protected String systemUserId;
@@ -186,7 +189,7 @@ public class IDMGroupProvisionService extends AbstractBaseService implements Gro
 
                             ManagedSystemObjectMatch matchObj = null;
                             ManagedSystemObjectMatch[] objList = managedSystemService.managedSysObjectParam(managedSysId,
-                                    "GROUP");
+                                    ManagedSystemObjectMatch.GROUP);
                             if (objList.length > 0) {
                                 matchObj = objList[0];
                             }
@@ -564,7 +567,7 @@ public class IDMGroupProvisionService extends AbstractBaseService implements Gro
             ManagedSysDto mSys = managedSystemService.getManagedSys(managedSystemId);
 
             ManagedSystemObjectMatch matchObj = null;
-            ManagedSystemObjectMatch[] matchObjAry = managedSystemService.managedSysObjectParam(mSys.getId(), "GROUP");
+            ManagedSystemObjectMatch[] matchObjAry = managedSystemService.managedSysObjectParam(mSys.getId(), ManagedSystemObjectMatch.GROUP);
             if (matchObjAry != null && matchObjAry.length > 0) {
                 matchObj = matchObjAry[0];
                 bindingMap.put(AbstractProvisioningService.MATCH_PARAM, matchObj);

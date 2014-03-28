@@ -22,11 +22,14 @@
 package org.openiam.provision.dto;
 
 import org.openiam.idm.srvc.grp.dto.Group;
+import org.openiam.idm.srvc.grp.dto.GroupAttribute;
+import org.openiam.idm.srvc.res.dto.Resource;
+import org.openiam.idm.srvc.role.dto.Role;
+import org.openiam.idm.srvc.role.dto.RoleSetAdapter;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlTransient;
-import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.*;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -54,6 +57,30 @@ public class ProvisionGroup extends org.openiam.idm.srvc.grp.dto.Group {
     }
 
     public ProvisionGroup(Group group) {
+        setAdminResourceId(group.getAdminResourceId());
+        setAdminResourceName(group.getAdminResourceName());
+
+        this.name = group.getName();
+        this.id = group.getId();
+
+        this.operation = group.getOperation();
+        this.managedSysId = group.getManagedSysId();
+        this.managedSysName = group.getManagedSysName();
+
+        this.createDate = group.getCreateDate();
+        this.createdBy = group.getCreatedBy();
+
+        this.companyId = group.getCompanyId();
+
+        this.description = group.getDescription();
+
+        this.status = group.getStatus();
+        this.lastUpdate = group.getLastUpdate();
+        this.lastUpdatedBy = group.getLastUpdatedBy();
+
+        this.parentGroups = group.getParentGroups();
+        this.childGroups = group.getChildGroups();
+
         this.managedSysId = group.getManagedSysId();
         this.managedSysName = group.getManagedSysName();
         this.createDate = group.getCreateDate();

@@ -376,7 +376,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             ManagedSysDto mSys = managedSysService.getManagedSys(managedSystemId);
 
             ManagedSystemObjectMatch matchObj = null;
-            ManagedSystemObjectMatch[] matchObjAry = managedSysService.managedSysObjectParam(mSys.getId(), "USER");
+            ManagedSystemObjectMatch[] matchObjAry = managedSysService.managedSysObjectParam(mSys.getId(), ManagedSystemObjectMatch.USER);
             if (matchObjAry != null && matchObjAry.length > 0) {
                 matchObj = matchObjAry[0];
                 bindingMap.put(MATCH_PARAM, matchObj);
@@ -393,7 +393,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             bindingMap.put(TARGET_SYS_RES_ID, resourceId);
 
             if (resourceId != null) {
-                res = resourceDataService.getResource(resourceId);
+                res = resourceDataService.getResource(resourceId, null);
                 if (res != null) {
                     String preProcessScript = getResProperty(res.getResourceProps(), "PRE_PROCESS");
                     if (preProcessScript != null && !preProcessScript.isEmpty()) {
@@ -468,7 +468,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
                                 ManagedSystemObjectMatch matchObj = null;
                                 ManagedSystemObjectMatch[] matchObjAry = managedSysService.managedSysObjectParam(
-                                        mSys.getId(), "USER");
+                                        mSys.getId(), ManagedSystemObjectMatch.USER);
                                 if (matchObjAry != null && matchObjAry.length > 0) {
                                     matchObj = matchObjAry[0];
                                     bindingMap.put(MATCH_PARAM, matchObj);
@@ -490,7 +490,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                 bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS, IDENTITY_EXIST);
 
                                 if (resourceId != null) {
-                                    resource = resourceDataService.getResource(resourceId);
+                                    resource = resourceDataService.getResource(resourceId, null);
                                     if (resource != null) {
                                         bindingMap.put(TARGET_SYS_RES, resource);
 
@@ -716,7 +716,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         if (CollectionUtils.isNotEmpty(roleList)) {
             for (final RoleEntity role : roleList) {
                 final List<Resource> resourceList = resourceDataService.getResourcesForRole(role.getId(), 0,
-                        Integer.MAX_VALUE, null);
+                        Integer.MAX_VALUE, null, null);
                 if (CollectionUtils.isNotEmpty(resourceList)) {
                     for (final Resource resource : resourceList) {
                         ManagedSysDto managedSys = managedSysService.getManagedSysByResource(resource.getId());
@@ -1211,7 +1211,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             }
 
             ManagedSystemObjectMatch matchObj = null;
-            ManagedSystemObjectMatch[] matchObjAry = managedSysService.managedSysObjectParam(managedSysId, "USER");
+            ManagedSystemObjectMatch[] matchObjAry = managedSysService.managedSysObjectParam(managedSysId, ManagedSystemObjectMatch.USER);
             if (matchObjAry != null && matchObjAry.length > 0) {
                 matchObj = matchObjAry[0];
                 bindingMap.put(MATCH_PARAM, matchObj);
@@ -1362,11 +1362,8 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
     @Transactional
     public PasswordResponse resetPassword(PasswordSync passwordSync) {
         log.debug("----resetPassword called.------");
-        final AuditLogBuilder auditBuilder = auditLogProvider.getAuditLogBuilder();
-        auditBuilder.setRequestorUserId(systemUserId).setTargetUser(null).setAction(AuditAction.PROVISIONING);
-        AuditLogBuilder auditBuilderResetPasswdChildLog = new AuditLogBuilder();
-        auditBuilderResetPasswdChildLog.setRequestorUserId(systemUserId).setTargetUser(null)
-                .setAction(AuditAction.PROVISIONING_RESETPASSWORD);
+        final AuditLogBuilder auditBuilder = auditLogProvider.getAuditLogBuilder().setRequestorUserId(passwordSync.getRequestorId()).setTargetUser(null).setAction(AuditAction.PROVISIONING);
+        final AuditLogBuilder auditBuilderResetPasswdChildLog = new AuditLogBuilder().setRequestorUserId(passwordSync.getRequestorId()).setTargetUser(null).setAction(AuditAction.PROVISIONING_RESETPASSWORD);
         auditBuilder.addChild(auditBuilderResetPasswdChildLog);
         final PasswordResponse response = new PasswordResponse(ResponseStatus.SUCCESS);
         try {
@@ -1396,6 +1393,9 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 response.setErrorCode(ResponseCode.USER_NOT_FOUND);
                 return response;
             }
+            
+            auditBuilder.setTargetUser(userId);
+            auditBuilderResetPasswdChildLog.setTargetUser(userId);
 
             String password = passwordSync.getPassword();
             if (StringUtils.isEmpty(password)) {

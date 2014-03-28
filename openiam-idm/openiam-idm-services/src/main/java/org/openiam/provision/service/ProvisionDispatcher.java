@@ -164,22 +164,27 @@ public class ProvisionDispatcher implements Sweepable {
                         Boolean res = transactionTemplate.execute(new TransactionCallback<Boolean>() {
                             @Override
                             public Boolean doInTransaction(TransactionStatus status) {
-                                final String parentAuditLogId = batchList.get(0).get(0).getParentAuditLogId();
-                                final AuditLogBuilder parentAuditBuilder;
-                                if (parentAuditLogId != null) {
-                                    parentAuditBuilder = new AuditLogBuilder(auditLogService.findById(parentAuditLogId));
-                                } else {
-                                    parentAuditBuilder = auditLogProvider.getAuditLogBuilder();
-                                    auditLogProvider.persist(parentAuditBuilder);
-                                }
+
+
+                               // final String parentAuditLogId = batchList.get(0).get(0).getParentAuditLogId();
+                               // final AuditLogBuilder parentAuditBuilder;
+                               // AuditLogBuilder auditBuilderDispatcherChild = new AuditLogBuilder();
+                               // auditBuilderDispatcherChild.setRequestorUserId(systemUserId).setTargetUser(null).setAction(AuditAction.PROVISIONING_DISPATCHER);
+
+                              //  if (parentAuditLogId != null) {
+                                  //  parentAuditBuilder = new AuditLogBuilder(auditLogService.findById(parentAuditLogId));
+                                  //  parentAuditBuilder.addChild(auditBuilderDispatcherChild);
+                              //  } else {
+                                  //  parentAuditBuilder = auditLogProvider.getAuditLogBuilder();
+                                  //  parentAuditBuilder.addChild(auditBuilderDispatcherChild);
+                               // }
 
                                 AuditLogBuilder auditBuilderDispatcherChild = new AuditLogBuilder();
-                                auditBuilderDispatcherChild.setRequestorUserId(systemUserId).setTargetUser(null)
-                                        .setAction(AuditAction.PROVISIONING_DISPATCHER);
-                                auditLogProvider.persist(auditBuilderDispatcherChild);
+                                auditBuilderDispatcherChild.setRequestorUserId(systemUserId).setTargetUser(null).setAction(AuditAction.PROVISIONING_DISPATCHER);
+                              //  auditLogProvider.persist(auditBuilderDispatcherChild);
 
-                                parentAuditBuilder.addChild(auditBuilderDispatcherChild);
-                                auditLogProvider.persist(parentAuditBuilder);
+                               // parentAuditBuilder.addChild(auditBuilderDispatcherChild);
+                                //auditLogProvider.persist(parentAuditBuilder);
 
                                 for (final List<ProvisionDataContainer> entityList : batchList) {
                                     process(entityList, auditBuilderDispatcherChild);
@@ -216,9 +221,9 @@ public class ProvisionDispatcher implements Sweepable {
                     loginEntity.setStatus(LoginStatusEnum.INACTIVE);
                     // do de-provisioning
                     StatusCodeType statusCodeType = deprovision(data).getStatus();
-                    auditBuilderDispatcherChild.addAttribute(AuditAttributeName.DESCRIPTION, "DELETE IDENTITY="
-                            + identity + " from MANAGED_SYS_ID=" + identity.getManagedSysId() + " status="
-                            + statusCodeType);
+
+                 //   auditBuilderDispatcherChild.addAttribute(AuditAttributeName.DESCRIPTION, "DELETE IDENTITY=" + identity + " from MANAGED_SYS_ID=" + identity.getManagedSysId() + " status=" + statusCodeType);
+
                     if (StatusCodeType.SUCCESS.equals(statusCodeType)) {
                         loginEntity.setStatus(LoginStatusEnum.INACTIVE);
                         loginEntity.setAuthFailCount(0);
@@ -259,10 +264,9 @@ public class ProvisionDispatcher implements Sweepable {
 
                     data.getIdentity().setStatus(loginEntity.getStatus());
                     // do provisioning to target system
+
                     ProvisionUserResponse response = provision(data, auditBuilderDispatcherChild);
-                    auditBuilderDispatcherChild.addAttribute(AuditAttributeName.DESCRIPTION, "ADD IDENTITY=" + identity
-                            + " from MANAGED_SYS_ID=" + identity.getManagedSysId() + " status=" + response.getStatus()
-                            + " details=" + response.getErrorText());
+               //     auditBuilderDispatcherChild.addAttribute(AuditAttributeName.DESCRIPTION, "ADD IDENTITY=" + identity + " from MANAGED_SYS_ID=" + identity.getManagedSysId() + " status=" + response.getStatus() + " details=" + response.getErrorText());
                     if (!response.isSuccess()) {
                         loginEntity.setStatus(LoginStatusEnum.FAIL_CREATE);
                     }
@@ -286,10 +290,10 @@ public class ProvisionDispatcher implements Sweepable {
                     }
                     data.getIdentity().setStatus(loginEntity.getStatus());
                     // do provisioning to target system
-                    ProvisionUserResponse response = provision(data, auditBuilderDispatcherChild);
-                    auditBuilderDispatcherChild.addAttribute(AuditAttributeName.DESCRIPTION,
-                            "UPDATE IDENTITY=" + identity + " from MANAGED_SYS_ID=" + identity.getManagedSysId()
-                                    + " status=" + response.getStatus() + " details=" + response.getErrorText());
+
+                    ProvisionUserResponse response = provision(data,auditBuilderDispatcherChild);
+                //    auditBuilderDispatcherChild.addAttribute(AuditAttributeName.DESCRIPTION, "UPDATE IDENTITY=" + identity + " from MANAGED_SYS_ID=" + identity.getManagedSysId() + " status=" + response.getStatus() + " details=" + response.getErrorText());
+
                     if (!response.isSuccess()) {
                         loginEntity.setStatus(LoginStatusEnum.FAIL_UPDATE);
                         // if we have changed identity for managed sys when
@@ -362,7 +366,7 @@ public class ProvisionDispatcher implements Sweepable {
             List<AttributeMap> attrMap = attributeMapDozerConverter.convertToDTOList(attrMapEntities, true);
             ManagedSystemObjectMatch matchObj = null;
             List<ManagedSystemObjectMatchEntity> objList = managedSystemService.managedSysObjectParam(managedSysId,
-                    "USER");
+                    ManagedSystemObjectMatch.USER);
             if (CollectionUtils.isNotEmpty(objList)) {
                 matchObj = managedSystemObjectMatchDozerConverter.convertToDTO(objList.get(0), false);
             }

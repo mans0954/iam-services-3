@@ -34,6 +34,7 @@ import org.apache.log4j.Logger;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
+import org.openiam.dozer.converter.LanguageDozerConverter;
 import org.openiam.dozer.converter.MetaDataElementDozerConverter;
 import org.openiam.dozer.converter.MetaDataTypeDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
@@ -66,27 +67,17 @@ public class MetadataWebServiceImpl implements MetadataWebService {
 
     @Autowired
     private MetaDataElementDozerConverter metaDataElementDozerConverter;
+    
+    @Autowired
+    private LanguageDozerConverter languageConverter;
 
     private static Logger LOG = Logger.getLogger(MetadataWebServiceImpl.class);
 
     @Override
-    public List<MetadataElement> getMetadataElementByType(final String typeId) {
-        final List<MetadataElementEntity> entityList = metadataService.getMetadataElementByType(typeId);
-        return (entityList != null) ? metaDataElementDozerConverter.convertToDTOList(entityList, true) : null;
-    }
-
-    @Override
-    public List<MetadataElement> getAllElementsForCategoryType(final String categoryType) {
-        final List<MetadataElementEntity> entityList = metadataService.getAllElementsForCategoryType(categoryType);
-        return (entityList != null) ? metaDataElementDozerConverter.convertToDTOList(entityList, true) : null;
-    }
-
-    @Override
-    public List<MetadataElement> findElementBeans(final MetadataElementSearchBean searchBean, final int from,
-                                                  final int size) {
-        final List<MetadataElementEntity> entityList = metadataService.findBeans(searchBean, from, size, null);
-        return (entityList != null) ? metaDataElementDozerConverter.convertToDTOList(entityList,
-                searchBean.isDeepCopy()) : null;
+    @LocalizedServiceGet
+    public List<MetadataElement> findElementBeans(final MetadataElementSearchBean searchBean, final int from, final int size, final Language language) {
+        final List<MetadataElementEntity> entityList = metadataService.findBeans(searchBean, from, size, languageConverter.convertToEntity(language, false));
+        return (entityList != null) ? metaDataElementDozerConverter.convertToDTOList(entityList,searchBean.isDeepCopy()) : null;
     }
 
     @Override
@@ -94,15 +85,6 @@ public class MetadataWebServiceImpl implements MetadataWebService {
     public List<MetadataType> findTypeBeans(final MetadataTypeSearchBean searchBean, final int from, final int size, final Language language) {
         final List<MetadataTypeEntity> entityList = metadataService.findBeans(searchBean, from, size);
         return (entityList != null) ? metaDataTypeDozerConverter.convertToDTOList(entityList, true) : null;
-    }
-
-    @Override
-    public MetadataElement findElementById(final String id) {
-        final MetadataElementSearchBean searchBean = new MetadataElementSearchBean();
-        searchBean.setKey(id);
-        searchBean.setDeepCopy(true);
-        final List<MetadataElement> dtoList = findElementBeans(searchBean, 0, 1);
-        return (CollectionUtils.isNotEmpty(dtoList)) ? dtoList.get(0) : null;
     }
 
     @Override

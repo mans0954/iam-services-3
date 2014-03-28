@@ -66,8 +66,8 @@ public class GroupEntity {
     @Column(name = "COMPANY_ID", length = 32)
     private String companyId;
 
-    @Column(name = "GROUP_DESC", length = 80)
-    @Size(max = 80, message = "group.description.too.long")
+    @Column(name = "GROUP_DESC", length = 512)
+    @Size(max = 512, message = "group.description.too.long")
     private String description;
 
     @Column(name = "STATUS", length = 20)

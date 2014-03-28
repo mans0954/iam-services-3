@@ -2,23 +2,39 @@ package org.openiam.idm.srvc.res.dto;
 
 // Generated Mar 8, 2009 12:54:32 PM by Hibernate Tools 3.2.2.GA
 
+import java.util.Map;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
+import org.openiam.base.KeyDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.idm.srvc.lang.dto.LanguageMapping;
 import org.openiam.idm.srvc.res.domain.ResourceTypeEntity;
+import org.openiam.internationalization.Internationalized;
+import org.openiam.internationalization.InternationalizedCollection;
 
 /**
  * ResourceType allows you to classify the resource.
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "ResourceType", propOrder = { "id", "description", "provisionResource", "processName",
-        "supportsHierarchy", "searchable", "url", "imageType" })
+@XmlType(name = "ResourceType", 
+	propOrder = {
+		"description", 
+		"provisionResource", 
+		"processName",
+		"supportsHierarchy", 
+		"searchable", 
+		"url", 
+		"imageType",
+		"displayNameMap",
+		"displayName"
+})
 @DozerDTOCorrespondence(ResourceTypeEntity.class)
-public class ResourceType implements java.io.Serializable {
+@Internationalized
+public class ResourceType extends KeyDTO {
 
-    private String id;
     private String description;
     private Integer provisionResource;
     private String processName;
@@ -26,6 +42,11 @@ public class ResourceType implements java.io.Serializable {
     private boolean searchable = true;
     private String url;
     private String imageType;
+    
+    @InternationalizedCollection(referenceType="ResourceTypeEntity", targetField="displayName")
+    private Map<String, LanguageMapping> displayNameMap;
+	    
+    private String displayName;
 
     public ResourceType() {
     }
@@ -36,14 +57,6 @@ public class ResourceType implements java.io.Serializable {
 
     public void setImageType(String imageType) {
         this.imageType = imageType;
-    }
-
-    public String getId() {
-        return this.id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
     }
 
     public String getDescription() {
@@ -94,7 +107,23 @@ public class ResourceType implements java.io.Serializable {
         this.url = url;
     }
 
-    @Override
+    public Map<String, LanguageMapping> getDisplayNameMap() {
+		return displayNameMap;
+	}
+
+	public void setDisplayNameMap(Map<String, LanguageMapping> displayNameMap) {
+		this.displayNameMap = displayNameMap;
+	}
+
+	public String getDisplayName() {
+		return displayName;
+	}
+
+	public void setDisplayName(String displayName) {
+		this.displayName = displayName;
+	}
+
+	@Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;

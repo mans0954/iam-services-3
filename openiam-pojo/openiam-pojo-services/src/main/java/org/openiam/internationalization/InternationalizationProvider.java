@@ -216,10 +216,12 @@ public class InternationalizationProvider {
 							if(fieldObject != null) {
 								if(fieldObject instanceof Collection) {
 									for(final Object o : (Collection)fieldObject) {
-										if(o instanceof KeyEntity) {
-											retVal.addAll(getTargetFields((KeyEntity)o, visitedSet));
+										if(o instanceof BaseIdentity) {
+											retVal.addAll(getTargetFields((BaseIdentity)o, visitedSet));
 										}
 									}
+								} else if(fieldObject instanceof BaseIdentity) {
+									retVal.addAll(getTargetFields((BaseIdentity)fieldObject, visitedSet));
 								}
 							}
 						}
@@ -249,8 +251,11 @@ public class InternationalizationProvider {
 					for(final String languageId : transientMap.keySet()) {
 						final LanguageMappingEntity entity = transientMap.get(languageId);
 						setMetadata(entity, object, languageId, metadata);
+						if(StringUtils.isNotBlank(entity.getValue())) {
+							toSave.add(entity);
+						}
 					}
-					toSave = transientMap.values();
+					//toSave = transientMap.values();
 				} else {
 					for(final LanguageMappingEntity dbEntity : dbList) {
 						if(transientMap.containsKey(dbEntity.getLanguageId())) { /* update */
@@ -278,7 +283,9 @@ public class InternationalizationProvider {
 						}
 						if(!contains) { /* new */
 							setMetadata(transientEntity, object, languageId, metadata);
-							toSave.add(transientEntity);
+							if(StringUtils.isNotBlank(transientEntity.getValue())) {
+								toSave.add(transientEntity);
+							}
 						}
 					}
 				}

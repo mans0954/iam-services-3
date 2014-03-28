@@ -15,6 +15,8 @@ import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.lang.dto.Language;
@@ -23,6 +25,7 @@ import org.openiam.idm.srvc.lang.dto.LanguageMapping;
 @Entity
 @Table(name = "LANGUAGE_MAPPING")
 @DozerDTOCorrespondence(LanguageMapping.class)
+@Cache(usage=CacheConcurrencyStrategy.READ_WRITE)
 public class LanguageMappingEntity implements Serializable {
 	
 	@Id

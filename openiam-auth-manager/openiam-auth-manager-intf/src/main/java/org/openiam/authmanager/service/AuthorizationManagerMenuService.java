@@ -2,6 +2,7 @@ package org.openiam.authmanager.service;
 
 import org.openiam.authmanager.common.model.AuthorizationMenu;
 import org.openiam.authmanager.ws.request.MenuEntitlementsRequest;
+import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 
 import java.util.List;

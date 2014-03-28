@@ -11,12 +11,10 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
-import org.openiam.base.AbstractDisplayNameDTO;
 import org.openiam.base.KeyDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.cat.dto.Category;
 import org.openiam.idm.srvc.lang.domain.LanguageMappingEntity;
-import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.lang.dto.LanguageMapping;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.internationalization.Internationalized;
@@ -33,11 +31,14 @@ import org.openiam.internationalization.InternationalizedCollection;
 	"elementAttributes", 
 	"categories", 
 	"grouping",
-	"binary"
+	"binary",
+	"displayNameMap",
+	"displayName",
+	"sensitive"
 })
 @DozerDTOCorrespondence(MetadataTypeEntity.class)
 @Internationalized
-public class MetadataType extends AbstractDisplayNameDTO {
+public class MetadataType extends KeyDTO {
 
     private String description;
 
@@ -47,9 +48,16 @@ public class MetadataType extends AbstractDisplayNameDTO {
     private String grouping;
     
     private boolean binary;
+    
+    private boolean sensitive;
 
     protected Map<String, MetadataElement> elementAttributes = new HashMap<String, MetadataElement>(0);
     protected Set<Category> categories = new HashSet<Category>(0);
+    
+    @InternationalizedCollection(referenceType="MetadataTypeEntity", targetField="displayName")
+    private Map<String, LanguageMapping> displayNameMap;
+	    
+    private String displayName;
     
     public MetadataType() {
     	super();
@@ -109,6 +117,30 @@ public class MetadataType extends AbstractDisplayNameDTO {
 
 	public void setBinary(boolean binary) {
 		this.binary = binary;
+	}
+	
+	 public Map<String, LanguageMapping> getDisplayNameMap() {
+		 return displayNameMap;
+	 }
+
+	 public void setDisplayNameMap(Map<String, LanguageMapping> displayNameMap) {
+		 this.displayNameMap = displayNameMap;
+	 }
+
+	 public String getDisplayName() {
+		 return displayName;
+	 }
+
+	 public void setDisplayName(String displayName) {
+		 this.displayName = displayName;
+	 }
+	 
+	public boolean isSensitive() {
+		return sensitive;
+	}
+
+	public void setSensitive(boolean sensitive) {
+		this.sensitive = sensitive;
 	}
 
 	@Override

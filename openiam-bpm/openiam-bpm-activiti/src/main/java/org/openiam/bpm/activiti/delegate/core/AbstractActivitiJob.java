@@ -125,11 +125,11 @@ public abstract class AbstractActivitiJob implements JavaDelegate, TaskListener 
 	}
 	
 	protected Organization getOrganization(final String organizationId) {
-		return organizationDataService.getOrganization(organizationId, null);
+		return organizationDataService.getOrganizationLocalized(organizationId, null, null);
 	}
 	
 	protected Resource getResource(final String resourceId) {
-		return resourceDataService.getResource(resourceId);
+		return resourceDataService.getResource(resourceId, null);
 	}
 	
 	protected List<String> getSupervisorsForUser(final UserEntity  user) {

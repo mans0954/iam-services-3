@@ -76,6 +76,7 @@ public class MetadataElementEntity extends KeyEntity {
 
     @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY)
     @JoinColumn(name = "TYPE_ID")
+    @Internationalized
     private MetadataTypeEntity metadataType;
     
 	@Column(name = "IS_PUBLIC", nullable = false)

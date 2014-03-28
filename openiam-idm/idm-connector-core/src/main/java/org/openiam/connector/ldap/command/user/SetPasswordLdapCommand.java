@@ -39,7 +39,7 @@ public class SetPasswordLdapCommand extends AbstractLdapCommand<PasswordRequest,
         LdapContext ldapctx = this.connect(managedSys);
 
         try {
-            ManagedSystemObjectMatch matchObj = getMatchObject(passwordRequest.getTargetID(), "USER");
+            ManagedSystemObjectMatch matchObj = getMatchObject(passwordRequest.getTargetID(), ManagedSystemObjectMatch.USER);
             String identity = passwordRequest.getObjectIdentity();
 
             //Check identity on CN format or not

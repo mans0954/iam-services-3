@@ -48,7 +48,7 @@ public class PeoplesoftAddCommand extends AbstractPeoplesoftCommand<CrudRequest<
             throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR, "managed system not linked with resource");
         }
 
-        final Resource res = resourceDataService.getResource(managedSys.getResourceId());
+        final Resource res = resourceDataService.getResource(managedSys.getResourceId(), null);
         if (res == null) {
             throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR, "resource is null");
         }

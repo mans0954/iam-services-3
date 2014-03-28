@@ -35,7 +35,7 @@ public class SuspendLdapCommand extends AbstractLdapCommand<SuspendResumeRequest
 
 
         try {
-            ManagedSystemObjectMatch matchObj = getMatchObject(suspendRequestType.getTargetID(), "USER");
+            ManagedSystemObjectMatch matchObj = getMatchObject(suspendRequestType.getTargetID(), ManagedSystemObjectMatch.USER);
 
             String identity = suspendRequestType.getObjectIdentity();
             //Check identity on CN format or not

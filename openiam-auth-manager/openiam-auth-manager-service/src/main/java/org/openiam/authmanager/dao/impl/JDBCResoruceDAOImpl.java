@@ -46,18 +46,6 @@ public class JDBCResoruceDAOImpl extends AbstractJDBCDao implements ResourceDAO 
 		return getJdbcTemplate().query(GET_ALL_MENUS, menuMapper, new Object[] {AuthorizationConstants.MENU_ITEM_RESOURCE_TYPE});
 	}
 	
-	@Override
-	public AuthorizationMenu getAuthorizationMenu(final String menuId) {
-		if(log.isDebugEnabled()) {
-			log.debug(String.format("Query: %s", GET_AUTH_MENU_BY_ID));
-		}
-		try {
-			return getJdbcTemplate().queryForObject(GET_AUTH_MENU_BY_ID, new Object[] {AuthorizationConstants.MENU_ITEM_RESOURCE_TYPE, menuId}, menuMapper);
-		} catch(EmptyResultDataAccessException e) {
-			return null;
-		}
-	}
-	
 	private static class MenuMapper implements RowMapper<AuthorizationMenu> {
 
 		@Override

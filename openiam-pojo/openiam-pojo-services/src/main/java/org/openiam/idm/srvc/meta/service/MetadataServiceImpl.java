@@ -80,22 +80,6 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 
     private static final Log log = LogFactory.getLog(MetadataServiceImpl.class);
 
-    @Override
-    public List<MetadataElementEntity> getMetadataElementByType(String typeId) {
-        final MetadataTypeEntity result = metadataTypeDao.findById(typeId);
-        if(result == null) {
-            log.error("MetadataServiceImpl.getMetadataElementByType.findById (typeId="+typeId+") = NULL");
-            return null;
-        }
-        final Map<String, MetadataElementEntity> elementMap = result.getElementAttributes();
-        return (elementMap != null) ? new ArrayList<MetadataElementEntity>(elementMap.values()) : null;
-    }
-
-    @Override
-    public List<MetadataElementEntity> getAllElementsForCategoryType(final String categoryType) {
-        return metadataElementDao.findbyCategoryType(categoryType);
-    }
-
 	@Override
 	@LocalizedServiceGet
 	@Transactional

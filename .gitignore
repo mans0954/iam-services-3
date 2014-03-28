@@ -5,7 +5,6 @@ Thumbs.db
 target
 .project
 .idea
-/*.sh
 .settings
 .classpath
 .DS_Store

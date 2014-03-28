@@ -24,6 +24,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
 import org.openiam.base.BaseObject;
+import org.openiam.base.KeyDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.pswd.domain.UserIdentityAnswerEntity;
 
@@ -33,32 +34,22 @@ import org.openiam.idm.srvc.pswd.domain.UserIdentityAnswerEntity;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "UserIdentityAnswer", propOrder = {
-        "id",
         "questionId",
         "userId",
         "questionAnswer"
 })
 @DozerDTOCorrespondence(UserIdentityAnswerEntity.class)
-public class UserIdentityAnswer extends BaseObject implements Serializable {
+public class UserIdentityAnswer extends KeyDTO {
 
     /**
      *
      */
     private static final long serialVersionUID = 8841064146448209034L;
-    protected String id;
     protected String questionId;
     protected String userId;
     protected String questionAnswer;
 
     public UserIdentityAnswer() {
-    }
-
-    public String getId() {
-        return this.id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
     }
 
     public String getUserId() {

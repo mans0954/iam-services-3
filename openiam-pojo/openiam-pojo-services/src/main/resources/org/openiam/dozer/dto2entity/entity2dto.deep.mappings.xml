@@ -63,6 +63,12 @@
 			<a>approverAssociations</a>
 			<b>approverAssociations</b>
 		</field-exclude>
+		<field
+			custom-converter="org.openiam.dozer.crossentity.CrossEntityMapConverterWithKeyString"
+			custom-converter-param="dto2entityShallowDozerMapper">
+			<a>displayNameMap</a>
+			<b>displayNameMap</b>
+		</field>
 	</mapping>
 	<mapping>
 		<class-a>org.openiam.idm.srvc.user.domain.UserEntity</class-a>
@@ -230,6 +236,10 @@
 			<a>approverAssociations</a>
 			<b>approverAssociations</b>
 		</field-exclude>
+		<field-exclude>
+			<a>users</a>
+			<b>users</b>
+		</field-exclude>
 	</mapping>
 
 	<mapping>
@@ -291,6 +301,10 @@
 			<a>approverAssociations</a>
 			<b>approverAssociations</b>
 		</field-exclude>
+		<field-exclude>
+			<a>users</a>
+			<b>users</b>
+		</field-exclude>
 	</mapping>
 	<mapping>
 		<class-a>org.openiam.idm.srvc.report.domain.ReportCriteriaParamEntity
@@ -351,6 +365,10 @@
 		<field>
 			<a>metadataType.id</a>
 			<b>metadataTypeId</b>
+		</field>
+		<field>
+			<a>metadataType.displayName</a>
+			<b>metadataTypeName</b>
 		</field>
 		<field
 			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
@@ -576,12 +594,12 @@
 			<b>organizationTypeId</b>
 		</field>
 		<field>
-			<a>organizationType.name</a>
+			<a>organizationType.displayName</a>
 			<b>organizationTypeName</b>
 		</field>
 		<field-exclude>
-			<a>affiliations</a>
-			<b>affiliations</b>
+			<a>users</a>
+			<b>users</b>
 		</field-exclude>
 		<field-exclude>
 			<a>approverAssociations</a>
@@ -703,17 +721,27 @@
 			<a>active</a>
 			<b>active</b>
 		</field>
+		<field
+			custom-converter="org.openiam.dozer.crossentity.CrossEntityMapConverterWithKeyString"
+			custom-converter-param="dto2entityShallowDozerMapper">
+			<a>displayNameMap</a>
+			<b>displayNameMap</b>
+		</field>
 	</mapping>
 
 	<mapping>
 		<class-a>org.openiam.idm.srvc.lang.domain.LanguageEntity</class-a>
 		<class-b>org.openiam.idm.srvc.lang.dto.Language</class-b>
-		<field
-			custom-converter="org.openiam.dozer.crossentity.CrossEntityMapConverterWithKeyString"
-			custom-converter-param="dto2entityShallowDozerMapper">
+		<field custom-converter="org.openiam.dozer.crossentity.CrossEntityMapConverterWithKeyString"
+			   custom-converter-param="dto2entityShallowDozerMapper">
 			<a>locales</a>
 			<b>locales</b>
 		</field>
+        <field  custom-converter="org.openiam.dozer.crossentity.CrossEntityMapConverterWithKeyString"
+                custom-converter-param="dto2entityShallowDozerMapper">
+            <a>displayNameMap</a>
+            <b>displayNameMap</b>
+        </field>
 	</mapping>
 
 	<mapping>
@@ -801,8 +829,7 @@
 	</mapping>
 
 	<mapping>
-		<class-a>org.openiam.idm.srvc.org.domain.OrganizationTypeEntity
-		</class-a>
+		<class-a>org.openiam.idm.srvc.org.domain.OrganizationTypeEntity</class-a>
 		<class-b>org.openiam.idm.srvc.org.dto.OrganizationType</class-b>
 		<field
 			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
@@ -821,6 +848,12 @@
 			custom-converter-param="dto2entityShallowDozerMapper">
 			<a>organizations</a>
 			<b>organizations</b>
+		</field>
+		<field
+			custom-converter="org.openiam.dozer.crossentity.CrossEntityMapConverterWithKeyString"
+			custom-converter-param="dto2entityShallowDozerMapper">
+			<a>displayNameMap</a>
+			<b>displayNameMap</b>
 		</field>
 	</mapping>
 	

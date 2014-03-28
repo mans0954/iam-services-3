@@ -111,7 +111,21 @@
 	<bean id="defaultLoginModuleManager" class="org.openiam.idm.srvc.auth.spi.DefaultLoginModule">
 	</bean>
 
-	<bean id="configurableGroovyScriptEngine" class="${org.openiam.groovy.script.engine}" />
+	<bean id="targetConfigurableGroovyScriptEngine" class="${org.openiam.groovy.script.engine}" />
+
+    <bean id="baseTransactionProxy" class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean"
+          abstract="true">
+        <property name="transactionManager" ref="transactionManager"/>
+        <property name="transactionAttributes">
+            <props>
+                <prop key="execute">PROPAGATION_REQUIRED</prop>
+            </props>
+        </property>
+    </bean>
+
+    <bean id="configurableGroovyScriptEngine" parent="baseTransactionProxy">
+        <property name="target" ref="targetConfigurableGroovyScriptEngine"/>
+    </bean>
 
 	<!-- QueryDataService -->
 	<bean id="queryWS" class="org.openiam.idm.srvc.qry.ws.QueryDataWebServiceImpl">
@@ -205,10 +219,6 @@
 		<property name="sessionFactory" ref="sessionFactory"></property>
 	</bean>
 
-	<bean id="refDAO" class="org.openiam.idm.srvc.cd.service.ReferenceDAOImpl">
-		<property name="sessionFactory" ref="sessionFactory"></property>
-	</bean>
-
 	<bean id="sysMessageDAO" class="org.openiam.idm.srvc.msg.service.SysMessageDAOImpl">
 		<property name="sessionFactory" ref="sessionFactory"></property>
 	</bean>
@@ -296,7 +306,7 @@
 				<!-- <value>org/openiam/idm/srvc/menu/service/Permission.hbm.xml</value> -->
 				<!-- Util Maps -->
 				<value>org/openiam/base/id/SequenceGen.hbm.xml</value>
-				<value>org/openiam/idm/srvc/cd/service/ReferenceData.hbm.xml</value>
+				<!-- <value>org/openiam/idm/srvc/cd/service/ReferenceData.hbm.xml</value> -->
 				<!-- Audit log Maps -->
 				<!--<value>org/openiam/idm/srvc/auth/sourceLogin/Login.hbm.xml</value> -->
 				<!--<value>org/openiam/idm/srvc/auth/sourceLogin/LoginAttribute.hbm.xml</value> -->

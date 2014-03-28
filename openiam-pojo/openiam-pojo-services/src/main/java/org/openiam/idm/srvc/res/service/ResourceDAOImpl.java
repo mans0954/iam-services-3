@@ -15,6 +15,7 @@ import org.openiam.idm.searchbeans.SearchBean;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.domain.ResourceTypeEntity;
 import org.openiam.idm.srvc.searchbean.converter.ResourceSearchBeanConverter;
+import org.openiam.internationalization.LocalizedDatabaseGet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -168,18 +169,23 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
 	*/
 
 	@Override
+	@LocalizedDatabaseGet
 	public ResourceEntity findByName(String name) {
 		Criteria criteria = getCriteria().add(Restrictions.eq("name", name));
 		return (ResourceEntity) criteria.uniqueResult();
 	}
+	
     @Override
+    @LocalizedDatabaseGet
 	public List<ResourceEntity> getResourcesByType(String id) {
 		Criteria criteria = getCriteria().createAlias("resourceType", "rt")
 				.add(Restrictions.eq("rt.id", id))
 				.addOrder(Order.asc("displayOrder"));
 		return (List<ResourceEntity>) criteria.list();
 	}
+    
     @Override
+    @LocalizedDatabaseGet
 	public List<ResourceEntity> getResourcesForRole(final String roleId,
 			final int from, final int size, final ResourceSearchBean searchBean) {
 		final Criteria criteria = getCriteria()
@@ -218,6 +224,7 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
 	}
 
 	@Override
+	@LocalizedDatabaseGet
 	public List<ResourceEntity> getResourcesForGroup(final String groupId,
 			final int from, final int size, final ResourceSearchBean searchBean) {
 		final Criteria criteria = getCriteria()
@@ -256,6 +263,7 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
 	}
 
 	@Override
+	@LocalizedDatabaseGet
 	public List<ResourceEntity> getResourcesForUser(final String userId,
 			final int from, final int size, final ResourceSearchBean searchBean) {
 		final Criteria criteria = getResourceForUserCriteria(userId);
@@ -271,13 +279,16 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
 
 		return criteria.list();
 	}
+	
     @Override
+    @LocalizedDatabaseGet
     public List<ResourceEntity> getResourcesForUserByType(final String userId, String resourceTypeId, final ResourceSearchBean searchBean){
         final Criteria criteria = getResourceForUserCriteria(userId);
         addSearchBeanCriteria(criteria, searchBean);
         criteria.createAlias("resourceType", "rt").add(Restrictions.eq("rt.id", resourceTypeId));
         return criteria.list();
     }
+    
 	@Override
 	public int getNumOfResourcesForUser(String userId, final ResourceSearchBean searchBean) {
 		final Criteria criteria = getResourceForUserCriteria(userId).setProjection(rowCount());

@@ -46,34 +46,36 @@ public class ScriptCommandFactory extends AbstractCommandFactory {
     @Qualifier("searchScriptCommand")
     private ConnectorCommand searchScriptCommand;
 
-
-    public ConnectorCommand getConnectorCommand(CommandType commandType, ExtensibleObjectType extensibleObjectType) throws ConnectorDataException {
+    public ConnectorCommand getConnectorCommand(CommandType commandType, ExtensibleObjectType extensibleObjectType)
+            throws ConnectorDataException {
         String error = String.format(ERROR_PATTERN, commandType, extensibleObjectType, "SalesForce");
-        switch (commandType){
-            case ADD:
-                return addScriptCommand;
-            case DELETE:
-                return deleteScriptCommand;
-            case MODIFY:
-                return modifyScriptCommand;
-            case RESUME:
-                return resumeScriptCommand;
-            case SET_PASSWORD:
-                return setPasswordScriptCommand;
-            case SUSPEND:
-                return suspendScriptCommand;
-            case LOOKUP:
-                return lookupScriptCommand;
-            case EXPIRE_PASSWORD:
-                return  expirePasswordCommand;
-            case TEST:
-                return testScriptCommand;
-            case VALIDATE_PASSWORD:
-                return validatePasswordScriptCommand;
-            case SEARCH:
-                return searchScriptCommand;
-            default:
-                throw new ConnectorDataException(ErrorCode.OPERATION_NOT_SUPPORTED_EXCEPTION, error);
+        switch (commandType) {
+        case ADD:
+            return addScriptCommand;
+        case DELETE:
+            return deleteScriptCommand;
+        case MODIFY:
+            return modifyScriptCommand;
+        case RESUME:
+            return resumeScriptCommand;
+        case SET_PASSWORD:
+            return setPasswordScriptCommand;
+        case RESET_PASSWORD:
+            return setPasswordScriptCommand;
+        case SUSPEND:
+            return suspendScriptCommand;
+        case LOOKUP:
+            return lookupScriptCommand;
+        case EXPIRE_PASSWORD:
+            return expirePasswordCommand;
+        case TEST:
+            return testScriptCommand;
+        case VALIDATE_PASSWORD:
+            return validatePasswordScriptCommand;
+        case SEARCH:
+            return searchScriptCommand;
+        default:
+            throw new ConnectorDataException(ErrorCode.OPERATION_NOT_SUPPORTED_EXCEPTION, error);
         }
     }
 }

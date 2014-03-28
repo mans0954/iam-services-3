@@ -5,11 +5,14 @@ import org.hibernate.annotations.*;
 import org.openiam.base.domain.KeyEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
+import org.openiam.idm.srvc.lang.domain.LanguageMappingEntity;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.dto.ResourceRisk;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
+import org.openiam.internationalization.Internationalized;
+import org.openiam.internationalization.InternationalizedCollection;
 
 import javax.persistence.*;
 import javax.persistence.CascadeType;
@@ -20,6 +23,7 @@ import javax.validation.constraints.Size;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Set;
 
 @Entity
@@ -28,10 +32,12 @@ import java.util.Set;
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @DozerDTOCorrespondence(Resource.class)
 @AttributeOverride(name = "id", column = @Column(name = "RESOURCE_ID"))
+@Internationalized
 public class ResourceEntity extends KeyEntity {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "RESOURCE_TYPE_ID")
+    @Internationalized
     private ResourceTypeEntity resourceType;
 
     @Column(name = "NAME", length = 150)
@@ -99,6 +105,14 @@ public class ResourceEntity extends KeyEntity {
 	@OneToMany(cascade = {CascadeType.ALL}, fetch = FetchType.LAZY, mappedBy="associationEntityId", orphanRemoval=true)
 	@Where(clause="ASSOCIATION_TYPE='RESOURCE'")
 	private Set<ApproverAssociationEntity> approverAssociations;
+	
+    
+    @Transient
+    @InternationalizedCollection(referenceType="ResourceEntity", targetField="displayName")
+    private Map<String, LanguageMappingEntity> displayNameMap;
+    
+    @Transient
+    private String displayName;
 
     public ResourceRisk getRisk() {
         return risk;
@@ -351,6 +365,22 @@ public class ResourceEntity extends KeyEntity {
 			}
 			this.approverAssociations.add(entity);
 		}
+	}
+
+	public Map<String, LanguageMappingEntity> getDisplayNameMap() {
+		return displayNameMap;
+	}
+
+	public void setDisplayNameMap(Map<String, LanguageMappingEntity> displayNameMap) {
+		this.displayNameMap = displayNameMap;
+	}
+
+	public String getDisplayName() {
+		return displayName;
+	}
+
+	public void setDisplayName(String displayName) {
+		this.displayName = displayName;
 	}
 
 	@Override

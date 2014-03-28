@@ -209,11 +209,15 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
 
 	@Override
 	@Transactional
-	public IdentityQuestionEntity saveQuestion(final IdentityQuestionEntity entity) throws Exception {
+	public void saveQuestion(final IdentityQuestionEntity entity) throws Exception {
 		if(entity.getIdentityQuestGrp() != null && StringUtils.isNotBlank(entity.getIdentityQuestGrp().getId())) {
 			entity.setIdentityQuestGrp(questionGroupDAO.findById(entity.getIdentityQuestGrp().getId()));
 		}
-		return questionDAO.merge(entity);
+		if(entity.getId() == null) {
+			questionDAO.save(entity);
+		} else {
+			questionDAO.merge(entity);
+		}
 	}
 
 	@Override

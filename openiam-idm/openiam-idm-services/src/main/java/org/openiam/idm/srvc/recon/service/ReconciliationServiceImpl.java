@@ -308,7 +308,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
 
             reconConfigDao.save(configEntity);
 
-            Resource res = resourceDataService.getResource(config.getResourceId());
+            Resource res = resourceDataService.getResource(config.getResourceId(), null);
 
             ManagedSysEntity mSys = managedSysService.getManagedSysByResource(res.getId(), "ACTIVE");
             String managedSysId = (mSys != null) ? mSys.getId() : null;

@@ -28,6 +28,7 @@ import org.openiam.idm.searchbeans.LanguageSearchBean;
 import org.openiam.idm.searchbeans.SearchBean;
 import org.openiam.idm.srvc.lang.domain.LanguageEntity;
 import org.openiam.idm.srvc.searchbean.converter.LanguageSearchBeanConverter;
+import org.openiam.internationalization.LocalizedDatabaseGet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -35,69 +36,76 @@ import java.util.List;
 
 /**
  * DAO to manage the list of languages.
+ * 
  * @see org.openiam.idm.srvc.lang.dto.Language
  * @author Suneet Shah
  */
 @Repository("languageDAO")
 public class LanguageDAOImpl extends BaseDaoImpl<LanguageEntity, String> implements LanguageDAO {
-	private static final Log log = LogFactory.getLog(LanguageDAOImpl.class);
+    private static final Log log = LogFactory.getLog(LanguageDAOImpl.class);
 
-	@Autowired
-	private LanguageSearchBeanConverter converter;
-	
-	
-	
+    @Autowired
+    private LanguageSearchBeanConverter converter;
+
     @Override
-	protected Criteria getExampleCriteria(final LanguageEntity t) {
-		final Criteria criteria = getCriteria();
-		if(t != null) {
-			if(StringUtils.isNotBlank(t.getLanguageCode())) {
-				criteria.add(Restrictions.eq("languageCode", t.getLanguageCode()));
-			}
-		}
-		return criteria;
-	}
+    protected Criteria getExampleCriteria(final LanguageEntity t) {
+        final Criteria criteria = getCriteria();
+        if (t != null) {
+            if (!StringUtils.isEmpty(t.getId())) {
+                criteria.add(Restrictions.eq("id", t.getId()));
+            } else {
+                if (StringUtils.isNotBlank(t.getLanguageCode())) {
+                    criteria.add(Restrictions.eq("languageCode", t.getLanguageCode()));
+                }
+            }
+        }
+        return criteria;
+    }
 
-	@Override
-	protected Criteria getExampleCriteria(final SearchBean searchBean) {
-		Criteria criteria = getCriteria();
-		if(searchBean != null && (searchBean instanceof LanguageSearchBean)) {
-			final LanguageSearchBean sb = (LanguageSearchBean)searchBean;
-			criteria = getExampleCriteria(converter.convert(sb));
-		}
-		return criteria;
-	}
+    @Override
+    protected Criteria getExampleCriteria(final SearchBean searchBean) {
+        Criteria criteria = getCriteria();
+        if (searchBean != null && (searchBean instanceof LanguageSearchBean)) {
+            final LanguageSearchBean sb = (LanguageSearchBean) searchBean;
+            criteria = getExampleCriteria(converter.convert(sb));
+        }
+        return criteria;
+    }
 
-	@Override
+    @Override
     protected String getPKfieldName() {
         return "id";
     }
 
-	@Override
-	public LanguageEntity getByLocale(String locale) {
-		final Criteria criteria = getCriteria();
-		criteria.createAlias("locales", "locale").add( Restrictions.eq("locale.locale", locale));
-		return (LanguageEntity)criteria.uniqueResult();
-	}
-
-	@Override
-	public LanguageEntity getByCode(String languageCode) {
-		final Criteria criteria = getCriteria();
-		criteria.add(Restrictions.eq("languageCode", languageCode));
-		return (LanguageEntity)criteria.uniqueResult();
-	}
-	
-	@Override
-	public LanguageEntity getDefaultLanguage() {
-		final Criteria criteria = getCriteria();
-		criteria.add(Restrictions.eq("isDefault", true));
-		return (LanguageEntity)criteria.uniqueResult();
-	}
+    @Override
+    @LocalizedDatabaseGet
+    public LanguageEntity getByLocale(String locale) {
+        final Criteria criteria = getCriteria();
+        criteria.createAlias("locales", "locale").add(Restrictions.eq("locale.locale", locale));
+        return (LanguageEntity) criteria.uniqueResult();
+    }
 
     @Override
-    public List<LanguageEntity> getUsedLanguages(){
+    @LocalizedDatabaseGet
+    public LanguageEntity getByCode(String languageCode) {
+        final Criteria criteria = getCriteria();
+        criteria.add(Restrictions.eq("languageCode", languageCode));
+        return (LanguageEntity) criteria.uniqueResult();
+    }
+
+    @Override
+    @LocalizedDatabaseGet
+    public LanguageEntity getDefaultLanguage() {
+        final Criteria criteria = getCriteria();
+        criteria.add(Restrictions.eq("isDefault", true));
+        return (LanguageEntity) criteria.uniqueResult();
+    }
+
+    @Override
+    @LocalizedDatabaseGet
+    public List<LanguageEntity> getUsedLanguages() {
         final Criteria criteria = getCriteria();
         criteria.add(Restrictions.eq("isUsed", true));
-        return (List<LanguageEntity>)criteria.list();
+        return (List<LanguageEntity>) criteria.list();
     }
 }

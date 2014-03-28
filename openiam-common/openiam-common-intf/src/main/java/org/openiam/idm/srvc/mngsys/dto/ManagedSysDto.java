@@ -32,15 +32,13 @@ import java.util.Set;
  * can also be forms
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "ManagedSysDto", propOrder = { "id", "name",
-        "description", "status", "connectorId", "hostUrl", "port",
-        "commProtocol", "userId", "pswd", "decryptPassword", "endDate",
-        "startDate", "attributeNamesLookup", "searchScope", "resourceId", "primaryRepository",
-        "secondaryRepositoryId", "updateSecondary", "mngSysObjectMatchs",
-        "driverUrl", "connectionString", "addHandler", "modifyHandler",
-        "deleteHandler", "passwordHandler", "suspendHandler", "searchHandler",
-        "lookupHandler", "testConnectionHandler", "reconcileResourceHandler",
-        "attributeNamesHandler", "handler5", "rules", "groups", "roles" })
+@XmlType(name = "ManagedSysDto", propOrder = { "id", "name", "description", "status", "connectorId", "hostUrl", "port",
+        "commProtocol", "userId", "pswd", "decryptPassword", "endDate", "startDate", "attributeNamesLookup",
+        "searchScope", "resourceId", "primaryRepository", "secondaryRepositoryId", "updateSecondary",
+        "mngSysObjectMatchs", "driverUrl", "connectionString", "addHandler", "modifyHandler", "deleteHandler",
+        "passwordHandler", "suspendHandler", "resumeHandler", "searchHandler", "lookupHandler",
+        "testConnectionHandler", "reconcileResourceHandler", "attributeNamesHandler", "handler5", "rules", "groups",
+        "roles" })
 @DozerDTOCorrespondence(ManagedSysEntity.class)
 public class ManagedSysDto implements java.io.Serializable {
 
@@ -75,6 +73,7 @@ public class ManagedSysDto implements java.io.Serializable {
     private String deleteHandler;
     private String passwordHandler;
     private String suspendHandler;
+    private String resumeHandler;
     private String searchHandler;
     private String lookupHandler;
     private String testConnectionHandler;
@@ -90,11 +89,10 @@ public class ManagedSysDto implements java.io.Serializable {
      * private Set<AttributeMap> systemAttributeMap = new
      * HashSet<AttributeMap>(0);
      */
-    private Set<ManagedSystemObjectMatch> mngSysObjectMatchs = new HashSet<ManagedSystemObjectMatch>(
-            0);
-    
+    private Set<ManagedSystemObjectMatch> mngSysObjectMatchs = new HashSet<ManagedSystemObjectMatch>(0);
+
     private Set<Group> groups;
-    
+
     private Set<Role> roles;
 
     public ManagedSysDto() {
@@ -105,10 +103,8 @@ public class ManagedSysDto implements java.io.Serializable {
         this.connectorId = connectorId;
     }
 
-    public ManagedSysDto(String id, String name, String description,
-            String status, String connectorId,  String hostUrl,
-            Integer port, String commProtocol, String userId, String pswd,
-            Date startDate, Date endDate) {
+    public ManagedSysDto(String id, String name, String description, String status, String connectorId, String hostUrl,
+            Integer port, String commProtocol, String userId, String pswd, Date startDate, Date endDate) {
         this.id = id;
         this.name = name;
         this.description = description;
@@ -227,8 +223,7 @@ public class ManagedSysDto implements java.io.Serializable {
      * @param objectType
      * @return
      */
-    public ManagedSystemObjectMatch getObjectMatchDetailsByType(
-            String objectType) {
+    public ManagedSystemObjectMatch getObjectMatchDetailsByType(String objectType) {
         Set<ManagedSystemObjectMatch> matchSet = getMngSysObjectMatchs();
         if (matchSet == null || matchSet.isEmpty())
             return null;
@@ -241,33 +236,32 @@ public class ManagedSysDto implements java.io.Serializable {
         }
         return null;
     }
-    
+
     public void removeManagedSysObjectMatch(final ManagedSystemObjectMatch match) {
-    	if(match != null && this.mngSysObjectMatchs != null) {
-    		for(final Iterator<ManagedSystemObjectMatch> it = this.mngSysObjectMatchs.iterator(); it.hasNext();) {
-    			final ManagedSystemObjectMatch next = it.next();
-    			if(StringUtils.equals(next.getObjectSearchId(), match.getObjectSearchId())) {
-    				it.remove();
-    			}
-    		}
-    	}
+        if (match != null && this.mngSysObjectMatchs != null) {
+            for (final Iterator<ManagedSystemObjectMatch> it = this.mngSysObjectMatchs.iterator(); it.hasNext();) {
+                final ManagedSystemObjectMatch next = it.next();
+                if (StringUtils.equals(next.getObjectSearchId(), match.getObjectSearchId())) {
+                    it.remove();
+                }
+            }
+        }
     }
-    
+
     public void addManagedSysObjectMatch(final ManagedSystemObjectMatch match) {
-    	if(match != null) {
-    		if(this.mngSysObjectMatchs == null) {
-    			this.mngSysObjectMatchs = new HashSet<ManagedSystemObjectMatch>();
-    		}
-    		this.mngSysObjectMatchs.add(match);
-    	}
+        if (match != null) {
+            if (this.mngSysObjectMatchs == null) {
+                this.mngSysObjectMatchs = new HashSet<ManagedSystemObjectMatch>();
+            }
+            this.mngSysObjectMatchs.add(match);
+        }
     }
 
     public Set<ManagedSystemObjectMatch> getMngSysObjectMatchs() {
         return mngSysObjectMatchs;
     }
 
-    public void setMngSysObjectMatchs(
-            Set<ManagedSystemObjectMatch> mngSysObjectMatchs) {
+    public void setMngSysObjectMatchs(Set<ManagedSystemObjectMatch> mngSysObjectMatchs) {
         this.mngSysObjectMatchs = mngSysObjectMatchs;
     }
 
@@ -383,6 +377,14 @@ public class ManagedSysDto implements java.io.Serializable {
         this.suspendHandler = suspendHandler;
     }
 
+    public String getResumeHandler() {
+        return resumeHandler;
+    }
+
+    public void setResumeHandler(String resumeHandler) {
+        this.resumeHandler = resumeHandler;
+    }
+
     public String getSearchHandler() {
         return searchHandler;
     }
@@ -433,32 +435,21 @@ public class ManagedSysDto implements java.io.Serializable {
 
     @Override
     public String toString() {
-        return "ManagedSysDto{" + "managedSysId='" + id + '\''
-                + ", name='" + name + '\'' + ", description='" + description
-                + '\'' + ", status='" + status + '\'' + ", connectorId='"
-                + connectorId + '\'' + ", hostUrl='" + hostUrl + '\'' + ", port=" + port
-                + ", commProtocol='" + commProtocol + '\'' + ", userId='"
-                + userId + '\'' + ", pswd='" + pswd + '\''
-                + ", decryptPassword='" + decryptPassword + '\''
-                + ", startDate=" + startDate + ", endDate=" + endDate
-                + ", attributeNamesLookup='" + attributeNamesLookup + '\''
-                + ", searchScope='" + searchScope + '\''
-                + ", resourceId='" + resourceId + '\'' + ", primaryRepository="
-                + primaryRepository + ", secondaryRepositoryId='"
-                + secondaryRepositoryId + '\'' + ", updateSecondary="
-                + updateSecondary + ", driverUrl='" + driverUrl + '\''
-                + ", connectionString='" + connectionString + '\''
-                + ", addHandler='" + addHandler + '\'' + ", modifyHandler='"
-                + modifyHandler + '\'' + ", deleteHandler='" + deleteHandler
-                + '\'' + ", passwordHandler='" + passwordHandler + '\''
-                + ", suspendHandler='" + suspendHandler + '\''
-                + ", searchHandler='" + searchHandler + '\''
-                + ", lookupHandler='" + lookupHandler + '\''
-                + ", testConnectionHandler='" + testConnectionHandler + '\''
-                + ", reconcileResourceHandler='" + reconcileResourceHandler
-                + ", attributeNamesHandler='" + attributeNamesHandler
-                + '\'' + ", handler5='" + handler5 + '\''
-                + ", mngSysObjectMatchs=" + mngSysObjectMatchs + '}';
+        return "ManagedSysDto{" + "managedSysId='" + id + '\'' + ", name='" + name + '\'' + ", description='"
+                + description + '\'' + ", status='" + status + '\'' + ", connectorId='" + connectorId + '\''
+                + ", hostUrl='" + hostUrl + '\'' + ", port=" + port + ", commProtocol='" + commProtocol + '\''
+                + ", userId='" + userId + '\'' + ", pswd='" + pswd + '\'' + ", decryptPassword='" + decryptPassword
+                + '\'' + ", startDate=" + startDate + ", endDate=" + endDate + ", attributeNamesLookup='"
+                + attributeNamesLookup + '\'' + ", searchScope='" + searchScope + '\'' + ", resourceId='" + resourceId
+                + '\'' + ", primaryRepository=" + primaryRepository + ", secondaryRepositoryId='"
+                + secondaryRepositoryId + '\'' + ", updateSecondary=" + updateSecondary + ", driverUrl='" + driverUrl
+                + '\'' + ", connectionString='" + connectionString + '\'' + ", addHandler='" + addHandler + '\''
+                + ", modifyHandler='" + modifyHandler + '\'' + ", deleteHandler='" + deleteHandler + '\''
+                + ", passwordHandler='" + passwordHandler + '\'' + ", suspendHandler='" + suspendHandler + '\''
+                + ", searchHandler='" + searchHandler + '\'' + ", lookupHandler='" + lookupHandler + '\''
+                + ", testConnectionHandler='" + testConnectionHandler + '\'' + ", reconcileResourceHandler='"
+                + reconcileResourceHandler + ", attributeNamesHandler='" + attributeNamesHandler + '\''
+                + ", handler5='" + handler5 + '\'' + ", mngSysObjectMatchs=" + mngSysObjectMatchs + '}';
     }
 
     public List<ManagedSysRuleDto> getRules() {
@@ -469,21 +460,20 @@ public class ManagedSysDto implements java.io.Serializable {
         this.rules = rules;
     }
 
-	public Set<Group> getGroups() {
-		return groups;
-	}
+    public Set<Group> getGroups() {
+        return groups;
+    }
 
-	public void setGroups(Set<Group> groups) {
-		this.groups = groups;
-	}
+    public void setGroups(Set<Group> groups) {
+        this.groups = groups;
+    }
 
-	public Set<Role> getRoles() {
-		return roles;
-	}
+    public Set<Role> getRoles() {
+        return roles;
+    }
 
-	public void setRoles(Set<Role> roles) {
-		this.roles = roles;
-	}
-    
-    
+    public void setRoles(Set<Role> roles) {
+        this.roles = roles;
+    }
+
 }

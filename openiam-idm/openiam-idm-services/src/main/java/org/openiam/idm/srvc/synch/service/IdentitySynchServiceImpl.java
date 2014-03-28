@@ -75,7 +75,7 @@ import org.springframework.transaction.annotation.Transactional;
  * @author suneet
  *
  */
-@Service
+@Service("synchService")
 public class IdentitySynchServiceImpl implements IdentitySynchService {
 
     @Autowired

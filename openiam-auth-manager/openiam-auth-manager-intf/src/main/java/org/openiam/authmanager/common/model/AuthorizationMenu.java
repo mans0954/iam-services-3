@@ -5,15 +5,21 @@ import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonProperty;
 import org.openiam.authmanager.model.MenuEntitlementType;
 import org.openiam.authmanager.util.AuthorizationConstants;
+import org.openiam.idm.srvc.lang.domain.LanguageMappingEntity;
+import org.openiam.idm.srvc.lang.dto.Language;
+import org.openiam.idm.srvc.lang.dto.LanguageMapping;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
+import org.springframework.beans.BeanUtils;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -29,7 +35,8 @@ import java.util.Set;
         "nextSibling",
         "entitlementTypeList",
         "isVisible",
-        "risk"
+        "risk",
+        "displayNameMap"
 })
 public class AuthorizationMenu implements Serializable {
 	
@@ -62,7 +69,11 @@ public class AuthorizationMenu implements Serializable {
 	@JsonProperty("visible")
 	private boolean isVisible = true;
 	
-	/* XMLTransient b/c otherwould would cause infinite loop */
+	@JsonProperty("displayNameMap")
+	private Map<String, LanguageMapping> displayNameMap;
+	
+	
+	/* XMLTransient b/c otherwise would cause infinite loop */
 	@XmlTransient
 	@JsonIgnore
 	private AuthorizationMenu parent;
@@ -165,13 +176,15 @@ public class AuthorizationMenu implements Serializable {
         this.risk = risk;
     }
 
-    public void afterPropertiesSet(final List<ResourceProp> resourcePropertyList) {
+    public void afterPropertiesSet(final List<ResourceProp> resourcePropertyList, final List<LanguageMappingEntity> languageMappings) {
 		if(resourcePropertyList != null) {
 			for(final ResourceProp prop : resourcePropertyList) {
+				/*
 				if(displayName == null && 
 				   StringUtils.equalsIgnoreCase(prop.getName(), AuthorizationConstants.MENU_ITEM_DISPLAY_NAME_PROPERTY)) {
 					displayName = StringUtils.trimToNull(prop.getPropValue());
 				}
+				*/
 				if(icon == null && StringUtils.equalsIgnoreCase(prop.getName(), AuthorizationConstants.MENU_ITEM_ICON_PROPERTY)) {
 					icon = StringUtils.trimToNull(prop.getPropValue());
 				}
@@ -181,7 +194,34 @@ public class AuthorizationMenu implements Serializable {
 				}
 			}
 		}
+		
+		if(languageMappings != null) {
+			for(final LanguageMappingEntity entity : languageMappings) {
+				final LanguageMapping mapping = new LanguageMapping();
+				/* this is legal, even though the classes don't match! */
+				mapping.setId(entity.getId());
+				mapping.setLanguageId(entity.getLanguageId());
+				mapping.setReferenceId(entity.getReferenceId());
+				mapping.setReferenceType(entity.getReferenceType());
+				mapping.setValue(entity.getValue());
+				if(displayNameMap == null) {
+					displayNameMap = new HashMap<String, LanguageMapping>();
+				}
+				displayNameMap.put(mapping.getLanguageId(), mapping);
+			}
+		}
 	}
+    
+    public void localize(final Language language) {
+    	if(language != null) {
+    		if(displayNameMap != null) {
+    			final LanguageMapping mapping = displayNameMap.get(language.getId());
+    			if(mapping != null) {
+    				displayName = mapping.getValue();
+    			}
+    		}
+    	}
+    }
 	
 	public boolean getIsVisible() {
 		return isVisible;
@@ -193,6 +233,18 @@ public class AuthorizationMenu implements Serializable {
 	
 	public void setIsPublic(final boolean isPublic) {
 		this.isPublic = isPublic;
+	}
+	
+	public void setDisplayName(String displayName) {
+		this.displayName = displayName;
+	}
+
+	public void setDisplayNameMap(Map<String, LanguageMapping> displayNameMap) {
+		this.displayNameMap = displayNameMap;
+	}
+
+	public Map<String, LanguageMapping> getDisplayNameMap() {
+		return displayNameMap;
 	}
 	
 	public void addEntitlementType(final MenuEntitlementType entitlementType) {
@@ -222,6 +274,7 @@ public class AuthorizationMenu implements Serializable {
 		return result;
 	}
 
+	
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -231,11 +284,13 @@ public class AuthorizationMenu implements Serializable {
 		if (getClass() != obj.getClass())
 			return false;
 		AuthorizationMenu other = (AuthorizationMenu) obj;
+		/*
 		if (displayName == null) {
 			if (other.displayName != null)
 				return false;
 		} else if (!displayName.equals(other.displayName))
 			return false;
+		*/
 		if (displayOrder == null) {
 			if (other.displayOrder != null)
 				return false;
@@ -319,6 +374,14 @@ public class AuthorizationMenu implements Serializable {
 		if(isPublic != other.isPublic) {
 			return false;
 		}
+		
+		if (displayNameMap == null) {
+			if (other.displayNameMap != null)
+				return false;
+		} else if (!displayNameMap.equals(other.displayNameMap))
+			return false;
+
+		
 		return true;
 	}
 	
@@ -350,6 +413,19 @@ public class AuthorizationMenu implements Serializable {
 		menu.isPublic = isPublic;
 		menu.isVisible = isVisible;
 		menu.icon = icon;
+		menu.displayNameMap = new HashMap<>();
+		if(this.displayNameMap != null) {
+			for(final String languageId : this.displayNameMap.keySet()) {
+				final LanguageMapping entity = this.displayNameMap.get(languageId);
+				final LanguageMapping mapping = new LanguageMapping();
+				mapping.setId(entity.getId());
+				mapping.setLanguageId(entity.getLanguageId());
+				mapping.setReferenceId(entity.getReferenceId());
+				mapping.setReferenceType(entity.getReferenceType());
+				mapping.setValue(entity.getValue());
+				menu.displayNameMap.put(languageId, mapping);
+			}
+		}
 		return menu;
 	}
 }
