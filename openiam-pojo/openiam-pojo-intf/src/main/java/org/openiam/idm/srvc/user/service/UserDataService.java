@@ -190,6 +190,10 @@ public interface UserDataService {
 
     public int getSuperiorsCount(String userId);
 
+    public List<UserEntity> getAllSuperiors(Integer from, Integer size);
+
+    public int getAllSuperiorsCount();
+
     public List<UserEntity> getSubordinates(String userId, Integer from, Integer size);
 
     public int getSubordinatesCount(String userId);

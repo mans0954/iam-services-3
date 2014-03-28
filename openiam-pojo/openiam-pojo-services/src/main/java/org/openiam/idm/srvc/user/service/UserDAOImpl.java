@@ -441,6 +441,24 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
         return criteria.list();
     }
 
+    @Override
+    public List<UserEntity> getAllSuperiors(final int from, final int size) {
+        Criteria criteria = getAllSuperiorsCriteria();
+
+        if (from > -1) {
+            criteria.setFirstResult(from);
+        }
+        if (size > -1) {
+            criteria.setMaxResults(size);
+        }
+        return criteria.list();
+    }
+
+    @Override
+    public int getAllSuperiorsCount() {
+        return ((Number) getAllSuperiorsCriteria().setProjection(rowCount()).uniqueResult()).intValue();
+    }
+
     public List<UserEntity> getSubordinates(String userId, final int from, final int size) {
         Criteria criteria = getSubordinatesCriteria(userId);
         if (from > -1) {
@@ -476,6 +494,12 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
     private Criteria getSuperiorsCriteria(String userId) {
         Criteria criteria = getSession().createCriteria(SupervisorEntity.class).setProjection(Projections.property("supervisor"))
                         .createAlias("employee", "employee").add(Restrictions.eq("employee.id", userId));
+        return criteria;
+    }
+
+    private Criteria getAllSuperiorsCriteria() {
+        Criteria criteria = getSession().createCriteria(SupervisorEntity.class)
+                .setProjection(Projections.distinct(Projections.property("supervisor")));
         return criteria;
     }
 

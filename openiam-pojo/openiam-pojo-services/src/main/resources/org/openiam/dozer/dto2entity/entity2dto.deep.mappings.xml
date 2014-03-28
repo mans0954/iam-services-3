@@ -313,7 +313,11 @@
 			<a>type.name</a>
 			<b>typeName</b>
 		</field>
-	</mapping>
+        <field>
+            <a>metaType.name</a>
+            <b>metaTypeName</b>
+        </field>
+    </mapping>
 	
 	<mapping>
 		<class-a>org.openiam.idm.srvc.report.domain.ReportSubCriteriaParamEntity

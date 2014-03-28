@@ -17,23 +17,23 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "ReportParamMetaTypeDto", propOrder = {
         "id",
         "name",
-        "multipleSelect"
+        "isMultiple"
 })
 @DozerDTOCorrespondence(ReportParamMetaTypeEntity.class)
 public class ReportParamMetaTypeDto {
 
     private String id;
     private String name;
-    private Boolean multipleSelect;
+    private Boolean isMultiple;
 
 
     public ReportParamMetaTypeDto() {
     }
 
-    public ReportParamMetaTypeDto(String id, String name, Boolean multipleSelect) {
+    public ReportParamMetaTypeDto(String id, String name, Boolean isMultiple) {
         this.id = id;
         this.name = name;
-        this.multipleSelect = multipleSelect;
+        this.isMultiple = isMultiple;
     }
 
     public String getId() {
@@ -52,12 +52,12 @@ public class ReportParamMetaTypeDto {
         this.name = name;
     }
 
-    public Boolean getMultipleSelect() {
-        return multipleSelect;
+    public Boolean getIsMultiple() {
+        return isMultiple;
     }
 
-    public void setMultipleSelect(Boolean multipleSelect) {
-        this.multipleSelect = multipleSelect;
+    public void setIsMultiple(Boolean isMultiple) {
+        this.isMultiple = isMultiple;
     }
 
     @Override
@@ -69,7 +69,7 @@ public class ReportParamMetaTypeDto {
 
         if (id != null ? !id.equals(that.id) : that.id != null) return false;
         if (name != null ? !name.equals(that.name) : that.name != null) return false;
-        if (multipleSelect != null ? !multipleSelect.equals(that.multipleSelect) : that.multipleSelect != null) return false;
+        if (isMultiple != null ? !isMultiple.equals(that.isMultiple) : that.isMultiple != null) return false;
 
         return true;
     }
@@ -78,14 +78,14 @@ public class ReportParamMetaTypeDto {
     public int hashCode() {
         int result = id != null ? id.hashCode() : 0;
         result = 31 * result + (name != null ? name.hashCode() : 0);
-        result = 31 * result + (multipleSelect != null ? multipleSelect.hashCode() : 0);
+        result = 31 * result + (isMultiple != null ? isMultiple.hashCode() : 0);
         return result;
     }
 
     @Override
 	public String toString() {
 		return "ReportCriteriaParamDto [id=" + id + ", name=" + name
-                + ", multipleSelect=" + multipleSelect + "]";
+                + ", isMultiple=" + isMultiple + "]";
 	}
 
 }

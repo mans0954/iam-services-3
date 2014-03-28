@@ -1403,6 +1403,18 @@ public class UserMgr implements UserDataService {
 
     @Override
     @Transactional(readOnly = true)
+    public List<UserEntity> getAllSuperiors(Integer from, Integer size) {
+        return userDao.getAllSuperiors(from, size);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public int getAllSuperiorsCount() {
+        return userDao.getAllSuperiorsCount();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<UserEntity> getSubordinates(String userId, Integer from, Integer size) {
         if (userId == null)
             throw new NullPointerException("userId is null");

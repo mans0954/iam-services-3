@@ -24,9 +24,9 @@ public class ReportParamMetaTypeEntity {
     @Column(name = "PARAM_METATYPE_NAME")
     private String name;
 
-    @Column(name = "MULTIPLE_SELECT")
+    @Column(name = "IS_MULTIPLE")
     @Type(type = "yes_no")
-    private boolean multipleSelect;
+    private boolean isMultiple;
 
     public String getId() {
         return id;
@@ -36,12 +36,12 @@ public class ReportParamMetaTypeEntity {
         this.id = id;
     }
 
-    public boolean getMultipleSelect() {
-        return multipleSelect;
+    public boolean getIsMultiple() {
+        return isMultiple;
     }
 
-    public void setMultipleSelect(boolean multiple) {
-        multipleSelect = multiple;
+    public void setIsMultiple(boolean isMultiple) {
+        this.isMultiple = isMultiple;
     }
 
     public String getName() {
@@ -61,7 +61,7 @@ public class ReportParamMetaTypeEntity {
 
         if (id != null ? !id.equals(that.id) : that.id != null) return false;
         if (name != null ? !name.equals(that.name) : that.name != null) return false;
-        if (multipleSelect != that.multipleSelect) return false;
+        if (isMultiple != that.isMultiple) return false;
 
         return true;
     }
@@ -70,7 +70,7 @@ public class ReportParamMetaTypeEntity {
     public int hashCode() {
         int result = id != null ? id.hashCode() : 0;
         result = 31 * result + (name != null ? name.hashCode() : 0);
-        result = 31 * result + (multipleSelect ? 1231 : 1237);
+        result = 31 * result + (isMultiple ? 1231 : 1237);
         return result;
     }
 
@@ -79,7 +79,7 @@ public class ReportParamMetaTypeEntity {
         return "ReportParamMetaTypeEntity{" +
                 "id='" + id + '\'' +
                 ", name='" + name + '\'' +
-                ", multipleSelect=" + multipleSelect +
+                ", isMultiple=" + isMultiple +
                 '}';
     }
 

@@ -645,7 +645,7 @@ public interface UserDataWebService {
      * @param user
      *            - the User Object
      * @param supervisorId
-     *            - the opetional Supervisor
+     *            - the optional Supervisor
      * @return - a UserResponse Object, containing the User object saved
      */
     @WebMethod
@@ -719,7 +719,7 @@ public interface UserDataWebService {
      * Saves a User Profile
      * 
      * @param request
-     *            - the User Profile to sasave
+     *            - the User Profile to save
      * @return a SaveTemplateProfileResponse, containing the results of this
      *         operation
      */
@@ -747,6 +747,27 @@ public interface UserDataWebService {
     @WebMethod
     public List<User> getUserByLastDate(
             @WebParam(name = "lastDate", targetNamespace = "") final Date lastDate);
+
+    /**
+     * returns a paged List of all Supervisors in the system
+     *
+     * @param from
+     *            - where to start
+     * @param size
+     *            - how many objects to return
+     * @return a paged List of all Supervisors in the system
+     */
+    @WebMethod
+    public List<User> getAllSuperiors(@WebParam(name = "from", targetNamespace = "") Integer from,
+                                      @WebParam(name = "size", targetNamespace = "") Integer size);
+
+    /**
+     * Get the Number of all supervisors in the system
+     *
+     * @return the Number of all supervisors in the system
+     */
+    @WebMethod
+    public int getAllSuperiorsCount();
 
 //    @WebMethod
 //    public Map<String, UserAttribute> getUserAttributesAsMap(@WebParam(name = "userId", targetNamespace = "") String userId);

@@ -21,7 +21,9 @@ import javax.xml.bind.annotation.XmlType;
         "reportId",
         "reportName",
         "reportDataSource",
-        "reportUrl"
+        "reportUrl",
+        "reportParams",
+        "parameterCount"
 })
 @DozerDTOCorrespondence(ReportInfoEntity.class)
 public class ReportInfoDto {
@@ -29,8 +31,8 @@ public class ReportInfoDto {
     private String reportName;
     private String reportDataSource;
     private String reportUrl;
-    @XmlTransient
     private Set<ReportCriteriaParamDto> reportParams = new HashSet<ReportCriteriaParamDto>();
+    private Integer parameterCount;
 
     public ReportInfoDto() {
     }
@@ -65,6 +67,14 @@ public class ReportInfoDto {
 
     public void setReportUrl(String reportUrl) {
         this.reportUrl = reportUrl;
+    }
+
+    public Integer getParameterCount() {
+        return parameterCount;
+    }
+
+    public void setParameterCount(Integer parameterCount) {
+        this.parameterCount = parameterCount;
     }
 
     @Override

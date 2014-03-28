@@ -1163,6 +1163,21 @@ public class UserDataWebServiceImpl implements UserDataWebService {
         return resultList;
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<User> getAllSuperiors(@WebParam(name = "from", targetNamespace = "") Integer from,
+                                      @WebParam(name = "size", targetNamespace = "") Integer size) {
+
+        final List<UserEntity> superiors = userManager.getAllSuperiors(from, size);
+        return userDozerConverter.convertToDTOList(superiors, true);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public int getAllSuperiorsCount() {
+        return userManager.getAllSuperiorsCount();
+    }
+
 //    @Override
 //    public Map<String, UserAttribute> getUserAttributesAsMap(@WebParam(name = "userId", targetNamespace = "") String userId){
 //        return userManager.getUserAttributesDto(userId);

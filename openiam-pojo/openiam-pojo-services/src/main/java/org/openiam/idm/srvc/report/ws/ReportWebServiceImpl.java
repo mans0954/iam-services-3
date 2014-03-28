@@ -19,16 +19,19 @@ import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.dozer.converter.ReportCriteriaParamDozerConverter;
+import org.openiam.dozer.converter.ReportParamMetaTypeDozerConverter;
 import org.openiam.dozer.converter.ReportSubCriteriaParamDozerConverter;
 import org.openiam.dozer.converter.ReportInfoDozerConverter;
 import org.openiam.dozer.converter.ReportSubscriptionDozerConverter;
 import org.openiam.dozer.converter.ReportParamTypeDozerConverter;
 import org.openiam.idm.srvc.report.domain.ReportCriteriaParamEntity;
 import org.openiam.idm.srvc.report.domain.ReportInfoEntity;
+import org.openiam.idm.srvc.report.domain.ReportParamMetaTypeEntity;
 import org.openiam.idm.srvc.report.domain.ReportSubCriteriaParamEntity;
 import org.openiam.idm.srvc.report.domain.ReportSubscriptionEntity;
 import org.openiam.idm.srvc.report.domain.ReportParamTypeEntity;
 import org.openiam.idm.srvc.report.dto.ReportCriteriaParamDto;
+import org.openiam.idm.srvc.report.dto.ReportParamMetaTypeDto;
 import org.openiam.idm.srvc.report.dto.ReportSubCriteriaParamDto;
 import org.openiam.idm.srvc.report.dto.ReportDataDto;
 import org.openiam.idm.srvc.report.dto.ReportSubscriptionDto;
@@ -122,8 +125,12 @@ public class ReportWebServiceImpl implements ReportWebService {
             URIBuilder uriBuilder = new URIBuilder(reportBaseUrl);
             uriBuilder.setPath(uriBuilder.getPath() + taskPath);
             uriBuilder.setParameter(REPORT_PARAMETER_NAME, reportDesignName);
-            for (Map.Entry<String, String> entry : queryParams.entrySet()  ) {
-                uriBuilder.addParameter(entry.getKey(), entry.getValue());
+            if (queryParams != null) {
+                for (Map.Entry<String, String> entry : queryParams.entrySet()  ) {
+                    if (StringUtils.isNotBlank(entry.getValue())) {
+                        uriBuilder.addParameter(entry.getKey(), entry.getValue());
+                    }
+                }
             }
             return uriBuilder.toString();
         } catch (URISyntaxException ex) {
