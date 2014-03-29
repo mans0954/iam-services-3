@@ -14,7 +14,17 @@ import java.util.List;
 public interface OrganizationTypeDataService {
 
 	@WebMethod
+	@Deprecated
 	public OrganizationType findById(final @WebParam(name = "id", targetNamespace = "") String id);
+	
+	public OrganizationType findByIdLocalized(final @WebParam(name = "id", targetNamespace = "") String id,
+											  final @WebParam(name = "language", targetNamespace = "") Language language);
+	
+	@Deprecated
+    public List<OrganizationType> findAllowedChildrenByDelegationFilter(final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
+	
+	public List<OrganizationType> findAllowedChildrenByDelegationFilterLocalized(final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
+																				 final @WebParam(name = "language", targetNamespace = "") Language language);
 	
 	@WebMethod
 	public List<OrganizationType> findBeans(final @WebParam(name = "searchBean", targetNamespace = "") OrganizationTypeSearchBean searchBean,
@@ -38,7 +48,4 @@ public interface OrganizationTypeDataService {
 	@WebMethod
 	public Response removeChild(final @WebParam(name = "id", targetNamespace = "") String id,
 							 	final @WebParam(name = "childId", targetNamespace = "") String childId);
-
-
-    public List<OrganizationType> findAllowedChildrenByDelegationFilter(final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 }

@@ -37,9 +37,31 @@ public class OrganizationTypeDataServiceImpl implements OrganizationTypeDataServ
 	private OrganizationDozerConverter organizationDozerConverter;
 	
 	@Override
+	@Deprecated
 	public OrganizationType findById(final String id) {
 		final OrganizationTypeEntity entity = organizationTypeService.findById(id);
 		return (entity != null) ? dozerConverter.convertToDTO(entity, true) : null;
+	}
+	
+	@Override
+	@LocalizedServiceGet
+	public OrganizationType findByIdLocalized(final String id, final Language language) {
+		final OrganizationTypeEntity entity = organizationTypeService.findById(id);
+		return (entity != null) ? dozerConverter.convertToDTO(entity, true) : null;
+	}
+	
+	@Override
+	@Deprecated
+	public List<OrganizationType> findAllowedChildrenByDelegationFilter(final String requesterId){
+		final List<OrganizationTypeEntity> entityList =  organizationTypeService.findAllowedChildrenByDelegationFilter(requesterId);
+		return dozerConverter.convertToDTOList(entityList, false);
+	}
+
+	@Override
+	@LocalizedServiceGet
+	public List<OrganizationType> findAllowedChildrenByDelegationFilterLocalized(final String requesterId, final Language language) {
+		final List<OrganizationTypeEntity> entityList =  organizationTypeService.findAllowedChildrenByDelegationFilter(requesterId);
+		return dozerConverter.convertToDTOList(entityList, false);
 	}
 
 	@Override
@@ -53,12 +75,6 @@ public class OrganizationTypeDataServiceImpl implements OrganizationTypeDataServ
 	public int count(final OrganizationTypeSearchBean searchBean) {
 		return organizationTypeService.count(searchBean);
 	}
-
-    @Override
-    public List<OrganizationType> findAllowedChildrenByDelegationFilter(final String requesterId){
-        final List<OrganizationTypeEntity> entityList =  organizationTypeService.findAllowedChildrenByDelegationFilter(requesterId);
-        return dozerConverter.convertToDTOList(entityList, false);
-    }
 
 	@Override
 	public Response save(final OrganizationType type) {
