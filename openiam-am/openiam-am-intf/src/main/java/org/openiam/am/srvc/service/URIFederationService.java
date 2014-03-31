@@ -10,4 +10,6 @@ public interface URIFederationService {
 	public AuthenticationRequest createAuthenticationRequest(final String principal, final String proxyURI) throws BasicDataServiceException;
 	
 	public URIFederationResponse federateProxyURI(final String userId, final int authLevel, final String proxyURI);
+	
+	public URIFederationResponse getMetadata(String proxyURI);
 }

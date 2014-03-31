@@ -73,4 +73,9 @@ public class URIFederationWebServiceImpl implements URIFederationWebService {
 		return wsResponse;
 	}
 
+	@Override
+	public URIFederationResponse getMetadata(String proxyURI) {
+		return uriFederationService.getMetadata(proxyURI);
+	}
+
 }

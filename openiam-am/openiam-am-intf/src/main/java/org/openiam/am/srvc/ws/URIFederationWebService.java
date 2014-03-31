@@ -32,4 +32,6 @@ public interface URIFederationWebService {
 	 */
 	public SSOLoginResponse getCookieFromProxyURIAndPrincipal(@WebParam(name = "proxyURI", targetNamespace = "") final String proxyURI,
 								 					  @WebParam(name = "principal", targetNamespace = "") final String principal);
+	
+	public URIFederationResponse getMetadata(final String proxyURI);
 }
