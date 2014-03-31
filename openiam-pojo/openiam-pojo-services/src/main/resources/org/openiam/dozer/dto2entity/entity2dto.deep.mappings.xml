@@ -923,7 +923,7 @@
 		</field>
 		<field
 			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
-			custom-converter-param="dto2entityShallowDozerMapper">
+			custom-converter-param="dto2entityDeepDozerMapper">
 			<a>patternSet</a>
 			<b>patternSet</b>
 		</field>
