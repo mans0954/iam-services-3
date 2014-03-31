@@ -25,13 +25,20 @@ public class IdmAuditLogDAOImpl extends BaseDaoImpl<IdmAuditLogEntity, String> i
 
 
     @Override
+    public IdmAuditLogEntity findByRequesterId(String requesterId, String correlationID) {
+        final Criteria criteria = super.getCriteria();
+        IdmAuditLogEntity auditLogEntity = (IdmAuditLogEntity)criteria.add(Restrictions.and(Restrictions.eq("userId",requesterId),Restrictions.eq("coorelationId",correlationID))).uniqueResult();
+        return auditLogEntity;
+    }
+
+    @Override
     protected Criteria getExampleCriteria(final IdmAuditLogEntity entity) {
         final Criteria criteria = super.getCriteria();
         if(entity != null) {
             if(StringUtils.isNotBlank(entity.getId())) {
                 criteria.add(Restrictions.eq(getPKfieldName(), entity.getId()));
             }
-            if(StringUtils.isNotBlank(entity.getAction())) {
+            if(entity.getAction() != null) {
                 criteria.add(Restrictions.eq("action",entity.getAction()));
             }
         }

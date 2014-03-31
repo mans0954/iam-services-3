@@ -34,7 +34,7 @@ public class AuditLogDispatcher implements Sweepable {
     private static Logger LOG = Logger.getLogger(AuditLogDispatcher.class);
 
     @Autowired
-    private IdmAuditLogDAO auditLogDAO;
+    private AuditLogService auditLogService;
     @Autowired
     private JmsTemplate jmsTemplate;
 
@@ -92,7 +92,6 @@ public class AuditLogDispatcher implements Sweepable {
                             e.nextElement();
                         }
 
-
                     } finally {
                         LOG.info(String.format("Done with audit logger sweeper thread.  Took %s ms", sw.getTime()));
                     }
@@ -106,31 +105,27 @@ public class AuditLogDispatcher implements Sweepable {
     private void process(final IdmAuditLog event) {
 
                 if (StringUtils.isNotEmpty(event.getId())) {
-                    IdmAuditLogEntity srcEntity = auditLogDAO.findById(event.getId());
-                    if (srcEntity != null) {
-                        for(IdmAuditLogCustom customEntity : event.getCustomRecords()) {
-                            IdmAuditLogCustomEntity auditLogCustomEntity = idmAuditLogCustomDozerConverter.convertToEntity(customEntity, true);
-                            if(!srcEntity.getCustomRecords().contains(auditLogCustomEntity)){
-                                srcEntity.addCustomRecord(customEntity.getKey(),customEntity.getValue());
+                    IdmAuditLog srcLog = auditLogService.findById(event.getId());
+                    if (srcLog != null) {
+                        for(IdmAuditLogCustom customLog : event.getCustomRecords()) {
+                            if(!srcLog.getCustomRecords().contains(customLog)){
+                                srcLog.addCustomRecord(customLog.getKey(),customLog.getValue());
                             }
                         }
                         for(IdmAuditLog newChildren : event.getChildLogs()) {
-                            IdmAuditLogEntity newChildrenEntity = idmAuditLogDozerConverter.convertToEntity(newChildren, true);
-                           if(!srcEntity.getChildLogs().contains(newChildrenEntity)) {
-                               srcEntity.addChild(newChildrenEntity);
+                           if(!srcLog.getChildLogs().contains(newChildren)) {
+                               srcLog.addChild(newChildren);
                            }
                         }
                         for(AuditLogTarget newTarget : event.getTargets()) {
-                            AuditLogTargetEntity newTargetEntity = idmAuditLogTargetDozerConverter.convertToEntity(newTarget, true);
-                            if(!srcEntity.getTargets().contains(newTargetEntity)) {
-                                srcEntity.addTarget(newTarget.getId(), newTarget.getTargetType());
+                             if(!srcLog.getTargets().contains(newTarget)) {
+                                srcLog.addTarget(newTarget.getId(), newTarget.getTargetType());
                             }
                         }
-                        auditLogDAO.merge(srcEntity);
+                        auditLogService.save(srcLog);
                     }
                 } else {
-                    IdmAuditLogEntity srcEntity = idmAuditLogDozerConverter.convertToEntity(event, true);
-                    auditLogDAO.persist(srcEntity);
+                    auditLogService.save(event);
                 }
 
 

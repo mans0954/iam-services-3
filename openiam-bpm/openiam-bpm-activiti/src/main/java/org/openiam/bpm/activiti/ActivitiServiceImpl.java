@@ -4,13 +4,10 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
-import javax.annotation.PostConstruct;
 import javax.jws.WebMethod;
 import javax.jws.WebService;
 
@@ -22,19 +19,14 @@ import org.activiti.engine.RuntimeService;
 import org.activiti.engine.TaskService;
 import org.activiti.engine.history.HistoricActivityInstance;
 import org.activiti.engine.history.HistoricActivityInstanceQuery;
-import org.activiti.engine.history.HistoricDetail;
-import org.activiti.engine.history.HistoricDetailQuery;
 import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.history.HistoricTaskInstanceQuery;
-import org.activiti.engine.history.HistoricVariableUpdate;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Task;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openiam.authmanager.service.AuthorizationManagerService;
-import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
@@ -43,7 +35,6 @@ import org.openiam.dozer.converter.EmailAddressDozerConverter;
 import org.openiam.dozer.converter.PhoneDozerConverter;
 import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
-import org.openiam.bpm.activiti.groovy.AbstractApproverAssociationIdentifier;
 import org.openiam.bpm.activiti.groovy.DefaultEditUserApproverAssociationIdentifier;
 import org.openiam.bpm.activiti.groovy.DefaultGenericWorkflowRequestApproverAssociationIdentifier;
 import org.openiam.bpm.activiti.groovy.DefaultNewHireRequestApproverAssociationIdentifier;
@@ -59,7 +50,7 @@ import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.bpm.util.ActivitiRequestType;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
-import org.openiam.idm.srvc.audit.domain.AuditLogBuilder;
+import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.base.AbstractBaseService;
 import org.openiam.idm.srvc.continfo.domain.AddressEntity;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
@@ -70,18 +61,9 @@ import org.openiam.idm.srvc.continfo.dto.Phone;
 import org.openiam.idm.srvc.meta.dto.SaveTemplateProfileResponse;
 import org.openiam.idm.srvc.meta.exception.PageTemplateException;
 import org.openiam.idm.srvc.meta.service.MetadataElementTemplateService;
-import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
-import org.openiam.idm.srvc.mngsys.domain.AssociationType;
-import org.openiam.idm.srvc.mngsys.service.ApproverAssociationDAO;
-import org.openiam.idm.srvc.res.domain.ResourceEntity;
-import org.openiam.idm.srvc.res.service.ResourceDAO;
-import org.openiam.idm.srvc.user.domain.SupervisorEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.NewUserProfileRequestModel;
-import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserProfileRequestModel;
-import org.openiam.idm.srvc.user.dto.UserStatusEnum;
-import org.openiam.idm.srvc.user.service.SupervisorDAO;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.srvc.user.service.UserProfileService;
 import org.openiam.idm.util.CustomJacksonMapper;
@@ -94,8 +76,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.transaction.annotation.Transactional;
-
-import com.thoughtworks.xstream.XStream;
 
 @WebService(endpointInterface = "org.openiam.bpm.activiti.ActivitiService", 
 targetNamespace = "urn:idm.openiam.org/bpm/request/service", 
@@ -180,11 +160,12 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 	public SaveTemplateProfileResponse initiateNewHireRequest(final NewUserProfileRequestModel request) {
 		log.info("Initializing workflow");
 		final SaveTemplateProfileResponse response = new SaveTemplateProfileResponse();
-		final AuditLogBuilder builder = auditLogProvider.getAuditLogBuilder();
-		builder.setAction(AuditAction.NEW_USER_WORKFLOW);
-		builder.setBaseObject(request);
+		final IdmAuditLog idmAuditLog = new IdmAuditLog();
+        idmAuditLog.setAction(AuditAction.NEW_USER_WORKFLOW.value());
+        idmAuditLog.setBaseObject(request);
+        idmAuditLog.setRequestorUserId(request.getRequestorUserId());
 		try {
-			builder.addAttributeAsJson(AuditAttributeName.REQUEST, request, jacksonMapper);
+            idmAuditLog.addAttributeAsJson(AuditAttributeName.REQUEST, request, jacksonMapper);
 			
 			if(request == null || request.getActivitiRequestType() == null) {
 				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
@@ -197,7 +178,7 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 			
 			final Map<String, Object> bindingMap = new HashMap<String, Object>();
 			bindingMap.put("REQUEST", request);
-			bindingMap.put("BUILDER", builder);
+			bindingMap.put("BUILDER", idmAuditLog);
 			
 			DefaultNewHireRequestApproverAssociationIdentifier identifier = null;
 			try {
@@ -215,9 +196,9 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 			
 			final List<String> approverAssociationIds = identifier.getApproverAssociationIds();
 			final List<String> approverUserIds = identifier.getApproverIds();
-			
-        	builder.addAttributeAsJson(AuditAttributeName.APPROVER_ASSOCIATIONS, approverAssociationIds, jacksonMapper);
-        	builder.addAttributeAsJson(AuditAttributeName.REQUEST_APPROVER_IDS, approverUserIds, jacksonMapper);
+
+            idmAuditLog.addAttributeAsJson(AuditAttributeName.APPROVER_ASSOCIATIONS, approverAssociationIds, jacksonMapper);
+            idmAuditLog.addAttributeAsJson(AuditAttributeName.REQUEST_APPROVER_IDS, approverUserIds, jacksonMapper);
 	        
 	        //if(CollectionUtils.isEmpty(approverAssociationIds) && CollectionUtils.isEmpty(approverUserIds)) {
         	//	throw new BasicDataServiceException(ResponseCode.NO_REQUEST_APPROVERS);
@@ -248,33 +229,41 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 			runtimeService.startProcessInstanceByKey(requestType.getKey(), variables);
 
 			response.setStatus(ResponseStatus.SUCCESS);
-			builder.succeed();
+            idmAuditLog.succeed();
 		} catch (PageTemplateException e) {
-			builder.fail().setFailureReason(e.getCode()).setException(e);
+            idmAuditLog.fail();
+            idmAuditLog.setFailureReason(e.getCode());
+            idmAuditLog.setException(e);
 			response.setCurrentValue(e.getCurrentValue());
 			response.setElementName(e.getElementName());
 			response.setErrorCode(e.getCode());
 			response.setStatus(ResponseStatus.FAILURE);
 		} catch(BasicDataServiceException e) {
-			builder.fail().setFailureReason(e.getCode()).setException(e);
+            idmAuditLog.fail();
+            idmAuditLog.setFailureReason(e.getCode());
+            idmAuditLog.setException(e);
             response.setErrorTokenList(e.getErrorTokenList());
 			response.setErrorCode(e.getCode());
 			response.setStatus(ResponseStatus.FAILURE);
 		} catch(ActivitiException e) {
-			builder.fail().setFailureReason(e.getMessage()).setException(e);
+            idmAuditLog.fail();
+            idmAuditLog.setFailureReason(e.getMessage());
+            idmAuditLog.setException(e);
 			log.info("Activiti Exception", e);
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(ResponseCode.USER_STATUS);
 			response.setErrorText(e.getMessage());
 		} catch(Throwable e) {
-			builder.fail().setFailureReason(e.getMessage()).setException(e);
+            idmAuditLog.fail();
+            idmAuditLog.setFailureReason(e.getMessage());
+            idmAuditLog.setException(e);
 			log.error("Error while creating newhire request", e);
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(ResponseCode.USER_STATUS);
 			response.setErrorText(e.getMessage());
 		} finally {
 			log.info("Persisting activiti log..");
-			auditLogService.enqueue(builder);
+			auditLogService.enqueue(idmAuditLog);
 		}
 		return response;
 	}
@@ -283,14 +272,14 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 	@WebMethod
 	@Transactional
 	public Response claimRequest(final ActivitiClaimRequest request) {
-		final AuditLogBuilder builder = auditLogProvider.getAuditLogBuilder();
-		builder.setAction(AuditAction.CLAIM_REQUEST);
-		builder.setBaseObject(request);
-		
+		final IdmAuditLog idmAuditLog = new IdmAuditLog();
+        idmAuditLog.setAction(AuditAction.CLAIM_REQUEST.value());
+        idmAuditLog.setBaseObject(request);
+        idmAuditLog.setRequestorUserId(request.getRequestorUserId());
 		final Response response = new Response();
 
 		try {
-			builder.addAttributeAsJson(AuditAttributeName.REQUEST, request, jacksonMapper);
+            idmAuditLog.addAttributeAsJson(AuditAttributeName.REQUEST, request, jacksonMapper);
 			
 			final List<Task> taskList = taskService.createTaskQuery().taskCandidateUser(request.getRequestorUserId()).list();
 			if(CollectionUtils.isEmpty(taskList)) {
@@ -319,21 +308,25 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 			
 
 			response.setStatus(ResponseStatus.SUCCESS);
-			builder.succeed();
+            idmAuditLog.succeed();
 		} catch(ActivitiException e) {
-			builder.fail().setFailureReason(e.getMessage()).setException(e);
+            idmAuditLog.fail();
+            idmAuditLog.setFailureReason(e.getMessage());
+            idmAuditLog.setException(e);
 			log.info("Activiti Exception", e);
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(ResponseCode.USER_STATUS);
 			response.setErrorText(e.getMessage());
 		} catch(Throwable e) {
-			builder.fail().setFailureReason(e.getMessage()).setException(e);
+            idmAuditLog.fail();
+            idmAuditLog.setFailureReason(e.getMessage());
+            idmAuditLog.setException(e);
 			log.error("Error while creating newhire request", e);
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(ResponseCode.USER_STATUS);
 			response.setErrorText(e.getMessage());
 		} finally {
-			auditLogService.enqueue(builder);
+			auditLogService.enqueue(idmAuditLog);
 		}
 
 		return response;
@@ -344,12 +337,12 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 	public SaveTemplateProfileResponse initiateEditUserWorkflow(final UserProfileRequestModel request) {
 		final SaveTemplateProfileResponse response = new SaveTemplateProfileResponse();
 		
-		final AuditLogBuilder builder = auditLogProvider.getAuditLogBuilder();
-		builder.setAction(AuditAction.EDIT_USER_WORKFLOW);
-		builder.setBaseObject(request);
-		
+		final IdmAuditLog idmAuditLog = new IdmAuditLog();
+        idmAuditLog.setAction(AuditAction.EDIT_USER_WORKFLOW.value());
+        idmAuditLog.setBaseObject(request);
+        idmAuditLog.setRequestorUserId(request.getRequestorUserId());
 		try {
-			builder.addAttributeAsJson(AuditAttributeName.REQUEST, request, jacksonMapper);
+            idmAuditLog.addAttributeAsJson(AuditAttributeName.REQUEST, request, jacksonMapper);
 			
 			if(request == null) {
 				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
@@ -364,7 +357,7 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 			
 			final Map<String, Object> bindingMap = new HashMap<String, Object>();
 			bindingMap.put("REQUEST", request);
-			bindingMap.put("BUILDER", builder);
+			bindingMap.put("BUILDER", idmAuditLog);
 			
 			DefaultEditUserApproverAssociationIdentifier identifier = null;
 			try {
@@ -382,8 +375,8 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 			
 			final List<String> approverAssociationIds = identifier.getApproverAssociationIds();
 			final List<String> approverUserIds = identifier.getApproverIds();
-			
-			builder.addAttributeAsJson(AuditAttributeName.REQUEST_APPROVER_IDS, approverUserIds, jacksonMapper);
+
+            idmAuditLog.addAttributeAsJson(AuditAttributeName.REQUEST_APPROVER_IDS, approverUserIds, jacksonMapper);
 			
 			final List<Object> approverCardinatlity = new LinkedList<Object>();
 			if(CollectionUtils.isNotEmpty(approverAssociationIds)) {
@@ -407,32 +400,40 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 			//userProfileService.validate(request);
 			
 			response.setStatus(ResponseStatus.SUCCESS);
-			builder.succeed();
+            idmAuditLog.succeed();
 		} catch (PageTemplateException e) {
-			builder.fail().setFailureReason(e.getCode()).setException(e);
+            idmAuditLog.fail();
+            idmAuditLog.setFailureReason(e.getCode());
+            idmAuditLog.setException(e);
 			response.setCurrentValue(e.getCurrentValue());
 			response.setElementName(e.getElementName());
 			response.setErrorCode(e.getCode());
 			response.setStatus(ResponseStatus.FAILURE);
 		} catch(BasicDataServiceException e) {
-			builder.fail().setFailureReason(e.getCode()).setException(e);
+            idmAuditLog.fail();
+            idmAuditLog.setFailureReason(e.getCode());
+            idmAuditLog.setException(e);
 			response.setErrorCode(e.getCode());
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorTokenList(e.getErrorTokenList());
 		} catch(ActivitiException e) {
-			builder.fail().setFailureReason(e.getMessage()).setException(e);
+            idmAuditLog.fail();
+            idmAuditLog.setFailureReason(e.getMessage());
+            idmAuditLog.setException(e);
 			log.info("Activiti Exception", e);
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(ResponseCode.USER_STATUS);
 			response.setErrorText(e.getMessage());
 		} catch(Throwable e) {
-			builder.fail().setFailureReason(e.getMessage()).setException(e);
+            idmAuditLog.fail();
+            idmAuditLog.setFailureReason(e.getMessage());
+            idmAuditLog.setException(e);
 			log.error("Error while creating newhire request", e);
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(ResponseCode.USER_STATUS);
 			response.setErrorText(e.getMessage());
 		} finally {
-			auditLogService.enqueue(builder);
+			auditLogService.enqueue(idmAuditLog);
 		}
 		return response;
 	}
@@ -463,13 +464,14 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 	@Override
 	@Transactional
 	public Response initiateWorkflow(final GenericWorkflowRequest request) {
-		final AuditLogBuilder builder = auditLogProvider.getAuditLogBuilder();
-		builder.setAction(AuditAction.WORKFLOW);
-		builder.setBaseObject(request);
+		final IdmAuditLog idmAuditLog = new IdmAuditLog();
+        idmAuditLog.setRequestorUserId(request.getRequestorUserId());
+        idmAuditLog.setAction(AuditAction.WORKFLOW.value());
+        idmAuditLog.setBaseObject(request);
 		
 		final Response response = new Response();
 		try {
-			builder.addAttributeAsJson(AuditAttributeName.REQUEST, request, jacksonMapper);
+            idmAuditLog.addAttributeAsJson(AuditAttributeName.REQUEST, request, jacksonMapper);
 			
 			if(request == null || request.isEmpty()) {
 				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
@@ -477,7 +479,7 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 			
 			final Map<String, Object> bindingMap = new HashMap<String, Object>();
 			bindingMap.put("REQUEST", request);
-			bindingMap.put("BUILDER", builder);
+			bindingMap.put("BUILDER", idmAuditLog);
 			
 			DefaultGenericWorkflowRequestApproverAssociationIdentifier identifier = null;
 			try {
@@ -503,8 +505,8 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 			} else {
 				approverCardinatlity.add(approverUserIds);
 			}
-			
-			builder.addAttributeAsJson(AuditAttributeName.REQUEST_APPROVER_IDS, approverUserIds, jacksonMapper);
+
+            idmAuditLog.addAttributeAsJson(AuditAttributeName.REQUEST_APPROVER_IDS, approverUserIds, jacksonMapper);
 			
 			final Map<String, Object> variables = new HashMap<String, Object>();
 			variables.put(ActivitiConstants.WORKFLOW_NAME.getName(), request.getActivitiRequestType());
@@ -538,26 +540,29 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 			final ProcessInstance instance = runtimeService.startProcessInstanceByKey(request.getActivitiRequestType(), variables);
 
 			response.setStatus(ResponseStatus.SUCCESS);
-			builder.succeed();
+            idmAuditLog.succeed();
 		} catch(BasicDataServiceException e) {
-			builder.setFailureReason(e.getCode()).setException(e);
+            idmAuditLog.setFailureReason(e.getCode());
+            idmAuditLog.setException(e);
 			log.info("Could not initialize task", e);
 			response.setErrorCode(e.getCode());
 			response.setStatus(ResponseStatus.FAILURE);
 		} catch(ActivitiException e) {
-			builder.setFailureReason(e.getMessage()).setException(e);
+            idmAuditLog.setFailureReason(e.getMessage());
+            idmAuditLog.setException(e);
 			log.info("Activiti Exception", e);
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(ResponseCode.USER_STATUS);
 			response.setErrorText(e.getMessage());
 		} catch(Throwable e) {
-			builder.setFailureReason(e.getMessage()).setException(e);
+            idmAuditLog.setFailureReason(e.getMessage());
+            idmAuditLog.setException(e);
 			log.error("Error while creating newhire request", e);
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(ResponseCode.USER_STATUS);
 			response.setErrorText(e.getMessage());
 		} finally {
-			auditLogService.enqueue(builder);
+			auditLogService.enqueue(idmAuditLog);
 		}
 		return response;
 	}

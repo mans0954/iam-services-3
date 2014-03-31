@@ -22,7 +22,7 @@ public class DeleteResourceDelegate extends AbstractActivitiJob {
 		Response wsResponse = null;
 		final Resource resource = getObjectVariable(execution, ActivitiConstants.RESOURCE, Resource.class);
 		if(resource != null) {
-			wsResponse = resourceService.deleteResource(resource.getId());
+			wsResponse = resourceService.deleteResource(resource.getId(), systemUserId);
 		}
 		//TODO:  validate
 	}

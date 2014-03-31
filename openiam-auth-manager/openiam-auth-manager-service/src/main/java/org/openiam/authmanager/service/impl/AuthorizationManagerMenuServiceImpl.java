@@ -17,16 +17,14 @@ import org.openiam.authmanager.model.ResourceEntitlementToken;
 import org.openiam.authmanager.service.AuthorizationManagerAdminService;
 import org.openiam.authmanager.service.AuthorizationManagerMenuService;
 import org.openiam.authmanager.service.AuthorizationManagerService;
-import org.openiam.authmanager.util.AuthorizationConstants;
 import org.openiam.authmanager.ws.request.MenuEntitlementsRequest;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
-import org.openiam.idm.srvc.audit.domain.AuditLogBuilder;
+import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.base.AbstractBaseService;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.service.GroupDAO;
 import org.openiam.idm.srvc.lang.domain.LanguageMappingEntity;
-import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.lang.service.LanguageMappingDAO;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
@@ -550,30 +548,29 @@ public class AuthorizationManagerMenuServiceImpl extends AbstractBaseService imp
         }
     }
 
-	@Override
-	public boolean isUserAuthenticatedToMenuWithURL(final String userId, final String url, final String menuId, final boolean defaultResult) {
-		boolean retVal = defaultResult;
-		final AuditLogBuilder builder = auditLogProvider.getAuditLogBuilder().setAction(AuditAction.MENU_AUTHORIZATON).setTargetUser(userId).setURL(url).addAttribute(AuditAttributeName.MENU_ID, menuId);
-		final AuthorizationMenu menu = StringUtils.isNotBlank(menuId) ? urlIdCache.get(getURLCacheId(menuId, url)) : urlCache.get(url);
-		try {
-			if(menu != null) {
-				if(menu.getIsPublic()) {
-					builder.setSuccessReason("Is Public");
-					retVal = true;
-				} else {
-					final AuthorizationResource resource = new AuthorizationResource();
-					resource.setId(menu.getId());
-					retVal = authManager.isEntitled(userId, resource);
-				}
-			}
-			if(retVal) {
-				builder.succeed();
-			} else {
-				builder.fail().setFailureReason("Unauthorized");
-			}
-		} finally {
-			auditLogService.enqueue(builder);
-		}
-		return retVal;
-	}
+    @Override
+    public boolean isUserAuthenticatedToMenuWithURL(final String userId, final String url, final String menuId, final boolean defaultResult) {
+        boolean retVal = defaultResult;
+        final AuthorizationMenu menu = StringUtils.isNotBlank(menuId) ? urlIdCache.get(getURLCacheId(menuId, url)) : urlCache.get(url);
+        if (menu != null) {
+            if (menu.getIsPublic()) {
+                retVal = true;
+            } else {
+                final AuthorizationResource resource = new AuthorizationResource();
+                resource.setId(menu.getId());
+                retVal = authManager.isEntitled(userId, resource);
+            }
+        }
+        if (!retVal) {
+            final IdmAuditLog idmAuditLog = new IdmAuditLog();
+            idmAuditLog.setAction(AuditAction.MENU_AUTHORIZATON.value());
+            idmAuditLog.setTargetUser(userId);
+            idmAuditLog.setURL(url);
+            idmAuditLog.addAttribute(AuditAttributeName.MENU_ID, menuId);
+            idmAuditLog.fail();
+            idmAuditLog.setFailureReason("Unauthorized");
+            auditLogService.enqueue(idmAuditLog);
+        }
+        return retVal;
+    }
 }

@@ -1,10 +1,7 @@
 package org.openiam.idm.srvc.audit.service;
 
 import java.net.InetAddress;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 import javax.annotation.PostConstruct;
 import javax.jms.JMSException;
@@ -15,17 +12,16 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openiam.base.SysConfiguration;
 import org.openiam.base.id.UUIDGen;
+import org.openiam.dozer.converter.IdmAuditLogDozerConverter;
+import org.openiam.dozer.converter.IdmAuditLogTargetDozerConverter;
 import org.openiam.idm.searchbeans.AuditLogSearchBean;
-import org.openiam.idm.srvc.audit.domain.AuditLogBuilder;
 import org.openiam.idm.srvc.audit.domain.AuditLogTargetEntity;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogCustomEntity;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.audit.dto.AuditLogTarget;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLogCustom;
-import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.util.encrypt.HashDigest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -55,9 +51,21 @@ public class AuditLogServiceImpl implements AuditLogService {
 	private IdmAuditLogDAO logDAO;
     
     private static final Log LOG = LogFactory.getLog(AuditLogServiceImpl.class);
-    
+
     private String nodeIP = null;
-    
+
+    @Autowired
+    private IdmAuditLogDozerConverter auditLogDozerConverter;
+
+    /**
+     * Cache for UserId and CorrelationId
+     *
+     * When new User login: new AuditLog with Correlation Id will be generated and store in cache Map
+     * Every login we replace CorrelationId by UserId
+     *
+     */
+    private final Map<String, String> correlationIdByRequesterId = new HashMap<>();
+
     @PostConstruct
     public void init() {
     	try {
@@ -67,41 +75,45 @@ public class AuditLogServiceImpl implements AuditLogService {
     	}
     }
     
-    public void prepare(final IdmAuditLog log, final String coorelationId) {
+    private void prepare(final IdmAuditLogEntity log) {
     	if(log != null) {
     		if(log.getId() == null || log.getHash() == null) {
                 log.setHash(hash.HexEncodedHash(log.concat()));
-                log.setCoorelationId(coorelationId);
+            }
+
+            if(StringUtils.isEmpty(log.getCorrelationId())) {
+               // log.setCorrelationId(String.valueOf(new Random().nextLong()));
             }
     		log.setNodeIP(nodeIP);
 
     		if(CollectionUtils.isNotEmpty(log.getChildLogs())) {
-    			for(final IdmAuditLog entity : log.getChildLogs()) {
-    				prepare(entity, coorelationId);
+    			for(final IdmAuditLogEntity entity : log.getChildLogs()) {
+                    if(StringUtils.isEmpty(entity.getCorrelationId())) {
+                       // log.setCorrelationId(log.getCorrelationId());
+                    }
+    				prepare(entity);
     			}
     		}
-    		
+
     		//required - the UI sends a transient instance to the service, so fix it here
     		if(CollectionUtils.isNotEmpty(log.getCustomRecords())) {
-    			for(final IdmAuditLogCustom custom : log.getCustomRecords()) {
-                    custom.setLogId(log.getId());
+    			for(final IdmAuditLogCustomEntity custom : log.getCustomRecords()) {
+                    custom.setLog(log);
     			}
     		}
-    		
+
     		if(CollectionUtils.isNotEmpty(log.getTargets())) {
-    			for(final AuditLogTarget target : log.getTargets()) {
-                    target.setLogId(log.getId());
+    			for(final AuditLogTargetEntity target : log.getTargets()) {
+                    target.setLog(log);
     			}
     		}
     	}
     }
 
 	@Override
-	public void enqueue(final AuditLogBuilder builder) {
-        if(builder!=null){
-		    final IdmAuditLog log = builder.getEvent();
-		    prepare(log, UUIDGen.getUUID());
-		    send(log);
+	public void enqueue(final IdmAuditLog event) {
+        if(event != null){
+		    send(event);
         }
 	}
 	
@@ -116,9 +128,14 @@ public class AuditLogServiceImpl implements AuditLogService {
 
 	@Override
 	@Transactional(readOnly=true)
-	public List<IdmAuditLogEntity> findBeans(AuditLogSearchBean searchBean,
+	public List<IdmAuditLog> findBeans(AuditLogSearchBean searchBean,
 			int from, int size) {
-		return logDAO.getByExample(searchBean, from, size);
+		List<IdmAuditLogEntity> idmAuditLogEntities = logDAO.getByExample(searchBean, from, size);
+        List<IdmAuditLog> idmAuditLogs = new LinkedList<>();
+        if(idmAuditLogEntities != null) {
+           idmAuditLogs = auditLogDozerConverter.convertToDTOList(idmAuditLogEntities, false);
+        }
+        return idmAuditLogs;
 	}
 
 	@Override
@@ -129,14 +146,33 @@ public class AuditLogServiceImpl implements AuditLogService {
 
 	@Override
 	@Transactional(readOnly=true)
-	public IdmAuditLogEntity findById(String id) {
-		return logDAO.findById(id);
+	public IdmAuditLog findById(String id) {
+        return auditLogDozerConverter.convertToDTO(logDAO.findById(id), true);
 	}
 
     @Override
     @Transactional
-    public String save(IdmAuditLogEntity auditLogEntity) {
-        logDAO.save(auditLogEntity);
+    public String save(IdmAuditLog auditLog) {
+        IdmAuditLogEntity auditLogEntity = auditLogDozerConverter.convertToEntity(auditLog, true);
+
+        prepare(auditLogEntity);
+        try {
+            logDAO.save(auditLogEntity);
+        } catch(Exception ex) {
+          ex.printStackTrace();
+        }
         return auditLogEntity.getId();
     }
+/*
+    @Override
+    @Transactional(readOnly = true)
+    public IdmAuditLog getAuditLogByRequesterId(String requesterId) {
+        IdmAuditLog auditLog = null;
+        if(correlationIdByUserId.containsKey(requesterId)) {
+            IdmAuditLogEntity auditLogEntity = logDAO.findByRequesterId(requesterId,correlationIdByUserId.get(requesterId));
+            auditLog = auditLogDozerConverter.convertToDTO(auditLogEntity, true);
+        }
+
+        return auditLog;
+    }*/
 }

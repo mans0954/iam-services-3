@@ -198,8 +198,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
     protected AttributeMapDozerConverter attributeMapDozerConverter;
     @Autowired
     protected ProvisionQueueService provQueueService;
-    @Autowired
-    protected AuditLogProvider auditLogProvider;
+
     @Autowired
     protected AuditLogService auditLogService;
 

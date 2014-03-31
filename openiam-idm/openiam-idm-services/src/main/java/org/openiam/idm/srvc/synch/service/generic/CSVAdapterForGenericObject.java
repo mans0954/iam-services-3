@@ -39,7 +39,6 @@ import org.openiam.base.id.UUIDGen;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.idm.srvc.audit.domain.AuditLogBuilder;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.synch.dto.Attribute;
@@ -82,7 +81,7 @@ public class CSVAdapterForGenericObject implements SourceAdapter {
     private static final Log log = LogFactory
             .getLog(CSVAdapterForGenericObject.class);
 
-    public SyncResponse startSynch(SynchConfig config, AuditLogBuilder auditLogBuilder) {
+    public SyncResponse startSynch(SynchConfig config) {
 
         log.debug("Starting to Sync CSV File..^^^^^^^^");
 

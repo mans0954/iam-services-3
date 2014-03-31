@@ -34,7 +34,6 @@ import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
-import org.openiam.idm.srvc.audit.domain.AuditLogBuilder;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.idm.srvc.synch.dto.Attribute;
 import org.openiam.idm.srvc.synch.dto.LineObject;
@@ -87,17 +86,14 @@ public class CSVAdapter extends AbstractSrcAdapter {
     protected AuditLogService auditLogService;
 
     @Autowired
-    private AuditLogProvider auditLogProvider;
-
-    @Autowired
     private RemoteFileStorageManager remoteFileStorageManager;
 
-    public SyncResponse startSynch(final SynchConfig config, final AuditLogBuilder auditBuilder) {
+    public SyncResponse startSynch(final SynchConfig config) {
         log.debug("CSV startSynch CALLED.^^^^^^^^");
         System.out.println("CSV startSynch CALLED.^^^^^^^^");
 
-        auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "CSV startSynch CALLED.^^^^^^^^");
-        auditLogProvider.persist(auditBuilder);
+ //       auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "CSV startSynch CALLED.^^^^^^^^");
+
 
         InputStreamReader isr = null;
 
@@ -129,19 +125,19 @@ public class CSVAdapter extends AbstractSrcAdapter {
             //Get Header
             final LineObject rowHeader = populateTemplate(rows[0]);
 
-            auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "Rows for processing: "+rows.length);
+//            auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "Rows for processing: "+rows.length);
 
             if (rows.length > 1) {
                 rows = Arrays.copyOfRange(rows, 1, rows.length);
-                proccess(config, provService, rows, validationScript, transformScripts, matchRule, rowHeader,0, auditBuilder);
+                proccess(config, provService, rows, validationScript, transformScripts, matchRule, rowHeader,0);
             }
 
         } catch (FileNotFoundException fe) {
             fe.printStackTrace();
 
             log.error(fe);
-            auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "FileNotFoundException: "+fe.getMessage());
-            auditLogProvider.persist(auditBuilder);
+//            auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "FileNotFoundException: "+fe.getMessage());
+//            auditLogProvider.persist(auditBuilder);
             SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
             resp.setErrorCode(ResponseCode.FILE_EXCEPTION);
             return resp;
@@ -192,11 +188,11 @@ public class CSVAdapter extends AbstractSrcAdapter {
 
         log.debug("CSV SYNCHRONIZATION COMPLETE^^^^^^^^");
 
-        auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "CSV SYNCHRONIZATION COMPLETE^^^^^^^^");
+//        auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "CSV SYNCHRONIZATION COMPLETE^^^^^^^^");
         return new SyncResponse(ResponseStatus.SUCCESS);
     }
 
-    private void proccess(SynchConfig config, ProvisionService provService, String[][] rows, final ValidationScript validationScript, final List<TransformScript> transformScripts, MatchObjectRule matchRule, LineObject rowHeader, int ctr,  AuditLogBuilder auditLogBuilder) {
+    private void proccess(SynchConfig config, ProvisionService provService, String[][] rows, final ValidationScript validationScript, final List<TransformScript> transformScripts, MatchObjectRule matchRule, LineObject rowHeader, int ctr) {
         for (String[] row : rows) {
             log.info("*** Record counter: " + ctr++);
             //populate the data object
@@ -231,10 +227,10 @@ public class CSVAdapter extends AbstractSrcAdapter {
             for(String col : row) {
                rowAsStr.append(col).append(",");
             }
-            auditLogBuilder.addAttribute(AuditAttributeName.DESCRIPTION, " - Row Attrs:" + rowAsStr.toString());
+            //auditLogBuilder.addAttribute(AuditAttributeName.DESCRIPTION, " - Row Attrs:" + rowAsStr.toString());
 
             User usr = matchRule.lookup(config, rowAttr);
-            auditLogBuilder.addAttribute(AuditAttributeName.DESCRIPTION, " Lookup User in repository: " + usr != null ? "FOUND" : "NOT FOUND");
+           // auditLogBuilder.addAttribute(AuditAttributeName.DESCRIPTION, " Lookup User in repository: " + usr != null ? "FOUND" : "NOT FOUND");
             //@todo - Update lookup so that an exception is thrown
             // when lookup fails due to bad matching.
 
@@ -278,8 +274,8 @@ public class CSVAdapter extends AbstractSrcAdapter {
 //                pUser.setParentAuditLogId(auditLogBuilder.getEntity().getId()); //TODO: causes transient object exception
                 if (retval != -1) {
                     if (retval == TransformScript.DELETE && pUser.getUser() != null) {
-                        auditLogBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "User login: "+(pUser.getFirstName()+" "+pUser.getLastName())+" [REMOVED]");
-                        auditLogProvider.persist(auditLogBuilder);
+                        //auditLogBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "User login: "+(pUser.getFirstName()+" "+pUser.getLastName())+" [REMOVED]");
+                        //auditLogProvider.persist(auditLogBuilder);
                         provService.deleteByUserId(pUser.getId(), UserStatusEnum.REMOVE, systemAccount);
                     } else {
                         // call synch
@@ -288,29 +284,29 @@ public class CSVAdapter extends AbstractSrcAdapter {
                                 log.info(" - Updating existing user");
                                 pUser.setId(usr.getId());
                                 try {
-                                    pUser.setParentAuditLogId(auditLogBuilder.getEntity().getId());
+                                    //pUser.setParentAuditLogId(auditLogBuilder.getEntity().getId());
                                     provService.modifyUser(pUser);
                                 } catch (Exception e) {
-                                    auditLogBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "Error: User login: " +(pUser.getFirstName()+" "+pUser.getLastName())+" [MODIFY] " + e.getMessage());
-                                    auditLogProvider.persist(auditLogBuilder);
+                                    //auditLogBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "Error: User login: " +(pUser.getFirstName()+" "+pUser.getLastName())+" [MODIFY] " + e.getMessage());
+                                    //auditLogProvider.persist(auditLogBuilder);
                                     log.error(e);
                                 }
-                                auditLogBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "User login: " +(pUser.getFirstName()+" "+pUser.getLastName())+" [MODIFY] ");
+                                //auditLogBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "User login: " +(pUser.getFirstName()+" "+pUser.getLastName())+" [MODIFY] ");
                             } else {
                                 log.info(" - New user being provisioned");
                                 pUser.setId(null);
                                 try {
                                     provService.addUser(pUser);
                                 } catch (Exception e) {
-                                    auditLogBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "Error: User login: " +(pUser.getFirstName()+" "+pUser.getLastName())+" [ADD] " + e.getMessage());
+                                    //auditLogBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "Error: User login: " +(pUser.getFirstName()+" "+pUser.getLastName())+" [ADD] " + e.getMessage());
                                     log.error(e);
                                 }
-                                auditLogBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "User: " +(pUser.getFirstName() + " " + pUser.getLastName())+" [ADD] ");
+                                //auditLogBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "User: " +(pUser.getFirstName() + " " + pUser.getLastName())+" [ADD] ");
                             }
                         }
                     }
                 } else {
-                    auditLogBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "Fail: User login: " +pUser.getLogin());
+                    //auditLogBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "Fail: User login: " +pUser.getLogin());
                 }
             }
             // show the user object
