@@ -24,4 +24,7 @@ public interface LanguageWebService {
     @WebMethod
     int count(final @WebParam(name = "searchBean", targetNamespace = "") LanguageSearchBean searchBean);
 
+    @WebMethod
+    void save(final @WebParam(name = "language", targetNamespace = "") Language language);
+
 }

@@ -33,76 +33,77 @@ import java.util.List;
 
 /**
  * @author suneet
- *
+ * 
  */
 @Service("languageDataService")
 public class LanguageDataServiceImpl implements LanguageDataService {
 
     @Autowired
     @Qualifier("languageDAO")
-	private LanguageDAO languageDao;
-	
-	
-    @Transactional
-	public void addLanguage(LanguageEntity lg) {
-		if (lg == null) {
-			throw new NullPointerException("lg is null");
-		}
-		languageDao.add(lg);
-
-	}
-
-	public List<LanguageEntity> allLanguages() {
-		return languageDao.findAll();
-	}
-
-    public List<LanguageEntity> getUsedLanguages(){
-        return languageDao.getUsedLanguages();
-    }
-    @Override
-    @LocalizedServiceGet
-    @Transactional
-    public List<LanguageEntity> getUsedLanguages(final LanguageEntity language){
-        return languageDao.getUsedLanguages();
-    }
-
-	public LanguageEntity getLanguage(String languageId) {
-
-		if (languageId == null) {
-			throw new NullPointerException("languageCd is null");
-		}
-		return languageDao.findById(languageId);
-	}
+    private LanguageDAO languageDao;
 
     @Transactional
-	public void removeLanguage(String languageId) {
-		if (languageId == null) {
-			throw new NullPointerException("languageCd is null");
-		}
-        final LanguageEntity lg = getLanguage(languageId);
-		languageDao.delete(lg);
-	}
-
-    @Transactional
-	public void updateLanguage(LanguageEntity lg) {
-		if (lg == null) {
-			throw new NullPointerException("lg is null");
-		}
-		final LanguageEntity l = getLanguage(lg.getId());
-        if(l!=null){
-            languageDao.merge(l);
+    public void addLanguage(LanguageEntity lg) {
+        if (lg == null) {
+            throw new NullPointerException("lg is null");
         }
-	}
+        languageDao.save(lg);
 
-	@Override
-	public List<LanguageEntity> findBeans(final LanguageSearchBean searchBean, final int from, final int size) {
-		return languageDao.getByExample(searchBean, from, size);
-	}
+    }
+
+    public List<LanguageEntity> allLanguages() {
+        return languageDao.findAll();
+    }
+
+    public List<LanguageEntity> getUsedLanguages() {
+        return languageDao.getUsedLanguages();
+    }
 
     @Override
     @LocalizedServiceGet
     @Transactional
-    public List<LanguageEntity> findBeans(final LanguageSearchBean searchBean, int from, int size, final LanguageEntity language){
+    public List<LanguageEntity> getUsedLanguages(final LanguageEntity language) {
+        return languageDao.getUsedLanguages();
+    }
+
+    public LanguageEntity getLanguage(String languageId) {
+
+        if (languageId == null) {
+            throw new NullPointerException("languageCd is null");
+        }
+        return languageDao.findById(languageId);
+    }
+
+    @Transactional
+    public void removeLanguage(String languageId) {
+        if (languageId == null) {
+            throw new NullPointerException("languageCd is null");
+        }
+        final LanguageEntity lg = getLanguage(languageId);
+        languageDao.delete(lg);
+    }
+
+    @Transactional
+    public void updateLanguage(LanguageEntity lg) {
+        if (lg == null) {
+            throw new NullPointerException("lg is null");
+        }
+        final LanguageEntity l = getLanguage(lg.getId());
+        if (l != null) {
+            languageDao.merge(lg);
+        }
+    }
+
+    @Override
+    public List<LanguageEntity> findBeans(final LanguageSearchBean searchBean, final int from, final int size) {
+        return languageDao.getByExample(searchBean, from, size);
+    }
+
+    @Override
+    @LocalizedServiceGet
+    @Transactional
+    public List<LanguageEntity> findBeans(final LanguageSearchBean searchBean, int from, int size,
+            final LanguageEntity language) {
         return languageDao.getByExample(searchBean, from, size);
     }
 }
