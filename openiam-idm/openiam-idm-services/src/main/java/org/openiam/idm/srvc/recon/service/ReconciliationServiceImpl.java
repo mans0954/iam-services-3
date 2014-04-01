@@ -674,7 +674,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
                     l.setManagedSysId(managedSysId);
                     l.setOperation(AttributeOperationEnum.ADD);
                     ProvisionUser newUser = new ProvisionUser();
-                    newUser.setParentAuditLogId(auditBuilder.getEntity().getId());
+//                    newUser.setParentAuditLogId(auditBuilder.getEntity().getId()); //TODO: causes transient object exception
                     newUser.setSrcSystemId(managedSysId);
                     // ADD Target user principal
                     newUser.getPrincipalList().add(l);
