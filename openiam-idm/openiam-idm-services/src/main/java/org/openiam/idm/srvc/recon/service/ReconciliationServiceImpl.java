@@ -45,12 +45,7 @@ import org.openiam.connector.type.ObjectValue;
 import org.openiam.connector.type.constant.StatusCodeType;
 import org.openiam.connector.type.request.SearchRequest;
 import org.openiam.connector.type.response.SearchResponse;
-import org.openiam.dozer.converter.GroupDozerConverter;
-import org.openiam.dozer.converter.LoginDozerConverter;
-import org.openiam.dozer.converter.ManagedSysDozerConverter;
-import org.openiam.dozer.converter.ReconciliationConfigDozerConverter;
-import org.openiam.dozer.converter.ReconciliationSituationDozerConverter;
-import org.openiam.dozer.converter.UserDozerConverter;
+import org.openiam.dozer.converter.*;
 import org.openiam.exception.ScriptEngineException;
 import org.openiam.idm.parser.csv.UserCSVParser;
 import org.openiam.idm.parser.csv.UserSearchBeanCSVParser;
@@ -72,6 +67,7 @@ import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
+import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorDto;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
 import org.openiam.idm.srvc.mngsys.ws.ProvisionConnectorWebService;
@@ -139,6 +135,8 @@ public class ReconciliationServiceImpl implements ReconciliationService {
     protected ResourceDataService resourceDataService;
     @Autowired
     private MailService mailService;
+    @Autowired
+    protected ManagedSystemObjectMatchDozerConverter objectMatchDozerConverter;
     @Autowired
     protected ManagedSystemService managedSysService;
     @Autowired
@@ -1115,6 +1113,11 @@ public class ReconciliationServiceImpl implements ReconciliationService {
         try {
             bindingMap.put("user", new ProvisionUser(user));
             bindingMap.put("managedSysId", identity.getManagedSysId());
+            final List<ManagedSystemObjectMatchEntity> matchList = managedSysService.managedSysObjectParam(
+                    identity.getManagedSysId(), "USER");
+            if (CollectionUtils.isNotEmpty(matchList)) {
+                bindingMap.put("matchParam", objectMatchDozerConverter.convertToDTO(matchList.get(0), false));
+            }
 
             // get all groups for user
             List<org.openiam.idm.srvc.grp.dto.Group> curGroupList = groupDozerConverter.convertToDTOList(
