@@ -36,7 +36,8 @@ import org.openiam.exception.LogoutException;
 import org.openiam.exception.ScriptEngineException;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
-import org.openiam.idm.srvc.audit.domain.AuditLogBuilder;
+import org.openiam.idm.srvc.audit.constant.AuditTarget;
+import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.auth.context.AuthContextFactory;
 import org.openiam.idm.srvc.auth.context.AuthenticationContext;
 import org.openiam.idm.srvc.auth.context.PasswordCredential;
@@ -129,18 +130,22 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
     @Override
     @ManagedAttribute
     public void globalLogout(String userId) throws Throwable {
-        final AuditLogBuilder auditBuilder=auditLogProvider.getAuditLogBuilder();
-        try{
-            auditBuilder.setRequestorUserId(userId).setTargetUser(userId).setAction(AuditAction.LOGOUT);
+        IdmAuditLog newLogoutEvent = new IdmAuditLog();
+        newLogoutEvent.setUserId(userId);
+        newLogoutEvent.addTarget(userId, AuditTarget.USER.value());
+        newLogoutEvent.setAction(AuditAction.LOGOUT.value());
 
+        try{
             if (userId == null) {
-                auditBuilder.fail().setFailureReason("Target User object not passed");
+                newLogoutEvent.fail();
+                newLogoutEvent.setFailureReason("Target User object not passed");
                 throw new NullPointerException("UserId is null");
             }
 
             AuthStateEntity authSt = authStateDao.findById(userId);
             if (authSt == null) {
-                auditBuilder.fail().setFailureReason(String.format("Cannot find AuthState object for User: %s",userId));
+                newLogoutEvent.fail();
+                newLogoutEvent.setFailureReason(String.format("Cannot find AuthState object for User: %s", userId));
                 log.error("AuthState not found for userId=" + userId);
                 throw new LogoutException();
             }
@@ -148,26 +153,23 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
             authSt.setAuthState(new BigDecimal(0));
             authSt.setToken("LOGOUT");
             authStateDao.saveAuthState(authSt);
-            auditBuilder.succeed();
-        /*
-        } catch (Throwable ex){
-           if(!AuditResult.FAILURE.value().equals(auditBuilder.getEntity().getResult()))
-               auditBuilder.setResult(AuditResult.FAILURE).addAttribute(AuditAttributeName.FAILURE_REASON, ex.getMessage());
-
-           throw ex;
-		*/
+            newLogoutEvent.succeed();
         } finally {
-            auditLogService.enqueue(auditBuilder);
+            auditLogService.enqueue(newLogoutEvent);
         }
     }
 
     @Override
     public AuthenticationResponse login(AuthenticationRequest request) {
-    	final AuditLogBuilder auditBuilder=auditLogProvider.getAuditLogBuilder().setAction(AuditAction.LOGIN);
+        IdmAuditLog newLoginEvent = new IdmAuditLog();
+        newLoginEvent.setUserId(null);
+        newLoginEvent.setAction(AuditAction.LOGIN.value());
+
     	final AuthenticationResponse authResp = new AuthenticationResponse(ResponseStatus.FAILURE);
     	try {
 	        if (request == null) {
-	        	auditBuilder.fail().setFailureReason("Request object is null");
+                newLoginEvent.fail();
+                newLoginEvent.setFailureReason("Request object is null");
 	            throw new IllegalArgumentException("Request object is null");
 	        }
 	
@@ -175,8 +177,9 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
 	        final String password = request.getPassword();
 	        final String clientIP = request.getClientIP();
 	        final String nodeIP = request.getNodeIP();
-	
-	        auditBuilder.setClientIP(clientIP).setRequestorPrincipal(principal);
+
+            newLoginEvent.setClientIP(clientIP);
+            newLoginEvent.setRequestorPrincipal(principal);
 	        
 	        AuthenticationContext ctx = null;
 	        AbstractLoginModule loginModule = null;
@@ -186,9 +189,9 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
 	        LoginEntity lg = null;
 	        String userId = null;
 	        UserEntity user = null;
-	
-	        auditBuilder.setManagedSysId(sysConfiguration.getDefaultManagedSysId());
 
+            newLoginEvent.setManagedSysId(sysConfiguration.getDefaultManagedSysId());
+            newLoginEvent.setTargetManagedSys(sysConfiguration.getDefaultManagedSysId());
 	        // Determine which login module to use
 	        // - get the Authentication policy for the domain
 	        String authPolicyId = sysConfiguration.getDefaultAuthPolicyId();
@@ -212,7 +215,8 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
 	                        "INVALID LOGIN", secDomainId, null, principal, null,
 	                        null, clientIP, nodeIP);
 					*/
-	            	auditBuilder.fail().setFailureReason("Invalid Principlal");
+                    newLoginEvent.fail();
+                    newLoginEvent.setFailureReason("Invalid Principlal");
 	                // throw new
 	                // AuthenticationException(AuthenticationConstants.RESULT_INVALID_LOGIN);
 	
@@ -232,7 +236,8 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
 	                
 	                // throw new
 	                // AuthenticationException(AuthenticationConstants.RESULT_INVALID_PASSWORD);
-	                auditBuilder.fail().setFailureReason("Invalid Password");
+                    newLoginEvent.fail();
+                    newLoginEvent.setFailureReason("Invalid Password");
 	                authResp.setAuthErrorCode(AuthenticationConstants.RESULT_INVALID_PASSWORD);
 	                return authResp;
 	
@@ -241,7 +246,8 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
 	            lg = loginManager.getLoginByManagedSys(principal, sysConfiguration.getDefaultManagedSysId());
 	
 	            if (lg == null) {
-	            	auditBuilder.fail().setFailureReason(
+                    newLoginEvent.fail();
+                    newLoginEvent.setFailureReason(
 	            			String.format("Cannot find login for principal '%s' and managedSystem '%s'",
 	            					 principal, sysConfiguration.getDefaultManagedSysId()));
 	            	/*
@@ -259,7 +265,8 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
 	
 	            // check the user status - move to the abstract class for reuse
 	            userId = lg.getUserId();
-	            auditBuilder.setRequestorUserId(userId).setTargetUser(userId);
+                newLoginEvent.setRequestorUserId(userId);
+                newLoginEvent.setTargetUser(userId);
 	            
 	            user = userManager.getUser(userId);
 	        }
@@ -315,7 +322,9 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
 	            log.error(ie.getMessage(), ie);
 	            // throw (new
 	            // AuthenticationException(AuthenticationConstants.INTERNAL_ERROR,ie.getMessage(),ie));
-	            auditBuilder.fail().setFailureReason(ie.getMessage()).setException(ie);
+                newLoginEvent.fail();
+                newLoginEvent.setFailureReason(ie.getMessage());
+                newLoginEvent.setException(ie);
 	            authResp.setAuthErrorCode(AuthenticationConstants.INTERNAL_ERROR);
 	            return authResp;
 	        }
@@ -338,7 +347,9 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
 	
 	            } catch (AuthenticationException ae) {
 	            	final String erroCodeAsString = Integer.valueOf(ae.getErrorCode()).toString();
-	            	auditBuilder.fail().setFailureReason(erroCodeAsString).addAttribute(AuditAttributeName.LOGIN_ERROR_CODE, erroCodeAsString);
+                    newLoginEvent.fail();
+                    newLoginEvent.setFailureReason(erroCodeAsString);
+                    newLoginEvent.addAttribute(AuditAttributeName.LOGIN_ERROR_CODE, erroCodeAsString);
 	                int errCode = ae.getErrorCode();
 	                switch (errCode) {
 		                case AuthenticationConstants.RESULT_INVALID_DOMAIN:
@@ -381,7 +392,9 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
 	                return authResp;
 	            } catch (Throwable e) {
 	            	log.error("Unknown Exception", e);
-	            	auditBuilder.fail().setFailureReason(e.getMessage()).setException(e);
+                    newLoginEvent.fail();
+                    newLoginEvent.setFailureReason(e.getMessage());
+                    newLoginEvent.setException(e);
 	                authResp.setStatus(ResponseStatus.FAILURE);
 	                authResp.setAuthErrorCode(AuthenticationConstants.INTERNAL_ERROR);
 	                authResp.setAuthErrorMessage(e.getMessage());
@@ -394,12 +407,12 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
 	        //populateSubject(sub.getUserId(), sub);
 	
 	        log.debug("*** PasswordAuth complete...Returning response object");
-	
-	        auditBuilder.succeed();
+
+            newLoginEvent.succeed();
 	        authResp.setSubject(sub);
 	        authResp.setStatus(ResponseStatus.SUCCESS);
     	} finally {
-    		auditLogService.enqueue(auditBuilder);
+    		auditLogService.enqueue(newLoginEvent);
     	}
         return authResp;
     }

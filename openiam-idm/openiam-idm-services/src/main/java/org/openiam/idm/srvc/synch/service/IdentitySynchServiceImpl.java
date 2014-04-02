@@ -26,13 +26,9 @@ import java.sql.Timestamp;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.Transformer;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.mule.api.MuleContext;
-import org.mule.api.context.MuleContextAware;
 import org.mule.module.client.MuleClient;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.ws.Response;
@@ -45,13 +41,10 @@ import org.openiam.idm.searchbeans.AttributeMapSearchBean;
 import org.openiam.idm.searchbeans.UserSearchBean;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
-import org.openiam.idm.srvc.audit.constant.AuditSource;
-import org.openiam.idm.srvc.audit.domain.AuditLogBuilder;
-import org.openiam.idm.srvc.audit.service.AuditLogProvider;
+import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.service.AttributeMapDAO;
-import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.synch.domain.SynchConfigEntity;
 import org.openiam.idm.srvc.synch.dto.SyncResponse;
@@ -101,8 +94,6 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
     @Value("${openiam.idm.ws.path}")
     private String serviceContext;
 
-    @Autowired
-    private AuditLogProvider auditLogProvider;
     @Autowired
     private AuditLogService auditLogService;
     @Value("${org.openiam.idm.system.user.id}")
@@ -179,10 +170,10 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
 
         log.debug("-startSynchronization CALLED.^^^^^^^^");
 
-        AuditLogBuilder auditBuilder = new AuditLogBuilder();
-        auditBuilder.setRequestorUserId(systemUserId).setTargetUser(null).setAction(AuditAction.SYNCHRONIZATION);
-        auditBuilder.setSource(config.getSynchConfigId());
-        auditLogProvider.persist(auditBuilder);
+        IdmAuditLog idmAuditLog = new IdmAuditLog();
+        idmAuditLog.setRequestorUserId(systemUserId);
+        idmAuditLog.setAction(AuditAction.SYNCHRONIZATION.value());
+        idmAuditLog.setSource(config.getSynchConfigId());
 
         String preScriptUrl = config.getPreSyncScript();
         if (StringUtils.isNotBlank(preScriptUrl)) {
@@ -209,7 +200,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
         Date startDate = new Date();
 
         SyncResponse processCheckResponse = addTask(config.getSynchConfigId());
-        auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "Synchronization started..." + startDate);
+        idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "Synchronization started..." + startDate);
 
         try {
             if ( processCheckResponse.getStatus() == ResponseStatus.FAILURE ) {
@@ -222,10 +213,10 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
 
 			long newLastExecTime = System.currentTimeMillis();
 
-            syncResponse = adapt.startSynch(configDTO, auditBuilder);
+            syncResponse = adapt.startSynch(configDTO);
 			
  			log.debug("SyncReponse updateTime value=" + newLastExecTime);
-            auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "SyncReponse updateTime value=" + newLastExecTime);
+            idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "SyncReponse updateTime value=" + newLastExecTime);
 
             if (syncResponse.getLastRecordTime() == null) {
 			
@@ -240,8 +231,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
 			}
 
 		    log.debug("-startSynchronization COMPLETE.^^^^^^^^");
-            auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "-startSynchronization COMPLETE.^^^^^^^^");
-            auditLogProvider.persist(auditBuilder);
+            idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "-startSynchronization COMPLETE.^^^^^^^^");
 
             String postScriptUrl = config.getPostSyncScript();
             if (StringUtils.isNotBlank(postScriptUrl)) {
@@ -267,21 +257,17 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
             syncResponse = new SyncResponse(ResponseStatus.FAILURE);
             syncResponse.setErrorCode(ResponseCode.CLASS_NOT_FOUND);
             syncResponse.setErrorText(cnfe.getMessage());
-            auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "ERROR: "+cnfe.getMessage());
-            auditLogProvider.persist(auditBuilder);
+            idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "ERROR: "+cnfe.getMessage());
         } catch(Exception e) {
 			log.error(e);
             syncResponse = new SyncResponse(ResponseStatus.FAILURE);
             syncResponse.setErrorText(e.getMessage());
-            auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "ERROR: "+e.getMessage());
-            auditLogProvider.persist(auditBuilder);
+            idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "ERROR: "+e.getMessage());
         } finally {
-            auditLogProvider.remove(auditBuilder.getEntity().getId());
             endTask(config.getSynchConfigId());
-            return syncResponse;
-
+            auditLogService.enqueue(idmAuditLog);
         }
-
+        return syncResponse;
 	}
 
     // manage if the task is running

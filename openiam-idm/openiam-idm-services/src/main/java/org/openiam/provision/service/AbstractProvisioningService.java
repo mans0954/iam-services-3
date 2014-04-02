@@ -1,34 +1,25 @@
 package org.openiam.provision.service;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.MapUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.mule.api.MuleContext;
 import org.mule.api.MuleException;
 import org.mule.module.client.MuleClient;
 import org.mule.util.StringUtils;
 import org.openiam.base.AttributeOperationEnum;
-import org.openiam.base.BaseAttributeContainer;
 import org.openiam.base.SysConfiguration;
-import org.openiam.base.id.UUIDGen;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.connector.type.*;
 import org.openiam.connector.type.constant.ErrorCode;
 import org.openiam.connector.type.constant.StatusCodeType;
 import org.openiam.connector.type.request.CrudRequest;
-import org.openiam.connector.type.request.LookupRequest;
 import org.openiam.connector.type.request.PasswordRequest;
 import org.openiam.connector.type.response.ObjectResponse;
 import org.openiam.connector.type.response.ResponseType;
-import org.openiam.connector.type.response.SearchResponse;
-import org.openiam.core.domain.UserKey;
 import org.openiam.dozer.converter.*;
 import org.openiam.exception.EncryptionException;
 import org.openiam.exception.ObjectNotFoundException;
-import org.openiam.exception.ScriptEngineException;
-import org.openiam.idm.srvc.audit.service.AuditLogProvider;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
@@ -47,12 +38,9 @@ import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
-import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
-import org.openiam.idm.srvc.mngsys.domain.ProvisionConnectorEntity;
 import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
-import org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorDto;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
 import org.openiam.idm.srvc.mngsys.service.ProvisionConnectorService;
 import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
@@ -77,7 +65,6 @@ import org.openiam.idm.srvc.res.service.ResourceService;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.role.service.RoleDataService;
-import org.openiam.idm.srvc.user.domain.SupervisorEntity;
 import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
@@ -85,7 +72,6 @@ import org.openiam.idm.srvc.user.dto.UserAttribute;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.dto.PasswordSync;
 import org.openiam.provision.dto.ProvisionUser;
-import org.openiam.provision.dto.UserResourceAssociation;
 import org.openiam.provision.resp.ProvisionUserResponse;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
@@ -94,7 +80,7 @@ import org.openiam.script.ScriptIntegration;
 import org.openiam.util.MuleContextProvider;
 import org.openiam.util.SpringContextProvider;
 import org.openiam.util.encrypt.Cryptor;
-import java.text.SimpleDateFormat;
+
 import java.util.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -212,8 +198,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
     protected AttributeMapDozerConverter attributeMapDozerConverter;
     @Autowired
     protected ProvisionQueueService provQueueService;
-    @Autowired
-    protected AuditLogProvider auditLogProvider;
+
     @Autowired
     protected AuditLogService auditLogService;
 

@@ -37,7 +37,8 @@ public interface ResourceDataService {
      * @return
      */
     @WebMethod
-    Response deleteResource(@WebParam(name = "resourceId", targetNamespace = "") final String resourceId);
+    Response deleteResource(@WebParam(name = "resourceId", targetNamespace = "") final String resourceId,
+                            final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
     /**
      * Add a new resource from a transient resource object and sets resourceId
@@ -48,7 +49,7 @@ public interface ResourceDataService {
      */
     @WebMethod
     Response saveResource(final @WebParam(name = "resource", targetNamespace = "") Resource resource,
-	    final @WebParam(name = "userId", targetNamespace = "") String requestorId);
+                          final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
     /**
      * Find a resource.
@@ -81,7 +82,8 @@ public interface ResourceDataService {
      * @return the resource prop
      */
     @WebMethod
-    Response addResourceProp(@WebParam(name = "resourceProp", targetNamespace = "") ResourceProp resourceProp);
+    Response addResourceProp(@WebParam(name = "resourceProp", targetNamespace = "") ResourceProp resourceProp,
+                             final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
     /**
      * Update a resource property.
@@ -91,7 +93,8 @@ public interface ResourceDataService {
      * @return the resource prop
      */
     @WebMethod
-    Response updateResourceProp(@WebParam(name = "resourceProp", targetNamespace = "") ResourceProp resourceProp);
+    Response updateResourceProp(@WebParam(name = "resourceProp", targetNamespace = "") ResourceProp resourceProp,
+                                final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
     /**
      * Remove a resource property.
@@ -100,7 +103,8 @@ public interface ResourceDataService {
      *            the resource prop id
      */
     @WebMethod
-    Response removeResourceProp(@WebParam(name = "resourcePropId", targetNamespace = "") String resourcePropId);
+    Response removeResourceProp(@WebParam(name = "resourcePropId", targetNamespace = "") String resourcePropId,
+                                final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
     /**
      * Entitles a User to a Resource
@@ -113,7 +117,8 @@ public interface ResourceDataService {
      */
     @WebMethod
     Response addUserToResource(final @WebParam(name = "resourceId", targetNamespace = "") String resourceId,
-	    final @WebParam(name = "userId", targetNamespace = "") String userId);
+	    final @WebParam(name = "userId", targetNamespace = "") String userId,
+        final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
     /**
      * Disentitled a User from a Resource
@@ -126,7 +131,8 @@ public interface ResourceDataService {
      */
     @WebMethod
     Response removeUserFromResource(final @WebParam(name = "resourceId", targetNamespace = "") String resourceId,
-	    final @WebParam(name = "userId", targetNamespace = "") String userId);
+	    final @WebParam(name = "userId", targetNamespace = "") String userId,
+        final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
     /**
      * Get the number of resources that a particular role is entitled to
@@ -256,7 +262,8 @@ public interface ResourceDataService {
      */
     @WebMethod
     Response addChildResource(@WebParam(name = "resourceId", targetNamespace = "") final String resourceId,
-	    @WebParam(name = "memberResourceId", targetNamespace = "") final String memberResourceId);
+	    @WebParam(name = "memberResourceId", targetNamespace = "") final String memberResourceId,
+        final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
     @WebMethod
     Response validateAddChildResource(@WebParam(name = "resourceId", targetNamespace = "") final String resourceId,
@@ -272,7 +279,8 @@ public interface ResourceDataService {
      */
     @WebMethod
     Response deleteChildResource(@WebParam(name = "resourceId", targetNamespace = "") final String resourceId,
-	    @WebParam(name = "memberResourceId", targetNamespace = "") final String memberResourceId);
+	    @WebParam(name = "memberResourceId", targetNamespace = "") final String memberResourceId,
+        final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
     /**
      * Entitles a Group to a Resource
@@ -285,7 +293,8 @@ public interface ResourceDataService {
      */
     @WebMethod
     Response addGroupToResource(@WebParam(name = "resourceId", targetNamespace = "") final String resourceId,
-	    @WebParam(name = "groupId", targetNamespace = "") final String groupId);
+	    @WebParam(name = "groupId", targetNamespace = "") final String groupId,
+        final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
     /**
      * Disentitles a Group from a Resource
@@ -298,7 +307,8 @@ public interface ResourceDataService {
      */
     @WebMethod
     Response removeGroupToResource(@WebParam(name = "resourceId", targetNamespace = "") final String resourceId,
-	    @WebParam(name = "groupId", targetNamespace = "") final String groupId);
+	    @WebParam(name = "groupId", targetNamespace = "") final String groupId,
+        final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
     /**
      * entitle a Role to a Resource
@@ -311,7 +321,8 @@ public interface ResourceDataService {
      */
     @WebMethod
     Response addRoleToResource(@WebParam(name = "resourceId", targetNamespace = "") final String resourceId,
-	    @WebParam(name = "roleId", targetNamespace = "") final String roleId);
+	    @WebParam(name = "roleId", targetNamespace = "") final String roleId,
+        final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
     /**
      * Disentitles a Resource from a Role
@@ -324,7 +335,8 @@ public interface ResourceDataService {
      */
     @WebMethod
     Response removeRoleToResource(@WebParam(name = "resourceId", targetNamespace = "") final String resourceId,
-	    @WebParam(name = "roleId", targetNamespace = "") final String roleId);
+	    @WebParam(name = "roleId", targetNamespace = "") final String roleId,
+        final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
     /**
      * Gets the number of resources entitled to a Group
@@ -433,9 +445,10 @@ public interface ResourceDataService {
 
     @WebMethod
     Response saveResourceType(@WebParam(name = "searchBean", targetNamespace = "") ResourceType resourceType,
-	    final @WebParam(name = "requestorId", targetNamespace = "") String requestorId);
+                              final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
     @WebMethod
-    Response deleteResourceType(final @WebParam(name = "resourceTypeId", targetNamespace = "") String resourceTypeId);
+    Response deleteResourceType(final @WebParam(name = "resourceTypeId", targetNamespace = "") String resourceTypeId,
+                                final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
 }

@@ -22,7 +22,7 @@ public class DeleteRoleDelegate extends AbstractActivitiJob {
 		Response wsResponse = null;
 		final Role role = getObjectVariable(execution, ActivitiConstants.ROLE, Role.class);
 		if(role != null) {
-			wsResponse = roleService.removeRole(role.getId());
+			wsResponse = roleService.removeRole(role.getId(), systemUserId);
 		}
 		//TODO:  validate
 	}

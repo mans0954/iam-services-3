@@ -28,13 +28,11 @@ import org.openiam.base.id.UUIDGen;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.idm.srvc.audit.domain.AuditLogBuilder;
 import org.openiam.idm.srvc.synch.dto.Attribute;
 import org.openiam.idm.srvc.synch.dto.LineObject;
 import org.openiam.idm.srvc.synch.dto.SyncResponse;
 import org.openiam.idm.srvc.synch.dto.SynchConfig;
 import org.openiam.idm.srvc.synch.service.MatchObjectRule;
-import org.openiam.idm.srvc.synch.service.SyncConstants;
 import org.openiam.idm.srvc.synch.service.TransformScript;
 import org.openiam.idm.srvc.synch.service.ValidationScript;
 import org.openiam.idm.srvc.synch.util.DatabaseUtil;
@@ -76,7 +74,7 @@ public class RDBMSAdapter extends AbstractSrcAdapter {
     @Value("${rdbmsvadapter.thread.delay.beforestart}")
     private int THREAD_DELAY_BEFORE_START;
 
-    public SyncResponse startSynch(final SynchConfig config, AuditLogBuilder auditLogBuilder) {
+    public SyncResponse startSynch(final SynchConfig config) {
 
         log.debug("RDBMS SYNCH STARTED ^^^^^^^^");
 

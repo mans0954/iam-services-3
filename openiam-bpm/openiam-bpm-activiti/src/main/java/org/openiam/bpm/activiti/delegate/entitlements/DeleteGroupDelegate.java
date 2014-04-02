@@ -22,7 +22,7 @@ public class DeleteGroupDelegate extends AbstractActivitiJob {
 		Response wsResponse = null;
 		final Group group = getObjectVariable(execution, ActivitiConstants.GROUP, Group.class);
 		if(group != null) {
-			wsResponse = groupDataService.deleteGroup(group.getId());
+			wsResponse = groupDataService.deleteGroup(group.getId(), systemUserId);
 		}
 		//TODO:  validate
 	}

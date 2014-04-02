@@ -14,5 +14,5 @@ import java.util.List;
  * @author Suneet Shah
  */
 public interface IdmAuditLogDAO extends BaseDao<IdmAuditLogEntity, String> {
-
+    IdmAuditLogEntity findByRequesterId(String requesterId, String correlationID);
 }
