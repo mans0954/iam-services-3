@@ -6,9 +6,6 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.openiam.base.id.UUIDGen;
-import org.openiam.idm.srvc.audit.constant.AuditAction;
-import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
-import org.openiam.idm.srvc.audit.domain.AuditLogBuilder;
 import org.openiam.idm.srvc.batch.domain.BatchTaskEntity;
 import org.openiam.script.ScriptIntegration;
 import org.springframework.beans.factory.annotation.Autowired;

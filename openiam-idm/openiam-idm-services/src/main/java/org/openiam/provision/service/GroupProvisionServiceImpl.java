@@ -22,7 +22,6 @@ import org.openiam.connector.type.response.SearchResponse;
 import org.openiam.dozer.converter.AttributeMapDozerConverter;
 import org.openiam.dozer.converter.ManagedSystemObjectMatchDozerConverter;
 import org.openiam.exception.ScriptEngineException;
-import org.openiam.idm.srvc.audit.domain.AuditLogBuilder;
 import org.openiam.idm.srvc.auth.dto.IdentityDto;
 import org.openiam.idm.srvc.auth.dto.IdentityTypeEnum;
 import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
@@ -233,7 +232,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Gr
 
                            if (!isExistedInTargetSystem) {
 
-                                connectorSuccess = requestAddModify(groupTargetSysIdentity, requestId, managedSys, matchObj, extObj, true, null);
+                                connectorSuccess = requestAddModify(groupTargetSysIdentity, requestId, managedSys, matchObj, extObj, true);
 
                             } else { // if user exists in target system
 
@@ -246,7 +245,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Gr
                                             new ExtensibleAttribute("ORIG_IDENTITY", groupTargetSysIdentity.getOrigPrincipalName(),
                                                     AttributeOperationEnum.REPLACE.getValue(), "String"));
                                 }
-                                connectorSuccess = requestAddModify(groupTargetSysIdentity, requestId, managedSys, matchObj, extObj, false, null);
+                                connectorSuccess = requestAddModify(groupTargetSysIdentity, requestId, managedSys, matchObj, extObj, false);
                             }
 
 
@@ -300,8 +299,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Gr
 
 
     private boolean requestAddModify(IdentityDto identityDto, String requestId, ManagedSysDto mSys,
-                                     ManagedSystemObjectMatch matchObj, ExtensibleObject extensibleObject, boolean isAdd,
-                                     final AuditLogBuilder auditBuilderDispatcherChild) {
+                                     ManagedSystemObjectMatch matchObj, ExtensibleObject extensibleObject, boolean isAdd) {
 
         CrudRequest<ExtensibleObject> userReq = new CrudRequest<ExtensibleObject>();
         userReq.setObjectIdentity(identityDto.getIdentity());
@@ -508,7 +506,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Gr
 
 
     @Override
-    public ProvisionGroupResponse deleteGroup(@WebParam(name = "managedSystemId", targetNamespace = "") String managedSystemId, @WebParam(name = "groupId", targetNamespace = "") String groupId, @WebParam(name = "status", targetNamespace = "") UserStatusEnum status, @WebParam(name = "requestorId", targetNamespace = "") String requestorId) {
+    public ProvisionGroupResponse deleteGroup(@WebParam(name = "managedSystemId", targetNamespace = "") String managedSystemId, @WebParam(name = "groupId", targetNamespace = "") String groupId, @WebParam(name = "status", targetNamespace = "") UserStatusEnum status, @WebParam(name = "requesterId", targetNamespace = "") String requesterId) {
 
         log.debug("----deleteUser called.------");
 
@@ -720,7 +718,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Gr
         if (UserStatusEnum.REMOVE.getValue().equalsIgnoreCase(status.getValue())) {
             identityService.deleteIdentity(identityDto.getId());
             try {
-                groupDataWebService.deleteGroup(groupId);
+                groupDataWebService.deleteGroup(groupId,requesterId);
             } catch (Exception e) {
                 e.printStackTrace();
                 response.setStatus(ResponseStatus.FAILURE);
@@ -729,7 +727,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Gr
             }
         } else {
             groupDto.setStatus(status.getValue());
-            groupDto.setLastUpdatedBy(requestorId);
+            groupDto.setLastUpdatedBy(requesterId);
             groupDto.setLastUpdate(new Date(System.currentTimeMillis()));
             groupDataWebService.saveGroup(groupDto,requestId);
         }
@@ -785,7 +783,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Gr
 
 
     @Override
-    public ProvisionGroupResponse deprovisionSelectedResources(@WebParam(name = "groupId", targetNamespace = "") String groupId, @WebParam(name = "requestorGroupId", targetNamespace = "") String requestorGroupId, @WebParam(name = "resourceList", targetNamespace = "") List<String> resourceList) {
+    public ProvisionGroupResponse deprovisionSelectedResources(@WebParam(name = "groupId", targetNamespace = "") String groupId, @WebParam(name = "requesterId", targetNamespace = "") String requesterId, @WebParam(name = "resourceList", targetNamespace = "") List<String> resourceList) {
         throw new UnsupportedOperationException("Not implemented yet");
     }
 }

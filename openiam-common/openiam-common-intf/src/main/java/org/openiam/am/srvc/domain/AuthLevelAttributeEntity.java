@@ -44,7 +44,7 @@ public class AuthLevelAttributeEntity implements Serializable {
     @Column(name = "VALUE_AS_BYTE_ARRAY")
     private byte[] valueAsByteArray;
     
-    @Column(name="VALUE_AS_STRING", length=300)
+    @Column(name="VALUE_AS_STRING", length=4096)
     private String valueAsString;
     
     public AuthLevelAttributeEntity() {

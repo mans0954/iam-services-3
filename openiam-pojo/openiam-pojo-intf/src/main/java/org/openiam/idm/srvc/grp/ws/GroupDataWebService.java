@@ -66,7 +66,8 @@ public interface GroupDataWebService {
      * @return - a Response Object which contains operation status.
      */
     @WebMethod
-    public Response deleteGroup(final @WebParam(name = "groupId", targetNamespace = "") String groupId);
+    public Response deleteGroup(final @WebParam(name = "groupId", targetNamespace = "") String groupId,
+                                final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
     /**
      * Gets the number of child groups that are direct members of this Group
@@ -128,8 +129,8 @@ public interface GroupDataWebService {
      * @return   a Response Object which contains result of checking: true or false and operation status.
      */
     @WebMethod
-    public Response isUserInGroup( @WebParam(name = "groupId", targetNamespace = "") String groupId,
-                                   @WebParam(name = "userId", targetNamespace = "") String userId);
+    public Response isUserInGroup(final @WebParam(name = "groupId", targetNamespace = "") String groupId,
+                                  final @WebParam(name = "userId", targetNamespace = "") String userId);
 
    
     /**
@@ -140,8 +141,9 @@ public interface GroupDataWebService {
      * @return   a Response Object which contains an operation status.
      */
     @WebMethod
-    public Response addUserToGroup(@WebParam(name = "groupId", targetNamespace = "") String groupId,
-                                   @WebParam(name = "userId", targetNamespace = "") String userId);
+    public Response addUserToGroup(final @WebParam(name = "groupId", targetNamespace = "") String groupId,
+                                   final @WebParam(name = "userId", targetNamespace = "") String userId,
+                                   final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
 
     /**
@@ -152,8 +154,9 @@ public interface GroupDataWebService {
      * @return   a Response Object which contains an operation status.
      */
     @WebMethod
-    public Response removeUserFromGroup(@WebParam(name = "groupId", targetNamespace = "") String groupId,
-                                        @WebParam(name = "userId", targetNamespace = "") String userId);
+    public Response removeUserFromGroup(final @WebParam(name = "groupId", targetNamespace = "") String groupId,
+                                        final @WebParam(name = "userId", targetNamespace = "") String userId,
+                                        final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
     /**
      * Adds an attribute to the Group object.
@@ -162,7 +165,8 @@ public interface GroupDataWebService {
      * @return   a Response Object which contains an operation status and GroupAttribute ID.
      */
     @WebMethod
-    public Response addAttribute(@WebParam(name = "attribute", targetNamespace = "") GroupAttribute attribute);
+    public Response addAttribute(final @WebParam(name = "attribute", targetNamespace = "") GroupAttribute attribute,
+                                 final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
     /**
      * Removes a GroupAttribute specified by the attribute.
@@ -171,7 +175,8 @@ public interface GroupDataWebService {
      * @return   a Response Object which contains an operation status.
      */
     @WebMethod
-    public Response removeAttribute(@WebParam(name = "attributeId", targetNamespace = "") String attributeId);
+    public Response removeAttribute(final @WebParam(name = "attributeId", targetNamespace = "") String attributeId,
+                                    final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
     /**
      * Return a paged List of Groups based on parameters, which are specified in GroupSearchBean object
@@ -280,7 +285,8 @@ public interface GroupDataWebService {
      */
     @WebMethod
     public Response addChildGroup(final @WebParam(name = "groupId") String groupId, 
-    							  final @WebParam(name = "childGroupId") String childGroupId);
+    							  final @WebParam(name = "childGroupId") String childGroupId,
+                                  final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
     @WebMethod
     public Response validateGroup2GroupAddition(final @WebParam(name = "groupId") String groupId, 
@@ -294,7 +300,8 @@ public interface GroupDataWebService {
      */
     @WebMethod
     public Response removeChildGroup(final @WebParam(name = "groupId") String groupId, 
-    							 	 final @WebParam(name = "childGroupId") String childGroupId);
+    							 	 final @WebParam(name = "childGroupId") String childGroupId,
+                                      final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
     /**
      * Checks if User specified by userId can be added to the Group specified by groupId as a member

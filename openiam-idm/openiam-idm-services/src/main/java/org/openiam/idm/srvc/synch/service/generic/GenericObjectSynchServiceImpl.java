@@ -2,12 +2,11 @@ package org.openiam.idm.srvc.synch.service.generic;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.mule.api.MuleContext;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
-import org.openiam.idm.srvc.audit.domain.AuditLogBuilder;
-import org.openiam.idm.srvc.audit.service.AuditLogProvider;
+import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
+import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.idm.srvc.synch.dto.SyncResponse;
 import org.openiam.idm.srvc.synch.dto.SynchConfig;
 import org.openiam.idm.srvc.synch.service.SourceAdapter;
@@ -32,24 +31,28 @@ public class GenericObjectSynchServiceImpl implements GenericObjectSynchService 
     protected SynchConfigDataMappingDAO synchConfigMappingDao;
     @Autowired
     protected SourceAdapterFactory adapterFactory;
-    @Autowired
-    private AuditLogProvider auditLogProvider;
+
     @Value("${org.openiam.idm.system.user.id}")
     private String systemUserId;
+
+    @Autowired
+    private AuditLogService auditLogService;
 
     private static final Log log = LogFactory.getLog(GenericObjectSynchServiceImpl.class);
 
     public SyncResponse startSynchronization(SynchConfig config) {
         log.debug("- Generic Object Synchronization started..^^^^^^^^");
+        IdmAuditLog idmAuditLog = new IdmAuditLog();
+        idmAuditLog.setRequestorUserId(systemUserId);
+        idmAuditLog.setAction(AuditAction.SYNCHRONIZATION.value());
+        idmAuditLog.setAuditDescription("- Generic Object Synchronization started..^^^^^^^^");
         try {
             SourceAdapter adapt = adapterFactory.create(config);
 
             long newLastExecTime = System.currentTimeMillis();
-            final AuditLogBuilder auditBuilder = auditLogProvider.getAuditLogBuilder();
-            auditBuilder.setRequestorUserId(systemUserId).setTargetUser(null).setAction(AuditAction.SYNCHRONIZATION);
-            auditBuilder.succeed().setAuditDescription("- Generic Object Synchronization started..^^^^^^^^");
 
-            SyncResponse resp = adapt.startSynch(config, auditBuilder);
+
+            SyncResponse resp = adapt.startSynch(config);
 
             log.debug("SyncResponse updateTime value=" + resp.getLastRecordTime());
 
@@ -67,7 +70,8 @@ public class GenericObjectSynchServiceImpl implements GenericObjectSynchService 
 
 
             log.debug("-Generic Object Synchronization COMPLETE.^^^^^^^^");
-            auditBuilder.succeed().setAuditDescription("-Generic Object Synchronization COMPLETE.^^^^^^^^");
+            idmAuditLog.succeed();
+            idmAuditLog.setAuditDescription("-Generic Object Synchronization COMPLETE.^^^^^^^^");
             return resp;
         }catch( ClassNotFoundException cnfe) {
 
@@ -86,6 +90,8 @@ public class GenericObjectSynchServiceImpl implements GenericObjectSynchService 
             SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
             resp.setErrorText(e.getMessage());
             return resp;
+        } finally {
+            auditLogService.enqueue(idmAuditLog);
         }
     }
 

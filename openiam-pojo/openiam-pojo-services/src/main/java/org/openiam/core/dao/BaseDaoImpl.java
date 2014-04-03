@@ -194,6 +194,7 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
     protected abstract String getPKfieldName();
 
     @SuppressWarnings({ "unchecked" })
+    @LocalizedDatabaseGet
     public List<T> findAll() {
         return getCriteria().list();
     }

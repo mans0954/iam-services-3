@@ -2,19 +2,8 @@
 <mappings xmlns="http://dozer.sourceforge.net" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://dozer.sourceforge.net
           http://dozer.sourceforge.net/schema/beanmapping.xsd">
-	
-	<mapping>
-		<class-a>org.openiam.idm.srvc.audit.domain.AuditLogBuilder</class-a>
-		<class-b>org.openiam.idm.srvc.audit.dto.AuditLogBuilderDto</class-b>
-		<field
-			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentObjectConverter"
-			custom-converter-param="dto2entityDeepDozerMapper">
-			<a>entity</a>
-			<b>entity</b>
-		</field>
-	</mapping>
-	
-	<mapping>
+
+   	<mapping>
 		<class-a>org.openiam.idm.srvc.res.domain.ResourceTypeEntity</class-a>
 		<class-b>org.openiam.idm.srvc.res.dto.ResourceType</class-b>
 		<field

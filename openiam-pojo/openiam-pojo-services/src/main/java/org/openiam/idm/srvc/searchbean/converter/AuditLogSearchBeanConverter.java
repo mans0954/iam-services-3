@@ -16,7 +16,7 @@ public class AuditLogSearchBeanConverter implements SearchBeanConverter<IdmAudit
 		final IdmAuditLogEntity entity = new IdmAuditLogEntity();
 		if(searchBean != null) {
 			entity.setId(StringUtils.trimToNull(searchBean.getKey()));
-            if(StringUtils.isNotEmpty(searchBean.getAction())) {
+            if(searchBean.getAction() != null) {
                 entity.setAction(searchBean.getAction());
             }
 		}

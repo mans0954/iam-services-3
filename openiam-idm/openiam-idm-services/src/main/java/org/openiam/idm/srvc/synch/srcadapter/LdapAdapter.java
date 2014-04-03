@@ -29,9 +29,7 @@ import org.openiam.base.id.UUIDGen;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.connector.type.constant.StatusCodeType;
 import org.openiam.exception.ScriptEngineException;
-import org.openiam.idm.srvc.audit.domain.AuditLogBuilder;
 import org.openiam.idm.srvc.synch.dto.Attribute;
 import org.openiam.idm.srvc.synch.dto.LineObject;
 import org.openiam.idm.srvc.synch.dto.SyncResponse;
@@ -43,7 +41,6 @@ import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.resp.ProvisionUserResponse;
-import org.openiam.provision.type.ExtensibleAttribute;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -85,7 +82,7 @@ public class LdapAdapter extends AbstractSrcAdapter { // implements SourceAdapte
 
     private static final Log log = LogFactory.getLog(LdapAdapter.class);
 
-    public SyncResponse startSynch(SynchConfig config, AuditLogBuilder auditLogBuilder) {
+    public SyncResponse startSynch(SynchConfig config) {
         // rule used to match object from source system to data in IDM
         MatchObjectRule matchRule = null;
        // String changeLog = null;

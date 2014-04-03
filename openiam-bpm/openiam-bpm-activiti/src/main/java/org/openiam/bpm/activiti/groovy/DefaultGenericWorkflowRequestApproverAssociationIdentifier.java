@@ -6,23 +6,17 @@ import java.util.Map;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
 import org.openiam.bpm.request.GenericWorkflowRequest;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
-import org.openiam.idm.srvc.audit.domain.AuditLogBuilder;
+import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.mngsys.domain.AssociationType;
-import org.openiam.idm.srvc.mngsys.service.ApproverAssociationDAO;
 import org.openiam.idm.srvc.user.domain.UserEntity;
-import org.openiam.idm.srvc.user.service.UserDataService;
-import org.openiam.idm.util.CustomJacksonMapper;
-import org.openiam.util.SpringContextProvider;
-import org.springframework.beans.factory.annotation.Autowired;
 
 public class DefaultGenericWorkflowRequestApproverAssociationIdentifier extends AbstractApproverAssociationIdentifier {
 	
 	protected GenericWorkflowRequest request;
-	protected AuditLogBuilder builder;
+	protected IdmAuditLog idmAuditLog;
 	
 	public DefaultGenericWorkflowRequestApproverAssociationIdentifier() {
 		super();
@@ -30,7 +24,7 @@ public class DefaultGenericWorkflowRequestApproverAssociationIdentifier extends 
 	
 	public final void init(final Map<String, Object> bindingMap) {
 		request = (GenericWorkflowRequest)bindingMap.get("REQUEST");
-		builder = (AuditLogBuilder)bindingMap.get("BUILDER");
+        idmAuditLog = (IdmAuditLog)bindingMap.get("BUILDER");
 		super.init(bindingMap);
 		calculateApprovers();
 	}
@@ -71,7 +65,7 @@ public class DefaultGenericWorkflowRequestApproverAssociationIdentifier extends 
 				}
 				if(CollectionUtils.isEmpty(approverAssocationList)) {
 					final String message = String.format("Can't find approver association for %s %s, using default approver association", request.getAssociationType(), request.getAssociationId());
-					builder.addAttribute(AuditAttributeName.WARNING, message);
+                    idmAuditLog.addAttribute(AuditAttributeName.WARNING, message);
 					LOG.warn(message);
 					approverAssocationList = getDefaultApproverAssociations();
 				}
@@ -81,7 +75,7 @@ public class DefaultGenericWorkflowRequestApproverAssociationIdentifier extends 
 					}
 				}
 			}
-			builder.addAttributeAsJson(AuditAttributeName.APPROVER_ASSOCIATIONS, approverAssocationList, jacksonMapper);
+            idmAuditLog.addAttributeAsJson(AuditAttributeName.APPROVER_ASSOCIATIONS, approverAssocationList, jacksonMapper);
 		}
 		
 		if(CollectionUtils.isNotEmpty(request.getAdditionalApproverIds())) {
@@ -90,7 +84,7 @@ public class DefaultGenericWorkflowRequestApproverAssociationIdentifier extends 
 		
 		if(CollectionUtils.isEmpty(approverUserIds) && CollectionUtils.isEmpty(approverAssociationIds)) {
 			final String message = "Could not found any approvers - using default user";
-			builder.addWarning(message);
+            idmAuditLog.addWarning(message);
 			LOG.warn(message);
         	approverUserIds.add(defaultApproverUserId);
 		}

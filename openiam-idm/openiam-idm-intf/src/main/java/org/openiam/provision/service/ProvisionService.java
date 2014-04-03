@@ -56,7 +56,8 @@ public interface ProvisionService {
      */
     @WebMethod
     public Response testConnectionConfig(
-            @WebParam(name = "managedSysId", targetNamespace = "") String managedSysId);
+            @WebParam(name = "managedSysId", targetNamespace = "") String managedSysId,
+            @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
     /**
      *  The addUser operation enables a requester to create a new user on the
@@ -90,7 +91,7 @@ public interface ProvisionService {
      * @param managedSystemId - target system
      * @param principal - identity of the user in target system
      * @param status - status od delete operation
-     * @param requestorId - requester
+     * @param requesterId - requester
      * @return
      */
     @WebMethod
@@ -98,7 +99,7 @@ public interface ProvisionService {
             @WebParam(name = "managedSystemId", targetNamespace = "") String managedSystemId,
             @WebParam(name = "principal", targetNamespace = "") String principal,
             @WebParam(name = "status", targetNamespace = "") UserStatusEnum status,
-            @WebParam(name = "requestorId", targetNamespace = "") String requestorId);
+            @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
     /**
      * Delete user from target system  by user id
