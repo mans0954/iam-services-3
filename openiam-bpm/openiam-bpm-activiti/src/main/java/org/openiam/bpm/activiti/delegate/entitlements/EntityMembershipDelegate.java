@@ -40,40 +40,40 @@ public class EntityMembershipDelegate extends AbstractEntitlementsDelegate {
 		if(requestType != null) {
 			switch(requestType) {
 				case ADD_GROUP_TO_GROUP:
-					response = groupDataService.addChildGroup(associationId, memberAssociationId);
+					response = groupDataService.addChildGroup(associationId, memberAssociationId, systemUserId);
 					break;
 				case REMOVE_GROUP_FROM_GROUP:
-					response = groupDataService.removeChildGroup(associationId, memberAssociationId);
+					response = groupDataService.removeChildGroup(associationId, memberAssociationId, systemUserId);
 					break;
 				case ADD_ROLE_TO_GROUP:
-					response = roleDataService.addGroupToRole(memberAssociationId, associationId);
+					response = roleDataService.addGroupToRole(memberAssociationId, associationId, systemUserId);
 					break;
 				case REMOVE_ROLE_FROM_GROUP:
-					response = roleDataService.removeGroupFromRole(memberAssociationId, associationId);
+					response = roleDataService.removeGroupFromRole(memberAssociationId, associationId, systemUserId);
 					break;
 				case ENTITLE_RESOURCE_TO_GROUP:
-					response = resourceDataService.addGroupToResource(associationId, memberAssociationId);
+					response = resourceDataService.addGroupToResource(associationId, memberAssociationId, systemUserId);
 					break;
 				case DISENTITLE_RESOURCE_FROM_GROUP:
-					response = resourceDataService.removeGroupToResource(associationId, memberAssociationId);
+					response = resourceDataService.removeGroupToResource(associationId, memberAssociationId, systemUserId);
 					break;
 				case ADD_ROLE_TO_ROLE:
-					response = roleDataService.addChildRole(associationId, memberAssociationId);
+					response = roleDataService.addChildRole(associationId, memberAssociationId, systemUserId);
 					break;
 				case REMOVE_ROLE_FROM_ROLE:
-					response = roleDataService.removeChildRole(associationId, memberAssociationId);
+					response = roleDataService.removeChildRole(associationId, memberAssociationId, systemUserId);
 					break;
 				case ENTITLE_RESOURCE_TO_ROLE:
-					response = resourceDataService.addRoleToResource(associationId, memberAssociationId);
+					response = resourceDataService.addRoleToResource(associationId, memberAssociationId, systemUserId);
 					break;
 				case DISENTITLE_RESOURCE_FROM_ROLE:
-					response = resourceDataService.removeRoleToResource(associationId, memberAssociationId);
+					response = resourceDataService.removeRoleToResource(associationId, memberAssociationId, systemUserId);
 					break;
 				case ADD_RESOURCE_TO_RESOURCE:
-					response = resourceDataService.addChildResource(associationId, memberAssociationId);
+					response = resourceDataService.addChildResource(associationId, memberAssociationId, systemUserId);
 					break;
 				case REMOVE_RESOURCE_FROM_RESOURCE:
-					response = resourceDataService.deleteChildResource(associationId, memberAssociationId);
+					response = resourceDataService.deleteChildResource(associationId, memberAssociationId, systemUserId);
 					break;
 				case ENTITLE_USER_TO_RESOURCE:
 					resource = getResource(associationId);

@@ -97,6 +97,7 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
     }
 
     @Override
+    @Transactional
     public List<ContentProviderEntity> findBeans(ContentProviderEntity example, Integer from, Integer size) {
         return contentProviderDao.getByExample(example, from, size);
     }

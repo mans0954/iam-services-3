@@ -22,6 +22,7 @@ public class AuditLogTarget implements Serializable {
 	private String id;
 	private String logId;
 	private String targetId;
+
 	private String targetType;
 	public String getId() {
 		return id;

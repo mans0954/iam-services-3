@@ -50,7 +50,7 @@ public interface GroupProvisionService {
      * @param managedSystemId - target system
      * @param groupId - group ID
      * @param status - status od delete operation
-     * @param requestorId - requester
+     * @param requesterId - requester
      * @return
      */
     @WebMethod
@@ -58,20 +58,20 @@ public interface GroupProvisionService {
             @WebParam(name = "managedSystemId", targetNamespace = "") String managedSystemId,
             @WebParam(name = "groupId", targetNamespace = "") String groupId,
             @WebParam(name = "status", targetNamespace = "") UserStatusEnum status,
-            @WebParam(name = "requestorId", targetNamespace = "") String requestorId);
+            @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
 
     /**
      * De-provisioning Group only from selected resources
      *
      * @param groupId - goup id
-     * @param requestorGroupId - requestor
+     * @param requesterId - requestor
      * @param resourceList - selected resources
      * @return
      */
     @WebMethod
     public ProvisionGroupResponse deprovisionSelectedResources(
             @WebParam(name = "groupId", targetNamespace = "") String groupId,
-            @WebParam(name = "requestorGroupId", targetNamespace = "") String requestorGroupId,
+            @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
             @WebParam(name = "resourceList", targetNamespace = "") List<String> resourceList);
 }

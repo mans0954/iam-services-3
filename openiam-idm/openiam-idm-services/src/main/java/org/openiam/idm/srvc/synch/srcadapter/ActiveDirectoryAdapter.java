@@ -34,15 +34,11 @@ import org.apache.commons.csv.CSVStrategy;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.ws.Response;
-import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.idm.srvc.audit.domain.AuditLogBuilder;
 import org.openiam.idm.srvc.synch.dto.Attribute;
 import org.openiam.idm.srvc.synch.dto.LineObject;
 import org.openiam.idm.srvc.synch.dto.SyncResponse;
 import org.openiam.idm.srvc.synch.dto.SynchConfig;
-import org.openiam.idm.srvc.synch.service.SyncConstants;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -63,7 +59,7 @@ public class ActiveDirectoryAdapter extends AbstractSrcAdapter{
     }
 
     @Override
-    public SyncResponse startSynch(SynchConfig config, AuditLogBuilder auditLogBuilder) {
+    public SyncResponse startSynch(SynchConfig config) {
 
         log.debug("CSV startSynch CALLED.^^^^^^^^");
         Reader reader = null;

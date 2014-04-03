@@ -27,7 +27,6 @@ import org.openiam.base.id.UUIDGen;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.idm.srvc.audit.domain.AuditLogBuilder;
 import org.openiam.idm.srvc.synch.dto.Attribute;
 import org.openiam.idm.srvc.synch.dto.LineObject;
 import org.openiam.idm.srvc.synch.dto.SyncResponse;
@@ -65,7 +64,7 @@ public class WSAdapter extends AbstractSrcAdapter { // implements SourceAdapter
 
 	private Connection con = null;
 
-	public SyncResponse startSynch(SynchConfig config, AuditLogBuilder auditLogBuilder) {
+	public SyncResponse startSynch(SynchConfig config) {
 
 		// rule used to match object from source system to data in IDM
 		MatchObjectRule matchRule = null;

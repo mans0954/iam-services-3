@@ -10,22 +10,16 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.mule.api.MuleContext;
 import org.mule.api.MuleException;
-import org.mule.api.context.MuleContextAware;
 import org.mule.module.client.MuleClient;
-import org.openiam.base.ws.ResponseCode;
-import org.openiam.base.ws.ResponseStatus;
 import org.openiam.dozer.converter.LoginDozerConverter;
 import org.openiam.dozer.converter.UserDozerConverter;
-import org.openiam.idm.srvc.audit.domain.AuditLogBuilder;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.synch.dto.SyncResponse;
 import org.openiam.idm.srvc.synch.dto.SynchConfig;
 import org.openiam.idm.srvc.synch.service.IdentitySynchService;
 import org.openiam.idm.srvc.synch.service.SourceAdapter;
-import org.openiam.idm.srvc.synch.service.SyncConstants;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.service.UserDataService;
@@ -33,11 +27,9 @@ import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.service.ProvisionService;
 import org.openiam.script.ScriptIntegration;
 import org.openiam.util.MuleContextProvider;
-import org.openiam.util.SpringContextProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationContext;
 
 /**
  * Abstract class which all Source System adapters must extend
@@ -84,7 +76,7 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
     @Value("${openiam.idm.ws.path}")
     private String serviceContext;
 
-    public abstract SyncResponse startSynch(SynchConfig config, AuditLogBuilder auditLogBuilder);
+    public abstract SyncResponse startSynch(SynchConfig config);
 
     public void addUser(ProvisionUser pUser) {
         long startTime = System.currentTimeMillis();

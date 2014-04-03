@@ -1,25 +1,11 @@
 package org.openiam.idm.srvc.audit.domain;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
+import javax.persistence.*;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -27,8 +13,6 @@ import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.dozer.DozerDTOCorrespondence;
-import org.openiam.idm.srvc.audit.constant.CustomIdmAuditLogType;
-import org.openiam.idm.srvc.audit.dto.AuditLogTarget;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 
 @Entity
@@ -76,7 +60,7 @@ public class IdmAuditLogEntity implements Serializable {
     private String sessionID;
     
     @Column(name="CORRELATION_ID", length=32)
-    private String coorelationId;
+    private String correlationId;
     
     @OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL, mappedBy = "log")
     private Set<IdmAuditLogCustomEntity> customRecords = new HashSet<IdmAuditLogCustomEntity>();
@@ -235,12 +219,12 @@ public class IdmAuditLogEntity implements Serializable {
 		this.childLogs = childLogs;
 	}
 
-	public String getCoorelationId() {
-		return coorelationId;
+	public String getCorrelationId() {
+		return correlationId;
 	}
 
-	public void setCoorelationId(String coorelationId) {
-		this.coorelationId = coorelationId;
+	public void setCorrelationId(String correlationId) {
+		this.correlationId = correlationId;
 	}
 
 	public Set<AuditLogTargetEntity> getTargets() {
@@ -262,7 +246,7 @@ public class IdmAuditLogEntity implements Serializable {
 	public void addTarget(final String targetId, final String targetType) {
 		if(targetId != null && targetType != null) {
 			if(this.targets == null) {
-				this.targets = new HashSet<AuditLogTargetEntity>();
+				this.targets = new HashSet<>();
 			}
 			final AuditLogTargetEntity target = new AuditLogTargetEntity();
 			target.setTargetId(targetId);
@@ -274,7 +258,7 @@ public class IdmAuditLogEntity implements Serializable {
 
 
 	public String concat() {
-		return String.format("%s-%s-%s-%s-%s-%s-%s-%s-%s-%s-%s", action, clientIP, principal, nodeIP, result, source, timestamp, userId, sessionID, managedSysId, coorelationId);
+		return String.format("%s-%s-%s-%s-%s-%s-%s-%s-%s-%s-%s", action, clientIP, principal, nodeIP, result, source, timestamp, userId, sessionID, managedSysId, correlationId);
 	}
 
     @Override
@@ -286,7 +270,7 @@ public class IdmAuditLogEntity implements Serializable {
 
         if (action != null ? !action.equals(that.action) : that.action != null) return false;
         if (clientIP != null ? !clientIP.equals(that.clientIP) : that.clientIP != null) return false;
-        if (coorelationId != null ? !coorelationId.equals(that.coorelationId) : that.coorelationId != null)
+        if (correlationId != null ? !correlationId.equals(that.correlationId) : that.correlationId != null)
             return false;
         if (hash != null ? !hash.equals(that.hash) : that.hash != null) return false;
         if (managedSysId != null ? !managedSysId.equals(that.managedSysId) : that.managedSysId != null) return false;
@@ -312,7 +296,7 @@ public class IdmAuditLogEntity implements Serializable {
         result = 31 * result + (action != null ? action.hashCode() : 0);
         result = 31 * result + (hash != null ? hash.hashCode() : 0);
         result = 31 * result + (sessionID != null ? sessionID.hashCode() : 0);
-        result = 31 * result + (coorelationId != null ? coorelationId.hashCode() : 0);
+        result = 31 * result + (correlationId != null ? correlationId.hashCode() : 0);
         return result;
     }
 
