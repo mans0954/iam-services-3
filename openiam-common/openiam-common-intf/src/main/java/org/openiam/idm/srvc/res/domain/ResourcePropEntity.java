@@ -1,15 +1,10 @@
 package org.openiam.idm.srvc.res.domain;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
+import javax.persistence.*;
+
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 
@@ -27,8 +22,9 @@ public class ResourcePropEntity {
     @JoinColumn(name = "RESOURCE_ID", referencedColumnName = "RESOURCE_ID", insertable = true, updatable = false)
     private ResourceEntity resource;
 
-    @Column(name="METADATA_ID",length=20)
-    private String metadataId;
+    @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch= FetchType.LAZY)
+    @JoinColumn(name = "METADATA_ID", insertable = true, updatable = true, nullable=true)
+    private MetadataElementEntity element;
 
     @Column(name="PROP_VALUE",length=200)
     private String propValue;
@@ -55,12 +51,12 @@ public class ResourcePropEntity {
 		this.resource = resource;
 	}
 
-	public String getMetadataId() {
-        return metadataId;
+    public MetadataElementEntity getElement() {
+        return element;
     }
 
-    public void setMetadataId(String metadataId) {
-        this.metadataId = metadataId;
+    public void setElement(MetadataElementEntity element) {
+        this.element = element;
     }
 
     public String getPropValue() {
@@ -83,8 +79,7 @@ public class ResourcePropEntity {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result
-				+ ((metadataId == null) ? 0 : metadataId.hashCode());
+        result = prime * result + ((element == null) ? 0 : element.hashCode());
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result
 				+ ((propValue == null) ? 0 : propValue.hashCode());
@@ -104,11 +99,11 @@ public class ResourcePropEntity {
 		if (getClass() != obj.getClass())
 			return false;
 		ResourcePropEntity other = (ResourcePropEntity) obj;
-		if (metadataId == null) {
-			if (other.metadataId != null)
-				return false;
-		} else if (!metadataId.equals(other.metadataId))
-			return false;
+        if (element == null) {
+            if (other.element != null)
+                return false;
+        } else if (!element.equals(other.element))
+            return false;
 		if (name == null) {
 			if (other.name != null)
 				return false;
@@ -135,8 +130,7 @@ public class ResourcePropEntity {
 	@Override
 	public String toString() {
 		return "ResourcePropEntity [resourcePropId=" + resourcePropId
-				+ ", resource=" + resource + ", metadataId=" + metadataId
-				+ ", propValue=" + propValue + ", name=" + name + "]";
+				+ ", resource=" + resource + ", propValue=" + propValue + ", name=" + name + "]";
 	}
 
     

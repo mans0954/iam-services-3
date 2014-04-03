@@ -7,6 +7,8 @@ import junit.framework.Assert;
 
 import org.apache.commons.lang.RandomStringUtils;
 import org.openiam.dozer.converter.ResourceDozerConverter;
+import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
+import org.openiam.idm.srvc.meta.dto.MetadataElement;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
 import org.openiam.idm.srvc.res.domain.ResourceTypeEntity;
@@ -114,7 +116,7 @@ public class TestCrossEntityConversion extends AbstractTestNGSpringContextTests 
 
     private ResourcePropEntity createResourcePropEntity() {
 	final ResourcePropEntity entity = new ResourcePropEntity();
-	entity.setMetadataId(rs(2));
+	entity.setElement(createMetadataElementEntity());
 	entity.setName(rs(2));
 	entity.setPropValue(rs(2));
 	// entity.setResourceId(rs(2));
@@ -142,6 +144,14 @@ public class TestCrossEntityConversion extends AbstractTestNGSpringContextTests 
 	entity.setProcessName(rs(2));
 	entity.setId(rs(2));
 	return entity;
+    }
+
+    private MetadataElementEntity createMetadataElementEntity() {
+        final MetadataElementEntity entity = new MetadataElementEntity();
+        entity.setDescription(rs(2));
+        entity.setAttributeName(rs(2));
+        entity.setId(rs(2));
+        return entity;
     }
 
     private String rs(final int size) {

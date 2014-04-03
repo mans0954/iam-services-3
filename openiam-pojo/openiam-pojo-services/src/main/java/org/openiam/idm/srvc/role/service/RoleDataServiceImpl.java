@@ -290,7 +290,7 @@ public class RoleDataServiceImpl implements RoleDataService {
 				final RoleAttributeEntity beanProp = it.next();
 				if(StringUtils.equals(dbProp.getRoleAttrId(), beanProp.getRoleAttrId())) {
 					dbProp.setAttrGroup(beanProp.getAttrGroup());
-					dbProp.setMetadataElementId(beanProp.getMetadataElementId());
+					dbProp.setElement(beanProp.getElement());
 					dbProp.setName(beanProp.getName());
 					dbProp.setValue(beanProp.getValue());
                     dbProp.setIsMultivalued(beanProp.getIsMultivalued());
