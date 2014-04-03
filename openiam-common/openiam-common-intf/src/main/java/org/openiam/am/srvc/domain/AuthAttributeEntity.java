@@ -32,7 +32,7 @@ public class AuthAttributeEntity implements Serializable {
     @Column(name="REQUIRED")
     @Type(type = "yes_no")
     private boolean isRequired = false;
-    @Column(name="DEFAULT_VALUE", length = 255)
+    @Column(name="DEFAULT_VALUE", length = 4096)
     private String defaultValue;
 
     @ManyToOne(fetch = FetchType.LAZY,cascade = CascadeType.ALL)

@@ -30,10 +30,10 @@ public class RoleAttributeEntity implements Serializable {
     @Column(name="METADATA_ID",length=20)
     private String metadataElementId;
     
-    @Column(name="NAME", length=20)
+    @Column(name="NAME", length=100)
     private String name;
     
-    @Column(name="VALUE")
+    @Column(name="VALUE", length=4096)
     private String value;
 
     @ElementCollection

@@ -34,13 +34,13 @@ public class PolicyAttributeEntity implements java.io.Serializable, Comparable<P
 	private String policyId;
 	@Column(name = "DEF_PARAM_ID")
 	private String defParamId;
-	@Column(name = "NAME", length = 60)
+	@Column(name = "NAME", length = 100)
 	private String name;
 	@Column(name = "OPERATION", length = 20)
 	private String operation;
-	@Column(name = "VALUE1", length = 255)
+	@Column(name = "VALUE1", length = 4096)
 	private String value1;
-	@Column(name = "VALUE2", length = 255)
+	@Column(name = "VALUE2", length = 4096)
 	private String value2;
 	
 	@Column(name = "REQUIRED")

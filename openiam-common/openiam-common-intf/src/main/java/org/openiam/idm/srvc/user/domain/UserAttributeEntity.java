@@ -31,7 +31,7 @@ public class UserAttributeEntity implements Serializable {
     private String metadataElementId;
 	*/
 
-    @Column(name = "NAME", length = 50)
+    @Column(name = "NAME", length = 100)
     private String name;
 
     /*
@@ -39,7 +39,7 @@ public class UserAttributeEntity implements Serializable {
     private String userId;
     */
 
-    @Column(name = "VALUE", length = 1000)
+    @Column(name = "VALUE", length = 4096)
     private String value;
 
     @ElementCollection

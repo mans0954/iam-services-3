@@ -26,10 +26,10 @@ public class LoginAttributeEntity implements java.io.Serializable {
     @Column(name="LOGIN_ATTR_ID", length=32, nullable = false)
     protected String loginAttrId;
     
-    @Column(name="NAME",length = 20)
+    @Column(name="NAME",length = 100)
     protected String name;
     
-    @Column(name="VALUE")
+    @Column(name="VALUE",length = 4096)
     protected String value;
     
     @Column(name="METADATA_ID",length = 20)
