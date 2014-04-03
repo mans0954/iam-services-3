@@ -21,7 +21,7 @@ public class GroupAttributeEntity {
     @Column(name="ID",length=32)
     private String id;
 	
-	@Column(name="NAME",length=20)
+	@Column(name="NAME",length=100)
     private String name;
 	
 	@Column(name="VALUE")
@@ -29,7 +29,7 @@ public class GroupAttributeEntity {
 
     @ElementCollection
     @CollectionTable(name="GROUP_ATTRIBUTE_VALUES", joinColumns=@JoinColumn(name="GROUP_ATTRIBUTE_ID", referencedColumnName="ID"))
-    @Column(name="VALUE", length = 255)
+    @Column(name="VALUE", length = 4096)
     private List<String> values = new ArrayList<String>();
 
     @Column(name = "IS_MULTIVALUED", nullable = false)

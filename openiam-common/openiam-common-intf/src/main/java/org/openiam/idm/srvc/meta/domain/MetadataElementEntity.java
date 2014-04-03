@@ -56,7 +56,7 @@ public class MetadataElementEntity extends KeyEntity {
     @Column(name = "DESCRIPTION", length = 40)
     private String description;
     
-    @Column(name = "ATTRIBUTE_NAME", length = 50)
+    @Column(name = "ATTRIBUTE_NAME", length = 100)
     private String attributeName;
 
     @Column(name = "DATA_TYPE", length = 20)
@@ -106,7 +106,7 @@ public class MetadataElementEntity extends KeyEntity {
     @OneToMany(orphanRemoval = true, cascade = {CascadeType.REMOVE, CascadeType.DETACH}, mappedBy = "entity", fetch = FetchType.LAZY)
     private Set<MetadataValidValueEntity> validValues;
     
-    @Column(name="STATIC_DEFAULT_VALUE", length=400)
+    @Column(name="STATIC_DEFAULT_VALUE", length=4096)
     private String staticDefaultValue;
     
     //@OneToMany(cascade={}, fetch = FetchType.LAZY)
