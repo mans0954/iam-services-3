@@ -21,15 +21,17 @@
  */
 package org.openiam.idm.srvc.lang.service;
 
+import java.util.List;
+
 import org.openiam.idm.searchbeans.LanguageSearchBean;
 import org.openiam.idm.srvc.lang.domain.LanguageEntity;
+import org.openiam.idm.srvc.lang.domain.LanguageLocaleEntity;
+import org.openiam.idm.srvc.lang.domain.LanguageMappingEntity;
 import org.openiam.internationalization.LocalizedServiceGet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 /**
  * @author suneet
@@ -42,12 +44,20 @@ public class LanguageDataServiceImpl implements LanguageDataService {
     @Qualifier("languageDAO")
     private LanguageDAO languageDao;
 
+    @Autowired
+    @Qualifier("languageLocaleDAO")
+    private LanguageLocaleDAO languageLocaleDao;
+
+    @Autowired
+    @Qualifier("languageMappingDAO")
+    private LanguageMappingDAO languageMappingDAO;
+
     @Transactional
-    public void addLanguage(LanguageEntity lg) {
+    public LanguageEntity addLanguage(LanguageEntity lg) {
         if (lg == null) {
             throw new NullPointerException("lg is null");
         }
-        languageDao.save(lg);
+        return languageDao.add(lg);
 
     }
 
@@ -105,5 +115,46 @@ public class LanguageDataServiceImpl implements LanguageDataService {
     public List<LanguageEntity> findBeans(final LanguageSearchBean searchBean, int from, int size,
             final LanguageEntity language) {
         return languageDao.getByExample(searchBean, from, size);
+    }
+
+    @Override
+    public LanguageLocaleEntity addLanguageLocale(LanguageLocaleEntity lgl) {
+        if (lgl == null) {
+            throw new NullPointerException("lg is null");
+        }
+        return languageLocaleDao.add(lgl);
+
+    }
+
+    @Override
+    public LanguageMappingEntity addLanguageMapping(LanguageMappingEntity lgl) {
+        if (lgl == null) {
+            throw new NullPointerException("lg is null");
+        }
+        return languageMappingDAO.add(lgl);
+    }
+
+    @Override
+    public void updateLanguageLocale(LanguageLocaleEntity lgl) {
+        if (lgl == null) {
+            throw new NullPointerException("lgl is null");
+        }
+        final LanguageLocaleEntity l = languageLocaleDao.findById(lgl.getId());
+        if (l != null) {
+            languageLocaleDao.merge(lgl);
+        }
+    }
+
+    @Override
+    public void removeLanguageLocale(LanguageLocaleEntity lgl) {
+        if (lgl == null) {
+            throw new NullPointerException("lgl is null");
+        }
+        languageLocaleDao.delete(lgl);
+    }
+
+    @Override
+    public List<LanguageLocaleEntity> getLanguageLocaleByLanguage(String languageId) {
+        return languageLocaleDao.getLocalesByLanguageId(languageId);
     }
 }
