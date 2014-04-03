@@ -264,7 +264,7 @@ public class GroupDataServiceImpl implements GroupDataService {
 		for(GroupAttributeEntity dbProp : dbProps) {
 			for(final GroupAttributeEntity beanProp : beanProps) {
 				if(StringUtils.equals(dbProp.getId(), beanProp.getId())) {
-					dbProp.setMetadataElementId(beanProp.getMetadataElementId());
+					dbProp.setElement(beanProp.getElement());
 					dbProp.setName(beanProp.getName());
 					dbProp.setValue(beanProp.getValue());
                     dbProp.setIsMultivalued(beanProp.getIsMultivalued());
