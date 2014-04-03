@@ -151,9 +151,6 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     final IdmAuditLog idmAuditLog = new IdmAuditLog();
                     idmAuditLog.setRequestorUserId(systemUserId);
                     idmAuditLog.setAction(AuditAction.PROVISIONING_ADD.value());
-
-                    idmAuditLog.addChild(idmAuditLog);
-
                     idmAuditLog.setAuditDescription("Provisioning add user: " + pUser.getId()
                             + " with principal list: " + pUser.getPrincipalList());
                     ProvisionUserResponse tmpRes = new ProvisionUserResponse(ResponseStatus.FAILURE);
@@ -911,8 +908,9 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         if (isAdd) {
             try {
                 userMgr.addUser(userEntity); // Need to have userId to
-                                             // encrypt/decrypt password
+                                           // encrypt/decrypt password
                 pUser.setId(userEntity.getId());
+                auditLog.setTargetUser(userEntity.getId());
             } catch (Exception e) {
                 auditLog.fail();
                 auditLog.setFailureReason("Exception while creating user: " + e.getMessage());
