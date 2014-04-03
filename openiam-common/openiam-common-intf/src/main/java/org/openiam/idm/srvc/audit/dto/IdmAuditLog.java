@@ -364,7 +364,7 @@ public class IdmAuditLog implements Serializable {
      * @return this
      */
     public void setTargetGroup(final String groupId) {
-        addTarget(groupId, AuditTarget.ROLE.value());
+        addTarget(groupId, AuditTarget.GROUP.value());
     }
 
     /**
