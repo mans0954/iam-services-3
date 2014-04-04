@@ -63,6 +63,7 @@ public class ReportWebServiceImpl implements ReportWebService {
 
     private static final String DEFAULT_REPORT_TASK = "frameset";
     private static final String REPORT_PARAMETER_NAME = "__report";
+    private static final String LOCALE_PARAMETER_NAME = "__locale";
 
 	@Autowired
 	private ReportInfoDozerConverter reportInfoDozerConverter;
@@ -113,7 +114,7 @@ public class ReportWebServiceImpl implements ReportWebService {
 
     @Override
     public String getReportUrl(final String reportName, final HashMap<String, String> queryParams,
-                               final String taskName, final String reportBaseUrl) {
+                               final String taskName, final String reportBaseUrl, String locale) {
         try {
             ReportInfoEntity report = reportDataService.getReportByName(reportName);
             if (report == null) {
@@ -131,6 +132,9 @@ public class ReportWebServiceImpl implements ReportWebService {
                         uriBuilder.addParameter(entry.getKey(), entry.getValue());
                     }
                 }
+            }
+            if (StringUtils.isNotBlank(locale)) {
+                uriBuilder.setParameter(LOCALE_PARAMETER_NAME, locale);
             }
             return uriBuilder.toString();
         } catch (URISyntaxException ex) {
