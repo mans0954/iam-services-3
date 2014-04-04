@@ -24,7 +24,7 @@ public class URIPatternMetaValueEntity implements Serializable {
 	@Column(name = "META_ATTRIBUTE_NAME", length = 100, nullable = false)
 	private String name;
 	
-	@Column(name = "STATIC_VALUE", length = 100, nullable = true)
+	@Column(name = "STATIC_VALUE", length = 4096, nullable = true)
 	private String staticValue;
 	
 	@Column(name = "GROOVY_SCRIPT", length = 200, nullable = true)
