@@ -149,7 +149,8 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 public ProvisionUserResponse doInTransaction(TransactionStatus status) {
 
                     final IdmAuditLog idmAuditLog = new IdmAuditLog();
-                    idmAuditLog.setRequestorUserId(systemUserId);
+                    idmAuditLog.setRequestorUserId(pUser.getRequestorUserId());
+                    idmAuditLog.setRequestorPrincipal(pUser.getRequestorLogin());
                     idmAuditLog.setAction(AuditAction.PROVISIONING_ADD.value());
                     idmAuditLog.setAuditDescription("Provisioning add user: " + pUser.getId()
                             + " with principal list: " + pUser.getPrincipalList());
@@ -195,6 +196,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 public ProvisionUserResponse doInTransaction(TransactionStatus status) {
                     final IdmAuditLog idmAuditLog = new IdmAuditLog();
                     idmAuditLog.setRequestorUserId(pUser.getRequestorUserId());
+                    idmAuditLog.setRequestorPrincipal(pUser.getRequestorLogin());
                     idmAuditLog.setAction(AuditAction.PROVISIONING_MODIFY.value());
                     idmAuditLog.setTargetUser(pUser.getId());
                     idmAuditLog.setAuditDescription("Provisioning modify user: " + pUser.getId()
@@ -254,7 +256,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
         log.debug("----deleteByUserId called.------");
         final IdmAuditLog idmAuditLog = new IdmAuditLog();
-        idmAuditLog.setRequestorUserId(systemUserId);
+        idmAuditLog.setRequestorUserId(requestorId);
         idmAuditLog.setAction(AuditAction.PROVISIONING_DELETE.value());
         try {
             List<LoginEntity> loginEntityList = loginManager.getLoginByUser(userId);

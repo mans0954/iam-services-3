@@ -24,10 +24,10 @@ public class RequestAttributeEntity {
 	@Column(name="REQUEST_ID",length=32, nullable=false)
 	private String provRequestId;
 	
-	@Column(name="NAME",length=20)
+	@Column(name="NAME",length=100)
 	private String name;
 	
-	@Column(name="VALUE",length=20)
+	@Column(name="VALUE",length=4096)
 	private String value;
 	
 	@Column(name="METADATA_ID",length=20)
