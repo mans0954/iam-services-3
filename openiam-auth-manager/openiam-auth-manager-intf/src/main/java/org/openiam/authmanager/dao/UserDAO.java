@@ -1,11 +1,11 @@
 package org.openiam.authmanager.dao;
 
-import java.util.Date;
-import java.util.List;
-
-import org.openiam.authmanager.common.model.InternalAuthroizationUser;
 import org.openiam.authmanager.common.model.AuthorizationManagerLoginId;
 import org.openiam.authmanager.common.model.AuthorizationUser;
+import org.openiam.authmanager.common.model.InternalAuthroizationUser;
+
+import java.util.Date;
+import java.util.List;
 
 public interface UserDAO extends AbstractDAO<AuthorizationUser> {
 	/**
@@ -31,4 +31,7 @@ public interface UserDAO extends AbstractDAO<AuthorizationUser> {
 	 * @return the fully populatedUser
 	 */
 	public InternalAuthroizationUser getFullUser(final AuthorizationManagerLoginId loginId);
+
+
+    public List<String> getUserIdsList();
 }

@@ -5,6 +5,7 @@ import org.apache.commons.collections.ListUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.authmanager.service.AuthorizationManagerService;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.BaseConstants;
 import org.openiam.base.SysConfiguration;
@@ -151,6 +152,10 @@ public class UserMgr implements UserDataService {
 
     @Value("${org.openiam.user.search.max.results}")
     private int MAX_USER_SEARCH_RESULTS;
+
+    @Autowired
+    @Qualifier("authorizationManagerService")
+    private AuthorizationManagerService authorizationManagerService;
 
     private static final Log log = LogFactory.getLog(UserMgr.class);
 
@@ -552,7 +557,18 @@ public class UserMgr implements UserDataService {
         }
 
         if (CollectionUtils.isNotEmpty(searchBean.getResourceIdSet())) {
-            nonEmptyListOfLists.add(userDao.getUserIdsForResources(searchBean.getResourceIdSet(), 0, MAX_USER_SEARCH_RESULTS));
+            // direct entitlements
+            List<String> resultUserIdList=new ArrayList<String>();
+            List<String> userIds=authorizationManagerService.getUserIdsList();
+            if(CollectionUtils.isNotEmpty(userIds)){
+                for (String usrId: userIds){
+                    for (String resId: searchBean.getResourceIdSet()){
+                        if(authorizationManagerService.isEntitled(usrId, resId))
+                            resultUserIdList.add(usrId);
+                    }
+                }
+            }
+            nonEmptyListOfLists.add(resultUserIdList);
         }
 
         if (searchBean.getPrincipal() != null) {
