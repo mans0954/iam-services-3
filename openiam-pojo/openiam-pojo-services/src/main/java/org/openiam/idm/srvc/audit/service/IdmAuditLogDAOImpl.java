@@ -4,6 +4,9 @@ package org.openiam.idm.srvc.audit.service;
 
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.Criteria;
+import org.hibernate.criterion.Criterion;
+import org.hibernate.criterion.Order;
+import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.idm.searchbeans.AuditLogSearchBean;
@@ -12,6 +15,8 @@ import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.searchbean.converter.AuditLogSearchBeanConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
 
 /**
  * RDMBS implementation the DAO for IdmAudit
@@ -44,6 +49,20 @@ public class IdmAuditLogDAOImpl extends BaseDaoImpl<IdmAuditLogEntity, String> i
         }
         return criteria;
     }
+    @Override
+    public List<String> getIDsByExample(SearchBean searchBean, int from, int size) {
+        final Criteria criteria = getExampleCriteria(searchBean);
+        if (from > -1) {
+            criteria.setFirstResult(from);
+        }
+
+        if (size > -1) {
+            criteria.setMaxResults(size);
+        }
+        criteria.addOrder(Order.desc("timestamp"));
+        criteria.setProjection(Projections.id());
+        return (List<String>)criteria.list();
+    }
 
     @Override
     protected Criteria getExampleCriteria(SearchBean searchBean) {
@@ -67,22 +86,30 @@ public class IdmAuditLogDAOImpl extends BaseDaoImpl<IdmAuditLogEntity, String> i
             if(StringUtils.isNotBlank(auditSearch.getSource())) {
                 criteria.add(Restrictions.eq("source", auditSearch.getSource()));
             }
-            
-            if(StringUtils.isNotBlank(auditSearch.getUserId())) {
-            	criteria.add(Restrictions.eq("userId", auditSearch.getUserId()));
-            }
 
-            if(StringUtils.isNotBlank(auditSearch.getTargetId())
-            || StringUtils.isNotBlank(auditSearch.getTargetType())) {
+            if(StringUtils.isNotBlank(auditSearch.getUserId()) &&
+                    StringUtils.isNotBlank(auditSearch.getTargetId())) {
+                Criterion sourceCriterion = Restrictions.eq("userId", auditSearch.getUserId());
+                criteria.createAlias("targets", "tar", Criteria.LEFT_JOIN);
 
-                criteria.createAlias("targets", "tar");
-
-                if(StringUtils.isNotBlank(auditSearch.getTargetId())) {
-                    criteria.add(Restrictions.eq("tar.targetId", auditSearch.getTargetId()));
+                criteria.add(Restrictions.or(sourceCriterion, Restrictions.and(Restrictions.eq("tar.targetId", auditSearch.getTargetId()),Restrictions.eq("tar.targetType", auditSearch.getTargetType()))));
+            } else {
+                if(StringUtils.isNotBlank(auditSearch.getUserId())) {
+                    criteria.add(Restrictions.eq("userId", auditSearch.getUserId()));
                 }
 
-                if(StringUtils.isNotBlank(auditSearch.getTargetType())) {
-                    criteria.add(Restrictions.eq("tar.targetType", auditSearch.getTargetType()));
+                if(StringUtils.isNotBlank(auditSearch.getTargetId())
+                || StringUtils.isNotBlank(auditSearch.getTargetType())) {
+
+                    criteria.createAlias("targets", "tar");
+
+                    if(StringUtils.isNotBlank(auditSearch.getTargetId())) {
+                        criteria.add(Restrictions.eq("tar.targetId", auditSearch.getTargetId()));
+                    }
+
+                    if(StringUtils.isNotBlank(auditSearch.getTargetType())) {
+                        criteria.add(Restrictions.eq("tar.targetType", auditSearch.getTargetType()));
+                    }
                 }
             }
         }

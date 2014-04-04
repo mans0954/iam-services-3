@@ -26,6 +26,7 @@ import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.service.GroupDAO;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.service.RoleDAO;
+import org.openiam.util.UserUtils;
 import org.openiam.util.encrypt.HashDigest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -124,7 +125,7 @@ public class AuditLogServiceImpl implements AuditLogService {
                     if(StringUtils.isNotEmpty(target.getTargetId()) && StringUtils.isEmpty(target.getObjectPrincipal())) {
                         if(AuditTarget.USER.value().equals(target.getTargetType())) {
                             List<LoginEntity> principals = loginDAO.findUser(target.getTargetId());
-                            LoginEntity loginEntity = getPrimaryIdentity(sysConfiguration.getDefaultManagedSysId(), principals);
+                            LoginEntity loginEntity = UserUtils.getPrimaryIdentityEntity(sysConfiguration.getDefaultManagedSysId(), principals);
                             target.setObjectPrincipal(loginEntity.getLogin());
                         } else if(AuditTarget.ROLE.value().equals(target.getTargetType())) {
                             RoleEntity role = roleDAO.findById(target.getTargetId());
@@ -139,24 +140,10 @@ public class AuditLogServiceImpl implements AuditLogService {
     		}
             if(StringUtils.isEmpty(log.getPrincipal()) && StringUtils.isNotEmpty(log.getUserId())) {
                 List<LoginEntity> principals = loginDAO.findUser(log.getUserId());
-                LoginEntity loginEntity = getPrimaryIdentity(sysConfiguration.getDefaultManagedSysId(), principals);
+                LoginEntity loginEntity = UserUtils.getPrimaryIdentityEntity(sysConfiguration.getDefaultManagedSysId(), principals);
                 log.setPrincipal(loginEntity.getLogin());
             }
         }
-    }
-
-
-    public LoginEntity getPrimaryIdentity(String managedSysId, List<LoginEntity> principalList) {
-        if (principalList == null ||
-                principalList.size() == 0) {
-            return null;
-        }
-        for (LoginEntity l  : principalList) {
-            if (l.getManagedSysId().equalsIgnoreCase(managedSysId)) {
-                return l;
-            }
-        }
-        return null;
     }
 
 	@Override
@@ -190,7 +177,7 @@ public class AuditLogServiceImpl implements AuditLogService {
     @Override
     @Transactional(readOnly=true)
     public List<String> findIDs(AuditLogSearchBean searchBean, int from, int size) {
-        return logDAO.getIDsByExample(searchBean,from,size);
+        return logDAO.getIDsByExample(searchBean, from, size);
     }
 
     @Override

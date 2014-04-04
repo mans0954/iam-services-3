@@ -8,6 +8,7 @@ import javax.jws.WebService;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
@@ -19,14 +20,21 @@ import org.openiam.idm.searchbeans.ResourceSearchBean;
 import org.openiam.idm.searchbeans.ResourceTypeSearchBean;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
+import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.base.AbstractBaseService;
+import org.openiam.idm.srvc.grp.domain.GroupEntity;
+import org.openiam.idm.srvc.grp.service.GroupDataService;
 import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
 import org.openiam.idm.srvc.res.domain.ResourceTypeEntity;
 import org.openiam.idm.srvc.res.dto.*;
+import org.openiam.idm.srvc.role.domain.RoleEntity;
+import org.openiam.idm.srvc.role.service.RoleDataService;
+import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.internationalization.LocalizedServiceGet;
+import org.openiam.util.UserUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -44,9 +52,15 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
     private UserDataService userDataService;
     @Autowired
     private ResourceService resourceService;
-
+    @Autowired
+    private RoleDataService roleService;
+    @Autowired
+    private GroupDataService groupDataService;
     @Autowired
     private ResourceTypeDozerConverter resourceTypeConverter;
+
+    @Autowired
+    protected SysConfiguration sysConfiguration;
 
     private static final Log log = LogFactory.getLog(ResourceDataServiceImpl.class);
 
@@ -138,7 +152,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
         IdmAuditLog idmAuditLog = new IdmAuditLog();
         idmAuditLog.setAction(AuditAction.SAVE_RESOURCE.value());
         idmAuditLog.setRequestorUserId(resource.getRequestorUserId());
-        idmAuditLog.setTargetResource(resource.getId());
+        idmAuditLog.setTargetResource(resource.getId(), resource.getName());
         try {
             validate(resource);
             if (StringUtils.isBlank(resource.getId())) {
@@ -308,7 +322,12 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
         IdmAuditLog idmAuditLog = new IdmAuditLog();
         idmAuditLog.setRequestorUserId(requesterId);
         idmAuditLog.setAction(AuditAction.REMOVE_USER_FROM_RESOURCE.value());
-        idmAuditLog.setTargetUser(userId);
+        UserEntity userEntity = userDataService.getUser(userId);
+        LoginEntity primaryIdentity = UserUtils.getPrimaryIdentityEntity(sysConfiguration.getDefaultManagedSysId(), userEntity.getPrincipalList());
+        idmAuditLog.setTargetUser(userId, primaryIdentity.getLogin());
+        ResourceEntity resourceEntity = resourceService.findResourceById(resourceId);
+        idmAuditLog.setTargetResource(resourceId, resourceEntity.getName());
+
         idmAuditLog.setAuditDescription(String.format("Remove user %s from resource: %s", userId, resourceId));
         try {
             if (resourceId == null || userId == null) {
@@ -339,7 +358,12 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
         IdmAuditLog idmAuditLog = new IdmAuditLog ();
         idmAuditLog.setRequestorUserId(requesterId);
         idmAuditLog.setAction(AuditAction.ADD_USER_TO_RESOURCE.value());
-        idmAuditLog.setTargetUser(userId);
+        UserEntity userEntity = userDataService.getUser(userId);
+        LoginEntity primaryIdentity = UserUtils.getPrimaryIdentityEntity(sysConfiguration.getDefaultManagedSysId(), userEntity.getPrincipalList());
+        idmAuditLog.setTargetUser(userId, primaryIdentity.getLogin());
+        ResourceEntity resourceEntity = resourceService.findResourceById(resourceId);
+        idmAuditLog.setTargetResource(resourceId, resourceEntity.getName());
+
         idmAuditLog.setAuditDescription(String.format("Add user %s to resource: %s", userId, resourceId));
         try {
             if (resourceId == null || userId == null) {
@@ -476,7 +500,11 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
         IdmAuditLog idmAuditLog = new IdmAuditLog ();
         idmAuditLog.setRequestorUserId(requesterId);
         idmAuditLog.setAction(AuditAction.ADD_CHILD_RESOURCE.value());
-        idmAuditLog.setTargetResource(resourceId);
+        ResourceEntity resourceEntity = resourceService.findResourceById(resourceId);
+        idmAuditLog.setTargetResource(resourceId, resourceEntity.getName());
+        ResourceEntity resourceEntityChild = resourceService.findResourceById(childResourceId);
+        idmAuditLog.setTargetResource(childResourceId, resourceEntityChild.getName());
+
         idmAuditLog.setAuditDescription(
                         String.format("Add child resource: %s to resource: %s", childResourceId, resourceId));
         try {
@@ -508,7 +536,11 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
         IdmAuditLog idmAuditLog = new IdmAuditLog ();
         idmAuditLog.setRequestorUserId(requesterId);
         idmAuditLog.setAction(AuditAction.REMOVE_CHILD_RESOURCE.value());
-        idmAuditLog.setTargetResource(resourceId);
+        ResourceEntity resourceEntity = resourceService.findResourceById(resourceId);
+        idmAuditLog.setTargetResource(resourceId, resourceEntity.getName());
+        ResourceEntity resourceEntityChild = resourceService.findResourceById(memberResourceId);
+        idmAuditLog.setTargetResource(memberResourceId, resourceEntityChild.getName());
+
         idmAuditLog.setAuditDescription(
                         String.format("Remove child resource: %s from resource: %s", memberResourceId, resourceId));
 
@@ -544,7 +576,11 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
         IdmAuditLog idmAuditLog = new IdmAuditLog ();
         idmAuditLog.setRequestorUserId(requesterId);
         idmAuditLog.setAction(AuditAction.ADD_GROUP_TO_RESOURCE.value());
-        idmAuditLog.setTargetGroup(groupId);
+        GroupEntity group = groupDataService.getGroup(groupId);
+        idmAuditLog.setTargetGroup(groupId, group.getName());
+        ResourceEntity resource = resourceService.findResourceById(resourceId);
+        idmAuditLog.setTargetResource(resourceId, resource.getName());
+
         idmAuditLog.setAuditDescription(String.format("Add group: %s to resource: %s", groupId, resourceId));
         try {
             if (StringUtils.isBlank(resourceId) || StringUtils.isBlank(groupId)) {
@@ -577,7 +613,10 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
         IdmAuditLog idmAuditLog = new IdmAuditLog ();
         idmAuditLog.setRequestorUserId(requesterId);
         idmAuditLog.setAction(AuditAction.REMOVE_GROUP_FROM_RESOURCE.value());
-        idmAuditLog.setTargetGroup(groupId);
+        GroupEntity groupEntity = groupDataService.getGroup(groupId);
+        idmAuditLog.setTargetGroup(groupId, groupEntity.getName());
+        ResourceEntity resourceEntity = resourceService.findResourceById(resourceId);
+        idmAuditLog.setTargetResource(resourceId, resourceEntity.getName());
         idmAuditLog.setAuditDescription(String.format("Remove group: %s from resource: %s", groupId, resourceId));
 
         try {
@@ -611,7 +650,11 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
         IdmAuditLog idmAuditLog = new IdmAuditLog ();
         idmAuditLog.setRequestorUserId(requesterId);
         idmAuditLog.setAction(AuditAction.ADD_ROLE_TO_RESOURCE.value());
-        idmAuditLog.setTargetRole(roleId);
+        RoleEntity roleEntity = roleService.getRole(roleId);
+        idmAuditLog.setTargetRole(roleId, roleEntity.getName());
+        ResourceEntity resourceEntity  = resourceService.findResourceById(resourceId);
+        idmAuditLog.setTargetResource(resourceId, resourceEntity.getName());
+
         idmAuditLog.setAuditDescription(String.format("Add role: %s to resource: %s", roleId, resourceId));
         try {
             if (StringUtils.isBlank(resourceId) || StringUtils.isBlank(roleId)) {
@@ -644,7 +687,10 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
         IdmAuditLog idmAuditLog = new IdmAuditLog ();
         idmAuditLog.setRequestorUserId(requesterId);
         idmAuditLog.setAction(AuditAction.REMOVE_ROLE_FROM_RESOURCE.value());
-        idmAuditLog.setTargetRole(roleId);
+        RoleEntity roleEntity = roleService.getRole(roleId);
+        idmAuditLog.setTargetRole(roleId, roleEntity.getName());
+        ResourceEntity resourceEntity = resourceService.findResourceById(resourceId);
+        idmAuditLog.setTargetRole(resourceId, resourceEntity.getName());
         idmAuditLog.setAuditDescription(String.format("Remove role: %s from resource: %s", roleId, resourceId));
         try {
             if (StringUtils.isBlank(resourceId) || StringUtils.isBlank(roleId)) {
