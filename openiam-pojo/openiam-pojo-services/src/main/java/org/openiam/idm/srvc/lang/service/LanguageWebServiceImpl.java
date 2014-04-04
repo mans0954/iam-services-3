@@ -62,39 +62,67 @@ public class LanguageWebServiceImpl implements LanguageWebService {
         return CollectionUtils.isEmpty(list) ? 0 : list.size();
     }
 
-    // @Override
-    // public void save(final Language language) throws Exception {
-    // if (language == null)
-    // throw new NullPointerException("language is null");
-    // if (StringUtils.isBlank(language.getId())) {
-    // languageService.addLanguage(languageDozerConverter.convertToEntity(language,
-    // false)).getId();
-    // } else {
-    // languageService.updateLanguage(languageDozerConverter.convertToEntity(language,
-    // true));
-    // }
-    // }
     @Override
     public Response save(final Language language) {
         Response response = new Response();
         response.setStatus(ResponseStatus.SUCCESS);
-        boolean isAdd = false;
         try {
-            if (language == null)
-                throw new NullPointerException("language is null");
+            if (language == null) {
+                throw new BasicDataServiceException(ResponseCode.INTERNAL_ERROR);
+            }
+            boolean isAdd = StringUtils.isEmpty(language.getId());
+            if (!MapUtils.isEmpty(language.getLocales())) {
+                Map<String, LanguageLocaleEntity> allLocales = languageService.getAllLocales();
+                for (LanguageLocale ll : language.getLocales().values()) {
+                    if (ll.getId() == null && allLocales.get(ll.getLocale().toLowerCase()) != null) {
+                        throw new BasicDataServiceException(ResponseCode.LOCALE_ALREADY_EXISTS, ll.getLocale());
+                    }
+                }
+            }
+            for (LanguageMapping lm : language.getDisplayNameMap().values()) {
+                if (StringUtils.isEmpty(lm.getValue())) {
+                    throw new BasicDataServiceException(ResponseCode.DISPLAY_NAME_REQUIRED);
+                }
+            }
+            if (isAdd && StringUtils.isEmpty(language.getName())) {
+                throw new BasicDataServiceException(ResponseCode.NAME_MISSING);
+            }
+            if (StringUtils.isEmpty(language.getLanguageCode())) {
+                throw new BasicDataServiceException(ResponseCode.LANGUAGE_CODE_MISSING);
+            }
             Map<String, LanguageLocale> localesUI = null;
             List<LanguageLocaleEntity> db = null;
+            // get locales
             if (MapUtils.isNotEmpty(language.getLocales())) {
                 localesUI = new java.util.HashMap<String, LanguageLocale>(language.getLocales());
                 language.setLocales(null);
             }
+            // get current default language
+            LanguageEntity defaultLanguage = languageService.getDefaultLanguage();
+            if ((defaultLanguage == null && !language.getIsDefault())
+                    || (defaultLanguage.getId().equals(language.getId()) && !language.getIsDefault()))
+                throw new BasicDataServiceException(ResponseCode.NO_DEFAULT_LANGUAGE);
             LanguageEntity entity = null;
             String id = null;
-            if (StringUtils.isBlank(language.getId())) {
+            // add language
+            if (isAdd) {
+                // if language to add is default make current default as Not
+                // default
+                if (defaultLanguage != null && language.getIsDefault()) {
+                    defaultLanguage.setIsDefault(false);
+                    languageService.updateLanguage(defaultLanguage);
+                }
+                // add languages without fetches
                 id = languageService.addLanguage(languageDozerConverter.convertToEntity(language, false)).getId();
-                isAdd = true;
             } else {
+                // update language
                 id = language.getId();
+                // if language to update is set as default, make current
+                // default as not default
+                if (defaultLanguage != null && !id.equals(defaultLanguage.getId()) && language.getIsDefault()) {
+                    defaultLanguage.setIsDefault(false);
+                    languageService.updateLanguage(defaultLanguage);
+                }
                 db = languageService.getLanguageLocaleByLanguage(id);
                 languageService.updateLanguage(languageDozerConverter.convertToEntity(language, true));
             }
@@ -157,10 +185,16 @@ public class LanguageWebServiceImpl implements LanguageWebService {
                         newE.setId(languageService.addLanguageMapping(newE).getId());
                     }
                 }
+                LanguageMappingEntity newE = new LanguageMappingEntity();
+                newE.setLanguageId(entity.getId());
+                newE.setReferenceId(entity.getId());
+                newE.setReferenceType(LanguageEntity.class.getSimpleName());
+                newE.setValue(language.getName());
             }
             response.setResponseValue(entity.getId());
         } catch (BasicDataServiceException e) {
             response.setErrorCode(e.getCode());
+            response.setResponseValue(e.getResponseValue());
             response.setStatus(ResponseStatus.FAILURE);
         }
         return response;

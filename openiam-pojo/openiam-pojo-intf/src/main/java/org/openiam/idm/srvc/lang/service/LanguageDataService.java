@@ -1,6 +1,7 @@
 package org.openiam.idm.srvc.lang.service;
 
 import java.util.List;
+import java.util.Map;
 
 import org.openiam.idm.searchbeans.LanguageSearchBean;
 import org.openiam.idm.srvc.lang.domain.LanguageEntity;
@@ -77,5 +78,9 @@ public interface LanguageDataService {
     List<LanguageLocaleEntity> getLanguageLocaleByLanguage(String languageId);
 
     LanguageMappingEntity addLanguageMapping(LanguageMappingEntity lgl);
+
+    LanguageEntity getDefaultLanguage();
+
+    Map<String, LanguageLocaleEntity> getAllLocales();
 
 }

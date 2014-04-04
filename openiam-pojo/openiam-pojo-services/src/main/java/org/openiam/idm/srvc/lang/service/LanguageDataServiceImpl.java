@@ -21,7 +21,9 @@
  */
 package org.openiam.idm.srvc.lang.service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.openiam.idm.searchbeans.LanguageSearchBean;
 import org.openiam.idm.srvc.lang.domain.LanguageEntity;
@@ -157,4 +159,20 @@ public class LanguageDataServiceImpl implements LanguageDataService {
     public List<LanguageLocaleEntity> getLanguageLocaleByLanguage(String languageId) {
         return languageLocaleDao.getLocalesByLanguageId(languageId);
     }
+
+    @Override
+    public Map<String, LanguageLocaleEntity> getAllLocales() {
+        List<LanguageLocaleEntity> locales = languageLocaleDao.findAll();
+        Map<String, LanguageLocaleEntity> result = new HashMap<String, LanguageLocaleEntity>();
+        for (LanguageLocaleEntity lle : locales) {
+            result.put(lle.getLocale().toLowerCase(), lle);
+        }
+        return result;
+    }
+
+    @Override
+    public LanguageEntity getDefaultLanguage() {
+        return languageDao.getDefaultLanguage();
+    }
+
 }
