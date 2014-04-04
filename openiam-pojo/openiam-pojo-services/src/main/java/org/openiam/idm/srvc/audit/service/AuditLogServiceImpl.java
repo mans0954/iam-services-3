@@ -13,17 +13,13 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.SysConfiguration;
-import org.openiam.base.id.UUIDGen;
 import org.openiam.dozer.converter.IdmAuditLogDozerConverter;
-import org.openiam.dozer.converter.IdmAuditLogTargetDozerConverter;
 import org.openiam.idm.searchbeans.AuditLogSearchBean;
 import org.openiam.idm.srvc.audit.constant.AuditTarget;
 import org.openiam.idm.srvc.audit.domain.AuditLogTargetEntity;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogCustomEntity;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
-import org.openiam.idm.srvc.audit.dto.AuditLogTarget;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLogCustom;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.login.LoginDAO;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
@@ -125,21 +121,21 @@ public class AuditLogServiceImpl implements AuditLogService {
     		if(CollectionUtils.isNotEmpty(log.getTargets())) {
     			for(final AuditLogTargetEntity target : log.getTargets()) {
                     target.setLog(log);
-    			}
-                AuditLogTargetEntity firstTargetEntity = log.getTargets().iterator().next();
-                if(StringUtils.isNotEmpty(firstTargetEntity.getTargetId())) {
-                    if(AuditTarget.USER.value().equals(firstTargetEntity.getTargetType())) {
-                        List<LoginEntity> principals = loginDAO.findUser(firstTargetEntity.getTargetId());
-                        LoginEntity loginEntity = getPrimaryIdentity(sysConfiguration.getDefaultManagedSysId(), principals);
-                        log.setSource("USER [" +loginEntity.getLogin()+ ']');
-                    } else if(AuditTarget.ROLE.value().equals(firstTargetEntity.getTargetType())) {
-                        RoleEntity role = roleDAO.findById(firstTargetEntity.getTargetId());
-                        log.setSource("ROLE [" +role.getName()+ ']');
-                    } else if(AuditTarget.GROUP.value().equals(firstTargetEntity.getTargetType())) {
-                        GroupEntity role = groupDAO.findById(firstTargetEntity.getTargetId());
-                        log.setSource("ROLE [" +role.getName()+ ']');
+                    if(StringUtils.isNotEmpty(target.getTargetId()) && StringUtils.isEmpty(target.getObjectPrincipal())) {
+                        if(AuditTarget.USER.value().equals(target.getTargetType())) {
+                            List<LoginEntity> principals = loginDAO.findUser(target.getTargetId());
+                            LoginEntity loginEntity = getPrimaryIdentity(sysConfiguration.getDefaultManagedSysId(), principals);
+                            target.setObjectPrincipal(loginEntity.getLogin());
+                        } else if(AuditTarget.ROLE.value().equals(target.getTargetType())) {
+                            RoleEntity role = roleDAO.findById(target.getTargetId());
+                            target.setObjectPrincipal(role.getName());
+                        } else if(AuditTarget.GROUP.value().equals(target.getTargetType())) {
+                            GroupEntity role = groupDAO.findById(target.getTargetId());
+                            target.setObjectPrincipal(role.getName());
+                        }
                     }
-                }
+    			}
+
     		}
             if(StringUtils.isEmpty(log.getPrincipal()) && StringUtils.isNotEmpty(log.getUserId())) {
                 List<LoginEntity> principals = loginDAO.findUser(log.getUserId());
@@ -191,7 +187,13 @@ public class AuditLogServiceImpl implements AuditLogService {
         return idmAuditLogs;
 	}
 
-	@Override
+    @Override
+    @Transactional(readOnly=true)
+    public List<String> findIDs(AuditLogSearchBean searchBean, int from, int size) {
+        return logDAO.getIDsByExample(searchBean,from,size);
+    }
+
+    @Override
 	@Transactional(readOnly=true)
 	public int count(AuditLogSearchBean searchBean) {
 		return logDAO.count(searchBean);

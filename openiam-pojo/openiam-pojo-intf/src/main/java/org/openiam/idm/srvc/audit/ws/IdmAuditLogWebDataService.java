@@ -26,6 +26,10 @@ public interface IdmAuditLogWebDataService {
     public List<IdmAuditLog> findBeans(final @WebParam(name = "searchBean", targetNamespace = "") AuditLogSearchBean searchBean,
     								   final @WebParam(name = "from", targetNamespace = "") int from,
     								   final @WebParam(name = "size", targetNamespace = "") int size);
+    @WebMethod
+    public List<String> getIds(final @WebParam(name = "searchBean", targetNamespace = "") AuditLogSearchBean searchBean,
+                                       final @WebParam(name = "from", targetNamespace = "") int from,
+                                       final @WebParam(name = "size", targetNamespace = "") int size);
 	
 	@WebMethod
 	public int count(final @WebParam(name = "searchBean", targetNamespace = "") AuditLogSearchBean searchBean);

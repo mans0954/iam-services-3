@@ -14,7 +14,8 @@ import org.openiam.idm.srvc.audit.domain.AuditLogTargetEntity;
 	"id",
 	"logId",
 	"targetId",
-	"targetType"
+	"targetType",
+    "objectPrincipal"
 })
 @DozerDTOCorrespondence(AuditLogTargetEntity.class)
 public class AuditLogTarget implements Serializable {
@@ -22,6 +23,7 @@ public class AuditLogTarget implements Serializable {
 	private String id;
 	private String logId;
 	private String targetId;
+    private String objectPrincipal;
 
 	private String targetType;
 	public String getId() {
@@ -48,7 +50,16 @@ public class AuditLogTarget implements Serializable {
 	public void setTargetType(String targetType) {
 		this.targetType = targetType;
 	}
-	@Override
+
+    public String getObjectPrincipal() {
+        return objectPrincipal;
+    }
+
+    public void setObjectPrincipal(String objectPrincipal) {
+        this.objectPrincipal = objectPrincipal;
+    }
+
+    @Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
@@ -94,8 +105,8 @@ public class AuditLogTarget implements Serializable {
 	@Override
 	public String toString() {
 		return String.format(
-				"AuditLogTarget [id=%s, logId=%s, targetId=%s, targetType=%s]",
-				id, logId, targetId, targetType);
+				"AuditLogTarget [id=%s, objectPrincipal=%s, logId=%s, targetId=%s, targetType=%s]",
+				id, objectPrincipal, logId, targetId, targetType);
 	}
 	
 	
