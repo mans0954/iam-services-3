@@ -23,6 +23,7 @@ package org.openiam.idm.srvc.role.ws;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
@@ -32,14 +33,18 @@ import org.openiam.dozer.converter.RolePolicyDozerConverter;
 import org.openiam.idm.searchbeans.RoleSearchBean;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
+import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.base.AbstractBaseService;
+import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.service.GroupDataService;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.domain.RolePolicyEntity;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.role.dto.RolePolicy;
 import org.openiam.idm.srvc.role.service.RoleDataService;
+import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.service.UserDataService;
+import org.openiam.util.UserUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -73,7 +78,10 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
     
     @Autowired
     private GroupDataService groupService;
-    
+
+    @Autowired
+    protected SysConfiguration sysConfiguration;
+
 	@Override
 	public Response validateEdit(Role role) {
 		final Response response = new Response(ResponseStatus.SUCCESS);
@@ -146,8 +154,10 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
         IdmAuditLog idmAuditLog = new IdmAuditLog();
         idmAuditLog.setRequestorUserId(requesterId);
         idmAuditLog.setAction(AuditAction.ADD_GROUP_TO_ROLE.value());
-        idmAuditLog.setTargetGroup(groupId);
-        idmAuditLog.setTargetRole(roleId);
+        GroupEntity groupEntity = groupService.getGroup(groupId);
+        idmAuditLog.setTargetGroup(groupId, groupEntity.getName());
+        RoleEntity roleEntity = roleDataService.getRole(roleId);
+        idmAuditLog.setTargetRole(roleId, roleEntity.getName());
         idmAuditLog.setAuditDescription(String.format("Add group to  role: %s", roleId));
 		try {
 			roleDataService.validateGroup2RoleAddition(roleId, groupId);
@@ -176,8 +186,11 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 		final Response response = new Response(ResponseStatus.SUCCESS);
         IdmAuditLog idmAuditLog = new IdmAuditLog();
         idmAuditLog.setAction(AuditAction.ADD_USER_TO_ROLE.value());
-        idmAuditLog.setTargetUser(userId);
-        idmAuditLog.setTargetRole(roleId);
+        UserEntity user = userDataService.getUser(userId);
+        LoginEntity primaryIdentity = UserUtils.getPrimaryIdentityEntity(sysConfiguration.getDefaultManagedSysId(), user.getPrincipalList());
+        idmAuditLog.setTargetUser(userId, primaryIdentity.getLogin());
+        RoleEntity roleEntity = roleDataService.getRole(roleId);
+        idmAuditLog.setTargetRole(roleId, roleEntity.getName());
         idmAuditLog.setRequestorUserId(requesterId);
         idmAuditLog.setAuditDescription(String.format("Add user to  role: %s", roleId));
 		try {
@@ -244,8 +257,10 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
         IdmAuditLog idmAuditLog = new IdmAuditLog();
         idmAuditLog.setRequestorUserId(requesterId);
         idmAuditLog.setAction(AuditAction.REMOVE_GROUP_FROM_ROLE.value());
-        idmAuditLog.setTargetGroup(groupId);
-        idmAuditLog.setTargetRole(roleId);
+        GroupEntity groupEntity = groupService.getGroup(groupId);
+        idmAuditLog.setTargetGroup(groupId, groupEntity.getName());
+        RoleEntity roleEntity = roleDataService.getRole(roleId);
+        idmAuditLog.setTargetRole(roleId, roleEntity.getName());
         idmAuditLog.setAuditDescription(String.format("Remove group %s from role: %s", groupId, roleId));
 		try {
 			if(groupId == null || roleId == null) {
@@ -278,7 +293,8 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
         IdmAuditLog idmAuditLog = new IdmAuditLog();
         idmAuditLog.setAction(AuditAction.REMOVE_ROLE.value());
         idmAuditLog.setRequestorUserId(requesterId);
-        idmAuditLog.setTargetRole(roleId);
+        RoleEntity roleEntity = roleDataService.getRole(roleId);
+        idmAuditLog.setTargetRole(roleId, roleEntity.getName());
 		try {
 			if(roleId == null) {
 				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "RoleId  is null or empty");
@@ -315,8 +331,11 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 		final Response response = new Response(ResponseStatus.SUCCESS);
         IdmAuditLog idmAuditLog = new IdmAuditLog();
         idmAuditLog.setAction(AuditAction.REMOVE_USER_FROM_ROLE.value());
-        idmAuditLog.setTargetUser(userId);
-        idmAuditLog.setTargetRole(roleId);
+        UserEntity userEntity = userDataService.getUser(userId);
+        LoginEntity primaryIdentity = UserUtils.getPrimaryIdentityEntity(sysConfiguration.getDefaultManagedSysId(), userEntity.getPrincipalList());
+        idmAuditLog.setTargetUser(userId, primaryIdentity.getLogin());
+        RoleEntity roleEntity = roleDataService.getRole(roleId);
+        idmAuditLog.setTargetRole(roleId, roleEntity.getName());
         idmAuditLog.setRequestorUserId(requesterId);
         idmAuditLog.setAuditDescription(String.format("Remove user %s from role: %s", userId, roleId));
 		try {
@@ -350,7 +369,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
         idmAuditLog.setAction(AuditAction.SAVE_ROLE.value());
 		try {
             idmAuditLog.setRequestorUserId(requesterId);
-            idmAuditLog.setTargetRole(role.getId());
+
             if(StringUtils.isBlank(role.getId())) {
                 idmAuditLog.setAction(AuditAction.ADD_ROLE.value());
             }
@@ -359,7 +378,8 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 			
 			final RoleEntity entity = roleDozerConverter.convertToEntity(role, true);
 			roleDataService.saveRole(entity, requesterId);
-			response.setResponseValue(entity.getId());
+            idmAuditLog.setTargetRole(entity.getId(), entity.getName());
+            response.setResponseValue(entity.getId());
             idmAuditLog.succeed();
 		} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
@@ -385,7 +405,8 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 		final RolePolicyResponse response = new RolePolicyResponse(ResponseStatus.SUCCESS);
         IdmAuditLog idmAuditLog = new IdmAuditLog();
         idmAuditLog.setAction(AuditAction.ADD_ROLE_POLICY.value());
-        idmAuditLog.setTargetRole(policy.getRoleId());
+        RoleEntity roleEntity = roleDataService.getRole(policy.getRoleId());
+        idmAuditLog.setTargetRole(policy.getRoleId(), roleEntity.getName());
         idmAuditLog.setRequestorUserId(requesterId);
 		try {
 			if(policy == null) {
@@ -396,6 +417,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 			roleDataService.savePolicy(entity);
 			final RolePolicy dto = rolePolicyDozerConverter.convertToDTO(entity, false);
 			response.setRolePolicy(dto);
+            idmAuditLog.setTargetPolicy(policy.getRolePolicyId(), policy.getName());
             idmAuditLog.succeed();
 		} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
@@ -421,7 +443,8 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
         IdmAuditLog idmAuditLog = new IdmAuditLog();
         idmAuditLog.setRequestorUserId(requesterId);
         idmAuditLog.setAction(AuditAction.UPDATE_ROLE_POLICY.value());
-        idmAuditLog.setTargetRole(policy.getRoleId());
+        RoleEntity roleEntity = roleDataService.getRole(policy.getRoleId());
+        idmAuditLog.setTargetRole(policy.getRoleId(), roleEntity.getName());
 		try {
 			if(policy == null) {
 				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS,"Role policy object is null");
@@ -430,6 +453,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 			final RolePolicyEntity entity = rolePolicyDozerConverter.convertToEntity(policy, false);
 			roleDataService.savePolicy(entity);
 			final RolePolicy dto = rolePolicyDozerConverter.convertToDTO(entity, false);
+            idmAuditLog.setTargetPolicy(policy.getRolePolicyId(), policy.getName());
 			response.setRolePolicy(dto);
             idmAuditLog.succeed();
 		} catch(BasicDataServiceException e) {
@@ -546,7 +570,10 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
         IdmAuditLog idmAuditLog = new IdmAuditLog();
         idmAuditLog.setRequestorUserId(requesterId);
         idmAuditLog.setAction(AuditAction.ADD_CHILD_ROLE.value());
-        idmAuditLog.setTargetRole(roleId);
+        RoleEntity roleEntity = roleDataService.getRole(roleId);
+        idmAuditLog.setTargetRole(roleId, roleEntity.getName());
+        RoleEntity roleEntityChild = roleDataService.getRole(roleId);
+        idmAuditLog.setTargetRole(childRoleId, roleEntityChild.getName());
         idmAuditLog.setAuditDescription(String.format("Add child role: %s to role: %s", childRoleId, roleId));
 		try {
 			if(roleId == null || childRoleId == null) {
@@ -579,7 +606,10 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
         IdmAuditLog idmAuditLog = new IdmAuditLog();
         idmAuditLog.setRequestorUserId(requesterId);
         idmAuditLog.setAction(AuditAction.REMOVE_CHILD_ROLE.value());
-        idmAuditLog.setTargetRole(roleId);
+        RoleEntity roleEntity = roleDataService.getRole(roleId);
+        idmAuditLog.setTargetRole(roleId, roleEntity.getName());
+        RoleEntity roleEntityChild = roleDataService.getRole(roleId);
+        idmAuditLog.setTargetRole(childRoleId, roleEntityChild.getName());
         idmAuditLog.setAuditDescription(String.format("Remove child role: %s from role: %s", childRoleId, roleId));
 		try {
 			if(roleId == null || childRoleId == null) {

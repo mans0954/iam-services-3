@@ -48,6 +48,8 @@ public interface BaseDao<T, PrimaryKey extends Serializable> {
   List<T> getByExample(T t);
   List<T> getByExample(SearchBean searchBean);
   List<T> getByExample(SearchBean searchBean, int from, int size);
+  List<String> getIDsByExample(SearchBean searchBean, int from, int size);
+
   int count(SearchBean searchBean);
   int count(T t);
 }

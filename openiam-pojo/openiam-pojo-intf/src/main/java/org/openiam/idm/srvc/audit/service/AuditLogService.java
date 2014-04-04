@@ -14,6 +14,8 @@ public interface AuditLogService {
     public void enqueue(final IdmAuditLog idmAuditLog);
     
     public List<IdmAuditLog> findBeans(final AuditLogSearchBean searchBean, final int from, final int size);
+    public List<String> findIDs(final AuditLogSearchBean searchBean, final int from, final int size);
+
     public int count(final AuditLogSearchBean searchBean);
     public IdmAuditLog findById(final String id);
     public String save(IdmAuditLog auditLogEntity);

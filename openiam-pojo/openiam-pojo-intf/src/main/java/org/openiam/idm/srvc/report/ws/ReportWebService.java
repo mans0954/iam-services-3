@@ -8,7 +8,6 @@ import javax.jws.WebService;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.openiam.base.ws.PropertyMapAdapter;
 import org.openiam.base.ws.Response;
-import org.openiam.idm.srvc.report.domain.ReportInfoEntity;
 import org.openiam.idm.srvc.report.dto.ReportCriteriaParamDto;
 import org.openiam.idm.srvc.report.dto.ReportInfoDto;
 import org.openiam.idm.srvc.report.dto.ReportSubCriteriaParamDto;
@@ -24,7 +23,8 @@ public interface ReportWebService {
     String getReportUrl(@WebParam(name = "reportName", targetNamespace = "") String reportName,
                 @WebParam(name = "queryParams", targetNamespace = "") @XmlJavaTypeAdapter(PropertyMapAdapter.class) HashMap<String, String> queryParams,
                 @WebParam(name = "taskName", targetNamespace = "") String taskName,
-                @WebParam(name = "reportBaseUrl", targetNamespace = "") String reportBaseUrl);
+                @WebParam(name = "reportBaseUrl", targetNamespace = "") String reportBaseUrl,
+                @WebParam(name = "locale", targetNamespace = "") String locale);
 
     @WebMethod
     GetAllReportsResponse getReports(@WebParam(name = "from", targetNamespace = "") int from, 

@@ -291,7 +291,8 @@ public class ReconciliationServiceImpl implements ReconciliationService {
 
         idmAuditLog.setRequestorUserId(config.getRequesterId());
         idmAuditLog.setAction(AuditAction.RECONCILIATION.value());
-        idmAuditLog.setTargetManagedSys(config.getManagedSysId());
+        ManagedSysEntity managedSysEntity = managedSysService.getManagedSysById(config.getManagedSysId());
+        idmAuditLog.setTargetManagedSys(config.getManagedSysId(), managedSysEntity.getName());
         idmAuditLog.setSource(config.getReconConfigId());
 
         try {

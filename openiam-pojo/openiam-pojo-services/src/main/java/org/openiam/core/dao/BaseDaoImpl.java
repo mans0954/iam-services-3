@@ -6,8 +6,9 @@ import org.apache.log4j.Logger;
 import org.hibernate.*;
 import org.hibernate.criterion.Example;
 import org.hibernate.criterion.Order;
+import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
-import org.openiam.base.BaseConstants;
+
 import org.openiam.base.OrderConstants;
 import org.openiam.idm.searchbeans.AbstractSearchBean;
 import org.openiam.idm.searchbeans.SearchBean;
@@ -93,6 +94,21 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
         }
 
         return (List<T>) criteria.list();
+    }
+
+    @Override
+    public List<String> getIDsByExample(SearchBean searchBean, int from, int size) {
+        final Criteria criteria = getExampleCriteria(searchBean);
+        if (from > -1) {
+            criteria.setFirstResult(from);
+        }
+
+        if (size > -1) {
+            criteria.setMaxResults(size);
+        }
+
+        criteria.setProjection(Projections.id());
+        return (List<String>)criteria.list();
     }
 
     @Override

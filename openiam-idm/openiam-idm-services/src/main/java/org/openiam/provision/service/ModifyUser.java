@@ -393,12 +393,12 @@ public class ModifyUser {
         for (Login l : principalList) {
             if (l.getManagedSysId().equalsIgnoreCase(managedSysId)) {
 
-                log.debug("getPrimaryIdentity() return ->" + l);
+                log.debug("getPrimaryIdentityEntity() return ->" + l);
 
                 return l;
             }
         }
-        log.debug("getPrimaryIdentity() not found. returning null");
+        log.debug("getPrimaryIdentityEntity() not found. returning null");
         return null;
     }
 

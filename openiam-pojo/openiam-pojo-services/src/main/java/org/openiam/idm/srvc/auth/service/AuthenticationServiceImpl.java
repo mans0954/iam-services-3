@@ -62,6 +62,7 @@ import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.script.ScriptIntegration;
+import org.openiam.util.UserUtils;
 import org.openiam.util.encrypt.Cryptor;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
@@ -121,7 +122,7 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
     @Autowired
     @Qualifier("configurableGroovyScriptEngine")
     private ScriptIntegration scriptRunner;
-    
+
     private ApplicationContext ctx;
     private BeanFactory beanFactory;
 
@@ -132,7 +133,9 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
     public void globalLogout(String userId) throws Throwable {
         IdmAuditLog newLogoutEvent = new IdmAuditLog();
         newLogoutEvent.setUserId(userId);
-        newLogoutEvent.addTarget(userId, AuditTarget.USER.value());
+        UserEntity userEntity = userManager.getUser(userId);
+        LoginEntity primaryIdentity = UserUtils.getPrimaryIdentityEntity(sysConfiguration.getDefaultManagedSysId(), userEntity.getPrincipalList());
+        newLogoutEvent.addTarget(userId, AuditTarget.USER.value(), primaryIdentity.getLogin());
         newLogoutEvent.setAction(AuditAction.LOGOUT.value());
 
         try{
@@ -191,7 +194,7 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
 	        UserEntity user = null;
 
             newLoginEvent.setManagedSysId(sysConfiguration.getDefaultManagedSysId());
-            newLoginEvent.setTargetManagedSys(sysConfiguration.getDefaultManagedSysId());
+
 	        // Determine which login module to use
 	        // - get the Authentication policy for the domain
 	        String authPolicyId = sysConfiguration.getDefaultAuthPolicyId();
@@ -266,7 +269,8 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
 	            // check the user status - move to the abstract class for reuse
 	            userId = lg.getUserId();
                 newLoginEvent.setRequestorUserId(userId);
-                newLoginEvent.setTargetUser(userId);
+
+                newLoginEvent.setTargetUser(userId, lg.getLogin());
 	            
 	            user = userManager.getUser(userId);
 	        }

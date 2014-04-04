@@ -3,6 +3,7 @@ package org.openiam.idm.srvc.grp.ws;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
@@ -13,13 +14,16 @@ import org.openiam.exception.EsbErrorToken;
 import org.openiam.idm.searchbeans.GroupSearchBean;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
+import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.base.AbstractBaseService;
 import org.openiam.idm.srvc.grp.domain.GroupAttributeEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.dto.GroupAttribute;
 import org.openiam.idm.srvc.grp.service.GroupDataService;
+import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.service.UserDataService;
+import org.openiam.util.UserUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -52,8 +56,10 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
     @Autowired
     private GroupAttributeDozerConverter groupAttributeDozerConverter;
 
-
     private static final Log log = LogFactory.getLog(GroupDataWebServiceImpl.class);
+
+    @Autowired
+    protected SysConfiguration sysConfiguration;
 
     public GroupDataWebServiceImpl() {
 
@@ -143,7 +149,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
 
             final GroupEntity entity = groupDozerConverter.convertToEntity(group, true);
             groupManager.saveGroup(entity, requesterId);
-            auditLog.setTargetGroup(group.getId());
+            auditLog.setTargetGroup(entity.getId(), entity.getName());
 
             response.setResponseValue(entity.getId());
             auditLog.succeed();
@@ -185,7 +191,9 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
         auditLog.setRequestorUserId(requesterId);
 
         auditLog.setAction(AuditAction.DELETE_GROUP.value());
-        auditLog.setTargetGroup(groupId);
+        GroupEntity groupEntity = groupManager.getGroup(groupId);
+        auditLog.setTargetGroup(groupId, groupEntity.getName());
+
         try {
             validateDeleteInternal(groupId);
 
@@ -258,8 +266,11 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
         final Response response = new Response(ResponseStatus.SUCCESS);
         IdmAuditLog auditLog = new IdmAuditLog();
         auditLog.setAction(AuditAction.ADD_USER_TO_GROUP.value());
-        auditLog.setTargetUser(userId);
-        auditLog.setTargetGroup(groupId);
+        UserEntity user = userManager.getUser(userId);
+        LoginEntity userPrimaryIdentity =  UserUtils.getPrimaryIdentityEntity(sysConfiguration.getDefaultManagedSysId(), user.getPrincipalList());
+        auditLog.setTargetUser(userId,userPrimaryIdentity.getLogin());
+        GroupEntity groupEntity = groupManager.getGroup(groupId);
+        auditLog.setTargetGroup(groupId, groupEntity.getName());
         auditLog.setRequestorUserId(requesterId);
         auditLog.setAuditDescription(String.format("Add user to group: %s", groupId));
         try {
@@ -293,7 +304,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
         IdmAuditLog auditLog = new IdmAuditLog();
         auditLog.setRequestorUserId(requesterId);
         auditLog.setAction(AuditAction.REMOVE_USER_FROM_GROUP.value());
-        auditLog.setTargetUser(userId);
+        auditLog.setTargetUser(userId, null);
         auditLog.setAuditDescription(String.format("Remove user from group: %s", groupId));
         try {
             if (groupId == null || userId == null) {
@@ -330,7 +341,8 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
             if (attribute == null) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Attribute object is null");
             }
-            auditLog.setTargetGroup(attribute.getGroupId());
+            GroupEntity groupEntity = groupManager.getGroup(attribute.getGroupId());
+            auditLog.setTargetGroup(attribute.getGroupId(), groupEntity.getName());
 
             if (StringUtils.isBlank(attribute.getName()) || StringUtils.isBlank(attribute.getValue())) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Attribute name is missed");
@@ -447,7 +459,10 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
         final Response response = new Response(ResponseStatus.SUCCESS);
         IdmAuditLog auditLog = new IdmAuditLog();
         auditLog.setAction(AuditAction.ADD_CHILD_GROUP.value());
-        auditLog.setTargetGroup(groupId);
+        GroupEntity groupEntity = groupManager.getGroup(groupId);
+        auditLog.setTargetGroup(groupId, groupEntity.getName());
+        GroupEntity groupEntityChild = groupManager.getGroup(childGroupId);
+        auditLog.setTargetGroup(childGroupId, groupEntityChild.getName());
         auditLog.setRequestorUserId(requesterId);
         auditLog.setAuditDescription(String.format("Add child group: %s to group: %s", childGroupId, groupId));
 
@@ -488,7 +503,10 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
         final Response response = new Response(ResponseStatus.SUCCESS);
         IdmAuditLog auditLog = new IdmAuditLog();
         auditLog.setAction(AuditAction.REMOVE_CHILD_GROUP.value());
-        auditLog.setTargetGroup(groupId);
+        GroupEntity groupEntity = groupManager.getGroup(groupId);
+        auditLog.setTargetGroup(groupId, groupEntity.getName());
+        GroupEntity groupEntityChild = groupManager.getGroup(childGroupId);
+        auditLog.setTargetGroup(childGroupId, groupEntityChild.getName());
         auditLog.setRequestorUserId(requesterId);
         auditLog.setAuditDescription(String.format("Remove child group: %s from group: %s", childGroupId, groupId));
 
