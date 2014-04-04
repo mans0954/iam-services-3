@@ -17,6 +17,7 @@ import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.dto.GroupAttribute;
 import org.openiam.idm.srvc.grp.dto.GroupStatus;
+import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 import org.openiam.idm.srvc.role.domain.RoleAttributeEntity;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.domain.RolePolicyEntity;
@@ -106,7 +107,7 @@ public class TestGroupConversion extends AbstractTestNGSpringContextTests {
 		final GroupAttributeEntity groupAttribute = new GroupAttributeEntity();
 		//groupAttribute.setGroupId(rs(2));
 		groupAttribute.setId(rs(2));
-		groupAttribute.setMetadataElementId(rs(2));
+		groupAttribute.setElement(createMetadataElementEntity());
 		groupAttribute.setName(rs(2));
 		groupAttribute.setValue(rs(2));
 		return groupAttribute;
@@ -142,7 +143,7 @@ public class TestGroupConversion extends AbstractTestNGSpringContextTests {
 	private RoleAttributeEntity createRoleAttribute() {
 		final RoleAttributeEntity roleAttribute = new RoleAttributeEntity();
 		roleAttribute.setAttrGroup(rs(2));
-		roleAttribute.setMetadataElementId(rs(2));
+		roleAttribute.setElement(createMetadataElementEntity());
 		roleAttribute.setName(rs(2));
 		roleAttribute.setRoleAttrId(rs(2));
 		//roleAttribute.setRoleId(rs(2));
@@ -197,4 +198,12 @@ public class TestGroupConversion extends AbstractTestNGSpringContextTests {
 			Assert.assertTrue(CollectionUtils.isEmpty(copy.getChildRoles()));
 		}
 	}
+
+    private MetadataElementEntity createMetadataElementEntity() {
+        final MetadataElementEntity entity = new MetadataElementEntity();
+        entity.setDescription(rs(2));
+        entity.setAttributeName(rs(2));
+        entity.setId(rs(2));
+        return entity;
+    }
 }

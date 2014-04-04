@@ -207,7 +207,7 @@ public class ResourceServiceImpl implements ResourceService {
             for (final ResourcePropEntity beanProp : beanProps) {
                 if (StringUtils.equals(dbProp.getResourcePropId(), beanProp.getResourcePropId())) {
                     dbProp.setPropValue(beanProp.getPropValue());
-                    dbProp.setMetadataId(beanProp.getMetadataId());
+                    dbProp.setElement(beanProp.getElement());
                     dbProp.setName(beanProp.getName());
                     renewedProperties.add(dbProp);
                     break;

@@ -5,6 +5,7 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.auth.dto.LoginAttribute;
+import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 
 import javax.persistence.*;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -32,8 +33,9 @@ public class LoginAttributeEntity implements java.io.Serializable {
     @Column(name="VALUE",length = 4096)
     protected String value;
     
-    @Column(name="METADATA_ID",length = 20)
-    protected String metadataId;
+    @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
+    @JoinColumn(name = "METADATA_ID", insertable = true, updatable = true, nullable=true)
+    protected MetadataElementEntity element;
     
     @Column(name="ATTR_GROUP",length = 20)
     protected String attrGroup;
@@ -73,14 +75,13 @@ public class LoginAttributeEntity implements java.io.Serializable {
         this.value = value;
     }
 
-    public String getMetadataId() {
-        return this.metadataId;
+    public MetadataElementEntity getElement() {
+        return element;
     }
 
-    public void setMetadataId(String metadataId) {
-        this.metadataId = metadataId;
+    public void setElement(MetadataElementEntity element) {
+        this.element = element;
     }
-
 
     public String getAttrGroup() {
         return attrGroup;
@@ -111,8 +112,7 @@ public class LoginAttributeEntity implements java.io.Serializable {
 		result = prime * result
 				+ ((loginAttrId == null) ? 0 : loginAttrId.hashCode());
 		result = prime * result + ((loginId == null) ? 0 : loginId.hashCode());
-		result = prime * result
-				+ ((metadataId == null) ? 0 : metadataId.hashCode());
+        result = prime * result + ((element == null) ? 0 : element.hashCode());
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result + ((value == null) ? 0 : value.hashCode());
 		return result;
@@ -143,11 +143,11 @@ public class LoginAttributeEntity implements java.io.Serializable {
 				return false;
 		} else if (!loginId.equals(other.loginId))
 			return false;
-		if (metadataId == null) {
-			if (other.metadataId != null)
-				return false;
-		} else if (!metadataId.equals(other.metadataId))
-			return false;
+        if (element == null) {
+            if (other.element != null)
+                return false;
+        } else if (!element.equals(other.element))
+            return false;
 		if (name == null) {
 			if (other.name != null)
 				return false;
@@ -166,8 +166,7 @@ public class LoginAttributeEntity implements java.io.Serializable {
 	public String toString() {
 		return String
 				.format("LoginAttributeEntity [loginAttrId=%s, name=%s, value=%s, metadataId=%s, attrGroup=%s, loginId=%s]",
-						loginAttrId, name, value, metadataId, attrGroup,
-						loginId);
+						loginAttrId, name, value, attrGroup, loginId);
 	}
 
     

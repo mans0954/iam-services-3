@@ -75,7 +75,7 @@ public class MetadataElementEntity extends KeyEntity {
     private boolean selfEditable;
 
     @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY)
-    @JoinColumn(name = "TYPE_ID")
+    @JoinColumn(name = "TYPE_ID", insertable=true, updatable=true)
     @Internationalized
     private MetadataTypeEntity metadataType;
     
