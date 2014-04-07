@@ -209,14 +209,15 @@ public class IdmAuditLog implements Serializable {
 		this.parentLogs = parentLogs;
 	}
 
-	public void addTarget(final String targetId, final String targetType) {
+	public void addTarget(final String targetId, final String targetType, final String principal) {
 		if(targetId != null && targetType != null) {
 			if(this.targets == null) {
-				this.targets = new HashSet<AuditLogTarget>();
+				this.targets = new HashSet<>();
 			}
 			final AuditLogTarget target = new AuditLogTarget();
 			target.setTargetId(targetId);
 			target.setTargetType(targetType);
+            target.setObjectPrincipal(principal);
 			target.setLogId(id);
 			this.targets.add(target);
 		}
@@ -345,8 +346,8 @@ public class IdmAuditLog implements Serializable {
      * @param userId
      * @return this
      */
-    public void setTargetUser(final String userId) {
-        addTarget(userId, AuditTarget.USER.value());
+    public void setTargetUser(final String userId, final String userPrincipal) {
+        addTarget(userId, AuditTarget.USER.value(), userPrincipal);
     }
 
     /**
@@ -354,17 +355,24 @@ public class IdmAuditLog implements Serializable {
      * @param roleId
      * @return this
      */
-    public void setTargetRole(final String roleId) {
-        addTarget(roleId, AuditTarget.ROLE.value());
+    public void setTargetRole(final String roleId,final String rolePrincipal) {
+        addTarget(roleId, AuditTarget.ROLE.value(),  rolePrincipal);
     }
-
+    /**
+     * Sets a 'target' policy - against which this operations is being performed
+     * @param policyId
+     * @return this
+     */
+    public void setTargetPolicy(final String policyId,final String policyPrincipal) {
+        addTarget(policyId, AuditTarget.POLICY.value(),  policyPrincipal);
+    }
     /**
      * Sets a 'target' group - against which this operations is being performed
      * @param groupId
      * @return this
      */
-    public void setTargetGroup(final String groupId) {
-        addTarget(groupId, AuditTarget.GROUP.value());
+    public void setTargetGroup(final String groupId, final String groupPrincipal) {
+        addTarget(groupId, AuditTarget.GROUP.value(), groupPrincipal);
     }
 
     /**
@@ -372,8 +380,8 @@ public class IdmAuditLog implements Serializable {
      * @param resourceId
      * @return this
      */
-    public void setTargetResource(final String resourceId) {
-        addTarget(resourceId, AuditTarget.RESOURCE.value());
+    public void setTargetResource(final String resourceId, final String resourcePrincipal) {
+        addTarget(resourceId, AuditTarget.RESOURCE.value(), resourcePrincipal);
     }
 
     /**
@@ -381,8 +389,8 @@ public class IdmAuditLog implements Serializable {
      * @param managedSysId
      * @return this
      */
-    public void setTargetManagedSys(final String managedSysId) {
-        addTarget(managedSysId, AuditTarget.MANAGED_SYS.value());
+    public void setTargetManagedSys(final String managedSysId, final String managedSysPrincipal) {
+        addTarget(managedSysId, AuditTarget.MANAGED_SYS.value(), managedSysPrincipal);
     }
 
     /**

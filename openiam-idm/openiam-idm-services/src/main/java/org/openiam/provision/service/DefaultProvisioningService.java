@@ -73,6 +73,7 @@ import org.openiam.provision.resp.ProvisionUserResponse;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleUser;
 import org.openiam.util.MuleContextProvider;
+import org.openiam.util.UserUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
@@ -198,7 +199,8 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     idmAuditLog.setRequestorUserId(pUser.getRequestorUserId());
                     idmAuditLog.setRequestorPrincipal(pUser.getRequestorLogin());
                     idmAuditLog.setAction(AuditAction.PROVISIONING_MODIFY.value());
-                    idmAuditLog.setTargetUser(pUser.getId());
+                    Login primaryIdentity = UserUtils.getPrimaryIdentity(sysConfiguration.getDefaultManagedSysId(), pUser.getPrincipalList());
+                    idmAuditLog.setTargetUser(pUser.getId(),primaryIdentity.getLogin());
                     idmAuditLog.setAuditDescription("Provisioning modify user: " + pUser.getId()
                             + " with principal list: " + pUser.getPrincipalList());
 
@@ -260,10 +262,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         idmAuditLog.setAction(AuditAction.PROVISIONING_DELETE.value());
         try {
             List<LoginEntity> loginEntityList = loginManager.getLoginByUser(userId);
-            LoginEntity primaryIdentity = getPrimaryIdentity(
-                    this.sysConfiguration.getDefaultManagedSysId(),
-                    loginDozerConverter.convertToEntityList(
-                            loginDozerConverter.convertToDTOList(loginEntityList, false), false));
+            LoginEntity primaryIdentity = UserUtils.getPrimaryIdentityEntity(this.sysConfiguration.getDefaultManagedSysId(),loginEntityList);
 
             ProvisionUserResponse response = deleteUser(sysConfiguration.getDefaultManagedSysId(),
                     primaryIdentity.getLogin(), status, requestorId);
@@ -811,7 +810,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         if (!isAdd) {
             List<LoginEntity> curPrincipalList = userEntity.getPrincipalList();
             // check that a primary identity exists some where
-            LoginEntity curPrimaryIdentity = getPrimaryIdentity(sysConfiguration.getDefaultManagedSysId(),
+            LoginEntity curPrimaryIdentity = UserUtils.getPrimaryIdentityEntity(sysConfiguration.getDefaultManagedSysId(),
                     curPrincipalList);
             if (curPrimaryIdentity == null && pUser.getPrincipalList() == null) {
                 log.debug("Primary identity not found...");
@@ -912,7 +911,8 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 userMgr.addUser(userEntity); // Need to have userId to
                                            // encrypt/decrypt password
                 pUser.setId(userEntity.getId());
-                auditLog.setTargetUser(userEntity.getId());
+                Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
+                auditLog.setTargetUser(userEntity.getId(), login.getLogin());
             } catch (Exception e) {
                 auditLog.fail();
                 auditLog.setFailureReason("Exception while creating user: " + e.getMessage());
@@ -966,7 +966,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         updatePrincipals(userEntity, pUser);
 
         // get primary identity and bind it for the groovy scripts
-        LoginEntity primaryIdentityEntity = getPrimaryIdentity(sysConfiguration.getDefaultManagedSysId(),
+        LoginEntity primaryIdentityEntity = UserUtils.getPrimaryIdentityEntity(sysConfiguration.getDefaultManagedSysId(),
                 userEntity.getPrincipalList());
         Login primaryIdentity = (primaryIdentityEntity != null) ? loginDozerConverter.convertToDTO(
                 primaryIdentityEntity, false) : null;
@@ -1358,6 +1358,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             // get the user object associated with this principal
             final LoginEntity login = loginManager.getLoginByManagedSys(passwordSync.getPrincipal(),
                     passwordSync.getManagedSystemId());
+            idmAuditLog.setTargetUser(login.getUserId(), login.getLogin());
             if (login == null) {
                 idmAuditLog.fail();
                 idmAuditLog.setFailureReason(ResponseCode.PRINCIPAL_NOT_FOUND);
@@ -1383,7 +1384,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 return response;
             }
 
-            idmAuditLog.setTargetUser(userId);
+            idmAuditLog.setTargetUser(userId, login.getLogin());
 
             String password = passwordSync.getPassword();
             if (StringUtils.isEmpty(password)) {
@@ -1468,7 +1469,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                             managedSysDozerConverter.convertToDTO(mSys, false),
                                             objectMatchDozerConverter.convertToDTO(matchObj, false));
                                     System.out.println("============== Connector Reset Password get : " + new Date());
-
+                                    idmAuditLog.setTargetUser(lg.getUserId(), lg.getLogin());
                                     if (resp != null && resp.getStatus() == StatusCodeType.SUCCESS) {
                                         idmAuditLog.succeed();
                                         idmAuditLog.setAuditDescription(
@@ -1648,7 +1649,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 response.setErrorCode(ResponseCode.USER_NOT_FOUND);
                 return response;
             }
-            auditLog.setTargetUser(userId);
+            auditLog.setTargetUser(userId, login.getLogin());
 
             // validate the password against password policy
             final Password pswd = new Password();
@@ -1949,7 +1950,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         // ManagedSystemId where this event originated.
         // Ensure that we dont send the event back to this system
 
-        log.debug("----syncPasswo8rdFromSrc called.------");
+        log.debug("----syncPasswordFromSrc called.------");
         long curTime = System.currentTimeMillis();
 
         Response response = new Response(ResponseStatus.SUCCESS);

@@ -119,7 +119,7 @@ public class AuditLogDispatcher implements Sweepable {
                         }
                         for(AuditLogTarget newTarget : event.getTargets()) {
                              if(!srcLog.getTargets().contains(newTarget)) {
-                                srcLog.addTarget(newTarget.getId(), newTarget.getTargetType());
+                                srcLog.addTarget(newTarget.getId(), newTarget.getTargetType(), newTarget.getObjectPrincipal());
                             }
                         }
                         auditLogService.save(srcLog);

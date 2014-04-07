@@ -1,12 +1,14 @@
 package org.openiam.idm.srvc.lang.service;
 
-import org.openiam.idm.searchbeans.LanguageSearchBean;
-import org.openiam.idm.srvc.lang.dto.Language;
+import java.util.List;
 
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebService;
-import java.util.List;
+
+import org.openiam.base.ws.Response;
+import org.openiam.idm.searchbeans.LanguageSearchBean;
+import org.openiam.idm.srvc.lang.dto.Language;
 
 @WebService(targetNamespace = "urn:idm.openiam.org/srvc/lang/service", name = "LanguageWebService")
 public interface LanguageWebService {
@@ -23,5 +25,8 @@ public interface LanguageWebService {
 
     @WebMethod
     int count(final @WebParam(name = "searchBean", targetNamespace = "") LanguageSearchBean searchBean);
+
+    @WebMethod
+    Response save(final @WebParam(name = "language", targetNamespace = "") Language language);
 
 }

@@ -24,7 +24,6 @@ import org.apache.log4j.Logger;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.dozer.converter.IdmAuditLogDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.AuditLogSearchBean;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
@@ -32,6 +31,7 @@ import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.jws.WebParam;
 import javax.jws.WebService;
 import java.util.List;
 
@@ -76,7 +76,13 @@ public class IdmAuditLogWebDataServiceImpl implements IdmAuditLogWebDataService 
 		return entityList;
 	}
 
-	@Override
+    @Override
+    public List<String> getIds(@WebParam(name = "searchBean", targetNamespace = "") AuditLogSearchBean searchBean, @WebParam(name = "from", targetNamespace = "") int from, @WebParam(name = "size", targetNamespace = "") int size) {
+        final List<String> ids = auditLogService.findIDs(searchBean, from, size);
+        return ids;
+    }
+
+    @Override
 	public int count(final AuditLogSearchBean searchBean) {
 		return auditLogService.count(searchBean);
 	}

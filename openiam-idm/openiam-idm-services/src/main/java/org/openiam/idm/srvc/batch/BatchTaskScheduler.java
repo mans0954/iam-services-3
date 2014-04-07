@@ -78,7 +78,7 @@ public class BatchTaskScheduler implements ApplicationContextAware, Initializing
 					for(final String id : currentScheduledTasks) {
 						final BatchTaskEntity entity = batchMap.get(id);
 						if(entity == null || !entity.isEnabled()) {
-							unSchedule(entity, true);
+							unSchedule(id, true);
 						}
 					}
 				}

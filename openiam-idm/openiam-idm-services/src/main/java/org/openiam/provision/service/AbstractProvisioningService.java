@@ -970,29 +970,6 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         }
     }
 
-    public LoginEntity getPrimaryIdentity(String managedSysId, List<LoginEntity> principalList) {
-
-        log.debug("Getting identity for ManagedSysId");
-
-        if (principalList == null ||
-                principalList.size() == 0) {
-            return null;
-        }
-
-        log.debug(" - principals ->" + principalList);
-
-        for (LoginEntity l  : principalList) {
-            if (l.getManagedSysId().equalsIgnoreCase(managedSysId)) {
-
-                log.debug("getPrimaryIdentity() return ->" + l);
-
-                return l;
-            }
-        }
-        log.debug("getPrimaryIdentity() not found. returning null" );
-        return null;
-    }
-
     /**
      * Update the list of attributes with the correct operation values so that they can be
      * passed to the connector

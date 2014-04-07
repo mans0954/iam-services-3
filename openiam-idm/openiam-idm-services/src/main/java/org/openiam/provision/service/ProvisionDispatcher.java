@@ -191,6 +191,7 @@ public class ProvisionDispatcher implements Sweepable {
 
     private void process(List<ProvisionDataContainer> entities, final IdmAuditLog idmAuditLog) {
         for (ProvisionDataContainer data : entities) {
+
             Login identity = data.getIdentity();
 
             LoginEntity loginEntity = loginManager.getLoginByManagedSys(identity.getLogin(), identity.getManagedSysId());

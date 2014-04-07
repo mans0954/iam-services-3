@@ -561,16 +561,7 @@ public class AuthorizationManagerMenuServiceImpl extends AbstractBaseService imp
                 retVal = authManager.isEntitled(userId, resource);
             }
         }
-        if (!retVal) {
-            final IdmAuditLog idmAuditLog = new IdmAuditLog();
-            idmAuditLog.setAction(AuditAction.MENU_AUTHORIZATON.value());
-            idmAuditLog.setTargetUser(userId);
-            idmAuditLog.setURL(url);
-            idmAuditLog.addAttribute(AuditAttributeName.MENU_ID, menuId);
-            idmAuditLog.fail();
-            idmAuditLog.setFailureReason("Unauthorized");
-            auditLogService.enqueue(idmAuditLog);
-        }
+
         return retVal;
     }
 }

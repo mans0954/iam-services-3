@@ -32,6 +32,9 @@ public class AuditLogTargetEntity implements Serializable {
     @Column(name = "TARGET_TYPE",length=70)
     private String targetType;
 
+    @Column(name = "OBJECT_PRINCIPAL",length=70)
+    private String objectPrincipal;
+
 	public String getId() {
 		return id;
 	}
@@ -64,7 +67,15 @@ public class AuditLogTargetEntity implements Serializable {
 		this.targetType = targetType;
 	}
 
-	@Override
+    public String getObjectPrincipal() {
+        return objectPrincipal;
+    }
+
+    public void setObjectPrincipal(String objectPrincipal) {
+        this.objectPrincipal = objectPrincipal;
+    }
+
+    @Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
@@ -112,8 +123,8 @@ public class AuditLogTargetEntity implements Serializable {
 	@Override
 	public String toString() {
 		return String
-				.format("AuditLogTargetEntity [id=%s, log=%s, targetId=%s, targetType=%s]",
-						id, log, targetId, targetType);
+				.format("AuditLogTargetEntity [id=%s, objectPrincipal=%s, log=%s, targetId=%s, targetType=%s]",
+                        id, objectPrincipal, log, targetId, targetType);
 	}
 	
     
