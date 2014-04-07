@@ -52,7 +52,7 @@ public class ReportDataServiceImpl implements ReportDataService {
     private String uploadRoot;
     @Override
     @Transactional(readOnly = true)
-    public ReportDataDto getReportData(final String reportName, final Map<String, String> reportParams) throws ClassNotFoundException, ScriptEngineException, IOException {
+    public ReportDataDto getReportData(final String reportName, final Map<String, List<String>> reportParams) throws ClassNotFoundException, ScriptEngineException, IOException {
         ReportInfoEntity reportInfo = reportDao.findByName(reportName);
         if (reportInfo == null) {
             throw new IllegalArgumentException("Invalid parameter list: report with name=" + reportName + " was not found in Database");

@@ -2,6 +2,7 @@ package org.openiam.idm.srvc.report.ws;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebService;
@@ -17,11 +18,12 @@ import org.openiam.idm.srvc.report.dto.ReportSubscriptionDto;
 public interface ReportWebService {
 
     @WebMethod
-    GetReportDataResponse executeQuery(@WebParam(name = "reportName", targetNamespace = "") String reportName, @WebParam(name = "queryParams", targetNamespace = "") @XmlJavaTypeAdapter(PropertyMapAdapter.class) HashMap<String, String> queryParams);
+    GetReportDataResponse executeQuery(@WebParam(name = "reportName", targetNamespace = "") String reportName,
+                                       @WebParam(name = "queryParams", targetNamespace = "") @XmlJavaTypeAdapter(PropertyMapAdapter.class) HashMap<String, List<String>> queryParams);
 
     @WebMethod
     String getReportUrl(@WebParam(name = "reportName", targetNamespace = "") String reportName,
-                @WebParam(name = "queryParams", targetNamespace = "") @XmlJavaTypeAdapter(PropertyMapAdapter.class) HashMap<String, String> queryParams,
+                @WebParam(name = "queryParams", targetNamespace = "") @XmlJavaTypeAdapter(PropertyMapAdapter.class) HashMap<String, List<String>> queryParams,
                 @WebParam(name = "taskName", targetNamespace = "") String taskName,
                 @WebParam(name = "reportBaseUrl", targetNamespace = "") String reportBaseUrl,
                 @WebParam(name = "locale", targetNamespace = "") String locale);

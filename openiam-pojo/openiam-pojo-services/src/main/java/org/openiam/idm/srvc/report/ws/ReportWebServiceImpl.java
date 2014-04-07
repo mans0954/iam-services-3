@@ -11,10 +11,13 @@ import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jws.WebParam;
 import javax.jws.WebService;
+
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.client.utils.URIBuilder;
+import org.apache.lucene.util.CollectionUtil;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
@@ -88,7 +91,7 @@ public class ReportWebServiceImpl implements ReportWebService {
 
 	@Override
 	public GetReportDataResponse executeQuery(final String reportName,
-			final HashMap<String, String> queryParams) {
+                                              final HashMap<String, List<String>> queryParams) {
 		GetReportDataResponse response = new GetReportDataResponse();
 		if (!StringUtils.isEmpty(reportName)) {
 			try {
@@ -113,7 +116,7 @@ public class ReportWebServiceImpl implements ReportWebService {
 	}
 
     @Override
-    public String getReportUrl(final String reportName, final HashMap<String, String> queryParams,
+    public String getReportUrl(final String reportName, final HashMap<String, List<String>> queryParams,
                                final String taskName, final String reportBaseUrl, String locale) {
         try {
             ReportInfoEntity report = reportDataService.getReportByName(reportName);
@@ -127,9 +130,11 @@ public class ReportWebServiceImpl implements ReportWebService {
             uriBuilder.setPath(uriBuilder.getPath() + taskPath);
             uriBuilder.setParameter(REPORT_PARAMETER_NAME, reportDesignName);
             if (queryParams != null) {
-                for (Map.Entry<String, String> entry : queryParams.entrySet()  ) {
-                    if (StringUtils.isNotBlank(entry.getValue())) {
-                        uriBuilder.addParameter(entry.getKey(), entry.getValue());
+                for (Map.Entry<String, List<String>> entry : queryParams.entrySet()  ) {
+                    if (CollectionUtils.isNotEmpty(entry.getValue())) {
+                        for(String value : entry.getValue()) {
+                            uriBuilder.addParameter(entry.getKey(), value);
+                        }
                     }
                 }
             }

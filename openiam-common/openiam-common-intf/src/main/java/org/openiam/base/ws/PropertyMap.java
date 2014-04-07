@@ -6,6 +6,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlType;
 
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -28,15 +29,15 @@ public class PropertyMap {
     public static class PropertyEntry {
         @XmlAttribute
         protected String key;
-        @XmlElement
-        protected String value;
+        @XmlElement(name = "value")
+        protected List<String> values;
 
-        public String getValue() {
-            return value;
+        public List<String> getValues() {
+            return values;
         }
 
-        public void setValue(String value) {
-            this.value = value;
+        public void setValues(List<String> value) {
+            this.values = values;
         }
 
         /**

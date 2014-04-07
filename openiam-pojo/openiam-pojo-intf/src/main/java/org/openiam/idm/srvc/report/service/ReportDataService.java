@@ -19,7 +19,7 @@ import org.openiam.idm.srvc.report.dto.ReportDataDto;
  * @author vitaly.yakunin
  */
 public interface ReportDataService {
-    ReportDataDto getReportData(final String reportName, final Map<String, String> reportParams) throws ClassNotFoundException, ScriptEngineException, IOException;
+    ReportDataDto getReportData(final String reportName, final Map<String, List<String>> reportParams) throws ClassNotFoundException, ScriptEngineException, IOException;
     List<ReportInfoEntity> getAllReports(final int from, final int size);
     Integer getReportCount();
     Integer getSubscribedReportCount();
