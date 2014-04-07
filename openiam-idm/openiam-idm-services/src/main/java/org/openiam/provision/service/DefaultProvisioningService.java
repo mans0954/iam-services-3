@@ -1950,7 +1950,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         // ManagedSystemId where this event originated.
         // Ensure that we dont send the event back to this system
 
-        log.debug("----syncPasswo8rdFromSrc called.------");
+        log.debug("----syncPasswordFromSrc called.------");
         long curTime = System.currentTimeMillis();
 
         Response response = new Response(ResponseStatus.SUCCESS);
