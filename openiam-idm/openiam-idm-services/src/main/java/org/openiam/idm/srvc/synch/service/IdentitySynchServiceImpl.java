@@ -175,6 +175,15 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
         idmAuditLog.setAction(AuditAction.SYNCHRONIZATION.value());
         idmAuditLog.setSource(config.getSynchConfigId());
 
+        SyncResponse processCheckResponse = addTask(config.getSynchConfigId());
+        if ( processCheckResponse.getStatus() == ResponseStatus.FAILURE &&
+                processCheckResponse.getErrorCode() == ResponseCode.FAIL_PROCESS_ALREADY_RUNNING) {
+            idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "WARNING: Previous synchronization run is not finished yet");
+            auditLogService.enqueue(idmAuditLog);
+            return processCheckResponse;
+
+        }
+
         String preScriptUrl = config.getPreSyncScript();
         if (StringUtils.isNotBlank(preScriptUrl)) {
             log.debug("-PRE synchronization script CALLED.^^^^^^^^");
@@ -199,14 +208,9 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
 
         Date startDate = new Date();
 
-        SyncResponse processCheckResponse = addTask(config.getSynchConfigId());
         idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "Synchronization started..." + startDate);
 
         try {
-            if ( processCheckResponse.getStatus() == ResponseStatus.FAILURE ) {
-                return processCheckResponse;
-
-            }
             SynchConfig configDTO = synchConfigDozerConverter.convertToDTO(config, false);
 
 			SourceAdapter adapt = adapterFactory.create(configDTO);
@@ -277,8 +281,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
      * @param configId
      * @return
      */
-    @Transactional
-    public SyncResponse addTask(String configId) {
+    private SyncResponse addTask(String configId) {
 
         SyncResponse resp = new SyncResponse(ResponseStatus.SUCCESS);
         synchronized (runningTask) {
@@ -294,8 +297,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
 
     }
 
-    @Transactional
-    public void endTask(String configID) {
+    private void endTask(String configID) {
         runningTask.remove(configID);
     }
 

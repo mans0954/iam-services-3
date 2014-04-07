@@ -31,6 +31,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
@@ -40,6 +41,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.SysConfiguration;
 import org.openiam.base.id.UUIDGen;
+import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.connector.type.ObjectValue;
 import org.openiam.connector.type.constant.StatusCodeType;
@@ -89,6 +91,7 @@ import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.synch.dto.Attribute;
+import org.openiam.idm.srvc.synch.dto.SyncResponse;
 import org.openiam.idm.srvc.synch.service.MatchObjectRule;
 import org.openiam.idm.srvc.synch.srcadapter.MatchRuleFactory;
 import org.openiam.idm.srvc.user.domain.UserEntity;
@@ -188,6 +191,15 @@ public class ReconciliationServiceImpl implements ReconciliationService {
     protected AuditLogService auditLogService;
 
     private static final Log log = LogFactory.getLog(ReconciliationServiceImpl.class);
+
+    /*
+    * The flags for the running tasks are handled by this Thread-Safe Set.
+    * It stores the taskIds of the currently executing tasks.
+    * This is faster and as reliable as storing the flags in the database,
+    * if the tasks are only launched from ONE host in a clustered environment.
+    * It is unique for each class-loader, which means unique per war-deployment.
+    */
+    private static Set<String> runningTask = Collections.newSetFromMap(new ConcurrentHashMap());
 
     public ReconciliationConfig addConfig(ReconciliationConfig config) {
         if (config == null) {
@@ -294,6 +306,14 @@ public class ReconciliationServiceImpl implements ReconciliationService {
         ManagedSysEntity managedSysEntity = managedSysService.getManagedSysById(config.getManagedSysId());
         idmAuditLog.setTargetManagedSys(config.getManagedSysId(), managedSysEntity.getName());
         idmAuditLog.setSource(config.getReconConfigId());
+
+        ReconciliationResponse processCheckResponse = addTask(config.getReconConfigId());
+        if ( processCheckResponse.getStatus() == ResponseStatus.FAILURE &&
+                processCheckResponse.getErrorCode() == ResponseCode.FAIL_PROCESS_ALREADY_RUNNING) {
+            idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "WARNING: Previous reconciliation run is not finished yet");
+            auditLogService.enqueue(idmAuditLog);
+            return processCheckResponse;
+        }
 
         try {
 
@@ -479,6 +499,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
                     "Reconciliation for target system: " + mSys.getName() + " is complete.");
 
             this.sendMail(config, res);
+
         } catch (Exception e) {
             log.error(e);
             e.printStackTrace();
@@ -489,6 +510,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
             return resp;
 
         } finally {
+            endTask(config.getReconConfigId());
             auditLogService.enqueue(idmAuditLog);
             reconConfigDao.save(configEntity);
         }
@@ -1144,5 +1166,30 @@ public class ReconciliationServiceImpl implements ReconciliationService {
             log.error(e);
             // e.printStackTrace();
         }
+    }
+
+    /**
+     * Updates the RunningTask list to show that a process is running
+     * @param configId
+     * @return
+     */
+    private ReconciliationResponse addTask(String configId) {
+
+        ReconciliationResponse resp = new ReconciliationResponse(ResponseStatus.SUCCESS);
+        synchronized (runningTask) {
+            if(runningTask.contains(configId)) {
+
+                resp = new ReconciliationResponse(ResponseStatus.FAILURE);
+                resp.setErrorCode(ResponseCode.FAIL_PROCESS_ALREADY_RUNNING);
+                return resp;
+            }
+            runningTask.add(configId);
+            return resp;
+        }
+
+    }
+
+    private void endTask(String configID) {
+        runningTask.remove(configID);
     }
 }

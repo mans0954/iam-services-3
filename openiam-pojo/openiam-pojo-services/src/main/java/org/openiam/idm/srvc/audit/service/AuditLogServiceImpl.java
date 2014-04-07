@@ -141,7 +141,9 @@ public class AuditLogServiceImpl implements AuditLogService {
             if(StringUtils.isEmpty(log.getPrincipal()) && StringUtils.isNotEmpty(log.getUserId())) {
                 List<LoginEntity> principals = loginDAO.findUser(log.getUserId());
                 LoginEntity loginEntity = UserUtils.getPrimaryIdentityEntity(sysConfiguration.getDefaultManagedSysId(), principals);
-                log.setPrincipal(loginEntity.getLogin());
+                if (loginEntity != null) {
+                    log.setPrincipal(loginEntity.getLogin());
+                }
             }
         }
     }
