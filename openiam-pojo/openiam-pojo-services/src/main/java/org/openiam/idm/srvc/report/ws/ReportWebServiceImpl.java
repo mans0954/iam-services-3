@@ -1,6 +1,7 @@
 package org.openiam.idm.srvc.report.ws;
 
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -35,6 +36,7 @@ import org.openiam.idm.srvc.report.domain.ReportSubscriptionEntity;
 import org.openiam.idm.srvc.report.domain.ReportParamTypeEntity;
 import org.openiam.idm.srvc.report.dto.ReportCriteriaParamDto;
 import org.openiam.idm.srvc.report.dto.ReportParamMetaTypeDto;
+import org.openiam.idm.srvc.report.dto.ReportQueryDto;
 import org.openiam.idm.srvc.report.dto.ReportSubCriteriaParamDto;
 import org.openiam.idm.srvc.report.dto.ReportDataDto;
 import org.openiam.idm.srvc.report.dto.ReportSubscriptionDto;
@@ -90,13 +92,11 @@ public class ReportWebServiceImpl implements ReportWebService {
     private Queue queue;
 
 	@Override
-	public GetReportDataResponse executeQuery(final String reportName,
-                                              final HashMap<String, List<String>> queryParams) {
+	public GetReportDataResponse executeQuery(final ReportQueryDto reportQuery) {
 		GetReportDataResponse response = new GetReportDataResponse();
-		if (!StringUtils.isEmpty(reportName)) {
+		if (!StringUtils.isEmpty(reportQuery.getReportName())) {
 			try {
-				ReportDataDto reportDataDto = reportDataService.getReportData(
-						reportName, queryParams);
+				ReportDataDto reportDataDto = reportDataService.getReportData(reportQuery);
 
 				response.setReportDataDto(reportDataDto);
 			} catch (Throwable ex) {
@@ -108,7 +108,7 @@ public class ReportWebServiceImpl implements ReportWebService {
 		} else {
 			response.setErrorCode(ResponseCode.INVALID_ARGUMENTS);
 			response.setErrorText("Invalid parameter list: reportName="
-					+ reportName);
+					+ reportQuery.getReportName());
 			response.setStatus(ResponseStatus.SUCCESS);
 		}
 
@@ -116,12 +116,12 @@ public class ReportWebServiceImpl implements ReportWebService {
 	}
 
     @Override
-    public String getReportUrl(final String reportName, final HashMap<String, List<String>> queryParams,
+    public String getReportUrl(final ReportQueryDto reportQuery,
                                final String taskName, final String reportBaseUrl, String locale) {
         try {
-            ReportInfoEntity report = reportDataService.getReportByName(reportName);
+            ReportInfoEntity report = reportDataService.getReportByName(reportQuery.getReportName());
             if (report == null) {
-                log.debug("Report couldn't be found. Report name = " + reportName);
+                log.debug("Report couldn't be found. Report name = " + reportQuery.getReportName());
                 return null;
             }
             String taskPath = StringUtils.isNotBlank(taskName) ? taskName : DEFAULT_REPORT_TASK;
@@ -129,8 +129,8 @@ public class ReportWebServiceImpl implements ReportWebService {
             URIBuilder uriBuilder = new URIBuilder(reportBaseUrl);
             uriBuilder.setPath(uriBuilder.getPath() + taskPath);
             uriBuilder.setParameter(REPORT_PARAMETER_NAME, reportDesignName);
-            if (queryParams != null) {
-                for (Map.Entry<String, List<String>> entry : queryParams.entrySet()  ) {
+            if (reportQuery.getQueryParams() != null) {
+                for (Map.Entry<String, List<String>> entry : reportQuery.getQueryParams().entrySet()  ) {
                     if (CollectionUtils.isNotEmpty(entry.getValue())) {
                         for(String value : entry.getValue()) {
                             uriBuilder.addParameter(entry.getKey(), value);

@@ -37,7 +37,7 @@ public class PropertyMap {
         }
 
         public void setValues(List<String> value) {
-            this.values = values;
+            this.values = value;
         }
 
         /**
