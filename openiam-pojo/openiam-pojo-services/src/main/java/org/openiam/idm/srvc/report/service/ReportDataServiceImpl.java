@@ -16,6 +16,7 @@ import org.openiam.idm.srvc.report.domain.ReportInfoEntity;
 import org.openiam.idm.srvc.report.domain.ReportSubscriptionEntity;
 import org.openiam.exception.ScriptEngineException;
 import org.openiam.idm.srvc.report.dto.ReportDataDto;
+import org.openiam.idm.srvc.report.dto.ReportQueryDto;
 import org.openiam.script.ScriptIntegration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -52,16 +53,13 @@ public class ReportDataServiceImpl implements ReportDataService {
     private String uploadRoot;
     @Override
     @Transactional(readOnly = true)
-    public ReportDataDto getReportData(final String reportName, final Map<String, String> reportParams) throws ClassNotFoundException, ScriptEngineException, IOException {
-        ReportInfoEntity reportInfo = reportDao.findByName(reportName);
+    public ReportDataDto getReportData(final ReportQueryDto reportQuery) throws ClassNotFoundException, ScriptEngineException, IOException {
+        ReportInfoEntity reportInfo = reportDao.findByName(reportQuery.getReportName());
         if (reportInfo == null) {
-            throw new IllegalArgumentException("Invalid parameter list: report with name=" + reportName + " was not found in Database");
+            throw new IllegalArgumentException("Invalid parameter list: report with name=" + reportQuery.getReportName() + " was not found in Database");
         }
-
-
         ReportDataSetBuilder dataSourceBuilder = (ReportDataSetBuilder) scriptRunner.instantiateClass(Collections.EMPTY_MAP, uploadRoot+"/report/", reportInfo.getReportDataSource());
-
-        return dataSourceBuilder.getReportData(reportParams);
+        return dataSourceBuilder.getReportData(reportQuery);
     }
 
     @Override
