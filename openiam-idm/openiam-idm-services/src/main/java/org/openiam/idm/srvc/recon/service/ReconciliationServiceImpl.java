@@ -307,6 +307,14 @@ public class ReconciliationServiceImpl implements ReconciliationService {
         idmAuditLog.setTargetManagedSys(config.getManagedSysId(), managedSysEntity.getName());
         idmAuditLog.setSource(config.getReconConfigId());
 
+        if ("INACTIVE".equalsIgnoreCase(config.getStatus())) {
+            idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "WARNING: Reconciliation config is in 'INACTIVE' status");
+            auditLogService.enqueue(idmAuditLog);
+            ReconciliationResponse resp = new ReconciliationResponse(ResponseStatus.FAILURE);
+            resp.setErrorCode(ResponseCode.FAIL_PROCESS_INACTIVE);
+            return resp;
+        }
+
         ReconciliationResponse processCheckResponse = addTask(config.getReconConfigId());
         if ( processCheckResponse.getStatus() == ResponseStatus.FAILURE &&
                 processCheckResponse.getErrorCode() == ResponseCode.FAIL_PROCESS_ALREADY_RUNNING) {

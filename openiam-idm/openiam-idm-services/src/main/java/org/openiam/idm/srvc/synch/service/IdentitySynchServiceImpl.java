@@ -175,6 +175,14 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
         idmAuditLog.setAction(AuditAction.SYNCHRONIZATION.value());
         idmAuditLog.setSource(config.getSynchConfigId());
 
+        if ("INACTIVE".equalsIgnoreCase(config.getStatus())) {
+            idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "WARNING: Synchronization config is in 'INACTIVE' status");
+            auditLogService.enqueue(idmAuditLog);
+            SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
+            resp.setErrorCode(ResponseCode.FAIL_PROCESS_INACTIVE);
+            return resp;
+        }
+
         SyncResponse processCheckResponse = addTask(config.getSynchConfigId());
         if ( processCheckResponse.getStatus() == ResponseStatus.FAILURE &&
                 processCheckResponse.getErrorCode() == ResponseCode.FAIL_PROCESS_ALREADY_RUNNING) {
