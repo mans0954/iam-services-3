@@ -26,6 +26,7 @@ import java.util.*;
         "managedSysId",
         "managedSysName",
         "companyId",
+        "companyName",
         "createDate",
         "createdBy",
         "description",
@@ -57,6 +58,7 @@ public class Group extends AdminResourceDTO implements Serializable {
     protected Date createDate;
     protected String createdBy;
     protected String companyId;
+    private String companyName;
     protected String description;
 
     protected String status;
@@ -222,6 +224,14 @@ public class Group extends AdminResourceDTO implements Serializable {
 
 	public void setManagedSysName(String managedSysName) {
 		this.managedSysName = managedSysName;
+	}
+
+	public String getCompanyName() {
+		return companyName;
+	}
+
+	public void setCompanyName(String companyName) {
+		this.companyName = companyName;
 	}
 
 	@Override

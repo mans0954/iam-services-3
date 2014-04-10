@@ -18,7 +18,7 @@ import org.openiam.base.ws.PropertyMapAdapter;
 public class ReportDataDto {
 
     @XmlJavaTypeAdapter(PropertyMapAdapter.class)
-    protected HashMap<String, String> parameters;
+    protected HashMap<String, List<String>> parameters;
 
     @XmlAnyElement(lax = true)
     protected List<ReportTable> tables;
@@ -34,14 +34,14 @@ public class ReportDataDto {
         this.tables = tables;
     }
 
-    public HashMap<String, String> getParameters() {
+    public HashMap<String, List<String>> getParameters() {
         if (parameters == null) {
-            parameters = new HashMap<String, String>();
+            parameters = new HashMap<String, List<String>>();
         }
         return parameters;
     }
 
-    public void setParameters(HashMap<String, String> parameters) {
+    public void setParameters(HashMap<String, List<String>> parameters) {
         this.parameters = parameters;
     }
 }
