@@ -32,9 +32,12 @@ import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
+import org.openiam.idm.srvc.org.domain.OrganizationEntity;
+import org.openiam.idm.srvc.org.domain.OrganizationTypeEntity;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
+import org.openiam.internationalization.Internationalized;
 
 @Entity
 @Table(name = "GRP")
@@ -62,9 +65,10 @@ public class GroupEntity {
     @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name = "MANAGED_SYS_ID", referencedColumnName = "MANAGED_SYS_ID", insertable = true, updatable = true, nullable=true)
     private ManagedSysEntity managedSystem;
-
-    @Column(name = "COMPANY_ID", length = 32)
-    private String companyId;
+    
+    @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+    @JoinColumn(name = "COMPANY_ID", referencedColumnName = "COMPANY_ID", insertable = true, updatable = true)
+    private OrganizationEntity company;
 
     @Column(name = "GROUP_DESC", length = 512)
     @Size(max = 512, message = "group.description.too.long")
@@ -152,15 +156,15 @@ public class GroupEntity {
         this.createdBy = createdBy;
     }
 
-    public String getCompanyId() {
-        return companyId;
-    }
+    public OrganizationEntity getCompany() {
+		return company;
+	}
 
-    public void setCompanyId(String companyId) {
-        this.companyId = companyId;
-    }
+	public void setCompany(OrganizationEntity company) {
+		this.company = company;
+	}
 
-    public String getDescription() {
+	public String getDescription() {
         return description;
     }
 
@@ -333,7 +337,7 @@ public class GroupEntity {
 		result = prime * result + ((status == null) ? 0 : status.hashCode());
 		
 		result = prime * result
-				+ ((companyId == null) ? 0 : companyId.hashCode());
+				+ ((company == null) ? 0 : company.hashCode());
 		return result;
 	}
 
@@ -391,10 +395,10 @@ public class GroupEntity {
 				return false;
 		} else if (!status.equals(other.status))
 			return false;
-		if (companyId == null) {
-			if (other.companyId != null)
+		if (company == null) {
+			if (other.company != null)
 				return false;
-		} else if (!companyId.equals(other.companyId))
+		} else if (!company.equals(other.company))
 			return false;
 		return true;
 	}

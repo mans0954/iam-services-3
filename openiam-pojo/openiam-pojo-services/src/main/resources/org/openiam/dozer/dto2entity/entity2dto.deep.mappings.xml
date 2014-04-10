@@ -194,6 +194,14 @@
 			<a>adminResource.name</a>
 			<b>adminResourceName</b>
 		</field>
+		<field>
+			<a>company.id</a>
+			<b>companyId</b>
+		</field>
+		<field>
+			<a>company.name</a>
+			<b>companyName</b>
+		</field>
 		<field
 			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
 			custom-converter-param="dto2entityShallowDozerMapper">
