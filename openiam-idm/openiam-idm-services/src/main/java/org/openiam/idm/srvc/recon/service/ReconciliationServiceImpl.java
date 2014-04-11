@@ -500,7 +500,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
 
             this.saveReconciliationResults(config.getResourceId(), resultBean);
 
-            configEntity.setLastExecTime(startDate);
+            configEntity.setLastExecTime(new Date());
             configEntity.setExecStatus(ReconExecStatusOptions.FINISHED);
 
             idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION,
@@ -544,6 +544,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
         bindingMap.put(AbstractProvisioningService.TARGET_SYS_MANAGED_SYS_ID, mSys.getId());
         bindingMap.put("baseDnField", baseDnField);
         bindingMap.put("searchFilter", config.getTargetSystemSearchFilter());
+        bindingMap.put("lastExecTime", config.getLastExecTime());
         bindingMap.put("updatedSince", config.getUpdatedSince());
         String searchQuery = (String) scriptRunner.execute(bindingMap, config.getTargetSystemMatchScript());
         if (StringUtils.isEmpty(searchQuery)) {
