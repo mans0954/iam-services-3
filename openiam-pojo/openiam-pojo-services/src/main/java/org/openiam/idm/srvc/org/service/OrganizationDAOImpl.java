@@ -92,6 +92,11 @@ public class OrganizationDAOImpl extends
 						organizationSearchBean.getKey()));
 			}
 
+            if (StringUtils.isNotBlank(organizationSearchBean.getInternalOrgId())) {
+                criteria.add(Restrictions.eq("internalOrgId",
+                        organizationSearchBean.getInternalOrgId()));
+            }
+
 			if (StringUtils.isNotBlank(organizationSearchBean.getUserId())) {
 				criteria.createAlias("users", "u").add(
 						Restrictions.eq("u.id",
