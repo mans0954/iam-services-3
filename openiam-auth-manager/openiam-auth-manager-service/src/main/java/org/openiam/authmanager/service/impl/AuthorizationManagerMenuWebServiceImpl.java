@@ -354,13 +354,13 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 		final ResourcePropEntity iconProp = new ResourcePropEntity();
 		iconProp.setResource(resource);
 		iconProp.setName(AuthorizationConstants.MENU_ITEM_ICON_PROPERTY);
-		iconProp.setPropValue(menu.getIcon());
+		iconProp.setValue(menu.getIcon());
 		resource.addResourceProperty(iconProp);
 		
 		final ResourcePropEntity visibleProp = new ResourcePropEntity();
 		visibleProp.setResource(resource);
 		visibleProp.setName(AuthorizationConstants.MENU_ITEM_IS_VISIBLE);
-		visibleProp.setPropValue(Boolean.valueOf(menu.getIsVisible()).toString());
+		visibleProp.setValue(Boolean.valueOf(menu.getIsVisible()).toString());
 		resource.addResourceProperty(visibleProp);
 		
 		return resource;
@@ -379,12 +379,12 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 		ResourcePropEntity visibleProp = resource.getResourceProperty(AuthorizationConstants.MENU_ITEM_IS_VISIBLE);
 		
 		if(visibleProp != null) {
-			visibleProp.setPropValue(Boolean.valueOf(menu.getIsVisible()).toString());
+			visibleProp.setValue(Boolean.valueOf(menu.getIsVisible()).toString());
 		} else {
 			visibleProp = new ResourcePropEntity();
 			visibleProp.setResource(resource);
 			visibleProp.setName(AuthorizationConstants.MENU_ITEM_IS_VISIBLE);
-			visibleProp.setPropValue(Boolean.valueOf(menu.getIsVisible()).toString());
+			visibleProp.setValue(Boolean.valueOf(menu.getIsVisible()).toString());
 			resource.addResourceProperty(visibleProp);
 		}
 		
@@ -401,12 +401,12 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 		*/
 		
 		if(iconProp != null) {
-			iconProp.setPropValue(menu.getIcon());
+			iconProp.setValue(menu.getIcon());
 		} else {
 			iconProp = new ResourcePropEntity();
 			iconProp.setResource(resource);
 			iconProp.setName(AuthorizationConstants.MENU_ITEM_ICON_PROPERTY);
-			iconProp.setPropValue(menu.getIcon());
+			iconProp.setValue(menu.getIcon());
 			resource.addResourceProperty(iconProp);
 		}
 	}

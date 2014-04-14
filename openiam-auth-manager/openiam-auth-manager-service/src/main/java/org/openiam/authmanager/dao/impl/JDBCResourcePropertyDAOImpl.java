@@ -15,7 +15,7 @@ public class JDBCResourcePropertyDAOImpl extends AbstractJDBCDao implements Reso
 
 	private static final RowMapper<ResourceProp> mapper = new Mapper();
 	
-	private static String GET_ALL = "SELECT RESOURCE_PROP_ID AS ID, RESOURCE_ID AS RESOURCE_ID, METADATA_ID AS METADATA_ID, NAME AS NAME, PROP_VALUE AS PROP_VALUE FROM %s.RESOURCE_PROP";
+	private static String GET_ALL = "SELECT RESOURCE_PROP_ID AS ID, RESOURCE_ID AS RESOURCE_ID, METADATA_ID AS METADATA_ID, NAME AS NAME, VALUE AS VALUE FROM %s.RESOURCE_PROP";
 	
 	@Override
 	protected void initSqlStatements() {
@@ -32,11 +32,11 @@ public class JDBCResourcePropertyDAOImpl extends AbstractJDBCDao implements Reso
 		@Override
 		public ResourceProp mapRow(final ResultSet rs, final int rowNum) throws SQLException {
 			final ResourceProp prop = new ResourceProp();
-			prop.setResourcePropId(rs.getString("ID"));
+			prop.setId(rs.getString("ID"));
 			prop.setResourceId(rs.getString("RESOURCE_ID"));
 			prop.setMetadataId(rs.getString("METADATA_ID"));
 			prop.setName(rs.getString("NAME"));
-			prop.setPropValue(rs.getString("PROP_VALUE"));
+			prop.setValue(rs.getString("VALUE"));
 			return prop;
 		}
 	}

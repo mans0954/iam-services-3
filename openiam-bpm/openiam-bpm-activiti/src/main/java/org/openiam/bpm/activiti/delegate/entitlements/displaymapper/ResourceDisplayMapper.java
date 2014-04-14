@@ -47,8 +47,8 @@ public class ResourceDisplayMapper extends AbstractActivitiJob {
 		
 		if(CollectionUtils.isNotEmpty(resource.getResourceProps())) {
 			for(final ResourceProp prop : resource.getResourceProps()) {
-				if(StringUtils.isNotBlank(prop.getName()) && StringUtils.isNotBlank(prop.getPropValue())) {
-					metadataMap.put(prop.getName(), prop.getPropValue());
+				if(StringUtils.isNotBlank(prop.getName()) && StringUtils.isNotBlank(prop.getValue())) {
+					metadataMap.put(prop.getName(), prop.getValue());
 				}
 			}
 		}

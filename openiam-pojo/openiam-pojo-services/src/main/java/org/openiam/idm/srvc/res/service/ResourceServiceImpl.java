@@ -196,8 +196,8 @@ public class ResourceServiceImpl implements ResourceService {
 	 * boolean contains = false; for(final Iterator<ResourcePropEntity> it =
 	 * beanProps.iterator(); it.hasNext();) { final ResourcePropEntity
 	 * beanProp = it.next();
-	 * if(StringUtils.equals(dbProp.getResourcePropId(),
-	 * beanProp.getResourcePropId())) { contains = true; break; } }
+	 * if(StringUtils.equals(dbProp.getId(),
+	 * beanProp.getId())) { contains = true; break; } }
 	 * 
 	 * if(!contains) { dbIt.remove(); } }
 	 */
@@ -205,8 +205,8 @@ public class ResourceServiceImpl implements ResourceService {
 	/* update */
         for (ResourcePropEntity dbProp : dbProps) {
             for (final ResourcePropEntity beanProp : beanProps) {
-                if (StringUtils.equals(dbProp.getResourcePropId(), beanProp.getResourcePropId())) {
-                    dbProp.setPropValue(beanProp.getPropValue());
+                if (StringUtils.equals(dbProp.getId(), beanProp.getId())) {
+                    dbProp.setValue(beanProp.getValue());
                     dbProp.setElement(beanProp.getElement());
                     dbProp.setName(beanProp.getName());
                     renewedProperties.add(dbProp);
@@ -219,7 +219,7 @@ public class ResourceServiceImpl implements ResourceService {
         for (final ResourcePropEntity beanProp : beanProps) {
             boolean contains = false;
             for (ResourcePropEntity dbProp : dbProps) {
-                if (StringUtils.equals(dbProp.getResourcePropId(), beanProp.getResourcePropId())) {
+                if (StringUtils.equals(dbProp.getId(), beanProp.getId())) {
                     contains = true;
                 }
             }
@@ -300,7 +300,7 @@ public class ResourceServiceImpl implements ResourceService {
     @Override
     @Transactional
     public void save(ResourcePropEntity entity) {
-        if (StringUtils.isBlank(entity.getResourcePropId())) {
+        if (StringUtils.isBlank(entity.getId())) {
             resourcePropDao.save(entity);
         } else {
             resourcePropDao.merge(entity);

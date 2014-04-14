@@ -4,6 +4,8 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
+import org.openiam.base.AbstractAttributeDTO;
+import org.openiam.base.KeyDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
 
@@ -14,34 +16,14 @@ import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "ResourceProp", propOrder = {
-        "resourcePropId",
-        "resourceId",
-        "metadataId",
-        "propValue",
-        "name"
+        "resourceId"
 })
 @DozerDTOCorrespondence(ResourcePropEntity.class)
-public class ResourceProp implements java.io.Serializable, Comparable<ResourceProp> {
+public class ResourceProp extends AbstractAttributeDTO implements Comparable<ResourceProp> {
 
-    private String resourcePropId;
     private String resourceId;
-    private String metadataId;
-    private String propValue;
-    private String name;
 
     public ResourceProp() {
-    }
-
-    public ResourceProp(String resourcePropId) {
-        this.resourcePropId = resourcePropId;
-    }
-
-    public String getResourcePropId() {
-        return this.resourcePropId;
-    }
-
-    public void setResourcePropId(String resourcePropId) {
-        this.resourcePropId = resourcePropId;
     }
 
     public String getResourceId() {
@@ -52,41 +34,6 @@ public class ResourceProp implements java.io.Serializable, Comparable<ResourcePr
         this.resourceId = resourceId;
     }
 
-    public String getMetadataId() {
-        return this.metadataId;
-    }
-
-    public void setMetadataId(String metadataId) {
-        this.metadataId = metadataId;
-    }
-
-    public String getPropValue() {
-        return propValue;
-    }
-
-    public void setPropValue(String propValue) {
-        this.propValue = propValue;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    @Override
-    public String toString() {
-        return "ResourceProp{" +
-                "resourcePropId='" + resourcePropId + '\'' +
-                ", resourceId='" + resourceId + '\'' +
-                ", metadataId='" + metadataId + '\'' +
-                ", propValue='" + propValue + '\'' +
-                ", name='" + name + '\'' +
-                '}';
-    }
-
     public int compareTo(ResourceProp o) {
         if (getName() == null || o == null) {
             // Not recommended, but compareTo() is only used for display purposes in this case
@@ -94,4 +41,38 @@ public class ResourceProp implements java.io.Serializable, Comparable<ResourcePr
         }
         return getName().compareTo(o.getName());
     }
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result
+				+ ((resourceId == null) ? 0 : resourceId.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		ResourceProp other = (ResourceProp) obj;
+		if (resourceId == null) {
+			if (other.resourceId != null)
+				return false;
+		} else if (!resourceId.equals(other.resourceId))
+			return false;
+		return true;
+	}
+
+	@Override
+	public String toString() {
+		return String.format("ResourceProp [resourceId=%s, toString()=%s]",
+				resourceId, super.toString());
+	}
+    
+    
 }
