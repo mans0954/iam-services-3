@@ -9,6 +9,7 @@ import javax.xml.bind.annotation.XmlType;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.openiam.idm.srvc.meta.domain.MetadataTypeGrouping;
 import org.openiam.idm.srvc.meta.dto.MetadataType;
 
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -25,7 +26,7 @@ public class MetadataTypeSearchBean extends AbstractSearchBean<MetadataType, Str
     private Set<String> keySet;
     private Boolean active;
     private Boolean syncManagedSys;
-    private String grouping;
+    private MetadataTypeGrouping grouping;
     private String name;
     private Set<String> categoryIds;
 
@@ -45,13 +46,13 @@ public class MetadataTypeSearchBean extends AbstractSearchBean<MetadataType, Str
         this.syncManagedSys = syncManagedSys;
     }
 
-    public String getGrouping() {
-        return grouping;
-    }
+    public MetadataTypeGrouping getGrouping() {
+		return grouping;
+	}
 
-    public void setGrouping(String grouping) {
-        this.grouping = grouping;
-    }
+	public void setGrouping(MetadataTypeGrouping grouping) {
+		this.grouping = grouping;
+	}
 
     @Override
     public void setKey(final String key) {
