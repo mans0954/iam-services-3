@@ -19,7 +19,7 @@ import java.util.Set;
 @XmlType(name = "OrganizationSearchBean", propOrder = {
         "keySet",
         "name",
-		"organizationTypeId",
+		"organizationTypeIdSet",
 		"userId",
 		"parentId",
 		"childId",
@@ -31,7 +31,7 @@ public class OrganizationSearchBean extends AbstractSearchBean<Organization, Str
     private static final long serialVersionUID = 1L;
     private Set<String> keySet;
     private String name;
-    private String organizationTypeId;
+    private Set<String> organizationTypeIdSet;
     private String userId;
     private String parentId;
     private String childId;
@@ -47,12 +47,35 @@ public class OrganizationSearchBean extends AbstractSearchBean<Organization, Str
 	}
 
 	public String getOrganizationTypeId() {
-		return organizationTypeId;
+        return (CollectionUtils.isNotEmpty(organizationTypeIdSet)) ? organizationTypeIdSet.iterator().next() : null;
+//		return organizationTypeId;
 	}
 
 	public void setOrganizationTypeId(String organizationTypeId) {
-		this.organizationTypeId = organizationTypeId;
+//		this.organizationTypeId = organizationTypeId;
+        this.addOrganizationTypeId(organizationTypeId);
 	}
+
+    public void addOrganizationTypeId(final String organizationTypeId) {
+        if(organizationTypeIdSet == null) {
+            organizationTypeIdSet = new HashSet<String>();
+        }
+        organizationTypeIdSet.add(organizationTypeId);
+    }
+
+    public Set<String> getOrganizationTypeIdSet() {
+        return organizationTypeIdSet;
+    }
+
+    public void setOrganizationTypeIdSet(final List<String> organizationTypeIdSet) {
+        if(organizationTypeIdSet != null) {
+            setKeys(new HashSet<String>(organizationTypeIdSet));
+        }
+    }
+
+    public void setOrganizationTypeIdSet(final Set<String> organizationTypeIdSet) {
+        this.organizationTypeIdSet = organizationTypeIdSet;
+    }
 
 	@Override
     public String getKey() {
@@ -61,10 +84,11 @@ public class OrganizationSearchBean extends AbstractSearchBean<Organization, Str
 
     @Override
     public void setKey(final String key) {
-        if(keySet == null) {
-            keySet = new HashSet<String>();
-        }
-        keySet.add(key);
+//        if(keySet == null) {
+//            keySet = new HashSet<String>();
+//        }
+//        keySet.add(key);
+        this.addKey(key);
     }
 
     public Set<String> getKeys() {
