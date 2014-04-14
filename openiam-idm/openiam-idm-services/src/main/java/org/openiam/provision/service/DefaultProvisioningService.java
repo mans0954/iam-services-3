@@ -154,7 +154,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     idmAuditLog.setRequestorPrincipal(pUser.getRequestorLogin());
                     idmAuditLog.setAction(AuditAction.PROVISIONING_ADD.value());
                     idmAuditLog.setAuditDescription("Provisioning add user: " + pUser.getId()
-                            + " with principal list: " + pUser.getPrincipalList());
+                            + " with first/last name: " + pUser.getFirstName() + "/" + pUser.getLastName());
                     ProvisionUserResponse tmpRes = new ProvisionUserResponse(ResponseStatus.FAILURE);
                     try {
                         tmpRes = addModifyUser(pUser, true, dataList, idmAuditLog);
@@ -199,10 +199,10 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     idmAuditLog.setRequestorUserId(pUser.getRequestorUserId());
                     idmAuditLog.setRequestorPrincipal(pUser.getRequestorLogin());
                     idmAuditLog.setAction(AuditAction.PROVISIONING_MODIFY.value());
-                    Login primaryIdentity = UserUtils.getPrimaryIdentity(sysConfiguration.getDefaultManagedSysId(), pUser.getPrincipalList());
-                    idmAuditLog.setTargetUser(pUser.getId(),primaryIdentity.getLogin());
+                    LoginEntity loginEntity = loginManager.getByUserIdManagedSys(pUser.getId(),sysConfiguration.getDefaultManagedSysId());
+                    idmAuditLog.setTargetUser(pUser.getId(),loginEntity.getLogin());
                     idmAuditLog.setAuditDescription("Provisioning modify user: " + pUser.getId()
-                            + " with principal list: " + pUser.getPrincipalList());
+                            + " with primary identity: " + loginEntity);
 
                     ProvisionUserResponse tmpRes = new ProvisionUserResponse(ResponseStatus.FAILURE);
                     try{
