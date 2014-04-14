@@ -124,14 +124,6 @@ public class OrganizationDAOImpl extends
 								organizationSearchBean.getValidParentTypeId()));
 			}
 
-            if (StringUtils.isNotBlank(organizationSearchBean
-                                               .getValidParentTypeId())) {
-                criteria.createAlias("organizationType.parentTypes",
-                                     "parentTypes").add(
-                        Restrictions.eq("parentTypes.id",
-                                        organizationSearchBean.getValidParentTypeId()));
-            }
-
             if (CollectionUtils.isNotEmpty(organizationSearchBean.getOrganizationTypeIdSet())) {
                 criteria.add(Restrictions.in("organizationType.id",
                                              organizationSearchBean.getOrganizationTypeIdSet()));
