@@ -19,7 +19,6 @@ public class ResourcePropEntity extends AbstractAttributeEntity {
     @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name = "RESOURCE_ID", referencedColumnName = "RESOURCE_ID", insertable = true, updatable = false)
     private ResourceEntity resource;
-    
     @Column(name = "IS_MULTIVALUED", nullable = false)
     @Type(type = "yes_no")
     private boolean isMultivalued = false;

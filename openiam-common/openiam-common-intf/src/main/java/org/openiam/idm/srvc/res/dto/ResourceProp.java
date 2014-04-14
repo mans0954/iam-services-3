@@ -91,6 +91,4 @@ public class ResourceProp extends AbstractAttributeDTO implements Comparable<Res
 				.format("ResourceProp [resourceId=%s, isMultivalued=%s, toString()=%s]",
 						resourceId, isMultivalued, super.toString());
 	}
-
-	
 }
