@@ -16,12 +16,14 @@ import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "ResourceProp", propOrder = {
-        "resourceId"
+        "resourceId",
+        "isMultivalued"
 })
 @DozerDTOCorrespondence(ResourcePropEntity.class)
 public class ResourceProp extends AbstractAttributeDTO implements Comparable<ResourceProp> {
 
     private String resourceId;
+    protected Boolean isMultivalued = Boolean.FALSE;
 
     public ResourceProp() {
     }
@@ -42,10 +44,20 @@ public class ResourceProp extends AbstractAttributeDTO implements Comparable<Res
         return getName().compareTo(o.getName());
     }
 
+	public Boolean getIsMultivalued() {
+		return isMultivalued;
+	}
+
+	public void setIsMultivalued(Boolean isMultivalued) {
+		this.isMultivalued = isMultivalued;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
+		result = prime * result
+				+ ((isMultivalued == null) ? 0 : isMultivalued.hashCode());
 		result = prime * result
 				+ ((resourceId == null) ? 0 : resourceId.hashCode());
 		return result;
@@ -60,6 +72,11 @@ public class ResourceProp extends AbstractAttributeDTO implements Comparable<Res
 		if (getClass() != obj.getClass())
 			return false;
 		ResourceProp other = (ResourceProp) obj;
+		if (isMultivalued == null) {
+			if (other.isMultivalued != null)
+				return false;
+		} else if (!isMultivalued.equals(other.isMultivalued))
+			return false;
 		if (resourceId == null) {
 			if (other.resourceId != null)
 				return false;
@@ -70,9 +87,10 @@ public class ResourceProp extends AbstractAttributeDTO implements Comparable<Res
 
 	@Override
 	public String toString() {
-		return String.format("ResourceProp [resourceId=%s, toString()=%s]",
-				resourceId, super.toString());
+		return String
+				.format("ResourceProp [resourceId=%s, isMultivalued=%s, toString()=%s]",
+						resourceId, isMultivalued, super.toString());
 	}
-    
-    
+
+	
 }
