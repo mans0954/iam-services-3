@@ -382,7 +382,7 @@ public class ProvisionDispatcher implements Sweepable {
             bindingMap.put("targetSystemAttributes", currentValueMap);
 
             ResourceProp preProcessProp = res.getResourceProperty("PRE_PROCESS");
-            String preProcessScript = preProcessProp != null ? preProcessProp.getPropValue() : null;
+            String preProcessScript = preProcessProp != null ? preProcessProp.getValue() : null;
             if (StringUtils.isNotBlank(preProcessScript)) {
                 PreProcessor ppScript = createPreProcessScript(preProcessScript, bindingMap);
                 if (ppScript != null) {
@@ -421,7 +421,7 @@ public class ProvisionDispatcher implements Sweepable {
 
             // post processing
             ResourceProp postProcessProp = res.getResourceProperty("POST_PROCESS");
-            String postProcessScript = postProcessProp != null ? postProcessProp.getPropValue() : null;
+            String postProcessScript = postProcessProp != null ? postProcessProp.getValue() : null;
             if (StringUtils.isNotBlank(postProcessScript)) {
                 PostProcessor ppScript = createPostProcessScript(postProcessScript, bindingMap);
                 if (ppScript != null) {

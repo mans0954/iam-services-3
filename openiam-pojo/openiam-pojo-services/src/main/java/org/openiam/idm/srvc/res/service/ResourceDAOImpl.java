@@ -314,11 +314,11 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
 				for(final Tuple<String, String> attribute : searchBean.getAttributes()) {
 					if(StringUtils.isNotBlank(attribute.getKey()) && StringUtils.isNotBlank(attribute.getValue())) {
 						criteria.add(Restrictions.and(Restrictions.eq("prop.name", attribute.getKey()), 
-								Restrictions.eq("prop.propValue", attribute.getValue())));
+								Restrictions.eq("prop.value", attribute.getValue())));
 					} else if(StringUtils.isNotBlank(attribute.getKey())) {
 						criteria.add(Restrictions.eq("prop.name", attribute.getKey()));
 					} else if(StringUtils.isNotBlank(attribute.getValue())) {
-						criteria.add(Restrictions.eq("prop.propValue", attribute.getValue()));
+						criteria.add(Restrictions.eq("prop.value", attribute.getValue()));
 					}
 				}
 			}

@@ -118,9 +118,9 @@ public class TestCrossEntityConversion extends AbstractTestNGSpringContextTests 
 	final ResourcePropEntity entity = new ResourcePropEntity();
 	entity.setElement(createMetadataElementEntity());
 	entity.setName(rs(2));
-	entity.setPropValue(rs(2));
+	entity.setValue(rs(2));
 	// entity.setResourceId(rs(2));
-	entity.setResourcePropId(rs(2));
+	entity.setId(rs(2));
 	return entity;
     }
 

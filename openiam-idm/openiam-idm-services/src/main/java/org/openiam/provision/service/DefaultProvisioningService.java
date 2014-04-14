@@ -1879,7 +1879,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         if (resource != null && StringUtils.isNotBlank(propertyName)) {
             final ResourcePropEntity property = resource.getResourceProperty(propertyName);
             if (property != null) {
-                retVal = property.getPropValue();
+                retVal = property.getValue();
             }
         }
         return retVal;
@@ -1895,7 +1895,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         while (propIt.hasNext()) {
             ResourceProp prop = propIt.next();
             if (prop.getName().equalsIgnoreCase(propertyName)) {
-                return prop.getPropValue();
+                return prop.getValue();
             }
         }
 

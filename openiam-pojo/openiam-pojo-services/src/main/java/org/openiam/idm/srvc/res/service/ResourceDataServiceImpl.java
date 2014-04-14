@@ -99,7 +99,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
     @LocalizedServiceGet
     public List<Resource> findBeans(final ResourceSearchBean searchBean, final int from, final int size, final Language language) {
         final List<ResourceEntity> resultsEntities = resourceService.findBeans(searchBean, from, size);
-        return resourceConverter.convertToDTOList(resultsEntities,false);
+        return resourceConverter.convertToDTOList(resultsEntities,searchBean.isDeepCopy());
     }
 
     @Override
@@ -243,8 +243,8 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
             }
 
             final ResourcePropEntity entity = resourcePropConverter.convertToEntity(prop, false);
-            if (StringUtils.isNotBlank(prop.getResourcePropId())) {
-                final ResourcePropEntity dbObject = resourceService.findResourcePropById(prop.getResourcePropId());
+            if (StringUtils.isNotBlank(prop.getId())) {
+                final ResourcePropEntity dbObject = resourceService.findResourcePropById(prop.getId());
                 if (dbObject == null) {
                     throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND,
                             "No Resource Property object is found");
@@ -255,7 +255,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
                 throw new BasicDataServiceException(ResponseCode.NO_NAME, "Resource Property name is not set");
             }
 
-            if (StringUtils.isBlank(entity.getPropValue())) {
+            if (StringUtils.isBlank(entity.getValue())) {
                 throw new BasicDataServiceException(ResponseCode.RESOURCE_PROP_VALUE_MISSING,
                         "Resource Property value is not set");
             }
@@ -265,7 +265,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
                         "Resource ID is not set for Resource Property object");
             }
             resourceService.save(entity);
-            response.setResponseValue(entity.getResourcePropId());
+            response.setResponseValue(entity.getId());
             idmAuditLog.succeed();
         } catch (BasicDataServiceException e) {
             response.setStatus(ResponseStatus.FAILURE);
