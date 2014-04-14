@@ -164,15 +164,57 @@ public class OrganizationTypeServiceImpl implements OrganizationTypeService, Ini
 		return retval;
 	}
     @Override
-    public List<OrganizationTypeEntity> getAllowedParents(String organizationTypeId){
+    public List<OrganizationTypeEntity> getAllowedParents(String organizationTypeId, String requesterId){
         OrganizationTypeSearchBean searchBean = new OrganizationTypeSearchBean();
-        searchBean.setKeySet(getAllowedParentsIds(organizationTypeId));
+        searchBean.setKeySet(getAllowedParentsIds(organizationTypeId, requesterId));
         return findBeans(searchBean, 0, Integer.MAX_VALUE);
     }
 
     @Override
-    public Set<String> getAllowedParentsIds(String organizationTypeId){
+    public Set<String> getAllowedParentsIds(String organizationTypeId, String requesterId){
+//        Set<String> result = new HashSet<>();
+//        List<OrgType2OrgTypeXref> xrefList = organizationTypeDAO.getOrgTypeToOrgTypeXrefList();
+//
+//        for(final OrgType2OrgTypeXref xref : xrefList) {
+//            final String orgTypeId = xref.getOrganizationTypeId();
+//            final String memberOrgTypeId = xref.getMemberOrganizationTypeId();
+//
+//            if(StringUtils.equals(memberOrgTypeId, organizationTypeId)) {
+//                result.add(orgTypeId);
+//            }
+//        }
+        Map<String, UserAttribute> requesterAttributes = null;
+        if (StringUtils.isNotBlank(requesterId)) {
+            requesterAttributes = userDataService.getUserAttributesDto(requesterId);
+        }
+        return getAllowedParentsIds(organizationTypeId, requesterAttributes);
+    }
+    @Override
+    public Set<String> getAllowedParentsIds(String organizationTypeId, Map<String, UserAttribute> requesterAttributes){
         Set<String> result = new HashSet<>();
+        Set<String> allowedParentTypesIds = new HashSet<>();
+        if(requesterAttributes!=null){
+            result = this.findAllowedChildrenByDelegationFilter(requesterAttributes);
+
+            boolean isOrgFilterSet = DelegationFilterHelper.isOrgFilterSet(requesterAttributes);
+            boolean isDivFilterSet = DelegationFilterHelper.isDivisionFilterSet(requesterAttributes);
+            boolean isDepFilterSet = DelegationFilterHelper.isDeptFilterSet(requesterAttributes);
+            boolean isUseOrgInhFilterSet = DelegationFilterHelper.isUseOrgInhFilterSet(requesterAttributes);
+            if(isOrgFilterSet){
+                result.add(organizationTypeId);
+            }
+            if(isDivFilterSet
+               || (isOrgFilterSet && isUseOrgInhFilterSet)){
+                result.add(divisionTypeId);
+            }
+            if(isDepFilterSet
+               || (isDivFilterSet && isUseOrgInhFilterSet)
+               || (isOrgFilterSet && isUseOrgInhFilterSet)){
+                result.add(departmentTypeId);
+            }
+        } else {
+            result = new HashSet<>(organizationTypeDAO.findAllIds());
+        }
         List<OrgType2OrgTypeXref> xrefList = organizationTypeDAO.getOrgTypeToOrgTypeXrefList();
 
         for(final OrgType2OrgTypeXref xref : xrefList) {
@@ -180,12 +222,13 @@ public class OrganizationTypeServiceImpl implements OrganizationTypeService, Ini
             final String memberOrgTypeId = xref.getMemberOrganizationTypeId();
 
             if(StringUtils.equals(memberOrgTypeId, organizationTypeId)) {
-                result.add(orgTypeId);
+                allowedParentTypesIds.add(orgTypeId);
             }
         }
+
+        result.retainAll(allowedParentTypesIds);
         return result;
     }
-
     @Override
     public List<OrganizationTypeEntity> findAllowedChildrenByDelegationFilter(String requesterId){
         Set<String> allowedTypeIds = new HashSet<String>();
