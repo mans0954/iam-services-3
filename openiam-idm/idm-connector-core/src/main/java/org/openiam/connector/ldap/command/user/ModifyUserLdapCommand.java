@@ -40,7 +40,10 @@ public class ModifyUserLdapCommand extends AbstractCrudLdapCommand<ExtensibleUse
         List<BaseAttribute> targetMembershipList = new ArrayList<BaseAttribute>();
         List<BaseAttribute> supervisorMembershipList = new ArrayList<BaseAttribute>();
         try {
-            String identity = crudRequest.getObjectIdentity();
+
+            ExtensibleAttribute origIdentity = isRename(crudRequest.getExtensibleObject());
+
+            String identity = (origIdentity != null)? origIdentity.getValue() : crudRequest.getObjectIdentity();
             //Check identity on CN format or not
             String identityPatternStr =  MessageFormat.format(DN_IDENTITY_MATCH_REGEXP, matchObj.getKeyField());
             Pattern pattern = Pattern.compile(identityPatternStr);
@@ -48,9 +51,10 @@ public class ModifyUserLdapCommand extends AbstractCrudLdapCommand<ExtensibleUse
             String objectBaseDN;
 
             if(matcher.matches()) {
+                String tmp = identity;
                 identity = matcher.group(1);
                 String CN = matchObj.getKeyField() + "=" + identity;
-                objectBaseDN =  crudRequest.getObjectIdentity().substring(CN.length()+1);
+                objectBaseDN =  tmp.substring(CN.length()+1);
 
             } else {
                 // if identity is not in DN format try to find OU info in attributes
@@ -59,20 +63,6 @@ public class ModifyUserLdapCommand extends AbstractCrudLdapCommand<ExtensibleUse
                     objectBaseDN = OU+","+matchObj.getBaseDn();
                 } else {
                     objectBaseDN = matchObj.getBaseDn();
-                }
-            }
-
-            ExtensibleAttribute origIdentity = isRename(crudRequest.getExtensibleObject());
-            if (origIdentity != null) {
-                log.debug("Renaming identity: " + origIdentity.getValue());
-
-                try {
-                    ldapctx.rename(origIdentity.getValue(), identity);
-                    log.debug("Renaming : " + origIdentity.getValue());
-
-                } catch (NamingException ne) {
-                    log.error(ne.getMessage(), ne);
-                    throw new ConnectorDataException(ErrorCode.DIRECTORY_ERROR, ne.getMessage());
                 }
             }
 
@@ -201,6 +191,19 @@ public class ModifyUserLdapCommand extends AbstractCrudLdapCommand<ExtensibleUse
                 if (supervisorMembershipEnabled) {
                     dirSpecificImp.updateSupervisorMembership(managedSys, supervisorMembershipList, identity, identityDN,
                             matchObj, ldapctx, crudRequest.getExtensibleObject());
+                }
+            }
+
+            if (origIdentity != null) {
+                log.debug("Renaming identity: " + identityDN);
+
+                try {
+                    ldapctx.rename(identityDN, crudRequest.getObjectIdentity());
+                    log.debug("Renaming : " + identityDN);
+
+                } catch (NamingException ne) {
+                    log.error(ne.getMessage(), ne);
+                    throw new ConnectorDataException(ErrorCode.DIRECTORY_ERROR, ne.getMessage());
                 }
             }
 
