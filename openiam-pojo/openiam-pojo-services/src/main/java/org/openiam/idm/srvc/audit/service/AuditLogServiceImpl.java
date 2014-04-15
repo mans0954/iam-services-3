@@ -16,8 +16,6 @@ import org.openiam.base.SysConfiguration;
 import org.openiam.dozer.converter.IdmAuditLogDozerConverter;
 import org.openiam.idm.searchbeans.AuditLogSearchBean;
 import org.openiam.idm.srvc.audit.constant.AuditTarget;
-import org.openiam.idm.srvc.audit.domain.AuditLogTargetEntity;
-import org.openiam.idm.srvc.audit.domain.IdmAuditLogCustomEntity;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.audit.dto.AuditLogTarget;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
