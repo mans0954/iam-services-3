@@ -9,7 +9,7 @@ import javax.xml.bind.annotation.XmlType;
 	"adminResourceId",
 	"adminResourceName"
 })
-public abstract class AdminResourceDTO extends KeyNameDTO {
+public abstract class AdminResourceDTO extends AbstractMetadataTypeDTO {
 
 	private String adminResourceId;
     private String adminResourceName;
