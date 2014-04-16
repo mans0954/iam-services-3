@@ -17,6 +17,7 @@ import org.openiam.idm.srvc.cat.dto.Category;
 import org.openiam.idm.srvc.lang.domain.LanguageMappingEntity;
 import org.openiam.idm.srvc.lang.dto.LanguageMapping;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
+import org.openiam.idm.srvc.meta.domain.MetadataTypeGrouping;
 import org.openiam.internationalization.Internationalized;
 import org.openiam.internationalization.InternationalizedCollection;
 
@@ -45,7 +46,7 @@ public class MetadataType extends KeyDTO {
     private boolean active;
     private boolean syncManagedSys;
 
-    private String grouping;
+    private MetadataTypeGrouping grouping;
     
     private boolean binary;
     
@@ -94,16 +95,18 @@ public class MetadataType extends KeyDTO {
     public void setSyncManagedSys(boolean syncManagedSys) {
     	this.syncManagedSys = syncManagedSys;
     }
+    
+    
 
-    public String getGrouping() {
-    	return grouping;
-    }
+    public MetadataTypeGrouping getGrouping() {
+		return grouping;
+	}
 
-    public void setGrouping(String grouping) {
-    	this.grouping = grouping;
-    }
+	public void setGrouping(MetadataTypeGrouping grouping) {
+		this.grouping = grouping;
+	}
 
-    public boolean getActive() {
+	public boolean getActive() {
     	return active;
     }
 

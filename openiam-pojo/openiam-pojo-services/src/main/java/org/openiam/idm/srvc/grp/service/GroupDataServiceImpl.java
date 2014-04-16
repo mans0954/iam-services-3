@@ -15,6 +15,7 @@ import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 import org.openiam.idm.srvc.mngsys.service.ManagedSysDAO;
+import org.openiam.idm.srvc.org.service.OrganizationDAO;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
@@ -75,6 +76,9 @@ public class GroupDataServiceImpl implements GroupDataService {
 	
 	@Autowired
 	private ResourceTypeDAO resourceTypeDAO;
+	
+	@Autowired
+	private OrganizationDAO organizationDAO;
 	
 	private static final Log log = LogFactory.getLog(GroupDataServiceImpl.class);
 
@@ -207,6 +211,12 @@ public class GroupDataServiceImpl implements GroupDataService {
 				group.setManagedSystem(managedSysDAO.findById(group.getManagedSystem().getId()));
 			} else {
 				group.setManagedSystem(null);
+			}
+			
+			if(group.getCompany() != null && StringUtils.isNotBlank(group.getCompany().getId())) {
+				group.setCompany(organizationDAO.findById(group.getCompany().getId()));
+			} else {
+				group.setCompany(null);
 			}
 
 			if(StringUtils.isNotBlank(group.getId())) {

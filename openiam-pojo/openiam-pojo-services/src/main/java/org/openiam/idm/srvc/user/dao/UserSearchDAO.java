@@ -14,21 +14,22 @@ public class UserSearchDAO extends AbstractHibernateSearchDao<UserEntity, UserSe
 	@Override
 	protected Query parse(UserSearchBean query) {
 		final BooleanQuery luceneQuery = new BooleanQuery();
+
 		Query clause = buildTokenizedClause("firstName", query.getFirstName());
 		if(clause != null) {
 			luceneQuery.add(clause, BooleanClause.Occur.MUST);
 		}
-		
+
 		clause = buildTokenizedClause("lastName", query.getLastName());
 		if(clause != null) {
 			luceneQuery.add(clause, BooleanClause.Occur.MUST);
 		}
-		
+
 		clause = buildExactClause("userStatus", query.getUserStatus());
 		if(clause != null) {
 			luceneQuery.add(clause, BooleanClause.Occur.MUST);
 		}
-		
+
 		clause = buildExactClause("accountStatus", query.getAccountStatus());
 		if(clause != null) {
 			luceneQuery.add(clause, BooleanClause.Occur.MUST);
@@ -38,7 +39,7 @@ public class UserSearchDAO extends AbstractHibernateSearchDao<UserEntity, UserSe
         if(clause != null) {
             luceneQuery.add(clause, BooleanClause.Occur.MUST);
         }
-        
+
         clause = buildExactClause("employeeType", query.getEmployeeType());
         if(clause != null) {
 			luceneQuery.add(clause, BooleanClause.Occur.MUST);

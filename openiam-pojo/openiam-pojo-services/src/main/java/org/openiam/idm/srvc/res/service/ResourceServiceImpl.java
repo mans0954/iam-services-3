@@ -16,10 +16,12 @@ import org.openiam.idm.searchbeans.ResourceSearchBean;
 import org.openiam.idm.searchbeans.ResourceTypeSearchBean;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.service.GroupDAO;
+import org.openiam.idm.srvc.lang.domain.LanguageEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataElementPageTemplateEntity;
 import org.openiam.idm.srvc.meta.service.MetadataElementDAO;
 import org.openiam.idm.srvc.meta.service.MetadataElementPageTemplateDAO;
+import org.openiam.idm.srvc.meta.service.MetadataTypeDAO;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
@@ -33,6 +35,7 @@ import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.service.RoleDAO;
 import org.openiam.idm.srvc.user.service.UserDAO;
+import org.openiam.internationalization.LocalizedServiceGet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -81,6 +84,9 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Autowired
     private UserDAO userDAO;
+    
+    @Autowired
+    private MetadataTypeDAO typeDAO;
 
     @Autowired
     private MetadataElementPageTemplateDAO templateDAO;
@@ -117,8 +123,14 @@ public class ResourceServiceImpl implements ResourceService {
             entity.setResourceType(resourceTypeDao.findById(entity.getResourceType().getId()));
         }
 
-	/* admin resource can't have an admin resource - do this check here */
+        /* admin resource can't have an admin resource - do this check here */
         boolean isAdminResource = StringUtils.equals(entity.getResourceType().getId(), adminResourceTypeId);
+        
+        if(entity.getType() != null && StringUtils.isNotBlank(entity.getType().getId())) {
+        	entity.setType(typeDAO.findById(entity.getType().getId()));
+        } else {
+        	entity.setType(null);
+        }
 
         if (StringUtils.isNotBlank(entity.getId())) {
             final ResourceEntity dbObject = resourceDao.findById(entity.getId());
@@ -156,6 +168,8 @@ public class ResourceServiceImpl implements ResourceService {
                 entity.addApproverAssociation(createDefaultApproverAssociations(entity, requestorId));
             }
         }
+        
+        
 
         resourceDao.merge(entity);
     }
@@ -196,8 +210,8 @@ public class ResourceServiceImpl implements ResourceService {
 	 * boolean contains = false; for(final Iterator<ResourcePropEntity> it =
 	 * beanProps.iterator(); it.hasNext();) { final ResourcePropEntity
 	 * beanProp = it.next();
-	 * if(StringUtils.equals(dbProp.getResourcePropId(),
-	 * beanProp.getResourcePropId())) { contains = true; break; } }
+	 * if(StringUtils.equals(dbProp.getId(),
+	 * beanProp.getId())) { contains = true; break; } }
 	 * 
 	 * if(!contains) { dbIt.remove(); } }
 	 */
@@ -205,8 +219,8 @@ public class ResourceServiceImpl implements ResourceService {
 	/* update */
         for (ResourcePropEntity dbProp : dbProps) {
             for (final ResourcePropEntity beanProp : beanProps) {
-                if (StringUtils.equals(dbProp.getResourcePropId(), beanProp.getResourcePropId())) {
-                    dbProp.setPropValue(beanProp.getPropValue());
+                if (StringUtils.equals(dbProp.getId(), beanProp.getId())) {
+                    dbProp.setValue(beanProp.getValue());
                     dbProp.setElement(beanProp.getElement());
                     dbProp.setName(beanProp.getName());
                     renewedProperties.add(dbProp);
@@ -219,7 +233,7 @@ public class ResourceServiceImpl implements ResourceService {
         for (final ResourcePropEntity beanProp : beanProps) {
             boolean contains = false;
             for (ResourcePropEntity dbProp : dbProps) {
-                if (StringUtils.equals(dbProp.getResourcePropId(), beanProp.getResourcePropId())) {
+                if (StringUtils.equals(dbProp.getId(), beanProp.getId())) {
                     contains = true;
                 }
             }
@@ -250,7 +264,8 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<ResourceEntity> findBeans(final ResourceSearchBean searchBean, final int from, final int size) {
+    @LocalizedServiceGet
+    public List<ResourceEntity> findBeans(final ResourceSearchBean searchBean, final int from, final int size, final LanguageEntity language) {
         // final ResourceEntity resource =
         // resourceSearchBeanConverter.convert(searchBean);
         List<ResourceEntity> resultsEntities = null;
@@ -300,7 +315,7 @@ public class ResourceServiceImpl implements ResourceService {
     @Override
     @Transactional
     public void save(ResourcePropEntity entity) {
-        if (StringUtils.isBlank(entity.getResourcePropId())) {
+        if (StringUtils.isBlank(entity.getId())) {
             resourcePropDao.save(entity);
         } else {
             resourcePropDao.merge(entity);

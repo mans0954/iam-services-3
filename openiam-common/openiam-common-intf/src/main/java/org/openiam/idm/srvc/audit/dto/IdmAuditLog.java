@@ -392,6 +392,14 @@ public class IdmAuditLog implements Serializable {
     public void setTargetManagedSys(final String managedSysId, final String managedSysPrincipal) {
         addTarget(managedSysId, AuditTarget.MANAGED_SYS.value(), managedSysPrincipal);
     }
+    /**
+     * Sets a 'target' org - against which this operations is being performed
+     * @param orgId
+     * @return this
+     */
+    public void setTargetOrg(final String orgId,final String orgPrincipal) {
+        addTarget(orgId, AuditTarget.ORG.value(),  orgPrincipal);
+    }
 
     /**
      * Sets the principal of who triggered this event

@@ -28,9 +28,11 @@ public interface OrganizationTypeService {
 	
 	public void removeChild(final String id, final String childId);
 
-    public List<OrganizationTypeEntity> getAllowedParents(String organizationTypeId);
+    public List<OrganizationTypeEntity> getAllowedParents(String organizationTypeId, String requesterId);
 
-    public Set<String> getAllowedParentsIds(String organizationTypeId);
+    public Set<String> getAllowedParentsIds(String organizationTypeId, String requesterId);
+
+    public Set<String> getAllowedParentsIds(String organizationTypeId, Map<String, UserAttribute> requesterAttributes);
 
     public List<OrganizationTypeEntity> findAllowedChildrenByDelegationFilter(String requesterId);
 

@@ -414,6 +414,10 @@
 		<prop key="hibernate.cache.use_query_cache">${openiam.hibernate.query.cache.enabled}</prop>
 		<prop key="hibernate.use_sql_comments">${openiam.hibernate.sql.comments.enabled}</prop>
 		<prop key="hibernate.connection.autoReconnect">${openiam.hibernate.auto.connect.enabled}</prop>
+
+        <prop key="hibernate.connection.CharSet">UTF-8</prop>
+        <prop key="hibernate.connection.characterEncoding">UTF-8</prop>
+        <prop key="hibernate.connection.useUnicode">true</prop>
 		<!--<prop key="hibernate.validationQuery">${openiam.hibernate.validationQuery}</prop>-->
 	</util:properties>
 

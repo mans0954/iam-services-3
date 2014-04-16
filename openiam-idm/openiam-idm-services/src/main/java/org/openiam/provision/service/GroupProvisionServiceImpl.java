@@ -213,7 +213,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Gr
 
                             ResourceProp preProcessProp = res.getResourceProperty("PRE_PROCESS");
                             //TODO enable pre processor
-                            String preProcessScript = preProcessProp != null ? preProcessProp.getPropValue() : null;
+                            String preProcessScript = preProcessProp != null ? preProcessProp.getValue() : null;
                        /*     if (StringUtils.isNotBlank(preProcessScript)) {
 
                                 PreProcessor ppScript = createPreProcessScript(preProcessScript, bindingMap);
@@ -251,7 +251,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Gr
 
                             // post processing
                             ResourceProp postProcessProp = res.getResourceProperty("POST_PROCESS");
-                            String postProcessScript = postProcessProp != null ? postProcessProp.getPropValue() : null;
+                            String postProcessScript = postProcessProp != null ? postProcessProp.getValue() : null;
                           /*  if (StringUtils.isNotBlank(postProcessScript)) {
                                 PostProcessor ppScript = createPostProcessScript(postProcessScript, bindingMap);
                                 if (ppScript != null) {

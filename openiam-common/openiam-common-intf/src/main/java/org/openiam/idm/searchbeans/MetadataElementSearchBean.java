@@ -9,6 +9,7 @@ import javax.xml.bind.annotation.XmlType;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.openiam.idm.srvc.meta.domain.MetadataTypeGrouping;
 import org.openiam.idm.srvc.meta.dto.MetadataElement;
 
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -32,7 +33,7 @@ public class MetadataElementSearchBean extends AbstractSearchBean<MetadataElemen
 	private String attributeName;
 	private boolean selfEditable;
 	private String templateId;
-	private Set<String> excludedGroupings;
+	private Set<MetadataTypeGrouping> excludedGroupings;
 	private Set<String> categoryTypes;
 	
 	public Set<String> getTypeIdSet() {
@@ -107,8 +108,8 @@ public class MetadataElementSearchBean extends AbstractSearchBean<MetadataElemen
 		this.keySet = keySet;
 	}
 	
-	public void addExcludedGrouping(final String grouping) {
-		if(StringUtils.isNotBlank(grouping)) {
+	public void addExcludedGrouping(final MetadataTypeGrouping grouping) {
+		if(grouping != null) {
 			if(this.excludedGroupings == null) {
 				this.excludedGroupings = new HashSet<>();
 			}
@@ -116,10 +117,10 @@ public class MetadataElementSearchBean extends AbstractSearchBean<MetadataElemen
 		}
 	}
 	
-	public Set<String> getExcludedGroupings() {
+	public Set<MetadataTypeGrouping> getExcludedGroupings() {
 		return excludedGroupings;
 	}
-	public void setExcludedGroupings(Set<String> excludedGroupings) {
+	public void setExcludedGroupings(Set<MetadataTypeGrouping> excludedGroupings) {
 		this.excludedGroupings = excludedGroupings;
 	}
 	

@@ -11,6 +11,8 @@ import javax.persistence.Cacheable;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -66,8 +68,9 @@ public class MetadataTypeEntity extends KeyEntity {
     @Type(type = "yes_no")
     private boolean sensitive;
     
+    @Enumerated(EnumType.STRING)
     @Column(name = "GROUPING", length = 100)
-    private String grouping;
+    private MetadataTypeGrouping grouping;
 
     @OneToMany(fetch = FetchType.LAZY, orphanRemoval = true, cascade = { CascadeType.ALL })
     @JoinColumn(name = "TYPE_ID", referencedColumnName = "TYPE_ID")
@@ -145,13 +148,13 @@ public class MetadataTypeEntity extends KeyEntity {
     	this.syncManagedSys = syncManagedSys;
     }
 
-    public String getGrouping() {
-    	return grouping;
-    }
+    public MetadataTypeGrouping getGrouping() {
+		return grouping;
+	}
 
-    public void setGrouping(String grouping) {
-    	this.grouping = grouping;
-    }
+	public void setGrouping(MetadataTypeGrouping grouping) {
+		this.grouping = grouping;
+	}
     
 	public boolean isBinary() {
 		return binary;

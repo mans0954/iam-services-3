@@ -18,6 +18,14 @@
 		<class-a>org.openiam.idm.srvc.res.domain.ResourceEntity</class-a>
 		<class-b>org.openiam.idm.srvc.res.dto.Resource</class-b>
 		<field>
+			<a>type.id</a>
+			<b>metadataTypeId</b>
+		</field>
+		<field>
+			<a>type.displayName</a>
+			<b>metadataTypeName</b>
+		</field>
+		<field>
 			<a>adminResource.id</a>
 			<b>adminResourceId</b>
 		</field>
@@ -193,6 +201,14 @@
 		<field>
 			<a>adminResource.name</a>
 			<b>adminResourceName</b>
+		</field>
+		<field>
+			<a>company.id</a>
+			<b>companyId</b>
+		</field>
+		<field>
+			<a>company.name</a>
+			<b>companyName</b>
 		</field>
 		<field
 			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"

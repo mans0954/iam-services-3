@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.org.service;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.MatchMode;
@@ -92,6 +93,11 @@ public class OrganizationDAOImpl extends
 						organizationSearchBean.getKey()));
 			}
 
+            if (StringUtils.isNotBlank(organizationSearchBean.getInternalOrgId())) {
+                criteria.add(Restrictions.eq("internalOrgId",
+                        organizationSearchBean.getInternalOrgId()));
+            }
+
 			if (StringUtils.isNotBlank(organizationSearchBean.getUserId())) {
 				criteria.createAlias("users", "u").add(
 						Restrictions.eq("u.id",
@@ -117,6 +123,11 @@ public class OrganizationDAOImpl extends
 						Restrictions.eq("parentTypes.id",
 								organizationSearchBean.getValidParentTypeId()));
 			}
+
+            if (CollectionUtils.isNotEmpty(organizationSearchBean.getOrganizationTypeIdSet())) {
+                criteria.add(Restrictions.in("organizationType.id",
+                                             organizationSearchBean.getOrganizationTypeIdSet()));
+            }
 		}
 		return criteria;
 	}
@@ -148,9 +159,9 @@ public class OrganizationDAOImpl extends
 				}
 			}
 
-			if (organization.getOrganizationType() != null && StringUtils.isNotBlank(organization.getOrganizationType().getId())) {
-				criteria.add(Restrictions.eq("organizationType.id", organization.getOrganizationType().getId()));
-			}
+//			if (organization.getOrganizationType() != null && StringUtils.isNotBlank(organization.getOrganizationType().getId())) {
+//				criteria.add(Restrictions.eq("organizationType.id", organization.getOrganizationType().getId()));
+//			}
 
 			if (StringUtils.isNotBlank(organization.getInternalOrgId())) {
 				criteria.add(Restrictions.eq("internalOrgId", organization.getInternalOrgId()));

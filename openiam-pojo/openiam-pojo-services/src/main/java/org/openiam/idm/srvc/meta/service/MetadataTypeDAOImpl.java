@@ -36,7 +36,7 @@ public class MetadataTypeDAOImpl extends BaseDaoImpl<MetadataTypeEntity, String>
 		    	criteria.add(Restrictions.eq("description", entity.getDescription()));
 		    }
 		    */
-		    if (StringUtils.isNotBlank(entity.getGrouping())) {
+		    if (entity.getGrouping() != null) {
 		    	criteria.add(Restrictions.eq("grouping", entity.getGrouping()));
 		    }
 		    

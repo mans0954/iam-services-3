@@ -27,6 +27,7 @@ import org.openiam.idm.searchbeans.MetadataTypeSearchBean;
 import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.lang.dto.LanguageMapping;
 import org.openiam.idm.srvc.lang.service.LanguageWebService;
+import org.openiam.idm.srvc.meta.domain.MetadataTypeGrouping;
 import org.openiam.idm.srvc.meta.dto.MetadataElement;
 import org.openiam.idm.srvc.meta.dto.MetadataElementPageTemplate;
 import org.openiam.idm.srvc.meta.dto.MetadataElementPageTemplateXref;
@@ -342,7 +343,7 @@ public class TestPageTemplateService extends AbstractTestNGSpringContextTests {
 		searchBean.setActive(true);
 		searchBean.setSyncManagedSys(true);
 		searchBean.setSyncManagedSys(false);
-		searchBean.setGrouping("UI_WIDGET");
+		searchBean.setGrouping(MetadataTypeGrouping.UI_WIDGET);
 		return metadataWebService.findTypeBeans(searchBean, 0, Integer.MAX_VALUE, null);
 	}
 }

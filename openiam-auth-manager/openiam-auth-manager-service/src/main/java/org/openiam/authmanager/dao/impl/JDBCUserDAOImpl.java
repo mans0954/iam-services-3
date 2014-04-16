@@ -22,7 +22,9 @@ import java.util.List;
 public class JDBCUserDAOImpl extends AbstractJDBCDao implements UserDAO {
 
 	private static final Log log = LogFactory.getLog(JDBCUserDAOImpl.class);
-	
+
+    private String COUNT_ALL_USERS = "SELECT COUNT(*) AS USER_CNT FROM %s.USERS";
+    private String GET_ALL_USERS_IDS = "SELECT USER_ID AS USER_ID FROM %s.USERS";
 	private String GET_ALL_USERS_LOGGED_IN_AFTER = "SELECT USER_ID AS USER_ID FROM %s.LOGIN WHERE LAST_LOGIN >= ?";
 	private String GET_ALL_LOGINS_WITH_LAST_LOGIN_AFTER = "SELECT LOGIN AS LOGIN, MANAGED_SYS_ID AS MANAGED_SYS_ID, USER_ID AS USER_ID FROM %s.LOGIN WHERE USER_ID IN( SELECT USER_ID FROM %s.LOGIN WHERE LAST_LOGIN >= ? )";
 	private static final String GET_FULLY_POPULATED_USER_RS_LIST = "SELECT " +
@@ -47,10 +49,12 @@ public class JDBCUserDAOImpl extends AbstractJDBCDao implements UserDAO {
 	private static final ResultSetExtractor<InternalAuthroizationUser> internalAuthorizationuserMapper = new InternalAuthroizationUserMapper();
 	private static final RowMapper<AuthorizationUser> userMapper = new UserMapper();
 	private static final RowMapper<AuthorizationManagerLoginId> loginMapper = new LoginIdMapper();
-	
+    private static final RowMapper<String> userIdMapper = new UserIdMapper();
 	@Override
 	public void initSqlStatements() {
 		final String schemaName = getSchemaName();
+        COUNT_ALL_USERS=String.format(COUNT_ALL_USERS, schemaName);
+        GET_ALL_USERS_IDS=String.format(GET_ALL_USERS_IDS, schemaName);
 		GET_ALL_USERS_LOGGED_IN_AFTER = String.format(GET_ALL_USERS_LOGGED_IN_AFTER, schemaName);
 		GET_ALL_LOGINS_WITH_LAST_LOGIN_AFTER = String.format(GET_ALL_LOGINS_WITH_LAST_LOGIN_AFTER, schemaName, schemaName);
 		GET_FULLY_POPULATED_USER_BY_ID = String.format(GET_FULLY_POPULATED_USER_BY_ID, schemaName, schemaName, schemaName, schemaName);
@@ -97,6 +101,14 @@ public class JDBCUserDAOImpl extends AbstractJDBCDao implements UserDAO {
 		}
 		return getJdbcTemplate().query(GET_FULLY_POPULATED_USER_BY_LOGIN_ID, params, internalAuthorizationuserMapper);
 	}
+
+    @Override
+    public List<String> getUserIdsList(){
+        if(log.isDebugEnabled()) {
+            log.debug(String.format("Query: %s", GET_ALL_USERS_IDS));
+        }
+        return getJdbcTemplate().query(GET_ALL_USERS_IDS, userIdMapper);
+    }
 
 	private static class UserMapper implements RowMapper<AuthorizationUser> {
 
@@ -149,6 +161,22 @@ public class JDBCUserDAOImpl extends AbstractJDBCDao implements UserDAO {
 			return loginId;
 		}
 	}
+
+    private static class UserIdMapper implements RowMapper<String> {
+        @Override
+        public String mapRow(ResultSet rs, int rowNum) throws SQLException {
+//			final String serviceId = rs.getString("SERVICE_ID");
+//            final String login = rs.getString("LOGIN");
+//            final String managedSysId = rs.getString("MANAGED_SYS_ID");
+            final String userId = rs.getString("USER_ID");
+
+//            final AuthorizationManagerLoginId loginId = new AuthorizationManagerLoginId();
+//            loginId.setLogin(login);
+//            loginId.setManagedSysId(managedSysId);
+//            loginId.setUserId(userId);
+            return userId;
+        }
+    }
 
 	@Override
 	public List<AuthorizationUser> getList() {

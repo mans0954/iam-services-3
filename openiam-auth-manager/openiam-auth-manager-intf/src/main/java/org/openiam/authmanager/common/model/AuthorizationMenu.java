@@ -186,11 +186,11 @@ public class AuthorizationMenu implements Serializable {
 				}
 				*/
 				if(icon == null && StringUtils.equalsIgnoreCase(prop.getName(), AuthorizationConstants.MENU_ITEM_ICON_PROPERTY)) {
-					icon = StringUtils.trimToNull(prop.getPropValue());
+					icon = StringUtils.trimToNull(prop.getValue());
 				}
 				
 				if(StringUtils.equals(prop.getName(), AuthorizationConstants.MENU_ITEM_IS_VISIBLE)) {
-					isVisible = StringUtils.equalsIgnoreCase("true", prop.getPropValue());
+					isVisible = StringUtils.equalsIgnoreCase("true", prop.getValue());
 				}
 			}
 		}
