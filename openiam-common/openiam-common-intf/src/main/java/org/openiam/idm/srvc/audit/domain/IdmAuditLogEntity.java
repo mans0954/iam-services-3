@@ -96,7 +96,7 @@ public class IdmAuditLogEntity implements Serializable {
     public void addCustomRecord(final String key, final String value) {
     	if(key != null && value != null) {
     		if(customRecords == null) {
-    			customRecords = new HashSet<IdmAuditLogCustomEntity>();
+    			customRecords = new HashSet<>();
     		}
     		final IdmAuditLogCustomEntity entity = new IdmAuditLogCustomEntity();
     		entity.setKey(key);
@@ -243,7 +243,7 @@ public class IdmAuditLogEntity implements Serializable {
 		this.parentLogs = parentLogs;
 	}
 
-	public void addTarget(final String targetId, final String targetType) {
+	public void addTarget(final String targetId, final String targetType, final String principal) {
 		if(targetId != null && targetType != null) {
 			if(this.targets == null) {
 				this.targets = new HashSet<>();
@@ -251,6 +251,7 @@ public class IdmAuditLogEntity implements Serializable {
 			final AuditLogTargetEntity target = new AuditLogTargetEntity();
 			target.setTargetId(targetId);
 			target.setTargetType(targetType);
+            target.setObjectPrincipal(principal);
 			target.setLog(this);
 			this.targets.add(target);
 		}

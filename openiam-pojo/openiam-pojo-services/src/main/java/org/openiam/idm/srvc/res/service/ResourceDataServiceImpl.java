@@ -13,6 +13,7 @@ import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.exception.BasicDataServiceException;
+import org.openiam.dozer.converter.LanguageDozerConverter;
 import org.openiam.dozer.converter.ResourceDozerConverter;
 import org.openiam.dozer.converter.ResourcePropDozerConverter;
 import org.openiam.dozer.converter.ResourceTypeDozerConverter;
@@ -58,6 +59,9 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
     private GroupDataService groupDataService;
     @Autowired
     private ResourceTypeDozerConverter resourceTypeConverter;
+    
+    @Autowired
+    private LanguageDozerConverter languageConverter;
 
     @Autowired
     protected SysConfiguration sysConfiguration;
@@ -86,7 +90,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
         int count = 0;
         if (Boolean.TRUE.equals(searchBean.getRootsOnly())) {
             final List<ResourceEntity> resultsEntities = resourceService
-                    .findBeans(searchBean, 0, Integer.MAX_VALUE);
+                    .findBeans(searchBean, 0, Integer.MAX_VALUE, null);
             count = (resultsEntities != null) ? resultsEntities.size() : 0;
         } else {
             count = resourceService.count(searchBean);
@@ -98,8 +102,8 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
     @Override
     @LocalizedServiceGet
     public List<Resource> findBeans(final ResourceSearchBean searchBean, final int from, final int size, final Language language) {
-        final List<ResourceEntity> resultsEntities = resourceService.findBeans(searchBean, from, size);
-        return resourceConverter.convertToDTOList(resultsEntities,false);
+        final List<ResourceEntity> resultsEntities = resourceService.findBeans(searchBean, from, size, languageConverter.convertToEntity(language, false));
+        return resourceConverter.convertToDTOList(resultsEntities,searchBean.isDeepCopy());
     }
 
     @Override
@@ -243,8 +247,8 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
             }
 
             final ResourcePropEntity entity = resourcePropConverter.convertToEntity(prop, false);
-            if (StringUtils.isNotBlank(prop.getResourcePropId())) {
-                final ResourcePropEntity dbObject = resourceService.findResourcePropById(prop.getResourcePropId());
+            if (StringUtils.isNotBlank(prop.getId())) {
+                final ResourcePropEntity dbObject = resourceService.findResourcePropById(prop.getId());
                 if (dbObject == null) {
                     throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND,
                             "No Resource Property object is found");
@@ -255,7 +259,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
                 throw new BasicDataServiceException(ResponseCode.NO_NAME, "Resource Property name is not set");
             }
 
-            if (StringUtils.isBlank(entity.getPropValue())) {
+            if (StringUtils.isBlank(entity.getValue())) {
                 throw new BasicDataServiceException(ResponseCode.RESOURCE_PROP_VALUE_MISSING,
                         "Resource Property value is not set");
             }
@@ -265,7 +269,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
                         "Resource ID is not set for Resource Property object");
             }
             resourceService.save(entity);
-            response.setResponseValue(entity.getResourcePropId());
+            response.setResponseValue(entity.getId());
             idmAuditLog.succeed();
         } catch (BasicDataServiceException e) {
             response.setStatus(ResponseStatus.FAILURE);

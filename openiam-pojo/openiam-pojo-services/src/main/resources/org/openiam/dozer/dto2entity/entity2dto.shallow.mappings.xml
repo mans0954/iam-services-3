@@ -19,6 +19,14 @@
 		<class-a>org.openiam.idm.srvc.res.domain.ResourceEntity</class-a>
 		<class-b>org.openiam.idm.srvc.res.dto.Resource</class-b>
 		<field>
+			<a>type.id</a>
+			<b>metadataTypeId</b>
+		</field>
+		<field>
+			<a>type.displayName</a>
+			<b>metadataTypeName</b>
+		</field>
+		<field>
 			<a>adminResource.id</a>
 			<b>adminResourceId</b>
 		</field>

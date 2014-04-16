@@ -34,10 +34,10 @@ public class DeleteUserLdapCommand extends AbstractCrudLdapCommand<ExtensibleUse
             Set<ResourceProp> rpSet = getResourceAttributes(managedSys.getResourceId());
             ResourceProp rpOnDelete = getResourceAttr(rpSet,"ON_DELETE");
 
-            if (rpOnDelete == null || rpOnDelete.getPropValue() == null || "DELETE".equalsIgnoreCase(rpOnDelete.getPropValue())) {
+            if (rpOnDelete == null || rpOnDelete.getValue() == null || "DELETE".equalsIgnoreCase(rpOnDelete.getValue())) {
                 delete = "DELETE";
-            } else if (rpOnDelete.getPropValue() != null) {
-                if ("DISABLE".equalsIgnoreCase(rpOnDelete.getPropValue())) {
+            } else if (rpOnDelete.getValue() != null) {
+                if ("DISABLE".equalsIgnoreCase(rpOnDelete.getValue())) {
                     delete = "DISABLE";
                 }
             }

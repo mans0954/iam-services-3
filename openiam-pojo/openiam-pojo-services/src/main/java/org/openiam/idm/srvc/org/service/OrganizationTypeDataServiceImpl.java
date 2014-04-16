@@ -10,6 +10,7 @@ import org.openiam.dozer.converter.OrganizationDozerConverter;
 import org.openiam.dozer.converter.OrganizationTypeDozerBeanConverter;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.OrganizationTypeSearchBean;
+import org.openiam.idm.srvc.lang.domain.LanguageEntity;
 import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.org.domain.OrganizationTypeEntity;
 import org.openiam.idm.srvc.org.dto.OrganizationType;
@@ -18,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.jws.WebParam;
 import javax.jws.WebService;
 import java.util.List;
 
@@ -184,4 +186,11 @@ public class OrganizationTypeDataServiceImpl implements OrganizationTypeDataServ
         }
         return response;
 	}
+
+    @Override
+    @LocalizedServiceGet
+    public List<OrganizationType> getAllowedParents(final String organizationTypeId, final String requesterId, final Language language){
+        final List<OrganizationTypeEntity> entityList = organizationTypeService.getAllowedParents(organizationTypeId, requesterId);
+        return dozerConverter.convertToDTOList(entityList, false);
+    }
 }

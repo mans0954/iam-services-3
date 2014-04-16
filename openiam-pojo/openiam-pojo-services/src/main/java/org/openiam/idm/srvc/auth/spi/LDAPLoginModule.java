@@ -86,31 +86,31 @@ public class LDAPLoginModule extends AbstractLoginModule {
         while (propIt.hasNext()) {
             ResourceProp p = propIt.next();
             if (p.getName().equalsIgnoreCase("HOST_URL")) {
-                host = p.getPropValue();
+                host = p.getValue();
             }
             if (p.getName().equalsIgnoreCase("BASE_DN")) {
-                baseDn = p.getPropValue();
+                baseDn = p.getValue();
             }
             if (p.getName().equalsIgnoreCase("HOST_LOGIN ID")) {
-                adminUserName = p.getPropValue();
+                adminUserName = p.getValue();
             }
             if (p.getName().equalsIgnoreCase("PASSWORD")) {
-                adminPassword = p.getPropValue();
+                adminPassword = p.getValue();
             }
             if (p.getName().equalsIgnoreCase("COMMUNICATION_PROTOCOL")) {
-                protocol = p.getPropValue();
+                protocol = p.getValue();
             }
             if (p.getName().equalsIgnoreCase("OBJECT_CLASS")) {
-                objectclass = p.getPropValue();
+                objectclass = p.getValue();
             }
             if (p.getName().equalsIgnoreCase("SEARCH_ATTRIBUTE")) {
-                pkAttribute = p.getPropValue();
+                pkAttribute = p.getValue();
             }
             if (p.getName().equalsIgnoreCase("MANAGED_SYS_ID")) {
-                managedSysId = p.getPropValue();
+                managedSysId = p.getValue();
             }
             if (p.getName().equalsIgnoreCase("DN_ATTRIBUTE")) {
-                dn = p.getPropValue();
+                dn = p.getValue();
             }
         }
 

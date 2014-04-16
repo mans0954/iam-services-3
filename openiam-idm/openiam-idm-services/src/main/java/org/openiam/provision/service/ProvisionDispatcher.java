@@ -163,19 +163,10 @@ public class ProvisionDispatcher implements Sweepable {
                             @Override
                             public Boolean doInTransaction(TransactionStatus status) {
 
-
-
-                                IdmAuditLog idmAuditLog = new IdmAuditLog();
-                                idmAuditLog.setRequestorUserId(systemUserId);
-                                idmAuditLog.setAction(AuditAction.PROVISIONING_DISPATCHER.value());
-
-                                try{
                                     for (final List<ProvisionDataContainer> entityList : batchList) {
-                                        process(entityList, idmAuditLog);
+                                        process(entityList);
                                     }
-                                } finally {
-                                    auditLogService.enqueue(idmAuditLog);
-                                }
+
                                 return true;
                             }
                         });
@@ -189,12 +180,18 @@ public class ProvisionDispatcher implements Sweepable {
 
     }
 
-    private void process(List<ProvisionDataContainer> entities, final IdmAuditLog idmAuditLog) {
+    private void process(final List<ProvisionDataContainer> entities) {
         for (ProvisionDataContainer data : entities) {
 
             Login identity = data.getIdentity();
 
-            LoginEntity loginEntity = loginManager.getLoginByManagedSys(identity.getLogin(), identity.getManagedSysId());
+            IdmAuditLog idmAuditLog = new IdmAuditLog();
+            idmAuditLog.setRequestorUserId(systemUserId);
+            idmAuditLog.setAction(AuditAction.PROVISIONING_DISPATCHER.value());
+            idmAuditLog.setTargetUser(identity.getUserId(), identity.getLogin());
+            idmAuditLog.succeed();
+            try {
+                LoginEntity loginEntity = loginManager.getLoginByManagedSys(identity.getLogin(), identity.getManagedSysId());
             if (loginEntity == null) {
                 loginEntity = loginDozerConverter.convertToEntity(identity, true);
                 log.error(String.format("Identity %s for managed sys %s has't saved yet to a database", identity.getLogin(), identity.getManagedSysId()));
@@ -207,8 +204,6 @@ public class ProvisionDispatcher implements Sweepable {
                     loginEntity.setStatus(LoginStatusEnum.INACTIVE);
                     // do de-provisioning
                     StatusCodeType statusCodeType = deprovision(data).getStatus();
-
-                 //   auditBuilderDispatcherChild.addAttribute(AuditAttributeName.DESCRIPTION, "DELETE IDENTITY=" + identity + " from MANAGED_SYS_ID=" + identity.getManagedSysId() + " status=" + statusCodeType);
 
                     if (StatusCodeType.SUCCESS.equals(statusCodeType)) {
                         loginEntity.setStatus(LoginStatusEnum.INACTIVE);
@@ -227,9 +222,12 @@ public class ProvisionDispatcher implements Sweepable {
                             loginEntity.setPassword(null);
                         }
                     } else {
+                        idmAuditLog.setFailureReason(LoginStatusEnum.FAIL_DELETE.getValue());
                         loginEntity.setStatus(LoginStatusEnum.FAIL_DELETE);
                     }
                 } catch (Throwable th) {
+                    idmAuditLog.fail();
+                    idmAuditLog.setFailureReason(th.getMessage());
                     idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION,
                             "DELETE IDENTITY=" + identity + " from MANAGED_SYS_ID=" + identity.getManagedSysId()
                                     + " status=" + th.getMessage());
@@ -252,11 +250,14 @@ public class ProvisionDispatcher implements Sweepable {
                     // do provisioning to target system
 
                     ProvisionUserResponse response = provision(data, idmAuditLog);
-               //     auditBuilderDispatcherChild.addAttribute(AuditAttributeName.DESCRIPTION, "ADD IDENTITY=" + identity + " from MANAGED_SYS_ID=" + identity.getManagedSysId() + " status=" + response.getStatus() + " details=" + response.getErrorText());
                     if (!response.isSuccess()) {
+                        idmAuditLog.fail();
+                        idmAuditLog.setFailureReason(response.getErrorText());
                         loginEntity.setStatus(LoginStatusEnum.FAIL_CREATE);
                     }
                 } catch (Throwable th) {
+                    idmAuditLog.fail();
+                    idmAuditLog.setFailureReason(th.getMessage());
                     idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "ADD IDENTITY=" + identity
                             + " from MANAGED_SYS_ID=" + identity.getManagedSysId() + " status="
                             + LoginStatusEnum.FAIL_CREATE + " details=" + th.getMessage());
@@ -281,6 +282,9 @@ public class ProvisionDispatcher implements Sweepable {
                 //    auditBuilderDispatcherChild.addAttribute(AuditAttributeName.DESCRIPTION, "UPDATE IDENTITY=" + identity + " from MANAGED_SYS_ID=" + identity.getManagedSysId() + " status=" + response.getStatus() + " details=" + response.getErrorText());
 
                     if (!response.isSuccess()) {
+                        idmAuditLog.fail();
+                        idmAuditLog.setFailureReason(response.getErrorText());
+
                         loginEntity.setStatus(LoginStatusEnum.FAIL_UPDATE);
                         // if we have changed identity for managed sys when
                         // rename we have to revert it because failed
@@ -289,12 +293,19 @@ public class ProvisionDispatcher implements Sweepable {
                         }
                     }
                 } catch (Throwable th) {
+                    idmAuditLog.fail();
+                    idmAuditLog.setFailureReason(th.getMessage());
                     idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "UPDATE IDENTITY="
                             + identity + " from MANAGED_SYS_ID=" + identity.getManagedSysId() + " status="
                             + LoginStatusEnum.FAIL_UPDATE + " details=" + th.getMessage());
                     loginEntity.setStatus(LoginStatusEnum.FAIL_UPDATE);
                 }
             }
+
+            } finally {
+                auditLogService.enqueue(idmAuditLog);
+            }
+
         }
     }
 
@@ -371,7 +382,7 @@ public class ProvisionDispatcher implements Sweepable {
             bindingMap.put("targetSystemAttributes", currentValueMap);
 
             ResourceProp preProcessProp = res.getResourceProperty("PRE_PROCESS");
-            String preProcessScript = preProcessProp != null ? preProcessProp.getPropValue() : null;
+            String preProcessScript = preProcessProp != null ? preProcessProp.getValue() : null;
             if (StringUtils.isNotBlank(preProcessScript)) {
                 PreProcessor ppScript = createPreProcessScript(preProcessScript, bindingMap);
                 if (ppScript != null) {
@@ -410,7 +421,7 @@ public class ProvisionDispatcher implements Sweepable {
 
             // post processing
             ResourceProp postProcessProp = res.getResourceProperty("POST_PROCESS");
-            String postProcessScript = postProcessProp != null ? postProcessProp.getPropValue() : null;
+            String postProcessScript = postProcessProp != null ? postProcessProp.getValue() : null;
             if (StringUtils.isNotBlank(postProcessScript)) {
                 PostProcessor ppScript = createPostProcessScript(postProcessScript, bindingMap);
                 if (ppScript != null) {
@@ -469,7 +480,24 @@ public class ProvisionDispatcher implements Sweepable {
                 : connectorAdapter.modifyRequest(mSys, userReq, MuleContextProvider.getCtx());
         idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, (isAdd ? "ADD IDENTITY = "
                 : "MODIFY IDENTITY = ") + resp.getStatus() + " details:" + resp.getErrorMsgAsStr());
-        return resp.getStatus() != StatusCodeType.FAILURE;
+
+        IdmAuditLog idmAuditLogChild1 = new IdmAuditLog();
+        idmAuditLogChild1.setAction(isAdd ? AuditAction.ADD_USER_TO_RESOURCE.value() : AuditAction.UPDATE_USER_TO_RESOURCE.value());
+        idmAuditLogChild1.setRequestorUserId(systemUserId);
+        idmAuditLogChild1.setTargetUser(mLg.getUserId(),mLg.getLogin());
+        idmAuditLogChild1.setTargetResource(mSys.getResourceId(), mSys.getName());
+        boolean successResult = resp.getStatus() != StatusCodeType.FAILURE;
+        if(successResult) {
+            idmAuditLogChild1.succeed();
+            idmAuditLogChild1.setSuccessReason(StatusCodeType.SUCCESS.value());
+        } else {
+            idmAuditLogChild1.fail();
+            idmAuditLogChild1.setFailureReason(resp.getErrorMsgAsStr());
+            idmAuditLogChild1.setAuditDescription(resp.getErrorMsgAsStr());
+        }
+        idmAuditLog.addChild(idmAuditLogChild1);
+
+        return successResult;
     }
 
     /**

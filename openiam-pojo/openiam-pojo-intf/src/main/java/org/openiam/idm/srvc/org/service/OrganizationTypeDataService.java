@@ -48,4 +48,9 @@ public interface OrganizationTypeDataService {
 	@WebMethod
 	public Response removeChild(final @WebParam(name = "id", targetNamespace = "") String id,
 							 	final @WebParam(name = "childId", targetNamespace = "") String childId);
+
+    @WebMethod
+    public List<OrganizationType> getAllowedParents(final @WebParam(name = "organizationTypeId", targetNamespace = "") String organizationTypeId,
+                                                          final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
+                                                          final @WebParam(name = "language", targetNamespace = "") Language language);
 }

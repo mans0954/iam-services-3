@@ -28,7 +28,7 @@ public class ResourcePropDAOImpl extends BaseDaoImpl<ResourcePropEntity, String>
 
 	@Override
 	protected String getPKfieldName() {
-		return "resourcePropId";
+		return "id";
 	}
 
 	

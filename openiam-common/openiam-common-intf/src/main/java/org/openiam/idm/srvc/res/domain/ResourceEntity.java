@@ -2,6 +2,7 @@ package org.openiam.idm.srvc.res.domain;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.*;
+import org.openiam.base.domain.AbstractMetdataTypeEntity;
 import org.openiam.base.domain.KeyEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
@@ -33,7 +34,7 @@ import java.util.Set;
 @DozerDTOCorrespondence(Resource.class)
 @AttributeOverride(name = "id", column = @Column(name = "RESOURCE_ID"))
 @Internationalized
-public class ResourceEntity extends KeyEntity {
+public class ResourceEntity extends AbstractMetdataTypeEntity {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "RESOURCE_TYPE_ID")
