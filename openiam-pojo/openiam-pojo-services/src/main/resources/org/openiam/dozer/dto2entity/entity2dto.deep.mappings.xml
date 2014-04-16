@@ -151,6 +151,11 @@
             <a>subordinates</a>
             <b>subordinates</b>
         </field>
+        <field custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentObjectConverter"
+               custom-converter-param="dto2entityShallowDozerMapper">
+            <a>jobCode</a>
+            <b>jobCode</b>
+        </field>
 	</mapping>
 
 	<mapping>

@@ -1790,11 +1790,7 @@ public class UserMgr implements UserDataService {
             }
         }
         if (newUserEntity.getJobCode() != null) {
-            if (newUserEntity.getJobCode().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-                origUserEntity.setJobCode(null);
-            } else {
-                origUserEntity.setJobCode(newUserEntity.getJobCode());
-            }
+            origUserEntity.setJobCode(newUserEntity.getJobCode());
         }
         if (newUserEntity.getLastName() != null) {
             if (newUserEntity.getLastName().equalsIgnoreCase(BaseConstants.NULL_STRING)) {

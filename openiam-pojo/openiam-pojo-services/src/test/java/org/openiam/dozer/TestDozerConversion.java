@@ -10,6 +10,7 @@ import org.openiam.idm.srvc.auth.dto.LoginAttribute;
 import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
+import org.openiam.idm.srvc.meta.dto.MetadataType;
 import org.openiam.idm.srvc.user.dto.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -51,7 +52,7 @@ public class TestDozerConversion extends AbstractTestNGSpringContextTests {
 		user.setEmployeeId(rs(2));
 		user.setEmployeeType(rs(2));
 		user.setFirstName(rs(2));
-		user.setJobCode(rs(2));
+		user.setJobCode(new MetadataType());
 		user.setLastDate(new Date());
 		user.setLastName(rs(2));
 		user.setLastUpdate(new Date());

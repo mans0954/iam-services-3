@@ -1,29 +1,9 @@
 package org.openiam.idm.srvc.user.domain;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import javax.persistence.*;
-import javax.validation.constraints.Size;
-
 import org.apache.commons.lang.StringUtils;
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
-import org.hibernate.annotations.FilterDef;
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.ParamDef;
-import org.hibernate.search.annotations.DocumentId;
-import org.hibernate.search.annotations.Field;
-import org.hibernate.search.annotations.Fields;
+import org.hibernate.annotations.*;
+import org.hibernate.search.annotations.*;
 import org.hibernate.search.annotations.Index;
-import org.hibernate.search.annotations.Indexed;
-import org.hibernate.search.annotations.Store;
 import org.openiam.base.BaseConstants;
 import org.openiam.core.dao.lucene.LuceneId;
 import org.openiam.core.dao.lucene.LuceneLastUpdate;
@@ -34,17 +14,28 @@ import org.openiam.idm.srvc.continfo.domain.AddressEntity;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
 import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
+import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 
+import javax.persistence.CascadeType;
+import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.MapKey;
+import javax.persistence.Table;
+import javax.validation.constraints.Size;
+import java.util.*;
+import java.util.Map.Entry;
+
 @Entity
 @FilterDef(name = "parentTypeFilter", parameters = @ParamDef(name = "parentFilter", type = "string"))
 @Table(name = "USERS")
 @DozerDTOCorrespondence(User.class)
 @Indexed
+//@Internationalized
 public class UserEntity {
     @Id
     @GeneratedValue(generator = "system-uuid")
@@ -84,9 +75,14 @@ public class UserEntity {
     @Size(max = 50, message = "validator.user.first.name.toolong")
     private String firstName;
 
-    @Column(name = "JOB_CODE", length = 50)
-    @Size(max = 50, message = "validator.user.job.code.toolong")
-    private String jobCode;
+//    @Column(name = "JOB_CODE", length = 50)
+//    @Size(max = 50, message = "validator.user.job.code.toolong")
+//    private String jobCode;
+
+    @ManyToOne
+    @JoinColumn(name = "JOB_CODE")
+//    @Internationalized
+    private MetadataTypeEntity jobCode;
 
     @Column(name = "LAST_NAME", length = 50)
     @Fields ({
@@ -320,11 +316,11 @@ public class UserEntity {
         this.firstName = firstName;
     }
 
-    public String getJobCode() {
+    public MetadataTypeEntity getJobCode() {
         return jobCode;
     }
 
-    public void setJobCode(String jobCode) {
+    public void setJobCode(MetadataTypeEntity jobCode) {
         this.jobCode = jobCode;
     }
 
@@ -772,11 +768,7 @@ public class UserEntity {
 	        }
 	    }
 	    if (newUser.getJobCode() != null) {
-	        if (newUser.getJobCode().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-	            this.jobCode = null;
-	        } else {
-	            this.jobCode = newUser.getJobCode();
-	        }
+	        this.jobCode = newUser.getJobCode();
 	    }
 	    if (newUser.getLastName() != null) {
 	        if (newUser.getLastName().equalsIgnoreCase(BaseConstants.NULL_STRING)) {

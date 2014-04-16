@@ -2,6 +2,7 @@ package org.openiam.idm.parser.csv;
 
 import org.openiam.am.srvc.constants.CSVSource;
 import org.openiam.am.srvc.constants.UserFields;
+import org.openiam.idm.srvc.meta.dto.MetadataType;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.recon.dto.ReconciliationObject;
@@ -60,7 +61,9 @@ public class ProvisionUserCSVParser extends
             user.setFirstName(objValue);
             break;
         case jobCode:
-            user.setJobCode(objValue);
+            MetadataType jc = new MetadataType();
+            jc.setId(objValue);
+            user.setJobCode(jc);
             break;
         case lastName:
             user.setLastName(objValue);

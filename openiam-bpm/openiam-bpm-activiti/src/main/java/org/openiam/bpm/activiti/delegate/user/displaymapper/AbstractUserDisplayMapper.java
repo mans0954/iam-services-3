@@ -110,8 +110,8 @@ public abstract class AbstractUserDisplayMapper extends AbstractActivitiJob {
 				metadataMap.put("End Date", new SimpleDateFormat("MMMM dd yyyy").format(user.getLastDate()));
 			}
 
-			if(StringUtils.isNotBlank(user.getJobCode())) {
-				metadataMap.put("Job Code", user.getJobCode());
+			if(user.getJobCode()!=null) {
+				metadataMap.put("Job Code", user.getJobCode().getId());
 			}
 
 			if(StringUtils.isNotBlank(user.getLocationCd())) {

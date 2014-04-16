@@ -9,11 +9,11 @@ import org.openiam.base.BaseConstants;
 import org.openiam.base.KeyDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.auth.dto.Login;
-import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
 import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
 import org.openiam.idm.srvc.grp.dto.Group;
+import org.openiam.idm.srvc.meta.dto.MetadataType;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.role.dto.Role;
@@ -100,6 +100,7 @@ import java.util.*;
         Organization.class
 })
 @DozerDTOCorrespondence(UserEntity.class)
+//@Internationalized
 public class User extends KeyDTO {
 
     private AttributeOperationEnum operation = AttributeOperationEnum.NO_CHANGE;
@@ -123,7 +124,8 @@ public class User extends KeyDTO {
 
     protected String firstName;
 
-    protected String jobCode;
+//    @Internationalized
+    protected MetadataType jobCode;
 
     protected String lastName;
 
@@ -433,11 +435,11 @@ public class User extends KeyDTO {
         this.companyOwnerId = companyOwnerId;
     }
 
-    public String getJobCode() {
+    public MetadataType getJobCode() {
         return this.jobCode;
     }
 
-    public void setJobCode(String jobCode) {
+    public void setJobCode(MetadataType jobCode) {
         this.jobCode = jobCode;
     }
 
@@ -946,11 +948,7 @@ public class User extends KeyDTO {
             }
         }
         if (newUser.getJobCode() != null) {
-            if (newUser.getJobCode().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-                this.jobCode = null;
-            } else {
-                this.jobCode = newUser.getJobCode();
-            }
+            this.jobCode = newUser.getJobCode();
         }
         if (newUser.getLastName() != null) {
             if (newUser.getLastName().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
