@@ -16,10 +16,12 @@ import org.openiam.idm.searchbeans.ResourceSearchBean;
 import org.openiam.idm.searchbeans.ResourceTypeSearchBean;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.service.GroupDAO;
+import org.openiam.idm.srvc.lang.domain.LanguageEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataElementPageTemplateEntity;
 import org.openiam.idm.srvc.meta.service.MetadataElementDAO;
 import org.openiam.idm.srvc.meta.service.MetadataElementPageTemplateDAO;
+import org.openiam.idm.srvc.meta.service.MetadataTypeDAO;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
@@ -33,6 +35,7 @@ import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.service.RoleDAO;
 import org.openiam.idm.srvc.user.service.UserDAO;
+import org.openiam.internationalization.LocalizedServiceGet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -81,6 +84,9 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Autowired
     private UserDAO userDAO;
+    
+    @Autowired
+    private MetadataTypeDAO typeDAO;
 
     @Autowired
     private MetadataElementPageTemplateDAO templateDAO;
@@ -117,8 +123,14 @@ public class ResourceServiceImpl implements ResourceService {
             entity.setResourceType(resourceTypeDao.findById(entity.getResourceType().getId()));
         }
 
-	/* admin resource can't have an admin resource - do this check here */
+        /* admin resource can't have an admin resource - do this check here */
         boolean isAdminResource = StringUtils.equals(entity.getResourceType().getId(), adminResourceTypeId);
+        
+        if(entity.getType() != null && StringUtils.isNotBlank(entity.getType().getId())) {
+        	entity.setType(typeDAO.findById(entity.getType().getId()));
+        } else {
+        	entity.setType(null);
+        }
 
         if (StringUtils.isNotBlank(entity.getId())) {
             final ResourceEntity dbObject = resourceDao.findById(entity.getId());
@@ -156,6 +168,8 @@ public class ResourceServiceImpl implements ResourceService {
                 entity.addApproverAssociation(createDefaultApproverAssociations(entity, requestorId));
             }
         }
+        
+        
 
         resourceDao.merge(entity);
     }
@@ -232,6 +246,16 @@ public class ResourceServiceImpl implements ResourceService {
         }
 
         bean.setResourceProps(renewedProperties);
+        
+        if(CollectionUtils.isNotEmpty(renewedProperties)) {
+        	for(final ResourcePropEntity prop : renewedProperties) {
+        		if(prop.getElement() != null && StringUtils.isNotBlank(prop.getElement().getId())) {
+        			prop.setElement(elementDAO.findById(prop.getElement().getId()));
+        		} else {
+        			prop.setElement(null);
+        		}
+        	}
+        }
     }
 
     @Override
@@ -250,7 +274,8 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<ResourceEntity> findBeans(final ResourceSearchBean searchBean, final int from, final int size) {
+    @LocalizedServiceGet
+    public List<ResourceEntity> findBeans(final ResourceSearchBean searchBean, final int from, final int size, final LanguageEntity language) {
         // final ResourceEntity resource =
         // resourceSearchBeanConverter.convert(searchBean);
         List<ResourceEntity> resultsEntities = null;

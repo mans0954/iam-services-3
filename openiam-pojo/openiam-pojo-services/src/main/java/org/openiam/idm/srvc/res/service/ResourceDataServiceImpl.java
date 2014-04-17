@@ -13,6 +13,7 @@ import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.exception.BasicDataServiceException;
+import org.openiam.dozer.converter.LanguageDozerConverter;
 import org.openiam.dozer.converter.ResourceDozerConverter;
 import org.openiam.dozer.converter.ResourcePropDozerConverter;
 import org.openiam.dozer.converter.ResourceTypeDozerConverter;
@@ -58,6 +59,9 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
     private GroupDataService groupDataService;
     @Autowired
     private ResourceTypeDozerConverter resourceTypeConverter;
+    
+    @Autowired
+    private LanguageDozerConverter languageConverter;
 
     @Autowired
     protected SysConfiguration sysConfiguration;
@@ -86,7 +90,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
         int count = 0;
         if (Boolean.TRUE.equals(searchBean.getRootsOnly())) {
             final List<ResourceEntity> resultsEntities = resourceService
-                    .findBeans(searchBean, 0, Integer.MAX_VALUE);
+                    .findBeans(searchBean, 0, Integer.MAX_VALUE, null);
             count = (resultsEntities != null) ? resultsEntities.size() : 0;
         } else {
             count = resourceService.count(searchBean);
@@ -98,8 +102,9 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
     @Override
     @LocalizedServiceGet
     public List<Resource> findBeans(final ResourceSearchBean searchBean, final int from, final int size, final Language language) {
-        final List<ResourceEntity> resultsEntities = resourceService.findBeans(searchBean, from, size);
-        return resourceConverter.convertToDTOList(resultsEntities,searchBean.isDeepCopy());
+        final List<ResourceEntity> resultsEntities = resourceService.findBeans(searchBean, from, size, languageConverter.convertToEntity(language, false));
+        final List<Resource> finalList = resourceConverter.convertToDTOList(resultsEntities,searchBean.isDeepCopy());
+        return finalList;
     }
 
     @Override

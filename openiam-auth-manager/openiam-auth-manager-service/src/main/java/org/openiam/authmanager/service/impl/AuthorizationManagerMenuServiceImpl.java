@@ -348,6 +348,8 @@ public class AuthorizationManagerMenuServiceImpl extends AbstractBaseService imp
 	}
 	
 	private AuthorizationMenu getMenu(final AuthorizationMenu menu, final String userId, final AuthorizationManagerLoginId loginId) {
+		final StopWatch sw = new StopWatch();
+		sw.start();
 		AuthorizationMenu retVal = null;
 		if(menu != null && hasAccess(menu, userId, loginId)) {
 			final AuthorizationMenu copy = menu.copy();
@@ -367,6 +369,10 @@ public class AuthorizationManagerMenuServiceImpl extends AbstractBaseService imp
 			setNextSiblings(siblings);
 			retVal = copy;
 		}
+		sw.stop();
+		if(log.isInfoEnabled()) {
+			log.info(String.format("getMenu took %s ms", sw.getTime()));
+		}
 		return retVal;
 	}
 	
@@ -384,6 +390,8 @@ public class AuthorizationManagerMenuServiceImpl extends AbstractBaseService imp
 	}
 	
 	private List<AuthorizationMenu> getSiblings(final AuthorizationMenu menu, final String userId, final AuthorizationManagerLoginId loginId) {
+		final StopWatch sw = new StopWatch();
+		sw.start();
 		final List<AuthorizationMenu> siblings = new LinkedList<AuthorizationMenu>();
 		if(menu != null) {
 			AuthorizationMenu sibling = menu;
@@ -395,10 +403,16 @@ public class AuthorizationManagerMenuServiceImpl extends AbstractBaseService imp
 				sibling = sibling.getNextSibling();
 			}
 		}
+		sw.stop();
+		if(log.isInfoEnabled()) {
+			log.info(String.format("getSiblings took %s ms", sw.getTime()));
+		}
 		return siblings;
 	}
 	
 	private boolean hasAccess(final AuthorizationMenu menu, final String userId, final AuthorizationManagerLoginId loginId) {
+		final StopWatch sw = new StopWatch();
+		sw.start();
 		final AuthorizationResource resource = new AuthorizationResource();
 		resource.setId(menu.getId());
 		boolean retVal = false;
@@ -406,6 +420,10 @@ public class AuthorizationManagerMenuServiceImpl extends AbstractBaseService imp
 			retVal = true;
 		} else {
 			retVal = (userId != null) ? (authManager.isEntitled(userId, resource)) : authManager.isEntitled(loginId, resource);
+		}
+		sw.stop();
+		if(log.isInfoEnabled()) {
+			log.info(String.format("getMenu took %s ms", sw.getTime()));
 		}
 		return retVal;
 	}
