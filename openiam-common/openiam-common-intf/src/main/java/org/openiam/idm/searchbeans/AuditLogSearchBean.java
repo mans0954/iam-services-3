@@ -20,7 +20,8 @@ import org.openiam.idm.srvc.continfo.dto.Address;
     "userId",
     "targetId",
     "targetType",
-    "parentId"
+    "parentId",
+    "result"
 })
 public class AuditLogSearchBean extends AbstractSearchBean<IdmAuditLog, String> implements SearchBean<IdmAuditLog, String> {
 
@@ -28,6 +29,7 @@ public class AuditLogSearchBean extends AbstractSearchBean<IdmAuditLog, String> 
 	private Date from;
 	private Date to;
 	private String action;
+    private String result;
     private String managedSysId;
     private String source;
     private String targetId;
@@ -99,5 +101,13 @@ public class AuditLogSearchBean extends AbstractSearchBean<IdmAuditLog, String> 
 
     public void setParentId(String parentId) {
         this.parentId = parentId;
+    }
+
+    public String getResult() {
+        return result;
+    }
+
+    public void setResult(String result) {
+        this.result = result;
     }
 }
