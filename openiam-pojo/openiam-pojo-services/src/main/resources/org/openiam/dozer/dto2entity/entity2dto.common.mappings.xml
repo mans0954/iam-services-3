@@ -21,6 +21,14 @@
 			<a>resource.id</a>
 			<b>resourceId</b>
 		</field>
+		<field>
+			<a>element.id</a>
+			<b>metadataId</b>
+		</field>
+		<field>
+			<a>element.description</a>
+			<b>metadataName</b>
+		</field>
 	</mapping>
 	
 	<mapping>

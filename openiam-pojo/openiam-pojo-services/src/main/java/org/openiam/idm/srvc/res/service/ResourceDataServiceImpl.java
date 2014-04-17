@@ -103,7 +103,8 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
     @LocalizedServiceGet
     public List<Resource> findBeans(final ResourceSearchBean searchBean, final int from, final int size, final Language language) {
         final List<ResourceEntity> resultsEntities = resourceService.findBeans(searchBean, from, size, languageConverter.convertToEntity(language, false));
-        return resourceConverter.convertToDTOList(resultsEntities,searchBean.isDeepCopy());
+        final List<Resource> finalList = resourceConverter.convertToDTOList(resultsEntities,searchBean.isDeepCopy());
+        return finalList;
     }
 
     @Override

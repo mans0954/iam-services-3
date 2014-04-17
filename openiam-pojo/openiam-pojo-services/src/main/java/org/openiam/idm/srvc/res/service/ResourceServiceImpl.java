@@ -246,6 +246,16 @@ public class ResourceServiceImpl implements ResourceService {
         }
 
         bean.setResourceProps(renewedProperties);
+        
+        if(CollectionUtils.isNotEmpty(renewedProperties)) {
+        	for(final ResourcePropEntity prop : renewedProperties) {
+        		if(prop.getElement() != null && StringUtils.isNotBlank(prop.getElement().getId())) {
+        			prop.setElement(elementDAO.findById(prop.getElement().getId()));
+        		} else {
+        			prop.setElement(null);
+        		}
+        	}
+        }
     }
 
     @Override

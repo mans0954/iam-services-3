@@ -6,11 +6,13 @@ import javax.xml.bind.annotation.XmlType;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "AbstractAttributeDTO", propOrder = {
-        "metadataId"
+        "metadataId",
+        "metadataName"
 })
 public abstract class AbstractAttributeDTO extends AbstactKeyNameValueDTO {
 
 	protected String metadataId;
+	protected String metadataName;
 	
 	public String getMetadataId() {
 		return this.metadataId;
@@ -20,12 +22,22 @@ public abstract class AbstractAttributeDTO extends AbstactKeyNameValueDTO {
 		this.metadataId = metadataId;
 	}
 
+	public String getMetadataName() {
+		return metadataName;
+	}
+
+	public void setMetadataName(String metadataName) {
+		this.metadataName = metadataName;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
 		result = prime * result
 				+ ((metadataId == null) ? 0 : metadataId.hashCode());
+		result = prime * result
+				+ ((metadataName == null) ? 0 : metadataName.hashCode());
 		return result;
 	}
 
@@ -43,15 +55,20 @@ public abstract class AbstractAttributeDTO extends AbstactKeyNameValueDTO {
 				return false;
 		} else if (!metadataId.equals(other.metadataId))
 			return false;
+		if (metadataName == null) {
+			if (other.metadataName != null)
+				return false;
+		} else if (!metadataName.equals(other.metadataName))
+			return false;
 		return true;
 	}
 
 	@Override
 	public String toString() {
-		return String.format(
-				"AbstractAttributeDTO [metadataId=%s, toString()=%s]",
-				metadataId, super.toString());
+		return String
+				.format("AbstractAttributeDTO [metadataId=%s, metadataName=%s, toString()=%s]",
+						metadataId, metadataName, super.toString());
 	}
-	
+
 	
 }
