@@ -43,8 +43,11 @@ public class IdmAuditLogDAOImpl extends BaseDaoImpl<IdmAuditLogEntity, String> i
             if(StringUtils.isNotBlank(entity.getId())) {
                 criteria.add(Restrictions.eq(getPKfieldName(), entity.getId()));
             }
-            if(entity.getAction() != null) {
+            if(StringUtils.isNotEmpty(entity.getAction())) {
                 criteria.add(Restrictions.eq("action",entity.getAction()));
+            }
+            if(StringUtils.isNotEmpty(entity.getResult())) {
+                criteria.add(Restrictions.eq("result",entity.getResult()));
             }
         }
         return criteria;
