@@ -348,17 +348,9 @@ public class AuthorizationManagerMenuServiceImpl extends AbstractBaseService imp
 	}
 	
 	private AuthorizationMenu getMenu(final AuthorizationMenu menu, final String userId, final AuthorizationManagerLoginId loginId) {
-		final StopWatch sw = new StopWatch();
-		sw.start();
 		AuthorizationMenu retVal = null;
 		if(menu != null && hasAccess(menu, userId, loginId)) {
-			final StopWatch sw2 = new StopWatch();
-			sw2.start();
 			final AuthorizationMenu copy = menu.copy();
-			sw2.stop();
-			if(log.isInfoEnabled()) {
-				log.info(String.format("menu.copy took %s ms", sw2.getTime()));
-			}
 			final List<AuthorizationMenu> children = getSiblings(menu.getFirstChild(), userId, loginId);
 			final List<AuthorizationMenu> siblings = getSiblings(menu.getNextSibling(), userId, loginId);
 			
@@ -374,10 +366,6 @@ public class AuthorizationManagerMenuServiceImpl extends AbstractBaseService imp
 			setNextSiblings(children);
 			setNextSiblings(siblings);
 			retVal = copy;
-		}
-		sw.stop();
-		if(log.isInfoEnabled()) {
-			log.info(String.format("getMenu took %s ms", sw.getTime()));
 		}
 		return retVal;
 	}
@@ -396,8 +384,6 @@ public class AuthorizationManagerMenuServiceImpl extends AbstractBaseService imp
 	}
 	
 	private List<AuthorizationMenu> getSiblings(final AuthorizationMenu menu, final String userId, final AuthorizationManagerLoginId loginId) {
-		final StopWatch sw = new StopWatch();
-		sw.start();
 		final List<AuthorizationMenu> siblings = new LinkedList<AuthorizationMenu>();
 		if(menu != null) {
 			AuthorizationMenu sibling = menu;
@@ -408,10 +394,6 @@ public class AuthorizationManagerMenuServiceImpl extends AbstractBaseService imp
 				}
 				sibling = sibling.getNextSibling();
 			}
-		}
-		sw.stop();
-		if(log.isInfoEnabled()) {
-			log.info(String.format("getSiblings took %s ms", sw.getTime()));
 		}
 		return siblings;
 	}
@@ -429,7 +411,7 @@ public class AuthorizationManagerMenuServiceImpl extends AbstractBaseService imp
 		}
 		sw.stop();
 		if(log.isInfoEnabled()) {
-			log.info(String.format("getMenu took %s ms", sw.getTime()));
+			//log.info(String.format("hasAccess took %s ms", sw.getTime()));
 		}
 		return retVal;
 	}
