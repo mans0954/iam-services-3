@@ -496,16 +496,10 @@ public class AuthorizationManagerServiceImpl implements AuthorizationManagerServ
 	}
 	
 	private AuthorizationUser fetchUser(final String userId) {
-		final StopWatch sw = new StopWatch();
-		sw.start();
 		AuthorizationUser retVal = getCachedUser(userId);
 		if(retVal == null) {
 			final InternalAuthroizationUser internalUser = userDAO.getFullUser(userId);
 			retVal = process(internalUser);
-		}
-		sw.stop();
-		if(log.isInfoEnabled()) {
-			log.info(String.format("fetchUser took %s ms", sw.getTotalTimeMillis()));
 		}
 		return retVal;
 	}
@@ -611,8 +605,6 @@ public class AuthorizationManagerServiceImpl implements AuthorizationManagerServ
 	}
 	
 	private boolean isEntitled(final AuthorizationUser user, final AuthorizationResource resource) {
-		final StopWatch sw = new StopWatch();
-		sw.start();
 		boolean retVal = false;
 		if(user != null && resource != null) {
 			AuthorizationResource toCheck = null;
@@ -622,10 +614,6 @@ public class AuthorizationManagerServiceImpl implements AuthorizationManagerServ
 				toCheck = resourceNameCache.get(resource.getName());
 			}
 			retVal = user.isEntitledTo(toCheck);
-		}
-		sw.stop();
-		if(log.isInfoEnabled()) {
-			log.info(String.format("fetchUser took %s ms", sw.getTotalTimeMillis()));
 		}
 		return retVal;
 	}

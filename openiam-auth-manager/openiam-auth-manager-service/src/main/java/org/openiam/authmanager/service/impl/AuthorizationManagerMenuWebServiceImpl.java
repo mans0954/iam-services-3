@@ -74,8 +74,8 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 			}
 		}
 		sw.stop();
-		if(log.isDebugEnabled()) {
-			log.debug(String.format("getMenuTreeForUserId: request: %s, time: %s ms", request, sw.getTime()));
+		if(log.isInfoEnabled()) {
+			log.info(String.format("getMenuTreeForUserId: request: %s, time: %s ms", request, sw.getTime()));
 		}
 		localize(retVal, langauge);
 		return retVal;

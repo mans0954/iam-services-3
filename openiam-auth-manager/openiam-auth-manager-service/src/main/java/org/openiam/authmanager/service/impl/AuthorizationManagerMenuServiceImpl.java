@@ -352,7 +352,13 @@ public class AuthorizationManagerMenuServiceImpl extends AbstractBaseService imp
 		sw.start();
 		AuthorizationMenu retVal = null;
 		if(menu != null && hasAccess(menu, userId, loginId)) {
+			final StopWatch sw2 = new StopWatch();
+			sw2.start();
 			final AuthorizationMenu copy = menu.copy();
+			sw2.stop();
+			if(log.isInfoEnabled()) {
+				log.info(String.format("menu.copy took %s ms", sw2.getTime()));
+			}
 			final List<AuthorizationMenu> children = getSiblings(menu.getFirstChild(), userId, loginId);
 			final List<AuthorizationMenu> siblings = getSiblings(menu.getNextSibling(), userId, loginId);
 			
