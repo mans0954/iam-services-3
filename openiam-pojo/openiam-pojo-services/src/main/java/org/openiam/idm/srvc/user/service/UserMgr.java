@@ -1776,12 +1776,11 @@ public class UserMgr implements UserDataService {
             }
         }
         if (newUserEntity.getEmployeeType() != null) {
-            if (newUserEntity.getEmployeeType().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-                origUserEntity.setEmployeeType(null);
-            } else {
-                origUserEntity.setEmployeeType(newUserEntity.getEmployeeType());
-            }
+           origUserEntity.setEmployeeType(newUserEntity.getEmployeeType());
+        } else {
+            origUserEntity.setEmployeeType(null);
         }
+
         if (newUserEntity.getFirstName() != null) {
             if (newUserEntity.getFirstName().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
                 origUserEntity.setFirstName(null);
@@ -1791,7 +1790,10 @@ public class UserMgr implements UserDataService {
         }
         if (newUserEntity.getJobCode() != null) {
             origUserEntity.setJobCode(newUserEntity.getJobCode());
+        } else {
+            origUserEntity.setJobCode(null);
         }
+
         if (newUserEntity.getLastName() != null) {
             if (newUserEntity.getLastName().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
                 origUserEntity.setLastName(null);
@@ -1813,12 +1815,8 @@ public class UserMgr implements UserDataService {
                 origUserEntity.setMaidenName(newUserEntity.getMaidenName());
             }
         }
-        if (newUserEntity.getMetadataTypeId() != null) {
-            if (newUserEntity.getMetadataTypeId().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-                origUserEntity.setMetadataTypeId(null);
-            } else {
-                origUserEntity.setMetadataTypeId(newUserEntity.getMetadataTypeId());
-            }
+        if (newUserEntity.getType() != null) {
+                origUserEntity.setType(newUserEntity.getType());
         }
         if (newUserEntity.getMiddleInit() != null) {
             if (newUserEntity.getMiddleInit().equalsIgnoreCase(BaseConstants.NULL_STRING)) {

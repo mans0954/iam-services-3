@@ -1,14 +1,12 @@
 package org.openiam.base.domain;
 
-import java.io.Serializable;
+import org.hibernate.annotations.GenericGenerator;
+import org.openiam.base.BaseIdentity;
 
-import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
-
-import org.hibernate.annotations.GenericGenerator;
-import org.openiam.base.BaseIdentity;
+import java.io.Serializable;
 
 @MappedSuperclass
 public abstract class KeyEntity implements Serializable, BaseIdentity {

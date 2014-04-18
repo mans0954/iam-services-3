@@ -4,20 +4,20 @@ package org.openiam.idm.srvc.user.dto;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.base.AbstractMetadataTypeDTO;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.BaseConstants;
-import org.openiam.base.KeyDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
 import org.openiam.idm.srvc.grp.dto.Group;
-import org.openiam.idm.srvc.meta.dto.MetadataType;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.user.domain.UserEntity;
+import org.openiam.internationalization.Internationalized;
 
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -40,10 +40,10 @@ import java.util.*;
         "createdBy",
         "emailAddresses",
         "employeeId",
-        "employeeType",
+        "employeeTypeId",
         //"expirationDate",
         "firstName",
-        "jobCode",
+        "jobCodeId",
         "lastName",
         "lastUpdate",
         "lastUpdatedBy",
@@ -100,8 +100,8 @@ import java.util.*;
         Organization.class
 })
 @DozerDTOCorrespondence(UserEntity.class)
-//@Internationalized
-public class User extends KeyDTO {
+@Internationalized
+public class User extends AbstractMetadataTypeDTO {
 
     private AttributeOperationEnum operation = AttributeOperationEnum.NO_CHANGE;
 
@@ -120,12 +120,12 @@ public class User extends KeyDTO {
 
     protected String employeeId;
 
-    protected String employeeType;
+    protected String employeeTypeId;
 
     protected String firstName;
 
 //    @Internationalized
-    protected MetadataType jobCode;
+    protected String jobCodeId;
 
     protected String lastName;
 
@@ -403,12 +403,12 @@ public class User extends KeyDTO {
         this.employeeId = employeeId;
     }
 
-    public String getEmployeeType() {
-        return this.employeeType;
+    public String getEmployeeTypeId() {
+        return this.employeeTypeId;
     }
 
-    public void setEmployeeType(String employeeType) {
-        this.employeeType = employeeType;
+    public void setEmployeeTypeId(String employeeTypeId) {
+        this.employeeTypeId = employeeTypeId;
     }
 
     public String getLocationCd() {
@@ -435,12 +435,12 @@ public class User extends KeyDTO {
         this.companyOwnerId = companyOwnerId;
     }
 
-    public MetadataType getJobCode() {
-        return this.jobCode;
+    public String getJobCodeId() {
+        return this.jobCodeId;
     }
 
-    public void setJobCode(MetadataType jobCode) {
-        this.jobCode = jobCode;
+    public void setJobCodeId(String jobCodeId) {
+        this.jobCodeId = jobCodeId;
     }
 
     public String getCostCenter() {
@@ -933,12 +933,8 @@ public class User extends KeyDTO {
                 this.employeeId = newUser.getEmployeeId();
             }
         }
-        if (newUser.getEmployeeType() != null) {
-            if (newUser.getEmployeeType().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-                this.employeeType = null;
-            } else {
-                this.employeeType = newUser.getEmployeeType();
-            }
+        if (newUser.getEmployeeTypeId() != null) {
+                this.employeeTypeId = newUser.getEmployeeTypeId();
         }
         if (newUser.getFirstName() != null) {
             if (newUser.getFirstName().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
@@ -947,8 +943,12 @@ public class User extends KeyDTO {
                 this.firstName = newUser.getFirstName();
             }
         }
-        if (newUser.getJobCode() != null) {
-            this.jobCode = newUser.getJobCode();
+        if (newUser.getJobCodeId() != null) {
+            if (newUser.getJobCodeId().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+                this.jobCodeId = null;
+            } else {
+                this.jobCodeId = newUser.getJobCodeId();
+            }
         }
         if (newUser.getLastName() != null) {
             if (newUser.getLastName().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
@@ -1256,7 +1256,7 @@ public class User extends KeyDTO {
         if (createdBy != null ? !createdBy.equals(user.createdBy) : user.createdBy != null) return false;
         if (email != null ? !email.equals(user.email) : user.email != null) return false;
         if (employeeId != null ? !employeeId.equals(user.employeeId) : user.employeeId != null) return false;
-        if (employeeType != null ? !employeeType.equals(user.employeeType) : user.employeeType != null) return false;
+        if (employeeTypeId != null ? !employeeTypeId.equals(user.employeeTypeId) : user.employeeTypeId != null) return false;
         if (lastDate != null ? !lastDate.equals(user.lastDate) : user.lastDate != null) return false;
         if (login != null ? !login.equals(user.login) : user.login != null) return false;
         if (maidenName != null ? !maidenName.equals(user.maidenName) : user.maidenName != null) return false;
@@ -1276,7 +1276,7 @@ public class User extends KeyDTO {
         result = 31 * result + (createDate != null ? createDate.hashCode() : 0);
         result = 31 * result + (createdBy != null ? createdBy.hashCode() : 0);
         result = 31 * result + (employeeId != null ? employeeId.hashCode() : 0);
-        result = 31 * result + (employeeType != null ? employeeType.hashCode() : 0);
+        result = 31 * result + (employeeTypeId != null ? employeeTypeId.hashCode() : 0);
         result = 31 * result + (title != null ? title.hashCode() : 0);
         result = 31 * result + (costCenter != null ? costCenter.hashCode() : 0);
         result = 31 * result + (startDate != null ? startDate.hashCode() : 0);

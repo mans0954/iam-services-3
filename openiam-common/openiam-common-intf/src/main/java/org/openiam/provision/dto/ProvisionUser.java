@@ -104,9 +104,9 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         createDate = user.getCreateDate();
         createdBy = user.getCreatedBy();
         employeeId = user.getEmployeeId();
-        employeeType = user.getEmployeeType();
+        employeeTypeId = user.getEmployeeTypeId();
         firstName = user.getFirstName();
-        jobCode = user.getJobCode();
+        jobCodeId = user.getJobCodeId();
         lastName = user.getLastName();
         lastUpdate = user.getLastUpdate();
         this.lastUpdatedBy = user.getLastUpdatedBy();
@@ -165,9 +165,9 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         user.setCreateDate(createDate);
         user.setCreatedBy(createdBy);
         user.setEmployeeId(employeeId);
-        user.setEmployeeType(employeeType);
+        user.setEmployeeTypeId(employeeTypeId);
         user.setFirstName(firstName);
-        user.setJobCode(jobCode);
+        user.setJobCodeId(jobCodeId);
         user.setLastName(lastName);
         user.setLastUpdate(lastUpdate);
         user.setLastUpdatedBy(lastUpdatedBy);

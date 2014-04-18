@@ -81,6 +81,10 @@
 	<mapping>
 		<class-a>org.openiam.idm.srvc.user.domain.UserEntity</class-a>
 		<class-b>org.openiam.idm.srvc.user.dto.User</class-b>
+        <field>
+            <a>type.id</a>
+            <b>metadataTypeId</b>
+        </field>
 		<field
 			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
 			custom-converter-param="dto2entityShallowDozerMapper">
@@ -151,10 +155,13 @@
             <a>subordinates</a>
             <b>subordinates</b>
         </field>
-        <field custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentObjectConverter"
-               custom-converter-param="dto2entityShallowDozerMapper">
-            <a>jobCode</a>
-            <b>jobCode</b>
+        <field>
+            <a>jobCode.id</a>
+            <b>jobCodeId</b>
+        </field>
+        <field>
+            <a>employeeType.id</a>
+            <b>employeeTypeId</b>
         </field>
 	</mapping>
 

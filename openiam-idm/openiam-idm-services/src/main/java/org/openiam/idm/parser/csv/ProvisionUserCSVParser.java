@@ -2,7 +2,6 @@ package org.openiam.idm.parser.csv;
 
 import org.openiam.am.srvc.constants.CSVSource;
 import org.openiam.am.srvc.constants.UserFields;
-import org.openiam.idm.srvc.meta.dto.MetadataType;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.recon.dto.ReconciliationObject;
@@ -55,15 +54,13 @@ public class ProvisionUserCSVParser extends
             user.setEmployeeId(objValue);
             break;
         case employeeType:
-            user.setEmployeeType(objValue);
+            user.setEmployeeTypeId(objValue);
             break;
         case firstName:
             user.setFirstName(objValue);
             break;
         case jobCode:
-            MetadataType jc = new MetadataType();
-            jc.setId(objValue);
-            user.setJobCode(jc);
+            user.setJobCodeId(objValue);
             break;
         case lastName:
             user.setLastName(objValue);
@@ -227,13 +224,13 @@ public class ProvisionUserCSVParser extends
             objValue = toString(user.getEmployeeId());
             break;
         case employeeType:
-            objValue = toString(user.getEmployeeType());
+            objValue = toString(user.getEmployeeTypeId());
             break;
         case firstName:
             objValue = toString(user.getFirstName());
             break;
         case jobCode:
-            objValue = toString(user.getJobCode());
+            objValue = toString(user.getJobCodeId());
             break;
         case lastName:
             objValue = toString(user.getLastName());

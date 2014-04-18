@@ -36,6 +36,9 @@ import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.service.GroupDataService;
 import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
+import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
+import org.openiam.idm.srvc.meta.dto.MetadataType;
+import org.openiam.idm.srvc.meta.service.MetadataTypeDAO;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
@@ -201,6 +204,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
 
     @Autowired
     protected AuditLogService auditLogService;
+    @Autowired
+    protected MetadataTypeDAO metadataTypeDAO;
 
     protected void checkAuditingAttributes(ProvisionUser pUser) {
         if ( pUser.getRequestClientIP() == null || pUser.getRequestClientIP().isEmpty() ) {
@@ -727,7 +732,23 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
     }
 
     public void updateUserProperties(UserEntity userEntity, ProvisionUser pUser) {
+        MetadataTypeEntity type = null;
+        MetadataTypeEntity jobCode = null;
+        MetadataTypeEntity employeeType = null;
+        if(StringUtils.isNotBlank(pUser.getMetadataTypeId())){
+            type = metadataTypeDAO.findById(pUser.getMetadataTypeId());
+        }
+        if(StringUtils.isNotBlank(pUser.getJobCodeId())){
+            jobCode = metadataTypeDAO.findById(pUser.getJobCodeId());
+        }
+        if(StringUtils.isNotBlank(pUser.getEmployeeTypeId())){
+            employeeType = metadataTypeDAO.findById(pUser.getEmployeeTypeId());
+        }
         userEntity.updateUser(userDozerConverter.convertToEntity(pUser.getUser(), false));
+
+        userEntity.setType(type);
+        userEntity.setJobCode(jobCode);
+        userEntity.setEmployeeType(employeeType);
     }
 
     public void updateUserAttributes(UserEntity userEntity, ProvisionUser pUser) {
