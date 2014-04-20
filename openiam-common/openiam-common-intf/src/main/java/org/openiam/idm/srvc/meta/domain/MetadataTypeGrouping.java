@@ -15,7 +15,11 @@ public enum MetadataTypeGrouping {
 	EMAIL(true),
 	AUTH_LEVEL(true),
 	JOB_CODE(true),
-	SERVICE_STATUS(true);
+	SERVICE_STATUS(true),
+	GROUP_TYPE(true),
+	ROLE_TYPE(true),
+	ORG_TYPE(true),
+	RESOURCE_TYPE(true);
 
 	private boolean creatable;
 	
