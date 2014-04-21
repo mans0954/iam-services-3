@@ -91,7 +91,7 @@ public class MetadataTypeEntity extends KeyEntity {
     private Set<CategoryEntity> categories = new HashSet<CategoryEntity>(0);
     
     @Transient
-    @InternationalizedCollection(referenceType="MetadataTypeEntity", targetField="displayName")
+    @InternationalizedCollection(targetField="displayName")
     private Map<String, LanguageMappingEntity> displayNameMap;
     
     @Transient

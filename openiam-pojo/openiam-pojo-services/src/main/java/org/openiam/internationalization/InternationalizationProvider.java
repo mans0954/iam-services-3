@@ -97,7 +97,7 @@ public class InternationalizationProvider {
 				final Field field = target.getField();
 				//field.setAccessible(true);
 				final InternationalizedCollection metadata = field.getAnnotation(InternationalizedCollection.class);
-				final List<LanguageMappingEntity> dbList = languageDAO.getByReferenceIdAndType(target.getEntity().getId(), metadata.referenceType());
+				final List<LanguageMappingEntity> dbList = languageDAO.getByReferenceIdAndType(target.getEntity().getId(), getReferenceType(target.getEntity(), field));
 				final Map<String, LanguageMappingEntity> dbMap = new HashMap<>();
 				if(CollectionUtils.isNotEmpty(dbList)) {
 					for(final LanguageMappingEntity dbRecord : dbList) {
@@ -108,6 +108,11 @@ public class InternationalizationProvider {
 				setValue(field, target.getEntity(), dbMap);
 			}
 		}
+	}
+	
+	private String getReferenceType(final BaseIdentity entity, final Field field) {
+		final String referenceType = String.format("%s.%s", entity.getClass().getSimpleName(), field.getName());
+		return referenceType;
 	}
 
 	public void doSaveUpdate(final KeyEntity object) {
@@ -128,7 +133,7 @@ public class InternationalizationProvider {
 				final Field field = target.getField();
 				//field.setAccessible(true);
 				final InternationalizedCollection metadata = field.getAnnotation(InternationalizedCollection.class);
-				final List<LanguageMappingEntity> dbList = languageDAO.getByReferenceIdAndType(target.getEntity().getId(), metadata.referenceType());
+				final List<LanguageMappingEntity> dbList = languageDAO.getByReferenceIdAndType(target.getEntity().getId(), getReferenceType(target.getEntity(), field));
 				if(CollectionUtils.isNotEmpty(dbList)) {
 					for(final LanguageMappingEntity entity : dbList) {
 						languageDAO.delete(entity);
@@ -247,14 +252,14 @@ public class InternationalizationProvider {
 	private void doCRUDLogicOnField(final Field field, final KeyEntity object) {
 		//field.setAccessible(true);
 		final InternationalizedCollection metadata = field.getAnnotation(InternationalizedCollection.class);
-		if(StringUtils.isNotBlank(object.getId()) && StringUtils.isNotBlank(metadata.referenceType())) {
+		if(StringUtils.isNotBlank(object.getId())) {
 			Collection<LanguageMappingEntity> toDelete = new LinkedList<>();
 			Collection<LanguageMappingEntity> toUpdate = new LinkedList<>();
 			Collection<LanguageMappingEntity> toSave = new LinkedList<>();
 			//final Object fieldObject = ReflectionUtils.getField(field, object);
 			final Object fieldObject = getMethodCallResult(field, object);
 			final Map<String, LanguageMappingEntity> transientMap = (Map<String, LanguageMappingEntity>)fieldObject;		
-			final List<LanguageMappingEntity> dbList = languageDAO.getByReferenceIdAndType(object.getId(), metadata.referenceType());
+			final List<LanguageMappingEntity> dbList = languageDAO.getByReferenceIdAndType(object.getId(), getReferenceType(object, field));
 			if(MapUtils.isEmpty(transientMap)) {
 				toDelete = dbList;
 			} else {
@@ -262,7 +267,7 @@ public class InternationalizationProvider {
 				if(CollectionUtils.isEmpty(dbList)) {
 					for(final String languageId : transientMap.keySet()) {
 						final LanguageMappingEntity entity = transientMap.get(languageId);
-						setMetadata(entity, object, languageId, metadata);
+						setMetadata(entity, object, languageId, field);
 						if(StringUtils.isNotBlank(entity.getValue())) {
 							toSave.add(entity);
 						}
@@ -294,7 +299,7 @@ public class InternationalizationProvider {
 							}
 						}
 						if(!contains) { /* new */
-							setMetadata(transientEntity, object, languageId, metadata);
+							setMetadata(transientEntity, object, languageId, field);
 							if(StringUtils.isNotBlank(transientEntity.getValue())) {
 								toSave.add(transientEntity);
 							}
@@ -322,10 +327,10 @@ public class InternationalizationProvider {
 		}
 	}
 	
-	private void setMetadata(final LanguageMappingEntity mappingEntity, final KeyEntity entity, final String languageId, final InternationalizedCollection metadata) {
+	private void setMetadata(final LanguageMappingEntity mappingEntity, final KeyEntity entity, final String languageId, final Field field) {
 		mappingEntity.setLanguageId(languageId);
 		mappingEntity.setReferenceId(entity.getId());
-		mappingEntity.setReferenceType(metadata.referenceType());
+		mappingEntity.setReferenceType(getReferenceType(entity, field));
 	}
 	
 	private class TargetInternationalizedField {

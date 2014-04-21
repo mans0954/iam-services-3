@@ -53,7 +53,7 @@ public class ResourceTypeEntity extends KeyEntity {
     private boolean selectAll;
     
     @Transient
-    @InternationalizedCollection(referenceType="ResourceTypeEntity", targetField="displayName")
+    @InternationalizedCollection(targetField="displayName")
     private Map<String, LanguageMappingEntity> displayNameMap;
     
     @Transient

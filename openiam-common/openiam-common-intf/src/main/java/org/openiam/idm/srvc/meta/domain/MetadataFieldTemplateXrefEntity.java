@@ -63,7 +63,7 @@ public class MetadataFieldTemplateXrefEntity extends KeyEntity {
     //@MapKey(name = "languageId")
     //@Fetch(FetchMode.SUBSELECT)
 	@Transient
-	@InternationalizedCollection(referenceType="MetadataFieldTemplateXrefEntity")
+	@InternationalizedCollection
     private Map<String, LanguageMappingEntity> languageMap;
 	
 	public MetadataTemplateTypeFieldEntity getField() {

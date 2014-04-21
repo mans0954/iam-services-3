@@ -96,7 +96,7 @@ public class MetadataElementEntity extends KeyEntity {
     //@MapKey(name = "languageId")
     //@Fetch(FetchMode.SUBSELECT)
     @Transient
-    @InternationalizedCollection(referenceType="MetadataElementEntity", targetField="displayName")
+    @InternationalizedCollection(targetField="displayName")
     private Map<String, LanguageMappingEntity> languageMap;
     
     @Transient
@@ -115,7 +115,7 @@ public class MetadataElementEntity extends KeyEntity {
     //@MapKey(name = "languageId")
     //@Fetch(FetchMode.SUBSELECT)
     @Transient
-    @InternationalizedCollection(referenceType="MetadataElementDefaultValues", targetField="defaultValue")
+    @InternationalizedCollection(targetField="defaultValue")
 	private Map<String, LanguageMappingEntity> defaultValueLanguageMap;
     
     @Transient

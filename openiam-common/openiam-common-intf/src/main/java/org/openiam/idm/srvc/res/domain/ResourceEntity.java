@@ -110,7 +110,7 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
 	
     
     @Transient
-    @InternationalizedCollection(referenceType="ResourceEntity", targetField="displayName")
+    @InternationalizedCollection(targetField="displayName")
     private Map<String, LanguageMappingEntity> displayNameMap;
     
     @Transient

@@ -41,7 +41,7 @@ public class LanguageEntity extends KeyEntity {
     private Map<String, LanguageLocaleEntity> locales;
 
     @Transient
-    @InternationalizedCollection(referenceType="LanguageEntity", targetField="name")
+    @InternationalizedCollection(targetField="name")
     private Map<String, LanguageMappingEntity> displayNameMap;
 
     public String getName() {

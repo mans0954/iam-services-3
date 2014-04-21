@@ -61,7 +61,7 @@ public class MetadataElement extends KeyDTO implements Serializable {
     private boolean selfEditable;
     private Set<MetadataElementPageTemplateXref> templateSet;
     
-    @InternationalizedCollection(referenceType="MetadataElementEntity", targetField="displayName")
+    @InternationalizedCollection(targetField="displayName")
     private Map<String, LanguageMapping> languageMap;
     private Set<MetadataValidValue> validValues;
     private String staticDefaultValue;

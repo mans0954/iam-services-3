@@ -69,7 +69,7 @@ public class Resource extends AdminResourceDTO {
     private boolean isPublic = true;
     private ResourceRisk risk;
     
-    @InternationalizedCollection(referenceType="ResourceEntity", targetField="displayName")
+    @InternationalizedCollection(targetField="displayName")
     private Map<String, LanguageMapping> displayNameMap;
 	    
     private String displayName;

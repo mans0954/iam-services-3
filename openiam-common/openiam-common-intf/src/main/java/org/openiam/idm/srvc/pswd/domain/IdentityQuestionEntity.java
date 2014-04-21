@@ -43,7 +43,7 @@ public class IdentityQuestionEntity extends KeyEntity {
 	private Boolean active;
 	
     @Transient
-    @InternationalizedCollection(referenceType="IdentityQuestionEntity", targetField="displayName")
+    @InternationalizedCollection(targetField="displayName")
     private Map<String, LanguageMappingEntity> displayNameMap;
     
     @Transient

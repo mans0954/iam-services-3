@@ -43,7 +43,7 @@ public class ResourceType extends KeyDTO {
     private String url;
     private String imageType;
     
-    @InternationalizedCollection(referenceType="ResourceTypeEntity", targetField="displayName")
+    @InternationalizedCollection(targetField="displayName")
     private Map<String, LanguageMapping> displayNameMap;
 	    
     private String displayName;

@@ -204,7 +204,7 @@ public class AuthorizationManagerMenuServiceImpl extends AbstractBaseService imp
 				idSet.add(menu.getId());
 			}
 		}
-		final List<LanguageMappingEntity> languageMappings = languageMappingDAO.getByReferenceIdsAndType(idSet, ResourceEntity.class.getSimpleName());
+		final List<LanguageMappingEntity> languageMappings = languageMappingDAO.getByReferenceIdsAndType(idSet, "ResourceEntity.displayNameMap");
 		final Map<String, List<LanguageMappingEntity>> languageMappingMap = new HashMap<String, List<LanguageMappingEntity>>();
 		if(CollectionUtils.isNotEmpty(languageMappings)) {
 			for(final LanguageMappingEntity mapping : languageMappings) {

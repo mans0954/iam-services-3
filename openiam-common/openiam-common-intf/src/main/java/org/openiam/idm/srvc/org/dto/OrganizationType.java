@@ -34,7 +34,7 @@ public class OrganizationType extends KeyDTO {
 	private Set<OrganizationType> childTypes;
 	private Set<Organization> organizations;
 	
-	@InternationalizedCollection(referenceType="MetadataTypeEntity", targetField="displayName")
+	@InternationalizedCollection(targetField="displayName")
     private Map<String, LanguageMapping> displayNameMap;
 	    
     private String displayName;

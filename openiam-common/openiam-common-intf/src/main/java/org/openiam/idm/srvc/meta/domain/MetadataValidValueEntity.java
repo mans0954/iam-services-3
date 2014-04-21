@@ -63,7 +63,7 @@ public class MetadataValidValueEntity extends KeyEntity {
     //@MapKey(name = "languageId")
     //@Fetch(FetchMode.SUBSELECT)
     @Transient
-    @InternationalizedCollection(referenceType="MetadataValidValueEntity", targetField="displayName")
+    @InternationalizedCollection(targetField="displayName")
     private Map<String, LanguageMappingEntity> languageMap;
 
 	public MetadataElementEntity getEntity() {

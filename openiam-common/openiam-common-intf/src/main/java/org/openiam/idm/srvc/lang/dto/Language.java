@@ -23,7 +23,7 @@ public class Language extends KeyDTO implements Cloneable {
     private String languageCode;
     private boolean isDefault = false;
 
-    @InternationalizedCollection(referenceType = "LanguageEntity", targetField = "name")
+    @InternationalizedCollection(targetField = "name")
     private Map<String, LanguageMapping> displayNameMap;
 
     private Map<String, LanguageLocale> locales;

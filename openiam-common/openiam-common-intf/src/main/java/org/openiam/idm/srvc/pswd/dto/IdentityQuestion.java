@@ -34,7 +34,7 @@ public class IdentityQuestion extends KeyDTO {
     protected String identityQuestGrpId;
     protected Boolean active;
     
-    @InternationalizedCollection(referenceType="IdentityQuestionEntity", targetField="displayName")
+    @InternationalizedCollection(targetField="displayName")
     private Map<String, LanguageMapping> displayNameMap;
 	    
     private String displayName;

@@ -61,7 +61,7 @@ public class OrganizationTypeEntity extends KeyEntity {
 	private Set<OrganizationEntity> organizations;
 	
 	@Transient
-	@InternationalizedCollection(referenceType="OrganizationTypeEntity", targetField="displayName")
+	@InternationalizedCollection(targetField="displayName")
 	private Map<String, LanguageMappingEntity> displayNameMap;
 	    
 	@Transient

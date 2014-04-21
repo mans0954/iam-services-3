@@ -55,7 +55,7 @@ public class MetadataType extends KeyDTO {
     protected Map<String, MetadataElement> elementAttributes = new HashMap<String, MetadataElement>(0);
     protected Set<Category> categories = new HashSet<Category>(0);
     
-    @InternationalizedCollection(referenceType="MetadataTypeEntity", targetField="displayName")
+    @InternationalizedCollection(targetField="displayName")
     private Map<String, LanguageMapping> displayNameMap;
 	    
     private String displayName;
