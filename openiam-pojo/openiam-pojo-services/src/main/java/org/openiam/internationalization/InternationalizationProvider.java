@@ -222,6 +222,18 @@ public class InternationalizationProvider {
 									}
 								} else if(fieldObject instanceof BaseIdentity) {
 									retVal.addAll(getTargetFields((BaseIdentity)fieldObject, visitedSet));
+								} else if(fieldObject instanceof Map) {
+									for(final Object key : ((Map)fieldObject).keySet()) {
+										if(key != null) {
+											if(key instanceof BaseIdentity) {
+												retVal.addAll(getTargetFields((BaseIdentity)key, visitedSet));
+											}
+											final Object value = ((Map)fieldObject).get(key);
+											if(value != null) {
+												retVal.addAll(getTargetFields((BaseIdentity)value, visitedSet));
+											}
+										}
+									}
 								}
 							}
 						}

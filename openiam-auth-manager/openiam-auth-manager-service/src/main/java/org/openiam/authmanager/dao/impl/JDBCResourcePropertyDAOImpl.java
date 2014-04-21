@@ -15,7 +15,7 @@ public class JDBCResourcePropertyDAOImpl extends AbstractJDBCDao implements Reso
 
 	private static final RowMapper<ResourceProp> mapper = new Mapper();
 	
-	private static String GET_ALL = "SELECT RESOURCE_PROP_ID AS ID, RESOURCE_ID AS RESOURCE_ID, METADATA_ID AS METADATA_ID, NAME AS NAME, VALUE AS VALUE FROM %s.RESOURCE_PROP";
+	private static String GET_ALL = "SELECT RESOURCE_PROP_ID AS ID, RESOURCE_ID AS RESOURCE_ID, METADATA_ID AS METADATA_ID, NAME AS NAME, _VALUE AS VALUE FROM %s.RESOURCE_PROP";
 	
 	@Override
 	protected void initSqlStatements() {

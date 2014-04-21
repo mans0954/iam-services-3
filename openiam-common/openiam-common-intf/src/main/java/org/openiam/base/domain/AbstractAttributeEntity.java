@@ -10,17 +10,19 @@ import javax.persistence.ManyToOne;
 import javax.persistence.MappedSuperclass;
 
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
+import org.openiam.internationalization.Internationalized;
 
 @MappedSuperclass
 @AttributeOverrides(value={
 	@AttributeOverride(name = "name", column = @Column(name="NAME", length=100)),
-	@AttributeOverride(name = "value", column = @Column(name="VALUE", length=4096))
+	@AttributeOverride(name = "value", column = @Column(name="_VALUE", length=4096))
 })
 public abstract class AbstractAttributeEntity extends AbstractKeyNameValueEntity {
 
 
     @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch= FetchType.LAZY)
     @JoinColumn(name = "METADATA_ID", insertable = true, updatable = true, nullable=true)
+    @Internationalized
     protected MetadataElementEntity element;
 
 	public MetadataElementEntity getElement() {

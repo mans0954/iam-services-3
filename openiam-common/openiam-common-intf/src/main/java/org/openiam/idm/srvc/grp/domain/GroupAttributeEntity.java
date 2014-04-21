@@ -25,7 +25,7 @@ public class GroupAttributeEntity {
 	@Column(name="NAME",length=100)
     private String name;
 	
-	@Column(name="VALUE")
+	@Column(name="_VALUE")
     private String value;
 
     @ElementCollection

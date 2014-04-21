@@ -329,73 +329,119 @@ public class AuthorizationManagerMenuServiceImpl extends AbstractBaseService imp
 	
 	@Override
 	public AuthorizationMenu getMenuTree(final String menuRoot, final String userId) {
-		return getMenu(menuCache.get(menuRoot), userId, null);
+		return getMenu(menuCache.get(menuRoot), userId, null, true);
 	}
 
 	@Override
 	public AuthorizationMenu getMenuTree(final String menuRoot, final String login, final String managedSysId) {
-		return getMenu(menuCache.get(menuRoot), null, new AuthorizationManagerLoginId(login, managedSysId));
+		return getMenu(menuCache.get(menuRoot), null, new AuthorizationManagerLoginId(login, managedSysId), true);
 	}
 	
 	@Override
     public AuthorizationMenu getMenuTreeByName(final String menuRoot, final String userId) {
-		return getMenu(menuNameCache.get(menuRoot), userId, null);
+		return getMenu(menuNameCache.get(menuRoot), userId, null, true);
 	}
 	
 	@Override
     public AuthorizationMenu getMenuTreeByName(final String menuRoot, final String login, final String managedSysId) {
-		return getMenu(menuNameCache.get(menuRoot), null, new AuthorizationManagerLoginId(login, managedSysId));
+		return getMenu(menuNameCache.get(menuRoot), null, new AuthorizationManagerLoginId(login, managedSysId), true);
 	}
 	
-	private AuthorizationMenu getMenu(final AuthorizationMenu menu, final String userId, final AuthorizationManagerLoginId loginId) {
+	private AuthorizationMenu getMenu(final AuthorizationMenu menu, final String userId, final AuthorizationManagerLoginId loginId, final boolean isRoot) {
 		AuthorizationMenu retVal = null;
-		if(menu != null && hasAccess(menu, userId, loginId)) {
-			final AuthorizationMenu copy = menu.copy();
-			final List<AuthorizationMenu> children = getSiblings(menu.getFirstChild(), userId, loginId);
-			final List<AuthorizationMenu> siblings = getSiblings(menu.getNextSibling(), userId, loginId);
+		if(menu != null) {
+			//make copy
+			AuthorizationMenu parent = menu.copy();
+			final AuthorizationMenu child = getMenu(menu.getFirstChild(), userId, loginId, false);
+			if(child != null) {
+				parent.setFirstChild(child);
+				child.setParent(parent);
+			}
 			
-			if(CollectionUtils.isNotEmpty(children)) {
-				copy.setFirstChild(children.get(0));
-				for(final AuthorizationMenu child : children) {
-					child.setParent(copy);
+			final AuthorizationMenu next = getMenu(menu.getNextSibling(), userId, loginId, false);
+			if(next != null) {
+				parent.setNextSibling(next);
+			}
+			
+			retVal = parent;
+			//end copy
+			
+			if(isRoot) {
+				if(!hasAccess(retVal, userId, loginId)) {
+					retVal = null;
+				} else {
+					removeUnauthorizedMenus(retVal, userId, loginId, true);
 				}
 			}
-			if(CollectionUtils.isNotEmpty(siblings)) {
-				copy.setNextSibling(siblings.get(0));
-			}
-			setNextSiblings(children);
-			setNextSiblings(siblings);
-			retVal = copy;
 		}
 		return retVal;
 	}
 	
-	private void setNextSiblings(final List<AuthorizationMenu> menuList) {
-		if(CollectionUtils.isNotEmpty(menuList)) {
-			AuthorizationMenu prev = null;
-			for(final Iterator<AuthorizationMenu> it = menuList.iterator(); it.hasNext();) {
-				final AuthorizationMenu next = it.next();
-				if(prev != null) {
-					prev.setNextSibling(next);
+	private List<AuthorizationMenu> getAuthorizedSiblings(final AuthorizationMenu menu, final String userId, final AuthorizationManagerLoginId loginId) {
+		final List<AuthorizationMenu> nextMenus = new LinkedList<>();
+		if(menu != null) {
+			AuthorizationMenu nextSibling = menu.getNextSibling();
+			while(nextSibling != null) {
+				if(hasAccess(nextSibling, userId, loginId)) {
+					removeUnauthorizedMenus(nextSibling, userId, loginId, false);
+					nextMenus.add(nextSibling);
 				}
-				prev = next;
+				nextSibling = nextSibling.getNextSibling();
 			}
 		}
+		return nextMenus;
 	}
 	
-	private List<AuthorizationMenu> getSiblings(final AuthorizationMenu menu, final String userId, final AuthorizationManagerLoginId loginId) {
-		final List<AuthorizationMenu> siblings = new LinkedList<AuthorizationMenu>();
+	private AuthorizationMenu getFirstAuthorizedChild(final AuthorizationMenu menu, final String userId, final AuthorizationManagerLoginId loginId) {
+		AuthorizationMenu authorizedChild = null;
 		if(menu != null) {
-			AuthorizationMenu sibling = menu;
-			while(sibling != null) {
-				final AuthorizationMenu siblingCopy = getMenu(sibling, userId, loginId);
-				if(siblingCopy != null) {
-					siblings.add(siblingCopy);
+			AuthorizationMenu child = menu.getFirstChild();
+			while(child != null) {
+				if(hasAccess(child, userId, loginId)) {
+					authorizedChild = child;
+					break;
 				}
-				sibling = sibling.getNextSibling();
+				child = child.getNextSibling();
 			}
 		}
-		return siblings;
+		return authorizedChild;
+	}
+	
+	private void removeUnauthorizedMenus(final AuthorizationMenu menu, final String userId, final AuthorizationManagerLoginId loginId, final boolean checkNext) {
+		final AuthorizationMenu child = getFirstAuthorizedChild(menu, userId, loginId);
+		if(child != null) {
+			menu.setFirstChild(child);
+			removeUnauthorizedMenus(menu.getFirstChild(), userId, loginId, true);
+		} else {
+			menu.setFirstChild(null);
+		}
+		/*
+		if(menu.getFirstChild() != null) {
+			if(!hasAccess(menu.getFirstChild(), userId, loginId)) {
+				menu.setFirstChild(null);
+			} else {
+				removeUnauthorizedMenus(menu.getFirstChild(), userId, loginId, true);
+			}
+		}
+		*/
+		
+		if(checkNext) {
+			final List<AuthorizationMenu> nextMenus = getAuthorizedSiblings(menu, userId, loginId);
+			
+			if(CollectionUtils.isNotEmpty(nextMenus)) {
+				AuthorizationMenu previous = null;
+				for(final AuthorizationMenu next : nextMenus) {
+					next.setNextSibling(null);
+					if(previous != null) {
+						previous.setNextSibling(next);
+					}
+					previous = next;
+				}
+				menu.setNextSibling(nextMenus.get(0));
+			} else {
+				menu.setNextSibling(null);
+			}
+		}
 	}
 	
 	private boolean hasAccess(final AuthorizationMenu menu, final String userId, final AuthorizationManagerLoginId loginId) {

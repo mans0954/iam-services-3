@@ -9,11 +9,13 @@ import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.idm.srvc.user.domain.UserEntity;
+import org.openiam.internationalization.Internationalized;
 
 @Entity
 @Table(name="RESOURCE_PROP")
 @AttributeOverride(name = "id", column = @Column(name = "RESOURCE_PROP_ID"))
 @DozerDTOCorrespondence(ResourceProp.class)
+@Internationalized
 public class ResourcePropEntity extends AbstractAttributeEntity {
    
     @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
