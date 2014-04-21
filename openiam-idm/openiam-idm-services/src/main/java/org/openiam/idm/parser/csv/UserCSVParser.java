@@ -52,13 +52,13 @@ public class UserCSVParser extends AbstractCSVParser<User, UserFields>
             user.setEmployeeId(objValue);
             break;
         case employeeType:
-            user.setEmployeeType(objValue);
+            user.setEmployeeTypeId(objValue);
             break;
         case firstName:
             user.setFirstName(objValue);
             break;
         case jobCode:
-            user.setJobCode(objValue);
+            user.setJobCodeId(objValue);
             break;
         case lastName:
             user.setLastName(objValue);
@@ -221,13 +221,13 @@ public class UserCSVParser extends AbstractCSVParser<User, UserFields>
             objValue = toString(user.getEmployeeId());
             break;
         case employeeType:
-            objValue = toString(user.getEmployeeType());
+            objValue = toString(user.getEmployeeTypeId());
             break;
         case firstName:
             objValue = toString(user.getFirstName());
             break;
         case jobCode:
-            objValue = toString(user.getJobCode());
+            objValue = toString(user.getJobCodeId());
             break;
         case lastName:
             objValue = toString(user.getLastName());

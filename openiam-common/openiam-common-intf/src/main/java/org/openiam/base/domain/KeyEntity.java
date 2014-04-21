@@ -1,22 +1,26 @@
 package org.openiam.base.domain;
 
-import java.io.Serializable;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.search.annotations.ContainedIn;
+import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.Index;
+import org.hibernate.search.annotations.Store;
+import org.openiam.base.BaseIdentity;
 
-import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
-
-import org.hibernate.annotations.GenericGenerator;
-import org.openiam.base.BaseIdentity;
+import java.io.Serializable;
 
 @MappedSuperclass
 public abstract class KeyEntity implements Serializable, BaseIdentity {
 
-	@Id
-	@GeneratedValue(generator="system-uuid")
-	@GenericGenerator(name="system-uuid", strategy = "uuid")
-	protected String id;
+    @Id
+    @GeneratedValue(generator="system-uuid")
+    @GenericGenerator(name="system-uuid", strategy = "uuid")
+    @ContainedIn   // must
+    @Field(name = "id", index = Index.UN_TOKENIZED, store = Store.YES)
+    protected String id;
 
 	public String getId() {
 		return id;

@@ -1,29 +1,9 @@
 package org.openiam.idm.srvc.user.domain;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import javax.persistence.*;
-import javax.validation.constraints.Size;
-
 import org.apache.commons.lang.StringUtils;
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
-import org.hibernate.annotations.FilterDef;
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.ParamDef;
-import org.hibernate.search.annotations.DocumentId;
-import org.hibernate.search.annotations.Field;
-import org.hibernate.search.annotations.Fields;
+import org.hibernate.annotations.*;
+import org.hibernate.search.annotations.*;
 import org.hibernate.search.annotations.Index;
-import org.hibernate.search.annotations.Indexed;
-import org.hibernate.search.annotations.Store;
 import org.openiam.base.BaseConstants;
 import org.openiam.core.dao.lucene.LuceneId;
 import org.openiam.core.dao.lucene.LuceneLastUpdate;
@@ -34,17 +14,29 @@ import org.openiam.idm.srvc.continfo.domain.AddressEntity;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
 import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
+import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
+import org.openiam.internationalization.Internationalized;
+
+import javax.persistence.CascadeType;
+import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.MapKey;
+import javax.persistence.Table;
+import javax.validation.constraints.Size;
+import java.util.*;
+import java.util.Map.Entry;
 
 @Entity
 @FilterDef(name = "parentTypeFilter", parameters = @ParamDef(name = "parentFilter", type = "string"))
 @Table(name = "USERS")
 @DozerDTOCorrespondence(User.class)
 @Indexed
+@Internationalized
 public class UserEntity {
     @Id
     @GeneratedValue(generator = "system-uuid")
@@ -71,10 +63,16 @@ public class UserEntity {
     @Size(max = 32, message = "validator.user.employee.id.toolong")
     private String employeeId;
 
-    @Column(name = "EMPLOYEE_TYPE", length = 20)
-    @Size(max = 20, message = "validator.user.employee.type.toolong")
-    @Field(index=Index.UN_TOKENIZED, name="employeeType", store=Store.YES)
-    private String employeeType;
+//    @Column(name = "EMPLOYEE_TYPE", length = 20)
+//    @Size(max = 20, message = "validator.user.employee.type.toolong")
+//    @Field(index=Index.UN_TOKENIZED, name="employeeType", store=Store.YES)
+//    private String employeeType;
+
+    @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch= FetchType.LAZY)
+    @JoinColumn(name = "EMPLOYEE_TYPE", insertable = true, updatable = true, nullable=true)
+    @Internationalized
+    @IndexedEmbedded
+    private MetadataTypeEntity employeeType;
 
     @Column(name = "FIRST_NAME", length = 50)
     @Fields ({
@@ -84,9 +82,14 @@ public class UserEntity {
     @Size(max = 50, message = "validator.user.first.name.toolong")
     private String firstName;
 
-    @Column(name = "JOB_CODE", length = 50)
-    @Size(max = 50, message = "validator.user.job.code.toolong")
-    private String jobCode;
+//    @Column(name = "JOB_CODE", length = 50)
+//    @Size(max = 50, message = "validator.user.job.code.toolong")
+//    private String jobCode;
+
+    @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch= FetchType.LAZY)
+    @JoinColumn(name = "JOB_CODE", insertable = true, updatable = true, nullable=true)
+    @Internationalized
+    private MetadataTypeEntity jobCode;
 
     @Column(name = "LAST_NAME", length = 50)
     @Fields ({
@@ -111,9 +114,10 @@ public class UserEntity {
     @Size(max = 100, message = "validator.user.location.name.toolong")
     private String locationName;
 
-    @Column(name = "TYPE_ID", length = 20)
-    @Size(max = 20, message = "validator.user.metadata.type.id.toolong")
-    private String metadataTypeId;
+    @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch= FetchType.LAZY)
+    @JoinColumn(name = "TYPE_ID", insertable = true, updatable = true, nullable=true)
+    @Internationalized
+    protected MetadataTypeEntity type;
 
     @Column(name = "CLASSIFICATION", length = 20)
     @Size(max = 20, message = "validator.user.classification.toolong")
@@ -304,11 +308,11 @@ public class UserEntity {
         this.employeeId = employeeId;
     }
 
-    public String getEmployeeType() {
+    public MetadataTypeEntity getEmployeeType() {
         return employeeType;
     }
 
-    public void setEmployeeType(String employeeType) {
+    public void setEmployeeType(MetadataTypeEntity employeeType) {
         this.employeeType = employeeType;
     }
 
@@ -320,11 +324,11 @@ public class UserEntity {
         this.firstName = firstName;
     }
 
-    public String getJobCode() {
+    public MetadataTypeEntity getJobCode() {
         return jobCode;
     }
 
-    public void setJobCode(String jobCode) {
+    public void setJobCode(MetadataTypeEntity jobCode) {
         this.jobCode = jobCode;
     }
 
@@ -368,12 +372,12 @@ public class UserEntity {
         this.locationName = locationName;
     }
 
-    public String getMetadataTypeId() {
-        return metadataTypeId;
+    public MetadataTypeEntity getType() {
+        return type;
     }
 
-    public void setMetadataTypeId(String metadataTypeId) {
-        this.metadataTypeId = metadataTypeId;
+    public void setType(MetadataTypeEntity type) {
+        this.type = type;
     }
 
     public String getClassification() {
@@ -758,12 +762,11 @@ public class UserEntity {
 	        }
 	    }
 	    if (newUser.getEmployeeType() != null) {
-	        if (newUser.getEmployeeType().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-	            this.employeeType = null;
-	        } else {
-	            this.employeeType = newUser.getEmployeeType();
-	        }
-	    }
+	       this.employeeType = newUser.getEmployeeType();
+	    } else {
+            employeeType=null;
+        }
+
 	    if (newUser.getFirstName() != null) {
 	        if (newUser.getFirstName().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
 	            this.firstName = null;
@@ -772,12 +775,10 @@ public class UserEntity {
 	        }
 	    }
 	    if (newUser.getJobCode() != null) {
-	        if (newUser.getJobCode().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-	            this.jobCode = null;
-	        } else {
-	            this.jobCode = newUser.getJobCode();
-	        }
-	    }
+	        this.jobCode = newUser.getJobCode();
+	    } else {
+            this.jobCode = null;
+        }
 	    if (newUser.getLastName() != null) {
 	        if (newUser.getLastName().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
 	            this.lastName = null;
@@ -820,12 +821,8 @@ public class UserEntity {
 	            this.mailCode = null;
 	        }
 	    }
-	    if (newUser.getMetadataTypeId() != null) {
-	        if (newUser.getMetadataTypeId().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-	            this.metadataTypeId = null;
-	        } else {
-	            this.metadataTypeId = newUser.getMetadataTypeId();
-	        }
+	    if (newUser.getType() != null) {
+            this.setType(newUser.getType());
 	    }
 	    if (newUser.getMiddleInit() != null) {
 	        if (newUser.getMiddleInit().equalsIgnoreCase(BaseConstants.NULL_STRING)) {

@@ -703,10 +703,10 @@ public class UserAttributeHelper {
         newUser.setCreateDate(user.getCreateDate());
         newUser.setCreatedBy(user.getCreatedBy());
         newUser.setEmployeeId(user.getEmployeeId());
-        newUser.setEmployeeType(user.getEmployeeType());
+        newUser.setEmployeeTypeId(user.getEmployeeTypeId());
 
         newUser.setFirstName(user.getFirstName());
-        newUser.setJobCode(user.getJobCode());
+        newUser.setJobCodeId(user.getJobCodeId());
         newUser.setLastName(user.getLastName());
         newUser.setLastUpdate(user.getLastUpdate());
         newUser.setLastUpdatedBy(user.getLastUpdatedBy());
