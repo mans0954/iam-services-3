@@ -1,35 +1,9 @@
 package org.openiam.idm.srvc.meta.domain;
 
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
-import javax.persistence.AttributeOverride;
-import javax.persistence.Cacheable;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import javax.persistence.MapKeyColumn;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
-import javax.persistence.Transient;
-
 import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Type;
+import org.hibernate.annotations.*;
+import org.hibernate.search.annotations.*;
+import org.hibernate.search.annotations.Index;
 import org.openiam.base.domain.KeyEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.cat.domain.CategoryEntity;
@@ -38,6 +12,15 @@ import org.openiam.idm.srvc.meta.dto.MetadataType;
 import org.openiam.internationalization.Internationalized;
 import org.openiam.internationalization.InternationalizedCollection;
 
+import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
 @Entity
 @Table(name = "METADATA_TYPE")
 @Cacheable
@@ -45,10 +28,11 @@ import org.openiam.internationalization.InternationalizedCollection;
 @DozerDTOCorrespondence(MetadataType.class)
 @AttributeOverride(name = "id", column = @Column(name = "TYPE_ID"))
 @Internationalized
+@Indexed
 public class MetadataTypeEntity extends KeyEntity {
 
     private static final long serialVersionUID = 1L;
-  
+
     @Column(name = "DESCRIPTION", length = 40)
     private String description;
 
@@ -96,7 +80,7 @@ public class MetadataTypeEntity extends KeyEntity {
     
     @Transient
     private String displayName;
-    
+
     public MetadataTypeEntity() {
     	super();
     }
