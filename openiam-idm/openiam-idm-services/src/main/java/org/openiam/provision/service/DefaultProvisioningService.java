@@ -41,6 +41,7 @@ import org.openiam.exception.ObjectNotFoundException;
 import org.openiam.exception.ScriptEngineException;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
+import org.openiam.idm.srvc.audit.constant.AuditSource;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
@@ -52,6 +53,9 @@ import org.openiam.idm.srvc.mngsys.domain.ProvisionConnectorEntity;
 import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
+import org.openiam.idm.srvc.prov.request.dto.BulkOperationEnum;
+import org.openiam.idm.srvc.prov.request.dto.BulkOperationRequest;
+import org.openiam.idm.srvc.prov.request.dto.OperationBean;
 import org.openiam.idm.srvc.pswd.dto.Password;
 import org.openiam.idm.srvc.pswd.dto.PasswordValidationResponse;
 import org.openiam.idm.srvc.pswd.service.PasswordGenerator;
@@ -2116,6 +2120,127 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         response.setStatus(ResponseStatus.SUCCESS);
         return response;
 
+    }
+
+    @Override
+    public Response startBulkOperation(final BulkOperationRequest bulkRequest) {
+        if (CollectionUtils.isNotEmpty(bulkRequest.getUserIds()) &&
+                CollectionUtils.isNotEmpty(bulkRequest.getOperations())) {
+
+            for (String userId : bulkRequest.getUserIds()) {
+                User user = userMgr.getUserDto(userId);
+
+                if (user != null) {
+                    user.setRequestorUserId(bulkRequest.getRequesterId());
+
+                    boolean isEntitlementModified = false;
+
+                    Set<Group> existingGroups = user.getGroups();
+                    user.setGroups(new HashSet<Group>());
+
+                    Set<Role> existingRoles = user.getRoles();
+                    user.setRoles(new HashSet<Role>());
+
+                    Set<Resource> existingResources = user.getResources();
+                    user.setResources(new HashSet<Resource>());
+
+                    for (OperationBean ob : bulkRequest.getOperations()) {
+                        switch (ob.getObjectType()) {
+                            case USER:
+                                switch(ob.getOperation()) {
+                                    case ACTIVATE_USER:
+                                        user.setStatus(UserStatusEnum.ACTIVE);
+                                        modifyUser(new ProvisionUser(user));
+                                        break;
+                                    case DEACTIVATE_USER:
+                                        deleteByUserId(userId, UserStatusEnum.DELETED, userId);
+                                        break;
+                                    case DELETE_USER:
+                                        deleteByUserId(userId, UserStatusEnum.REMOVE, userId);
+                                        break;
+                                    case ENABLE_USER:
+                                        disableUser(userId, false, bulkRequest.getRequesterId());
+                                        break;
+                                    case DISABLE_USER:
+                                        disableUser(userId, true, bulkRequest.getRequesterId());
+                                        break;
+                                }
+                                break;
+                            case GROUP:
+                                boolean isModifiedGroup = false;
+                                Group group = groupDozerConverter.convertToDTO(
+                                        groupManager.getGroup(ob.getObjectId(), bulkRequest.getRequesterId()), false);
+                                if (existingGroups.contains(group)) {
+                                    if (BulkOperationEnum.DELETE_ENTITLEMENT.equals(ob.getOperation())) {
+                                        existingGroups.remove(group);
+                                        group.setOperation(AttributeOperationEnum.DELETE);
+                                        isModifiedGroup = true;
+                                    }
+                                } else {
+                                    if (BulkOperationEnum.ADD_ENTITLEMENT.equals(ob.getOperation())) {
+                                        existingGroups.add(group);
+                                        group.setOperation(AttributeOperationEnum.ADD);
+                                        isModifiedGroup = true;
+                                    }
+                                }
+                                if (isModifiedGroup) {
+                                    user.getGroups().add(group);
+                                    isEntitlementModified = true;
+                                }
+                                break;
+                            case ROLE:
+                                boolean isModifiedRole = false;
+                                Role role = roleDozerConverter.convertToDTO(
+                                        roleDataService.getRole(ob.getObjectId(), bulkRequest.getRequesterId()), false);
+                                if (existingRoles.contains(role)) {
+                                    if (BulkOperationEnum.DELETE_ENTITLEMENT.equals(ob.getOperation())) {
+                                        existingRoles.remove(role);
+                                        role.setOperation(AttributeOperationEnum.DELETE);
+                                        isModifiedRole = true;
+                                    }
+                                } else {
+                                    if (BulkOperationEnum.ADD_ENTITLEMENT.equals(ob.getOperation())) {
+                                        existingRoles.add(role);
+                                        role.setOperation(AttributeOperationEnum.ADD);
+                                        isModifiedRole = true;
+                                    }
+                                }
+                                if (isModifiedRole) {
+                                    user.getRoles().add(role);
+                                    isEntitlementModified = true;
+                                }
+                                break;
+                            case RESOURCE:
+                                boolean isModifiedResource = false;
+                                Resource resource = resourceService.getResourceDTO(ob.getObjectId());
+                                if (existingResources.contains(resource)) {
+                                    if (BulkOperationEnum.DELETE_ENTITLEMENT.equals(ob.getOperation())) {
+                                        existingResources.remove(resource);
+                                        resource.setOperation(AttributeOperationEnum.DELETE);
+                                        isModifiedResource = true;
+                                    }
+                                } else {
+                                    if (BulkOperationEnum.ADD_ENTITLEMENT.equals(ob.getOperation())) {
+                                        existingResources.add(resource);
+                                        resource.setOperation(AttributeOperationEnum.ADD);
+                                        isModifiedResource = true;
+                                    }
+                                }
+                                if (isModifiedResource) {
+                                    user.getResources().add(resource);
+                                    isEntitlementModified = true;
+                                }
+                                break;
+                        }
+                    }
+                    if (isEntitlementModified) {
+                        modifyUser(new ProvisionUser(user));
+                    }
+                }
+            }
+        }
+
+        return new Response(ResponseStatus.SUCCESS);
     }
 
 }

@@ -642,7 +642,7 @@ public class UserMgr implements UserDataService {
     @Override
     @Transactional(readOnly = true)
     public int count(UserSearchBean searchBean) throws BasicDataServiceException {
-        return getUserIds(searchBean).size();
+        return userDao.findByIds(getUserIds(searchBean)).size();
     }
 
     @Override
