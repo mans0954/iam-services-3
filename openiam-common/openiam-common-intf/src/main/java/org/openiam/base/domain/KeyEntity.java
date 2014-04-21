@@ -18,7 +18,7 @@ public abstract class KeyEntity implements Serializable, BaseIdentity {
     @Id
     @GeneratedValue(generator="system-uuid")
     @GenericGenerator(name="system-uuid", strategy = "uuid")
-    @ContainedIn   // must
+    //@ContainedIn   // must
     @Field(name = "id", index = Index.UN_TOKENIZED, store = Store.YES)
     protected String id;
 

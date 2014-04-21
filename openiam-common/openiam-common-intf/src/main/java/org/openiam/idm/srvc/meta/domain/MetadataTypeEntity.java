@@ -85,6 +85,12 @@ public class MetadataTypeEntity extends KeyEntity {
     	super();
     }
     
+    @Override
+    @ContainedIn
+    public String getId() {
+    	return super.getId();
+    }
+    
 	public Map<String, MetadataElementEntity> getElementAttributes() {
     	return elementAttributes;
     }
