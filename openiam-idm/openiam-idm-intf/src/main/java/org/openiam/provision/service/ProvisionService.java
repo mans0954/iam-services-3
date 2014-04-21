@@ -22,6 +22,7 @@
 package org.openiam.provision.service;
 
 import org.openiam.base.ws.Response;
+import org.openiam.idm.srvc.prov.request.dto.BulkOperationRequest;
 import org.openiam.idm.srvc.pswd.dto.PasswordValidationResponse;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.provision.dto.AccountLockEnum;
@@ -205,5 +206,9 @@ public interface ProvisionService {
     public Response syncPasswordFromSrc(
             @WebParam(name = "passwordSync", targetNamespace = "")
             PasswordSync passwordSync);
+
+    @WebMethod
+    public Response startBulkOperation(
+            @WebParam(name = "bulkRequest", targetNamespace = "") BulkOperationRequest bulkRequest);
 
 }
