@@ -21,6 +21,7 @@ import java.util.*;
         "lastName",
         "accountStatus",
         "maidenName",
+        "jobCode",
         "userStatus",
         "nickName",
         "phoneAreaCd",
@@ -56,6 +57,7 @@ import java.util.*;
 public class UserSearchBean extends AbstractSearchBean<User, String> implements SearchBean<User, String>,
         Serializable {
 
+	protected String jobCode = null;
     protected String firstName = null;
     protected String lastName = null;
     protected String nickName = null;
@@ -425,6 +427,14 @@ public class UserSearchBean extends AbstractSearchBean<User, String> implements 
 
 	public void setMaidenName(String maidenName) {
 		this.maidenName = maidenName;
+	}
+
+	public String getJobCode() {
+		return jobCode;
+	}
+
+	public void setJobCode(String jobCode) {
+		this.jobCode = jobCode;
 	}
     
     

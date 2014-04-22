@@ -89,6 +89,7 @@ public class UserEntity {
     @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch= FetchType.LAZY)
     @JoinColumn(name = "JOB_CODE", insertable = true, updatable = true, nullable=true)
     @Internationalized
+    @IndexedEmbedded
     private MetadataTypeEntity jobCode;
 
     @Column(name = "LAST_NAME", length = 50)

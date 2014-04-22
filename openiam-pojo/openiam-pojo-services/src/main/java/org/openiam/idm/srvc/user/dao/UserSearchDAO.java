@@ -44,6 +44,11 @@ public class UserSearchDAO extends AbstractHibernateSearchDao<UserEntity, UserSe
         if(clause != null) {
             luceneQuery.add(clause, BooleanClause.Occur.MUST);
         }
+        
+        clause = buildExactClause("jobCode.id", query.getJobCode());
+        if(clause != null) {
+			luceneQuery.add(clause, BooleanClause.Occur.MUST);
+		}
 
         clause = buildExactClause("employeeType.id", query.getEmployeeType());
         if(clause != null) {
