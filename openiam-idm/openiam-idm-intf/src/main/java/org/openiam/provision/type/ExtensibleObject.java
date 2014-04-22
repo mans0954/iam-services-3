@@ -22,6 +22,9 @@
 package org.openiam.provision.type;
 
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -94,6 +97,15 @@ public class ExtensibleObject implements java.io.Serializable {
 	public List<ExtensibleAttribute> getAttributes() {
 		return attributes;
 	}
+
+    public String getAttributesAsJSON(){
+        Gson gson = new Gson();
+        JsonObject jsonObject = new JsonObject();
+        for(ExtensibleAttribute attribute : this.getAttributes()) {
+            jsonObject.addProperty(attribute.getName(), attribute.getValue());
+        }
+        return gson.toJson(jsonObject);
+    }
 
 	public void setAttributes(List<ExtensibleAttribute> attributes) {
 		this.attributes = attributes;
