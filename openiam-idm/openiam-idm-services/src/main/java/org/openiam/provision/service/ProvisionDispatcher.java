@@ -494,6 +494,7 @@ public class ProvisionDispatcher implements Sweepable {
             idmAuditLogChild1.fail();
             idmAuditLogChild1.setFailureReason(resp.getErrorMsgAsStr());
             idmAuditLogChild1.setAuditDescription(resp.getErrorMsgAsStr());
+            idmAuditLog.setAuditDescription(resp.getErrorMsgAsStr());
         }
         idmAuditLog.addChild(idmAuditLogChild1);
 
