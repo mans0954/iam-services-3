@@ -43,7 +43,7 @@ import java.util.*;
         portName = "DefaultProvisionControllerServicePort",
         serviceName = "AsynchUserProvisionService")
 @Component("asynchProvisonWS")
-public class AsynchUserProvisioningServiceImpl {
+public class AsynchUserProvisioningServiceImpl implements AsynchUserProvisionService {
 
     protected static final Log log = LogFactory.getLog(AsynchUserProvisioningServiceImpl.class);
     @Autowired
@@ -59,6 +59,7 @@ public class AsynchUserProvisioningServiceImpl {
     /* (non-Javadoc)
       * @see org.openiam.provision.service.ProvisionService#addUser(org.openiam.provision.dto.ProvisionUser)
       */
+    @Override
     public void addUser(ProvisionUser user) {
         log.debug("START PROVISIONING - ADD USER CALLED...................");
 
@@ -86,6 +87,7 @@ public class AsynchUserProvisioningServiceImpl {
     /* (non-Javadoc)
       * @see org.openiam.provision.service.ProvisionService#modifyUser(org.openiam.provision.dto.ProvisionUser)
       */
+    @Override
     public void modifyUser(ProvisionUser user) {
             log.debug("START PROVISIONING - MODIFY USER CALLED...................");
 
@@ -110,6 +112,7 @@ public class AsynchUserProvisioningServiceImpl {
 
     }
 
+    @Override
     public void startBulkOperation(BulkOperationRequest bulkRequest) {
         log.debug("START BULK OPERATION CALLED...................");
 

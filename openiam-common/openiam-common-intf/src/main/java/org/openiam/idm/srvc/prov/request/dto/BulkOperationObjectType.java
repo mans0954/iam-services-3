@@ -8,7 +8,7 @@ import javax.xml.bind.annotation.XmlType;
 @XmlEnum
 public enum BulkOperationObjectType {
 
-    @XmlEnumValue("GROUP")
+    @XmlEnumValue("USER")
     USER("USER", "User"),
 
     @XmlEnumValue("GROUP")

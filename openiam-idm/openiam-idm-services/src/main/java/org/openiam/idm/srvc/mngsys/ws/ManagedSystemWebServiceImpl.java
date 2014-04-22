@@ -21,6 +21,9 @@ import org.openiam.dozer.converter.ManagedSysDozerConverter;
 import org.openiam.dozer.converter.ManagedSysRuleDozerConverter;
 import org.openiam.dozer.converter.ManagedSystemObjectMatchDozerConverter;
 import org.openiam.idm.searchbeans.AttributeMapSearchBean;
+import org.openiam.idm.srvc.audit.constant.AuditAction;
+import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
+import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
@@ -43,6 +46,7 @@ import org.openiam.idm.srvc.mngsys.searchbeans.converter.ManagedSystemSearchBean
 import org.openiam.idm.srvc.mngsys.service.ApproverAssociationDAO;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
 import org.openiam.idm.srvc.user.service.UserDataService;
+import org.openiam.idm.util.SSLCert;
 import org.openiam.util.encrypt.Cryptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -55,6 +59,12 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
 
     @Value("${org.openiam.idm.system.user.id}")
     private String systemUserId;
+
+    @Value("${KEYSTORE}")
+    private String keystore;
+
+    @Value("${KEYSTORE_PSWD}")
+    private String keystorePasswd;
 
     @Autowired
     private ManagedSystemService managedSystemService;
@@ -80,8 +90,13 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
 
     @Autowired
     private ApproverAssociationDozerConverter approverAssociationDozerConverter;
+
+    @Autowired
+    private AuditLogService auditLogService;
+
     @Autowired
     private DefaultReconciliationAttributeMapDozerConverter defaultReconciliationAttributeMapDozerConverter;
+
     private static final Log log = LogFactory
             .getLog(ManagedSystemWebServiceImpl.class);
 
@@ -101,6 +116,32 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
                 .convert(searchBean);
         return managedSystemService
                 .getManagedSystemsCountByExample(managedSysEntity);
+    }
+
+    @Override
+    public Response requestSSLCert(@WebParam(name = "sys", targetNamespace = "") ManagedSysDto sys, @WebParam(name = "requesterId", targetNamespace = "") String requesterId) {
+        Response response = new Response(ResponseStatus.SUCCESS);
+        IdmAuditLog auditLog = new IdmAuditLog();
+        auditLog.setRequestorUserId(requesterId);
+        auditLog.setAction(AuditAction.SSL_CERT_REQUEST.value());
+        auditLog.setTargetManagedSys(sys.getId(), sys.getName());
+        try {
+            String host = sys.getHostUrl();
+            if(host.indexOf("://") > 0) {
+               host = host.substring(host.indexOf("://")+"://".length());
+            }
+            SSLCert.installCert(host, sys.getPort(), keystorePasswd, keystore);
+            auditLog.succeed();
+        } catch(Exception ex) {
+            auditLog.fail();
+            auditLog.setFailureReason(ex.toString());
+            response.setErrorText(ex.toString());
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(ResponseCode.INTERNAL_ERROR);
+        } finally {
+            auditLogService.enqueue(auditLog);
+        }
+        return response;
     }
 
     @Override

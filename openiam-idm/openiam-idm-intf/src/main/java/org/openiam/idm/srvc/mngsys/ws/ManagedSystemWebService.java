@@ -78,6 +78,17 @@ public interface ManagedSystemWebService {
             @WebParam(name = "sys", targetNamespace = "") ManagedSysDto sys);
 
     /**
+     * Send request for SSL Certificate and install it
+     *
+     * @param sys
+     * @return
+     */
+    @WebMethod
+    Response requestSSLCert(
+            @WebParam(name = "sys", targetNamespace = "") ManagedSysDto sys,
+            @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
+
+    /**
      * Removes a managed system entry from the system.
      * 
      * @param sysId
