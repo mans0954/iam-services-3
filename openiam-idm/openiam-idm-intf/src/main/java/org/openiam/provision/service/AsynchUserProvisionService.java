@@ -21,6 +21,7 @@
  */
 package org.openiam.provision.service;
 
+import org.openiam.idm.srvc.prov.request.dto.BulkOperationRequest;
 import org.openiam.provision.dto.ProvisionUser;
 
 import javax.jws.WebMethod;
@@ -51,4 +52,9 @@ public interface AsynchUserProvisionService {
 	public void modifyUser(
             @WebParam(name = "user", targetNamespace = "")
             ProvisionUser user);
+
+    @WebMethod
+    public void startBulkOperation(
+            @WebParam(name = "bulkRequest", targetNamespace = "")
+            BulkOperationRequest bulkRequest);
 }
