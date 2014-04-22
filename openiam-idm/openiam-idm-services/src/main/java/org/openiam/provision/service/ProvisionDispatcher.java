@@ -1,5 +1,6 @@
 package org.openiam.provision.service;
 
+import com.google.gson.*;
 import groovy.lang.MissingPropertyException;
 
 import java.text.SimpleDateFormat;
@@ -370,6 +371,7 @@ public class ProvisionDispatcher implements Sweepable {
 
             ExtensibleUser extUser = buildFromRules(targetSysProvUser, attrMap, bindingMap);
 
+            idmAuditLog.setAuditDescription(extUser.getAttributesAsJSON());
             // get the attributes at the target system
             // this lookup only for getting attributes from the
             // system
