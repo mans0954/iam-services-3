@@ -371,7 +371,7 @@ public class ProvisionDispatcher implements Sweepable {
 
             ExtensibleUser extUser = buildFromRules(targetSysProvUser, attrMap, bindingMap);
             try {
-                idmAuditLog.setAuditDescription(extUser.getAttributesAsJSON());
+                idmAuditLog.addCustomRecord("ATTRIBUTES",extUser.getAttributesAsJSON());
             } catch(JsonGenerationException jge) {
                 log.error(jge);
             }
