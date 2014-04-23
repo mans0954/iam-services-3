@@ -24,9 +24,14 @@ package org.openiam.provision.type;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import org.codehaus.jackson.JsonGenerationException;
+import org.codehaus.jackson.map.ObjectMapper;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 import javax.xml.bind.annotation.*;
 
@@ -98,13 +103,13 @@ public class ExtensibleObject implements java.io.Serializable {
 		return attributes;
 	}
 
-    public String getAttributesAsJSON(){
-        Gson gson = new Gson();
-        JsonObject jsonObject = new JsonObject();
+    public String getAttributesAsJSON() throws IOException {
+        Properties attrVals = new Properties();
+        ObjectMapper mapper = new ObjectMapper();
         for(ExtensibleAttribute attribute : this.getAttributes()) {
-            jsonObject.addProperty(attribute.getName(), attribute.getValue());
+            attrVals.put(attribute.getName(), attribute.getValue());
         }
-        return gson.toJson(jsonObject);
+        return mapper.writeValueAsString(attrVals);
     }
 
 	public void setAttributes(List<ExtensibleAttribute> attributes) {
