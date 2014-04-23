@@ -276,4 +276,17 @@ public class ChallengeResponseWebServiceImpl implements ChallengeResponseWebServ
 	public boolean isUserAnsweredSecurityQuestions(final String userId) {
 		return challengeResponseService.isUserAnsweredSecurityQuestions(userId);
 	}
+
+	@Override
+	public Response resetQuestionsForUser(String userId) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			challengeResponseService.resetQuestionsForUser(userId);
+		} catch (Throwable e) {
+			log.error(String.format("Can't reset questions for user %s", userId), e);
+			response.setErrorText(e.getMessage());
+			response.setStatus(ResponseStatus.FAILURE);
+		}
+		return response;
+	}
 }

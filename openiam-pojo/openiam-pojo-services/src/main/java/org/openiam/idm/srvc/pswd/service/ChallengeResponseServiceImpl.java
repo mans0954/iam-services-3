@@ -132,4 +132,9 @@ public class ChallengeResponseServiceImpl implements ChallengeResponseService {
 	public boolean isUserAnsweredSecurityQuestions(final String userId) {
 		return getResponseValidator().isUserAnsweredSecurityQuestions(userId);
 	}
+
+	@Override
+	public void resetQuestionsForUser(String userId) {
+		getResponseValidator().resetQuestionsForUser(userId);
+	}
 }
