@@ -20,6 +20,8 @@ import java.util.*;
         "firstName",
         "lastName",
         "accountStatus",
+        "maidenName",
+        "jobCode",
         "userStatus",
         "nickName",
         "phoneAreaCd",
@@ -55,9 +57,11 @@ import java.util.*;
 public class UserSearchBean extends AbstractSearchBean<User, String> implements SearchBean<User, String>,
         Serializable {
 
+	protected String jobCode = null;
     protected String firstName = null;
     protected String lastName = null;
     protected String nickName = null;
+    protected String maidenName = null;
     protected String accountStatus = null;
     protected String userStatus = null;
     protected String phoneAreaCd = null;
@@ -416,4 +420,22 @@ public class UserSearchBean extends AbstractSearchBean<User, String> implements 
             this.resourceIdSet.add(resourceId);
         }
     }
+
+	public String getMaidenName() {
+		return maidenName;
+	}
+
+	public void setMaidenName(String maidenName) {
+		this.maidenName = maidenName;
+	}
+
+	public String getJobCode() {
+		return jobCode;
+	}
+
+	public void setJobCode(String jobCode) {
+		this.jobCode = jobCode;
+	}
+    
+    
 }
