@@ -908,7 +908,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         userEntity.setLastUpdate(currDate);
 
         // update originalUser from IDM with the new user information
-        updateUserProperties(userEntity, pUser);
+        updateUserProperties(userEntity, pUser, auditLog);
 
         if (isAdd) {
             try {
@@ -930,28 +930,28 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         }
 
         // update addresses
-        updateAddresses(userEntity, pUser);
+        updateAddresses(userEntity, pUser, auditLog);
 
         // update phones
-        updatePhones(userEntity, pUser);
+        updatePhones(userEntity, pUser, auditLog);
 
         // update emails
-        updateEmails(userEntity, pUser);
+        updateEmails(userEntity, pUser, auditLog);
 
         // update supervisors
-        updateSupervisors(userEntity, pUser);
+        updateSupervisors(userEntity, pUser, auditLog);
 
         // update groups
-        updateGroups(userEntity, pUser);
+        updateGroups(userEntity, pUser, auditLog);
 
         // update roles
         Set<Role> roleSet = new HashSet<Role>();
         Set<Role> deleteRoleSet = new HashSet<Role>();
-        updateRoles(userEntity, pUser, roleSet, deleteRoleSet);
+        updateRoles(userEntity, pUser, roleSet, deleteRoleSet, auditLog);
         bindingMap.put("userRole", roleSet);
 
         // update organization associations
-        updateAffiliations(userEntity, pUser);
+        updateAffiliations(userEntity, pUser, auditLog);
 
         // Set of resources that a person should have based on their active
         // roles
@@ -961,13 +961,13 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         Set<Resource> deleteResourceSet = getResourcesForRoles(deleteRoleSet);
 
         // update resources, update resources sets
-        updateResources(userEntity, pUser, resourceSet, deleteResourceSet);
+        updateResources(userEntity, pUser, resourceSet, deleteResourceSet, auditLog);
 
         log.debug("Resources to be added ->> " + resourceSet);
         log.debug("Delete the following resources ->> " + deleteResourceSet);
 
         // update principals
-        updatePrincipals(userEntity, pUser);
+        updatePrincipals(userEntity, pUser, auditLog);
 
         // get primary identity and bind it for the groovy scripts
         LoginEntity primaryIdentityEntity = UserUtils.getPrimaryIdentityEntity(sysConfiguration.getDefaultManagedSysId(),
@@ -1022,7 +1022,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         }
 
         // update attributes
-        updateUserAttributes(userEntity, pUser);
+        updateUserAttributes(userEntity, pUser, auditLog);
 
         log.debug("Binding active roles to scripting");
         log.debug("- role set -> " + roleSet);

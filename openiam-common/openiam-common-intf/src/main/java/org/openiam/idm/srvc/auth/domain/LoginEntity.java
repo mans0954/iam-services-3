@@ -604,5 +604,19 @@ public class LoginEntity implements java.io.Serializable {
 			return false;
 		return true;
 	}
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("LoginEntity");
+        sb.append("{login='").append(login).append('\'');
+        sb.append(", managedSysId='").append(managedSysId).append('\'');
+        sb.append(", pwdChanged=").append(pwdChanged);
+        sb.append(", pwdExp=").append(pwdExp);
+        sb.append(", status=").append(status);
+        sb.append(", lastUpdate=").append(lastUpdate);
+        sb.append('}');
+        return sb.toString();
+    }
 }
 

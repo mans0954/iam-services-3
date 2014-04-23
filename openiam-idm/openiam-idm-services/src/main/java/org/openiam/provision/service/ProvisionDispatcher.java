@@ -1,6 +1,5 @@
 package org.openiam.provision.service;
 
-import com.google.gson.*;
 import groovy.lang.MissingPropertyException;
 
 import java.text.SimpleDateFormat;

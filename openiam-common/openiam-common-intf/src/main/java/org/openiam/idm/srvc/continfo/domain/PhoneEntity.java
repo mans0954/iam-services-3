@@ -318,5 +318,19 @@ public class PhoneEntity {
 		return true;
 	}
 
-	
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("PhoneEntity");
+        sb.append("{areaCd='").append(areaCd).append('\'');
+        sb.append(", countryCd='").append(countryCd).append('\'');
+        sb.append(", description='").append(description).append('\'');
+        sb.append(", isDefault=").append(isDefault);
+        sb.append(", phoneExt='").append(phoneExt).append('\'');
+        sb.append(", phoneNbr='").append(phoneNbr).append('\'');
+        sb.append(", name='").append(name).append('\'');
+        sb.append(", lastUpdate=").append(lastUpdate);
+        sb.append('}');
+        return sb.toString();
+    }
 }

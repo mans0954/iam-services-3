@@ -160,4 +160,16 @@ public class UserAttributeEntity implements Serializable {
         result = 31 * result + (isMultivalued ? 1231 : 1237);
         return result;
     }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("UserAttributeEntity");
+        sb.append("{name='").append(name).append('\'');
+        sb.append(", value='").append(value).append('\'');
+        sb.append(", isMultivalued=").append(isMultivalued);
+        sb.append(", element=").append(element);
+        sb.append('}');
+        return sb.toString();
+    }
 }

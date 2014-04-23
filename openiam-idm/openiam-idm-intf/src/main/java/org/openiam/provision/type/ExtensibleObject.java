@@ -22,8 +22,6 @@
 package org.openiam.provision.type;
 
 
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
 import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.map.ObjectMapper;
 

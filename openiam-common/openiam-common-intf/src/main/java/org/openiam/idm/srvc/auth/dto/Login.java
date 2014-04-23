@@ -478,10 +478,12 @@ public class Login implements java.io.Serializable {
         sb.append("Login");
         sb.append("{login='").append(login).append('\'');
         sb.append(", managedSysId='").append(managedSysId).append('\'');
-        sb.append(", lowerCaseLogin='").append(lowerCaseLogin).append('\'');
         sb.append(", userId='").append(userId).append('\'');
+        sb.append(", pwdChanged=").append(pwdChanged);
+        sb.append(", pwdExp=").append(pwdExp);
         sb.append(", status=").append(status);
         sb.append(", initialStatus=").append(initialStatus);
+        sb.append(", lastUpdate=").append(lastUpdate);
         sb.append('}');
         return sb.toString();
     }
