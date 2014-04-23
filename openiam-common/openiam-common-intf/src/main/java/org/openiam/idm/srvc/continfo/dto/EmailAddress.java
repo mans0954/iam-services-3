@@ -281,4 +281,17 @@ public class EmailAddress implements Serializable {
             return false;
 		return true;
 	}
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("EmailAddress");
+        sb.append("{emailAddress='").append(emailAddress).append('\'');
+        sb.append(", name='").append(name).append('\'');
+        sb.append(", lastUpdate=").append(lastUpdate);
+        sb.append(", typeDescription='").append(typeDescription).append('\'');
+        sb.append(", isDefault=").append(isDefault);
+        sb.append('}');
+        return sb.toString();
+    }
 }

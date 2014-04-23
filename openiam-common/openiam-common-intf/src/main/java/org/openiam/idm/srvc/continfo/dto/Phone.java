@@ -424,5 +424,19 @@ public class Phone implements java.io.Serializable {
 		return true;
 	}
 
-	
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("Phone");
+        sb.append("{areaCd='").append(areaCd).append('\'');
+        sb.append(", countryCd='").append(countryCd).append('\'');
+        sb.append(", description='").append(description).append('\'');
+        sb.append(", phoneExt='").append(phoneExt).append('\'');
+        sb.append(", phoneNbr='").append(phoneNbr).append('\'');
+        sb.append(", name='").append(name).append('\'');
+        sb.append(", lastUpdate=").append(lastUpdate);
+        sb.append(", typeDescription='").append(typeDescription).append('\'');
+        sb.append('}');
+        return sb.toString();
+    }
 }

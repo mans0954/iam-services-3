@@ -291,7 +291,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 	public Response removeRole(String roleId, String requesterId) {
 		final Response response = new Response(ResponseStatus.SUCCESS);
         IdmAuditLog idmAuditLog = new IdmAuditLog();
-        idmAuditLog.setAction(AuditAction.REMOVE_ROLE.value());
+        idmAuditLog.setAction(AuditAction.DELETE_ROLE.value());
         idmAuditLog.setRequestorUserId(requesterId);
         RoleEntity roleEntity = roleDataService.getRole(roleId);
         idmAuditLog.setTargetRole(roleId, roleEntity.getName());

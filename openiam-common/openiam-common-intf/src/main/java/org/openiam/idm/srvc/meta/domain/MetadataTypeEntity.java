@@ -227,4 +227,17 @@ public class MetadataTypeEntity extends KeyEntity {
 		return true;
 	}
 
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("MetadataTypeEntity");
+        sb.append("{description='").append(description).append('\'');
+        sb.append(", active=").append(active);
+        sb.append(", syncManagedSys=").append(syncManagedSys);
+        sb.append(", binary=").append(binary);
+        sb.append(", sensitive=").append(sensitive);
+        sb.append(", displayName='").append(displayName).append('\'');
+        sb.append('}');
+        return sb.toString();
+    }
 }

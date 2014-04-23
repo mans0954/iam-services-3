@@ -468,5 +468,34 @@ public class AddressEntity {
 		return true;
 	}
 
-   
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("AddressEntity");
+        sb.append("{addressId='").append(addressId).append('\'');
+        sb.append(", isActive=").append(isActive);
+        sb.append(", isDefault=").append(isDefault);
+        sb.append(", bldgNumber='").append(bldgNumber).append('\'');
+        sb.append(", streetDirection='").append(streetDirection).append('\'');
+        sb.append(", suite='").append(suite).append('\'');
+        sb.append(", address1='").append(address1).append('\'');
+        sb.append(", address2='").append(address2).append('\'');
+        sb.append(", address3='").append(address3).append('\'');
+        sb.append(", address4='").append(address4).append('\'');
+        sb.append(", address5='").append(address5).append('\'');
+        sb.append(", address6='").append(address6).append('\'');
+        sb.append(", address7='").append(address7).append('\'');
+        sb.append(", city='").append(city).append('\'');
+        sb.append(", country='").append(country).append('\'');
+        sb.append(", description='").append(description).append('\'');
+        sb.append(", parent=").append(parent);
+        sb.append(", postalCd='").append(postalCd).append('\'');
+        sb.append(", state='").append(state).append('\'');
+        sb.append(", name='").append(name).append('\'');
+        sb.append(", lastUpdate=").append(lastUpdate);
+        sb.append(", createDate=").append(createDate);
+        sb.append(", metadataType=").append(metadataType);
+        sb.append('}');
+        return sb.toString();
+    }
 }

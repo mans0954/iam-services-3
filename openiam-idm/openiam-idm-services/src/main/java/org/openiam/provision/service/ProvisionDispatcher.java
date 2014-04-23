@@ -1,6 +1,5 @@
 package org.openiam.provision.service;
 
-import com.google.gson.*;
 import groovy.lang.MissingPropertyException;
 
 import java.text.SimpleDateFormat;
@@ -22,6 +21,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.jackson.JsonGenerationException;
 import org.mule.api.MuleContext;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.BaseAttributeContainer;
@@ -370,8 +370,11 @@ public class ProvisionDispatcher implements Sweepable {
             }
 
             ExtensibleUser extUser = buildFromRules(targetSysProvUser, attrMap, bindingMap);
-
-            idmAuditLog.setAuditDescription(extUser.getAttributesAsJSON());
+            try {
+                idmAuditLog.addCustomRecord("ATTRIBUTES",extUser.getAttributesAsJSON());
+            } catch(JsonGenerationException jge) {
+                log.error(jge);
+            }
             // get the attributes at the target system
             // this lookup only for getting attributes from the
             // system
