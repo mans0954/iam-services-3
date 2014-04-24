@@ -21,4 +21,5 @@ public interface ChallengeResponseService {
 	public void saveAnswers(List<UserIdentityAnswerEntity> answerList) throws Exception ;
 	public boolean isResponseValid(String userId, List<UserIdentityAnswerEntity> newAnswerList);
 	public boolean isUserAnsweredSecurityQuestions(final String userId);
+	public void resetQuestionsForUser(String userId);
 }

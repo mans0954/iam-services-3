@@ -71,6 +71,8 @@ public interface ChallengeResponseWebService {
 													@WebParam(name = "from", targetNamespace = "") int from, 
 													@WebParam(name = "size", targetNamespace = "") int size);
 	
+	@WebMethod
+	public Response resetQuestionsForUser(final @WebParam(name = "userId", targetNamespace = "") String userId);
 	
 	@WebMethod
 	public Response saveAnswer(@WebParam(name = "answer", targetNamespace = "") final UserIdentityAnswer answer);

@@ -272,4 +272,10 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
 			answerDAO.save(answerList);
 		}
 	}
+
+	@Override
+	@Transactional
+	public void resetQuestionsForUser(String userId) {
+		answerDAO.deleteByUser(userId);
+	}
 }

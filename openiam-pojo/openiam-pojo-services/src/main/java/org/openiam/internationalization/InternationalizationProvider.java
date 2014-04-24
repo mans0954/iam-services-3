@@ -1,42 +1,25 @@
 package org.openiam.internationalization;
 
-import java.beans.PropertyDescriptor;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.annotation.PostConstruct;
-
-import net.sf.saxon.om.Navigator.BaseEnumeration;
-
-import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.hibernate.annotations.common.reflection.ReflectionUtil;
 import org.hibernate.proxy.HibernateProxyHelper;
 import org.openiam.base.BaseIdentity;
 import org.openiam.base.domain.KeyEntity;
-import org.openiam.idm.srvc.lang.domain.LanguageEntity;
 import org.openiam.idm.srvc.lang.domain.LanguageMappingEntity;
-import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.lang.dto.LanguageMapping;
 import org.openiam.idm.srvc.lang.service.LanguageMappingDAO;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.expression.spel.support.ReflectivePropertyAccessor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ReflectionUtils;
 
-import com.mchange.v2.codegen.bean.BeangenUtils;
+import javax.annotation.PostConstruct;
+import java.beans.PropertyDescriptor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.*;
 
 @Component
 public class InternationalizationProvider {
@@ -111,7 +94,8 @@ public class InternationalizationProvider {
 	}
 	
 	private String getReferenceType(final BaseIdentity entity, final Field field) {
-		final String referenceType = String.format("%s.%s", entity.getClass().getSimpleName(), field.getName());
+		final String referenceType = String.format("%s.%s", HibernateProxyHelper.getClassWithoutInitializingProxy(
+                entity).getSimpleName(), field.getName());
 		return referenceType;
 	}
 
