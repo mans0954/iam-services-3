@@ -41,7 +41,6 @@ import org.openiam.exception.ObjectNotFoundException;
 import org.openiam.exception.ScriptEngineException;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
-import org.openiam.idm.srvc.audit.constant.AuditSource;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
@@ -156,7 +155,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     final IdmAuditLog idmAuditLog = new IdmAuditLog();
                     idmAuditLog.setRequestorUserId(pUser.getRequestorUserId());
                     idmAuditLog.setRequestorPrincipal(pUser.getRequestorLogin());
-                    idmAuditLog.setAction(AuditAction.PROVISIONING_ADD.value());
+                    idmAuditLog.setAction(AuditAction.CREATE_USER.value());
                     idmAuditLog.setAuditDescription("Provisioning add user: " + pUser.getId()
                             + " with first/last name: " + pUser.getFirstName() + "/" + pUser.getLastName());
                     ProvisionUserResponse tmpRes = new ProvisionUserResponse(ResponseStatus.FAILURE);
@@ -202,7 +201,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     final IdmAuditLog idmAuditLog = new IdmAuditLog();
                     idmAuditLog.setRequestorUserId(pUser.getRequestorUserId());
                     idmAuditLog.setRequestorPrincipal(pUser.getRequestorLogin());
-                    idmAuditLog.setAction(AuditAction.PROVISIONING_MODIFY.value());
+                    idmAuditLog.setAction(AuditAction.MODIFY_USER.value());
                     LoginEntity loginEntity = loginManager.getByUserIdManagedSys(pUser.getId(),sysConfiguration.getDefaultManagedSysId());
                     idmAuditLog.setTargetUser(pUser.getId(),loginEntity.getLogin());
                     idmAuditLog.setAuditDescription("Provisioning modify user: " + pUser.getId()
