@@ -3,7 +3,7 @@ package org.openiam.idm.srvc.res.domain;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.*;
 import org.openiam.base.domain.AbstractMetdataTypeEntity;
-import org.openiam.base.domain.KeyEntity;
+
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.lang.domain.LanguageMappingEntity;
