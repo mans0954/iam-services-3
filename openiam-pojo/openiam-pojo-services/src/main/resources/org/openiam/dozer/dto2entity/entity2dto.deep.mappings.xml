@@ -19,7 +19,7 @@
 		<class-b>org.openiam.idm.srvc.res.dto.Resource</class-b>
 		<field>
 			<a>type.id</a>
-			<b>metadataTypeId</b>
+			<b>mdTypeId</b>
 		</field>
 		<field>
 			<a>type.displayName</a>
@@ -83,7 +83,7 @@
 		<class-b>org.openiam.idm.srvc.user.dto.User</class-b>
         <field>
             <a>type.id</a>
-            <b>metadataTypeId</b>
+            <b>mdTypeId</b>
         </field>
 		<field
 			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"

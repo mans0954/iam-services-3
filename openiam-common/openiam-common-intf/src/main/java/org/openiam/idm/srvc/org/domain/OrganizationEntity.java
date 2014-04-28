@@ -1,12 +1,9 @@
 package org.openiam.idm.srvc.org.domain;
 
-import java.io.Serializable;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
-import java.util.Map;
 import java.util.Set;
 
 import javax.persistence.AttributeOverride;
@@ -14,40 +11,27 @@ import javax.persistence.Cacheable;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
-import javax.persistence.MapKey;
-import javax.persistence.MapKeyColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
 import javax.persistence.Table;
 import javax.validation.constraints.Size;
 
-import org.hibernate.annotations.GenericGenerator;
 import org.openiam.base.domain.KeyEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
-import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
-import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.Where;
-import org.hibernate.search.annotations.DocumentId;
-import org.openiam.idm.srvc.org.dto.Organization;
-import org.openiam.idm.srvc.org.dto.OrganizationAttribute;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
-import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.internationalization.Internationalized;
 

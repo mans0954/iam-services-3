@@ -90,6 +90,9 @@ public class IdmAuditLogDAOImpl extends BaseDaoImpl<IdmAuditLogEntity, String> i
                 criteria.add(Restrictions.eq("source", auditSearch.getSource()));
             }
 
+            if(StringUtils.isNotEmpty(auditSearch.getParentId()) && auditSearch.isParentOnly()) {
+                criteria.add(Restrictions.isEmpty("parentLogs"));
+            }
             if(StringUtils.isNotBlank(auditSearch.getUserId()) &&
                     StringUtils.isNotBlank(auditSearch.getTargetId())) {
                 Criterion sourceCriterion = Restrictions.eq("userId", auditSearch.getUserId());

@@ -554,7 +554,21 @@
 		</outbound-endpoint>
 	</flow>
 
+    <flow name="provisionServiceBuildManagedSystemViewer">
+        <vm:inbound-endpoint path="provisionServiceBuildManagedSystemViewerMessage"
+                             exchange-pattern="one-way">
+        </vm:inbound-endpoint>
 
+        <outbound-endpoint responseTimeout="90000000"
+                           address="http://#[header:INBOUND:SERVICE_HOST]/#[header:INBOUND:SERVICE_CONTEXT]ProvisioningService"
+                           exchange-pattern="request-response">
+            <cxf:jaxws-client
+                    serviceClass="org.openiam.provision.service.DefaultProvisioningService"
+                    operation="buildManagedSystemViewer">
+            </cxf:jaxws-client>
+
+        </outbound-endpoint>
+    </flow>
 
 </mule>
 

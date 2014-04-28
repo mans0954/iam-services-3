@@ -6,6 +6,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
+import org.apache.commons.lang.StringUtils;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.continfo.dto.Address;
@@ -35,6 +36,14 @@ public class AuditLogSearchBean extends AbstractSearchBean<IdmAuditLog, String> 
     private String targetId;
     private String targetType;
     private String parentId;
+
+    public void setParentOnly(){
+        parentId = "null";
+    }
+
+    public boolean isParentOnly(){
+        return StringUtils.isNotEmpty(parentId) && parentId.equals("null");
+    }
 
 	public Date getFrom() {
 		return from;

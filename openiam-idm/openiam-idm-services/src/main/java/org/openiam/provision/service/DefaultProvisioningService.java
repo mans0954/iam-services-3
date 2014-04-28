@@ -21,11 +21,13 @@
  */
 package org.openiam.provision.service;
 
+import groovy.lang.MissingPropertyException;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.AttributeOperationEnum;
+import org.openiam.base.BaseAttributeContainer;
 import org.openiam.base.BaseObject;
 import org.openiam.base.id.UUIDGen;
 import org.openiam.base.ws.Response;
@@ -41,12 +43,12 @@ import org.openiam.exception.ObjectNotFoundException;
 import org.openiam.exception.ScriptEngineException;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
-import org.openiam.idm.srvc.audit.constant.AuditSource;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
 import org.openiam.idm.srvc.grp.dto.Group;
+import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
 import org.openiam.idm.srvc.mngsys.domain.ProvisionConnectorEntity;
@@ -72,10 +74,12 @@ import org.openiam.provision.dto.AccountLockEnum;
 import org.openiam.provision.dto.PasswordSync;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.resp.LookupUserResponse;
+import org.openiam.provision.resp.ManagedSystemViewerResponse;
 import org.openiam.provision.resp.PasswordResponse;
 import org.openiam.provision.resp.ProvisionUserResponse;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleUser;
+import org.openiam.provision.type.ManagedSystemViewerBean;
 import org.openiam.util.MuleContextProvider;
 import org.openiam.util.UserUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -88,6 +92,7 @@ import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.jws.WebService;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -156,7 +161,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     final IdmAuditLog idmAuditLog = new IdmAuditLog();
                     idmAuditLog.setRequestorUserId(pUser.getRequestorUserId());
                     idmAuditLog.setRequestorPrincipal(pUser.getRequestorLogin());
-                    idmAuditLog.setAction(AuditAction.PROVISIONING_ADD.value());
+                    idmAuditLog.setAction(AuditAction.CREATE_USER.value());
                     idmAuditLog.setAuditDescription("Provisioning add user: " + pUser.getId()
                             + " with first/last name: " + pUser.getFirstName() + "/" + pUser.getLastName());
                     ProvisionUserResponse tmpRes = new ProvisionUserResponse(ResponseStatus.FAILURE);
@@ -202,7 +207,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     final IdmAuditLog idmAuditLog = new IdmAuditLog();
                     idmAuditLog.setRequestorUserId(pUser.getRequestorUserId());
                     idmAuditLog.setRequestorPrincipal(pUser.getRequestorLogin());
-                    idmAuditLog.setAction(AuditAction.PROVISIONING_MODIFY.value());
+                    idmAuditLog.setAction(AuditAction.MODIFY_USER.value());
                     LoginEntity loginEntity = loginManager.getByUserIdManagedSys(pUser.getId(),sysConfiguration.getDefaultManagedSysId());
                     idmAuditLog.setTargetUser(pUser.getId(),loginEntity.getLogin());
                     idmAuditLog.setAuditDescription("Provisioning modify user: " + pUser.getId()
@@ -2241,6 +2246,238 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         }
 
         return new Response(ResponseStatus.SUCCESS);
+    }
+
+    public ManagedSystemViewerResponse buildManagedSystemViewer(String userId, String managedSysId) {
+        ManagedSystemViewerResponse res = new ManagedSystemViewerResponse();
+
+        if (StringUtils.isEmpty(userId)) {
+            throw new IllegalArgumentException("userId can not be empty");
+        }
+        if (StringUtils.isEmpty(managedSysId)) {
+            throw new IllegalArgumentException("managedSysId can not be empty");
+        }
+        res.setUserId(userId);
+        res.setManagedSysId(managedSysId);
+
+        User usr = userDozerConverter.convertToDTO(userMgr.getUser(userId), true);
+        if (usr == null) {
+            res.setStatus(ResponseStatus.FAILURE);
+            res.setErrorText(String.format("User with id=%s doesn't exist", userId));
+            return res;
+        }
+
+        Login login = null;
+        List<Login> principals = usr.getPrincipalList();
+        if (CollectionUtils.isNotEmpty(principals)) {
+            for (Login l : principals) {
+                if (managedSysId != null && managedSysId.equals(l.getManagedSysId())) {
+                    login = l;
+                    break;
+                }
+            }
+        }
+        if (login == null) {
+            res.setStatus(ResponseStatus.FAILURE);
+            res.setErrorText(String.format("User with id=%s doesn't have identity for managed system with id=%s",
+                    userId, managedSysId));
+            return res;
+        }
+
+        List<AttributeMapEntity> attrMapEntities = managedSystemService.getAttributeMapsByManagedSysId(managedSysId);
+        List<ExtensibleAttribute> requestedExtensibleAttributes = new ArrayList<ExtensibleAttribute>();
+        for (AttributeMapEntity ame : attrMapEntities) {
+            if ("USER".equalsIgnoreCase(ame.getMapForObjectType()) && "ACTIVE".equalsIgnoreCase(ame.getStatus())) {
+                requestedExtensibleAttributes.add(new ExtensibleAttribute(ame.getAttributeName(), null));
+            }
+        }
+
+        ProvisionUser pUser = new ProvisionUser(usr);
+        List<ExtensibleAttribute> idmAttrs = buildMngSysAttributesForIDMUser(pUser, managedSysId);
+
+        List<ExtensibleAttribute> mngSysAttrs = new ArrayList<ExtensibleAttribute>();
+        LookupUserResponse lookupUserResponse = getTargetSystemUser(login.getLogin(), managedSysId, requestedExtensibleAttributes);
+        if (ResponseStatus.SUCCESS.equals(lookupUserResponse.getStatus())) {
+            mngSysAttrs = lookupUserResponse.getAttrList();
+        }
+
+        List<ManagedSystemViewerBean> viewerList = new ArrayList<ManagedSystemViewerBean>();
+        if (CollectionUtils.isNotEmpty(requestedExtensibleAttributes)) {
+            for (ExtensibleAttribute a : requestedExtensibleAttributes) {
+                ManagedSystemViewerBean viewerBean = new ManagedSystemViewerBean();
+                viewerBean.setAttributeName(a.getName());
+                viewerBean.setIdmAttribute(findExtAttrByName(a.getName(), idmAttrs));
+                viewerBean.setMngSysAttribute(findExtAttrByName(a.getName(), mngSysAttrs));
+                viewerList.add(viewerBean);
+            }
+        }
+        res.setStatus(ResponseStatus.SUCCESS);
+        res.setViewerList(viewerList);
+
+        return res;
+    }
+
+    private List<ExtensibleAttribute> buildMngSysAttributesForIDMUser(ProvisionUser pUser, String managedSysId) {
+
+        Map bindingMap = new HashMap<String, Object>();
+        bindingMap.put("sysId", sysConfiguration.getDefaultManagedSysId());
+        bindingMap.put("org", pUser.getPrimaryOrganization());
+        bindingMap.put("operation", "MODIFY");
+        bindingMap.put("user", pUser);
+
+        UserEntity userEntity = null;
+        userEntity = userMgr.getUser(pUser.getId());
+        LoginEntity primaryIdentityEntity = UserUtils.getPrimaryIdentityEntity(sysConfiguration.getDefaultManagedSysId(),
+                userEntity.getPrincipalList());
+        Login primaryIdentity = (primaryIdentityEntity != null) ? loginDozerConverter.convertToDTO(
+                primaryIdentityEntity, false) : null;
+        if (primaryIdentity != null) {
+            String decPassword = null;
+            String password = primaryIdentity.getPassword();
+            if (password != null) {
+                try {
+                    decPassword = loginManager.decryptPassword(primaryIdentity.getUserId(), password);
+                } catch (EncryptionException e) {
+                }
+                bindingMap.put("password", decPassword);
+            }
+            bindingMap.put("lg", primaryIdentity);
+        }
+
+        ProvisionUser u = new ProvisionUser(userDozerConverter.convertToDTO(userEntity, true));
+        setCurrentSuperiors(u);
+        bindingMap.put("userBeforeModify", u);
+
+        List<Role> curRoleList = roleDataService.getUserRolesAsFlatList(pUser.getId());
+        List<Group> curGroupList = groupDozerConverter.convertToDTOList(
+                groupManager.getGroupsForUser(pUser.getId(), null, -1, -1), false);
+        bindingMap.put("currentRoleList", curRoleList);
+        bindingMap.put("currentGroupList", curGroupList);
+
+        bindingMap.put(TARGET_SYS_MANAGED_SYS_ID, managedSysId);
+        ManagedSysDto managedSys = managedSysService.getManagedSys(managedSysId);
+        bindingMap.put(TARGET_SYS_RES_ID, managedSys.getResourceId());
+
+        ManagedSystemObjectMatch matchObj = null;
+        ManagedSystemObjectMatch[] matchObjAry = managedSysService.managedSysObjectParam(managedSysId, ManagedSystemObjectMatch.USER);
+        if (matchObjAry != null && matchObjAry.length > 0) {
+            matchObj = matchObjAry[0];
+            bindingMap.put(MATCH_PARAM, matchObj);
+        }
+
+        bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS, IDENTITY_EXIST);
+
+        LoginEntity mLg = null;
+        for (LoginEntity l : userEntity.getPrincipalList()) {
+            if (managedSysId != null && managedSysId.equals(l.getManagedSysId())) {
+                mLg = l;
+                break;
+            }
+        }
+        bindingMap.put(TARGET_SYSTEM_ATTRIBUTES, null);
+        bindingMap.put(TARGET_SYSTEM_IDENTITY, mLg != null ? mLg.getLogin() : null);
+
+        List<AttributeMapEntity> attrMapEntities = managedSystemService.getAttributeMapsByManagedSysId(managedSysId);
+        List<ExtensibleAttribute> idmExtensibleAttributes = new ArrayList<ExtensibleAttribute>();
+
+        for (AttributeMapEntity attr : attrMapEntities) {
+
+            if ("INACTIVE".equalsIgnoreCase(attr.getStatus())) {
+                continue;
+            }
+
+            String objectType = attr.getMapForObjectType();
+            if (objectType != null) {
+
+                if (objectType.equalsIgnoreCase("USER")
+                        || objectType.equalsIgnoreCase("PASSWORD")) {
+                    Object output = "";
+                    try {
+                        output = ProvisionServiceUtil.getOutputFromAttrMap(attr, bindingMap, scriptRunner);
+                    } catch (ScriptEngineException see) {
+                        log.error("Error in script = '", see);
+                        continue;
+                    } catch (MissingPropertyException mpe) {
+                        log.error("Error in script = '", mpe);
+                        continue;
+                    }
+                    log.debug("buildFromRules: OBJECTTYPE=" + objectType + " SCRIPT OUTPUT=" + output
+                            + " attribute name=" + attr.getAttributeName());
+                    if (output != null) {
+                        ExtensibleAttribute newAttr;
+                        if (output instanceof String) {
+
+                            // if its memberOf object than dont add it to
+                            // the list
+                            // the connectors can detect a delete if an
+                            // attribute is not in the list
+
+                            newAttr = new ExtensibleAttribute(attr.getAttributeName(), (String) output, 1, attr
+                                    .getDataType().getValue());
+                            newAttr.setObjectType(objectType);
+                            idmExtensibleAttributes.add(newAttr);
+
+                        } else if (output instanceof Integer) {
+
+                            // if its memberOf object than dont add it to
+                            // the list
+                            // the connectors can detect a delete if an
+                            // attribute is not in the list
+
+                            newAttr = new ExtensibleAttribute(attr.getAttributeName(),
+                                    ((Integer) output).toString(), 1, attr.getDataType().getValue());
+                            newAttr.setObjectType(objectType);
+                            idmExtensibleAttributes.add(newAttr);
+
+                        } else if (output instanceof Date) {
+                            // date
+                            Date d = (Date) output;
+                            String DATE_FORMAT = "MM/dd/yyyy";
+                            SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT);
+
+                            newAttr = new ExtensibleAttribute(attr.getAttributeName(), sdf.format(d), 1, attr
+                                    .getDataType().getValue());
+                            newAttr.setObjectType(objectType);
+                            idmExtensibleAttributes.add(newAttr);
+
+                        } else if (output instanceof byte[]) {
+                            idmExtensibleAttributes.add(
+                                    new ExtensibleAttribute(attr.getAttributeName(), (byte[]) output, 1, attr
+                                            .getDataType().getValue()));
+
+                        } else if (output instanceof BaseAttributeContainer) {
+                            // process a complex object which can be passed
+                            // to the connector
+                            newAttr = new ExtensibleAttribute(attr.getAttributeName(),
+                                    (BaseAttributeContainer) output, 1, attr.getDataType().getValue());
+                            newAttr.setObjectType(objectType);
+                            idmExtensibleAttributes.add(newAttr);
+
+                        } else {
+                            // process a list - multi-valued object
+
+                            newAttr = new ExtensibleAttribute(attr.getAttributeName(), (List) output, 1, attr
+                                    .getDataType().getValue());
+                            newAttr.setObjectType(objectType);
+                            idmExtensibleAttributes.add(newAttr);
+
+                        }
+                    }
+                }
+            }
+        }
+        return idmExtensibleAttributes;
+    }
+
+    private ExtensibleAttribute findExtAttrByName(String name, List<ExtensibleAttribute> attrs) {
+        if (CollectionUtils.isNotEmpty(attrs)) {
+            for (ExtensibleAttribute ea: attrs) {
+                if (ea.getName().equals(name)) {
+                    return ea;
+                }
+            }
+        }
+        return null;
     }
 
 }

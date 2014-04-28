@@ -29,14 +29,17 @@ import org.openiam.provision.dto.AccountLockEnum;
 import org.openiam.provision.dto.PasswordSync;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.resp.LookupUserResponse;
+import org.openiam.provision.resp.ManagedSystemViewerResponse;
 import org.openiam.provision.resp.PasswordResponse;
 import org.openiam.provision.resp.ProvisionUserResponse;
 import org.openiam.provision.type.ExtensibleAttribute;
+import org.openiam.provision.type.ExtensibleUser;
 
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebService;
 import java.util.List;
+import java.util.Map;
 
 /**
  * <code>ProvisionService</code> Interface for the Provisioning service which is
@@ -210,5 +213,10 @@ public interface ProvisionService {
     @WebMethod
     public Response startBulkOperation(
             @WebParam(name = "bulkRequest", targetNamespace = "") BulkOperationRequest bulkRequest);
+
+    @WebMethod
+    public ManagedSystemViewerResponse buildManagedSystemViewer(
+            @WebParam(name = "userId", targetNamespace = "") String userId,
+            @WebParam(name = "managedSysId", targetNamespace = "") String managedSysId);
 
 }
