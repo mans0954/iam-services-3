@@ -6,20 +6,23 @@ import javax.xml.bind.annotation.XmlType;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "AbstractMetadataTypeDTO", propOrder = {
-	"metadataTypeId",
+	"mdTypeId",
 	"metadataTypeName"
 })
 public abstract class AbstractMetadataTypeDTO extends KeyNameDTO {
 
-	private String metadataTypeId;
+	private String mdTypeId;
 	private String metadataTypeName;
-	public String getMetadataTypeId() {
-		return metadataTypeId;
-	}
-	public void setMetadataTypeId(String metadataTypeId) {
-		this.metadataTypeId = metadataTypeId;
-	}
-	public String getMetadataTypeName() {
+
+    public String getMdTypeId() {
+        return mdTypeId;
+    }
+
+    public void setMdTypeId(String mdTypeId) {
+        this.mdTypeId = mdTypeId;
+    }
+
+    public String getMetadataTypeName() {
 		return metadataTypeName;
 	}
 	public void setMetadataTypeName(String metadataTypeName) {
@@ -30,7 +33,7 @@ public abstract class AbstractMetadataTypeDTO extends KeyNameDTO {
 		final int prime = 31;
 		int result = super.hashCode();
 		result = prime * result
-				+ ((metadataTypeId == null) ? 0 : metadataTypeId.hashCode());
+				+ ((mdTypeId == null) ? 0 : mdTypeId.hashCode());
 		result = prime
 				* result
 				+ ((metadataTypeName == null) ? 0 : metadataTypeName.hashCode());
@@ -45,10 +48,10 @@ public abstract class AbstractMetadataTypeDTO extends KeyNameDTO {
 		if (getClass() != obj.getClass())
 			return false;
 		AbstractMetadataTypeDTO other = (AbstractMetadataTypeDTO) obj;
-		if (metadataTypeId == null) {
-			if (other.metadataTypeId != null)
+		if (mdTypeId == null) {
+			if (other.mdTypeId != null)
 				return false;
-		} else if (!metadataTypeId.equals(other.metadataTypeId))
+		} else if (!mdTypeId.equals(other.mdTypeId))
 			return false;
 		if (metadataTypeName == null) {
 			if (other.metadataTypeName != null)
@@ -61,7 +64,7 @@ public abstract class AbstractMetadataTypeDTO extends KeyNameDTO {
 	public String toString() {
 		return String
 				.format("AbstractMetadataTypeDTO [metadataTypeId=%s, metadataTypeName=%s, toString()=%s]",
-						metadataTypeId, metadataTypeName, super.toString());
+                        mdTypeId, metadataTypeName, super.toString());
 	}
 	
 	
