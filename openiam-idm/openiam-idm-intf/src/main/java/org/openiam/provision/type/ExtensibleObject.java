@@ -22,6 +22,7 @@
 package org.openiam.provision.type;
 
 
+import org.apache.commons.collections.CollectionUtils;
 import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.map.ObjectMapper;
 
@@ -105,7 +106,13 @@ public class ExtensibleObject implements java.io.Serializable {
         Properties attrVals = new Properties();
         ObjectMapper mapper = new ObjectMapper();
         for(ExtensibleAttribute attribute : this.getAttributes()) {
-            attrVals.put(attribute.getName(), attribute.getValue());
+            if (attribute.getValue() != null) {
+                attrVals.put(attribute.getName(), attribute.getValue());
+            } else if (attribute.getAttributeContainer() != null) {
+                attrVals.put(attribute.getName(), attribute.getAttributeContainer());
+            } else if (CollectionUtils.isNotEmpty(attribute.getValueList())) {
+                attrVals.put(attribute.getName(), attribute.getValueList());
+            }
         }
         return mapper.writeValueAsString(attrVals);
     }
