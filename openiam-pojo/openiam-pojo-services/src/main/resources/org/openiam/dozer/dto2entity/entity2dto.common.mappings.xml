@@ -107,6 +107,14 @@
 		<class-a>org.openiam.idm.srvc.grp.domain.GroupAttributeEntity
 		</class-a>
 		<class-b>org.openiam.idm.srvc.grp.dto.GroupAttribute</class-b>
+        <field>
+            <a>element.id</a>
+            <b>metadataId</b>
+        </field>
+        <field>
+            <a>element.displayName</a>
+            <b>metadataName</b>
+        </field>
 	</mapping>
 
 	<mapping>

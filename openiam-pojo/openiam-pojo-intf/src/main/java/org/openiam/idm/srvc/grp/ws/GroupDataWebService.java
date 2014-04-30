@@ -4,6 +4,7 @@ import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.GroupSearchBean;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.dto.GroupAttribute;
+import org.openiam.idm.srvc.lang.dto.Language;
 
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
@@ -58,6 +59,11 @@ public interface GroupDataWebService {
     @WebMethod
     public Group getGroup(final @WebParam(name = "groupId", targetNamespace = "") String groupId,
                           final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
+
+    @WebMethod
+    public Group getGroupLocalize(final @WebParam(name = "groupId", targetNamespace = "") String groupId,
+                          final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
+                          final @WebParam(name = "language", targetNamespace = "") Language language);
 
     /**
      * This method removes group from openIAM database for a particular groupId.
@@ -191,6 +197,13 @@ public interface GroupDataWebService {
                                  final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
     							 final @WebParam(name = "from", targetNamespace = "") int from,
     							 final @WebParam(name = "size", targetNamespace = "") int size);
+
+    @WebMethod
+    public List<Group> findBeansLocalize(final @WebParam(name = "searchBean") GroupSearchBean searchBean,
+                                 final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
+                                 final @WebParam(name = "from", targetNamespace = "") int from,
+                                 final @WebParam(name = "size", targetNamespace = "") int size ,
+                                 final @WebParam(name = "language", targetNamespace = "") Language language);
     /**
      * Returns total number of Groups based on parameters, which are specified in GroupSearchBean object
      * @param searchBean -  GroupSearchBean object

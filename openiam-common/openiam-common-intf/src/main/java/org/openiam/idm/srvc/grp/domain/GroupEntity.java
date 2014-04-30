@@ -6,20 +6,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import javax.persistence.Cacheable;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import javax.persistence.ManyToOne;
-import javax.persistence.MapKeyColumn;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
+import javax.persistence.*;
 import javax.validation.constraints.Size;
 
 import org.hibernate.annotations.Cache;
@@ -28,6 +15,7 @@ import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Where;
+import org.openiam.base.domain.AbstractMetdataTypeEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
@@ -43,14 +31,10 @@ import org.openiam.internationalization.Internationalized;
 @Table(name = "GRP")
 @Cacheable
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@AttributeOverride(name = "id", column = @Column(name = "GRP_ID"))
 @DozerDTOCorrespondence(Group.class)
-public class GroupEntity {
-
-    @Id
-    @GeneratedValue(generator = "system-uuid")
-    @GenericGenerator(name = "system-uuid", strategy = "uuid")
-    @Column(name = "GRP_ID", length = 32)
-    private String id;
+@Internationalized
+public class GroupEntity extends AbstractMetdataTypeEntity {
 
     @Column(name = "GRP_NAME", length = 80)
     @Size(max = 80, message = "group.name.too.long")
@@ -105,6 +89,7 @@ public class GroupEntity {
     //@JoinColumn(name = "GRP_ID", referencedColumnName = "GRP_ID")
     @MapKeyColumn(name = "name")
     @Fetch(FetchMode.SUBSELECT)
+    @Internationalized
     private Set<GroupAttributeEntity> attributes;
 
     @ManyToMany(cascade = { CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH }, fetch = FetchType.LAZY)
@@ -123,14 +108,6 @@ public class GroupEntity {
 	@OneToMany(cascade = {CascadeType.ALL}, fetch = FetchType.LAZY, mappedBy="associationEntityId", orphanRemoval=true)
 	@Where(clause="ASSOCIATION_TYPE='GROUP'")
 	private Set<ApproverAssociationEntity> approverAssociations;
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
 
     public String getName() {
         return name;
