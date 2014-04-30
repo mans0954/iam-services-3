@@ -2121,17 +2121,17 @@ public class UserMgr implements UserDataService {
     @Override
     @Transactional
     public void addUserToGroup(String userId, String groupId) {
-        GroupEntity groupEntity = groupDAO.findById(groupId);
-        UserEntity userEntity = userDao.findById(userId);
-        userEntity.getGroups().add(groupEntity);
+        final GroupEntity groupEntity = groupDAO.findById(groupId);
+        final UserEntity userEntity = userDao.findById(userId);
+        userEntity.addGroup(groupEntity);
     }
 
     @Override
     @Transactional
     public void removeUserFromGroup(String userId, String groupId) {
-        GroupEntity groupEntity = groupDAO.findById(groupId);
-        UserEntity userEntity = userDao.findById(userId);
-        userEntity.getGroups().remove(groupEntity);
+    	final GroupEntity groupEntity = groupDAO.findById(groupId);
+    	final UserEntity userEntity = userDao.findById(userId);
+    	userEntity.removeGroup(groupEntity);
     }
 
     @Override
@@ -2166,13 +2166,21 @@ public class UserMgr implements UserDataService {
         // delegationFilter, 0, Integer.MAX_VALUE));
         return userDao.isUserInOrg(userId, organizationId);
     }
+    
+    @Override
+    @Transactional
+    public void removeUserFromResource(String userId, String resourceId) {
+    	 final ResourceEntity resourceEntity = resourceDAO.findById(resourceId);
+    	 final UserEntity userEntity = userDao.findById(userId);
+    	 userEntity.removeResource(resourceEntity);
+    }
 
     @Override
     @Transactional
     public void addUserToResource(String userId, String resourceId) {
-        ResourceEntity resourceEntity = resourceDAO.findById(resourceId);
-        UserEntity userEntity = userDao.findById(userId);
-        userEntity.getResources().add(resourceEntity);
+    	final ResourceEntity resourceEntity = resourceDAO.findById(resourceId);
+    	final UserEntity userEntity = userDao.findById(userId);
+    	userEntity.addResource(resourceEntity);
     }
 
 
