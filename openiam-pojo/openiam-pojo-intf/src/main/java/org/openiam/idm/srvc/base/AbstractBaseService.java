@@ -12,4 +12,6 @@ public abstract class AbstractBaseService {
 	@Autowired
     @Qualifier("entityValidator")
 	protected EntityValidator entityValidator;
+
+
 }
