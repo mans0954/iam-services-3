@@ -22,13 +22,16 @@ import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.dto.GroupAttribute;
 import org.openiam.idm.srvc.grp.service.GroupDataService;
+import org.openiam.idm.srvc.lang.domain.LanguageEntity;
 import org.openiam.idm.srvc.lang.dto.Language;
+import org.openiam.idm.srvc.lang.service.LanguageDataService;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.internationalization.LocalizedServiceGet;
 import org.openiam.util.UserUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import twitter4j.api.HelpResources;
 
 import javax.jws.WebMethod;
 import javax.jws.WebService;
@@ -67,8 +70,15 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
     @Autowired
     private LanguageDozerConverter languageConverter;
 
+    @Autowired
+    protected LanguageDataService languageDataService;
+
     public GroupDataWebServiceImpl() {
 
+    }
+
+    protected Language getDefaultLanguage() {
+        return languageConverter.convertToDTO(languageDataService.getDefaultLanguage(), false);
     }
 
     @Override
@@ -181,13 +191,9 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
     }
 
     @Override
-    public Group getGroup(final String groupId, final String requesterId) {
-        Group retVal = null;
-        if (StringUtils.isNotBlank(groupId)) {
-            final GroupEntity entity = groupManager.getGroup(groupId, requesterId);
-            retVal = groupDozerConverter.convertToDTO(entity, true);
-        }
-        return retVal;
+    @Deprecated
+    public  Group getGroup(final String groupId, final String requesterId) {
+        return getGroupLocalize(groupId, requesterId, getDefaultLanguage());
     }
 
     @Override
@@ -241,9 +247,17 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
     }
 
     @Override
+    @Deprecated
     public List<Group> getChildGroups(final String groupId, final String requesterId, final Boolean deepFlag,
             final int from, final int size) {
-        final List<GroupEntity> groupEntityList = groupManager.getChildGroups(groupId, requesterId, from, size);
+        return getChildGroupsLocalize(groupId, requesterId, deepFlag, from, size, getDefaultLanguage());
+    }
+
+    @Override
+    @LocalizedServiceGet
+    public List<Group> getChildGroupsLocalize(final String groupId, final String requesterId, final Boolean deepFlag,
+                                      final int from, final int size, final Language language) {
+        final List<GroupEntity> groupEntityList = groupManager.getChildGroupsLocalize(groupId, requesterId, from, size, languageConverter.convertToEntity(language, false));
         return groupDozerConverter.convertToDTOList(groupEntityList, false);
     }
 
@@ -253,8 +267,15 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
     }
 
     @Override
+    @Deprecated
     public List<Group> getParentGroups(final String groupId, final String requesterId, final int from, final int size) {
-        final List<GroupEntity> groupEntityList = groupManager.getParentGroups(groupId, requesterId, from, size);
+        return getParentGroupsLocalize(groupId, requesterId, from, size, getDefaultLanguage());
+    }
+
+    @Override
+    @LocalizedServiceGet
+    public List<Group> getParentGroupsLocalize(final String groupId, final String requesterId, final int from, final int size, final Language language) {
+        final List<GroupEntity> groupEntityList = groupManager.getParentGroupsLocalize(groupId, requesterId, from, size, languageConverter.convertToEntity(language, false));
         return groupDozerConverter.convertToDTOList(groupEntityList, false);
     }
 
@@ -417,17 +438,10 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
     }
 
     @Override
+    @Deprecated
     public List<Group> findBeans(final GroupSearchBean searchBean, final String requesterId, final int from,
             final int size) {
-        final List<GroupEntity> groupEntityList = groupManager.findBeans(searchBean, requesterId, from, size);
-        List<Group> groupList = groupDozerConverter.convertToDTOList(groupEntityList, false);
-            Collections.sort(groupList, new Comparator<Group>() {
-                @Override
-                public int compare(Group o1, Group o2) {
-                    return o1.getName().compareTo(o2.getName());
-                }
-            });
-        return groupList;
+        return findBeansLocalize(searchBean, requesterId, from, size, getDefaultLanguage());
     }
 
     @Override
@@ -451,10 +465,18 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
     }
 
     @Override
+    @Deprecated
     public List<Group> getGroupsForUser(final String userId, final String requesterId, Boolean deepFlag,
             final int from, final int size) {
-       final List<GroupEntity> groupEntityList = groupManager.getGroupsForUser(userId, requesterId, from, size);
-       return groupDozerConverter.convertToDTOList(groupEntityList, false);
+        return getGroupsForUserLocalize(userId, requesterId, deepFlag, from, size, getDefaultLanguage());
+    }
+
+    @Override
+    @LocalizedServiceGet
+    public List<Group> getGroupsForUserLocalize(final String userId, final String requesterId, Boolean deepFlag,
+                                        final int from, final int size, final Language language) {
+        final List<GroupEntity> groupEntityList = groupManager.getGroupsForUserLocalize(userId, requesterId, from, size, languageConverter.convertToEntity(language, false));
+        return groupDozerConverter.convertToDTOList(groupEntityList, false);
     }
 
     @Override
@@ -463,9 +485,17 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
     }
 
     @Override
+    @Deprecated
     public List<Group> getGroupsForResource(final String resourceId, final String requesterId, final boolean deepFlag,
         final int from, final int size) {
-        final List<GroupEntity> groupEntityList = groupManager.getGroupsForResource(resourceId, requesterId, from, size);
+        return getGroupsForResourceLocalize(resourceId, requesterId, deepFlag, from, size, getDefaultLanguage());
+    }
+
+    @Override
+    @LocalizedServiceGet
+    public List<Group> getGroupsForResourceLocalize(final String resourceId, final String requesterId, final boolean deepFlag,
+                                            final int from, final int size, final Language language) {
+        final List<GroupEntity> groupEntityList = groupManager.getGroupsForResourceLocalize(resourceId, requesterId, from, size, languageConverter.convertToEntity(language, false));
         return groupDozerConverter.convertToDTOList(groupEntityList, false);
     }
 
@@ -475,9 +505,17 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
     }
 
     @Override
+    @Deprecated
     public List<Group> getGroupsForRole(final String roleId, final String requesterId, final int from, final int size,
             boolean deepFlag) {
-        final List<GroupEntity> groupEntityList = groupManager.getGroupsForRole(roleId, requesterId, from, size);
+        return getGroupsForRoleLocalize(roleId, requesterId, from, size, deepFlag, getDefaultLanguage());
+    }
+
+    @Override
+    @LocalizedServiceGet
+    public List<Group> getGroupsForRoleLocalize(final String roleId, final String requesterId, final int from, final int size,
+                                        boolean deepFlag, final Language language) {
+        final List<GroupEntity> groupEntityList = groupManager.getGroupsForRoleLocalize(roleId, requesterId, from, size, languageConverter.convertToEntity(language, false));
         return groupDozerConverter.convertToDTOList(groupEntityList, deepFlag);
     }
 
@@ -626,8 +664,15 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
     }
 
     @Override
+    @Deprecated
     public List<Group> findGroupsByAttributeValue(String attrName, String attrValue) {
+        return findGroupsByAttributeValueLocalize(attrName, attrValue, getDefaultLanguage());
+    }
+
+    @Override
+    @LocalizedServiceGet
+    public List<Group> findGroupsByAttributeValueLocalize(String attrName, String attrValue, final Language language) {
         return groupDozerConverter.convertToDTOList(
-                groupManager.findGroupsByAttributeValue(attrName, attrValue), true);
+                groupManager.findGroupsByAttributeValueLocalize(attrName, attrValue, languageConverter.convertToEntity(language, false)), true);
     }
 }

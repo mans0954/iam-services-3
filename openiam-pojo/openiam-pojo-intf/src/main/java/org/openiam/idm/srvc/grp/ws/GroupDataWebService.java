@@ -101,6 +101,14 @@ public interface GroupDataWebService {
                                       final @WebParam(name = "deepFlag", targetNamespace = "") Boolean deepFlag,
     								  final @WebParam(name = "from", targetNamespace = "") int from,
     								  final @WebParam(name = "size", targetNamespace = "") int size);
+
+    @WebMethod
+    public List<Group> getChildGroupsLocalize(final @WebParam(name = "groupId", targetNamespace = "") String groupId,
+                                      final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
+                                      final @WebParam(name = "deepFlag", targetNamespace = "") Boolean deepFlag,
+                                      final @WebParam(name = "from", targetNamespace = "") int from,
+                                      final @WebParam(name = "size", targetNamespace = "") int size,
+                                      final @WebParam(name = "language", targetNamespace = "") Language language);
     /**
      * Gets the number of groups that are direct parents of this Group
      * @param groupId - the Group ID
@@ -125,6 +133,13 @@ public interface GroupDataWebService {
                                        final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
     								   final @WebParam(name = "from", targetNamespace = "") int from,
     								   final @WebParam(name = "size", targetNamespace = "") int size);
+
+    @WebMethod
+    public List<Group> getParentGroupsLocalize(final @WebParam(name = "groupId", targetNamespace = "") String groupId,
+                                       final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
+                                       final @WebParam(name = "from", targetNamespace = "") int from,
+                                       final @WebParam(name = "size", targetNamespace = "") int size,
+                                       final @WebParam(name = "language", targetNamespace = "") Language language);
 
     /**
      * Checks if a user belongs to a particular group or not. If a group has been marked as "Inherits from Parent", then
@@ -229,6 +244,13 @@ public interface GroupDataWebService {
                                         @WebParam(name="deepFlag", targetNamespace="") Boolean deepFlag,
                                         @WebParam(name = "from") int from,
                                         @WebParam(name = "size") int size);
+    @WebMethod
+    public List<Group> getGroupsForUserLocalize(@WebParam(name = "userId", targetNamespace = "") String userId,
+                                        @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
+                                        @WebParam(name="deepFlag", targetNamespace="") Boolean deepFlag,
+                                        @WebParam(name = "from") int from,
+                                        @WebParam(name = "size") int size,
+                                        final @WebParam(name = "language", targetNamespace = "") Language language);
     /**
      * Gets the number of Groups directly entitled to this User specified by the userId
      * @param userId - the User ID
@@ -252,6 +274,13 @@ public interface GroupDataWebService {
                                             final @WebParam(name = "deepFlag", targetNamespace = "") boolean deepFlag,
     										final @WebParam(name = "from", targetNamespace = "") int from,
     										final @WebParam(name = "size", targetNamespace = "") int size);
+    @WebMethod
+    public List<Group> getGroupsForResourceLocalize(final @WebParam(name = "resourceId") String resourceId,
+                                            final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
+                                            final @WebParam(name = "deepFlag", targetNamespace = "") boolean deepFlag,
+                                            final @WebParam(name = "from", targetNamespace = "") int from,
+                                            final @WebParam(name = "size", targetNamespace = "") int size,
+                                            final @WebParam(name = "language", targetNamespace = "") Language language);
 
     /**
      * Gets the number of Groups directly entitled to this Resource specified by the resourceId
@@ -278,6 +307,14 @@ public interface GroupDataWebService {
     									final @WebParam(name = "from", targetNamespace = "") int from,
     									final @WebParam(name = "size", targetNamespace = "") int size,
                                         final @WebParam(name = "deepFlag", targetNamespace = "") boolean deepFlag);
+
+    @WebMethod
+    public List<Group> getGroupsForRoleLocalize(final @WebParam(name = "roleId") String roleId,
+                                        final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
+                                        final @WebParam(name = "from", targetNamespace = "") int from,
+                                        final @WebParam(name = "size", targetNamespace = "") int size,
+                                        final @WebParam(name = "deepFlag", targetNamespace = "") boolean deepFlag,
+                                        final @WebParam(name = "language", targetNamespace = "") Language language);
 
     /**
      * Gets the number of Groups directly entitled to this Role specified by the roleId
@@ -339,4 +376,8 @@ public interface GroupDataWebService {
     @WebMethod
     public List<Group> findGroupsByAttributeValue(final @WebParam(name = "attrName", targetNamespace = "") String attrName,
                                                   final @WebParam(name = "attrValue", targetNamespace = "") String attrValue);
+    @WebMethod
+    public List<Group> findGroupsByAttributeValueLocalize(final @WebParam(name = "attrName", targetNamespace = "") String attrName,
+                                                  final @WebParam(name = "attrValue", targetNamespace = "") String attrValue,
+                                                  final @WebParam(name = "language", targetNamespace = "") Language language);
 }

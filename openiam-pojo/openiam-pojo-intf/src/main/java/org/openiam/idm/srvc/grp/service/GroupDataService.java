@@ -22,25 +22,34 @@ import java.util.List;
  */
 
 public interface GroupDataService {
-    public GroupEntity getGroupLocalize(final String id, final LanguageEntity language);
-    public GroupEntity getGroupLocalize(final String id, final String requesterId, final LanguageEntity language);
     public GroupEntity getGroup(final String id);
     public GroupEntity getGroup(final String id, final String requesterId);
     public GroupEntity getGroupByName(final String groupName, final String requesterId);
     public List<Group> getCompiledGroupsForUser(final String userId);
+
+    public GroupEntity getGroupLocalize(final String id, final LanguageEntity language);
+    public GroupEntity getGroupLocalize(final String id, final String requesterId, final LanguageEntity language);
+    public GroupEntity getGroupByNameLocalize(final String groupName, final String requesterId, final LanguageEntity language);
+    public List<Group> getCompiledGroupsForUserLocalize(final String userId, final LanguageEntity language);
     /**
      * Returns a list of Group objects that satisfy the search criteria defined through the GroupSearch parameter.
      *
      * @param searchBean
      * @return
      */
-    public List<GroupEntity> findBeansLocalize(final GroupSearchBean searchBean, String requesterId, final int from, final int size, final LanguageEntity language);
     public List<GroupEntity> findBeans(final GroupSearchBean searchBean, String requesterId, final int from, final int size);
     public List<GroupEntity> getChildGroups(final String groupId, final String requesterId, final int from, final int size);
     public List<GroupEntity> getParentGroups(final String groupId, final String requesterId, final int from, final int size);
     public List<GroupEntity> getGroupsForResource(final String resourceId, final String requesterId, final int from, final int size);
     public List<GroupEntity> getGroupsForUser(final String userId, String requesterId, final int from, final int size);
     public List<GroupEntity> getGroupsForRole(final String roleId, String requesterId, final int from, final int size);
+
+    public List<GroupEntity> findBeansLocalize(final GroupSearchBean searchBean, String requesterId, final int from, final int size, final LanguageEntity language);
+    public List<GroupEntity> getChildGroupsLocalize(final String groupId, final String requesterId, final int from, final int size, final LanguageEntity language);
+    public List<GroupEntity> getParentGroupsLocalize(final String groupId, final String requesterId, final int from, final int size, final LanguageEntity language);
+    public List<GroupEntity> getGroupsForResourceLocalize(final String resourceId, final String requesterId, final int from, final int size, final LanguageEntity language);
+    public List<GroupEntity> getGroupsForUserLocalize(final String userId, String requesterId, final int from, final int size, final LanguageEntity language);
+    public List<GroupEntity> getGroupsForRoleLocalize(final String roleId, String requesterId, final int from, final int size, final LanguageEntity language);
 
     public int getNumOfGroupsForRole(final String roleId, final String requesterId);
     public int getNumOfGroupsForUser(final String userId, final String requesterId);
@@ -86,7 +95,9 @@ public interface GroupDataService {
     public void validateGroup2GroupAddition(final String parentId, final String memberId) throws BasicDataServiceException;
     
     public Group getGroupDTO(final String groupId);
-
     public List<GroupEntity> findGroupsByAttributeValue(String attrName, String attrValue);
+
+    public Group getGroupDTOLocalize(final String groupId, LanguageEntity language);
+    public List<GroupEntity> findGroupsByAttributeValueLocalize(String attrName, String attrValue, LanguageEntity language);
 
 }
