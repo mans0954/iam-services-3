@@ -202,7 +202,7 @@ public interface GroupDataWebService {
     public List<Group> findBeansLocalize(final @WebParam(name = "searchBean") GroupSearchBean searchBean,
                                  final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
                                  final @WebParam(name = "from", targetNamespace = "") int from,
-                                 final @WebParam(name = "size", targetNamespace = "") int size ,
+                                 final @WebParam(name = "size", targetNamespace = "") int size,
                                  final @WebParam(name = "language", targetNamespace = "") Language language);
     /**
      * Returns total number of Groups based on parameters, which are specified in GroupSearchBean object
