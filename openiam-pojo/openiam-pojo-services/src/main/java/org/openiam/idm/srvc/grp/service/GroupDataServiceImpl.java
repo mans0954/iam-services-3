@@ -100,7 +100,7 @@ public class GroupDataServiceImpl implements GroupDataService {
     @Override
     @LocalizedServiceGet
     public GroupEntity getGroupLocalize(String id, LanguageEntity languageEntity) {
-        return getGroup(id, null);
+        return getGroupLocalize(id, null, languageEntity);
     }
 
     @Override
