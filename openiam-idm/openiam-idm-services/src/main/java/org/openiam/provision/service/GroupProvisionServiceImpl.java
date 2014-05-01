@@ -147,12 +147,11 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Gr
                    //int callPreProcessor = callPreProcessor(isAdd ? "ADD" : "MODIFY", group, bindingMap);
 
                     Set<Resource> resources = group.getResources();
-                    for(Resource res : resources) {
-                        if(group.getNotProvisioninResourcesIds().contains(res.getId())) {
-                            continue;
-                        }
-
-
+                    if (resources != null) {
+                        for(Resource res : resources) {
+                            if (group.getNotProvisioninResourcesIds().contains(res.getId())) {
+                                continue;
+                            }
 
                         ManagedSysDto managedSys = managedSystemService.getManagedSysByResource(res.getId());
                         if (managedSys != null) {
@@ -281,7 +280,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Gr
 
                         }  else {
                             // TODO WARNING
-                        }
+                        }}
                     }
                     //TODO Post-Processing
 

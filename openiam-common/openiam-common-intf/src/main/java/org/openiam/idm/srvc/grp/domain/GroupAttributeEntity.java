@@ -4,9 +4,11 @@ import javax.persistence.*;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
+import org.openiam.base.domain.AbstractAttributeEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.grp.dto.GroupAttribute;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
+import org.openiam.internationalization.Internationalized;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,19 +16,9 @@ import java.util.List;
 @Entity
 @Table(name="GRP_ATTRIBUTES")
 @DozerDTOCorrespondence(GroupAttribute.class)
-public class GroupAttributeEntity {
-
-	@Id
-    @GeneratedValue(generator="system-uuid")
-    @GenericGenerator(name="system-uuid", strategy = "uuid")
-    @Column(name="ID",length=32)
-    private String id;
-	
-	@Column(name="NAME",length=100)
-    private String name;
-	
-	@Column(name="_VALUE")
-    private String value;
+@AttributeOverride(name = "id", column = @Column(name = "ID"))
+@Internationalized
+public class GroupAttributeEntity extends AbstractAttributeEntity {
 
     @ElementCollection
     @CollectionTable(name="GROUP_ATTRIBUTE_VALUES", joinColumns=@JoinColumn(name="GROUP_ATTRIBUTE_ID", referencedColumnName="ID"))
@@ -37,10 +29,6 @@ public class GroupAttributeEntity {
     @Type(type = "yes_no")
     private boolean isMultivalued = false;
 
-    @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
-    @JoinColumn(name = "METADATA_ID", insertable = true, updatable = true, nullable=true)
-    private MetadataElementEntity element;
-    
     /*
     @Column(name="GRP_ID",length=32)
     private String groupId;
@@ -49,30 +37,6 @@ public class GroupAttributeEntity {
     @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name = "GRP_ID", referencedColumnName = "GRP_ID", insertable = true, updatable = false)
     private GroupEntity group;
-
-	public String getId() {
-		return id;
-	}
-
-	public void setId(String id) {
-		this.id = id;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	public String getValue() {
-		return value;
-	}
-
-	public void setValue(String value) {
-		this.value = value;
-	}
 
     public List<String> getValues() {
         return values;
@@ -88,14 +52,6 @@ public class GroupAttributeEntity {
 
     public void setIsMultivalued(boolean isMultivalued) {
         this.isMultivalued = isMultivalued;
-    }
-
-    public MetadataElementEntity getElement() {
-        return element;
-    }
-
-    public void setElement(MetadataElementEntity element) {
-        this.element = element;
     }
 
 	public GroupEntity getGroup() {
