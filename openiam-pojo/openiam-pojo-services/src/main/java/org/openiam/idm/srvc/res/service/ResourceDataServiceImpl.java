@@ -338,6 +338,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
             if (resourceId == null || userId == null) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "ResourceId or UserId is not set");
             }
+            userDataService.removeUserFromResource(userId, resourceId);
             idmAuditLog.succeed();
         } catch (BasicDataServiceException e) {
             response.setStatus(ResponseStatus.FAILURE);

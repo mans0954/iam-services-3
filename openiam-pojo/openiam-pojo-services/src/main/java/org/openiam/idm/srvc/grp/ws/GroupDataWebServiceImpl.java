@@ -349,7 +349,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Group Id is null or empty");
             }
 
-            userManager.removeUserFromGroup(groupId, userId);
+            userManager.removeUserFromGroup(userId, groupId);
             auditLog.succeed();
         } catch (BasicDataServiceException e) {
             response.setStatus(ResponseStatus.FAILURE);
