@@ -23,7 +23,8 @@ import javax.xml.bind.annotation.XmlType;
         "reportDataSource",
         "reportUrl",
         "reportParams",
-        "parameterCount"
+        "parameterCount",
+        "isBuiltIn"
 })
 @DozerDTOCorrespondence(ReportInfoEntity.class)
 public class ReportInfoDto {
@@ -33,6 +34,7 @@ public class ReportInfoDto {
     private String reportUrl;
     private Set<ReportCriteriaParamDto> reportParams = new HashSet<ReportCriteriaParamDto>();
     private Integer parameterCount;
+    private boolean isBuiltIn;
 
     public ReportInfoDto() {
     }
@@ -77,6 +79,14 @@ public class ReportInfoDto {
         this.parameterCount = parameterCount;
     }
 
+    public boolean getIsBuiltIn() {
+        return isBuiltIn;
+    }
+
+    public void setIsBuiltIn(boolean isBuiltIn) {
+        this.isBuiltIn = isBuiltIn;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -89,6 +99,7 @@ public class ReportInfoDto {
         if (reportId != null ? !reportId.equals(reportDto.reportId) : reportDto.reportId != null) return false;
         if (reportName != null ? !reportName.equals(reportDto.reportName) : reportDto.reportName != null) return false;
         if (reportUrl != null ? !reportUrl.equals(reportDto.reportUrl) : reportDto.reportUrl != null) return false;
+        if (isBuiltIn != reportDto.isBuiltIn) return false;
 
         return true;
     }
@@ -99,6 +110,7 @@ public class ReportInfoDto {
         result = 31 * result + (reportName != null ? reportName.hashCode() : 0);
         result = 31 * result + (reportDataSource != null ? reportDataSource.hashCode() : 0);
         result = 31 * result + (reportUrl != null ? reportUrl.hashCode() : 0);
+        result = 31 * result + (isBuiltIn ? 1231 : 1237);
         return result;
     }
 

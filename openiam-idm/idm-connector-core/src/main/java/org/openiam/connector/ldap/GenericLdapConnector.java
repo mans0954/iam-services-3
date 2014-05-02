@@ -15,7 +15,7 @@ import javax.jws.WebService;
 public class GenericLdapConnector extends AbstractConnectorService {
 
     @Autowired
-    protected ManagedSystemService managedSysService;
+    protected ManagedSystemService managedSystemService;
     @Autowired
     protected ManagedSystemObjectMatchDAO managedSysObjectMatchDao;
 

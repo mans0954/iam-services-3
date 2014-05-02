@@ -1932,27 +1932,34 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
     public List<String> getAttributesList(String mSysId) {
         if (mSysId == null)
             return null;
-        ManagedSysDto mSys = managedSysService.getManagedSys(mSysId);
-        if (mSys == null)
-            return null;
-        LookupRequest lookupRequest = new LookupRequest();
-        lookupRequest.setTargetID(mSys.getId());
-        lookupRequest.setRequestID(mSys.getResourceId());
-        lookupRequest.setHostUrl(mSys.getHostUrl());
-        lookupRequest.setHostLoginId(mSys.getUserId());
-        lookupRequest.setHostLoginPassword(mSys.getDecryptPassword());
-        lookupRequest.setScriptHandler(mSys.getAttributeNamesHandler());
-        LookupAttributeResponse response = connectorAdapter.lookupAttributes(mSys.getConnectorId(), lookupRequest,
-                MuleContextProvider.getCtx());
+        LookupAttributeResponse response = lookupMngSysAttributes(mSysId);
         if (StatusCodeType.SUCCESS.equals(response.getStatus())) {
             List<String> attributeNames = new LinkedList<String>();
             for (ExtensibleAttribute attr : response.getAttributes()) {
-                attributeNames.add(attr.getName());
+                if (!"READ_ONLY".equals(attr.getMetadataElementId())) {
+                    attributeNames.add(attr.getName());
+                }
             }
             return attributeNames;
         } else {
             return null;
         }
+    }
+
+    private LookupAttributeResponse lookupMngSysAttributes(String mSysId) {
+        ManagedSysDto mSys = managedSysService.getManagedSys(mSysId);
+        if (mSys != null) {
+            LookupRequest lookupRequest = new LookupRequest();
+            lookupRequest.setTargetID(mSys.getId());
+            lookupRequest.setRequestID(mSys.getResourceId());
+            lookupRequest.setHostUrl(mSys.getHostUrl());
+            lookupRequest.setHostLoginId(mSys.getUserId());
+            lookupRequest.setHostLoginPassword(mSys.getDecryptPassword());
+            lookupRequest.setScriptHandler(mSys.getAttributeNamesHandler());
+            return connectorAdapter.lookupAttributes(mSys.getConnectorId(), lookupRequest,
+                    MuleContextProvider.getCtx());
+        }
+        return null;
     }
 
     public Response syncPasswordFromSrc(PasswordSync passwordSync) {
@@ -2292,6 +2299,27 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             }
         }
 
+        LookupAttributeResponse response = lookupMngSysAttributes(managedSysId);
+        List<ExtensibleAttribute> hiddenAttrs = new ArrayList<ExtensibleAttribute>();
+        if (StatusCodeType.SUCCESS.equals(response.getStatus())) {
+            for (ExtensibleAttribute attr : response.getAttributes()) {
+                if ("READ_ONLY".equals(attr.getMetadataElementId())) { //Adding read only attributes
+                    requestedExtensibleAttributes.add(new ExtensibleAttribute(attr.getName(), null, attr.getMetadataElementId()));
+
+                } else if ("HIDDEN".equals(attr.getMetadataElementId())) { //Removing hidden attributes
+                    for (ExtensibleAttribute a : requestedExtensibleAttributes) {
+                        if (attr.getName().equals(a.getName())) {
+                            hiddenAttrs.add(a);
+                            break;
+                        }
+                    }
+                }
+            }
+            if (CollectionUtils.isNotEmpty(hiddenAttrs)) {
+                requestedExtensibleAttributes.removeAll(hiddenAttrs);
+            }
+        }
+
         ProvisionUser pUser = new ProvisionUser(usr);
         List<ExtensibleAttribute> idmAttrs = buildMngSysAttributesForIDMUser(pUser, managedSysId);
 
@@ -2308,6 +2336,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 viewerBean.setAttributeName(a.getName());
                 viewerBean.setIdmAttribute(findExtAttrByName(a.getName(), idmAttrs));
                 viewerBean.setMngSysAttribute(findExtAttrByName(a.getName(), mngSysAttrs));
+                viewerBean.setReadOnly("READ_ONLY".equals(a.getMetadataElementId()));
                 viewerList.add(viewerBean);
             }
         }

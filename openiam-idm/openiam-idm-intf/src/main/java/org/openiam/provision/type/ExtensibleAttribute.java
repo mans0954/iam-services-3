@@ -84,7 +84,15 @@ public class ExtensibleAttribute extends Attribute implements Serializable {
         this.metadataElementId = metadataElementId;
         operation = ModificationAttribute.add;
     }
-    
+
+    public String getMetadataElementId() {
+        return metadataElementId;
+    }
+
+    public void setMetadataElementId(String metadataElementId) {
+        this.metadataElementId = metadataElementId;
+    }
+
     public ExtensibleAttribute(String name, String value, int operation, String dataType) {
         super();
         this.name = name;

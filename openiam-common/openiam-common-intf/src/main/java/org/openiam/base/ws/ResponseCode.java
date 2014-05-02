@@ -47,6 +47,9 @@ public enum ResponseCode {
     @XmlEnumValue("nameTaken")
     NAME_TAKEN("nameTaken"),
 
+    @XmlEnumValue("READONLY")
+    READONLY("READONLY"),
+
     @XmlEnumValue("RULE_NOT_SET")
     RULE_NOT_SET("RULE_NOT_SET"),
 
