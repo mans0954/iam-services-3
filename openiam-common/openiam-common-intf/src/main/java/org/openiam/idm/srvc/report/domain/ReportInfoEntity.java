@@ -16,6 +16,7 @@ import javax.persistence.Table;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Type;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.report.dto.ReportInfoDto;
 
@@ -44,8 +45,12 @@ public class ReportInfoEntity {
     @Column(name = "REPORT_FILE_PATH")
     private String reportUrl;
 
+    @Column(name = "BUILT_IN", insertable = false, updatable = false)
+    @Type(type = "yes_no")
+    private boolean isBuiltIn;
+
     @OneToMany(cascade=CascadeType.ALL,fetch=FetchType.LAZY)
-    @JoinColumn(name="REPORT_INFO_ID", referencedColumnName="REPORT_INFO_ID" ,insertable = false, updatable = false)
+    @JoinColumn(name="REPORT_INFO_ID", referencedColumnName="REPORT_INFO_ID", insertable = false, updatable = false)
     @Fetch(FetchMode.SUBSELECT)
     private Set<ReportCriteriaParamEntity> reportParams = new HashSet<ReportCriteriaParamEntity>();
 
@@ -90,6 +95,14 @@ public class ReportInfoEntity {
 	public void setReportUrl(String reportUrl) {
 		this.reportUrl = reportUrl;
 	}
+
+    public boolean getIsBuiltIn() {
+        return isBuiltIn;
+    }
+
+    public void setIsBuiltIn(boolean isBuiltIn) {
+        this.isBuiltIn = isBuiltIn;
+    }
 
 	public Set<ReportCriteriaParamEntity> getReportParams() {
 		return reportParams;

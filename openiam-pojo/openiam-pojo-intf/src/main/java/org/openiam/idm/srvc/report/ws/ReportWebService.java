@@ -38,6 +38,9 @@ public interface ReportWebService {
     Response createOrUpdateReportInfo(@WebParam(name = "report", targetNamespace = "") final ReportInfoDto report);
 
     @WebMethod
+    Response validateUpdateReportInfo(@WebParam(name = "report", targetNamespace = "") final ReportInfoDto report);
+
+    @WebMethod
     Response createOrUpdateReportInfoParam(@WebParam(name = "reportParam", targetNamespace = "") final ReportCriteriaParamDto reportParam);
 
     @WebMethod
