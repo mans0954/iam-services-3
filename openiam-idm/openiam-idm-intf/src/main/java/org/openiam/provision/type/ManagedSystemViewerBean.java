@@ -9,13 +9,15 @@ import java.io.Serializable;
 @XmlType(name = "ManagedSystemViewerBean", propOrder = {
         "attributeName",
         "idmAttribute",
-        "mngSysAttribute"
+        "mngSysAttribute",
+        "readOnly"
 })
 public class ManagedSystemViewerBean implements Serializable {
 
     private String attributeName;
     private ExtensibleAttribute idmAttribute;
     private ExtensibleAttribute mngSysAttribute;
+    private boolean readOnly;
 
     public String getAttributeName() {
         return attributeName;
@@ -39,5 +41,13 @@ public class ManagedSystemViewerBean implements Serializable {
 
     public void setMngSysAttribute(ExtensibleAttribute mngSysAttribute) {
         this.mngSysAttribute = mngSysAttribute;
+    }
+
+    public boolean isReadOnly() {
+        return readOnly;
+    }
+
+    public void setReadOnly(boolean readOnly) {
+        this.readOnly = readOnly;
     }
 }

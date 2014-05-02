@@ -37,21 +37,29 @@ public class LookupAttributeNamesCommand<ExtObject extends ExtensibleObject> ext
         ManagedSysEntity mngSys = config.getManagedSys();
         try {
 
-            List<String> attrNames = new ArrayList<String>();
+            Object attrNames = null;
             if (StringUtils.isNotBlank(mngSys.getAttributeNamesLookup())) {
                 Map<String, Object> bindingMap = new HashMap<String, Object>();
                 bindingMap.put("managedSys", mngSys);
-                attrNames = (List)scriptRunner.execute(bindingMap, mngSys.getAttributeNamesLookup());
+                attrNames = scriptRunner.execute(bindingMap, mngSys.getAttributeNamesLookup());
+            }
+
+            List<ExtensibleAttribute> attributes = new ArrayList<ExtensibleAttribute>();
+            if (attrNames instanceof List) {
+                List<String> attrNamesList = (List<String>)attrNames;
+                for (String name : attrNamesList) {
+                    attributes.add(new ExtensibleAttribute(name, ""));
+                }
+            } else if (attrNames instanceof Map) {
+                Map<String, String> attrNamesMap = (Map<String,String>)attrNames;
+
+                for (String name : attrNamesMap.keySet()) {
+                    attributes.add(new ExtensibleAttribute(name, "", attrNamesMap.get(name)));
+                }
             }
 
             respType.setStatus(StatusCodeType.SUCCESS);
-            if (CollectionUtils.isNotEmpty(attrNames)) {
-                List<ExtensibleAttribute> attributes = new ArrayList<ExtensibleAttribute>();
-                for (String name : attrNames) {
-                    attributes.add(new ExtensibleAttribute(name,""));
-                }
-                respType.setAttributes(attributes);
-            }
+            respType.setAttributes(attributes);
 
         } catch (ScriptEngineException e) {
             log.error("Can't execute script", e);
