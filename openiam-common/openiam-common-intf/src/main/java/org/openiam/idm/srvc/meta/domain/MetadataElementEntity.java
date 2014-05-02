@@ -34,6 +34,7 @@ import org.hibernate.annotations.Type;
 import org.hibernate.annotations.Where;
 import org.openiam.base.domain.KeyEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.idm.srvc.grp.domain.GroupAttributeEntity;
 import org.openiam.idm.srvc.lang.domain.LanguageMappingEntity;
 import org.openiam.idm.srvc.meta.dto.MetadataElement;
 import org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity;
@@ -126,6 +127,9 @@ public class MetadataElementEntity extends KeyEntity {
     
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "element", fetch = FetchType.LAZY)
     private Set<OrganizationAttributeEntity> organizationAttributes;
+
+    @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "element", fetch = FetchType.LAZY)
+    private Set<GroupAttributeEntity> groupAttributes;
 
     
     
@@ -282,10 +286,19 @@ public class MetadataElementEntity extends KeyEntity {
 		return organizationAttributes;
 	}
 
-	public void setOrganizationAttributes(
-			Set<OrganizationAttributeEntity> organizationAttributes) {
-		this.organizationAttributes = organizationAttributes;
+    public Set<GroupAttributeEntity> getGroupAttributes() {
+        return groupAttributes;
+    }
+
+	public void setGroupAttributes(
+			Set<GroupAttributeEntity> groupAttributes) {
+		this.groupAttributes = groupAttributes;
 	}
+
+    public void setOrganizationAttributes(
+            Set<OrganizationAttributeEntity> organizationAttributes) {
+        this.organizationAttributes = organizationAttributes;
+    }
 
 	public boolean getIsPublic() {
 		return isPublic;

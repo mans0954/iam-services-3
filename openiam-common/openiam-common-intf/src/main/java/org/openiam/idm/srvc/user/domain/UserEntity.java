@@ -703,6 +703,23 @@ public class UserEntity {
     		}
     	}
     }
+    
+    public void addGroup(final GroupEntity group) {
+    	if(group != null) {
+    		if(this.groups == null) {
+    			this.groups = new HashSet<>();
+    		}
+    		this.groups.add(group);
+    	}
+    }
+    
+    public void removeGroup(final GroupEntity group) {
+    	if(group != null) {
+    		if(this.groups != null) {
+    			this.groups.remove(group);
+    		}
+    	}
+    }
 
     public Set<GroupEntity> getGroups() {
         return groups;
@@ -734,6 +751,23 @@ public class UserEntity {
 
     public void setResources(Set<ResourceEntity> resources) {
         this.resources = resources;
+    }
+    
+    public void addResource(final ResourceEntity entity) {
+    	if(entity != null) {
+    		if(this.resources == null) {
+    			this.resources = new HashSet<>();
+    		}
+    		this.resources.add(entity);
+    	}
+    }
+    
+    public void removeResource(final ResourceEntity entity) {
+    	if(entity != null) {
+    		if(this.resources != null) {
+    			this.resources.remove(entity);
+    		}
+    	}
     }
 
     public void updateUser(UserEntity newUser) {

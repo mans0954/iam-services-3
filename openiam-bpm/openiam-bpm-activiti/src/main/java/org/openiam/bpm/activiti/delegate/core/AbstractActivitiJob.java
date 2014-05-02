@@ -42,6 +42,7 @@ public abstract class AbstractActivitiJob implements JavaDelegate, TaskListener 
 	
 	private FixedValue notificationType;
 	private FixedValue targetVariable;
+	private FixedValue provisioningEnabled;
 	
 	@Autowired
 	protected MailService mailService;
@@ -146,6 +147,16 @@ public abstract class AbstractActivitiJob implements JavaDelegate, TaskListener 
 			LOG.warn(String.format("Can't get variable '%s", key), e);
 			return null;
 		}
+	}
+	
+	protected boolean isProvisioningEnabled(final DelegateExecution execution) {
+		boolean retVal = true;
+		if(provisioningEnabled != null) {
+			if(StringUtils.equalsIgnoreCase(Boolean.FALSE.toString(), StringUtils.trimToNull(provisioningEnabled.getExpressionText()))) {
+				retVal = false;
+			}
+		}
+		return retVal;
 	}
 	
 	protected String getAssociationId(final DelegateExecution execution) {

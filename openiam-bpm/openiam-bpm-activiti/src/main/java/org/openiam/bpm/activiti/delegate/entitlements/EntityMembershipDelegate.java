@@ -36,6 +36,8 @@ public class EntityMembershipDelegate extends AbstractEntitlementsDelegate {
 		Resource resource = null;
 		Organization organization = null;
 		
+		boolean provisioningEnabled = isProvisioningEnabled(execution);
+		
 		final ActivitiRequestType requestType = getRequestType(execution); 
 		if(requestType != null) {
 			switch(requestType) {
@@ -76,79 +78,111 @@ public class EntityMembershipDelegate extends AbstractEntitlementsDelegate {
 					response = resourceDataService.deleteChildResource(associationId, memberAssociationId, systemUserId);
 					break;
 				case ENTITLE_USER_TO_RESOURCE:
-					resource = getResource(associationId);
-					user = getUser(memberAssociationId);
-					if(resource != null && user != null) {
-						final ProvisionUser pUser = new ProvisionUser(user);
-						resource.setOperation(AttributeOperationEnum.ADD);
-			            pUser.addResource(resource);
-			            response = provisionService.modifyUser(pUser);
+					if(provisioningEnabled) {
+						resource = getResource(associationId);
+						user = getUser(memberAssociationId);
+						if(resource != null && user != null) {
+							final ProvisionUser pUser = new ProvisionUser(user);
+							resource.setOperation(AttributeOperationEnum.ADD);
+							pUser.addResource(resource);
+							response = provisionService.modifyUser(pUser);
+						}
+					} else {
+						response = resourceDataService.addUserToResource(associationId, memberAssociationId, systemUserId);
 					}
 					break;
 				case DISENTITLE_USR_FROM_RESOURCE:
-					resource = getResource(associationId);
-					user = getUser(memberAssociationId);
-					if(resource != null && user != null) {
-						 final ProvisionUser pUser = new ProvisionUser(user);
-						 pUser.markResourceAsDeleted(resource.getId());
-						 response = provisionService.modifyUser(pUser);
+					if(provisioningEnabled) {
+						resource = getResource(associationId);
+						user = getUser(memberAssociationId);
+						if(resource != null && user != null) {
+							 final ProvisionUser pUser = new ProvisionUser(user);
+							 pUser.markResourceAsDeleted(resource.getId());
+							 response = provisionService.modifyUser(pUser);
+						}
+					} else {
+						response = resourceDataService.removeUserFromResource(associationId, memberAssociationId, systemUserId);
 					}
 					break;
 				case ADD_USER_TO_GROUP:
-					group = getGroup(associationId);
-					user = getUser(memberAssociationId);
-					if(group != null && user != null) {
-						group.setOperation(AttributeOperationEnum.ADD);
-						final ProvisionUser pUser = new ProvisionUser(user);
-						pUser.addGroup(group);
-						response = provisionService.modifyUser(pUser);
+					if(provisioningEnabled) {
+						group = getGroup(associationId);
+						user = getUser(memberAssociationId);
+						if(group != null && user != null) {
+							group.setOperation(AttributeOperationEnum.ADD);
+							final ProvisionUser pUser = new ProvisionUser(user);
+							pUser.addGroup(group);
+							response = provisionService.modifyUser(pUser);
+						}
+					} else {
+						response = groupDataService.addUserToGroup(associationId, memberAssociationId, systemUserId);
 					}
 					break;
 				case REMOVE_USER_FROM_GROUP:
-					group = getGroup(associationId);
-					user = getUser(memberAssociationId);
-					if(group != null && user != null) {
-						final ProvisionUser pUser = new ProvisionUser(user);
-						pUser.markGroupAsDeleted(group.getId());
-						response = provisionService.modifyUser(pUser);
+					if(provisioningEnabled) {
+						group = getGroup(associationId);
+						user = getUser(memberAssociationId);
+						if(group != null && user != null) {
+							final ProvisionUser pUser = new ProvisionUser(user);
+							pUser.markGroupAsDeleted(group.getId());
+							response = provisionService.modifyUser(pUser);
+						}
+					} else {	
+						response = groupDataService.removeUserFromGroup(associationId, memberAssociationId, systemUserId);
 					}
 					break;
 				case ADD_USER_TO_ROLE:
-					role = getRole(associationId);
-					user = getUser(memberAssociationId);
-					if(role != null && user != null) {
-						final ProvisionUser pUser = new ProvisionUser(user);
-						role.setOperation(AttributeOperationEnum.ADD);
-			            pUser.addRole(role);
-			            response = provisionService.modifyUser(pUser);
+					if(provisioningEnabled) {
+						role = getRole(associationId);
+						user = getUser(memberAssociationId);
+						if(role != null && user != null) {
+							final ProvisionUser pUser = new ProvisionUser(user);
+							role.setOperation(AttributeOperationEnum.ADD);
+				            pUser.addRole(role);
+				            response = provisionService.modifyUser(pUser);
+						}
+					} else {	
+						response = roleDataService.addUserToRole(associationId, memberAssociationId, systemUserId);
 					}
 					break;
 				case REMOVE_USER_FROM_ROLE:
-					role = getRole(associationId);
-					user = getUser(memberAssociationId);
-					if(role != null && user != null) {
-						final ProvisionUser pUser = new ProvisionUser(user);
-						pUser.markRoleAsDeleted(role.getId());
-						response = provisionService.modifyUser(pUser);
+					if(provisioningEnabled) {
+						role = getRole(associationId);
+						user = getUser(memberAssociationId);
+						if(role != null && user != null) {
+							final ProvisionUser pUser = new ProvisionUser(user);
+							pUser.markRoleAsDeleted(role.getId());
+							response = provisionService.modifyUser(pUser);
+						}
+					} else {	
+						response = roleDataService.removeUserFromRole(associationId, memberAssociationId, systemUserId);
 					}
 					break;
 				case ADD_USER_TO_ORG:
-					organization = getOrganization(associationId);
-					user = getUser(memberAssociationId);
-					if(organization != null && user != null) {
-						organization.setOperation(AttributeOperationEnum.ADD);
-						final ProvisionUser pUser = new ProvisionUser(user);
-						pUser.addAffiliation(organization);
-						response = provisionService.modifyUser(pUser);
+					if(provisioningEnabled) {
+						organization = getOrganization(associationId);
+						user = getUser(memberAssociationId);
+						if(organization != null && user != null) {
+							organization.setOperation(AttributeOperationEnum.ADD);
+							final ProvisionUser pUser = new ProvisionUser(user);
+							pUser.addAffiliation(organization);
+							response = provisionService.modifyUser(pUser);
+						}
+					} else {	
+						response = organizationDataService.addUserToOrg(associationId, memberAssociationId);
 					}
 					break;
 				case REMOVE_USER_FROM_ORG:
-					organization = getOrganization(associationId);
-					user = getUser(memberAssociationId);
-					if(organization != null && user != null) {
-						final ProvisionUser pUser = new ProvisionUser(user);
-						pUser.markAffiliateAsDeleted(organization.getId());
-						response = provisionService.modifyUser(pUser);
+					if(provisioningEnabled) {
+						organization = getOrganization(associationId);
+						user = getUser(memberAssociationId);
+						if(organization != null && user != null) {
+							final ProvisionUser pUser = new ProvisionUser(user);
+							pUser.markAffiliateAsDeleted(organization.getId());
+							response = provisionService.modifyUser(pUser);
+						}
+					} else {	
+						response = organizationDataService.removeUserFromOrg(associationId, memberAssociationId);
 					}
 					break;
 				default:
