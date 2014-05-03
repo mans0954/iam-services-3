@@ -39,6 +39,7 @@ import org.openiam.idm.srvc.lang.domain.LanguageMappingEntity;
 import org.openiam.idm.srvc.meta.dto.MetadataElement;
 import org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
+import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
 import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.internationalization.Internationalized;
 import org.openiam.internationalization.InternationalizedCollection;
@@ -131,7 +132,8 @@ public class MetadataElementEntity extends KeyEntity {
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "element", fetch = FetchType.LAZY)
     private Set<GroupAttributeEntity> groupAttributes;
 
-    
+    @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "element", fetch = FetchType.LAZY)
+    private Set<ResourcePropEntity> resourceAttributes;
     
 	public String getDisplayName() {
 		return displayName;
@@ -294,8 +296,16 @@ public class MetadataElementEntity extends KeyEntity {
 			Set<GroupAttributeEntity> groupAttributes) {
 		this.groupAttributes = groupAttributes;
 	}
+	
+    public Set<ResourcePropEntity> getResourceAttributes() {
+		return resourceAttributes;
+	}
 
-    public void setOrganizationAttributes(
+	public void setResourceAttributes(Set<ResourcePropEntity> resourceAttributes) {
+		this.resourceAttributes = resourceAttributes;
+	}
+
+	public void setOrganizationAttributes(
             Set<OrganizationAttributeEntity> organizationAttributes) {
         this.organizationAttributes = organizationAttributes;
     }

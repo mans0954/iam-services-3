@@ -1938,10 +1938,10 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<String> getAttributesList(String mSysId) {
+    public List<String> getPolicyMapAttributesList(String mSysId) {
         if (mSysId == null)
             return null;
-        LookupAttributeResponse response = lookupMngSysAttributes(mSysId);
+        LookupAttributeResponse response = lookupAttributes(mSysId, "POLICY_MAP");
         if (StatusCodeType.SUCCESS.equals(response.getStatus())) {
             List<String> attributeNames = new LinkedList<String>();
             for (ExtensibleAttribute attr : response.getAttributes()) {
@@ -1955,10 +1955,28 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         }
     }
 
-    private LookupAttributeResponse lookupMngSysAttributes(String mSysId) {
+    @Override
+    @Transactional(readOnly = true)
+    public List<String> getManagedSystemAttributesList(String mSysId) {
+        if (mSysId == null)
+            return null;
+        LookupAttributeResponse response = lookupAttributes(mSysId, "MANAGED_SYSTEM");
+        if (StatusCodeType.SUCCESS.equals(response.getStatus())) {
+            List<String> attributeNames = new LinkedList<String>();
+            for (ExtensibleAttribute attr : response.getAttributes()) {
+                attributeNames.add(attr.getName());
+            }
+            return attributeNames;
+        } else {
+            return null;
+        }
+    }
+
+    private LookupAttributeResponse lookupAttributes(String mSysId, String execMode) {
         ManagedSysDto mSys = managedSysService.getManagedSys(mSysId);
         if (mSys != null) {
             LookupRequest lookupRequest = new LookupRequest();
+            lookupRequest.setExecutionMode(execMode);
             lookupRequest.setTargetID(mSys.getId());
             lookupRequest.setRequestID(mSys.getResourceId());
             lookupRequest.setHostUrl(mSys.getHostUrl());
@@ -2308,7 +2326,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             }
         }
 
-        LookupAttributeResponse response = lookupMngSysAttributes(managedSysId);
+        LookupAttributeResponse response = lookupAttributes(managedSysId, "POLICY_MAP");
         List<ExtensibleAttribute> hiddenAttrs = new ArrayList<ExtensibleAttribute>();
         if (StatusCodeType.SUCCESS.equals(response.getStatus())) {
             for (ExtensibleAttribute attr : response.getAttributes()) {

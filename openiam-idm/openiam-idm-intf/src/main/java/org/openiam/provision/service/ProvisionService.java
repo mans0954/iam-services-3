@@ -196,13 +196,23 @@ public interface ProvisionService {
             @WebParam(name = "attributes", targetNamespace = "") List<ExtensibleAttribute> attributes);
 
     /**
-     * Return all possible attributes for selected managed system
+     * Return all possible policy map attributes for selected managed system
      *
      * @param managedSysId - managed system
      * @return  List<String> with attributes
      */
     @WebMethod
-    public List<String> getAttributesList(
+    public List<String> getPolicyMapAttributesList(
+            @WebParam(name = "managedSysId", targetNamespace = "") String managedSysId);
+
+    /**
+     * Return all possible managed system attributes for selected managed system
+     *
+     * @param managedSysId - managed sys id
+     * @return  List<String> with attributes
+     */
+    @WebMethod
+    public List<String> getManagedSystemAttributesList(
             @WebParam(name = "managedSysId", targetNamespace = "") String managedSysId);
 
     @WebMethod

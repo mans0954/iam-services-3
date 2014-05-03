@@ -52,4 +52,6 @@ public interface BaseDao<T, PrimaryKey extends Serializable> {
 
   int count(SearchBean searchBean);
   int count(T t);
+  
+  void flush();
 }
