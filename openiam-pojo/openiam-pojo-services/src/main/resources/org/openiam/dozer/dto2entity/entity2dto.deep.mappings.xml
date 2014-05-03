@@ -442,6 +442,14 @@
 			<a>organizationAttributes</a>
 			<b>organizationAttributes</b>
 		</field>
+		<field-exclude>
+			<a>groupAttributes</a>
+			<b>groupAttributes</b>
+		</field-exclude>
+		<field-exclude>
+			<a>resourceAttributes</a>
+			<b>resourceAttributes</b>
+		</field-exclude>
 	</mapping>
 	
 	<mapping>

@@ -197,24 +197,8 @@ public class ResourceServiceImpl implements ResourceService {
     private void mergeAttribute(final ResourceEntity bean, final ResourceEntity dbObject) {
         final Set<ResourcePropEntity> renewedProperties = new HashSet<ResourcePropEntity>();
 
-        Set<ResourcePropEntity> beanProps = (bean.getResourceProps() != null) ? bean.getResourceProps()
-                : new HashSet<ResourcePropEntity>();
-        Set<ResourcePropEntity> dbProps = (dbObject.getResourceProps() != null) ? dbObject.getResourceProps()
-                : new HashSet<ResourcePropEntity>();
-
-	/* delete */
-    /*
-	 * for(final Iterator<ResourcePropEntity> dbIt = dbProps.iterator();
-	 * dbIt.hasNext();) { final ResourcePropEntity dbProp = dbIt.next();
-	 * 
-	 * boolean contains = false; for(final Iterator<ResourcePropEntity> it =
-	 * beanProps.iterator(); it.hasNext();) { final ResourcePropEntity
-	 * beanProp = it.next();
-	 * if(StringUtils.equals(dbProp.getId(),
-	 * beanProp.getId())) { contains = true; break; } }
-	 * 
-	 * if(!contains) { dbIt.remove(); } }
-	 */
+        Set<ResourcePropEntity> beanProps = (bean.getResourceProps() != null) ? bean.getResourceProps() : new HashSet<ResourcePropEntity>();
+        Set<ResourcePropEntity> dbProps = (dbObject.getResourceProps() != null) ? dbObject.getResourceProps() : new HashSet<ResourcePropEntity>();
 
 	/* update */
         for (ResourcePropEntity dbProp : dbProps) {
@@ -223,6 +207,7 @@ public class ResourceServiceImpl implements ResourceService {
                     dbProp.setValue(beanProp.getValue());
                     dbProp.setElement(beanProp.getElement());
                     dbProp.setName(beanProp.getName());
+                    dbProp.setIsMultivalued(beanProp.getIsMultivalued());
                     renewedProperties.add(dbProp);
                     break;
                 }
@@ -244,18 +229,19 @@ public class ResourceServiceImpl implements ResourceService {
                 renewedProperties.add(beanProp);
             }
         }
-
-        bean.setResourceProps(renewedProperties);
         
         if(CollectionUtils.isNotEmpty(renewedProperties)) {
         	for(final ResourcePropEntity prop : renewedProperties) {
         		if(prop.getElement() != null && StringUtils.isNotBlank(prop.getElement().getId())) {
-        			prop.setElement(elementDAO.findById(prop.getElement().getId()));
+        			final MetadataElementEntity entity = elementDAO.findById(prop.getElement().getId());
+        			prop.setElement(entity);
         		} else {
         			prop.setElement(null);
         		}
         	}
         }
+        
+        bean.setResourceProps(renewedProperties);
     }
 
     @Override
