@@ -9,6 +9,7 @@ import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.cat.domain.CategoryEntity;
 import org.openiam.idm.srvc.lang.domain.LanguageMappingEntity;
 import org.openiam.idm.srvc.meta.dto.MetadataType;
+import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.internationalization.Internationalized;
 import org.openiam.internationalization.InternationalizedCollection;
 
@@ -28,7 +29,6 @@ import java.util.Set;
 @DozerDTOCorrespondence(MetadataType.class)
 @AttributeOverride(name = "id", column = @Column(name = "TYPE_ID"))
 @Internationalized
-@Indexed
 public class MetadataTypeEntity extends KeyEntity {
 
     private static final long serialVersionUID = 1L;
@@ -77,18 +77,16 @@ public class MetadataTypeEntity extends KeyEntity {
     @Transient
     @InternationalizedCollection(targetField="displayName")
     private Map<String, LanguageMappingEntity> displayNameMap;
+
+    @OneToMany(mappedBy = "employeeType")
+    @ContainedIn
+    private Set<UserEntity> userEntitySet;
     
     @Transient
     private String displayName;
 
     public MetadataTypeEntity() {
     	super();
-    }
-    
-    @Override
-    @ContainedIn
-    public String getId() {
-    	return super.getId();
     }
     
 	public Map<String, MetadataElementEntity> getElementAttributes() {
@@ -178,7 +176,15 @@ public class MetadataTypeEntity extends KeyEntity {
 		this.sensitive = sensitive;
 	}
 
-	@Override
+    public Set<UserEntity> getUserEntitySet() {
+        return userEntitySet;
+    }
+
+    public void setUserEntitySet(Set<UserEntity> userEntitySet) {
+        this.userEntitySet = userEntitySet;
+    }
+
+    @Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
