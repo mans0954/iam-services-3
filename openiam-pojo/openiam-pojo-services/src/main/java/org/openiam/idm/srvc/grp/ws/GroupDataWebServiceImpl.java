@@ -16,6 +16,7 @@ import org.openiam.idm.searchbeans.GroupSearchBean;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
+import org.openiam.idm.srvc.auth.login.IdentityService;
 import org.openiam.idm.srvc.base.AbstractBaseService;
 import org.openiam.idm.srvc.grp.domain.GroupAttributeEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
@@ -166,7 +167,6 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
             final GroupEntity entity = groupDozerConverter.convertToEntity(group, true);
             groupManager.saveGroup(entity, requesterId);
             auditLog.setTargetGroup(entity.getId(), entity.getName());
-
             response.setResponseValue(entity.getId());
             auditLog.succeed();
         } catch (BasicDataServiceException e) {

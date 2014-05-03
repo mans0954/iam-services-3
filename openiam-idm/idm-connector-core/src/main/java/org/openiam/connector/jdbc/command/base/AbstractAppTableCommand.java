@@ -23,6 +23,7 @@ import org.openiam.connector.type.request.RequestType;
 import org.openiam.connector.type.response.ResponseType;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.dto.PolicyMapDataTypeOptions;
+import org.openiam.idm.srvc.mngsys.dto.PolicyMapObjectTypeOptions;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
@@ -106,7 +107,7 @@ public abstract class AbstractAppTableCommand<Request extends RequestType, Respo
             return null;
         List<ExtensibleAttribute> list = new ArrayList<ExtensibleAttribute>();
         for (ExtensibleAttribute ea : attrList) {
-            if (type.equalsIgnoreCase(ea.getObjectType()) || "PRINCIPAL".equalsIgnoreCase(ea.getObjectType())) {
+            if (type.equalsIgnoreCase(ea.getObjectType()) || PolicyMapObjectTypeOptions.PRINCIPAL.name().equalsIgnoreCase(ea.getObjectType())) {
                 list.add(ea);
             }
         }

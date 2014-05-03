@@ -73,7 +73,32 @@ public class LdapCommandFactory extends AbstractCommandFactory {
                     throw new ConnectorDataException(ErrorCode.OPERATION_NOT_SUPPORTED_EXCEPTION, error);
             }
         } else if(ExtensibleObjectType.GROUP==extensibleObjectType){
-            throw new ConnectorDataException(ErrorCode.OPERATION_NOT_SUPPORTED_EXCEPTION, error);
+            switch (commandType){
+                case ADD:
+                    return addUserLdapCommand;
+                case DELETE:
+                    return deleteUserLdapCommand;
+                case LOOKUP_ATTRIBUTE_NAME:
+                    return lookupAttributeNamesCommand;
+                case LOOKUP:
+                    return lookupUserLdapCommand;
+                case SEARCH:
+                    return  searchUserLdapCommand;
+                case MODIFY:
+                    return modifyUserLdapCommand;
+                case RESUME:
+                    return resumeLdapCommand;
+                case SET_PASSWORD:
+                    return setPasswordLdapCommand;
+                case RESET_PASSWORD:
+                    return setPasswordLdapCommand;
+                case SUSPEND:
+                    return suspendLdapCommand;
+                case TEST:
+                    return testUserLdapCommand;
+                default:
+                    throw new ConnectorDataException(ErrorCode.OPERATION_NOT_SUPPORTED_EXCEPTION, error);
+            }
         } else {
             throw new ConnectorDataException(ErrorCode.OPERATION_NOT_SUPPORTED_EXCEPTION, error);
         }

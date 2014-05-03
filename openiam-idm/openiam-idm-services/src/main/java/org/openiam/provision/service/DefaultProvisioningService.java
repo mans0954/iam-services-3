@@ -779,7 +779,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         bindingMap.put("sysId", sysConfiguration.getDefaultManagedSysId());
         bindingMap.put("org", pUser.getPrimaryOrganization());
         bindingMap.put("operation", isAdd ? "ADD" : "MODIFY");
-        bindingMap.put("user", pUser);
+        bindingMap.put(USER, pUser);
         bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS, null);
         bindingMap.put(TARGET_SYSTEM_IDENTITY, null);
         if (!isAdd) {
@@ -1196,7 +1196,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
             bindingMap.put(TARGET_SYS_RES_ID, res.getId());
             bindingMap.put(TARGET_SYS_MANAGED_SYS_ID, managedSysId);
-            bindingMap.put("user", targetSysProvUser);
+            bindingMap.put(USER, targetSysProvUser);
 
             List<AttributeMap> attrMap = managedSysService.getResourceAttributeMaps(res.getId());
             ManagedSysDto mSys = managedSysService.getManagedSys(managedSysId);
@@ -1244,7 +1244,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 try {
                     log.debug(" - Building principal Name for: " + managedSysId);
                     String newPrincipalName = ProvisionServiceUtil
-                            .buildPrincipalName(attrMap, scriptRunner, bindingMap);
+                            .buildUserPrincipalName(attrMap, scriptRunner, bindingMap);
                     if (StringUtils.isBlank(newPrincipalName)) {
                         log.debug("Principal name for managed sys " + managedSysId + " is blank.");
                         return null;
