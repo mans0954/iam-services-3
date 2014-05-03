@@ -1550,6 +1550,12 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             // get the connector for the managedSystem
 
             ManagedSysDto mSys = managedSysService.getManagedSys(managedSysId);
+            ManagedSystemObjectMatchEntity matchObj = null;
+            List<ManagedSystemObjectMatchEntity> objList = managedSystemService.managedSysObjectParam(managedSysId,
+                    ManagedSystemObjectMatch.USER);
+            if (CollectionUtils.isNotEmpty(objList)) {
+                matchObj = objList.get(0);
+            }
 
             // do the lookup
 
@@ -1562,6 +1568,9 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             reqType.setRequestedAttributes(extensibleAttributes);
             reqType.setTargetID(managedSysId);
             reqType.setHostLoginId(mSys.getUserId());
+            if (matchObj != null && StringUtils.isNotEmpty(matchObj.getSearchBaseDn())) {
+                reqType.setBaseDN(matchObj.getSearchBaseDn());
+            }
             String passwordDecoded;
             try {
                 passwordDecoded = getDecryptedPassword(mSys);

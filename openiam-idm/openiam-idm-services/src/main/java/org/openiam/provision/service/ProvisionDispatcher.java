@@ -587,8 +587,8 @@ public class ProvisionDispatcher implements Sweepable {
         }
         reqType.setHostLoginPassword(passwordDecoded);
         reqType.setHostUrl(mSys.getHostUrl());
-        if (matchObj != null) {
-            reqType.setBaseDN(matchObj.getBaseDn());
+        if (matchObj != null && StringUtils.isNotEmpty(matchObj.getSearchBaseDn())) {
+            reqType.setBaseDN(matchObj.getSearchBaseDn());
         }
         reqType.setExtensibleObject(extUser);
         reqType.setScriptHandler(mSys.getLookupHandler());
