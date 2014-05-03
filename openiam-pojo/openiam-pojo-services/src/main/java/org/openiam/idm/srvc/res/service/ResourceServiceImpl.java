@@ -152,7 +152,7 @@ public class ResourceServiceImpl implements ResourceService {
             entity.setGroups(dbObject.getGroups());
             entity.setRoles(dbObject.getRoles());
 
-            elementDAO.flush();
+            //elementDAO.flush();
             mergeAttribute(entity, dbObject);
 
         } else {
