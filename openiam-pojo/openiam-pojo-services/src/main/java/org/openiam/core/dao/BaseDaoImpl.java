@@ -80,6 +80,10 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
     	 return ((Number) getExampleCriteria(searchBean).setProjection(rowCount())
                  .uniqueResult()).intValue();
     }
+    
+    public void flush() {
+    	getSession().flush();
+    }
 
     @Override
     @LocalizedDatabaseGet
