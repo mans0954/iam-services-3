@@ -779,7 +779,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         bindingMap.put("sysId", sysConfiguration.getDefaultManagedSysId());
         bindingMap.put("org", pUser.getPrimaryOrganization());
         bindingMap.put("operation", isAdd ? "ADD" : "MODIFY");
-        bindingMap.put("user", pUser);
+        bindingMap.put(USER, pUser);
         bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS, null);
         bindingMap.put(TARGET_SYSTEM_IDENTITY, null);
         if (!isAdd) {
@@ -1196,7 +1196,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
             bindingMap.put(TARGET_SYS_RES_ID, res.getId());
             bindingMap.put(TARGET_SYS_MANAGED_SYS_ID, managedSysId);
-            bindingMap.put("user", targetSysProvUser);
+            bindingMap.put(USER, targetSysProvUser);
 
             List<AttributeMap> attrMap = managedSysService.getResourceAttributeMaps(res.getId());
             ManagedSysDto mSys = managedSysService.getManagedSys(managedSysId);
@@ -1244,7 +1244,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 try {
                     log.debug(" - Building principal Name for: " + managedSysId);
                     String newPrincipalName = ProvisionServiceUtil
-                            .buildPrincipalName(attrMap, scriptRunner, bindingMap);
+                            .buildUserPrincipalName(attrMap, scriptRunner, bindingMap);
                     if (StringUtils.isBlank(newPrincipalName)) {
                         log.debug("Principal name for managed sys " + managedSysId + " is blank.");
                         return null;
@@ -1938,10 +1938,10 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<String> getAttributesList(String mSysId) {
+    public List<String> getPolicyMapAttributesList(String mSysId) {
         if (mSysId == null)
             return null;
-        LookupAttributeResponse response = lookupMngSysAttributes(mSysId);
+        LookupAttributeResponse response = lookupAttributes(mSysId, "POLICY_MAP");
         if (StatusCodeType.SUCCESS.equals(response.getStatus())) {
             List<String> attributeNames = new LinkedList<String>();
             for (ExtensibleAttribute attr : response.getAttributes()) {
@@ -1955,10 +1955,28 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         }
     }
 
-    private LookupAttributeResponse lookupMngSysAttributes(String mSysId) {
+    @Override
+    @Transactional(readOnly = true)
+    public List<String> getManagedSystemAttributesList(String mSysId) {
+        if (mSysId == null)
+            return null;
+        LookupAttributeResponse response = lookupAttributes(mSysId, "MANAGED_SYSTEM");
+        if (StatusCodeType.SUCCESS.equals(response.getStatus())) {
+            List<String> attributeNames = new LinkedList<String>();
+            for (ExtensibleAttribute attr : response.getAttributes()) {
+                attributeNames.add(attr.getName());
+            }
+            return attributeNames;
+        } else {
+            return null;
+        }
+    }
+
+    private LookupAttributeResponse lookupAttributes(String mSysId, String execMode) {
         ManagedSysDto mSys = managedSysService.getManagedSys(mSysId);
         if (mSys != null) {
             LookupRequest lookupRequest = new LookupRequest();
+            lookupRequest.setExecutionMode(execMode);
             lookupRequest.setTargetID(mSys.getId());
             lookupRequest.setRequestID(mSys.getResourceId());
             lookupRequest.setHostUrl(mSys.getHostUrl());
@@ -2308,7 +2326,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             }
         }
 
-        LookupAttributeResponse response = lookupMngSysAttributes(managedSysId);
+        LookupAttributeResponse response = lookupAttributes(managedSysId, "POLICY_MAP");
         List<ExtensibleAttribute> hiddenAttrs = new ArrayList<ExtensibleAttribute>();
         if (StatusCodeType.SUCCESS.equals(response.getStatus())) {
             for (ExtensibleAttribute attr : response.getAttributes()) {

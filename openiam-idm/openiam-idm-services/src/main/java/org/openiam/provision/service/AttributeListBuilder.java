@@ -28,6 +28,7 @@ import org.openiam.exception.ScriptEngineException;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
 import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
+import org.openiam.idm.srvc.mngsys.dto.PolicyMapObjectTypeOptions;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleUser;
@@ -92,7 +93,7 @@ public class AttributeListBuilder {
 
                     final String objectType = attr.getMapForObjectType();
                     if (objectType != null) {
-                        if (StringUtils.equalsIgnoreCase("PRINCIPAL",
+                        if (StringUtils.equalsIgnoreCase(PolicyMapObjectTypeOptions.PRINCIPAL.name(),
                                 objectType)) {
                             if (log.isDebugEnabled()) {
                                 log.debug(String
@@ -204,7 +205,7 @@ public class AttributeListBuilder {
         for (AttributeMap attr : attrMap) {
             String objectType = attr.getMapForObjectType();
             if (objectType != null) {
-                if (objectType.equalsIgnoreCase("PRINCIPAL")) {
+                if (PolicyMapObjectTypeOptions.PRINCIPAL.name().equalsIgnoreCase(objectType)) {
                     try {
                         String output = (String)ProvisionServiceUtil
                                 .getOutputFromAttrMap(attr, bindingMap, se);
@@ -323,7 +324,7 @@ public class AttributeListBuilder {
                                             + attr.getAttributeName());
                                 }
 
-                            } else if (objectType.equalsIgnoreCase("PRINCIPAL")) {
+                            } else if (PolicyMapObjectTypeOptions.PRINCIPAL.name().equalsIgnoreCase(objectType)) {
 
                                 extUser.setPrincipalFieldName(attr
                                         .getAttributeName());

@@ -73,8 +73,12 @@ public class ExtensibleObject implements java.io.Serializable {
 	public ExtensibleObject() {
 		operation = 0;
 	}
-	
-	public String getObjectId() {
+
+    public ExtensibleObject(ExtensibleObjectType extensibleObjectType) {
+        this.extensibleObjectType = extensibleObjectType;
+    }
+
+    public String getObjectId() {
 		return objectId;
 	}
 

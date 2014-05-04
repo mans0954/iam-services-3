@@ -35,6 +35,7 @@ import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
+import org.openiam.idm.srvc.mngsys.dto.PolicyMapObjectTypeOptions;
 import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
@@ -43,6 +44,7 @@ import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.provision.dto.ProvisionGroup;
 import org.openiam.provision.resp.ProvisionGroupResponse;
 import org.openiam.provision.type.ExtensibleAttribute;
+import org.openiam.provision.type.ExtensibleGroup;
 import org.openiam.provision.type.ExtensibleObject;
 import org.openiam.provision.type.ExtensibleUser;
 import org.openiam.script.ScriptIntegration;
@@ -68,6 +70,8 @@ import java.util.*;
         serviceName = "GroupProvisionService")
 @Component("groupProvision")
 public class GroupProvisionServiceImpl extends AbstractBaseService implements GroupProvisionService {
+    @Autowired
+    protected ManagedSystemWebService managedSysService;
 
     @Autowired
     protected ValidateConnectionConfig validateConnectionConfig;
@@ -158,20 +162,33 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Gr
                             String managedSysId = managedSys.getId();
                             IdentityDto groupTargetSysIdentity = identityService.getIdentity(group.getId(), managedSysId);
                             if(groupTargetSysIdentity == null) {
-                                //TODO: create by policy map PRONCIPAL field
-                                // stub: temporary use the same as Group Name
-                                String identity = group.getName();
+                                List<AttributeMap> attrMap = managedSysService.getResourceAttributeMaps(res.getId());
+                                Map<String, Object> bindingMap = new HashMap<String, Object>();
+                                bindingMap.put("sysId", sysConfiguration.getDefaultManagedSysId());
+                                bindingMap.put("operation", isAdd ? "ADD" : "MODIFY");
+                                bindingMap.put(AbstractProvisioningService.TARGET_SYSTEM_IDENTITY_STATUS, null);
+                                bindingMap.put(AbstractProvisioningService.TARGET_SYSTEM_IDENTITY, null);
+                                bindingMap.put(AbstractProvisioningService.TARGET_SYS_RES_ID, res.getId());
+                                bindingMap.put(AbstractProvisioningService.TARGET_SYS_MANAGED_SYS_ID, managedSysId);
+                                bindingMap.put(AbstractProvisioningService.GROUP, group);
+                                try {
+                                    log.debug(" - Building principal Name for: " + managedSysId);
+                                    String newIdentity = ProvisionServiceUtil.buildGroupPrincipalName(attrMap, scriptRunner, bindingMap);
 
-                                groupTargetSysIdentity = new IdentityDto(IdentityTypeEnum.GROUP);
-                                groupTargetSysIdentity.setIdentity(identity);
-                                groupTargetSysIdentity.setCreateDate(new Date());
-                                groupTargetSysIdentity.setCreatedBy(systemUserId);
-                                groupTargetSysIdentity.setManagedSysId(managedSysId);
-                                groupTargetSysIdentity.setReferredObjectId(group.getId());
-                                groupTargetSysIdentity.setStatus(LoginStatusEnum.PENDING_CREATE);
+                                    groupTargetSysIdentity = new IdentityDto(IdentityTypeEnum.GROUP);
+                                    groupTargetSysIdentity.setIdentity(newIdentity);
+                                    groupTargetSysIdentity.setCreateDate(new Date());
+                                    groupTargetSysIdentity.setCreatedBy(systemUserId);
+                                    groupTargetSysIdentity.setManagedSysId(managedSysId);
+                                    groupTargetSysIdentity.setReferredObjectId(group.getId());
+                                    groupTargetSysIdentity.setStatus(LoginStatusEnum.PENDING_CREATE);
 
-                                String groupTargetSysIdentityId = identityService.save(groupTargetSysIdentity);
-                                groupTargetSysIdentity.setId(groupTargetSysIdentityId);
+                                    String groupTargetSysIdentityId = identityService.save(groupTargetSysIdentity);
+
+                                    groupTargetSysIdentity.setId(groupTargetSysIdentityId);
+                                } catch (ScriptEngineException e) {
+                                    e.printStackTrace();
+                                }
                             }
 
 
@@ -398,7 +415,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Gr
     private ExtensibleObject buildFromRules(List<AttributeMap> attrMap,
                                           Map<String, Object> bindingMap) {
 
-        ExtensibleObject extensibleObject = new ExtensibleObject();
+        ExtensibleGroup extensibleObject = new ExtensibleGroup();
 
         if (attrMap != null) {
 
@@ -490,12 +507,12 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Gr
                                 log.debug("buildFromRules: added attribute to extGroup:" + attr.getAttributeName());
                             }
                         }
-                    } /*else if (objectType.equalsIgnoreCase("PRINCIPAL")) {
+                    } else if (PolicyMapObjectTypeOptions.GROUP_PRINCIPAL.name().equalsIgnoreCase(objectType)) {
 
                         extensibleObject.setPrincipalFieldName(attr.getAttributeName());
                         extensibleObject.setPrincipalFieldDataType(attr.getDataType().getValue());
 
-                    }*/
+                    }
                 }
             }
         }
@@ -576,10 +593,10 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Gr
 
             bindingMap.put("IDENTITY", identityDto.getIdentity());
             bindingMap.put("RESOURCE", res);
-            /*bindingMap.put(TARGET_SYSTEM_IDENTITY, identityDto.getIdentity());
-            bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS, IDENTITY_EXIST);
-            bindingMap.put(TARGET_SYS_RES_ID, resourceId);
-*/
+            bindingMap.put(AbstractProvisioningService.TARGET_SYSTEM_IDENTITY, identityDto.getIdentity());
+            bindingMap.put(AbstractProvisioningService.TARGET_SYSTEM_IDENTITY_STATUS, AbstractProvisioningService.IDENTITY_EXIST);
+            bindingMap.put(AbstractProvisioningService.TARGET_SYS_RES_ID, resourceId);
+
            /* if (resourceId != null) {
                 res = resourceDataService.getResource(resourceId);
                 if (res != null) {

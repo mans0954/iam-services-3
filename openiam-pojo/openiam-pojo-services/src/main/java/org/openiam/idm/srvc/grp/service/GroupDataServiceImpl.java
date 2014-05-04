@@ -5,26 +5,29 @@ import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.dozer.converter.GroupDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.GroupSearchBean;
+import org.openiam.idm.srvc.auth.domain.IdentityEntity;
+import org.openiam.idm.srvc.auth.dto.IdentityTypeEnum;
+import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
+import org.openiam.idm.srvc.auth.login.IdentityDAO;
 import org.openiam.idm.srvc.grp.domain.GroupAttributeEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.lang.domain.LanguageEntity;
-import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.lang.service.LanguageDAO;
 import org.openiam.idm.srvc.meta.service.MetadataElementDAO;
 import org.openiam.idm.srvc.meta.service.MetadataTypeDAO;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.mngsys.domain.AssociationType;
+import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.service.ManagedSysDAO;
 import org.openiam.idm.srvc.org.service.OrganizationDAO;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
-import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
-import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.srvc.user.util.DelegationFilterHelper;
@@ -35,12 +38,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.openiam.internationalization.LocalizedServiceGet;
-import twitter4j.api.HelpResources;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * <code>GroupDataServiceImpl</code> provides a service to manage groups as
@@ -55,7 +54,9 @@ import java.util.Set;
 @Service("groupManager")
 @Transactional
 public class GroupDataServiceImpl implements GroupDataService {
-	
+    @Autowired
+    protected SysConfiguration sysConfiguration;
+
 	@Autowired
 	private GroupDAO groupDao;
 	
@@ -92,6 +93,9 @@ public class GroupDataServiceImpl implements GroupDataService {
 
     @Autowired
     private MetadataElementDAO metadataElementDAO;
+
+    @Autowired
+    private IdentityDAO identityDAO;
 
     @Autowired
     protected LanguageDAO languageDAO;
@@ -341,6 +345,14 @@ public class GroupDataServiceImpl implements GroupDataService {
 			} else {
 				group.setAdminResource(getNewAdminResource(group, requestorId));
 				groupDao.save(group);
+
+                IdentityEntity groupDefaultEntity = new IdentityEntity(IdentityTypeEnum.GROUP);
+                groupDefaultEntity.setCreateDate(new Date());
+                groupDefaultEntity.setCreatedBy(requestorId);
+                groupDefaultEntity.setManagedSysId(sysConfiguration.getDefaultManagedSysId());
+                groupDefaultEntity.setReferredObjectId(group.getId());
+                groupDefaultEntity.setStatus(LoginStatusEnum.PENDING_CREATE);
+                identityDAO.save(groupDefaultEntity);
 				group.addApproverAssociation(createDefaultApproverAssociations(group, requestorId));
 			}
 			groupDao.merge(group);
@@ -418,6 +430,10 @@ public class GroupDataServiceImpl implements GroupDataService {
 		final GroupEntity entity = groupDao.findById(groupId);
 		if(entity != null) {
 			groupDao.delete(entity);
+            IdentityEntity systemGroupIdentity = identityDAO.findByManagedSysId(groupId, sysConfiguration.getDefaultManagedSysId());
+            if(systemGroupIdentity != null) {
+                identityDAO.delete(systemGroupIdentity);
+            }
 		}
 	}
 

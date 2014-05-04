@@ -45,7 +45,7 @@ public class ExtensibleAddress extends ExtensibleObject {
 	protected Address address;
 	
 	public ExtensibleAddress() {
-        extensibleObjectType= ExtensibleObjectType.ADDRESS;
+        super(ExtensibleObjectType.ADDRESS);
 	}
 	
 	public ExtensibleAddress(Address adr) {

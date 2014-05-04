@@ -6,6 +6,7 @@ import java.util.Map;
 import org.openiam.exception.ScriptEngineException;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
+import org.openiam.idm.srvc.mngsys.dto.PolicyMapObjectTypeOptions;
 import org.openiam.idm.srvc.policy.domain.PolicyEntity;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.script.ScriptIntegration;
@@ -52,11 +53,30 @@ public class ProvisionServiceUtil {
      * @return
      * @throws ScriptEngineException
      */
-    public static String buildPrincipalName(List<AttributeMap> attrMap,
-                                            ScriptIntegration se, Map<String, Object> bindingMap)
+    public static String buildUserPrincipalName(List<AttributeMap> attrMap,
+                                                ScriptIntegration se, Map<String, Object> bindingMap)
             throws ScriptEngineException {
         for (AttributeMap attr : attrMap) {
-            if ("PRINCIPAL".equalsIgnoreCase(attr.getMapForObjectType())
+            if (PolicyMapObjectTypeOptions.PRINCIPAL.name().equalsIgnoreCase(attr.getMapForObjectType())
+                    && !"INACTIVE".equalsIgnoreCase(attr.getStatus())) {
+                return (String) ProvisionServiceUtil.getOutputFromAttrMap(attr,
+                        bindingMap, se);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Generate the principalName for a targetSystem
+     *
+     * @return
+     * @throws ScriptEngineException
+     */
+    public static String buildGroupPrincipalName(List<AttributeMap> attrMap,
+                                                ScriptIntegration se, Map<String, Object> bindingMap)
+            throws ScriptEngineException {
+        for (AttributeMap attr : attrMap) {
+            if (PolicyMapObjectTypeOptions.GROUP_PRINCIPAL.name().equalsIgnoreCase(attr.getMapForObjectType())
                     && !"INACTIVE".equalsIgnoreCase(attr.getStatus())) {
                 return (String) ProvisionServiceUtil.getOutputFromAttrMap(attr,
                         bindingMap, se);

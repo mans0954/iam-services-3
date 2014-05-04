@@ -1,12 +1,12 @@
 package org.openiam.idm.srvc.recon.result.dto;
 
-import java.text.AttributedCharacterIterator.Attribute;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapUtil;
+import org.openiam.idm.srvc.mngsys.dto.PolicyMapObjectTypeOptions;
 
 public class ReconciliationResultUtil {
 
@@ -21,7 +21,7 @@ public class ReconciliationResultUtil {
             field.setValues(Arrays.asList(head.getAttributeName(),
                     AttributeMapUtil.getAttributeIDMFieldName(head)));
             fieldSet.add(field);
-            if ("PRINCIPAL".equalsIgnoreCase(head.getMapForObjectType()))
+            if (PolicyMapObjectTypeOptions.PRINCIPAL.name().equalsIgnoreCase(head.getMapForObjectType()))
                 field.setKeyField(true);
         }
         headerRow.setFields(fieldSet);
