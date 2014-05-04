@@ -19,7 +19,8 @@ public enum MetadataTypeGrouping {
 	GROUP_TYPE(true),
 	ROLE_TYPE(true),
 	ORG_TYPE(true),
-	RESOURCE_TYPE(true);
+	RESOURCE_TYPE(true),
+	USER_OBJECT_TYPE(true);
 
 	private boolean creatable;
 	
