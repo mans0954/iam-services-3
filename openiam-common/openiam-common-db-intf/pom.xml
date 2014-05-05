@@ -3,13 +3,13 @@
     <parent>
         <groupId>org.openiam</groupId>
         <artifactId>openiam-common</artifactId>
-        <version>3.1.0</version>
+        <version>3.1.beta1.RELEASE</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.openiam</groupId>
     <artifactId>openiam-common-db-intf</artifactId>
     <name>openiam-common-db-intf</name>
-    <version>3.1.0</version>
+    <version>3.1.beta1.RELEASE</version>
     <description>OpenIAM Common Module for Entities and DAOs</description>
 
     <build>
@@ -227,7 +227,7 @@
 		<dependency>
             <groupId>org.openiam</groupId>
             <artifactId>openiam-common-intf</artifactId>
-            <version>3.1.0</version>
+            <version>3.1.beta1.RELEASE</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>
