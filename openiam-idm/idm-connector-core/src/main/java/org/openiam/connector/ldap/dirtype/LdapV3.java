@@ -26,7 +26,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.naming.ldap.LdapContext;
-import org.openiam.util.encrypt.SHA1Hash;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**

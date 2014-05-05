@@ -260,8 +260,6 @@
 	<!-- Utility Beans -->
 	<bean id="cryptor" class="org.openiam.util.encrypt.DESedeCryptor">
 	</bean>
-	<bean id="hash" class="org.openiam.util.encrypt.SHA2Hash">
-	</bean>
 
 
 

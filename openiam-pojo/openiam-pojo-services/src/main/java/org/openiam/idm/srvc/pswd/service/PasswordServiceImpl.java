@@ -22,6 +22,8 @@ package org.openiam.idm.srvc.pswd.service;
 
 import java.util.Date;
 import java.util.List;
+
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.ws.ResponseCode;
@@ -51,7 +53,6 @@ import org.openiam.idm.srvc.pswd.rule.PasswordValidator;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.util.encrypt.Cryptor;
-import org.openiam.util.encrypt.HashDigest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -96,10 +97,6 @@ public class PasswordServiceImpl implements PasswordService {
 
 	@Autowired
 	protected OrganizationDAO organizationDAO;
-
-	@Autowired
-	@Qualifier("hash")
-	protected HashDigest hash;
 
 	@Autowired
 	protected KeyManagementService keyManagementService;
@@ -431,7 +428,7 @@ public class PasswordServiceImpl implements PasswordService {
 
 		String str = request.getPrincipal() + "*" + expireDate;
 
-		String token = hash.HexEncodedHash(str);
+		String token = DigestUtils.sha256Hex(str);
 
 		resp.setPasswordResetToken(token);
 
