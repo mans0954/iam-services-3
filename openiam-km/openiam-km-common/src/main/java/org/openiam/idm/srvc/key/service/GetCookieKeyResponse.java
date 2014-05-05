@@ -1,5 +1,5 @@
 
-package org.openiam.idm.srvc.res.service;
+package org.openiam.idm.srvc.key.service;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -8,16 +8,16 @@ import javax.xml.bind.annotation.XmlType;
 
 
 /**
- * <p>Java class for migrateDataResponse complex type.
+ * <p>Java class for getCookieKeyResponse complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="migrateDataResponse">
+ * &lt;complexType name="getCookieKeyResponse">
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="return" type="{urn:idm.openiam.org/srvc/res/service}Response" minOccurs="0"/>
+ *         &lt;element name="return" type="{http://www.w3.org/2001/XMLSchema}base64Binary" minOccurs="0"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -27,23 +27,22 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "migrateDataResponse", propOrder = {
+@XmlType(name = "getCookieKeyResponse", propOrder = {
     "_return"
 })
-public class MigrateDataResponse {
+public class GetCookieKeyResponse {
 
     @XmlElement(name = "return")
-    protected Response _return;
+    protected byte[] _return;
 
     /**
      * Gets the value of the return property.
      * 
      * @return
      *     possible object is
-     *     {@link Response }
-     *     
+     *     byte[]
      */
-    public Response getReturn() {
+    public byte[] getReturn() {
         return _return;
     }
 
@@ -52,10 +51,9 @@ public class MigrateDataResponse {
      * 
      * @param value
      *     allowed object is
-     *     {@link Response }
-     *     
+     *     byte[]
      */
-    public void setReturn(Response value) {
+    public void setReturn(byte[] value) {
         this._return = value;
     }
 
