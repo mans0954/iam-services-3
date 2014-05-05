@@ -1,5 +1,5 @@
 
-package org.openiam.idm.srvc.res.service;
+package org.openiam.idm.srvc.key.service;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -8,12 +8,12 @@ import javax.xml.bind.annotation.XmlType;
 
 
 /**
- * <p>Java class for generateMasterKeyResponse complex type.
+ * <p>Java class for migrateDataResponse complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="generateMasterKeyResponse">
+ * &lt;complexType name="migrateDataResponse">
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
@@ -27,10 +27,10 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "generateMasterKeyResponse", propOrder = {
+@XmlType(name = "migrateDataResponse", propOrder = {
     "_return"
 })
-public class GenerateMasterKeyResponse {
+public class MigrateDataResponse {
 
     @XmlElement(name = "return")
     protected Response _return;
