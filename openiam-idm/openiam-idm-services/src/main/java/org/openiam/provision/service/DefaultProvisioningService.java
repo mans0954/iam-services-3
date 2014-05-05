@@ -779,7 +779,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         bindingMap.put("sysId", sysConfiguration.getDefaultManagedSysId());
         bindingMap.put("org", pUser.getPrimaryOrganization());
         bindingMap.put("operation", isAdd ? "ADD" : "MODIFY");
-        bindingMap.put("user", pUser);
+        bindingMap.put(USER, pUser);
         bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS, null);
         bindingMap.put(TARGET_SYSTEM_IDENTITY, null);
         if (!isAdd) {
@@ -1196,7 +1196,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
             bindingMap.put(TARGET_SYS_RES_ID, res.getId());
             bindingMap.put(TARGET_SYS_MANAGED_SYS_ID, managedSysId);
-            bindingMap.put("user", targetSysProvUser);
+            bindingMap.put(USER, targetSysProvUser);
 
             List<AttributeMap> attrMap = managedSysService.getResourceAttributeMaps(res.getId());
             ManagedSysDto mSys = managedSysService.getManagedSys(managedSysId);
@@ -1244,7 +1244,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 try {
                     log.debug(" - Building principal Name for: " + managedSysId);
                     String newPrincipalName = ProvisionServiceUtil
-                            .buildPrincipalName(attrMap, scriptRunner, bindingMap);
+                            .buildUserPrincipalName(attrMap, scriptRunner, bindingMap);
                     if (StringUtils.isBlank(newPrincipalName)) {
                         log.debug("Principal name for managed sys " + managedSysId + " is blank.");
                         return null;
@@ -1550,6 +1550,12 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             // get the connector for the managedSystem
 
             ManagedSysDto mSys = managedSysService.getManagedSys(managedSysId);
+            ManagedSystemObjectMatchEntity matchObj = null;
+            List<ManagedSystemObjectMatchEntity> objList = managedSystemService.managedSysObjectParam(managedSysId,
+                    ManagedSystemObjectMatch.USER);
+            if (CollectionUtils.isNotEmpty(objList)) {
+                matchObj = objList.get(0);
+            }
 
             // do the lookup
 
@@ -1562,6 +1568,9 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             reqType.setRequestedAttributes(extensibleAttributes);
             reqType.setTargetID(managedSysId);
             reqType.setHostLoginId(mSys.getUserId());
+            if (matchObj != null && StringUtils.isNotEmpty(matchObj.getSearchBaseDn())) {
+                reqType.setBaseDN(matchObj.getSearchBaseDn());
+            }
             String passwordDecoded;
             try {
                 passwordDecoded = getDecryptedPassword(mSys);
@@ -1929,21 +1938,29 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<String> getAttributesList(String mSysId) {
+    public List<String> getPolicyMapAttributesList(String mSysId) {
         if (mSysId == null)
             return null;
-        ManagedSysDto mSys = managedSysService.getManagedSys(mSysId);
-        if (mSys == null)
+        LookupAttributeResponse response = lookupAttributes(mSysId, "POLICY_MAP");
+        if (StatusCodeType.SUCCESS.equals(response.getStatus())) {
+            List<String> attributeNames = new LinkedList<String>();
+            for (ExtensibleAttribute attr : response.getAttributes()) {
+                if (!"READ_ONLY".equals(attr.getMetadataElementId())) {
+                    attributeNames.add(attr.getName());
+                }
+            }
+            return attributeNames;
+        } else {
             return null;
-        LookupRequest lookupRequest = new LookupRequest();
-        lookupRequest.setTargetID(mSys.getId());
-        lookupRequest.setRequestID(mSys.getResourceId());
-        lookupRequest.setHostUrl(mSys.getHostUrl());
-        lookupRequest.setHostLoginId(mSys.getUserId());
-        lookupRequest.setHostLoginPassword(mSys.getDecryptPassword());
-        lookupRequest.setScriptHandler(mSys.getAttributeNamesHandler());
-        LookupAttributeResponse response = connectorAdapter.lookupAttributes(mSys.getConnectorId(), lookupRequest,
-                MuleContextProvider.getCtx());
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<String> getManagedSystemAttributesList(String mSysId) {
+        if (mSysId == null)
+            return null;
+        LookupAttributeResponse response = lookupAttributes(mSysId, "MANAGED_SYSTEM");
         if (StatusCodeType.SUCCESS.equals(response.getStatus())) {
             List<String> attributeNames = new LinkedList<String>();
             for (ExtensibleAttribute attr : response.getAttributes()) {
@@ -1953,6 +1970,23 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         } else {
             return null;
         }
+    }
+
+    private LookupAttributeResponse lookupAttributes(String mSysId, String execMode) {
+        ManagedSysDto mSys = managedSysService.getManagedSys(mSysId);
+        if (mSys != null) {
+            LookupRequest lookupRequest = new LookupRequest();
+            lookupRequest.setExecutionMode(execMode);
+            lookupRequest.setTargetID(mSys.getId());
+            lookupRequest.setRequestID(mSys.getResourceId());
+            lookupRequest.setHostUrl(mSys.getHostUrl());
+            lookupRequest.setHostLoginId(mSys.getUserId());
+            lookupRequest.setHostLoginPassword(mSys.getDecryptPassword());
+            lookupRequest.setScriptHandler(mSys.getAttributeNamesHandler());
+            return connectorAdapter.lookupAttributes(mSys.getConnectorId(), lookupRequest,
+                    MuleContextProvider.getCtx());
+        }
+        return null;
     }
 
     public Response syncPasswordFromSrc(PasswordSync passwordSync) {
@@ -2292,6 +2326,27 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             }
         }
 
+        LookupAttributeResponse response = lookupAttributes(managedSysId, "POLICY_MAP");
+        List<ExtensibleAttribute> hiddenAttrs = new ArrayList<ExtensibleAttribute>();
+        if (StatusCodeType.SUCCESS.equals(response.getStatus())) {
+            for (ExtensibleAttribute attr : response.getAttributes()) {
+                if ("READ_ONLY".equals(attr.getMetadataElementId())) { //Adding read only attributes
+                    requestedExtensibleAttributes.add(new ExtensibleAttribute(attr.getName(), null, attr.getMetadataElementId()));
+
+                } else if ("HIDDEN".equals(attr.getMetadataElementId())) { //Removing hidden attributes
+                    for (ExtensibleAttribute a : requestedExtensibleAttributes) {
+                        if (attr.getName().equals(a.getName())) {
+                            hiddenAttrs.add(a);
+                            break;
+                        }
+                    }
+                }
+            }
+            if (CollectionUtils.isNotEmpty(hiddenAttrs)) {
+                requestedExtensibleAttributes.removeAll(hiddenAttrs);
+            }
+        }
+
         ProvisionUser pUser = new ProvisionUser(usr);
         List<ExtensibleAttribute> idmAttrs = buildMngSysAttributesForIDMUser(pUser, managedSysId);
 
@@ -2308,6 +2363,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 viewerBean.setAttributeName(a.getName());
                 viewerBean.setIdmAttribute(findExtAttrByName(a.getName(), idmAttrs));
                 viewerBean.setMngSysAttribute(findExtAttrByName(a.getName(), mngSysAttrs));
+                viewerBean.setReadOnly("READ_ONLY".equals(a.getMetadataElementId()));
                 viewerList.add(viewerBean);
             }
         }

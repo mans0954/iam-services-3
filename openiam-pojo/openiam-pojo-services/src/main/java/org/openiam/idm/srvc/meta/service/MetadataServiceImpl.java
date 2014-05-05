@@ -137,6 +137,8 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 				entity.setResource(dbEntity.getResource());
 				entity.setOrganizationAttributes(dbEntity.getOrganizationAttributes());
                 entity.setGroupAttributes(dbEntity.getGroupAttributes());
+                entity.setUserAttributes(dbEntity.getUserAttributes());
+                entity.setResourceAttributes(dbEntity.getResourceAttributes());
 			}
 			
 			if(CollectionUtils.isNotEmpty(entity.getValidValues())) {

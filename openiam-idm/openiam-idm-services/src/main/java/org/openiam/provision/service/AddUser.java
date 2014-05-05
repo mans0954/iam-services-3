@@ -38,6 +38,7 @@ import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.service.GroupDataService;
 import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
+import org.openiam.idm.srvc.mngsys.dto.PolicyMapObjectTypeOptions;
 import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.service.OrganizationDataService;
@@ -308,7 +309,7 @@ public class AddUser {
                                 .getOutputFromAttrMap(attr, bindingMap, se);
                         String objectType = attr.getMapForObjectType();
                         if (objectType != null) {
-                            if (objectType.equalsIgnoreCase("PRINCIPAL")) {
+                            if (PolicyMapObjectTypeOptions.PRINCIPAL.name().equalsIgnoreCase(objectType)) {
                                 if (attr.getAttributeName().equalsIgnoreCase(
                                         "PRINCIPAL")) {
                                     primaryIdentity.setLogin(output);
@@ -388,7 +389,7 @@ public class AddUser {
                                 .getOutputFromAttrMap(attr, bindingMap, se);
                         String objectType = attr.getMapForObjectType();
                         if (objectType != null) {
-                            if (objectType.equalsIgnoreCase("PRINCIPAL")) {
+                            if (PolicyMapObjectTypeOptions.PRINCIPAL.name().equalsIgnoreCase(objectType)) {
 
                                 if (attr.getAttributeName().equalsIgnoreCase(
                                         "PASSWORD")) {

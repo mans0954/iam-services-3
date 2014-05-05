@@ -46,6 +46,7 @@ import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
+import org.openiam.idm.srvc.mngsys.dto.PolicyMapObjectTypeOptions;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
 import org.openiam.idm.srvc.mngsys.service.ProvisionConnectorService;
 import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
@@ -117,6 +118,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
     public static final String IDENTITY = "IDENTITY";
     public static final String IDENTITY_NEW = "NEW";
     public static final String IDENTITY_EXIST = "EXIST";
+    public static final String USER = "user";
+    public static final String GROUP = "group";
 
     @Value("${org.openiam.idm.system.user.id}")
     protected String systemUserId;
@@ -364,7 +367,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                             attr, bindingMap, se);
                     String objectType = attr.getMapForObjectType();
                     if (objectType != null) {
-                        if (objectType.equalsIgnoreCase("PRINCIPAL")) {
+                        if (PolicyMapObjectTypeOptions.PRINCIPAL.name().equalsIgnoreCase(objectType)) {
                             if (attr.getAttributeName().equalsIgnoreCase("PRINCIPAL")) {
                                 primaryIdentity.setLogin(output);
                             }
@@ -397,7 +400,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         for (AttributeMap attr : policyAttrMap) {
             String objectType = attr.getMapForObjectType();
             if (objectType != null) {
-                if (objectType.equalsIgnoreCase("PRINCIPAL")) {
+                if (PolicyMapObjectTypeOptions.PRINCIPAL.name().equalsIgnoreCase(objectType)) {
                     if (attr.getAttributeName().equalsIgnoreCase("PRINCIPAL")) {
                         principalAttributeName = attr.getAttributeName();
                         break;
@@ -428,8 +431,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     String output = (String)ProvisionServiceUtil.getOutputFromAttrMap(attr, bindingMap, se);
                     String objectType = attr.getMapForObjectType();
                     if (objectType != null) {
-                        if (objectType.equalsIgnoreCase("PRINCIPAL")) {
-                            if (attr.getAttributeName().equalsIgnoreCase("PASSWORD")) {
+                        if (PolicyMapObjectTypeOptions.PRINCIPAL.name().equalsIgnoreCase(objectType)) {
+                            if ("PASSWORD".equalsIgnoreCase(attr.getAttributeName())) {
                                 primaryIdentity.setPassword(output);
                             }
                         }
@@ -1270,7 +1273,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                                 Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
                                 String loginStr = login != null ? login.getLogin() : StringUtils.EMPTY;
                                 auditLog.setTargetUser(pUser.getId(), loginStr);
-                                auditLog.addCustomRecord("PRINCIPAL", e.getLogin());
+                                auditLog.addCustomRecord(PolicyMapObjectTypeOptions.PRINCIPAL.name(), e.getLogin());
                                 parentLog.addChild(auditLog);
                                 // --------------------------------------------------------------
                             }
@@ -1292,7 +1295,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
                     String loginStr = login != null ? login.getLogin() : StringUtils.EMPTY;
                     auditLog.setTargetUser(pUser.getId(), loginStr);
-                    auditLog.addCustomRecord("PRINCIPAL", e.getLogin());
+                    auditLog.addCustomRecord(PolicyMapObjectTypeOptions.PRINCIPAL.name(), e.getLogin());
                     parentLog.addChild(auditLog);
                     // --------------------------------------------------------------
                 } else if (e.getOperation().equals(AttributeOperationEnum.REPLACE)) {
@@ -1315,7 +1318,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                                 Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
                                 String loginStr = login != null ? login.getLogin() : StringUtils.EMPTY;
                                 auditLog.setTargetUser(pUser.getId(), loginStr);
-                                auditLog.addCustomRecord("PRINCIPAL", "old= '"+en.toString()+"' new='"+e.toString()+"'");
+                                auditLog.addCustomRecord(PolicyMapObjectTypeOptions.PRINCIPAL.name(), "old= '"+en.toString()+"' new='"+e.toString()+"'");
                                 parentLog.addChild(auditLog);
                                 // --------------------------------------------------------------
                                 break;

@@ -15,10 +15,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.am.srvc.constants.CSVSource;
 import org.openiam.am.srvc.constants.UserFields;
-import org.openiam.idm.searchbeans.UserSearchBean;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapUtil;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
+import org.openiam.idm.srvc.mngsys.dto.PolicyMapObjectTypeOptions;
 import org.openiam.idm.srvc.recon.dto.ReconciliationObject;
 import org.openiam.idm.srvc.recon.result.dto.ReconciliationResultField;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,7 +28,6 @@ import org.springframework.util.StringUtils;
 public abstract class AbstractCSVParser<T, E extends Enum<E>> {
     protected static char SEPARATOR = ',';
     protected static char END_OF_LINE = '\n';
-    protected static String PRINCIPAL_OBJECT = "PRINCIPAL";
     @Value("${iam.files.location}")
     private String pathToCSV;
 
@@ -61,7 +60,7 @@ public abstract class AbstractCSVParser<T, E extends Enum<E>> {
                         fieldValue = Enum.valueOf(clazz2, "DEFAULT");
                     }
                     this.putValueInDTO(obj, fieldValue, objValue.trim());
-                    if (PRINCIPAL_OBJECT.equals(a.getMapForObjectType())) {
+                    if (PolicyMapObjectTypeOptions.PRINCIPAL.name().equals(a.getMapForObjectType())) {
                         csvObject.setPrincipal(objValue);
                     }
                 }
@@ -268,7 +267,7 @@ public abstract class AbstractCSVParser<T, E extends Enum<E>> {
                         }
                         values.add(this.putValueIntoString(obj.getObject(),
                                 fields));
-                    } else if (PRINCIPAL_OBJECT
+                    } else if (PolicyMapObjectTypeOptions.PRINCIPAL.name()
                             .equals(am.getMapForObjectType())) {
                         values.add(obj.getPrincipal() == null ? "" : obj
                                 .getPrincipal());
@@ -369,7 +368,7 @@ public abstract class AbstractCSVParser<T, E extends Enum<E>> {
         for (AttributeMapEntity a : attrMap) {
             String name = a.getAttributeName();
             if (name != null) {
-                if (PRINCIPAL_OBJECT.equals(a.getMapForObjectType())) {
+                if (PolicyMapObjectTypeOptions.PRINCIPAL.name().equals(a.getMapForObjectType())) {
                     E fieldValue;
                     try {
                         fieldValue = Enum.valueOf(enumClass, name);

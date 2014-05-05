@@ -69,6 +69,7 @@ import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
+import org.openiam.idm.srvc.mngsys.dto.PolicyMapObjectTypeOptions;
 import org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorDto;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
 import org.openiam.idm.srvc.mngsys.ws.ProvisionConnectorWebService;
@@ -1165,7 +1166,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
                 fromIDM.getAttributes().add(
                         new ExtensibleAttribute(attr.getAttributeName(), (String) ProvisionServiceUtil
                                 .getOutputFromAttrMap(attr, bindingMap, scriptRunner)));
-                if ("PRINCIPAL".equalsIgnoreCase(attr.getMapForObjectType())
+                if (PolicyMapObjectTypeOptions.PRINCIPAL.name().equalsIgnoreCase(attr.getMapForObjectType())
                         && !"INACTIVE".equalsIgnoreCase(attr.getStatus())) {
                     fromIDM.setPrincipalFieldName(attr.getAttributeName());
                 }

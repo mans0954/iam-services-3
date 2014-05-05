@@ -46,7 +46,7 @@ public class ExtensiblePhone extends ExtensibleObject {
 	protected Phone phone;
 	
 	public ExtensiblePhone() {
-        extensibleObjectType= ExtensibleObjectType.PHONE;
+        super(ExtensibleObjectType.PHONE);
 	}
 	
 	public ExtensiblePhone(Phone phone) {

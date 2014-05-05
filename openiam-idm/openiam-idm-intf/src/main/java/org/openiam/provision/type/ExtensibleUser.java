@@ -52,7 +52,7 @@ public class ExtensibleUser extends ExtensibleObject {
 	protected List<ExtensibleRole> role = new ArrayList<ExtensibleRole>();
 
     public ExtensibleUser(){
-        extensibleObjectType= ExtensibleObjectType.USER;
+        super(ExtensibleObjectType.USER);
     }
 	
 

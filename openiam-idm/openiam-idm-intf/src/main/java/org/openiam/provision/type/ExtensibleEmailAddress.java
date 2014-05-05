@@ -46,7 +46,7 @@ public class ExtensibleEmailAddress extends ExtensibleObject {
 	protected EmailAddress emailAddress;
 	
 	public ExtensibleEmailAddress() {
-        extensibleObjectType= ExtensibleObjectType.EMAIL;
+        super(ExtensibleObjectType.EMAIL);
 	}
 	
 	public ExtensibleEmailAddress(EmailAddress adr) {

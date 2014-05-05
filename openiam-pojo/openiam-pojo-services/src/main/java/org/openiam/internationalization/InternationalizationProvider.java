@@ -8,6 +8,7 @@ import org.apache.log4j.Logger;
 import org.hibernate.proxy.HibernateProxyHelper;
 import org.openiam.base.BaseIdentity;
 import org.openiam.base.domain.KeyEntity;
+import org.openiam.hibernate.HibernateUtils;
 import org.openiam.idm.srvc.lang.domain.LanguageMappingEntity;
 import org.openiam.idm.srvc.lang.dto.LanguageMapping;
 import org.openiam.idm.srvc.lang.service.LanguageMappingDAO;
@@ -16,7 +17,14 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.ReflectionUtils;
 
 import javax.annotation.PostConstruct;
+import javax.persistence.CascadeType;
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
+
 import java.beans.PropertyDescriptor;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.*;
@@ -36,7 +44,7 @@ public class InternationalizationProvider {
 	}
 	
 	public void doServiceGet(final BaseIdentity object, final String languageId) {
-		final Set<TargetInternationalizedField> fieldList = getTargetFields(object);
+		final Set<TargetInternationalizedField> fieldList = getTargetFields(object, false);
 		if(CollectionUtils.isNotEmpty(fieldList)) {
 			for(final TargetInternationalizedField target : fieldList) {
 				final Field field = target.getField();
@@ -74,7 +82,7 @@ public class InternationalizationProvider {
 	}
 	
 	public void doDatabaseGet(final KeyEntity object) {
-		final Set<TargetInternationalizedField> fieldList = getTargetFields(object);
+		final Set<TargetInternationalizedField> fieldList = getTargetFields(object, false);
 		if(CollectionUtils.isNotEmpty(fieldList)) {
 			for(final TargetInternationalizedField target : fieldList) {
 				final Field field = target.getField();
@@ -100,7 +108,7 @@ public class InternationalizationProvider {
 	}
 
 	public void doSaveUpdate(final KeyEntity object) {
-		final Set<TargetInternationalizedField> fieldList = getTargetFields(object);
+		final Set<TargetInternationalizedField> fieldList = getTargetFields(object, false);
 		if(CollectionUtils.isNotEmpty(fieldList)) {
 			for(final TargetInternationalizedField target : fieldList) {
 				doCRUDLogicOnField(target.getField(), (KeyEntity)target.getEntity());
@@ -111,7 +119,7 @@ public class InternationalizationProvider {
 
 	
 	public void doDelete(final KeyEntity object) {
-		final Set<TargetInternationalizedField> fieldList = getTargetFields(object);
+		final Set<TargetInternationalizedField> fieldList = getTargetFields(object, true);
 		if(CollectionUtils.isNotEmpty(fieldList)) {
 			for(final TargetInternationalizedField target : fieldList) {
 				final Field field = target.getField();
@@ -127,9 +135,9 @@ public class InternationalizationProvider {
 		}
 	}
 	
-	private Set<TargetInternationalizedField> getTargetFields(final BaseIdentity object) {
+	private Set<TargetInternationalizedField> getTargetFields(final BaseIdentity object, final boolean isDelete) {
 		if(object != null) {
-			return getTargetFields(object, new HashSet<VisitedField>());
+			return getTargetFields(object, new HashSet<VisitedField>(), isDelete);
 		} else {
 			return Collections.EMPTY_SET;
 		}
@@ -175,7 +183,31 @@ public class InternationalizationProvider {
 		return resultList;
 	}
 	
-	private Set<TargetInternationalizedField> getTargetFields(final BaseIdentity entity, final Set<VisitedField> visitedSet) {
+	private boolean isCascadeDeletePresent(final Field field) {
+		CascadeType[] cascadeTypes = null;
+		if(field.getAnnotation(ManyToMany.class) != null) {
+			cascadeTypes = field.getAnnotation(ManyToMany.class).cascade();
+		} else if(field.getAnnotation(OneToOne.class) != null) {
+			cascadeTypes = field.getAnnotation(OneToOne.class).cascade();
+		} else if(field.getAnnotation(ManyToOne.class) != null) {
+			cascadeTypes = field.getAnnotation(ManyToOne.class).cascade();
+		} else if(field.getAnnotation(OneToMany.class) != null) {
+			cascadeTypes = field.getAnnotation(OneToMany.class).cascade();
+		}
+		
+		boolean retVal = false;
+		if(cascadeTypes != null) {
+			for(final CascadeType type : cascadeTypes) {
+				if(type.equals(CascadeType.ALL) || type.equals(CascadeType.REMOVE)) {
+					retVal = true;
+				}
+			}
+		}
+		
+		return retVal;
+	}
+	
+	private Set<TargetInternationalizedField> getTargetFields(final BaseIdentity entity, final Set<VisitedField> visitedSet, final boolean isDelete) {
 		final Set<TargetInternationalizedField> retVal = new HashSet<>();
 		
 		/* 
@@ -198,28 +230,30 @@ public class InternationalizationProvider {
 								retVal.add(new TargetInternationalizedField(field, entity));
 							}
 						} else if(field.isAnnotationPresent(Internationalized.class)) {
-							//field.setAccessible(true);
-							//PropertyUtils.getReadMethod(new PropertyDescriptor(propertyName, beanClass))
-							//final Object fieldObject = ReflectionUtils.getField(field, entity);
+							
+							//If this is a delete operation, but there is no delete cascade, ignore the field
+							if(isDelete && !isCascadeDeletePresent(field)) {
+								continue;
+							}
 							final Object fieldObject = getMethodCallResult(field, entity);
 							if(fieldObject != null) {
 								if(fieldObject instanceof Collection) {
 									for(final Object o : (Collection)fieldObject) {
 										if(o instanceof BaseIdentity) {
-											retVal.addAll(getTargetFields((BaseIdentity)o, visitedSet));
+											retVal.addAll(getTargetFields((BaseIdentity)o, visitedSet, isDelete));
 										}
 									}
 								} else if(fieldObject instanceof BaseIdentity) {
-									retVal.addAll(getTargetFields((BaseIdentity)fieldObject, visitedSet));
+									retVal.addAll(getTargetFields((BaseIdentity)fieldObject, visitedSet, isDelete));
 								} else if(fieldObject instanceof Map) {
 									for(final Object key : ((Map)fieldObject).keySet()) {
 										if(key != null) {
 											if(key instanceof BaseIdentity) {
-												retVal.addAll(getTargetFields((BaseIdentity)key, visitedSet));
+												retVal.addAll(getTargetFields((BaseIdentity)key, visitedSet, isDelete));
 											}
 											final Object value = ((Map)fieldObject).get(key);
 											if(value != null) {
-												retVal.addAll(getTargetFields((BaseIdentity)value, visitedSet));
+												retVal.addAll(getTargetFields((BaseIdentity)value, visitedSet, isDelete));
 											}
 										}
 									}

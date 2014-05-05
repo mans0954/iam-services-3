@@ -57,6 +57,7 @@ import org.openiam.idm.srvc.mngsys.domain.ProvisionConnectorEntity;
 import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
+import org.openiam.idm.srvc.mngsys.dto.PolicyMapObjectTypeOptions;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
 import org.openiam.idm.srvc.mngsys.service.ProvisionConnectorService;
 import org.openiam.idm.srvc.pswd.service.PasswordGenerator;
@@ -587,8 +588,8 @@ public class ProvisionDispatcher implements Sweepable {
         }
         reqType.setHostLoginPassword(passwordDecoded);
         reqType.setHostUrl(mSys.getHostUrl());
-        if (matchObj != null) {
-            reqType.setBaseDN(matchObj.getBaseDn());
+        if (matchObj != null && StringUtils.isNotEmpty(matchObj.getSearchBaseDn())) {
+            reqType.setBaseDN(matchObj.getSearchBaseDn());
         }
         reqType.setExtensibleObject(extUser);
         reqType.setScriptHandler(mSys.getLookupHandler());
@@ -710,7 +711,7 @@ public class ProvisionDispatcher implements Sweepable {
                                 log.debug("buildFromRules: added attribute to extUser:" + attr.getAttributeName());
                             }
                         }
-                    } else if (objectType.equalsIgnoreCase("PRINCIPAL")) {
+                    } else if (PolicyMapObjectTypeOptions.PRINCIPAL.name().equalsIgnoreCase(objectType)) {
 
                         extUser.setPrincipalFieldName(attr.getAttributeName());
                         extUser.setPrincipalFieldDataType(attr.getDataType().getValue());
