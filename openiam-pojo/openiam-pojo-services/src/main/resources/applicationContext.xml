@@ -262,8 +262,6 @@
 	</bean>
 	<bean id="hash" class="org.openiam.util.encrypt.SHA2Hash">
 	</bean>
-	<bean id="hash1" class="org.openiam.util.encrypt.SHA1Hash">
-	</bean>
 
 
 

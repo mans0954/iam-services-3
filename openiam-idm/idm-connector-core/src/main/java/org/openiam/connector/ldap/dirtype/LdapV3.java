@@ -16,7 +16,6 @@ import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.idm.srvc.pswd.service.PasswordGenerator;
 import org.openiam.provision.type.ExtensibleObject;
 import org.openiam.exception.EncryptionException;
-import org.openiam.util.encrypt.HashDigest;
 
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
@@ -41,7 +40,7 @@ public class LdapV3 implements Directory {
     
     Map<String, Object> objectMap = new HashMap<String, Object>();
     private static final Log log = LogFactory.getLog(LdapV3.class);
-    HashDigest hash = new SHA1Hash();
+    //HashDigest hash = new SHA1Hash();
     
 
     public ModificationItem[] setPassword(PasswordRequest reqType) throws UnsupportedEncodingException {
