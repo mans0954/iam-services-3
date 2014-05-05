@@ -8,6 +8,7 @@ import javax.jws.WebService;
 
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.AttributeMapSearchBean;
+import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 import org.openiam.idm.srvc.mngsys.dto.*;
 
 /**
@@ -50,18 +51,7 @@ public interface ManagedSystemWebService {
     ManagedSysDto getManagedSys(
             @WebParam(name = "sysId", targetNamespace = "") String sysId);
 
-    /**
-     * Returns a ManagedSys object for the specified name. The name is the value
-     * in the name field in the ManagedSys object.
-     * 
-     * @param name
-     *            the name
-     * @return the managed sys by name
-     */
-    @WebMethod
-    ManagedSysDto getManagedSysByName(
-            @WebParam(name = "name", targetNamespace = "") String name);
-
+    
     @WebMethod
     List<ManagedSysDto> getAllManagedSys();
 
@@ -86,6 +76,17 @@ public interface ManagedSystemWebService {
     @WebMethod
     Response saveManagedSystem(
             @WebParam(name = "sys", targetNamespace = "") ManagedSysDto sys);
+
+    /**
+     * Send request for SSL Certificate and install it
+     *
+     * @param sys
+     * @return
+     */
+    @WebMethod
+    Response requestSSLCert(
+            @WebParam(name = "sys", targetNamespace = "") ManagedSysDto sys,
+            @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
     /**
      * Removes a managed system entry from the system.
@@ -119,17 +120,6 @@ public interface ManagedSystemWebService {
     @WebMethod
     public void removeManagedSystemObjectMatch(
             @WebParam(name = "obj", targetNamespace = "") ManagedSystemObjectMatch obj);
-
-    /**
-     * Gets the approver association.
-     * 
-     * @param approverAssociationId
-     *            the approver association id
-     * @return the approver association
-     */
-    @WebMethod
-    ApproverAssociation getApproverAssociation(
-            @WebParam(name = "approverAssociationId", targetNamespace = "") String approverAssociationId);
 
     /**
      * Removes the approver association.
@@ -206,6 +196,8 @@ public interface ManagedSystemWebService {
     List<AttributeMap> getResourceAttributeMaps(
             @WebParam(name = "resourceId", targetNamespace = "") String resourceId);
 
+    List<AttributeMap> getAttributeMapsByManagedSysId(String managedSysId);
+
     @WebMethod
     public List<AttributeMap> findResourceAttributeMaps(
             @WebParam(name = "searchBean", targetNamespace = "") AttributeMapSearchBean searchBean);
@@ -221,6 +213,9 @@ public interface ManagedSystemWebService {
     @WebMethod
     List<DefaultReconciliationAttributeMap> getAllDefaultReconcileMap();
 
+    @WebMethod
+    public Response saveApproverAssociations(final List<ApproverAssociation> approverAssociationList, final AssociationType type, final String entityId);
+    
     @WebMethod
     public Response saveApproverAssociation(
             final @WebParam(name = "approverAssociation", targetNamespace = "") ApproverAssociation approverAssociation);

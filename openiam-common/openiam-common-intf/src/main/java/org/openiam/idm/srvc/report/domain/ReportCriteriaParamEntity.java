@@ -1,10 +1,13 @@
 package org.openiam.idm.srvc.report.domain;
 
-import org.hibernate.annotations.GenericGenerator;
+import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import javax.persistence.Table;
+
+import org.hibernate.annotations.*;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.report.dto.ReportCriteriaParamDto;
-
-import javax.persistence.*;
 
 /**
  * This entity used in reporting system to define parameters of criteria for DataSetBuilder
@@ -28,12 +31,27 @@ public class ReportCriteriaParamEntity {
     @Column(name = "PARAM_NAME")
     private String name;
 
+    @Column(name = "CAPTION")
+    private String caption;
+
     @Column(name = "PARAM_VALUE")
     private String value;
 
-    @OneToOne(optional = false)
+    @ManyToOne(optional = false)
     @JoinColumn(name = "RCPT_ID", nullable = false, insertable = true, updatable = true)
     private ReportParamTypeEntity type;
+
+    @ManyToOne
+    @JoinColumn(name = "PARAM_META_TYPE_ID", nullable = true, insertable = true, updatable = true)
+    private ReportParamMetaTypeEntity metaType;
+
+    @Column(name = "IS_MULTIPLE")
+    @Type(type = "yes_no")
+    private boolean isMultiple;
+
+    @Column(name = "IS_REQUIRED")
+    @Type(type = "yes_no")
+    private boolean isRequired;
 
     public ReportCriteriaParamEntity() {
     }
@@ -62,6 +80,14 @@ public class ReportCriteriaParamEntity {
         this.name = name;
     }
 
+    public String getCaption() {
+        return caption;
+    }
+
+    public void setCaption(String caption) {
+        this.caption = caption;
+    }
+
     public String getValue() {
         return value;
     }
@@ -78,6 +104,30 @@ public class ReportCriteriaParamEntity {
         this.type = type;
     }
 
+    public ReportParamMetaTypeEntity getMetaType() {
+        return metaType;
+    }
+
+    public void setMetaType(ReportParamMetaTypeEntity metaType) {
+        this.metaType = metaType;
+    }
+
+    public boolean getIsMultiple() {
+        return isMultiple;
+    }
+
+    public void setIsMultiple(boolean multiple) {
+        isMultiple = multiple;
+    }
+
+    public boolean getIsRequired() {
+        return isRequired;
+    }
+
+    public void setIsRequired(boolean required) {
+        isRequired = required;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -85,11 +135,15 @@ public class ReportCriteriaParamEntity {
 
         ReportCriteriaParamEntity that = (ReportCriteriaParamEntity) o;
 
+        if (isMultiple != that.isMultiple) return false;
+        if (isRequired != that.isRequired) return false;
         if (id != null ? !id.equals(that.id) : that.id != null) return false;
         if (name != null ? !name.equals(that.name) : that.name != null) return false;
+        if (caption != null ? !caption.equals(that.caption) : that.caption!= null) return false;
         if (report != null ? !report.equals(that.report) : that.report != null) return false;
         if (type != null ? !type.equals(that.type) : that.type != null) return false;
         if (value != null ? !value.equals(that.value) : that.value != null) return false;
+        if (metaType != null ? !metaType.equals(that.metaType) : that.metaType != null) return false;
 
         return true;
     }
@@ -99,8 +153,12 @@ public class ReportCriteriaParamEntity {
         int result = id != null ? id.hashCode() : 0;
         result = 31 * result + (report != null ? report.hashCode() : 0);
         result = 31 * result + (name != null ? name.hashCode() : 0);
+        result = 31 * result + (caption != null ? caption.hashCode() : 0);
         result = 31 * result + (value != null ? value.hashCode() : 0);
         result = 31 * result + (type != null ? type.hashCode() : 0);
+        result = 31 * result + (metaType != null ? metaType.hashCode() : 0);
+        result = 31 * result + (isMultiple ? 1231 : 1237);
+        result = 31 * result + (isRequired ? 1231 : 1237);
         return result;
     }
 
@@ -110,8 +168,12 @@ public class ReportCriteriaParamEntity {
                 "id='" + id + '\'' +
                 ", report=" + report +
                 ", name='" + name + '\'' +
+                ", caption='" + caption + '\'' +
                 ", value='" + value + '\'' +
                 ", type=" + type +
+                ", metaType=" + (metaType != null ? metaType.getId() : "null") +
+                ", isMultiple=" + isMultiple +
+                ", isRequired=" + isRequired +
                 '}';
     }
 }

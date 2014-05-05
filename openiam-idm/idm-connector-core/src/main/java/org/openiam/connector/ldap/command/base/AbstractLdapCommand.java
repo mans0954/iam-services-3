@@ -60,7 +60,7 @@ public abstract class AbstractLdapCommand<Request extends RequestType, Response 
     }
 
     public Set<ResourceProp> getResourceAttributes (String resId ) {
-        Resource r = resourceDataService.getResource(resId);
+        Resource r = resourceDataService.getResource(resId, null);
         if (r != null) {
             return r.getResourceProps();
         }
@@ -81,12 +81,12 @@ public abstract class AbstractLdapCommand<Request extends RequestType, Response 
     public boolean isMembershipEnabled(Set<ResourceProp> rpSet, String property) {
         ResourceProp rpSupervisorMembership = getResourceAttr(rpSet, property);
         // BY DEFAULT - we want to enable membership
-        if (rpSupervisorMembership == null || rpSupervisorMembership.getPropValue() == null
-                || "Y".equalsIgnoreCase(rpSupervisorMembership.getPropValue())) {
+        if (rpSupervisorMembership == null || rpSupervisorMembership.getValue() == null
+                || "Y".equalsIgnoreCase(rpSupervisorMembership.getValue())) {
             return true;
 
-        } else if (rpSupervisorMembership.getPropValue() != null) {
-            if ("N".equalsIgnoreCase(rpSupervisorMembership.getPropValue())) {
+        } else if (rpSupervisorMembership.getValue() != null) {
+            if ("N".equalsIgnoreCase(rpSupervisorMembership.getValue())) {
                 return false;
             }
         }

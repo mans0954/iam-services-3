@@ -16,7 +16,6 @@ import java.util.Set;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "Login", propOrder = {
-		"domainId",
         "login",
         "lowerCaseLogin",
         "managedSysId",
@@ -63,7 +62,6 @@ public class Login implements java.io.Serializable {
     protected AttributeOperationEnum operation = AttributeOperationEnum.NO_CHANGE;
     
     private String loginId;
-    private String domainId;
     private String login;
     private String lowerCaseLogin;
     private String managedSysId;
@@ -393,14 +391,6 @@ public class Login implements java.io.Serializable {
         this.managedSysName = managedSysName;
     }
 
-	public String getDomainId() {
-		return domainId;
-	}
-
-	public void setDomainId(String domainId) {
-		this.domainId = domainId;
-	}
-
 	public String getLogin() {
 		return login;
 	}
@@ -457,6 +447,7 @@ public class Login implements java.io.Serializable {
     }
 
     @Override
+
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
@@ -487,10 +478,12 @@ public class Login implements java.io.Serializable {
         sb.append("Login");
         sb.append("{login='").append(login).append('\'');
         sb.append(", managedSysId='").append(managedSysId).append('\'');
-        sb.append(", lowerCaseLogin='").append(lowerCaseLogin).append('\'');
         sb.append(", userId='").append(userId).append('\'');
+        sb.append(", pwdChanged=").append(pwdChanged);
+        sb.append(", pwdExp=").append(pwdExp);
         sb.append(", status=").append(status);
         sb.append(", initialStatus=").append(initialStatus);
+        sb.append(", lastUpdate=").append(lastUpdate);
         sb.append('}');
         return sb.toString();
     }

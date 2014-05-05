@@ -8,6 +8,8 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+import org.openiam.idm.srvc.meta.domain.MetadataTypeGrouping;
 import org.openiam.idm.srvc.meta.dto.MetadataElement;
 
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -18,7 +20,9 @@ import org.openiam.idm.srvc.meta.dto.MetadataElement;
 	"attributeName",
 	"selfEditable",
 	"templateId",
-	"keySet"
+	"keySet",
+	"excludedGroupings",
+	"categoryTypes"
 })
 public class MetadataElementSearchBean extends AbstractSearchBean<MetadataElement, String> implements SearchBean<MetadataElement, String> {
 
@@ -29,9 +33,19 @@ public class MetadataElementSearchBean extends AbstractSearchBean<MetadataElemen
 	private String attributeName;
 	private boolean selfEditable;
 	private String templateId;
+	private Set<MetadataTypeGrouping> excludedGroupings;
+	private Set<String> categoryTypes;
 	
 	public Set<String> getTypeIdSet() {
 		return typeIdSet;
+	}
+	public void addTypeId(final String typeId) {
+		if(StringUtils.isNotBlank(typeId)) {
+			if(this.typeIdSet == null) {
+				this.typeIdSet = new HashSet<>();
+			}
+			this.typeIdSet.add(typeId);
+		}
 	}
 	public void setTypeIdSet(Set<String> typeIdSet) {
 		this.typeIdSet = typeIdSet;
@@ -94,6 +108,37 @@ public class MetadataElementSearchBean extends AbstractSearchBean<MetadataElemen
 		this.keySet = keySet;
 	}
 	
+	public void addExcludedGrouping(final MetadataTypeGrouping grouping) {
+		if(grouping != null) {
+			if(this.excludedGroupings == null) {
+				this.excludedGroupings = new HashSet<>();
+			}
+			this.excludedGroupings.add(grouping);
+		}
+	}
+	
+	public Set<MetadataTypeGrouping> getExcludedGroupings() {
+		return excludedGroupings;
+	}
+	public void setExcludedGroupings(Set<MetadataTypeGrouping> excludedGroupings) {
+		this.excludedGroupings = excludedGroupings;
+	}
+	
+	public void addCategoryType(final String category) {
+		if(StringUtils.isNotBlank(category)) {
+			if(this.categoryTypes == null) {
+				this.categoryTypes = new HashSet<>();
+			}
+			this.categoryTypes.add(category);
+		}
+	}
+	
+	public Set<String> getCategoryTypes() {
+		return categoryTypes;
+	}
+	public void setCategoryTypes(Set<String> categoryTypes) {
+		this.categoryTypes = categoryTypes;
+	}
 	@Override
 	public String getKey() {
 		return (CollectionUtils.isNotEmpty(keySet)) ? keySet.iterator().next() : null;

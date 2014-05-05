@@ -25,5 +25,5 @@ public interface WebResourceAttributeService {
 
     public int removeResourceAttributeMaps(String resourceId) throws Exception;
 
-    public List<Attribute> getSSOAttributes(String resourceId, String principalName, String securityDomain, String managedSysId);
+    public List<Attribute> getSSOAttributes(String resourceId, String principalName, String managedSysId);
 }

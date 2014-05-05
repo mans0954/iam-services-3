@@ -76,7 +76,7 @@ public class AuthorizationManagerHessianServlet extends HessianServlet implement
 	}
 
 	@Override
-	public boolean isUserWithLoginEntitledToResourceWithId(final String domain, final String login, final String managedSysId, final String resourceId) {
+	public boolean isUserWithLoginEntitledToResourceWithId(final String login, final String managedSysId, final String resourceId) {
 		StopWatch sw = null;
 		if(log.isDebugEnabled()) {
 			sw = new StopWatch();
@@ -84,19 +84,18 @@ public class AuthorizationManagerHessianServlet extends HessianServlet implement
 		}
 		final AuthorizationResource resource = new AuthorizationResource();
 		resource.setId(resourceId);
-		final boolean retval = authManagerService.isEntitled(new AuthorizationManagerLoginId(domain, login, managedSysId), resource);
+		final boolean retval = authManagerService.isEntitled(new AuthorizationManagerLoginId(login, managedSysId), resource);
 		if(log.isDebugEnabled()) {
 			sw.stop();
-			log.debug(String.format("isUserEntitledToResourceWithId: domain: %s, login: %s, managedSysId: %s, resourceId: %s, ThreadId: %s. Took %s ms", 
-					domain, login, managedSysId, resourceId, Thread.currentThread().getId(), sw.getTime()));
+			log.debug(String.format("isUserEntitledToResourceWithId: login: %s, managedSysId: %s, resourceId: %s, ThreadId: %s. Took %s ms",
+					login, managedSysId, resourceId, Thread.currentThread().getId(), sw.getTime()));
 		}
 		
 		return retval;
 	}
 
 	@Override
-	public boolean isUserWithLoginEntitledToResourceWithName(final String domain,
-			final String login, final String managedSysId, final String resourceName) {
+	public boolean isUserWithLoginEntitledToResourceWithName(final String login, final String managedSysId, final String resourceName) {
 		StopWatch sw = null;
 		if(log.isDebugEnabled()) {
 			sw = new StopWatch();
@@ -104,11 +103,11 @@ public class AuthorizationManagerHessianServlet extends HessianServlet implement
 		}
 		final AuthorizationResource resource = new AuthorizationResource();
 		resource.setName(resourceName);
-		final boolean retval = authManagerService.isEntitled(new AuthorizationManagerLoginId(domain, login, managedSysId), resource);
+		final boolean retval = authManagerService.isEntitled(new AuthorizationManagerLoginId(login, managedSysId), resource);
 		if(log.isDebugEnabled()) {
 			sw.stop();
-			log.debug(String.format("isUserEntitledToResourceWithName: domain: %s, login: %s, managedSysId: %s, resourceName: %s, ThreadId: %s. Took %s ms", 
-					domain, login, managedSysId, resourceName, Thread.currentThread().getId(), sw.getTime()));
+			log.debug(String.format("isUserEntitledToResourceWithName: login: %s, managedSysId: %s, resourceName: %s, ThreadId: %s. Took %s ms",
+					login, managedSysId, resourceName, Thread.currentThread().getId(), sw.getTime()));
 		}
 		
 		return retval;
@@ -151,7 +150,7 @@ public class AuthorizationManagerHessianServlet extends HessianServlet implement
 	}
 
 	@Override
-	public boolean isUserWithLoginMemberOfGroupWithId(final String domain, final String login,
+	public boolean isUserWithLoginMemberOfGroupWithId(final String login,
 			final String managedSysId, final String groupId) {
 		StopWatch sw = null;
 		if(log.isDebugEnabled()) {
@@ -160,17 +159,17 @@ public class AuthorizationManagerHessianServlet extends HessianServlet implement
 		}
 		final AuthorizationGroup group = new AuthorizationGroup();
 		group.setId(groupId);
-		final boolean retval = authManagerService.isMemberOf(new AuthorizationManagerLoginId(domain, login, managedSysId), group);
+		final boolean retval = authManagerService.isMemberOf(new AuthorizationManagerLoginId(login, managedSysId), group);
 		if(log.isDebugEnabled()) {
 			sw.stop();
-			log.debug(String.format("isUserMemberOfGroupWithId: domain: %s, login: %s, managedSysId: %s, groupId: %s, ThreadId: %s. Took %s ms", 
-					domain, login, managedSysId, groupId, Thread.currentThread().getId(), sw.getTime()));
+			log.debug(String.format("isUserMemberOfGroupWithId: login: %s, managedSysId: %s, groupId: %s, ThreadId: %s. Took %s ms",
+					login, managedSysId, groupId, Thread.currentThread().getId(), sw.getTime()));
 		}
 		return retval;
 	}
 
 	@Override
-	public boolean isUserWithLoginMemberOfGroupWithName(final String domain, final String login,
+	public boolean isUserWithLoginMemberOfGroupWithName(final String login,
 			final String managedSysId, final String groupName) {
 		StopWatch sw = null;
 		if(log.isDebugEnabled()) {
@@ -179,11 +178,11 @@ public class AuthorizationManagerHessianServlet extends HessianServlet implement
 		}
 		final AuthorizationGroup group = new AuthorizationGroup();
 		group.setName(groupName);
-		final boolean retval = authManagerService.isMemberOf(new AuthorizationManagerLoginId(domain, login, managedSysId), group);
+		final boolean retval = authManagerService.isMemberOf(new AuthorizationManagerLoginId(login, managedSysId), group);
 		if(log.isDebugEnabled()) {
 			sw.stop();
-			log.debug(String.format("isUserMemberOfGroupWithName: domain: %s, login: %s, managedSysId: %s, groupName: %s, ThreadId: %s. Took %s ms", 
-					domain, login, managedSysId, groupName, Thread.currentThread().getId(), sw.getTime()));
+			log.debug(String.format("isUserMemberOfGroupWithName: login: %s, managedSysId: %s, groupName: %s, ThreadId: %s. Took %s ms",
+					login, managedSysId, groupName, Thread.currentThread().getId(), sw.getTime()));
 		}
 		return retval;
 	}
@@ -225,7 +224,7 @@ public class AuthorizationManagerHessianServlet extends HessianServlet implement
 	}
 
 	@Override
-	public boolean isUserWithLoginMemberOfRoleWithId(final String domain, final String login,
+	public boolean isUserWithLoginMemberOfRoleWithId(final String login,
 			final String managedSysId, final String roleId) {
 		StopWatch sw = null;
 		if(log.isDebugEnabled()) {
@@ -234,17 +233,17 @@ public class AuthorizationManagerHessianServlet extends HessianServlet implement
 		}
 		final AuthorizationRole role = new AuthorizationRole();
 		role.setId(roleId);
-		final boolean retval = authManagerService.isMemberOf(new AuthorizationManagerLoginId(domain, login, managedSysId), role);
+		final boolean retval = authManagerService.isMemberOf(new AuthorizationManagerLoginId(login, managedSysId), role);
 		if(log.isDebugEnabled()) {
 			sw.stop();
-			log.debug(String.format("isUserMemberOfRoleWithId: domain: %s, login: %s, managedSysId: %s, roleId: %s, ThreadId: %s. Took %s ms", 
-					domain, login, managedSysId, roleId, Thread.currentThread().getId(), sw.getTime()));
+			log.debug(String.format("isUserMemberOfRoleWithId: login: %s, managedSysId: %s, roleId: %s, ThreadId: %s. Took %s ms",
+					login, managedSysId, roleId, Thread.currentThread().getId(), sw.getTime()));
 		}
 		return retval;
 	}
 
 	@Override
-	public boolean isUserWithLoginMemberOfRoleWithName(final String domain, final String login,
+	public boolean isUserWithLoginMemberOfRoleWithName(final String login,
 			final String managedSysId, final String roleName) {
 		StopWatch sw = null;
 		if(log.isDebugEnabled()) {
@@ -253,11 +252,11 @@ public class AuthorizationManagerHessianServlet extends HessianServlet implement
 		}
 		final AuthorizationRole role = new AuthorizationRole();
 		role.setName(roleName);
-		final boolean retval = authManagerService.isMemberOf(new AuthorizationManagerLoginId(domain, login, managedSysId), role);
+		final boolean retval = authManagerService.isMemberOf(new AuthorizationManagerLoginId(login, managedSysId), role);
 		if(log.isDebugEnabled()) {
 			sw.stop();
-			log.debug(String.format("isUserMemberOfRoleWithName: domain: %s, login: %s, managedSysId: %s, roleName: %s, ThreadId: %s. Took %s ms", 
-					domain, login, managedSysId, roleName, Thread.currentThread().getId(), sw.getTime()));
+			log.debug(String.format("isUserMemberOfRoleWithName: login: %s, managedSysId: %s, roleName: %s, ThreadId: %s. Took %s ms",
+					login, managedSysId, roleName, Thread.currentThread().getId(), sw.getTime()));
 		}
 		return retval;
 	}
@@ -284,14 +283,14 @@ public class AuthorizationManagerHessianServlet extends HessianServlet implement
 	}
 
 	@Override
-	public String[] getResourceIdsForUserWithLogin(final String domain, final String login,
+	public String[] getResourceIdsForUserWithLogin(final String login,
 			final String managedSysId) {
 		StopWatch sw = null;
 		if(log.isDebugEnabled()) {
 			sw = new StopWatch();
 			sw.start();
 		}
-		final Set<AuthorizationResource> resultSet = authManagerService.getResourcesFor(new AuthorizationManagerLoginId(domain, login, managedSysId));
+		final Set<AuthorizationResource> resultSet = authManagerService.getResourcesFor(new AuthorizationManagerLoginId(login, managedSysId));
 		final String[] retval = new String[resultSet.size()];
 		int i = 0;
 		for(final AuthorizationResource resource : resultSet) {
@@ -299,8 +298,8 @@ public class AuthorizationManagerHessianServlet extends HessianServlet implement
 		}
 		if(log.isDebugEnabled()) {
 			sw.stop();
-			log.debug(String.format("getResourceIdsForUser: domain: %s, login: %s, managedSysId: %s, ThreadId: %s. Took %s ms", 
-					domain, login, managedSysId, Thread.currentThread().getId(), sw.getTime()));
+			log.debug(String.format("getResourceIdsForUser: login: %s, managedSysId: %s, ThreadId: %s. Took %s ms",
+					login, managedSysId, Thread.currentThread().getId(), sw.getTime()));
 		}
 		return retval;
 	}
@@ -327,14 +326,14 @@ public class AuthorizationManagerHessianServlet extends HessianServlet implement
 	}
 
 	@Override
-	public String[] getResourceNamesForUserWithLogin(final String domain, final String login,
+	public String[] getResourceNamesForUserWithLogin(final String login,
 			String managedSysId) {
 		StopWatch sw = null;
 		if(log.isDebugEnabled()) {
 			sw = new StopWatch();
 			sw.start();
 		}
-		final Set<AuthorizationResource> resultSet = authManagerService.getResourcesFor(new AuthorizationManagerLoginId(domain, login, managedSysId));
+		final Set<AuthorizationResource> resultSet = authManagerService.getResourcesFor(new AuthorizationManagerLoginId(login, managedSysId));
 		final String[] retval = new String[resultSet.size()];
 		int i = 0;
 		for(final AuthorizationResource resource : resultSet) {
@@ -342,8 +341,8 @@ public class AuthorizationManagerHessianServlet extends HessianServlet implement
 		}
 		if(log.isDebugEnabled()) {
 			sw.stop();
-			log.debug(String.format("getResourceNamesForUser: domain: %s, login: %s, managedSysId: %s, ThreadId: %s. Took %s ms", 
-					domain, login, managedSysId, Thread.currentThread().getId(), sw.getTime()));
+			log.debug(String.format("getResourceNamesForUser: login: %s, managedSysId: %s, ThreadId: %s. Took %s ms",
+					login, managedSysId, Thread.currentThread().getId(), sw.getTime()));
 		}
 		return retval;
 	}
@@ -370,14 +369,14 @@ public class AuthorizationManagerHessianServlet extends HessianServlet implement
 	}
 
 	@Override
-	public String[] getGroupIdsForUserWithLogin(final String domain, final String login,
+	public String[] getGroupIdsForUserWithLogin(final String login,
 			final String managedSysId) {
 		StopWatch sw = null;
 		if(log.isDebugEnabled()) {
 			sw = new StopWatch();
 			sw.start();
 		}
-		final Set<AuthorizationGroup> resultSet = authManagerService.getGroupsFor(new AuthorizationManagerLoginId(domain, login, managedSysId));
+		final Set<AuthorizationGroup> resultSet = authManagerService.getGroupsFor(new AuthorizationManagerLoginId(login, managedSysId));
 		final String[] retval = new String[resultSet.size()];
 		int i = 0;
 		for(final AuthorizationGroup group : resultSet) {
@@ -385,8 +384,8 @@ public class AuthorizationManagerHessianServlet extends HessianServlet implement
 		}
 		if(log.isDebugEnabled()) {
 			sw.stop();
-			log.debug(String.format("getGroupIdsForUser: domain: %s, login: %s, managedSysId: %s, ThreadId: %s. Took %s ms", 
-					domain, login, managedSysId, Thread.currentThread().getId(), sw.getTime()));
+			log.debug(String.format("getGroupIdsForUser: login: %s, managedSysId: %s, ThreadId: %s. Took %s ms",
+					login, managedSysId, Thread.currentThread().getId(), sw.getTime()));
 		}
 		return retval;
 	}
@@ -413,14 +412,14 @@ public class AuthorizationManagerHessianServlet extends HessianServlet implement
 	}
 
 	@Override
-	public String[] getGroupNamesForUserWithLogin(final String domain, final String login,
+	public String[] getGroupNamesForUserWithLogin(final String login,
 			final String managedSysId) {
 		StopWatch sw = null;
 		if(log.isDebugEnabled()) {
 			sw = new StopWatch();
 			sw.start();
 		}
-		final Set<AuthorizationGroup> resultSet = authManagerService.getGroupsFor(new AuthorizationManagerLoginId(domain, login, managedSysId));
+		final Set<AuthorizationGroup> resultSet = authManagerService.getGroupsFor(new AuthorizationManagerLoginId(login, managedSysId));
 		final String[] retval = new String[resultSet.size()];
 		int i = 0;
 		for(final AuthorizationGroup group : resultSet) {
@@ -428,8 +427,8 @@ public class AuthorizationManagerHessianServlet extends HessianServlet implement
 		}
 		if(log.isDebugEnabled()) {
 			sw.stop();
-			log.debug(String.format("getGroupIdsForUser: domain: %s, login: %s, managedSysId: %s, ThreadId: %s. Took %s ms", 
-					domain, login, managedSysId, Thread.currentThread().getId(), sw.getTime()));
+			log.debug(String.format("getGroupIdsForUser: login: %s, managedSysId: %s, ThreadId: %s. Took %s ms",
+					login, managedSysId, Thread.currentThread().getId(), sw.getTime()));
 		}
 		return retval;
 	}
@@ -456,14 +455,14 @@ public class AuthorizationManagerHessianServlet extends HessianServlet implement
 	}
 
 	@Override
-	public String[] getRoleIdsForUserWithLogin(final String domain, final String login,
+	public String[] getRoleIdsForUserWithLogin(final String login,
 			final String managedSysId) {
 		StopWatch sw = null;
 		if(log.isDebugEnabled()) {
 			sw = new StopWatch();
 			sw.start();
 		}
-		final Set<AuthorizationRole> resultSet = authManagerService.getRolesFor(new AuthorizationManagerLoginId(domain, login, managedSysId));
+		final Set<AuthorizationRole> resultSet = authManagerService.getRolesFor(new AuthorizationManagerLoginId(login, managedSysId));
 		final String[] retval = new String[resultSet.size()];
 		int i = 0;
 		for(final AuthorizationRole role : resultSet) {
@@ -471,8 +470,8 @@ public class AuthorizationManagerHessianServlet extends HessianServlet implement
 		}
 		if(log.isDebugEnabled()) {
 			sw.stop();
-			log.debug(String.format("getRoleIdsForUser: domain: %s, login: %s, managedSysId: %s, ThreadId: %s. Took %s ms", 
-					domain, login, managedSysId, Thread.currentThread().getId(), sw.getTime()));
+			log.debug(String.format("getRoleIdsForUser: login: %s, managedSysId: %s, ThreadId: %s. Took %s ms",
+					login, managedSysId, Thread.currentThread().getId(), sw.getTime()));
 		}
 		return retval;
 	}
@@ -499,14 +498,14 @@ public class AuthorizationManagerHessianServlet extends HessianServlet implement
 	}
 
 	@Override
-	public String[] getRoleNamesForUserWithLogin(String domain, String login,
+	public String[] getRoleNamesForUserWithLogin(String login,
 			String managedSysId) {
 		StopWatch sw = null;
 		if(log.isDebugEnabled()) {
 			sw = new StopWatch();
 			sw.start();
 		}
-		final Set<AuthorizationRole> resultSet = authManagerService.getRolesFor(new AuthorizationManagerLoginId(domain, login, managedSysId));
+		final Set<AuthorizationRole> resultSet = authManagerService.getRolesFor(new AuthorizationManagerLoginId(login, managedSysId));
 		final String[] retval = new String[resultSet.size()];
 		int i = 0;
 		for(final AuthorizationRole role : resultSet) {
@@ -514,8 +513,8 @@ public class AuthorizationManagerHessianServlet extends HessianServlet implement
 		}
 		if(log.isDebugEnabled()) {
 			sw.stop();
-			log.debug(String.format("getRoleNamesForUser: domain: %s, login: %s, managedSysId: %s, ThreadId: %s. Took %s ms", 
-					domain, login, managedSysId, Thread.currentThread().getId(), sw.getTime()));
+			log.debug(String.format("getRoleNamesForUser: login: %s, managedSysId: %s, ThreadId: %s. Took %s ms",
+					login, managedSysId, Thread.currentThread().getId(), sw.getTime()));
 		}
 		return retval;
 	}

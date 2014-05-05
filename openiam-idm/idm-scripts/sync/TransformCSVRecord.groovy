@@ -20,7 +20,6 @@ import java.text.ParseException
 
 public class TransformCSVRecord extends AbstractTransformScript {
 
-    static String DOMAIN = "USR_SEC_DOMAIN"
 
     @Override
     void init() {}
@@ -31,7 +30,6 @@ public class TransformCSVRecord extends AbstractTransformScript {
         populateObject(rowObj, pUser)
 
         pUser.status = UserStatusEnum.ACTIVE
-        pUser.securityDomain = "0"
 
         return TransformScript.NO_DELETE
     }

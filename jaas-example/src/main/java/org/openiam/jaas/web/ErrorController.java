@@ -20,9 +20,7 @@ public class ErrorController extends BaseController {
         HttpSession session = request.getSession(true);
         String errorMessage = (String)session.getAttribute(Constants.ERROR_MESSAGE);
         if(errorMessage!=null && !errorMessage.isEmpty()){
-            if("RESULT_INVALID_DOMAIN".equals(errorMessage)){
-                errorMessage="Invalid security domain";
-            }  else if("RESULT_INVALID_LOGIN".equals(errorMessage)){
+            if("RESULT_INVALID_LOGIN".equals(errorMessage)){
                 errorMessage="Invalid principal name";
             }  else if("RESULT_INVALID_PASSWORD".equals(errorMessage)){
                 errorMessage="Password is invalid";

@@ -1,50 +1,31 @@
 package org.openiam.idm.srvc.res.domain;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
+import javax.persistence.*;
+
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Type;
+import org.openiam.base.domain.AbstractAttributeEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.idm.srvc.user.domain.UserEntity;
+import org.openiam.internationalization.Internationalized;
 
 @Entity
 @Table(name="RESOURCE_PROP")
+@AttributeOverride(name = "id", column = @Column(name = "RESOURCE_PROP_ID"))
 @DozerDTOCorrespondence(ResourceProp.class)
-public class ResourcePropEntity {
-    @Id
-    @GeneratedValue(generator="system-uuid")
-    @GenericGenerator(name="system-uuid", strategy = "uuid")
-    @Column(name="RESOURCE_PROP_ID", length=32)
-    private String resourcePropId;
-    
+@Internationalized
+public class ResourcePropEntity extends AbstractAttributeEntity {
+   
     @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name = "RESOURCE_ID", referencedColumnName = "RESOURCE_ID", insertable = true, updatable = false)
     private ResourceEntity resource;
-
-    @Column(name="METADATA_ID",length=20)
-    private String metadataId;
-
-    @Column(name="PROP_VALUE",length=200)
-    private String propValue;
-
-    @Column(name="NAME",length=40)
-    private String name;
+    @Column(name = "IS_MULTIVALUED", nullable = false)
+    @Type(type = "yes_no")
+    private boolean isMultivalued = false;
 
     public ResourcePropEntity() {
-    }
-
-    public String getResourcePropId() {
-        return resourcePropId;
-    }
-
-    public void setResourcePropId(String resourcePropId) {
-        this.resourcePropId = resourcePropId;
     }
 
     public ResourceEntity getResource() {
@@ -54,44 +35,22 @@ public class ResourcePropEntity {
 	public void setResource(ResourceEntity resource) {
 		this.resource = resource;
 	}
+	
+	public Boolean getIsMultivalued() {
+		return isMultivalued;
+	}
 
-	public String getMetadataId() {
-        return metadataId;
-    }
-
-    public void setMetadataId(String metadataId) {
-        this.metadataId = metadataId;
-    }
-
-    public String getPropValue() {
-        return propValue;
-    }
-
-    public void setPropValue(String propValue) {
-        this.propValue = propValue;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
+	public void setIsMultivalued(Boolean isMultivalued) {
+		this.isMultivalued = isMultivalued;
+	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
-		int result = 1;
-		result = prime * result
-				+ ((metadataId == null) ? 0 : metadataId.hashCode());
-		result = prime * result + ((name == null) ? 0 : name.hashCode());
-		result = prime * result
-				+ ((propValue == null) ? 0 : propValue.hashCode());
+		int result = super.hashCode();
+		result = prime * result + (isMultivalued ? 1231 : 1237);
 		result = prime * result
 				+ ((resource == null) ? 0 : resource.hashCode());
-		result = prime * result
-				+ ((resourcePropId == null) ? 0 : resourcePropId.hashCode());
 		return result;
 	}
 
@@ -99,45 +58,27 @@ public class ResourcePropEntity {
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
-		if (obj == null)
+		if (!super.equals(obj))
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
 		ResourcePropEntity other = (ResourcePropEntity) obj;
-		if (metadataId == null) {
-			if (other.metadataId != null)
-				return false;
-		} else if (!metadataId.equals(other.metadataId))
-			return false;
-		if (name == null) {
-			if (other.name != null)
-				return false;
-		} else if (!name.equals(other.name))
-			return false;
-		if (propValue == null) {
-			if (other.propValue != null)
-				return false;
-		} else if (!propValue.equals(other.propValue))
+		if (isMultivalued != other.isMultivalued)
 			return false;
 		if (resource == null) {
 			if (other.resource != null)
 				return false;
 		} else if (!resource.equals(other.resource))
 			return false;
-		if (resourcePropId == null) {
-			if (other.resourcePropId != null)
-				return false;
-		} else if (!resourcePropId.equals(other.resourcePropId))
-			return false;
 		return true;
 	}
 
 	@Override
 	public String toString() {
-		return "ResourcePropEntity [resourcePropId=" + resourcePropId
-				+ ", resource=" + resource + ", metadataId=" + metadataId
-				+ ", propValue=" + propValue + ", name=" + name + "]";
+		return String
+				.format("ResourcePropEntity [resource=%s, isMultivalued=%s, toString()=%s]",
+						resource, isMultivalued, super.toString());
 	}
 
-    
+	
 }

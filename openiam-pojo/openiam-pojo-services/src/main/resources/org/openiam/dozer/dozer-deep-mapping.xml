@@ -11,6 +11,14 @@
 			<a>attributes</a>
 			<b>attributes</b>
 		</field>
+		<field custom-converter="org.openiam.dozer.PersistentObjectConverter" custom-converter-param="shallowDozerMapper">
+			<a>adminResource</a>
+			<b>adminResource</b>
+		</field>
+		<field-exclude>
+			<a>approverAssociations</a>
+			<b>approverAssociations</b>
+		</field-exclude>
 	</mapping>
           
 	<mapping>
@@ -71,6 +79,10 @@
 	<mapping>
 		<class-a>org.openiam.idm.srvc.grp.domain.GroupEntity</class-a>
 		<class-b>org.openiam.idm.srvc.grp.domain.GroupEntity</class-b>
+		<field custom-converter="org.openiam.dozer.PersistentObjectConverter" custom-converter-param="shallowDozerMapper">
+			<a>adminResource</a>
+			<b>adminResource</b>
+		</field>
 		<field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="shallowDozerMapper">
 			<a>attributes</a>
 			<b>attributes</b>
@@ -95,6 +107,10 @@
 			<a>managedSystem</a>
 			<b>managedSystem</b>
 		</field>
+		<field-exclude>
+			<a>approverAssociations</a>
+			<b>approverAssociations</b>
+		</field-exclude>
 	</mapping>
 	
 	<mapping>
@@ -132,6 +148,14 @@
 			<a>managedSystem</a>
 			<b>managedSystem</b>
 		</field>
+		<field custom-converter="org.openiam.dozer.PersistentObjectConverter" custom-converter-param="shallowDozerMapper">
+			<a>adminResource</a>
+			<b>adminResource</b>
+		</field>
+		<field-exclude>
+			<a>approverAssociations</a>
+			<b>approverAssociations</b>
+		</field-exclude>
 	</mapping>
 	<mapping>
 		<class-a>org.openiam.idm.srvc.res.dto.Resource</class-a>
@@ -159,7 +183,7 @@
 	</mapping>
 	
 
-		<mapping>
+	<mapping>
 		 <class-a>org.openiam.idm.srvc.meta.dto.MetadataType</class-a>
 		<class-b>org.openiam.idm.srvc.meta.dto.MetadataType</class-b>
 		<field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="deepDozerMapper">

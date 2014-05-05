@@ -109,8 +109,7 @@ public class WebResourceAttributeServiceImpl implements WebResourceAttributeServ
     }
 
     @Override
-    public List<Attribute> getSSOAttributes(String resourceId, String principalName, String securityDomain,
-                                            String managedSysId) {
+    public List<Attribute> getSSOAttributes(String resourceId, String principalName, String managedSysId) {
         List<Attribute> resultList = new ArrayList<Attribute>();
         try {
             log.debug("try to get attribute list by resource id:" + resourceId);
@@ -120,10 +119,10 @@ public class WebResourceAttributeServiceImpl implements WebResourceAttributeServ
                 throw new NullPointerException("Empty attribute map collection");
             }
             // get default identity object
-            LoginEntity identityObject = loginManager.getLoginByManagedSys(securityDomain, principalName, "0");
+            LoginEntity identityObject = loginManager.getLoginByManagedSys(principalName, "0");
             if (identityObject == null) {
                 StringBuilder msg = new StringBuilder();
-                msg.append("Default identity object for { securityDomain: ").append(securityDomain).append(", principalName: ")
+                msg.append("Default identity object for { principalName: ")
                         .append(principalName).append(", managedSysId:").append(managedSysId)
                         .append("} has not been found ");
                 throw new NullPointerException(msg.toString());
@@ -133,10 +132,10 @@ public class WebResourceAttributeServiceImpl implements WebResourceAttributeServ
                 throw new NullPointerException("User object has not been found");
 
 
-            LoginEntity login = loginManager.getByUserIdManagedSys(user.getUserId(), managedSysId);
+            LoginEntity login = loginManager.getByUserIdManagedSys(user.getId(), managedSysId);
             if (login == null) {
                 StringBuilder msg = new StringBuilder();
-                msg.append("Login object for { securityDomain: ").append(securityDomain).append(", principalName: ")
+                msg.append("Login object for { principalName: ")
                    .append(principalName).append(", managedSysId:").append(managedSysId)
                    .append("} has not been found. Using the default identity object.");
                 log.warn(msg.toString());

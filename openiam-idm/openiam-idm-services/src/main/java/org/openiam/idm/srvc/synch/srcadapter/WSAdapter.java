@@ -27,7 +27,6 @@ import org.openiam.base.id.UUIDGen;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.idm.srvc.audit.domain.AuditLogBuilder;
 import org.openiam.idm.srvc.synch.dto.Attribute;
 import org.openiam.idm.srvc.synch.dto.LineObject;
 import org.openiam.idm.srvc.synch.dto.SyncResponse;
@@ -65,7 +64,7 @@ public class WSAdapter extends AbstractSrcAdapter { // implements SourceAdapter
 
 	private Connection con = null;
 
-	public SyncResponse startSynch(SynchConfig config, AuditLogBuilder auditLogBuilder) {
+	public SyncResponse startSynch(SynchConfig config) {
 
 		// rule used to match object from source system to data in IDM
 		MatchObjectRule matchRule = null;
@@ -168,12 +167,12 @@ public class WSAdapter extends AbstractSrcAdapter { // implements SourceAdapter
                             // initialize the transform script
                             if (usr != null) {
                                 transformScript.setNewUser(false);
-                                User u = userManager.getUserDto(usr.getUserId());
+                                User u = userManager.getUserDto(usr.getId());
                                 pUser = new ProvisionUser(u);
                                 setCurrentSuperiors(pUser);
                                 transformScript.setUser(u);
-                                transformScript.setPrincipalList(loginDozerConverter.convertToDTOList(loginManager.getLoginByUser(usr.getUserId()), false));
-                                transformScript.setUserRoleList(roleDataService.getUserRolesAsFlatList(usr.getUserId()));
+                                transformScript.setPrincipalList(loginDozerConverter.convertToDTOList(loginManager.getLoginByUser(usr.getId()), false));
+                                transformScript.setUserRoleList(roleDataService.getUserRolesAsFlatList(usr.getId()));
 
                             } else {
                                 transformScript.setNewUser(true);
@@ -190,14 +189,14 @@ public class WSAdapter extends AbstractSrcAdapter { // implements SourceAdapter
 
                         // show the user object
                         log.debug("- User After Transformation =" + pUser);
-                        log.debug("- User = " + pUser.getUserId() + "-" + pUser.getFirstName() + " " + pUser.getLastName());
+                        log.debug("- User = " + pUser.getId() + "-" + pUser.getFirstName() + " " + pUser.getLastName());
                         log.debug("- User Attributes = " + pUser.getUserAttributes());
                         /*
 						pUser.setSessionId(synchStartLog.getSessionId());
 						*/
 						if (retval == TransformScript.DELETE && usr != null) {
-							log.debug("deleting record - " + usr.getUserId());
-							ProvisionUserResponse userResp = provService.deleteByUserId(usr.getUserId(), UserStatusEnum.DELETED, systemAccount);
+							log.debug("deleting record - " + usr.getId());
+							ProvisionUserResponse userResp = provService.deleteByUserId(usr.getId(), UserStatusEnum.DELETED, systemAccount);
 
 						} else {
 							// call synch
@@ -207,15 +206,15 @@ public class WSAdapter extends AbstractSrcAdapter { // implements SourceAdapter
                                 log.debug("-Provisioning user=" + pUser.getLastName());
 
 								if (usr != null) {
-									log.debug("-updating existing user...systemId=" + pUser.getUserId());
-									pUser.setUserId(usr.getUserId());
+									log.debug("-updating existing user...systemId=" + pUser.getId());
+									pUser.setId(usr.getId());
 
                                     modifyUser(pUser);
 									
 								} else {
 									log.debug("-adding new user...");
 
-									pUser.setUserId(null);
+									pUser.setId(null);
                                     addUser(pUser);
 								}
 							}

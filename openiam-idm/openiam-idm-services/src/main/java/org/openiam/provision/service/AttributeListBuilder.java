@@ -28,6 +28,7 @@ import org.openiam.exception.ScriptEngineException;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
 import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
+import org.openiam.idm.srvc.mngsys.dto.PolicyMapObjectTypeOptions;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleUser;
@@ -56,8 +57,7 @@ public class AttributeListBuilder {
 
     public ExtensibleUser buildFromRules(ProvisionUser pUser,
             List<AttributeMap> attrMap, ScriptIntegration se,
-            String managedSysId, String domainId,
-            Map<String, Object> bindingMap, String createdBy) {
+            String managedSysId, Map<String, Object> bindingMap, String createdBy) {
 
         final ExtensibleUser extUser = new ExtensibleUser();
 
@@ -70,7 +70,6 @@ public class AttributeListBuilder {
             final Login identity = new Login();
 
             // init values
-            identity.setDomainId(domainId);
             identity.setManagedSysId(managedSysId);
 
             for (final AttributeMap attr : attrMap) {
@@ -94,7 +93,7 @@ public class AttributeListBuilder {
 
                     final String objectType = attr.getMapForObjectType();
                     if (objectType != null) {
-                        if (StringUtils.equalsIgnoreCase("PRINCIPAL",
+                        if (StringUtils.equalsIgnoreCase(PolicyMapObjectTypeOptions.PRINCIPAL.name(),
                                 objectType)) {
                             if (log.isDebugEnabled()) {
                                 log.debug(String
@@ -199,15 +198,14 @@ public class AttributeListBuilder {
 
 
     public Login buildIdentity(List<AttributeMap> attrMap,
-            ScriptIntegration se, String managedSysId, String domainId,
-            Map<String, Object> bindingMap, String createdBy) {
+            ScriptIntegration se, String managedSysId, Map<String, Object> bindingMap, String createdBy) {
 
         Login newIdentity = new Login();
 
         for (AttributeMap attr : attrMap) {
             String objectType = attr.getMapForObjectType();
             if (objectType != null) {
-                if (objectType.equalsIgnoreCase("PRINCIPAL")) {
+                if (PolicyMapObjectTypeOptions.PRINCIPAL.name().equalsIgnoreCase(objectType)) {
                     try {
                         String output = (String)ProvisionServiceUtil
                                 .getOutputFromAttrMap(attr, bindingMap, se);
@@ -231,7 +229,6 @@ public class AttributeListBuilder {
         if (newIdentity.getLogin() == null) {
             return null;
         }
-        newIdentity.setDomainId(domainId);
         newIdentity.setManagedSysId(managedSysId);
         newIdentity.setAuthFailCount(0);
         newIdentity.setCreateDate(new Date(System.currentTimeMillis()));
@@ -245,8 +242,7 @@ public class AttributeListBuilder {
 
     public ExtensibleUser buildModifyFromRules(ProvisionUser pUser,
             Login currentIdentity, List<AttributeMap> attrMap,
-            ScriptIntegration se, String managedSysId, String domainId,
-            Map<String, Object> bindingMap, String createdBy) {
+            ScriptIntegration se, String managedSysId, Map<String, Object> bindingMap, String createdBy) {
 
         ExtensibleUser extUser = new ExtensibleUser();
 
@@ -328,7 +324,7 @@ public class AttributeListBuilder {
                                             + attr.getAttributeName());
                                 }
 
-                            } else if (objectType.equalsIgnoreCase("PRINCIPAL")) {
+                            } else if (PolicyMapObjectTypeOptions.PRINCIPAL.name().equalsIgnoreCase(objectType)) {
 
                                 extUser.setPrincipalFieldName(attr
                                         .getAttributeName());

@@ -56,7 +56,7 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractTestNGSpr
 	
 	private static final int MAX_ITERS = 10;
 	/*
-	private String GET_RESOURCE_DOMAINS_WITH_PATTERNS = "SELECT r.RESOURCE_ID AS RESOURCE_ID, prop.PROP_VALUE AS PATTERN, r.MIN_AUTH_LEVEL AS MIN_AUTH_LEVEL, r.DOMAIN AS DOMAIN, r.IS_PUBLIC AS IS_PUBLIC, r.IS_SSL AS IS_SSL" +
+	private String GET_RESOURCE_DOMAINS_WITH_PATTERNS = "SELECT r.RESOURCE_ID AS RESOURCE_ID, prop.VALUE AS PATTERN, r.MIN_AUTH_LEVEL AS MIN_AUTH_LEVEL, r.DOMAIN AS DOMAIN, r.IS_PUBLIC AS IS_PUBLIC, r.IS_SSL AS IS_SSL" +
 			"	FROM " +
 			"		%s.RES r " +
 			"		JOIN %s.RESOURCE_PROP prop " +
@@ -260,7 +260,7 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractTestNGSpr
 		final List<AuthorizationManagerLoginId> loginIdList = new LinkedList<AuthorizationManagerLoginId>();
 		if(user != null && CollectionUtils.isNotEmpty(user.getPrincipalList())) {
 			for(final Login login : user.getPrincipalList()) {
-				final AuthorizationManagerLoginId authManagerLoginId = new AuthorizationManagerLoginId(login.getDomainId(), login.getLogin(), login.getManagedSysId());
+				final AuthorizationManagerLoginId authManagerLoginId = new AuthorizationManagerLoginId( login.getLogin(), login.getManagedSysId());
 				loginIdList.add(authManagerLoginId);
 			}
 		}
@@ -349,11 +349,11 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractTestNGSpr
 		
 		final List<AuthorizationManagerLoginId> loginIdList = getLoginIdList(user);
 		
-		checkUser2RoleMembership(user.getUserId(), null, role.getRoleId(), null);
-		checkUser2RoleMembership(user.getUserId(), null, null, role.getRoleName());
+		checkUser2RoleMembership(user.getId(), null, role.getId(), null);
+		checkUser2RoleMembership(user.getId(), null, null, role.getName());
 		for(final AuthorizationManagerLoginId loginId : loginIdList) {
-			checkUser2RoleMembership(null, loginId, role.getRoleId(), null);
-			checkUser2RoleMembership(null, loginId, null, role.getRoleName());
+			checkUser2RoleMembership(null, loginId, role.getId(), null);
+			checkUser2RoleMembership(null, loginId, null, role.getName());
 		}
 	}
 	
@@ -363,25 +363,25 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractTestNGSpr
 		
 		final List<AuthorizationManagerLoginId> loginIdList = getLoginIdList(user);
 		
-		checkUser2GroupMembership(user.getUserId(), null, group.getGrpId(), null);
-		checkUser2GroupMembership(user.getUserId(), null, null, group.getGrpName());
+		checkUser2GroupMembership(user.getId(), null, group.getId(), null);
+		checkUser2GroupMembership(user.getId(), null, null, group.getName());
 		
 		for(final AuthorizationManagerLoginId loginId : loginIdList) {
-			checkUser2GroupMembership(null, loginId, group.getGrpId(), null);
-			checkUser2GroupMembership(null, loginId, null, group.getGrpName());
+			checkUser2GroupMembership(null, loginId, group.getId(), null);
+			checkUser2GroupMembership(null, loginId, null, group.getName());
 		}
 	}
 	
 	private void checkResourceMembership(final String userId, final String resourceId) {
-		final Resource resource = resourceServiceClient.getResource(resourceId);
+		final Resource resource = resourceServiceClient.getResource(resourceId, null);
 		final User user = userDataWebService.getUserWithDependent(userId,null, true);
 		
-		checkUser2ResourceEntitlement(user.getUserId(), null, resource.getResourceId(), null);
-		checkUser2ResourceEntitlement(user.getUserId(), null, null, resource.getName());
+		checkUser2ResourceEntitlement(user.getId(), null, resource.getId(), null);
+		checkUser2ResourceEntitlement(user.getId(), null, null, resource.getName());
 		
 		final List<AuthorizationManagerLoginId> loginIdList = getLoginIdList(user);
 		for(final AuthorizationManagerLoginId loginId : loginIdList) {
-			checkUser2ResourceEntitlement(null, loginId, resource.getResourceId(), null);
+			checkUser2ResourceEntitlement(null, loginId, resource.getId(), null);
 			checkUser2ResourceEntitlement(null, loginId, null, resource.getName());
 		}
 	}

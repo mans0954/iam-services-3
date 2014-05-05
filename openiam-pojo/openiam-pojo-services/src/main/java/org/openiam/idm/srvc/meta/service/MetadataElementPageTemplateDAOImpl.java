@@ -22,7 +22,7 @@ public class MetadataElementPageTemplateDAOImpl extends BaseDaoImpl<MetadataElem
 	protected Criteria getExampleCriteria(final MetadataElementPageTemplateEntity entity) {
 		final Criteria criteria = getCriteria();
 		if(StringUtils.isNotBlank(entity.getId())) {
-			criteria.add(Restrictions.eq("id", entity.getId()));
+			criteria.add(Restrictions.eq(getPKfieldName(), entity.getId()));
 		} else {
 
             if (StringUtils.isNotEmpty(entity.getName())) {
@@ -54,8 +54,8 @@ public class MetadataElementPageTemplateDAOImpl extends BaseDaoImpl<MetadataElem
 				criteria.createAlias("uriPatterns", "patterns").add( Restrictions.in("patterns.id", patternIdSet));
 			}
 			
-			if(entity.getResource() != null && StringUtils.isNotEmpty(entity.getResource().getResourceId())) {
-            	criteria.add(Restrictions.eq("resource.resourceId", entity.getResource().getResourceId()));
+			if(entity.getResource() != null && StringUtils.isNotEmpty(entity.getResource().getId())) {
+            	criteria.add(Restrictions.eq("resource.id", entity.getResource().getId()));
             }
 		}
 		return criteria;
@@ -70,7 +70,7 @@ public class MetadataElementPageTemplateDAOImpl extends BaseDaoImpl<MetadataElem
 	public List<MetadataElementPageTemplateEntity> getByResourceId(final String resourceId) {
 		final MetadataElementPageTemplateEntity entity = new MetadataElementPageTemplateEntity();
 		final ResourceEntity resource = new ResourceEntity();
-		resource.setResourceId(resourceId);
+		resource.setId(resourceId);
 		entity.setResource(resource);
 		return getByExample(entity);
 	}

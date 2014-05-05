@@ -134,7 +134,8 @@ public class LinuxUser {
         StringBuilder cmd = new StringBuilder();
         cmd.append("grep \"^");
         cmd.append(login);
-        cmd.append(":\" /etc/passwd");
+        cmd.append(""
+                + "\" /etc/passwd");
 
         return cmd.toString();
     }

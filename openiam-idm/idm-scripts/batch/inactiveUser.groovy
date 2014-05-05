@@ -76,8 +76,7 @@ if (loginList != null ) {
 		
 		println("Processing User id=" + lg.userId + " " + lg.id)
 		
-		if (	"USR_SEC_DOMAIN".equalsIgnoreCase(lg.id.domainId) && 
-					!isIdmAccountActive( lg, loginManager, INACTIVE_DAYS ) ) {
+		if (!isIdmAccountActive( lg, loginManager, INACTIVE_DAYS ) ) {
 						
 		
 			user = userManager.getUserWithDependent(lg.userId, true).user		
@@ -95,8 +94,7 @@ if (loginList != null ) {
 				 pUser.lastUpdatedBy = "3000"
 	
 				 pUser.requestorLogin ="IDM_SERVER";
-	       pUser.requestorDomain = "IDM";
-	      
+
 				 provision.modifyUser(pUser)
 				 
 		    

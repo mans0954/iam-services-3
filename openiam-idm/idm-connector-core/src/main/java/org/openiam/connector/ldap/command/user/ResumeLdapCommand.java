@@ -44,7 +44,7 @@ public class ResumeLdapCommand extends AbstractLdapCommand<SuspendResumeRequest,
         LdapContext ldapctx = this.connect(config.getManagedSys());
 
         try {
-            ManagedSystemObjectMatch matchObj = getMatchObject(resumeRequestType.getTargetID(), "USER");
+            ManagedSystemObjectMatch matchObj = getMatchObject(resumeRequestType.getTargetID(), ManagedSystemObjectMatch.USER);
 
             String identity = resumeRequestType.getObjectIdentity();
             //Check identity on CN format or not

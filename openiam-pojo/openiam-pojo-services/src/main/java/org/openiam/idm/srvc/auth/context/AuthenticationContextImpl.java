@@ -1,21 +1,20 @@
 package org.openiam.idm.srvc.auth.context;
 
-import java.io.Serializable;
-import java.util.Map;
-import java.util.HashMap;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.openiam.base.ws.ObjectMapAdapter;
+import org.openiam.idm.srvc.auth.dto.Login;
+import org.openiam.idm.srvc.auth.service.AuthenticationConstants;
+import org.openiam.idm.srvc.user.dto.User;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.openiam.idm.srvc.auth.dto.Login;
-import org.openiam.idm.srvc.auth.service.AuthenticationConstants;
-import org.openiam.idm.srvc.user.dto.User;
-import org.openiam.base.ws.ObjectMapAdapter;
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 
 
 /**
@@ -29,7 +28,6 @@ import org.openiam.base.ws.ObjectMapAdapter;
     "authenticationType",
     "resourceId",
     "credential",
-    "domainId",
     "principal",
     "password",
     "authParam",
@@ -48,7 +46,6 @@ public class AuthenticationContextImpl implements Serializable, AuthenticationCo
 	private String loginModule;
 	private String resourceId;
 	private Credential credential;
-	private String domainId;
 	private String principal;
 	private String password;	
 	@XmlJavaTypeAdapter(ObjectMapAdapter.class)
@@ -76,6 +73,7 @@ public class AuthenticationContextImpl implements Serializable, AuthenticationCo
 	 * @param key
 	 * @param value
 	 */
+    @Override
 	public void addParam(String key, Object value) {
 		authParam.put(key, value);
 	}
@@ -84,6 +82,7 @@ public class AuthenticationContextImpl implements Serializable, AuthenticationCo
 	 * @param key
 	 * @return
 	 */
+    @Override
 	public Object getParam(String key) {
 		return (authParam.get(key));
 	}
@@ -91,6 +90,7 @@ public class AuthenticationContextImpl implements Serializable, AuthenticationCo
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.auth.context.AuthenticationContext#createCredentialObject(java.lang.String)
 	 */
+    @Override
 	public Credential createCredentialObject(String authnType) {
 		if (authnType.equals(AuthenticationConstants.AUTHN_TYPE_PASSWORD)) {
 			return new PasswordCredential();
@@ -101,6 +101,7 @@ public class AuthenticationContextImpl implements Serializable, AuthenticationCo
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.auth.context.AuthenticationContext#setCredential(java.lang.String, org.openiam.idm.srvc.auth.context.Credential)
 	 */
+    @Override
 	public void setCredential(String authnType, Credential cred) {
 		authenticationType = authnType;
 		credential = cred;
@@ -109,6 +110,7 @@ public class AuthenticationContextImpl implements Serializable, AuthenticationCo
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.auth.context.AuthenticationContext#getCredential()
 	 */
+    @Override
 	public Credential getCredential() {
 		return credential;
 	}
@@ -117,6 +119,7 @@ public class AuthenticationContextImpl implements Serializable, AuthenticationCo
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.auth.context.AuthenticationContext#getResourceId()
 	 */
+    @Override
 	public String getResourceId() {
 		return resourceId;
 	}
@@ -125,6 +128,7 @@ public class AuthenticationContextImpl implements Serializable, AuthenticationCo
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.auth.context.AuthenticationContext#setResourceId(java.lang.String)
 	 */
+    @Override
 	public void setResourceId(String resourceId) {
 		this.resourceId = resourceId;
 	}
@@ -133,6 +137,7 @@ public class AuthenticationContextImpl implements Serializable, AuthenticationCo
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.auth.context.AuthenticationContext#getAuthParam()
 	 */
+    @Override
 	public Map<String, Object> getAuthParam() {
 		return authParam;
 	}
@@ -141,6 +146,7 @@ public class AuthenticationContextImpl implements Serializable, AuthenticationCo
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.auth.context.AuthenticationContext#setAuthParam(java.util.Map)
 	 */
+    @Override
 	public void setAuthParam(Map<String, Object> authParam) {
 		this.authParam = authParam;
 	}
@@ -153,14 +159,6 @@ public class AuthenticationContextImpl implements Serializable, AuthenticationCo
 		this.authenticationType = authenticationType;
 	}
 
-	public String getDomainId() {
-		return domainId;
-	}
-
-	public void setDomainId(String domainId) {
-		this.domainId = domainId;
-	}
-
 	public String getPrincipal() {
 		return principal;
 	}
@@ -169,7 +167,7 @@ public class AuthenticationContextImpl implements Serializable, AuthenticationCo
 		this.principal = principal;
 	}
 
-	public String getPassword() {
+    public String getPassword() {
 		return password;
 	}
 
@@ -177,54 +175,54 @@ public class AuthenticationContextImpl implements Serializable, AuthenticationCo
 		this.password = password;
 	}
 
-	public void setCredential(Credential credential) {
+    public void setCredential(Credential credential) {
 		this.credential = credential;
 	}
-
+    @Override
 	public String getLoginModule() {
 		return loginModule;
 	}
-
+    @Override
 	public void setLoginModule(String loginModule) {
 		this.loginModule = loginModule;
 	}
-
+    @Override
 	public User getUser() {
 		return user;
 	}
-
+    @Override
 	public void setUser(User user) {
 		this.user = user;
 	}
-
+    @Override
 	public Login getLogin() {
 		return login;
 	}
-
+    @Override
 	public void setLogin(Login login) {
 		this.login = login;
 	}
-
+    @Override
 	public String getManagedSysId() {
 		return managedSysId;
 	}
-
+    @Override
 	public void setManagedSysId(String managedSysId) {
 		this.managedSysId = managedSysId;
 	}
-
+    @Override
     public String getClientIP() {
         return clientIP;
     }
-
+    @Override
     public void setClientIP(String clientIP) {
         this.clientIP = clientIP;
     }
-
+    @Override
     public String getNodeIP() {
         return nodeIP;
     }
-
+    @Override
     public void setNodeIP(String nodeIP) {
         this.nodeIP = nodeIP;
     }

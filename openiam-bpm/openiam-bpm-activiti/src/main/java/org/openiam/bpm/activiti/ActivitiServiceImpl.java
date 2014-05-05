@@ -4,13 +4,10 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
-import javax.annotation.PostConstruct;
 import javax.jws.WebMethod;
 import javax.jws.WebService;
 
@@ -21,6 +18,7 @@ import org.activiti.engine.RepositoryService;
 import org.activiti.engine.RuntimeService;
 import org.activiti.engine.TaskService;
 import org.activiti.engine.history.HistoricActivityInstance;
+import org.activiti.engine.history.HistoricActivityInstanceQuery;
 import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.history.HistoricTaskInstanceQuery;
 import org.activiti.engine.runtime.ProcessInstance;
@@ -29,8 +27,6 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openiam.authmanager.service.AuthorizationManagerService;
-import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
@@ -39,6 +35,10 @@ import org.openiam.dozer.converter.EmailAddressDozerConverter;
 import org.openiam.dozer.converter.PhoneDozerConverter;
 import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
+import org.openiam.bpm.activiti.groovy.DefaultEditUserApproverAssociationIdentifier;
+import org.openiam.bpm.activiti.groovy.DefaultGenericWorkflowRequestApproverAssociationIdentifier;
+import org.openiam.bpm.activiti.groovy.DefaultNewHireRequestApproverAssociationIdentifier;
+import org.openiam.bpm.activiti.model.ActivitiJSONStringWrapper;
 import org.openiam.bpm.request.ActivitiClaimRequest;
 import org.openiam.bpm.request.ActivitiRequestDecision;
 import org.openiam.bpm.request.GenericWorkflowRequest;
@@ -50,7 +50,7 @@ import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.bpm.util.ActivitiRequestType;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
-import org.openiam.idm.srvc.audit.domain.AuditLogBuilder;
+import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.base.AbstractBaseService;
 import org.openiam.idm.srvc.continfo.domain.AddressEntity;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
@@ -61,20 +61,9 @@ import org.openiam.idm.srvc.continfo.dto.Phone;
 import org.openiam.idm.srvc.meta.dto.SaveTemplateProfileResponse;
 import org.openiam.idm.srvc.meta.exception.PageTemplateException;
 import org.openiam.idm.srvc.meta.service.MetadataElementTemplateService;
-import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
-import org.openiam.idm.srvc.mngsys.domain.AssociationType;
-import org.openiam.idm.srvc.mngsys.service.ApproverAssociationDAO;
-import org.openiam.idm.srvc.prov.request.domain.ProvisionRequestEntity;
-import org.openiam.idm.srvc.prov.request.service.RequestDataService;
-import org.openiam.idm.srvc.res.domain.ResourceEntity;
-import org.openiam.idm.srvc.res.service.ResourceDAO;
-import org.openiam.idm.srvc.user.domain.SupervisorEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.NewUserProfileRequestModel;
-import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserProfileRequestModel;
-import org.openiam.idm.srvc.user.dto.UserStatusEnum;
-import org.openiam.idm.srvc.user.service.SupervisorDAO;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.srvc.user.service.UserProfileService;
 import org.openiam.idm.util.CustomJacksonMapper;
@@ -87,8 +76,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.transaction.annotation.Transactional;
-
-import com.thoughtworks.xstream.XStream;
 
 @WebService(endpointInterface = "org.openiam.bpm.activiti.ActivitiService", 
 targetNamespace = "urn:idm.openiam.org/bpm/request/service", 
@@ -120,29 +107,25 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 	private HistoryService historyService;
 	
 	@Autowired
-	@Qualifier("approverAssociationDAO")
-	private ApproverAssociationDAO approverAssociationDao;
-	
-	@Autowired
-	@Qualifier("provRequestService")
-	private RequestDataService provRequestService;
-	
-	@Autowired
 	private CustomJacksonMapper jacksonMapper;
-
-	@Autowired
-	private SupervisorDAO supervisorDAO;
 	
 	@Autowired
 	private UserProfileService userProfileService;
     @Autowired
     private UserDataService userDataService;
 
-	@Value("${org.openiam.idm.activiti.default.approver.association.resource.name}")
-	private String defaultApproverAssociationResourceId;
+	@Value("${org.openiam.activiti.membership.approver.association.groovy.script}")
+	private String membershipApproverAssociationGroovyScript;
 	
-	@Value("${org.openiam.idm.activiti.default.approver.user}")
-	private String defaultApproverUserId;
+	@Value("${org.openiam.activiti.edit.user.approver.association.groovy.script}")
+	private String editUserApproverAssociationGroovyScript;
+	
+	@Value("${org.openiam.activiti.new.user.approver.association.groovy.script}")
+	private String newUserApproverAssociationGroovyScript;
+	
+    @Autowired
+    @Qualifier("configurableGroovyScriptEngine")
+    protected ScriptIntegration scriptRunner;
 	
     @Autowired
     private MetadataElementTemplateService pageTemplateService;
@@ -164,24 +147,6 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
     
     @Autowired
     private PhoneDozerConverter phoneDozerConverter;
-
-	@Value("${org.openiam.idm.activiti.new.user.approver.association.order}")
-	private String newUserApproverAssociationOrder;
-	
-	private List<AssociationType> newUserAssociationTypes = new LinkedList<AssociationType>();
-	
-	@PostConstruct
-	public void init() {
-		final String[] newUserApproverTypes = StringUtils.split(newUserApproverAssociationOrder, ",");
-		if(newUserApproverTypes != null) {
-			for(final String s : newUserApproverTypes) {
-				final AssociationType type = AssociationType.getByValue(StringUtils.trimToNull(s));
-				if(type != null) {
-					newUserAssociationTypes.add(type);
-				}
-			}
-		}
-	}
     
 	@Override
 	@WebMethod
@@ -195,11 +160,12 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 	public SaveTemplateProfileResponse initiateNewHireRequest(final NewUserProfileRequestModel request) {
 		log.info("Initializing workflow");
 		final SaveTemplateProfileResponse response = new SaveTemplateProfileResponse();
-		final AuditLogBuilder builder = auditLogProvider.getAuditLogBuilder();
-		builder.setAction(AuditAction.NEW_USER_WORKFLOW);
-		builder.setBaseObject(request);
+		final IdmAuditLog idmAuditLog = new IdmAuditLog();
+        idmAuditLog.setAction(AuditAction.NEW_USER_WORKFLOW.value());
+        idmAuditLog.setBaseObject(request);
+        idmAuditLog.setRequestorUserId(request.getRequestorUserId());
 		try {
-			builder.addAttributeAsJson(AuditAttributeName.REQUEST, request, jacksonMapper);
+            idmAuditLog.addAttributeAsJson(AuditAttributeName.REQUEST, request, jacksonMapper);
 			
 			if(request == null || request.getActivitiRequestType() == null) {
 				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
@@ -208,143 +174,96 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 			/* throws exception if invalid - caught in try/catch */
 			userProfileService.validate(request);
 			
-			final ProvisionRequestEntity provisionRequest = new ProvisionRequestEntity();
-			final User provisionUser = request.getUser();
-			
 			validateUserRequest(request);
 			
-			final Set<String> requestApproverIds = new HashSet<String>();
-			List<ApproverAssociationEntity> approverAssocationList = new LinkedList<ApproverAssociationEntity>();
-			populateApprovers(request, approverAssocationList, requestApproverIds);
-	        
-			final List<String> approverAssociationIds = new LinkedList<String>();
-			if(CollectionUtils.isEmpty(requestApproverIds)) {
-	        	if(CollectionUtils.isEmpty(approverAssocationList)) {
-	        		builder.addWarning("Can't find approver association for, using default approver association");
-	        		log.warn("Can't find approver association for, using default approver association");
-					approverAssocationList = getDefaultApproverAssociations();
+			final Map<String, Object> bindingMap = new HashMap<String, Object>();
+			bindingMap.put("REQUEST", request);
+			bindingMap.put("BUILDER", idmAuditLog);
+			
+			DefaultNewHireRequestApproverAssociationIdentifier identifier = null;
+			try {
+				identifier = (DefaultNewHireRequestApproverAssociationIdentifier)
+						scriptRunner.instantiateClass(bindingMap, newUserApproverAssociationGroovyScript);
+				if(identifier == null) {
+					throw new Exception("Did not instantiate script - was null");
 				}
-	        	
-	        	if (CollectionUtils.isNotEmpty(approverAssocationList)) {
-	        		for (final ApproverAssociationEntity approverAssociation : approverAssocationList) {
-	        			approverAssociationIds.add(approverAssociation.getId());
-	        			if (approverAssociation != null) {
-	        				final AssociationType approverType = approverAssociation.getApproverEntityType();
-	        				final String approverId = approverAssociation.getApproverEntityId();
-	        				
-	        				if(approverType != null) {
-	        					switch(approverType) {
-	        						case SUPERVISOR:
-	        							if(CollectionUtils.isNotEmpty(request.getSupervisorIds())) {
-	        								requestApproverIds.addAll(request.getSupervisorIds());
-	        							}
-	                    				break;
-	        						case ROLE:
-	        							if(StringUtils.isNotBlank(approverId)) {
-	        								final List<String> authUsers = userDataService.getUserIdsInRole(approverId, null);
-	        								if(CollectionUtils.isNotEmpty(authUsers)) {
-	        									requestApproverIds.addAll(authUsers);
-	        								}
-	        							}
-	        							break;
-	        						case GROUP:
-	        							if(StringUtils.isNotBlank(approverId)) {
-	        								final List<String> authUsers = userDataService.getUserIdsInGroup(approverId, null);
-	        								if(CollectionUtils.isNotEmpty(authUsers)) {
-	        									requestApproverIds.addAll(authUsers);
-	                						}
-	        							}
-	        							break;
-	        						case USER:
-	        							if(StringUtils.isNotBlank(approverId)) {
-	        								requestApproverIds.add(approverId);
-	        							}
-	        							break;
-	        						default:
-	        							break;
-	        					}
-	        				}
-	        			}
-	        		}
-	        	}
+			} catch(Throwable e) {
+				log.error(String.format("Can't instantiate '%s' - using default", newUserApproverAssociationGroovyScript), e);
+				identifier = new DefaultNewHireRequestApproverAssociationIdentifier();
 			}
-        	
-        	if(CollectionUtils.isEmpty(requestApproverIds)) {
-        		log.warn("Could not found any approvers - using default user");
-        		builder.addWarning("Could not found any approvers - using default user");
-        		requestApproverIds.add(defaultApproverUserId);
-        	}
-        	
-        	builder.addAttributeAsJson(AuditAttributeName.APPROVER_ASSOCIATIONS, approverAssocationList, jacksonMapper);
-        	builder.addAttributeAsJson(AuditAttributeName.REQUEST_APPROVER_IDS, requestApproverIds, jacksonMapper);
-	        
-	        if(CollectionUtils.isEmpty(requestApproverIds)) {
-	        	throw new BasicDataServiceException(ResponseCode.NO_REQUEST_APPROVERS);
-	        }
-	        
-			/* set provision user fields before saving request */
-			provisionUser.setUserId(null);
-			provisionUser.setCreateDate(new Date());
-			provisionUser.setCreatedBy(request.getRequestorUserId());
-			provisionUser.setStatus(UserStatusEnum.PENDING_APPROVAL);
+		
+			identifier.init(bindingMap);
+			
+			final List<String> approverAssociationIds = identifier.getApproverAssociationIds();
+			final List<String> approverUserIds = identifier.getApproverIds();
 
+            idmAuditLog.addAttributeAsJson(AuditAttributeName.APPROVER_ASSOCIATIONS, approverAssociationIds, jacksonMapper);
+            idmAuditLog.addAttributeAsJson(AuditAttributeName.REQUEST_APPROVER_IDS, approverUserIds, jacksonMapper);
+	        
+	        //if(CollectionUtils.isEmpty(approverAssociationIds) && CollectionUtils.isEmpty(approverUserIds)) {
+        	//	throw new BasicDataServiceException(ResponseCode.NO_REQUEST_APPROVERS);
+        	//}
+	        
 			/* populate the provision request with required values */
-			final Date currentDate = new Date();
-			final String xml = new XStream().toXML(request);
-			provisionRequest.setRequestXML(xml);
-			provisionRequest.setStatus("PENDING");
-			provisionRequest.setStatusDate(currentDate);
-			provisionRequest.setRequestDate(currentDate);
-			provisionRequest.setRequestReason(String.format("New User Request for %s %s", provisionUser.getFirstName(), provisionUser.getLastName()));
-			provisionRequest.setRequestorId(request.getRequestorUserId());
-			
-			/* save the request */
-			provRequestService.addRequest(provisionRequest);
-			
-			/* set a dsearch filter, in case it is needed by the underlying delegate */
 			
 			final ActivitiRequestType requestType = request.getActivitiRequestType();
-			final String taskName = String.format("%s Request for %s %s", requestType.getDescription(), provisionUser.getFirstName(), provisionUser.getLastName());
+			final String taskName = String.format("%s Request for %s", requestType.getDescription(), request.getUser().getDisplayName());
 			final String taskDescription = taskName;
 			
 			/* pass required variables to Activiti, and start the process */
+			final List<Object> approverCardinatlity = new LinkedList<Object>();
+			if(CollectionUtils.isNotEmpty(approverAssociationIds)) {
+				approverCardinatlity.addAll(approverAssociationIds);
+			} else {
+				approverCardinatlity.add(approverUserIds);
+			}
+			
 			final Map<String, Object> variables = new HashMap<String, Object>();
-			variables.put(ActivitiConstants.APPROVER_ASSOCIATION_IDS, approverAssociationIds);
-			variables.put(ActivitiConstants.PROVISION_REQUEST_ID, provisionRequest.getId());
-			variables.put(ActivitiConstants.CANDIDATE_USERS_IDS, requestApproverIds);
-			variables.put(ActivitiConstants.TASK_NAME, taskName);
-			variables.put(ActivitiConstants.TASK_DESCRIPTION, taskDescription);
-			variables.put(ActivitiConstants.TASK_OWNER, request.getRequestorUserId());
+			variables.put(ActivitiConstants.APPROVER_CARDINALTITY.getName(), approverCardinatlity);
+			variables.put(ActivitiConstants.APPROVER_ASSOCIATION_IDS.getName(), approverAssociationIds);
+			variables.put(ActivitiConstants.REQUEST.getName(), new ActivitiJSONStringWrapper(jacksonMapper.writeValueAsString(request)));
+			variables.put(ActivitiConstants.TASK_NAME.getName(), taskName);
+			variables.put(ActivitiConstants.TASK_DESCRIPTION.getName(), taskDescription);
+			variables.put(ActivitiConstants.REQUESTOR.getName(), request.getRequestorUserId());
+			variables.put(ActivitiConstants.WORKFLOW_NAME.getName(), requestType.getKey());
 			runtimeService.startProcessInstanceByKey(requestType.getKey(), variables);
 
 			response.setStatus(ResponseStatus.SUCCESS);
-			builder.succeed();
+            idmAuditLog.succeed();
 		} catch (PageTemplateException e) {
-			builder.fail().setFailureReason(e.getCode()).setException(e);
+            idmAuditLog.fail();
+            idmAuditLog.setFailureReason(e.getCode());
+            idmAuditLog.setException(e);
 			response.setCurrentValue(e.getCurrentValue());
 			response.setElementName(e.getElementName());
 			response.setErrorCode(e.getCode());
 			response.setStatus(ResponseStatus.FAILURE);
 		} catch(BasicDataServiceException e) {
-			builder.fail().setFailureReason(e.getCode()).setException(e);
+            idmAuditLog.fail();
+            idmAuditLog.setFailureReason(e.getCode());
+            idmAuditLog.setException(e);
             response.setErrorTokenList(e.getErrorTokenList());
 			response.setErrorCode(e.getCode());
 			response.setStatus(ResponseStatus.FAILURE);
 		} catch(ActivitiException e) {
-			builder.fail().setFailureReason(e.getMessage()).setException(e);
+            idmAuditLog.fail();
+            idmAuditLog.setFailureReason(e.getMessage());
+            idmAuditLog.setException(e);
 			log.info("Activiti Exception", e);
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(ResponseCode.USER_STATUS);
 			response.setErrorText(e.getMessage());
 		} catch(Throwable e) {
-			builder.fail().setFailureReason(e.getMessage()).setException(e);
+            idmAuditLog.fail();
+            idmAuditLog.setFailureReason(e.getMessage());
+            idmAuditLog.setException(e);
 			log.error("Error while creating newhire request", e);
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(ResponseCode.USER_STATUS);
 			response.setErrorText(e.getMessage());
 		} finally {
 			log.info("Persisting activiti log..");
-			auditLogService.enqueue(builder);
+			auditLogService.enqueue(idmAuditLog);
 		}
 		return response;
 	}
@@ -353,16 +272,16 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 	@WebMethod
 	@Transactional
 	public Response claimRequest(final ActivitiClaimRequest request) {
-		final AuditLogBuilder builder = auditLogProvider.getAuditLogBuilder();
-		builder.setAction(AuditAction.CLAIM_REQUEST);
-		builder.setBaseObject(request);
-		
+		final IdmAuditLog idmAuditLog = new IdmAuditLog();
+        idmAuditLog.setAction(AuditAction.CLAIM_REQUEST.value());
+        idmAuditLog.setBaseObject(request);
+        idmAuditLog.setRequestorUserId(request.getRequestorUserId());
 		final Response response = new Response();
 
 		try {
-			builder.addAttributeAsJson(AuditAttributeName.REQUEST, request, jacksonMapper);
+            idmAuditLog.addAttributeAsJson(AuditAttributeName.REQUEST, request, jacksonMapper);
 			
-			final List<Task> taskList = taskService.createTaskQuery().taskCandidateUser(request.getCallerUserId()).list();
+			final List<Task> taskList = taskService.createTaskQuery().taskCandidateUser(request.getRequestorUserId()).list();
 			if(CollectionUtils.isEmpty(taskList)) {
 				throw new ActivitiException("No Candidate Task available");
 			}
@@ -384,26 +303,30 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 			}
 			
 			/* claim the process, and set the assignee */
-			taskService.claim(potentialTaskToClaim.getId(), request.getCallerUserId());
-			taskService.setAssignee(potentialTaskToClaim.getId(), request.getCallerUserId());
+			taskService.claim(potentialTaskToClaim.getId(), request.getRequestorUserId());
+			taskService.setAssignee(potentialTaskToClaim.getId(), request.getRequestorUserId());
 			
 
 			response.setStatus(ResponseStatus.SUCCESS);
-			builder.succeed();
+            idmAuditLog.succeed();
 		} catch(ActivitiException e) {
-			builder.fail().setFailureReason(e.getMessage()).setException(e);
+            idmAuditLog.fail();
+            idmAuditLog.setFailureReason(e.getMessage());
+            idmAuditLog.setException(e);
 			log.info("Activiti Exception", e);
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(ResponseCode.USER_STATUS);
 			response.setErrorText(e.getMessage());
 		} catch(Throwable e) {
-			builder.fail().setFailureReason(e.getMessage()).setException(e);
+            idmAuditLog.fail();
+            idmAuditLog.setFailureReason(e.getMessage());
+            idmAuditLog.setException(e);
 			log.error("Error while creating newhire request", e);
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(ResponseCode.USER_STATUS);
 			response.setErrorText(e.getMessage());
 		} finally {
-			auditLogService.enqueue(builder);
+			auditLogService.enqueue(idmAuditLog);
 		}
 
 		return response;
@@ -414,93 +337,103 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 	public SaveTemplateProfileResponse initiateEditUserWorkflow(final UserProfileRequestModel request) {
 		final SaveTemplateProfileResponse response = new SaveTemplateProfileResponse();
 		
-		final AuditLogBuilder builder = auditLogProvider.getAuditLogBuilder();
-		builder.setAction(AuditAction.EDIT_USER_WORKFLOW);
-		builder.setBaseObject(request);
-		
+		final IdmAuditLog idmAuditLog = new IdmAuditLog();
+        idmAuditLog.setAction(AuditAction.EDIT_USER_WORKFLOW.value());
+        idmAuditLog.setBaseObject(request);
+        idmAuditLog.setRequestorUserId(request.getRequestorUserId());
 		try {
-			builder.addAttributeAsJson(AuditAttributeName.REQUEST, request, jacksonMapper);
+            idmAuditLog.addAttributeAsJson(AuditAttributeName.REQUEST, request, jacksonMapper);
 			
 			if(request == null) {
 				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
 			}
 			
-			//userProfileService.validate(request);
 			pageTemplateService.validate(request);
 			validateUserRequest(request);
-			//final UserEntity provisionUserValidationObject = userDozerConverter.convertToEntity(request.getUser(), true);
-			//entityValidator.isValid(provisionUserValidationObject);
 			
 			final String description = String.format("Edit User %s", request.getUser().getDisplayName());
 			
-			final Set<String> requestApproverIds = new HashSet<String>();
-			final List<SupervisorEntity> supervisors = supervisorDAO.findSupervisors(request.getUser().getUserId());
-			if(CollectionUtils.isNotEmpty(supervisors)) {
-				for(final SupervisorEntity supervisor : supervisors) {
-					requestApproverIds.add(supervisor.getSupervisor().getUserId());
-				}
-			}
-			if(CollectionUtils.isEmpty(requestApproverIds)) {
-				log.warn("Could not found any approvers - using default user");
-        		requestApproverIds.add(defaultApproverUserId);
-			}
-			
-			builder.addAttributeAsJson(AuditAttributeName.REQUEST_APPROVER_IDS, requestApproverIds, jacksonMapper);
-			
 			final Date currentDate = new Date();
 			
-			final ProvisionRequestEntity provisionRequest = new ProvisionRequestEntity();
-			final String xml = new XStream().toXML(request);
-			provisionRequest.setRequestXML(xml);
-			provisionRequest.setStatus("PENDING");
-			provisionRequest.setStatusDate(currentDate);
-			provisionRequest.setRequestDate(currentDate);
-			provisionRequest.setRequestReason(description);
-			provisionRequest.setRequestorId(request.getRequestorUserId());
+			final Map<String, Object> bindingMap = new HashMap<String, Object>();
+			bindingMap.put("REQUEST", request);
+			bindingMap.put("BUILDER", idmAuditLog);
 			
-			/* save the request */
-			provRequestService.addRequest(provisionRequest);
+			DefaultEditUserApproverAssociationIdentifier identifier = null;
+			try {
+				identifier = (DefaultEditUserApproverAssociationIdentifier)
+						scriptRunner.instantiateClass(bindingMap, editUserApproverAssociationGroovyScript);
+				if(identifier == null) {
+					throw new Exception("Did not instantiate script - was null");
+				}
+			} catch(Throwable e) {
+				log.error(String.format("Can't instantiate '%s' - using default", editUserApproverAssociationGroovyScript), e);
+				identifier = new DefaultEditUserApproverAssociationIdentifier();
+			}
+		
+			identifier.init(bindingMap);
+			
+			final List<String> approverAssociationIds = identifier.getApproverAssociationIds();
+			final List<String> approverUserIds = identifier.getApproverIds();
+
+            idmAuditLog.addAttributeAsJson(AuditAttributeName.REQUEST_APPROVER_IDS, approverUserIds, jacksonMapper);
+			
+			final List<Object> approverCardinatlity = new LinkedList<Object>();
+			if(CollectionUtils.isNotEmpty(approverAssociationIds)) {
+				approverCardinatlity.addAll(approverAssociationIds);
+			} else {
+				approverCardinatlity.add(approverUserIds);
+			}
 			
 			final Map<String, Object> variables = new HashMap<String, Object>();
-			//variables.put(ActivitiConstants.APPROVER_ASSOCIATION_IDS, approverAssociationIds);
-			variables.put(ActivitiConstants.PROVISION_REQUEST_ID, provisionRequest.getId());
-			variables.put(ActivitiConstants.CANDIDATE_USERS_IDS, requestApproverIds);
-			variables.put(ActivitiConstants.TASK_NAME, description);
-			variables.put(ActivitiConstants.TASK_DESCRIPTION, description);
-			variables.put(ActivitiConstants.TASK_OWNER, request.getRequestorUserId());
-			variables.put(ActivitiConstants.ASSOCIATION_ID, request.getUser().getUserId());
-			final ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(ActivitiRequestType.EDIT_USER.getKey(), variables);
+			variables.put(ActivitiConstants.APPROVER_CARDINALTITY.getName(), approverCardinatlity);
+			variables.put(ActivitiConstants.APPROVER_ASSOCIATION_IDS.getName(), approverAssociationIds);
+			variables.put(ActivitiConstants.REQUEST.getName(), new ActivitiJSONStringWrapper(jacksonMapper.writeValueAsString(request)));
+			variables.put(ActivitiConstants.TASK_NAME.getName(), description);
+			variables.put(ActivitiConstants.TASK_DESCRIPTION.getName(), description);
+			variables.put(ActivitiConstants.REQUESTOR.getName(), request.getRequestorUserId());
+			variables.put(ActivitiConstants.ASSOCIATION_ID.getName(), request.getUser().getId());
+			variables.put(ActivitiConstants.WORKFLOW_NAME.getName(), ActivitiRequestType.EDIT_USER.getKey());
+			runtimeService.startProcessInstanceByKey(ActivitiRequestType.EDIT_USER.getKey(), variables);
 			
 			/* throws exception if invalid - caught in try/catch */
 			//userProfileService.validate(request);
 			
 			response.setStatus(ResponseStatus.SUCCESS);
-			builder.succeed();
+            idmAuditLog.succeed();
 		} catch (PageTemplateException e) {
-			builder.fail().setFailureReason(e.getCode()).setException(e);
+            idmAuditLog.fail();
+            idmAuditLog.setFailureReason(e.getCode());
+            idmAuditLog.setException(e);
 			response.setCurrentValue(e.getCurrentValue());
 			response.setElementName(e.getElementName());
 			response.setErrorCode(e.getCode());
 			response.setStatus(ResponseStatus.FAILURE);
 		} catch(BasicDataServiceException e) {
-			builder.fail().setFailureReason(e.getCode()).setException(e);
+            idmAuditLog.fail();
+            idmAuditLog.setFailureReason(e.getCode());
+            idmAuditLog.setException(e);
 			response.setErrorCode(e.getCode());
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorTokenList(e.getErrorTokenList());
 		} catch(ActivitiException e) {
-			builder.fail().setFailureReason(e.getMessage()).setException(e);
+            idmAuditLog.fail();
+            idmAuditLog.setFailureReason(e.getMessage());
+            idmAuditLog.setException(e);
 			log.info("Activiti Exception", e);
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(ResponseCode.USER_STATUS);
 			response.setErrorText(e.getMessage());
 		} catch(Throwable e) {
-			builder.fail().setFailureReason(e.getMessage()).setException(e);
+            idmAuditLog.fail();
+            idmAuditLog.setFailureReason(e.getMessage());
+            idmAuditLog.setException(e);
 			log.error("Error while creating newhire request", e);
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(ResponseCode.USER_STATUS);
 			response.setErrorText(e.getMessage());
 		} finally {
-			auditLogService.enqueue(builder);
+			auditLogService.enqueue(idmAuditLog);
 		}
 		return response;
 	}
@@ -531,130 +464,105 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 	@Override
 	@Transactional
 	public Response initiateWorkflow(final GenericWorkflowRequest request) {
-		final AuditLogBuilder builder = auditLogProvider.getAuditLogBuilder();
-		builder.setAction(AuditAction.WORKFLOW);
-		builder.setBaseObject(request);
+		final IdmAuditLog idmAuditLog = new IdmAuditLog();
+        idmAuditLog.setRequestorUserId(request.getRequestorUserId());
+        idmAuditLog.setAction(AuditAction.WORKFLOW.value());
+        idmAuditLog.setBaseObject(request);
 		
 		final Response response = new Response();
 		try {
-			builder.addAttributeAsJson(AuditAttributeName.REQUEST, request, jacksonMapper);
+            idmAuditLog.addAttributeAsJson(AuditAttributeName.REQUEST, request, jacksonMapper);
 			
 			if(request == null || request.isEmpty()) {
 				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
 			}
 			
-			final Set<String> approverAssociationIds = new HashSet<String>();
-			final Set<String> approverUserIds = new HashSet<String>();
+			final Map<String, Object> bindingMap = new HashMap<String, Object>();
+			bindingMap.put("REQUEST", request);
+			bindingMap.put("BUILDER", idmAuditLog);
 			
-			if(CollectionUtils.isNotEmpty(request.getCustomApproverIds())) {
-				approverUserIds.addAll(request.getCustomApproverIds());
-			} else {
-				List<ApproverAssociationEntity> approverAssocationList = null;
+			DefaultGenericWorkflowRequestApproverAssociationIdentifier identifier = null;
+			try {
+				identifier = (DefaultGenericWorkflowRequestApproverAssociationIdentifier)
+						scriptRunner.instantiateClass(bindingMap, membershipApproverAssociationGroovyScript);
 				
-				/* for user target objects, use the supervisors - no approver association */
-				if(AssociationType.USER.equals(request.getAssociationType()) && StringUtils.isNotEmpty(request.getUserCentricUserId())) {
-					final List<SupervisorEntity> supervisors = supervisorDAO.findSupervisors(request.getUserCentricUserId());
-					if(CollectionUtils.isNotEmpty(supervisors)) {
-						for(final SupervisorEntity supervisor : supervisors) {
-							if(supervisor != null && supervisor.getSupervisor() != null) {
-								approverUserIds.add(supervisor.getSupervisor().getUserId());
-							}
-						}
-					}
-				} else {
-					if(CollectionUtils.isNotEmpty(request.getCustomApproverAssociationIds())) {
-						approverAssocationList = approverAssociationDao.findByIds(request.getCustomApproverAssociationIds());
-					} else {
-						approverAssocationList = approverAssociationDao.getByAssociation(request.getAssociationId(), request.getAssociationType());
-					}
-					if(CollectionUtils.isEmpty(approverAssocationList)) {
-						final String message = String.format("Can't find approver association for %s %s, using default approver association", request.getAssociationType(), request.getAssociationId());
-						builder.addAttribute(AuditAttributeName.WARNING, message);
-						log.warn(message);
-						approverAssocationList = getDefaultApproverAssociations();
-					}
-					if(CollectionUtils.isNotEmpty(approverAssocationList)) {
-						for(final ApproverAssociationEntity entity : approverAssocationList) {
-							approverAssociationIds.add(entity.getId());
-							if(entity.getApproverEntityType() != null && StringUtils.isNotBlank(entity.getApproverEntityId())) {
-								final String approverId = entity.getApproverEntityId();
-								switch(entity.getApproverEntityType()) {
-									case GROUP:
-										final List<String> groupUsers = userDataService.getUserIdsInGroup(approverId, null);
-										if(CollectionUtils.isNotEmpty(groupUsers)) {
-			    							approverUserIds.addAll(groupUsers);
-			    						}
-										break;
-									case ROLE:
-										final List<String> roleUsers = userDataService.getUserIdsInRole(approverId, null);
-										if(CollectionUtils.isNotEmpty(roleUsers)) {
-											approverUserIds.addAll(roleUsers);
-										}
-										break;
-									case USER:
-										approverUserIds.add(approverId);
-										break;
-									case SUPERVISOR: /* assume association ID is a user */
-										final List<SupervisorEntity> supervisors = supervisorDAO.findSupervisors(request.getAssociationId());
-										if(CollectionUtils.isNotEmpty(supervisors)) {
-											for(final SupervisorEntity supervisor : supervisors) {
-												if(supervisor != null && supervisor.getSupervisor() != null) {
-													approverUserIds.add(supervisor.getSupervisor().getUserId());
-												}
-											}
-										}
-										break;
-									default:
-										break;
-								}
-							}
-						}
-					}
+				if(identifier == null) {
+					throw new Exception("Did not instantiate script - was null");
 				}
-				builder.addAttributeAsJson(AuditAttributeName.APPROVER_ASSOCIATIONS, approverAssocationList, jacksonMapper);
+			} catch(Throwable e) {
+				log.error(String.format("Can't instantiate '%s' - using default", membershipApproverAssociationGroovyScript), e);
+				identifier = new DefaultGenericWorkflowRequestApproverAssociationIdentifier();
 			}
-			if(CollectionUtils.isEmpty(approverUserIds)) {
-				final String message = "Could not found any approvers - using default user";
-				builder.addWarning(message);
-				log.warn(message);
-	        	approverUserIds.add(defaultApproverUserId);
-			}
+		
+			identifier.init(bindingMap);
 			
-			builder.addAttributeAsJson(AuditAttributeName.REQUEST_APPROVER_IDS, approverUserIds, jacksonMapper);
+			final List<String> approverAssociationIds = identifier.getApproverAssociationIds();
+			final List<String> approverUserIds = identifier.getApproverIds();
+			
+			final List<Object> approverCardinatlity = new LinkedList<Object>();
+			if(CollectionUtils.isNotEmpty(approverAssociationIds)) {
+				approverCardinatlity.addAll(approverAssociationIds);
+			} else {
+				approverCardinatlity.add(approverUserIds);
+			}
+
+            idmAuditLog.addAttributeAsJson(AuditAttributeName.REQUEST_APPROVER_IDS, approverUserIds, jacksonMapper);
 			
 			final Map<String, Object> variables = new HashMap<String, Object>();
-			variables.put(ActivitiConstants.APPROVER_ASSOCIATION_IDS, approverAssociationIds);
-			variables.put(ActivitiConstants.CANDIDATE_USERS_IDS, approverUserIds);
-			variables.put(ActivitiConstants.TASK_NAME, request.getName());
-			variables.put(ActivitiConstants.TASK_DESCRIPTION, request.getDescription());
-			variables.put(ActivitiConstants.TASK_OWNER, request.getCallerUserId());
-			variables.put(ActivitiConstants.ASSOCIATION_ID, request.getAssociationId());
+			variables.put(ActivitiConstants.WORKFLOW_NAME.getName(), request.getActivitiRequestType());
+			variables.put(ActivitiConstants.APPROVER_CARDINALTITY.getName(), approverCardinatlity);
+			variables.put(ActivitiConstants.APPROVER_ASSOCIATION_IDS.getName(), approverAssociationIds);
+			variables.put(ActivitiConstants.TASK_NAME.getName(), request.getName());
+			variables.put(ActivitiConstants.TASK_DESCRIPTION.getName(), request.getDescription());
+			variables.put(ActivitiConstants.REQUESTOR.getName(), request.getRequestorUserId());
+			if(request.getAssociationId() != null) {
+				variables.put(ActivitiConstants.ASSOCIATION_ID.getName(), request.getAssociationId());
+			}
+			if(request.getAssociationType() != null) {
+				variables.put(ActivitiConstants.ASSOCIATION_TYPE.getName(), request.getAssociationType().getValue());
+			}
+			if(request.getMemberAssociationId() != null) {
+				variables.put(ActivitiConstants.MEMBER_ASSOCIATION_ID.getName(), request.getMemberAssociationId());
+			}
+			if(request.getMemberAssociationType() != null) {
+				variables.put(ActivitiConstants.MEMBER_ASSOCIATION_TYPE.getName(), request.getMemberAssociationType().getValue());
+			}
 			if(request.getParameters() != null) {
 				variables.putAll(request.getParameters());
 			}
-			runtimeService.startProcessInstanceByKey(request.getActivitiRequestType(), variables);
+			if(request.getJsonSerializedParams() != null) {
+				for(final String key : request.getJsonSerializedParams().keySet()) {
+					final String value = request.getJsonSerializedParams().get(key);
+					variables.put(key, new ActivitiJSONStringWrapper(value));
+				}
+			}
+			
+			final ProcessInstance instance = runtimeService.startProcessInstanceByKey(request.getActivitiRequestType(), variables);
 
 			response.setStatus(ResponseStatus.SUCCESS);
-			builder.succeed();
+            idmAuditLog.succeed();
 		} catch(BasicDataServiceException e) {
-			builder.setFailureReason(e.getCode()).setException(e);
+            idmAuditLog.setFailureReason(e.getCode());
+            idmAuditLog.setException(e);
 			log.info("Could not initialize task", e);
 			response.setErrorCode(e.getCode());
 			response.setStatus(ResponseStatus.FAILURE);
 		} catch(ActivitiException e) {
-			builder.setFailureReason(e.getMessage()).setException(e);
+            idmAuditLog.setFailureReason(e.getMessage());
+            idmAuditLog.setException(e);
 			log.info("Activiti Exception", e);
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(ResponseCode.USER_STATUS);
 			response.setErrorText(e.getMessage());
 		} catch(Throwable e) {
-			builder.setFailureReason(e.getMessage()).setException(e);
+            idmAuditLog.setFailureReason(e.getMessage());
+            idmAuditLog.setException(e);
 			log.error("Error while creating newhire request", e);
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(ResponseCode.USER_STATUS);
 			response.setErrorText(e.getMessage());
 		} finally {
-			auditLogService.enqueue(builder);
+			auditLogService.enqueue(idmAuditLog);
 		}
 		return response;
 	}
@@ -669,9 +577,9 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 		
         	/* complete the Task in Activiti, passing required parameters */
         	final Map<String, Object> variables = new HashMap<String, Object>();
-        	variables.put(ActivitiConstants.COMMENT, request.getComment());
-        	variables.put(ActivitiConstants.IS_TASK_APPROVED, request.isAccepted());
-        	variables.put(ActivitiConstants.EXECUTOR_ID, request.getCallerUserId());
+        	variables.put(ActivitiConstants.COMMENT.getName(), request.getComment());
+        	variables.put(ActivitiConstants.IS_TASK_APPROVED.getName(), request.isAccepted());
+        	variables.put(ActivitiConstants.EXECUTOR_ID.getName(), request.getRequestorUserId());
         	if(request.getCustomVariables() != null) {
         		variables.putAll(request.getCustomVariables());
         	}
@@ -701,7 +609,7 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 	}
 	
 	private Task getTaskAssignee(final ActivitiRequestDecision newHireRequest) throws ActivitiException {
-		return getTaskAssignee(newHireRequest.getTaskId(), newHireRequest.getCallerUserId());
+		return getTaskAssignee(newHireRequest.getTaskId(), newHireRequest.getRequestorUserId());
 	}
 
 	@Override
@@ -745,9 +653,17 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 	}
 	
 	@Override
-	public TaskWrapper getTaskFromHistory(String taskId) {
+	public TaskWrapper getTaskFromHistory(final String executionId, final String taskId) {
 		TaskWrapper retVal = null;
-		final List<HistoricTaskInstance> instances = historyService.createHistoricTaskInstanceQuery().taskId(taskId).list();
+		final HistoricTaskInstanceQuery query = historyService.createHistoricTaskInstanceQuery(); 
+		if(StringUtils.isNotBlank(executionId)) {
+			query.executionId(executionId);
+		} else if(StringUtils.isNotBlank(taskId)) {
+			query.taskId(taskId);
+		} else {
+			throw new IllegalArgumentException("Execution ID and Task ID are null");
+		}
+		final List<HistoricTaskInstance> instances = query.list();
 		if(CollectionUtils.isNotEmpty(instances)) {
 			retVal = new TaskWrapper(instances.get(0));
 		}
@@ -767,7 +683,8 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 				}
 			}
 			
-			final List<HistoricActivityInstance> activityList = historyService.createHistoricActivityInstanceQuery().executionId(executionId).list();
+			final HistoricActivityInstanceQuery query = historyService.createHistoricActivityInstanceQuery().executionId(executionId);
+			final List<HistoricActivityInstance> activityList = query.list();
 			if(CollectionUtils.isNotEmpty(activityList)) {
 				for(int i = 0; i < activityList.size(); i++) {
 					final HistoricActivityInstance instance = activityList.get(i);
@@ -784,6 +701,19 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 					if(i < activityList.size() - 1) {
 						wrapper.addNextTask(activityList.get(i + 1).getId());
 					}
+					
+					/*
+					final HistoricDetailQuery detailQuery = historyService.createHistoricDetailQuery()
+																		  .activityInstanceId(instance.getId())
+																		  .variableUpdates();
+					final List<HistoricDetail> details = detailQuery.list();
+					if(CollectionUtils.isNotEmpty(details)) {
+						for(final HistoricDetail detail : details) {
+							final HistoricVariableUpdate variableUpdate = (HistoricVariableUpdate)detail;
+							log.info(String.format("Variable update: %s", variableUpdate));
+						}
+					}
+					*/
 				}
 			}
 		}
@@ -906,66 +836,6 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 		return response;
 	}
 	
-	private List<ApproverAssociationEntity> getDefaultApproverAssociations() {
-		return approverAssociationDao.getByAssociation(defaultApproverAssociationResourceId, AssociationType.RESOURCE);
-	}
-	
-	private void populateApprovers(final NewUserProfileRequestModel request, 
-			   					   final List<ApproverAssociationEntity> associationList, 
-			   					   final Set<String> requestApproverIds) {
-		for(final AssociationType type : newUserAssociationTypes) {
-			if(CollectionUtils.isNotEmpty(associationList) || CollectionUtils.isNotEmpty(requestApproverIds)) {
-				break;
-			}
-			
-			if(type != null) {
-				switch(type) {
-					case ORGANIZATION:
-						if(CollectionUtils.isNotEmpty(request.getOrganizationIds())) {
-							for(final String associationId : request.getOrganizationIds()) {
-								final List<ApproverAssociationEntity> entityList = approverAssociationDao.getByAssociation(associationId, AssociationType.ORGANIZATION);
-								if(CollectionUtils.isNotEmpty(entityList)) {
-									associationList.addAll(entityList);
-								}
-							}
-						}
-						break;
-					case GROUP:
-						if(CollectionUtils.isNotEmpty(request.getGroupIds())) {
-							for(final String associationId : request.getGroupIds()) {
-								final List<ApproverAssociationEntity> entityList = approverAssociationDao.getByAssociation(associationId, AssociationType.GROUP);
-								if(CollectionUtils.isNotEmpty(entityList)) {
-									associationList.addAll(entityList);
-								}
-							}
-						}
-						break;
-					case ROLE:
-						if(CollectionUtils.isNotEmpty(request.getRoleIds())) {
-							for(final String associationId : request.getRoleIds()) {
-								final List<ApproverAssociationEntity> entityList = approverAssociationDao.getByAssociation(associationId, AssociationType.ROLE);
-								if(CollectionUtils.isNotEmpty(entityList)) {
-									associationList.addAll(entityList);
-								}
-							}
-						}
-						break;
-					case SUPERVISOR:
-						if(CollectionUtils.isNotEmpty(request.getSupervisorIds())) {
-							for(final String id : request.getSupervisorIds()) {
-								if(StringUtils.isNotBlank(id)) {
-									requestApproverIds.add(id);
-								}
-							}
-						}
-						break;
-					default:
-						break;
-				}
-			}
-		}
-	}
-
 	@Override
 	public void setApplicationContext(ApplicationContext ctx)
 			throws BeansException {

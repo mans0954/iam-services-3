@@ -3,25 +3,21 @@ package org.openiam.idm.srvc.audit.dto;
 // Generated Nov 30, 2007 3:01:45 AM by Hibernate Tools 3.2.0.b11
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
-import javax.persistence.Column;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 
-import org.hibernate.annotations.GenericGenerator;
+import org.apache.commons.lang.exception.ExceptionUtils;
+import org.openiam.base.BaseObject;
+import org.openiam.base.ws.ResponseCode;
 import org.openiam.dozer.DozerDTOCorrespondence;
-import org.openiam.idm.srvc.audit.constant.CustomIdmAuditLogType;
-import org.openiam.idm.srvc.audit.domain.IdmAuditLogCustomEntity;
+import org.openiam.idm.srvc.audit.constant.*;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
+import org.openiam.idm.util.CustomJacksonMapper;
 
 /**
  * DTO object that is used log and retrieve audit information
@@ -44,7 +40,7 @@ import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 	"sessionID",
 	"customRecords",
 	"childLogs",
-	"coorelationId",
+	"correlationId",
 	"targets",
 	"parentLogs"
 })
@@ -63,13 +59,17 @@ public class IdmAuditLog implements Serializable {
     private String result;
     private String hash;
     private String sessionID;
-    private String coorelationId;
+    private String correlationId;
     private Set<IdmAuditLogCustom> customRecords;
     private Set<AuditLogTarget> targets;
     private Set<IdmAuditLog> childLogs;
     private Set<IdmAuditLog> parentLogs;
 
-	public String getId() {
+    public IdmAuditLog() {
+        setTimestamp(new Date());
+    }
+
+    public String getId() {
 		return id;
 	}
 
@@ -165,16 +165,16 @@ public class IdmAuditLog implements Serializable {
 		this.sessionID = sessionID;
 	}
 	
-	public String getCoorelationId() {
-		return coorelationId;
+	public String getCorrelationId() {
+		return correlationId;
 	}
 
-	public void setCoorelationId(String coorelationId) {
-		this.coorelationId = coorelationId;
+	public void setCorrelationId(String correlationId) {
+		this.correlationId = correlationId;
 	}
 	
 	public String concat() {
-		return String.format("%s-%s-%s-%s-%s-%s-%s-%s-%s-%s-%s", action, clientIP, principal, nodeIP, result, source, timestamp, userId, sessionID, managedSysId, coorelationId);
+		return String.format("%s-%s-%s-%s-%s-%s-%s-%s-%s-%s-%s", action, clientIP, principal, nodeIP, result, source, timestamp, userId, sessionID, managedSysId, correlationId);
 	}
 	
 	public Set<IdmAuditLogCustom> getCustomRecords() {
@@ -209,14 +209,15 @@ public class IdmAuditLog implements Serializable {
 		this.parentLogs = parentLogs;
 	}
 
-	public void addTarget(final String targetId, final String targetType) {
+	public void addTarget(final String targetId, final String targetType, final String principal) {
 		if(targetId != null && targetType != null) {
 			if(this.targets == null) {
-				this.targets = new HashSet<AuditLogTarget>();
+				this.targets = new HashSet<>();
 			}
 			final AuditLogTarget target = new AuditLogTarget();
 			target.setTargetId(targetId);
 			target.setTargetType(targetType);
+            target.setObjectPrincipal(principal);
 			target.setLogId(id);
 			this.targets.add(target);
 		}
@@ -230,11 +231,20 @@ public class IdmAuditLog implements Serializable {
     		this.childLogs.add(entity);
     	}
     }
-    
+
+    public void addParent(final IdmAuditLog event) {
+        if(event != null) {
+            if(this.parentLogs == null) {
+                this.parentLogs = new HashSet<>();
+            }
+            this.parentLogs.add(event);
+        }
+    }
+
     public void addCustomRecord(final String key, final String value) {
     	if(key != null && value != null) {
     		if(customRecords == null) {
-    			customRecords = new HashSet<IdmAuditLogCustom>();
+    			customRecords = new HashSet<>();
     		}
     		final IdmAuditLogCustom logAttr = new IdmAuditLogCustom();
             logAttr.setKey(key);
@@ -242,6 +252,177 @@ public class IdmAuditLog implements Serializable {
             logAttr.setTimestamp(new Date().getTime());
     		customRecords.add(logAttr);
     	}
+    }
+
+    public void addAttributeAsJson(final AuditAttributeName key, final Object o, final CustomJacksonMapper mapper) {
+        if(mapper != null) {
+            addCustomRecord(key.name(), mapper.mapToStringQuietly(o));
+        }
+    }
+
+    /**
+     * Adds an attribute
+     * @param key - the key
+     * @param value - the value
+     * @return this
+     */
+    public void addAttribute(final AuditAttributeName key, final String value) {
+        addCustomRecord(key.name(), value);
+    }
+
+
+    /**
+     * Sets the description of this event
+     * @param value
+     * @return this
+     */
+    public void setAuditDescription(final String value) {
+        addAttribute(AuditAttributeName.DESCRIPTION, value);
+    }
+
+    public void addWarning(final String warning) {
+        addAttribute(AuditAttributeName.WARNING, warning);
+    }
+
+    public void setFailureReason(final ResponseCode code) {
+        if(code != null) {
+            setFailureReason(code.name());
+        }
+    }
+
+    /**
+     * Sets an Exception for this event
+     * @param e
+     * @return this
+     */
+    public void setException(final Throwable e) {
+        addAttribute(AuditAttributeName.EXCEPTION, ExceptionUtils.getStackTrace(e));
+    }
+
+    /**
+     * Sets the reason for success
+     * @param reason
+     * @return
+     */
+    public void setSuccessReason(final String reason) {
+        addAttribute(AuditAttributeName.SUCCESS_REASON, reason);
+    }
+
+    public void setURL(final String url) {
+        addAttribute(AuditAttributeName.URL, url);
+    }
+
+    /**
+     * Sets the user id of who triggered this event
+     * @param userId - the caller
+     * @return this
+     */
+    public void setRequestorUserId(String userId) {
+        setUserId(userId);
+    }
+
+    private void setResult(AuditResult result) {
+        setResult((result != null) ? result.value() : null);
+    }
+
+    /**
+     * Signals that this event failed
+     * @return this
+     */
+    public void fail() {
+        setResult(AuditResult.FAILURE);
+    }
+
+    /**
+     * Signals that this event succeeded
+     * @return this
+     */
+    public void succeed() {
+        setResult(AuditResult.SUCCESS);
+    }
+
+    /**
+     * Sets a 'target' user - against which this operations is being performed
+     * @param userId
+     * @return this
+     */
+    public void setTargetUser(final String userId, final String userPrincipal) {
+        addTarget(userId, AuditTarget.USER.value(), userPrincipal);
+    }
+
+    /**
+     * Sets a 'target' role - against which this operations is being performed
+     * @param roleId
+     * @return this
+     */
+    public void setTargetRole(final String roleId,final String rolePrincipal) {
+        addTarget(roleId, AuditTarget.ROLE.value(),  rolePrincipal);
+    }
+    /**
+     * Sets a 'target' policy - against which this operations is being performed
+     * @param policyId
+     * @return this
+     */
+    public void setTargetPolicy(final String policyId,final String policyPrincipal) {
+        addTarget(policyId, AuditTarget.POLICY.value(),  policyPrincipal);
+    }
+    /**
+     * Sets a 'target' group - against which this operations is being performed
+     * @param groupId
+     * @return this
+     */
+    public void setTargetGroup(final String groupId, final String groupPrincipal) {
+        addTarget(groupId, AuditTarget.GROUP.value(), groupPrincipal);
+    }
+
+    /**
+     * Sets a 'target' resource - against which this operations is being performed
+     * @param resourceId
+     * @return this
+     */
+    public void setTargetResource(final String resourceId, final String resourcePrincipal) {
+        addTarget(resourceId, AuditTarget.RESOURCE.value(), resourcePrincipal);
+    }
+
+    /**
+     * Sets a 'target' managed system - against which this operations is being performed
+     * @param managedSysId
+     * @return this
+     */
+    public void setTargetManagedSys(final String managedSysId, final String managedSysPrincipal) {
+        addTarget(managedSysId, AuditTarget.MANAGED_SYS.value(), managedSysPrincipal);
+    }
+    /**
+     * Sets a 'target' org - against which this operations is being performed
+     * @param orgId
+     * @return this
+     */
+    public void setTargetOrg(final String orgId,final String orgPrincipal) {
+        addTarget(orgId, AuditTarget.ORG.value(),  orgPrincipal);
+    }
+
+    /**
+     * Sets the principal of who triggered this event
+     * @param principal - the caller
+     * @return this
+     */
+    public void setRequestorPrincipal(String principal) {
+        setPrincipal(principal);
+    }
+    /**
+     * Convenience method for Web Service calls to set caller information
+     * @param baseObject
+     * @return this
+     */
+    public void setBaseObject(final BaseObject baseObject) {
+        setClientIP(baseObject.getRequestClientIP());
+        setSessionID(baseObject.getRequestorSessionID());
+        setRequestorPrincipal(baseObject.getRequestorLogin());
+        setRequestorUserId(baseObject.getRequestorUserId());
+    }
+
+    public void setFailureReason(final String value) {
+        addAttribute(AuditAttributeName.FAILURE_REASON, value);
     }
 
 	@Override
@@ -263,7 +444,7 @@ public class IdmAuditLog implements Serializable {
 		result = prime * result + ((principal == null) ? 0 : principal.hashCode());
 		result = prime * result + ((managedSysId == null) ? 0 : managedSysId.hashCode());
 		result = prime * result + ((sessionID == null) ? 0 : sessionID.hashCode());
-		result = prime * result + ((coorelationId == null) ? 0 : coorelationId.hashCode());
+		result = prime * result + ((correlationId == null) ? 0 : correlationId.hashCode());
 		return result;
 	}
 
@@ -339,10 +520,10 @@ public class IdmAuditLog implements Serializable {
 		} else if (!managedSysId.equals(other.managedSysId))
 			return false;
 		
-		if (coorelationId == null) {
-			if (other.coorelationId != null)
+		if (correlationId == null) {
+			if (other.correlationId != null)
 				return false;
-		} else if (!coorelationId.equals(other.coorelationId))
+		} else if (!correlationId.equals(other.correlationId))
 			return false;
 		return true;
 	}

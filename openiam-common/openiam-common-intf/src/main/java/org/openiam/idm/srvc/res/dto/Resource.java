@@ -2,9 +2,16 @@ package org.openiam.idm.srvc.res.dto;
 
 // Generated Mar 8, 2009 12:54:32 PM by Hibernate Tools 3.2.2.GA
 
+import org.openiam.base.AdminResourceDTO;
 import org.openiam.base.AttributeOperationEnum;
-import org.openiam.base.BaseObject;
 import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.idm.srvc.grp.dto.Group;
+import org.openiam.idm.srvc.lang.dto.LanguageMapping;
+import org.openiam.idm.srvc.res.domain.ResourceEntity;
+import org.openiam.idm.srvc.role.dto.Role;
+import org.openiam.idm.srvc.user.dto.User;
+import org.openiam.internationalization.Internationalized;
+import org.openiam.internationalization.InternationalizedCollection;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -12,12 +19,8 @@ import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlType;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Set;
-
-import org.openiam.idm.srvc.grp.dto.Group;
-import org.openiam.idm.srvc.res.domain.ResourceEntity;
-import org.openiam.idm.srvc.role.dto.Role;
-import org.openiam.idm.srvc.user.dto.User;
 
 /**
  * Resources are items that need to be managed or protected. These can be both logic and physical in nature.
@@ -25,44 +28,34 @@ import org.openiam.idm.srvc.user.dto.User;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "Resource", propOrder = {
         "resourceType",
-        "resourceId",
-        "name",
         "description",
-        "branchId",
-        "categoryId",
         "displayOrder",
         "URL",
         "roles",
         "resourceProps",
         "groups",
-        "resOwnerUserId",
-        "resOwnerGroupId",
         "childResources",
         "parentResources",
         "minAuthLevel",
-        "domain",
         "isPublic",
-        //"isSSL",
-        "operation"
+        "operation",
+        "risk",
+        "displayNameMap",
+        "displayName"
 })
 @XmlSeeAlso({
         Role.class,
         User.class
 })
 @DozerDTOCorrespondence(ResourceEntity.class)
-public class Resource extends BaseObject {
+@Internationalized
+public class Resource extends AdminResourceDTO {
 
-    private String resourceId;
+	@Internationalized
     private ResourceType resourceType;
-    private String name;
     private String description;
-    private String branchId;
-    private String categoryId;
     private Integer displayOrder;
     private String URL;
-
-    private String resOwnerUserId;
-    private String resOwnerGroupId;
 
     private Set<Resource> parentResources = new HashSet<Resource>(0);
     private Set<Resource> childResources = new HashSet<Resource>(0);
@@ -73,21 +66,19 @@ public class Resource extends BaseObject {
 
     private Set<Group> groups = new HashSet<Group>(0);
     private String minAuthLevel;
-    private String domain;
     private boolean isPublic = true;
+    private ResourceRisk risk;
+    
+    @InternationalizedCollection(targetField="displayName")
+    private Map<String, LanguageMapping> displayNameMap;
+	    
+    private String displayName;
+
     //private boolean isSSL = false;
 
     protected AttributeOperationEnum operation = AttributeOperationEnum.NO_CHANGE;
 
     public Resource() {
-    }
-
-    public String getResourceId() {
-        return this.resourceId;
-    }
-
-    public void setResourceId(String resourceId) {
-        this.resourceId = resourceId;
     }
 
     public ResourceType getResourceType() {
@@ -104,30 +95,6 @@ public class Resource extends BaseObject {
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    public String getName() {
-        return this.name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getBranchId() {
-        return this.branchId;
-    }
-
-    public void setBranchId(String branchId) {
-        this.branchId = branchId;
-    }
-
-    public String getCategoryId() {
-        return this.categoryId;
-    }
-
-    public void setCategoryId(String categoryId) {
-        this.categoryId = categoryId;
     }
 
     public Integer getDisplayOrder() {
@@ -173,14 +140,6 @@ public class Resource extends BaseObject {
 		this.minAuthLevel = minAuthLevel;
 	}
 
-	public String getDomain() {
-		return domain;
-	}
-
-	public void setDomain(String domain) {
-		this.domain = domain;
-	}
-
 	public boolean getIsPublic() {
 		return isPublic;
 	}
@@ -188,18 +147,8 @@ public class Resource extends BaseObject {
 	public void setIsPublic(boolean isPublic) {
 		this.isPublic = isPublic;
 	}
-	
-	/*
-    public boolean getIsSSL() {
-		return this.isSSL;
-	}
 
-	public void setIsSSL(final boolean isSSL) {
-		this.isSSL = isSSL;
-	}
-	*/
-
-    public AttributeOperationEnum getOperation() {
+	public AttributeOperationEnum getOperation() {
         return operation;
 	}
 
@@ -210,17 +159,13 @@ public class Resource extends BaseObject {
 	@Override
     public String toString() {
         return "Resource{" +
-                "resourceId='" + resourceId + '\'' +
+                "resourceId='" + id + '\'' +
                 ", resourceType=" + resourceType +
                 ", name='" + name + '\'' +
                 ", description='" + description + '\'' +
-                ", branchId='" + branchId + '\'' +
-                ", categoryId='" + categoryId + '\'' +
                 ", displayOrder=" + displayOrder +
+                ", risk=" + risk +
                 ", URL='" + URL + '\'' +
-                ", resOwnerUserId='" + resOwnerUserId + '\'' +
-                ", resOwnerGroupId='" + resOwnerGroupId + '\'' +
-                /*", entitlements=" + entitlements +*/
                 '}';
     }
 
@@ -248,32 +193,6 @@ public class Resource extends BaseObject {
         this.groups = groups;
     }
 
-    public String getResOwnerUserId() {
-        return resOwnerUserId;
-    }
-
-    public void setResOwnerUserId(String resOwnerUserId) {
-        this.resOwnerUserId = resOwnerUserId;
-    }
-
-    public String getResOwnerGroupId() {
-        return resOwnerGroupId;
-    }
-
-    public void setResOwnerGroupId(String resOwnerGroupId) {
-        this.resOwnerGroupId = resOwnerGroupId;
-    }
-
-    /*
-    public Set<ResourcePrivilege> getEntitlements() {
-        return entitlements;
-    }
-
-    public void setEntitlements(Set<ResourcePrivilege> entitlements) {
-        this.entitlements = entitlements;
-    }
-    */
-
 	public Set<Resource> getParentResources() {
 		return parentResources;
 	}
@@ -289,12 +208,36 @@ public class Resource extends BaseObject {
 	public void setChildResources(Set<Resource> childResources) {
 		this.childResources = childResources;
 	}
-	
+
+    public ResourceRisk getRisk() {
+        return risk;
+    }
+
+    public void setRisk(ResourceRisk risk) {
+        this.risk = risk;
+    }
+
+    public Map<String, LanguageMapping> getDisplayNameMap() {
+		return displayNameMap;
+	}
+
+	public void setDisplayNameMap(Map<String, LanguageMapping> displayNameMap) {
+		this.displayNameMap = displayNameMap;
+	}
+
+	public String getDisplayName() {
+		return displayName;
+	}
+
+	public void setDisplayName(String displayName) {
+		this.displayName = displayName;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((resourceId == null) ? 0 : resourceId.hashCode());
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		return result;
 	}
 }

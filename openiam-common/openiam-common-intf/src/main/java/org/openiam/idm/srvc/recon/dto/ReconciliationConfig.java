@@ -19,7 +19,7 @@ import org.springframework.format.annotation.DateTimeFormat;
         "separator", "endOfLine", "notificationEmailAddress","manualReconciliationFlag",
         "targetSystemMatchScript","targetSystemSearchFilter","matchScript","searchFilter","updatedSince",
         "customIdentityMatchScript","scriptHandler","matchFieldName",
-        "customMatchAttr","matchSrcFieldName","lastExecTime","execStatus"})
+        "customMatchAttr","matchSrcFieldName","lastExecTime","execStatus","requesterId"})
 
 @DozerDTOCorrespondence(ReconciliationConfigEntity.class)
 public class ReconciliationConfig implements MatchConfig, java.io.Serializable {
@@ -60,8 +60,18 @@ public class ReconciliationConfig implements MatchConfig, java.io.Serializable {
     private Date lastExecTime;
     private ReconExecStatusOptions execStatus;
 
+    private String requesterId;
+
     @Transient
     private String reportPath;
+
+    public String getRequesterId() {
+        return requesterId;
+    }
+
+    public void setRequesterId(String requesterId) {
+        this.requesterId = requesterId;
+    }
 
     public String getSeparator() {
         return separator;
@@ -87,8 +97,8 @@ public class ReconciliationConfig implements MatchConfig, java.io.Serializable {
     }
 
     public ReconciliationConfig(String reconConfigId, String resourceId, String managedSysId,
-            String mode, String frequency, String status,
-            Integer attributeLevelCheck, Integer updateChangedAttribute) {
+                                String mode, String frequency, String status,
+                                Integer attributeLevelCheck, Integer updateChangedAttribute) {
         this.reconConfigId = reconConfigId;
         this.resourceId = resourceId;
         this.managedSysId = managedSysId;

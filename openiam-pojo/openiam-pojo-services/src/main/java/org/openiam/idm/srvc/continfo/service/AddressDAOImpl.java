@@ -22,7 +22,7 @@ public class AddressDAOImpl extends BaseDaoImpl<AddressEntity, String> implement
 
 	private static final Log log = LogFactory.getLog(AddressDAOImpl.class);
 	
-	private String DELETE_BY_USER_ID = "DELETE FROM %s e WHERE e.parent.userId = :userId";
+	private String DELETE_BY_USER_ID = "DELETE FROM %s e WHERE e.parent.id = :userId";
 	
 	@PostConstruct
 	public void initSQL() {
@@ -37,14 +37,14 @@ public class AddressDAOImpl extends BaseDaoImpl<AddressEntity, String> implement
         } else {
 
             if (address.getParent() != null) {
-                if (StringUtils.isNotBlank(address.getParent().getUserId())) {
-                    criteria.add(Restrictions.eq("parent.userId", address.getParent().getUserId()));
+                if (StringUtils.isNotBlank(address.getParent().getId())) {
+                    criteria.add(Restrictions.eq("parent.id", address.getParent().getId()));
                 }
             }
 
             if (address.getMetadataType() != null) {
-                if (StringUtils.isNotBlank(address.getMetadataType().getMetadataTypeId())) {
-                    criteria.add(Restrictions.eq("metadataType.metadataTypeId", address.getMetadataType().getMetadataTypeId()));
+                if (StringUtils.isNotBlank(address.getMetadataType().getId())) {
+                    criteria.add(Restrictions.eq("metadataType.id", address.getMetadataType().getId()));
                 }
             }
         }

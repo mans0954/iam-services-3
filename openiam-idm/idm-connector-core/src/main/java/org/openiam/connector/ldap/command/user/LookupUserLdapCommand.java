@@ -1,5 +1,6 @@
 package org.openiam.connector.ldap.command.user;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.connector.type.ObjectValue;
@@ -23,6 +24,7 @@ import javax.naming.directory.Attributes;
 import javax.naming.directory.SearchResult;
 import javax.naming.ldap.LdapContext;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -32,11 +34,8 @@ public class LookupUserLdapCommand extends AbstractLookupLdapCommand<ExtensibleU
     @Override
     protected boolean lookup(ManagedSysEntity managedSys, LookupRequest<ExtensibleUser> lookupRequest, SearchResponse respType, LdapContext ldapctx) throws ConnectorDataException {
         boolean found=false;
-        ManagedSystemObjectMatch matchObj = getMatchObject(lookupRequest.getTargetID(), "USER");
+        ManagedSystemObjectMatch matchObj = getMatchObject(lookupRequest.getTargetID(), ManagedSystemObjectMatch.USER);
         String resourceId = managedSys.getResourceId();
-
-        log.debug("Resource id = " + resourceId);
-        List<AttributeMapEntity> attrMap = managedSysService.getResourceAttributeMaps(resourceId);
 
         String identity = lookupRequest.getSearchValue();
         try {
@@ -61,8 +60,21 @@ public class LookupUserLdapCommand extends AbstractLookupLdapCommand<ExtensibleU
 
             log.debug("looking up identity: " + identity);
 
-            if (attrMap != null) {
-                List<String> attrList = getAttributeNameList(attrMap);
+            List<String> attrList = new ArrayList<String>();
+            if (CollectionUtils.isNotEmpty(lookupRequest.getRequestedAttributes())) {
+                for (ExtensibleAttribute ea: lookupRequest.getRequestedAttributes()) {
+                    attrList.add(ea.getName());
+                }
+            } else {
+                log.debug("Resource id = " + resourceId);
+                List<AttributeMapEntity> attrMap = managedSysService.getResourceAttributeMaps(resourceId);
+                if (attrMap != null) {
+                    attrList = getAttributeNameList(attrMap);
+                }
+            }
+
+            if (CollectionUtils.isNotEmpty(attrList)) {
+
                 String[] attrAry = new String[attrList.size()];
                 attrList.toArray(attrAry);
                 log.debug("Attribute array=" + attrAry);

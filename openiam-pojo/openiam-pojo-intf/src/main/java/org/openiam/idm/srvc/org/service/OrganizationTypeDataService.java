@@ -1,26 +1,36 @@
 package org.openiam.idm.srvc.org.service;
 
-import java.util.List;
+import org.openiam.base.ws.Response;
+import org.openiam.idm.searchbeans.OrganizationTypeSearchBean;
+import org.openiam.idm.srvc.lang.dto.Language;
+import org.openiam.idm.srvc.org.dto.OrganizationType;
 
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebService;
-
-import org.openiam.base.ws.Response;
-import org.openiam.idm.searchbeans.OrganizationTypeSearchBean;
-import org.openiam.idm.srvc.org.dto.Organization;
-import org.openiam.idm.srvc.org.dto.OrganizationType;
+import java.util.List;
 
 @WebService(targetNamespace = "urn:idm.openiam.org/srvc/org/service", name = "OrganizationTypeDataService")
 public interface OrganizationTypeDataService {
 
 	@WebMethod
+	@Deprecated
 	public OrganizationType findById(final @WebParam(name = "id", targetNamespace = "") String id);
+	
+	public OrganizationType findByIdLocalized(final @WebParam(name = "id", targetNamespace = "") String id,
+											  final @WebParam(name = "language", targetNamespace = "") Language language);
+	
+	@Deprecated
+    public List<OrganizationType> findAllowedChildrenByDelegationFilter(final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
+	
+	public List<OrganizationType> findAllowedChildrenByDelegationFilterLocalized(final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
+																				 final @WebParam(name = "language", targetNamespace = "") Language language);
 	
 	@WebMethod
 	public List<OrganizationType> findBeans(final @WebParam(name = "searchBean", targetNamespace = "") OrganizationTypeSearchBean searchBean,
 											final @WebParam(name = "from", targetNamespace = "") int from,
-											final @WebParam(name = "size", targetNamespace = "") int size);
+											final @WebParam(name = "size", targetNamespace = "") int size,
+											final @WebParam(name = "language", targetNamespace = "") Language language);
 	
 	@WebMethod
 	public int count(final @WebParam(name = "searchBean", targetNamespace = "") OrganizationTypeSearchBean searchBean);
@@ -38,4 +48,9 @@ public interface OrganizationTypeDataService {
 	@WebMethod
 	public Response removeChild(final @WebParam(name = "id", targetNamespace = "") String id,
 							 	final @WebParam(name = "childId", targetNamespace = "") String childId);
+
+    @WebMethod
+    public List<OrganizationType> getAllowedParents(final @WebParam(name = "organizationTypeId", targetNamespace = "") String organizationTypeId,
+                                                          final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
+                                                          final @WebParam(name = "language", targetNamespace = "") Language language);
 }

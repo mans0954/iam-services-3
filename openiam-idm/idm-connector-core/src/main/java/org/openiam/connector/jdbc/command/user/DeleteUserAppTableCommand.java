@@ -22,4 +22,10 @@ public class DeleteUserAppTableCommand extends AbstractDeleteAppTableCommand<Ext
         }
         throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR, "Attribute not found");
     }
+
+    @Override
+    protected String getObjectType() {
+        return "USER";
+    }
+
 }

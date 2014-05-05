@@ -5,26 +5,26 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
+import org.openiam.base.AbstractAttributeDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.grp.domain.GroupAttributeEntity;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "GroupAttribute", propOrder = {
-        "id",
-        "name",
-        "value",
-        "metadataElementId",
+        "values",
+        "isMultivalued",
         "groupId"
 })
 @DozerDTOCorrespondence(GroupAttributeEntity.class)
-public class GroupAttribute implements java.io.Serializable {
+public class GroupAttribute extends AbstractAttributeDTO {
 
 	private static final long serialVersionUID = 1L;
-	
-	protected String id;
-    protected String name;
-    protected String value;
-    protected String metadataElementId;
+
+    protected List<String> values = new ArrayList<String>();
+    protected Boolean isMultivalued = Boolean.FALSE;
     protected String groupId;
 
     public GroupAttribute(String id) {
@@ -33,37 +33,21 @@ public class GroupAttribute implements java.io.Serializable {
 
     public GroupAttribute() {
     }
-    
-    public String getId() {
-        return this.id;
+
+    public List<String> getValues() {
+        return values;
     }
 
-    public void setId(String id) {
-        this.id = id;
+    public void setValues(List<String> values) {
+        this.values = values;
     }
 
-    public String getMetadataElementId() {
-        return metadataElementId;
+    public Boolean getIsMultivalued() {
+        return isMultivalued;
     }
 
-    public void setMetadataElementId(String metadataElementId) {
-        this.metadataElementId = metadataElementId;
-    }
-
-    public String getName() {
-        return this.name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getValue() {
-        return this.value;
-    }
-
-    public void setValue(String value) {
-        this.value = value;
+    public void setIsMultivalued(Boolean isMultivalued) {
+        this.isMultivalued = isMultivalued;
     }
 
     public String getGroupId() {
@@ -82,11 +66,13 @@ public class GroupAttribute implements java.io.Serializable {
 		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		result = prime
 				* result
-				+ ((metadataElementId == null) ? 0 : metadataElementId
+				+ ((metadataId == null) ? 0 : metadataId
 						.hashCode());
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result + ((value == null) ? 0 : value.hashCode());
-		return result;
+        result = prime * result + ((isMultivalued == null) ? 0 : isMultivalued.hashCode());
+
+        return result;
 	}
 
 	@Override
@@ -108,10 +94,10 @@ public class GroupAttribute implements java.io.Serializable {
 				return false;
 		} else if (!id.equals(other.id))
 			return false;
-		if (metadataElementId == null) {
-			if (other.metadataElementId != null)
+		if (metadataId == null) {
+			if (other.metadataId != null)
 				return false;
-		} else if (!metadataElementId.equals(other.metadataElementId))
+		} else if (!metadataId.equals(other.metadataId))
 			return false;
 		if (name == null) {
 			if (other.name != null)
@@ -123,6 +109,12 @@ public class GroupAttribute implements java.io.Serializable {
 				return false;
 		} else if (!value.equals(other.value))
 			return false;
+        if (isMultivalued == null) {
+            if (other.isMultivalued != null)
+                return false;
+        } else if (!isMultivalued.equals(other.isMultivalued))
+            return false;
+
 		return true;
 	}
 	
@@ -132,7 +124,7 @@ public class GroupAttribute implements java.io.Serializable {
 	public String toString() {
 		return String
 				.format("GroupAttribute [id=%s, name=%s, value=%s, metadataElementId=%s, groupId=%s]",
-						id, name, value, metadataElementId, groupId);
+						id, name, value, metadataId, groupId);
 	}
 
 

@@ -50,9 +50,7 @@ public class LdapConnectionMgr implements ConnectionMgr {
     @Value("${org.openiam.idm.system.user.id}")
     private String systemUserId;
 
-    public LdapConnectionMgr() {
-    	
-    }
+    public LdapConnectionMgr() {}
 
     protected String getDecryptedPassword(ManagedSysEntity managedSys) throws ConnectorDataException {
         String result = null;
@@ -67,7 +65,7 @@ public class LdapConnectionMgr implements ConnectionMgr {
         return result;
     }
 
-	public LdapContext connect(ManagedSysEntity managedSys)  throws NamingException{
+	public LdapContext connect(ManagedSysEntity managedSys) throws NamingException {
 
 		LdapContext ldapContext = null;
 		Hashtable<String, String> envDC = new Hashtable();
@@ -91,9 +89,9 @@ public class LdapConnectionMgr implements ConnectionMgr {
             decryptedPassword = getDecryptedPassword(managedSys);
         } catch (ConnectorDataException e) {
             decryptedPassword = managedSys.getPswd();
-            e.printStackTrace();
+            log.error("connect", e);
         }
-        log.debug("connect: Connecting to target system: " + managedSys.getManagedSysId() );
+        log.debug("connect: Connecting to target system: " + managedSys.getId() );
         log.debug("connect: Managed System object : " + managedSys);
 
 		log.info(" directory login = " + managedSys.getUserId() );
@@ -119,10 +117,9 @@ public class LdapConnectionMgr implements ConnectionMgr {
         //}
 
         try {
+            ldapContext = new InitialLdapContext(envDC, null);
 
-            ldapContext = new InitialLdapContext(envDC,null);
-
-        }catch (CommunicationException ce) {
+        } catch (CommunicationException ce) {
             // check if there is a secondary connection linked to this
             String secondarySysID =  managedSys.getSecondaryRepositoryId();
 
@@ -145,7 +142,7 @@ public class LdapConnectionMgr implements ConnectionMgr {
             log.error(ne.toString());
             throw ne;
 
-        }catch (Exception e) {
+        } catch (Exception e) {
             log.error(e.toString());
             return null;
         }

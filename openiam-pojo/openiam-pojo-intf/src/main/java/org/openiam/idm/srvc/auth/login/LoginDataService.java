@@ -1,6 +1,5 @@
 package org.openiam.idm.srvc.auth.login;
 
-import org.openiam.exception.AuthenticationException;
 import org.openiam.exception.EncryptionException;
 import org.openiam.idm.searchbeans.LoginSearchBean;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
@@ -8,7 +7,6 @@ import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 
-import javax.jws.WebService;
 import java.util.Date;
 import java.util.List;
 
@@ -29,13 +27,13 @@ public interface LoginDataService {
 
     public void activateDeactivateLogin(String loginId, LoginStatusEnum status);
     
-    public void removeLogin(String domainId, String principal, String managedSysId);
+    public void removeLogin(String principal, String managedSysId);
     
     public LoginEntity getLoginDetails(final String loginId);
     
     public Login getLoginDTO(final String loginId);
 
-    public LoginEntity getLoginByManagedSys(String domainId, String principal, String sysId);
+    public LoginEntity getLoginByManagedSys(String principal, String sysId);
 
     /**
      * Returns a list of Login objects for the managed system specified by the sysId
@@ -65,56 +63,51 @@ public interface LoginDataService {
     /**
      * Returns a decrypted password.
      *
-     * @param domainId
      * @param principal
      * @param sysId
      * @return
      */
-    public String getPassword(String domainId, String principal, String sysId) throws Exception;
+    public String getPassword(String principal, String sysId) throws Exception;
 
     /**
      * determines if the new passowrd is equal to the current password that is associated with this principal
      *
-     * @param domainId
      * @param principal
      * @param sysId
      * @param newPassword
      * @return
      */
-    public boolean isPasswordEq(String domainId, String principal, String sysId, String newPassword) throws Exception;
+    public boolean isPasswordEq(String principal, String sysId, String newPassword) throws Exception;
 
     /**
      * Checks to see if a login exists for a user - domain - managed system combination
      *
-     * @param domainId
      * @param principal
      * @param sysId
      * @return
      */
-    public boolean loginExists(String domainId, String principal, String sysId);
+    public boolean loginExists(String principal, String sysId);
 
     /**
      * Sets the password for a principal. The password needs to be encrypted externally. this allow for flexiblity in
      * supporting alternate approaches to encryption.
      *
-     * @param domainId
      * @param principal
      * @param sysId
      * @param password
      * @return
      */
-    public boolean setPassword(String domainId, String principal, String sysId, String password, boolean preventChangeCountIncrement);
+    public boolean setPassword(String principal, String sysId, String password, boolean preventChangeCountIncrement);
 
     /**
      * Sets a new password for the identity and updates the support attributes such as locked account flag.
      *
-     * @param domainId
      * @param principal
      * @param sysId
      * @param password
      * @return
      */
-    public boolean resetPassword(String domainId, String principal, String sysId, String password);
+    public boolean resetPassword(String principal, String sysId, String password);
 
 
     /**
@@ -129,9 +122,9 @@ public interface LoginDataService {
 
     public List<LoginEntity> getLoginByUser(String userId);
 
-    void lockLogin(String domainId, String principal, String sysId);
+    void lockLogin(String principal, String sysId);
 
-    void unLockLogin(String domainId, String principal, String sysId);
+    void unLockLogin(String principal, String sysId);
 
 
     /**
@@ -143,7 +136,7 @@ public interface LoginDataService {
 
     int bulkResetPasswordChangeCount();
 
-    List<LoginEntity> getLoginByDomain(String domain);
+//    List<LoginEntity> getLoginByDomain(String domain);
 
     public List<LoginEntity> getLockedUserSince(Date lastExecTime);
 
@@ -177,7 +170,7 @@ public interface LoginDataService {
      * @return
      */
     public int changeIdentityName(String newPrincipalName, String newPassword,
-                                  String userId, String managedSysId, String domainId);
+                                  String userId, String managedSysId);
 
     public List<LoginEntity> getLoginDetailsByManagedSys(String principalName, String managedSysId);
 

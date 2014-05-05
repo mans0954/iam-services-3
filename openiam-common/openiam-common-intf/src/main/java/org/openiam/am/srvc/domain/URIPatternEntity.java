@@ -4,10 +4,13 @@ import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
+import org.openiam.am.srvc.dto.AuthLevelGroupingURIPatternXref;
 import org.openiam.am.srvc.dto.URIPattern;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.meta.domain.MetadataElementPageTemplateEntity;
+import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
+import org.openiam.idm.srvc.ui.theme.domain.UIThemeEntity;
 
 import javax.persistence.*;
 
@@ -30,16 +33,16 @@ public class URIPatternEntity implements Serializable {
     @JoinColumn(name="CONTENT_PROVIDER_ID", referencedColumnName = "CONTENT_PROVIDER_ID")
 	private ContentProviderEntity contentProvider;
 	
-	@ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
-    @JoinColumn(name="MIN_AUTH_LEVEL", referencedColumnName = "AUTH_LEVEL_ID")
-	private AuthLevelEntity minAuthLevel;
-	
 	@Column(name = "PATTERN", length = 100, nullable = false)
 	private String pattern;
 	
 	@Column(name = "IS_PUBLIC", nullable = false)
 	@Type(type = "yes_no")
 	private boolean isPublic;
+	
+    @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+    @JoinColumn(name = "UI_THEME_ID", referencedColumnName = "UI_THEME_ID", insertable = true, updatable = true, nullable=true)
+    private UIThemeEntity uiTheme;
 
 	/*
     @Column(name = "RESOURCE_ID", length = 32, nullable = false)
@@ -61,6 +64,10 @@ public class URIPatternEntity implements Serializable {
     @Fetch(FetchMode.SUBSELECT)
 	private Set<MetadataElementPageTemplateEntity> pageTemplates;
 	
+	@OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "pattern", fetch = FetchType.LAZY)
+	@OrderBy("order ASC")
+	private Set<AuthLevelGroupingURIPatternXrefEntity> groupingXrefs;
+	
 	public String getId() {
 		return id;
 	}
@@ -75,14 +82,6 @@ public class URIPatternEntity implements Serializable {
 
 	public void setContentProvider(ContentProviderEntity contentProvider) {
 		this.contentProvider = contentProvider;
-	}
-
-	public AuthLevelEntity getMinAuthLevel() {
-		return minAuthLevel;
-	}
-
-	public void setMinAuthLevel(AuthLevelEntity minAuthLevel) {
-		this.minAuthLevel = minAuthLevel;
 	}
 
 	public String getPattern() {
@@ -123,6 +122,14 @@ public class URIPatternEntity implements Serializable {
 		}
 		metaEntitySet.add(enitity);
 	}
+	
+	public UIThemeEntity getUiTheme() {
+		return uiTheme;
+	}
+
+	public void setUiTheme(UIThemeEntity uiTheme) {
+		this.uiTheme = uiTheme;
+	}
 
 	/*
     public String getResourceId() {
@@ -143,6 +150,15 @@ public class URIPatternEntity implements Serializable {
 		this.pageTemplates = pageTemplates;
 	}
 
+	public Set<AuthLevelGroupingURIPatternXrefEntity> getGroupingXrefs() {
+		return groupingXrefs;
+	}
+
+	public void setGroupingXrefs(
+			Set<AuthLevelGroupingURIPatternXrefEntity> groupingXrefs) {
+		this.groupingXrefs = groupingXrefs;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -151,11 +167,11 @@ public class URIPatternEntity implements Serializable {
 				+ ((contentProvider == null) ? 0 : contentProvider.hashCode());
 		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		result = prime * result + (isPublic ? 1231 : 1237);
-		result = prime * result
-				+ ((minAuthLevel == null) ? 0 : minAuthLevel.hashCode());
 		result = prime * result + ((pattern == null) ? 0 : pattern.hashCode());
 		result = prime * result
 				+ ((resource == null) ? 0 : resource.hashCode());
+		result = prime * result
+				+ ((uiTheme == null) ? 0 : uiTheme.hashCode());
 		return result;
 	}
 
@@ -180,11 +196,6 @@ public class URIPatternEntity implements Serializable {
 			return false;
 		if (isPublic != other.isPublic)
 			return false;
-		if (minAuthLevel == null) {
-			if (other.minAuthLevel != null)
-				return false;
-		} else if (!minAuthLevel.equals(other.minAuthLevel))
-			return false;
 		if (pattern == null) {
 			if (other.pattern != null)
 				return false;
@@ -194,6 +205,12 @@ public class URIPatternEntity implements Serializable {
 			if (other.resource != null)
 				return false;
 		} else if (!resource.equals(other.resource))
+			return false;
+		
+		if (uiTheme == null) {
+			if (other.uiTheme != null)
+				return false;
+		} else if (!uiTheme.equals(other.uiTheme))
 			return false;
 		return true;
 	}

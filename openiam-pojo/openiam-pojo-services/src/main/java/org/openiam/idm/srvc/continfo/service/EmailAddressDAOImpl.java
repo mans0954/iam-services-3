@@ -27,7 +27,7 @@ public class EmailAddressDAOImpl extends BaseDaoImpl<EmailAddressEntity, String>
 
 	private static final Log log = LogFactory.getLog(AddressDAOImpl.class);
 	
-	private String DELETE_BY_USER_ID = "DELETE FROM %s e WHERE e.parent.userId = :userId";
+	private String DELETE_BY_USER_ID = "DELETE FROM %s e WHERE e.parent.id = :userId";
 	
 	@PostConstruct
 	public void initSQL() {
@@ -62,14 +62,14 @@ public class EmailAddressDAOImpl extends BaseDaoImpl<EmailAddressEntity, String>
             }
 
             if (email.getParent() != null) {
-                if (StringUtils.isNotBlank(email.getParent().getUserId())) {
-                    criteria.add(Restrictions.eq("parent.userId", email.getParent().getUserId()));
+                if (StringUtils.isNotBlank(email.getParent().getId())) {
+                    criteria.add(Restrictions.eq("parent.id", email.getParent().getId()));
                 }
             }
 
             if (email.getMetadataType() != null) {
-                if (StringUtils.isNotBlank(email.getMetadataType().getMetadataTypeId())) {
-                    criteria.add(Restrictions.eq("metadataType.metadataTypeId", email.getMetadataType().getMetadataTypeId()));
+                if (StringUtils.isNotBlank(email.getMetadataType().getId())) {
+                    criteria.add(Restrictions.eq("metadataType.id", email.getMetadataType().getId()));
                 }
             }
         }

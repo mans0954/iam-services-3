@@ -34,8 +34,6 @@ public class AuthProviderServiceImpl implements AuthProviderService {
     @Autowired
     private AuthResourceAttributeService authResourceAttributeService;
     @Autowired
-    private ResourceDAO resourceDao;
-    @Autowired
     private ResourceTypeDAO resourceTypeDAO;
     @Autowired
     private ResourceService resourceService;
@@ -160,7 +158,7 @@ public class AuthProviderServiceImpl implements AuthProviderService {
     }
     @Override
     @Transactional
-    public void addAuthProvider(AuthProviderEntity provider) throws Exception{
+    public void addAuthProvider(AuthProviderEntity provider, final String requestorId) throws Exception{
         if(provider==null)
             throw new NullPointerException("provider is null");
         if(provider.getProviderType()==null || provider.getProviderType().trim().isEmpty())
@@ -177,13 +175,13 @@ public class AuthProviderServiceImpl implements AuthProviderService {
         if(resourceType==null){
             throw new NullPointerException("Cannot create resource for provider. Resource type is not found");
         }
-
-        ResourceEntity resource = provider.getResource();
+        
+        final ResourceEntity resource = provider.getResource();
         resource.setName(System.currentTimeMillis() + "_" + provider.getName());
         resource.setResourceType(resourceType);
-        resource.setResourceId(null);
-        resource = resourceDao.add(resource);
-
+        resource.setId(null);
+        
+        resourceService.save(resource, requestorId);
         provider.setProviderId(null);
         provider.setResource(resource);
         //provider.setResourceId(resource.getResourceId());
@@ -203,7 +201,7 @@ public class AuthProviderServiceImpl implements AuthProviderService {
 
     @Override
     @Transactional
-    public void updateAuthProvider(AuthProviderEntity provider) throws Exception{
+    public void updateAuthProvider(AuthProviderEntity provider, final String requestorId) throws Exception{
         if(provider==null)
             throw new NullPointerException("provider is null");
         if(provider.getProviderType()==null || provider.getProviderType().trim().isEmpty())
@@ -228,9 +226,9 @@ public class AuthProviderServiceImpl implements AuthProviderService {
 
             // get resource for provider
             if(provider.getResource()!=null){
-                ResourceEntity resource = entity.getResource();
-                resource.setURL(provider.getResource().getURL());
-                resourceDao.save(resource);
+                final ResourceEntity resource = entity.getResource();
+               resource.setURL(provider.getResource().getURL());
+               //resourceService.save(resource, null);
             }
         }
         
@@ -252,7 +250,7 @@ public class AuthProviderServiceImpl implements AuthProviderService {
             authResourceAttributeMapDao.deleteByProviderId(providerId);
             this.deleteAuthProviderAttributes(providerId);
             authProviderDao.deleteByPkList(Arrays.asList(new String[]{providerId}));
-            resourceService.deleteResource(entity.getResource().getResourceId());
+            resourceService.deleteResource(entity.getResource().getId());
         }
     }
 
@@ -268,7 +266,7 @@ public class AuthProviderServiceImpl implements AuthProviderService {
         if(providerList!=null && !providerList.isEmpty()){
             for (AuthProviderEntity provider :providerList){
                 pkList.add(provider.getProviderId());
-                resourceIdList.add(provider.getResource().getResourceId());
+                resourceIdList.add(provider.getResource().getId());
             }
             authProviderAttributeDao.deleteByProviderList(pkList);
             authResourceAttributeMapDao.deleteByProviderList(pkList);

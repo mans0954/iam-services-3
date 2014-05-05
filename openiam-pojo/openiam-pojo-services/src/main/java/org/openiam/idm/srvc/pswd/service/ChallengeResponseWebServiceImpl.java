@@ -20,14 +20,8 @@
  */
 package org.openiam.idm.srvc.pswd.service;
 
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-
-import javax.jws.WebService;
-
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -35,22 +29,29 @@ import org.openiam.base.id.UUIDGen;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.exception.BasicDataServiceException;
 import org.openiam.dozer.converter.IdentityQuestionDozerConverter;
 import org.openiam.dozer.converter.UserIdentityAnswerDozerConverter;
+import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.IdentityAnswerSearchBean;
 import org.openiam.idm.searchbeans.IdentityQuestionSearchBean;
+import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.pswd.domain.IdentityQuestionEntity;
 import org.openiam.idm.srvc.pswd.domain.UserIdentityAnswerEntity;
 import org.openiam.idm.srvc.pswd.dto.IdentityQuestion;
 import org.openiam.idm.srvc.pswd.dto.UserIdentityAnswer;
+import org.openiam.internationalization.LocalizedServiceGet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.jws.WebService;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
+
 @Service("challengeResponse")
 @WebService(endpointInterface = "org.openiam.idm.srvc.pswd.service.ChallengeResponseWebService", targetNamespace = "urn:idm.openiam.org/srvc/pswd/service", portName = "ChallengeResponseWebServicePort", serviceName = "ChallengeResponseWebService")
-public class ChallengeResponseWebServiceImpl implements
-		ChallengeResponseWebService {
+public class ChallengeResponseWebServiceImpl implements ChallengeResponseWebService {
 
 	@Autowired
 	private ChallengeResponseService challengeResponseService;
@@ -65,30 +66,32 @@ public class ChallengeResponseWebServiceImpl implements
 			.getLog(ChallengeResponseWebServiceImpl.class);
 
 	@Override
-	public Integer getNumOfRequiredQuestions(String userId, String domainId) {
-		return challengeResponseService.getNumOfRequiredQuestions(userId,
-				domainId);
+	public Integer getNumOfRequiredQuestions(String userId) {
+		return challengeResponseService.getNumOfRequiredQuestions(userId);
 	}
 
 	@Override
 	public Integer count(final IdentityQuestionSearchBean searchBean) {
 		return challengeResponseService.count(searchBean);
 	}
-
+	
 	@Override
-	public List<IdentityQuestion> findQuestionBeans(
-			final IdentityQuestionSearchBean searchBean, final int from,
-			final int size) {
-		final List<IdentityQuestionEntity> resultList = challengeResponseService
-				.findQuestionBeans(searchBean, from, size);
-		return (resultList != null) ? questionDozerConverter.convertToDTOList(
-				resultList, searchBean.isDeepCopy()) : null;
+	@LocalizedServiceGet
+	public IdentityQuestion getQuestion(final String questionId, final Language language) {
+		final IdentityQuestionEntity question = challengeResponseService.getQuestion(questionId);
+		return (question != null) ? questionDozerConverter.convertToDTO(question, false) : null;
+
 	}
 
 	@Override
-	public List<UserIdentityAnswer> findAnswerBeans(
-			final IdentityAnswerSearchBean searchBean, final int from,
-			final int size) {
+	@LocalizedServiceGet
+	public List<IdentityQuestion> findQuestionBeans(final IdentityQuestionSearchBean searchBean, final int from, final int size, final Language language) {
+		final List<IdentityQuestionEntity> resultList = challengeResponseService.findQuestionBeans(searchBean, from, size);
+		return (resultList != null) ? questionDozerConverter.convertToDTOList(resultList, searchBean.isDeepCopy()) : null;
+	}
+
+	@Override
+	public List<UserIdentityAnswer> findAnswerBeans(final IdentityAnswerSearchBean searchBean, final int from, final int size) {
 		final List<UserIdentityAnswerEntity> resultList = challengeResponseService
 				.findAnswerBeans(searchBean, from, size);
 		return (resultList != null) ? answerDozerConverter.convertToDTOList(
@@ -108,10 +111,11 @@ public class ChallengeResponseWebServiceImpl implements
 				throw new BasicDataServiceException(
 						ResponseCode.NO_IDENTITY_QUESTION_GROUP);
 			}
-			if (StringUtils.isBlank(question.getQuestionText())) {
+			if (MapUtils.isEmpty(question.getDisplayNameMap())) {
 				throw new BasicDataServiceException(
 						ResponseCode.NO_IDENTITY_QUESTION);
 			}
+			/*
 			final IdentityQuestionSearchBean searchBean = new IdentityQuestionSearchBean();
 			searchBean.setQuestionText(question.getQuestionText());
 			final List<IdentityQuestionEntity> found = challengeResponseService.findQuestionBeans(searchBean, 0, 2);
@@ -125,12 +129,11 @@ public class ChallengeResponseWebServiceImpl implements
 								found.get(0).getId())) {
 					throw new BasicDataServiceException(ResponseCode.IDENTICAL_QUESTIONS);
 				}
-								
 			}
+			*/
 
-			IdentityQuestionEntity entity = questionDozerConverter
-					.convertToEntity(question, false);
-			entity = challengeResponseService.saveQuestion(entity);
+			final IdentityQuestionEntity entity = questionDozerConverter.convertToEntity(question, false);
+			challengeResponseService.saveQuestion(entity);
 			response.setResponseValue(entity.getId());
 		} catch (BasicDataServiceException e) {
 			log.error("Can't save or update resource", e);
@@ -163,15 +166,6 @@ public class ChallengeResponseWebServiceImpl implements
 			response.setStatus(ResponseStatus.FAILURE);
 		}
 		return response;
-	}
-
-	@Override
-	public IdentityQuestion getQuestion(final String questionId) {
-		final IdentityQuestionEntity question;
-		question = challengeResponseService.getQuestion(questionId);
-		return (question != null) ? questionDozerConverter.convertToDTO(
-				question, false) : null;
-
 	}
 
 	@Override
@@ -223,7 +217,7 @@ public class ChallengeResponseWebServiceImpl implements
 		}
 		return response;
 	}
-
+    @Override
 	public Response saveAnswers(List<UserIdentityAnswer> answerList) {
 		final Response response = new Response(ResponseStatus.SUCCESS);
 		try {
@@ -270,18 +264,29 @@ public class ChallengeResponseWebServiceImpl implements
 		}
 		return response;
 	}
-
-	public boolean isResponseValid(String domainId, String userId,
+    @Override
+	public boolean isResponseValid(String userId,
 			List<UserIdentityAnswer> newAnswerList) {
 		final List<UserIdentityAnswerEntity> entityList = answerDozerConverter
 				.convertToEntityList(newAnswerList, true);
-		return challengeResponseService.isResponseValid(domainId, userId,
-				entityList);
-
+		return challengeResponseService.isResponseValid(userId, entityList);
 	}
 
 	@Override
-	public boolean isUserAnsweredSecurityQuestions(final String userId, final String domainId) {
-		return challengeResponseService.isUserAnsweredSecurityQuestions(userId, domainId);
+	public boolean isUserAnsweredSecurityQuestions(final String userId) {
+		return challengeResponseService.isUserAnsweredSecurityQuestions(userId);
+	}
+
+	@Override
+	public Response resetQuestionsForUser(String userId) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			challengeResponseService.resetQuestionsForUser(userId);
+		} catch (Throwable e) {
+			log.error(String.format("Can't reset questions for user %s", userId), e);
+			response.setErrorText(e.getMessage());
+			response.setStatus(ResponseStatus.FAILURE);
+		}
+		return response;
 	}
 }

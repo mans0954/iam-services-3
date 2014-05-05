@@ -1,8 +1,9 @@
 package org.openiam.core.key.ws;
 
-import org.openiam.idm.srvc.res.service.KeyManagementWS;
-import org.openiam.idm.srvc.res.service.KeyManagementWS_Service;
-import org.openiam.idm.srvc.res.service.Response;
+
+import org.openiam.idm.srvc.key.service.KeyManagementWS;
+import org.openiam.idm.srvc.key.service.KeyManagementWS_Service;
+import org.openiam.idm.srvc.key.service.Response;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -50,8 +51,8 @@ public class KeyManagementWSClient {
        return ss.getKeyManagementWSPort();
     }
 
-    public Response generateMasterKey() throws Exception{
-        return this.getService().generateMasterKey();
+    public Response initKeyManagement() throws Exception{
+        return this.getService().initKeyManagement();
     }
 
     public Response migrateData(String secretKey) throws Exception{

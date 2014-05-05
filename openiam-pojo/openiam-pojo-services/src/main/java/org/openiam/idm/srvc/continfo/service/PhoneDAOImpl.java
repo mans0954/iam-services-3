@@ -22,7 +22,7 @@ public class PhoneDAOImpl extends BaseDaoImpl<PhoneEntity, String> implements Ph
 
 	private static final Log log = LogFactory.getLog(PhoneDAOImpl.class);
 	
-	private String DELETE_BY_USER_ID = "DELETE FROM %s e WHERE e.parent.userId = :userId";
+	private String DELETE_BY_USER_ID = "DELETE FROM %s e WHERE e.parent.id = :userId";
 	
 	@PostConstruct
 	public void initSQL() {
@@ -37,14 +37,14 @@ public class PhoneDAOImpl extends BaseDaoImpl<PhoneEntity, String> implements Ph
         } else {
 
             if (phone.getParent() != null) {
-                if (StringUtils.isNotBlank(phone.getParent().getUserId())) {
-                    criteria.add(Restrictions.eq("parent.userId", phone.getParent().getUserId()));
+                if (StringUtils.isNotBlank(phone.getParent().getId())) {
+                    criteria.add(Restrictions.eq("parent.id", phone.getParent().getId()));
                 }
             }
 
             if (phone.getMetadataType() != null) {
-                if (StringUtils.isNotBlank(phone.getMetadataType().getMetadataTypeId())) {
-                    criteria.add(Restrictions.eq("metadataType.metadataTypeId", phone.getMetadataType().getMetadataTypeId()));
+                if (StringUtils.isNotBlank(phone.getMetadataType().getId())) {
+                    criteria.add(Restrictions.eq("metadataType.id", phone.getMetadataType().getId()));
                 }
             }
 

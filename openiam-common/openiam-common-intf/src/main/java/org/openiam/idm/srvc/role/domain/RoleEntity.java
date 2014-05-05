@@ -1,6 +1,5 @@
 package org.openiam.idm.srvc.role.domain;
 
-import java.io.Serializable;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -12,8 +11,6 @@ import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
@@ -21,36 +18,36 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
 import javax.persistence.Table;
+import javax.persistence.AttributeOverride;
 import javax.validation.constraints.Size;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
-import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Where;
+import org.openiam.base.domain.AbstractMetdataTypeEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
+import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.user.domain.UserEntity;
+import org.openiam.internationalization.Internationalized;
 
 @Entity
 @Table(name="ROLE")
 @Cacheable
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @DozerDTOCorrespondence(Role.class)
-public class RoleEntity implements Serializable {
-	
-    @Id
-    @GeneratedValue(generator="system-uuid")
-    @GenericGenerator(name="system-uuid", strategy = "uuid")
-    @Column(name="ROLE_ID", length=32)
-	private String roleId;
-    
+@AttributeOverride(name = "id", column = @Column(name = "ROLE_ID"))
+@Internationalized
+public class RoleEntity extends AbstractMetdataTypeEntity {
+
     @Column(name="ROLE_NAME",length=80)
     @Size(max = 80, message = "role.name.too.long")
-    private String roleName;
+    private String name;
     
     @Column(name="DESCRIPTION")
     @Size(max = 255, message = "role.description.too.long")
@@ -58,10 +55,7 @@ public class RoleEntity implements Serializable {
     
     @Column(name="STATUS",length=20)
     private String status;
-    
-    @Column(name="SERVICE_ID",length=32)
-    private String serviceId;
-    
+
     @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name = "MANAGED_SYS_ID", referencedColumnName = "MANAGED_SYS_ID", insertable = true, updatable = true, nullable=true)
     private ManagedSysEntity managedSystem;
@@ -111,21 +105,21 @@ public class RoleEntity implements Serializable {
     
     @Column(name="CREATED_BY",length=20)
 	private String createdBy;
+    
+	@ManyToOne(fetch = FetchType.EAGER,cascade={CascadeType.ALL})
+    @JoinColumn(name="ADMIN_RESOURCE_ID", referencedColumnName = "RESOURCE_ID", insertable = true, updatable = true, nullable=true)
+	private ResourceEntity adminResource;
+	
+	@OneToMany(cascade = {CascadeType.ALL}, fetch = FetchType.LAZY, mappedBy="associationEntityId", orphanRemoval=true)
+	@Where(clause="ASSOCIATION_TYPE='ROLE'")
+	private Set<ApproverAssociationEntity> approverAssociations;
 
-	public String getRoleId() {
-		return roleId;
+	public String getName() {
+		return name;
 	}
 
-	public void setRoleId(String roleId) {
-		this.roleId = roleId;
-	}
-
-	public String getRoleName() {
-		return roleName;
-	}
-
-	public void setRoleName(String roleName) {
-		this.roleName = roleName;
+	public void setName(String name) {
+		this.name = name;
 	}
 
 	public String getDescription() {
@@ -144,19 +138,11 @@ public class RoleEntity implements Serializable {
 		this.status = status;
 	}
 
-	public String getServiceId() {
-		return serviceId;
-	}
-
-	public void setServiceId(String serviceId) {
-		this.serviceId = serviceId;
-	}
-	
 	public boolean hasGroup(final String groupId) {
 		boolean retVal = false;
 		if(groups != null) {
 			for(final GroupEntity entity : groups) {
-				if(entity.getGrpId().equals(groupId)) {
+				if(entity.getId().equals(groupId)) {
 					retVal = true;
 					break;
 				}
@@ -187,7 +173,7 @@ public class RoleEntity implements Serializable {
 			if(groups != null) {
 				for(final Iterator<GroupEntity> it = groups.iterator(); it.hasNext();) {
 					final GroupEntity entity = it.next();
-					if(entity.getGrpId().equals(groupId)) {
+					if(entity.getId().equals(groupId)) {
 						it.remove();
 						break;
 					}
@@ -224,12 +210,12 @@ public class RoleEntity implements Serializable {
 		return childRoles;
 	}
 	
-	public boolean hasChildRole(final String roleId) {
+	public boolean hasChildRole(final String id) {
 		boolean retVal = false;
-		if(roleId != null) {
+		if(id != null) {
 			if(childRoles != null) {
 				for(final RoleEntity role : childRoles) {
-					if(role.getRoleId().equals(roleId)) {
+					if(role.getId().equals(id)) {
 						retVal = true;
 						break;
 					}
@@ -248,12 +234,12 @@ public class RoleEntity implements Serializable {
 		}
 	}
 	
-	public void removeChildRole(final String roleId) {
-		if(roleId != null) {
+	public void removeChildRole(final String id) {
+		if(id != null) {
 			if(childRoles != null) {
 				for(final Iterator<RoleEntity> it = childRoles.iterator(); it.hasNext();) {
 					final RoleEntity role = it.next();
-					if(role.getRoleId().equals(roleId)) {
+					if(role.getId().equals(id)) {
 						it.remove();
 						break;
 					}
@@ -306,6 +292,32 @@ public class RoleEntity implements Serializable {
 		this.managedSystem = managedSystem;
 	}
 
+	public ResourceEntity getAdminResource() {
+		return adminResource;
+	}
+
+	public void setAdminResource(ResourceEntity adminResource) {
+		this.adminResource = adminResource;
+	}
+	
+	public Set<ApproverAssociationEntity> getApproverAssociations() {
+		return approverAssociations;
+	}
+
+	public void setApproverAssociations(
+			Set<ApproverAssociationEntity> approverAssociations) {
+		this.approverAssociations = approverAssociations;
+	}
+	
+	public void addApproverAssociation(final ApproverAssociationEntity entity) {
+		if(entity != null) {
+			if(this.approverAssociations == null) {
+				this.approverAssociations = new HashSet<ApproverAssociationEntity>();
+			}
+			this.approverAssociations.add(entity);
+		}
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -318,11 +330,9 @@ public class RoleEntity implements Serializable {
 				+ ((description == null) ? 0 : description.hashCode());
 		result = prime * result
 				+ ((managedSystem == null) ? 0 : managedSystem.hashCode());
-		result = prime * result + ((roleId == null) ? 0 : roleId.hashCode());
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		result = prime * result
-				+ ((roleName == null) ? 0 : roleName.hashCode());
-		result = prime * result
-				+ ((serviceId == null) ? 0 : serviceId.hashCode());
+				+ ((name == null) ? 0 : name.hashCode());
 		result = prime * result + ((status == null) ? 0 : status.hashCode());
 		return result;
 	}
@@ -356,20 +366,15 @@ public class RoleEntity implements Serializable {
 				return false;
 		} else if (!managedSystem.equals(other.managedSystem))
 			return false;
-		if (roleId == null) {
-			if (other.roleId != null)
+		if (id == null) {
+			if (other.id != null)
 				return false;
-		} else if (!roleId.equals(other.roleId))
+		} else if (!id.equals(other.id))
 			return false;
-		if (roleName == null) {
-			if (other.roleName != null)
+		if (name == null) {
+			if (other.name != null)
 				return false;
-		} else if (!roleName.equals(other.roleName))
-			return false;
-		if (serviceId == null) {
-			if (other.serviceId != null)
-				return false;
-		} else if (!serviceId.equals(other.serviceId))
+		} else if (!name.equals(other.name))
 			return false;
 		if (status == null) {
 			if (other.status != null)
@@ -382,9 +387,8 @@ public class RoleEntity implements Serializable {
 	@Override
 	public String toString() {
 		return String
-				.format("RoleEntity [roleId=%s, roleName=%s, description=%s, status=%s, serviceId=%s, managedSystem=%s, createDate=%s, createdBy=%s]",
-						roleId, roleName, description, status, serviceId,
-						managedSystem, createDate, createdBy);
+				.format("RoleEntity [id=%s, name=%s, description=%s, status=%s, managedSystem=%s, createDate=%s, createdBy=%s]",
+						id, name, description, status, managedSystem, createDate, createdBy);
 	}
 
 

@@ -2,8 +2,8 @@ package org.openiam.core.key.generator;
 
 import org.openiam.core.key.util.KmUtil;
 import org.openiam.core.key.ws.KeyManagementWSClient;
-import org.openiam.idm.srvc.res.service.Response;
-import org.openiam.idm.srvc.res.service.ResponseStatus;
+import org.openiam.idm.srvc.key.service.Response;
+import org.openiam.idm.srvc.key.service.ResponseStatus;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -42,7 +42,7 @@ public class KeyGenerator {
             }
             System.out.println("Generating master key...");
             KeyManagementWSClient client = new  KeyManagementWSClient(wsdlLocation);
-            Response response = client.generateMasterKey();
+            Response response = client.initKeyManagement();
 
             if(response.getStatus()== ResponseStatus.SUCCESS)
                 System.out.println("Generating master key successfully finished");

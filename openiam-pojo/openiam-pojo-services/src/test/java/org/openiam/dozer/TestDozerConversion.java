@@ -10,7 +10,10 @@ import org.openiam.idm.srvc.auth.dto.LoginAttribute;
 import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
-import org.openiam.idm.srvc.user.dto.*;
+import org.openiam.idm.srvc.user.dto.User;
+import org.openiam.idm.srvc.user.dto.UserAttribute;
+import org.openiam.idm.srvc.user.dto.UserNote;
+import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.test.context.ContextConfiguration;
@@ -49,9 +52,9 @@ public class TestDozerConversion extends AbstractTestNGSpringContextTests {
 		emailAddresses.add(new EmailAddress(rs(2), rs(2), rs(2), true));
 		user.setEmailAddresses(emailAddresses);
 		user.setEmployeeId(rs(2));
-		user.setEmployeeType(rs(2));
+		user.setEmployeeTypeId(rs(2));
 		user.setFirstName(rs(2));
-		user.setJobCode(rs(2));
+		user.setJobCodeId(rs(2));
 		user.setLastDate(new Date());
 		user.setLastName(rs(2));
 		user.setLastUpdate(new Date());
@@ -78,7 +81,6 @@ public class TestDozerConversion extends AbstractTestNGSpringContextTests {
 		user.setPrincipalList(principalList);
 		user.setRequestClientIP(rs(2));
 		user.setSecondaryStatus(UserStatusEnum.ACTIVE);
-		user.setSecurityDomain(rs(2));
 		user.setSex(rs(2));
 		user.setShowInSearch(2);
 		user.setStartDate(new Date());
@@ -87,7 +89,7 @@ public class TestDozerConversion extends AbstractTestNGSpringContextTests {
 
 		user.setTitle(rs(2));
 		user.setUserAttributes(new HashMap<String, UserAttribute>());
-		user.setUserId(rs(2));
+		user.setId(rs(2));
 		
 		final Set<UserNote> userNotes = new HashSet<UserNote>();
 		userNotes.add(new UserNote(rs(2), rs(2), rs(2), rs(2), null, rs(2)));
@@ -242,9 +244,9 @@ public class TestDozerConversion extends AbstractTestNGSpringContextTests {
 			Assert.assertTrue(CollectionUtils.isEmpty(copy.getEmailAddresses()));
 		}
 		Assert.assertEquals(original.getEmployeeId(), copy.getEmployeeId());
-		Assert.assertEquals(original.getEmployeeType(), copy.getEmployeeType());
+		Assert.assertEquals(original.getEmployeeTypeId(), copy.getEmployeeTypeId());
 		Assert.assertEquals(original.getFirstName(), copy.getFirstName());
-		Assert.assertEquals(original.getJobCode(), copy.getJobCode());
+		Assert.assertEquals(original.getJobCodeId(), copy.getJobCodeId());
 		Assert.assertEquals(original.getLastDate(), copy.getLastDate());
 		Assert.assertEquals(original.getLastName(), copy.getLastName());
 		Assert.assertEquals(original.getLastUpdate(), copy.getLastUpdate());
@@ -276,7 +278,6 @@ public class TestDozerConversion extends AbstractTestNGSpringContextTests {
 		//Assert.assertEquals(original.getRequestorDomain(), copy.getRequestorDomain());
 		Assert.assertEquals(original.getRequestorLogin(), copy.getRequestorLogin());
 		Assert.assertEquals(original.getSecondaryStatus(), copy.getSecondaryStatus());
-		Assert.assertEquals(original.getSecurityDomain(), copy.getSecurityDomain());
 		Assert.assertEquals(original.getSex(), copy.getSex());
 		Assert.assertEquals(original.getShowInSearch(), copy.getShowInSearch());
 		Assert.assertEquals(original.getStartDate(), copy.getStartDate());
@@ -289,7 +290,7 @@ public class TestDozerConversion extends AbstractTestNGSpringContextTests {
 		} else {
 			Assert.assertTrue(MapUtils.isEmpty(copy.getUserAttributes()));
 		}
-		Assert.assertEquals(original.getUserId(), copy.getUserId());
+		Assert.assertEquals(original.getId(), copy.getId());
 		
 		
 		if(isDeep) {

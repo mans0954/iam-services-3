@@ -1,7 +1,6 @@
 package org.openiam.idm.srvc.report.ws;
 
 import java.net.URISyntaxException;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -11,6 +10,8 @@ import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jws.WebParam;
 import javax.jws.WebService;
+
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -19,16 +20,20 @@ import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.dozer.converter.ReportCriteriaParamDozerConverter;
+import org.openiam.dozer.converter.ReportParamMetaTypeDozerConverter;
 import org.openiam.dozer.converter.ReportSubCriteriaParamDozerConverter;
 import org.openiam.dozer.converter.ReportInfoDozerConverter;
 import org.openiam.dozer.converter.ReportSubscriptionDozerConverter;
 import org.openiam.dozer.converter.ReportParamTypeDozerConverter;
 import org.openiam.idm.srvc.report.domain.ReportCriteriaParamEntity;
 import org.openiam.idm.srvc.report.domain.ReportInfoEntity;
+import org.openiam.idm.srvc.report.domain.ReportParamMetaTypeEntity;
 import org.openiam.idm.srvc.report.domain.ReportSubCriteriaParamEntity;
 import org.openiam.idm.srvc.report.domain.ReportSubscriptionEntity;
 import org.openiam.idm.srvc.report.domain.ReportParamTypeEntity;
 import org.openiam.idm.srvc.report.dto.ReportCriteriaParamDto;
+import org.openiam.idm.srvc.report.dto.ReportParamMetaTypeDto;
+import org.openiam.idm.srvc.report.dto.ReportQueryDto;
 import org.openiam.idm.srvc.report.dto.ReportSubCriteriaParamDto;
 import org.openiam.idm.srvc.report.dto.ReportDataDto;
 import org.openiam.idm.srvc.report.dto.ReportSubscriptionDto;
@@ -60,6 +65,7 @@ public class ReportWebServiceImpl implements ReportWebService {
 
     private static final String DEFAULT_REPORT_TASK = "frameset";
     private static final String REPORT_PARAMETER_NAME = "__report";
+    private static final String LOCALE_PARAMETER_NAME = "__locale";
 
 	@Autowired
 	private ReportInfoDozerConverter reportInfoDozerConverter;
@@ -72,6 +78,8 @@ public class ReportWebServiceImpl implements ReportWebService {
 	@Autowired
 	private ReportParamTypeDozerConverter paramTypeDozerConverter;
 	@Autowired
+	private ReportParamMetaTypeDozerConverter paramMetaTypeDozerConverter;
+	@Autowired
 	private ReportDataService reportDataService;
 
     @Autowired
@@ -81,13 +89,11 @@ public class ReportWebServiceImpl implements ReportWebService {
     private Queue queue;
 
 	@Override
-	public GetReportDataResponse executeQuery(final String reportName,
-			final HashMap<String, String> queryParams) {
+	public GetReportDataResponse executeQuery(final ReportQueryDto reportQuery) {
 		GetReportDataResponse response = new GetReportDataResponse();
-		if (!StringUtils.isEmpty(reportName)) {
+		if (!StringUtils.isEmpty(reportQuery.getReportName())) {
 			try {
-				ReportDataDto reportDataDto = reportDataService.getReportData(
-						reportName, queryParams);
+				ReportDataDto reportDataDto = reportDataService.getReportData(reportQuery);
 
 				response.setReportDataDto(reportDataDto);
 			} catch (Throwable ex) {
@@ -99,7 +105,7 @@ public class ReportWebServiceImpl implements ReportWebService {
 		} else {
 			response.setErrorCode(ResponseCode.INVALID_ARGUMENTS);
 			response.setErrorText("Invalid parameter list: reportName="
-					+ reportName);
+					+ reportQuery.getReportName());
 			response.setStatus(ResponseStatus.SUCCESS);
 		}
 
@@ -107,12 +113,12 @@ public class ReportWebServiceImpl implements ReportWebService {
 	}
 
     @Override
-    public String getReportUrl(final String reportName, final HashMap<String, String> queryParams,
-                               final String taskName, final String reportBaseUrl) {
+    public String getReportUrl(final ReportQueryDto reportQuery,
+                               final String taskName, final String reportBaseUrl, String locale) {
         try {
-            ReportInfoEntity report = reportDataService.getReportByName(reportName);
+            ReportInfoEntity report = reportDataService.getReportByName(reportQuery.getReportName());
             if (report == null) {
-                log.debug("Report couldn't be found. Report name = " + reportName);
+                log.debug("Report couldn't be found. Report name = " + reportQuery.getReportName());
                 return null;
             }
             String taskPath = StringUtils.isNotBlank(taskName) ? taskName : DEFAULT_REPORT_TASK;
@@ -120,8 +126,17 @@ public class ReportWebServiceImpl implements ReportWebService {
             URIBuilder uriBuilder = new URIBuilder(reportBaseUrl);
             uriBuilder.setPath(uriBuilder.getPath() + taskPath);
             uriBuilder.setParameter(REPORT_PARAMETER_NAME, reportDesignName);
-            for (Map.Entry<String, String> entry : queryParams.entrySet()  ) {
-                uriBuilder.addParameter(entry.getKey(), entry.getValue());
+            if (reportQuery.getQueryParams() != null) {
+                for (Map.Entry<String, List<String>> entry : reportQuery.getQueryParams().entrySet()  ) {
+                    if (CollectionUtils.isNotEmpty(entry.getValue())) {
+                        for(String value : entry.getValue()) {
+                            uriBuilder.addParameter(entry.getKey(), value);
+                        }
+                    }
+                }
+            }
+            if (StringUtils.isNotBlank(locale)) {
+                uriBuilder.setParameter(LOCALE_PARAMETER_NAME, locale);
             }
             return uriBuilder.toString();
         } catch (URISyntaxException ex) {
@@ -159,80 +174,78 @@ public class ReportWebServiceImpl implements ReportWebService {
 
 
 	@Override
-	public Response createOrUpdateReportInfo(
-			@WebParam(name = "report", targetNamespace = "") ReportInfoDto report) {
+	public Response createOrUpdateReportInfo(ReportInfoDto report) {
 		Response response = new Response();
-		ReportInfoEntity entity = null;
+		ReportInfoEntity entity;
 
-		if (report != null) {
 			try {
-
-				if (StringUtils.isBlank(report.getReportName())) {
-					response.setErrorCode(
-							ResponseCode.REPORT_NAME_NOT_SET);
-					response.setStatus(ResponseStatus.FAILURE);
-					response.setErrorText(ResponseCode.REPORT_NAME_NOT_SET.toString());
-					return response;
-				}
-				if (StringUtils.isBlank(report.getReportDataSource())) {
-					
-					response.setErrorCode(
-							ResponseCode.REPORT_DATASOURCE_NOT_SET);
-					response.setStatus(ResponseStatus.FAILURE);
-					response.setErrorText(ResponseCode.REPORT_DATASOURCE_NOT_SET.toString());
-					return response;
-				}
-				if (StringUtils.isBlank(report.getReportUrl())) {
-					
-					response.setErrorCode(
-							ResponseCode.REPORT_URL_NOT_SET);
-					response.setStatus(ResponseStatus.FAILURE);
-					response.setErrorText(ResponseCode.REPORT_URL_NOT_SET.toString());
-					return response;
-				}
-				final ReportInfoEntity found = reportDataService
-						.getReportByName(report.getReportName());
-				if (found != null) {
-					if (StringUtils.isBlank(report.getReportId())) {
-						System.out.println("Call=1");
-						response.setErrorCode(
-								ResponseCode.NAME_TAKEN);
-						response.setStatus(ResponseStatus.FAILURE);
-						response.setErrorText(ResponseCode.NAME_TAKEN.toString());
-						return response;
-					}
-
-					if (StringUtils.isNotBlank(report.getReportId())
-							&& !report.getReportId()
-									.equals(found.getReportId())) {
-						System.out.println("Call=2");
-						response.setErrorCode(
-								ResponseCode.NAME_TAKEN);
-						response.setStatus(ResponseStatus.FAILURE);
-						response.setErrorText(ResponseCode.NAME_TAKEN.toString());
-						return response;
-					}
-				}
-               
-				entity = reportInfoDozerConverter.convertToEntity(report, true);
-               
+                if ( !validateCreateOrUpdateInternal(report, response) ) {
+                    return response;
+                }
+                entity = reportInfoDozerConverter.convertToEntity(report, true);
 				entity = reportDataService.createOrUpdateReportInfo(entity);
-			} catch (Throwable t) {			
+
+			} catch (Throwable t) {
+                response.setStatus(ResponseStatus.FAILURE);
+                response.setErrorCode(ResponseCode.INTERNAL_ERROR);
 				response.setErrorText(t.getMessage());
 				return response;
 			}
-			
 			response.setResponseValue(entity.getReportId());
 			response.setStatus(ResponseStatus.SUCCESS);
-		} else {
-			response.setErrorCode(ResponseCode.INVALID_ARGUMENTS);
-			response.setErrorText("Invalid parameter list: report=" + report);
-			response.setStatus(ResponseStatus.FAILURE);
-		}
+
 		return response;
 	}
 
-	@Override
+    @Override
+    public Response validateUpdateReportInfo(ReportInfoDto report) {
+        Response response = new Response();
+        validateCreateOrUpdateInternal(report, response);
+        return response;
+    }
+
+    private boolean validateCreateOrUpdateInternal(ReportInfoDto report, Response response) {
+        response.setStatus(ResponseStatus.FAILURE);
+
+        if (report == null) {
+            response.setErrorCode(ResponseCode.INVALID_ARGUMENTS);
+            response.setErrorText("Parameter 'report' is not defined");
+            return false;
+        }
+
+        if (StringUtils.isBlank(report.getReportName())) {
+            response.setErrorCode(ResponseCode.REPORT_NAME_NOT_SET);
+            return false;
+        }
+        if (StringUtils.isBlank(report.getReportDataSource())) {
+            response.setErrorCode(ResponseCode.REPORT_DATASOURCE_NOT_SET);
+            return false;
+        }
+        if (StringUtils.isBlank(report.getReportUrl())) {
+            response.setErrorCode(ResponseCode.REPORT_URL_NOT_SET);
+            return false;
+        }
+
+        // validate unique name
+        final ReportInfoEntity found = reportDataService.getReportByName( report.getReportName() );
+        if (found != null && !found.getReportId().equals( report.getReportId() ) ) {
+            response.setErrorCode(ResponseCode.NAME_TAKEN);
+            return false;
+        }
+
+        // validate built-in report name
+        if ( report.getReportId() != null ) {
+            final ReportInfoEntity entity = reportDataService.getReport( report.getReportId() );
+            if (entity.getIsBuiltIn() && !entity.getReportName().equals(report.getReportName())) {
+                response.setErrorCode(ResponseCode.READONLY);
+                return false;
+            }
+        }
+        response.setStatus(ResponseStatus.SUCCESS);
+        return true;
+    }
+
+    @Override
 	public Response createOrUpdateReportInfoParam(
 			@WebParam(name = "reportParam", targetNamespace = "") final ReportCriteriaParamDto reportParam) {
 		log.debug("In createOrUpdateReportInfoParam:" + reportParam);
@@ -426,27 +439,46 @@ public class ReportWebServiceImpl implements ReportWebService {
 			@WebParam(name = "reportId", targetNamespace = "") String reportId) {
 		Response response = new Response();
 		if (!StringUtils.isEmpty(reportId)) {
+
 			try {
-				reportDataService.deleteReport(reportId);
-				response.setStatus(ResponseStatus.SUCCESS);
+                if (validateDelete(reportId, response)) {
+                    reportDataService.deleteReport(reportId);
+                    response.setStatus(ResponseStatus.SUCCESS);
+                }
 			} catch (Throwable t) {
-				log.error("error while deleting report" + t);
+				log.error("Can't delete report. " + t);
 				response.setStatus(ResponseStatus.FAILURE);
-				response.setErrorCode(ResponseCode.SQL_EXCEPTION);
+				response.setErrorCode(ResponseCode.INTERNAL_ERROR);
 				response.setErrorText(t.getMessage());
 				return response;
 			}
 
 		} else {
 			response.setErrorCode(ResponseCode.INVALID_ARGUMENTS);
-			response.setErrorText("Invalid parameter list: reportId="
-					+ reportId);
+			response.setErrorText("ReportId is null or empty");
 			response.setStatus(ResponseStatus.FAILURE);
 		}
 		return response;
 	}
 
-	@Override
+    private boolean validateDelete(String reportId, Response response) {
+        ReportInfoEntity report = reportDataService.getReport(reportId);
+        if (report == null) {
+            response.setErrorCode(ResponseCode.OBJECT_NOT_FOUND);
+            response.setErrorText("Report does not exist");
+            response.setStatus(ResponseStatus.FAILURE);
+            return false;
+        }
+        if (report.getIsBuiltIn()) {
+            response.setErrorCode(ResponseCode.PERMISSION_EXCEPTION);
+            response.setErrorText("Built-in report can not be deleted");
+            response.setStatus(ResponseStatus.FAILURE);
+            return false;
+        }
+        return true;
+    }
+
+    @Override
 	public GetReportParameterTypesResponse getReportParameterTypes() {
 		GetReportParameterTypesResponse response = new GetReportParameterTypesResponse();
 		List<ReportParamTypeEntity> paramTypeEntities = reportDataService
@@ -460,6 +492,21 @@ public class ReportWebServiceImpl implements ReportWebService {
 		response.setStatus(ResponseStatus.SUCCESS);
 		return response;
 	}
+
+    @Override
+    public GetReportParameterMetaTypesResponse getReportParameterMetaTypes() {
+        GetReportParameterMetaTypesResponse response = new GetReportParameterMetaTypesResponse();
+        List<ReportParamMetaTypeEntity> metaTypeEntities = reportDataService
+                .getReportParamMetaTypes();
+        List<ReportParamMetaTypeDto> metaTypeDtos = new LinkedList<ReportParamMetaTypeDto>();
+        if (metaTypeEntities != null && metaTypeEntities.size() > 0) {
+            metaTypeDtos = paramMetaTypeDozerConverter.convertToDTOList(
+                    metaTypeEntities, false);
+        }
+        response.setTypes(metaTypeDtos);
+        response.setStatus(ResponseStatus.SUCCESS);
+        return response;
+    }
 
 	@Override
 	public GetAllSubscribedReportsResponse getSubscribedReports() {

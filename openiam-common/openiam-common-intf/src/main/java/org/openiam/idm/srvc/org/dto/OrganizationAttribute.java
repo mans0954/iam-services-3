@@ -7,13 +7,18 @@ import javax.xml.bind.annotation.XmlType;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "organizationAttribute", propOrder = {
         "id",
         "metadataElementId",
         "name",
         "organizationId",
-        "value"
+        "value",
+        "values",
+        "isMultivalued"
 })
 @DozerDTOCorrespondence(OrganizationAttributeEntity.class)
 public class OrganizationAttribute implements java.io.Serializable {
@@ -25,7 +30,9 @@ public class OrganizationAttribute implements java.io.Serializable {
     private String name;
     private String organizationId;
     private String value;
-    
+    protected List<String> values = new ArrayList<String>();
+    protected Boolean isMultivalued = Boolean.FALSE;
+
     public OrganizationAttribute() {
     }
 
@@ -57,6 +64,22 @@ public class OrganizationAttribute implements java.io.Serializable {
         this.value = value;
     }
 
+    public List<String> getValues() {
+        return values;
+    }
+
+    public void setValues(List<String> values) {
+        this.values = values;
+    }
+
+    public Boolean getIsMultivalued() {
+        return isMultivalued;
+    }
+
+    public void setIsMultivalued(Boolean isMultivalued) {
+        this.isMultivalued = isMultivalued;
+    }
+
     public String getMetadataElementId() {
         return metadataElementId;
     }
@@ -82,6 +105,8 @@ public class OrganizationAttribute implements java.io.Serializable {
 		result = prime * result
 				+ ((organizationId == null) ? 0 : organizationId.hashCode());
 		result = prime * result + ((value == null) ? 0 : value.hashCode());
+        result = prime * result + ((isMultivalued == null) ? 0 : isMultivalued.hashCode());
+
 		return result;
 	}
 
@@ -119,6 +144,12 @@ public class OrganizationAttribute implements java.io.Serializable {
 				return false;
 		} else if (!value.equals(other.value))
 			return false;
+        if (isMultivalued == null) {
+            if (other.isMultivalued != null)
+                return false;
+        } else if (!isMultivalued.equals(other.isMultivalued))
+            return false;
+
 		return true;
 	}
     

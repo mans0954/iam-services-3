@@ -5,110 +5,145 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
+import javax.persistence.Transient;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
+
+import org.openiam.base.KeyDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.cat.dto.Category;
+import org.openiam.idm.srvc.lang.domain.LanguageMappingEntity;
+import org.openiam.idm.srvc.lang.dto.LanguageMapping;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
-
-// Generated Nov 4, 2008 12:11:29 AM by Hibernate Tools 3.2.2.GA
+import org.openiam.idm.srvc.meta.domain.MetadataTypeGrouping;
+import org.openiam.internationalization.Internationalized;
+import org.openiam.internationalization.InternationalizedCollection;
 
 /**
  * <code>MetadataType</code> represents a metdata type instance.
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "MetadataType", propOrder = { 
-		"metadataTypeId", 
-		"description",
-        "active", 
-        "syncManagedSys", 
-        "elementAttributes", 
-        "categories",
-        "grouping"
+@XmlType(name = "MetadataType", propOrder = {
+	"description", 
+	"active", 
+	"syncManagedSys",
+	"elementAttributes", 
+	"categories", 
+	"grouping",
+	"binary",
+	"displayNameMap",
+	"displayName",
+	"sensitive"
 })
 @DozerDTOCorrespondence(MetadataTypeEntity.class)
-public class MetadataType implements Serializable {
+@Internationalized
+public class MetadataType extends KeyDTO {
 
-    private String metadataTypeId;
     private String description;
 
     private boolean active;
     private boolean syncManagedSys;
+
+    private MetadataTypeGrouping grouping;
     
-    private String grouping;
+    private boolean binary;
+    
+    private boolean sensitive;
 
-    protected Map<String, MetadataElement> elementAttributes = new HashMap<String, MetadataElement>(
-            0);
+    protected Map<String, MetadataElement> elementAttributes = new HashMap<String, MetadataElement>(0);
     protected Set<Category> categories = new HashSet<Category>(0);
-
+    
+    @InternationalizedCollection(targetField="displayName")
+    private Map<String, LanguageMapping> displayNameMap;
+	    
+    private String displayName;
+    
     public MetadataType() {
+    	super();
     }
 
-    public MetadataType(String metadataTypeId) {
-        this.metadataTypeId = metadataTypeId;
-    }
-
-    public MetadataType(String metadataTypeId, String description) {
-        this.metadataTypeId = metadataTypeId;
-        this.description = description;
-    }
-
-    public String getMetadataTypeId() {
-        return this.metadataTypeId;
-    }
-
-    public void setMetadataTypeId(String metadataTypeId) {
-        this.metadataTypeId = metadataTypeId;
-    }
-
-    public String getDescription() {
-        return this.description;
+	public String getDescription() {
+    	return this.description;
     }
 
     public void setDescription(String description) {
-        this.description = description;
+    	this.description = description;
     }
 
     public Map<String, MetadataElement> getElementAttributes() {
-        return this.elementAttributes;
+    	return this.elementAttributes;
     }
 
-    public void setElementAttributes(
-            Map<String, MetadataElement> elementAttributes) {
-        this.elementAttributes = elementAttributes;
+    public void setElementAttributes(Map<String, MetadataElement> elementAttributes) {
+    	this.elementAttributes = elementAttributes;
     }
 
     public Set<Category> getCategories() {
-        return categories;
+    	return categories;
     }
 
     public void setCategories(Set<Category> categories) {
-        this.categories = categories;
+    	this.categories = categories;
     }
 
-	public void setActive(boolean active) {
-		this.active = active;
-	}
+    public void setActive(boolean active) {
+    	this.active = active;
+    }
 
-	public void setSyncManagedSys(boolean syncManagedSys) {
-		this.syncManagedSys = syncManagedSys;
-	}
+    public void setSyncManagedSys(boolean syncManagedSys) {
+    	this.syncManagedSys = syncManagedSys;
+    }
+    
+    
 
-	public String getGrouping() {
+    public MetadataTypeGrouping getGrouping() {
 		return grouping;
 	}
 
-	public void setGrouping(String grouping) {
+	public void setGrouping(MetadataTypeGrouping grouping) {
 		this.grouping = grouping;
 	}
 
-	public boolean isActive() {
-		return active;
+	public boolean getActive() {
+    	return active;
+    }
+
+    public boolean getSyncManagedSys() {
+    	return syncManagedSys;
+    }
+
+	public boolean isBinary() {
+		return binary;
 	}
 
-	public boolean isSyncManagedSys() {
-		return syncManagedSys;
+	public void setBinary(boolean binary) {
+		this.binary = binary;
+	}
+	
+	 public Map<String, LanguageMapping> getDisplayNameMap() {
+		 return displayNameMap;
+	 }
+
+	 public void setDisplayNameMap(Map<String, LanguageMapping> displayNameMap) {
+		 this.displayNameMap = displayNameMap;
+	 }
+
+	 public String getDisplayName() {
+		 return displayName;
+	 }
+
+	 public void setDisplayName(String displayName) {
+		 this.displayName = displayName;
+	 }
+	 
+	public boolean isSensitive() {
+		return sensitive;
+	}
+
+	public void setSensitive(boolean sensitive) {
+		this.sensitive = sensitive;
 	}
 
 	@Override
@@ -120,8 +155,9 @@ public class MetadataType implements Serializable {
 				+ ((description == null) ? 0 : description.hashCode());
 		result = prime * result
 				+ ((grouping == null) ? 0 : grouping.hashCode());
+		result = prime * result + (binary ? 1231 : 1237);
 		result = prime * result
-				+ ((metadataTypeId == null) ? 0 : metadataTypeId.hashCode());
+				+ ((id == null) ? 0 : id.hashCode());
 		result = prime * result + (syncManagedSys ? 1231 : 1237);
 		return result;
 	}
@@ -147,15 +183,16 @@ public class MetadataType implements Serializable {
 				return false;
 		} else if (!grouping.equals(other.grouping))
 			return false;
-		if (metadataTypeId == null) {
-			if (other.metadataTypeId != null)
+		if (binary != other.binary)
+			return false;
+		if (id == null) {
+			if (other.id != null)
 				return false;
-		} else if (!metadataTypeId.equals(other.metadataTypeId))
+		} else if (!id.equals(other.id))
 			return false;
 		if (syncManagedSys != other.syncManagedSys)
 			return false;
 		return true;
 	}
-
-	
+    
 }

@@ -17,13 +17,13 @@ public class AddressSearchBeanConverter implements SearchBeanConverter<AddressEn
 
         if(StringUtils.isNotBlank(searchBean.getParentId())) {
             final UserEntity parent = new UserEntity();
-            parent.setUserId(searchBean.getParentId());
+            parent.setId(searchBean.getParentId());
             address.setParent(parent);
         }
 
         if(StringUtils.isNotBlank(searchBean.getMetadataTypeId())) {
             final MetadataTypeEntity type = new MetadataTypeEntity();
-            type.setMetadataTypeId(searchBean.getMetadataTypeId());
+            type.setId(searchBean.getMetadataTypeId());
             address.setMetadataType(type);
         }
         return address;

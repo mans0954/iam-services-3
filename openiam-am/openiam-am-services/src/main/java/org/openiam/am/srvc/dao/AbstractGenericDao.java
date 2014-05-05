@@ -55,7 +55,6 @@ public abstract class AbstractGenericDao<Entity, PrimaryKey extends Serializable
             sessionFactory.getCurrentSession().persist(instance);
             return instance;
         }catch(DataAccessException dae) {
-            dae.printStackTrace();
             log.error("Add operation failed.", dae);
             throw new DataException( dae.getMessage(), dae.getCause() );
         }

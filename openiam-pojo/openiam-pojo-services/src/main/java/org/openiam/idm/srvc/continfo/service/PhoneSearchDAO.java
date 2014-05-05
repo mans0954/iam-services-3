@@ -46,7 +46,7 @@ public class PhoneSearchDAO extends AbstractHibernateSearchDao<PhoneEntity, Phon
 				for (final Object row : idList) {
 					final Object[] columns = (Object[]) row;
 					final UserEntity id = (UserEntity) columns[0];
-					result.add(id.getUserId());
+					result.add(id.getId());
 				}
             }
     	}

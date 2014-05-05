@@ -26,13 +26,9 @@ import java.sql.Timestamp;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.Transformer;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.mule.api.MuleContext;
-import org.mule.api.context.MuleContextAware;
 import org.mule.module.client.MuleClient;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.ws.Response;
@@ -45,13 +41,10 @@ import org.openiam.idm.searchbeans.AttributeMapSearchBean;
 import org.openiam.idm.searchbeans.UserSearchBean;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
-import org.openiam.idm.srvc.audit.constant.AuditSource;
-import org.openiam.idm.srvc.audit.domain.AuditLogBuilder;
-import org.openiam.idm.srvc.audit.service.AuditLogProvider;
+import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.service.AttributeMapDAO;
-import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.synch.domain.SynchConfigEntity;
 import org.openiam.idm.srvc.synch.dto.SyncResponse;
@@ -75,7 +68,7 @@ import org.springframework.transaction.annotation.Transactional;
  * @author suneet
  *
  */
-@Service
+@Service("synchService")
 public class IdentitySynchServiceImpl implements IdentitySynchService {
 
     @Autowired
@@ -88,6 +81,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
     @Autowired
     private UserDataService userManager;
     @Autowired
+    @Qualifier("defaultProvision")
     private ProvisionService provisionService;
     @Autowired
     private UserDozerConverter userDozerConverter;
@@ -100,8 +94,6 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
     @Value("${openiam.idm.ws.path}")
     private String serviceContext;
 
-    @Autowired
-    private AuditLogProvider auditLogProvider;
     @Autowired
     private AuditLogService auditLogService;
     @Value("${org.openiam.idm.system.user.id}")
@@ -178,10 +170,27 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
 
         log.debug("-startSynchronization CALLED.^^^^^^^^");
 
-        AuditLogBuilder auditBuilder = new AuditLogBuilder();
-        auditBuilder.setRequestorUserId(systemUserId).setTargetUser(null).setAction(AuditAction.SYNCHRONIZATION);
-        auditBuilder.setSource(config.getSynchConfigId());
-        auditLogProvider.persist(auditBuilder);
+        IdmAuditLog idmAuditLog = new IdmAuditLog();
+        idmAuditLog.setRequestorUserId(systemUserId);
+        idmAuditLog.setAction(AuditAction.SYNCHRONIZATION.value());
+        idmAuditLog.setSource(config.getSynchConfigId());
+
+        if ("INACTIVE".equalsIgnoreCase(config.getStatus())) {
+            idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "WARNING: Synchronization config is in 'INACTIVE' status");
+            auditLogService.enqueue(idmAuditLog);
+            SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
+            resp.setErrorCode(ResponseCode.FAIL_PROCESS_INACTIVE);
+            return resp;
+        }
+
+        SyncResponse processCheckResponse = addTask(config.getSynchConfigId());
+        if ( processCheckResponse.getStatus() == ResponseStatus.FAILURE &&
+                processCheckResponse.getErrorCode() == ResponseCode.FAIL_PROCESS_ALREADY_RUNNING) {
+            idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "WARNING: Previous synchronization run is not finished yet");
+            auditLogService.enqueue(idmAuditLog);
+            return processCheckResponse;
+
+        }
 
         String preScriptUrl = config.getPreSyncScript();
         if (StringUtils.isNotBlank(preScriptUrl)) {
@@ -207,24 +216,19 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
 
         Date startDate = new Date();
 
-        SyncResponse processCheckResponse = addTask(config.getSynchConfigId());
-        auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "Synchronization started..." + startDate);
+        idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "Synchronization started..." + startDate);
 
         try {
-            if ( processCheckResponse.getStatus() == ResponseStatus.FAILURE ) {
-                return processCheckResponse;
-
-            }
             SynchConfig configDTO = synchConfigDozerConverter.convertToDTO(config, false);
 
 			SourceAdapter adapt = adapterFactory.create(configDTO);
 
 			long newLastExecTime = System.currentTimeMillis();
 
-            syncResponse = adapt.startSynch(configDTO, auditBuilder);
+            syncResponse = adapt.startSynch(configDTO);
 			
  			log.debug("SyncReponse updateTime value=" + newLastExecTime);
-            auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "SyncReponse updateTime value=" + newLastExecTime);
+            idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "SyncReponse updateTime value=" + newLastExecTime);
 
             if (syncResponse.getLastRecordTime() == null) {
 			
@@ -239,8 +243,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
 			}
 
 		    log.debug("-startSynchronization COMPLETE.^^^^^^^^");
-            auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "-startSynchronization COMPLETE.^^^^^^^^");
-            auditLogProvider.persist(auditBuilder);
+            idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "-startSynchronization COMPLETE.^^^^^^^^");
 
             String postScriptUrl = config.getPostSyncScript();
             if (StringUtils.isNotBlank(postScriptUrl)) {
@@ -266,21 +269,17 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
             syncResponse = new SyncResponse(ResponseStatus.FAILURE);
             syncResponse.setErrorCode(ResponseCode.CLASS_NOT_FOUND);
             syncResponse.setErrorText(cnfe.getMessage());
-            auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "ERROR: "+cnfe.getMessage());
-            auditLogProvider.persist(auditBuilder);
+            idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "ERROR: "+cnfe.getMessage());
         } catch(Exception e) {
 			log.error(e);
             syncResponse = new SyncResponse(ResponseStatus.FAILURE);
             syncResponse.setErrorText(e.getMessage());
-            auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "ERROR: "+e.getMessage());
-            auditLogProvider.persist(auditBuilder);
+            idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "ERROR: "+e.getMessage());
         } finally {
-            auditLogProvider.remove(auditBuilder.getEntity().getId());
             endTask(config.getSynchConfigId());
-            return syncResponse;
-
+            auditLogService.enqueue(idmAuditLog);
         }
-
+        return syncResponse;
 	}
 
     // manage if the task is running
@@ -290,8 +289,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
      * @param configId
      * @return
      */
-    @Transactional
-    public SyncResponse addTask(String configId) {
+    private SyncResponse addTask(String configId) {
 
         SyncResponse resp = new SyncResponse(ResponseStatus.SUCCESS);
         synchronized (runningTask) {
@@ -307,8 +305,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
 
     }
 
-    @Transactional
-    public void endTask(String configID) {
+    private void endTask(String configID) {
         runningTask.remove(configID);
     }
 
@@ -357,7 +354,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
             // all the provisioning service
             for ( User user :  searchResult) {
 
-                log.debug("Migrating user: " + user.getUserId() + " " + user.getLastName());
+                log.debug("Migrating user: " + user.getId() + " " + user.getLastName());
 
                 ProvisionUser pUser = new ProvisionUser(user);
 
@@ -384,7 +381,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
                     Set<Resource> resourceSet = new HashSet<Resource>();
 
                     Resource resource = new Resource();
-                    resource.setResourceId(config.getTargetResource());
+                    resource.setId(config.getTargetResource());
 
                     if ("ADD".equalsIgnoreCase(config.getOperation())) {
                         // add to resourceList
@@ -468,7 +465,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
             roleId = st.nextToken();
         }
         Role r = new Role();
-        r.setRoleId(roleId);
+        r.setId(roleId);
 
         return r;
     }
@@ -487,7 +484,6 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
 
             searchResult = userDozerConverter.convertToDTOList(userManager.findBeans(searchBean), true);
 
-
             if (searchResult == null) {
                 resp.setStatus(ResponseStatus.FAILURE);
                 return resp;
@@ -495,12 +491,12 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
 
             // create role object to show role membership
             Role rl = new Role();
-            rl.setRoleId(roleId);
+            rl.setId(roleId);
 
             // all the provisioning service
             for ( User user :  searchResult) {
 
-                log.debug("Updating the user since this role's configuration has changed.: " + user.getUserId() + " " + user.getLastName());
+                log.debug("Updating the user since this role's configuration has changed.: " + user.getId() + " " + user.getLastName());
 
                 ProvisionUser pUser = new ProvisionUser(user);
 

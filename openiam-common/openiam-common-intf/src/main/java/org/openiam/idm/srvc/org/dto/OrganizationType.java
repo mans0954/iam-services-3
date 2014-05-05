@@ -1,39 +1,44 @@
 package org.openiam.idm.srvc.org.dto;
 
+import java.util.Map;
 import java.util.Set;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
+import org.openiam.base.KeyDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.idm.srvc.lang.dto.LanguageMapping;
 import org.openiam.idm.srvc.org.domain.OrganizationTypeEntity;
+import org.openiam.internationalization.Internationalized;
+import org.openiam.internationalization.InternationalizedCollection;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "OrganizationType", propOrder = {
-	"id",
 	"name",
 	"description",
 	"parentTypes",
 	"childTypes",
-	"organizations"
+	"organizations",
+	"displayNameMap",
+	"displayName"
 })
 @DozerDTOCorrespondence(OrganizationTypeEntity.class)
-public class OrganizationType {
+@Internationalized
+public class OrganizationType extends KeyDTO {
 
-	private String id;
 	private String name;
 	private String description;
 	private Set<OrganizationType> parentTypes;
 	private Set<OrganizationType> childTypes;
 	private Set<Organization> organizations;
 	
-	public String getId() {
-		return id;
-	}
-	public void setId(String id) {
-		this.id = id;
-	}
+	@InternationalizedCollection(targetField="displayName")
+    private Map<String, LanguageMapping> displayNameMap;
+	    
+    private String displayName;
+
 	public String getName() {
 		return name;
 	}
@@ -65,6 +70,19 @@ public class OrganizationType {
 	}
 	public void setOrganizations(Set<Organization> organizations) {
 		this.organizations = organizations;
+	}
+	
+	public Map<String, LanguageMapping> getDisplayNameMap() {
+		return displayNameMap;
+	}
+	public void setDisplayNameMap(Map<String, LanguageMapping> displayNameMap) {
+		this.displayNameMap = displayNameMap;
+	}
+	public String getDisplayName() {
+		return displayName;
+	}
+	public void setDisplayName(String displayName) {
+		this.displayName = displayName;
 	}
 	@Override
 	public int hashCode() {

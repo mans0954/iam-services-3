@@ -1,66 +1,67 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<mappings xmlns="http://dozer.sourceforge.net"
-          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-          xsi:schemaLocation="http://dozer.sourceforge.net
+<mappings xmlns="http://dozer.sourceforge.net" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://dozer.sourceforge.net
           http://dozer.sourceforge.net/schema/beanmapping.xsd">
-	
+
 	<mapping>
 		<class-a>org.openiam.idm.srvc.user.dto.UserNote</class-a>
 		<class-b>org.openiam.idm.srvc.user.dto.UserNote</class-b>
 	</mapping>
-	
+
 	<mapping>
 		<class-a>org.openiam.base.BaseObject</class-a>
 		<class-b>org.openiam.base.BaseObject</class-b>
 	</mapping>
-	
+
 	<mapping>
 		<class-a>org.openiam.idm.srvc.user.dto.UserAttribute</class-a>
 		<class-b>org.openiam.idm.srvc.user.dto.UserAttribute</class-b>
 	</mapping>
-	
+
 	<mapping>
 		<class-a>org.openiam.idm.srvc.continfo.dto.Address</class-a>
 		<class-b>org.openiam.idm.srvc.continfo.dto.Address</class-b>
 	</mapping>
-	
+
 	<mapping>
 		<class-a>org.openiam.idm.srvc.continfo.dto.Phone</class-a>
 		<class-b>org.openiam.idm.srvc.continfo.dto.Phone</class-b>
 	</mapping>
-	
+
 	<mapping>
 		<class-a>org.openiam.idm.srvc.continfo.dto.EmailAddress</class-a>
 		<class-b>org.openiam.idm.srvc.continfo.dto.EmailAddress</class-b>
 	</mapping>
-	
+
 	<mapping>
 		<class-a>org.openiam.idm.srvc.role.dto.RoleAttribute</class-a>
 		<class-b>org.openiam.idm.srvc.role.dto.RoleAttribute</class-b>
 	</mapping>
-	
+
 	<mapping>
 		<class-a>org.openiam.idm.srvc.role.dto.RolePolicy</class-a>
 		<class-b>org.openiam.idm.srvc.role.dto.RolePolicy</class-b>
 	</mapping>
-	
+
 	<mapping>
-		<class-a>org.openiam.idm.srvc.grp.domain.GroupAttributeEntity</class-a>
-		<class-b>org.openiam.idm.srvc.grp.domain.GroupAttributeEntity</class-b>
+		<class-a>org.openiam.idm.srvc.grp.domain.GroupAttributeEntity
+		</class-a>
+		<class-b>org.openiam.idm.srvc.grp.domain.GroupAttributeEntity
+		</class-b>
 	</mapping>
-	
+
 	<mapping>
 		<class-a>org.openiam.idm.srvc.policy.dto.PolicyAttribute</class-a>
 		<class-b>org.openiam.idm.srvc.policy.dto.PolicyAttribute</class-b>
 	</mapping>
 
-	
+
 	<mapping>
 		<class-a>org.openiam.idm.srvc.res.dto.ResourceProp</class-a>
 		<class-b>org.openiam.idm.srvc.res.dto.ResourceProp</class-b>
 	</mapping>
 
-	
+
 	<mapping>
 		<class-a>org.openiam.idm.srvc.res.dto.ResourceType</class-a>
 		<class-b>org.openiam.idm.srvc.res.dto.ResourceType</class-b>
@@ -73,14 +74,16 @@
 	</mapping>
 
 	<mapping>
-		<class-a>org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity</class-a>
-		<class-b>org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity</class-b>
+		<class-a>org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity
+		</class-a>
+		<class-b>org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity
+		</class-b>
 	</mapping>
-		<mapping>
+	<mapping>
 		<class-a>org.openiam.idm.srvc.cat.dto.CategoryType</class-a>
 		<class-b>org.openiam.idm.srvc.cat.dto.CategoryType</class-b>
 	</mapping>
-		<mapping>
+	<mapping>
 		<class-a>org.openiam.idm.srvc.cat.dto.CategoryLanguage</class-a>
 		<class-b>org.openiam.idm.srvc.cat.dto.CategoryLanguage</class-b>
 	</mapping>
@@ -93,24 +96,57 @@
 		<class-b>org.openiam.idm.srvc.policy.dto.PolicyObjectAssoc</class-b>
 	</mapping>
 
-    <mapping>
-        <class-a>org.openiam.idm.srvc.continfo.domain.EmailAddressEntity</class-a>
-        <class-b>org.openiam.idm.srvc.continfo.domain.EmailAddressEntity</class-b>
-    </mapping>
-    <mapping>
-        <class-a>org.openiam.idm.srvc.continfo.domain.AddressEntity</class-a>
-        <class-b>org.openiam.idm.srvc.continfo.domain.AddressEntity</class-b>
-    </mapping>
-    <mapping>
-        <class-a>org.openiam.idm.srvc.continfo.domain.PhoneEntity</class-a>
-        <class-b>org.openiam.idm.srvc.continfo.domain.PhoneEntity</class-b>
-    </mapping>
-    <mapping>
-        <class-a>org.openiam.idm.srvc.user.domain.UserNoteEntity</class-a>
-        <class-b>org.openiam.idm.srvc.user.domain.UserNoteEntity</class-b>
-    </mapping>
-    <mapping>
-        <class-a>org.openiam.idm.srvc.auth.domain.LoginEntity</class-a>
-        <class-b>org.openiam.idm.srvc.auth.domain.LoginEntity</class-b>
-    </mapping>
+	<mapping>
+		<class-a>org.openiam.idm.srvc.continfo.domain.EmailAddressEntity
+		</class-a>
+		<class-b>org.openiam.idm.srvc.continfo.domain.EmailAddressEntity
+		</class-b>
+	</mapping>
+	<mapping>
+		<class-a>org.openiam.idm.srvc.continfo.domain.AddressEntity</class-a>
+		<class-b>org.openiam.idm.srvc.continfo.domain.AddressEntity</class-b>
+	</mapping>
+	<mapping>
+		<class-a>org.openiam.idm.srvc.continfo.domain.PhoneEntity</class-a>
+		<class-b>org.openiam.idm.srvc.continfo.domain.PhoneEntity</class-b>
+	</mapping>
+	<mapping>
+		<class-a>org.openiam.idm.srvc.user.domain.UserNoteEntity</class-a>
+		<class-b>org.openiam.idm.srvc.user.domain.UserNoteEntity</class-b>
+	</mapping>
+	<mapping>
+		<class-a>org.openiam.idm.srvc.auth.domain.LoginEntity</class-a>
+		<class-b>org.openiam.idm.srvc.auth.domain.LoginEntity</class-b>
+	</mapping>
+
+	<mapping>
+		<class-a>org.openiam.am.srvc.domain.AuthAttributeEntity</class-a>
+		<class-b>org.openiam.am.srvc.domain.AuthAttributeEntity</class-b>
+	</mapping>
+
+	<mapping>
+		<class-a>org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity</class-a>
+		<class-b>org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity</class-b>
+	</mapping>
+	<mapping>
+		<class-a>org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity
+		</class-a>
+		<class-b>org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity
+		</class-b>
+	</mapping>
+
+	<mapping>
+		<class-a>org.openiam.am.srvc.domain.AuthLevelEntity</class-a>
+		<class-b>org.openiam.am.srvc.domain.AuthLevelEntity</class-b>
+	</mapping>
+
+	<mapping>
+		<class-a>org.openiam.am.srvc.domain.URIPatternMetaTypeEntity</class-a>
+		<class-b>org.openiam.am.srvc.domain.URIPatternMetaTypeEntity</class-b>
+	</mapping>
+	<mapping>
+		<class-a>org.openiam.idm.srvc.lang.dto.LanguageLocale</class-a>
+		<class-b>org.openiam.idm.srvc.lang.domain.LanguageLocaleEntity
+		</class-b>
+	</mapping>
 </mappings>

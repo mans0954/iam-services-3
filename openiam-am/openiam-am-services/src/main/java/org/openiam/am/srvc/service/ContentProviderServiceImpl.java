@@ -6,7 +6,14 @@ import org.apache.cxf.interceptor.URIMappingInterceptor;
 import org.openiam.am.srvc.constants.AmAttributes;
 import org.openiam.am.srvc.dao.*;
 import org.openiam.am.srvc.domain.*;
+import org.openiam.am.srvc.domain.pk.AuthLevelGroupingContentProviderXrefIdEntity;
+import org.openiam.am.srvc.domain.pk.AuthLevelGroupingURIPatternXrefIdEntity;
+import org.openiam.am.srvc.dto.AuthLevelGrouping;
 import org.openiam.base.AttributeOperationEnum;
+import org.openiam.base.ws.ResponseCode;
+import org.openiam.exception.BasicDataServiceException;
+import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
+import org.openiam.idm.srvc.meta.service.MetadataTypeDAO;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.service.ManagedSysDAO;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
@@ -14,6 +21,8 @@ import org.openiam.idm.srvc.res.domain.ResourceTypeEntity;
 import org.openiam.idm.srvc.res.service.ResourceDAO;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
+import org.openiam.idm.srvc.ui.theme.UIThemeDAO;
+import org.openiam.idm.srvc.ui.theme.domain.UIThemeEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,8 +37,6 @@ import java.util.Set;
 public class ContentProviderServiceImpl implements  ContentProviderService{
     private static final String resourceTypeId="CONTENT_PROVIDER";
     private static final String patternResourceTypeId="URL_PATTERN";
-    @Autowired
-    private AuthLevelDao authLevelDao;
     @Autowired
     private ContentProviderDao contentProviderDao;
     @Autowired
@@ -50,21 +57,37 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
     private ResourceDAO resourceDao;
     @Autowired
     private ResourceTypeDAO resourceTypeDAO;
+    
     @Autowired
-    private ResourceDataService resourceDataService;
+    private UIThemeDAO uiThemeDAO;
     
     @Autowired
     private ManagedSysDAO managedSysDAO;
+    
+    @Autowired
+    private AuthLevelGroupingDao authLevelGroupingDAO;
+    
+    @Autowired
+    private AuthLevelDao authLevelDAO;
+    
+    @Autowired
+    private AuthLevelAttributeDAO authLevelAttributeDAO;
+    
+    @Autowired
+    private MetadataTypeDAO typeDAO;
 
     @Override
-    public List<AuthLevelEntity> getAuthLevelList(){
-      return  authLevelDao.findAll();
+    public List<AuthLevelEntity> getAuthLevelList() {
+    	return authLevelDAO.findAll();
+    }
+    
+    @Override
+    public List<AuthLevelGroupingEntity> getAuthLevelGroupingList(){
+      return authLevelGroupingDAO.findAll();
     }
 
     @Override
     public ContentProviderEntity getContentProvider(String providerId) {
-        if(providerId==null || providerId.trim().isEmpty())
-            throw new NullPointerException("Content Provider Id not set");
         return contentProviderDao.findById(providerId);
     }
 
@@ -74,6 +97,7 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
     }
 
     @Override
+    @Transactional
     public List<ContentProviderEntity> findBeans(ContentProviderEntity example, Integer from, Integer size) {
         return contentProviderDao.getByExample(example, from, size);
     }
@@ -85,95 +109,122 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
 
     @Override
     @Transactional
-    public ContentProviderEntity saveContentProvider(ContentProviderEntity provider){
-        if (provider == null) {
-            throw new NullPointerException("Content provider not set");
-        }
-        if (StringUtils.isBlank(provider.getName())) {
-            throw new  IllegalArgumentException("Provider name not set");
-        }
-        if (provider.getMinAuthLevel()==null || StringUtils.isBlank(provider.getMinAuthLevel().getId())) {
-            throw new  IllegalArgumentException("Auth Level not set for provider");
-        }
-        if(provider.getManagedSystem() == null || StringUtils.isBlank(provider.getManagedSystem().getManagedSysId())) {
-        	throw new  IllegalArgumentException("Managed System not set for provider");
-        }
-
-        final AuthLevelEntity authLevel = authLevelDao.findById(provider.getMinAuthLevel().getId());
-        if(authLevel==null) {
-            throw new NullPointerException("Cannot save content provider. Auth LEVEL is not found");
-        }
-        
-        final ManagedSysEntity managedSys = managedSysDAO.findById(provider.getManagedSystem().getManagedSysId());
-        if(managedSys == null) {
-        	throw new NullPointerException("Cannot save content provider. Managed System is not found");
+    public void saveContentProvider(ContentProviderEntity provider){
+       
+    	UIThemeEntity theme = null;
+        final ManagedSysEntity managedSys = managedSysDAO.findById(provider.getManagedSystem().getId());        
+        if(provider.getUiTheme() != null) {
+        	theme = uiThemeDAO.findById(provider.getUiTheme().getId());
         }
         
         final String cpURL = provider.getResource().getURL();
-
-        provider.setManagedSystem(managedSys);
-        provider.setMinAuthLevel(authLevel);
-        ContentProviderEntity entity  = null;
-        if(provider.getId()==null || provider.getId().trim().isEmpty()){
-            // new provider
-            // create resources
-            ResourceTypeEntity resourceType = resourceTypeDAO.findById(resourceTypeId);
+        
+        if(StringUtils.isBlank(provider.getId())) {
+            final ResourceTypeEntity resourceType = resourceTypeDAO.findById(resourceTypeId);
             if(resourceType==null){
                 throw new NullPointerException("Cannot create resource for provider. Resource type is not found");
             }
 
-            ResourceEntity resource = new ResourceEntity();
+            final ResourceEntity resource = new ResourceEntity();
             resource.setName(resourceTypeId+"_"+provider.getName() + "_" + System.currentTimeMillis());
             resource.setResourceType(resourceType);
-            resource.setResourceId(null);
+            resource.setId(null);
             resource.setIsPublic(false);
             resource.setURL(cpURL);
             resourceDao.save(resource);
-
-            provider.setId(null);
+            
             provider.setResource(resource);
-            //provider.setResourceId(resource.getResourceId());
-
+            provider.setManagedSystem(managedSys);
+            provider.setUiTheme(theme);
+            
+            final Set<AuthLevelGroupingContentProviderXrefEntity> incomingXrefs = provider.getGroupingXrefs();
+            provider.setGroupingXrefs(null);
             contentProviderDao.save(provider);
-            entity = provider;
+            if(CollectionUtils.isNotEmpty(incomingXrefs)) {
+            	for(final AuthLevelGroupingContentProviderXrefEntity xref : incomingXrefs) {
+            		final AuthLevelGroupingEntity grouping = authLevelGroupingDAO.findById(xref.getId().getGroupingId());
+            		xref.setContentProvider(provider);
+            		xref.setGrouping(grouping);
+            		xref.setId(new AuthLevelGroupingContentProviderXrefIdEntity(grouping.getId(), provider.getId()));
+            	}
+            }
+            provider.setGroupingXrefs(incomingXrefs);
+            contentProviderDao.merge(provider);
         } else{
             // update provider
-            entity  = contentProviderDao.findById(provider.getId());
-            entity.setDomainPattern(provider.getDomainPattern());
-            entity.setName(provider.getName());
-            entity.setMinAuthLevel(authLevel);
-            entity.setIsPublic(provider.getIsPublic());
-            entity.setIsSSL(provider.getIsSSL());
-            entity.getResource().setURL(cpURL);
-            /*entity.setContextPath(provider.getContextPath());*/
-            entity.setPatternSet(null);
-            entity.setServerSet(null);
-
-            contentProviderDao.save(entity);
+            final ContentProviderEntity dbEntity = contentProviderDao.findById(provider.getId());
+        	if(dbEntity != null) {
+        		dbEntity.setDomainPattern(provider.getDomainPattern());
+        		dbEntity.setIsPublic(provider.getIsPublic());
+        		dbEntity.setIsSSL(provider.getIsSSL());
+        		//dbEntity.setManagedSystem(provider.getManagedSystem());
+        		dbEntity.setName(provider.getName());
+        		dbEntity.getResource().setURL(cpURL);
+        		dbEntity.setManagedSystem(managedSys);
+        		dbEntity.setUiTheme(theme);
+        		if(dbEntity.getGroupingXrefs() == null) {
+        			dbEntity.setGroupingXrefs(new HashSet<AuthLevelGroupingContentProviderXrefEntity>());
+        		}
+        		
+        		/* set CP id */
+        		if(CollectionUtils.isNotEmpty(provider.getGroupingXrefs())) {
+    				for(AuthLevelGroupingContentProviderXrefEntity xref : provider.getGroupingXrefs()) {
+    					xref.getId().setContentProviderId(dbEntity.getId());
+    				}
+        		}
+        		
+        		/* update and delete */
+        		for(final Iterator<AuthLevelGroupingContentProviderXrefEntity> dbIterator = dbEntity.getGroupingXrefs().iterator(); dbIterator.hasNext();) {
+        			boolean contains = false;
+        			final AuthLevelGroupingContentProviderXrefEntity dbXref = dbIterator.next();
+        			if(CollectionUtils.isNotEmpty(provider.getGroupingXrefs())) {
+        				for(AuthLevelGroupingContentProviderXrefEntity xref : provider.getGroupingXrefs()) {
+        					if(dbXref.getId().equals(xref.getId())) { /* update */
+        						dbXref.setOrder(xref.getOrder());
+        						contains = true;
+        					}
+        				}
+        			}
+        			
+        			if(!contains) {
+        				dbIterator.remove();
+        			}
+        		}
+        		
+        		if(CollectionUtils.isNotEmpty(provider.getGroupingXrefs())) {
+        			final Set<AuthLevelGroupingContentProviderXrefEntity> newXrefs = new HashSet<AuthLevelGroupingContentProviderXrefEntity>();
+    				for(final AuthLevelGroupingContentProviderXrefEntity xref : provider.getGroupingXrefs()) {
+    					boolean contains = false;
+    					for(final AuthLevelGroupingContentProviderXrefEntity dbXref : dbEntity.getGroupingXrefs()) {
+    						if(xref.getId().equals(dbXref.getId())) {
+    							contains = true;
+    						}
+    					}
+    					
+    					if(!contains) {
+    						final AuthLevelGroupingEntity grouping = authLevelGroupingDAO.findById(xref.getId().getGroupingId());
+    						xref.setContentProvider(dbEntity);
+    						xref.setGrouping(grouping);
+    						xref.setId(new AuthLevelGroupingContentProviderXrefIdEntity(grouping.getId(), dbEntity.getId()));
+    						newXrefs.add(xref);
+        				}
+    				}
+    				dbEntity.getGroupingXrefs().addAll(newXrefs);
+        		}
+        		
+        		contentProviderDao.update(dbEntity);
+        	}
         }
-        return entity;
     }
-
+    
     @Override
     @Transactional
     public void deleteContentProvider(String providerId) {
-        if (providerId==null || providerId.trim().isEmpty())
-            throw new  IllegalArgumentException("Provider Id name not set");
-
-        ContentProviderEntity entity  = contentProviderDao.findById(providerId);
-
-        if(entity!=null){
-            // delete resource
-            //resourceDataService.deleteResource(entity.getResource().getResourceId());
-            /*
-            // delete servers for given provider
-            contentProviderServerDao.deleteByProvider(providerId);
-            // delete patterns
-            deletePatternByProvider(providerId);
-            // delete provider
-            contentProviderDao.deleteById(providerId);
-            */
-            contentProviderDao.delete(entity);
+    	if(StringUtils.isNotBlank(providerId)) {
+    		final ContentProviderEntity entity  = contentProviderDao.findById(providerId);
+    		if(entity!=null){
+    			contentProviderDao.delete(entity);
+    		}
         }
     }
 
@@ -190,23 +241,23 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
     @Override
     @Transactional
     public void deleteProviderServer(String contentProviderServerId) {
-        if (contentProviderServerId==null || contentProviderServerId.trim().isEmpty())
-            throw new  IllegalArgumentException("Content Provider Server Id name not set");
-
-        contentProviderServerDao.deleteById(contentProviderServerId);
+    	if(StringUtils.isNotBlank(contentProviderServerId)) {
+    		contentProviderServerDao.deleteById(contentProviderServerId);
+    	}
     }
 
     @Override
     @Transactional
     public ContentProviderServerEntity saveProviderServer(ContentProviderServerEntity contentProviderServer) {
-        if (contentProviderServer == null)
+        if (contentProviderServer == null) {
             throw new  NullPointerException("Content Provider Server not set");
-        if (contentProviderServer.getServerURL()==null || contentProviderServer.getServerURL().trim().isEmpty())
+        }
+        if(StringUtils.isBlank(contentProviderServer.getServerURL())) {
             throw new  IllegalArgumentException("Server Url not set");
-        if (contentProviderServer.getContentProvider()==null
-                || contentProviderServer.getContentProvider().getId()==null
-                || contentProviderServer.getContentProvider().getId().trim().isEmpty())
+        }
+        if (contentProviderServer.getContentProvider()==null || StringUtils.isBlank(contentProviderServer.getContentProvider().getId())) {
             throw new  IllegalArgumentException("Content Provider not set");
+        }
 
         ContentProviderEntity provider = contentProviderDao.findById(contentProviderServer.getContentProvider().getId());
 
@@ -215,7 +266,7 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
         }
 
         ContentProviderServerEntity entity  = null;
-        if(contentProviderServer.getId()==null || contentProviderServer.getId().trim().isEmpty()){
+        if(StringUtils.isBlank(contentProviderServer.getId())) {
             // new server
 
             contentProviderServer.setId(null);
@@ -248,76 +299,111 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
 
     @Override
     @Transactional
-    public URIPatternEntity saveURIPattern(URIPatternEntity pattern) {
-        if (pattern == null) {
-            throw new NullPointerException("Invalid agrument ");
-        }
-        if (StringUtils.isBlank(pattern.getPattern())) {
-            throw new  IllegalArgumentException("Pattern not set");
-        }
-        if (pattern.getMinAuthLevel()==null || StringUtils.isBlank(pattern.getMinAuthLevel().getId())) {
-            throw new  IllegalArgumentException("Auth Level not set for url pattern");
-        }
-
-        AuthLevelEntity authLevel = authLevelDao.findById(pattern.getMinAuthLevel().getId());
-        if(authLevel==null) {
-            throw new NullPointerException("Cannot save content provider. Auth LEVEL is not found");
-        }
-
-        ContentProviderEntity provider = contentProviderDao.findById(pattern.getContentProvider().getId());
-        if(provider==null){
-            throw new NullPointerException("Cannot save content provider server. Content Provider is not found");
-        }
-
-        pattern.setMinAuthLevel(authLevel);
-        pattern.setContentProvider(provider);
-        URIPatternEntity entity  = null;
+    public void saveURIPattern(URIPatternEntity pattern) {
+        final UIThemeEntity theme = (pattern.getUiTheme() != null) ? uiThemeDAO.findById(pattern.getUiTheme().getId()) : null;
+        
         if(StringUtils.isBlank(pattern.getId())) {
-            // new provider
-            // create resources
+        	final ContentProviderEntity contentProvider = contentProviderDao.findById(pattern.getContentProvider().getId());
+        	
             ResourceTypeEntity resourceType = resourceTypeDAO.findById(patternResourceTypeId);
             if(resourceType==null){
                 throw new NullPointerException("Cannot create resource for URI pattern. Resource type is not found");
             }
 
-            ResourceEntity resource = new ResourceEntity();
+            final ResourceEntity resource = new ResourceEntity();
             resource.setName(System.currentTimeMillis() + "_" + pattern.getPattern());
             resource.setResourceType(resourceType);
-            resource.setResourceId(null);
+            resource.setId(null);
             resource.setIsPublic(false);
             resourceDao.add(resource);
 
-
-            pattern.setId(null);
             pattern.setResource(resource);
-            //pattern.setResourceId(resource.getResourceId());
-
+            pattern.setUiTheme(theme);
+            pattern.setContentProvider(contentProvider);
+            final Set<AuthLevelGroupingURIPatternXrefEntity> incomingXrefs = pattern.getGroupingXrefs();
+            pattern.setGroupingXrefs(null);
             uriPatternDao.save(pattern);
-            entity = pattern;
+            if(CollectionUtils.isNotEmpty(incomingXrefs)) {
+            	for(final AuthLevelGroupingURIPatternXrefEntity xref : incomingXrefs) {
+            		final AuthLevelGroupingEntity grouping = authLevelGroupingDAO.findById(xref.getId().getGroupingId());
+            		xref.setPattern(pattern);
+            		xref.setGrouping(grouping);
+            		xref.setId(new AuthLevelGroupingURIPatternXrefIdEntity(grouping.getId(), pattern.getId()));
+            	}
+            }
+            pattern.setGroupingXrefs(incomingXrefs);
+            
+            uriPatternDao.merge(pattern);
         } else{
-            // update provider
-            entity  = uriPatternDao.findById(pattern.getId());
-            entity.setPattern(pattern.getPattern());
-            entity.setMinAuthLevel(authLevel);
-            entity.setIsPublic(pattern.getIsPublic());
-            entity.setMetaEntitySet(null);
-
-            uriPatternDao.save(entity);
+        	final URIPatternEntity dbEntity = uriPatternDao.findById(pattern.getId());
+        	if(dbEntity != null) {
+        		dbEntity.setIsPublic(pattern.getIsPublic());
+        		dbEntity.setPattern(pattern.getPattern());
+        		dbEntity.setUiTheme(theme);
+        		if(dbEntity.getGroupingXrefs() == null) {
+        			dbEntity.setGroupingXrefs(new HashSet<AuthLevelGroupingURIPatternXrefEntity>());
+        		}
+        		
+        		/* set CP id */
+        		if(CollectionUtils.isNotEmpty(pattern.getGroupingXrefs())) {
+    				for(AuthLevelGroupingURIPatternXrefEntity xref : pattern.getGroupingXrefs()) {
+    					xref.getId().setPatternId(dbEntity.getId());
+    				}
+        		}
+        		
+        		/* update and delete */
+        		for(final Iterator<AuthLevelGroupingURIPatternXrefEntity> dbIterator = dbEntity.getGroupingXrefs().iterator(); dbIterator.hasNext();) {
+        			boolean contains = false;
+        			final AuthLevelGroupingURIPatternXrefEntity dbXref = dbIterator.next();
+        			if(CollectionUtils.isNotEmpty(pattern.getGroupingXrefs())) {
+        				for(AuthLevelGroupingURIPatternXrefEntity xref : pattern.getGroupingXrefs()) {
+        					if(dbXref.getId().equals(xref.getId())) { /* update */
+        						dbXref.setOrder(xref.getOrder());
+        						contains = true;
+        					}
+        				}
+        			}
+        			
+        			if(!contains) {
+        				dbIterator.remove();
+        			}
+        		}
+        		
+        		if(CollectionUtils.isNotEmpty(pattern.getGroupingXrefs())) {
+        			final Set<AuthLevelGroupingURIPatternXrefEntity> newXrefs = new HashSet<AuthLevelGroupingURIPatternXrefEntity>();
+    				for(final AuthLevelGroupingURIPatternXrefEntity xref : pattern.getGroupingXrefs()) {
+    					boolean contains = false;
+    					for(final AuthLevelGroupingURIPatternXrefEntity dbXref : dbEntity.getGroupingXrefs()) {
+    						if(xref.getId().equals(dbXref.getId())) {
+    							contains = true;
+    						}
+    					}
+    					
+    					if(!contains) {
+    						final AuthLevelGroupingEntity grouping = authLevelGroupingDAO.findById(xref.getId().getGroupingId());
+    						xref.setPattern(dbEntity);
+    						xref.setGrouping(grouping);
+    						xref.setId(new AuthLevelGroupingURIPatternXrefIdEntity(grouping.getId(), dbEntity.getId()));
+    						newXrefs.add(xref);
+        				}
+    				}
+    				dbEntity.getGroupingXrefs().addAll(newXrefs);
+        		}
+        		
+        		uriPatternDao.update(dbEntity);
+        	}
         }
-        return entity;
     }
 
     @Override
     @Transactional
     public void deleteProviderPattern(String patternId) {
-        if (patternId==null || patternId.trim().isEmpty())
-            throw new  IllegalArgumentException("URI Pattern Id not set");
-
-        URIPatternEntity entity  = uriPatternDao.findById(patternId);
-        if(entity != null) {
-        	uriPatternDao.delete(entity);
-        }
-        //deleteProviderPattern(entity);
+       if(StringUtils.isNotBlank(patternId)) {
+    	   URIPatternEntity entity  = uriPatternDao.findById(patternId);
+    	   if(entity != null) {
+    		   uriPatternDao.delete(entity);
+    	   }
+       }
     }
 
     @Override
@@ -338,20 +424,18 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
     @Override
     @Transactional
     public URIPatternMetaEntity saveMetaDataForPattern(URIPatternMetaEntity uriPatternMetaEntity) {
-        if(uriPatternMetaEntity==null)
+        if(uriPatternMetaEntity==null) {
             throw new NullPointerException("Invalid argument");
-        if(uriPatternMetaEntity.getPattern()==null
-           || uriPatternMetaEntity.getPattern().getId()==null
-           || uriPatternMetaEntity.getPattern().getId().trim().isEmpty())
+        }
+        if(uriPatternMetaEntity.getPattern()==null || StringUtils.isBlank(uriPatternMetaEntity.getPattern().getId())) {
             throw new NullPointerException("URI Pattern not set");
-        if(uriPatternMetaEntity.getName()==null
-           || uriPatternMetaEntity.getName().trim().isEmpty())
+        }
+        if(StringUtils.isBlank(uriPatternMetaEntity.getName())) {
             throw new  NullPointerException("URI Pattern Meta name not set");
-        if(uriPatternMetaEntity.getMetaType()==null
-           || uriPatternMetaEntity.getMetaType().getId()==null
-           || uriPatternMetaEntity.getMetaType().getId().trim().isEmpty())
+        }
+        if(uriPatternMetaEntity.getMetaType()==null || StringUtils.isBlank(uriPatternMetaEntity.getMetaType().getId())) {
             throw new NullPointerException("Meta Type not set");
-        
+        }
         if(CollectionUtils.isNotEmpty(uriPatternMetaEntity.getMetaValueSet())) {
     		for(final URIPatternMetaValueEntity value : uriPatternMetaEntity.getMetaValueSet()) {
     			value.setMetaEntity(uriPatternMetaEntity);
@@ -439,12 +523,11 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
     @Override
     @Transactional
     public void deleteMetaDataForPattern(String metaId) {
-        if (metaId==null || metaId.trim().isEmpty())
-            throw new  IllegalArgumentException("Meta Data Id not set");
-
-        URIPatternMetaEntity entity  = uriPatternMetaDao.findById(metaId);
-        if(entity != null) {
-        	this.uriPatternMetaDao.delete(entity);
+        if(metaId != null) {
+	        URIPatternMetaEntity entity  = uriPatternMetaDao.findById(metaId);
+	        if(entity != null) {
+	        	this.uriPatternMetaDao.delete(entity);
+	        }
         }
         //deletePatternMeta(entity);
     }
@@ -477,113 +560,115 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
         uriPatternMetaValueDao.deleteById(id);
     }
 
-    /*
-    @Transactional
-    private void saveMetaValue(URIPatternMetaValueEntity value) {
-        if (value == null) {
-            throw new NullPointerException("Meta Value is null");
-        }
-        if (value.getMetaEntity() == null || StringUtils.isBlank(value.getMetaEntity().getId())) {
-            throw new NullPointerException("Meta Data is not set");
-        }
-        if (StringUtils.isBlank(value.getName())) {
-            throw new NullPointerException("Meta Data Attribute Name is not set");
-        }
-        if ((value.getAmAttribute() == null || StringUtils.isBlank(value.getAmAttribute().getId())) &&
-        	(StringUtils.isBlank(value.getStaticValue())) && 
-        	(StringUtils.isBlank(value.getGroovyScript()))) {
-            throw new NullPointerException("Meta Data Attribute value not set");
-        }
+	@Override
+	@Transactional
+	public List<URIPatternEntity> getURIPatternsForContentProviderMatchingPattern(final String contentProviderId, final String pattern) {
+		return uriPatternDao.getURIPatternsForContentProviderMatchingPattern(contentProviderId, pattern);
+	}
 
-        if(value.getAmAttribute() != null && StringUtils.isNotBlank(value.getAmAttribute().getId())) {
-            value.setStaticValue(null);
-            value.setGroovyScript(null);
-            AuthResourceAMAttributeEntity amAttribute = authResourceAMAttributeDao.findById(value.getAmAttribute().getId());
-            if(amAttribute==null) {
-                throw new  NullPointerException("Cannot save Meta data value for URI pattern. Attribute Map is not found");
-            }
-            value.setAmAttribute(amAttribute);
-        } else if(StringUtils.isNotBlank(value.getGroovyScript())) {
-        	value.setStaticValue(null);
-            value.setAmAttribute(null);
-        } else {
-        	value.setAmAttribute(null);
-        	value.setGroovyScript(null);
-        }
+	@Override
+	@Transactional
+	public AuthLevelGroupingEntity getAuthLevelGrouping(String id) {
+		return authLevelGroupingDAO.findById(id);
+	}
+	
 
-        URIPatternMetaValueEntity entity = null;
-        if(value.getId()==null || value.getId().trim().isEmpty()){
-            // new meta data value
-            value.setId(null);
+	@Override
+	@Transactional
+	public void deleteAuthLevelGrouping(String id) {
+		final AuthLevelGroupingEntity entity = authLevelGroupingDAO.findById(id);
+		if(entity != null) {
+			authLevelGroupingDAO.delete(entity);
+		}
+	}
 
-            uriPatternMetaValueDao.save(value);
-            entity = value;
-        } else{
-            // update meta data value
-            entity  = uriPatternMetaValueDao.findById(value.getId());
-            entity.setName(value.getName());
-            entity.setStaticValue(value.getStaticValue());
-            entity.setAmAttribute(value.getAmAttribute());
-            uriPatternMetaValueDao.save(entity);
-        }
-    }
-    */
+	@Override
+	@Transactional
+	public void saveAuthLevelGrouping(AuthLevelGroupingEntity entity) {
+		if(StringUtils.isBlank(entity.getId())) {
+			entity.setAuthLevel(authLevelDAO.findById(entity.getAuthLevel().getId()));
+			entity.setAttributes(null);
+			entity.setContentProviderXrefs(null);
+			entity.setPatternXrefs(null);
+			authLevelGroupingDAO.save(entity);
+		} else {
+			final AuthLevelGroupingEntity dbEntity = authLevelGroupingDAO.findById(entity.getId());
+			if(dbEntity != null) {
+				dbEntity.setName(entity.getName());
+				authLevelGroupingDAO.update(dbEntity);
+			}
+		}
+	}
 
-    /*
-    @Transactional
-    private void deleteProviderPattern(URIPatternEntity entity){
-        if(entity!=null){
-            // delete resource
-            //resourceDataService.deleteResource(entity.getResource().getResourceId());
-            // delete meta
-            deleteMetaByPattern(entity.getId());
-            // delete pattern
-            
-            uriPatternDao.deleteById(entity.getId());
-        }
-    }
-    */
+	@Override
+	@Transactional
+	public void validateDeleteAuthLevelGrouping(String id)
+			throws BasicDataServiceException {
+		final AuthLevelGroupingEntity entity = authLevelGroupingDAO.findById(id);
+		if(entity != null) {
+			if(CollectionUtils.isNotEmpty(entity.getContentProviderXrefs())) {
+				throw new BasicDataServiceException(ResponseCode.AUTH_LEVEL_GROUPING_HAS_CONTENT_PROVIDERS);
+			}
+			
+			if(CollectionUtils.isNotEmpty(entity.getPatternXrefs())) {
+				throw new BasicDataServiceException(ResponseCode.AUTH_LEVEL_GROUPING_HAS_PATTERNS);
+			}
+		}
+	}
 
-    /*
-    @Transactional
-    private void deletePatternByProvider(String providerId){
-        URIPatternEntity example = new URIPatternEntity();
-        ContentProviderEntity provider = new ContentProviderEntity();
-        provider.setId(providerId);
-        example.setContentProvider(provider);
+	@Override
+	@Transactional
+	public void validateSaveAuthLevelGrouping(AuthLevelGroupingEntity entity)
+			throws BasicDataServiceException {
+		final AuthLevelGroupingEntity dbEntity = authLevelGroupingDAO.findByName(entity.getName());
+		if(dbEntity != null) {
+			if(StringUtils.isBlank(entity.getId()) || !(dbEntity.getId().equals(entity.getId()))) {
+				throw new BasicDataServiceException(ResponseCode.NAME_TAKEN);
+			}
+		}
+	}
 
-        List<URIPatternEntity> patternList = getUriPatternsList(example, 0, Integer.MAX_VALUE);
-        if(patternList!=null && !patternList.isEmpty()){
-            for (URIPatternEntity pattern: patternList){
-                deleteProviderPattern(pattern);
-            }
-        }
-    }
-    */
+	@Override
+	@Transactional
+	public void saveAuthLevelAttibute(AuthLevelAttributeEntity entity) {
+		if(entity != null) {
+			MetadataTypeEntity type = null;
+			if(entity.getType() != null) {
+				type = typeDAO.findById(entity.getType().getId());
+			}
+			if(StringUtils.isBlank(entity.getId())) {
+				entity.setId(null);
+				if(entity.getGrouping() != null) {
+					final AuthLevelGroupingEntity grouping = authLevelGroupingDAO.findById(entity.getGrouping().getId());
+					entity.setGrouping(grouping);
+				}
+				
+				entity.setType(type);
+				authLevelAttributeDAO.save(entity);
+			} else {
+				final AuthLevelAttributeEntity dbEntity = authLevelAttributeDAO.findById(entity.getId());
+				if(dbEntity != null) {
+					dbEntity.setType(type);
+					dbEntity.setValueAsByteArray(entity.getValueAsByteArray());
+					dbEntity.setValueAsString(entity.getValueAsString());
+					authLevelAttributeDAO.update(dbEntity);
+				}
+			}
+		}
+	}
 
-    /*
-    @Transactional
-    private void deleteMetaByPattern(String patternId){
-        URIPatternMetaEntity example = new URIPatternMetaEntity();
-        URIPatternEntity pattern = new URIPatternEntity();
-        pattern.setId(patternId);
-        example.setPattern(pattern);
+	@Override
+	@Transactional
+	public void deleteAuthLevelAttribute(String id) {
+		final AuthLevelAttributeEntity entity = authLevelAttributeDAO.findById(id);
+		if(entity != null) {
+			authLevelAttributeDAO.delete(entity);
+		}
+	}
 
-        List<URIPatternMetaEntity> metaList = getMetaDataList(example, 0, Integer.MAX_VALUE);
-        if(metaList!=null && !metaList.isEmpty()){
-            for (URIPatternMetaEntity meta: metaList){
-                deletePatternMeta(meta);
-            }
-        }
-    }
-    */
-    /*
-    @Transactional
-    private void deletePatternMeta(URIPatternMetaEntity entity) {
-        // delete all values
-        //uriPatternMetaValueDao.deleteByMeta(entity.getId());
-        //delete meta data
-        uriPatternMetaDao.deleteById(entity.getId());
-    }
-    */
+	@Override
+	@Transactional
+	public AuthLevelAttributeEntity getAuthLevelAttribute(String id) {
+		return authLevelAttributeDAO.findById(id);
+	}
 }

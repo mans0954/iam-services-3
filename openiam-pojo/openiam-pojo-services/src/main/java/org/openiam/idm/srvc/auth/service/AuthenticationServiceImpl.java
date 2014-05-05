@@ -22,81 +22,53 @@ package org.openiam.idm.srvc.auth.service;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.StringTokenizer;
-import javax.jws.WebMethod;
 import javax.jws.WebService;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.SysConfiguration;
-import org.openiam.base.ws.BooleanResponse;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.dozer.converter.GroupDozerConverter;
-import org.openiam.dozer.converter.RoleDozerConverter;
 import org.openiam.exception.AuthenticationException;
 import org.openiam.exception.LogoutException;
 import org.openiam.exception.ScriptEngineException;
-import org.openiam.idm.srvc.audit.annotation.AuditLoggable;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
-import org.openiam.idm.srvc.audit.constant.AuditResult;
-import org.openiam.idm.srvc.audit.constant.AuditSource;
-import org.openiam.idm.srvc.audit.domain.AuditLogBuilder;
-import org.openiam.idm.srvc.audit.service.AuditLogService;
+import org.openiam.idm.srvc.audit.constant.AuditTarget;
+import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.auth.context.AuthContextFactory;
 import org.openiam.idm.srvc.auth.context.AuthenticationContext;
 import org.openiam.idm.srvc.auth.context.PasswordCredential;
 import org.openiam.idm.srvc.auth.domain.AuthStateEntity;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.AuthenticationRequest;
-import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.dto.LoginModuleSelector;
 import org.openiam.idm.srvc.auth.dto.SSOToken;
 import org.openiam.idm.srvc.auth.dto.Subject;
 import org.openiam.idm.srvc.auth.login.AuthStateDAO;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.auth.spi.AbstractLoginModule;
-import org.openiam.idm.srvc.auth.spi.LoginModule;
 import org.openiam.idm.srvc.auth.sso.SSOTokenFactory;
 import org.openiam.idm.srvc.auth.sso.SSOTokenModule;
 import org.openiam.idm.srvc.auth.ws.AuthenticationResponse;
 import org.openiam.idm.srvc.base.AbstractBaseService;
-import org.openiam.idm.srvc.grp.domain.GroupEntity;
-import org.openiam.idm.srvc.grp.service.GroupDataService;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.policy.domain.PolicyAttributeEntity;
 import org.openiam.idm.srvc.policy.domain.PolicyEntity;
-import org.openiam.idm.srvc.policy.dto.Policy;
-import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
 import org.openiam.idm.srvc.policy.service.PolicyDAO;
-import org.openiam.idm.srvc.policy.service.PolicyDataService;
-import org.openiam.idm.srvc.pswd.service.PasswordService;
-import org.openiam.idm.srvc.res.service.ResourceDataService;
-import org.openiam.idm.srvc.role.domain.RoleEntity;
-import org.openiam.idm.srvc.role.service.RoleDataService;
-import org.openiam.idm.srvc.secdomain.domain.SecurityDomainEntity;
-import org.openiam.idm.srvc.secdomain.dto.SecurityDomain;
-import org.openiam.idm.srvc.secdomain.service.SecurityDomainDAO;
-import org.openiam.idm.srvc.secdomain.service.SecurityDomainDataService;
 import org.openiam.idm.srvc.user.domain.UserEntity;
-import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.script.ScriptIntegration;
+import org.openiam.util.UserUtils;
 import org.openiam.util.encrypt.Cryptor;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Required;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -125,18 +97,8 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
     @Autowired
     private LoginDataService loginManager;
     
-    @Autowired
-    private SecurityDomainDAO securityDomainDAO;
-    
     @Value("${org.openiam.core.login.authentication.context.class}")
     private String authContextClass;
-    
-    @Autowired
-    private ResourceDataService resourceService;
-
-    @Autowired
-    @Qualifier("defaultSSOToken")
-    private SSOTokenModule defaultToken;
     
     @Autowired
     private UserDataService userManager;
@@ -150,9 +112,6 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
     
     @Autowired
     private SysConfiguration sysConfiguration;
-    
-    @Autowired
-    private PasswordService passwordManager;
 
     @Autowired
     protected KeyManagementService keyManagementService;
@@ -163,7 +122,7 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
     @Autowired
     @Qualifier("configurableGroovyScriptEngine")
     private ScriptIntegration scriptRunner;
-    
+
     private ApplicationContext ctx;
     private BeanFactory beanFactory;
 
@@ -172,18 +131,24 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
     @Override
     @ManagedAttribute
     public void globalLogout(String userId) throws Throwable {
-        final AuditLogBuilder auditBuilder=auditLogProvider.getAuditLogBuilder();
-        try{
-            auditBuilder.setRequestorUserId(userId).setTargetUser(userId).setAction(AuditAction.LOGOUT);
+        IdmAuditLog newLogoutEvent = new IdmAuditLog();
+        newLogoutEvent.setUserId(userId);
+        UserEntity userEntity = userManager.getUser(userId);
+        LoginEntity primaryIdentity = UserUtils.getPrimaryIdentityEntity(sysConfiguration.getDefaultManagedSysId(), userEntity.getPrincipalList());
+        newLogoutEvent.addTarget(userId, AuditTarget.USER.value(), primaryIdentity.getLogin());
+        newLogoutEvent.setAction(AuditAction.LOGOUT.value());
 
+        try{
             if (userId == null) {
-                auditBuilder.fail().setFailureReason("Target User object not passed");
+                newLogoutEvent.fail();
+                newLogoutEvent.setFailureReason("Target User object not passed");
                 throw new NullPointerException("UserId is null");
             }
 
             AuthStateEntity authSt = authStateDao.findById(userId);
             if (authSt == null) {
-                auditBuilder.fail().setFailureReason(String.format("Cannot find AuthState object for User: %s",userId));
+                newLogoutEvent.fail();
+                newLogoutEvent.setFailureReason(String.format("Cannot find AuthState object for User: %s", userId));
                 log.error("AuthState not found for userId=" + userId);
                 throw new LogoutException();
             }
@@ -191,36 +156,33 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
             authSt.setAuthState(new BigDecimal(0));
             authSt.setToken("LOGOUT");
             authStateDao.saveAuthState(authSt);
-            auditBuilder.succeed();
-        /*
-        } catch (Throwable ex){
-           if(!AuditResult.FAILURE.value().equals(auditBuilder.getEntity().getResult()))
-               auditBuilder.setResult(AuditResult.FAILURE).addAttribute(AuditAttributeName.FAILURE_REASON, ex.getMessage());
-
-           throw ex;
-		*/
+            newLogoutEvent.succeed();
         } finally {
-            auditLogService.enqueue(auditBuilder);
+            auditLogService.enqueue(newLogoutEvent);
         }
     }
 
     @Override
     public AuthenticationResponse login(AuthenticationRequest request) {
-    	final AuditLogBuilder auditBuilder=auditLogProvider.getAuditLogBuilder().setAction(AuditAction.LOGIN);
+        IdmAuditLog newLoginEvent = new IdmAuditLog();
+        newLoginEvent.setUserId(null);
+        newLoginEvent.setAction(AuditAction.LOGIN.value());
+
     	final AuthenticationResponse authResp = new AuthenticationResponse(ResponseStatus.FAILURE);
     	try {
 	        if (request == null) {
-	        	auditBuilder.fail().setFailureReason("Request object is null");
+                newLoginEvent.fail();
+                newLoginEvent.setFailureReason("Request object is null");
 	            throw new IllegalArgumentException("Request object is null");
 	        }
 	
-	        final String secDomainId = request.getDomainId();
 	        final String principal = request.getPrincipal();
 	        final String password = request.getPassword();
 	        final String clientIP = request.getClientIP();
 	        final String nodeIP = request.getNodeIP();
-	
-	        auditBuilder.setClientIP(clientIP).setRequestorPrincipal(principal);
+
+            newLoginEvent.setClientIP(clientIP);
+            newLoginEvent.setRequestorPrincipal(principal);
 	        
 	        AuthenticationContext ctx = null;
 	        AbstractLoginModule loginModule = null;
@@ -230,20 +192,12 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
 	        LoginEntity lg = null;
 	        String userId = null;
 	        UserEntity user = null;
-	
-	        SecurityDomainEntity secDomain = securityDomainDAO.findById(secDomainId);
-	        if (secDomain == null) {
-	            // throw new
-	            // AuthenticationException(AuthenticationConstants.RESULT_INVALID_DOMAIN);
-	        	auditBuilder.fail().setFailureReason(String.format("Security domain %s is invalid", secDomainId));
-	            authResp.setAuthErrorCode(AuthenticationConstants.RESULT_INVALID_DOMAIN);
-	            return authResp;
-	        }
-	        auditBuilder.setManagedSysId(secDomain.getAuthSysId());
-	
+
+            newLoginEvent.setManagedSysId(sysConfiguration.getDefaultManagedSysId());
+
 	        // Determine which login module to use
 	        // - get the Authentication policy for the domain
-	        String authPolicyId = secDomain.getAuthnPolicyId();
+	        String authPolicyId = sysConfiguration.getDefaultAuthPolicyId();
 	        final PolicyEntity authPolicy = policyDao.findById(authPolicyId);
 	        PolicyAttributeEntity modType = authPolicy.getAttribute("LOGIN_MOD_TYPE");
 	        PolicyAttributeEntity defaultModule = authPolicy.getAttribute("DEFAULT_LOGIN_MOD");
@@ -264,7 +218,8 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
 	                        "INVALID LOGIN", secDomainId, null, principal, null,
 	                        null, clientIP, nodeIP);
 					*/
-	            	auditBuilder.fail().setFailureReason("Invalid Principlal");
+                    newLoginEvent.fail();
+                    newLoginEvent.setFailureReason("Invalid Principlal");
 	                // throw new
 	                // AuthenticationException(AuthenticationConstants.RESULT_INVALID_LOGIN);
 	
@@ -284,19 +239,20 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
 	                
 	                // throw new
 	                // AuthenticationException(AuthenticationConstants.RESULT_INVALID_PASSWORD);
-	                auditBuilder.fail().setFailureReason("Invalid Password");
+                    newLoginEvent.fail();
+                    newLoginEvent.setFailureReason("Invalid Password");
 	                authResp.setAuthErrorCode(AuthenticationConstants.RESULT_INVALID_PASSWORD);
 	                return authResp;
 	
 	            }
 	
-	            lg = loginManager.getLoginByManagedSys(secDomainId, principal,
-	                    secDomain.getAuthSysId());
+	            lg = loginManager.getLoginByManagedSys(principal, sysConfiguration.getDefaultManagedSysId());
 	
 	            if (lg == null) {
-	            	auditBuilder.fail().setFailureReason(
-	            			String.format("Cannot find login for security domain '%s', principal '%s' and managedSystem '%s'", 
-	            					secDomainId, principal, secDomain.getAuthSysId()));
+                    newLoginEvent.fail();
+                    newLoginEvent.setFailureReason(
+	            			String.format("Cannot find login for principal '%s' and managedSystem '%s'",
+	            					 principal, sysConfiguration.getDefaultManagedSysId()));
 	            	/*
 	                log("AUTHENTICATION", "AUTHENTICATION", "FAIL",
 	                        "INVALID LOGIN", secDomainId, null, principal, null,
@@ -312,7 +268,9 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
 	
 	            // check the user status - move to the abstract class for reuse
 	            userId = lg.getUserId();
-	            auditBuilder.setRequestorUserId(userId).setTargetUser(userId);
+                newLoginEvent.setRequestorUserId(userId);
+
+                newLoginEvent.setTargetUser(userId, lg.getLogin());
 	            
 	            user = userManager.getUser(userId);
 	        }
@@ -330,9 +288,8 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
 	                log.debug("Calling policy selection rule");
 	
 	                Map<String, Object> bindingMap = new HashMap<String, Object>();
-	                bindingMap.put("secDomainId", secDomainId);
 	                bindingMap.put("principal", principal);
-	                bindingMap.put("sysId", secDomain.getAuthSysId());
+	                bindingMap.put("sysId", sysConfiguration.getDefaultManagedSysId());
 	                // also bind the user and login objects to avoid
 	                // re-initialization of spring the scripting engine
 	                bindingMap.put("login", lg);
@@ -359,9 +316,9 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
 	            	
 	                loginModule = beanFactory.getBean(loginModName, AbstractLoginModule.class); 
 	                //loginModule = (AbstractLoginModule) LoginModuleFactory.createModule(loginModName);
-	                loginModule.setSecurityDomain(secDomain);
 	                loginModule.setUser(user);
 	                loginModule.setLg(lg);
+                    loginModule.setSysConfiguration(sysConfiguration);
 	                loginModule.setAuthPolicyId(authPolicyId);
 	            }
 	
@@ -369,18 +326,19 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
 	            log.error(ie.getMessage(), ie);
 	            // throw (new
 	            // AuthenticationException(AuthenticationConstants.INTERNAL_ERROR,ie.getMessage(),ie));
-	            auditBuilder.fail().setFailureReason(ie.getMessage()).setException(ie);
+                newLoginEvent.fail();
+                newLoginEvent.setFailureReason(ie.getMessage());
+                newLoginEvent.setException(ie);
 	            authResp.setAuthErrorCode(AuthenticationConstants.INTERNAL_ERROR);
 	            return authResp;
 	        }
 	        PasswordCredential cred = (PasswordCredential) ctx
 	                .createCredentialObject(AuthenticationConstants.AUTHN_TYPE_PASSWORD);
-	        cred.setCredentials(secDomainId, principal, password);
+	        cred.setCredentials(principal, password);
 	        ctx.setCredential(AuthenticationConstants.AUTHN_TYPE_PASSWORD, cred);
 	
 	        Map<String, Object> authParamMap = new HashMap<String, Object>();
-	        authParamMap.put("SEC_DOMAIN_ID", secDomainId);
-	        authParamMap.put("AUTH_SYS_ID", secDomain.getAuthSysId());
+	        authParamMap.put("AUTH_SYS_ID", sysConfiguration.getDefaultManagedSysId());
 	        ctx.setAuthParam(authParamMap);
 	
 	        ctx.setNodeIP(nodeIP);
@@ -393,7 +351,9 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
 	
 	            } catch (AuthenticationException ae) {
 	            	final String erroCodeAsString = Integer.valueOf(ae.getErrorCode()).toString();
-	            	auditBuilder.fail().setFailureReason(erroCodeAsString).addAttribute(AuditAttributeName.LOGIN_ERROR_CODE, erroCodeAsString);
+                    newLoginEvent.fail();
+                    newLoginEvent.setFailureReason(erroCodeAsString);
+                    newLoginEvent.addAttribute(AuditAttributeName.LOGIN_ERROR_CODE, erroCodeAsString);
 	                int errCode = ae.getErrorCode();
 	                switch (errCode) {
 		                case AuthenticationConstants.RESULT_INVALID_DOMAIN:
@@ -436,7 +396,9 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
 	                return authResp;
 	            } catch (Throwable e) {
 	            	log.error("Unknown Exception", e);
-	            	auditBuilder.fail().setFailureReason(e.getMessage()).setException(e);
+                    newLoginEvent.fail();
+                    newLoginEvent.setFailureReason(e.getMessage());
+                    newLoginEvent.setException(e);
 	                authResp.setStatus(ResponseStatus.FAILURE);
 	                authResp.setAuthErrorCode(AuthenticationConstants.INTERNAL_ERROR);
 	                authResp.setAuthErrorMessage(e.getMessage());
@@ -449,12 +411,12 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
 	        //populateSubject(sub.getUserId(), sub);
 	
 	        log.debug("*** PasswordAuth complete...Returning response object");
-	
-	        auditBuilder.succeed();
+
+            newLoginEvent.succeed();
 	        authResp.setSubject(sub);
 	        authResp.setStatus(ResponseStatus.SUCCESS);
     	} finally {
-    		auditLogService.enqueue(auditBuilder);
+    		auditLogService.enqueue(newLoginEvent);
     	}
         return authResp;
     }
@@ -468,20 +430,13 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
 
         // validateToken first
 
-        final SecurityDomainEntity secDomain = securityDomainDAO.findById(sysConfiguration.getDefaultSecurityDomain());
-
-        PolicyEntity plcy = policyDao.findById(secDomain.getAuthnPolicyId());
-        String attrValue = getPolicyAttribute(plcy.getPolicyAttributes(),
-                "FAILED_AUTH_COUNT");
-        String tokenLife = getPolicyAttribute(plcy.getPolicyAttributes(),
-                "TOKEN_LIFE");
-        String tokenIssuer = getPolicyAttribute(plcy.getPolicyAttributes(),
-                "TOKEN_ISSUER");
+        PolicyEntity plcy = policyDao.findById(sysConfiguration.getDefaultAuthPolicyId());
+        String attrValue = getPolicyAttribute(plcy.getPolicyAttributes(), "FAILED_AUTH_COUNT");
+        String tokenLife = getPolicyAttribute(plcy.getPolicyAttributes(),  "TOKEN_LIFE");
+        String tokenIssuer = getPolicyAttribute(plcy.getPolicyAttributes(), "TOKEN_ISSUER");
 
         // get the userId of this token
-        LoginEntity lg = loginManager.getLoginByManagedSys(
-                sysConfiguration.getDefaultSecurityDomain(), principal,
-                sysConfiguration.getDefaultManagedSysId());
+        LoginEntity lg = loginManager.getLoginByManagedSys(principal, sysConfiguration.getDefaultManagedSysId());
 
         if (lg == null) {
             resp.setStatus(ResponseStatus.FAILURE);
@@ -582,7 +537,7 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
 
     private void updateAuthState(Subject sub) {
 
-    	AuthStateEntity state = new AuthStateEntity(sub.getDomainId(), new BigDecimal(1),
+    	AuthStateEntity state = new AuthStateEntity(null, new BigDecimal(1),
                 sub.getSsoToken().getExpirationTime().getTime(), sub
                         .getSsoToken().getToken(), sub.getUserId());
 

@@ -1,7 +1,5 @@
 package org.openiam.provision.service;
 
-import java.util.List;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -20,7 +18,6 @@ import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
-import org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorDto;
 import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.idm.srvc.mngsys.ws.ProvisionConnectorWebService;
 import org.openiam.idm.srvc.user.domain.UserEntity;
@@ -32,6 +29,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 /**
  * Class to handle the Disable User operation
@@ -143,7 +142,7 @@ public class DisableUserDelegate {
 
         // typical sync
         List<LoginEntity> principalList = loginManager
-                .getLoginByUser(usr.getUserId());
+                .getLoginByUser(usr.getId());
         if (principalList != null) {
             log.debug("PrincipalList size =" + principalList.size());
             for (LoginEntity lg : principalList) {
@@ -216,10 +215,8 @@ public class DisableUserDelegate {
                                 resumeReq, MuleContextProvider.getCtx());
                     }
 
-                    String domainId = null;
                     String loginId = null;
                     if (lRequestor != null) {
-                        domainId = lRequestor.getDomainId();
                         loginId = lRequestor.getLogin();
                     }
                     /*

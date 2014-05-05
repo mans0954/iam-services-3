@@ -14,8 +14,6 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-import static org.hibernate.criterion.Example.create;
-
 /**
  * Home object for domain model class ManagedSys.
  * @see org.openiam.idm.srvc.mngsys.service
@@ -30,8 +28,8 @@ public class ManagedSysDAOImpl extends BaseDaoImpl<ManagedSysEntity, String> imp
 	protected Criteria getExampleCriteria(ManagedSysEntity example) {
 		final Criteria criteria = getCriteria();
 		if(example != null) {
-			if(StringUtils.isNotBlank(example.getManagedSysId())) {
-				criteria.add(Restrictions.eq("managedSysId", example.getManagedSysId()));
+			if(StringUtils.isNotBlank(example.getId())) {
+				criteria.add(Restrictions.eq(getPKfieldName(), example.getId()));
 			} else {
 				if(StringUtils.isNotBlank(example.getName())) {
 					String name = example.getName();
@@ -53,26 +51,25 @@ public class ManagedSysDAOImpl extends BaseDaoImpl<ManagedSysEntity, String> imp
 						}
 					}
 				}
-				if(StringUtils.isNotBlank(example.getDomainId())) {
-					criteria.add(Restrictions.eq("domainId", example.getDomainId()));;
-				}
 			}
 		}
 		return criteria;
 	}
 
 	@SuppressWarnings(value = "unchecked")
+    @Override
 	public List<ManagedSysEntity> findbyConnectorId(String connectorId) {
-		Criteria criteria = getCriteria().add(Restrictions.eq("connectorId",connectorId)).addOrder(Order.asc("managedSysId"));
+		Criteria criteria = getCriteria().add(Restrictions.eq("connectorId",connectorId)).addOrder(Order.asc(getPKfieldName()));
 		return (List<ManagedSysEntity>)criteria.list();
 	}
 
-	@SuppressWarnings(value = "unchecked")
-	public List<ManagedSysEntity> findbyDomain(String domainId) {
-        Criteria criteria = getCriteria().add(Restrictions.eq("domainId",domainId)).addOrder(Order.asc("managedSysId"));
-		return (List<ManagedSysEntity>)criteria.list();
-	}
+//	@SuppressWarnings(value = "unchecked")
+//	public List<ManagedSysEntity> findbyDomain(String domainId) {
+//        Criteria criteria = getCriteria().add(Restrictions.eq("domainId",domainId)).addOrder(Order.asc(getPKfieldName()));
+//		return (List<ManagedSysEntity>)criteria.list();
+//	}
 
+    @Override
     @SuppressWarnings(value = "unchecked")
 	public List<ManagedSysEntity> findAllManagedSys() {
         Criteria criteria = getCriteria().addOrder(Order.asc("name"));
@@ -82,9 +79,10 @@ public class ManagedSysDAOImpl extends BaseDaoImpl<ManagedSysEntity, String> imp
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.mngsys.service.ManagedSysDAO#findByName(java.lang.String)
 	 */
+    @Override
     @SuppressWarnings(value = "unchecked")
     public ManagedSysEntity findByName(String name) {
-        Criteria criteria = getCriteria().add(Restrictions.eq("name",name)).addOrder(Order.asc("name")).addOrder(Order.asc("managedSysId"));
+        Criteria criteria = getCriteria().add(Restrictions.eq("name",name)).addOrder(Order.asc("name")).addOrder(Order.asc(getPKfieldName()));
         List<ManagedSysEntity> results = (List<ManagedSysEntity>)criteria.list();
         if(CollectionUtils.isNotEmpty(results)) {
             log.info("ManagedSys resultSet = " + results.size());
@@ -95,6 +93,7 @@ public class ManagedSysDAOImpl extends BaseDaoImpl<ManagedSysEntity, String> imp
         }
 	}
 
+    @Override
     @SuppressWarnings(value = "unchecked")
     public ManagedSysEntity findByResource(String resourceId, String status) {
         Criteria criteria = getCriteria()
@@ -116,7 +115,7 @@ public class ManagedSysDAOImpl extends BaseDaoImpl<ManagedSysEntity, String> imp
 	
     @Override
     protected String getPKfieldName() {
-        return "managedSysId";
+        return "id";
     }
 
 	@Override

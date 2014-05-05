@@ -4,7 +4,6 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 import java.io.Serializable;
-import java.util.List;
 
 
 /**
@@ -30,7 +29,6 @@ import java.util.List;
         "saml",
         "samlType",
         "daysToPwdExp",
-        "domainId",
         "ssoToken",
         "userId",
         "principal"
@@ -46,7 +44,6 @@ public class Subject implements Serializable {
     private String saml;
     private String samlType;
     private int daysToPwdExp = 0;
-    private String domainId;
 
     private SSOToken ssoToken;    /* Object containing the sso token and related information */
 
@@ -154,7 +151,6 @@ public class Subject implements Serializable {
                 ", saml='" + saml + '\'' +
                 ", samlType='" + samlType + '\'' +
                 ", daysToPwdExp=" + daysToPwdExp +
-                ", domainId='" + domainId + '\'' +
                 ", ssoToken=" + ssoToken +
                 ", userId='" + userId + '\'' +
                 ", principal='" + principal + '\'' +
@@ -255,14 +251,5 @@ public class Subject implements Serializable {
     public void setSsoToken(SSOToken ssoToken) {
         this.ssoToken = ssoToken;
     }
-
-    public String getDomainId() {
-        return domainId;
-    }
-
-    public void setDomainId(String domainId) {
-        this.domainId = domainId;
-    }
-
 
 }

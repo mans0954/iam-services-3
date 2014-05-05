@@ -25,6 +25,7 @@ import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.IdentityAnswerSearchBean;
 import org.openiam.idm.searchbeans.IdentityQuestionSearchBean;
 import org.openiam.idm.searchbeans.PolicySearchBean;
+import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.pswd.dto.IdentityQuestion;
 import org.openiam.idm.srvc.pswd.dto.UserIdentityAnswer;
@@ -44,15 +45,15 @@ import java.util.List;
 public interface ChallengeResponseWebService {
     
 	@WebMethod
-	public Integer getNumOfRequiredQuestions(@WebParam(name = "userId", targetNamespace = "") final String userId, 
-											 @WebParam(name = "domainId", targetNamespace = "") final String domainId);
+	public Integer getNumOfRequiredQuestions(@WebParam(name = "userId", targetNamespace = "") final String userId);
 	@WebMethod
 	public Integer count(@WebParam(name = "searchBean", targetNamespace = "") final IdentityQuestionSearchBean searchBean);
 
 	@WebMethod
 	public List<IdentityQuestion> findQuestionBeans(@WebParam(name = "searchBean", targetNamespace = "") final IdentityQuestionSearchBean searchBean, 
 									  				@WebParam(name = "from", targetNamespace = "") int from, 
-									  				@WebParam(name = "size", targetNamespace = "") int size);
+									  				@WebParam(name = "size", targetNamespace = "") int size,
+									  				@WebParam(name = "language", targetNamespace = "") final Language language);
 	
 	@WebMethod
 	public Response saveQuestion(@WebParam(name = "question", targetNamespace = "") final IdentityQuestion question);
@@ -61,13 +62,17 @@ public interface ChallengeResponseWebService {
 	public Response deleteQuestion(@WebParam(name = "questionId", targetNamespace = "") final String questionId);
 	
 	@WebMethod
-	public IdentityQuestion getQuestion(@WebParam(name = "questionId", targetNamespace = "") final String questionId);
+	public IdentityQuestion getQuestion(
+			@WebParam(name = "questionId", targetNamespace = "") final String questionId,
+			@WebParam(name = "language", targetNamespace = "") final Language language);
 	
 	@WebMethod
 	public List<UserIdentityAnswer> findAnswerBeans(@WebParam(name = "searchBean", targetNamespace = "") final IdentityAnswerSearchBean searchBean,
 													@WebParam(name = "from", targetNamespace = "") int from, 
 													@WebParam(name = "size", targetNamespace = "") int size);
 	
+	@WebMethod
+	public Response resetQuestionsForUser(final @WebParam(name = "userId", targetNamespace = "") String userId);
 	
 	@WebMethod
 	public Response saveAnswer(@WebParam(name = "answer", targetNamespace = "") final UserIdentityAnswer answer);
@@ -89,9 +94,9 @@ public interface ChallengeResponseWebService {
      * @throws RemoteException
      */
 	@WebMethod
-    boolean isResponseValid(String domainId, String userId, List<UserIdentityAnswer> answerList);
+    boolean isResponseValid(String userId, List<UserIdentityAnswer> answerList);
     
 	@WebMethod
-    public boolean isUserAnsweredSecurityQuestions(final String userId, final String domainId);
+    public boolean isUserAnsweredSecurityQuestions(final String userId);
 
 }

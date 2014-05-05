@@ -53,8 +53,8 @@ public class ContentProviderDaoImpl extends BaseDaoImpl<ContentProviderEntity, S
                 criteria.add(Restrictions.eq("domainPattern", entity.getDomainPattern()));
             }
 
-            if(entity.getResource() != null && StringUtils.isNotEmpty(entity.getResource().getResourceId())) {
-            	criteria.add(Restrictions.eq("resource.resourceId", entity.getResource().getResourceId()));
+            if(entity.getResource() != null && StringUtils.isNotEmpty(entity.getResource().getId())) {
+            	criteria.add(Restrictions.eq("resource.id", entity.getResource().getId()));
             }
         }
         return criteria;
@@ -91,7 +91,7 @@ public class ContentProviderDaoImpl extends BaseDaoImpl<ContentProviderEntity, S
 	public List<ContentProviderEntity> getByResourceId(String resourceId) {
 		final ContentProviderEntity entity = new ContentProviderEntity();
 		final ResourceEntity resource = new ResourceEntity();
-		resource.setResourceId(resourceId);
+		resource.setId(resourceId);
 		entity.setResource(resource);
 		return getByExample(entity);
 	}

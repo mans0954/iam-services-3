@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.openiam.idm.searchbeans.MetadataElementSearchBean;
 import org.openiam.idm.searchbeans.MetadataTypeSearchBean;
+import org.openiam.idm.srvc.lang.domain.LanguageEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataValidValueEntity;
@@ -20,29 +21,10 @@ import org.openiam.idm.srvc.meta.dto.MetadataType;
  */
 
 public interface MetadataService {
-
-    /**
-     * Gets the Metadata Element based on the Type Id.It also returns the MetadataOptions
-     * with the MetadataElements.
-     *
-     * @param typeId the MetadataType for which the MetadataElements are required.
-     * @return the Map which contains MetadataId as Key and MetadataElementValue
-     *         objects as Values.
-     */
-	public List<MetadataElementEntity> getMetadataElementByType(String typeId);
-
-	public List<MetadataElementEntity> getAllElementsForCategoryType(String categoryType);
-
-    /**
-     * Returns a list of MetadataTypes that are associated with a Category
-     *
-     * @param categoryId
-     */
-	public List<MetadataTypeEntity> getTypesInCategory(String categoryId);
 	
 	public List<MetadataElementEntity> findElementByName(final String name);
 	
-	public List<MetadataElementEntity> findBeans(final MetadataElementSearchBean searchBean, final int from, final int size);
+	public List<MetadataElementEntity> findBeans(final MetadataElementSearchBean searchBean, final int from, final int size, final LanguageEntity entity);
 	
 	public List<MetadataTypeEntity> findBeans(final MetadataTypeSearchBean searchBean, final int from, final int size);
 	
@@ -60,6 +42,4 @@ public interface MetadataService {
 	
 	//public void save(final MetadataValidValueEntity entity);
 	public void delteMetaValidValue(final String validValueId);
-	
-	public List<MetadataTypeEntity> getAllMetadataTypes();
 }

@@ -1,12 +1,5 @@
 package org.openiam.idm.parser.csv;
 
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
 import org.openiam.am.srvc.constants.CSVSource;
 import org.openiam.am.srvc.constants.UserFields;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
@@ -17,6 +10,9 @@ import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 @Service("userCSVParser")
 public class UserCSVParser extends AbstractCSVParser<User, UserFields>
@@ -56,13 +52,13 @@ public class UserCSVParser extends AbstractCSVParser<User, UserFields>
             user.setEmployeeId(objValue);
             break;
         case employeeType:
-            user.setEmployeeType(objValue);
+            user.setEmployeeTypeId(objValue);
             break;
         case firstName:
             user.setFirstName(objValue);
             break;
         case jobCode:
-            user.setJobCode(objValue);
+            user.setJobCodeId(objValue);
             break;
         case lastName:
             user.setLastName(objValue);
@@ -114,7 +110,7 @@ public class UserCSVParser extends AbstractCSVParser<User, UserFields>
             break;
         case uid:
         case userId:
-            user.setUserId(objValue);
+            user.setId(objValue);
             break;
         case userTypeInd:
             user.setUserTypeInd(objValue);
@@ -169,9 +165,6 @@ public class UserCSVParser extends AbstractCSVParser<User, UserFields>
             break;
         case alternateContactId:
             user.setAlternateContactId(objValue);
-            break;
-        case securityDomain:
-            user.setSecurityDomain(objValue);
             break;
         case userOwnerId:
             user.setUserOwnerId(objValue);
@@ -228,13 +221,13 @@ public class UserCSVParser extends AbstractCSVParser<User, UserFields>
             objValue = toString(user.getEmployeeId());
             break;
         case employeeType:
-            objValue = toString(user.getEmployeeType());
+            objValue = toString(user.getEmployeeTypeId());
             break;
         case firstName:
             objValue = toString(user.getFirstName());
             break;
         case jobCode:
-            objValue = toString(user.getJobCode());
+            objValue = toString(user.getJobCodeId());
             break;
         case lastName:
             objValue = toString(user.getLastName());
@@ -281,7 +274,7 @@ public class UserCSVParser extends AbstractCSVParser<User, UserFields>
             break;
         case uid:
         case userId:
-            objValue = toString(user.getUserId());
+            objValue = toString(user.getId());
             break;
         case userTypeInd:
             objValue = toString(user.getUserTypeInd());
@@ -319,9 +312,6 @@ public class UserCSVParser extends AbstractCSVParser<User, UserFields>
             break;
         case alternateContactId:
             objValue = toString(user.getAlternateContactId());
-            break;
-        case securityDomain:
-            objValue = toString(user.getSecurityDomain());
             break;
         case userOwnerId:
             objValue = toString(user.getUserOwnerId());

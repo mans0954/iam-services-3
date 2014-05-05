@@ -12,8 +12,30 @@ import java.util.List;
 
 @WebService(targetNamespace = "urn:idm.openiam.org/srvc/am/service", name = "ContentProviderWebService")
 public interface ContentProviderWebService {
+   
+	@WebMethod
+	public AuthLevelAttribute getAuthLevelAttribute(final String id);
+	
+	@WebMethod
+	public Response saveAuthLevelAttribute(final AuthLevelAttribute attribute);
+	
+	@WebMethod
+	public Response deleteAuthLevelAttribute(final String id);
+	
+	@WebMethod
+	public Response saveAuthLevelGrouping(final AuthLevelGrouping grouping);
+	
+	@WebMethod
+	public Response deleteAuthLevelGrouping(final String id);
+	
+	@WebMethod
+	public AuthLevelGrouping getAuthLevelGrouping(final String id);
+	
+	@WebMethod
+	public List<AuthLevel> getAuthLevelList();
+	
     @WebMethod
-    List<AuthLevel> getAuthLevelList();
+    List<AuthLevelGrouping> getAuthLevelGroupingList();
 
     /**
      * Add or update ContentProvider object.

@@ -24,22 +24,15 @@ import org.apache.log4j.Logger;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.dozer.converter.AuditLogBuilderDozerConverter;
-import org.openiam.dozer.converter.IdmAuditLogDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.AuditLogSearchBean;
-import org.openiam.idm.srvc.audit.domain.AuditLogBuilder;
-import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
-import org.openiam.idm.srvc.audit.dto.AuditLogBuilderDto;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
-import org.openiam.idm.srvc.audit.dto.SearchAudit;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
+import javax.jws.WebParam;
 import javax.jws.WebService;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -52,25 +45,19 @@ public class IdmAuditLogWebDataServiceImpl implements IdmAuditLogWebDataService 
 	
 	@Autowired
 	private AuditLogService auditLogService;
-    
-    @Autowired
-    private IdmAuditLogDozerConverter converter;
-    
-    @Autowired
-    private AuditLogBuilderDozerConverter auditBuilderConverter;
-    
+
     private static Logger LOG = Logger.getLogger(IdmAuditLogWebDataServiceImpl.class);
 
 	@Override
-	public Response addLogs(List<AuditLogBuilderDto> logList) {
+	public Response addLogs(List<IdmAuditLog> events) {
 		final Response resp = new Response(ResponseStatus.SUCCESS);
     	try {
-    		if(logList == null) {
+    		if(events == null) {
     			throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
     		}
     		
-    		for(final AuditLogBuilderDto log : logList) {
-    			auditLogService.enqueue(auditBuilderConverter.convertToEntity(log, true));
+    		for(final IdmAuditLog log : events) {
+    			auditLogService.enqueue(log);
     		}
     	} catch(BasicDataServiceException e) {
     		resp.fail();
@@ -84,64 +71,26 @@ public class IdmAuditLogWebDataServiceImpl implements IdmAuditLogWebDataService 
 	}
 
 	@Override
-	@Transactional(readOnly=true)
 	public List<IdmAuditLog> findBeans(final AuditLogSearchBean searchBean, final int from, final int size) {
-		final List<IdmAuditLogEntity> entityList = auditLogService.findBeans(searchBean, from, size);
-		return converter.convertToDTOList(entityList, searchBean.isDeepCopy());
+		final List<IdmAuditLog> entityList = auditLogService.findBeans(searchBean, from, size);
+		return entityList;
 	}
 
-	@Override
+    @Override
+    public List<String> getIds(@WebParam(name = "searchBean", targetNamespace = "") AuditLogSearchBean searchBean, @WebParam(name = "from", targetNamespace = "") int from, @WebParam(name = "size", targetNamespace = "") int size) {
+        final List<String> ids = auditLogService.findIDs(searchBean, from, size);
+        return ids;
+    }
+
+    @Override
 	public int count(final AuditLogSearchBean searchBean) {
 		return auditLogService.count(searchBean);
 	}
 
 	@Override
-	@Transactional(readOnly=true)
 	public IdmAuditLog getLogRecord(final String id) {
-		final IdmAuditLogEntity entity = auditLogService.findById(id);
-		return (entity != null) ? converter.convertToDTO(entity, true) : null;
+		final IdmAuditLog entity = auditLogService.findById(id);
+		return entity;
 	}
 
-    /*
-    @Override
-    public IdmAuditLogListResponse searchEvents(SearchAudit search, Integer from, Integer size){
-        IdmAuditLogListResponse resp = new IdmAuditLogListResponse(
-                ResponseStatus.SUCCESS);
-        List<IdmAuditLog> logList = auditDataService.search(search,from, size);
-        if (logList != null) {
-            resp.setLogList(logList);
-        } else {
-            resp.setStatus(ResponseStatus.FAILURE);
-        }
-        return resp;
-    }
-    
-    @Override
-    public Integer countEvents(SearchAudit search){
-        return auditDataService.countEvents(search);
-    }
-
-    @Override
-    public IdmAuditLogListResponse eventsAboutUser(String principal, Date startDate) {
-        return searchEventsAboutUser(principal, startDate, null, -1,-1);
-    }
-    
-    @Override
-    public IdmAuditLogListResponse searchEventsAboutUser(String principal, Date startDate, Date endDate, Integer from, Integer size){
-        IdmAuditLogListResponse resp = new IdmAuditLogListResponse(
-                ResponseStatus.SUCCESS);
-        List<IdmAuditLog> logList = auditDataService.eventsAboutUser(principal, startDate, endDate, from, size);
-        if (logList != null) {
-            resp.setLogList(logList);
-        } else {
-            resp.setStatus(ResponseStatus.FAILURE);
-        }
-        return resp;
-    }
-
-    @Override
-    public Integer countEventsAboutUser(String principal, Date startDate, Date endDate){
-        return auditDataService.countEventsAboutUser(principal, startDate, endDate);
-    }
-    */
 }

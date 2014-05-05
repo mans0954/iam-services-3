@@ -19,8 +19,10 @@ import org.openiam.am.srvc.dao.URIPatternDao;
 import org.openiam.am.srvc.domain.URIPatternEntity;
 import org.openiam.authmanager.common.model.AuthorizationResource;
 import org.openiam.authmanager.service.AuthorizationManagerService;
+import org.openiam.base.service.AbstractLanguageService;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.idm.searchbeans.MetadataElementPageTemplateSearchBean;
+import org.openiam.idm.searchbeans.MetadataElementSearchBean;
 import org.openiam.idm.searchbeans.MetadataTemplateTypeFieldSearchBean;
 import org.openiam.idm.srvc.lang.domain.LanguageEntity;
 import org.openiam.idm.srvc.lang.domain.LanguageMappingEntity;
@@ -29,10 +31,10 @@ import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataElementPageTemplateEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataElementPageTemplateXrefEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataFieldTemplateXrefEntity;
-import org.openiam.idm.srvc.meta.domain.MetadataFieldTemplateXrefIDEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataTemplateTypeEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataTemplateTypeFieldEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataValidValueEntity;
+import org.openiam.idm.srvc.meta.domain.WhereClauseConstants;
 import org.openiam.idm.srvc.meta.domain.pk.MetadataElementPageTemplateXrefIdEntity;
 import org.openiam.idm.srvc.meta.dto.PageElement;
 import org.openiam.idm.srvc.meta.dto.PageElementValidValue;
@@ -57,7 +59,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service("metadataElementTemplateService")
-public class MetadataElementTemplateServiceImpl implements MetadataElementTemplateService {
+public class MetadataElementTemplateServiceImpl extends AbstractLanguageService  implements MetadataElementTemplateService {
 	
 	@Autowired
 	private MetadataElementPageTemplateDAO pageTemplateDAO;
@@ -70,6 +72,9 @@ public class MetadataElementTemplateServiceImpl implements MetadataElementTempla
 	
 	@Autowired
 	private MetadataElementDAO elementDAO;
+	
+	@Autowired
+	private MetadataService elementService;
 	
 	@Autowired
 	private ResourceTypeDAO resourceTypeDAO;
@@ -190,20 +195,23 @@ public class MetadataElementTemplateServiceImpl implements MetadataElementTempla
 			if(CollectionUtils.isNotEmpty(entity.getFieldXrefs())) {
 				for(final MetadataFieldTemplateXrefEntity xref : entity.getFieldXrefs()) {
 					if(xref != null) {
-						final MetadataFieldTemplateXrefIDEntity id = xref.getId();
-						final String fieldId = id.getFieldId();
-						if(id != null && StringUtils.isNotBlank(fieldId) && templateType.getField(fieldId) != null) {
-							final MetadataFieldTemplateXrefEntity dbXref = uiFieldXrefDAO.findById(id);
-							boolean isRequired = templateType.getField(id.getFieldId()).isRequired() ? true : xref.isRequired();
+						final String fieldId = xref.getField().getId();
+						if(StringUtils.isNotBlank(fieldId) && templateType.getField(fieldId) != null) {
+							final MetadataFieldTemplateXrefEntity dbXref = uiFieldXrefDAO.findById(xref.getId());
+							boolean isRequired = templateType.getField(fieldId).isRequired() ? true : xref.isRequired();
 							if(dbXref != null) {
 								dbXref.setRequired(isRequired);
 								dbXref.setEditable(xref.isEditable());
 								dbXref.setDisplayOrder(xref.getDisplayOrder());
+								dbXref.setLanguageMap(xref.getLanguageMap());
 								fieldXrefs.add(dbXref);
 							} else {
+								xref.setId(null);
 								xref.setRequired(isRequired);
 								xref.setTemplate(entity);
 								xref.setField(uiFieldDAO.findById(fieldId));
+								//xref.setLanguageMap(null);
+								uiFieldXrefDAO.save(xref);
 								fieldXrefs.add(xref);
 							}
 						}
@@ -272,7 +280,7 @@ public class MetadataElementTemplateServiceImpl implements MetadataElementTempla
 			/*
 			 * If the user is unknown (self registration), the template is public, it's an admin request, or if the user is entitled to the template, create one
 			 */
-			if(entity.isPublic() || isAdminRequest || isEntitled(userId, entity.getResource().getResourceId())) {
+			if(entity.isPublic() || isAdminRequest || isEntitled(userId, entity.getResource().getId())) {
 				final String templateId = entity.getId();
 				template = new PageTempate();
 				template.setTemplateId(templateId);
@@ -281,25 +289,30 @@ public class MetadataElementTemplateServiceImpl implements MetadataElementTempla
 						final String elementId = xref.getId().getMetadataElementId();
 						final Integer order = xref.getDisplayOrder();
 						
-						final MetadataElementEntity elementEntity = elementDAO.findById(elementId);
+						final MetadataElementEntity elementEntity = getElement(elementId, targetLanguage);//elementDAO.findById(elementId);
 						if(elementEntity != null) {
-							if(elementEntity.isPublic() || isAdminRequest || isEntitled(userId, elementEntity.getResource().getResourceId())) {
+							if(elementEntity.getIsPublic() || isAdminRequest || isEntitled(userId, elementEntity.getResource().getId())) {
 								final PageElement pageElement = new PageElement(elementEntity, order);
 								
 								if(targetLanguage != null) {
 									if(targetLanguage != null) {
-										pageElement.setDisplayName(getLanguageValue(targetLanguage, elementEntity.getLanguageMap()));
+										//pageElement.setDisplayName(getLanguageValue(targetLanguage, elementEntity.getLanguageMap()));
+										pageElement.setDisplayName(elementEntity.getDisplayName());
 										pageElement.setDefaultValue(elementEntity.getStaticDefaultValue());
 										if(StringUtils.isBlank(pageElement.getDefaultValue())) {
-											pageElement.setDefaultValue(getLanguageValue(targetLanguage, elementEntity.getDefaultValueLanguageMap()));
+											//pageElement.setDefaultValue(getLanguageValue(targetLanguage, elementEntity.getDefaultValueLanguageMap()));
+											pageElement.setDefaultValue(elementEntity.getDefaultValue());
 										}
 										if(CollectionUtils.isNotEmpty(elementEntity.getValidValues())) {
 											for(final MetadataValidValueEntity validValueEntity : elementEntity.getValidValues()) {
 												final String validValueId = validValueEntity.getId();
 												final String value = validValueEntity.getUiValue();
-												final String displayName = getLanguageValue(targetLanguage, validValueEntity.getLanguageMap());
+												//final String displayName = getLanguageValue(targetLanguage, validValueEntity.getLanguageMap());
+												final String displayName =  validValueEntity.getDisplayName();
 												final Integer displayOrder = validValueEntity.getDisplayOrder();
-												pageElement.addValidValue(new PageElementValidValue(validValueId, value, displayName, displayOrder));
+												if(displayName != null && value != null) {
+													pageElement.addValidValue(new PageElementValidValue(validValueId, value, displayName, displayOrder));
+												}
 											}
 										}
 									}
@@ -323,18 +336,31 @@ public class MetadataElementTemplateServiceImpl implements MetadataElementTempla
 				if(CollectionUtils.isNotEmpty(entity.getFieldXrefs())) {
 					for(final MetadataFieldTemplateXrefEntity xref : entity.getFieldXrefs()) {
 						final MetadataTemplateTypeFieldEntity field = xref.getField();
-						final TemplateUIField uiField = new TemplateUIField();
-						uiField.setId(field.getId());
-						uiField.setName(field.getName());
-						uiField.setRequired(xref.isRequired());
-						uiField.setEditable(xref.isEditable());
-						uiField.setDisplayOrder(xref.getDisplayOrder());
-						template.addUIField(uiField);
+						if(targetLanguage != null) {
+							final String displayName = xref.getDisplayName(targetLanguage);
+							if(displayName != null) {
+								final TemplateUIField uiField = new TemplateUIField();
+								uiField.setId(field.getId());
+								uiField.setName(displayName);
+								uiField.setRequired(xref.isRequired());
+								uiField.setEditable(xref.isEditable());
+								uiField.setDisplayOrder(xref.getDisplayOrder());
+								template.addUIField(uiField);
+							}
+						}
 					}
 				}
 			}
 		}
 		return template;
+	}
+	
+	private MetadataElementEntity getElement(final String id, final LanguageEntity language) {
+		final MetadataElementSearchBean searchBean = new MetadataElementSearchBean();
+		searchBean.setDeepCopy(true);
+		searchBean.setKey(id);
+		final List<MetadataElementEntity> resultList = elementService.findBeans(searchBean, 0, 1, language);
+		return (CollectionUtils.isNotEmpty(resultList)) ? resultList.get(0) : null;
 	}
 	
 	private LanguageEntity getLanguage(final TemplateRequest request) {
@@ -365,6 +391,7 @@ public class MetadataElementTemplateServiceImpl implements MetadataElementTempla
 		return entity;
 	}
 	
+	/*
 	private String getLanguageValue(final LanguageEntity targetLanguage, final Map<String, LanguageMappingEntity> languageMap) {
 		String retVal = null;
 		if(targetLanguage != null) {
@@ -380,6 +407,7 @@ public class MetadataElementTemplateServiceImpl implements MetadataElementTempla
 		}
 		return retVal;
 	}
+	*/
 
 	private boolean isEntitled(final String userId, final String resourceId) {
 		final AuthorizationResource authResource = new AuthorizationResource();
@@ -388,7 +416,7 @@ public class MetadataElementTemplateServiceImpl implements MetadataElementTempla
 	}
 	
 	private boolean isEntitled(final String userId, final ResourceEntity resource) {
-		return resource == null || isEntitled(userId, resource.getResourceId());
+		return resource == null || isEntitled(userId, resource.getId());
 	}
 	
 	private boolean isEntitled(final String userId, final MetadataElementPageTemplateEntity template) {
@@ -396,13 +424,13 @@ public class MetadataElementTemplateServiceImpl implements MetadataElementTempla
 	}
 	
 	private boolean isEntitled(final String userId, final MetadataElementEntity element) {
-		return element.isPublic() || isEntitled(userId, element.getResource());
+		return element.getIsPublic() || isEntitled(userId, element.getResource());
 	}
 	
 	@Override
 	public void validate(UserProfileRequestModel request) throws PageTemplateException {
 		final PageTempate pageTemplate = request.getPageTemplate();
-		final String userId = (request.getUser() != null) ? request.getUser().getUserId() : null;
+		final String userId = (request.getUser() != null) ? request.getUser().getId() : null;
 		final LanguageEntity targetLanguage = getLanguage(request);
 	
 		if(pageTemplate != null) {
@@ -446,7 +474,7 @@ public class MetadataElementTemplateServiceImpl implements MetadataElementTempla
 						MetadataElementEntity element = elementMap.get(elementId);
 						/* if the user is entitled to the element, do CRUD logic on the attributes */
 						if(isEntitled(userId, element)) {
-							boolean isMultiSelect = element.getMetadataType() != null && StringUtils.equals(element.getMetadataType().getMetadataTypeId(), "MULTI_SELECT");
+							boolean isMultiSelect = element.getMetadataType() != null && StringUtils.equals(element.getMetadataType().getId(), "MULTI_SELECT");
 							int numRequiredViolations = 0;
 							
 							if(isMultiSelect && pageElement.isEditable() && pageElement.isRequired() && CollectionUtils.isEmpty(pageElement.getUserValues())) {
@@ -500,7 +528,7 @@ public class MetadataElementTemplateServiceImpl implements MetadataElementTempla
 		final List<UserAttributeEntity> saveList = new LinkedList<UserAttributeEntity>();
 		
 		final PageTempate pageTemplate = request.getPageTemplate();
-		final String userId = request.getUser().getUserId();
+		final String userId = request.getUser().getId();
 		final LanguageEntity targetLanguage = getLanguage(request);
 		
 		if(pageTemplate != null) {
@@ -552,7 +580,7 @@ public class MetadataElementTemplateServiceImpl implements MetadataElementTempla
 								}
 							} else { /* attributes sent - figure out weather to save or update */
 								
-								boolean isMultiSelect = element.getMetadataType() != null && StringUtils.equals(element.getMetadataType().getMetadataTypeId(), "MULTI_SELECT");
+								boolean isMultiSelect = element.getMetadataType() != null && StringUtils.equals(element.getMetadataType().getId(), "MULTI_SELECT");
 								int numRequiredViolations = 0;
 								for(final PageElementValue elementValue : pageElement.getUserValues()) {
 									boolean indexViolatesRequiredFlag = pageElement.isEditable() && pageElement.isRequired() && StringUtils.isBlank(elementValue.getValue());
@@ -665,7 +693,7 @@ public class MetadataElementTemplateServiceImpl implements MetadataElementTempla
 	private String getElementName(final MetadataElementEntity entity, final LanguageEntity language) {
 		String elementName = null;
 		if(entity != null && language != null && MapUtils.isNotEmpty(entity.getLanguageMap())) {
-			final LanguageMappingEntity mapping = entity.getLanguageMap().get(language.getLanguageId());
+			final LanguageMappingEntity mapping = entity.getLanguageMap().get(language.getId());
 			if(mapping != null) {
 				elementName = mapping.getValue();
 			}
@@ -699,7 +727,7 @@ public class MetadataElementTemplateServiceImpl implements MetadataElementTempla
 						if(StringUtils.isNotBlank(validValue.getUiValue())) {
 							validValues.add(validValue.getUiValue());
 						} else if(MapUtils.isNotEmpty(validValue.getLanguageMap())) {
-							final LanguageMappingEntity languageMapping = validValue.getLanguageMap().get(language.getLanguageId());
+							final LanguageMappingEntity languageMapping = validValue.getLanguageMap().get(language.getId());
 							if(languageMapping != null) {
 								validValues.add(languageMapping.getValue());
 							}

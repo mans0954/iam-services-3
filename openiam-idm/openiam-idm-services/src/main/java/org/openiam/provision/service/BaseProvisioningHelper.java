@@ -98,7 +98,7 @@ public class BaseProvisioningHelper {
         while (propIt.hasNext()) {
             ResourceProp prop = propIt.next();
             if (prop.getName().equalsIgnoreCase(propertyName)) {
-                return prop.getPropValue();
+                return prop.getValue();
             }
         }
 

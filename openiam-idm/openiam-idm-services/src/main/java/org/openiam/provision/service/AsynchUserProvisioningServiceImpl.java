@@ -24,9 +24,11 @@ package org.openiam.provision.service;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.mule.module.client.MuleClient;
+import org.openiam.idm.srvc.prov.request.dto.BulkOperationRequest;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.util.MuleContextProvider;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -41,10 +43,11 @@ import java.util.*;
         portName = "DefaultProvisionControllerServicePort",
         serviceName = "AsynchUserProvisionService")
 @Component("asynchProvisonWS")
-public class AsynchUserProvisioningServiceImpl {
+public class AsynchUserProvisioningServiceImpl implements AsynchUserProvisionService {
 
     protected static final Log log = LogFactory.getLog(AsynchUserProvisioningServiceImpl.class);
     @Autowired
+    @Qualifier("defaultProvision")
     protected ProvisionService provisionService;
 
     @Value("${openiam.service_base}")
@@ -56,6 +59,7 @@ public class AsynchUserProvisioningServiceImpl {
     /* (non-Javadoc)
       * @see org.openiam.provision.service.ProvisionService#addUser(org.openiam.provision.dto.ProvisionUser)
       */
+    @Override
     public void addUser(ProvisionUser user) {
         log.debug("START PROVISIONING - ADD USER CALLED...................");
 
@@ -83,6 +87,7 @@ public class AsynchUserProvisioningServiceImpl {
     /* (non-Javadoc)
       * @see org.openiam.provision.service.ProvisionService#modifyUser(org.openiam.provision.dto.ProvisionUser)
       */
+    @Override
     public void modifyUser(ProvisionUser user) {
             log.debug("START PROVISIONING - MODIFY USER CALLED...................");
 
@@ -105,6 +110,28 @@ public class AsynchUserProvisioningServiceImpl {
             log.debug("END PROVISIONING - MODIFY USER ---------------------");
 
 
+    }
+
+    @Override
+    public void startBulkOperation(BulkOperationRequest bulkRequest) {
+        log.debug("START BULK OPERATION CALLED...................");
+
+        try {
+
+            Map<String,String> msgPropMap =  new HashMap<String,String>();
+            msgPropMap.put("SERVICE_HOST", serviceHost);
+            msgPropMap.put("SERVICE_CONTEXT", serviceContext);
+
+            //Create the client with the context
+            MuleClient client = new MuleClient(MuleContextProvider.getCtx());
+            client.sendAsync("vm://provisionServiceBulkOperationMessage", bulkRequest, msgPropMap);
+
+        }catch(Exception e) {
+            log.debug("EXCEPTION:AsynchIdentitySynchService");
+            log.error(e);
+            //e.printStackTrace();
+        }
+        log.debug("END BULK OPERATION CALLED ---------------------");
     }
 
 }

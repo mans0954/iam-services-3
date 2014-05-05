@@ -78,7 +78,7 @@ public class BatchTaskScheduler implements ApplicationContextAware, Initializing
 					for(final String id : currentScheduledTasks) {
 						final BatchTaskEntity entity = batchMap.get(id);
 						if(entity == null || !entity.isEnabled()) {
-							unSchedule(entity, true);
+							unSchedule(id, true);
 						}
 					}
 				}
@@ -260,47 +260,4 @@ public class BatchTaskScheduler implements ApplicationContextAware, Initializing
 		sweep();
 	}
 	
-	public static void main(String[] args) {
-		final ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
-		scheduler.setPoolSize(1);
-		scheduler.initialize();
-		scheduler.setWaitForTasksToCompleteOnShutdown(true);
-		for(int i = 0; i < (Integer.MAX_VALUE / 2); i++) {
-			try {
-				scheduler.schedule(new TestExecturor(scheduler), new CronTrigger("0/1 * * * * ?"));
-			} catch(Throwable e) {
-				e.printStackTrace();
-			}
-		}
-		/*
-		try {
-			scheduler.getScheduledExecutor().awaitTermination(Integer.MAX_VALUE, TimeUnit.SECONDS);
-		} catch (IllegalStateException e) {
-			e.printStackTrace();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-		*/
-		System.out.println("done");
-	}
-	
-	public static class TestExecturor implements Runnable {
-		
-		private ThreadPoolTaskScheduler scheduler;
-		
-		public TestExecturor(final ThreadPoolTaskScheduler scheduler) {
-			this.scheduler = scheduler;
-		}
-
-		@Override
-		public void run() {
-			try {
-				Thread.sleep(10L);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		
-	}
 }

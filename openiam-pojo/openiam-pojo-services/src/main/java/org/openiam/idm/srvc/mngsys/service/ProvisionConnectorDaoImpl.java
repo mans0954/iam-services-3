@@ -24,7 +24,7 @@ public class ProvisionConnectorDaoImpl extends BaseDaoImpl<ProvisionConnectorEnt
         DetachedCriteria ownerCriteria = DetachedCriteria.forClass(ProvisionConnectorEntity.class);
         ownerCriteria.setProjection(Property.forName("metadataTypeId"));
         Criteria criteria = getSession().createCriteria(MetadataTypeEntity.class);
-        criteria.add(Property.forName("metadataTypeId").in(ownerCriteria));
+        criteria.add(Property.forName("id").in(ownerCriteria));
         return criteria.list();
     }
 }

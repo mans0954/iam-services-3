@@ -1,11 +1,11 @@
 package org.openiam.connector.jdbc.command.factory;
 
+import org.openiam.connector.common.command.ConnectorCommand;
+import org.openiam.connector.common.constants.CommandType;
+import org.openiam.connector.common.factory.AbstractCommandFactory;
+import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.connector.type.constant.ErrorCode;
 import org.openiam.provision.type.ExtensibleObjectType;
-import org.openiam.connector.common.constants.CommandType;
-import org.openiam.connector.type.ConnectorDataException;
-import org.openiam.connector.common.command.ConnectorCommand;
-import org.openiam.connector.common.factory.AbstractCommandFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -15,6 +15,9 @@ public class AppTableCommandFactory extends AbstractCommandFactory {
     @Autowired
     @Qualifier("addUserAppTableCommand")
     private ConnectorCommand addUserAppTableCommand;
+    @Autowired
+    @Qualifier("addGroupAppTableCommand")
+    private ConnectorCommand addGroupAppTableCommand;
     @Autowired
     @Qualifier("deleteUserAppTableCommand")
     private ConnectorCommand deleteUserAppTableCommand;
@@ -41,35 +44,35 @@ public class AppTableCommandFactory extends AbstractCommandFactory {
     private ConnectorCommand testUserAppTableCommand;
 
     public ConnectorCommand getConnectorCommand(CommandType commandType, ExtensibleObjectType extensibleObjectType)
-	    throws ConnectorDataException {
-	String error = String.format(ERROR_PATTERN, commandType, extensibleObjectType, "APP TABLE");
-	if (ExtensibleObjectType.USER == extensibleObjectType) {
-	    switch (commandType) {
-	    case ADD:
-		return addUserAppTableCommand;
-	    case DELETE:
-		return deleteUserAppTableCommand;
-	    case RESUME:
-		return resumeAppTableCommand;
-	    case SET_PASSWORD:
-		return setPasswordAppTableCommand;
-	    case SUSPEND:
-		return suspendAppTableCommand;
-	    case MODIFY:
-		return modifyUserAppTableCommand;
-	    case LOOKUP:
-		return lookupUserAppTableCommand;
-	    case TEST:
-		return testUserAppTableCommand;
-	    case SEARCH:
-		return searchUserAppTableCommand;
-	    default:
-		throw new ConnectorDataException(ErrorCode.OPERATION_NOT_SUPPORTED_EXCEPTION, error);
-	    }
-	} else if (ExtensibleObjectType.GROUP == extensibleObjectType) {
-	    throw new ConnectorDataException(ErrorCode.OPERATION_NOT_SUPPORTED_EXCEPTION, error);
-	} else {
-	    throw new ConnectorDataException(ErrorCode.OPERATION_NOT_SUPPORTED_EXCEPTION, error);
-	}
+            throws ConnectorDataException {
+        String error = String.format(ERROR_PATTERN, commandType, extensibleObjectType, "APP TABLE");
+        if (ExtensibleObjectType.USER == extensibleObjectType) {
+            switch (commandType) {
+            case ADD:
+                return addUserAppTableCommand;
+            case DELETE:
+                return deleteUserAppTableCommand;
+            case RESUME:
+                return resumeAppTableCommand;
+            case SET_PASSWORD:
+                return setPasswordAppTableCommand;
+            case SUSPEND:
+                return suspendAppTableCommand;
+            case MODIFY:
+                return modifyUserAppTableCommand;
+            case LOOKUP:
+                return lookupUserAppTableCommand;
+            case TEST:
+                return testUserAppTableCommand;
+            case SEARCH:
+                return searchUserAppTableCommand;
+            default:
+                throw new ConnectorDataException(ErrorCode.OPERATION_NOT_SUPPORTED_EXCEPTION, error);
+            }
+        } else if (ExtensibleObjectType.GROUP == extensibleObjectType) {
+            throw new ConnectorDataException(ErrorCode.OPERATION_NOT_SUPPORTED_EXCEPTION, error);
+        } else {
+            throw new ConnectorDataException(ErrorCode.OPERATION_NOT_SUPPORTED_EXCEPTION, error);
+        }
     }
 }

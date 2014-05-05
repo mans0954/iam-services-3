@@ -1,19 +1,23 @@
 package org.openiam.idm.srvc.org.service;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Order;
-import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
+import org.hibernate.transform.Transformers;
 import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.idm.searchbeans.OrganizationSearchBean;
 import org.openiam.idm.searchbeans.SearchBean;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
+import org.openiam.idm.srvc.org.dto.Org2OrgXref;
 import org.openiam.idm.srvc.searchbean.converter.OrganizationSearchBeanConverter;
+import org.openiam.internationalization.LocalizedDatabaseGet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -28,14 +32,18 @@ public class OrganizationDAOImpl extends
 
 	@Autowired
 	private OrganizationSearchBeanConverter organizationSearchBeanConverter;
-
+	
+    @Override
+    @LocalizedDatabaseGet
 	public int getNumOfOrganizationsForUser(final String userId,
 			final Set<String> filter) {
 		final Criteria criteria = getOrganizationsForUserCriteria(userId,
 				filter).setProjection(rowCount());
 		return ((Number) criteria.uniqueResult()).intValue();
 	}
-
+    
+    @Override
+    @LocalizedDatabaseGet
 	public List<OrganizationEntity> getOrganizationsForUser(
 			final String userId, final Set<String> filter, final int from,
 			final int size) {
@@ -57,7 +65,7 @@ public class OrganizationDAOImpl extends
 		final Criteria criteria = getCriteria();
 		if (StringUtils.isNotBlank(userId)) {
 			criteria.createAlias("users", "u").add(
-					Restrictions.eq("u.userId", userId));
+					Restrictions.eq("u.id", userId));
 		}
 
 		if (filter != null && !filter.isEmpty()) {
@@ -65,22 +73,7 @@ public class OrganizationDAOImpl extends
 		}
 		return criteria;
 	}
-
-	public List<OrganizationEntity> findRootOrganizations() {
-		final Criteria criteria = getCriteria().add(
-				Restrictions.isNull("parentId")).addOrder(
-				Order.asc("organizationName"));
-		// .setFetchMode("attributes", FetchMode.JOIN);
-		return criteria.list();
-	}
-
-	public List<OrganizationEntity> findAllOrganization() {
-		Criteria criteria = getCriteria().addOrder(
-				Order.asc("organizationName"));
-		// .setFetchMode("attributes", FetchMode.JOIN);
-		return criteria.list();
-	}
-
+   
 	@Override
 	protected Criteria getExampleCriteria(final SearchBean searchBean) {
 		Criteria criteria = getCriteria();
@@ -100,9 +93,14 @@ public class OrganizationDAOImpl extends
 						organizationSearchBean.getKey()));
 			}
 
+            if (StringUtils.isNotBlank(organizationSearchBean.getInternalOrgId())) {
+                criteria.add(Restrictions.eq("internalOrgId",
+                        organizationSearchBean.getInternalOrgId()));
+            }
+
 			if (StringUtils.isNotBlank(organizationSearchBean.getUserId())) {
 				criteria.createAlias("users", "u").add(
-						Restrictions.eq("u.userId",
+						Restrictions.eq("u.id",
 								organizationSearchBean.getUserId()));
 			}
 
@@ -125,6 +123,11 @@ public class OrganizationDAOImpl extends
 						Restrictions.eq("parentTypes.id",
 								organizationSearchBean.getValidParentTypeId()));
 			}
+
+            if (CollectionUtils.isNotEmpty(organizationSearchBean.getOrganizationTypeIdSet())) {
+                criteria.add(Restrictions.in("organizationType.id",
+                                             organizationSearchBean.getOrganizationTypeIdSet()));
+            }
 		}
 		return criteria;
 	}
@@ -135,46 +138,40 @@ public class OrganizationDAOImpl extends
 		if (StringUtils.isNotBlank(organization.getId())) {
 			criteria.add(Restrictions.eq(getPKfieldName(), organization.getId()));
 		} else {
-			if (StringUtils.isNotEmpty(organization.getOrganizationName())) {
-				String organizationName = organization.getOrganizationName();
+			if (StringUtils.isNotEmpty(organization.getName())) {
+				String name = organization.getName();
 				MatchMode matchMode = null;
-				if (StringUtils.indexOf(organizationName, "*") == 0) {
+				if (StringUtils.indexOf(name, "*") == 0) {
 					matchMode = MatchMode.START;
-					organizationName = organizationName.substring(1);
+					name = name.substring(1);
 				}
-				if (StringUtils.isNotEmpty(organizationName)
-						&& StringUtils.indexOf(organizationName, "*") == organizationName
-								.length() - 1) {
-					organizationName = organizationName.substring(0,
-							organizationName.length() - 1);
-					matchMode = (matchMode == MatchMode.START) ? MatchMode.ANYWHERE
-							: MatchMode.END;
+				if (StringUtils.isNotEmpty(name) && StringUtils.indexOf(name, "*") == name.length() - 1) {
+					name = name.substring(0, name.length() - 1);
+					matchMode = (matchMode == MatchMode.START) ? MatchMode.ANYWHERE : MatchMode.END;
 				}
 
-				if (StringUtils.isNotEmpty(organizationName)) {
+				if (StringUtils.isNotEmpty(name)) {
 					if (matchMode != null) {
-						criteria.add(Restrictions.ilike("organizationName",
-								organizationName, matchMode));
+						criteria.add(Restrictions.ilike("name", name, matchMode));
 					} else {
-						criteria.add(Restrictions.eq("organizationName",
-								organizationName));
+						criteria.add(Restrictions.eq("name", name));
 					}
 				}
 			}
 
-			if (organization.getOrganizationType() != null
-					&& StringUtils.isNotBlank(organization
-							.getOrganizationType().getId())) {
-				criteria.add(Restrictions.eq("organizationType.id",
-						organization.getOrganizationType().getId()));
-			}
+//			if (organization.getOrganizationType() != null && StringUtils.isNotBlank(organization.getOrganizationType().getId())) {
+//				criteria.add(Restrictions.eq("organizationType.id", organization.getOrganizationType().getId()));
+//			}
 
 			if (StringUtils.isNotBlank(organization.getInternalOrgId())) {
-				criteria.add(Restrictions.eq("internalOrgId",
-						organization.getInternalOrgId()));
+				criteria.add(Restrictions.eq("internalOrgId", organization.getInternalOrgId()));
+			}
+			
+			if(organization.getAdminResource() != null && StringUtils.isNotBlank(organization.getAdminResource().getId())) {
+				criteria.add(Restrictions.eq("adminResource.id", organization.getAdminResource().getId()));
 			}
 		}
-		criteria.addOrder(Order.asc("organizationName"));
+		criteria.addOrder(Order.asc("name"));
 		return criteria;
 	}
 
@@ -184,12 +181,14 @@ public class OrganizationDAOImpl extends
 	}
 
 	@Override
+	@LocalizedDatabaseGet
 	public List<OrganizationEntity> getChildOrganizations(String orgId,
 			Set<String> filter, final int from, final int size) {
 		return getList(getChildOrganizationsCriteria(orgId, filter), from, size);
 	}
 
 	@Override
+	@LocalizedDatabaseGet
 	public List<OrganizationEntity> getParentOrganizations(String orgId,
 			Set<String> filter, final int from, final int size) {
 		return getList(getParentOrganizationsCriteria(orgId, filter), from,
@@ -231,7 +230,7 @@ public class OrganizationDAOImpl extends
 		if (size > -1) {
 			criteria.setMaxResults(size);
 		}
-		criteria.addOrder(Order.asc("organizationName"));
+		criteria.addOrder(Order.asc("name"));
 		return criteria.list();
 	}
 
@@ -254,4 +253,38 @@ public class OrganizationDAOImpl extends
 		}
 		return criteria;
 	}
+
+    @Override
+    public List<Org2OrgXref> getOrgToOrgXrefList(){
+        return this.getSession().createSQLQuery("SELECT COMPANY_ID as organizationId, MEMBER_COMPANY_ID as memberOrganizationId FROM COMPANY_TO_COMPANY_MEMBERSHIP")
+                .addScalar("organizationId").addScalar("memberOrganizationId")
+                .setResultTransformer(Transformers.aliasToBean(Org2OrgXref.class)).list();
+    }
+
+    @Override
+    @LocalizedDatabaseGet
+    public List<OrganizationEntity> findAllByTypesAndIds(Set<String> allowedOrgTypes, Set<String> filterData){
+        Criteria criteria = getCriteria();
+
+        if(allowedOrgTypes!=null && !allowedOrgTypes.isEmpty()){
+            criteria.add(Restrictions.in("organizationType.id", allowedOrgTypes));
+        }
+
+        if(filterData!=null && !filterData.isEmpty()){
+            criteria.add(Restrictions.in("id", filterData));
+        }
+        return criteria.list();
+    }
+
+    @Override
+    @LocalizedDatabaseGet
+    public List<OrganizationEntity> findOrganizationsByAttributeValue(final String attrName, final String attrValue) {
+        List ret = new ArrayList<OrganizationEntity>();
+        if (StringUtils.isNotBlank(attrName)) {
+            // Can't use Criteria for @ElementCollection due to Hibernate bug
+            // (org.hibernate.MappingException: collection was not an association)
+            ret = getHibernateTemplate().find("select oa.organization from OrganizationAttributeEntity oa left join oa.values av where oa.name = ? and ((oa.isMultivalued = false and oa.value = ?) or (oa.isMultivalued = true and av in ?))", attrName, attrValue, attrValue);
+        }
+        return ret;
+    }
 }

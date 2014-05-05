@@ -25,6 +25,9 @@ public class OracleCommandFactory extends AbstractCommandFactory {
 	@Qualifier("lookupUserOracleCommand")
 	private ConnectorCommand lookupUserOracleCommand;
 	@Autowired
+	@Qualifier("searchUserOracleCommand")
+	private ConnectorCommand searchUserOracleCommand;
+	@Autowired
 	@Qualifier("resumeOracleCommand")
 	private ConnectorCommand resumeOracleCommand;
 	@Autowired
@@ -33,6 +36,9 @@ public class OracleCommandFactory extends AbstractCommandFactory {
 	@Autowired
 	@Qualifier("suspendOracleCommand")
 	private ConnectorCommand suspendOracleCommand;
+	@Autowired
+	@Qualifier("testOracleCommand")
+    private ConnectorCommand testOracleCommand;
 
 	public ConnectorCommand getConnectorCommand(CommandType commandType,
 			ExtensibleObjectType extensibleObjectType)
@@ -54,7 +60,9 @@ public class OracleCommandFactory extends AbstractCommandFactory {
 			case SUSPEND:
 				return suspendOracleCommand;
 			case SEARCH:
-				return lookupUserOracleCommand;
+				return searchUserOracleCommand;
+			 case TEST:
+	            return testOracleCommand;
 			case LOOKUP:
 				return lookupUserOracleCommand;
 			default:

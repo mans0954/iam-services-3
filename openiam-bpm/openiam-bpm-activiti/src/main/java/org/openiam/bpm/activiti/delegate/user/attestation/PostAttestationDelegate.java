@@ -8,6 +8,7 @@ import org.activiti.engine.delegate.JavaDelegate;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.StopWatch;
 import org.apache.log4j.Logger;
+import org.openiam.bpm.activiti.delegate.entitlements.AbstractEntitlementsDelegate;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.idm.srvc.msg.dto.NotificationParam;
 import org.openiam.idm.srvc.msg.dto.NotificationRequest;
@@ -17,16 +18,10 @@ import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.util.SpringContextProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 
-public class PostAttestationDelegate implements JavaDelegate {
-	
-	@Autowired
-	private MailService mailService;
-	
-	@Autowired
-	private UserDataService userService;
+public class PostAttestationDelegate extends AbstractEntitlementsDelegate {
 	
 	public PostAttestationDelegate() {
-		SpringContextProvider.autowire(this);
+		super();
 	}
 	
 	private static Logger LOG = Logger.getLogger(PostAttestationDelegate.class);
@@ -36,28 +31,13 @@ public class PostAttestationDelegate implements JavaDelegate {
 		final StopWatch sw = new StopWatch();
 		sw.start();
 		
-		final String employeeId = (String)execution.getVariable(ActivitiConstants.EMPLOYEE_ID);
+		final String employeeId = getTargetUserId(execution);
 		if(employeeId != null) {
-			final UserEntity employee = userService.getUser(employeeId);
+			final UserEntity employee = getUserEntity(employeeId);
 			if(employee != null) {
-				final Object candidateUserIdsObj = execution.getVariable(ActivitiConstants.CANDIDATE_USERS_IDS);
-				final Collection<String> candidateUsersIds = new ArrayList<String>();
-				if(candidateUserIdsObj != null) {
-					if((candidateUserIdsObj instanceof Collection<?>)) {
-						for(final String candidateId : (Collection<String>)candidateUserIdsObj) {
-							if(candidateId != null) {
-								candidateUsersIds.add(candidateId);
-							}
-						}
-					} else if(candidateUserIdsObj instanceof String) {
-						if(StringUtils.isNotBlank(((String)candidateUserIdsObj))) {
-							candidateUsersIds.add(((String)candidateUserIdsObj));
-						}
-					}
-				}
-				
+				final Collection<String> candidateUsersIds = activitiHelper.getCandidateUserIds(execution, employeeId, null);
 				for(final String candidateId : candidateUsersIds) {
-					final UserEntity supervisor = userService.getUser(candidateId);
+					final UserEntity supervisor = getUserEntity(candidateId);
 					if(supervisor != null) {
 						sendNotificationRequest(supervisor, employee);
 					}
@@ -71,10 +51,15 @@ public class PostAttestationDelegate implements JavaDelegate {
 
 	private void sendNotificationRequest(final UserEntity supervisor, final UserEntity employee) {
 		final NotificationRequest request = new NotificationRequest();
-        request.setUserId(supervisor.getUserId());
+        request.setUserId(supervisor.getId());
         request.setNotificationType("ATTESTATION_REQUEST_DONE");
         request.getParamList().add(new NotificationParam("EMPLOYEE", employee));
         request.getParamList().add(new NotificationParam("SUPERVISOR", supervisor));
         mailService.sendNotification(request);
+	}
+	
+	@Override
+	protected ActivitiConstants getTargetVariable() {
+		return ActivitiConstants.EMPLOYEE_ID;
 	}
 }

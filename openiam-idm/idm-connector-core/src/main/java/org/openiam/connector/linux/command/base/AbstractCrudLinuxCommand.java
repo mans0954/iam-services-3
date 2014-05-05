@@ -1,7 +1,5 @@
 package org.openiam.connector.linux.command.base;
 
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.openiam.connector.linux.ssh.SSHAgent;
@@ -11,15 +9,7 @@ import org.openiam.connector.type.constant.StatusCodeType;
 import org.openiam.connector.type.request.CrudRequest;
 import org.openiam.connector.type.response.ObjectResponse;
 import org.openiam.connector.util.connect.FileUtil;
-import org.openiam.exception.ScriptEngineException;
-import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
-import org.openiam.idm.srvc.mngsys.domain.AttributeMapUtil;
-import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.type.ExtensibleObject;
-import org.openiam.script.GroovyScriptEngineIntegration;
-import org.openiam.script.ScriptIntegration;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.util.StringUtils;
 
 /**
@@ -28,10 +18,6 @@ import org.springframework.util.StringUtils;
  */
 public abstract class AbstractCrudLinuxCommand<ExtObject extends ExtensibleObject>
         extends AbstractLinuxCommand<CrudRequest<ExtObject>, ObjectResponse> {
-
-    @Autowired
-    @Qualifier("configurableGroovyScriptEngine")
-    private ScriptIntegration scriptRunner;
 
     @Override
     public ObjectResponse execute(CrudRequest<ExtObject> crudRequest)

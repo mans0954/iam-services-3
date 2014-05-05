@@ -1,29 +1,9 @@
 package org.openiam.idm.srvc.user.domain;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import javax.persistence.*;
-import javax.validation.constraints.Size;
-
 import org.apache.commons.lang.StringUtils;
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
-import org.hibernate.annotations.FilterDef;
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.ParamDef;
-import org.hibernate.search.annotations.DocumentId;
-import org.hibernate.search.annotations.Field;
-import org.hibernate.search.annotations.Fields;
+import org.hibernate.annotations.*;
+import org.hibernate.search.annotations.*;
 import org.hibernate.search.annotations.Index;
-import org.hibernate.search.annotations.Indexed;
-import org.hibernate.search.annotations.Store;
 import org.openiam.base.BaseConstants;
 import org.openiam.core.dao.lucene.LuceneId;
 import org.openiam.core.dao.lucene.LuceneLastUpdate;
@@ -34,17 +14,29 @@ import org.openiam.idm.srvc.continfo.domain.AddressEntity;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
 import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
+import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
+import org.openiam.internationalization.Internationalized;
+
+import javax.persistence.CascadeType;
+import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.MapKey;
+import javax.persistence.Table;
+import javax.validation.constraints.Size;
+import java.util.*;
+import java.util.Map.Entry;
 
 @Entity
 @FilterDef(name = "parentTypeFilter", parameters = @ParamDef(name = "parentFilter", type = "string"))
 @Table(name = "USERS")
 @DozerDTOCorrespondence(User.class)
 @Indexed
+@Internationalized
 public class UserEntity {
     @Id
     @GeneratedValue(generator = "system-uuid")
@@ -52,7 +44,7 @@ public class UserEntity {
     @Column(name = "USER_ID", length = 32, nullable = false)
     @LuceneId
     @DocumentId
-    private String userId;
+    private String id;
 
     @Column(name = "BIRTHDATE", length = 19)
     private Date birthdate;
@@ -71,10 +63,16 @@ public class UserEntity {
     @Size(max = 32, message = "validator.user.employee.id.toolong")
     private String employeeId;
 
-    @Column(name = "EMPLOYEE_TYPE", length = 20)
-    @Size(max = 20, message = "validator.user.employee.type.toolong")
-    @Field(index=Index.UN_TOKENIZED, name="employeeType", store=Store.YES)
-    private String employeeType;
+//    @Column(name = "EMPLOYEE_TYPE", length = 20)
+//    @Size(max = 20, message = "validator.user.employee.type.toolong")
+//    @Field(index=Index.UN_TOKENIZED, name="employeeType", store=Store.YES)
+//    private String employeeType;
+
+    @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch= FetchType.LAZY)
+    @JoinColumn(name = "EMPLOYEE_TYPE", insertable = true, updatable = true, nullable=true)
+    @Internationalized
+    @IndexedEmbedded
+    private MetadataTypeEntity employeeType;
 
     @Column(name = "FIRST_NAME", length = 50)
     @Fields ({
@@ -84,9 +82,15 @@ public class UserEntity {
     @Size(max = 50, message = "validator.user.first.name.toolong")
     private String firstName;
 
-    @Column(name = "JOB_CODE", length = 50)
-    @Size(max = 50, message = "validator.user.job.code.toolong")
-    private String jobCode;
+//    @Column(name = "JOB_CODE", length = 50)
+//    @Size(max = 50, message = "validator.user.job.code.toolong")
+//    private String jobCode;
+
+    @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch= FetchType.LAZY)
+    @JoinColumn(name = "JOB_CODE", insertable = true, updatable = true, nullable=true)
+    @Internationalized
+    @IndexedEmbedded
+    private MetadataTypeEntity jobCode;
 
     @Column(name = "LAST_NAME", length = 50)
     @Fields ({
@@ -111,9 +115,10 @@ public class UserEntity {
     @Size(max = 100, message = "validator.user.location.name.toolong")
     private String locationName;
 
-    @Column(name = "TYPE_ID", length = 20)
-    @Size(max = 20, message = "validator.user.metadata.type.id.toolong")
-    private String metadataTypeId;
+    @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch= FetchType.LAZY)
+    @JoinColumn(name = "TYPE_ID", insertable = true, updatable = true, nullable=true)
+    @Internationalized
+    protected MetadataTypeEntity type;
 
     @Column(name = "CLASSIFICATION", length = 20)
     @Size(max = 20, message = "validator.user.classification.toolong")
@@ -173,6 +178,10 @@ public class UserEntity {
 
     @Column(name = "MAIDEN_NAME", length = 40)
     @Size(max = 40, message = "validator.user.maiden.name.toolong")
+    @Fields ({
+        @Field(index = Index.TOKENIZED),
+        @Field(name = "maidenName", index = Index.TOKENIZED, store = Store.YES)
+    })
     private String maidenName;
 
     @Column(name = "PASSWORD_THEME", length = 20)
@@ -207,7 +216,6 @@ public class UserEntity {
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "parent", fetch = FetchType.LAZY)
     private Set<AddressEntity> addresses = new HashSet<AddressEntity>(0);
 
-    
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "parent", fetch = FetchType.LAZY)
     private Set<PhoneEntity> phones = new HashSet<PhoneEntity>(0);
 
@@ -246,15 +254,23 @@ public class UserEntity {
     @Fetch(FetchMode.SUBSELECT)
     private Set<ResourceEntity> resources = new HashSet<ResourceEntity>(0);
 
+    @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "employee", fetch = FetchType.LAZY)
+    // @Fetch(FetchMode.SUBSELECT)
+    private Set<SupervisorEntity> supervisors;
+
+    @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "supervisor", fetch = FetchType.LAZY)
+    // @Fetch(FetchMode.SUBSELECT)
+    private Set<SupervisorEntity> subordinates;
+
     public UserEntity() {
     }
 
-    public String getUserId() {
-        return userId;
+    public String getId() {
+        return id;
     }
 
-    public void setUserId(String userId) {
-        this.userId = userId;
+    public void setId(String id) {
+        this.id = id;
     }
 
     public Date getBirthdate() {
@@ -297,11 +313,11 @@ public class UserEntity {
         this.employeeId = employeeId;
     }
 
-    public String getEmployeeType() {
+    public MetadataTypeEntity getEmployeeType() {
         return employeeType;
     }
 
-    public void setEmployeeType(String employeeType) {
+    public void setEmployeeType(MetadataTypeEntity employeeType) {
         this.employeeType = employeeType;
     }
 
@@ -313,11 +329,11 @@ public class UserEntity {
         this.firstName = firstName;
     }
 
-    public String getJobCode() {
+    public MetadataTypeEntity getJobCode() {
         return jobCode;
     }
 
-    public void setJobCode(String jobCode) {
+    public void setJobCode(MetadataTypeEntity jobCode) {
         this.jobCode = jobCode;
     }
 
@@ -361,12 +377,12 @@ public class UserEntity {
         this.locationName = locationName;
     }
 
-    public String getMetadataTypeId() {
-        return metadataTypeId;
+    public MetadataTypeEntity getType() {
+        return type;
     }
 
-    public void setMetadataTypeId(String metadataTypeId) {
-        this.metadataTypeId = metadataTypeId;
+    public void setType(MetadataTypeEntity type) {
+        this.type = type;
     }
 
     public String getClassification() {
@@ -509,117 +525,6 @@ public class UserEntity {
     	return displayName;
     }
 
-//    public String getCountry() {
-//        return country;
-//    }
-//
-//    public void setCountry(String country) {
-//        this.country = country;
-//    }
-//
-//    public String getBldgNum() {
-//        return bldgNum;
-//    }
-//
-//    public void setBldgNum(String bldgNum) {
-//        this.bldgNum = bldgNum;
-//    }
-//
-//    public String getStreetDirection() {
-//        return streetDirection;
-//    }
-//
-//    public void setStreetDirection(String streetDirection) {
-//        this.streetDirection = streetDirection;
-//    }
-//
-//    public String getSuite() {
-//        return suite;
-//    }
-//
-//    public void setSuite(String suite) {
-//        this.suite = suite;
-//    }
-//
-//    public String getAddress1() {
-//        return address1;
-//    }
-//
-//    public void setAddress1(String address1) {
-//        this.address1 = address1;
-//    }
-//
-//    public String getAddress2() {
-//        return address2;
-//    }
-//
-//    public void setAddress2(String address2) {
-//        this.address2 = address2;
-//    }
-//
-//    public String getAddress3() {
-//        return address3;
-//    }
-//
-//    public void setAddress3(String address3) {
-//        this.address3 = address3;
-//    }
-//
-//    public String getAddress4() {
-//        return address4;
-//    }
-//
-//    public void setAddress4(String address4) {
-//        this.address4 = address4;
-//    }
-//
-//    public String getAddress5() {
-//        return address5;
-//    }
-//
-//    public void setAddress5(String address5) {
-//        this.address5 = address5;
-//    }
-//
-//    public String getAddress6() {
-//        return address6;
-//    }
-//
-//    public void setAddress6(String address6) {
-//        this.address6 = address6;
-//    }
-//
-//    public String getAddress7() {
-//        return address7;
-//    }
-//
-//    public void setAddress7(String address7) {
-//        this.address7 = address7;
-//    }
-//
-//    public String getCity() {
-//        return city;
-//    }
-//
-//    public void setCity(String city) {
-//        this.city = city;
-//    }
-//
-//    public String getState() {
-//        return state;
-//    }
-//
-//    public void setState(String state) {
-//        this.state = state;
-//    }
-//
-//    public String getPostalCd() {
-//        return postalCd;
-//    }
-//
-//    public void setPostalCd(String postalCd) {
-//        this.postalCd = postalCd;
-//    }
     @Deprecated
     public String getEmail() {
         String defaultEmail = null;
@@ -631,44 +536,16 @@ public class UserEntity {
                    }
             }
         }
+        if(defaultEmail == null) {
+        	if(this.emailAddresses!=null && !this.emailAddresses.isEmpty()){
+        		final EmailAddressEntity entity = this.emailAddresses.iterator().next();
+        		if(entity != null) {
+        			defaultEmail = entity.getEmailAddress();
+        		}
+        	}
+        }
         return defaultEmail;
     }
-
-//    public void setEmail(String email) {
-//        this.email = email;
-//    }
-//
-//    public String getAreaCd() {
-//        return areaCd;
-//    }
-//
-//    public void setAreaCd(String areaCd) {
-//        this.areaCd = areaCd;
-//    }
-//
-//    public String getCountryCd() {
-//        return countryCd;
-//    }
-//
-//    public void setCountryCd(String countryCd) {
-//        this.countryCd = countryCd;
-//    }
-//
-//    public String getPhoneNbr() {
-//        return phoneNbr;
-//    }
-//
-//    public void setPhoneNbr(String phoneNbr) {
-//        this.phoneNbr = phoneNbr;
-//    }
-//
-//    public String getPhoneExt() {
-//        return phoneExt;
-//    }
-//
-//    public void setPhoneExt(String phoneExt) {
-//        this.phoneExt = phoneExt;
-//    }
 
     public Integer getShowInSearch() {
         return showInSearch;
@@ -826,6 +703,23 @@ public class UserEntity {
     		}
     	}
     }
+    
+    public void addGroup(final GroupEntity group) {
+    	if(group != null) {
+    		if(this.groups == null) {
+    			this.groups = new HashSet<>();
+    		}
+    		this.groups.add(group);
+    	}
+    }
+    
+    public void removeGroup(final GroupEntity group) {
+    	if(group != null) {
+    		if(this.groups != null) {
+    			this.groups.remove(group);
+    		}
+    	}
+    }
 
     public Set<GroupEntity> getGroups() {
         return groups;
@@ -851,13 +745,29 @@ public class UserEntity {
         this.affiliations = affiliations;
     }
 
-
     public Set<ResourceEntity> getResources() {
         return resources;
     }
 
     public void setResources(Set<ResourceEntity> resources) {
         this.resources = resources;
+    }
+    
+    public void addResource(final ResourceEntity entity) {
+    	if(entity != null) {
+    		if(this.resources == null) {
+    			this.resources = new HashSet<>();
+    		}
+    		this.resources.add(entity);
+    	}
+    }
+    
+    public void removeResource(final ResourceEntity entity) {
+    	if(entity != null) {
+    		if(this.resources != null) {
+    			this.resources.remove(entity);
+    		}
+    	}
     }
 
     public void updateUser(UserEntity newUser) {
@@ -891,12 +801,11 @@ public class UserEntity {
 	        }
 	    }
 	    if (newUser.getEmployeeType() != null) {
-	        if (newUser.getEmployeeType().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-	            this.employeeType = null;
-	        } else {
-	            this.employeeType = newUser.getEmployeeType();
-	        }
-	    }
+	       this.employeeType = newUser.getEmployeeType();
+	    } else {
+            employeeType=null;
+        }
+
 	    if (newUser.getFirstName() != null) {
 	        if (newUser.getFirstName().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
 	            this.firstName = null;
@@ -905,12 +814,10 @@ public class UserEntity {
 	        }
 	    }
 	    if (newUser.getJobCode() != null) {
-	        if (newUser.getJobCode().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-	            this.jobCode = null;
-	        } else {
-	            this.jobCode = newUser.getJobCode();
-	        }
-	    }
+	        this.jobCode = newUser.getJobCode();
+	    } else {
+            this.jobCode = null;
+        }
 	    if (newUser.getLastName() != null) {
 	        if (newUser.getLastName().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
 	            this.lastName = null;
@@ -953,12 +860,8 @@ public class UserEntity {
 	            this.mailCode = null;
 	        }
 	    }
-	    if (newUser.getMetadataTypeId() != null) {
-	        if (newUser.getMetadataTypeId().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-	            this.metadataTypeId = null;
-	        } else {
-	            this.metadataTypeId = newUser.getMetadataTypeId();
-	        }
+	    if (newUser.getType() != null) {
+            this.setType(newUser.getType());
 	    }
 	    if (newUser.getMiddleInit() != null) {
 	        if (newUser.getMiddleInit().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
@@ -1073,8 +976,24 @@ public class UserEntity {
                 this.dateITPolicyApproved = newUser.getDateITPolicyApproved();
             }
         }
-	
-	}
+
+    }
+
+    public Set<SupervisorEntity> getSupervisors() {
+        return supervisors;
+    }
+
+    public void setSupervisors(Set<SupervisorEntity> supervisorsSet) {
+        this.supervisors = supervisorsSet;
+    }
+
+    public Set<SupervisorEntity> getSubordinates() {
+        return subordinates;
+    }
+
+    public void setSubordinates(Set<SupervisorEntity> subordinatesSet) {
+        this.subordinates = subordinatesSet;
+    }
 
     @Override
     public boolean equals(Object o) {
@@ -1090,14 +1009,14 @@ public class UserEntity {
         if (createdBy != null ? !createdBy.equals(that.createdBy) : that.createdBy != null) return false;
         if (employeeId != null ? !employeeId.equals(that.employeeId) : that.employeeId != null) return false;
         if (nickname != null ? !nickname.equals(that.nickname) : that.nickname != null) return false;
-        if (userId != null ? !userId.equals(that.userId) : that.userId != null) return false;
+        if (id != null ? !id.equals(that.id) : that.id != null) return false;
 
         return true;
     }
 
     @Override
     public int hashCode() {
-        int result = userId != null ? userId.hashCode() : 0;
+        int result = id != null ? id.hashCode() : 0;
         result = 31 * result + (birthdate != null ? birthdate.hashCode() : 0);
         result = 31 * result + (companyOwnerId != null ? companyOwnerId.hashCode() : 0);
         result = 31 * result + (createDate != null ? createDate.hashCode() : 0);

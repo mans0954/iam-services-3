@@ -22,8 +22,15 @@
 package org.openiam.provision.type;
 
 
+import org.apache.commons.collections.CollectionUtils;
+import org.codehaus.jackson.JsonGenerationException;
+import org.codehaus.jackson.map.ObjectMapper;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 import javax.xml.bind.annotation.*;
 
@@ -66,8 +73,12 @@ public class ExtensibleObject implements java.io.Serializable {
 	public ExtensibleObject() {
 		operation = 0;
 	}
-	
-	public String getObjectId() {
+
+    public ExtensibleObject(ExtensibleObjectType extensibleObjectType) {
+        this.extensibleObjectType = extensibleObjectType;
+    }
+
+    public String getObjectId() {
 		return objectId;
 	}
 
@@ -94,6 +105,21 @@ public class ExtensibleObject implements java.io.Serializable {
 	public List<ExtensibleAttribute> getAttributes() {
 		return attributes;
 	}
+
+    public String getAttributesAsJSON() throws IOException {
+        Properties attrVals = new Properties();
+        ObjectMapper mapper = new ObjectMapper();
+        for(ExtensibleAttribute attribute : this.getAttributes()) {
+            if (attribute.getValue() != null) {
+                attrVals.put(attribute.getName(), attribute.getValue());
+            } else if (attribute.getAttributeContainer() != null) {
+                attrVals.put(attribute.getName(), attribute.getAttributeContainer());
+            } else if (CollectionUtils.isNotEmpty(attribute.getValueList())) {
+                attrVals.put(attribute.getName(), attribute.getValueList());
+            }
+        }
+        return mapper.writeValueAsString(attrVals);
+    }
 
 	public void setAttributes(List<ExtensibleAttribute> attributes) {
 		this.attributes = attributes;

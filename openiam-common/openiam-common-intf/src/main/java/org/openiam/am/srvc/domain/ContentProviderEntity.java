@@ -6,8 +6,10 @@ import org.openiam.am.srvc.dto.ContentProvider;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
+import org.openiam.idm.srvc.ui.theme.domain.UIThemeEntity;
 
 import javax.persistence.*;
+
 import java.io.Serializable;
 import java.util.Set;
 
@@ -34,16 +36,16 @@ public class ContentProviderEntity implements Serializable {
 	@Type(type = "yes_no")
 	private boolean isPublic;
 	
-	@ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
-    @JoinColumn(name="MIN_AUTH_LEVEL", referencedColumnName = "AUTH_LEVEL_ID")
-	private AuthLevelEntity minAuthLevel;
-	
 	@Column(name = "DOMAIN_PATTERN", length = 100, nullable = false)
 	private String domainPattern;
 	
 	@Column(name = "IS_SSL", nullable = true)
 	@Type(type = "yes_no")
 	private Boolean isSSL;
+	
+    @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+    @JoinColumn(name = "UI_THEME_ID", referencedColumnName = "UI_THEME_ID", insertable = true, updatable = true, nullable=true)
+    private UIThemeEntity uiTheme;
 
 	/*
     @Column(name = "CONTEXT_PATH", nullable = false)
@@ -56,7 +58,7 @@ public class ContentProviderEntity implements Serializable {
     */
 	
 	@ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
-    @JoinColumn(name="MANAGED_SYS_ID", referencedColumnName = "RESOURCE_ID", insertable = true, updatable = true, nullable=false)
+    @JoinColumn(name="MANAGED_SYS_ID", referencedColumnName = "MANAGED_SYS_ID", insertable = true, updatable = true, nullable=false)
 	private ManagedSysEntity managedSystem;
 	
 	@ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
@@ -68,6 +70,11 @@ public class ContentProviderEntity implements Serializable {
 	
 	@OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL, mappedBy = "contentProvider")
 	private Set<URIPatternEntity> patternSet;
+	
+	@OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "contentProvider", fetch = FetchType.LAZY)
+	@OrderBy("order ASC")
+	private Set<AuthLevelGroupingContentProviderXrefEntity> groupingXrefs;
+	
 
 	public String getId() {
 		return id;
@@ -91,14 +98,6 @@ public class ContentProviderEntity implements Serializable {
 
 	public void setIsPublic(boolean isPublic) {
 		this.isPublic = isPublic;
-	}
-
-	public AuthLevelEntity getMinAuthLevel() {
-		return minAuthLevel;
-	}
-
-	public void setMinAuthLevel(AuthLevelEntity minAuthLevel) {
-		this.minAuthLevel = minAuthLevel;
 	}
 
 	public String getDomainPattern() {
@@ -140,6 +139,8 @@ public class ContentProviderEntity implements Serializable {
 	public void setPatternSet(Set<URIPatternEntity> patternSet) {
 		this.patternSet = patternSet;
 	}
+	
+	
 
 	/*
     public String getResourceId() {
@@ -161,12 +162,29 @@ public class ContentProviderEntity implements Serializable {
     }
     */
 
-    public ManagedSysEntity getManagedSystem() {
+    public UIThemeEntity getUiTheme() {
+		return uiTheme;
+	}
+
+	public void setUiTheme(UIThemeEntity uiTheme) {
+		this.uiTheme = uiTheme;
+	}
+
+	public ManagedSysEntity getManagedSystem() {
 		return managedSystem;
 	}
 
 	public void setManagedSystem(ManagedSysEntity managedSystem) {
 		this.managedSystem = managedSystem;
+	}
+
+	public Set<AuthLevelGroupingContentProviderXrefEntity> getGroupingXrefs() {
+		return groupingXrefs;
+	}
+
+	public void setGroupingXrefs(
+			Set<AuthLevelGroupingContentProviderXrefEntity> groupingXrefs) {
+		this.groupingXrefs = groupingXrefs;
 	}
 
 	@Override
@@ -182,11 +200,11 @@ public class ContentProviderEntity implements Serializable {
         result = prime * result
                  + ((contextPath == null) ? 0 : contextPath.hashCode());
 		*/
-		result = prime * result
-				+ ((minAuthLevel == null) ? 0 : minAuthLevel.hashCode());
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result
 				+ ((resource == null) ? 0 : resource.hashCode());
+		result = prime * result
+				+ ((uiTheme == null) ? 0 : uiTheme.hashCode());
 		return result;
 	}
 
@@ -223,11 +241,6 @@ public class ContentProviderEntity implements Serializable {
 				return false;
 		} else if (!isSSL.equals(other.isSSL))
 			return false;
-		if (minAuthLevel == null) {
-			if (other.minAuthLevel != null)
-				return false;
-		} else if (!minAuthLevel.equals(other.minAuthLevel))
-			return false;
 		if (name == null) {
 			if (other.name != null)
 				return false;
@@ -237,6 +250,12 @@ public class ContentProviderEntity implements Serializable {
 			if (other.resource != null)
 				return false;
 		} else if (!resource.equals(other.resource))
+			return false;
+		
+		if (uiTheme == null) {
+			if (other.uiTheme != null)
+				return false;
+		} else if (!uiTheme.equals(other.uiTheme))
 			return false;
 		return true;
 	}

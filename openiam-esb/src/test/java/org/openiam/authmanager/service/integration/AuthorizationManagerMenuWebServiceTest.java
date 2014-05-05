@@ -32,7 +32,7 @@ public class AuthorizationManagerMenuWebServiceTest extends AbstractTestNGSpring
 		final MenuRequest request = new MenuRequest();
 		request.setMenuRoot("IDM");
 		request.setUserId("3000");
-		final AuthorizationMenu menu = menuWebService.getMenuTreeForUserId(request);
+		final AuthorizationMenu menu = menuWebService.getMenuTreeForUserId(request, null);
 		Assert.assertNotNull(menu);
 		if(menu != null) {
 			Assert.assertNotNull(menu.getFirstChild());

@@ -1,12 +1,32 @@
 package org.openiam.am.srvc.service;
 
 import org.openiam.am.srvc.domain.*;
+import org.openiam.am.srvc.dto.AuthLevelGrouping;
+import org.openiam.exception.BasicDataServiceException;
 
 import java.util.List;
 
 public interface ContentProviderService {
+	
+	public List<AuthLevelEntity> getAuthLevelList();
+	
+	public void deleteAuthLevelAttribute(final String id);
+	
+	public AuthLevelAttributeEntity getAuthLevelAttribute(final String id);
+	
+	public void saveAuthLevelAttibute(final AuthLevelAttributeEntity entity);
+	
+	public void deleteAuthLevelGrouping(final String id);
+	
+	public void saveAuthLevelGrouping(final AuthLevelGroupingEntity entity);
+	
+	public void validateDeleteAuthLevelGrouping(final String id) throws BasicDataServiceException;
+	
+	public void validateSaveAuthLevelGrouping(final AuthLevelGroupingEntity entity) throws BasicDataServiceException;
+	
+	public AuthLevelGroupingEntity getAuthLevelGrouping(final String id);
 
-    List<AuthLevelEntity> getAuthLevelList();
+    List<AuthLevelGroupingEntity> getAuthLevelGroupingList();
 
     ContentProviderEntity getContentProvider(String providerId);
 
@@ -14,7 +34,7 @@ public interface ContentProviderService {
 
     List<ContentProviderEntity> findBeans(ContentProviderEntity example, Integer from, Integer size);
 
-    ContentProviderEntity saveContentProvider(ContentProviderEntity providerEntity);
+    void saveContentProvider(ContentProviderEntity providerEntity);
 
     void deleteContentProvider(String providerId);
 
@@ -32,7 +52,7 @@ public interface ContentProviderService {
 
     URIPatternEntity getURIPattern(String patternId);
 
-    URIPatternEntity saveURIPattern(URIPatternEntity uriPatternEntity);
+    void saveURIPattern(URIPatternEntity uriPatternEntity);
 
     void deleteProviderPattern(String providerId);
 
@@ -50,4 +70,6 @@ public interface ContentProviderService {
 
 
     List<ContentProviderEntity> getProviderByDomainPattern(String domainPattern, Boolean isSSL);
+    
+    public List<URIPatternEntity> getURIPatternsForContentProviderMatchingPattern(final String contentProviderId, final String pattern);
 }

@@ -1,10 +1,13 @@
 package org.openiam.idm.srvc.meta.dto;
 
+import org.openiam.base.KeyDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.lang.dto.LanguageMapping;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 import org.openiam.idm.srvc.org.dto.OrganizationAttribute;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
+import org.openiam.internationalization.Internationalized;
+import org.openiam.internationalization.InternationalizedCollection;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -23,8 +26,8 @@ import java.util.Set;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "MetadataElement", 
-	propOrder = { 
-		"id",
+	propOrder = {
+		"metadataTypeName",
         "metadataTypeId",
         "description",
         "auditable",
@@ -40,13 +43,15 @@ import java.util.Set;
         "resourceId",
         "userAttributes",
         "organizationAttributes",
-        "isPublic"
+        "isPublic",
+        "displayName"
 })
 @DozerDTOCorrespondence(MetadataElementEntity.class)
-public class MetadataElement implements Serializable {
+@Internationalized
+public class MetadataElement extends KeyDTO implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    private String id;
+    private String metadataTypeName;
     private String metadataTypeId;
     private String description;
     private String dataType;
@@ -55,6 +60,8 @@ public class MetadataElement implements Serializable {
     private String attributeName;
     private boolean selfEditable;
     private Set<MetadataElementPageTemplateXref> templateSet;
+    
+    @InternationalizedCollection(targetField="displayName")
     private Map<String, LanguageMapping> languageMap;
     private Set<MetadataValidValue> validValues;
     private String staticDefaultValue;
@@ -63,17 +70,10 @@ public class MetadataElement implements Serializable {
     private String resourceId;
     private boolean isPublic = true;
     private Set<OrganizationAttribute> organizationAttributes;
+    private String displayName;
 
     public MetadataElement() {
     }
-
-	public String getId() {
-		return id;
-	}
-
-	public void setId(String id) {
-		this.id = id;
-	}
 
 	public String getMetadataTypeId() {
 		return metadataTypeId;
@@ -99,7 +99,7 @@ public class MetadataElement implements Serializable {
 		this.dataType = dataType;
 	}
 
-	public boolean isAuditable() {
+	public boolean getAuditable() {
 		return auditable;
 	}
 
@@ -107,7 +107,7 @@ public class MetadataElement implements Serializable {
 		this.auditable = auditable;
 	}
 
-	public boolean isRequired() {
+	public boolean getRequired() {
 		return required;
 	}
 
@@ -115,11 +115,11 @@ public class MetadataElement implements Serializable {
 		this.required = required;
 	}
 
-	public boolean getIsSelfEditable() {
+	public boolean getSelfEditable() {
 		return selfEditable;
 	}
 
-	public void setIsSelfEditable(boolean selfEditable) {
+	public void setSelfEditable(boolean selfEditable) {
 		this.selfEditable = selfEditable;
 	}
 
@@ -236,8 +236,25 @@ public class MetadataElement implements Serializable {
 	public boolean getIsPublic() {
 		return isPublic;
 	}
+
 	public void setIsPublic(boolean isPublic) {
 		this.isPublic = isPublic;
+	}
+
+	public String getDisplayName() {
+		return displayName;
+	}
+
+	public void setDisplayName(String displayName) {
+		this.displayName = displayName;
+	}
+
+	public String getMetadataTypeName() {
+		return metadataTypeName;
+	}
+
+	public void setMetadataTypeName(String metadataTypeName) {
+		this.metadataTypeName = metadataTypeName;
 	}
 
 	@Override

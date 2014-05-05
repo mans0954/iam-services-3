@@ -5,21 +5,22 @@ import java.util.List;
 import java.util.Map;
 
 import org.openiam.idm.srvc.report.domain.ReportCriteriaParamEntity;
+import org.openiam.idm.srvc.report.domain.ReportParamMetaTypeEntity;
+import org.openiam.idm.srvc.report.domain.ReportParamTypeEntity;
 import org.openiam.idm.srvc.report.domain.ReportSubCriteriaParamEntity;
 import org.openiam.idm.srvc.report.domain.ReportInfoEntity;
 import org.openiam.idm.srvc.report.domain.ReportSubscriptionEntity;
 import org.openiam.exception.ScriptEngineException;
-import org.openiam.idm.srvc.report.domain.ReportParamTypeEntity;
-import org.openiam.idm.srvc.report.dto.ReportCriteriaParamDto;
 import org.openiam.idm.srvc.report.dto.ReportDataDto;
-import org.openiam.idm.srvc.report.dto.ReportTable;
+import org.openiam.idm.srvc.report.dto.ReportQueryDto;
+
 /**
  * Report data service provides transactional
  *
  * @author vitaly.yakunin
  */
 public interface ReportDataService {
-    ReportDataDto getReportData(final String reportName, final Map<String, String> reportParams) throws ClassNotFoundException, ScriptEngineException, IOException;
+    ReportDataDto getReportData(ReportQueryDto reportQuery) throws ClassNotFoundException, ScriptEngineException, IOException;
     List<ReportInfoEntity> getAllReports(final int from, final int size);
     Integer getReportCount();
     Integer getSubscribedReportCount();
@@ -42,6 +43,7 @@ public interface ReportDataService {
     void updateReportParametersByReportName(String reportName, List<ReportCriteriaParamEntity> prameters);
     void updateSubReportParametersByReportName(String reportName, List<ReportSubCriteriaParamEntity> prameters);
     List<ReportParamTypeEntity> getReportParameterTypes();
+    List<ReportParamMetaTypeEntity> getReportParamMetaTypes();
     void deleteSubscribedReport(String reportId);
     void deleteSubCriteriaParamReport(String reportId);
     ReportSubscriptionEntity getSubscriptionReportById(String reportId);

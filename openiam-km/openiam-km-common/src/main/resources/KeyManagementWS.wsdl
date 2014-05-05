@@ -1,153 +1,589 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<wsdl:definitions name="KeyManagementWS" targetNamespace="urn:idm.openiam.org/srvc/res/service" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:tns="urn:idm.openiam.org/srvc/res/service" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
-  <wsdl:types>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:tns="urn:idm.openiam.org/srvc/res/service" elementFormDefault="unqualified" targetNamespace="urn:idm.openiam.org/srvc/res/service" version="1.0">
-<xs:element name="generateMasterKey" type="tns:generateMasterKey"/>
-<xs:element name="generateMasterKeyResponse" type="tns:generateMasterKeyResponse"/>
-<xs:element name="migrateData" type="tns:migrateData"/>
-<xs:element name="migrateDataResponse" type="tns:migrateDataResponse"/>
-<xs:complexType name="migrateData">
-<xs:sequence>
-<xs:element minOccurs="0" name="secretKey" type="xs:string"/>
-</xs:sequence>
-</xs:complexType>
-<xs:complexType name="migrateDataResponse">
-<xs:sequence>
-<xs:element minOccurs="0" name="return" type="tns:Response"/>
-</xs:sequence>
-</xs:complexType>
-<xs:complexType name="Response">
-<xs:sequence>
-<xs:element minOccurs="0" name="errorCode" type="tns:ResponseErrorCode"/>
-<xs:element minOccurs="0" name="responseValue" type="xs:anyType"/>
-<xs:element minOccurs="0" name="errorText" type="xs:string"/>
-</xs:sequence>
-<xs:attribute name="status" type="tns:ResponseStatus" use="required"/>
-</xs:complexType>
-<xs:complexType name="generateMasterKey">
-<xs:sequence/>
-</xs:complexType>
-<xs:complexType name="generateMasterKeyResponse">
-<xs:sequence>
-<xs:element minOccurs="0" name="return" type="tns:Response"/>
-</xs:sequence>
-</xs:complexType>
-<xs:simpleType name="ResponseStatus">
-<xs:restriction base="xs:string">
-<xs:enumeration value="success"/>
-<xs:enumeration value="failure"/>
-</xs:restriction>
-</xs:simpleType>
-<xs:simpleType name="ResponseErrorCode">
-<xs:restriction base="xs:string">
-<xs:enumeration value="objectNotFound"/>
-<xs:enumeration value="classNotFound"/>
-<xs:enumeration value="principalNotFound"/>
-<xs:enumeration value="userNotFound"/>
-<xs:enumeration value="userStatus"/>
-<xs:enumeration value="supervisorlNotFound"/>
-<xs:enumeration value="DUPLICATE_PRINCIPAL"/>
-<xs:enumeration value="failPasswordPolicy"/>
-<xs:enumeration value="groupIdNull"/>
-<xs:enumeration value="groupIdInvalid"/>
-<xs:enumeration value="roleIdNull"/>
-<xs:enumeration value="roleIdInvalid"/>
-<xs:enumeration value="objectIdInvalid"/>
-<xs:enumeration value="success"/>
-<xs:enumeration value="FAIL_SQL_ERORR"/>
-<xs:enumeration value="FAIL_CONNECTION"/>
-<xs:enumeration value="FAIL_ALPHA_CHAR_RULE"/>
-<xs:enumeration value="FAIL_LOWER_CASE_RULE"/>
-<xs:enumeration value="FAIL_UPPER_CASE_RULE"/>
-<xs:enumeration value="FAIL_NON_APHANUMERIC_RULE"/>
-<xs:enumeration value="FAIL_NUMERIC_CHAR_RULE"/>
-<xs:enumeration value="FAIL_HISTORY_RULE"/>
-<xs:enumeration value="FAIL_LENGTH_RULE"/>
-<xs:enumeration value="FAIL_NEQ_NAME"/>
-<xs:enumeration value="FAIL_NEQ_PASSWORD"/>
-<xs:enumeration value="FAIL_NEQ_PRINCIPAL"/>
-<xs:enumeration value="FAIL_PASSWORD_CHANGE_FREQUENCY"/>
-<xs:enumeration value="PASSWORD_POLICY_NOT_FOUND"/>
-<xs:enumeration value="FAIL_PASSWORD_CHANGE_ALLOW"/>
-<xs:enumeration value="FAIL_REJECT_CHARS_IN_PSWD"/>
-<xs:enumeration value="FAIL_ENCRYPTION"/>
-<xs:enumeration value="FAIL_DECRYPTION"/>
-<xs:enumeration value="DIRECTORY_NAMING_EXCEPTION"/>
-<xs:enumeration value="COMMUNICATION_EXCEPTION"/>
-<xs:enumeration value="FAIL_CONNECTOR"/>
-<xs:enumeration value="INVALID_ARGUMENTS"/>
-<xs:enumeration value="IO_EXCEPTION"/>
-<xs:enumeration value="FILE_EXCEPTION"/>
-<xs:enumeration value="SQL_EXCEPTION"/>
-<xs:enumeration value="WS_SERVICE_EXCEPTION"/>
-<xs:enumeration value="SYNCHRONIZATION_EXCEPTION"/>
-<xs:enumeration value="LIMIT_EXCEEDED_EXCEPTION"/>
-<xs:enumeration value="AUTHENTICATION_EXCEPTION"/>
-<xs:enumeration value="PERMISSION_EXCEPTION"/>
-<xs:enumeration value="SERVICE_UNAVAILABLE_EXCEPTION"/>
-<xs:enumeration value="SCHEMA_VIOLATION_EXCEPTION"/>
-<xs:enumeration value="FAIL_PREPROCESSOR"/>
-<xs:enumeration value="FAIL_POSTPROCESSOR"/>
-<xs:enumeration value="FAIL_PROCESS_ALREADY_RUNNING"/>
-<xs:enumeration value="FAIL_OTHER"/>
-</xs:restriction>
-</xs:simpleType>
-</xs:schema>
-  </wsdl:types>
-  <wsdl:message name="generateMasterKeyResponse">
-    <wsdl:part name="parameters" element="tns:generateMasterKeyResponse">
-    </wsdl:part>
-  </wsdl:message>
-  <wsdl:message name="migrateDataResponse">
-    <wsdl:part name="parameters" element="tns:migrateDataResponse">
-    </wsdl:part>
-  </wsdl:message>
-  <wsdl:message name="migrateData">
-    <wsdl:part name="parameters" element="tns:migrateData">
-    </wsdl:part>
-  </wsdl:message>
-  <wsdl:message name="generateMasterKey">
-    <wsdl:part name="parameters" element="tns:generateMasterKey">
-    </wsdl:part>
-  </wsdl:message>
-  <wsdl:portType name="KeyManagementWS">
-    <wsdl:operation name="migrateData">
-      <wsdl:input name="migrateData" message="tns:migrateData">
-    </wsdl:input>
-      <wsdl:output name="migrateDataResponse" message="tns:migrateDataResponse">
-    </wsdl:output>
-    </wsdl:operation>
-    <wsdl:operation name="generateMasterKey">
-      <wsdl:input name="generateMasterKey" message="tns:generateMasterKey">
-    </wsdl:input>
-      <wsdl:output name="generateMasterKeyResponse" message="tns:generateMasterKeyResponse">
-    </wsdl:output>
-    </wsdl:operation>
-  </wsdl:portType>
-  <wsdl:binding name="KeyManagementWSSoapBinding" type="tns:KeyManagementWS">
-    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
-    <wsdl:operation name="migrateData">
-      <soap:operation soapAction="" style="document"/>
-      <wsdl:input name="migrateData">
-        <soap:body use="literal"/>
-      </wsdl:input>
-      <wsdl:output name="migrateDataResponse">
-        <soap:body use="literal"/>
-      </wsdl:output>
-    </wsdl:operation>
-    <wsdl:operation name="generateMasterKey">
-      <soap:operation soapAction="" style="document"/>
-      <wsdl:input name="generateMasterKey">
-        <soap:body use="literal"/>
-      </wsdl:input>
-      <wsdl:output name="generateMasterKeyResponse">
-        <soap:body use="literal"/>
-      </wsdl:output>
-    </wsdl:operation>
-  </wsdl:binding>
-  <wsdl:service name="KeyManagementWS">
-    <wsdl:port name="KeyManagementWSPort" binding="tns:KeyManagementWSSoapBinding">
-      <soap:address location="http://localhost:9090/KeyManagementWSPort"/>
-    </wsdl:port>
-  </wsdl:service>
+<?xml version='1.0' encoding='UTF-8'?><wsdl:definitions name="KeyManagementWS" targetNamespace="urn:idm.openiam.org/srvc/res/service" xmlns:ns1="http://schemas.xmlsoap.org/soap/http" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="urn:idm.openiam.org/srvc/res/service" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <wsdl:types>
+        <xs:schema attributeFormDefault="unqualified" elementFormDefault="unqualified" targetNamespace="urn:idm.openiam.org/srvc/res/service" xmlns:tns="urn:idm.openiam.org/srvc/res/service" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+            <xs:element name="decryptData" type="tns:decryptData"/>
+            <xs:element name="decryptDataResponse" type="tns:decryptDataResponse"/>
+            <xs:element name="decryptUserData" type="tns:decryptUserData"/>
+            <xs:element name="decryptUserDataResponse" type="tns:decryptUserDataResponse"/>
+            <xs:element name="encryptData" type="tns:encryptData"/>
+            <xs:element name="encryptDataResponse" type="tns:encryptDataResponse"/>
+            <xs:element name="encryptUserData" type="tns:encryptUserData"/>
+            <xs:element name="encryptUserDataResponse" type="tns:encryptUserDataResponse"/>
+            <xs:element name="generateCookieKey" type="tns:generateCookieKey"/>
+            <xs:element name="generateCookieKeyResponse" type="tns:generateCookieKeyResponse"/>
+            <xs:element name="generateMasterKey" type="tns:generateMasterKey"/>
+            <xs:element name="generateMasterKeyResponse" type="tns:generateMasterKeyResponse"/>
+            <xs:element name="getCookieKey" type="tns:getCookieKey"/>
+            <xs:element name="getCookieKeyResponse" type="tns:getCookieKeyResponse"/>
+            <xs:element name="initKeyManagement" type="tns:initKeyManagement"/>
+            <xs:element name="initKeyManagementResponse" type="tns:initKeyManagementResponse"/>
+            <xs:element name="migrateData" type="tns:migrateData"/>
+            <xs:element name="migrateDataResponse" type="tns:migrateDataResponse"/>
+            <xs:complexType name="encryptUserData">
+                <xs:sequence>
+                    <xs:element minOccurs="0" name="arg0" type="xs:string"/>
+                    <xs:element minOccurs="0" name="arg1" type="xs:string"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="encryptUserDataResponse">
+                <xs:sequence>
+                    <xs:element minOccurs="0" name="return" type="xs:string"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="initKeyManagement">
+                <xs:sequence/>
+            </xs:complexType>
+            <xs:complexType name="initKeyManagementResponse">
+                <xs:sequence>
+                    <xs:element minOccurs="0" name="return" type="tns:Response"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="Response">
+                <xs:sequence>
+                    <xs:element minOccurs="0" name="errorCode" type="tns:ResponseErrorCode"/>
+                    <xs:element minOccurs="0" name="responseValue" type="xs:anyType"/>
+                    <xs:element minOccurs="0" name="errorText" type="xs:string"/>
+                    <xs:element maxOccurs="unbounded" minOccurs="0" name="errorTokenList" nillable="true" type="tns:EsbErrorToken"/>
+                </xs:sequence>
+                <xs:attribute name="status" type="tns:ResponseStatus" use="required"/>
+            </xs:complexType>
+            <xs:complexType name="EsbErrorToken">
+                <xs:sequence>
+                    <xs:element minOccurs="0" name="className" type="xs:string"/>
+                    <xs:element minOccurs="0" name="fieldName" type="xs:string"/>
+                    <xs:element minOccurs="0" name="message" type="xs:string"/>
+                    <xs:element minOccurs="0" name="lengthConstraint" type="xs:long"/>
+                    <xs:element minOccurs="0" name="value" type="xs:anyType"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="migrateData">
+                <xs:sequence>
+                    <xs:element minOccurs="0" name="secretKey" type="xs:string"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="migrateDataResponse">
+                <xs:sequence>
+                    <xs:element minOccurs="0" name="return" type="tns:Response"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="generateCookieKey">
+                <xs:sequence/>
+            </xs:complexType>
+            <xs:complexType name="generateCookieKeyResponse">
+                <xs:sequence>
+                    <xs:element minOccurs="0" name="return" type="xs:base64Binary"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="getCookieKey">
+                <xs:sequence/>
+            </xs:complexType>
+            <xs:complexType name="getCookieKeyResponse">
+                <xs:sequence>
+                    <xs:element minOccurs="0" name="return" type="xs:base64Binary"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="generateMasterKey">
+                <xs:sequence/>
+            </xs:complexType>
+            <xs:complexType name="generateMasterKeyResponse">
+                <xs:sequence>
+                    <xs:element minOccurs="0" name="return" type="tns:Response"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="decryptUserData">
+                <xs:sequence>
+                    <xs:element minOccurs="0" name="arg0" type="xs:string"/>
+                    <xs:element minOccurs="0" name="arg1" type="xs:string"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="decryptUserDataResponse">
+                <xs:sequence>
+                    <xs:element minOccurs="0" name="return" type="xs:string"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="decryptData">
+                <xs:sequence>
+                    <xs:element minOccurs="0" name="arg0" type="xs:string"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="decryptDataResponse">
+                <xs:sequence>
+                    <xs:element minOccurs="0" name="return" type="xs:string"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="encryptData">
+                <xs:sequence>
+                    <xs:element minOccurs="0" name="arg0" type="xs:string"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="encryptDataResponse">
+                <xs:sequence>
+                    <xs:element minOccurs="0" name="return" type="xs:string"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:simpleType name="ResponseStatus">
+                <xs:restriction base="xs:string">
+                    <xs:enumeration value="success"/>
+                    <xs:enumeration value="failure"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType name="ResponseErrorCode">
+                <xs:restriction base="xs:string">
+                    <xs:enumeration value="resourcePropResourceIdMissing"/>
+                    <xs:enumeration value="resourcePropValueMissing"/>
+                    <xs:enumeration value="resourcePropMissing"/>
+                    <xs:enumeration value="hangingChildren"/>
+                    <xs:enumeration value="hangingGroups"/>
+                    <xs:enumeration value="hangingRoles"/>
+                    <xs:enumeration value="menuDoesNotExist"/>
+                    <xs:enumeration value="invalidResourceType"/>
+                    <xs:enumeration value="invalidRoleDomain"/>
+                    <xs:enumeration value="noName"/>
+                    <xs:enumeration value="nameTaken"/>
+                    <xs:enumeration value="READONLY"/>
+                    <xs:enumeration value="RULE_NOT_SET"/>
+                    <xs:enumeration value="membershipExists"/>
+                    <xs:enumeration value="resourceTypesNotEqual"/>
+                    <xs:enumeration value="relationshipExists"/>
+                    <xs:enumeration value="cantAddYourselfAsChild"/>
+                    <xs:enumeration value="RESOURCE_TYPE_NOT_SUPPORTS_HIERARCHY"/>
+                    <xs:enumeration value="circularDependency"/>
+                    <xs:enumeration value="objectNotFound"/>
+                    <xs:enumeration value="questNotSelected"/>
+                    <xs:enumeration value="answerNotTaken"/>
+                    <xs:enumeration value="hangingChildRoles"/>
+                    <xs:enumeration value="hangingRoleGroups"/>
+                    <xs:enumeration value="hangingRoleResources"/>
+                    <xs:enumeration value="hangingRoleUsers"/>
+                    <xs:enumeration value="classNotFound"/>
+                    <xs:enumeration value="principalNotFound"/>
+                    <xs:enumeration value="userNotFound"/>
+                    <xs:enumeration value="userStatus"/>
+                    <xs:enumeration value="supervisorlNotFound"/>
+                    <xs:enumeration value="supervisorlError"/>
+                    <xs:enumeration value="DUPLICATE_PRINCIPAL"/>
+                    <xs:enumeration value="failPasswordPolicy"/>
+                    <xs:enumeration value="groupIdNull"/>
+                    <xs:enumeration value="groupIdInvalid"/>
+                    <xs:enumeration value="roleIdNull"/>
+                    <xs:enumeration value="roleIdInvalid"/>
+                    <xs:enumeration value="objectIdInvalid"/>
+                    <xs:enumeration value="success"/>
+                    <xs:enumeration value="FAIL_SQL_ERORR"/>
+                    <xs:enumeration value="FAIL_CONNECTION"/>
+                    <xs:enumeration value="FAIL_ALPHA_CHAR_RULE"/>
+                    <xs:enumeration value="FAIL_LOWER_CASE_RULE"/>
+                    <xs:enumeration value="FAIL_UPPER_CASE_RULE"/>
+                    <xs:enumeration value="FAIL_NON_APHANUMERIC_RULE"/>
+                    <xs:enumeration value="FAIL_NUMERIC_CHAR_RULE"/>
+                    <xs:enumeration value="FAIL_HISTORY_RULE"/>
+                    <xs:enumeration value="FAIL_LENGTH_RULE"/>
+                    <xs:enumeration value="FAIL_NEQ_NAME"/>
+                    <xs:enumeration value="FAIL_NEQ_PASSWORD"/>
+                    <xs:enumeration value="FAIL_NEQ_PRINCIPAL"/>
+                    <xs:enumeration value="FAIL_PASSWORD_CHANGE_FREQUENCY"/>
+                    <xs:enumeration value="PASSWORD_POLICY_NOT_FOUND"/>
+                    <xs:enumeration value="FAIL_PASSWORD_CHANGE_ALLOW"/>
+                    <xs:enumeration value="FAIL_REJECT_CHARS_IN_PSWD"/>
+                    <xs:enumeration value="FAIL_MIN_WORDS_PASSPHRASE_RULE"/>
+                    <xs:enumeration value="FAIL_REPEAT_SAME_WORD_PASSPHRASE_RULE"/>
+                    <xs:enumeration value="FAIL_ENCRYPTION"/>
+                    <xs:enumeration value="FAIL_DECRYPTION"/>
+                    <xs:enumeration value="DIRECTORY_NAMING_EXCEPTION"/>
+                    <xs:enumeration value="COMMUNICATION_EXCEPTION"/>
+                    <xs:enumeration value="FAIL_CONNECTOR"/>
+                    <xs:enumeration value="INVALID_ARGUMENTS"/>
+                    <xs:enumeration value="IO_EXCEPTION"/>
+                    <xs:enumeration value="INTERRUPTED_EXCEPTION"/>
+                    <xs:enumeration value="FILE_EXCEPTION"/>
+                    <xs:enumeration value="SQL_EXCEPTION"/>
+                    <xs:enumeration value="WS_SERVICE_EXCEPTION"/>
+                    <xs:enumeration value="SYNCHRONIZATION_EXCEPTION"/>
+                    <xs:enumeration value="SYNCHRONIZATION_PRE_SRIPT_FAILURE"/>
+                    <xs:enumeration value="SYNCHRONIZATION_POST_SRIPT_FAILURE"/>
+                    <xs:enumeration value="LIMIT_EXCEEDED_EXCEPTION"/>
+                    <xs:enumeration value="AUTHENTICATION_EXCEPTION"/>
+                    <xs:enumeration value="PERMISSION_EXCEPTION"/>
+                    <xs:enumeration value="SERVICE_UNAVAILABLE_EXCEPTION"/>
+                    <xs:enumeration value="SCHEMA_VIOLATION_EXCEPTION"/>
+                    <xs:enumeration value="FAIL_PREPROCESSOR"/>
+                    <xs:enumeration value="FAIL_POSTPROCESSOR"/>
+                    <xs:enumeration value="FAIL_PROCESS_ALREADY_RUNNING"/>
+                    <xs:enumeration value="FAIL_PROCESS_INACTIVE"/>
+                    <xs:enumeration value="FAIL_OTHER"/>
+                    <xs:enumeration value="AUTH_PROVIDER_TYPE_NOT_SET"/>
+                    <xs:enumeration value="AUTH_ATTRIBUTE_NAME_NOT_SET"/>
+                    <xs:enumeration value="MANAGED_SYS_NOT_SET"/>
+                    <xs:enumeration value="AUTH_PROVIDER_NAME_NOT_SET"/>
+                    <xs:enumeration value="AUTH_PROVIDER_NOT_SET"/>
+                    <xs:enumeration value="AUTH_ATTRIBUTE_NOT_SET"/>
+                    <xs:enumeration value="AUTH_ATTRIBUTE_VALUE_NOT_SET"/>
+                    <xs:enumeration value="AUTH_RESOURCE_ATTRIBUTE_NAME_NOT_SET"/>
+                    <xs:enumeration value="AUTH_PROVIDER_SECUTITY_KEYS_NOT_SET"/>
+                    <xs:enumeration value="AUTH_REQUIRED_PROVIDER_ATTRIBUTE_NOT_SET"/>
+                    <xs:enumeration value="AUTH_RESOURCE_AM_ATTRIBUTE_NOT_SET"/>
+                    <xs:enumeration value="AUTH_RESOURCE_AM_ATTRIBUTE_ID_NOT_SET"/>
+                    <xs:enumeration value="AUTH_RESOURCE_AM_ATTRIBUTE_ID_NOT_SET"/>
+                    <xs:enumeration value="AUTH_RESOURCE_AM_ATTRIBUTE_NAME_NOT_SET"/>
+                    <xs:enumeration value="AUTH_RESOURCE_ATTRIBUTE_MAP_NOT_SET"/>
+                    <xs:enumeration value="AUTH_RESOURCE_TARGET_ATTRIBUTE_NOT_SET"/>
+                    <xs:enumeration value="AUTH_RESOURCE_ATTRIBUTE_MAP_COLLECTION_NOT_SET"/>
+                    <xs:enumeration value="AUTH_RESOURCE_ATTRIBUTE_MAP_ID_NOT_SET"/>
+                    <xs:enumeration value="AUTH_RESOURCE_ATTRIBUTE_TYPE_NOT_SET"/>
+                    <xs:enumeration value="USER_NOT_SET"/>
+                    <xs:enumeration value="USER_ATTRIBUTE_NAME_NOT_SET"/>
+                    <xs:enumeration value="CONTENT_PROVIDER_NAME_NOT_SET"/>
+                    <xs:enumeration value="CONTENT_PROVIDER_AUTH_LEVEL_NOT_SET"/>
+                    <xs:enumeration value="CONTENT_PROVIDER_DOMAIN_PATERN_NOT_SET"/>
+                    <xs:enumeration value="CONTENT_PROVIDER_SERVER_URL_NOT_SET"/>
+                    <xs:enumeration value="CONTENT_PROVIDER_NOT_SET"/>
+                    <xs:enumeration value="URI_FEDERATION_CONTENT_PROVIDER_NOT_FOUND"/>
+                    <xs:enumeration value="URI_FEDERATION_NOT_ENTITLED_TO_CONTENT_PROVIDER"/>
+                    <xs:enumeration value="URI_FEDERATION_AUTH_LEVEL_DOES_NOT_MEET_MIN_AUTH_LEVEL_ON_CP"/>
+                    <xs:enumeration value="URI_FEDERATION_NOT_ENTITLED_TO_PATTERN"/>
+                    <xs:enumeration value="URI_FEDERATION_AUTH_LEVEL_DOES_NOT_MEET_MIN_AUTH_LEVEL_ON_PATTERN"/>
+                    <xs:enumeration value="INVALID_URI"/>
+                    <xs:enumeration value="URI_PATTERN_RULE_PROCESS_ERROR"/>
+                    <xs:enumeration value="CONTENT_PROVIDER_URI_PATTERN_NOT_SET"/>
+                    <xs:enumeration value="URI_PATTERN_NOT_SET"/>
+                    <xs:enumeration value="URI_PATTERN_META_TYPE_NOT_SET"/>
+                    <xs:enumeration value="URI_PATTERN_META_EXISTS"/>
+                    <xs:enumeration value="CONTENT_PROVIDER_SERVER_EXISTS"/>
+                    <xs:enumeration value="CONTENT_PROVIDER_WITH_NAME_EXISTS"/>
+                    <xs:enumeration value="CONTENT_PROVIDER_DOMAIN_PATTERN_EXISTS"/>
+                    <xs:enumeration value="URL_PATTERN_META_VALUE_NAME_NOT_SET"/>
+                    <xs:enumeration value="URL_PATTERN_META_VALUE_MAP_NOT_SET"/>
+                    <xs:enumeration value="URI_PATTERN_INVALID"/>
+                    <xs:enumeration value="URI_PATTERN_META_NAME_NOT_SET"/>
+                    <xs:enumeration value="INTERNAL_ERROR"/>
+                    <xs:enumeration value="LOGIN_EXISTS"/>
+                    <xs:enumeration value="MISSING_REQUIRED_ATTRIBUTE"/>
+                    <xs:enumeration value="NO_IDENTITY_QUESTION"/>
+                    <xs:enumeration value="NO_IDENTITY_QUESTION_GROUP"/>
+                    <xs:enumeration value="NO_ANSWER_TO_QUESTION"/>
+                    <xs:enumeration value="IDENTICAL_QUESTIONS"/>
+                    <xs:enumeration value="IDENTITY_NOT_FOUND"/>
+                    <xs:enumeration value="ATTRIBUTE_NAME_MISSING"/>
+                    <xs:enumeration value="METADATA_TYPE_MISSING"/>
+                    <xs:enumeration value="CATEGORIES_COLLECTION_CHILDREN"/>
+                    <xs:enumeration value="UNAUTHORIZED"/>
+                    <xs:enumeration value="INVALID_VALUE"/>
+                    <xs:enumeration value="REQUIRED"/>
+                    <xs:enumeration value="FIRST_NAME_REQUIRED"/>
+                    <xs:enumeration value="LAST_NAME_REQUIRED"/>
+                    <xs:enumeration value="EMAIL_REQUIRED"/>
+                    <xs:enumeration value="LOGIN_REQUIRED"/>
+                    <xs:enumeration value="SEND_EMAIL_FAILED"/>
+                    <xs:enumeration value="LINKED_TO_AUTHENTICATION_PROVIDER"/>
+                    <xs:enumeration value="LINKED_TO_CONTENT_PROVIDER"/>
+                    <xs:enumeration value="LINKED_TO_URI_PATTERN"/>
+                    <xs:enumeration value="LINKED_TO_METADATA_ELEMENT"/>
+                    <xs:enumeration value="LINKED_TO_MANAGED_SYSTEM"/>
+                    <xs:enumeration value="LINKED_TO_PAGE_TEMPLATE"/>
+                    <xs:enumeration value="RESOURCE_IS_AN_ADMIN_OF_RESOURCE"/>
+                    <xs:enumeration value="RESOURCE_IS_AN_ADMIN_OF_ROLE"/>
+                    <xs:enumeration value="RESOURCE_IS_AN_ADMIN_OF_GROUP"/>
+                    <xs:enumeration value="RESOURCE_IS_AN_ADMIN_OF_ORG"/>
+                    <xs:enumeration value="ORGANIZATION_NAME_NOT_SET"/>
+                    <xs:enumeration value="NAME_MISSING"/>
+                    <xs:enumeration value="URL_REQUIRED"/>
+                    <xs:enumeration value="REPORT_NAME_NOT_SET"/>
+                    <xs:enumeration value="REPORT_PARAM_NAME_NOT_SET"/>
+                    <xs:enumeration value="REPORT_PARAM_TYPE_NOT_SET"/>
+                    <xs:enumeration value="REPORT_NOT_SET"/>
+                    <xs:enumeration value="REPORT_PARAMETER_EXISTS"/>
+                    <xs:enumeration value="REPORT_DATASOURCE_NOT_SET"/>
+                    <xs:enumeration value="REPORT_URL_NOT_SET"/>
+                    <xs:enumeration value="SUBSCRIBED_VALUE_NOT_SET"/>
+                    <xs:enumeration value="SUBSCRIBED_DELIVERY_METHOD_NOT_SET"/>
+                    <xs:enumeration value="SUBSCRIBED_DELIVERY_AUDIENCE_NOT_SET"/>
+                    <xs:enumeration value="SUBSCRIBED_DELIVERY_FORMAT_NOT_SET"/>
+                    <xs:enumeration value="SUBSCRIBED_ID_NOT_SET"/>
+                    <xs:enumeration value="SUBSCRIBED_NAME_NOT_SET"/>
+                    <xs:enumeration value="POLICY_NAME_NOT_SET"/>
+                    <xs:enumeration value="ORGANIZATION_TYPE_NOT_SET"/>
+                    <xs:enumeration value="CLASSIFICATION_NOT_SET"/>
+                    <xs:enumeration value="NO_APPROVER_ASSOCIATIONS"/>
+                    <xs:enumeration value="NO_REQUEST_APPROVERS"/>
+                    <xs:enumeration value="REQUEST_APPROVERS_NOT_SET"/>
+                    <xs:enumeration value="MANAGED_SYSTEM_NOT_SET"/>
+                    <xs:enumeration value="IT_POLICY_EXISTS"/>
+                    <xs:enumeration value="ORGANIZATION_TYPE_CHILDREN_EXIST"/>
+                    <xs:enumeration value="ORGANIZATION_TYPE_PARENTS_EXIST"/>
+                    <xs:enumeration value="ORGANIZATION_TYPE_TIED_TO_ORGANIZATION"/>
+                    <xs:enumeration value="NO_EXEUCUTION_TIME"/>
+                    <xs:enumeration value="INVALID_CRON_EXRPESSION"/>
+                    <xs:enumeration value="DATE_INVALID"/>
+                    <xs:enumeration value="FILE_DOES_NOT_EXIST"/>
+                    <xs:enumeration value="SPRING_BEAN_OR_SCRIPT_REQUIRED"/>
+                    <xs:enumeration value="INVALID_SPRING_BEAN"/>
+                    <xs:enumeration value="TEMPLATE_TYPE_REQUIRED"/>
+                    <xs:enumeration value="ADDRESS_TYPE_REQUIRED"/>
+                    <xs:enumeration value="EMAIL_ADDRESS_TYPE_REQUIRED"/>
+                    <xs:enumeration value="PHONE_TYPE_REQUIRED"/>
+                    <xs:enumeration value="PHONE_TYPE_DUPLICATED"/>
+                    <xs:enumeration value="EMAIL_ADDRESS_TYPE_DUPLICATED"/>
+                    <xs:enumeration value="ADDRESS_TYPE_DUPLICATED"/>
+                    <xs:enumeration value="VALIDATION_ERROR"/>
+                    <xs:enumeration value="META_NAME_MISSING"/>
+                    <xs:enumeration value="META_VALUE_MISSING"/>
+                    <xs:enumeration value="CONNECTOR_REQUIRED"/>
+                    <xs:enumeration value="FAIL_LIMIT_NUM_REPEAT_CHAR"/>
+                    <xs:enumeration value="NOT_ALLOWED_ROLE_IN_SEARCH"/>
+                    <xs:enumeration value="NOT_ALLOWED_GROUP_IN_SEARCH"/>
+                    <xs:enumeration value="NOT_ALLOWED_ORGANIZATION_IN_SEARCH"/>
+                    <xs:enumeration value="INVALID_USER_SEARCH_REQUEST"/>
+                    <xs:enumeration value="NO_SUBJECT"/>
+                    <xs:enumeration value="NO_SSO_TOKEN"/>
+                    <xs:enumeration value="AUTH_LEVEL_GROUPING_HAS_PATTERNS"/>
+                    <xs:enumeration value="AUTH_LEVEL_GROUPING_HAS_CONTENT_PROVIDERS"/>
+                    <xs:enumeration value="METATYPE_LINKED_WITH_METAELEMENT"/>
+                    <xs:enumeration value="TYPE_REQUIRED"/>
+                    <xs:enumeration value="GROUPING_REQUIRED"/>
+                    <xs:enumeration value="VALUE_REQUIRED"/>
+                    <xs:enumeration value="DISPLAY_NAME_REQUIRED"/>
+                    <xs:enumeration value="LOCALE_ALREADY_EXISTS"/>
+                    <xs:enumeration value="NO_DEFAULT_LANGUAGE"/>
+                    <xs:enumeration value="LANGUAGE_CODE_MISSING"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:element name="Exception" type="tns:Exception"/>
+            <xs:complexType name="Exception">
+                <xs:sequence>
+                    <xs:element minOccurs="0" name="message" type="xs:string"/>
+                </xs:sequence>
+            </xs:complexType>
+        </xs:schema>
+    </wsdl:types>
+    <wsdl:message name="Exception">
+        <wsdl:part element="tns:Exception" name="Exception">
+        </wsdl:part>
+    </wsdl:message>
+    <wsdl:message name="encryptDataResponse">
+        <wsdl:part element="tns:encryptDataResponse" name="parameters">
+        </wsdl:part>
+    </wsdl:message>
+    <wsdl:message name="encryptData">
+        <wsdl:part element="tns:encryptData" name="parameters">
+        </wsdl:part>
+    </wsdl:message>
+    <wsdl:message name="migrateData">
+        <wsdl:part element="tns:migrateData" name="parameters">
+        </wsdl:part>
+    </wsdl:message>
+    <wsdl:message name="migrateDataResponse">
+        <wsdl:part element="tns:migrateDataResponse" name="parameters">
+        </wsdl:part>
+    </wsdl:message>
+    <wsdl:message name="generateCookieKey">
+        <wsdl:part element="tns:generateCookieKey" name="parameters">
+        </wsdl:part>
+    </wsdl:message>
+    <wsdl:message name="generateCookieKeyResponse">
+        <wsdl:part element="tns:generateCookieKeyResponse" name="parameters">
+        </wsdl:part>
+    </wsdl:message>
+    <wsdl:message name="initKeyManagement">
+        <wsdl:part element="tns:initKeyManagement" name="parameters">
+        </wsdl:part>
+    </wsdl:message>
+    <wsdl:message name="encryptUserDataResponse">
+        <wsdl:part element="tns:encryptUserDataResponse" name="parameters">
+        </wsdl:part>
+    </wsdl:message>
+    <wsdl:message name="initKeyManagementResponse">
+        <wsdl:part element="tns:initKeyManagementResponse" name="parameters">
+        </wsdl:part>
+    </wsdl:message>
+    <wsdl:message name="decryptDataResponse">
+        <wsdl:part element="tns:decryptDataResponse" name="parameters">
+        </wsdl:part>
+    </wsdl:message>
+    <wsdl:message name="getCookieKey">
+        <wsdl:part element="tns:getCookieKey" name="parameters">
+        </wsdl:part>
+    </wsdl:message>
+    <wsdl:message name="generateMasterKeyResponse">
+        <wsdl:part element="tns:generateMasterKeyResponse" name="parameters">
+        </wsdl:part>
+    </wsdl:message>
+    <wsdl:message name="encryptUserData">
+        <wsdl:part element="tns:encryptUserData" name="parameters">
+        </wsdl:part>
+    </wsdl:message>
+    <wsdl:message name="generateMasterKey">
+        <wsdl:part element="tns:generateMasterKey" name="parameters">
+        </wsdl:part>
+    </wsdl:message>
+    <wsdl:message name="decryptData">
+        <wsdl:part element="tns:decryptData" name="parameters">
+        </wsdl:part>
+    </wsdl:message>
+    <wsdl:message name="decryptUserDataResponse">
+        <wsdl:part element="tns:decryptUserDataResponse" name="parameters">
+        </wsdl:part>
+    </wsdl:message>
+    <wsdl:message name="decryptUserData">
+        <wsdl:part element="tns:decryptUserData" name="parameters">
+        </wsdl:part>
+    </wsdl:message>
+    <wsdl:message name="getCookieKeyResponse">
+        <wsdl:part element="tns:getCookieKeyResponse" name="parameters">
+        </wsdl:part>
+    </wsdl:message>
+    <wsdl:portType name="KeyManagementWS">
+        <wsdl:operation name="encryptUserData">
+            <wsdl:input message="tns:encryptUserData" name="encryptUserData">
+            </wsdl:input>
+            <wsdl:output message="tns:encryptUserDataResponse" name="encryptUserDataResponse">
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="initKeyManagement">
+            <wsdl:input message="tns:initKeyManagement" name="initKeyManagement">
+            </wsdl:input>
+            <wsdl:output message="tns:initKeyManagementResponse" name="initKeyManagementResponse">
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="migrateData">
+            <wsdl:input message="tns:migrateData" name="migrateData">
+            </wsdl:input>
+            <wsdl:output message="tns:migrateDataResponse" name="migrateDataResponse">
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="generateCookieKey">
+            <wsdl:input message="tns:generateCookieKey" name="generateCookieKey">
+            </wsdl:input>
+            <wsdl:output message="tns:generateCookieKeyResponse" name="generateCookieKeyResponse">
+            </wsdl:output>
+            <wsdl:fault message="tns:Exception" name="Exception">
+            </wsdl:fault>
+        </wsdl:operation>
+        <wsdl:operation name="getCookieKey">
+            <wsdl:input message="tns:getCookieKey" name="getCookieKey">
+            </wsdl:input>
+            <wsdl:output message="tns:getCookieKeyResponse" name="getCookieKeyResponse">
+            </wsdl:output>
+            <wsdl:fault message="tns:Exception" name="Exception">
+            </wsdl:fault>
+        </wsdl:operation>
+        <wsdl:operation name="generateMasterKey">
+            <wsdl:input message="tns:generateMasterKey" name="generateMasterKey">
+            </wsdl:input>
+            <wsdl:output message="tns:generateMasterKeyResponse" name="generateMasterKeyResponse">
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="decryptUserData">
+            <wsdl:input message="tns:decryptUserData" name="decryptUserData">
+            </wsdl:input>
+            <wsdl:output message="tns:decryptUserDataResponse" name="decryptUserDataResponse">
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="decryptData">
+            <wsdl:input message="tns:decryptData" name="decryptData">
+            </wsdl:input>
+            <wsdl:output message="tns:decryptDataResponse" name="decryptDataResponse">
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="encryptData">
+            <wsdl:input message="tns:encryptData" name="encryptData">
+            </wsdl:input>
+            <wsdl:output message="tns:encryptDataResponse" name="encryptDataResponse">
+            </wsdl:output>
+        </wsdl:operation>
+    </wsdl:portType>
+    <wsdl:binding name="KeyManagementWSSoapBinding" type="tns:KeyManagementWS">
+        <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+        <wsdl:operation name="encryptUserData">
+            <soap:operation soapAction="" style="document"/>
+            <wsdl:input name="encryptUserData">
+                <soap:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output name="encryptUserDataResponse">
+                <soap:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="initKeyManagement">
+            <soap:operation soapAction="" style="document"/>
+            <wsdl:input name="initKeyManagement">
+                <soap:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output name="initKeyManagementResponse">
+                <soap:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="migrateData">
+            <soap:operation soapAction="" style="document"/>
+            <wsdl:input name="migrateData">
+                <soap:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output name="migrateDataResponse">
+                <soap:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="generateCookieKey">
+            <soap:operation soapAction="" style="document"/>
+            <wsdl:input name="generateCookieKey">
+                <soap:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output name="generateCookieKeyResponse">
+                <soap:body use="literal"/>
+            </wsdl:output>
+            <wsdl:fault name="Exception">
+                <soap:fault name="Exception" use="literal"/>
+            </wsdl:fault>
+        </wsdl:operation>
+        <wsdl:operation name="getCookieKey">
+            <soap:operation soapAction="" style="document"/>
+            <wsdl:input name="getCookieKey">
+                <soap:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output name="getCookieKeyResponse">
+                <soap:body use="literal"/>
+            </wsdl:output>
+            <wsdl:fault name="Exception">
+                <soap:fault name="Exception" use="literal"/>
+            </wsdl:fault>
+        </wsdl:operation>
+        <wsdl:operation name="generateMasterKey">
+            <soap:operation soapAction="" style="document"/>
+            <wsdl:input name="generateMasterKey">
+                <soap:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output name="generateMasterKeyResponse">
+                <soap:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="decryptUserData">
+            <soap:operation soapAction="" style="document"/>
+            <wsdl:input name="decryptUserData">
+                <soap:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output name="decryptUserDataResponse">
+                <soap:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="decryptData">
+            <soap:operation soapAction="" style="document"/>
+            <wsdl:input name="decryptData">
+                <soap:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output name="decryptDataResponse">
+                <soap:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="encryptData">
+            <soap:operation soapAction="" style="document"/>
+            <wsdl:input name="encryptData">
+                <soap:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output name="encryptDataResponse">
+                <soap:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+    </wsdl:binding>
+    <wsdl:service name="KeyManagementWS">
+        <wsdl:port binding="tns:KeyManagementWSSoapBinding" name="KeyManagementWSPort">
+            <soap:address location="http://localhost:9080/openiam-esb/idmsrvc/KeyManagementWS"/>
+        </wsdl:port>
+    </wsdl:service>
 </wsdl:definitions>

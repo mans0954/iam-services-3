@@ -37,7 +37,6 @@ import java.util.List;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "PasswordSync", propOrder = {
-    "securityDomain",
     "managedSystemId",
     "principal",
     "password",
@@ -54,7 +53,6 @@ public class PasswordSync extends BaseObject  {
 	 */
 	private static final long serialVersionUID = 2746720616086920826L;
 
-	private String securityDomain;
 	private String managedSystemId;
 	private String principal;
 	private String password;
@@ -68,12 +66,6 @@ public class PasswordSync extends BaseObject  {
 		
 	}
 	
-	public String getSecurityDomain() {
-		return securityDomain;
-	}
-	public void setSecurityDomain(String securityDomain) {
-		this.securityDomain = securityDomain;
-	}
 	public String getManagedSystemId() {
 		return managedSystemId;
 	}

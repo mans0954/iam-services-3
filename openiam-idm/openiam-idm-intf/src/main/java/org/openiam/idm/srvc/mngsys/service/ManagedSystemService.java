@@ -1,16 +1,12 @@
 package org.openiam.idm.srvc.mngsys.service;
 
-import java.util.List;
-
 import org.openiam.am.srvc.domain.AuthProviderEntity;
 import org.openiam.idm.searchbeans.AttributeMapSearchBean;
-import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
-import org.openiam.idm.srvc.mngsys.domain.DefaultReconciliationAttributeMapEntity;
-import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
-import org.openiam.idm.srvc.mngsys.domain.ManagedSysRuleEntity;
-import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
+import org.openiam.idm.srvc.mngsys.domain.*;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
+
+import java.util.List;
 
 public interface ManagedSystemService {
 
@@ -25,7 +21,7 @@ public interface ManagedSystemService {
 
     List<ManagedSysEntity> getManagedSysByConnectorId(String connectorId);
 
-    List<ManagedSysEntity> getManagedSysByDomain(String domainId);
+//    List<ManagedSysEntity> getManagedSysByDomain(String domainId);
 
     List<ManagedSysEntity> getAllManagedSys();
 
@@ -79,4 +75,6 @@ public interface ManagedSystemService {
     void deleteManagedSystemObjectMatch(String objectMatchId);
 
     List<AuthProviderEntity> findAuthProvidersByManagedSysId(String managedSysId);
+    
+    public void saveApproverAssociations(final List<ApproverAssociationEntity> entityList, final AssociationType type, final String id);
 }

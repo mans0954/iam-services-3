@@ -1,23 +1,25 @@
 package org.openiam.idm.srvc.user.domain;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
+import javax.persistence.*;
+
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Type;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Table(name = "USER_ATTRIBUTES")
 @DozerDTOCorrespondence(UserAttribute.class)
-public class UserAttributeEntity {
+public class UserAttributeEntity implements Serializable {
+    private static final long serialVersionUID = 6695609793883291213L;
+
     @Id
     @GeneratedValue(generator = "system-uuid")
     @GenericGenerator(name = "system-uuid", strategy = "uuid")
@@ -29,7 +31,7 @@ public class UserAttributeEntity {
     private String metadataElementId;
 	*/
 
-    @Column(name = "NAME", length = 50)
+    @Column(name = "NAME", length = 100)
     private String name;
 
     /*
@@ -37,8 +39,17 @@ public class UserAttributeEntity {
     private String userId;
     */
 
-    @Column(name = "VALUE", length = 1000)
+    @Column(name = "VALUE", length = 4096)
     private String value;
+
+    @ElementCollection
+    @CollectionTable(name="USER_ATTRIBUTE_VALUES", joinColumns=@JoinColumn(name="USER_ATTRIBUTE_ID", referencedColumnName="ID"))
+    @Column(name="VALUE", length = 255)
+    private List<String> values = new ArrayList<String>();
+
+    @Column(name = "IS_MULTIVALUED", nullable = false)
+    @Type(type = "yes_no")
+    private boolean isMultivalued = false;
 
     @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name = "USER_ID", referencedColumnName = "USER_ID", insertable = true, updatable = false)
@@ -102,8 +113,22 @@ public class UserAttributeEntity {
     public void setValue(String value) {
         this.value = value;
     }
-    
-    
+
+    public List<String> getValues() {
+        return values;
+    }
+
+    public void setValues(List<String> values) {
+        this.values = values;
+    }
+
+    public boolean getIsMultivalued() {
+        return isMultivalued;
+    }
+
+    public void setIsMultivalued(boolean isMultivalued) {
+        this.isMultivalued = isMultivalued;
+    }
 
     public MetadataElementEntity getElement() {
 		return element;
@@ -122,7 +147,7 @@ public class UserAttributeEntity {
 
         if (id != null ? !id.equals(that.id) : that.id != null) return false;
         if (name != null ? !name.equals(that.name) : that.name != null) return false;
-        if (value != null ? !value.equals(that.value) : that.value != null) return false;
+        if (isMultivalued != that.isMultivalued) return false;
 
         return true;
     }
@@ -132,6 +157,19 @@ public class UserAttributeEntity {
         int result = id != null ? id.hashCode() : 0;
         result = 31 * result + (name != null ? name.hashCode() : 0);
         result = 31 * result + (value != null ? value.hashCode() : 0);
+        result = 31 * result + (isMultivalued ? 1231 : 1237);
         return result;
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("UserAttributeEntity");
+        sb.append("{name='").append(name).append('\'');
+        sb.append(", value='").append(value).append('\'');
+        sb.append(", isMultivalued=").append(isMultivalued);
+        sb.append(", element=").append(element);
+        sb.append('}');
+        return sb.toString();
     }
 }

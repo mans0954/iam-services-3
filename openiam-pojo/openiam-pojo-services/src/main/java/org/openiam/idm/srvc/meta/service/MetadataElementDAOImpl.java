@@ -39,7 +39,19 @@ public class MetadataElementDAOImpl extends BaseDaoImpl<MetadataElementEntity, S
 			} else {
 				setAttributeNameCriteria(criteria, metaSearchBean.getAttributeName());	
 				if(CollectionUtils.isNotEmpty(metaSearchBean.getTypeIdSet())) {
-					criteria.add(Restrictions.in("metadataType.metadataTypeId", metaSearchBean.getTypeIdSet()));
+					criteria.add(Restrictions.in("metadataType.id", metaSearchBean.getTypeIdSet()));
+				}
+				
+				//TODO:  Bug in Hibernate - metadataType.grouping throws org.hibernate.QueryException: could not resolve property
+				if(CollectionUtils.isNotEmpty(metaSearchBean.getExcludedGroupings())) {
+					//criteria.createAlias("metadataType", "mt").add(Restrictions.not(Restrictions.in("mt.grouping", metaSearchBean.getExcludedGroupings())));
+					//criteria.add(Restrictions.not(Restrictions.in("metadataType.grouping", metaSearchBean.getExcludedGroupings())));
+				}
+				
+				if(CollectionUtils.isNotEmpty(metaSearchBean.getCategoryTypes())) {
+					criteria.createAlias("metadataType", "mt")
+							.createAlias("mt.categories", "ct")
+							.add(Restrictions.in("ct.id", metaSearchBean.getCategoryTypes()));
 				}
 				
 				if(StringUtils.isNotBlank(metaSearchBean.getTemplateId())) {
@@ -63,9 +75,9 @@ public class MetadataElementDAOImpl extends BaseDaoImpl<MetadataElementEntity, S
 				criteria.add(Restrictions.eq("dataType", entity.getDataType()));
 			}
 			
-			if(entity.getMetadataType() != null && StringUtils.isNotBlank(entity.getMetadataType().getMetadataTypeId())) {
-				final String metadataTypeId = entity.getMetadataType().getMetadataTypeId();
-				criteria.add(Restrictions.eq("metadataType.metadataTypeId", metadataTypeId));
+			if(entity.getMetadataType() != null && StringUtils.isNotBlank(entity.getMetadataType().getId())) {
+				final String metadataTypeId = entity.getMetadataType().getId();
+				criteria.add(Restrictions.eq("metadataType.id", metadataTypeId));
 			}
 			
 			if(CollectionUtils.isNotEmpty(entity.getTemplateSet())) {
@@ -79,8 +91,8 @@ public class MetadataElementDAOImpl extends BaseDaoImpl<MetadataElementEntity, S
 				setTemplateCriteria(criteria, templateIdSet);
 			}
 			
-			if(entity.getResource() != null && StringUtils.isNotEmpty(entity.getResource().getResourceId())) {
-            	criteria.add(Restrictions.eq("resource.resourceId", entity.getResource().getResourceId()));
+			if(entity.getResource() != null && StringUtils.isNotEmpty(entity.getResource().getId())) {
+            	criteria.add(Restrictions.eq("resource.id", entity.getResource().getId()));
             }
 		}
 		return criteria;
@@ -95,7 +107,7 @@ public class MetadataElementDAOImpl extends BaseDaoImpl<MetadataElementEntity, S
 	}
 	
 	private void setAttributeNameCriteria(final Criteria criteria, final String attributeName) {
-		if (StringUtils.isNotEmpty(attributeName)) {
+		if (StringUtils.isNotBlank(attributeName)) {
             String name = attributeName;
             MatchMode matchMode = null;
             if (StringUtils.indexOf(name, "*") == 0) {
@@ -117,16 +129,6 @@ public class MetadataElementDAOImpl extends BaseDaoImpl<MetadataElementEntity, S
         }
 	}
 
-	@SuppressWarnings("unchecked")
-    @Override
-    public List<MetadataElementEntity> findbyCategoryType(String categoryType) {
-        final Criteria criteria = getCriteria()
-        							.createAlias("metadataType", "mt")
-        							.createAlias("mt.categories", "ct")
-        							.add(Restrictions.eq("ct.categoryId", categoryType));
-       return criteria.list();
-    }
-
     @Override
     protected String getPKfieldName() {
         return "id";
@@ -136,7 +138,7 @@ public class MetadataElementDAOImpl extends BaseDaoImpl<MetadataElementEntity, S
 	public List<MetadataElementEntity> getByResourceId(String resourceId) {
 		final MetadataElementEntity entity = new MetadataElementEntity();
 		final ResourceEntity resource = new ResourceEntity();
-		resource.setResourceId(resourceId);
+		resource.setId(resourceId);
 		entity.setResource(resource);
 		return getByExample(entity);
 	}

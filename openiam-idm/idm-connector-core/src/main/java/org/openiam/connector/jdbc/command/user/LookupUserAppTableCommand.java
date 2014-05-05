@@ -13,7 +13,7 @@ public class LookupUserAppTableCommand extends AbstractLookupAppTableCommand<Ext
     }
 
     @Override
-    protected boolean compareObjectTypeWithObject(String objectType) {
-        return StringUtils.equalsIgnoreCase(objectType, "USER");
+    protected String getObjectType() {
+        return "USER";
     }
 }

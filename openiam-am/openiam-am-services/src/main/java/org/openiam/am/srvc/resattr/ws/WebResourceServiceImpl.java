@@ -85,19 +85,17 @@ public class WebResourceServiceImpl implements WebResourceService {
     public WebResourceResponse getSSOAttributes(@WebParam(name = "resourceId", targetNamespace = "") String resourceId,
                                                 @WebParam(name = "principalName", targetNamespace = "")
                                                 String principalName,
-                                                @WebParam(name = "securityDomain", targetNamespace = "")
-                                                String securityDomain,
                                                 @WebParam(name = "managedSysId", targetNamespace = "")
                                                 String managedSysId) {
         StringBuilder msg = new StringBuilder();
-        msg.append("Try to get SSO attributes for { resource id:").append(resourceId).append(", securityDomain: ")
-           .append(securityDomain).append(", principalName: ").append(principalName).append(", managedSysId:")
+        msg.append("Try to get SSO attributes for { resource id:").append(resourceId)
+                .append(", principalName: ").append(principalName).append(", managedSysId:")
            .append(managedSysId).append("}");
         log.debug(msg.toString());
 
         WebResourceResponse resp = new WebResourceResponse(ResponseStatus.SUCCESS);
         List<Attribute> attributeList = webResourceAttributeService
-                .getSSOAttributes(resourceId, principalName, securityDomain, managedSysId);
+                .getSSOAttributes(resourceId, principalName, managedSysId);
 
         if (attributeList == null || attributeList.isEmpty()) {
             log.debug("There no any attributes for given resource id:" + resourceId);

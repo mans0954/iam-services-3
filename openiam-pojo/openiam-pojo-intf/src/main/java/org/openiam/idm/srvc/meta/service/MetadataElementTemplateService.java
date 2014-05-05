@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.openiam.idm.searchbeans.MetadataElementPageTemplateSearchBean;
 import org.openiam.idm.searchbeans.MetadataTemplateTypeFieldSearchBean;
+import org.openiam.idm.srvc.lang.domain.LanguageEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataElementPageTemplateEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataTemplateTypeEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataTemplateTypeFieldEntity;

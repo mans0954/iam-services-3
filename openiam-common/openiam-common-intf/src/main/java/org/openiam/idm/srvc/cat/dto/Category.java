@@ -8,16 +8,24 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 import org.openiam.base.BaseObject;
+import org.openiam.base.KeyDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.cat.domain.CategoryEntity;
 
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "category", propOrder = { "categoryId", "createdBy",
-        "categoryName", "categoryDesc", "createDate", "parentId", "showList",
-        "displayOrder", "childCategories", "categoryLanguages" })
+@XmlType(name = "category", propOrder = {
+	"createdBy",
+	"categoryName", 
+	"categoryDesc", 
+	"createDate", 
+	"parentId", 
+	"showList",
+	"displayOrder", 
+	"childCategories", 
+	"categoryLanguages" 
+})
 @DozerDTOCorrespondence(CategoryEntity.class)
-public class Category extends BaseObject {
-    private String categoryId;
+public class Category extends KeyDTO {
     private String createdBy;
     private String categoryName;
     private String categoryDesc;
@@ -32,14 +40,6 @@ public class Category extends BaseObject {
 
     public Category() {
         super();
-    }
-
-    public String getCategoryId() {
-        return this.categoryId;
-    }
-
-    public void setCategoryId(String categoryId) {
-        this.categoryId = categoryId;
     }
 
     public String getCreatedBy() {

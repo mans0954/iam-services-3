@@ -40,7 +40,7 @@ public class ProvisionServicePreProcessor extends AbstractPreProcessor {
 
         //Add Delegation Filter for selected users org if processed user is in Organization Admin role
         for(Role role : user.getRoles()) {
-            if (ORGANIZATION_ADMIN_ROLEID.equals(role.getRoleId())) {
+            if (ORGANIZATION_ADMIN_ROLEID.equals(role.id)) {
                 println("Organization Admin");
                 Organization organization = user.getPrimaryOrganization();
                 if (organization != null) {

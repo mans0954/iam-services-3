@@ -27,20 +27,12 @@ public class MetadataServiceTouchTest extends
     @Autowired
     CategoryDataService categoryDataService;
 
-    @Test
-    public void getAllElementsForCategoryType() {
-        metadataService.getAllElementsForCategoryType("");
-    }
-
+    /*
     @Test
     public void getMetadataElementByType() {
         metadataService.getMetadataElementByType("");
     }
-
-    @Test
-    public void getTypesInCategory() {
-        metadataService.getTypesInCategory("");
-    }
+    */
 
     private MetadataType addMetadataTypeRecord() {
         MetadataType type = new MetadataType();

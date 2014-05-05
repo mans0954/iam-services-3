@@ -13,21 +13,12 @@ public class OrganizationDAOTouchTest extends AbstractTransactionalTestNGSpringC
     @Autowired
     private OrganizationDAO orgDAO;
 
-    @Test
-    private void touchFindAllOrganization() {
-        orgDAO.findAllOrganization();
-    }
 
     @Test
     private void touchFindById() {
         orgDAO.findById("");
     }
 
-    @Test
-    private void touchFindRootOrganizations() {
-        orgDAO.findRootOrganizations();
-    }
-    
     @Test
     private void touchGetChildOrganizations() {
     	orgDAO.getChildOrganizations("",null, 0, Integer.MAX_VALUE);

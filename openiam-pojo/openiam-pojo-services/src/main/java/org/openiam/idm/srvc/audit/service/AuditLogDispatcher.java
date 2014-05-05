@@ -5,12 +5,18 @@ import java.util.*;
 import javax.jms.*;
 import javax.jms.Queue;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.StopWatch;
 import org.apache.log4j.Logger;
+import org.openiam.dozer.converter.IdmAuditLogCustomDozerConverter;
+import org.openiam.dozer.converter.IdmAuditLogDozerConverter;
+import org.openiam.dozer.converter.IdmAuditLogTargetDozerConverter;
+import org.openiam.idm.srvc.audit.domain.AuditLogTargetEntity;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogCustomEntity;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
+import org.openiam.idm.srvc.audit.dto.AuditLogTarget;
+import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
+import org.openiam.idm.srvc.audit.dto.IdmAuditLogCustom;
 import org.openiam.thread.Sweepable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -28,7 +34,7 @@ public class AuditLogDispatcher implements Sweepable {
     private static Logger LOG = Logger.getLogger(AuditLogDispatcher.class);
 
     @Autowired
-    private IdmAuditLogDAO auditLogDAO;
+    private AuditLogService auditLogService;
     @Autowired
     private JmsTemplate jmsTemplate;
 
@@ -40,6 +46,15 @@ public class AuditLogDispatcher implements Sweepable {
     @Qualifier("transactionManager")
     private PlatformTransactionManager platformTransactionManager;
     private final Object mutex = new Object();
+
+    @Autowired
+    private IdmAuditLogDozerConverter idmAuditLogDozerConverter;
+
+    @Autowired
+    private IdmAuditLogTargetDozerConverter idmAuditLogTargetDozerConverter;
+
+    @Autowired
+    private IdmAuditLogCustomDozerConverter idmAuditLogCustomDozerConverter;
 
     @Override
     public void sweep() {
@@ -53,41 +68,30 @@ public class AuditLogDispatcher implements Sweepable {
                     try {
                         LOG.info("Starting audit log sweeper thread");
 
-                        final List<Set<IdmAuditLogEntity>> batchList = new LinkedList<Set<IdmAuditLogEntity>>();
-                        Set<IdmAuditLogEntity> set = new HashSet<IdmAuditLogEntity>();
-                        batchList.add(set);
                         Enumeration e = browser.getEnumeration();
-                        int count = 0;
+
                         while (e.hasMoreElements()) {
-                            IdmAuditLogEntity message = (IdmAuditLogEntity) ((ObjectMessage) jmsTemplate.receive(queue)).getObject();
-                            set.add(message);
-                            if (count++ >= 100) {
-                                set = new HashSet<IdmAuditLogEntity>();
-                                batchList.add(set);
-                            }
-                            e.nextElement();
-                        }
+                            final IdmAuditLog message = (IdmAuditLog) ((ObjectMessage) jmsTemplate.receive(queue)).getObject();
 
-
-                        if (batchList.size() > 0 && batchList.get(0) != null && batchList.get(0).size() > 0) {
-                           TransactionTemplate transactionTemplate = new TransactionTemplate(platformTransactionManager);
+                            TransactionTemplate transactionTemplate = new TransactionTemplate(platformTransactionManager);
                             transactionTemplate.setPropagationBehavior(TransactionTemplate.PROPAGATION_REQUIRED);
                             Boolean result = transactionTemplate.execute(new TransactionCallback<Boolean>() {
                                 @Override
                                 public Boolean doInTransaction(TransactionStatus status) {
-                                    for (final Set<IdmAuditLogEntity> entityList : batchList) {
-                                        process(entityList);
+                                        process(message);
                                         try {
                                             // to give other threads chance to be executed
                                             Thread.sleep(100);
                                         } catch (InterruptedException e1) {
                                             LOG.warn(e1.getMessage());
                                         }
-                                    }
+
                                     return true;
                                 }});
 
+                            e.nextElement();
                         }
+
                     } finally {
                         LOG.info(String.format("Done with audit logger sweeper thread.  Took %s ms", sw.getTime()));
                     }
@@ -98,28 +102,32 @@ public class AuditLogDispatcher implements Sweepable {
 
     }
 
-    private void process(final Collection<IdmAuditLogEntity> entityList) {
-        if (CollectionUtils.isNotEmpty(entityList)) {
-            for (IdmAuditLogEntity auditLogEntity : entityList) {
-                if (StringUtils.isNotEmpty(auditLogEntity.getId())) {
-                    IdmAuditLogEntity srcEntity = auditLogDAO.findById(auditLogEntity.getId());
-                    if (srcEntity != null) {
-                        for(IdmAuditLogCustomEntity customEntity : auditLogEntity.getCustomRecords()) {
-                            if(!srcEntity.getCustomRecords().contains(customEntity)){
-                                srcEntity.addCustomRecord(customEntity.getKey(),customEntity.getValue());
+    private void process(final IdmAuditLog event) {
+
+                if (StringUtils.isNotEmpty(event.getId())) {
+                    IdmAuditLog srcLog = auditLogService.findById(event.getId());
+                    if (srcLog != null) {
+                        for(IdmAuditLogCustom customLog : event.getCustomRecords()) {
+                            if(!srcLog.getCustomRecords().contains(customLog)){
+                                srcLog.addCustomRecord(customLog.getKey(),customLog.getValue());
                             }
                         }
-                        for(IdmAuditLogEntity newChildren : auditLogEntity.getChildLogs()) {
-                           if(!srcEntity.getChildLogs().contains(newChildren)) {
-                               srcEntity.addChild(newChildren);
+                        for(IdmAuditLog newChildren : event.getChildLogs()) {
+                           if(!srcLog.getChildLogs().contains(newChildren)) {
+                               srcLog.addChild(newChildren);
                            }
                         }
-                        auditLogDAO.merge(srcEntity);
+                        for(AuditLogTarget newTarget : event.getTargets()) {
+                             if(!srcLog.getTargets().contains(newTarget)) {
+                                srcLog.addTarget(newTarget.getId(), newTarget.getTargetType(), newTarget.getObjectPrincipal());
+                            }
+                        }
+                        auditLogService.save(srcLog);
                     }
                 } else {
-                    auditLogDAO.persist(auditLogEntity);
+                    auditLogService.save(event);
                 }
-            }
-        }
+
+
     }
 }

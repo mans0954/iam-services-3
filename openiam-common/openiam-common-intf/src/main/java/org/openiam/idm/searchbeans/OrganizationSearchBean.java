@@ -18,8 +18,8 @@ import java.util.Set;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "OrganizationSearchBean", propOrder = {
         "keySet",
-        "organizationName",
-		"organizationTypeId",
+        "name",
+		"organizationTypeIdSet",
 		"userId",
 		"parentId",
 		"childId",
@@ -30,29 +30,52 @@ public class OrganizationSearchBean extends AbstractSearchBean<Organization, Str
         Serializable {
     private static final long serialVersionUID = 1L;
     private Set<String> keySet;
-    private String organizationName;
-    private String organizationTypeId;
+    private String name;
+    private Set<String> organizationTypeIdSet;
     private String userId;
     private String parentId;
     private String childId;
     private String validParentTypeId;
     private String internalOrgId;
 
-    public String getOrganizationName() {
-        return organizationName;
-    }
+    public String getName() {
+		return name;
+	}
 
-    public void setOrganizationName(String organizationName) {
-        this.organizationName = organizationName;
-    }
+	public void setName(String name) {
+		this.name = name;
+	}
 
-    public String getOrganizationTypeId() {
-		return organizationTypeId;
+	public String getOrganizationTypeId() {
+        return (CollectionUtils.isNotEmpty(organizationTypeIdSet)) ? organizationTypeIdSet.iterator().next() : null;
+//		return organizationTypeId;
 	}
 
 	public void setOrganizationTypeId(String organizationTypeId) {
-		this.organizationTypeId = organizationTypeId;
+//		this.organizationTypeId = organizationTypeId;
+        this.addOrganizationTypeId(organizationTypeId);
 	}
+
+    public void addOrganizationTypeId(final String organizationTypeId) {
+        if(organizationTypeIdSet == null) {
+            organizationTypeIdSet = new HashSet<String>();
+        }
+        organizationTypeIdSet.add(organizationTypeId);
+    }
+
+    public Set<String> getOrganizationTypeIdSet() {
+        return organizationTypeIdSet;
+    }
+
+    public void setOrganizationTypeIdSet(final List<String> organizationTypeIdSet) {
+        if(organizationTypeIdSet != null) {
+            setKeys(new HashSet<String>(organizationTypeIdSet));
+        }
+    }
+
+    public void setOrganizationTypeIdSet(final Set<String> organizationTypeIdSet) {
+        this.organizationTypeIdSet = organizationTypeIdSet;
+    }
 
 	@Override
     public String getKey() {
@@ -61,10 +84,11 @@ public class OrganizationSearchBean extends AbstractSearchBean<Organization, Str
 
     @Override
     public void setKey(final String key) {
-        if(keySet == null) {
-            keySet = new HashSet<String>();
-        }
-        keySet.add(key);
+//        if(keySet == null) {
+//            keySet = new HashSet<String>();
+//        }
+//        keySet.add(key);
+        this.addKey(key);
     }
 
     public Set<String> getKeys() {

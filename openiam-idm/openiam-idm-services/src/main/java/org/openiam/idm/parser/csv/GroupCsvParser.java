@@ -21,10 +21,10 @@ public class GroupCsvParser extends AbstractCSVParser<Group, GroupFields> implem
         SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
         switch (field) {
             case grpId:
-                group.setGrpId(objValue);
+                group.setId(objValue);
                 break;
             case grpName:
-                group.setGrpName(objValue);
+                group.setName(objValue);
                 break;
             case createDate:
                 try {
@@ -82,10 +82,10 @@ public class GroupCsvParser extends AbstractCSVParser<Group, GroupFields> implem
         String objValue = "";
         switch (field) {
             case grpId:
-                objValue = group.getGrpId();
+                objValue = group.getId();
                 break;
             case grpName:
-                objValue = group.getGrpName();
+                objValue = group.getName();
                 break;
             case createDate:
                 objValue = group.getLastUpdate() == null ? "" : toString(sdf

@@ -1,13 +1,12 @@
 package org.openiam.idm.srvc.lang.dto;
 
-import java.io.Serializable;
+import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.idm.srvc.lang.domain.LanguageLocaleEntity;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
-
-import org.openiam.dozer.DozerDTOCorrespondence;
-import org.openiam.idm.srvc.lang.domain.LanguageLocaleEntity;
+import java.io.Serializable;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "LanguageLocale", propOrder = {
@@ -16,7 +15,7 @@ import org.openiam.idm.srvc.lang.domain.LanguageLocaleEntity;
         "locale"
 })
 @DozerDTOCorrespondence(LanguageLocaleEntity.class)
-public class LanguageLocale implements Serializable {
+public class LanguageLocale implements Serializable, Cloneable {
 
 	private String id;
 	private String languageId;
@@ -81,7 +80,10 @@ public class LanguageLocale implements Serializable {
 		return "LanguageLocale [id=" + id + ", languageId=" + languageId
 				+ ", locale=" + locale + "]";
 	}
-	
+    @Override
+    public LanguageLocale clone() throws CloneNotSupportedException {
+        return (LanguageLocale)super.clone();
+    }
 
 	
 }

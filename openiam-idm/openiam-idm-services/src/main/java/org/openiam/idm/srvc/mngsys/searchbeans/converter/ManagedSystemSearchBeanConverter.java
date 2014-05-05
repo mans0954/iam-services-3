@@ -11,9 +11,8 @@ public class ManagedSystemSearchBeanConverter implements SearchBeanConverter<Man
     @Override
     public ManagedSysEntity convert(ManagedSysSearchBean searchBean) {
         ManagedSysEntity managedSysEntity = new ManagedSysEntity();
-        managedSysEntity.setManagedSysId(searchBean.getKey());
+        managedSysEntity.setId(searchBean.getKey());
         managedSysEntity.setName(searchBean.getName());
-        managedSysEntity.setDomainId(searchBean.getDomainId());
         return managedSysEntity;
     }
 }

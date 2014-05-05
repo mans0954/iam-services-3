@@ -200,7 +200,7 @@
 
         <outbound-endpoint address="http://#[header:INBOUND:serviceName]"
                            exchange-pattern="request-response"
-                           responseTimeout="72000000">
+                		   responseTimeout="72000000">
 
             <cxf:jaxws-client serviceClass="org.openiam.connector.ConnectorService"
                               operation="search">
@@ -493,6 +493,21 @@
 		</outbound-endpoint>
 	</flow>
 
+    <flow name="provisionServiceBulkOperation">
+        <vm:inbound-endpoint path="provisionServiceBulkOperationMessage"
+                             exchange-pattern="one-way">
+        </vm:inbound-endpoint>
+
+        <outbound-endpoint responseTimeout="90000000"
+                           address="http://#[header:INBOUND:SERVICE_HOST]/#[header:INBOUND:SERVICE_CONTEXT]ProvisioningService"
+                           exchange-pattern="request-response">
+            <cxf:jaxws-client
+                    serviceClass="org.openiam.provision.service.DefaultProvisioningService"
+                    operation="startBulkOperation">
+            </cxf:jaxws-client>
+        </outbound-endpoint>
+    </flow>
+
 	<flow name="provisionServiceDeleteUser">
 		<vm:inbound-endpoint path="provisionServiceDeleteMessage"
 			exchange-pattern="one-way">
@@ -539,7 +554,21 @@
 		</outbound-endpoint>
 	</flow>
 
+    <flow name="provisionServiceBuildManagedSystemViewer">
+        <vm:inbound-endpoint path="provisionServiceBuildManagedSystemViewerMessage"
+                             exchange-pattern="one-way">
+        </vm:inbound-endpoint>
 
+        <outbound-endpoint responseTimeout="90000000"
+                           address="http://#[header:INBOUND:SERVICE_HOST]/#[header:INBOUND:SERVICE_CONTEXT]ProvisioningService"
+                           exchange-pattern="request-response">
+            <cxf:jaxws-client
+                    serviceClass="org.openiam.provision.service.DefaultProvisioningService"
+                    operation="buildManagedSystemViewer">
+            </cxf:jaxws-client>
+
+        </outbound-endpoint>
+    </flow>
 
 </mule>
 

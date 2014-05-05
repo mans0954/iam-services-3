@@ -4,6 +4,7 @@ package org.openiam.idm.srvc.user.dto;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.base.AbstractMetadataTypeDTO;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.BaseConstants;
 import org.openiam.dozer.DozerDTOCorrespondence;
@@ -16,6 +17,7 @@ import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.user.domain.UserEntity;
+import org.openiam.internationalization.Internationalized;
 
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -38,10 +40,10 @@ import java.util.*;
         "createdBy",
         "emailAddresses",
         "employeeId",
-        "employeeType",
+        "employeeTypeId",
         //"expirationDate",
         "firstName",
-        "jobCode",
+        "jobCodeId",
         "lastName",
         "lastUpdate",
         "lastUpdatedBy",
@@ -58,7 +60,6 @@ import java.util.*;
         "suffix",
         "title",
         "userAttributes",
-        "userId",
         "userTypeInd",
         "userNotes",
         "costCenter",
@@ -72,7 +73,6 @@ import java.util.*;
         "showInSearch",
         "principalList",
         "alternateContactId",
-        "securityDomain",
         "userOwnerId",
         "datePasswordChanged",
         "dateChallengeRespChanged",
@@ -83,7 +83,9 @@ import java.util.*;
         "roles",
         "resources",
         "groups",
-        "affiliations"
+        "affiliations",
+        "supervisors",
+        "subordinates"
 })
 @XmlSeeAlso({
         Login.class,
@@ -98,13 +100,12 @@ import java.util.*;
         Organization.class
 })
 @DozerDTOCorrespondence(UserEntity.class)
-public class User extends org.openiam.base.BaseObject {
+@Internationalized
+public class User extends AbstractMetadataTypeDTO {
 
     private AttributeOperationEnum operation = AttributeOperationEnum.NO_CHANGE;
 
     protected static final Log log = LogFactory.getLog(User.class);
-    // Fields
-    protected String userId;
 
     //protected AddressMap addresses; see below
     @XmlSchemaType(name = "dateTime")
@@ -119,11 +120,12 @@ public class User extends org.openiam.base.BaseObject {
 
     protected String employeeId;
 
-    protected String employeeType;
+    protected String employeeTypeId;
 
     protected String firstName;
 
-    protected String jobCode;
+//    @Internationalized
+    protected String jobCodeId;
 
     protected String lastName;
 
@@ -182,8 +184,6 @@ public class User extends org.openiam.base.BaseObject {
 
     protected String alternateContactId;
 
-    protected String securityDomain;
-
     protected String userOwnerId;
 
     @XmlSchemaType(name = "dateTime")
@@ -221,6 +221,10 @@ public class User extends org.openiam.base.BaseObject {
     private String password;
     private Boolean notifyUserViaEmail=true;
 
+    private Set<Supervisor> supervisors;
+
+    private Set<Supervisor> subordinates;
+
     // Constructors
 
     /**
@@ -232,18 +236,8 @@ public class User extends org.openiam.base.BaseObject {
     /**
      * minimal constructor
      */
-    public User(String userId) {
-        this.userId = userId;
-    }
-
-    // Property accessors
-    public String getUserId() {
-        return this.userId;
-    }
-
-    public void setUserId(String userId) {
-
-        this.userId = userId;
+    public User(String id) {
+    	setId(id);
     }
 
     public AttributeOperationEnum getOperation() {
@@ -409,12 +403,12 @@ public class User extends org.openiam.base.BaseObject {
         this.employeeId = employeeId;
     }
 
-    public String getEmployeeType() {
-        return this.employeeType;
+    public String getEmployeeTypeId() {
+        return this.employeeTypeId;
     }
 
-    public void setEmployeeType(String employeeType) {
-        this.employeeType = employeeType;
+    public void setEmployeeTypeId(String employeeTypeId) {
+        this.employeeTypeId = employeeTypeId;
     }
 
     public String getLocationCd() {
@@ -441,12 +435,12 @@ public class User extends org.openiam.base.BaseObject {
         this.companyOwnerId = companyOwnerId;
     }
 
-    public String getJobCode() {
-        return this.jobCode;
+    public String getJobCodeId() {
+        return this.jobCodeId;
     }
 
-    public void setJobCode(String jobCode) {
-        this.jobCode = jobCode;
+    public void setJobCodeId(String jobCodeId) {
+        this.jobCodeId = jobCodeId;
     }
 
     public String getCostCenter() {
@@ -597,6 +591,21 @@ public class User extends org.openiam.base.BaseObject {
     public void setEmailAddresses(Set<EmailAddress> emailAddresses) {
         this.emailAddresses = emailAddresses;
     }
+    
+    /*
+    public EmailAddress getPrimaryEmailAddress() {
+    	EmailAddress defaultEmail = null;
+        if(this.emailAddresses!=null && !this.emailAddresses.isEmpty()){
+            for (EmailAddress email: this.emailAddresses){
+                   if(email.getIsDefault()){
+                       defaultEmail = email;
+                       break;
+                   }
+            }
+        }
+        return defaultEmail;
+    }
+    */
 
     public EmailAddress getEmailByName(String name) {
         Iterator<EmailAddress> emailIt = emailAddresses.iterator();
@@ -669,25 +678,6 @@ public class User extends org.openiam.base.BaseObject {
         this.mailCode = mailCode;
     }
 
-    /*
-     public Set<Phone> getPhones() {
-         return phones;
-     }f
-
-     public void setPhones(Set<Phone> phones) {
-         this.phones = phones;
-     }
-     */
-
-    /*public Set<EmailAddress> getEmailAddresses() {
-            return emailAddresses;
-        }
-
-        public void setEmailAddresses(Set<EmailAddress> emailAddresses) {
-            this.emailAddresses = emailAddresses;
-        }
-    */
-
     public Set<Role> getRoles() {
         return roles;
     }
@@ -696,7 +686,7 @@ public class User extends org.openiam.base.BaseObject {
     	if(id != null) {
     		if(roles != null) {
     			for(final Role role : roles) {
-    				if(StringUtils.equals(role.getRoleId(), id)) {
+    				if(StringUtils.equals(role.getId(), id)) {
     					role.setOperation(AttributeOperationEnum.DELETE);
     					break;
     				}
@@ -737,7 +727,7 @@ public class User extends org.openiam.base.BaseObject {
     	if(groupId != null) {
     		if(groups != null) {
     			for(final Group group : groups) {
-    				if(StringUtils.equals(group.getGrpId(), groupId)) {
+    				if(StringUtils.equals(group.getId(), groupId)) {
     					group.setOperation(AttributeOperationEnum.DELETE);
     					break;
     				}
@@ -758,7 +748,7 @@ public class User extends org.openiam.base.BaseObject {
     	if(resourceId != null) {
     		if(resources != null) {
     			for(final Resource resource : resources) {
-    				if(StringUtils.equals(resource.getResourceId(), resourceId)) {
+    				if(StringUtils.equals(resource.getId(), resourceId)) {
     					resource.setOperation(AttributeOperationEnum.DELETE);
     					break;
     				}
@@ -781,6 +771,8 @@ public class User extends org.openiam.base.BaseObject {
         this.resources = resources;
     }
 
+    
+    //this field is mapped from Dozer 
     public String getEmail() {
         return email;
     }
@@ -904,14 +896,6 @@ public class User extends org.openiam.base.BaseObject {
         this.alternateContactId = alternateContactId;
     }
 
-    public String getSecurityDomain() {
-        return securityDomain;
-    }
-
-    public void setSecurityDomain(String securityDomain) {
-        this.securityDomain = securityDomain;
-    }
-
 	public void updateUser(User newUser) {
         if (newUser.getBirthdate() != null) {
             if (newUser.getBirthdate().equals(BaseConstants.NULL_DATE)) {
@@ -949,12 +933,8 @@ public class User extends org.openiam.base.BaseObject {
                 this.employeeId = newUser.getEmployeeId();
             }
         }
-        if (newUser.getEmployeeType() != null) {
-            if (newUser.getEmployeeType().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-                this.employeeType = null;
-            } else {
-                this.employeeType = newUser.getEmployeeType();
-            }
+        if (newUser.getEmployeeTypeId() != null) {
+                this.employeeTypeId = newUser.getEmployeeTypeId();
         }
         if (newUser.getFirstName() != null) {
             if (newUser.getFirstName().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
@@ -963,11 +943,11 @@ public class User extends org.openiam.base.BaseObject {
                 this.firstName = newUser.getFirstName();
             }
         }
-        if (newUser.getJobCode() != null) {
-            if (newUser.getJobCode().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-                this.jobCode = null;
+        if (newUser.getJobCodeId() != null) {
+            if (newUser.getJobCodeId().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+                this.jobCodeId = null;
             } else {
-                this.jobCode = newUser.getJobCode();
+                this.jobCodeId = newUser.getJobCodeId();
             }
         }
         if (newUser.getLastName() != null) {
@@ -1245,6 +1225,22 @@ public class User extends org.openiam.base.BaseObject {
         this.notifyUserViaEmail = notifyUserViaEmail;
     }
 
+    public Set<Supervisor> getSupervisors() {
+        return supervisors;
+    }
+
+    public void setSupervisors(Set<Supervisor> supervisorsSet) {
+        this.supervisors = supervisorsSet;
+    }
+
+    public Set<Supervisor> getSubordinates() {
+        return subordinates;
+    }
+
+    public void setSubordinates(Set<Supervisor> subordinatesSet) {
+        this.subordinates = subordinatesSet;
+    }
+
 
     @Override
     public boolean equals(Object o) {
@@ -1260,16 +1256,14 @@ public class User extends org.openiam.base.BaseObject {
         if (createdBy != null ? !createdBy.equals(user.createdBy) : user.createdBy != null) return false;
         if (email != null ? !email.equals(user.email) : user.email != null) return false;
         if (employeeId != null ? !employeeId.equals(user.employeeId) : user.employeeId != null) return false;
-        if (employeeType != null ? !employeeType.equals(user.employeeType) : user.employeeType != null) return false;
+        if (employeeTypeId != null ? !employeeTypeId.equals(user.employeeTypeId) : user.employeeTypeId != null) return false;
         if (lastDate != null ? !lastDate.equals(user.lastDate) : user.lastDate != null) return false;
         if (login != null ? !login.equals(user.login) : user.login != null) return false;
         if (maidenName != null ? !maidenName.equals(user.maidenName) : user.maidenName != null) return false;
         if (nickname != null ? !nickname.equals(user.nickname) : user.nickname != null) return false;
-        if (securityDomain != null ? !securityDomain.equals(user.securityDomain) : user.securityDomain != null)
-            return false;
         if (startDate != null ? !startDate.equals(user.startDate) : user.startDate != null) return false;
         if (title != null ? !title.equals(user.title) : user.title != null) return false;
-        if (userId != null ? !userId.equals(user.userId) : user.userId != null) return false;
+        if (id != null ? !id.equals(user.id) : user.id != null) return false;
         if (userOwnerId != null ? !userOwnerId.equals(user.userOwnerId) : user.userOwnerId != null) return false;
 
         return true;
@@ -1277,12 +1271,12 @@ public class User extends org.openiam.base.BaseObject {
 
     @Override
     public int hashCode() {
-        int result = userId != null ? userId.hashCode() : 0;
+        int result = id != null ? id.hashCode() : 0;
         result = 31 * result + (companyOwnerId != null ? companyOwnerId.hashCode() : 0);
         result = 31 * result + (createDate != null ? createDate.hashCode() : 0);
         result = 31 * result + (createdBy != null ? createdBy.hashCode() : 0);
         result = 31 * result + (employeeId != null ? employeeId.hashCode() : 0);
-        result = 31 * result + (employeeType != null ? employeeType.hashCode() : 0);
+        result = 31 * result + (employeeTypeId != null ? employeeTypeId.hashCode() : 0);
         result = 31 * result + (title != null ? title.hashCode() : 0);
         result = 31 * result + (costCenter != null ? costCenter.hashCode() : 0);
         result = 31 * result + (startDate != null ? startDate.hashCode() : 0);
@@ -1290,7 +1284,6 @@ public class User extends org.openiam.base.BaseObject {
         result = 31 * result + (nickname != null ? nickname.hashCode() : 0);
         result = 31 * result + (maidenName != null ? maidenName.hashCode() : 0);
         result = 31 * result + (email != null ? email.hashCode() : 0);
-        result = 31 * result + (securityDomain != null ? securityDomain.hashCode() : 0);
         result = 31 * result + (userOwnerId != null ? userOwnerId.hashCode() : 0);
         result = 31 * result + (login != null ? login.hashCode() : 0);
         return result;

@@ -1,33 +1,27 @@
 package org.openiam.idm.srvc.org.service;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import javax.jws.WebService;
-
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.exception.BasicDataServiceException;
-import org.openiam.dozer.converter.OrganizationAttributeDozerConverter;
+import org.openiam.dozer.converter.LanguageDozerConverter;
 import org.openiam.dozer.converter.OrganizationDozerConverter;
+import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.OrganizationSearchBean;
-import org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity;
+import org.openiam.idm.srvc.base.AbstractBaseService;
+import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.dto.Organization;
-import org.openiam.idm.srvc.org.dto.OrganizationAttribute;
-import org.openiam.idm.srvc.searchbean.converter.OrganizationSearchBeanConverter;
-import org.openiam.idm.srvc.user.domain.UserEntity;
-import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.idm.srvc.user.service.UserDataService;
+import org.openiam.internationalization.LocalizedServiceGet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+
+import javax.jws.WebService;
+import java.util.LinkedList;
+import java.util.List;
 
 //import diamelle.common.continfo.*;
 //import diamelle.base.prop.*;
@@ -47,7 +41,7 @@ import org.springframework.transaction.annotation.Transactional;
             portName = "OrganizationDataWebServicePort",
             serviceName = "OrganizationDataWebService")
 @Service("orgManager")
-public class OrganizationDataServiceImpl implements OrganizationDataService {
+public class OrganizationDataServiceImpl extends AbstractBaseService implements OrganizationDataService {
 
     private static final Log log = LogFactory.getLog(OrganizationDataServiceImpl.class);
 
@@ -58,17 +52,21 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
     private UserDataService userDataService;
 
     @Autowired
-    private OrganizationSearchBeanConverter organizationSearchBeanConverter;
-
-    @Autowired
     private OrganizationDozerConverter organizationDozerConverter;
 
     @Autowired
-    private OrganizationAttributeDozerConverter organizationAttributeDozerConverter;
+    private LanguageDozerConverter languageConverter;
 
     @Override
+    @Deprecated
     public Organization getOrganization(final String orgId, String requesterId) {
-        final OrganizationEntity entity = organizationService.getOrganization(orgId, requesterId);
+        return this.getOrganizationLocalized(orgId, requesterId, getDefaultLanguage());
+    }
+
+    @Override
+    @LocalizedServiceGet
+    public Organization getOrganizationLocalized(final String orgId, String requesterId, final Language language) {
+        final OrganizationEntity entity = organizationService.getOrganizationLocalized(orgId, requesterId, languageConverter.convertToEntity(language, false));
         return organizationDozerConverter.convertToDTO(entity, true);
     }
     
@@ -76,36 +74,62 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
 	public int getNumOfOrganizationsForUser(final String userId, final String requesterId) {
     	return organizationService.getNumOfOrganizationsForUser(userId, requesterId);
 	}
-    
+
     @Override
-	public List<Organization> getOrganizationsForUser(final String userId, final String requesterId, final int from, final int size) {
-    	final List<OrganizationEntity> ogranizationEntity = organizationService.getOrganizationsForUser(userId, requesterId, from, size);
+    @Deprecated
+    public List<Organization> getOrganizationsForUser(final String userId, final String requesterId, final int from, final int size) {
+        return this.getOrganizationsForUserLocalized(userId, requesterId, from, size, getDefaultLanguage());
+    }
+
+    @Override
+    @LocalizedServiceGet
+	public List<Organization> getOrganizationsForUserLocalized(final String userId, final String requesterId, final int from, final int size, final Language language) {
+    	final List<OrganizationEntity> ogranizationEntity = organizationService.getOrganizationsForUser(userId, requesterId, from, size, languageConverter.convertToEntity(language, false));
         return organizationDozerConverter.convertToDTOList(ogranizationEntity, false);
 	}
 
     @Override
-    public List<Organization> getAllOrganizations(String requesterId) {
-        final List<OrganizationEntity> entityList = organizationService.getAllOrganizations(requesterId);
-        return organizationDozerConverter.convertToDTOList(entityList, false);
+    @Deprecated
+    public List<Organization> findBeans(final OrganizationSearchBean searchBean, final String requesterId, final int from, final int size) {
+        return this.findBeansLocalized(searchBean, requesterId, from, size, getDefaultLanguage());
     }
 
     @Override
-    public List<Organization> findBeans(final OrganizationSearchBean searchBean, String requesterId, final int from, final int size) {
-        final List<OrganizationEntity> entityList = organizationService.findBeans(searchBean, requesterId, from, size);
-        final List<Organization> resultList = organizationDozerConverter.convertToDTOList(entityList, searchBean.isDeepCopy());
+    @LocalizedServiceGet
+    public List<Organization> findBeansLocalized(final OrganizationSearchBean searchBean, final String requesterId, final int from, final int size, final Language language) {
+        final List<OrganizationEntity> entityList = organizationService.findBeans(searchBean, requesterId, from, size, languageConverter.convertToEntity(language, false));
+        final List<Organization> resultList = new LinkedList<Organization>();
+        for(OrganizationEntity organizationEntity : entityList) {
+            resultList.add(organizationDozerConverter.convertToDTO(organizationEntity,false));
+        }
+
         return resultList;
     }
 
     @Override
+    @Deprecated
     public List<Organization> getParentOrganizations(String orgId, String requesterId, final int from, final int size) {
-        final List<OrganizationEntity> entityList = organizationService.getParentOrganizations(orgId, requesterId, from, size);
+        return this.getParentOrganizationsLocalized(orgId, requesterId, from, size, getDefaultLanguage());
+    }
+
+    @Override
+    @LocalizedServiceGet
+    public List<Organization> getParentOrganizationsLocalized(String orgId, String requesterId, final int from, final int size, final Language language) {
+        final List<OrganizationEntity> entityList = organizationService.getParentOrganizations(orgId, requesterId, from, size, languageConverter.convertToEntity(language, false));
         final List<Organization> organizationList = organizationDozerConverter.convertToDTOList(entityList, false);
         return organizationList;
     }
 
     @Override
+    @Deprecated
     public List<Organization> getChildOrganizations(String orgId, String requesterId, final int from, final int size) {
-        final List<OrganizationEntity> entityList = organizationService.getChildOrganizations(orgId, requesterId, from, size);
+        return this.getChildOrganizationsLocalized(orgId, requesterId, from, size, getDefaultLanguage());
+    }
+
+    @Override
+    @LocalizedServiceGet
+    public List<Organization> getChildOrganizationsLocalized(String orgId, String requesterId, final int from, final int size, final Language language) {
+        final List<OrganizationEntity> entityList = organizationService.getChildOrganizations(orgId, requesterId, from, size, languageConverter.convertToEntity(language, false));
         final List<Organization> organizationList = organizationDozerConverter.convertToDTOList(entityList, false);
         return organizationList;
     }
@@ -124,6 +148,50 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
     public int count(final OrganizationSearchBean searchBean, String requesterId) {
         return organizationService.count(searchBean, requesterId);
     }
+
+    @Override
+    @Deprecated
+    public List<Organization> getAllowedParentOrganizationsForType(final String orgTypeId, String requesterId){
+        return this.getAllowedParentOrganizationsForTypeLocalized(orgTypeId, requesterId, getDefaultLanguage());
+    }
+
+    @Override
+    @LocalizedServiceGet
+    public List<Organization> getAllowedParentOrganizationsForTypeLocalized(final String orgTypeId, String requesterId, final Language language){
+        final List<OrganizationEntity> entityList = organizationService.getAllowedParentOrganizationsForType(orgTypeId, requesterId, languageConverter.convertToEntity(language, false));
+        final List<Organization> resultList = organizationDozerConverter.convertToDTOList(entityList, false);
+        return resultList;
+    }
+
+    @Override
+    @Deprecated
+    public List<Organization> findOrganizationsByAttributeValue(String attrName, String attrValue) {
+        return this.findOrganizationsByAttributeValueLocalized(attrName, attrValue, getDefaultLanguage());
+    }
+
+    @Override
+    @LocalizedServiceGet
+    public List<Organization> findOrganizationsByAttributeValueLocalized(String attrName, String attrValue, final Language language) {
+        return organizationDozerConverter.convertToDTOList(
+                organizationService.findOrganizationsByAttributeValue(attrName, attrValue, languageConverter.convertToEntity(language, false)), true);
+    }
+
+
+    @Override
+    @Deprecated
+    public List<Organization> getOrganizationsForUserByType(final String userId, final String requesterId, final String organizationTypeId) {
+        return this.getOrganizationsForUserByTypeLocalized(userId, requesterId, organizationTypeId, getDefaultLanguage());
+    }
+
+	@Override
+	@LocalizedServiceGet
+	public List<Organization> getOrganizationsForUserByTypeLocalized(final String userId, final String requesterId, final String organizationTypeId, final Language language) {
+		final OrganizationSearchBean searchBean = new OrganizationSearchBean();
+		searchBean.setUserId(userId);
+		searchBean.setOrganizationTypeId(organizationTypeId);
+		searchBean.setDeepCopy(false);
+		return findBeansLocalized(searchBean, requesterId, 0, Integer.MAX_VALUE, language);
+	}
 
     @Override
     public Response addUserToOrg(final String orgId, final String userId) {
@@ -165,93 +233,53 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
         return response;
     }
 
-    @Override
-    public Response removeAttribute(final String attributeId) {
-        final Response response = new Response(ResponseStatus.SUCCESS);
-        try {
-            if (attributeId == null) {
-                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+    private Language getDefaultLanguage(){
+        Language lang = new Language();
+        lang.setId("1");
+        return lang;
+    }
+
+    private void validate(final Organization organization) throws BasicDataServiceException {
+    	if (organization == null) {
+            throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+        }
+        if (StringUtils.isBlank(organization.getName())) {
+            throw new BasicDataServiceException(ResponseCode.ORGANIZATION_NAME_NOT_SET);
+        }
+
+        final OrganizationEntity found = organizationService.getOrganizationByName(organization.getName(), null, null);
+        if (found != null) {
+            if (StringUtils.isBlank(organization.getId()) && found != null) {
+                throw new BasicDataServiceException(ResponseCode.NAME_TAKEN);
             }
 
-            organizationService.removeAttribute(attributeId);
-        } catch (BasicDataServiceException e) {
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorCode(e.getCode());
-        } catch (Throwable e) {
-            log.error("Can't delete occupation attribute", e);
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorText(e.getMessage());
+            if (StringUtils.isNotBlank(organization.getId()) && !organization.getId().equals(found.getId())) {
+                throw new BasicDataServiceException(ResponseCode.NAME_TAKEN);
+            }
         }
-        return response;
+        
+        if(StringUtils.isBlank(organization.getOrganizationTypeId())) {
+            throw new BasicDataServiceException(ResponseCode.ORGANIZATION_TYPE_NOT_SET);
+        }
+        
+        final OrganizationEntity entity = organizationDozerConverter.convertToEntity(organization, true);
+        entityValidator.isValid(entity);
     }
 
     @Override
-    public Response saveOrganization(final Organization organization) {
+    public Response saveOrganization(final Organization organization, final String requestorId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
-            if (organization == null) {
-                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
-            }
-            if (StringUtils.isBlank(organization.getOrganizationName())) {
-                throw new BasicDataServiceException(ResponseCode.ORGANIZATION_NAME_NOT_SET);
-            }
-
-            final OrganizationEntity found = organizationService.getOrganizationByName(organization.getOrganizationName(), null);
-            if (found != null) {
-                if (StringUtils.isBlank(organization.getId()) && found != null) {
-                    throw new BasicDataServiceException(ResponseCode.NAME_TAKEN);
-                }
-
-                if (StringUtils.isNotBlank(organization.getId()) && !organization.getId().equals(found.getId())) {
-                    throw new BasicDataServiceException(ResponseCode.NAME_TAKEN);
-                }
-            }
-
-            // if(StringUtils.isBlank(organization.getMetadataTypeId())) {
-            // throw new
-            // BasicDataServiceException(ResponseCode.ORGANIZATION_TYPE_NOT_SET);
-            // }
-            if(StringUtils.isBlank(organization.getOrganizationTypeId())) {
-                throw new BasicDataServiceException(ResponseCode.CLASSIFICATION_NOT_SET);
-            }
-
+        	validate(organization);
             final OrganizationEntity entity = organizationDozerConverter.convertToEntity(organization, true);
-            organizationService.save(entity);
+            organizationService.save(entity, requestorId);
             response.setResponseValue(entity.getId());
         } catch (BasicDataServiceException e) {
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorCode(e.getCode());
+        	response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+            response.setErrorTokenList(e.getErrorTokenList());
         } catch (Throwable e) {
             log.error("Can't save organization", e);
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorText(e.getMessage());
-        }
-        return response;
-    }
-
-    @Override
-    public Response saveAttribute(final OrganizationAttribute attribute) {
-        final Response response = new Response(ResponseStatus.SUCCESS);
-        try {
-            if (attribute == null) {
-                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
-            }
-
-            if (StringUtils.isBlank(attribute.getOrganizationId())) {
-                throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
-            }
-
-            final OrganizationAttributeEntity entity = organizationAttributeDozerConverter.convertToEntity(attribute, false);
-            if (StringUtils.isBlank(entity.getName())) {
-                throw new BasicDataServiceException(ResponseCode.NO_NAME);
-            }
-
-            organizationService.save(entity);
-        } catch (BasicDataServiceException e) {
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorCode(e.getCode());
-        } catch (Throwable e) {
-            log.error("Can't save resource type", e);
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorText(e.getMessage());
         }
@@ -317,14 +345,44 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
         }
         return response;
     }
+    
+    private void validateDeleteInternal(final String id) throws BasicDataServiceException {
+    	if (id == null) {
+            throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+        }
+    }
+    
+    @Override
+	public Response validateEdit(Organization organization) {
+    	 final Response response = new Response(ResponseStatus.SUCCESS);
+         try {
+        	 validate(organization);
+         } catch (BasicDataServiceException e) {
+        	response.setStatus(ResponseStatus.FAILURE);
+ 			response.setErrorCode(e.getCode());
+            response.setErrorTokenList(e.getErrorTokenList());
+         } catch (Throwable e) {
+             log.error("Exception", e);
+             response.setStatus(ResponseStatus.FAILURE);
+             response.setErrorText(e.getMessage());
+         }
+         return response;
+	}
 
 	@Override
-	public List<Organization> getOrganizationsForUserByType(final String userId, final String requesterId, final String organizationTypeId) {
-		final OrganizationSearchBean searchBean = new OrganizationSearchBean();
-		searchBean.setUserId(userId);
-		searchBean.setOrganizationTypeId(organizationTypeId);
-		searchBean.setDeepCopy(false);
-		return findBeans(searchBean, requesterId, 0, Integer.MAX_VALUE);
+	public Response validateDelete(String id) {
+		 final Response response = new Response(ResponseStatus.SUCCESS);
+         try {
+        	 validateDeleteInternal(id);
+         } catch (BasicDataServiceException e) {
+             response.setStatus(ResponseStatus.FAILURE);
+             response.setErrorCode(e.getCode());
+         } catch (Throwable e) {
+             log.error("Exception", e);
+             response.setStatus(ResponseStatus.FAILURE);
+             response.setErrorText(e.getMessage());
+         }
+         return response;
 	}
 
 	@Override

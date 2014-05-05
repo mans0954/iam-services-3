@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -16,10 +17,14 @@ import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hibernate.Hibernate;
+import org.openiam.base.service.AbstractLanguageService;
 import org.openiam.dozer.converter.MetaDataElementDozerConverter;
 import org.openiam.dozer.converter.MetaDataTypeDozerConverter;
+import org.openiam.hibernate.HibernateUtils;
 import org.openiam.idm.searchbeans.MetadataElementSearchBean;
 import org.openiam.idm.searchbeans.MetadataTypeSearchBean;
+import org.openiam.idm.srvc.lang.domain.LanguageEntity;
 import org.openiam.idm.srvc.lang.domain.LanguageMappingEntity;
 import org.openiam.idm.srvc.lang.service.LanguageMappingDAO;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
@@ -35,6 +40,7 @@ import org.openiam.idm.srvc.res.domain.ResourceTypeEntity;
 import org.openiam.idm.srvc.res.service.ResourceDAO;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
 import org.openiam.idm.srvc.searchbean.converter.MetadataTypeSearchBeanConverter;
+import org.openiam.internationalization.LocalizedServiceGet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -46,7 +52,7 @@ import org.springframework.transaction.annotation.Transactional;
  * @version 1
  */
 @Service("metadataService")
-public class MetadataServiceImpl implements MetadataService {
+public class MetadataServiceImpl extends AbstractLanguageService implements MetadataService {
 
     @Autowired
     private MetadataTypeDAO metadataTypeDao;
@@ -74,29 +80,10 @@ public class MetadataServiceImpl implements MetadataService {
 
     private static final Log log = LogFactory.getLog(MetadataServiceImpl.class);
 
-    @Override
-    public List<MetadataElementEntity> getMetadataElementByType(String typeId) {
-        final MetadataTypeEntity result = metadataTypeDao.findById(typeId);
-        if(result == null) {
-            log.error("MetadataServiceImpl.getMetadataElementByType.findById (typeId="+typeId+") = NULL");
-            return null;
-        }
-        final Map<String, MetadataElementEntity> elementMap = result.getElementAttributes();
-        return (elementMap != null) ? new ArrayList<MetadataElementEntity>(elementMap.values()) : null;
-    }
-
-    @Override
-    public List<MetadataTypeEntity> getTypesInCategory(String categoryId) {
-        return metadataTypeDao.findTypesInCategory(categoryId);
-    }
-
-    @Override
-    public List<MetadataElementEntity> getAllElementsForCategoryType(final String categoryType) {
-        return metadataElementDao.findbyCategoryType(categoryType);
-    }
-
 	@Override
-	public List<MetadataElementEntity> findBeans(final MetadataElementSearchBean searchBean, final int from, final int size) {
+	@LocalizedServiceGet
+	@Transactional
+	public List<MetadataElementEntity> findBeans(final MetadataElementSearchBean searchBean, final int from, final int size, final LanguageEntity language) {
 		List<MetadataElementEntity> retVal = null;
 		if(searchBean.hasMultipleKeys()) {
 			retVal = metadataElementDao.findByIds(searchBean.getKeys());
@@ -122,8 +109,6 @@ public class MetadataServiceImpl implements MetadataService {
 	@Transactional
 	public void save(MetadataElementEntity entity) {
 		if(entity != null) {
-			final Map<String, LanguageMappingEntity> languageMap = entity.getLanguageMap();
-			final Map<String, LanguageMappingEntity> defaultValueLanguageMap = entity.getDefaultValueLanguageMap();
 			final Set<MetadataValidValueEntity> validValues = entity.getValidValues();
 			
 			if(StringUtils.isBlank(entity.getId())) {
@@ -133,35 +118,27 @@ public class MetadataServiceImpl implements MetadataService {
 	            resource.setIsPublic(true); /* make public by default */
 	            resourceDAO.save(resource);
 	            entity.setResource(resource);
-				entity.setMetadataType(metadataTypeDao.findById(entity.getMetadataType().getMetadataTypeId()));
+				entity.setMetadataType(metadataTypeDao.findById(entity.getMetadataType().getId()));
 				
-				entity.setLanguageMap(null);
-				entity.setDefaultValueLanguageMap(null);
 				entity.setValidValues(null);
 				entity.setTemplateSet(null);
-				
 				metadataElementDao.save(entity);
-				entity.setLanguageMap(mergeLanguageMaps(entity.getLanguageMap(), languageMap));
-				entity.setDefaultValueLanguageMap(mergeLanguageMaps(entity.getDefaultValueLanguageMap(), defaultValueLanguageMap));
 				entity.setValidValues(mergeValidValues(entity.getValidValues(), validValues));
-				doCollectionsArithmetic(entity);
 			} else {
 				final MetadataElementEntity dbEntity = metadataElementDao.findById(entity.getId());
 				entity.setValidValues(dbEntity.getValidValues());
-				entity.setLanguageMap(dbEntity.getLanguageMap());
-				entity.setDefaultValueLanguageMap(dbEntity.getDefaultValueLanguageMap());
 				entity.setUserAttributes(dbEntity.getUserAttributes());
 				
-				entity.setLanguageMap(mergeLanguageMaps(entity.getLanguageMap(), languageMap));
-				entity.setDefaultValueLanguageMap(mergeLanguageMaps(entity.getDefaultValueLanguageMap(), defaultValueLanguageMap));
 				entity.setValidValues(mergeValidValues(dbEntity.getValidValues(), validValues));
-				doCollectionsArithmetic(entity);
-			
+
 				/* don't let the caller update these */
 				entity.setMetadataType(dbEntity.getMetadataType());
 				entity.setTemplateSet(dbEntity.getTemplateSet());
 				entity.setResource(dbEntity.getResource());
 				entity.setOrganizationAttributes(dbEntity.getOrganizationAttributes());
+                entity.setGroupAttributes(dbEntity.getGroupAttributes());
+                entity.setUserAttributes(dbEntity.getUserAttributes());
+                entity.setResourceAttributes(dbEntity.getResourceAttributes());
 			}
 			
 			if(CollectionUtils.isNotEmpty(entity.getValidValues())) {
@@ -173,72 +150,6 @@ public class MetadataServiceImpl implements MetadataService {
 			
 			metadataElementDao.merge(entity);
 		}
-	}
-	
-	/* assumes same referenceId and referenceType */
-	private Map<String, LanguageMappingEntity> mergeLanguageMaps(final Map<String, LanguageMappingEntity> persistentMap, Map<String, LanguageMappingEntity> transientMap) {
-		//final Map<String, Set<String>> deleteMap = new HashMap<String, Set<String>>();
-		
-		transientMap = (transientMap != null) ? transientMap : new HashMap<String, LanguageMappingEntity>();
-		final Map<String, LanguageMappingEntity> retVal = (persistentMap != null) ? persistentMap : new HashMap<String, LanguageMappingEntity>();
-		
-		/* remove empty strings */
-		for(final Iterator<Entry<String, LanguageMappingEntity>> it = transientMap.entrySet().iterator(); it.hasNext();) {
-			final Entry<String, LanguageMappingEntity> entry = it.next();
-			final LanguageMappingEntity entity = entry.getValue();
-			if(StringUtils.isBlank(entity.getValue())) {
-				it.remove();
-			}
-		}
-		
-		/* update existing entries */
-		for(final LanguageMappingEntity transientEntry : transientMap.values()) {
-			for(final LanguageMappingEntity persistentEntry : retVal.values()) {
-				if(StringUtils.equals(transientEntry.getLanguageId(), persistentEntry.getLanguageId())) {
-					persistentEntry.setValue(transientEntry.getValue());
-				}
-			}
-		}
-		
-		/* remove old entries */
-		for(final Iterator<Entry<String, LanguageMappingEntity>> it = retVal.entrySet().iterator(); it.hasNext();) {
-			final Entry<String, LanguageMappingEntity> entry = it.next();
-			final LanguageMappingEntity persistentEntry = entry.getValue();
-			boolean contains = false;
-			for(final LanguageMappingEntity transientEntry : transientMap.values()) {
-				if(StringUtils.equals(transientEntry.getLanguageId(), persistentEntry.getLanguageId())) {
-					contains = true;
-				}
-			}
-			
-			if(!contains) {
-				it.remove();
-			}
-		}
-		
-		/* add new entries */
-		for(final LanguageMappingEntity transientEntry : transientMap.values()) {
-			boolean found = false;
-			for(final LanguageMappingEntity persistentEntry : retVal.values()) {
-				if(StringUtils.isNotEmpty(transientEntry.getValue())) {
-					if(StringUtils.equals(transientEntry.getLanguageId(), persistentEntry.getLanguageId())) {
-						found = true;
-						break;
-					}
-				}
-			}
-			if(!found) {
-				retVal.put(transientEntry.getLanguageId(), transientEntry);
-			}
-		}
-		
-		/*
-		for(final String referenceType : deleteMap.keySet()) {
-			languageMappingDAO.deleteByReferenceTypeAndIds(deleteMap.get(referenceType), referenceType);
-		}
-		*/
-		
-		return retVal;
 	}
 	
 	private Set<MetadataValidValueEntity> mergeValidValues(final Set<MetadataValidValueEntity> persistentSet, Set<MetadataValidValueEntity> transientSet) {
@@ -288,7 +199,7 @@ public class MetadataServiceImpl implements MetadataService {
 					if(StringUtils.equals(persistentEntity.getId(), transientEntity.getId())) {
 						persistentEntity.setUiValue(transientEntity.getUiValue());
 						persistentEntity.setDisplayOrder(transientEntity.getDisplayOrder());
-						mergeLanguageMaps(persistentEntity.getLanguageMap(), transientEntity.getLanguageMap());
+						persistentEntity.setLanguageMap(transientEntity.getLanguageMap());
 					}
 				}
 			}
@@ -297,47 +208,18 @@ public class MetadataServiceImpl implements MetadataService {
 		return retval;
 	}
 	
-	private void doCollectionsArithmetic(final MetadataElementEntity entity) {
-		if(MapUtils.isNotEmpty(entity.getLanguageMap())) {
-			for(final LanguageMappingEntity mapValue : entity.getLanguageMap().values()) {
-				setReferenceType(mapValue, WhereClauseConstants.META_ELEMENT_REFERENCE_TYPE, entity.getId());
-			}
-		}
-		if(MapUtils.isNotEmpty(entity.getDefaultValueLanguageMap())) {
-			for(final LanguageMappingEntity mapValue : entity.getDefaultValueLanguageMap().values()) {
-				setReferenceType(mapValue, WhereClauseConstants.META_ELEMENT_DEFAULT_VALUE_REFERENCE_TYPE, entity.getId());
-			}
-		}
-		if(CollectionUtils.isNotEmpty(entity.getValidValues())) {
-			for(final MetadataValidValueEntity validValue : entity.getValidValues()) {
-				if(MapUtils.isNotEmpty(validValue.getLanguageMap())) {
-					for(final LanguageMappingEntity mapValue : validValue.getLanguageMap().values()) {
-						setReferenceType(mapValue, WhereClauseConstants.VALID_VALUES_REFERENCE_TYPE, validValue.getId());
-					}
-				}
-			}
-		}
-	}
-	
-	private void setReferenceType(final LanguageMappingEntity entity, final String referenceType, final String referenceId) {
-		if(entity != null) {
-			entity.setReferenceType(referenceType);
-			entity.setReferenceId(referenceId);
-		}
-	}
-
 	@Override
 	@Transactional
 	public void save(MetadataTypeEntity entity) {
 		if(entity != null) {
-			if(StringUtils.isNotBlank(entity.getMetadataTypeId())) {
-				final MetadataTypeEntity dbEntity = metadataTypeDao.findById(entity.getMetadataTypeId());
+			if(StringUtils.isNotBlank(entity.getId())) {
+				final MetadataTypeEntity dbEntity = metadataTypeDao.findById(entity.getId());
 				if(dbEntity != null) {
 					entity.setCategories(dbEntity.getCategories());
 					entity.setElementAttributes(dbEntity.getElementAttributes());
 				}
 			}
-			if(StringUtils.isBlank(entity.getMetadataTypeId())) {
+			if(StringUtils.isBlank(entity.getId())) {
 				metadataTypeDao.save(entity);
 			} else {
 				metadataTypeDao.merge(entity);
@@ -365,17 +247,6 @@ public class MetadataServiceImpl implements MetadataService {
 			}
 			*/
 			metadataElementDao.delete(entity);
-		}
-	}
-	
-	private void populateLanguageDeleteMap(final Map<String, LanguageMappingEntity> languageMap, final Map<String, Set<String>> languageDeleteMap) {
-		if(MapUtils.isNotEmpty(languageMap)) {
-			for(final LanguageMappingEntity languageEntity : languageMap.values()) {
-				if(!languageDeleteMap.containsKey(languageEntity.getReferenceType())) {
-					languageDeleteMap.put(languageEntity.getReferenceType(), new HashSet<String>());
-				}
-				languageDeleteMap.get(languageEntity.getReferenceType()).add(languageEntity.getReferenceId());
-			}
 		}
 	}
 
@@ -409,54 +280,32 @@ public class MetadataServiceImpl implements MetadataService {
 	//@Override
 	//@Transactional
 	private void save(MetadataValidValueEntity entity) {
-		final Map<String, LanguageMappingEntity> languageMap = entity.getLanguageMap();
 		if(StringUtils.isEmpty(entity.getId())) {
-			entity.setLanguageMap(null);
+			//entity.setLanguageMap(null);
 			//entity.setEntity(metadataElementDao.findById(entity.getEntity().getId()));
 			validValueDAO.save(entity);
-			entity.setLanguageMap(mergeLanguageMaps(entity.getLanguageMap(), languageMap));
 		} else {
 			//final MetadataValidValueEntity dbEntity = validValueDAO.findById(entity.getId());
 			//entity.setEntity(dbEntity.getEntity());
 			//entity.setLanguageMap(mergeLanguageMaps(dbEntity.getLanguageMap(), languageMap));
+			validValueDAO.merge(entity);
 		}
-		setLanguageMetadata(entity);
-		validValueDAO.merge(entity);
+		//validValueDAO.merge(entity);
 	}
 	
-	private void setLanguageMetadata(final MetadataValidValueEntity entity) {
-		if(entity != null) {
-			if(MapUtils.isNotEmpty(entity.getLanguageMap())) {
-				for(final LanguageMappingEntity languageEntity : entity.getLanguageMap().values()) {
-					setReferenceType(languageEntity, WhereClauseConstants.VALID_VALUES_REFERENCE_TYPE, entity.getId());
-				}
-			}
-		}
-	}
-
 	@Override
 	@Transactional
 	public void delteMetaValidValue(String validValueId) {
 		final MetadataValidValueEntity entity = validValueDAO.findById(validValueId);
 		if(entity != null) {
-			final Map<String, Set<String>> languageDeleteMap = new HashMap<String, Set<String>>();
-			populateLanguageDeleteMap(entity.getLanguageMap(), languageDeleteMap);
-			for(final String referenceType : languageDeleteMap.keySet()) {
-				languageMappingDAO.deleteByReferenceTypeAndIds(languageDeleteMap.get(referenceType), referenceType);
-			}
 			validValueDAO.delete(entity);
 		}
-	}
-
-	@Override
-	public List<MetadataTypeEntity> getAllMetadataTypes() {
-		return metadataTypeDao.findAll();
 	}
 
 	@Override
 	public List<MetadataElementEntity> findElementByName(String name) {
 		final MetadataElementSearchBean searchBean = new MetadataElementSearchBean();
 		searchBean.setAttributeName(name);
-		return findBeans(searchBean, 0, Integer.MAX_VALUE);
+		return findBeans(searchBean, 0, Integer.MAX_VALUE, null);
 	}
 }

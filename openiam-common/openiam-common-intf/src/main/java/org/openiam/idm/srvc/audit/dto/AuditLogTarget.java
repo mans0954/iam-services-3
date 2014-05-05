@@ -14,7 +14,8 @@ import org.openiam.idm.srvc.audit.domain.AuditLogTargetEntity;
 	"id",
 	"logId",
 	"targetId",
-	"targetType"
+	"targetType",
+    "objectPrincipal"
 })
 @DozerDTOCorrespondence(AuditLogTargetEntity.class)
 public class AuditLogTarget implements Serializable {
@@ -22,6 +23,8 @@ public class AuditLogTarget implements Serializable {
 	private String id;
 	private String logId;
 	private String targetId;
+    private String objectPrincipal;
+
 	private String targetType;
 	public String getId() {
 		return id;
@@ -47,54 +50,47 @@ public class AuditLogTarget implements Serializable {
 	public void setTargetType(String targetType) {
 		this.targetType = targetType;
 	}
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
-		result = prime * result + ((logId == null) ? 0 : logId.hashCode());
-		result = prime * result
-				+ ((targetId == null) ? 0 : targetId.hashCode());
-		result = prime * result
-				+ ((targetType == null) ? 0 : targetType.hashCode());
-		return result;
-	}
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		AuditLogTarget other = (AuditLogTarget) obj;
-		if (id == null) {
-			if (other.id != null)
-				return false;
-		} else if (!id.equals(other.id))
-			return false;
-		if (logId == null) {
-			if (other.logId != null)
-				return false;
-		} else if (!logId.equals(other.logId))
-			return false;
-		if (targetId == null) {
-			if (other.targetId != null)
-				return false;
-		} else if (!targetId.equals(other.targetId))
-			return false;
-		if (targetType == null) {
-			if (other.targetType != null)
-				return false;
-		} else if (!targetType.equals(other.targetType))
-			return false;
-		return true;
-	}
-	@Override
+
+    public String getObjectPrincipal() {
+        return objectPrincipal;
+    }
+
+    public void setObjectPrincipal(String objectPrincipal) {
+        this.objectPrincipal = objectPrincipal;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        AuditLogTarget that = (AuditLogTarget) o;
+
+        if (id != null ? !id.equals(that.id) : that.id != null) return false;
+        if (logId != null ? !logId.equals(that.logId) : that.logId != null) return false;
+        if (objectPrincipal != null ? !objectPrincipal.equals(that.objectPrincipal) : that.objectPrincipal != null)
+            return false;
+        if (targetId != null ? !targetId.equals(that.targetId) : that.targetId != null) return false;
+        if (targetType != null ? !targetType.equals(that.targetType) : that.targetType != null) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = id != null ? id.hashCode() : 0;
+        result = 31 * result + (logId != null ? logId.hashCode() : 0);
+        result = 31 * result + (targetId != null ? targetId.hashCode() : 0);
+        result = 31 * result + (objectPrincipal != null ? objectPrincipal.hashCode() : 0);
+        result = 31 * result + (targetType != null ? targetType.hashCode() : 0);
+        return result;
+    }
+
+    @Override
 	public String toString() {
 		return String.format(
-				"AuditLogTarget [id=%s, logId=%s, targetId=%s, targetType=%s]",
-				id, logId, targetId, targetType);
+				"AuditLogTarget [id=%s, objectPrincipal=%s, logId=%s, targetId=%s, targetType=%s]",
+				id, objectPrincipal, logId, targetId, targetType);
 	}
 	
 	

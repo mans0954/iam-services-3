@@ -19,7 +19,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.mule.util.concurrent.DaemonThreadFactory;
 import org.openiam.bpm.util.ActivitiConstants;
-import org.openiam.idm.srvc.prov.request.dto.ProvisionRequest;
 import org.openiam.provision.dto.ProvisionUser;
 
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -119,16 +118,16 @@ public class TaskWrapper implements Serializable {
 			try {
 				final Map<String, Object> customVariables = runtimeService.getVariables(executionId);
 				if(customVariables != null) {
-					if(customVariables.containsKey(ActivitiConstants.REQUEST_METADATA_MAP)) {
-						requestMetadataMap = (LinkedHashMap<String, String>)customVariables.get(ActivitiConstants.REQUEST_METADATA_MAP);
+					if(customVariables.containsKey(ActivitiConstants.REQUEST_METADATA_MAP.getName())) {
+						requestMetadataMap = (LinkedHashMap<String, String>)customVariables.get(ActivitiConstants.REQUEST_METADATA_MAP.getName());
 					}
 					
-					if(customVariables.containsKey(ActivitiConstants.CUSTOM_TASK_UI_URL)) {
-						customObjectURI = (String)customVariables.get(ActivitiConstants.CUSTOM_TASK_UI_URL);
+					if(customVariables.containsKey(ActivitiConstants.CUSTOM_TASK_UI_URL.getName())) {
+						customObjectURI = (String)customVariables.get(ActivitiConstants.CUSTOM_TASK_UI_URL.getName());
 					}
 					
-					if(customVariables.containsKey(ActivitiConstants.EMPLOYEE_ID)) {
-						employeeId = (String)customVariables.get(ActivitiConstants.EMPLOYEE_ID);
+					if(customVariables.containsKey(ActivitiConstants.EMPLOYEE_ID.getName())) {
+						employeeId = (String)customVariables.get(ActivitiConstants.EMPLOYEE_ID.getName());
 					}
 				}
 			} catch(ActivitiException e) {

@@ -9,5 +9,4 @@ import org.openiam.authmanager.common.model.AuthorizationResource;
 
 public interface ResourceDAO extends AbstractDAO<AuthorizationResource> {
 	public List<AuthorizationMenu> getAuthorizationMenus();
-	public AuthorizationMenu getAuthorizationMenu(final String menuId);
 }

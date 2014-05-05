@@ -31,7 +31,8 @@ public class FixedPasswordGenerator implements GeneratePassword {
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.pswd.rule.GeneratePassword#generatePassword(java.lang.String)
 	 */
-	public String generatePassword(String domainid) {
+    @Override
+	public String generatePassword() {
 		// TODO Auto-generated method stub
 		return null;
 	}

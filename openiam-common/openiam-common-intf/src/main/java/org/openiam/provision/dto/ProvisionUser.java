@@ -21,15 +21,6 @@
  */
 package org.openiam.provision.dto;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
-
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlTransient;
-import javax.xml.bind.annotation.XmlType;
-
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.base.AttributeOperationEnum;
@@ -38,6 +29,14 @@ import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.user.dto.User;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlTransient;
+import javax.xml.bind.annotation.XmlType;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * ProvisionUser is the user object used by the provisioning service.
  * 
@@ -45,7 +44,7 @@ import org.openiam.idm.srvc.user.dto.User;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "ProvisionUser", propOrder = { "requestId", "sessionId",
-                                              "superiors", "srcSystemId", "provisionModel", "securityDomain", "notifyTargetSystems",
+                                              "superiors", "srcSystemId", "provisionModel", "notifyTargetSystems",
                                               "emailCredentialsToNewUsers", "emailCredentialsToSupervisor", "provisionOnStartDate",
                                               "addInitialPasswordToHistory", "passwordPolicy", "skipPreprocessor",
                                               "skipPostProcessor","parentAuditLogId"})
@@ -65,7 +64,6 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
 
 
     public ProvisionModelEnum provisionModel;
-    public String securityDomain;
 
     boolean emailCredentialsToNewUsers = false;
     boolean emailCredentialsToSupervisor = false;
@@ -106,9 +104,9 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         createDate = user.getCreateDate();
         createdBy = user.getCreatedBy();
         employeeId = user.getEmployeeId();
-        employeeType = user.getEmployeeType();
+        employeeTypeId = user.getEmployeeTypeId();
         firstName = user.getFirstName();
-        jobCode = user.getJobCode();
+        jobCodeId = user.getJobCodeId();
         lastName = user.getLastName();
         lastUpdate = user.getLastUpdate();
         this.lastUpdatedBy = user.getLastUpdatedBy();
@@ -123,7 +121,7 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         this.secondaryStatus = user.getSecondaryStatus();
         this.suffix = user.getSuffix();
         this.title = user.getTitle();
-        this.userId = user.getUserId();
+        this.id = user.getId();
         this.userTypeInd = user.getUserTypeInd();
         this.mailCode = user.getMailCode();
         this.costCenter = user.getCostCenter();
@@ -167,9 +165,9 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         user.setCreateDate(createDate);
         user.setCreatedBy(createdBy);
         user.setEmployeeId(employeeId);
-        user.setEmployeeType(employeeType);
+        user.setEmployeeTypeId(employeeTypeId);
         user.setFirstName(firstName);
-        user.setJobCode(jobCode);
+        user.setJobCodeId(jobCodeId);
         user.setLastName(lastName);
         user.setLastUpdate(lastUpdate);
         user.setLastUpdatedBy(lastUpdatedBy);
@@ -184,7 +182,7 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         user.setSecondaryStatus(secondaryStatus);
         user.setSuffix(suffix);
         user.setTitle(title);
-        user.setUserId(userId);
+        user.setId(id);
         user.setUserTypeInd(userTypeInd);
         user.setMailCode(mailCode);
         user.setCostCenter(costCenter);
@@ -284,14 +282,6 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         this.provisionModel = provisionModel;
     }
 
-    public String getSecurityDomain() {
-        return securityDomain;
-    }
-
-    public void setSecurityDomain(String securityDomain) {
-        this.securityDomain = securityDomain;
-    }
-
     public String getSessionId() {
         return sessionId;
     }
@@ -310,8 +300,8 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
 
     @Override
     public String toString() {
-        return "ProvisionUser{ superiors=" + superiors + ", provisionModel=" + provisionModel + ", securityDomain='"
-               + securityDomain + '\'' + ", emailCredentialsToNewUsers=" + emailCredentialsToNewUsers + ", emailCredentialsToSupervisor="
+        return "ProvisionUser{ superiors=" + superiors + ", provisionModel=" + provisionModel
+               + ", emailCredentialsToNewUsers=" + emailCredentialsToNewUsers + ", emailCredentialsToSupervisor="
                + emailCredentialsToSupervisor + ", addInitialPasswordToHistory=" + addInitialPasswordToHistory + ", provisionOnStartDate="
                + provisionOnStartDate + ", requestId='" + requestId + '\'' + ", sessionId='" + sessionId + '\'' + ", skipPreprocessor="
                + skipPreprocessor + ", skipPostProcessor=" + skipPostProcessor + ", srcSystemId='" + srcSystemId + '\'' + ", notifyTargetSystems="

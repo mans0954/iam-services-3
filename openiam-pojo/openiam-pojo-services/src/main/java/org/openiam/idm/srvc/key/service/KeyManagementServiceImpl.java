@@ -1,13 +1,5 @@
 package org.openiam.idm.srvc.key.service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import javax.annotation.PostConstruct;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.core.dao.UserKeyDao;
@@ -34,6 +26,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import javax.annotation.PostConstruct;
+import java.util.*;
+
 /**
  * Created by: Alexander Duckardt Date: 09.10.12
  */
@@ -50,6 +45,8 @@ public class KeyManagementServiceImpl implements KeyManagementService {
     private String keyPassword;
     @Value("${iam.jks.cookie.key.password}")
     private String cookieKeyPassword;
+    @Value("${iam.jks.common.key.password}")
+    private String commonKeyPassword;
     private Integer iterationCount;
     private JksManager jksManager;
 
@@ -113,6 +110,13 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         }
     }
 
+    @Transactional(rollbackFor = Exception.class)
+    public void initKeyManagement() throws Exception{
+        this.generateMasterKey();
+        this.generateCookieKey();
+        this.generateCommonKey();
+    }
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void generateMasterKey() throws Exception {
@@ -152,6 +156,10 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         userKeyDao.deleteAll();
         addUserKeys(newUserKeyList);
         log.warn("End generating new master key...");
+
+        log.warn("Generating new cookie key...");
+        this.generateCookieKey();
+        log.warn("End generating new cookie key...");
     }
 
     @Override
@@ -173,8 +181,8 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         }
         List<UserEntity> userList = new ArrayList<UserEntity>();
         userList.add(user);
-        List<LoginEntity> lgList = loginDAO.findUser(user.getUserId());
-        List<UserKey> keyList = userKeyDao.getByUserId(user.getUserId());
+        List<LoginEntity> lgList = loginDAO.findUser(user.getId());
+        List<UserKey> keyList = userKeyDao.getByUserId(user.getId());
         List<PasswordHistoryEntity> pwdList = new ArrayList<PasswordHistoryEntity>();
         for (LoginEntity lg : lgList) {
             pwdList.addAll(passwordHistoryDao.getPasswordHistoryByLoginId(lg.getLoginId(), 0, Integer.MAX_VALUE));
@@ -183,15 +191,15 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         List<UserKey> newUserKeyList = new ArrayList<UserKey>();
 
         UserSecurityWrapper usw = new UserSecurityWrapper();
-        usw.setUserId(user.getUserId());
+        usw.setUserId(user.getId());
         usw.setLoginList(lgList);
-        usw.setManagedSysList(managedSysMap.get(user.getUserId()));
+        usw.setManagedSysList(managedSysMap.get(user.getId()));
         usw.setPasswordHistoryList(pwdList);
         usw.setUserKeyList(keyList);
 
         encryptUserData(masterKey, usw, newUserKeyList);
         // replace user key for given user
-        userKeyDao.deleteByUserId(user.getUserId());
+        userKeyDao.deleteByUserId(user.getId());
         addUserKeys(newUserKeyList);
         return 2L;
     }
@@ -243,6 +251,63 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         return this.getPrimaryKey(JksManager.KEYSTORE_COOKIE_ALIAS, this.cookieKeyPassword);
     }
 
+    @Override
+    public byte[] getCommonKey() throws Exception {
+        byte[] key = this.getPrimaryKey(JksManager.KEYSTORE_COMMON_ALIAS, this.commonKeyPassword);
+        if (key == null || key.length == 0) {
+            return generateCookieKey();
+        }
+        return key;
+    }
+
+    @Override
+    public byte[] generateCommonKey() throws Exception {
+        // create new key for cookie
+        jksManager.generatePrimaryKey(this.jksPassword.toCharArray(), this.commonKeyPassword.toCharArray(), JksManager.KEYSTORE_COMMON_ALIAS);
+        // try to get it
+        return this.getPrimaryKey(JksManager.KEYSTORE_COMMON_ALIAS, this.commonKeyPassword);
+    }
+
+    @Override
+    public String encryptData(String data)throws Exception{
+        return encryptData(null, data);
+    }
+    @Override
+    public String decryptData(String encryptedData)throws Exception{
+        return decryptData(null, encryptedData);
+    }
+    @Override
+    public String encryptData(String userId, String data)throws Exception{
+        byte[] dataKey = null;
+        if(StringUtils.hasText(userId)){
+            dataKey = getUserKey(userId, KeyName.dataKey.name());
+        } else {
+            dataKey = this.getCommonKey();
+        }
+
+        if(dataKey==null)
+            throw new Exception("Cannot encrypt data, due to invalid secret key");
+        if(!StringUtils.hasText(data))
+            return data;
+        return cryptor.encrypt(dataKey, data);
+    }
+
+    @Override
+    public String decryptData(String userId, String encryptedData)throws Exception{
+        byte[] dataKey = null;
+        if(StringUtils.hasText(userId)){
+            dataKey = getUserKey(userId, KeyName.dataKey.name());
+        } else {
+            dataKey = this.getCommonKey();
+        }
+
+        if(dataKey==null)
+            throw new Exception("Cannot decrypt data, due to invalid secret key");
+        if(!StringUtils.hasText(encryptedData))
+           return encryptedData;
+        return cryptor.decrypt(dataKey, encryptedData);
+    }
+
     @Transactional(rollbackFor = Exception.class)
     private void encryptData(byte[] masterKey, HashMap<String, UserSecurityWrapper> userSecurityMap, List<UserKey> newUserKeyList) throws Exception {
         if (userSecurityMap != null && !userSecurityMap.isEmpty()) {
@@ -256,6 +321,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
     private void encryptUserData(byte[] masterKey, UserSecurityWrapper userSecurityWrapper, List<UserKey> newUserKeyList) throws Exception {
         byte[] pwdKey = jksManager.getNewPrivateKey();
         byte[] tokenKey = jksManager.getNewPrivateKey();
+        byte[] dataKey = jksManager.getNewPrivateKey();
         // create new USER KEYS
         UserKey uk = new UserKey();
         uk.setKey(cryptor.encrypt(masterKey, jksManager.encodeKey(pwdKey)));
@@ -269,6 +335,12 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         uk.setUserId(userSecurityWrapper.getUserId());
         newUserKeyList.add(uk);
 
+        uk = new UserKey();
+        uk.setKey(cryptor.encrypt(masterKey, jksManager.encodeKey(dataKey)));
+        uk.setName(KeyName.dataKey.name());
+        uk.setUserId(userSecurityWrapper.getUserId());
+        newUserKeyList.add(uk);
+
         // log.warn("NEW USER KEYS ARE: [USER_ID: " + user.getUserId() +
         // "; PWD_KEY: " + jksManager.encodeKey(pwdKey) + "; TKN_KEY: "
         // + jksManager.encodeKey(tokenKey) + "]");
@@ -277,15 +349,19 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         log.warn("Encrypt user passwords ...");
         if (userSecurityWrapper.getLoginList() != null && !userSecurityWrapper.getLoginList().isEmpty()) {
             for (LoginEntity login : userSecurityWrapper.getLoginList()) {
-                login.setPassword(cryptor.encrypt(pwdKey, login.getPassword()));
-                loginDAO.update(login);
+                if(StringUtils.hasText(login.getPassword())){
+                    login.setPassword(cryptor.encrypt(pwdKey, login.getPassword()));
+                    loginDAO.update(login);
+                }
             }
         }
         log.warn("Encrypt user passwords history...");
         if (userSecurityWrapper.getPasswordHistoryList() != null && !userSecurityWrapper.getPasswordHistoryList().isEmpty()) {
             for (PasswordHistoryEntity pwd : userSecurityWrapper.getPasswordHistoryList()) {
-                pwd.setPassword(cryptor.encrypt(pwdKey, pwd.getPassword()));
-                passwordHistoryDao.update(pwd);
+                if(StringUtils.hasText(pwd.getPassword())){
+                    pwd.setPassword(cryptor.encrypt(pwdKey, pwd.getPassword()));
+                    passwordHistoryDao.update(pwd);
+                }
             }
         }
 
@@ -344,13 +420,15 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         log.warn("Decrypting user passwords ...");
         if (userSecurityWrapper.getLoginList() != null && !userSecurityWrapper.getLoginList().isEmpty()) {
             for (LoginEntity login : userSecurityWrapper.getLoginList()) {
-                login.setPassword(cryptor.decrypt(key, login.getPassword()));
+                if(StringUtils.hasText(login.getPassword()))
+                    login.setPassword(cryptor.decrypt(key, login.getPassword()));
             }
         }
         if (userSecurityWrapper.getPasswordHistoryList() != null && !userSecurityWrapper.getPasswordHistoryList().isEmpty()) {
             log.warn("Decrypting user passwords history ...");
             for (PasswordHistoryEntity pwd : userSecurityWrapper.getPasswordHistoryList()) {
-                pwd.setPassword(cryptor.decrypt(key, pwd.getPassword()));
+                if(StringUtils.hasText(pwd.getPassword()))
+                    pwd.setPassword(cryptor.decrypt(key, pwd.getPassword()));
             }
         }
 
@@ -367,7 +445,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
 
     private void printUserData(User user, HashMap<String, List<PasswordHistory>> pwdHistoryMap, HashMap<String, List<ManagedSysDto>> managedSysMap) {
         StringBuilder msg = new StringBuilder();
-        msg.append("LOGIN LIST FOR USER_ID(" + user.getUserId() + ") [\n");
+        msg.append("LOGIN LIST FOR USER_ID(" + user.getId() + ") [\n");
         if (user.getPrincipalList() != null && !user.getPrincipalList().isEmpty()) {
             for (Login login : user.getPrincipalList()) {
                 msg.append("\t{login:" + login.getLogin() + ";password:" + login.getPassword() + "}\n");
@@ -377,9 +455,9 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         log.warn(msg.toString());
         msg.setLength(0);
 
-        msg.append("PWD HISTORY LIST FOR USER_ID(" + user.getUserId() + ") [\n");
-        if (pwdHistoryMap.containsKey(user.getUserId())) {
-            for (PasswordHistory pwd : pwdHistoryMap.get(user.getUserId())) {
+        msg.append("PWD HISTORY LIST FOR USER_ID(" + user.getId() + ") [\n");
+        if (pwdHistoryMap.containsKey(user.getId())) {
+            for (PasswordHistory pwd : pwdHistoryMap.get(user.getId())) {
                 msg.append("\tpassword:" + pwd.getPassword() + "\n");
             }
         }
@@ -387,9 +465,9 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         log.warn(msg.toString());
         msg.setLength(0);
 
-        msg.append("MANAGED SYS LIST FOR USER_ID(" + user.getUserId() + ") [\n");
-        if (managedSysMap.containsKey(user.getUserId())) {
-            for (ManagedSysDto ms : managedSysMap.get(user.getUserId())) {
+        msg.append("MANAGED SYS LIST FOR USER_ID(" + user.getId() + ") [\n");
+        if (managedSysMap.containsKey(user.getId())) {
+            for (ManagedSysDto ms : managedSysMap.get(user.getId())) {
                 if (ms.getPswd() != null) {
                     msg.append("\tpassword:" + ms.getPswd() + "\n");
                 } else {

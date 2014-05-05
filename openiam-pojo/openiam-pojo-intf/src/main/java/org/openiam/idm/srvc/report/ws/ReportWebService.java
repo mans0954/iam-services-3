@@ -2,15 +2,16 @@ package org.openiam.idm.srvc.report.ws;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebService;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.openiam.base.ws.PropertyMapAdapter;
 import org.openiam.base.ws.Response;
-import org.openiam.idm.srvc.report.domain.ReportInfoEntity;
 import org.openiam.idm.srvc.report.dto.ReportCriteriaParamDto;
 import org.openiam.idm.srvc.report.dto.ReportInfoDto;
+import org.openiam.idm.srvc.report.dto.ReportQueryDto;
 import org.openiam.idm.srvc.report.dto.ReportSubCriteriaParamDto;
 import org.openiam.idm.srvc.report.dto.ReportSubscriptionDto;
 
@@ -18,13 +19,13 @@ import org.openiam.idm.srvc.report.dto.ReportSubscriptionDto;
 public interface ReportWebService {
 
     @WebMethod
-    GetReportDataResponse executeQuery(@WebParam(name = "reportName", targetNamespace = "") String reportName, @WebParam(name = "queryParams", targetNamespace = "") @XmlJavaTypeAdapter(PropertyMapAdapter.class) HashMap<String, String> queryParams);
+    GetReportDataResponse executeQuery(@WebParam(name = "reportQuery", targetNamespace = "") final ReportQueryDto reportQuery);
 
     @WebMethod
-    String getReportUrl(@WebParam(name = "reportName", targetNamespace = "") String reportName,
-                @WebParam(name = "queryParams", targetNamespace = "") @XmlJavaTypeAdapter(PropertyMapAdapter.class) HashMap<String, String> queryParams,
+    String getReportUrl(@WebParam(name = "reportQuery", targetNamespace = "") final ReportQueryDto reportQuery,
                 @WebParam(name = "taskName", targetNamespace = "") String taskName,
-                @WebParam(name = "reportBaseUrl", targetNamespace = "") String reportBaseUrl);
+                @WebParam(name = "reportBaseUrl", targetNamespace = "") String reportBaseUrl,
+                @WebParam(name = "locale", targetNamespace = "") String locale);
 
     @WebMethod
     GetAllReportsResponse getReports(@WebParam(name = "from", targetNamespace = "") int from, 
@@ -35,6 +36,9 @@ public interface ReportWebService {
     
     @WebMethod
     Response createOrUpdateReportInfo(@WebParam(name = "report", targetNamespace = "") final ReportInfoDto report);
+
+    @WebMethod
+    Response validateUpdateReportInfo(@WebParam(name = "report", targetNamespace = "") final ReportInfoDto report);
 
     @WebMethod
     Response createOrUpdateReportInfoParam(@WebParam(name = "reportParam", targetNamespace = "") final ReportCriteriaParamDto reportParam);
@@ -50,6 +54,9 @@ public interface ReportWebService {
 
     @WebMethod
     GetReportParameterTypesResponse getReportParameterTypes();
+
+    @WebMethod
+    GetReportParameterMetaTypesResponse getReportParameterMetaTypes();
 
     @WebMethod
     GetAllSubscribedReportsResponse getSubscribedReports();

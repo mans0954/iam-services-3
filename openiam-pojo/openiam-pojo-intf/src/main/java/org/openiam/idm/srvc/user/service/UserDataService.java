@@ -9,6 +9,7 @@ import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.AddressSearchBean;
 import org.openiam.idm.searchbeans.EmailSearchBean;
 import org.openiam.idm.searchbeans.PhoneSearchBean;
+import org.openiam.idm.searchbeans.PotentialSupSubSearchBean;
 import org.openiam.idm.searchbeans.UserSearchBean;
 import org.openiam.idm.srvc.continfo.domain.AddressEntity;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
@@ -40,12 +41,11 @@ public interface UserDataService {
      * refers to a principal that is associated with a particular target system.
      * User 0 to use the default principal ID.
      * 
-     * @param securityDomain
      * @param principal
      * @param managedSysId
      * @return
      */
-    public UserEntity getUserByPrincipal(String securityDomain, String principal, String managedSysId, boolean dependants);
+    public UserEntity getUserByPrincipal(String principal, String managedSysId, boolean dependants);
 
     public void addUser(UserEntity user) throws Exception;
 
@@ -167,11 +167,11 @@ public interface UserDataService {
 
     public void addSuperior(String supervisorId, String subordinateId);
 
-    public void updateSupervisor(SupervisorEntity supervisor);
+    // public void updateSupervisor(SupervisorEntity supervisor);
 
-    public void removeSupervisor(String supervisorId);
+    public void removeSupervisor(String supervisorId, final String employeeId);
 
-    public SupervisorEntity getSupervisor(String supervisorObjId);
+    // public SupervisorEntity getSupervisor(String supervisorObjId);
 
     public void evict(Object object);
 
@@ -182,7 +182,7 @@ public interface UserDataService {
      * @param employeeId
      * @return
      */
-    public List<SupervisorEntity> getSupervisors(String employeeId);
+    // public List<UserEntity> getSupervisors(String employeeId);
 
     public SupervisorEntity findSupervisor(String superiorId, String subordinateId);
 
@@ -190,13 +190,17 @@ public interface UserDataService {
 
     public int getSuperiorsCount(String userId);
 
+    public List<UserEntity> getAllSuperiors(Integer from, Integer size);
+
+    public int getAllSuperiorsCount();
+
     public List<UserEntity> getSubordinates(String userId, Integer from, Integer size);
 
     public int getSubordinatesCount(String userId);
 
-    public List<UserEntity> findPotentialSupSubs(UserSearchBean searchBean, Integer from, Integer size) throws BasicDataServiceException;
+    public List<UserEntity> findPotentialSupSubs(PotentialSupSubSearchBean searchBean, Integer from, Integer size) throws BasicDataServiceException;
 
-    public int findPotentialSupSubsCount(UserSearchBean searchBean) throws BasicDataServiceException;
+    public int findPotentialSupSubsCount(PotentialSupSubSearchBean searchBean)  throws BasicDataServiceException;
 
     /**
      * Returns a list of Supervisor objects that represents the employees or
@@ -205,7 +209,7 @@ public interface UserDataService {
      * @param supervisorId
      * @return
      */
-    public List<SupervisorEntity> getEmployees(String supervisorId);
+    // public List<SupervisorEntity> getEmployees(String supervisorId);
 
     /**
      * Returns the primary supervisor for this employee. Null if no primary is
@@ -214,7 +218,7 @@ public interface UserDataService {
      * @param employeeId
      * @return
      */
-    public SupervisorEntity getPrimarySupervisor(String employeeId);
+    public UserEntity getPrimarySupervisor(String employeeId);
 
     public UserEntity getUser(String id);
 
@@ -272,6 +276,8 @@ public interface UserDataService {
 
     boolean isHasGroup(String userId, String groupId);
 
+    void removeUserFromResource(String userId, String resourceId);
+    
     void addUserToResource(String userId, String resourceId);
 
     boolean isHasResource(String userId, String resourceId);

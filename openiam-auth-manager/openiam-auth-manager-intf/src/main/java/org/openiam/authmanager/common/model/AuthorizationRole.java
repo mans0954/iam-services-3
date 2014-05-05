@@ -1,21 +1,19 @@
 package org.openiam.authmanager.common.model;
 
-import java.io.Serializable;
-import java.util.BitSet;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "AuthorizationRole", propOrder = {
+        "description",
+        "status",
+        "managedSysId"
 })
 public class AuthorizationRole extends AbstractAuthorizationEntity implements Serializable  {
 	
@@ -27,6 +25,9 @@ public class AuthorizationRole extends AbstractAuthorizationEntity implements Se
 	@XmlTransient
 	private Set<AuthorizationResource> resources;
 
+    private String description;
+    private String status;
+    private String managedSysId;
 	/*
 	private BitSet linearRoleBitSet = new BitSet();
 	private BitSet linearResourceBitSet = new BitSet();
@@ -124,4 +125,28 @@ public class AuthorizationRole extends AbstractAuthorizationEntity implements Se
 		super.makeCopy(copy);
 		return copy;
 	}
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getManagedSysId() {
+        return managedSysId;
+    }
+
+    public void setManagedSysId(String managedSysId) {
+        this.managedSysId = managedSysId;
+    }
 }

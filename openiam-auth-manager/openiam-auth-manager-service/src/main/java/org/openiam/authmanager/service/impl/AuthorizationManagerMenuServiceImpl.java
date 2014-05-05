@@ -1,16 +1,5 @@
 package org.openiam.authmanager.service.impl;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
-
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.StopWatch;
@@ -29,8 +18,14 @@ import org.openiam.authmanager.service.AuthorizationManagerAdminService;
 import org.openiam.authmanager.service.AuthorizationManagerMenuService;
 import org.openiam.authmanager.service.AuthorizationManagerService;
 import org.openiam.authmanager.ws.request.MenuEntitlementsRequest;
+import org.openiam.idm.srvc.audit.constant.AuditAction;
+import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
+import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
+import org.openiam.idm.srvc.base.AbstractBaseService;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.service.GroupDAO;
+import org.openiam.idm.srvc.lang.domain.LanguageMappingEntity;
+import org.openiam.idm.srvc.lang.service.LanguageMappingDAO;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
@@ -48,9 +43,11 @@ import org.springframework.jmx.export.annotation.ManagedOperation;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.*;
+
 @Service("authorizationManagerMenuService")
 //@ManagedResource(objectName="org.openiam.authorization.manager:name=authorizationManagerMenuService")
-public class AuthorizationManagerMenuServiceImpl implements AuthorizationManagerMenuService, InitializingBean, ApplicationContextAware, Sweepable/*, Runnable*/ {
+public class AuthorizationManagerMenuServiceImpl extends AbstractBaseService implements AuthorizationManagerMenuService, InitializingBean, ApplicationContextAware, Sweepable/*, Runnable*/ {
 
 	private ApplicationContext ctx;
 	
@@ -61,6 +58,7 @@ public class AuthorizationManagerMenuServiceImpl implements AuthorizationManager
 	private Map<String, AuthorizationMenu> menuCache;
 	private Map<String, AuthorizationMenu> menuNameCache;
 	private Map<String, AuthorizationMenu> urlCache;
+	private Map<String, AuthorizationMenu> urlIdCache;
 	
 	@Autowired
 	@Qualifier("jdbcResourceResourceXrefDAO")
@@ -87,6 +85,9 @@ public class AuthorizationManagerMenuServiceImpl implements AuthorizationManager
 	private AuthorizationManagerService authManager;
 	
 	@Autowired
+	private LanguageMappingDAO languageMappingDAO;
+	
+	@Autowired
 	private AuthorizationManagerAdminService authManagerAdminService;
 	
 	@Autowired
@@ -111,7 +112,7 @@ public class AuthorizationManagerMenuServiceImpl implements AuthorizationManager
 		final StringBuilder sb = new StringBuilder();
 		try {
 			if(rootName != null) {
-				final AuthorizationMenu root = getMenuTree(rootName, userId);
+				final AuthorizationMenu root = getMenuTree(rootName, userId, null);
 				if(root == null) {
 					sb.append(String.format("No menu with root '%s'", rootName));
 				} else {
@@ -186,8 +187,8 @@ public class AuthorizationManagerMenuServiceImpl implements AuthorizationManager
 	}
 	
 	private final Map<String, AuthorizationMenu> getAllMenuTress() {
+		final List<AuthorizationMenu> tempMenuList = resourceDAO.getAuthorizationMenus();		
 		final List<ResourceProp> tempResourcePropertyList = resourcePropDAO.getList();
-		final List<AuthorizationMenu> tempMenuList = resourceDAO.getAuthorizationMenus();
 		
 		final Map<String, List<ResourceProp>> tempResourcePropMap = new HashMap<String, List<ResourceProp>>();
 		for(final ResourceProp prop : tempResourcePropertyList) {
@@ -197,16 +198,39 @@ public class AuthorizationManagerMenuServiceImpl implements AuthorizationManager
 			tempResourcePropMap.get(prop.getResourceId()).add(prop);
 		}
 		
+		final Set<String> idSet = new HashSet<>();
+		if(CollectionUtils.isNotEmpty(tempMenuList)) {
+			for(final AuthorizationMenu menu : tempMenuList) {
+				idSet.add(menu.getId());
+			}
+		}
+		final List<LanguageMappingEntity> languageMappings = languageMappingDAO.getByReferenceIdsAndType(idSet, "ResourceEntity.displayNameMap");
+		final Map<String, List<LanguageMappingEntity>> languageMappingMap = new HashMap<String, List<LanguageMappingEntity>>();
+		if(CollectionUtils.isNotEmpty(languageMappings)) {
+			for(final LanguageMappingEntity mapping : languageMappings) {
+				if(!languageMappingMap.containsKey(mapping.getReferenceId())) {
+					languageMappingMap.put(mapping.getReferenceId(), new LinkedList<LanguageMappingEntity>());
+				}
+				languageMappingMap.get(mapping.getReferenceId()).add(mapping);
+			}
+		}
+		
 		final Map<String, AuthorizationMenu> tempMenuMap = new HashMap<String, AuthorizationMenu>();
 		for(final AuthorizationMenu menu : tempMenuList) {
 			tempMenuMap.put(menu.getId(), menu);
-			menu.afterPropertiesSet(tempResourcePropMap.get(menu.getId()));
+			menu.afterPropertiesSet(tempResourcePropMap.get(menu.getId()), languageMappingMap.get(menu.getId()));
 		}
 		final Map<String, AuthorizationMenu> tempMenuTreeMap = createMenuTrees(tempMenuMap);
 		return tempMenuTreeMap;
 	}
 	
-	@ManagedOperation(description="sweep the Menu Cache")
+	private String getURLCacheId(final String id, final String url) {
+		return String.format("%s:%s", id, url);
+	}
+	
+	@Override
+	@Transactional
+    //@ManagedOperation(description="sweep the Menu Cache")
 	public void sweep() {
 		final StopWatch sw = new StopWatch();
 		sw.start();
@@ -217,15 +241,21 @@ public class AuthorizationManagerMenuServiceImpl implements AuthorizationManager
 			tempMenuNameMap.put(menu.getName(), menu);
 		}
 		
-		final Map<String, AuthorizationMenu> tempURLCache = new HashMap<String, AuthorizationMenu>();
+		final Map<String, AuthorizationMenu> tempURLIDCache = new HashMap<String, AuthorizationMenu>();
 		for(final AuthorizationMenu menu : tempMenuTreeMap.values()) {
-			tempURLCache.put(menu.getUrl(), menu);
+			tempURLIDCache.put(getURLCacheId(menu.getId(), menu.getUrl()), menu);
+		}
+		
+		final Map<String, AuthorizationMenu> tempUrlCache = new HashMap<String, AuthorizationMenu>();
+		for(final AuthorizationMenu menu : tempMenuTreeMap.values()) {
+			tempUrlCache.put(menu.getUrl(), menu);
 		}
 		
 		synchronized(this) {
 			menuCache = tempMenuTreeMap;
 			menuNameCache = tempMenuNameMap;
-			urlCache = tempURLCache;
+			urlIdCache = tempURLIDCache;
+			urlCache = tempUrlCache;
 		}
 		sw.stop();
 		log.debug(String.format("Done creating menu trees. Took: %s ms", sw.getTime()));
@@ -299,74 +329,124 @@ public class AuthorizationManagerMenuServiceImpl implements AuthorizationManager
 	
 	@Override
 	public AuthorizationMenu getMenuTree(final String menuRoot, final String userId) {
-		return getMenu(menuCache.get(menuRoot), userId, null);
+		return getMenu(menuCache.get(menuRoot), userId, null, true);
 	}
 
 	@Override
-	public AuthorizationMenu getMenuTree(final String menuRoot, final String domain, final String login, final String managedSysId) {
-		return getMenu(menuCache.get(menuRoot), null, new AuthorizationManagerLoginId(domain, login, managedSysId));
+	public AuthorizationMenu getMenuTree(final String menuRoot, final String login, final String managedSysId) {
+		return getMenu(menuCache.get(menuRoot), null, new AuthorizationManagerLoginId(login, managedSysId), true);
 	}
 	
-	public AuthorizationMenu getMenuTreeByName(final String menuRoot, final String userId) {
-		return getMenu(menuNameCache.get(menuRoot), userId, null);
+	@Override
+    public AuthorizationMenu getMenuTreeByName(final String menuRoot, final String userId) {
+		return getMenu(menuNameCache.get(menuRoot), userId, null, true);
 	}
 	
-	public AuthorizationMenu getMenuTreeByName(final String menuRoot, final String domain, final String login, final String managedSysId) {
-		return getMenu(menuNameCache.get(menuRoot), null, new AuthorizationManagerLoginId(domain, login, managedSysId));
+	@Override
+    public AuthorizationMenu getMenuTreeByName(final String menuRoot, final String login, final String managedSysId) {
+		return getMenu(menuNameCache.get(menuRoot), null, new AuthorizationManagerLoginId(login, managedSysId), true);
 	}
 	
-	private AuthorizationMenu getMenu(final AuthorizationMenu menu, final String userId, final AuthorizationManagerLoginId loginId) {
+	private AuthorizationMenu getMenu(final AuthorizationMenu menu, final String userId, final AuthorizationManagerLoginId loginId, final boolean isRoot) {
 		AuthorizationMenu retVal = null;
-		if(menu != null && hasAccess(menu, userId, loginId)) {
-			final AuthorizationMenu copy = menu.copy();
-			final List<AuthorizationMenu> children = getSiblings(menu.getFirstChild(), userId, loginId);
-			final List<AuthorizationMenu> siblings = getSiblings(menu.getNextSibling(), userId, loginId);
+		if(menu != null) {
+			//make copy
+			AuthorizationMenu parent = menu.copy();
+			final AuthorizationMenu child = getMenu(menu.getFirstChild(), userId, loginId, false);
+			if(child != null) {
+				parent.setFirstChild(child);
+				child.setParent(parent);
+			}
 			
-			if(CollectionUtils.isNotEmpty(children)) {
-				copy.setFirstChild(children.get(0));
-				for(final AuthorizationMenu child : children) {
-					child.setParent(copy);
+			final AuthorizationMenu next = getMenu(menu.getNextSibling(), userId, loginId, false);
+			if(next != null) {
+				parent.setNextSibling(next);
+			}
+			
+			retVal = parent;
+			//end copy
+			
+			if(isRoot) {
+				if(!hasAccess(retVal, userId, loginId)) {
+					retVal = null;
+				} else {
+					removeUnauthorizedMenus(retVal, userId, loginId, true);
 				}
 			}
-			if(CollectionUtils.isNotEmpty(siblings)) {
-				copy.setNextSibling(siblings.get(0));
-			}
-			setNextSiblings(children);
-			setNextSiblings(siblings);
-			retVal = copy;
 		}
 		return retVal;
 	}
 	
-	private void setNextSiblings(final List<AuthorizationMenu> menuList) {
-		if(CollectionUtils.isNotEmpty(menuList)) {
-			AuthorizationMenu prev = null;
-			for(final Iterator<AuthorizationMenu> it = menuList.iterator(); it.hasNext();) {
-				final AuthorizationMenu next = it.next();
-				if(prev != null) {
-					prev.setNextSibling(next);
+	private List<AuthorizationMenu> getAuthorizedSiblings(final AuthorizationMenu menu, final String userId, final AuthorizationManagerLoginId loginId) {
+		final List<AuthorizationMenu> nextMenus = new LinkedList<>();
+		if(menu != null) {
+			AuthorizationMenu nextSibling = menu.getNextSibling();
+			while(nextSibling != null) {
+				if(hasAccess(nextSibling, userId, loginId)) {
+					removeUnauthorizedMenus(nextSibling, userId, loginId, false);
+					nextMenus.add(nextSibling);
 				}
-				prev = next;
+				nextSibling = nextSibling.getNextSibling();
 			}
 		}
+		return nextMenus;
 	}
 	
-	private List<AuthorizationMenu> getSiblings(final AuthorizationMenu menu, final String userId, final AuthorizationManagerLoginId loginId) {
-		final List<AuthorizationMenu> siblings = new LinkedList<AuthorizationMenu>();
+	private AuthorizationMenu getFirstAuthorizedChild(final AuthorizationMenu menu, final String userId, final AuthorizationManagerLoginId loginId) {
+		AuthorizationMenu authorizedChild = null;
 		if(menu != null) {
-			AuthorizationMenu sibling = menu;
-			while(sibling != null) {
-				final AuthorizationMenu siblingCopy = getMenu(sibling, userId, loginId);
-				if(siblingCopy != null) {
-					siblings.add(siblingCopy);
+			AuthorizationMenu child = menu.getFirstChild();
+			while(child != null) {
+				if(hasAccess(child, userId, loginId)) {
+					authorizedChild = child;
+					break;
 				}
-				sibling = sibling.getNextSibling();
+				child = child.getNextSibling();
 			}
 		}
-		return siblings;
+		return authorizedChild;
+	}
+	
+	private void removeUnauthorizedMenus(final AuthorizationMenu menu, final String userId, final AuthorizationManagerLoginId loginId, final boolean checkNext) {
+		final AuthorizationMenu child = getFirstAuthorizedChild(menu, userId, loginId);
+		if(child != null) {
+			menu.setFirstChild(child);
+			removeUnauthorizedMenus(menu.getFirstChild(), userId, loginId, true);
+		} else {
+			menu.setFirstChild(null);
+		}
+		/*
+		if(menu.getFirstChild() != null) {
+			if(!hasAccess(menu.getFirstChild(), userId, loginId)) {
+				menu.setFirstChild(null);
+			} else {
+				removeUnauthorizedMenus(menu.getFirstChild(), userId, loginId, true);
+			}
+		}
+		*/
+		
+		if(checkNext) {
+			final List<AuthorizationMenu> nextMenus = getAuthorizedSiblings(menu, userId, loginId);
+			
+			if(CollectionUtils.isNotEmpty(nextMenus)) {
+				AuthorizationMenu previous = null;
+				for(final AuthorizationMenu next : nextMenus) {
+					next.setNextSibling(null);
+					if(previous != null) {
+						previous.setNextSibling(next);
+					}
+					previous = next;
+				}
+				menu.setNextSibling(nextMenus.get(0));
+			} else {
+				menu.setNextSibling(null);
+			}
+		}
 	}
 	
 	private boolean hasAccess(final AuthorizationMenu menu, final String userId, final AuthorizationManagerLoginId loginId) {
+		final StopWatch sw = new StopWatch();
+		sw.start();
 		final AuthorizationResource resource = new AuthorizationResource();
 		resource.setId(menu.getId());
 		boolean retVal = false;
@@ -374,6 +454,10 @@ public class AuthorizationManagerMenuServiceImpl implements AuthorizationManager
 			retVal = true;
 		} else {
 			retVal = (userId != null) ? (authManager.isEntitled(userId, resource)) : authManager.isEntitled(loginId, resource);
+		}
+		sw.stop();
+		if(log.isInfoEnabled()) {
+			//log.info(String.format("hasAccess took %s ms", sw.getTime()));
 		}
 		return retVal;
 	}
@@ -516,19 +600,20 @@ public class AuthorizationManagerMenuServiceImpl implements AuthorizationManager
         }
     }
 
-	@Override
-	public boolean isUserAuthenticatedToMenuWithURL(final String userId, final String url, final boolean defaultResult) {
-		boolean retVal = defaultResult;
-		final AuthorizationMenu menu = urlCache.get(url);
-		if(menu != null) {
-			if(menu.getIsPublic()) {
-				retVal = true;
-			} else {
-				final AuthorizationResource resource = new AuthorizationResource();
-				resource.setId(menu.getId());
-				retVal = authManager.isEntitled(userId, resource);
-			}
-		}
-		return retVal;
-	}
+    @Override
+    public boolean isUserAuthenticatedToMenuWithURL(final String userId, final String url, final String menuId, final boolean defaultResult) {
+        boolean retVal = defaultResult;
+        final AuthorizationMenu menu = StringUtils.isNotBlank(menuId) ? urlIdCache.get(getURLCacheId(menuId, url)) : urlCache.get(url);
+        if (menu != null) {
+            if (menu.getIsPublic()) {
+                retVal = true;
+            } else {
+                final AuthorizationResource resource = new AuthorizationResource();
+                resource.setId(menu.getId());
+                retVal = authManager.isEntitled(userId, resource);
+            }
+        }
+
+        return retVal;
+    }
 }

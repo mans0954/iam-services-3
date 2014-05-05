@@ -38,7 +38,7 @@ public class MetadataTemplateTypeFieldEntityDAOImpl extends BaseDaoImpl<Metadata
 				}
 				
 				if(StringUtils.isNotBlank(bean.getTemplateId())) {
-					criteria.createAlias("fieldXrefs", "xref").add(Restrictions.eq("xref.id.templateId", bean.getTemplateId()));
+					criteria.createAlias("fieldXrefs", "xref").add(Restrictions.eq("xref.template.id", bean.getTemplateId()));
 				}
 			}
 		}

@@ -4,10 +4,12 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.AttributeOverride;
 import javax.persistence.Cacheable;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EntityListeners;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -25,22 +27,20 @@ import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 import org.openiam.am.srvc.domain.URIPatternEntity;
+import org.openiam.base.domain.KeyEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.meta.dto.MetadataElementPageTemplate;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
+import org.openiam.internationalization.Internationalized;
 
 @Entity
 @Table(name = "METADATA_ELEMENT_PAGE_TEMPLATE")
 @Cacheable
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @DozerDTOCorrespondence(MetadataElementPageTemplate.class)
-public class MetadataElementPageTemplateEntity implements Serializable {
-
-	@Id
-    @GeneratedValue(generator = "system-uuid")
-    @GenericGenerator(name = "system-uuid", strategy = "uuid")
-    @Column(name = "ID", length = 32)
-	private String id;
+@Internationalized
+@AttributeOverride(name = "id", column = @Column(name = "ID"))
+public class MetadataElementPageTemplateEntity extends KeyEntity {
 	
 	@Column(name = "NAME", length = 40)
 	private String name;
@@ -67,6 +67,7 @@ public class MetadataElementPageTemplateEntity implements Serializable {
     @Fetch(FetchMode.JOIN)
     private MetadataTemplateTypeEntity templateType;
     
+    @Internationalized
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "template", fetch = FetchType.LAZY)
     private Set<MetadataFieldTemplateXrefEntity> fieldXrefs;
     
@@ -74,10 +75,6 @@ public class MetadataElementPageTemplateEntity implements Serializable {
 	@Type(type = "yes_no")
 	private boolean isPublic = true;
 	
-	public String getId() {
-		return id;
-	}
-
 	public String getName() {
 		return name;
 	}
@@ -90,11 +87,7 @@ public class MetadataElementPageTemplateEntity implements Serializable {
 	public Set<MetadataElementPageTemplateXrefEntity> getMetadataElements() {
 		return metadataElements;
 	}
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
+	
     public void setName(String name) {
         this.name = name;
     }

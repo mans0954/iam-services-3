@@ -1,39 +1,34 @@
 package org.openiam.idm.srvc.grp.domain;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Type;
+import org.openiam.base.domain.AbstractAttributeEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.grp.dto.GroupAttribute;
-import org.openiam.idm.srvc.role.domain.RoleEntity;
+import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
+import org.openiam.internationalization.Internationalized;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name="GRP_ATTRIBUTES")
 @DozerDTOCorrespondence(GroupAttribute.class)
-public class GroupAttributeEntity {
+@AttributeOverride(name = "id", column = @Column(name = "ID"))
+@Internationalized
+public class GroupAttributeEntity extends AbstractAttributeEntity {
 
-	@Id
-    @GeneratedValue(generator="system-uuid")
-    @GenericGenerator(name="system-uuid", strategy = "uuid")
-    @Column(name="ID",length=32)
-    private String id;
-	
-	@Column(name="NAME",length=20)
-    private String name;
-	
-	@Column(name="VALUE")
-    private String value;
-    
-    @Column(name="METADATA_ID",length=20)
-    private String metadataElementId;
-    
+    @ElementCollection
+    @CollectionTable(name="GROUP_ATTRIBUTE_VALUES", joinColumns=@JoinColumn(name="GROUP_ATTRIBUTE_ID", referencedColumnName="ID"))
+    @Column(name="VALUE", length = 4096)
+    private List<String> values = new ArrayList<String>();
+
+    @Column(name = "IS_MULTIVALUED", nullable = false)
+    @Type(type = "yes_no")
+    private boolean isMultivalued = false;
+
     /*
     @Column(name="GRP_ID",length=32)
     private String groupId;
@@ -43,37 +38,21 @@ public class GroupAttributeEntity {
     @JoinColumn(name = "GRP_ID", referencedColumnName = "GRP_ID", insertable = true, updatable = false)
     private GroupEntity group;
 
-	public String getId() {
-		return id;
-	}
+    public List<String> getValues() {
+        return values;
+    }
 
-	public void setId(String id) {
-		this.id = id;
-	}
+    public void setValues(List<String> values) {
+        this.values = values;
+    }
 
-	public String getName() {
-		return name;
-	}
+    public boolean getIsMultivalued() {
+        return isMultivalued;
+    }
 
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	public String getValue() {
-		return value;
-	}
-
-	public void setValue(String value) {
-		this.value = value;
-	}
-
-	public String getMetadataElementId() {
-		return metadataElementId;
-	}
-
-	public void setMetadataElementId(String metadataElementId) {
-		this.metadataElementId = metadataElementId;
-	}
+    public void setIsMultivalued(boolean isMultivalued) {
+        this.isMultivalued = isMultivalued;
+    }
 
 	public GroupEntity getGroup() {
 		return group;
@@ -89,12 +68,10 @@ public class GroupAttributeEntity {
 		int result = 1;
 		result = prime * result + ((group == null) ? 0 : group.hashCode());
 		result = prime * result + ((id == null) ? 0 : id.hashCode());
-		result = prime
-				* result
-				+ ((metadataElementId == null) ? 0 : metadataElementId
-						.hashCode());
+        result = prime * result + ((element == null) ? 0 : element.hashCode());
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result + ((value == null) ? 0 : value.hashCode());
+        result = prime * result + (isMultivalued ? 1231 : 1237);
 		return result;
 	}
 
@@ -117,11 +94,11 @@ public class GroupAttributeEntity {
 				return false;
 		} else if (!id.equals(other.id))
 			return false;
-		if (metadataElementId == null) {
-			if (other.metadataElementId != null)
-				return false;
-		} else if (!metadataElementId.equals(other.metadataElementId))
-			return false;
+        if (element == null) {
+            if (other.element != null)
+                return false;
+        } else if (!element.equals(other.element))
+            return false;
 		if (name == null) {
 			if (other.name != null)
 				return false;
@@ -132,14 +109,14 @@ public class GroupAttributeEntity {
 				return false;
 		} else if (!value.equals(other.value))
 			return false;
+        if (isMultivalued != other.isMultivalued) return false;
 		return true;
 	}
 
 	@Override
 	public String toString() {
 		return "GroupAttributeEntity [id=" + id + ", name=" + name + ", value="
-				+ value + ", metadataElementId=" + metadataElementId
-				+ ", group=" + group + "]";
+				+ value + ", group=" + group + "]";
 	}
 
 	    

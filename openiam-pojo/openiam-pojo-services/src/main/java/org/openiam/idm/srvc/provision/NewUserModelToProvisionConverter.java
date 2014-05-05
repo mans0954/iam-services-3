@@ -138,7 +138,7 @@ public class NewUserModelToProvisionConverter {
 			if(CollectionUtils.isNotEmpty(request.getOrganizationIds())) {
                 final Set<Organization> userOrganizations = new HashSet<Organization>();
 				for(final String organizationId : request.getOrganizationIds()) {
-					final OrganizationEntity entity = organizationDataService.getOrganization(organizationId);
+					final OrganizationEntity entity = organizationDataService.getOrganization(organizationId, null);
 					if(entity != null) {
 						final Organization organization = organizationDozerConverter.convertToDTO(entity, false);
                         organization.setOperation(AttributeOperationEnum.ADD);

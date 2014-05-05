@@ -29,22 +29,18 @@ import org.openiam.base.id.UUIDGen;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.connector.type.constant.StatusCodeType;
 import org.openiam.exception.ScriptEngineException;
-import org.openiam.idm.srvc.audit.domain.AuditLogBuilder;
 import org.openiam.idm.srvc.synch.dto.Attribute;
 import org.openiam.idm.srvc.synch.dto.LineObject;
 import org.openiam.idm.srvc.synch.dto.SyncResponse;
 import org.openiam.idm.srvc.synch.dto.SynchConfig;
 import org.openiam.idm.srvc.synch.service.MatchObjectRule;
-import org.openiam.idm.srvc.synch.service.SyncConstants;
 import org.openiam.idm.srvc.synch.service.TransformScript;
 import org.openiam.idm.srvc.synch.service.ValidationScript;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.resp.ProvisionUserResponse;
-import org.openiam.provision.type.ExtensibleAttribute;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -54,7 +50,10 @@ import javax.naming.NamingException;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
-import javax.naming.ldap.*;
+import javax.naming.ldap.Control;
+import javax.naming.ldap.InitialLdapContext;
+import javax.naming.ldap.LdapContext;
+import javax.naming.ldap.PagedResultsResponseControl;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -83,11 +82,11 @@ public class LdapAdapter extends AbstractSrcAdapter { // implements SourceAdapte
 
     private static final Log log = LogFactory.getLog(LdapAdapter.class);
 
-    public SyncResponse startSynch(SynchConfig config, AuditLogBuilder auditLogBuilder) {
+    public SyncResponse startSynch(SynchConfig config) {
         // rule used to match object from source system to data in IDM
         MatchObjectRule matchRule = null;
-        // String changeLog = null;
-        // Date mostRecentRecord = null;
+       // String changeLog = null;
+       // Date mostRecentRecord = null;
         long mostRecentRecord = 0L;
         String lastRecProcessed = null;
         //java.util.Date lastExec = null;
@@ -104,7 +103,7 @@ public class LdapAdapter extends AbstractSrcAdapter { // implements SourceAdapte
         // happen atomically. It is possible for two threads, started by Quartz, to reach this point at
         // the same time for the same task.
         synchronized (runningTask) {
-            if (runningTask.contains(config.getSynchConfigId())) {
+            if(runningTask.contains(config.getSynchConfigId())) {
                 log.debug("**** Synchronization Configuration " + config.getName() + " is already running");
 
                 SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
@@ -142,17 +141,17 @@ public class LdapAdapter extends AbstractSrcAdapter { // implements SourceAdapte
             }
             // get the last execution time
             if (config.getLastRecProcessed() != null) {
-                lastRecProcessed = config.getLastRecProcessed();
-            }
+			    lastRecProcessed =  config.getLastRecProcessed() ;
+		    }
 
             // get change log field
             if (config.getSynchType().equalsIgnoreCase("INCREMENTAL")) {
                 if (lastRecProcessed != null) {
                     // update the search filter so that it has the new time
-                    String ldapFilterQuery = config.getQuery();
+                    String ldapFilterQuery =  config.getQuery();
                     // replace wildcards with the last exec time
 
-                    config.setQuery(ldapFilterQuery.replace("?", lastRecProcessed));
+                    config.setQuery(  ldapFilterQuery.replace("?", lastRecProcessed ) );
 
                     log.debug("Updated ldap filter = " + config.getQuery());
                 }
@@ -270,12 +269,12 @@ public class LdapAdapter extends AbstractSrcAdapter { // implements SourceAdapte
                                     // initialize the transform script
                                     if (usr != null) {
                                         transformScript.setNewUser(false);
-                                        User u = userManager.getUserDto(usr.getUserId());
+                                        User u = userManager.getUserDto(usr.getId());
                                         pUser = new ProvisionUser(u);
                                         setCurrentSuperiors(pUser);
                                         transformScript.setUser(u);
-                                        transformScript.setPrincipalList(loginDozerConverter.convertToDTOList(loginManager.getLoginByUser(usr.getUserId()), false));
-                                        transformScript.setUserRoleList(roleDataService.getUserRolesAsFlatList(usr.getUserId()));
+                                        transformScript.setPrincipalList(loginDozerConverter.convertToDTOList(loginManager.getLoginByUser(usr.getId()), false));
+                                        transformScript.setUserRoleList(roleDataService.getUserRolesAsFlatList(usr.getId()));
 
                                     } else {
                                         transformScript.setNewUser(true);
@@ -296,21 +295,21 @@ public class LdapAdapter extends AbstractSrcAdapter { // implements SourceAdapte
                                 if (retval != -1) {
                                     successRecords++;
                                     if (retval == TransformScript.DELETE && usr != null) {
-                                        log.debug("deleting record - " + usr.getUserId());
-                                        ProvisionUserResponse userResp = provService.deleteByUserId(usr.getUserId(), UserStatusEnum.DELETED, systemAccount);
+                                        log.debug("deleting record - " + usr.getId());
+                                        ProvisionUserResponse userResp = provService.deleteByUserId(usr.getId(), UserStatusEnum.DELETED, systemAccount);
 
                                     } else {
                                         // call synch
                                         if (retval != TransformScript.DELETE) {
                                             System.out.println("Provisioning user=" + pUser.getLastName());
                                             if (usr != null) {
-                                                log.debug("updating existing user...systemId=" + pUser.getUserId());
-                                                pUser.setUserId(usr.getUserId());
+                                                log.debug("updating existing user...systemId=" + pUser.getId());
+                                                pUser.setId(usr.getId());
                                                 ProvisionUserResponse userResp = provService.modifyUser(pUser);
 
                                             } else {
                                                 log.debug("adding new user...");
-                                                pUser.setUserId(null);
+                                                pUser.setId(null);
                                                 ProvisionUserResponse userResp = provService.addUser(pUser);
                                             }
                                         }

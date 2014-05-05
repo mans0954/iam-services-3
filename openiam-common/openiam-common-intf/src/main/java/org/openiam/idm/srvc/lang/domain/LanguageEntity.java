@@ -3,32 +3,25 @@ package org.openiam.idm.srvc.lang.domain;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.Type;
-import org.hibernate.annotations.Where;
+import org.openiam.base.domain.KeyEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.lang.dto.Language;
+import org.openiam.internationalization.Internationalized;
+import org.openiam.internationalization.InternationalizedCollection;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.Id;
-import javax.persistence.MapKey;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
-import java.io.Serializable;
+import javax.persistence.*;
 import java.util.Map;
 
 @Entity
 @Table(name = "LANGUAGE")
 @DozerDTOCorrespondence(Language.class)
-public class LanguageEntity implements Serializable {
+@AttributeOverride(name = "id", column = @Column(name = "ID"))
+@Internationalized
+public class LanguageEntity extends KeyEntity {
     private static final long serialVersionUID = 6695606794883491243L;
-
-    @Id
-    @Column(name = "ID", length = 32)
-    private String languageId;
     
-    @Column(name = "LANGUAGE", length = 20)
+//    @Column(name = "LANGUAGE", length = 20)
+    @Transient
     private String name;
 
     @Column(name = "IS_USED")
@@ -47,15 +40,9 @@ public class LanguageEntity implements Serializable {
     @Fetch(FetchMode.SUBSELECT)
     private Map<String, LanguageLocaleEntity> locales;
 
-
-
-    public String getLanguageId() {
-        return languageId;
-    }
-
-    public void setLanguageId(String languageId) {
-        this.languageId = languageId;
-    }
+    @Transient
+    @InternationalizedCollection(targetField="name")
+    private Map<String, LanguageMappingEntity> displayNameMap;
 
     public String getName() {
         return name;
@@ -85,11 +72,11 @@ public class LanguageEntity implements Serializable {
 		this.isUsed = isUsed;
 	}
 
-    public boolean isDefault() {
+    public boolean getIsDefault() {
 		return isDefault;
 	}
 
-	public void setDefault(boolean isDefault) {
+	public void setIsDefault(boolean isDefault) {
 		this.isDefault = isDefault;
 	}
 
@@ -101,13 +88,21 @@ public class LanguageEntity implements Serializable {
         this.languageCode = languageCode;
     }
 
+    public Map<String, LanguageMappingEntity> getDisplayNameMap() {
+        return displayNameMap;
+    }
+
+    public void setDisplayNameMap(Map<String, LanguageMappingEntity> displayNameMap) {
+        this.displayNameMap = displayNameMap;
+    }
+
     @Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + (isUsed ? 1231 : 1237);
 		result = prime * result
-				+ ((languageId == null) ? 0 : languageId.hashCode());
+				+ ((id == null) ? 0 : id.hashCode());
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		return result;
 	}
@@ -125,10 +120,10 @@ public class LanguageEntity implements Serializable {
 			return false;
 		if (isDefault != other.isDefault)
 			return false;
-		if (languageId == null) {
-			if (other.languageId != null)
+		if (id == null) {
+			if (other.id != null)
 				return false;
-		} else if (!languageId.equals(other.languageId))
+		} else if (!id.equals(other.id))
 			return false;
 		if (name == null) {
 			if (other.name != null)
@@ -140,7 +135,7 @@ public class LanguageEntity implements Serializable {
 
 	@Override
 	public String toString() {
-		return "LanguageEntity [languageId=" + languageId + ", name=" + name
+		return "LanguageEntity [id=" + id + ", name=" + name
 				+ ", isUsed=" + isUsed + "]";
 	}
 

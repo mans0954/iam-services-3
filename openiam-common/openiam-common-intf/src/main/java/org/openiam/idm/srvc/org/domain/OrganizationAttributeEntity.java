@@ -1,18 +1,15 @@
 package org.openiam.idm.srvc.org.domain;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
+import javax.persistence.*;
+
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Type;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 import org.openiam.idm.srvc.org.dto.OrganizationAttribute;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "COMPANY_ATTRIBUTE")
@@ -32,9 +29,18 @@ public class OrganizationAttributeEntity {
     @JoinColumn(name = "COMPANY_ID", referencedColumnName = "COMPANY_ID", insertable = true, updatable = false)
     private OrganizationEntity organization;
 
-    @Column(name = "VALUE", length=255)
+    @Column(name = "_VALUE", length=4096)
     private String value;
-    
+
+    @ElementCollection
+    @CollectionTable(name="COMPANY_ATTRIBUTE_VALUES", joinColumns=@JoinColumn(name="COMPANY_ATTRIBUTE_ID", referencedColumnName="COMPANY_ATTR_ID"))
+    @Column(name="VALUE", length = 255)
+    private List<String> values = new ArrayList<String>();
+
+    @Column(name = "IS_MULTIVALUED", nullable = false)
+    @Type(type = "yes_no")
+    private boolean isMultivalued = false;
+
     @Column(name = "NAME", length = 100)
     private String name;
 
@@ -65,6 +71,22 @@ public class OrganizationAttributeEntity {
         this.value = value;
     }
 
+    public List<String> getValues() {
+        return values;
+    }
+
+    public void setValues(List<String> values) {
+        this.values = values;
+    }
+
+    public boolean getIsMultivalued() {
+        return isMultivalued;
+    }
+
+    public void setIsMultivalued(boolean isMultivalued) {
+        this.isMultivalued = isMultivalued;
+    }
+
     public MetadataElementEntity getElement() {
 		return element;
 	}
@@ -91,6 +113,7 @@ public class OrganizationAttributeEntity {
 		result = prime * result
 				+ ((organization == null) ? 0 : organization.hashCode());
 		result = prime * result + ((value == null) ? 0 : value.hashCode());
+        result = prime * result + (isMultivalued ? 1231 : 1237);
 		return result;
 	}
 
@@ -128,6 +151,7 @@ public class OrganizationAttributeEntity {
 				return false;
 		} else if (!value.equals(other.value))
 			return false;
+        if (isMultivalued != other.isMultivalued) return false;
 		return true;
 	}
 	

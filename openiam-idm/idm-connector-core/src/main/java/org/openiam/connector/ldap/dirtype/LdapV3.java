@@ -16,7 +16,6 @@ import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.idm.srvc.pswd.service.PasswordGenerator;
 import org.openiam.provision.type.ExtensibleObject;
 import org.openiam.exception.EncryptionException;
-import org.openiam.util.encrypt.HashDigest;
 
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
@@ -27,7 +26,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.naming.ldap.LdapContext;
-import org.openiam.util.encrypt.SHA1Hash;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -41,7 +39,7 @@ public class LdapV3 implements Directory {
     
     Map<String, Object> objectMap = new HashMap<String, Object>();
     private static final Log log = LogFactory.getLog(LdapV3.class);
-    HashDigest hash = new SHA1Hash();
+    //HashDigest hash = new SHA1Hash();
     
 
     public ModificationItem[] setPassword(PasswordRequest reqType) throws UnsupportedEncodingException {
@@ -72,10 +70,7 @@ public class LdapV3 implements Directory {
         try {
 
              // get the current password for the user.
-            LoginEntity login = loginManager.getLoginByManagedSys(
-                    sysConfiguration.getDefaultSecurityDomain(),
-                    ldapName,
-                    targetID);
+            LoginEntity login = loginManager.getLoginByManagedSys(ldapName, targetID);
             String encPassword = login.getPassword();
             String decPassword = loginManager.decryptPassword(login.getUserId(),encPassword);
 
@@ -307,7 +302,7 @@ public class LdapV3 implements Directory {
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
+        	log.error("userMembershipList", e);
         }
 
         if (currentMembershipList.isEmpty()) {
@@ -366,7 +361,7 @@ public class LdapV3 implements Directory {
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
+        	log.error("userSupervisorMembershipList", e);
         }
 
         if (currentSupervisorMembershipList.isEmpty()) {

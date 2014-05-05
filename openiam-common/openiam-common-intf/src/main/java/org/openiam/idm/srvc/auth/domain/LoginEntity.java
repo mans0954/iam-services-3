@@ -2,28 +2,20 @@ package org.openiam.idm.srvc.auth.domain;
 // Generated Feb 18, 2008 3:56:06 PM by Hibernate Tools 3.2.0.b11
 
 
-import org.apache.commons.lang.StringUtils;
 import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.search.annotations.DocumentId;
-import org.hibernate.search.annotations.Field;
+import org.hibernate.annotations.*;
+import org.hibernate.search.annotations.*;
 import org.hibernate.search.annotations.Index;
-import org.hibernate.search.annotations.Indexed;
-import org.hibernate.search.annotations.Store;
-import org.openiam.base.AttributeOperationEnum;
 import org.openiam.core.dao.lucene.LuceneId;
 import org.openiam.core.dao.lucene.LuceneLastUpdate;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
-import org.openiam.idm.srvc.auth.dto.SSOToken;
-import org.openiam.idm.srvc.auth.dto.Subject;
 
 import javax.persistence.*;
-import javax.xml.bind.annotation.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
@@ -45,10 +37,6 @@ public class LoginEntity implements java.io.Serializable {
     @LuceneId
     @DocumentId
     private String loginId;
-    
-    @Field(name = "domainId", index = Index.UN_TOKENIZED, store = Store.YES)
-    @Column(name="SERVICE_ID",length=20)
-    private String domainId;
     
     @Field(name = "login", index = Index.TOKENIZED, store = Store.YES)
     @Column(name="LOGIN",length=320)
@@ -373,14 +361,6 @@ public class LoginEntity implements java.io.Serializable {
 		this.loginId = loginId;
 	}
 
-	public String getDomainId() {
-		return domainId;
-	}
-
-	public void setDomainId(String domainId) {
-		this.domainId = domainId;
-	}
-
 	public String getLogin() {
 		return login;
 	}
@@ -435,8 +415,6 @@ public class LoginEntity implements java.io.Serializable {
 		result = prime
 				* result
 				+ ((currentLoginHost == null) ? 0 : currentLoginHost.hashCode());
-		result = prime * result
-				+ ((domainId == null) ? 0 : domainId.hashCode());
 		result = prime * result + firstTimeLogin;
 		result = prime * result
 				+ ((gracePeriod == null) ? 0 : gracePeriod.hashCode());
@@ -517,11 +495,6 @@ public class LoginEntity implements java.io.Serializable {
 			if (other.currentLoginHost != null)
 				return false;
 		} else if (!currentLoginHost.equals(other.currentLoginHost))
-			return false;
-		if (domainId == null) {
-			if (other.domainId != null)
-				return false;
-		} else if (!domainId.equals(other.domainId))
 			return false;
 		if (firstTimeLogin != other.firstTimeLogin)
 			return false;
@@ -631,5 +604,19 @@ public class LoginEntity implements java.io.Serializable {
 			return false;
 		return true;
 	}
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("LoginEntity");
+        sb.append("{login='").append(login).append('\'');
+        sb.append(", managedSysId='").append(managedSysId).append('\'');
+        sb.append(", pwdChanged=").append(pwdChanged);
+        sb.append(", pwdExp=").append(pwdExp);
+        sb.append(", status=").append(status);
+        sb.append(", lastUpdate=").append(lastUpdate);
+        sb.append('}');
+        return sb.toString();
+    }
 }
 

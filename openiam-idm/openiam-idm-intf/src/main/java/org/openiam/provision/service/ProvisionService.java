@@ -21,24 +21,25 @@
  */
 package org.openiam.provision.service;
 
-import javax.jws.WebMethod;
-import javax.jws.WebParam;
-import javax.jws.WebService;
-
-import java.util.List;
-
 import org.openiam.base.ws.Response;
-import org.openiam.connector.type.request.LookupRequest;
-
+import org.openiam.idm.srvc.prov.request.dto.BulkOperationRequest;
 import org.openiam.idm.srvc.pswd.dto.PasswordValidationResponse;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.provision.dto.AccountLockEnum;
 import org.openiam.provision.dto.PasswordSync;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.resp.LookupUserResponse;
+import org.openiam.provision.resp.ManagedSystemViewerResponse;
 import org.openiam.provision.resp.PasswordResponse;
 import org.openiam.provision.resp.ProvisionUserResponse;
 import org.openiam.provision.type.ExtensibleAttribute;
+import org.openiam.provision.type.ExtensibleUser;
+
+import javax.jws.WebMethod;
+import javax.jws.WebParam;
+import javax.jws.WebService;
+import java.util.List;
+import java.util.Map;
 
 /**
  * <code>ProvisionService</code> Interface for the Provisioning service which is
@@ -59,7 +60,8 @@ public interface ProvisionService {
      */
     @WebMethod
     public Response testConnectionConfig(
-            @WebParam(name = "managedSysId", targetNamespace = "") String managedSysId);
+            @WebParam(name = "managedSysId", targetNamespace = "") String managedSysId,
+            @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
     /**
      *  The addUser operation enables a requester to create a new user on the
@@ -90,20 +92,18 @@ public interface ProvisionService {
      * The deleteUser operation enables the requester to delete an existing user
      * from the appropriate target systems
      *
-     * @param securityDomain -
      * @param managedSystemId - target system
      * @param principal - identity of the user in target system
      * @param status - status od delete operation
-     * @param requestorId - requester
+     * @param requesterId - requester
      * @return
      */
     @WebMethod
     public ProvisionUserResponse deleteUser(
-            @WebParam(name = "securityDomain", targetNamespace = "") String securityDomain,
             @WebParam(name = "managedSystemId", targetNamespace = "") String managedSystemId,
             @WebParam(name = "principal", targetNamespace = "") String principal,
             @WebParam(name = "status", targetNamespace = "") UserStatusEnum status,
-            @WebParam(name = "requestorId", targetNamespace = "") String requestorId);
+            @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
     /**
      * Delete user from target system  by user id
@@ -196,18 +196,37 @@ public interface ProvisionService {
             @WebParam(name = "attributes", targetNamespace = "") List<ExtensibleAttribute> attributes);
 
     /**
-     * Return all possible attributes for selected managed system
+     * Return all possible policy map attributes for selected managed system
      *
      * @param managedSysId - managed system
      * @return  List<String> with attributes
      */
     @WebMethod
-    public List<String> getAttributesList(
+    public List<String> getPolicyMapAttributesList(
+            @WebParam(name = "managedSysId", targetNamespace = "") String managedSysId);
+
+    /**
+     * Return all possible managed system attributes for selected managed system
+     *
+     * @param managedSysId - managed sys id
+     * @return  List<String> with attributes
+     */
+    @WebMethod
+    public List<String> getManagedSystemAttributesList(
             @WebParam(name = "managedSysId", targetNamespace = "") String managedSysId);
 
     @WebMethod
     public Response syncPasswordFromSrc(
             @WebParam(name = "passwordSync", targetNamespace = "")
             PasswordSync passwordSync);
+
+    @WebMethod
+    public Response startBulkOperation(
+            @WebParam(name = "bulkRequest", targetNamespace = "") BulkOperationRequest bulkRequest);
+
+    @WebMethod
+    public ManagedSystemViewerResponse buildManagedSystemViewer(
+            @WebParam(name = "userId", targetNamespace = "") String userId,
+            @WebParam(name = "managedSysId", targetNamespace = "") String managedSysId);
 
 }

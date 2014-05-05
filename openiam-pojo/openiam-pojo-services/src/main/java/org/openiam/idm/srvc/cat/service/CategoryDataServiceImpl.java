@@ -60,7 +60,7 @@ public class CategoryDataServiceImpl implements CategoryDataService {
         }
         if (!nested) {
             CategoryEntity parentCat = new CategoryEntity();
-            parentCat.setCategoryId(categoryId);
+            parentCat.setId(categoryId);
             categoryDao.delete(parentCat);
             return 1;
         }
@@ -81,9 +81,9 @@ public class CategoryDataServiceImpl implements CategoryDataService {
             if (catIdBuf.length() > 0) {
                 catIdBuf.append(",");
             }
-            catIdBuf.append(" '" + cat.getCategoryId() + "' ");
+            catIdBuf.append(" '" + cat.getId() + "' ");
 
-            String catStr = getRecursiveCatId(cat.getCategoryId());
+            String catStr = getRecursiveCatId(cat.getId());
             if (catStr != null) {
                 if (catIdBuf.length() > 0) {
                     catIdBuf.append(",");
@@ -94,7 +94,7 @@ public class CategoryDataServiceImpl implements CategoryDataService {
         String catIdStr = catIdBuf.toString();
         int count = categoryDao.removeGroupList(catIdStr);
         Category parentCat = new Category();
-        parentCat.setCategoryId(categoryId);
+        parentCat.setId(categoryId);
         categoryDao.delete(categoryDozerConverter.convertToEntity(parentCat,
                 false));
         return count++;
@@ -120,11 +120,11 @@ public class CategoryDataServiceImpl implements CategoryDataService {
             if (catIdBuf.length() > 0) {
                 catIdBuf.append(",");
             }
-            catIdBuf.append(" '" + cat.getCategoryId() + "' ");
+            catIdBuf.append(" '" + cat.getId() + "' ");
 
             // check for child group
 
-            String catStr = getRecursiveCatId(cat.getCategoryId());
+            String catStr = getRecursiveCatId(cat.getId());
             if (catStr != null) {
                 if (catIdBuf.length() > 0) {
                     catIdBuf.append(",");

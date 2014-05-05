@@ -31,7 +31,7 @@ public class AddUserCSVCommand extends AbstractCrudCSVCommand<ExtensibleUser> {
         try {
             List<AttributeMapEntity> attrMapList = managedSysService.getResourceAttributeMaps(managedSys.getResourceId());
             //TODO check
-            User user = userDataWebService.getUserByPrincipal(managedSys.getDomainId(),principal,managedSys.getManagedSysId(),true);
+            User user = userDataWebService.getUserByPrincipal(principal,managedSys.getId(),true);
             userCSVParser.add(new ReconciliationObject<User>(principal, user), managedSys, attrMapList, CSVSource.IDM);
         } catch (Exception e) {
             log.error(e.getMessage(), e);

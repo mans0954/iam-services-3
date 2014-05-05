@@ -1,17 +1,16 @@
 package org.openiam.authmanager.service.integration;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
-
 import org.apache.commons.collections.CollectionUtils;
 import org.openiam.authmanager.AuthorizationManagerHessianClient;
 import org.openiam.authmanager.common.model.AuthorizationManagerLoginId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.testng.Assert;
+
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 @ContextConfiguration(locations={"classpath:test-integration-environment.xml","classpath:test-esb-integration.xml"})
 public class AuthorizationManagerHessianClientTest extends AbstractAuthorizationManagerTest {
@@ -32,7 +31,7 @@ public class AuthorizationManagerHessianClientTest extends AbstractAuthorization
 		if(userId != null) {
 			result.addAll(Arrays.asList(authClient.getRoleIdsForUserWithId(userId)));
 		} else {
-			result.addAll(Arrays.asList(authClient.getRoleIdsForUserWithLogin(loginId.getDomain(), loginId.getLogin(), loginId.getManagedSysId())));
+			result.addAll(Arrays.asList(authClient.getRoleIdsForUserWithLogin(loginId.getLogin(), loginId.getManagedSysId())));
 		}
 		
 		Assert.assertEquals(CollectionUtils.size(roleIds), CollectionUtils.size(result),String.format("The number of DB roles and roles returned from the WS are not equal for user '%s", (userId != null) ? userId : loginId));
@@ -53,7 +52,7 @@ public class AuthorizationManagerHessianClientTest extends AbstractAuthorization
 		if(userId != null) {
 			result.addAll(Arrays.asList(authClient.getGroupIdsForUserWithId(userId)));
 		} else {
-			result.addAll(Arrays.asList(authClient.getGroupIdsForUserWithLogin(loginId.getDomain(), loginId.getLogin(), loginId.getManagedSysId())));
+			result.addAll(Arrays.asList(authClient.getGroupIdsForUserWithLogin(loginId.getLogin(), loginId.getManagedSysId())));
 		}
 		
 		Assert.assertEquals(CollectionUtils.size(groupIds), CollectionUtils.size(result),String.format("The number of DB groups and groups returned from the WS are not equal for user '%s", (userId != null) ? userId : loginId));
@@ -74,7 +73,7 @@ public class AuthorizationManagerHessianClientTest extends AbstractAuthorization
 		if(userId != null) {
 			result.addAll(Arrays.asList(authClient.getResourceIdsForUserWithId(userId)));
 		} else {
-			result.addAll(Arrays.asList(authClient.getResourceIdsForUserWithLogin(loginId.getDomain(), loginId.getLogin(), loginId.getManagedSysId())));
+			result.addAll(Arrays.asList(authClient.getResourceIdsForUserWithLogin(loginId.getLogin(), loginId.getManagedSysId())));
 		}
 		
 		Assert.assertEquals(CollectionUtils.size(resourceIds), CollectionUtils.size(result), String.format("The number of DB resoruces and resources returned from the WS are not equal for user '%s", (userId != null) ? userId : loginId));
@@ -97,13 +96,13 @@ public class AuthorizationManagerHessianClientTest extends AbstractAuthorization
 			if(userId != null) {
 				result = authClient.isUserWithIdEntitledToResourceWithId(userId, resourceId);
 			} else {
-				result = authClient.isUserWithLoginEntitledToResourceWithId(loginId.getDomain(), loginId.getLogin(), loginId.getManagedSysId(), resourceId);
+				result = authClient.isUserWithLoginEntitledToResourceWithId(loginId.getLogin(), loginId.getManagedSysId(), resourceId);
 			}
 		} else {
 			if(userId != null) {
 				result = authClient.isUserWithIdEntitledToResourceWithName(userId, resourceName);
 			} else {
-				result = authClient.isUserWithLoginEntitledToResourceWithName(loginId.getDomain(), loginId.getLogin(), loginId.getManagedSysId(), resourceName);
+				result = authClient.isUserWithLoginEntitledToResourceWithName(loginId.getLogin(), loginId.getManagedSysId(), resourceName);
 			}
 		}
 		String failMessage = String.format("User %s:%s is not entitled to resource.  %s", userId, loginId, resourceId);
@@ -119,13 +118,13 @@ public class AuthorizationManagerHessianClientTest extends AbstractAuthorization
 			if(userId != null) {
 				result = authClient.isUserWithIdMemberOfGroupWithId(userId, groupId);
 			} else {
-				result = authClient.isUserWithLoginMemberOfGroupWithId(loginId.getDomain(), loginId.getLogin(), loginId.getManagedSysId(), groupId);
+				result = authClient.isUserWithLoginMemberOfGroupWithId(loginId.getLogin(), loginId.getManagedSysId(), groupId);
 			}
 		} else {
 			if(userId != null) {
 				result = authClient.isUserWithIdMemberOfGroupWithName(userId, groupName);
 			} else {
-				result = authClient.isUserWithLoginMemberOfGroupWithName(loginId.getDomain(), loginId.getLogin(), loginId.getManagedSysId(), groupName);
+				result = authClient.isUserWithLoginMemberOfGroupWithName(loginId.getLogin(), loginId.getManagedSysId(), groupName);
 			}
 		}
 		String failMessage = String.format("User not member of group.  %s", groupId);
@@ -140,13 +139,13 @@ public class AuthorizationManagerHessianClientTest extends AbstractAuthorization
 			if(userId != null) {
 				result = authClient.isUserWithIdMemberOfRoleWithId(userId, roleId);
 			} else {
-				result = authClient.isUserWithLoginMemberOfRoleWithId(loginId.getDomain(), loginId.getLogin(), loginId.getManagedSysId(), roleId);
+				result = authClient.isUserWithLoginMemberOfRoleWithId(loginId.getLogin(), loginId.getManagedSysId(), roleId);
 			}
 		} else {
 			if(userId != null) {
 				result = authClient.isUserWithIdMemberOfRoleWithName(userId, roleName);
 			} else {
-				result = authClient.isUserWithLoginMemberOfRoleWithName(loginId.getDomain(), loginId.getLogin(), loginId.getManagedSysId(), roleName);
+				result = authClient.isUserWithLoginMemberOfRoleWithName(loginId.getLogin(), loginId.getManagedSysId(), roleName);
 			}
 		}
 		String failMessage = String.format("User not member of role.  %s", roleName);

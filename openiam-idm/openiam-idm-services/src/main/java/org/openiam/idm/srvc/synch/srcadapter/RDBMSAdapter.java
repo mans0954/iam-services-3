@@ -28,13 +28,11 @@ import org.openiam.base.id.UUIDGen;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.idm.srvc.audit.domain.AuditLogBuilder;
 import org.openiam.idm.srvc.synch.dto.Attribute;
 import org.openiam.idm.srvc.synch.dto.LineObject;
 import org.openiam.idm.srvc.synch.dto.SyncResponse;
 import org.openiam.idm.srvc.synch.dto.SynchConfig;
 import org.openiam.idm.srvc.synch.service.MatchObjectRule;
-import org.openiam.idm.srvc.synch.service.SyncConstants;
 import org.openiam.idm.srvc.synch.service.TransformScript;
 import org.openiam.idm.srvc.synch.service.ValidationScript;
 import org.openiam.idm.srvc.synch.util.DatabaseUtil;
@@ -76,7 +74,7 @@ public class RDBMSAdapter extends AbstractSrcAdapter {
     @Value("${rdbmsvadapter.thread.delay.beforestart}")
     private int THREAD_DELAY_BEFORE_START;
 
-    public SyncResponse startSynch(final SynchConfig config, AuditLogBuilder auditLogBuilder) {
+    public SyncResponse startSynch(final SynchConfig config) {
 
         log.debug("RDBMS SYNCH STARTED ^^^^^^^^");
 
@@ -327,12 +325,12 @@ public class RDBMSAdapter extends AbstractSrcAdapter {
                         // initialize the transform script
                         if (usr != null) {
                             transformScript.setNewUser(false);
-                            User u = userManager.getUserDto(usr.getUserId());
+                            User u = userManager.getUserDto(usr.getId());
                             pUser = new ProvisionUser(u);
                             setCurrentSuperiors(pUser);
                             transformScript.setUser(u);
-                            transformScript.setPrincipalList(loginDozerConverter.convertToDTOList(loginManager.getLoginByUser(usr.getUserId()), false));
-                            transformScript.setUserRoleList(roleDataService.getUserRolesAsFlatList(usr.getUserId()));
+                            transformScript.setPrincipalList(loginDozerConverter.convertToDTOList(loginManager.getLoginByUser(usr.getId()), false));
+                            transformScript.setUserRoleList(roleDataService.getUserRolesAsFlatList(usr.getId()));
 
                         } else {
                             transformScript.setNewUser(true);
@@ -355,8 +353,8 @@ public class RDBMSAdapter extends AbstractSrcAdapter {
 				*/
                 if (retval != -1) {
                     if (retval == TransformScript.DELETE && usr != null) {
-                        log.debug("deleting record - " + usr.getUserId());
-                        provService.deleteByUserId(usr.getUserId(), UserStatusEnum.DELETED, systemAccount);
+                        log.debug("deleting record - " + usr.getId());
+                        provService.deleteByUserId(usr.getId(), UserStatusEnum.DELETED, systemAccount);
 
                     } else {
                         // call synch
@@ -365,15 +363,15 @@ public class RDBMSAdapter extends AbstractSrcAdapter {
                             log.debug("-Provisioning user=" + pUser.getLastName());
 
                             if (usr != null) {
-                                log.debug("-updating existing user...systemId=" + pUser.getUserId());
-                                pUser.setUserId(usr.getUserId());
+                                log.debug("-updating existing user...systemId=" + pUser.getId());
+                                pUser.setId(usr.getId());
 
                                 modifyUser(pUser);
 
                             } else {
                                 log.debug("-adding new user...");
 
-                                pUser.setUserId(null);
+                                pUser.setId(null);
                                 addUser(pUser);
                             }
                         }

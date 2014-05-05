@@ -1,65 +1,15 @@
 package org.openiam.authmanager.service.impl;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.sql.Date;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
-
-import javax.annotation.PreDestroy;
-
 import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Element;
-
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openiam.authmanager.common.model.AuthorizationGroup;
-import org.openiam.authmanager.common.model.AuthorizationMenu;
-import org.openiam.authmanager.common.model.AuthorizationResource;
-import org.openiam.authmanager.common.model.AuthorizationRole;
-import org.openiam.authmanager.common.model.AuthorizationUser;
-import org.openiam.authmanager.common.model.InternalAuthroizationUser;
-import org.openiam.authmanager.common.xref.GroupGroupXref;
-import org.openiam.authmanager.common.xref.GroupUserXref;
-import org.openiam.authmanager.common.xref.ResourceGroupXref;
-import org.openiam.authmanager.common.xref.ResourceResourceXref;
-import org.openiam.authmanager.common.xref.ResourceRoleXref;
-import org.openiam.authmanager.common.xref.ResourceUserXref;
-import org.openiam.authmanager.common.xref.RoleGroupXref;
-import org.openiam.authmanager.common.xref.RoleRoleXref;
-import org.openiam.authmanager.common.xref.RoleUserXref;
-import org.openiam.authmanager.dao.GroupDAO;
-import org.openiam.authmanager.dao.GroupGroupXrefDAO;
-import org.openiam.authmanager.dao.GroupUserXrefDAO;
-import org.openiam.authmanager.dao.ResourceDAO;
-import org.openiam.authmanager.dao.ResourceGroupXrefDAO;
-import org.openiam.authmanager.dao.ResourcePropDAO;
-import org.openiam.authmanager.dao.ResourceResourceXrefDAO;
-import org.openiam.authmanager.dao.ResourceRoleXrefDAO;
-import org.openiam.authmanager.dao.ResourceUserXrefDAO;
-import org.openiam.authmanager.dao.RoleDAO;
-import org.openiam.authmanager.dao.RoleGroupXrefDAO;
-import org.openiam.authmanager.dao.RoleRoleXrefDAO;
-import org.openiam.authmanager.dao.RoleUserXrefDAO;
-import org.openiam.authmanager.dao.UserDAO;
-import org.openiam.authmanager.model.ResourceEntitlementToken;
+import org.openiam.authmanager.common.model.*;
+import org.openiam.authmanager.common.xref.*;
+import org.openiam.authmanager.dao.*;
 import org.openiam.authmanager.service.AuthorizationManagerService;
-import org.openiam.authmanager.common.model.AuthorizationManagerLoginId;
-import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.thread.Sweepable;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
@@ -71,8 +21,10 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.jmx.export.annotation.ManagedOperation;
 import org.springframework.jmx.export.annotation.ManagedResource;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StopWatch;
+
+import java.sql.Date;
+import java.util.*;
 
 /**
  * @author Lev Bornovalov
@@ -180,7 +132,8 @@ public class AuthorizationManagerServiceImpl implements AuthorizationManagerServ
 	/**
 	 * This function sweeps through the database, and compiles the new entitlement mappings
 	 */
-	@ManagedOperation(description="sweep the Authorization Cache")
+	@Override
+    @ManagedOperation(description="sweep the Authorization Cache")
 	public void sweep() {
 		log.info(String.format("Starting Authorization Manager Refresh.  ThreadId: %s.  Spring Context: %s:%s", Thread.currentThread().getId(), ctx.getId(), ctx.getDisplayName()));
 		final StopWatch sw = new StopWatch();
@@ -482,17 +435,16 @@ public class AuthorizationManagerServiceImpl implements AuthorizationManagerServ
 		}
 	}
 	
-	private String createLoginIdKey(final String domainId, final String login, final String managedSysId) {
-		return createLoginIdKey(new AuthorizationManagerLoginId(domainId, login, managedSysId));
+	private String createLoginIdKey(final String login, final String managedSysId) {
+		return createLoginIdKey(new AuthorizationManagerLoginId(login, managedSysId));
 	}
 	
 	private String createLoginIdKey(final AuthorizationManagerLoginId loginId) {
 		clean(loginId);
-		return String.format("%s:%s:%s", loginId.getDomain(), loginId.getLogin(), loginId.getManagedSysId());
+		return String.format("%s:%s", loginId.getLogin(), loginId.getManagedSysId());
 	}
 	
 	private void clean(final AuthorizationManagerLoginId loginId) {
-		loginId.setDomain(StringUtils.trimToNull(StringUtils.lowerCase(loginId.getDomain())));
 		loginId.setLogin(StringUtils.trimToNull(StringUtils.lowerCase(loginId.getLogin())));
 		loginId.setManagedSysId(StringUtils.trimToNull(StringUtils.lowerCase(loginId.getManagedSysId())));
 	}
@@ -787,6 +739,11 @@ public class AuthorizationManagerServiceImpl implements AuthorizationManagerServ
 	public Set<AuthorizationRole> getRolesFor(final AuthorizationManagerLoginId loginId) {
 		return getRolesFor(fetchUser(loginId));
 	}
+
+    @Override
+    public List<String> getUserIdsList(){
+        return userDAO.getUserIdsList();
+    }
 	
 	private Set<AuthorizationRole> getRolesFor(final AuthorizationUser user) {
 		Set<AuthorizationRole> retVal = new HashSet<AuthorizationRole>();
@@ -839,6 +796,13 @@ public class AuthorizationManagerServiceImpl implements AuthorizationManagerServ
 	public void afterPropertiesSet() throws Exception {
 		sweep();
 		//service.submit(this);
+	}
+
+	@Override
+	public boolean isEntitled(String userId, String resourceId) {
+		final AuthorizationResource resource = new AuthorizationResource();
+		resource.setId(resourceId);
+		return isEntitled(userId, resource);
 	}
 
 	/*
