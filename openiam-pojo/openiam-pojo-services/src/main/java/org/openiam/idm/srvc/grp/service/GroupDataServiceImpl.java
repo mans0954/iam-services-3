@@ -352,6 +352,7 @@ public class GroupDataServiceImpl implements GroupDataService {
                 groupDefaultEntity.setManagedSysId(sysConfiguration.getDefaultManagedSysId());
                 groupDefaultEntity.setReferredObjectId(group.getId());
                 groupDefaultEntity.setStatus(LoginStatusEnum.PENDING_CREATE);
+                groupDefaultEntity.setIdentity(group.getName());
                 identityDAO.save(groupDefaultEntity);
 				group.addApproverAssociation(createDefaultApproverAssociations(group, requestorId));
 			}
