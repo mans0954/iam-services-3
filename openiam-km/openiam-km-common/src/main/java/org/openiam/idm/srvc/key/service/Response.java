@@ -1,9 +1,12 @@
 
-package org.openiam.idm.srvc.res.service;
+package org.openiam.idm.srvc.key.service;
 
+import java.util.ArrayList;
+import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
 
@@ -20,6 +23,7 @@ import javax.xml.bind.annotation.XmlType;
  *         &lt;element name="errorCode" type="{urn:idm.openiam.org/srvc/res/service}ResponseErrorCode" minOccurs="0"/>
  *         &lt;element name="responseValue" type="{http://www.w3.org/2001/XMLSchema}anyType" minOccurs="0"/>
  *         &lt;element name="errorText" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
+ *         &lt;element name="errorTokenList" type="{urn:idm.openiam.org/srvc/res/service}EsbErrorToken" maxOccurs="unbounded" minOccurs="0"/>
  *       &lt;/sequence>
  *       &lt;attribute name="status" use="required" type="{urn:idm.openiam.org/srvc/res/service}ResponseStatus" />
  *     &lt;/restriction>
@@ -33,14 +37,17 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "Response", propOrder = {
     "errorCode",
     "responseValue",
-    "errorText"
+    "errorText",
+    "errorTokenList"
 })
 public class Response {
 
     protected ResponseErrorCode errorCode;
     protected Object responseValue;
     protected String errorText;
-    @XmlAttribute(required = true)
+    @XmlElement(nillable = true)
+    protected List<EsbErrorToken> errorTokenList;
+    @XmlAttribute(name = "status", required = true)
     protected ResponseStatus status;
 
     /**
@@ -113,6 +120,35 @@ public class Response {
      */
     public void setErrorText(String value) {
         this.errorText = value;
+    }
+
+    /**
+     * Gets the value of the errorTokenList property.
+     * 
+     * <p>
+     * This accessor method returns a reference to the live list,
+     * not a snapshot. Therefore any modification you make to the
+     * returned list will be present inside the JAXB object.
+     * This is why there is not a <CODE>set</CODE> method for the errorTokenList property.
+     * 
+     * <p>
+     * For example, to add a new item, do as follows:
+     * <pre>
+     *    getErrorTokenList().add(newItem);
+     * </pre>
+     * 
+     * 
+     * <p>
+     * Objects of the following type(s) are allowed in the list
+     * {@link EsbErrorToken }
+     * 
+     * 
+     */
+    public List<EsbErrorToken> getErrorTokenList() {
+        if (errorTokenList == null) {
+            errorTokenList = new ArrayList<EsbErrorToken>();
+        }
+        return this.errorTokenList;
     }
 
     /**

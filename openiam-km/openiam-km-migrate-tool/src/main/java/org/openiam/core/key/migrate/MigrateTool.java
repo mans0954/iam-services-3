@@ -3,8 +3,8 @@ package org.openiam.core.key.migrate;
 import org.bouncycastle.util.encoders.Hex;
 import org.openiam.core.key.util.KmUtil;
 import org.openiam.core.key.ws.KeyManagementWSClient;
-import org.openiam.idm.srvc.res.service.Response;
-import org.openiam.idm.srvc.res.service.ResponseStatus;
+import org.openiam.idm.srvc.key.service.Response;
+import org.openiam.idm.srvc.key.service.ResponseStatus;
 
 import java.io.BufferedInputStream;
 import java.io.File;

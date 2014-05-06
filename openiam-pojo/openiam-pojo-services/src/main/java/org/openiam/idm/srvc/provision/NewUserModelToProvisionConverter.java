@@ -1,8 +1,11 @@
 package org.openiam.idm.srvc.provision;
 
 import java.util.*;
+import java.util.Map.Entry;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
+import org.apache.commons.lang.StringUtils;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.dozer.converter.GroupDozerConverter;
 import org.openiam.dozer.converter.OrganizationDozerConverter;
@@ -168,18 +171,50 @@ public class NewUserModelToProvisionConverter {
                 user.setSuperiors(userSupervisors);
 			}
 
+			final HashMap<String, UserAttribute> userAttributes = new HashMap<String, UserAttribute>();
 			final PageTemplateAttributeToken token = templateService.getAttributesFromTemplate(request);
 			if(token != null && CollectionUtils.isNotEmpty(token.getSaveList())) {
 				final List<UserAttribute> userAttributeList = userAttributeDozerConverter.convertToDTOList(token.getSaveList(), true);
-				final HashMap<String, UserAttribute> userAttributes = new HashMap<String, UserAttribute>();
 				for(final UserAttribute attribute : userAttributeList) {
 					if(attribute != null) {
 						attribute.setOperation(AttributeOperationEnum.ADD);
 						userAttributes.put(attribute.getName(), attribute);
 					}
 				}
-				user.setUserAttributes(userAttributes);
 			}
+			
+			if(MapUtils.isNotEmpty(request.getUser().getUserAttributes())) {
+				final Set<Entry<String, UserAttribute>> entrySet = request.getUser().getUserAttributes().entrySet();
+				for(final Iterator<Entry<String, UserAttribute>> it = entrySet.iterator(); it.hasNext();) {
+					final Entry<String, UserAttribute> entry = it.next();
+					if(entry != null) {
+						final UserAttribute attribute = entry.getValue();
+						attribute.setOperation(AttributeOperationEnum.ADD);
+						if(attribute != null) {
+							if(StringUtils.isNotBlank(attribute.getName())) {
+								if(StringUtils.isNotBlank(attribute.getValue())) {
+									userAttributes.put(attribute.getName(), attribute);
+								} else if(Boolean.TRUE.equals(attribute.getIsMultivalued())) {
+									if(CollectionUtils.isNotEmpty(attribute.getValues())) {
+										for(final Iterator<String> valueIt = attribute.getValues().iterator(); valueIt.hasNext();) {
+											final String value = valueIt.next();
+											if(StringUtils.isBlank(value)) {
+												valueIt.remove();
+											}
+										}
+									}
+									//the above code removed empty values - check again if the list is empty
+									if(CollectionUtils.isNotEmpty(attribute.getValues())) {
+										userAttributes.put(attribute.getName(), attribute);
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+			
+			user.setUserAttributes(userAttributes);
 		}
 		return user;
 	}

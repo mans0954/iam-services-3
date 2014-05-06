@@ -9,6 +9,7 @@ import java.util.Set;
 import org.activiti.engine.delegate.DelegateExecution;
 import org.activiti.engine.delegate.JavaDelegate;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.bpm.activiti.delegate.core.AbstractActivitiJob;
 import org.openiam.bpm.util.ActivitiConstants;
@@ -28,6 +29,7 @@ import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.NewUserProfileRequestModel;
 import org.openiam.idm.srvc.user.dto.User;
+import org.openiam.idm.srvc.user.dto.UserAttribute;
 import org.openiam.idm.srvc.user.dto.UserProfileRequestModel;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -154,7 +156,21 @@ public abstract class AbstractUserDisplayMapper extends AbstractActivitiJob {
 				metadataMap.put("User Type", user.getUserTypeInd());
 			}
 		
-
+			if(MapUtils.isNotEmpty(user.getUserAttributes())) {
+				for(final UserAttribute attribute : user.getUserAttributes().values()) {
+					if(StringUtils.isNotBlank(attribute.getName())) {
+						List<String> values = new LinkedList<>();
+						if(Boolean.TRUE.equals(attribute.getIsMultivalued())) {
+							values = attribute.getValues();
+						} else {
+							values.add(attribute.getValue());
+						}
+						if(CollectionUtils.isNotEmpty(values)) {
+							metadataMap.put(attribute.getName(), values.toString());
+						}
+					}
+				}
+			}
 		}
 		
 		final List<Address> addresses = request.getAddresses();

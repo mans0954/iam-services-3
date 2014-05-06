@@ -16,13 +16,29 @@ import javax.jws.WebService;
  */
 @Service("keyManagementWS")
 @WebService(endpointInterface = "org.openiam.idm.srvc.key.ws.KeyManagementWS",
-            targetNamespace = "urn:idm.openiam.org/srvc/res/service", portName = "KeyManagementWSPort",
+            targetNamespace = "urn:idm.openiam.org/srvc/key/service", portName = "KeyManagementWSPort",
             serviceName = "KeyManagementWS")
 public class KeyManagementWSImpl implements KeyManagementWS {
     protected final Log log = LogFactory.getLog(this.getClass());
     @Autowired
     private KeyManagementService keyManagementService;
 
+    @Override
+    public Response initKeyManagement(){
+        log.debug("Got initKeyManagement request. ");
+        Response resp = new Response(ResponseStatus.SUCCESS);
+        try {
+            keyManagementService.initKeyManagement();
+
+            log.warn("InitKeyManagement request successfully handled ");
+        } catch(Exception e) {
+            log.warn("ERROR: " + e.getMessage());
+            log.error(e.getMessage(), e);
+            resp.setStatus(ResponseStatus.FAILURE);
+            resp.setErrorText(e.getMessage());
+        }
+        return resp;
+    }
 
     @Override
     public Response generateMasterKey() {
@@ -75,5 +91,47 @@ public class KeyManagementWSImpl implements KeyManagementWS {
             log.error(e.getMessage(), e);
         }
         return key;
+    }
+
+    @Override
+    public String encryptData(String data) {
+        String encryptedData = null;
+        try {
+            encryptedData = keyManagementService.encryptData(data);
+        } catch(Exception e) {
+            log.error(e.getMessage(), e);
+        }
+        return encryptedData;
+    }
+    @Override
+    public String decryptData(String encryptedData) {
+        String decryptedData = null;
+        try {
+            decryptedData = keyManagementService.decryptData(encryptedData);
+        } catch(Exception e) {
+            log.error(e.getMessage(), e);
+        }
+        return decryptedData;
+    }
+
+    @Override
+    public String encryptUserData(String userId, String data) {
+        String encryptedData = null;
+        try {
+            encryptedData = keyManagementService.encryptData(userId, data);
+        } catch(Exception e) {
+            log.error(e.getMessage(), e);
+        }
+        return encryptedData;
+    }
+    @Override
+    public String decryptUserData(String userId, String encryptedData) {
+        String decryptedData = null;
+        try {
+            decryptedData = keyManagementService.decryptData(userId, encryptedData);
+        } catch(Exception e) {
+            log.error(e.getMessage(), e);
+        }
+        return decryptedData;
     }
 }
