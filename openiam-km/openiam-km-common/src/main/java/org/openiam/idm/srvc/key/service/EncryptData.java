@@ -1,5 +1,5 @@
 
-package org.openiam.idm.srvc.res.service;
+package org.openiam.idm.srvc.key.service;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -7,16 +7,16 @@ import javax.xml.bind.annotation.XmlType;
 
 
 /**
- * <p>Java class for migrateData complex type.
+ * <p>Java class for encryptData complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="migrateData">
+ * &lt;complexType name="encryptData">
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="secretKey" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
+ *         &lt;element name="arg0" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -26,35 +26,35 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "migrateData", propOrder = {
-    "secretKey"
+@XmlType(name = "encryptData", propOrder = {
+    "arg0"
 })
-public class MigrateData {
+public class EncryptData {
 
-    protected String secretKey;
+    protected String arg0;
 
     /**
-     * Gets the value of the secretKey property.
+     * Gets the value of the arg0 property.
      * 
      * @return
      *     possible object is
      *     {@link String }
      *     
      */
-    public String getSecretKey() {
-        return secretKey;
+    public String getArg0() {
+        return arg0;
     }
 
     /**
-     * Sets the value of the secretKey property.
+     * Sets the value of the arg0 property.
      * 
      * @param value
      *     allowed object is
      *     {@link String }
      *     
      */
-    public void setSecretKey(String value) {
-        this.secretKey = value;
+    public void setArg0(String value) {
+        this.arg0 = value;
     }
 
 }

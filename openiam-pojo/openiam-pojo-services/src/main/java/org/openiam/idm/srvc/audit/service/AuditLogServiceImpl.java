@@ -8,6 +8,7 @@ import javax.jms.JMSException;
 import javax.jms.Queue;
 import javax.jms.Session;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -31,7 +32,6 @@ import org.openiam.idm.srvc.res.service.ResourceDAO;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.service.RoleDAO;
 import org.openiam.util.UserUtils;
-import org.openiam.util.encrypt.HashDigest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jms.core.JmsTemplate;
@@ -52,9 +52,6 @@ public class AuditLogServiceImpl implements AuditLogService {
 	@Autowired
     @Qualifier(value = "logQueue")
     private Queue queue;
-	
-	@Autowired
-    private HashDigest hash;
 	
 	@Autowired
 	private IdmAuditLogDAO logDAO;
@@ -106,7 +103,7 @@ public class AuditLogServiceImpl implements AuditLogService {
         if(log != null) {
             IdmAuditLogEntity auditLogEntity = auditLogDozerConverter.convertToEntity(log, false);
     		if(auditLogEntity.getId() == null || auditLogEntity.getHash() == null) {
-                auditLogEntity.setHash(hash.HexEncodedHash(log.concat()));
+                auditLogEntity.setHash(DigestUtils.sha256Hex(log.concat()));
             }
 
             if(StringUtils.isEmpty(auditLogEntity.getCorrelationId())) {

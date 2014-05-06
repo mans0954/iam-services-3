@@ -27,6 +27,7 @@ public class JksManager {
     public static final String KEYSTORE_ALIAS = "openiam";
     public static final String TMP_KEYSTORE_ALIAS = "openiam_tmp";
     public static final String KEYSTORE_COOKIE_ALIAS = "openiam_cookie";
+    public static final String KEYSTORE_COMMON_ALIAS = "openiam_common";
 
     public static final int MIN_ITERATION_COUNT = 20;
 

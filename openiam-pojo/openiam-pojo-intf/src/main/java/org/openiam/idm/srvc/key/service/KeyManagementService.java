@@ -16,7 +16,15 @@ public interface KeyManagementService {
 
     public byte[] getCookieKey()throws Exception;
     public byte[] generateCookieKey()throws Exception;
+    public byte[] getCommonKey() throws Exception;
+    public byte[] generateCommonKey()throws Exception;
 
     public void generateMasterKey() throws Exception;
+    public void initKeyManagement() throws Exception;
     public void migrateData(String oldSecretKey)throws Exception;
+
+    public String encryptData(String data)throws Exception;
+    public String decryptData(String encryptedData)throws Exception;
+    public String encryptData(String userId, String data)throws Exception;
+    public String decryptData(String userId, String encryptedData)throws Exception;
 }
