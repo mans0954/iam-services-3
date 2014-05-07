@@ -2536,4 +2536,29 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         return null;
     }
 
+    public Response requestModify(ExtensibleUser extUser, Login login, String requestorId) {
+        final String requestId = "R" + UUIDGen.getUUID();
+        ProvisionUserResponse response = new ProvisionUserResponse(ResponseStatus.SUCCESS);
+
+        log.debug("----requestModify called.------");
+        final IdmAuditLog idmAuditLog = new IdmAuditLog();
+        idmAuditLog.setRequestorUserId(requestorId != null ? requestorId : systemUserId);
+        idmAuditLog.setAction(AuditAction.PROVISIONING_MODIFY.value());
+        idmAuditLog.setTargetUser(login.getUserId(), login.getLogin());
+        try {
+            ObjectResponse resp = requestAddModify(extUser, login, false, requestId, idmAuditLog);
+            if (resp.getStatus() != StatusCodeType.SUCCESS) {
+                response.setStatus(ResponseStatus.FAILURE);
+                response.setErrorText(resp.getErrorMsgAsStr());
+                idmAuditLog.fail();
+            } else {
+                idmAuditLog.succeed();
+            }
+        } finally {
+            auditLogService.enqueue(idmAuditLog);
+        }
+
+        return response;
+    }
+
 }
