@@ -9,6 +9,8 @@ import org.openiam.idm.searchbeans.SearchBean;
 public interface BaseDao<T, PrimaryKey extends Serializable> {
 
   T findById(PrimaryKey id);
+  
+  T findInitializedObjectById(PrimaryKey id);
 
   T findById(PrimaryKey id, String ... fetchFields);
   

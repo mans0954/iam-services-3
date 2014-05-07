@@ -169,6 +169,20 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
         }
         return (T) getCriteria().add(eq(getPKfieldName(), id)).uniqueResult(); //this.getSession().get(domainClass, id);
     }
+    
+    /**
+     * So... the reason for this method, is that findById was returning a non-intialized object.  WHen setting attributes on Resources,
+     * Groups, Roles, etc, this casued a TransientObjectException.  The only thing that fixed that, was by calling this method,
+     * which calles Session.get.  According to the Hibernate docs, 'get' never returns a non-initialized object.
+     * Consider removing this in 3.2
+     * @param id
+     * @return
+     */
+    @LocalizedDatabaseGet
+    public T findInitializedObjectById(PrimaryKey id) {
+    	final Object o = this.getSession().get(domainClass, id);
+    	return (o != null) ? (T)o : null;
+    }
 
     @SuppressWarnings("unchecked")
     @LocalizedDatabaseGet

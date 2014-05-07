@@ -201,7 +201,7 @@ public class ResourceServiceImpl implements ResourceService {
         Set<ResourcePropEntity> beanProps = (bean.getResourceProps() != null) ? bean.getResourceProps() : new HashSet<ResourcePropEntity>();
         Set<ResourcePropEntity> dbProps = (dbObject.getResourceProps() != null) ? dbObject.getResourceProps() : new HashSet<ResourcePropEntity>();
 
-	/* update */
+        /* update */
         for (ResourcePropEntity dbProp : dbProps) {
             for (final ResourcePropEntity beanProp : beanProps) {
                 if (StringUtils.equals(dbProp.getId(), beanProp.getId())) {
@@ -215,7 +215,7 @@ public class ResourceServiceImpl implements ResourceService {
             }
         }
 
-	/* add */
+        /* add */
         for (final ResourcePropEntity beanProp : beanProps) {
             boolean contains = false;
             for (ResourcePropEntity dbProp : dbProps) {
@@ -234,7 +234,7 @@ public class ResourceServiceImpl implements ResourceService {
         if(CollectionUtils.isNotEmpty(renewedProperties)) {
         	for(final ResourcePropEntity prop : renewedProperties) {
         		if(prop.getElement() != null && StringUtils.isNotBlank(prop.getElement().getId())) {
-        			final MetadataElementEntity entity = elementDAO.findById(prop.getElement().getId());
+        			final MetadataElementEntity entity = elementDAO.findInitializedObjectById(prop.getElement().getId());
         			prop.setElement(entity);
         		} else {
         			prop.setElement(null);

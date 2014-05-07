@@ -35,7 +35,9 @@ import java.util.Set;
 	"roleToResourceMap",
     "roleToGroupMap",
     "roleToRoleMap",
-    "publicResourceIds"
+    "publicResourceIds",
+    "childGroupToParentGroupMap",
+    "childRoleToParentRoleMap"
 })
 public class UserEntitlementsMatrix implements Serializable {
 	private String userId;
@@ -50,31 +52,29 @@ public class UserEntitlementsMatrix implements Serializable {
 	
 	@XmlJavaTypeAdapter(AuthorizationMatrixAdapter.class)
 	private Map<String, Set<String>> groupToGroupMap;
-	
+    @XmlJavaTypeAdapter(AuthorizationMatrixAdapter.class)
+    private Map<String, Set<String>> childGroupToParentGroupMap;
 	@XmlJavaTypeAdapter(AuthorizationMatrixAdapter.class)
 	private Map<String, Set<String>> groupToRoleMap;
-
     @XmlJavaTypeAdapter(AuthorizationMatrixAdapter.class)
     private Map<String, Set<String>> groupToResourceMap;
 
     @XmlJavaTypeAdapter(AuthorizationMatrixAdapter.class)
+    private Map<String, Set<String>> childRoleToParentRoleMap;
+    @XmlJavaTypeAdapter(AuthorizationMatrixAdapter.class)
     private Map<String, Set<String>> roleToRoleMap;
-
     @XmlJavaTypeAdapter(AuthorizationMatrixAdapter.class)
     private Map<String, Set<String>> roleToGroupMap;
-
     @XmlJavaTypeAdapter(AuthorizationMatrixAdapter.class)
     private Map<String, Set<String>> roleToResourceMap;
 
+
 	@XmlJavaTypeAdapter(AuthorizationMatrixAdapter.class)
 	private Map<String, Set<String>> resourceToResourceMap;
-
     @XmlJavaTypeAdapter(AuthorizationMatrixAdapter.class)
     private Map<String, Set<String>> childResToParentResMap;
-
     @XmlJavaTypeAdapter(AuthorizationMatrixAdapter.class)
     private Map<String, Set<String>> resourceToGroupMap;
-
     @XmlJavaTypeAdapter(AuthorizationMatrixAdapter.class)
     private Map<String, Set<String>> resourceToRoleMap;
 
@@ -97,6 +97,25 @@ public class UserEntitlementsMatrix implements Serializable {
 			}
 		}
 	}
+
+    public void setChildGroupToParentGroupMap(final Map<String, Set<AuthorizationGroup>> childGroupToParentGroupMap) {
+        if(childGroupToParentGroupMap != null) {
+            if(this.childGroupToParentGroupMap == null) {
+                this.childGroupToParentGroupMap = new HashMap<String, Set<String>>();
+            }
+            for(final String groupId : childGroupToParentGroupMap.keySet()) {
+                final Set<AuthorizationGroup> groups = childGroupToParentGroupMap.get(groupId);
+                if(CollectionUtils.isNotEmpty(groups)) {
+                    if(!this.childGroupToParentGroupMap.containsKey(groupId)) {
+                        this.childGroupToParentGroupMap.put(groupId, new HashSet<String>());
+                    }
+                    for(final AuthorizationGroup group : groups) {
+                        this.childGroupToParentGroupMap.get(groupId).add(group.getId());
+                    }
+                }
+            }
+        }
+    }
 	
 	public void setRoleToRoleMap(final Map<String, Set<AuthorizationRole>> roleToRoleMap) {
 		if(roleToRoleMap != null) {
@@ -116,6 +135,25 @@ public class UserEntitlementsMatrix implements Serializable {
 			}
 		}
 	}
+
+    public void setChildRoleToParentRoleMap(final Map<String, Set<AuthorizationRole>> childRoleToParentRoleMap) {
+        if(childRoleToParentRoleMap != null) {
+            if(this.childRoleToParentRoleMap == null) {
+                this.childRoleToParentRoleMap = new HashMap<String, Set<String>>();
+            }
+            for(final String roleId : childRoleToParentRoleMap.keySet()) {
+                final Set<AuthorizationRole> roles = childRoleToParentRoleMap.get(roleId);
+                if(CollectionUtils.isNotEmpty(roles)) {
+                    if(!this.childRoleToParentRoleMap.containsKey(roleId)) {
+                        this.childRoleToParentRoleMap.put(roleId, new HashSet<String>());
+                    }
+                    for(final AuthorizationRole role : roles) {
+                        this.childRoleToParentRoleMap.get(roleId).add(role.getId());
+                    }
+                }
+            }
+        }
+    }
 	
 	public void setGroupToRoleMap(final Map<String, Set<AuthorizationRole>> groupToRoleMap) {
 		if(groupToRoleMap != null) {
@@ -390,5 +428,13 @@ public class UserEntitlementsMatrix implements Serializable {
 
     public Map<String, Set<String>> getChildResToParentResMap() {
         return childResToParentResMap;
+    }
+
+    public Map<String, Set<String>> getChildGroupToParentGroupMap() {
+        return childGroupToParentGroupMap;
+    }
+
+    public Map<String, Set<String>> getChildRoleToParentRoleMap() {
+        return childRoleToParentRoleMap;
     }
 }
