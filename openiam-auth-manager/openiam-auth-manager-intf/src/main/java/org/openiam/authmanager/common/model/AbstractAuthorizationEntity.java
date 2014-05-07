@@ -15,7 +15,10 @@ import javax.xml.bind.annotation.XmlType;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "AbstractAuthorizationEntity", propOrder = {
         "id",
-        "name"
+        "name",
+        "description",
+        "status",
+        "managedSysId"
 })
 public abstract class AbstractAuthorizationEntity {
 	
@@ -28,6 +31,9 @@ public abstract class AbstractAuthorizationEntity {
 
 	private String name;
 	private String id;
+    private String description;
+    private String status;
+    private String managedSysId;
 
 	@XmlTransient
 	private int bitSetIdx = -1;
@@ -94,5 +100,27 @@ public abstract class AbstractAuthorizationEntity {
 				bitSetIdx);
 	}
 
-	
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getManagedSysId() {
+        return managedSysId;
+    }
+
+    public void setManagedSysId(String managedSysId) {
+        this.managedSysId = managedSysId;
+    }
 }

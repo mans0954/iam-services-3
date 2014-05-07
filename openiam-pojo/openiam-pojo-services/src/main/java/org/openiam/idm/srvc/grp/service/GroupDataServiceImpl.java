@@ -19,6 +19,7 @@ import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.lang.domain.LanguageEntity;
 import org.openiam.idm.srvc.lang.service.LanguageDAO;
+import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 import org.openiam.idm.srvc.meta.service.MetadataElementDAO;
 import org.openiam.idm.srvc.meta.service.MetadataTypeDAO;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
@@ -27,6 +28,7 @@ import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.service.ManagedSysDAO;
 import org.openiam.idm.srvc.org.service.OrganizationDAO;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
+import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
 import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.idm.srvc.user.service.UserDataService;
@@ -352,6 +354,7 @@ public class GroupDataServiceImpl implements GroupDataService {
                 groupDefaultEntity.setManagedSysId(sysConfiguration.getDefaultManagedSysId());
                 groupDefaultEntity.setReferredObjectId(group.getId());
                 groupDefaultEntity.setStatus(LoginStatusEnum.PENDING_CREATE);
+                groupDefaultEntity.setIdentity(group.getName());
                 identityDAO.save(groupDefaultEntity);
 				group.addApproverAssociation(createDefaultApproverAssociations(group, requestorId));
 			}
@@ -379,49 +382,52 @@ public class GroupDataServiceImpl implements GroupDataService {
 	
 	private void mergeAttribute(final GroupEntity bean, final GroupEntity dbObject) {
 		final Set<GroupAttributeEntity> renewedProperties = new HashSet<GroupAttributeEntity>();
-		
-		Set<GroupAttributeEntity> beanProps = (bean.getAttributes() != null) ? bean.getAttributes() : new HashSet<GroupAttributeEntity>();
-		Set<GroupAttributeEntity> dbProps = (dbObject.getAttributes() != null) ? dbObject.getAttributes() : new HashSet<GroupAttributeEntity>();
-		
-		/* update */
-		for(GroupAttributeEntity dbProp : dbProps) {
-			for(final GroupAttributeEntity beanProp : beanProps) {
-				if(StringUtils.equals(dbProp.getId(), beanProp.getId())) {
+
+        Set<GroupAttributeEntity> beanProps = (bean.getAttributes() != null) ? bean.getAttributes() : new HashSet<GroupAttributeEntity>();
+        Set<GroupAttributeEntity> dbProps = (dbObject.getAttributes() != null) ? dbObject.getAttributes() : new HashSet<GroupAttributeEntity>();
+
+        /* update */
+        for (GroupAttributeEntity dbProp : dbProps) {
+            for (final GroupAttributeEntity beanProp : beanProps) {
+                if (StringUtils.equals(dbProp.getId(), beanProp.getId())) {
+                    dbProp.setValue(beanProp.getValue());
                     dbProp.setElement(beanProp.getElement());
-					dbProp.setName(beanProp.getName());
-					dbProp.setValue(beanProp.getValue());
+                    dbProp.setName(beanProp.getName());
                     dbProp.setIsMultivalued(beanProp.getIsMultivalued());
-                    dbProp.setValues(beanProp.getValues());
-					renewedProperties.add(dbProp);
-					break;
-				}
-			}
-		}
-		
-		/* add */
-		for(final GroupAttributeEntity beanProp : beanProps) {
-			boolean contains = false;
-			for(GroupAttributeEntity dbProp : dbProps) {
-				if(StringUtils.equals(dbProp.getId(), beanProp.getId())) {
-					contains = true;
-				}
-			}
-			
-			if(!contains) {
-				beanProp.setGroup(bean);
-				//dbProps.add(beanProp);
-				renewedProperties.add(beanProp);
-			}
-		}
-		for (GroupAttributeEntity prop : renewedProperties) {
-            if(prop.getElement()!=null){
-                prop.setElement(metadataElementDAO.findById(prop.getElement().getId()));
-            } else {
-                prop.setElement(null);
+                    renewedProperties.add(dbProp);
+                    break;
+                }
             }
         }
-		bean.setAttributes(renewedProperties);
-		//bean.setResourceProps(renewedProperties);
+
+        /* add */
+        for (final GroupAttributeEntity beanProp : beanProps) {
+            boolean contains = false;
+            for (GroupAttributeEntity dbProp : dbProps) {
+                if (StringUtils.equals(dbProp.getId(), beanProp.getId())) {
+                    contains = true;
+                }
+            }
+
+            if (!contains) {
+                beanProp.setGroup(bean);
+                // dbProps.add(beanProp);
+                renewedProperties.add(beanProp);
+            }
+        }
+        
+        if(CollectionUtils.isNotEmpty(renewedProperties)) {
+        	for(final GroupAttributeEntity prop : renewedProperties) {
+        		if(prop.getElement() != null && StringUtils.isNotBlank(prop.getElement().getId())) {
+        			final MetadataElementEntity entity = metadataElementDAO.findInitializedObjectById(prop.getElement().getId());
+        			prop.setElement(entity);
+        		} else {
+        			prop.setElement(null);
+        		}
+        	}
+        }
+        
+        bean.setAttributes(renewedProperties);
 	}
 
 	@Override
