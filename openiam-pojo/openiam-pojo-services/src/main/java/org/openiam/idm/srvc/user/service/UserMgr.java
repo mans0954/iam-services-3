@@ -915,19 +915,21 @@ public class UserMgr implements UserDataService {
     public void removeAddress(final String addressId) {
         final AddressEntity entity = addressDao.findById(addressId, "parent");
 
-        if (entity.getIsDefault()) {
-            AddressEntity example = new AddressEntity();
-            example.setParent(entity.getParent());
-            List<AddressEntity> addresses = addressDao.getByExample(example);
-
-            AddressEntity defaultAddress = getAddressByDefaultFlag(addresses, false);
-            if (defaultAddress != null) {
-                defaultAddress.setIsDefault(true);
-                defaultAddress.setParent(entity.getParent());
-                addressDao.update(defaultAddress);
-            }
+        if(entity != null) {
+	        if (entity.getIsDefault()) {
+	            AddressEntity example = new AddressEntity();
+	            example.setParent(entity.getParent());
+	            List<AddressEntity> addresses = addressDao.getByExample(example);
+	
+	            AddressEntity defaultAddress = getAddressByDefaultFlag(addresses, false);
+	            if (defaultAddress != null) {
+	                defaultAddress.setIsDefault(true);
+	                defaultAddress.setParent(entity.getParent());
+	                addressDao.update(defaultAddress);
+	            }
+	        }
+	        addressDao.delete(entity);
         }
-        addressDao.delete(entity);
     }
 
     @Override
@@ -1077,20 +1079,22 @@ public class UserMgr implements UserDataService {
     public void removePhone(final String phoneId) {
         final PhoneEntity entity = phoneDao.findById(phoneId, "parent");
 
-        if (entity.getIsDefault()) {
-            PhoneEntity example = new PhoneEntity();
-            example.setParent(entity.getParent());
-            List<PhoneEntity> phones = phoneDao.getByExample(example);
-
-            PhoneEntity defaultPhone = getPhoneByDefaultFlag(phones, false);
-            if (defaultPhone != null) {
-                defaultPhone.setIsDefault(true);
-                defaultPhone.setParent(entity.getParent());
-                phoneDao.update(defaultPhone);
-            }
+        if(entity != null) {
+	        if (entity.getIsDefault()) {
+	            PhoneEntity example = new PhoneEntity();
+	            example.setParent(entity.getParent());
+	            List<PhoneEntity> phones = phoneDao.getByExample(example);
+	
+	            PhoneEntity defaultPhone = getPhoneByDefaultFlag(phones, false);
+	            if (defaultPhone != null) {
+	                defaultPhone.setIsDefault(true);
+	                defaultPhone.setParent(entity.getParent());
+	                phoneDao.update(defaultPhone);
+	            }
+	        }
+	
+	        phoneDao.delete(entity);
         }
-
-        phoneDao.delete(entity);
     }
 
     @Override
@@ -1239,20 +1243,23 @@ public class UserMgr implements UserDataService {
 
         final EmailAddressEntity entity = emailAddressDao.findById(emailAddressId, "parent");
 
-        if (entity.getIsDefault()) {
-            EmailAddressEntity example = new EmailAddressEntity();
-            example.setParent(entity.getParent());
-            List<EmailAddressEntity> emailList = emailAddressDao.getByExample(example);
-
-            EmailAddressEntity defaultEmail = getEmailAddressByDefaultFlag(emailList, false);
-            if (defaultEmail != null) {
-                defaultEmail.setIsDefault(true);
-                defaultEmail.setParent(entity.getParent());
-                emailAddressDao.update(defaultEmail);
-            }
+        
+        if(entity != null) {
+	        if (entity.getIsDefault()) {
+	            EmailAddressEntity example = new EmailAddressEntity();
+	            example.setParent(entity.getParent());
+	            List<EmailAddressEntity> emailList = emailAddressDao.getByExample(example);
+	
+	            EmailAddressEntity defaultEmail = getEmailAddressByDefaultFlag(emailList, false);
+	            if (defaultEmail != null) {
+	                defaultEmail.setIsDefault(true);
+	                defaultEmail.setParent(entity.getParent());
+	                emailAddressDao.update(defaultEmail);
+	            }
+	        }
+	
+	        emailAddressDao.delete(entity);
         }
-
-        emailAddressDao.delete(entity);
     }
 
     @Override
