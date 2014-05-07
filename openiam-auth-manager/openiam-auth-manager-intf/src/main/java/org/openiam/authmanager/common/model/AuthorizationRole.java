@@ -11,9 +11,9 @@ import java.util.Set;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "AuthorizationRole", propOrder = {
-        "description",
-        "status",
-        "managedSysId"
+//        "description",
+//        "status",
+//        "managedSysId"
 })
 public class AuthorizationRole extends AbstractAuthorizationEntity implements Serializable  {
 	
@@ -25,9 +25,9 @@ public class AuthorizationRole extends AbstractAuthorizationEntity implements Se
 	@XmlTransient
 	private Set<AuthorizationResource> resources;
 
-    private String description;
-    private String status;
-    private String managedSysId;
+//    private String description;
+//    private String status;
+//    private String managedSysId;
 	/*
 	private BitSet linearRoleBitSet = new BitSet();
 	private BitSet linearResourceBitSet = new BitSet();
@@ -126,27 +126,27 @@ public class AuthorizationRole extends AbstractAuthorizationEntity implements Se
 		return copy;
 	}
 
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public String getManagedSysId() {
-        return managedSysId;
-    }
-
-    public void setManagedSysId(String managedSysId) {
-        this.managedSysId = managedSysId;
-    }
+//    public String getDescription() {
+//        return description;
+//    }
+//
+//    public void setDescription(String description) {
+//        this.description = description;
+//    }
+//
+//    public String getStatus() {
+//        return status;
+//    }
+//
+//    public void setStatus(String status) {
+//        this.status = status;
+//    }
+//
+//    public String getManagedSysId() {
+//        return managedSysId;
+//    }
+//
+//    public void setManagedSysId(String managedSysId) {
+//        this.managedSysId = managedSysId;
+//    }
 }

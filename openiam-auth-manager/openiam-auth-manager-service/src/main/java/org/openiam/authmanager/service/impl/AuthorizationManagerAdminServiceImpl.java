@@ -81,7 +81,7 @@ public class AuthorizationManagerAdminServiceImpl implements AuthorizationManage
 					}
 				}
 				
-				final Map<String, Set<AuthorizationGroup>> group2GroupMap = getGroup2GroupMap(groupMap);
+				final Map<String, Set<AuthorizationGroup>> group2GroupMap = getGroup2GroupMap(groupMap, true);
 				final Set<AuthorizationGroup> visitedGroupSet = new HashSet<AuthorizationGroup>();
 				for(final AuthorizationGroup group : userGroups) {
 					final Set<AuthorizationGroup> tempCompiledGroups = compileGroups(group, group2GroupMap, visitedGroupSet);
@@ -103,7 +103,7 @@ public class AuthorizationManagerAdminServiceImpl implements AuthorizationManage
 					}
 				}
 				
-				final Map<String, Set<AuthorizationRole>> role2RoleMap = getRole2RoleMap(roleMap);
+				final Map<String, Set<AuthorizationRole>> role2RoleMap = getRole2RoleMap(roleMap, true);
 				final Set<AuthorizationRole> visitedRoleSet = new HashSet<AuthorizationRole>();
 				for(final AuthorizationRole role : userRoles) {
 					final Set<AuthorizationRole> tempCompiledRoles = compileRoles(role, role2RoleMap, visitedRoleSet);
@@ -174,10 +174,10 @@ public class AuthorizationManagerAdminServiceImpl implements AuthorizationManage
 				retVal = new ResourceEntitlementToken();
 				final Map<String, AuthorizationResource> resourceMap = getResourceMap();
 				final Map<String, AuthorizationRole> roleMap = getRoleMap();
-				final Map<String, Set<AuthorizationGroup>> group2GroupMap = getGroup2GroupMap(groupMap);
+				final Map<String, Set<AuthorizationGroup>> group2GroupMap = getGroup2GroupMap(groupMap, true);
 				final Map<String, Set<AuthorizationRole>> group2RoleMap = getGroup2RoleMap(roleMap);
 				final Map<String, Set<AuthorizationResource>> group2ResoruceMap = getGroup2ResourceMap(resourceMap);
-				final Map<String, Set<AuthorizationRole>> role2RoleMap = getRole2RoleMap(roleMap);
+				final Map<String, Set<AuthorizationRole>> role2RoleMap = getRole2RoleMap(roleMap, true);
 				final Map<String, Set<AuthorizationResource>> role2ResourceMap = getRole2ResourceMap(resourceMap);
 				final Map<String, Set<AuthorizationResource>> resource2ResourceMap = getResource2ResourceMap(resourceMap, true);
 				
@@ -234,7 +234,7 @@ public class AuthorizationManagerAdminServiceImpl implements AuthorizationManage
 			if(roleMap.containsKey(roleId)) {
 				retVal = new ResourceEntitlementToken();
 				final Map<String, AuthorizationResource> resourceMap = getResourceMap();
-				final Map<String, Set<AuthorizationRole>> role2RoleMap = getRole2RoleMap(roleMap);
+				final Map<String, Set<AuthorizationRole>> role2RoleMap = getRole2RoleMap(roleMap, true);
 				final Map<String, Set<AuthorizationResource>> resource2ResourceMap = getResource2ResourceMap(resourceMap, true);
 				final Map<String, Set<AuthorizationResource>> role2ResourceMap = getRole2ResourceMap(resourceMap);
 				
@@ -412,17 +412,26 @@ public class AuthorizationManagerAdminServiceImpl implements AuthorizationManage
         return group2RoleMap;
     }
 
-    private Map<String, Set<AuthorizationGroup>> getGroup2GroupMap(final Map<String, AuthorizationGroup> groupMap) {
+    private Map<String, Set<AuthorizationGroup>> getGroup2GroupMap(final Map<String, AuthorizationGroup> groupMap, final boolean invert) {
         final List<GroupGroupXref> xrefs = groupGroupXrefDAO.getList();
         final Map<String, Set<AuthorizationGroup>> groupXrefMap = new HashMap<String, Set<AuthorizationGroup>>();
+
         for(final GroupGroupXref xref : xrefs) {
-            if(!groupXrefMap.containsKey(xref.getGroupId())) {
-                groupXrefMap.put(xref.getGroupId(), new HashSet<AuthorizationGroup>());
+            if(!invert){
+                if(!groupXrefMap.containsKey(xref.getGroupId())) {
+                    groupXrefMap.put(xref.getGroupId(), new HashSet<AuthorizationGroup>());
+                }
+                groupXrefMap.get(xref.getGroupId()).add(groupMap.get(xref.getMemberGroupId()));
+            }else{
+                if(!groupXrefMap.containsKey(xref.getMemberGroupId())) {
+                    groupXrefMap.put(xref.getMemberGroupId(), new HashSet<AuthorizationGroup>());
+                }
+                groupXrefMap.get(xref.getMemberGroupId()).add(groupMap.get(xref.getGroupId()));
             }
-            groupXrefMap.get(xref.getGroupId()).add(groupMap.get(xref.getMemberGroupId()));
         }
         return groupXrefMap;
     }
+
 	
 	private Map<String, Set<AuthorizationResource>> getRole2ResourceMap(final Map<String, AuthorizationResource> resourceMap) {
 		final List<ResourceRoleXref> xrefs = resourceRoleXrefDAO.getList();
@@ -436,14 +445,21 @@ public class AuthorizationManagerAdminServiceImpl implements AuthorizationManage
 		return role2ResourceMap;
 	}
 	
-	private Map<String, Set<AuthorizationRole>> getRole2RoleMap(final Map<String, AuthorizationRole> roleMap) {
+	private Map<String, Set<AuthorizationRole>> getRole2RoleMap(final Map<String, AuthorizationRole> roleMap, final boolean invert) {
 		final List<RoleRoleXref> roleRoleXrefs = roleRoleXrefDAO.getList();
 		final Map<String, Set<AuthorizationRole>> roleXrefMap = new HashMap<String, Set<AuthorizationRole>>();
 		for(final RoleRoleXref xref : roleRoleXrefs) {
-			if(!roleXrefMap.containsKey(xref.getMemberRoleId())) {
-				roleXrefMap.put(xref.getMemberRoleId(), new HashSet<AuthorizationRole>());
-			}
-			roleXrefMap.get(xref.getMemberRoleId()).add(roleMap.get(xref.getRoleId()));
+            if(!invert){
+                if(!roleXrefMap.containsKey(xref.getRoleId())) {
+                    roleXrefMap.put(xref.getRoleId(), new HashSet<AuthorizationRole>());
+                }
+                roleXrefMap.get(xref.getRoleId()).add(roleMap.get(xref.getMemberRoleId()));
+            }else{
+                if(!roleXrefMap.containsKey(xref.getMemberRoleId())) {
+                    roleXrefMap.put(xref.getMemberRoleId(), new HashSet<AuthorizationRole>());
+                }
+                roleXrefMap.get(xref.getMemberRoleId()).add(roleMap.get(xref.getRoleId()));
+            }
 		}
 		return roleXrefMap;
 	}
@@ -549,18 +565,22 @@ public class AuthorizationManagerAdminServiceImpl implements AuthorizationManage
 				}
 				
 				final Map<String, Set<AuthorizationResource>> role2ResourceMap = getRole2ResourceMap(resourceMap);
-				final Map<String, Set<AuthorizationRole>> role2RoleMap = getRole2RoleMap(roleMap);
+				final Map<String, Set<AuthorizationRole>> role2RoleMap = getRole2RoleMap(roleMap, false);
+                final Map<String, Set<AuthorizationRole>> childRole2ParentRoleMap = getRole2RoleMap(roleMap, true);
                 final Map<String, Set<AuthorizationGroup>> role2GroupMap = getRole2GroupMap(groupMap);
 				
 				final Map<String, Set<AuthorizationRole>> group2RoleMap = getGroup2RoleMap(roleMap);
-				final Map<String, Set<AuthorizationGroup>> group2GroupMap = getGroup2GroupMap(groupMap);
+				final Map<String, Set<AuthorizationGroup>> group2GroupMap = getGroup2GroupMap(groupMap, false);
+                final Map<String, Set<AuthorizationGroup>> childGroup2ParentGroupMap = getGroup2GroupMap(groupMap, true);
 				final Map<String, Set<AuthorizationResource>> group2ResourceMap = getGroup2ResourceMap(resourceMap);
 
 				matrix.setRoleToResourceMap(role2ResourceMap);
 				matrix.setRoleToRoleMap(role2RoleMap);
+                matrix.setChildRoleToParentRoleMap(childRole2ParentRoleMap);
                 matrix.setRoleToGroupMap(role2GroupMap);
 
 				matrix.setGroupToGroupMap(group2GroupMap);
+                matrix.setChildGroupToParentGroupMap(childGroup2ParentGroupMap);
 				matrix.setGroupToResourceMap(group2ResourceMap);
 				matrix.setGroupToRoleMap(group2RoleMap);
 

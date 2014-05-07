@@ -15,9 +15,9 @@ import javax.xml.bind.annotation.XmlType;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "AuthorizationGroup", propOrder = {
-        "description",
-        "status",
-        "managedSysId"
+//        "description",
+//        "status",
+//        "managedSysId"
 })
 public class AuthorizationGroup extends AbstractAuthorizationEntity implements Serializable  {
 
@@ -31,10 +31,10 @@ public class AuthorizationGroup extends AbstractAuthorizationEntity implements S
 	
 	@XmlTransient
 	private Set<AuthorizationResource> resources = null;
-
-    private String description;
-    private String status;
-    private String managedSysId;
+//
+//    private String description;
+//    private String status;
+//    private String managedSysId;
 	
 	/*
 	private BitSet linearGroupBitSet = new BitSet();
@@ -91,29 +91,29 @@ public class AuthorizationGroup extends AbstractAuthorizationEntity implements S
 		return retVal;
 	}
 
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public String getManagedSysId() {
-        return managedSysId;
-    }
-
-    public void setManagedSysId(String managedSysId) {
-        this.managedSysId = managedSysId;
-    }
+//    public String getDescription() {
+//        return description;
+//    }
+//
+//    public void setDescription(String description) {
+//        this.description = description;
+//    }
+//
+//    public String getStatus() {
+//        return status;
+//    }
+//
+//    public void setStatus(String status) {
+//        this.status = status;
+//    }
+//
+//    public String getManagedSysId() {
+//        return managedSysId;
+//    }
+//
+//    public void setManagedSysId(String managedSysId) {
+//        this.managedSysId = managedSysId;
+//    }
 
     /**
 	 * Compiles this Group against it's Role, Group, and Resource Membership
