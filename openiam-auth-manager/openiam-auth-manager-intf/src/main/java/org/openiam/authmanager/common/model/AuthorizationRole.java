@@ -11,9 +11,6 @@ import java.util.Set;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "AuthorizationRole", propOrder = {
-//        "description",
-//        "status",
-//        "managedSysId"
 })
 public class AuthorizationRole extends AbstractAuthorizationEntity implements Serializable  {
 	
@@ -126,27 +123,4 @@ public class AuthorizationRole extends AbstractAuthorizationEntity implements Se
 		return copy;
 	}
 
-//    public String getDescription() {
-//        return description;
-//    }
-//
-//    public void setDescription(String description) {
-//        this.description = description;
-//    }
-//
-//    public String getStatus() {
-//        return status;
-//    }
-//
-//    public void setStatus(String status) {
-//        this.status = status;
-//    }
-//
-//    public String getManagedSysId() {
-//        return managedSysId;
-//    }
-//
-//    public void setManagedSysId(String managedSysId) {
-//        this.managedSysId = managedSysId;
-//    }
 }

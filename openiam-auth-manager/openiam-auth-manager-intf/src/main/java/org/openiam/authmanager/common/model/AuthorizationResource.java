@@ -11,7 +11,6 @@ import java.util.Set;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "AuthorizationResource", propOrder = {
         "resourceTypeId",
-//        "description",
         "inheritFromParent",
         "isPublic",
         "risk"
@@ -24,8 +23,6 @@ public class AuthorizationResource extends AbstractAuthorizationEntity implement
 	private Set<AuthorizationResource> parentResources;
 
     private String resourceTypeId;
-
-//    private String description;
 
 	private boolean inheritFromParent = true;
 	
@@ -59,14 +56,6 @@ public class AuthorizationResource extends AbstractAuthorizationEntity implement
 		}
 		parentResources.add(resource);
 	}
-
-//    public String getDescription() {
-//        return description;
-//    }
-//
-//    public void setDescription(String description) {
-//        this.description = description;
-//    }
 
     public String getResourceTypeId() {
         return resourceTypeId;
