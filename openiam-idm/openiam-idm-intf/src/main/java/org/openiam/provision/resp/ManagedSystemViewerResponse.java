@@ -10,21 +10,23 @@ import java.util.List;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "ManagedSystemViewerResponse", propOrder = {
-        "viewerList",
+        "viewerBeanList",
         "userId",
-        "managedSysId"
+        "managedSysId",
+        "exist"
 })
 public class ManagedSystemViewerResponse extends Response {
-    List<ManagedSystemViewerBean> viewerList;
-    String userId;
-    String managedSysId;
+    private List<ManagedSystemViewerBean> viewerBeanList;
+    private String userId;
+    private String managedSysId;
+    private boolean exist;
 
-    public List<ManagedSystemViewerBean> getViewerList() {
-        return viewerList;
+    public List<ManagedSystemViewerBean> getViewerBeanList() {
+        return viewerBeanList;
     }
 
-    public void setViewerList(List<ManagedSystemViewerBean> viewerList) {
-        this.viewerList = viewerList;
+    public void setViewerBeanList(List<ManagedSystemViewerBean> viewerBeanList) {
+        this.viewerBeanList = viewerBeanList;
     }
 
     public String getUserId() {
@@ -41,5 +43,13 @@ public class ManagedSystemViewerResponse extends Response {
 
     public void setManagedSysId(String managedSysId) {
         this.managedSysId = managedSysId;
+    }
+
+    public boolean isExist() {
+        return exist;
+    }
+
+    public void setExist(boolean exist) {
+        this.exist = exist;
     }
 }
