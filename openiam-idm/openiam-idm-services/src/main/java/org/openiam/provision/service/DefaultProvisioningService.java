@@ -2330,7 +2330,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         List<ExtensibleAttribute> hiddenAttrs = new ArrayList<ExtensibleAttribute>();
         if (StatusCodeType.SUCCESS.equals(response.getStatus())) {
             for (ExtensibleAttribute attr : response.getAttributes()) {
-                if ("READ_ONLY".equals(attr.getMetadataElementId())) { //Adding read only attributes
+                if ("READ_ONLY".equals(attr.getMetadataElementId())) { //Adding readOnly attributes
                     requestedExtensibleAttributes.add(new ExtensibleAttribute(attr.getName(), null, attr.getMetadataElementId()));
 
                 } else if ("HIDDEN".equals(attr.getMetadataElementId())) { //Removing hidden attributes
@@ -2340,6 +2340,13 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                             break;
                         }
                     }
+                } else {
+                    for (ExtensibleAttribute ea : requestedExtensibleAttributes) {
+                        if (StringUtils.equals(attr.getName(), ea.getName())) {
+                            ea.setMetadataElementId(attr.getMetadataElementId());
+                        }
+                    }
+
                 }
             }
             if (CollectionUtils.isNotEmpty(hiddenAttrs)) {
@@ -2352,8 +2359,10 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
         List<ExtensibleAttribute> mngSysAttrs = new ArrayList<ExtensibleAttribute>();
         LookupUserResponse lookupUserResponse = getTargetSystemUser(login.getLogin(), managedSysId, requestedExtensibleAttributes);
+        boolean targetSysUserExists = false;
         if (ResponseStatus.SUCCESS.equals(lookupUserResponse.getStatus())) {
             mngSysAttrs = lookupUserResponse.getAttrList();
+            targetSysUserExists = true;
         }
 
         List<ManagedSystemViewerBean> viewerList = new ArrayList<ManagedSystemViewerBean>();
@@ -2363,12 +2372,14 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 viewerBean.setAttributeName(a.getName());
                 viewerBean.setIdmAttribute(findExtAttrByName(a.getName(), idmAttrs));
                 viewerBean.setMngSysAttribute(findExtAttrByName(a.getName(), mngSysAttrs));
-                viewerBean.setReadOnly("READ_ONLY".equals(a.getMetadataElementId()));
+                viewerBean.setReadOnly("READ_ONLY".equals(a.getMetadataElementId()) ||
+                        "NON_EDITABLE".equals(a.getMetadataElementId()));
                 viewerList.add(viewerBean);
             }
         }
         res.setStatus(ResponseStatus.SUCCESS);
-        res.setViewerList(viewerList);
+        res.setViewerBeanList(viewerList);
+        res.setExist(targetSysUserExists);
 
         return res;
     }
@@ -2536,6 +2547,36 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         return null;
     }
 
+    public Response requestAdd(ExtensibleUser extUser, Login login, String requestorId) {
+        final String requestId = "R" + UUIDGen.getUUID();
+        ProvisionUserResponse response = new ProvisionUserResponse(ResponseStatus.SUCCESS);
+
+        log.debug("----addModify called.------");
+        final IdmAuditLog idmAuditLog = new IdmAuditLog();
+        idmAuditLog.setRequestorUserId(requestorId != null ? requestorId : systemUserId);
+        idmAuditLog.setAction(AuditAction.PROVISIONING_ADD.value());
+        idmAuditLog.setTargetUser(login.getUserId(), login.getLogin());
+
+        try {
+
+            List<ExtensibleAttribute> hiddenAttrs = buildHiddenMngSysAttributes(login);
+            extUser.getAttributes().addAll(hiddenAttrs);
+
+            ObjectResponse resp = requestAddModify(extUser, login, true, requestId, idmAuditLog);
+            if (resp.getStatus() != StatusCodeType.SUCCESS) {
+                response.setStatus(ResponseStatus.FAILURE);
+                response.setErrorText(resp.getErrorMsgAsStr());
+                idmAuditLog.fail();
+            } else {
+                idmAuditLog.succeed();
+            }
+        } finally {
+            auditLogService.enqueue(idmAuditLog);
+        }
+
+        return response;
+    }
+
     public Response requestModify(ExtensibleUser extUser, Login login, String requestorId) {
         final String requestId = "R" + UUIDGen.getUUID();
         ProvisionUserResponse response = new ProvisionUserResponse(ResponseStatus.SUCCESS);
@@ -2559,6 +2600,72 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         }
 
         return response;
+    }
+
+    private List<ExtensibleAttribute> buildHiddenMngSysAttributes(Login login) {
+
+        String userId = login.getUserId();
+        String managedSysId = login.getManagedSysId();
+
+        User usr = userDozerConverter.convertToDTO(userMgr.getUser(userId), true);
+        if (usr == null) {
+            return null;
+        }
+        ProvisionUser pUser = new ProvisionUser(usr);
+        List<ExtensibleAttribute> idmAttrs = buildMngSysAttributesForIDMUser(pUser, managedSysId);
+
+        List<AttributeMapEntity> attrMapEntities = managedSystemService.getAttributeMapsByManagedSysId(managedSysId);
+        List<ExtensibleAttribute> requestedExtensibleAttributes = new ArrayList<ExtensibleAttribute>();
+        for (AttributeMapEntity ame : attrMapEntities) {
+            if ("USER".equalsIgnoreCase(ame.getMapForObjectType()) && "ACTIVE".equalsIgnoreCase(ame.getStatus())) {
+                requestedExtensibleAttributes.add(new ExtensibleAttribute(ame.getAttributeName(), null));
+            }
+        }
+
+        LookupAttributeResponse response = lookupAttributes(managedSysId, "POLICY_MAP");
+        List<ExtensibleAttribute> hiddenAttrs = new ArrayList<ExtensibleAttribute>();
+        if (StatusCodeType.SUCCESS.equals(response.getStatus())) {
+            for (ExtensibleAttribute attr : response.getAttributes()) {
+                if ("HIDDEN".equals(attr.getMetadataElementId()) ||
+                        "NON_EDITABLE".equals(attr.getMetadataElementId())) {
+                    for (ExtensibleAttribute a : requestedExtensibleAttributes) {
+                        if (attr.getName().equals(a.getName())) {
+                            hiddenAttrs.add(a);
+                            break;
+                        }
+                    }
+                }
+            }
+
+        }
+
+        LookupUserResponse lookupUserResponse = getTargetSystemUser(login.getLogin(), managedSysId, hiddenAttrs);
+        boolean targetSysUserExists = false;
+        List<ExtensibleAttribute> mngSysAttrs = new ArrayList<ExtensibleAttribute>();
+        if (ResponseStatus.SUCCESS.equals(lookupUserResponse.getStatus())) {
+            mngSysAttrs = lookupUserResponse.getAttrList();
+            targetSysUserExists = true;
+        }
+
+        for (ExtensibleAttribute idma : idmAttrs) {
+            if (targetSysUserExists) {
+                for (ExtensibleAttribute msa : mngSysAttrs) {
+                    if (StringUtils.equals(idma.getName(), msa.getName())) {
+                        if (!StringUtils.equals(idma.getValue(), msa.getValue())) {
+                            idma.setOperation(AttributeOperationEnum.REPLACE.getValue());
+                        } else {
+                            idma.setOperation(AttributeOperationEnum.NO_CHANGE.getValue());
+                        }
+                        break;
+                    }
+                }
+            } else {
+                idma.setOperation(AttributeOperationEnum.ADD.getValue());
+            }
+        }
+
+        return idmAttrs;
+
     }
 
 }
