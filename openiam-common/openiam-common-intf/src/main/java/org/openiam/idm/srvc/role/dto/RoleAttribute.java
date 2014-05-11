@@ -40,8 +40,7 @@ import java.util.List;
         "name",
         "value",
         "values",
-        "isMultivalued",
-        "attrGroup"
+        "isMultivalued"
 })
 @DozerDTOCorrespondence(RoleAttributeEntity.class)
 public class RoleAttribute implements java.io.Serializable {
@@ -53,7 +52,6 @@ public class RoleAttribute implements java.io.Serializable {
     protected String value;
     protected List<String> values = new ArrayList<String>();
     protected Boolean isMultivalued = Boolean.FALSE;
-    protected String attrGroup;
 
     public RoleAttribute() {
     }
@@ -120,22 +118,11 @@ public class RoleAttribute implements java.io.Serializable {
         this.roleId = roleId;
     }
 
-    public String getAttrGroup() {
-        return attrGroup;
-    }
-
-
-    public void setAttrGroup(String attrGroup) {
-        this.attrGroup = attrGroup;
-    }
-
-
 	@Override
 	public String toString() {
 		return String
-				.format("RoleAttribute [roleAttrId=%s, roleId=%s, metadataElementId=%s, name=%s, value=%s, attrGroup=%s]",
-						roleAttrId, roleId, metadataElementId, name,
-						value, attrGroup);
+				.format("RoleAttribute [roleAttrId=%s, roleId=%s, metadataElementId=%s, name=%s, value=%s]",
+						roleAttrId, roleId, metadataElementId, name, value);
 	}
 
 
@@ -163,11 +150,6 @@ public class RoleAttribute implements java.io.Serializable {
 		if (getClass() != obj.getClass())
 			return false;
 		RoleAttribute other = (RoleAttribute) obj;
-		if (attrGroup == null) {
-			if (other.attrGroup != null)
-				return false;
-		} else if (!attrGroup.equals(other.attrGroup))
-			return false;
 		if (metadataElementId == null) {
 			if (other.metadataElementId != null)
 				return false;

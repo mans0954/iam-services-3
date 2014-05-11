@@ -13,8 +13,7 @@ import org.openiam.idm.srvc.prov.request.domain.RequestAttributeEntity;
     "provRequestId",
     "name",
     "value",
-    "metadataTypeId",
-    "attrGroup"
+    "metadataTypeId"
 })
 @DozerDTOCorrespondence(RequestAttributeEntity.class)
 public class RequestAttribute implements java.io.Serializable {
@@ -24,7 +23,6 @@ public class RequestAttribute implements java.io.Serializable {
 	private String name;
 	private String value;
 	private String metadataTypeId;
-	private String attrGroup;
 
 	public RequestAttribute() {
 	}
@@ -52,17 +50,6 @@ public class RequestAttribute implements java.io.Serializable {
 	public void setValue(String value) {
 		this.value = value;
 	}
-
-
-	public String getAttrGroup() {
-		return this.attrGroup;
-	}
-
-	public void setAttrGroup(String attrGroup) {
-		this.attrGroup = attrGroup;
-	}
-
-
 
 	public String getProvRequestId() {
 		return provRequestId;
