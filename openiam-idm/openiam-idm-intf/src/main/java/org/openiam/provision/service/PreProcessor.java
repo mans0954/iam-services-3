@@ -30,18 +30,18 @@ import java.util.Map;
 
  *
  */
-public interface PreProcessor {
+public interface PreProcessor <T> {
 
     /**
      * Provides pre-processing capabilities for each resource that a user is being provisioned into
      *
-     * @param user
+     * @param object - provisioning object
      * @param bindingMap
      * @return
      */
-    int addUser(ProvisionUser user, Map<String, Object> bindingMap);
-    int modifyUser(ProvisionUser user, Map<String, Object> bindingMap);
-    int deleteUser(ProvisionUser user, Map<String, Object> bindingMap);
+    int add(T object, Map<String, Object> bindingMap);
+    int modify(T object, Map<String, Object> bindingMap);
+    int delete(T object, Map<String, Object> bindingMap);
     int setPassword( Map<String, Object> bindingMap);
 
 }

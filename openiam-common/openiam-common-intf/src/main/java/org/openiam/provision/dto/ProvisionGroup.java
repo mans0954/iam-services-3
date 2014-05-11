@@ -40,12 +40,22 @@ import java.util.Set;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "ProvisionGroup", propOrder = {
         "requestId",
-        "srcSystemId"
+        "sessionId",
+        "srcSystemId",
+        "skipPreprocessor",
+        "skipPostProcessor"
 })
 public class ProvisionGroup extends org.openiam.idm.srvc.grp.dto.Group {
 	private static final long serialVersionUID = -33009889049229700L;
-	
-	private String requestId;
+
+
+    // flags to skip over the service level pre and post processors
+    private boolean skipPreprocessor = false;
+    private boolean skipPostProcessor = false;
+
+    private String sessionId;
+
+    private String requestId;
 	/* ID of the system where this request came from */
     private String srcSystemId;
 
@@ -98,6 +108,30 @@ public class ProvisionGroup extends org.openiam.idm.srvc.grp.dto.Group {
         this.resources = group.getResources();
         this.roles = group.getRoles();
         this.attributes = group.getAttributes();
+    }
+
+    public boolean isSkipPreprocessor() {
+        return skipPreprocessor;
+    }
+
+    public void setSkipPreprocessor(boolean skipPreprocessor) {
+        this.skipPreprocessor = skipPreprocessor;
+    }
+
+    public boolean isSkipPostProcessor() {
+        return skipPostProcessor;
+    }
+
+    public void setSkipPostProcessor(boolean skipPostProcessor) {
+        this.skipPostProcessor = skipPostProcessor;
+    }
+
+    public String getSessionId() {
+        return sessionId;
+    }
+
+    public void setSessionId(String sessionId) {
+        this.sessionId = sessionId;
     }
 
     public String getRequestId() {

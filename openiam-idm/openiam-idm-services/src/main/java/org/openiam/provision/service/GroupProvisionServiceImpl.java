@@ -2,6 +2,7 @@ package org.openiam.provision.service;
 
 
 import groovy.lang.MissingPropertyException;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.mule.api.MuleContext;
@@ -21,6 +22,7 @@ import org.openiam.connector.type.response.ResponseType;
 import org.openiam.connector.type.response.SearchResponse;
 import org.openiam.dozer.converter.AttributeMapDozerConverter;
 import org.openiam.dozer.converter.ManagedSystemObjectMatchDozerConverter;
+import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.exception.ScriptEngineException;
 import org.openiam.idm.srvc.auth.dto.IdentityDto;
 import org.openiam.idm.srvc.auth.dto.IdentityTypeEnum;
@@ -37,11 +39,18 @@ import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.idm.srvc.mngsys.dto.PolicyMapObjectTypeOptions;
 import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
+import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
+import org.openiam.idm.srvc.role.domain.RoleEntity;
+import org.openiam.idm.srvc.user.domain.UserEntity;
+import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
+import org.openiam.idm.srvc.user.service.UserDataService;
+import org.openiam.provision.dto.PasswordSync;
 import org.openiam.provision.dto.ProvisionGroup;
+import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.resp.ProvisionGroupResponse;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleGroup;
@@ -49,6 +58,7 @@ import org.openiam.provision.type.ExtensibleObject;
 import org.openiam.provision.type.ExtensibleUser;
 import org.openiam.script.ScriptIntegration;
 import org.openiam.util.MuleContextProvider;
+import org.openiam.util.SpringContextProvider;
 import org.openiam.util.encrypt.Cryptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -76,10 +86,19 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Gr
     @Autowired
     protected ValidateConnectionConfig validateConnectionConfig;
 
+    @Autowired
+    private UserDozerConverter userDozerConverter;
+
     protected static final Log log = LogFactory.getLog(GroupProvisionServiceImpl.class);
 
     @Value("${org.openiam.idm.system.user.id}")
     protected String systemUserId;
+
+    @Autowired
+    protected String preProcessorGroup;
+
+    @Autowired
+    protected String postProcessorGroup;
 
     @Autowired
     @Qualifier("transactionManager")
@@ -118,11 +137,18 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Gr
     protected ResourceDataService resourceDataService;
 
     @Autowired
+    protected UserDataService userDataService;
+
+    @Autowired
     @Qualifier("cryptor")
     private Cryptor cryptor;
 
     @Autowired
     private KeyManagementService keyManagementService;
+
+    @Autowired
+    @Qualifier("defaultProvision")
+    protected ProvisionService provisionService;
 
     @Override
     public ProvisionGroupResponse addGroup(@WebParam(name = "group", targetNamespace = "") final ProvisionGroup group) throws Exception {
@@ -145,11 +171,21 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Gr
             response = transactionTemplate.execute(new TransactionCallback<ProvisionGroupResponse>() {
                 @Override
                 public ProvisionGroupResponse doInTransaction(TransactionStatus status) {
+                    // bind the objects to the scripting engine
+                    Map<String, Object> bindingMap = new HashMap<String, Object>();
+                    bindingMap.put("sysId", sysConfiguration.getDefaultManagedSysId());
+
+                    bindingMap.put("operation", isAdd ? "ADD" : "MODIFY");
+                    bindingMap.put(AbstractProvisioningService.GROUP, group);
+                    bindingMap.put(AbstractProvisioningService.TARGET_SYSTEM_IDENTITY_STATUS, null);
+                    bindingMap.put(AbstractProvisioningService.TARGET_SYSTEM_IDENTITY, null);
 
                     ProvisionGroupResponse tmpRes = new ProvisionGroupResponse();
-                    // TODO Pre-Processing
-                   //int callPreProcessor = callPreProcessor(isAdd ? "ADD" : "MODIFY", group, bindingMap);
-
+                    if (callPreProcessor(isAdd ? "ADD" : "MODIFY", group, bindingMap) != ProvisioningConstants.SUCCESS) {
+                        tmpRes.setStatus(ResponseStatus.FAILURE);
+                        tmpRes.setErrorCode(ResponseCode.FAIL_PREPROCESSOR);
+                        return tmpRes;
+                    }
                     Set<Resource> resources = group.getResources();
                     if (resources != null) {
                         for(Resource res : resources) {
@@ -163,7 +199,6 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Gr
                             IdentityDto groupTargetSysIdentity = identityService.getIdentity(group.getId(), managedSysId);
                             if(groupTargetSysIdentity == null) {
                                 List<AttributeMap> attrMap = managedSysService.getResourceAttributeMaps(res.getId());
-                                Map<String, Object> bindingMap = new HashMap<String, Object>();
                                 bindingMap.put("sysId", sysConfiguration.getDefaultManagedSysId());
                                 bindingMap.put("operation", isAdd ? "ADD" : "MODIFY");
                                 bindingMap.put(AbstractProvisioningService.TARGET_SYSTEM_IDENTITY_STATUS, null);
@@ -191,13 +226,23 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Gr
                                 }
                             }
 
+                            //Provisioning Members
+                            List<UserEntity> members = userDataService.getUsersForGroup(group.getId(), systemUserId, 0, Integer.MAX_VALUE);
+                            for(UserEntity member : members) {
+                                if(! isMemberAvailableInResource(member, res.getId())) {
+                                    User user = userDozerConverter.convertToDTO(member, true);
+                                    user.addResource(res);
+                                    provisionService.modifyUser(new ProvisionUser(user));
+                                }
+                            }
 
                             // bind the objects to the scripting engine
-                            Map<String, Object> bindingMap = new HashMap<String, Object>();
                             bindingMap.put("operation", isAdd ? "ADD" : "MODIFY");
                             bindingMap.put("sysId", managedSysId);
+                            bindingMap.put("managedSysId", managedSysId);
                             bindingMap.put("group", group);
                             bindingMap.put("identity", groupTargetSysIdentity);
+                            bindingMap.put("requesterId", systemUserId);
 
                             List<AttributeMap> attrMapEntities = managedSystemService
                                     .getAttributeMapsByManagedSysId(managedSysId);
@@ -227,23 +272,22 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Gr
                             // pre-processing
                             bindingMap.put("targetSystemAttributes", currentValueMap);
 
-                            ResourceProp preProcessProp = res.getResourceProperty("PRE_PROCESS");
-                            //TODO enable pre processor
+                            ResourceProp preProcessProp = res.getResourceProperty("GROUP_PRE_PROCESS");
                             String preProcessScript = preProcessProp != null ? preProcessProp.getValue() : null;
-                       /*     if (StringUtils.isNotBlank(preProcessScript)) {
+                            if (StringUtils.isNotBlank(preProcessScript)) {
 
-                                PreProcessor ppScript = createPreProcessScript(preProcessScript, bindingMap);
+                                PreProcessor<ProvisionGroup> ppScript = createPreProcessScript(preProcessScript, bindingMap);
                                 if (ppScript != null) {
                                     int executePreProcessResult = executePreProcess(ppScript, bindingMap, group,
                                             isExistedInTargetSystem ? "MODIFY" : "ADD");
                                     if (executePreProcessResult == ProvisioningConstants.FAIL) {
-                                        response.setStatus(ResponseStatus.FAILURE);
-                                        response.setErrorCode(ResponseCode.FAIL_PREPROCESSOR);
-                                        return response;
+                                        tmpRes.setStatus(ResponseStatus.FAILURE);
+                                        tmpRes.setErrorCode(ResponseCode.FAIL_PREPROCESSOR);
+                                        return tmpRes;
                                     }
                                 }
 
-                            }*/
+                            }
 
 
                            if (!isExistedInTargetSystem) {
@@ -266,21 +310,21 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Gr
 
 
                             // post processing
-                            ResourceProp postProcessProp = res.getResourceProperty("POST_PROCESS");
+                            ResourceProp postProcessProp = res.getResourceProperty("GROUP_POST_PROCESS");
                             String postProcessScript = postProcessProp != null ? postProcessProp.getValue() : null;
-                          /*  if (StringUtils.isNotBlank(postProcessScript)) {
+                            if (StringUtils.isNotBlank(postProcessScript)) {
                                 PostProcessor ppScript = createPostProcessScript(postProcessScript, bindingMap);
                                 if (ppScript != null) {
                                     int executePostProcessResult = executePostProcess(ppScript, bindingMap, group,
                                             isExistedInTargetSystem ? "MODIFY" : "ADD", connectorSuccess);
 
                                     if (executePostProcessResult == ProvisioningConstants.FAIL) {
-                                        response.setStatus(ResponseStatus.FAILURE);
-                                        response.setErrorCode(ResponseCode.FAIL_POSTPROCESSOR);
-                                        return response;
+                                        tmpRes.setStatus(ResponseStatus.FAILURE);
+                                        tmpRes.setErrorCode(ResponseCode.FAIL_POSTPROCESSOR);
+                                        return tmpRes;
                                     }
                                 }
-                            }*/
+                            }
 
                             if (connectorSuccess) {
                                 tmpRes.setStatus(ResponseStatus.SUCCESS);
@@ -299,8 +343,17 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Gr
                             // TODO WARNING
                         }}
                     }
-                    //TODO Post-Processing
+                    // SET POST ATTRIBUTES FOR DEFAULT SYS SCRIPT
 
+                    int callPostProcessorResult = callPostProcessor(isAdd ? "ADD" : "MODIFY", group, bindingMap);
+               //     auditLog.addAttribute(AuditAttributeName.DESCRIPTION, "callPostProcessor result="
+               //             + (callPostProcessorResult == 1 ? "SUCCESS" : "FAIL"));
+                    if (callPostProcessorResult != ProvisioningConstants.SUCCESS) {
+                        tmpRes.setStatus(ResponseStatus.FAILURE);
+                        tmpRes.setErrorCode(ResponseCode.FAIL_POSTPROCESSOR);
+               //         auditLog.addAttribute(AuditAttributeName.DESCRIPTION, "PostProcessor error.");
+                        return tmpRes;
+                    }
                     tmpRes.setStatus(ResponseStatus.SUCCESS);
                     return tmpRes;
                 }
@@ -313,6 +366,168 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Gr
     }
 
 
+    private boolean isMemberAvailableInResource(final UserEntity member, final String resourceId) {
+        boolean result = false;
+        for(ResourceEntity res : member.getResources()) {
+            if(res.getId().equalsIgnoreCase(resourceId)) {
+                return true;
+            }
+        }
+        for(RoleEntity re : member.getRoles()) {
+           for(ResourceEntity res : re.getResources()) {
+               if(res.getId().equalsIgnoreCase(resourceId)) {
+                   return true;
+               }
+           }
+        }
+        return result;
+    }
+
+    protected int callPreProcessor(String operation, ProvisionGroup pGroup, Map<String, Object> bindingMap ) {
+
+        ProvisionServicePreProcessor addPreProcessScript = null;
+        if ( pGroup != null) {
+            System.out.println("======= callPreProcessor: isSkipPreprocessor="+pGroup.isSkipPreprocessor()+", ");
+            if (!pGroup.isSkipPreprocessor() &&
+                    (addPreProcessScript = createProvPreProcessScript(preProcessorGroup, bindingMap)) != null) {
+                addPreProcessScript.setMuleContext(MuleContextProvider.getCtx());
+                addPreProcessScript.setApplicationContext(SpringContextProvider.getApplicationContext());
+                return executeProvisionPreProcess(addPreProcessScript, bindingMap, pGroup, null, operation);
+
+            }
+            System.out.println("======= callPreProcessor: addPreProcessScript="+addPreProcessScript+", ");
+        }
+        // pre-processor was skipped
+        return ProvisioningConstants.SUCCESS;
+    }
+
+
+    protected int callPostProcessor(String operation, ProvisionGroup pGroup, Map<String, Object> bindingMap ) {
+
+        ProvisionServicePostProcessor addPostProcessScript;
+
+        if ( pGroup != null) {
+            if (!pGroup.isSkipPostProcessor() &&
+                    (addPostProcessScript = createProvPostProcessScript(postProcessorGroup, bindingMap)) != null) {
+                addPostProcessScript.setMuleContext(MuleContextProvider.getCtx());
+                addPostProcessScript.setApplicationContext(SpringContextProvider.getApplicationContext());
+                return executeProvisionPostProcess(addPostProcessScript, bindingMap, pGroup, null, operation);
+
+            }
+        }
+        // pre-processor was skipped
+        return ProvisioningConstants.SUCCESS;
+    }
+    protected int executeProvisionPreProcess(ProvisionServicePreProcessor<ProvisionGroup> ppScript,
+                                             Map<String, Object> bindingMap, ProvisionGroup pGroup, PasswordSync passwordSync, String operation) {
+        if ("ADD".equalsIgnoreCase(operation)) {
+            return ppScript.add(pGroup, bindingMap);
+        }
+        if ("MODIFY".equalsIgnoreCase(operation)) {
+            return ppScript.modify(pGroup, bindingMap);
+        }
+        if ("DELETE".equalsIgnoreCase(operation)) {
+            return ppScript.delete(pGroup, bindingMap);
+        }
+        if ("SET_PASSWORD".equalsIgnoreCase(operation)) {
+            return ppScript.setPassword(passwordSync, bindingMap);
+        }
+
+        return 0;
+    }
+
+    protected int executeProvisionPostProcess(ProvisionServicePostProcessor<ProvisionGroup> ppScript,
+                                              Map<String, Object> bindingMap, ProvisionGroup pGroup, PasswordSync passwordSync, String operation) {
+        if ("ADD".equalsIgnoreCase(operation)) {
+            return ppScript.add(pGroup, bindingMap);
+        }
+        if ("MODIFY".equalsIgnoreCase(operation)) {
+            return ppScript.modify(pGroup, bindingMap);
+        }
+        if ("DELETE".equalsIgnoreCase(operation)) {
+            return ppScript.delete(pGroup, bindingMap);
+        }
+        if ("SET_PASSWORD".equalsIgnoreCase(operation)) {
+            return ppScript.setPassword(passwordSync, bindingMap);
+        }
+
+        return 0;
+    }
+
+    protected PreProcessor<ProvisionGroup> createPreProcessScript(String scriptName, Map<String, Object> bindingMap) {
+        try {
+            return (PreProcessor<ProvisionGroup>) scriptRunner.instantiateClass(bindingMap, scriptName);
+        } catch (Exception ce) {
+            log.error(ce);
+            return null;
+        }
+    }
+
+    protected PostProcessor<ProvisionGroup> createPostProcessScript(String scriptName, Map<String, Object> bindingMap) {
+        try {
+            return (PostProcessor<ProvisionGroup>) scriptRunner.instantiateClass(bindingMap, scriptName);
+        } catch (Exception ce) {
+            log.error(ce);
+            return null;
+        }
+    }
+
+    protected int executePreProcess(PreProcessor<ProvisionGroup> ppScript,
+                                    Map<String, Object> bindingMap, ProvisionGroup group, String operation) {
+        if ("ADD".equalsIgnoreCase(operation)) {
+            return ppScript.add(group, bindingMap);
+        }
+        if ("MODIFY".equalsIgnoreCase(operation)) {
+            return ppScript.modify(group, bindingMap);
+        }
+        if ("DELETE".equalsIgnoreCase(operation)) {
+            return ppScript.delete(group, bindingMap);
+        }
+        if ("SET_PASSWORD".equalsIgnoreCase(operation)) {
+            return ppScript.setPassword(bindingMap);
+        }
+
+        return 0;
+    }
+
+    protected int executePostProcess(PostProcessor<ProvisionGroup> ppScript,
+                                     Map<String, Object> bindingMap, ProvisionGroup group, String operation, boolean success) {
+        if ("ADD".equalsIgnoreCase(operation)) {
+            return ppScript.add(group, bindingMap, success);
+        }
+        if ("MODIFY".equalsIgnoreCase(operation)) {
+            return ppScript.modify(group, bindingMap, success);
+
+        }
+        if ("DELETE".equalsIgnoreCase(operation)) {
+            return ppScript.delete(group, bindingMap, success);
+
+        }
+
+        if ("SET_PASSWORD".equalsIgnoreCase(operation)) {
+            return ppScript.setPassword(bindingMap, success);
+        }
+
+        return 0;
+    }
+
+    protected ProvisionServicePreProcessor<ProvisionGroup> createProvPreProcessScript(String scriptName, Map<String, Object> bindingMap) {
+        try {
+            return (ProvisionServicePreProcessor<ProvisionGroup>) scriptRunner.instantiateClass(bindingMap, scriptName);
+        } catch (Exception ce) {
+            log.error(ce);
+            return null;
+        }
+    }
+
+    protected ProvisionServicePostProcessor<ProvisionGroup> createProvPostProcessScript(String scriptName, Map<String, Object> bindingMap) {
+        try {
+            return (ProvisionServicePostProcessor<ProvisionGroup>) scriptRunner.instantiateClass(bindingMap, scriptName);
+        } catch (Exception ce) {
+            log.error(ce);
+            return null;
+        }
+    }
 
     private boolean requestAddModify(IdentityDto identityDto, String requestId, ManagedSysDto mSys,
                                      ManagedSystemObjectMatch matchObj, ExtensibleObject extensibleObject, boolean isAdd) {
@@ -561,12 +776,12 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Gr
         bindingMap.put("group", pGroup);
         bindingMap.put("identity", identityDto.getIdentity());
 
-      /*  if (callPreProcessor("DELETE", pUser, bindingMap) != ProvisioningConstants.SUCCESS) {
+        if (callPreProcessor("DELETE", pGroup, bindingMap) != ProvisioningConstants.SUCCESS) {
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(ResponseCode.FAIL_PREPROCESSOR);
             return response;
         }
-*/
+
         if (status != UserStatusEnum.REMOVE
                 && (UserStatusEnum.DELETED.getValue().equalsIgnoreCase(pGroup.getStatus()) || UserStatusEnum.TERMINATE.getValue().equalsIgnoreCase(pGroup.getStatus()))) {
             log.debug("User was already deleted. Nothing more to do.");
@@ -588,8 +803,9 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Gr
             }
             // pre-processing
 
-            Resource res = null;
+
             String resourceId = mSys.getResourceId();
+            Resource res = resourceDataService.getResource(resourceId, null);
 
             bindingMap.put("IDENTITY", identityDto.getIdentity());
             bindingMap.put("RESOURCE", res);
@@ -597,18 +813,16 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Gr
             bindingMap.put(AbstractProvisioningService.TARGET_SYSTEM_IDENTITY_STATUS, AbstractProvisioningService.IDENTITY_EXIST);
             bindingMap.put(AbstractProvisioningService.TARGET_SYS_RES_ID, resourceId);
 
-           /* if (resourceId != null) {
-                res = resourceDataService.getResource(resourceId);
-                if (res != null) {
-                    String preProcessScript = getResProperty(res.getResourceProps(), "PRE_PROCESS");
-                    if (preProcessScript != null && !preProcessScript.isEmpty()) {
-                        PreProcessor ppScript = createPreProcessScript(preProcessScript, bindingMap);
-                        if (ppScript != null) {
-                            executePreProcess(ppScript, bindingMap, pUser, "DELETE");
-                        }
-                    }
+            ResourceProp preProcessProp = res.getResourceProperty("GROUP_PRE_PROCESS");
+            String preProcessScript = preProcessProp != null ? preProcessProp.getValue() : null;
+            if (StringUtils.isNotBlank(preProcessScript)) {
+
+                PreProcessor<ProvisionGroup> ppScript = createPreProcessScript(preProcessScript, bindingMap);
+                if (ppScript != null) {
+                    executePreProcess(ppScript, bindingMap, pGroup, "DELETE");
                 }
-            }*/
+
+            }
 
             boolean connectorSuccess = false;
             ResponseType resp = delete(identityDto, requestId, mSys, matchObj);
@@ -632,13 +846,14 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Gr
             }
 
          //   bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS, null);
-           /* String postProcessScript = getResProperty(res.getResourceProps(), "POST_PROCESS");
-            if (postProcessScript != null && !postProcessScript.isEmpty()) {
-                PostProcessor ppScript = createPostProcessScript(postProcessScript, bindingMap);
+            ResourceProp postProcessScript = res.getResourceProperty("GROUP_POST_PROCESS");
+            String postProcessScriptVal = postProcessScript != null ? postProcessScript.getValue() : null;
+            if (postProcessScriptVal != null && !postProcessScriptVal.isEmpty()) {
+                PostProcessor<ProvisionGroup> ppScript = createPostProcessScript(postProcessScriptVal, bindingMap);
                 if (ppScript != null) {
-                    executePostProcess(ppScript, bindingMap, pUser, "DELETE", connectorSuccess);
+                    executePostProcess(ppScript, bindingMap, pGroup, "DELETE", connectorSuccess);
                 }
-            }*/
+            }
 
         } else {
             // update the identities and set them to inactive
@@ -657,7 +872,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Gr
 
                                 ManagedSystemObjectMatch matchObj = null;
                                 ManagedSystemObjectMatch[] matchObjAry = managedSystemService.managedSysObjectParam(
-                                        mSys.getId(), "USER");
+                                        mSys.getId(), "GROUP");
                                 if (matchObjAry != null && matchObjAry.length > 0) {
                                     matchObj = matchObjAry[0];
                                     bindingMap.put(AbstractProvisioningService.MATCH_PARAM, matchObj);
@@ -678,24 +893,21 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Gr
                                 bindingMap.put(AbstractProvisioningService.TARGET_SYS_RES_ID, resourceId);
                                 bindingMap.put(AbstractProvisioningService.TARGET_SYSTEM_IDENTITY_STATUS, AbstractProvisioningService.IDENTITY_EXIST);
 
-                               /* if (resourceId != null) {
-                                    resource = resourceDataService.getResource(resourceId);
+                                if (resourceId != null) {
+                                    resource = resourceDataService.getResource(resourceId, null);
                                     if (resource != null) {
                                         bindingMap.put(AbstractProvisioningService.TARGET_SYS_RES, resource);
-
-                                        String preProcessScript = getResProperty(resource.getResourceProps(),
-                                                "PRE_PROCESS");
-                                        if (preProcessScript != null && !preProcessScript.isEmpty()) {
-                                            PreProcessor ppScript = createPreProcessScript(preProcessScript, bindingMap);
+                                        ResourceProp preProcessProp = resource.getResourceProperty("GROUP_PRE_PROCESS");
+                                        String preProcessScript = preProcessProp != null ? preProcessProp.getValue() : null;
+                                        if (StringUtils.isNotBlank(preProcessScript)) {
+                                            PreProcessor<ProvisionGroup> ppScript = createPreProcessScript(preProcessScript, bindingMap);
                                             if (ppScript != null) {
-                                                if (executePreProcess(ppScript, bindingMap, pUser, "DELETE") == ProvisioningConstants.FAIL) {
-                                                    continue;
-                                                }
+                                                executePreProcess(ppScript, bindingMap, pGroup, "DELETE");
                                             }
                                         }
                                     }
                                 }
-*/
+
                                 boolean connectorSuccess = false;
 
                                 ObjectResponse resp = delete(l, requestId,
@@ -709,16 +921,16 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Gr
                                 }
                                 // SET POST ATTRIBUTES FOR TARGET SYS SCRIPT
                                 bindingMap.put(AbstractProvisioningService.TARGET_SYSTEM_IDENTITY_STATUS, null);
-                              /*  if (resource != null) {
-                                    String postProcessScript = getResProperty(resource.getResourceProps(),
-                                            "POST_PROCESS");
-                                    if (postProcessScript != null && !postProcessScript.isEmpty()) {
-                                        PostProcessor ppScript = createPostProcessScript(postProcessScript, bindingMap);
+                                if (resource != null) {
+                                    ResourceProp postProcessScript = resource.getResourceProperty("GROUP_POST_PROCESS");
+                                    String postProcessScriptVal = postProcessScript != null ? postProcessScript.getValue() : null;
+                                    if (postProcessScriptVal != null && !postProcessScriptVal.isEmpty()) {
+                                        PostProcessor<ProvisionGroup> ppScript = createPostProcessScript(postProcessScriptVal, bindingMap);
                                         if (ppScript != null) {
-                                            executePostProcess(ppScript, bindingMap, pUser, "DELETE", connectorSuccess);
+                                            executePostProcess(ppScript, bindingMap, pGroup, "DELETE", connectorSuccess);
                                         }
                                     }
-                                }*/
+                                }
                                 if (status == UserStatusEnum.REMOVE) {
                                     identityService.deleteIdentity(identityDto.getIdentity());
                                 }
@@ -727,12 +939,17 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Gr
                         }
                     } catch (Throwable tw) {
                         log.error(l, tw);
+                        tw.printStackTrace();
+                        response.setStatus(ResponseStatus.FAILURE);
+                        response.setErrorCode(ResponseCode.INTERNAL_ERROR);
+                        return response;
                     }
                 }
             }
         }
         if (UserStatusEnum.REMOVE.getValue().equalsIgnoreCase(status.getValue())) {
-            identityService.deleteIdentity(identityDto.getId());
+
+                identityService.deleteIdentity(identityDto.getId());
             try {
                 groupDataWebService.deleteGroup(groupId,requesterId);
             } catch (Exception e) {
@@ -749,15 +966,15 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Gr
         }
         // SET POST ATTRIBUTES FOR DEFAULT SYS SCRIPT
 
-       /* bindingMap.put(TARGET_SYSTEM_IDENTITY, identityDto.getIdentity());
-        bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS, null);
-        bindingMap.put(TARGET_SYS_RES_ID, null);
+        bindingMap.put(AbstractProvisioningService.TARGET_SYSTEM_IDENTITY, identityDto.getIdentity());
+        bindingMap.put(AbstractProvisioningService.TARGET_SYSTEM_IDENTITY_STATUS, null);
+        bindingMap.put(AbstractProvisioningService.TARGET_SYS_RES_ID, null);
 
-        if (callPostProcessor("DELETE", pUser, bindingMap) != ProvisioningConstants.SUCCESS) {
+        if (callPostProcessor("DELETE", pGroup, bindingMap) != ProvisioningConstants.SUCCESS) {
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(ResponseCode.FAIL_POSTPROCESSOR);
             return response;
-        }*/
+        }
 
         response.setStatus(ResponseStatus.SUCCESS);
         return response;
@@ -770,8 +987,9 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Gr
             ManagedSysDto mSys,
             ManagedSystemObjectMatch matchObj) {
 
-        CrudRequest<ExtensibleUser> request = new CrudRequest<ExtensibleUser>();
-
+        CrudRequest<ExtensibleGroup> request = new CrudRequest<ExtensibleGroup>();
+        ExtensibleGroup extensibleGroup =  new ExtensibleGroup();
+        request.setExtensibleObject(extensibleGroup);
         request.setObjectIdentity(identityDto.getIdentity());
         request.setRequestID(requestId);
         request.setTargetID(identityDto.getManagedSysId());
@@ -796,7 +1014,10 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Gr
         return resp;
     }
 
-
+    @Override
+    public ProvisionGroupResponse removeGroup(@WebParam(name = "groupId", targetNamespace = "") String groupId, @WebParam(name = "requesterId", targetNamespace = "") String requesterId) {
+        return deleteGroup(sysConfiguration.getDefaultManagedSysId(), groupId, UserStatusEnum.REMOVE, requesterId);
+    }
 
     @Override
     public ProvisionGroupResponse deprovisionSelectedResources(@WebParam(name = "groupId", targetNamespace = "") String groupId, @WebParam(name = "requesterId", targetNamespace = "") String requesterId, @WebParam(name = "resourceList", targetNamespace = "") List<String> resourceList) {
