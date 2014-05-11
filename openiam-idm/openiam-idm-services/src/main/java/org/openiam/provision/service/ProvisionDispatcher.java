@@ -113,6 +113,8 @@ public class ProvisionDispatcher implements Sweepable {
     @Autowired
     private ResourceService resourceService;
     @Autowired
+    private ProvisionService provisionService;
+    @Autowired
     private ResourceDozerConverter resourceDozerConverter;
     @Autowired
     private LoginDozerConverter loginDozerConverter;
@@ -406,9 +408,8 @@ public class ProvisionDispatcher implements Sweepable {
             }
 
             if (!isExistedInTargetSystem) {
-
-                connectorSuccess = requestAddModify(targetSysLogin, requestId, mSys, matchObj, extUser, true,
-                        idmAuditLog);
+                ObjectResponse resp = provisionService.requestAddModify(extUser, targetSysLogin, true, requestId, idmAuditLog);
+                connectorSuccess = resp.getStatus() != StatusCodeType.FAILURE;
 
             } else { // if user exists in target system
 
@@ -421,8 +422,8 @@ public class ProvisionDispatcher implements Sweepable {
                             new ExtensibleAttribute("ORIG_IDENTITY", targetSysLogin.getOrigPrincipalName(),
                                     AttributeOperationEnum.REPLACE.getValue(), "String"));
                 }
-                connectorSuccess = requestAddModify(targetSysLogin, requestId, mSys, matchObj, extUser, false,
-                        idmAuditLog);
+                ObjectResponse resp = provisionService.requestAddModify(extUser, targetSysLogin, false, requestId, idmAuditLog);
+                connectorSuccess = resp.getStatus() != StatusCodeType.FAILURE;
             }
 
             // post processing
@@ -456,55 +457,6 @@ public class ProvisionDispatcher implements Sweepable {
             ex.printStackTrace();
         }
         return response;
-    }
-
-    private boolean requestAddModify(Login mLg, String requestId, ManagedSysDto mSys,
-            ManagedSystemObjectMatch matchObj, ExtensibleUser extUser, boolean isAdd,
-            final IdmAuditLog idmAuditLog) {
-
-        CrudRequest<ExtensibleUser> userReq = new CrudRequest<ExtensibleUser>();
-        userReq.setObjectIdentity(mLg.getLogin());
-        userReq.setRequestID(requestId);
-        userReq.setTargetID(mLg.getManagedSysId());
-        userReq.setHostLoginId(mSys.getUserId());
-        String passwordDecoded = mSys.getPswd();
-        try {
-            passwordDecoded = getDecryptedPassword(mSys);
-        } catch (ConnectorDataException e) {
-            e.printStackTrace();
-        }
-        userReq.setHostLoginPassword(passwordDecoded);
-        userReq.setHostUrl(mSys.getHostUrl());
-        if (matchObj != null) {
-            userReq.setBaseDN(matchObj.getBaseDn());
-        }
-        userReq.setOperation(isAdd ? "ADD" : "MODIFY");
-        userReq.setExtensibleObject(extUser);
-        userReq.setScriptHandler(mSys.getAddHandler());
-
-        ObjectResponse resp = isAdd ? connectorAdapter.addRequest(mSys, userReq, MuleContextProvider.getCtx())
-                : connectorAdapter.modifyRequest(mSys, userReq, MuleContextProvider.getCtx());
-        idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, (isAdd ? "ADD IDENTITY = "
-                : "MODIFY IDENTITY = ") + resp.getStatus() + " details:" + resp.getErrorMsgAsStr());
-
-        IdmAuditLog idmAuditLogChild1 = new IdmAuditLog();
-        idmAuditLogChild1.setAction(isAdd ? AuditAction.ADD_USER_TO_RESOURCE.value() : AuditAction.UPDATE_USER_TO_RESOURCE.value());
-        idmAuditLogChild1.setRequestorUserId(systemUserId);
-        idmAuditLogChild1.setTargetUser(mLg.getUserId(),mLg.getLogin());
-        idmAuditLogChild1.setTargetResource(mSys.getResourceId(), mSys.getName());
-        boolean successResult = resp.getStatus() != StatusCodeType.FAILURE;
-        if(successResult) {
-            idmAuditLogChild1.succeed();
-            idmAuditLogChild1.setSuccessReason(StatusCodeType.SUCCESS.value());
-        } else {
-            idmAuditLogChild1.fail();
-            idmAuditLogChild1.setFailureReason(resp.getErrorMsgAsStr());
-            idmAuditLogChild1.setAuditDescription(resp.getErrorMsgAsStr());
-            idmAuditLog.setAuditDescription(resp.getErrorMsgAsStr());
-        }
-        idmAuditLog.addChild(idmAuditLogChild1);
-
-        return successResult;
     }
 
     /**

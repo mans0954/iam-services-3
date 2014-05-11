@@ -47,9 +47,6 @@ public class RoleAttributeEntity implements Serializable {
     @Type(type = "yes_no")
     private boolean isMultivalued = false;
 
-    @Column(name="ATTR_GROUP",length=20)
-    private String attrGroup;
-
 	public String getRoleAttrId() {
 		return roleAttrId;
 	}
@@ -106,20 +103,10 @@ public class RoleAttributeEntity implements Serializable {
         this.isMultivalued = isMultivalued;
     }
 
-    public String getAttrGroup() {
-		return attrGroup;
-	}
-
-	public void setAttrGroup(String attrGroup) {
-		this.attrGroup = attrGroup;
-	}
-
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result
-				+ ((attrGroup == null) ? 0 : attrGroup.hashCode());
         result = prime * result + ((element == null) ? 0 : element.hashCode());
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result + ((role == null) ? 0 : role.hashCode());
@@ -139,11 +126,6 @@ public class RoleAttributeEntity implements Serializable {
 		if (getClass() != obj.getClass())
 			return false;
 		RoleAttributeEntity other = (RoleAttributeEntity) obj;
-		if (attrGroup == null) {
-			if (other.attrGroup != null)
-				return false;
-		} else if (!attrGroup.equals(other.attrGroup))
-			return false;
         if (element == null) {
             if (other.element != null)
                 return false;
@@ -176,7 +158,7 @@ public class RoleAttributeEntity implements Serializable {
 	@Override
 	public String toString() {
 		return "RoleAttributeEntity [roleAttrId=" + roleAttrId + ", role="
-				+ role + ", name=" + name + ", value=" + value + ", attrGroup=" + attrGroup + "]";
+				+ role + ", name=" + name + ", value=" + value + "]";
 	}
 
 	

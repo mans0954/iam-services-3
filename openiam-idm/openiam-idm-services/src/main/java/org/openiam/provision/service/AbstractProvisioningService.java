@@ -8,6 +8,7 @@ import org.mule.module.client.MuleClient;
 import org.mule.util.StringUtils;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.SysConfiguration;
+import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.connector.type.*;
@@ -21,6 +22,7 @@ import org.openiam.dozer.converter.*;
 import org.openiam.exception.EncryptionException;
 import org.openiam.exception.ObjectNotFoundException;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
+import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
@@ -43,6 +45,7 @@ import org.openiam.idm.srvc.meta.dto.MetadataType;
 import org.openiam.idm.srvc.meta.service.MetadataTypeDAO;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
+import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
 import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
@@ -212,6 +215,9 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
     protected AuditLogService auditLogService;
     @Autowired
     protected MetadataTypeDAO metadataTypeDAO;
+
+    @Autowired
+    private ManagedSystemObjectMatchDozerConverter managedSystemObjectMatchDozerConverter;
 
     protected void checkAuditingAttributes(ProvisionUser pUser) {
         if ( pUser.getRequestClientIP() == null || pUser.getRequestClientIP().isEmpty() ) {
@@ -1391,15 +1397,25 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         return extUser;
     }
 
+    public ObjectResponse requestAddModify(ExtensibleUser extUser, Login mLg, boolean isAdd,
+                                    String requestId, final IdmAuditLog idmAuditLog) {
 
+        ObjectResponse response = new ObjectResponse();
 
-    protected boolean add(Login mLg, String requestId, ManagedSysDto mSys,
-                                ManagedSystemObjectMatch matchObj, ExtensibleUser extUser) {
+        String managedSysId = mLg.getManagedSysId();
+        if (managedSysId == null) {
+            log.error("managedSysId is not set for Login");
+            response.setStatus(StatusCodeType.FAILURE);
+            response.setError(ErrorCode.INVALID_MANAGED_SYS_ID);
+            return response;
+        }
+        ManagedSysDto mSys = managedSysDozerConverter.convertToDTO(
+                managedSystemService.getManagedSysById(managedSysId), true);
 
         CrudRequest<ExtensibleUser> userReq = new CrudRequest<ExtensibleUser>();
         userReq.setObjectIdentity(mLg.getLogin());
         userReq.setRequestID(requestId);
-        userReq.setTargetID(mLg.getManagedSysId());
+        userReq.setTargetID(managedSysId);
         userReq.setHostLoginId(mSys.getUserId());
         String passwordDecoded = mSys.getPswd();
         try {
@@ -1409,17 +1425,44 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         }
         userReq.setHostLoginPassword(passwordDecoded);
         userReq.setHostUrl(mSys.getHostUrl());
+
+        ManagedSystemObjectMatch matchObj = null;
+        List<ManagedSystemObjectMatchEntity> objList = managedSystemService.managedSysObjectParam(managedSysId,
+                ManagedSystemObjectMatch.USER);
+        if (CollectionUtils.isNotEmpty(objList)) {
+            matchObj = managedSystemObjectMatchDozerConverter.convertToDTO(objList.get(0), false);
+        }
+
         if (matchObj != null) {
             userReq.setBaseDN(matchObj.getBaseDn());
         }
-        userReq.setOperation("ADD");
+        userReq.setOperation(isAdd ? "ADD" : "MODIFY");
         userReq.setExtensibleObject(extUser);
-
         userReq.setScriptHandler(mSys.getAddHandler());
 
-        ObjectResponse resp = connectorAdapter.addRequest(mSys, userReq, MuleContextProvider.getCtx());
+        response = isAdd ? connectorAdapter.addRequest(mSys, userReq, MuleContextProvider.getCtx())
+                : connectorAdapter.modifyRequest(mSys, userReq, MuleContextProvider.getCtx());
+        idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, (isAdd ? "ADD IDENTITY = "
+                : "MODIFY IDENTITY = ") + response.getStatus() + " details:" + response.getErrorMsgAsStr());
 
-        return resp.getStatus() != StatusCodeType.FAILURE;
+        IdmAuditLog idmAuditLogChild1 = new IdmAuditLog();
+        idmAuditLogChild1.setAction(isAdd ? AuditAction.ADD_USER_TO_RESOURCE.value() : AuditAction.UPDATE_USER_TO_RESOURCE.value());
+        idmAuditLogChild1.setRequestorUserId(systemUserId);
+        idmAuditLogChild1.setTargetUser(mLg.getUserId(),mLg.getLogin());
+        idmAuditLogChild1.setTargetResource(mSys.getResourceId(), mSys.getName());
+        boolean successResult = response.getStatus() != StatusCodeType.FAILURE;
+        if(successResult) {
+            idmAuditLogChild1.succeed();
+            idmAuditLogChild1.setSuccessReason(StatusCodeType.SUCCESS.value());
+        } else {
+            idmAuditLogChild1.fail();
+            idmAuditLogChild1.setFailureReason(response.getErrorMsgAsStr());
+            idmAuditLogChild1.setAuditDescription(response.getErrorMsgAsStr());
+            idmAuditLog.setAuditDescription(response.getErrorMsgAsStr());
+        }
+        idmAuditLog.addChild(idmAuditLogChild1);
+
+        return response;
     }
 
     protected ObjectResponse delete(

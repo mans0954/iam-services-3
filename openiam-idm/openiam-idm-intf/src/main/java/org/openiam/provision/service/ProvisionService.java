@@ -22,6 +22,9 @@
 package org.openiam.provision.service;
 
 import org.openiam.base.ws.Response;
+import org.openiam.connector.type.response.ObjectResponse;
+import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
+import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.prov.request.dto.BulkOperationRequest;
 import org.openiam.idm.srvc.pswd.dto.PasswordValidationResponse;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
@@ -228,5 +231,36 @@ public interface ProvisionService {
     public ManagedSystemViewerResponse buildManagedSystemViewer(
             @WebParam(name = "userId", targetNamespace = "") String userId,
             @WebParam(name = "managedSysId", targetNamespace = "") String managedSysId);
+
+    /**
+     * Adds user directly to a given target system bypassing policy map attributes script logic
+     * @param extUser
+     * @param login
+     * @param requestorId
+     * @return
+     */
+    @WebMethod
+    public Response requestAdd(@WebParam(name = "extUser", targetNamespace = "") ExtensibleUser extUser,
+            @WebParam(name = "login", targetNamespace = "") Login login,
+            @WebParam(name = "requestorId", targetNamespace = "") String requestorId);
+
+    /**
+     * Modifies user directly in a given target system bypassing policy map attributes script logic
+     * @param extUser
+     * @param login
+     * @param requestorId
+     * @return
+     */
+    @WebMethod
+    public Response requestModify(@WebParam(name = "extUser", targetNamespace = "") ExtensibleUser extUser,
+                                  @WebParam(name = "login", targetNamespace = "") Login login,
+                                  @WebParam(name = "requestorId", targetNamespace = "") String requestorId);
+
+    @WebMethod
+    public ObjectResponse requestAddModify(@WebParam(name = "extUser", targetNamespace = "") ExtensibleUser extUser,
+            @WebParam(name = "login", targetNamespace = "") Login login,
+            @WebParam(name = "isAdd", targetNamespace = "") boolean isAdd,
+            @WebParam(name = "requestId", targetNamespace = "") String requestId,
+            @WebParam(name = "idmAuditLog", targetNamespace = "") final IdmAuditLog idmAuditLog);
 
 }
