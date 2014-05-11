@@ -536,16 +536,16 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         }
     }
 
-    protected int executeProvisionPreProcess(ProvisionServicePreProcessor ppScript,
+    protected int executeProvisionPreProcess(ProvisionServicePreProcessor<ProvisionUser> ppScript,
             Map<String, Object> bindingMap, ProvisionUser user, PasswordSync passwordSync, String operation) {
         if ("ADD".equalsIgnoreCase(operation)) {
-            return ppScript.addUser(user, bindingMap);
+            return ppScript.add(user, bindingMap);
         }
         if ("MODIFY".equalsIgnoreCase(operation)) {
-            return ppScript.modifyUser(user, bindingMap);
+            return ppScript.modify(user, bindingMap);
         }
         if ("DELETE".equalsIgnoreCase(operation)) {
-            return ppScript.deleteUser(user, bindingMap);
+            return ppScript.delete(user, bindingMap);
         }
         if ("SET_PASSWORD".equalsIgnoreCase(operation)) {
             return ppScript.setPassword(passwordSync, bindingMap);
@@ -554,16 +554,16 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         return 0;
     }
 
-    protected int executeProvisionPostProcess(ProvisionServicePostProcessor ppScript,
+    protected int executeProvisionPostProcess(ProvisionServicePostProcessor<ProvisionUser> ppScript,
                 Map<String, Object> bindingMap, ProvisionUser user, PasswordSync passwordSync, String operation) {
         if ("ADD".equalsIgnoreCase(operation)) {
-            return ppScript.addUser(user, bindingMap);
+            return ppScript.add(user, bindingMap);
         }
         if ("MODIFY".equalsIgnoreCase(operation)) {
-            return ppScript.modifyUser(user, bindingMap);
+            return ppScript.modify(user, bindingMap);
         }
         if ("DELETE".equalsIgnoreCase(operation)) {
-            return ppScript.deleteUser(user, bindingMap);
+            return ppScript.delete(user, bindingMap);
         }
         if ("SET_PASSWORD".equalsIgnoreCase(operation)) {
             return ppScript.setPassword(passwordSync, bindingMap);
@@ -572,16 +572,16 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         return 0;
     }
 
-    protected int executePreProcess(PreProcessor ppScript,
+    protected int executePreProcess(PreProcessor<ProvisionUser> ppScript,
                 Map<String, Object> bindingMap, ProvisionUser user, String operation) {
         if ("ADD".equalsIgnoreCase(operation)) {
-            return ppScript.addUser(user, bindingMap);
+            return ppScript.add(user, bindingMap);
         }
         if ("MODIFY".equalsIgnoreCase(operation)) {
-            return ppScript.modifyUser(user, bindingMap);
+            return ppScript.modify(user, bindingMap);
         }
         if ("DELETE".equalsIgnoreCase(operation)) {
-            return ppScript.deleteUser(user, bindingMap);
+            return ppScript.delete(user, bindingMap);
         }
         if ("SET_PASSWORD".equalsIgnoreCase(operation)) {
             return ppScript.setPassword(bindingMap);
@@ -590,17 +590,17 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         return 0;
     }
 
-    protected int executePostProcess(PostProcessor ppScript,
+    protected int executePostProcess(PostProcessor<ProvisionUser> ppScript,
                 Map<String, Object> bindingMap, ProvisionUser user, String operation, boolean success) {
         if ("ADD".equalsIgnoreCase(operation)) {
-            return ppScript.addUser(user, bindingMap, success);
+            return ppScript.add(user, bindingMap, success);
         }
         if ("MODIFY".equalsIgnoreCase(operation)) {
-            return ppScript.modifyUser(user, bindingMap, success);
+            return ppScript.modify(user, bindingMap, success);
 
         }
         if ("DELETE".equalsIgnoreCase(operation)) {
-            return ppScript.deleteUser(user, bindingMap, success);
+            return ppScript.delete(user, bindingMap, success);
 
         }
 

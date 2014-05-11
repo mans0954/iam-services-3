@@ -26,7 +26,7 @@ import java.util.Map;
  * Time: 10:00 PM
  * @version 2.2
  */
-public abstract class AbstractPostProcessor implements ProvisionServicePostProcessor {
+public abstract class AbstractPostProcessor<T> implements ProvisionServicePostProcessor<T> {
     protected MuleContext muleContext;
     protected ApplicationContext context;
 
@@ -63,13 +63,4 @@ public abstract class AbstractPostProcessor implements ProvisionServicePostProce
         }
     }
 
-    public abstract int addUser(ProvisionUser user, Map<String, Object> bindingMap);
-
-
-    public abstract int modifyUser(ProvisionUser user, Map<String, Object> bindingMap);
-
-
-    public abstract int deleteUser(ProvisionUser user, Map<String, Object> bindingMap);
-
-    public abstract int setPassword(PasswordSync passwordSync, Map<String, Object> bindingMap);
 }
