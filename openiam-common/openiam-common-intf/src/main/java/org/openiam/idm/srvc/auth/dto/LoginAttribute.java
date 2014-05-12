@@ -23,8 +23,7 @@ import javax.xml.bind.annotation.XmlType;
         "loginId",
         "name",
         "value",
-        "metadataId",
-        "attrGroup"
+        "metadataId"
 })
 @DozerDTOCorrespondence(LoginAttributeEntity.class)
 public class LoginAttribute implements java.io.Serializable {
@@ -32,7 +31,6 @@ public class LoginAttribute implements java.io.Serializable {
     protected String name;
     protected String value;
     protected String metadataId;
-    protected String attrGroup;
     private String loginId;
 
     public LoginAttribute() {
@@ -75,17 +73,6 @@ public class LoginAttribute implements java.io.Serializable {
         this.metadataId = metadataId;
     }
 
-
-    public String getAttrGroup() {
-        return attrGroup;
-    }
-
-
-    public void setAttrGroup(String attrGroup) {
-        this.attrGroup = attrGroup;
-    }
-
-
 	public String getLoginId() {
 		return loginId;
 	}
@@ -100,8 +87,6 @@ public class LoginAttribute implements java.io.Serializable {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result
-				+ ((attrGroup == null) ? 0 : attrGroup.hashCode());
 		result = prime * result
 				+ ((loginAttrId == null) ? 0 : loginAttrId.hashCode());
 		result = prime * result + ((loginId == null) ? 0 : loginId.hashCode());
@@ -122,11 +107,6 @@ public class LoginAttribute implements java.io.Serializable {
 		if (getClass() != obj.getClass())
 			return false;
 		LoginAttribute other = (LoginAttribute) obj;
-		if (attrGroup == null) {
-			if (other.attrGroup != null)
-				return false;
-		} else if (!attrGroup.equals(other.attrGroup))
-			return false;
 		if (loginAttrId == null) {
 			if (other.loginAttrId != null)
 				return false;
@@ -159,9 +139,8 @@ public class LoginAttribute implements java.io.Serializable {
 	@Override
 	public String toString() {
 		return String
-				.format("LoginAttribute [loginAttrId=%s, name=%s, value=%s, metadataId=%s, attrGroup=%s, loginId=%s]",
-						loginAttrId, name, value, metadataId, attrGroup,
-						loginId);
+				.format("LoginAttribute [loginAttrId=%s, name=%s, value=%s, metadataId=%s, loginId=%s]",
+						loginAttrId, name, value, metadataId, loginId);
 	}
 
     

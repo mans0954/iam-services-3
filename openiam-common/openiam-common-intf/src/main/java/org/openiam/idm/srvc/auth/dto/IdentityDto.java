@@ -19,6 +19,7 @@ import java.util.Date;
         "status",
         "createDate",
         "createdBy",
+        "type",
         "operation",
         "origPrincipalName"
 })

@@ -37,9 +37,6 @@ public class LoginAttributeEntity implements java.io.Serializable {
     @JoinColumn(name = "METADATA_ID", insertable = true, updatable = true, nullable=true)
     protected MetadataElementEntity element;
     
-    @Column(name="ATTR_GROUP",length = 20)
-    protected String attrGroup;
-    
     @Column(name="LOGIN_ID",length = 32)
     private String loginId;
 
@@ -83,16 +80,6 @@ public class LoginAttributeEntity implements java.io.Serializable {
         this.element = element;
     }
 
-    public String getAttrGroup() {
-        return attrGroup;
-    }
-
-
-    public void setAttrGroup(String attrGroup) {
-        this.attrGroup = attrGroup;
-    }
-
-
 	public String getLoginId() {
 		return loginId;
 	}
@@ -107,8 +94,6 @@ public class LoginAttributeEntity implements java.io.Serializable {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result
-				+ ((attrGroup == null) ? 0 : attrGroup.hashCode());
 		result = prime * result
 				+ ((loginAttrId == null) ? 0 : loginAttrId.hashCode());
 		result = prime * result + ((loginId == null) ? 0 : loginId.hashCode());
@@ -128,11 +113,6 @@ public class LoginAttributeEntity implements java.io.Serializable {
 		if (getClass() != obj.getClass())
 			return false;
 		LoginAttributeEntity other = (LoginAttributeEntity) obj;
-		if (attrGroup == null) {
-			if (other.attrGroup != null)
-				return false;
-		} else if (!attrGroup.equals(other.attrGroup))
-			return false;
 		if (loginAttrId == null) {
 			if (other.loginAttrId != null)
 				return false;
@@ -165,8 +145,8 @@ public class LoginAttributeEntity implements java.io.Serializable {
 	@Override
 	public String toString() {
 		return String
-				.format("LoginAttributeEntity [loginAttrId=%s, name=%s, value=%s, metadataId=%s, attrGroup=%s, loginId=%s]",
-						loginAttrId, name, value, attrGroup, loginId);
+				.format("LoginAttributeEntity [loginAttrId=%s, name=%s, value=%s, metadataId=%s, loginId=%s]",
+						loginAttrId, name, value, loginId);
 	}
 
     

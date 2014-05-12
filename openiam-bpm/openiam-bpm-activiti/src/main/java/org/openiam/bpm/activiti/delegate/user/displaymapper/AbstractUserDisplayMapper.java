@@ -129,7 +129,7 @@ public abstract class AbstractUserDisplayMapper extends AbstractActivitiJob {
 			}
 
 			if(StringUtils.isNotBlank(user.getMetadataTypeId())) {
-				metadataMap.put("Object Class", user.getMetadataTypeId());
+				metadataMap.put("Metadata Type", user.getMetadataTypeId());
 			}
 
 			if(StringUtils.isNotBlank(user.getPrefix())) {

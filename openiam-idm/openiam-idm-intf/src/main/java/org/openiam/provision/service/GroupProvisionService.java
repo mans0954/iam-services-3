@@ -60,7 +60,18 @@ public interface GroupProvisionService {
             @WebParam(name = "status", targetNamespace = "") UserStatusEnum status,
             @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
-
+    /**
+     * The removeGroup operation enables the requester to delete an existing group
+     * from all target systems
+     *
+     * @param groupId - group ID
+     * @param requesterId - requester
+     * @return
+     */
+    @WebMethod
+    public ProvisionGroupResponse removeGroup(
+            @WebParam(name = "groupId", targetNamespace = "") String groupId,
+            @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
     /**
      * De-provisioning Group only from selected resources
      *

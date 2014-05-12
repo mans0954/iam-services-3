@@ -151,3 +151,4 @@ public abstract class AbstractConnectorService implements ConnectorService,Appli
 
     protected abstract void initConnectorType();
 }
+

@@ -711,13 +711,13 @@ public class ProvisionDispatcher implements Sweepable {
     private int executePreProcess(PreProcessor ppScript, Map<String, Object> bindingMap, ProvisionUser user,
             String operation) {
         if ("ADD".equalsIgnoreCase(operation)) {
-            return ppScript.addUser(user, bindingMap);
+            return ppScript.add(user, bindingMap);
         }
         if ("MODIFY".equalsIgnoreCase(operation)) {
-            return ppScript.modifyUser(user, bindingMap);
+            return ppScript.modify(user, bindingMap);
         }
         if ("DELETE".equalsIgnoreCase(operation)) {
-            return ppScript.deleteUser(user, bindingMap);
+            return ppScript.delete(user, bindingMap);
         }
         if ("SET_PASSWORD".equalsIgnoreCase(operation)) {
             return ppScript.setPassword(bindingMap);
@@ -725,16 +725,16 @@ public class ProvisionDispatcher implements Sweepable {
         return 0;
     }
 
-    private int executePostProcess(PostProcessor ppScript, Map<String, Object> bindingMap, ProvisionUser user,
+    private static int executePostProcess(PostProcessor ppScript, Map<String, Object> bindingMap, ProvisionUser user,
             String operation, boolean success) {
         if ("ADD".equalsIgnoreCase(operation)) {
-            return ppScript.addUser(user, bindingMap, success);
+            return ppScript.add(user, bindingMap, success);
         }
         if ("MODIFY".equalsIgnoreCase(operation)) {
-            return ppScript.modifyUser(user, bindingMap, success);
+            return ppScript.modify(user, bindingMap, success);
         }
         if ("DELETE".equalsIgnoreCase(operation)) {
-            return ppScript.deleteUser(user, bindingMap, success);
+            return ppScript.delete(user, bindingMap, success);
         }
         if ("SET_PASSWORD".equalsIgnoreCase(operation)) {
             return ppScript.setPassword(bindingMap, success);

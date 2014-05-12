@@ -289,7 +289,6 @@ public class RoleDataServiceImpl implements RoleDataService {
 			for(final Iterator<RoleAttributeEntity> it = beanProps.iterator(); it.hasNext();) {
 				final RoleAttributeEntity beanProp = it.next();
 				if(StringUtils.equals(dbProp.getRoleAttrId(), beanProp.getRoleAttrId())) {
-					dbProp.setAttrGroup(beanProp.getAttrGroup());
 					dbProp.setElement(beanProp.getElement());
 					dbProp.setName(beanProp.getName());
 					dbProp.setValue(beanProp.getValue());

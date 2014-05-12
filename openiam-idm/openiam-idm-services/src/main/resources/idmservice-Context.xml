@@ -14,6 +14,14 @@
     <bean id="postProcessor" class="java.lang.String">
         <constructor-arg value="/prov-helper/ProvisionServicePostProcessor.groovy"/>
     </bean>
+
+    <bean id="preProcessorGroup" class="java.lang.String">
+        <constructor-arg value="/prov-helper/ProvisionServiceGroupPreProcessor.groovy"/>
+    </bean>
+    <bean id="postProcessorGroup" class="java.lang.String">
+        <constructor-arg value="/prov-helper/ProvisionServiceGroupPostProcessor.groovy"/>
+    </bean>
+
     <bean id="resourceOrderProcessor" class="java.lang.String">
         <constructor-arg value="/prov-helper/ProvisionServiceResourceOrderProcessor.groovy"/>
     </bean>

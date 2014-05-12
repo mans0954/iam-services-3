@@ -24,7 +24,7 @@ import java.util.Map;
  * Time: 10:00 PM
  * @version 2.2
  */
-public abstract class AbstractPreProcessor implements ProvisionServicePreProcessor {
+public abstract class AbstractPreProcessor<T> implements ProvisionServicePreProcessor <T> {
 
     protected MuleContext muleContext;
     protected ApplicationContext context;
