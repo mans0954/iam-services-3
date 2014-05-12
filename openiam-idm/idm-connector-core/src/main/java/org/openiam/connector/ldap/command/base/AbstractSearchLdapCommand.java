@@ -7,6 +7,7 @@ import org.openiam.connector.type.constant.ErrorCode;
 import org.openiam.connector.type.constant.StatusCodeType;
 import org.openiam.connector.type.request.SearchRequest;
 import org.openiam.connector.type.response.SearchResponse;
+import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
@@ -33,7 +34,8 @@ public abstract class AbstractSearchLdapCommand<ExtObject extends ExtensibleObje
         searchResponse.setStatus(StatusCodeType.SUCCESS);
 
         ConnectorConfiguration config =  getConfiguration(searchRequest.getTargetID(), ConnectorConfiguration.class);
-        LdapContext ldapContext = this.connect(config.getManagedSys());
+        ManagedSysEntity managedSys = config.getManagedSys();
+        LdapContext ldapContext = this.connect(managedSys);
 
         ManagedSystemObjectMatch matchObj = getMatchObject(searchRequest.getTargetID(), getObjectType());
         try {
@@ -43,6 +45,7 @@ public abstract class AbstractSearchLdapCommand<ExtObject extends ExtensibleObje
 
             SearchControls searchControls = new SearchControls();
             ldapContext.setRequestControls(new Control[] { new PagedResultsControl(PAGE_SIZE, Control.CRITICAL) });
+            searchControls.setSearchScope(managedSys.getSearchScope().getValue());
             String identityAttrName = matchObj != null ? matchObj.getKeyField() : "cn";
 
             List<ObjectValue> objectValueList = new LinkedList<ObjectValue>();
