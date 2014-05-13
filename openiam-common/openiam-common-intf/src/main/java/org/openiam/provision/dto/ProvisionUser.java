@@ -112,7 +112,7 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         this.lastUpdatedBy = user.getLastUpdatedBy();
         this.locationCd = user.getLocationCd();
         this.locationName = user.getLocationName();
-        this.metadataTypeId = user.getMetadataTypeId();
+        this.setMdTypeId(user.getMdTypeId());
         this.classification = user.getClassification();
         this.middleInit = user.getMiddleInit();
         this.prefix = user.getPrefix();
@@ -173,7 +173,7 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         user.setLastUpdatedBy(lastUpdatedBy);
         user.setLocationCd(locationCd);
         user.setLocationName(locationName);
-        user.setMetadataTypeId(metadataTypeId);
+        user.setMdTypeId(this.getMdTypeId());
         user.setClassification(classification);
         user.setMiddleInit(middleInit);
         user.setPrefix(prefix);
