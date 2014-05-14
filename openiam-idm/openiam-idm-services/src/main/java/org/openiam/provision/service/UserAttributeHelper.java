@@ -712,7 +712,7 @@ public class UserAttributeHelper {
         newUser.setLastUpdatedBy(user.getLastUpdatedBy());
         newUser.setLocationCd(user.getLocationCd());
         newUser.setLocationName(user.getLocationName());
-        newUser.setMetadataTypeId(user.getMetadataTypeId());
+        newUser.setMdTypeId(user.getMdTypeId());
         newUser.setClassification(user.getClassification());
         newUser.setMiddleInit(user.getMiddleInit());
         newUser.setPrefix(user.getPrefix());
