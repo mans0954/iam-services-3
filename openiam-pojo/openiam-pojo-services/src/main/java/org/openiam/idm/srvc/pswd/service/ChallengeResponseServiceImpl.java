@@ -64,8 +64,8 @@ public class ChallengeResponseServiceImpl implements ChallengeResponseService {
 
 	@Override
 	public List<UserIdentityAnswerEntity> findAnswerBeans(
-			IdentityAnswerSearchBean searchBean, int from, int size) {
-		return getResponseValidator().findAnswerBeans(searchBean, from, size);
+			IdentityAnswerSearchBean searchBean, String requesterId, int from, int size) throws Exception {
+		return getResponseValidator().findAnswerBeans(searchBean, requesterId, from, size);
 	}
 
 	@Override
@@ -109,7 +109,7 @@ public class ChallengeResponseServiceImpl implements ChallengeResponseService {
 	}
 
 	@Override
-	public boolean isResponseValid(String userId, List<UserIdentityAnswerEntity> newAnswerList) {
+	public boolean isResponseValid(String userId, List<UserIdentityAnswerEntity> newAnswerList) throws Exception {
 		 int requiredCorrect = newAnswerList.size();
 
 		 final UserEntity user = userDAO.findById(userId);
@@ -129,7 +129,7 @@ public class ChallengeResponseServiceImpl implements ChallengeResponseService {
 	 }
 
 	@Override
-	public boolean isUserAnsweredSecurityQuestions(final String userId) {
+	public boolean isUserAnsweredSecurityQuestions(final String userId) throws Exception {
 		return getResponseValidator().isUserAnsweredSecurityQuestions(userId);
 	}
 
