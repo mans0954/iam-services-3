@@ -116,9 +116,9 @@ public interface LoginDataService {
      * @param password
      * @return
      */
-    public String encryptPassword(String userId, String password ) throws EncryptionException;
+    public String encryptPassword(String userId, String password ) throws Exception;
 
-    public String decryptPassword(String userId, String password ) throws EncryptionException;
+    public String decryptPassword(String userId, String password ) throws Exception;
 
     public List<LoginEntity> getLoginByUser(String userId);
 

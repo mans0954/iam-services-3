@@ -126,7 +126,7 @@ public class AddUser {
 
         try {
             addPrincipals(user);
-        } catch (EncryptionException e) {
+        } catch (Exception e) {
             resp.setStatus(ResponseStatus.FAILURE);
             resp.setErrorCode(ResponseCode.FAIL_ENCRYPTION);
             return resp;
@@ -169,7 +169,7 @@ public class AddUser {
         return ResponseCode.SUCCESS;
     }
 
-    private void addPrincipals(ProvisionUser u) throws EncryptionException {
+    private void addPrincipals(ProvisionUser u) throws Exception {
         List<Login> principalList = u.getPrincipalList();
         if (principalList != null && !principalList.isEmpty()) {
             for (Login lg : principalList) {

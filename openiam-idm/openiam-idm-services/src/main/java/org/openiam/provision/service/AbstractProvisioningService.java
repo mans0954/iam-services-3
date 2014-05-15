@@ -1288,7 +1288,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                         entity.setUserId(userEntity.getId());
                         userEntity.getPrincipalList().add(entity);
                         entity.setPassword(loginManager.encryptPassword(userEntity.getId(), e.getPassword()));
-                    } catch (EncryptionException ee) {
+                    } catch (Exception ee) {
                         log.error(ee);
                         ee.printStackTrace();
                     }

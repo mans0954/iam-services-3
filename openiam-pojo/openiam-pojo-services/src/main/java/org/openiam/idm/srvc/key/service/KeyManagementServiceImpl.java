@@ -14,8 +14,10 @@ import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.service.ManagedSysDAO;
 import org.openiam.idm.srvc.pswd.domain.PasswordHistoryEntity;
+import org.openiam.idm.srvc.pswd.domain.UserIdentityAnswerEntity;
 import org.openiam.idm.srvc.pswd.dto.PasswordHistory;
 import org.openiam.idm.srvc.pswd.service.PasswordHistoryDAO;
+import org.openiam.idm.srvc.pswd.service.UserIdentityAnswerDAO;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.service.UserDAO;
@@ -65,6 +67,8 @@ public class KeyManagementServiceImpl implements KeyManagementService {
     private PasswordHistoryDAO passwordHistoryDao;
     @Autowired
     private ManagedSysDAO managedSysDAO;
+    @Autowired
+    private UserIdentityAnswerDAO userIdentityAnswerDAO;
 
     @PostConstruct
     public void init() {
@@ -103,7 +107,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
                 return null;
             }
 
-            return jksManager.decodeKey(cryptor.decrypt(masterKey, uk.getKey()));
+            return jksManager.decodeKey(this.decrypt(masterKey, uk.getKey()));
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             throw new EncryptionException(e);
@@ -139,9 +143,10 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         }
 
         log.warn(" Generation of new master key ...");
-        jksManager.generateMasterKey(this.jksPassword.toCharArray(), this.keyPassword.toCharArray());
-
-        byte[] masterKey = this.getPrimaryKey(JksManager.KEYSTORE_ALIAS, this.keyPassword);
+//        jksManager.generateMasterKey(this.jksPassword.toCharArray(), this.keyPassword.toCharArray());
+//
+//        byte[] masterKey = this.getPrimaryKey(JksManager.KEYSTORE_ALIAS, this.keyPassword);
+        byte[] masterKey = generateJKSKey(this.keyPassword, JksManager.KEYSTORE_ALIAS);
         if (masterKey == null || masterKey.length == 0) {
             throw new NullPointerException("Cannot get master key to encrypt user keys");
         }
@@ -156,10 +161,6 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         userKeyDao.deleteAll();
         addUserKeys(newUserKeyList);
         log.warn("End generating new master key...");
-
-        log.warn("Generating new cookie key...");
-        this.generateCookieKey();
-        log.warn("End generating new cookie key...");
     }
 
     @Override
@@ -183,6 +184,10 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         userList.add(user);
         List<LoginEntity> lgList = loginDAO.findUser(user.getId());
         List<UserKey> keyList = userKeyDao.getByUserId(user.getId());
+        UserIdentityAnswerEntity example = new UserIdentityAnswerEntity();
+        example.setUserId(user.getId());
+        List<UserIdentityAnswerEntity> answersList = userIdentityAnswerDAO.getByExample(example);
+
         List<PasswordHistoryEntity> pwdList = new ArrayList<PasswordHistoryEntity>();
         for (LoginEntity lg : lgList) {
             pwdList.addAll(passwordHistoryDao.getPasswordHistoryByLoginId(lg.getLoginId(), 0, Integer.MAX_VALUE));
@@ -196,6 +201,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         usw.setManagedSysList(managedSysMap.get(user.getId()));
         usw.setPasswordHistoryList(pwdList);
         usw.setUserKeyList(keyList);
+        usw.setUserIdentityAnswerList(answersList);
 
         encryptUserData(masterKey, usw, newUserKeyList);
         // replace user key for given user
@@ -245,27 +251,21 @@ public class KeyManagementServiceImpl implements KeyManagementService {
 
     @Override
     public byte[] generateCookieKey() throws Exception {
-        // create new key for cookie
-        jksManager.generatePrimaryKey(this.jksPassword.toCharArray(), this.cookieKeyPassword.toCharArray(), JksManager.KEYSTORE_COOKIE_ALIAS);
-        // try to get it
-        return this.getPrimaryKey(JksManager.KEYSTORE_COOKIE_ALIAS, this.cookieKeyPassword);
+        return generateJKSKey(this.cookieKeyPassword, JksManager.KEYSTORE_COOKIE_ALIAS);
     }
 
     @Override
     public byte[] getCommonKey() throws Exception {
         byte[] key = this.getPrimaryKey(JksManager.KEYSTORE_COMMON_ALIAS, this.commonKeyPassword);
         if (key == null || key.length == 0) {
-            return generateCookieKey();
+            return generateCommonKey();
         }
         return key;
     }
 
     @Override
     public byte[] generateCommonKey() throws Exception {
-        // create new key for cookie
-        jksManager.generatePrimaryKey(this.jksPassword.toCharArray(), this.commonKeyPassword.toCharArray(), JksManager.KEYSTORE_COMMON_ALIAS);
-        // try to get it
-        return this.getPrimaryKey(JksManager.KEYSTORE_COMMON_ALIAS, this.commonKeyPassword);
+        return generateJKSKey(this.commonKeyPassword, JksManager.KEYSTORE_COMMON_ALIAS);
     }
 
     @Override
@@ -289,7 +289,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
             throw new Exception("Cannot encrypt data, due to invalid secret key");
         if(!StringUtils.hasText(data))
             return data;
-        return cryptor.encrypt(dataKey, data);
+        return this.encrypt(dataKey, data);
     }
 
     @Override
@@ -305,7 +305,33 @@ public class KeyManagementServiceImpl implements KeyManagementService {
             throw new Exception("Cannot decrypt data, due to invalid secret key");
         if(!StringUtils.hasText(encryptedData))
            return encryptedData;
-        return cryptor.decrypt(dataKey, encryptedData);
+        return this.decrypt(dataKey, encryptedData);
+    }
+    @Override
+    public String encrypt(String userId, KeyName keyName, String data)throws Exception{
+        byte[] dataKey = getUserKey(userId, keyName.name());
+        if(dataKey!=null && dataKey.length>0){
+            return encrypt(dataKey, data);
+        }
+        log.warn("Data Key is null. Skipping ecryption...");
+        return null;
+    }
+    @Override
+    public String encrypt(byte[] key, String data)throws Exception{
+        return cryptor.encrypt(key, data);
+    }
+    @Override
+    public String decrypt(String userId, KeyName keyName, String encryptedData)throws Exception{
+        byte[] dataKey = getUserKey(userId, keyName.name());
+        if(dataKey!=null && dataKey.length>0){
+            return decrypt(dataKey, encryptedData);
+        }
+        log.warn("Data Key is null. Skipping decryption...");
+        return null;
+    }
+    @Override
+    public String decrypt(byte[] key, String encryptedData)throws Exception{
+        return cryptor.decrypt(key, encryptedData);
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -322,22 +348,29 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         byte[] pwdKey = jksManager.getNewPrivateKey();
         byte[] tokenKey = jksManager.getNewPrivateKey();
         byte[] dataKey = jksManager.getNewPrivateKey();
+        byte[] answerKey = jksManager.getNewPrivateKey();
         // create new USER KEYS
         UserKey uk = new UserKey();
-        uk.setKey(cryptor.encrypt(masterKey, jksManager.encodeKey(pwdKey)));
+        uk.setKey(this.encrypt(masterKey, jksManager.encodeKey(pwdKey)));
         uk.setName(KeyName.password.name());
         uk.setUserId(userSecurityWrapper.getUserId());
         newUserKeyList.add(uk);
 
         uk = new UserKey();
-        uk.setKey(cryptor.encrypt(masterKey, jksManager.encodeKey(tokenKey)));
+        uk.setKey(this.encrypt(masterKey, jksManager.encodeKey(tokenKey)));
         uk.setName(KeyName.token.name());
         uk.setUserId(userSecurityWrapper.getUserId());
         newUserKeyList.add(uk);
 
         uk = new UserKey();
-        uk.setKey(cryptor.encrypt(masterKey, jksManager.encodeKey(dataKey)));
+        uk.setKey(this.encrypt(masterKey, jksManager.encodeKey(dataKey)));
         uk.setName(KeyName.dataKey.name());
+        uk.setUserId(userSecurityWrapper.getUserId());
+        newUserKeyList.add(uk);
+
+        uk = new UserKey();
+        uk.setKey(this.encrypt(masterKey, jksManager.encodeKey(answerKey)));
+        uk.setName(KeyName.challengeResponse.name());
         uk.setUserId(userSecurityWrapper.getUserId());
         newUserKeyList.add(uk);
 
@@ -346,11 +379,35 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         // + jksManager.encodeKey(tokenKey) + "]");
 
         // encrypt user data
+        encryptUserPasswords(pwdKey, userSecurityWrapper);
+        encryptUserChallengeResponses(answerKey, userSecurityWrapper);
+
+
+        // log.warn("Printing ecrypted data...");
+        // printUserData(user, pwdHistoryMap, managedSysMap);
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    private void encryptUserChallengeResponses(byte[] key, UserSecurityWrapper userSecurityWrapper)throws Exception {
+        log.warn("Encrypt user ChallengeResponses ...");
+        if (userSecurityWrapper.getUserIdentityAnswerList() != null && !userSecurityWrapper.getUserIdentityAnswerList().isEmpty()) {
+            for (UserIdentityAnswerEntity answer : userSecurityWrapper.getUserIdentityAnswerList()) {
+                if(StringUtils.hasText(answer.getQuestionAnswer()))
+                    answer.setQuestionAnswer(this.encrypt(key, answer.getQuestionAnswer()));
+                    answer.setIsEncrypted(true);
+                    userIdentityAnswerDAO.update(answer);
+            }
+        }
+        log.warn("Encrypt user ChallengeResponses FINISHED...");
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    private void encryptUserPasswords(byte[] key, UserSecurityWrapper userSecurityWrapper) throws Exception {
         log.warn("Encrypt user passwords ...");
         if (userSecurityWrapper.getLoginList() != null && !userSecurityWrapper.getLoginList().isEmpty()) {
             for (LoginEntity login : userSecurityWrapper.getLoginList()) {
                 if(StringUtils.hasText(login.getPassword())){
-                    login.setPassword(cryptor.encrypt(pwdKey, login.getPassword()));
+                    login.setPassword(this.encrypt(key, login.getPassword()));
                     loginDAO.update(login);
                 }
             }
@@ -359,7 +416,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         if (userSecurityWrapper.getPasswordHistoryList() != null && !userSecurityWrapper.getPasswordHistoryList().isEmpty()) {
             for (PasswordHistoryEntity pwd : userSecurityWrapper.getPasswordHistoryList()) {
                 if(StringUtils.hasText(pwd.getPassword())){
-                    pwd.setPassword(cryptor.encrypt(pwdKey, pwd.getPassword()));
+                    pwd.setPassword(this.encrypt(key, pwd.getPassword()));
                     passwordHistoryDao.update(pwd);
                 }
             }
@@ -369,14 +426,12 @@ public class KeyManagementServiceImpl implements KeyManagementService {
             log.warn("Encrypt manages sys...");
             for (ManagedSysEntity ms : userSecurityWrapper.getManagedSysList()) {
                 if (ms.getPswd() != null) {
-                    ms.setPswd(cryptor.encrypt(pwdKey, ms.getPswd()));
+                    ms.setPswd(this.encrypt(key, ms.getPswd()));
                 }
                 managedSysDAO.save(ms);
             }
         }
-        log.warn("Encrypt user data FINISHED...");
-        // log.warn("Printing ecrypted data...");
-        // printUserData(user, pwdHistoryMap, managedSysMap);
+        log.warn("Encrypt user passwords FINISHED...");
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -395,40 +450,52 @@ public class KeyManagementServiceImpl implements KeyManagementService {
             if (masterKey == null || masterKey.length == 0) {
                 throw new NullPointerException("Cannot read master key for decrypting user keys.");
             }
-            // try to decrypt each key
-            String pwdKey = null;
-            String tokenKey = null;
-            for (UserKey uk : userSecurityWrapper.getUserKeyList()) {
-                String key = uk.getKey();
-                if (KeyName.password.name().equals(uk.getName())) {
-                    pwdKey = cryptor.decrypt(masterKey, key);
-                } else if (KeyName.token.name().equals(uk.getName())) {
-                    tokenKey = cryptor.decrypt(masterKey, key);
-                }
-            }
-            log.warn("OLD USER KEYS ARE: [USER_ID: " + userSecurityWrapper.getUserId() + "; PWD_KEY: " + pwdKey + "; TKN_KEY: " + tokenKey + "]");
-            // decypt user data with keys
-            decryptSecurityDataForUser(jksManager.decodeKey(pwdKey), userSecurityWrapper);
-
-            // log.warn("Printing decrypted data...");
-            // printUserData(user, pwdHistoryMap, managedSysMap);
+            decryptSecurityDataForUser(masterKey, userSecurityWrapper);
         }
     }
 
     @Transactional(rollbackFor = Exception.class)
-    private void decryptSecurityDataForUser(byte[] key, UserSecurityWrapper userSecurityWrapper) throws Exception {
+    private void decryptSecurityDataForUser(byte[] masterKey, UserSecurityWrapper userSecurityWrapper) throws Exception {
+        log.warn("Decrypting user data ...");
+        for (UserKey uk : userSecurityWrapper.getUserKeyList()) {
+            byte[] key = jksManager.decodeKey(this.decrypt(masterKey, uk.getKey()));
+            if (KeyName.password.name().equals(uk.getName())) {
+                decryptUserPasswords(key, userSecurityWrapper);
+            } else if (KeyName.challengeResponse.name().equals(uk.getName())) {
+                decryptUserChallengeResponse(key, userSecurityWrapper);
+            }
+        }
+        log.warn("Decrypting user data FINISHED...");
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    private void decryptUserChallengeResponse(byte[] key, UserSecurityWrapper userSecurityWrapper) throws Exception {
+        log.warn("Decrypting user ChallengeResponses ...");
+        if (userSecurityWrapper.getUserIdentityAnswerList() != null && !userSecurityWrapper.getUserIdentityAnswerList().isEmpty()) {
+            for (UserIdentityAnswerEntity answer : userSecurityWrapper.getUserIdentityAnswerList()) {
+                if(answer.getIsEncrypted()){
+                    if(StringUtils.hasText(answer.getQuestionAnswer()))
+                        answer.setQuestionAnswer(this.decrypt(key, answer.getQuestionAnswer()));
+                }
+            }
+        }
+        log.warn("Decrypting user ChallengeResponses FINISHED...");
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    private void decryptUserPasswords(byte[] key, UserSecurityWrapper userSecurityWrapper) throws Exception {
         log.warn("Decrypting user passwords ...");
         if (userSecurityWrapper.getLoginList() != null && !userSecurityWrapper.getLoginList().isEmpty()) {
             for (LoginEntity login : userSecurityWrapper.getLoginList()) {
                 if(StringUtils.hasText(login.getPassword()))
-                    login.setPassword(cryptor.decrypt(key, login.getPassword()));
+                    login.setPassword(this.decrypt(key, login.getPassword()));
             }
         }
         if (userSecurityWrapper.getPasswordHistoryList() != null && !userSecurityWrapper.getPasswordHistoryList().isEmpty()) {
             log.warn("Decrypting user passwords history ...");
             for (PasswordHistoryEntity pwd : userSecurityWrapper.getPasswordHistoryList()) {
                 if(StringUtils.hasText(pwd.getPassword()))
-                    pwd.setPassword(cryptor.decrypt(key, pwd.getPassword()));
+                    pwd.setPassword(this.decrypt(key, pwd.getPassword()));
             }
         }
 
@@ -436,11 +503,11 @@ public class KeyManagementServiceImpl implements KeyManagementService {
             log.warn("Decrypting manages sys ...");
             for (ManagedSysEntity ms : userSecurityWrapper.getManagedSysList()) {
                 if (ms.getPswd() != null) {
-                    ms.setPswd(cryptor.decrypt(key, ms.getPswd()));
+                    ms.setPswd(this.decrypt(key, ms.getPswd()));
                 }
             }
         }
-        log.warn("Decrypting user data FINISHED...");
+        log.warn("Decrypting user passwords FINISHED...");
     }
 
     private void printUserData(User user, HashMap<String, List<PasswordHistory>> pwdHistoryMap, HashMap<String, List<ManagedSysDto>> managedSysMap) {
@@ -493,6 +560,11 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         return jksManager.getPrimaryKeyFromJKS(alias, jksPassword.toCharArray(), keyPassword.toCharArray());
     }
 
+    private byte[] generateJKSKey(String keyPassword, String keystoreAlias) throws Exception {
+        jksManager.generatePrimaryKey(this.jksPassword.toCharArray(), keyPassword.toCharArray(), keystoreAlias);
+        return this.getPrimaryKey(keystoreAlias, keyPassword);
+    }
+
     private HashMap<String, UserSecurityWrapper> getSecurityMap() throws Exception {
         HashMap<String, UserSecurityWrapper> result = new HashMap<String, UserSecurityWrapper>();
 
@@ -513,6 +585,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
             HashMap<String, List<LoginEntity>> loginMap = getLoginMap();
             HashMap<String, List<UserKey>> userKeyMap = getUserKeyMap();
             HashMap<String, List<PasswordHistoryEntity>> pwdHistoryMap = getPasswordHistoryMap(loginMap);
+            HashMap<String, List<UserIdentityAnswerEntity>> identityAnswerMap = getIdentityAnswerMap();
 
             for (String userId : userIdList) {
                 UserSecurityWrapper usw = new UserSecurityWrapper();
@@ -521,6 +594,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
                 usw.setManagedSysList(managedSysMap.get(userId));
                 usw.setPasswordHistoryList(pwdHistoryMap.get(userId));
                 usw.setUserKeyList(userKeyMap.get(userId));
+                usw.setUserIdentityAnswerList(identityAnswerMap.get(userId));
 
                 result.put(userId, usw);
             }
@@ -574,6 +648,30 @@ public class KeyManagementServiceImpl implements KeyManagementService {
             }
         }
         return lgMap;
+    }
+
+    private HashMap<String, List<UserIdentityAnswerEntity>> getIdentityAnswerMap() {
+        HashMap<String, List<UserIdentityAnswerEntity>> answMap = new HashMap<String, List<UserIdentityAnswerEntity>>();
+        Long answCount = userIdentityAnswerDAO.countAll();
+        if (answCount != null && answCount > 0) {
+            long fetchedDataCount = 0l;
+            Set<UserIdentityAnswerEntity> answerList = new HashSet<UserIdentityAnswerEntity>();
+            int pageNum = 0;
+            do {
+                answerList.addAll(userIdentityAnswerDAO.getByExample(new UserIdentityAnswerEntity(),
+                                                                     pageNum * FETCH_COUNT, FETCH_COUNT));
+                fetchedDataCount = (long) answerList.size();
+                pageNum++;
+            } while (fetchedDataCount < answCount);
+
+            for (UserIdentityAnswerEntity answ : answerList) {
+                if (!answMap.containsKey(answ.getUserId())) {
+                    answMap.put(answ.getUserId(), new ArrayList<UserIdentityAnswerEntity>());
+                }
+                answMap.get(answ.getUserId()).add(answ);
+            }
+        }
+        return answMap;
     }
 
     private HashMap<String, List<ManagedSysEntity>> getManagedSysMap() {

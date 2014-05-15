@@ -77,7 +77,7 @@ public class LdapV3 implements Directory {
             ModificationItem[] mods = new ModificationItem[1];
             mods[0] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute("userPassword", decPassword));
             return mods;
-        } catch(EncryptionException e) {
+        } catch(Exception e) {
             log.error(e.toString());
             return null;
         }

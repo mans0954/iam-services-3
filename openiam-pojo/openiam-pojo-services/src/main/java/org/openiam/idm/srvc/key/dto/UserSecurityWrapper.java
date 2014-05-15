@@ -4,6 +4,7 @@ import org.openiam.core.domain.UserKey;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.pswd.domain.PasswordHistoryEntity;
+import org.openiam.idm.srvc.pswd.domain.UserIdentityAnswerEntity;
 
 import java.util.List;
 
@@ -17,6 +18,7 @@ public class UserSecurityWrapper {
     private List<UserKey> userKeyList;
     private List<PasswordHistoryEntity> passwordHistoryList;
     private List<ManagedSysEntity>  managedSysList;
+    private List<UserIdentityAnswerEntity>  userIdentityAnswerList;
 
     public String getUserId() {
         return userId;
@@ -56,5 +58,13 @@ public class UserSecurityWrapper {
 
     public void setManagedSysList(List<ManagedSysEntity> managedSysList) {
         this.managedSysList = managedSysList;
+    }
+
+    public List<UserIdentityAnswerEntity> getUserIdentityAnswerList() {
+        return userIdentityAnswerList;
+    }
+
+    public void setUserIdentityAnswerList(List<UserIdentityAnswerEntity> userIdentityAnswerList) {
+        this.userIdentityAnswerList = userIdentityAnswerList;
     }
 }

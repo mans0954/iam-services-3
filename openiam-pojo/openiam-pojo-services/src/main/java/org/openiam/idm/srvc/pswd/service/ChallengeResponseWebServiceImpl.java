@@ -91,9 +91,10 @@ public class ChallengeResponseWebServiceImpl implements ChallengeResponseWebServ
 	}
 
 	@Override
-	public List<UserIdentityAnswer> findAnswerBeans(final IdentityAnswerSearchBean searchBean, final int from, final int size) {
+	public List<UserIdentityAnswer> findAnswerBeans(final IdentityAnswerSearchBean searchBean, final  String requesterId, final int from, final int size)
+            throws Exception {
 		final List<UserIdentityAnswerEntity> resultList = challengeResponseService
-				.findAnswerBeans(searchBean, from, size);
+				.findAnswerBeans(searchBean, requesterId, from, size);
 		return (resultList != null) ? answerDozerConverter.convertToDTOList(
 				resultList, searchBean.isDeepCopy()) : null;
 	}
@@ -266,14 +267,14 @@ public class ChallengeResponseWebServiceImpl implements ChallengeResponseWebServ
 	}
     @Override
 	public boolean isResponseValid(String userId,
-			List<UserIdentityAnswer> newAnswerList) {
+			List<UserIdentityAnswer> newAnswerList) throws Exception {
 		final List<UserIdentityAnswerEntity> entityList = answerDozerConverter
 				.convertToEntityList(newAnswerList, true);
 		return challengeResponseService.isResponseValid(userId, entityList);
 	}
 
 	@Override
-	public boolean isUserAnsweredSecurityQuestions(final String userId) {
+	public boolean isUserAnsweredSecurityQuestions(final String userId) throws Exception {
 		return challengeResponseService.isUserAnsweredSecurityQuestions(userId);
 	}
 
