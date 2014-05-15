@@ -804,7 +804,7 @@ public class ModifyUser {
                             try {
                                 newLg.setPassword(loginManager.encryptPassword(
                                         l.getUserId(), newPassword));
-                            } catch (EncryptionException e) {
+                            } catch (Exception e) {
                                 log.error(e);
                                 e.printStackTrace();
                             }

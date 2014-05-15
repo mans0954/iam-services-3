@@ -751,6 +751,10 @@
 			<a>identityQuestion.id</a>
 			<b>questionId</b>
 		</field>
+        <field>
+            <a>isEncrypted</a>
+            <b>isEncrypted</b>
+        </field>
 	</mapping>
 
 	<mapping>

@@ -35,17 +35,19 @@ import java.util.List;
  */
 public interface ChallengeResponseValidator {
     
-    public boolean isResponseValid(String userId, List<UserIdentityAnswerEntity> newAnswerList, int requiredCorrectAns);
+    public boolean isResponseValid(String userId, List<UserIdentityAnswerEntity> newAnswerList, int requiredCorrectAns)
+            throws Exception;
     public Integer count(final IdentityQuestionSearchBean searchBean);
     public List<IdentityQuestionEntity> findQuestionBeans(final IdentityQuestionSearchBean searchBean, final int from, final int size);
-    public List<UserIdentityAnswerEntity> findAnswerBeans(final IdentityAnswerSearchBean searchBean, final int from, final int size);
+    public List<UserIdentityAnswerEntity> findAnswerBeans(final IdentityAnswerSearchBean searchBean, String requesterId, final int from, final int size)
+            throws Exception;
     public void saveQuestion(final IdentityQuestionEntity entity) throws Exception;
     public void deleteQuestion(final String questionId) throws Exception;
     public IdentityQuestionEntity getQuestion(final String questionId);
     public void saveAnswer(final UserIdentityAnswerEntity answer) throws Exception;
     public void deleteAnswer(final String answerId) throws Exception;
     public void saveAnswers(List<UserIdentityAnswerEntity> answerList) throws Exception;
-    public boolean isUserAnsweredSecurityQuestions(final String userId);
+    public boolean isUserAnsweredSecurityQuestions(final String userId) throws Exception;
     public Integer getNumOfRequiredQuestions(final String userId);
     public void resetQuestionsForUser(final String userId);
 }

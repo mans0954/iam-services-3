@@ -17,16 +17,14 @@
  */
 package org.openiam.idm.srvc.pswd.dto;
 
-import java.io.Serializable;
-
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlType;
-
-import org.openiam.base.BaseObject;
 import org.openiam.base.KeyDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.pswd.domain.UserIdentityAnswerEntity;
+
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlTransient;
+import javax.xml.bind.annotation.XmlType;
 
 
 /**
@@ -48,6 +46,8 @@ public class UserIdentityAnswer extends KeyDTO {
     protected String questionId;
     protected String userId;
     protected String questionAnswer;
+    @XmlTransient
+    private boolean isEncrypted=false;
 
     public UserIdentityAnswer() {
     }
@@ -76,4 +76,11 @@ public class UserIdentityAnswer extends KeyDTO {
         this.questionId = questionId;
     }
 
+    public boolean getIsEncrypted() {
+        return isEncrypted;
+    }
+
+    public void setIsEncrypted(boolean isEncrypted) {
+        this.isEncrypted = isEncrypted;
+    }
 }
