@@ -63,9 +63,9 @@ public class JksManager {
     public void generatePrimaryKey(char[] password, char[] pkPassword, String alias) throws Exception {
         KeyStore ks = getKeyStore(password);
         byte[] rawKey = getNewPrivateKey();
-        System.out.println("RAW KEY: " + encodeKey(rawKey));
+//        System.out.println("RAW KEY: " + encodeKey(rawKey));
         byte[] key =  encryptPrivateKey(pkPassword, rawKey);
-        System.out.println("ENCRYPTED KEY: " + encodeKey(key));
+//        System.out.println("ENCRYPTED KEY: " + encodeKey(key));
         //        // check if there is already key
         //        KeyStore.Entry entry = ks.getEntry(KEYSTORE_ALIAS, new KeyStore.PasswordProtection(password));
         //        if(entry!=null){
@@ -92,9 +92,9 @@ public class JksManager {
         if(secretKey==null)
             return null;
         byte[] encryptedKey = secretKey.getSecretKey().getEncoded();
-        System.out.println("ENCRYPTED KEY FROM JSK: " + encodeKey(encryptedKey));
+//        System.out.println("ENCRYPTED KEY FROM JSK: " + encodeKey(encryptedKey));
         byte[] rawKey = decryptKey(pkPassword,encryptedKey);
-        System.out.println("RAW KEY FROM JSK: " + encodeKey(rawKey));
+//        System.out.println("RAW KEY FROM JSK: " + encodeKey(rawKey));
         return rawKey;
     }
 
@@ -108,7 +108,7 @@ public class JksManager {
             // create keystore file
             keyStore.store(new FileOutputStream(ksFile), password);
         }
-        System.out.println("Using keystore-file : " + keyStoreName);
+//        System.out.println("Using keystore-file : " + keyStoreName);
         keyStore.load(new FileInputStream(ksFile), password);
         return keyStore;
     }
@@ -165,8 +165,8 @@ public class JksManager {
         AlgorithmParameters algParams = ePKInfo.getAlgParameters();
         cipher.init(Cipher.DECRYPT_MODE, pbeKey, algParams);
 
-        System.out.println("ePKInfo.getEncoded():       " + encodeKey(ePKInfo.getEncoded()));
-        System.out.println("ePKInfo.getEncryptedData(): " + encodeKey(ePKInfo.getEncryptedData()));
+//        System.out.println("ePKInfo.getEncoded():       " + encodeKey(ePKInfo.getEncoded()));
+//        System.out.println("ePKInfo.getEncryptedData(): " + encodeKey(ePKInfo.getEncryptedData()));
 
         return cipher.doFinal(ePKInfo.getEncryptedData());
     }

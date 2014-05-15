@@ -1,11 +1,5 @@
 package org.openiam.idm.srvc.auth.login;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -32,6 +26,8 @@ import org.openiam.util.encrypt.Cryptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.*;
 
 @Service("loginManager")
 public class LoginDataServiceImpl implements LoginDataService {
@@ -114,9 +110,11 @@ public class LoginDataServiceImpl implements LoginDataService {
     	LoginEntity lg = getLoginByManagedSys(login, sysId);
         if (lg != null && lg.getPassword() != null) {
             try {
-                return cryptor.decrypt(keyManagementService.getUserKey(
-                        lg.getUserId(), KeyName.password.name()), lg
-                        .getPassword());
+                return keyManagementService.decrypt(lg.getUserId(), KeyName.password, lg.getPassword());
+
+//                        cryptor.decrypt(keyManagementService.getUserKey(
+//                        lg.getUserId(), KeyName.password.name()), lg
+//                        .getPassword());
             } catch (EncryptionException e) {
                 throw new IllegalArgumentException(
                         "Unable to decrypt the password. ");
@@ -312,24 +310,26 @@ public class LoginDataServiceImpl implements LoginDataService {
 
     @Override
     public String encryptPassword(String userId, String password)
-            throws EncryptionException {
+            throws Exception {
         if (password != null) {
-            byte[] key = keyManagementService.getUserKey(userId,
-                    KeyName.password.name());
-            if(key != null) {
-                return cryptor.encrypt(key, password);
-            }
+//            byte[] key = keyManagementService.getUserKey(userId,
+//                    KeyName.password.name());
+//            if(key != null) {
+//                return cryptor.encrypt(key, password);
+//            }
+            return keyManagementService.encrypt(userId, KeyName.password, password);
         }
         return null;
     }
 
     @Override
     public String decryptPassword(String userId, String password)
-            throws EncryptionException {
+            throws Exception {
         if (password != null) {
-            return cryptor.decrypt(
-                    keyManagementService.getUserKey(userId,
-                            KeyName.password.name()), password);
+            return keyManagementService.decrypt(userId, KeyName.password, password);
+//            return cryptor.decrypt(
+//                    keyManagementService.getUserKey(userId,
+//                            KeyName.password.name()), password);
         }
         return null;
     }

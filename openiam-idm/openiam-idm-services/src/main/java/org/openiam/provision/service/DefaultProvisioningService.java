@@ -989,7 +989,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 userEntity.getPrincipalList().add(entity);
                 entity.setPassword(loginManager.encryptPassword(entity.getUserId(), entity.getPassword()));
                 primaryIdentity = loginDozerConverter.convertToDTO(entity, false);
-            } catch (EncryptionException ee) {
+            } catch (Exception ee) {
                 log.error(ee);
                 ee.printStackTrace();
             }
@@ -1004,7 +1004,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             if (password != null) {
                 try {
                     decPassword = loginManager.decryptPassword(primaryIdentity.getUserId(), password);
-                } catch (EncryptionException e) {
+                } catch (Exception e) {
                     auditLog.fail();
                     auditLog.setFailureReason(ResponseCode.FAIL_ENCRYPTION);
                     resp.setStatus(ResponseStatus.FAILURE);
@@ -1403,7 +1403,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             String encPassword = null;
             try {
                 encPassword = loginManager.encryptPassword(userId, password);
-            } catch (EncryptionException e) {
+            } catch (Exception e) {
                 idmAuditLog.fail();
                 idmAuditLog.setFailureReason(ResponseCode.FAIL_ENCRYPTION);
                 response.setStatus(ResponseStatus.FAILURE);
@@ -1691,7 +1691,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             String encPassword = null;
             try {
                 encPassword = loginManager.encryptPassword(usr.getId(), passwordSync.getPassword());
-            } catch (EncryptionException e) {
+            } catch (Exception e) {
                 auditLog.setException(e);
                 auditLog.fail();
                 auditLog.setFailureReason(ResponseCode.FAIL_ENCRYPTION);
@@ -2053,7 +2053,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
         try {
             encPassword = loginManager.encryptPassword(userId, passwordSync.getPassword());
-        } catch (EncryptionException e) {
+        } catch (Exception e) {
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(ResponseCode.FAIL_ENCRYPTION);
             return response;
@@ -2404,7 +2404,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             if (password != null) {
                 try {
                     decPassword = loginManager.decryptPassword(primaryIdentity.getUserId(), password);
-                } catch (EncryptionException e) {
+                } catch (Exception e) {
                 }
                 bindingMap.put("password", decPassword);
             }

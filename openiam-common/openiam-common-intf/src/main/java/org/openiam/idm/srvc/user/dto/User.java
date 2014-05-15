@@ -49,7 +49,6 @@ import java.util.*;
         "lastUpdatedBy",
         "locationCd",
         "locationName",
-        "metadataTypeId",
         "classification",
         "middleInit",
         "phones",
@@ -137,8 +136,6 @@ public class User extends AbstractMetadataTypeDTO {
     protected String locationCd;
 
     protected String locationName;
-
-    protected String metadataTypeId;
 
     protected String classification;
 
@@ -818,14 +815,6 @@ public class User extends AbstractMetadataTypeDTO {
     }
 
 
-    public String getMetadataTypeId() {
-        return metadataTypeId;
-    }
-
-    public void setMetadataTypeId(String metadataTypeId) {
-        this.metadataTypeId = metadataTypeId;
-    }
-
     public String getPasswordTheme() {
         return passwordTheme;
     }
@@ -992,11 +981,11 @@ public class User extends AbstractMetadataTypeDTO {
                 this.mailCode = null;
             }
         }
-        if (newUser.getMetadataTypeId() != null) {
-            if (newUser.getMetadataTypeId().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-                this.metadataTypeId = null;
+        if (newUser.getMdTypeId() != null) {
+            if (newUser.getMdTypeId().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+                this.setMdTypeId(null);
             } else {
-                this.metadataTypeId = newUser.getMetadataTypeId();
+                this.setMdTypeId(getMdTypeId());
             }
         }
         if (newUser.getMiddleInit() != null) {

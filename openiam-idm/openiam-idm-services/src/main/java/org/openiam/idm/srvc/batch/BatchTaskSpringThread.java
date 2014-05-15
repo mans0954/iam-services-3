@@ -1,6 +1,7 @@
 package org.openiam.idm.srvc.batch;
 
 import java.lang.reflect.Method;
+import java.util.Date;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -19,13 +20,16 @@ public class BatchTaskSpringThread extends AbstractBatchTaskThread {
 
 	@Override
 	protected void doRun() {
+        Date startDate = new Date();
 		if(StringUtils.isNotBlank(entity.getSpringBean()) && StringUtils.isNotBlank(entity.getSpringBeanMethod())) {
 			try {
-			final Object obj = ctx.getBean(entity.getSpringBean());
+			    final Object obj = ctx.getBean(entity.getSpringBean());
 				if(obj != null) {
 					final Method method = ReflectionUtils.findMethod(obj.getClass(), entity.getSpringBeanMethod());
 					if(method != null) {
 						method.invoke(obj, null);
+                        entity.setLastExecTime(startDate);
+                        batchService.save(entity);
 					}
 				}
 			} catch(Throwable e) {

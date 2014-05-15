@@ -8,10 +8,9 @@ import org.mule.module.client.MuleClient;
 import org.mule.util.StringUtils;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.SysConfiguration;
-import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.connector.type.*;
+import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.connector.type.constant.ErrorCode;
 import org.openiam.connector.type.constant.StatusCodeType;
 import org.openiam.connector.type.request.CrudRequest;
@@ -41,7 +40,6 @@ import org.openiam.idm.srvc.grp.service.GroupDataService;
 import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
-import org.openiam.idm.srvc.meta.dto.MetadataType;
 import org.openiam.idm.srvc.meta.service.MetadataTypeDAO;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
@@ -90,12 +88,11 @@ import org.openiam.util.MuleContextProvider;
 import org.openiam.util.SpringContextProvider;
 import org.openiam.util.UserUtils;
 import org.openiam.util.encrypt.Cryptor;
-
-import java.util.*;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+
+import java.util.*;
 
 /**
  * Base class for the provisioning service
@@ -816,8 +813,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         MetadataTypeEntity type = null;
         MetadataTypeEntity jobCode = null;
         MetadataTypeEntity employeeType = null;
-        if(StringUtils.isNotBlank(pUser.getMetadataTypeId())){
-            type = metadataTypeDAO.findById(pUser.getMetadataTypeId());
+        if(StringUtils.isNotBlank(pUser.getMdTypeId())){
+            type = metadataTypeDAO.findById(pUser.getMdTypeId());
         }
         if(StringUtils.isNotBlank(pUser.getJobCodeId())){
             jobCode = metadataTypeDAO.findById(pUser.getJobCodeId());
@@ -1291,7 +1288,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                         entity.setUserId(userEntity.getId());
                         userEntity.getPrincipalList().add(entity);
                         entity.setPassword(loginManager.encryptPassword(userEntity.getId(), e.getPassword()));
-                    } catch (EncryptionException ee) {
+                    } catch (Exception ee) {
                         log.error(ee);
                         ee.printStackTrace();
                     }
