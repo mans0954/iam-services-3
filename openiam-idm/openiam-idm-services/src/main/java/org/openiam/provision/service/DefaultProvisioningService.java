@@ -55,6 +55,7 @@ import org.openiam.idm.srvc.mngsys.domain.ProvisionConnectorEntity;
 import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
+import org.openiam.idm.srvc.mngsys.dto.PolicyMapObjectTypeOptions;
 import org.openiam.idm.srvc.prov.request.dto.BulkOperationEnum;
 import org.openiam.idm.srvc.prov.request.dto.BulkOperationRequest;
 import org.openiam.idm.srvc.prov.request.dto.OperationBean;
@@ -2586,6 +2587,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         idmAuditLog.setRequestorUserId(requestorId != null ? requestorId : systemUserId);
         idmAuditLog.setAction(AuditAction.PROVISIONING_MODIFY.value());
         idmAuditLog.setTargetUser(login.getUserId(), login.getLogin());
+
         try {
             ObjectResponse resp = requestAddModify(extUser, login, false, requestId, idmAuditLog);
             if (resp.getStatus() != StatusCodeType.SUCCESS) {
@@ -2636,7 +2638,6 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     }
                 }
             }
-
         }
 
         LookupUserResponse lookupUserResponse = getTargetSystemUser(login.getLogin(), managedSysId, hiddenAttrs);
@@ -2647,21 +2648,30 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             targetSysUserExists = true;
         }
 
+        List<ExtensibleAttribute> idmAttrsToDelete = new ArrayList<ExtensibleAttribute>();
         for (ExtensibleAttribute idma : idmAttrs) {
+            idma.setOperation(AttributeOperationEnum.NO_CHANGE.getValue());
             if (targetSysUserExists) {
+                boolean exists = false;
                 for (ExtensibleAttribute msa : mngSysAttrs) {
                     if (StringUtils.equals(idma.getName(), msa.getName())) {
                         if (!StringUtils.equals(idma.getValue(), msa.getValue())) {
                             idma.setOperation(AttributeOperationEnum.REPLACE.getValue());
-                        } else {
-                            idma.setOperation(AttributeOperationEnum.NO_CHANGE.getValue());
                         }
+                        exists = true;
                         break;
                     }
+                }
+                if (!exists) {
+                    idmAttrsToDelete.add(idma);
                 }
             } else {
                 idma.setOperation(AttributeOperationEnum.ADD.getValue());
             }
+        }
+
+        if (CollectionUtils.isNotEmpty(idmAttrsToDelete)) {
+            idmAttrs.removeAll(idmAttrsToDelete);
         }
 
         return idmAttrs;

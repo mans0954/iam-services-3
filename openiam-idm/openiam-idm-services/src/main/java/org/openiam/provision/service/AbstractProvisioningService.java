@@ -1427,6 +1427,16 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         ManagedSysDto mSys = managedSysDozerConverter.convertToDTO(
                 managedSystemService.getManagedSysById(managedSysId), true);
 
+        List<AttributeMapEntity> attrMapEntities = managedSystemService
+                .getAttributeMapsByManagedSysId(managedSysId);
+        List<AttributeMap> attrMap = attributeMapDozerConverter.convertToDTOList(attrMapEntities, true);
+        for (AttributeMap attr : attrMap) {
+            if (PolicyMapObjectTypeOptions.PRINCIPAL.name().equalsIgnoreCase(attr.getMapForObjectType())) {
+                extUser.setPrincipalFieldName(attr.getAttributeName());
+                extUser.setPrincipalFieldDataType(attr.getDataType().getValue());
+            }
+        }
+
         CrudRequest<ExtensibleUser> userReq = new CrudRequest<ExtensibleUser>();
         userReq.setObjectIdentity(mLg.getLogin());
         userReq.setRequestID(requestId);
