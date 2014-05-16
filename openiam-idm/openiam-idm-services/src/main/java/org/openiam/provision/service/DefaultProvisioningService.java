@@ -2589,6 +2589,10 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         idmAuditLog.setTargetUser(login.getUserId(), login.getLogin());
 
         try {
+
+            List<ExtensibleAttribute> hiddenAttrs = buildHiddenMngSysAttributes(login);
+            extUser.getAttributes().addAll(hiddenAttrs);
+
             ObjectResponse resp = requestAddModify(extUser, login, false, requestId, idmAuditLog);
             if (resp.getStatus() != StatusCodeType.SUCCESS) {
                 response.setStatus(ResponseStatus.FAILURE);
