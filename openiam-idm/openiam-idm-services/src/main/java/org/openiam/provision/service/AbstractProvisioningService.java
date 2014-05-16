@@ -1502,6 +1502,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         request.setRequestID(requestId);
         request.setTargetID(mLg.getManagedSysId());
         request.setHostLoginId(mSys.getUserId());
+        request.setExtensibleObject(new ExtensibleUser());
         String passwordDecoded = mSys.getPswd();
         try {
             passwordDecoded = getDecryptedPassword(mSys);
