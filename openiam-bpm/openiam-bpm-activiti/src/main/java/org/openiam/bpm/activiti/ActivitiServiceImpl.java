@@ -35,6 +35,7 @@ import org.openiam.dozer.converter.EmailAddressDozerConverter;
 import org.openiam.dozer.converter.PhoneDozerConverter;
 import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
+import org.openiam.exception.CustomActivitiException;
 import org.openiam.bpm.activiti.groovy.DefaultEditUserApproverAssociationIdentifier;
 import org.openiam.bpm.activiti.groovy.DefaultGenericWorkflowRequestApproverAssociationIdentifier;
 import org.openiam.bpm.activiti.groovy.DefaultNewHireRequestApproverAssociationIdentifier;
@@ -401,6 +402,11 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 			
 			response.setStatus(ResponseStatus.SUCCESS);
             idmAuditLog.succeed();
+		} catch(CustomActivitiException e) {
+			log.warn("Can't perform task", e);
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+			response.setErrorText(e.getMessage());
 		} catch (PageTemplateException e) {
             idmAuditLog.fail();
             idmAuditLog.setFailureReason(e.getCode());
@@ -541,6 +547,11 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 
 			response.setStatus(ResponseStatus.SUCCESS);
             idmAuditLog.succeed();
+		} catch(CustomActivitiException e) {
+			log.warn("Can't perform task", e);
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+			response.setErrorText(e.getMessage());
 		} catch(BasicDataServiceException e) {
             idmAuditLog.setFailureReason(e.getCode());
             idmAuditLog.setException(e);
@@ -585,15 +596,20 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
         	}
         	taskService.complete(assignedTask.getId(), variables);	
         	response.setStatus(ResponseStatus.SUCCESS);
+		} catch(CustomActivitiException e) {
+			log.warn("Can't perform task", e);
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+			response.setErrorText(e.getMessage());
 		} catch(ActivitiException e) {
 			log.info("Activiti Exception", e);
 			response.setStatus(ResponseStatus.FAILURE);
-			response.setErrorCode(ResponseCode.USER_STATUS);
+			response.setErrorCode(ResponseCode.INTERNAL_ERROR);
 			response.setErrorText(e.getMessage());
 		} catch(Throwable e) {
 			log.error("Error while creating newhire request", e);
 			response.setStatus(ResponseStatus.FAILURE);
-			response.setErrorCode(ResponseCode.USER_STATUS);
+			response.setErrorCode(ResponseCode.INTERNAL_ERROR);
 			response.setErrorText(e.getMessage());
 		}
 		return response;

@@ -7,6 +7,7 @@ import org.apache.log4j.Logger;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.bpm.activiti.delegate.entitlements.AbstractEntitlementsDelegate;
 import org.openiam.bpm.util.ActivitiConstants;
+import org.openiam.exception.CustomActivitiException;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.provision.NewUserModelToProvisionConverter;
@@ -49,7 +50,8 @@ public class CreateNewUser extends AbstractEntitlementsDelegate {
 			final String userId = response.getUser().getId();
 			execution.setVariable(ActivitiConstants.NEW_USER_ID.getName(), userId);
 		} else {
-			throw new Exception("Could not save User Profile using Provisioning Service - can't continue");
+			final String message = String.format("Could not save User Profile using Provisioning Service - can't continue.  Response Error Code: %s.  Response Error Text: %s", response.getErrorCode(), response.getErrorText());
+			throw new CustomActivitiException(response.getErrorCode(), message);
 		}
 	}
 }
