@@ -1,7 +1,7 @@
 package org.openiam.core.dao;
 
+import org.hibernate.criterion.Restrictions;
 import org.openiam.core.domain.UserKey;
-import org.openiam.idm.srvc.auth.dto.Login;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,14 +27,15 @@ public class UserKeyImpl extends BaseDaoImpl<UserKey, String> implements UserKey
 
     @Override
     public UserKey getByUserIdKeyName(String userId, String keyName) throws Exception {
-        List<UserKey> result = (List<UserKey>) getSession().createQuery(
-                "select obj from " + this.domainClass.getName() + " obj where obj.userId=:userId and obj.name=:keyName")
-                .setParameter("userId", userId).setParameter("keyName", keyName).list();
-
-        if(result == null || result.isEmpty()) {
-            return null;
-        }
-        return result.get(0);
+//        List<UserKey> result = (List<UserKey>) getSession().createQuery(
+//                "select obj from " + this.domainClass.getName() + " obj where obj.userId=:userId and obj.name=:keyName")
+//                .setParameter("userId", userId).setParameter("keyName", keyName).list();
+        return (UserKey)(getCriteria().add(Restrictions.eq("userId", userId))
+                                      .add(Restrictions.eq("name", keyName)).uniqueResult());
+//        if(result == null || result.isEmpty()) {
+//            return null;
+//        }
+//        return result.get(0);
     }
 
     @Override

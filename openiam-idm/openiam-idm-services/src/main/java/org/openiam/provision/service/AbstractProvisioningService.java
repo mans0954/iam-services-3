@@ -644,6 +644,9 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                 } else if (e.getOperation().equals(AttributeOperationEnum.ADD)) {
                     EmailAddressEntity entity = emailAddressDozerConverter.convertToEntity(e, false);
                     entity.setParent(userEntity);
+                    if(org.apache.commons.lang.StringUtils.isBlank(e.getMetadataTypeId())){
+                        entity.setMetadataType(null);
+                    }
                     userEntity.getEmailAddresses().add(entity);
                     // Audit Log
                     //--------------------------------------------------
@@ -664,6 +667,9 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                                 userMgr.evict(en);
                                 EmailAddressEntity entity = emailAddressDozerConverter.convertToEntity(e, false);
                                 entity.setParent(userEntity);
+                                if(org.apache.commons.lang.StringUtils.isBlank(e.getMetadataTypeId())){
+                                    entity.setMetadataType(null);
+                                }
                                 userEntity.getEmailAddresses().add(entity);
                                 // Audit Log
                                 //--------------------------------------------------
@@ -712,6 +718,9 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                 } else if (e.getOperation().equals(AttributeOperationEnum.ADD)) {
                     PhoneEntity entity = phoneDozerConverter.convertToEntity(e, false);
                     entity.setParent(userEntity);
+                    if(org.apache.commons.lang.StringUtils.isBlank(e.getMetadataTypeId())){
+                        entity.setMetadataType(null);
+                    }
                     userEntity.getPhones().add(entity);
                     // Audit log
                     IdmAuditLog auditLog = new IdmAuditLog();
@@ -738,6 +747,9 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                                 userMgr.evict(en);
                                 PhoneEntity entity = phoneDozerConverter.convertToEntity(e, false);
                                 entity.setParent(userEntity);
+                                if(org.apache.commons.lang.StringUtils.isBlank(e.getMetadataTypeId())){
+                                    entity.setMetadataType(null);
+                                }
                                 userEntity.getPhones().add(entity);
                                 break;
                             }
@@ -775,6 +787,9 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                 } else if (e.getOperation().equals(AttributeOperationEnum.ADD)) {
                     AddressEntity entity = addressDozerConverter.convertToEntity(e, false);
                     entity.setParent(userEntity);
+                    if(org.apache.commons.lang.StringUtils.isBlank(e.getMetadataTypeId())){
+                        entity.setMetadataType(null);
+                    }
                     userEntity.getAddresses().add(entity);
                     IdmAuditLog auditLog = new IdmAuditLog();
                     Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
@@ -799,6 +814,9 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                                 userMgr.evict(en);
                                 AddressEntity entity = addressDozerConverter.convertToEntity(e, false);
                                 entity.setParent(userEntity);
+                                if(org.apache.commons.lang.StringUtils.isBlank(e.getMetadataTypeId())){
+                                    entity.setMetadataType(null);
+                                }
                                 userEntity.getAddresses().add(entity);
                                 break;
                             }
@@ -1409,6 +1427,16 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         ManagedSysDto mSys = managedSysDozerConverter.convertToDTO(
                 managedSystemService.getManagedSysById(managedSysId), true);
 
+        List<AttributeMapEntity> attrMapEntities = managedSystemService
+                .getAttributeMapsByManagedSysId(managedSysId);
+        List<AttributeMap> attrMap = attributeMapDozerConverter.convertToDTOList(attrMapEntities, true);
+        for (AttributeMap attr : attrMap) {
+            if (PolicyMapObjectTypeOptions.PRINCIPAL.name().equalsIgnoreCase(attr.getMapForObjectType())) {
+                extUser.setPrincipalFieldName(attr.getAttributeName());
+                extUser.setPrincipalFieldDataType(attr.getDataType().getValue());
+            }
+        }
+
         CrudRequest<ExtensibleUser> userReq = new CrudRequest<ExtensibleUser>();
         userReq.setObjectIdentity(mLg.getLogin());
         userReq.setRequestID(requestId);
@@ -1474,6 +1502,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         request.setRequestID(requestId);
         request.setTargetID(mLg.getManagedSysId());
         request.setHostLoginId(mSys.getUserId());
+        request.setExtensibleObject(new ExtensibleUser());
         String passwordDecoded = mSys.getPswd();
         try {
             passwordDecoded = getDecryptedPassword(mSys);
