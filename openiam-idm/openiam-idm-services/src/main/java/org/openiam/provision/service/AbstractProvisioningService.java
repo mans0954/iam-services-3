@@ -1427,6 +1427,16 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         ManagedSysDto mSys = managedSysDozerConverter.convertToDTO(
                 managedSystemService.getManagedSysById(managedSysId), true);
 
+        List<AttributeMapEntity> attrMapEntities = managedSystemService
+                .getAttributeMapsByManagedSysId(managedSysId);
+        List<AttributeMap> attrMap = attributeMapDozerConverter.convertToDTOList(attrMapEntities, true);
+        for (AttributeMap attr : attrMap) {
+            if (PolicyMapObjectTypeOptions.PRINCIPAL.name().equalsIgnoreCase(attr.getMapForObjectType())) {
+                extUser.setPrincipalFieldName(attr.getAttributeName());
+                extUser.setPrincipalFieldDataType(attr.getDataType().getValue());
+            }
+        }
+
         CrudRequest<ExtensibleUser> userReq = new CrudRequest<ExtensibleUser>();
         userReq.setObjectIdentity(mLg.getLogin());
         userReq.setRequestID(requestId);
@@ -1492,6 +1502,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         request.setRequestID(requestId);
         request.setTargetID(mLg.getManagedSysId());
         request.setHostLoginId(mSys.getUserId());
+        request.setExtensibleObject(new ExtensibleUser());
         String passwordDecoded = mSys.getPswd();
         try {
             passwordDecoded = getDecryptedPassword(mSys);
