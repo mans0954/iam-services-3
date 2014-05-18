@@ -35,7 +35,7 @@ public class RoleAttributeEntity implements Serializable {
     @Column(name="NAME", length=100)
     private String name;
     
-    @Column(name="_VALUE", length=4096)
+    @Column(name="ATTR_VALUE", length=4096)
     private String value;
 
     @ElementCollection

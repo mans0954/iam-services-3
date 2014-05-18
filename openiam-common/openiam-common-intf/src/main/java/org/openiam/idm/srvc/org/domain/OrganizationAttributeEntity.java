@@ -29,7 +29,7 @@ public class OrganizationAttributeEntity {
     @JoinColumn(name = "COMPANY_ID", referencedColumnName = "COMPANY_ID", insertable = true, updatable = false)
     private OrganizationEntity organization;
 
-    @Column(name = "_VALUE", length=4096)
+    @Column(name = "ATTR_VALUE", length=4096)
     private String value;
 
     @ElementCollection
