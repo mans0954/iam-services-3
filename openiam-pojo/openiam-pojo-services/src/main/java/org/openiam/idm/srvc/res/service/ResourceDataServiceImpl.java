@@ -328,7 +328,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
         idmAuditLog.setRequestorUserId(requesterId);
         idmAuditLog.setAction(AuditAction.REMOVE_USER_FROM_RESOURCE.value());
         UserEntity userEntity = userDataService.getUser(userId);
-        LoginEntity primaryIdentity = UserUtils.getPrimaryIdentityEntity(sysConfiguration.getDefaultManagedSysId(), userEntity.getPrincipalList());
+        LoginEntity primaryIdentity = UserUtils.getUserManagedSysIdentityEntity(sysConfiguration.getDefaultManagedSysId(), userEntity.getPrincipalList());
         idmAuditLog.setTargetUser(userId, primaryIdentity.getLogin());
         ResourceEntity resourceEntity = resourceService.findResourceById(resourceId);
         idmAuditLog.setTargetResource(resourceId, resourceEntity.getName());
@@ -365,7 +365,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
         idmAuditLog.setRequestorUserId(requesterId);
         idmAuditLog.setAction(AuditAction.ADD_USER_TO_RESOURCE.value());
         UserEntity userEntity = userDataService.getUser(userId);
-        LoginEntity primaryIdentity = UserUtils.getPrimaryIdentityEntity(sysConfiguration.getDefaultManagedSysId(), userEntity.getPrincipalList());
+        LoginEntity primaryIdentity = UserUtils.getUserManagedSysIdentityEntity(sysConfiguration.getDefaultManagedSysId(), userEntity.getPrincipalList());
         idmAuditLog.setTargetUser(userId, primaryIdentity.getLogin());
         ResourceEntity resourceEntity = resourceService.findResourceById(resourceId);
         idmAuditLog.setTargetResource(resourceId, resourceEntity.getName());

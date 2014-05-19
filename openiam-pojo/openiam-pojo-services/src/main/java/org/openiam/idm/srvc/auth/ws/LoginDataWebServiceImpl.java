@@ -448,7 +448,7 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.auth.ws.LoginDataWebService#getPrimaryIdentityEntity(java.lang.String)
+	 * @see org.openiam.idm.srvc.auth.ws.LoginDataWebService#getUserManagedSysIdentityEntity(java.lang.String)
 	 */
     @Override
 	public LoginResponse getPrimaryIdentity(String userId) {

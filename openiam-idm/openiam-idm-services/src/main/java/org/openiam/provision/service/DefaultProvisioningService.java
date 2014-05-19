@@ -38,7 +38,6 @@ import org.openiam.connector.type.constant.StatusCodeType;
 import org.openiam.connector.type.request.LookupRequest;
 import org.openiam.connector.type.request.SuspendResumeRequest;
 import org.openiam.connector.type.response.*;
-import org.openiam.exception.EncryptionException;
 import org.openiam.exception.ObjectNotFoundException;
 import org.openiam.exception.ScriptEngineException;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
@@ -55,7 +54,6 @@ import org.openiam.idm.srvc.mngsys.domain.ProvisionConnectorEntity;
 import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
-import org.openiam.idm.srvc.mngsys.dto.PolicyMapObjectTypeOptions;
 import org.openiam.idm.srvc.prov.request.dto.BulkOperationEnum;
 import org.openiam.idm.srvc.prov.request.dto.BulkOperationRequest;
 import org.openiam.idm.srvc.prov.request.dto.OperationBean;
@@ -272,7 +270,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         idmAuditLog.setAction(AuditAction.PROVISIONING_DELETE.value());
         try {
             List<LoginEntity> loginEntityList = loginManager.getLoginByUser(userId);
-            LoginEntity primaryIdentity = UserUtils.getPrimaryIdentityEntity(this.sysConfiguration.getDefaultManagedSysId(),loginEntityList);
+            LoginEntity primaryIdentity = UserUtils.getUserManagedSysIdentityEntity(this.sysConfiguration.getDefaultManagedSysId(), loginEntityList);
 
             ProvisionUserResponse response = deleteUser(sysConfiguration.getDefaultManagedSysId(),
                     primaryIdentity.getLogin(), status, requestorId);
@@ -820,7 +818,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         if (!isAdd) {
             List<LoginEntity> curPrincipalList = userEntity.getPrincipalList();
             // check that a primary identity exists some where
-            LoginEntity curPrimaryIdentity = UserUtils.getPrimaryIdentityEntity(sysConfiguration.getDefaultManagedSysId(),
+            LoginEntity curPrimaryIdentity = UserUtils.getUserManagedSysIdentityEntity(sysConfiguration.getDefaultManagedSysId(),
                     curPrincipalList);
             if (curPrimaryIdentity == null && pUser.getPrincipalList() == null) {
                 log.debug("Primary identity not found...");
@@ -976,7 +974,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         updatePrincipals(userEntity, pUser, auditLog);
 
         // get primary identity and bind it for the groovy scripts
-        LoginEntity primaryIdentityEntity = UserUtils.getPrimaryIdentityEntity(sysConfiguration.getDefaultManagedSysId(),
+        LoginEntity primaryIdentityEntity = UserUtils.getUserManagedSysIdentityEntity(sysConfiguration.getDefaultManagedSysId(),
                 userEntity.getPrincipalList());
         Login primaryIdentity = (primaryIdentityEntity != null) ? loginDozerConverter.convertToDTO(
                 primaryIdentityEntity, false) : null;
@@ -1278,6 +1276,17 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             bindingMap.put(TARGET_SYSTEM_ATTRIBUTES, null);
             bindingMap.put(TARGET_SYSTEM_IDENTITY, mLg != null ? mLg.getLogin() : null);
 
+            if (mLg!=null) {
+                bindingMap.put("lg", mLg);
+                String decPassword = "";
+                try {
+                    decPassword = loginManager.decryptPassword(mLg.getUserId(), mLg.getPassword());
+                } catch (Exception e) {
+                    log.debug(" - Failed to decrypt password for " + mLg.getUserId());
+                }
+                bindingMap.put("password", decPassword);
+            }
+
             // Identity of current target system
             Login targetSysLogin = loginDozerConverter.convertToDTO(mLg, false);
             for (Login l : pUser.getPrincipalList()) { // saving Login
@@ -1366,35 +1375,31 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             final String requestId = "R" + UUIDGen.getUUID();
 
             // get the user object associated with this principal
-            final LoginEntity login = loginManager.getLoginByManagedSys(passwordSync.getPrincipal(),
-                    passwordSync.getManagedSystemId());
-            idmAuditLog.setTargetUser(login.getUserId(), login.getLogin());
-            if (login == null) {
+            List<LoginEntity> identities = loginManager.getLoginByUser(passwordSync.getUserId());
+
+            idmAuditLog.setUserId(passwordSync.getUserId());
+            LoginEntity identity = null;
+            if (StringUtils.isNotBlank(passwordSync.getManagedSystemId())) {
+                for (LoginEntity le : identities) {
+                    if (passwordSync.getManagedSystemId().equals(le.getManagedSysId())) {
+                        identity = le;
+                        break;
+                    }
+                }
+            } else {
+                identity = loginManager.getPrimaryIdentity(passwordSync.getUserId());
+            }
+
+            if (identity != null) {
+                idmAuditLog.setTargetUser(identity.getUserId(), identity.getLogin());
+
+            } else {
                 idmAuditLog.fail();
                 idmAuditLog.setFailureReason(ResponseCode.PRINCIPAL_NOT_FOUND);
                 response.setStatus(ResponseStatus.FAILURE);
                 response.setErrorCode(ResponseCode.PRINCIPAL_NOT_FOUND);
                 return response;
             }
-            // check if the user active
-            final String userId = login.getUserId();
-            if (userId == null) {
-                idmAuditLog.fail();
-                idmAuditLog.setFailureReason(ResponseCode.USER_NOT_FOUND);
-                response.setStatus(ResponseStatus.FAILURE);
-                response.setErrorCode(ResponseCode.USER_NOT_FOUND);
-                return response;
-            }
-            final UserEntity usr = userMgr.getUser(userId);
-            if (usr == null) {
-                idmAuditLog.fail();
-                idmAuditLog.setFailureReason(ResponseCode.USER_NOT_FOUND);
-                response.setStatus(ResponseStatus.FAILURE);
-                response.setErrorCode(ResponseCode.USER_NOT_FOUND);
-                return response;
-            }
-
-            idmAuditLog.setTargetUser(userId, login.getLogin());
 
             String password = passwordSync.getPassword();
             if (StringUtils.isEmpty(password)) {
@@ -1403,7 +1408,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             }
             String encPassword = null;
             try {
-                encPassword = loginManager.encryptPassword(userId, password);
+                encPassword = loginManager.encryptPassword(identity.getUserId(), password);
             } catch (Exception e) {
                 idmAuditLog.fail();
                 idmAuditLog.setFailureReason(ResponseCode.FAIL_ENCRYPTION);
@@ -1411,120 +1416,88 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 response.setErrorCode(ResponseCode.FAIL_ENCRYPTION);
                 return response;
             }
-            final boolean retval = loginManager.resetPassword(passwordSync.getPrincipal(),
-                    passwordSync.getManagedSystemId(), encPassword);
 
-            if (retval) {
-                log.debug("-Password changed in openiam repository for user:" + passwordSync.getPrincipal());
-                idmAuditLog.succeed();
-
-                /*
-                 * came with merge from v2.3 //check if password should be sent
-                 * to the user. if (passwordSync.isSendPasswordToUser()) { //
-                 * sendPasswordToUser(usr, password); }
-                 */
-                if (passwordSync.getSendPasswordToUser()) {
-                    sendResetPasswordToUser(usr, passwordSync.getPrincipal(), password);
-                }
-
+            List<LoginEntity> principalList = new ArrayList<LoginEntity>();
+            if (StringUtils.isNotBlank(passwordSync.getManagedSystemId())) {
+                principalList.add(identity);
             } else {
-                idmAuditLog.fail();
-                idmAuditLog.setFailureReason(ResponseCode.PRINCIPAL_NOT_FOUND);
-                Response resp = new Response();
-                resp.setStatus(ResponseStatus.FAILURE);
-                resp.setErrorCode(ResponseCode.PRINCIPAL_NOT_FOUND);
+                principalList.addAll(identities);
             }
 
-            if (StringUtils.equalsIgnoreCase(passwordSync.getManagedSystemId(),
-                    sysConfiguration.getDefaultManagedSysId())) {
-                // typical sync
-                final List<LoginEntity> principalList = loginManager.getLoginByUser(login.getUserId());
-                if (principalList != null) {
-                    log.debug("PrincipalList size =" + principalList.size());
-                    for (final LoginEntity lg : principalList) {
-                        // get the managed system for the identity - ignore the
-                        // managed system id that is linked to openiam's
-                        // repository
-                        log.debug("**** Managed System Id in passwordsync object=" + passwordSync.getManagedSystemId());
+            // reset passwords for all identities with the same password
+            for (final LoginEntity lg : principalList) {
+                final String managedSysId = lg.getManagedSysId();
+                final ManagedSysEntity mSys = managedSystemService.getManagedSysById(managedSysId);
+                if (mSys != null) {
+                    final ResourceEntity res = resourceService.findResourceById(mSys.getResourceId());
+                    log.debug(" - Managed System Id = " + managedSysId);
+                    log.debug(" - Resource Id = " + res.getId());
 
-                        if (!StringUtils.equalsIgnoreCase(lg.getManagedSysId(), passwordSync.getManagedSystemId())
-                                && !StringUtils.equalsIgnoreCase(lg.getManagedSysId(),
-                                        sysConfiguration.getDefaultManagedSysId())) {
-                            // determine if you should sync the password or not
-                            final String managedSysId = lg.getManagedSysId();
-                            final ManagedSysEntity mSys = managedSystemService.getManagedSysById(managedSysId);
-                            if (mSys != null) {
-                                final ResourceEntity res = resourceService.findResourceById(mSys.getResourceId());
-                                log.debug(" - managedsys id = " + managedSysId);
-                                log.debug(" - Resource for sysId =" + res);
+                    final boolean retval = loginManager.resetPassword(lg.getLogin(), lg.getManagedSysId(), encPassword);
 
-                                // check the sync flag
+                    if (retval) {
+                        log.debug(String.format("- Password changed for principal: %s, user: %s, managed sys: %s -",
+                                identity.getLogin(), identity.getUserId(), identity.getManagedSysId()));
+                        idmAuditLog.succeed();
 
-                                if (syncAllowed(res)) {
+                        /*
+                         * came with merge from v2.3 //check if password should be sent
+                         * to the user. if (passwordSync.isSendPasswordToUser()) { //
+                         * sendPasswordToUser(usr, password); }
+                         */
+                        if (passwordSync.getSendPasswordToUser()) {
+                            sendResetPasswordToUser(identity, password);
+                        }
 
-                                    log.debug("Sync allowed for sys=" + managedSysId);
-                                    loginManager.resetPassword(lg.getLogin(), lg.getManagedSysId(), encPassword);
+                    } else {
+                        idmAuditLog.fail();
+                        idmAuditLog.setFailureReason(ResponseCode.PRINCIPAL_NOT_FOUND);
+                        response.setStatus(ResponseStatus.FAILURE);
+                        response.setErrorCode(ResponseCode.PRINCIPAL_NOT_FOUND);
+                        return response;
+                    }
 
-                                    ManagedSystemObjectMatchEntity matchObj = null;
-                                    final List<ManagedSystemObjectMatchEntity> matcheList = managedSystemService
-                                            .managedSysObjectParam(managedSysId, "USER");
+                    if (!lg.getManagedSysId().equals(sysConfiguration.getDefaultManagedSysId())) {
+                        if (syncAllowed(res)) { // check the sync flag
+                            log.debug("Sync allowed for managed sys = " + managedSysId);
 
-                                    if (CollectionUtils.isNotEmpty(matcheList)) {
-                                        matchObj = matcheList.get(0);
-                                    }
+                            ManagedSystemObjectMatchEntity matchObj = null;
+                            final List<ManagedSystemObjectMatchEntity> matchList = managedSystemService
+                                    .managedSysObjectParam(managedSysId, "USER");
 
-                                    System.out.println("============== Connector Reset Password call: " + new Date());
-                                    ResponseType resp = resetPassword(requestId,
-                                            loginDozerConverter.convertToDTO(lg, false), password,
-                                            managedSysDozerConverter.convertToDTO(mSys, false),
-                                            objectMatchDozerConverter.convertToDTO(matchObj, false));
-                                    System.out.println("============== Connector Reset Password get : " + new Date());
-                                    idmAuditLog.setTargetUser(lg.getUserId(), lg.getLogin());
-                                    if (resp != null && resp.getStatus() == StatusCodeType.SUCCESS) {
-                                        idmAuditLog.succeed();
-                                        idmAuditLog.setAuditDescription(
-                                                "Reset password for resource: " + res.getName() + " for user: "
-                                                        + lg.getLogin());
-                                    } else {
-                                        idmAuditLog.fail();
-                                        idmAuditLog.setFailureReason(
-                                                "Reset password for resource: " + mSys.getName() + " for user: "
-                                                        + login.getLogin() + ". " + resp.getErrorMsgAsStr());
+                            if (CollectionUtils.isNotEmpty(matchList)) {
+                                matchObj = matchList.get(0);
+                            }
+
+                            System.out.println("============== Connector Reset Password call: " + new Date());
+                            ResponseType resp = resetPassword(requestId,
+                                    loginDozerConverter.convertToDTO(lg, false), password,
+                                    managedSysDozerConverter.convertToDTO(mSys, false),
+                                    objectMatchDozerConverter.convertToDTO(matchObj, false));
+                            System.out.println("============== Connector Reset Password get : " + new Date());
+                            idmAuditLog.setTargetUser(lg.getUserId(), lg.getLogin());
+                            if (resp != null && resp.getStatus() == StatusCodeType.SUCCESS) {
+                                idmAuditLog.succeed();
+                                idmAuditLog.setAuditDescription(
+                                        "Reset password for resource: " + res.getName() + " for user: "
+                                                + lg.getLogin());
+                            } else {
+                                idmAuditLog.fail();
+                                String reason = "";
+                                if(resp != null) {
+                                    if (resp.getError() != null) {
+                                        reason = resp.getError().value();
+                                    } else if (StringUtils.isNotBlank(resp.getErrorMsgAsStr())) {
+                                        reason = resp.getErrorMsgAsStr();
                                     }
                                 }
+                                idmAuditLog.setFailureReason(String.format("Reset password for resource %s user %s failed: %s",
+                                        mSys.getName(), lg.getLogin(), reason));
+
                             }
                         }
                     }
                 }
-
-            } else {
-                // update just the system that was specified
-
-                final ManagedSysEntity mSys = managedSystemService.getManagedSysById(passwordSync.getManagedSystemId());
-
-                ManagedSystemObjectMatchEntity matchObj = null;
-                final List<ManagedSystemObjectMatchEntity> matchList = managedSystemService.managedSysObjectParam(
-                        mSys.getId(), "USER");
-                if (CollectionUtils.isNotEmpty(matchList)) {
-                    matchObj = matchList.get(0);
-                }
-                ResponseType resp = resetPassword(requestId, loginDozerConverter.convertToDTO(login, false),
-                        passwordSync.getPassword(), managedSysDozerConverter.convertToDTO(mSys, false),
-                        objectMatchDozerConverter.convertToDTO(matchObj, false));
-                if (resp != null && resp.getStatus() == StatusCodeType.SUCCESS) {
-                    idmAuditLog.succeed();
-                    idmAuditLog.setAuditDescription(
-                            "Reset password for resource: " + mSys.getName() + " for user: " + login.getLogin());
-                    response.setStatus(ResponseStatus.SUCCESS);
-                } else {
-                    idmAuditLog.fail();
-                    idmAuditLog.setFailureReason(
-                            "Reset password for resource: " + mSys.getName() + " for user: " + login.getLogin() + ". "
-                                    + resp.getErrorMsgAsStr());
-                    response.setErrorText(resp.getErrorMsgAsStr());
-                    response.setStatus(ResponseStatus.FAILURE);
-                }
-
             }
         } finally {
             auditLogService.enqueue(idmAuditLog);
@@ -1637,43 +1610,37 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
             final String requestId = "R" + UUIDGen.getUUID();
 
-            // get the user object associated with this principal
-            final LoginEntity login = loginManager.getLoginByManagedSys(passwordSync.getPrincipal(),
-                    passwordSync.getManagedSystemId());
+            // get the user identities
+            List<LoginEntity> identities = loginManager.getLoginByUser(passwordSync.getUserId());
 
-            if (login == null) {
+            auditLog.setUserId(passwordSync.getUserId());
+            LoginEntity identity = null;
+            if (StringUtils.isNotBlank(passwordSync.getManagedSystemId())) {
+                for (LoginEntity le : identities) {
+                    if (passwordSync.getManagedSystemId().equals(le.getManagedSysId())) {
+                        identity = le;
+                        break;
+                    }
+                }
+            } else {
+                identity = loginManager.getPrimaryIdentity(passwordSync.getUserId());
+            }
+
+            if (identity != null) {
+                auditLog.setTargetUser(identity.getUserId(), identity.getLogin());
+
+            } else {
                 auditLog.fail();
                 auditLog.setFailureReason(ResponseCode.PRINCIPAL_NOT_FOUND);
-                response.fail();
+                response.setStatus(ResponseStatus.FAILURE);
                 response.setErrorCode(ResponseCode.PRINCIPAL_NOT_FOUND);
                 return response;
             }
 
-            String prevDecodedPasswordCurrentMngSys = getDecryptedPassword(login.getUserId(), login.getPassword());
-            // check if the user active
-            final String userId = login.getUserId();
-            if (userId == null) {
-                response.fail();
-                auditLog.fail();
-                auditLog.setFailureReason(ResponseCode.USER_NOT_FOUND);
-                response.setErrorCode(ResponseCode.USER_NOT_FOUND);
-                return response;
-            }
-
-            final UserEntity usr = userMgr.getUser(userId);
-            if (usr == null) {
-                auditLog.fail();
-                auditLog.setFailureReason(ResponseCode.USER_NOT_FOUND);
-                response.fail();
-                response.setErrorCode(ResponseCode.USER_NOT_FOUND);
-                return response;
-            }
-            auditLog.setTargetUser(userId, login.getLogin());
-
             // validate the password against password policy
             final Password pswd = new Password();
-            pswd.setManagedSysId(passwordSync.getManagedSystemId());
-            pswd.setPrincipal(passwordSync.getPrincipal());
+            pswd.setManagedSysId(identity.getManagedSysId());
+            pswd.setPrincipal(identity.getLogin());
             pswd.setPassword(passwordSync.getPassword());
 
             try {
@@ -1683,7 +1650,6 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     auditLog.setFailureReason("Invalid Password");
                     return response;
                 }
-
             } catch (ObjectNotFoundException oe) {
                 auditLog.setException(oe);
                 log.error("Object not found", oe);
@@ -1691,130 +1657,122 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
             String encPassword = null;
             try {
-                encPassword = loginManager.encryptPassword(usr.getId(), passwordSync.getPassword());
+                encPassword = loginManager.encryptPassword(identity.getUserId(), passwordSync.getPassword());
             } catch (Exception e) {
-                auditLog.setException(e);
                 auditLog.fail();
                 auditLog.setFailureReason(ResponseCode.FAIL_ENCRYPTION);
-                response.fail();
+                response.setStatus(ResponseStatus.FAILURE);
                 response.setErrorCode(ResponseCode.FAIL_ENCRYPTION);
                 return response;
             }
 
-            // make sure that update all the primary identity records
-            final List<LoginEntity> principalList = loginManager.getLoginByUser(login.getUserId());
+            List<LoginEntity> principalList = new ArrayList<LoginEntity>();
+            if (StringUtils.isNotBlank(passwordSync.getManagedSystemId())) {
+                principalList.add(identity);
+            } else {
+                principalList.addAll(identities);
+            }
 
-            for (final LoginEntity l : principalList) {
+            for (final LoginEntity lg : principalList) {
 
-                // find the openiam identity and update it in openiam DB
-                if (StringUtils.equalsIgnoreCase(l.getManagedSysId(), passwordSync.getManagedSystemId())) {
+                final String managedSysId = lg.getManagedSysId();
+                final ManagedSysEntity mSys = managedSystemService.getManagedSysById(managedSysId);
 
-                    final boolean retval = loginManager.setPassword(l.getLogin(), passwordSync.getManagedSystemId(),
+                if (mSys != null) {
+                    final ResourceEntity res = resourceService.findResourceById(mSys.getResourceId());
+                    log.debug(" - Managed System Id = " + managedSysId);
+                    log.debug(" - Resource Id = " + res.getId());
+
+                    final boolean retval = loginManager.setPassword(lg.getLogin(), managedSysId,
                             encPassword, passwordSync.isPreventChangeCountIncrement());
-                    if (retval) {
-                        log.debug("-Password changed in openiam repository for user:" + passwordSync.getPrincipal());
-                        auditLog.succeed();
-                        // update the user object that the password was changed
-                        usr.setDatePasswordChanged(new Date(System.currentTimeMillis()));
 
-                        userMgr.updateUserWithDependent(usr, false);
+                    if (retval) {
+                        log.debug(String.format("- Password changed for principal: %s, user: %s, managed sys: %s -",
+                                identity.getLogin(), identity.getUserId(), identity.getManagedSysId()));
+                        auditLog.succeed();
+
+                        /*
+                         * came with merge from v2.3 //check if password should be sent
+                         * to the user. if (passwordSync.isSendPasswordToUser()) { //
+                         * sendPasswordToUser(usr, password); }
+                         */
+                        if (passwordSync.getSendPasswordToUser()) {
+                            sendResetPasswordToUser(identity, passwordSync.getPassword());
+                        }
 
                     } else {
                         auditLog.fail();
                         auditLog.setFailureReason(ResponseCode.PRINCIPAL_NOT_FOUND);
                         response.setStatus(ResponseStatus.FAILURE);
                         response.setErrorCode(ResponseCode.PRINCIPAL_NOT_FOUND);
+                        return response;
                     }
-                    break;
-                }
-            }
 
-            boolean connectorSuccess = false;
+                    if (!managedSysId.equals(sysConfiguration.getDefaultManagedSysId())) {
+                        if (syncAllowed(res)) { // check the sync flag
+                            log.debug("Sync allowed for managed sys = " + managedSysId);
 
-            if (StringUtils.equalsIgnoreCase(passwordSync.getManagedSystemId(),
-                    sysConfiguration.getDefaultManagedSysId())) {
-                // typical sync
-                // List<Login> principalList =
-                // loginManager.getLoginByUser(login.getUserId());
-                // if (principalList != null) {
+                            // pre-process
 
-                // sync the non-openiam identities
-                for (final LoginEntity lg : principalList) {
-                    // get the managed system for the identity - ignore the
-                    // managed
-                    // system id that is linked to openiam's repository
-                    log.debug("**** Managed System Id in passwordsync object=" + passwordSync.getManagedSystemId());
+                            bindingMap.put("IDENTITY", lg);
+                            bindingMap.put("RESOURCE", res);
+                            bindingMap.put("PASSWORD_SYNC", passwordSync);
 
-                    if (!StringUtils.equalsIgnoreCase(lg.getManagedSysId(), sysConfiguration.getDefaultManagedSysId())) {
-
-                        // determine if you should sync the password or not
-                        final String managedSysId = lg.getManagedSysId();
-                        final ManagedSysEntity mSys = managedSystemService.getManagedSysById(managedSysId);
-                        if (mSys != null) {
-                            final ResourceEntity resource = resourceService.findResourceById(mSys.getResourceId());
-
-                            log.debug(" - managedsys id = " + managedSysId);
-                            log.debug(" - Resource for sysId =" + resource);
-
-                            // check the sync flag
-
-                            if (syncAllowed(resource)) {
-
-                                log.debug("Sync allowed for sys=" + managedSysId);
-
-                                // pre-process
-
-                                bindingMap.put("IDENTITY", lg);
-                                bindingMap.put("RESOURCE", resource);
-                                bindingMap.put("PASSWORD_SYNC", passwordSync);
-
-                                if (resource != null) {
-                                    final String preProcessScript = getResourceProperty(resource, "PRE_PROCESS");
-                                    if (preProcessScript != null && !preProcessScript.isEmpty()) {
-                                        final PreProcessor ppScript = createPreProcessScript(preProcessScript,
-                                                bindingMap);
-                                        if (ppScript != null) {
-                                            if (executePreProcess(ppScript, bindingMap, null, "SET_PASSWORD") == ProvisioningConstants.FAIL) {
-                                                continue;
-                                            }
+                            if (res != null) {
+                                final String preProcessScript = getResourceProperty(res, "PRE_PROCESS");
+                                if (preProcessScript != null && !preProcessScript.isEmpty()) {
+                                    final PreProcessor ppScript = createPreProcessScript(preProcessScript,
+                                            bindingMap);
+                                    if (ppScript != null) {
+                                        if (executePreProcess(ppScript, bindingMap, null, "SET_PASSWORD") == ProvisioningConstants.FAIL) {
+                                            continue;
                                         }
                                     }
                                 }
-                                String prevDecodedPassword = getDecryptedPassword(lg.getUserId(), lg.getPassword());
-                                // update the password in openiam
-                                loginManager.setPassword(lg.getLogin(), lg.getManagedSysId(), encPassword,
-                                        passwordSync.isPreventChangeCountIncrement());
+                            }
 
-                                if (StringUtils.isNotEmpty(mSys.getConnectorId())) {
+                            String prevDecodedPassword = getDecryptedPassword(lg.getUserId(), lg.getPassword());
+                            // update the password in openiam
+                            loginManager.setPassword(lg.getLogin(), lg.getManagedSysId(), encPassword,
+                                    passwordSync.isPreventChangeCountIncrement());
 
-                                    ManagedSystemObjectMatchEntity matchObj = null;
-                                    final List<ManagedSystemObjectMatchEntity> matchObjects = managedSystemService
-                                            .managedSysObjectParam(mSys.getId(), "USER");
-                                    if (CollectionUtils.isNotEmpty(matchObjects)) {
-                                        matchObj = matchObjects.get(0);
-                                    }
+                            ManagedSystemObjectMatchEntity matchObj = null;
+                            final List<ManagedSystemObjectMatchEntity> matchList = managedSystemService
+                                    .managedSysObjectParam(managedSysId, "USER");
 
-                                    ResponseType resp = setPassword(requestId,
-                                            loginDozerConverter.convertToDTO(lg, false), prevDecodedPassword,
-                                            passwordSync.getPassword(),
-                                            managedSysDozerConverter.convertToDTO(mSys, false),
-                                            objectMatchDozerConverter.convertToDTO(matchObj, false));
+                            if (CollectionUtils.isNotEmpty(matchList)) {
+                                matchObj = matchList.get(0);
+                            }
 
-                                    if (resp.getStatus() == StatusCodeType.SUCCESS) {
-                                        connectorSuccess = true;
-                                    }
+                            ResponseType resp = setPassword(requestId,
+                                    loginDozerConverter.convertToDTO(lg, false), prevDecodedPassword,
+                                    passwordSync.getPassword(),
+                                    managedSysDozerConverter.convertToDTO(mSys, false),
+                                    objectMatchDozerConverter.convertToDTO(matchObj, false));
 
-                                    // post-process
-                                    if (resource != null) {
-                                        final String postProcessScript = getResourceProperty(resource, "POST_PROCESS");
-                                        if (postProcessScript != null && !postProcessScript.isEmpty()) {
-                                            final PostProcessor ppScript = createPostProcessScript(postProcessScript,
-                                                    bindingMap);
-                                            if (ppScript != null) {
-                                                executePostProcess(ppScript, bindingMap, null, "SET_PASSWORD",
-                                                        connectorSuccess);
-                                            }
-                                        }
+                            boolean connectorSuccess = false;
+                            if (resp.getStatus() == StatusCodeType.SUCCESS) {
+                                connectorSuccess = true;
+                                auditLog.fail();
+                                String reason = "";
+                                if (resp.getError() != null) {
+                                    reason = resp.getError().value();
+                                } else if (StringUtils.isNotBlank(resp.getErrorMsgAsStr())) {
+                                    reason = resp.getErrorMsgAsStr();
+                                }
+                                auditLog.setFailureReason(String.format("Reset password for resource %s user %s failed: %s",
+                                        mSys.getName(), lg.getLogin(), reason));
+                            }
+
+                            // post-process
+                            if (res != null) {
+                                final String postProcessScript = getResourceProperty(res, "POST_PROCESS");
+                                if (postProcessScript != null && !postProcessScript.isEmpty()) {
+                                    final PostProcessor ppScript = createPostProcessScript(postProcessScript,
+                                            bindingMap);
+                                    if (ppScript != null) {
+                                        executePostProcess(ppScript, bindingMap, null, "SET_PASSWORD",
+                                                connectorSuccess);
                                     }
                                 }
                             }
@@ -1823,61 +1781,10 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                         }
                     }
                 }
-                // }
-            } else {
-                // just the update the managed system that was specified.
-                final ManagedSysEntity mSys = managedSystemService.getManagedSysById(passwordSync.getManagedSystemId());
-
-                ManagedSystemObjectMatchEntity matchObj = null;
-                final List<ManagedSystemObjectMatchEntity> matchObjects = managedSystemService.managedSysObjectParam(
-                        mSys.getId(), "USER");
-                if (CollectionUtils.isNotEmpty(matchObjects)) {
-                    matchObj = matchObjects.get(0);
-                }
-
-                // pre-process
-                final ResourceEntity resource = resourceService.findResourceById(mSys.getResourceId());
-
-                bindingMap.put("IDENTITY", login);
-                bindingMap.put("PASSWORD_SYNC", passwordSync);
-
-                if (resource != null) {
-                    bindingMap.put("RESOURCE", resource);
-
-                    final String preProcessScript = getResourceProperty(resource, "PRE_PROCESS");
-                    if (preProcessScript != null && !preProcessScript.isEmpty()) {
-                        final PreProcessor ppScript = createPreProcessScript(preProcessScript, bindingMap);
-                        if (ppScript != null) {
-                            executePreProcess(ppScript, bindingMap, null, "SET_PASSWORD");
-                        }
-                    }
-                }
-
-                setPassword(requestId, loginDozerConverter.convertToDTO(login, false),
-                        prevDecodedPasswordCurrentMngSys, passwordSync.getPassword(),
-                        managedSysDozerConverter.convertToDTO(mSys, false),
-                        objectMatchDozerConverter.convertToDTO(matchObj, false));
-                // post-process
-                if (resource != null) {
-                    String postProcessScript = getResourceProperty(resource, "POST_PROCESS");
-                    if (postProcessScript != null && !postProcessScript.isEmpty()) {
-                        PostProcessor ppScript = createPostProcessScript(postProcessScript, bindingMap);
-                        if (ppScript != null) {
-                            executePostProcess(ppScript, bindingMap, null, "SET_PASSWORD", connectorSuccess);
-                        }
-                    }
-                }
-
             }
-
-            if (callPostProcessor("SET_PASSWORD", null, bindingMap) != ProvisioningConstants.SUCCESS) {
-                response.setStatus(ResponseStatus.FAILURE);
-                response.setErrorCode(ResponseCode.FAIL_POSTPROCESSOR);
-                return response;
-            }
-
             response.setStatus(ResponseStatus.SUCCESS);
             return response;
+
         } finally {
             auditLogService.enqueue(auditLog);
         }
@@ -2395,21 +2302,22 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
         UserEntity userEntity = null;
         userEntity = userMgr.getUser(pUser.getId());
-        LoginEntity primaryIdentityEntity = UserUtils.getPrimaryIdentityEntity(sysConfiguration.getDefaultManagedSysId(),
+
+        LoginEntity identityEntity = UserUtils.getUserManagedSysIdentityEntity(managedSysId,
                 userEntity.getPrincipalList());
-        Login primaryIdentity = (primaryIdentityEntity != null) ? loginDozerConverter.convertToDTO(
-                primaryIdentityEntity, false) : null;
-        if (primaryIdentity != null) {
+        Login identity = (identityEntity != null) ? loginDozerConverter.convertToDTO(
+                identityEntity, false) : null;
+        if (identity != null) {
             String decPassword = null;
-            String password = primaryIdentity.getPassword();
+            String password = identity.getPassword();
             if (password != null) {
                 try {
-                    decPassword = loginManager.decryptPassword(primaryIdentity.getUserId(), password);
+                    decPassword = loginManager.decryptPassword(identity.getUserId(), password);
                 } catch (Exception e) {
                 }
                 bindingMap.put("password", decPassword);
             }
-            bindingMap.put("lg", primaryIdentity);
+            bindingMap.put("lg", identity);
         }
 
         ProvisionUser u = new ProvisionUser(userDozerConverter.convertToDTO(userEntity, true));
