@@ -1133,28 +1133,17 @@ public class ReconciliationServiceImpl implements ReconciliationService {
             List<org.openiam.idm.srvc.grp.dto.Group> curGroupList = groupDozerConverter.convertToDTOList(
                     groupManager.getGroupsForUser(user.getId(), null, -1, -1), false);
 
-            Login primaryIdentity = null;
-            for (Login l : user.getPrincipalList()) {
-                if (l.getManagedSysId().equalsIgnoreCase(sysConfiguration.getDefaultManagedSysId())) {
-                    primaryIdentity = l;
-                    break;
-                }
-            }
-
             String decPassword = "";
-            if (primaryIdentity != null) {
-                String password = primaryIdentity.getPassword();
-                if (password != null) {
-                    decPassword = loginManager.decryptPassword(primaryIdentity.getUserId(), password);
-                    bindingMap.put("password", decPassword);
-                }
-                bindingMap.put("lg", primaryIdentity);
-            }
-
             if (identity != null) {
                 if (StringUtils.isEmpty(identity.getUserId())) {
                     throw new IllegalArgumentException("Identity userId can not be empty");
                 }
+                String password = identity.getPassword();
+                if (password != null) {
+                    decPassword = loginManager.decryptPassword(identity.getUserId(), password);
+                    bindingMap.put("password", decPassword);
+                }
+                bindingMap.put("lg", identity);
                 bindingMap.put("targetSystemIdentity", identity.getLogin());
             }
 

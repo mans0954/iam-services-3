@@ -67,7 +67,7 @@ public class AdapterFactory {
 		String customScript = config.getCustomAdatperScript();
 		if (adapterType != null) {
 				if (adapterType.equalsIgnoreCase("CUSTOM") &&
-					( adapterType  != null &&  adapterType.length() > 0)) {
+					( adapterType.length() > 0)) {
 					// custom adapter- written groovy
 					return (SourceAdapter)scriptRunner.instantiateClass(null, customScript);
 				} else {

@@ -18,7 +18,6 @@ import org.openiam.connector.type.request.PasswordRequest;
 import org.openiam.connector.type.response.ObjectResponse;
 import org.openiam.connector.type.response.ResponseType;
 import org.openiam.dozer.converter.*;
-import org.openiam.exception.EncryptionException;
 import org.openiam.exception.ObjectNotFoundException;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
@@ -255,16 +254,16 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         }
         return result;
     }
-    protected void sendResetPasswordToUser(UserEntity user, String principal, String password) {
+    protected void sendResetPasswordToUser(LoginEntity identity, String password) {
         try {
             MuleClient client = new MuleClient(MuleContextProvider.getCtx());
-
+            UserEntity user = userMgr.getUser(identity.getUserId());
             List<NotificationParam> msgParams = new LinkedList<NotificationParam>();
             msgParams.add(new NotificationParam(MailTemplateParameters.SERVICE_HOST.value(), serviceHost));
             msgParams.add(new NotificationParam(MailTemplateParameters.SERVICE_CONTEXT.value(), serviceContext));
-            msgParams.add(new NotificationParam(MailTemplateParameters.USER_ID.value(), user.getId()));
+            msgParams.add(new NotificationParam(MailTemplateParameters.USER_ID.value(), identity.getUserId()));
             msgParams.add(new NotificationParam(MailTemplateParameters.PASSWORD.value(), password));
-            msgParams.add(new NotificationParam(MailTemplateParameters.IDENTITY.value(), principal));
+            msgParams.add(new NotificationParam(MailTemplateParameters.IDENTITY.value(), identity.getLogin()));
             msgParams.add(new NotificationParam(MailTemplateParameters.FIRST_NAME.value(), user.getFirstName()));
             msgParams.add(new NotificationParam(MailTemplateParameters.LAST_NAME.value(), user.getLastName()));
 
@@ -1042,7 +1041,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                                 IdmAuditLog auditLog = new IdmAuditLog();
                                 Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
                                 String loginStr = login != null ? login.getLogin() : StringUtils.EMPTY;
-                                LoginEntity loginSupervisor = UserUtils.getPrimaryIdentityEntity(sysConfiguration.getDefaultManagedSysId(), se.getPrincipalList());
+                                LoginEntity loginSupervisor = UserUtils.getUserManagedSysIdentityEntity(sysConfiguration.getDefaultManagedSysId(), se.getPrincipalList());
                                 auditLog.setTargetUser(userEntity.getId(), loginStr);
                                 auditLog.setTargetUser(se.getId(), login != null ? loginSupervisor.getLogin() : StringUtils.EMPTY);
                                 auditLog.setAction(AuditAction.DELETE_SUPERVISOR.value());
@@ -1064,7 +1063,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     User se = userMgr.getUserDto(e.getId());
                     Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
                     String loginStr = login != null ? login.getLogin() : StringUtils.EMPTY;
-                    Login loginSupervisor = UserUtils.getPrimaryIdentity(sysConfiguration.getDefaultManagedSysId(), se.getPrincipalList());
+                    Login loginSupervisor = UserUtils.getUserManagedSysIdentity(sysConfiguration.getDefaultManagedSysId(), se.getPrincipalList());
                     auditLog.setTargetUser(userEntity.getId(), loginStr);
                     auditLog.setTargetUser(se.getId(), login != null ? loginSupervisor.getLogin() : StringUtils.EMPTY);
                     auditLog.setAction(AuditAction.ADD_SUPERVISOR.value());
