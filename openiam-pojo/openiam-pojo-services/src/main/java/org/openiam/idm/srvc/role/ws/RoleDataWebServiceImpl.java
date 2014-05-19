@@ -194,7 +194,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
         IdmAuditLog idmAuditLog = new IdmAuditLog();
         idmAuditLog.setAction(AuditAction.ADD_USER_TO_ROLE.value());
         UserEntity user = userDataService.getUser(userId);
-        LoginEntity primaryIdentity = UserUtils.getPrimaryIdentityEntity(sysConfiguration.getDefaultManagedSysId(), user.getPrincipalList());
+        LoginEntity primaryIdentity = UserUtils.getUserManagedSysIdentityEntity(sysConfiguration.getDefaultManagedSysId(), user.getPrincipalList());
         idmAuditLog.setTargetUser(userId, primaryIdentity.getLogin());
         RoleEntity roleEntity = roleDataService.getRole(roleId);
         idmAuditLog.setTargetRole(roleId, roleEntity.getName());
@@ -351,7 +351,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
         IdmAuditLog idmAuditLog = new IdmAuditLog();
         idmAuditLog.setAction(AuditAction.REMOVE_USER_FROM_ROLE.value());
         UserEntity userEntity = userDataService.getUser(userId);
-        LoginEntity primaryIdentity = UserUtils.getPrimaryIdentityEntity(sysConfiguration.getDefaultManagedSysId(), userEntity.getPrincipalList());
+        LoginEntity primaryIdentity = UserUtils.getUserManagedSysIdentityEntity(sysConfiguration.getDefaultManagedSysId(), userEntity.getPrincipalList());
         idmAuditLog.setTargetUser(userId, primaryIdentity.getLogin());
         RoleEntity roleEntity = roleDataService.getRole(roleId);
         idmAuditLog.setTargetRole(roleId, roleEntity.getName());
