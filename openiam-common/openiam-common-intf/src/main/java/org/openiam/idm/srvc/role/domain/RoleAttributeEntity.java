@@ -8,6 +8,7 @@ import javax.persistence.*;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
+import org.openiam.base.domain.AbstractAttributeEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
@@ -15,28 +16,13 @@ import org.openiam.idm.srvc.role.dto.RoleAttribute;
 
 @Entity
 @Table(name="ROLE_ATTRIBUTE")
+@AttributeOverride(name = "id", column = @Column(name = "ROLE_ATTR_ID"))
 @DozerDTOCorrespondence(RoleAttribute.class)
-public class RoleAttributeEntity implements Serializable {
-
-    @Id
-    @GeneratedValue(generator="system-uuid")
-    @GenericGenerator(name="system-uuid", strategy = "uuid")
-    @Column(name="ROLE_ATTR_ID", length=32)
-    private String roleAttrId;
+public class RoleAttributeEntity extends AbstractAttributeEntity {
     
     @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name = "ROLE_ID", referencedColumnName = "ROLE_ID", insertable = true, updatable = false)
     private RoleEntity role;
-
-    @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch= FetchType.LAZY)
-    @JoinColumn(name = "METADATA_ID", insertable = true, updatable = true, nullable=true)
-    private MetadataElementEntity element;
-    
-    @Column(name="NAME", length=100)
-    private String name;
-    
-    @Column(name="_VALUE", length=4096)
-    private String value;
 
     @ElementCollection
     @CollectionTable(name="ROLE_ATTRIBUTE_VALUES", joinColumns=@JoinColumn(name="ROLE_ATTRIBUTE_ID", referencedColumnName="ROLE_ATTR_ID"))
@@ -46,14 +32,6 @@ public class RoleAttributeEntity implements Serializable {
     @Column(name = "IS_MULTIVALUED", nullable = false)
     @Type(type = "yes_no")
     private boolean isMultivalued = false;
-
-	public String getRoleAttrId() {
-		return roleAttrId;
-	}
-
-	public void setRoleAttrId(String roleAttrId) {
-		this.roleAttrId = roleAttrId;
-	}
 
 	public RoleEntity getRole() {
 		return role;
@@ -70,22 +48,6 @@ public class RoleAttributeEntity implements Serializable {
     public void setElement(MetadataElementEntity element) {
         this.element = element;
     }
-
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	public String getValue() {
-		return value;
-	}
-
-	public void setValue(String value) {
-		this.value = value;
-	}
 
     public List<String> getValues() {
         return values;
@@ -106,14 +68,10 @@ public class RoleAttributeEntity implements Serializable {
 	@Override
 	public int hashCode() {
 		final int prime = 31;
-		int result = 1;
-        result = prime * result + ((element == null) ? 0 : element.hashCode());
-		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		int result = super.hashCode();
+		result = prime * result + (isMultivalued ? 1231 : 1237);
 		result = prime * result + ((role == null) ? 0 : role.hashCode());
-		result = prime * result
-				+ ((roleAttrId == null) ? 0 : roleAttrId.hashCode());
-		result = prime * result + ((value == null) ? 0 : value.hashCode());
-        result = prime * result + (isMultivalued ? 1231 : 1237);
+		result = prime * result + ((values == null) ? 0 : values.hashCode());
 		return result;
 	}
 
@@ -121,45 +79,32 @@ public class RoleAttributeEntity implements Serializable {
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
-		if (obj == null)
+		if (!super.equals(obj))
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
 		RoleAttributeEntity other = (RoleAttributeEntity) obj;
-        if (element == null) {
-            if (other.element != null)
-                return false;
-        } else if (!element.equals(other.element))
-            return false;
-		if (name == null) {
-			if (other.name != null)
-				return false;
-		} else if (!name.equals(other.name))
+		if (isMultivalued != other.isMultivalued)
 			return false;
 		if (role == null) {
 			if (other.role != null)
 				return false;
 		} else if (!role.equals(other.role))
 			return false;
-		if (roleAttrId == null) {
-			if (other.roleAttrId != null)
+		if (values == null) {
+			if (other.values != null)
 				return false;
-		} else if (!roleAttrId.equals(other.roleAttrId))
+		} else if (!values.equals(other.values))
 			return false;
-		if (value == null) {
-			if (other.value != null)
-				return false;
-		} else if (!value.equals(other.value))
-			return false;
-        if (isMultivalued != other.isMultivalued) return false;
 		return true;
 	}
 
 	@Override
 	public String toString() {
-		return "RoleAttributeEntity [roleAttrId=" + roleAttrId + ", role="
-				+ role + ", name=" + name + ", value=" + value + "]";
+		return String
+				.format("RoleAttributeEntity [role=%s, values=%s, isMultivalued=%s, toString()=%s]",
+						role, values, isMultivalued, super.toString());
 	}
 
-	
+    
 }

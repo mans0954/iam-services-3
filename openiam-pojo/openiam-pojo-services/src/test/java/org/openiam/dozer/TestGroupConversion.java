@@ -144,7 +144,7 @@ public class TestGroupConversion extends AbstractTestNGSpringContextTests {
 		final RoleAttributeEntity roleAttribute = new RoleAttributeEntity();
 		roleAttribute.setElement(createMetadataElementEntity());
 		roleAttribute.setName(rs(2));
-		roleAttribute.setRoleAttrId(rs(2));
+		roleAttribute.setId(rs(2));
 		//roleAttribute.setRoleId(rs(2));
 		roleAttribute.setValue(rs(2));
 		return roleAttribute;

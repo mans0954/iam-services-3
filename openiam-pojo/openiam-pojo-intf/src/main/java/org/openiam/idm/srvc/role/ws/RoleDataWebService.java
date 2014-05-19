@@ -2,6 +2,7 @@ package org.openiam.idm.srvc.role.ws;
 
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.RoleSearchBean;
+import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.role.dto.RoleAttribute;
 import org.openiam.idm.srvc.role.dto.RolePolicy;
@@ -36,8 +37,14 @@ public interface RoleDataWebService {
      * @return - a Role Object if it is found, otherwise null will be returned.
      */
     @WebMethod
+    @Deprecated
     Role getRole(@WebParam(name = "roleId", targetNamespace = "") String roleId,
                  @WebParam(name="requesterId", targetNamespace="") String requesterId);
+    
+    @WebMethod
+    Role getRoleLocalized(@WebParam(name = "roleId", targetNamespace = "") String roleId,
+                 		  @WebParam(name="requesterId", targetNamespace="") String requesterId,
+                 		  @WebParam(name="language", targetNamespace="") Language language);
 
     /**
      * This method creates a new role or update existed one. For example:
