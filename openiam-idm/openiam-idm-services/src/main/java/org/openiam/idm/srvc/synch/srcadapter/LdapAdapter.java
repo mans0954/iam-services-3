@@ -29,7 +29,9 @@ import org.openiam.base.id.UUIDGen;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
+import org.openiam.connector.type.constant.StatusCodeType;
 import org.openiam.exception.ScriptEngineException;
+import org.openiam.idm.srvc.mngsys.service.AttributeNamesLookupService;
 import org.openiam.idm.srvc.synch.dto.Attribute;
 import org.openiam.idm.srvc.synch.dto.LineObject;
 import org.openiam.idm.srvc.synch.dto.SyncResponse;
@@ -41,6 +43,7 @@ import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.resp.ProvisionUserResponse;
+import org.openiam.provision.type.ExtensibleAttribute;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -509,19 +512,30 @@ public class LdapAdapter extends AbstractSrcAdapter { // implements SourceAdapte
 
         String attrIds[] = {"*", "modifyTimestamp", "createTimestamp"};
         if (StringUtils.isNotEmpty(config.getAttributeNamesLookup())) {
-            try {
-                List<String> attrNames = new ArrayList<String>();
-                if (StringUtils.isNotBlank(config.getAttributeNamesLookup())) {
+            Object attrNames = new ArrayList<String>();
+            if (StringUtils.isNotBlank(config.getAttributeNamesLookup())) {
+                try {
                     Map<String, Object> bindingMap = new HashMap<String, Object>();
                     bindingMap.put("config", config);
-                    attrNames = (List)scriptRunner.execute(bindingMap, config.getAttributeNamesLookup());
+                    AttributeNamesLookupService lookupScript =
+                            (AttributeNamesLookupService) scriptRunner.instantiateClass(bindingMap,
+                                    config.getAttributeNamesLookup());
+                    attrNames = lookupScript.lookupPolicyMapAttributes(bindingMap);
+                } catch (Exception e) {
+                    log.error("Can't execute script", e);
                 }
-                if (CollectionUtils.isNotEmpty(attrNames)) {
-                    attrIds = attrNames.toArray(new String[0]);
-                }
+            }
 
-            } catch (ScriptEngineException e) {
-                log.error("Can't execute script", e);
+            List<String> attributeNames = new ArrayList<String>();
+            if (attrNames instanceof List) {
+                attributeNames = (List)attrNames;
+            } else if (attrNames instanceof Map) {
+                Map<String, String> attrNamesMap = (Map<String,String>)attrNames;
+                attributeNames = new ArrayList(attrNamesMap.keySet());
+            }
+
+            if (CollectionUtils.isNotEmpty(attributeNames)) {
+                attrIds = attributeNames.toArray(new String[0]);
             }
         }
 

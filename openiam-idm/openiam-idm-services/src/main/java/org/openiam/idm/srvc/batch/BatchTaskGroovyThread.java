@@ -51,6 +51,7 @@ public class BatchTaskGroovyThread extends AbstractBatchTaskThread {
             }
 
             entity.setLastExecTime(startDate);
+            batchService.save(entity);
 
         } catch (Throwable e) {
             LOG.error(e);

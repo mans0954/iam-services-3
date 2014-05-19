@@ -5,5 +5,5 @@ package org.openiam.idm.srvc.key.constant;
  * Date: 17.10.12
  */
 public enum KeyName {
-    password, token, dataKey;
+    password, token, dataKey, challengeResponse;
 }

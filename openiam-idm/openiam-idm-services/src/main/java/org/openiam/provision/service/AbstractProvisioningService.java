@@ -8,10 +8,9 @@ import org.mule.module.client.MuleClient;
 import org.mule.util.StringUtils;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.SysConfiguration;
-import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.connector.type.*;
+import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.connector.type.constant.ErrorCode;
 import org.openiam.connector.type.constant.StatusCodeType;
 import org.openiam.connector.type.request.CrudRequest;
@@ -41,7 +40,6 @@ import org.openiam.idm.srvc.grp.service.GroupDataService;
 import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
-import org.openiam.idm.srvc.meta.dto.MetadataType;
 import org.openiam.idm.srvc.meta.service.MetadataTypeDAO;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
@@ -90,12 +88,11 @@ import org.openiam.util.MuleContextProvider;
 import org.openiam.util.SpringContextProvider;
 import org.openiam.util.UserUtils;
 import org.openiam.util.encrypt.Cryptor;
-
-import java.util.*;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+
+import java.util.*;
 
 /**
  * Base class for the provisioning service
@@ -647,6 +644,9 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                 } else if (e.getOperation().equals(AttributeOperationEnum.ADD)) {
                     EmailAddressEntity entity = emailAddressDozerConverter.convertToEntity(e, false);
                     entity.setParent(userEntity);
+                    if(org.apache.commons.lang.StringUtils.isBlank(e.getMetadataTypeId())){
+                        entity.setMetadataType(null);
+                    }
                     userEntity.getEmailAddresses().add(entity);
                     // Audit Log
                     //--------------------------------------------------
@@ -667,6 +667,9 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                                 userMgr.evict(en);
                                 EmailAddressEntity entity = emailAddressDozerConverter.convertToEntity(e, false);
                                 entity.setParent(userEntity);
+                                if(org.apache.commons.lang.StringUtils.isBlank(e.getMetadataTypeId())){
+                                    entity.setMetadataType(null);
+                                }
                                 userEntity.getEmailAddresses().add(entity);
                                 // Audit Log
                                 //--------------------------------------------------
@@ -715,6 +718,9 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                 } else if (e.getOperation().equals(AttributeOperationEnum.ADD)) {
                     PhoneEntity entity = phoneDozerConverter.convertToEntity(e, false);
                     entity.setParent(userEntity);
+                    if(org.apache.commons.lang.StringUtils.isBlank(e.getMetadataTypeId())){
+                        entity.setMetadataType(null);
+                    }
                     userEntity.getPhones().add(entity);
                     // Audit log
                     IdmAuditLog auditLog = new IdmAuditLog();
@@ -741,6 +747,9 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                                 userMgr.evict(en);
                                 PhoneEntity entity = phoneDozerConverter.convertToEntity(e, false);
                                 entity.setParent(userEntity);
+                                if(org.apache.commons.lang.StringUtils.isBlank(e.getMetadataTypeId())){
+                                    entity.setMetadataType(null);
+                                }
                                 userEntity.getPhones().add(entity);
                                 break;
                             }
@@ -778,6 +787,9 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                 } else if (e.getOperation().equals(AttributeOperationEnum.ADD)) {
                     AddressEntity entity = addressDozerConverter.convertToEntity(e, false);
                     entity.setParent(userEntity);
+                    if(org.apache.commons.lang.StringUtils.isBlank(e.getMetadataTypeId())){
+                        entity.setMetadataType(null);
+                    }
                     userEntity.getAddresses().add(entity);
                     IdmAuditLog auditLog = new IdmAuditLog();
                     Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
@@ -802,6 +814,9 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                                 userMgr.evict(en);
                                 AddressEntity entity = addressDozerConverter.convertToEntity(e, false);
                                 entity.setParent(userEntity);
+                                if(org.apache.commons.lang.StringUtils.isBlank(e.getMetadataTypeId())){
+                                    entity.setMetadataType(null);
+                                }
                                 userEntity.getAddresses().add(entity);
                                 break;
                             }
@@ -816,8 +831,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         MetadataTypeEntity type = null;
         MetadataTypeEntity jobCode = null;
         MetadataTypeEntity employeeType = null;
-        if(StringUtils.isNotBlank(pUser.getMetadataTypeId())){
-            type = metadataTypeDAO.findById(pUser.getMetadataTypeId());
+        if(StringUtils.isNotBlank(pUser.getMdTypeId())){
+            type = metadataTypeDAO.findById(pUser.getMdTypeId());
         }
         if(StringUtils.isNotBlank(pUser.getJobCodeId())){
             jobCode = metadataTypeDAO.findById(pUser.getJobCodeId());
@@ -1291,7 +1306,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                         entity.setUserId(userEntity.getId());
                         userEntity.getPrincipalList().add(entity);
                         entity.setPassword(loginManager.encryptPassword(userEntity.getId(), e.getPassword()));
-                    } catch (EncryptionException ee) {
+                    } catch (Exception ee) {
                         log.error(ee);
                         ee.printStackTrace();
                     }
@@ -1412,6 +1427,16 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         ManagedSysDto mSys = managedSysDozerConverter.convertToDTO(
                 managedSystemService.getManagedSysById(managedSysId), true);
 
+        List<AttributeMapEntity> attrMapEntities = managedSystemService
+                .getAttributeMapsByManagedSysId(managedSysId);
+        List<AttributeMap> attrMap = attributeMapDozerConverter.convertToDTOList(attrMapEntities, true);
+        for (AttributeMap attr : attrMap) {
+            if (PolicyMapObjectTypeOptions.PRINCIPAL.name().equalsIgnoreCase(attr.getMapForObjectType())) {
+                extUser.setPrincipalFieldName(attr.getAttributeName());
+                extUser.setPrincipalFieldDataType(attr.getDataType().getValue());
+            }
+        }
+
         CrudRequest<ExtensibleUser> userReq = new CrudRequest<ExtensibleUser>();
         userReq.setObjectIdentity(mLg.getLogin());
         userReq.setRequestID(requestId);
@@ -1477,6 +1502,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         request.setRequestID(requestId);
         request.setTargetID(mLg.getManagedSysId());
         request.setHostLoginId(mSys.getUserId());
+        request.setExtensibleObject(new ExtensibleUser());
         String passwordDecoded = mSys.getPswd();
         try {
             passwordDecoded = getDecryptedPassword(mSys);

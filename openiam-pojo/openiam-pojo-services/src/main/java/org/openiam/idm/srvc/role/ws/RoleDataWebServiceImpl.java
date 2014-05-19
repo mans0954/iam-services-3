@@ -28,6 +28,7 @@ import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.exception.BasicDataServiceException;
+import org.openiam.dozer.converter.LanguageDozerConverter;
 import org.openiam.dozer.converter.RoleDozerConverter;
 import org.openiam.dozer.converter.RolePolicyDozerConverter;
 import org.openiam.idm.searchbeans.RoleSearchBean;
@@ -36,7 +37,9 @@ import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.base.AbstractBaseService;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
+import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.service.GroupDataService;
+import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.domain.RolePolicyEntity;
 import org.openiam.idm.srvc.role.dto.Role;
@@ -44,6 +47,7 @@ import org.openiam.idm.srvc.role.dto.RolePolicy;
 import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.service.UserDataService;
+import org.openiam.internationalization.LocalizedServiceGet;
 import org.openiam.util.UserUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -81,6 +85,9 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 
     @Autowired
     protected SysConfiguration sysConfiguration;
+    
+    @Autowired
+    private LanguageDozerConverter languageConverter;
 
 	@Override
 	public Response validateEdit(Role role) {
@@ -217,8 +224,20 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
         }
 		return response;
 	}
+	
+	@Override
+	@LocalizedServiceGet
+	public Role getRoleLocalized(final String roleId, final String requesterId, final Language language) {
+		Role retVal = null;
+		 if (StringUtils.isNotBlank(roleId)) {
+			 final RoleEntity entity = roleDataService.getRoleLocalized(roleId, requesterId, languageConverter.convertToEntity(language, false));
+			 retVal = roleDozerConverter.convertToDTO(entity, true);
+		 }
+		 return retVal;
+	}
 
 	@Override
+	@Deprecated
 	public Role getRole(String roleId, String requesterId) {
 		Role retVal = null;
         try{

@@ -55,6 +55,7 @@ import org.openiam.idm.srvc.mngsys.domain.ProvisionConnectorEntity;
 import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
+import org.openiam.idm.srvc.mngsys.dto.PolicyMapObjectTypeOptions;
 import org.openiam.idm.srvc.prov.request.dto.BulkOperationEnum;
 import org.openiam.idm.srvc.prov.request.dto.BulkOperationRequest;
 import org.openiam.idm.srvc.prov.request.dto.OperationBean;
@@ -989,7 +990,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 userEntity.getPrincipalList().add(entity);
                 entity.setPassword(loginManager.encryptPassword(entity.getUserId(), entity.getPassword()));
                 primaryIdentity = loginDozerConverter.convertToDTO(entity, false);
-            } catch (EncryptionException ee) {
+            } catch (Exception ee) {
                 log.error(ee);
                 ee.printStackTrace();
             }
@@ -1004,7 +1005,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             if (password != null) {
                 try {
                     decPassword = loginManager.decryptPassword(primaryIdentity.getUserId(), password);
-                } catch (EncryptionException e) {
+                } catch (Exception e) {
                     auditLog.fail();
                     auditLog.setFailureReason(ResponseCode.FAIL_ENCRYPTION);
                     resp.setStatus(ResponseStatus.FAILURE);
@@ -1403,7 +1404,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             String encPassword = null;
             try {
                 encPassword = loginManager.encryptPassword(userId, password);
-            } catch (EncryptionException e) {
+            } catch (Exception e) {
                 idmAuditLog.fail();
                 idmAuditLog.setFailureReason(ResponseCode.FAIL_ENCRYPTION);
                 response.setStatus(ResponseStatus.FAILURE);
@@ -1691,7 +1692,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             String encPassword = null;
             try {
                 encPassword = loginManager.encryptPassword(usr.getId(), passwordSync.getPassword());
-            } catch (EncryptionException e) {
+            } catch (Exception e) {
                 auditLog.setException(e);
                 auditLog.fail();
                 auditLog.setFailureReason(ResponseCode.FAIL_ENCRYPTION);
@@ -2053,7 +2054,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
         try {
             encPassword = loginManager.encryptPassword(userId, passwordSync.getPassword());
-        } catch (EncryptionException e) {
+        } catch (Exception e) {
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(ResponseCode.FAIL_ENCRYPTION);
             return response;
@@ -2404,7 +2405,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             if (password != null) {
                 try {
                     decPassword = loginManager.decryptPassword(primaryIdentity.getUserId(), password);
-                } catch (EncryptionException e) {
+                } catch (Exception e) {
                 }
                 bindingMap.put("password", decPassword);
             }
@@ -2586,7 +2587,12 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         idmAuditLog.setRequestorUserId(requestorId != null ? requestorId : systemUserId);
         idmAuditLog.setAction(AuditAction.PROVISIONING_MODIFY.value());
         idmAuditLog.setTargetUser(login.getUserId(), login.getLogin());
+
         try {
+
+            List<ExtensibleAttribute> hiddenAttrs = buildHiddenMngSysAttributes(login);
+            extUser.getAttributes().addAll(hiddenAttrs);
+
             ObjectResponse resp = requestAddModify(extUser, login, false, requestId, idmAuditLog);
             if (resp.getStatus() != StatusCodeType.SUCCESS) {
                 response.setStatus(ResponseStatus.FAILURE);
@@ -2636,7 +2642,6 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     }
                 }
             }
-
         }
 
         LookupUserResponse lookupUserResponse = getTargetSystemUser(login.getLogin(), managedSysId, hiddenAttrs);
@@ -2647,21 +2652,30 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             targetSysUserExists = true;
         }
 
+        List<ExtensibleAttribute> idmAttrsToDelete = new ArrayList<ExtensibleAttribute>();
         for (ExtensibleAttribute idma : idmAttrs) {
+            idma.setOperation(AttributeOperationEnum.NO_CHANGE.getValue());
             if (targetSysUserExists) {
+                boolean exists = false;
                 for (ExtensibleAttribute msa : mngSysAttrs) {
                     if (StringUtils.equals(idma.getName(), msa.getName())) {
                         if (!StringUtils.equals(idma.getValue(), msa.getValue())) {
                             idma.setOperation(AttributeOperationEnum.REPLACE.getValue());
-                        } else {
-                            idma.setOperation(AttributeOperationEnum.NO_CHANGE.getValue());
                         }
+                        exists = true;
                         break;
                     }
+                }
+                if (!exists) {
+                    idmAttrsToDelete.add(idma);
                 }
             } else {
                 idma.setOperation(AttributeOperationEnum.ADD.getValue());
             }
+        }
+
+        if (CollectionUtils.isNotEmpty(idmAttrsToDelete)) {
+            idmAttrs.removeAll(idmAttrsToDelete);
         }
 
         return idmAttrs;

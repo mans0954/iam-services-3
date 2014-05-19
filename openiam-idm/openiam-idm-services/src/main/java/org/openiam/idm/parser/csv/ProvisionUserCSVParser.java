@@ -82,7 +82,7 @@ public class ProvisionUserCSVParser extends
             user.setLocationName(objValue);
             break;
         case metadataTypeId:
-            user.setMetadataTypeId(objValue);
+            user.setMdTypeId(objValue);
             break;
         case classification:
             user.setClassification(objValue);
@@ -249,7 +249,7 @@ public class ProvisionUserCSVParser extends
             objValue = toString(user.getLocationName());
             break;
         case metadataTypeId:
-            objValue = toString(user.getMetadataTypeId());
+            objValue = toString(user.getMdTypeId());
             break;
         case classification:
             objValue = toString(user.getClassification());

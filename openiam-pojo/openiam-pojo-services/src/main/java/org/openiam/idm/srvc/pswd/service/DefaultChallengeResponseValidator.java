@@ -34,6 +34,8 @@ import org.openiam.idm.searchbeans.IdentityAnswerSearchBean;
 import org.openiam.idm.searchbeans.IdentityQuestionSearchBean;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
+import org.openiam.idm.srvc.key.constant.KeyName;
+import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
 import org.openiam.idm.srvc.pswd.domain.IdentityQuestionEntity;
@@ -82,11 +84,14 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
 
     @Autowired
     private PasswordService passwordService;
+    @Autowired
+    private KeyManagementService keyManagementService;
     
 	private static final Log log = LogFactory.getLog(DefaultChallengeResponseValidator.class);
 	
 	@Override
-	public boolean isResponseValid(String userId, List<UserIdentityAnswerEntity> newAnswerList, int requiredCorrectAns) {
+	public boolean isResponseValid(String userId, List<UserIdentityAnswerEntity> newAnswerList, int requiredCorrectAns)
+            throws Exception {
 		final int correctAns = getNumOfCorrectAnswers(userId, newAnswerList);
 		if (correctAns >= requiredCorrectAns && requiredCorrectAns > 0) {
 			return true;
@@ -118,7 +123,7 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
 	}
 	
 	@Override
-	public boolean isUserAnsweredSecurityQuestions(final String userId) {
+	public boolean isUserAnsweredSecurityQuestions(final String userId) throws Exception {
 		final Integer numOfRequiredQuestions = getNumOfRequiredQuestions(userId);
 		final List<UserIdentityAnswerEntity> answerList = answersByUser(userId);
 		
@@ -135,7 +140,8 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
 		return retVal;
 	}
 
-	private int getNumOfCorrectAnswers(final String userId, final List<UserIdentityAnswerEntity> newAnswerList) {
+	private int getNumOfCorrectAnswers(final String userId, final List<UserIdentityAnswerEntity> newAnswerList)
+            throws Exception {
 		int correctAns = 0;
 		
 		LoginEntity lg = loginManager.getPrimaryIdentity(userId);
@@ -152,7 +158,10 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
 		for (UserIdentityAnswerEntity savedAns : savedAnsList) {
 			for (UserIdentityAnswerEntity newAns : newAnswerList) {
 				if(StringUtils.equalsIgnoreCase(newAns.getId(), savedAns.getId())) {
-					if(StringUtils.equalsIgnoreCase(newAns.getQuestionAnswer(), savedAns.getQuestionAnswer())) {
+
+
+					if(StringUtils.equalsIgnoreCase(keyManagementService.encrypt(lg.getUserId(), KeyName.challengeResponse, newAns.getQuestionAnswer()),
+                                                    savedAns.getQuestionAnswer())) {
 						correctAns++;
 					}
 				}
@@ -161,7 +170,7 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
 		return correctAns;
 	}
 
-	private List<UserIdentityAnswerEntity> answersByUser(String userId) {
+	private List<UserIdentityAnswerEntity> answersByUser(String userId) throws Exception {
 		if (userId == null) {
 			throw new NullPointerException("UserId is null");
 		}
@@ -193,7 +202,8 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
 	}
 
 	@Override
-	public List<UserIdentityAnswerEntity> findAnswerBeans(final IdentityAnswerSearchBean searchBean, final int from, final int size) {
+	public List<UserIdentityAnswerEntity> findAnswerBeans(final IdentityAnswerSearchBean searchBean, String requesterId, final int from, final int size)
+            throws Exception {
 		List<UserIdentityAnswerEntity> resultList = null;
 		if(searchBean.getKey() != null) {
 			final UserIdentityAnswerEntity entity = answerDAO.findById(searchBean.getKey());
@@ -204,7 +214,7 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
 		} else {
 			resultList = answerDAO.getByExample(answerSearchBeanConverter.convert(searchBean), from, size);
 		}
-		return resultList;
+		return decryptAnswers(resultList, requesterId);
 	}
 
 	@Override
@@ -247,7 +257,10 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
 		if(StringUtils.isBlank(entity.getQuestionAnswer())) {
 			throw new BasicDataServiceException(ResponseCode.NO_ANSWER_TO_QUESTION);
 		}
-		
+
+        entity.setQuestionAnswer(keyManagementService.encrypt(entity.getUserId(), KeyName.challengeResponse, entity.getQuestionAnswer()));
+        entity.setIsEncrypted(true);
+
 		answerDAO.merge(entity);
 	}
 
@@ -268,6 +281,8 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
 				if(entity.getIdentityQuestion() != null && StringUtils.isNotBlank(entity.getIdentityQuestion().getId())) {
 					entity.setIdentityQuestion(questionDAO.findById(entity.getIdentityQuestion().getId()));
 				}
+                entity.setQuestionAnswer(keyManagementService.encrypt(entity.getUserId(), KeyName.challengeResponse, entity.getQuestionAnswer()));
+                entity.setIsEncrypted(true);
 			}
 			answerDAO.save(answerList);
 		}
@@ -278,4 +293,21 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
 	public void resetQuestionsForUser(String userId) {
 		answerDAO.deleteByUser(userId);
 	}
+
+
+    private List<UserIdentityAnswerEntity> decryptAnswers(List<UserIdentityAnswerEntity> answerList, String requesterId)
+            throws Exception {
+        if(CollectionUtils.isNotEmpty(answerList)){
+            for(UserIdentityAnswerEntity entity: answerList){
+                if(StringUtils.isNotBlank(requesterId)
+                   && requesterId.equals(entity.getUserId())
+                   && entity.getIsEncrypted()){
+
+                    entity.setQuestionAnswer(keyManagementService.decrypt(entity.getUserId(), KeyName.challengeResponse,
+                                                                          entity.getQuestionAnswer()));
+                }
+            }
+        }
+        return answerList;
+    }
 }

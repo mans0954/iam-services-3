@@ -2,6 +2,7 @@ package org.openiam.idm.srvc.role.service;
 
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.RoleSearchBean;
+import org.openiam.idm.srvc.lang.domain.LanguageEntity;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.domain.RolePolicyEntity;
 import org.openiam.idm.srvc.role.dto.Role;
@@ -20,6 +21,8 @@ public interface RoleDataService {
     public RoleEntity getRole(String roleId);
     public RoleEntity getRole(String roleId, String requesterId);
     public RoleEntity getRoleByName(final String roleName, String requesterId);
+    
+    public RoleEntity getRoleLocalized(final String roleId, final String requestorId, final LanguageEntity language);
     
     public void saveRole(final RoleEntity role, final String requestorId) throws BasicDataServiceException;
     
