@@ -9,8 +9,13 @@ import org.openiam.base.ws.ResponseCode;
 import org.openiam.dozer.converter.RoleDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.RoleSearchBean;
+import org.openiam.idm.srvc.grp.domain.GroupAttributeEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.service.GroupDAO;
+import org.openiam.idm.srvc.lang.domain.LanguageEntity;
+import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
+import org.openiam.idm.srvc.meta.service.MetadataElementDAO;
+import org.openiam.idm.srvc.meta.service.MetadataTypeDAO;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 import org.openiam.idm.srvc.mngsys.service.ManagedSysDAO;
@@ -24,6 +29,7 @@ import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.srvc.user.util.DelegationFilterHelper;
+import org.openiam.internationalization.LocalizedServiceGet;
 import org.openiam.validator.EntityValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -44,6 +50,10 @@ public class RoleDataServiceImpl implements RoleDataService {
 	
 	@Autowired
 	private RolePolicyDAO rolePolicyDao;
+	
+
+    @Autowired
+    private MetadataElementDAO metadataElementDAO;
 	
 	@Autowired
 	private GroupDAO groupDAO;
@@ -66,6 +76,9 @@ public class RoleDataServiceImpl implements RoleDataService {
     
 	@Value("${org.openiam.resource.admin.resource.type.id}")
 	private String adminResourceTypeId;
+	
+    @Autowired
+    private MetadataTypeDAO typeDAO;
 
 	private static final Log log = LogFactory.getLog(RoleDataServiceImpl.class);
 
@@ -73,10 +86,22 @@ public class RoleDataServiceImpl implements RoleDataService {
     public RoleEntity getRole(String roleId){
         return  getRole(roleId, null);
     }
+    
+    
 	@Override
     @Transactional(readOnly = true)
 	public RoleEntity getRole(String roleId, final String requesterId) {
         if(DelegationFilterHelper.isAllowed(roleId, getDelegationFilter(requesterId))){
+            return roleDao.findById(roleId);
+        }
+        return null;
+	}
+	
+	@Override
+    @LocalizedServiceGet
+    @Transactional(readOnly = true)
+	public RoleEntity getRoleLocalized(final String roleId, final String requesterId, final LanguageEntity language) {
+		if(DelegationFilterHelper.isAllowed(roleId, getDelegationFilter(requesterId))){
             return roleDao.findById(roleId);
         }
         return null;
@@ -212,6 +237,12 @@ public class RoleDataServiceImpl implements RoleDataService {
 				role.setManagedSystem(null);
 			}
 			
+			if(role.getType() != null && StringUtils.isNotBlank(role.getType().getId())) {
+				role.setType(typeDAO.findById(role.getType().getId()));
+            } else {
+            	role.setType(null);
+            }
+
 			if(StringUtils.isBlank(role.getId())) {
 				role.setAdminResource(getNewAdminResource(role, requestorId));
 				roleDao.save(role);
@@ -219,6 +250,7 @@ public class RoleDataServiceImpl implements RoleDataService {
 			} else {
 				final RoleEntity dbRole = roleDao.findById(role.getId());
 				if(dbRole != null) {
+					mergeAttributes(role, dbRole);
 					role.setApproverAssociations(dbRole.getApproverAssociations());
 					role.setChildRoles(dbRole.getChildRoles());
 					role.setGroups(dbRole.getGroups());
@@ -231,12 +263,69 @@ public class RoleDataServiceImpl implements RoleDataService {
 						role.setAdminResource(getNewAdminResource(role, requestorId));
 					}
 					
-					mergeAttributes(role, dbRole);
 				}
 			}
 			roleDao.merge(role);
 		}
 	}
+	
+	private void mergeAttributes(final RoleEntity bean, final RoleEntity dbObject) {
+		Set<RoleAttributeEntity> beanProps = (bean.getRoleAttributes() != null) ? bean.getRoleAttributes() : new HashSet<RoleAttributeEntity>();
+        Set<RoleAttributeEntity> dbProps = (dbObject.getRoleAttributes() != null) ? new HashSet<RoleAttributeEntity>(dbObject.getRoleAttributes()) : new HashSet<RoleAttributeEntity>();
+
+        /* update */
+        Iterator<RoleAttributeEntity> dbIteroator = dbProps.iterator();
+        while(dbIteroator.hasNext()) {
+        	final RoleAttributeEntity dbProp = dbIteroator.next();
+        	
+        	boolean contains = false;
+            for (final RoleAttributeEntity beanProp : beanProps) {
+                if (StringUtils.equals(dbProp.getId(), beanProp.getId())) {
+                    dbProp.setValue(beanProp.getValue());
+                    dbProp.setElement(getEntity(beanProp.getElement()));
+                    dbProp.setName(beanProp.getName());
+                    dbProp.setIsMultivalued(beanProp.getIsMultivalued());
+                    contains = true;
+                    break;
+                }
+            }
+            
+            /* remove */
+            if(!contains) {
+            	dbIteroator.remove();
+            }
+        }
+
+        /* add */
+        final Set<RoleAttributeEntity> toAdd = new HashSet<>();
+        for (final RoleAttributeEntity beanProp : beanProps) {
+            boolean contains = false;
+            dbIteroator = dbProps.iterator();
+            while(dbIteroator.hasNext()) {
+            	final RoleAttributeEntity dbProp = dbIteroator.next();
+                if (StringUtils.equals(dbProp.getId(), beanProp.getId())) {
+                    contains = true;
+                }
+            }
+
+            if (!contains) {
+                beanProp.setRole(bean);
+                beanProp.setElement(getEntity(beanProp.getElement()));
+                toAdd.add(beanProp);
+            }
+        }
+        dbProps.addAll(toAdd);
+        
+        bean.setRoleAttributes(dbProps);
+	}
+	
+	private MetadataElementEntity getEntity(final MetadataElementEntity bean) {
+    	if(bean != null && StringUtils.isNotBlank(bean.getId())) {
+    		return metadataElementDAO.findById(bean.getId());
+    	} else {
+    		return null;
+    	}
+    }
 	
 	private ResourceEntity getNewAdminResource(final RoleEntity entity, final String requestorId) {
 		final ResourceEntity adminResource = new ResourceEntity();
@@ -256,70 +345,6 @@ public class RoleDataServiceImpl implements RoleDataService {
 		return association;
 	}
 	
-	private void mergeAttributes(final RoleEntity bean, final RoleEntity dbObject) {
-		
-		final Set<RoleAttributeEntity> renewedSet = new HashSet<RoleAttributeEntity>();
-		
-		final Set<RoleAttributeEntity> beanProps = (bean.getRoleAttributes() != null) ? bean.getRoleAttributes() : new HashSet<RoleAttributeEntity>();
-		final Set<RoleAttributeEntity> dbProps = (dbObject.getRoleAttributes() != null) ? dbObject.getRoleAttributes() : new HashSet<RoleAttributeEntity>();
-		
-		/* delete */
-		/*
-		for(final Iterator<RoleAttributeEntity> dbIt = dbProps.iterator(); dbIt.hasNext();) {
-			final RoleAttributeEntity dbProp = dbIt.next();
-			
-			boolean contains = false;
-			for(final Iterator<RoleAttributeEntity> it = beanProps.iterator(); it.hasNext();) {
-			final RoleAttributeEntity beanProp = it.next();
-				if(StringUtils.equals(dbProp.getRoleAttrId(), beanProp.getRoleAttrId())) {
-					contains = true;
-					break;
-				}
-			}
-			
-			if(!contains) {
-				dbIt.remove();
-			}
-		}
-		*/
-			
-		/* update */
-		for(final Iterator<RoleAttributeEntity> dbIt = dbProps.iterator(); dbIt.hasNext();) {
-			final RoleAttributeEntity dbProp = dbIt.next();
-			for(final Iterator<RoleAttributeEntity> it = beanProps.iterator(); it.hasNext();) {
-				final RoleAttributeEntity beanProp = it.next();
-				if(StringUtils.equals(dbProp.getRoleAttrId(), beanProp.getRoleAttrId())) {
-					dbProp.setElement(beanProp.getElement());
-					dbProp.setName(beanProp.getName());
-					dbProp.setValue(beanProp.getValue());
-                    dbProp.setIsMultivalued(beanProp.getIsMultivalued());
-                    dbProp.setValues(beanProp.getValues());
-					renewedSet.add(dbProp);
-					break;
-				}
-			}
-		}
-		
-		/* add */
-		for(final Iterator<RoleAttributeEntity> it = beanProps.iterator(); it.hasNext();) {
-			boolean contains = false;
-			final RoleAttributeEntity beanProp = it.next();
-			for(final Iterator<RoleAttributeEntity> dbIt = dbProps.iterator(); dbIt.hasNext();) {
-				final RoleAttributeEntity dbProp = dbIt.next();
-				if(StringUtils.equals(dbProp.getRoleAttrId(), beanProp.getRoleAttrId())) {
-					contains = true;
-				}
-			}
-			
-			if(!contains) {
-				beanProp.setRole(bean);
-				//dbProps.add(beanProp);
-				renewedSet.add(beanProp);
-			}
-		}
-		
-		bean.setRoleAttributes(renewedSet);
-	}
 
 	@Override
     @Transactional

@@ -255,8 +255,6 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Gr
                             }
 
                             ExtensibleObject extObj = buildFromRules(attrMapEntities, bindingMap);
-                            extObj.setPrincipalFieldName(groupTargetSysIdentity.getIdentity());
-                            extObj.setPrincipalFieldDataType(groupTargetSysIdentity.getIdentity());
 
                             // get the attributes at the target system
                             // this lookup only for getting attributes from the
@@ -532,7 +530,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Gr
     private boolean requestAddModify(IdentityDto identityDto, String requestId, ManagedSysDto mSys,
                                      ManagedSystemObjectMatch matchObj, ExtensibleObject extensibleObject, boolean isAdd) {
 
-        CrudRequest<ExtensibleObject> userReq = new CrudRequest<ExtensibleObject>();
+        CrudRequest<ExtensibleObject> userReq = new CrudRequest<>();
         userReq.setObjectIdentity(identityDto.getIdentity());
         userReq.setRequestID(requestId);
         userReq.setTargetID(identityDto.getManagedSysId());

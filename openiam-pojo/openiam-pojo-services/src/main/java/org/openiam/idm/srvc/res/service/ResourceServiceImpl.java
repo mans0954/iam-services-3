@@ -197,7 +197,6 @@ public class ResourceServiceImpl implements ResourceService {
     }
 
     private void mergeAttribute(final ResourceEntity bean, final ResourceEntity dbObject) {
-        //final Set<ResourcePropEntity> renewedProperties = new HashSet<ResourcePropEntity>();
 
         Set<ResourcePropEntity> beanProps = (bean.getResourceProps() != null) ? bean.getResourceProps() : new HashSet<ResourcePropEntity>();
         Set<ResourcePropEntity> dbProps = (dbObject.getResourceProps() != null) ? new HashSet<ResourcePropEntity>(dbObject.getResourceProps()) : new HashSet<ResourcePropEntity>();
@@ -242,9 +241,6 @@ public class ResourceServiceImpl implements ResourceService {
                 beanProp.setResource(bean);
                 beanProp.setElement(getEntity(beanProp.getElement()));
                 toAdd.add(beanProp);
-                //dbProps.add(beanProp);
-                //renewedProperties.add(beanProp);
-                //dbProp.
             }
         }
         dbProps.addAll(toAdd);

@@ -216,6 +216,14 @@
 		<class-a>org.openiam.idm.srvc.role.domain.RoleEntity</class-a>
 		<class-b>org.openiam.idm.srvc.role.dto.Role</class-b>
 		<field>
+            <a>type.id</a>
+            <b>mdTypeId</b>
+        </field>
+        <field>
+            <a>type.displayName</a>
+            <b>metadataTypeName</b>
+        </field>
+		<field>
 			<a>adminResource.id</a>
 			<b>adminResourceId</b>
 		</field>
