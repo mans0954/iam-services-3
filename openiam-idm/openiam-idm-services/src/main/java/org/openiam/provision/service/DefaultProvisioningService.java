@@ -540,11 +540,12 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 return response;
             }
         } else {
-            usr.setStatus(status);
-            usr.setSecondaryStatus(null);
-            usr.setLastUpdatedBy(requestorId);
-            usr.setLastUpdate(new Date(System.currentTimeMillis()));
-            userMgr.updateUserWithDependent(userDozerConverter.convertToEntity(usr, true), false);
+            UserEntity entity = userMgr.getUser(userId);
+            entity.setStatus(status);
+            entity.setSecondaryStatus(null);
+            entity.setLastUpdatedBy(requestorId);
+            entity.setLastUpdate(new Date(System.currentTimeMillis()));
+            userMgr.updateUser(entity);
         }
         // SET POST ATTRIBUTES FOR DEFAULT SYS SCRIPT
 
