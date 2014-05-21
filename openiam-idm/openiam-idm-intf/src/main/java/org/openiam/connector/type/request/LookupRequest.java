@@ -13,17 +13,7 @@ import java.util.List;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "LookupRequest", propOrder = {
-    "requestedAttributes"
 })
 public class LookupRequest<ExtObject extends ExtensibleObject> extends SearchRequest<ExtObject>{
 
-    protected List<ExtensibleAttribute> requestedAttributes = new LinkedList<ExtensibleAttribute>();
-
-    public List<ExtensibleAttribute> getRequestedAttributes() {
-        return requestedAttributes;
-    }
-
-    public void setRequestedAttributes(List<ExtensibleAttribute> requestedAttributes) {
-        this.requestedAttributes = requestedAttributes;
-    }
 }
