@@ -39,6 +39,7 @@ import org.openiam.idm.searchbeans.PolicySearchBean;
 import org.openiam.idm.srvc.policy.domain.*;
 import org.openiam.idm.srvc.policy.dto.ITPolicy;
 import org.openiam.idm.srvc.policy.dto.Policy;
+import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
 import org.openiam.idm.srvc.policy.dto.PolicyDefParam;
 import org.openiam.idm.srvc.policy.dto.PolicyObjectAssoc;
 
@@ -163,30 +164,29 @@ public class PolicyDataServiceImpl implements PolicyDataService {
 
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.openiam.idm.srvc.policy.service.PolicyDataService#addPolicy(org.openiam
-	 * .idm.srvc.policy.dto.Policy)
-	 */
+	
 	@Override
 	public Response addPolicy(Policy policy) {
-
-		return saveOrUpdatePolicy(policy);
+		Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			response = saveOrUpdatePolicy(policy);
+		} catch(Throwable e) {
+			response.fail();
+			log.error("Can't save policy", e);
+		}
+		return response;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.openiam.idm.srvc.policy.service.PolicyDataService#updatePolicy(org
-	 * .openiam.idm.srvc.policy.dto.Policy)
-	 */
 	@Override
 	public Response updatePolicy(Policy policy) {
-
-		return saveOrUpdatePolicy(policy);
+		Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			response = saveOrUpdatePolicy(policy);
+		} catch(Throwable e) {
+			response.fail();
+			log.error("Can't save policy", e);
+		}
+		return response;
 	}
 
 	/**
@@ -229,6 +229,12 @@ public class PolicyDataServiceImpl implements PolicyDataService {
 			if (StringUtils.isNotBlank(pe.getPolicyId())) {
 				final PolicyEntity poObject = policyDao.findById(policy
 						.getPolicyId());
+				
+				if(CollectionUtils.isNotEmpty(pe.getPolicyAttributes())) {
+					for(final PolicyAttributeEntity attribute : pe.getPolicyAttributes()) {
+						attribute.setPolicyId(poObject.getPolicyId());
+					}
+				}
 
 				// TODO: extend this merge
 				poObject.setCreateDate(pe.getCreateDate());
