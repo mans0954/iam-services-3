@@ -1536,11 +1536,16 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
             log.debug("Calling lookupRequest ");
 
-            LookupRequest reqType = new LookupRequest();
+            LookupRequest<ExtensibleUser> reqType = new LookupRequest<>();
             String requestId = "R" + UUIDGen.getUUID();
             reqType.setRequestID(requestId);
             reqType.setSearchValue(principalName);
-            reqType.setRequestedAttributes(extensibleAttributes);
+
+            ExtensibleUser extensibleUser = new ExtensibleUser();
+            extensibleUser.setPrincipalFieldName(matchObj.getKeyField());
+            extensibleUser.setPrincipalFieldDataType("string");
+            extensibleUser.setAttributes(extensibleAttributes);
+            reqType.setExtensibleObject(extensibleUser);
             reqType.setTargetID(managedSysId);
             reqType.setHostLoginId(mSys.getUserId());
             if (matchObj != null && StringUtils.isNotEmpty(matchObj.getSearchBaseDn())) {
@@ -1558,7 +1563,6 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             }
             reqType.setHostLoginPassword(passwordDecoded);
             reqType.setHostUrl(mSys.getHostUrl());
-            reqType.setExtensibleObject(new ExtensibleUser());
             reqType.setScriptHandler(mSys.getLookupHandler());
 
             SearchResponse responseType = connectorAdapter.lookupRequest(mSys, reqType, MuleContextProvider.getCtx());

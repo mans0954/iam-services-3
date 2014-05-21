@@ -155,7 +155,6 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Gr
         return provisioning(group, true);
     }
 
-
     @Override
     public ProvisionGroupResponse modifyGroup(@WebParam(name = "group", targetNamespace = "") ProvisionGroup group) {
         return provisioning(group, false);
