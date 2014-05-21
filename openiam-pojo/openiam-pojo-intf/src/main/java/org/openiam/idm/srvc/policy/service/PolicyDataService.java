@@ -50,6 +50,7 @@ public interface PolicyDataService {
 	 * @param policyDefId
 	 * @return
 	 */
+	@Deprecated
 	List<Policy> getAllPolicies(String policyDefId, final int from, final int size);
 
 	/**
@@ -65,6 +66,7 @@ public interface PolicyDataService {
     * @param policy the policy
     * @return the response
     */
+	@Deprecated
    Response addPolicy(Policy policy);
 	
 	
@@ -74,8 +76,11 @@ public interface PolicyDataService {
 	 * @param policy the policy
 	 * @return the response
 	 */
+	@Deprecated
 	Response updatePolicy(Policy  policy);
 	
+	
+	public Response savePolicy(final Policy policy);
 	
 	/**
 	 * Delete policy.

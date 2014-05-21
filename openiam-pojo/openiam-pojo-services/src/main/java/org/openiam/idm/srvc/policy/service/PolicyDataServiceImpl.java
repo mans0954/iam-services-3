@@ -62,19 +62,10 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class PolicyDataServiceImpl implements PolicyDataService {
 
-	private static final Log log = LogFactory
-			.getLog(PolicyDataServiceImpl.class);
-
-	/** The policy dao. */
-	@Autowired
-	private PolicyDAO policyDao;
+	private static final Log log = LogFactory.getLog(PolicyDataServiceImpl.class);
 
     @Autowired
     private ITPolicyDAO itPolicyDao;
-
-	/** The policy def param dao. */
-	@Autowired
-	private PolicyDefParamDAO policyDefParamDao;
 
 	@Autowired
 	private PolicyObjectAssocDAO policyObjectAssocDAO;
@@ -92,61 +83,29 @@ public class PolicyDataServiceImpl implements PolicyDataService {
 	/** The policy def param dozer converter. */
 	@Autowired
 	private PolicyDefParamDozerConverter policyDefParamDozerConverter;
+	
+	@Autowired
+	private PolicyService policyService;
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.openiam.idm.srvc.policy.service.PolicyDataService#getPolicy(java.
-	 * lang.String)
-	 */
+	@Override
 	public Policy getPolicy(String policyId) {
 		if (policyId == null) {
 			throw new NullPointerException("PolicyId is null");
 		}
-		PolicyEntity p = policyDao.findById(policyId);
-		if (p == null)
-			return null;
+		final PolicyEntity p = policyService.getPolicy(policyId);
 		return policyDozerConverter.convertToDTO(p, true);
 	}
 
-	/**
-	 * Gets the policy def param dao.
-	 * 
-	 * @return the policy def param dao
-	 */
-	public PolicyDefParamDAO getPolicyDefParamDao() {
-		return policyDefParamDao;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.openiam.idm.srvc.policy.service.PolicyDataService#getAllPolicies(
-	 * java.lang.String)
-	 */
+	@Override
+	@Deprecated
 	public List<Policy> getAllPolicies(String policyDefId, final int from, final int size) {
-		if (policyDefId == null) {
-			throw new NullPointerException("policyDefId is null");
-		}
-		final List<Policy> policyList = policyDozerConverter.convertToDTOList(
-				policyDao.findAllPolicies(policyDefId, from , size), true);
-
-		if (CollectionUtils.isEmpty(policyList)) {
-			return null;
-		}
-		return policyList;
-
+		final PolicySearchBean searchBean = new PolicySearchBean();
+		searchBean.setPolicyDefId(policyDefId);
+		searchBean.setDeepCopy(true);
+		return findBeans(searchBean, from, size);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.openiam.idm.srvc.policy.service.PolicyDataService#getAllPolicyAttributes
-	 * (java.lang.String)
-	 */
+	@Override
 	public List<PolicyDefParam> getAllPolicyAttributes(String policyDefId,
 			String pswdGroup) {
 		if (policyDefId == null) {
@@ -154,7 +113,7 @@ public class PolicyDataServiceImpl implements PolicyDataService {
 		}
 
 		final List<PolicyDefParam> policyList = policyDefParamDozerConverter
-				.convertToDTOList(policyDefParamDao.findPolicyDefParamByGroup(
+				.convertToDTOList(policyService.findPolicyDefParamByGroup(
 						policyDefId, pswdGroup), true);
 
 		if (CollectionUtils.isEmpty(policyList)) {
@@ -164,39 +123,7 @@ public class PolicyDataServiceImpl implements PolicyDataService {
 
 	}
 
-	
-	@Override
-	public Response addPolicy(Policy policy) {
-		Response response = new Response(ResponseStatus.SUCCESS);
-		try {
-			response = saveOrUpdatePolicy(policy);
-		} catch(Throwable e) {
-			response.fail();
-			log.error("Can't save policy", e);
-		}
-		return response;
-	}
-
-	@Override
-	public Response updatePolicy(Policy policy) {
-		Response response = new Response(ResponseStatus.SUCCESS);
-		try {
-			response = saveOrUpdatePolicy(policy);
-		} catch(Throwable e) {
-			response.fail();
-			log.error("Can't save policy", e);
-		}
-		return response;
-	}
-
-	/**
-	 * Save or update policy.
-	 * 
-	 * @param policy
-	 *            the policy
-	 * @return the response
-	 */
-	private Response saveOrUpdatePolicy(Policy policy) {
+	public Response savePolicy(final Policy policy) {
 		final Response response = new Response(ResponseStatus.SUCCESS);
 
 		try {
@@ -209,8 +136,7 @@ public class PolicyDataServiceImpl implements PolicyDataService {
 						ResponseCode.POLICY_NAME_NOT_SET);
 			}
 
-			final List<PolicyEntity> found = policyDao.findPolicyByName(
-					policy.getPolicyDefId(), policy.getName());
+			final List<PolicyEntity> found = policyService.findPolicyByName(policy.getPolicyDefId(), policy.getName());
 			if (found != null && found.size() > 0) {
 				if (StringUtils.isBlank(policy.getPolicyId()) && found != null) {
 					throw new BasicDataServiceException(ResponseCode.NAME_TAKEN);
@@ -222,46 +148,12 @@ public class PolicyDataServiceImpl implements PolicyDataService {
 					throw new BasicDataServiceException(ResponseCode.NAME_TAKEN);
 				}
 			}
-			PolicyEntity pe = policyDozerConverter
-					.convertToEntity(policy, true);
+			final PolicyEntity pe = policyDozerConverter.convertToEntity(policy, true);
 
-			/* merge */
-			if (StringUtils.isNotBlank(pe.getPolicyId())) {
-				final PolicyEntity poObject = policyDao.findById(policy
-						.getPolicyId());
-				
-				if(CollectionUtils.isNotEmpty(pe.getPolicyAttributes())) {
-					for(final PolicyAttributeEntity attribute : pe.getPolicyAttributes()) {
-						attribute.setPolicyId(poObject.getPolicyId());
-					}
-				}
-
-				// TODO: extend this merge
-				poObject.setCreateDate(pe.getCreateDate());
-				poObject.setCreatedBy(pe.getCreatedBy());
-				poObject.setDescription(pe.getDescription());
-				poObject.setPolicyId(pe.getPolicyId());
-				poObject.setPolicyDefId(pe.getPolicyDefId());
-				poObject.setName(pe.getName());
-				poObject.setLastUpdate(pe.getLastUpdate());
-				poObject.setLastUpdatedBy(pe.getLastUpdatedBy());
-				poObject.setRule(pe.getRule());
-				poObject.setRuleSrcUrl(pe.getRuleSrcUrl());
-				poObject.setStatus(pe.getStatus());
-				poObject.setPolicyAttributes(pe.getPolicyAttributes());
-				// Updating Policy.
-				policyDao.update(poObject);
-
-				response.setResponseValue(pe.getPolicyId());
-
-			} else {
-				// creating new Policy
-				pe = policyDao.add(pe);
-				response.setResponseValue(pe.getPolicyId());
-
-			}
+			policyService.save(pe);
+			response.setResponseValue(pe.getPolicyId());
 		} catch (BasicDataServiceException e) {
-
+			log.warn("Can't save policty", e);
 			response.setErrorCode(e.getCode());
 			response.setStatus(ResponseStatus.FAILURE);
 		} catch (Throwable e) {
@@ -271,16 +163,21 @@ public class PolicyDataServiceImpl implements PolicyDataService {
 		}
 
 		return response;
-
+	}
+	
+	@Override
+	@Deprecated
+	public Response addPolicy(Policy policy) {
+		return savePolicy(policy);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.openiam.idm.srvc.policy.service.PolicyDataService#deletePolicy(java
-	 * .lang.String)
-	 */
+	@Override
+	@Deprecated
+	public Response updatePolicy(Policy policy) {
+		return savePolicy(policy);
+	}
+
+	
 	@Override
 	public Response deletePolicy(String policyId) {
 
@@ -291,8 +188,7 @@ public class PolicyDataServiceImpl implements PolicyDataService {
 						ResponseCode.INVALID_ARGUMENTS);
 			}
 
-			PolicyEntity pe = policyDao.findById(policyId);
-			policyDao.delete(pe);
+			policyService.delete(policyId);
 		} catch (BasicDataServiceException e) {
 
 			response.setStatus(ResponseStatus.FAILURE);
@@ -305,12 +201,6 @@ public class PolicyDataServiceImpl implements PolicyDataService {
 		return response;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.openiam.idm.srvc.policy.service.PolicyDataService#
-	 * getAssociationsForPolicy(java.lang.String)
-	 */
 	@Override
 	public List<PolicyObjectAssoc> getAssociationsForPolicy(String policyId) {
 
@@ -321,13 +211,6 @@ public class PolicyDataServiceImpl implements PolicyDataService {
 		return policyObjectAssoc;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.openiam.idm.srvc.policy.service.PolicyDataService#savePolicyAssoc
-	 * (org.openiam.idm.srvc.policy.dto.PolicyObjectAssoc)
-	 */
 	@Override
 	public Response savePolicyAssoc(PolicyObjectAssoc poa) {
 		final Response response = new Response(ResponseStatus.SUCCESS);
@@ -362,12 +245,12 @@ public class PolicyDataServiceImpl implements PolicyDataService {
 
 	@Override
 	public List<Policy> findBeans(final PolicySearchBean searchBean, int from, int size) {
-        return policyDozerConverter.convertToDTOList(policyDao.getByExample(searchBean, from, size), true);
+        return policyDozerConverter.convertToDTOList(policyService.findBeans(searchBean, from, size), true);
 	}
 
 	@Override
 	public int count(PolicySearchBean searchBean) {
-		return policyDao.count(searchBean);
+		return policyService.count(searchBean);
 	}
 
     @Override
