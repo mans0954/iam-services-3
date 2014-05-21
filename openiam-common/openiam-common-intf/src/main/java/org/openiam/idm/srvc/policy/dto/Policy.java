@@ -111,6 +111,15 @@ public class Policy implements java.io.Serializable {
     public Set<PolicyAttribute> getPolicyAttributes() {
         return this.policyAttributes;
     }
+    
+    public void addPolicyAttribute(final PolicyAttribute attribute) {
+    	if(attribute != null) {
+    		if(this.policyAttributes == null) {
+    			this.policyAttributes = new HashSet<>();
+    		}
+    		this.policyAttributes.add(attribute);
+    	}
+    }
 
     public void setPolicyAttributes(Set<PolicyAttribute> policyAttributes) {
         this.policyAttributes = policyAttributes;
