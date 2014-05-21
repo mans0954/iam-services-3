@@ -137,7 +137,7 @@ public class AuditLogServiceImpl implements AuditLogService {
                     if(StringUtils.isNotEmpty(target.getTargetId()) && StringUtils.isEmpty(target.getObjectPrincipal())) {
                         if(AuditTarget.USER.value().equals(target.getTargetType())) {
                             List<LoginEntity> principals = loginDAO.findUser(target.getTargetId());
-                            LoginEntity loginEntity = UserUtils.getPrimaryIdentityEntity(sysConfiguration.getDefaultManagedSysId(), principals);
+                            LoginEntity loginEntity = UserUtils.getUserManagedSysIdentityEntity(sysConfiguration.getDefaultManagedSysId(), principals);
                             target.setObjectPrincipal(loginEntity.getLogin());
                         } else if(AuditTarget.ROLE.value().equals(target.getTargetType())) {
                             RoleEntity role = roleDAO.findById(target.getTargetId());
@@ -159,7 +159,7 @@ public class AuditLogServiceImpl implements AuditLogService {
     		}
             if(StringUtils.isEmpty(log.getPrincipal()) && StringUtils.isNotEmpty(log.getUserId())) {
                 List<LoginEntity> principals = loginDAO.findUser(log.getUserId());
-                LoginEntity loginEntity = UserUtils.getPrimaryIdentityEntity(sysConfiguration.getDefaultManagedSysId(), principals);
+                LoginEntity loginEntity = UserUtils.getUserManagedSysIdentityEntity(sysConfiguration.getDefaultManagedSysId(), principals);
                 if (loginEntity != null) {
                     auditLogEntity.setPrincipal(loginEntity.getLogin());
                 }
