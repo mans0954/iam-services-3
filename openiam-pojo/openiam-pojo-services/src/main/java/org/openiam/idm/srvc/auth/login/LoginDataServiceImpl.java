@@ -232,7 +232,7 @@ public class LoginDataServiceImpl implements LoginDataService {
         lg.setPswdResetTokenExp(null);
 
         // calculate when the password will expire
-        if (pswdExpValue != null && !pswdExpValue.isEmpty()) {
+        if (pswdExpValue != null && !pswdExpValue.isEmpty() && !"0".equals(pswdExpValue)) {
             cal.add(Calendar.DATE, Integer.parseInt(pswdExpValue));
             expCal.add(Calendar.DATE, Integer.parseInt(pswdExpValue));
             lg.setPwdExp(expCal.getTime());
