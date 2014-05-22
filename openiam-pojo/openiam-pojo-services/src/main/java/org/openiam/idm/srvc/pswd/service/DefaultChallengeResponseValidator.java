@@ -158,10 +158,10 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
 		for (UserIdentityAnswerEntity savedAns : savedAnsList) {
 			for (UserIdentityAnswerEntity newAns : newAnswerList) {
 				if(StringUtils.equalsIgnoreCase(newAns.getId(), savedAns.getId())) {
+                    String savedAnswer = (savedAns.getIsEncrypted()) ? keyManagementService.decrypt(lg.getUserId(), KeyName.challengeResponse, savedAns.getQuestionAnswer())
+                                                                     : savedAns.getQuestionAnswer();
 
-
-					if(StringUtils.equalsIgnoreCase(keyManagementService.encrypt(lg.getUserId(), KeyName.challengeResponse, newAns.getQuestionAnswer()),
-                                                    savedAns.getQuestionAnswer())) {
+					if(StringUtils.equalsIgnoreCase(newAns.getQuestionAnswer(),savedAnswer)) {
 						correctAns++;
 					}
 				}
