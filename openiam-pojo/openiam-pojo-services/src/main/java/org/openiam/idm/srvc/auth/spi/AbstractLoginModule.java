@@ -145,8 +145,8 @@ public abstract class AbstractLoginModule implements LoginModule {
             	//throw new AuthenticationException(AuthenticationConstants.RESULT_SUCCESS_PASSWORD_EXP);
             }
         } else {
-        	throw new AuthenticationException(AuthenticationConstants.RESULT_PASSWORD_EXPIRED);
-            //sub.setResultCode(AuthenticationConstants.RESULT_SUCCESS);
+        	//throw new AuthenticationException(AuthenticationConstants.RESULT_PASSWORD_EXPIRED);
+            sub.setResultCode(AuthenticationConstants.RESULT_SUCCESS);
         }
 
     }
