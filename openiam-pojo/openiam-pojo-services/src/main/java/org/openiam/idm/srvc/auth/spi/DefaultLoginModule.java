@@ -138,6 +138,7 @@ public class DefaultLoginModule extends AbstractLoginModule {
 
         // check the password
         String decryptPswd = this.decryptPassword(lg.getUserId(), lg.getPassword());
+        Policy pwdPlcy = passwordManager.getPasswordPolicy(lg.getLogin(), lg.getManagedSysId());
         if (decryptPswd != null && !decryptPswd.equals(password)) {
 
             // if failed auth count is part of the polices, then do the
@@ -204,7 +205,7 @@ public class DefaultLoginModule extends AbstractLoginModule {
                 sub.setDaysToPwdExp(daysToExp);
             }
             // check password policy if it is necessary to change it after reset
-            Policy pwdPlcy = passwordManager.getPasswordPolicy(lg.getLogin(), lg.getManagedSysId());
+
             String chngPwdAttr = getPolicyAttribute(pwdPlcy.getPolicyAttributes(),"CHNG_PSWD_ON_RESET");
             if(lg.getResetPassword()>0 && StringUtils.isNotBlank(chngPwdAttr)){
                 throw new AuthenticationException(
@@ -245,7 +246,7 @@ public class DefaultLoginModule extends AbstractLoginModule {
         sub.setUserId(lg.getUserId());
         sub.setPrincipal(principal);
         sub.setSsoToken(token(lg.getUserId(), tokenParam));
-        setResultCode(lg, sub, curDate);
+        setResultCode(lg, sub, curDate, pwdPlcy);
 
 
 
