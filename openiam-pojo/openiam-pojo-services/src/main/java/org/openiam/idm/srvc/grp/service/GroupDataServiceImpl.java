@@ -13,6 +13,7 @@ import org.openiam.idm.searchbeans.GroupSearchBean;
 import org.openiam.idm.srvc.auth.domain.IdentityEntity;
 import org.openiam.idm.srvc.auth.dto.IdentityTypeEnum;
 import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
+import org.openiam.idm.srvc.auth.dto.ProvLoginStatusEnum;
 import org.openiam.idm.srvc.auth.login.IdentityDAO;
 import org.openiam.idm.srvc.grp.domain.GroupAttributeEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
@@ -353,7 +354,7 @@ public class GroupDataServiceImpl implements GroupDataService {
                 groupDefaultEntity.setCreatedBy(requestorId);
                 groupDefaultEntity.setManagedSysId(sysConfiguration.getDefaultManagedSysId());
                 groupDefaultEntity.setReferredObjectId(group.getId());
-                groupDefaultEntity.setStatus(LoginStatusEnum.PENDING_CREATE);
+                groupDefaultEntity.setStatus(LoginStatusEnum.ACTIVE);
                 groupDefaultEntity.setIdentity(group.getName());
                 identityDAO.save(groupDefaultEntity);
 				group.addApproverAssociation(createDefaultApproverAssociations(group, requestorId));

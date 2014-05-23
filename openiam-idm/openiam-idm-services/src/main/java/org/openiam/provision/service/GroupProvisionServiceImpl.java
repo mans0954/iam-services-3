@@ -215,7 +215,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Gr
                                     groupTargetSysIdentity.setCreatedBy(systemUserId);
                                     groupTargetSysIdentity.setManagedSysId(managedSysId);
                                     groupTargetSysIdentity.setReferredObjectId(group.getId());
-                                    groupTargetSysIdentity.setStatus(LoginStatusEnum.PENDING_CREATE);
+                                    groupTargetSysIdentity.setStatus(LoginStatusEnum.ACTIVE);
 
                                     String groupTargetSysIdentityId = identityService.save(groupTargetSysIdentity);
 
@@ -837,8 +837,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Gr
                     identityService.updateIdentity(identityDto);
                 }
             } else {
-                identityDto.setStatus(status == UserStatusEnum.REMOVE ? LoginStatusEnum.FAIL_REMOVE
-                        : LoginStatusEnum.FAIL_DELETE);
+                identityDto.setStatus(LoginStatusEnum.INACTIVE);
                 identityService.updateIdentity(identityDto);
             }
 

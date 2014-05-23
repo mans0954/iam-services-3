@@ -28,6 +28,7 @@ import java.util.Set;
         "resetPassword",
         "isLocked",
         "status",
+        "provStatus",
         "gracePeriod",
         "createDate",
         "createdBy",
@@ -85,6 +86,8 @@ public class Login implements java.io.Serializable {
     protected int isLocked;
 
     protected LoginStatusEnum status;
+
+    protected ProvLoginStatusEnum provStatus;
 
     @XmlTransient
     protected LoginStatusEnum initialStatus;
@@ -213,6 +216,14 @@ public class Login implements java.io.Serializable {
 
     public void setStatus(LoginStatusEnum status) {
         this.status = status;
+    }
+
+    public ProvLoginStatusEnum getProvStatus() {
+        return provStatus;
+    }
+
+    public void setProvStatus(ProvLoginStatusEnum provStatus) {
+        this.provStatus = provStatus;
     }
 
     public Date getGracePeriod() {
@@ -482,6 +493,7 @@ public class Login implements java.io.Serializable {
         sb.append(", pwdChanged=").append(pwdChanged);
         sb.append(", pwdExp=").append(pwdExp);
         sb.append(", status=").append(status);
+        sb.append(", provStatus=").append(provStatus);
         sb.append(", initialStatus=").append(initialStatus);
         sb.append(", lastUpdate=").append(lastUpdate);
         sb.append('}');

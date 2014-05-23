@@ -46,6 +46,7 @@ import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
+import org.openiam.idm.srvc.auth.dto.ProvLoginStatusEnum;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
@@ -71,6 +72,7 @@ import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.provision.dto.AccountLockEnum;
 import org.openiam.provision.dto.PasswordSync;
+import org.openiam.provision.dto.ProvOperationEnum;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.resp.LookupUserResponse;
 import org.openiam.provision.resp.ManagedSystemViewerResponse;
@@ -402,14 +404,15 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     loginManager.deleteLogin(login.getLoginId());
                 } else {
                     login.setStatus(LoginStatusEnum.INACTIVE);
+                    login.setProvStatus(ProvLoginStatusEnum.DELETED);
                     login.setAuthFailCount(0);
                     login.setPasswordChangeCount(0);
                     login.setIsLocked(1);
                     loginManager.updateLogin(login);
                 }
             } else {
-                login.setStatus(status == UserStatusEnum.REMOVE ? LoginStatusEnum.FAIL_REMOVE
-                        : LoginStatusEnum.FAIL_DELETE);
+                login.setStatus(LoginStatusEnum.INACTIVE);
+                login.setProvStatus(ProvLoginStatusEnum.FAIL_DELETE);
                 loginManager.updateLogin(login);
             }
 
@@ -501,9 +504,14 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
                                 if (connectorSuccess) {
                                     l.setStatus(LoginStatusEnum.INACTIVE);
+                                    l.setProvStatus(ProvLoginStatusEnum.DELETED);
                                     l.setAuthFailCount(0);
                                     l.setPasswordChangeCount(0);
                                     l.setIsLocked(1);
+                                } else {
+                                    l.setStatus(LoginStatusEnum.INACTIVE);
+                                    l.setProvStatus(ProvLoginStatusEnum.FAIL_DELETE);
+
                                 }
                                 // SET POST ATTRIBUTES FOR TARGET SYS SCRIPT
                                 bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS, null);
@@ -968,9 +976,6 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         // update resources, update resources sets
         updateResources(userEntity, pUser, resourceSet, deleteResourceSet, auditLog);
 
-        log.debug("Resources to be added ->> " + resourceSet);
-        log.debug("Delete the following resources ->> " + deleteResourceSet);
-
         // update principals
         updatePrincipals(userEntity, pUser, auditLog);
 
@@ -1034,6 +1039,30 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         log.debug("- Primary Identity : " + primaryIdentity);
         auditLog.addAttribute(AuditAttributeName.DESCRIPTION, "- Primary Identity: " + primaryIdentity.getLogin());
         ProvisionUser finalProvUser = new ProvisionUser(userDozerConverter.convertToDTO(userEntity, true));
+
+        if (!isAdd) {
+            //If identity for resource exists and it's status is 'INACTIVE' user should be deprovisioned from target system
+            Set<Resource> inactiveResources = new HashSet<Resource>();
+            for (Resource res : resourceSet) {
+                ManagedSysDto mSys = managedSysService.getManagedSysByResource(res.getId());
+                String managedSysId = mSys != null ? mSys.getId() : null;
+                for (LoginEntity l : userEntity.getPrincipalList()) {
+                    if (managedSysId != null && managedSysId.equals(l.getManagedSysId())) {
+                        if (!LoginStatusEnum.ACTIVE.equals(l.getStatus())) {
+                            inactiveResources.add(res);
+                        }
+                        break;
+                    }
+                }
+            }
+            if (CollectionUtils.isNotEmpty(inactiveResources)) {
+                resourceSet.removeAll(inactiveResources);
+                deleteResourceSet.addAll(inactiveResources);
+            }
+        }
+
+        log.debug("Resources to be added ->> " + resourceSet);
+        log.debug("Delete the following resources ->> " + deleteResourceSet);
 
         // deprovision resources
         if (!isAdd) {
@@ -1215,8 +1244,8 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             LoginEntity mLg = null;
             for (LoginEntity l : userEntity.getPrincipalList()) {
                 if (managedSysId != null && managedSysId.equals(l.getManagedSysId())) {
-                    // TODO: check if another props need to be updated
-                    l.setStatus(LoginStatusEnum.PENDING_UPDATE);
+                    l.setStatus(LoginStatusEnum.ACTIVE);
+                    l.setProvStatus(ProvLoginStatusEnum.PENDING_UPDATE);
                     mLg = l;
                 }
             }
@@ -1263,7 +1292,8 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     mLg.setCreatedBy(userEntity.getLastUpdatedBy());
                     mLg.setIsLocked(0);
                     mLg.setFirstTimeLogin(1);
-                    mLg.setStatus(LoginStatusEnum.PENDING_CREATE);
+                    mLg.setStatus(LoginStatusEnum.ACTIVE);
+                    mLg.setProvStatus(ProvLoginStatusEnum.PENDING_CREATE);
 
                     userEntity.getPrincipalList().add(mLg); // add new identity
                                                             // to user
@@ -1301,9 +1331,9 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
             ProvisionDataContainer data = new ProvisionDataContainer();
             if (isMngSysIdentityExistsInOpeniam) {
-                data.setOperation(AttributeOperationEnum.REPLACE);
+                data.setOperation(ProvOperationEnum.UPDATE);
             } else {
-                data.setOperation(AttributeOperationEnum.ADD);
+                data.setOperation(ProvOperationEnum.CREATE);
             }
             data.setRequestId(requestId);
             data.setResourceId(res.getId());
@@ -1312,6 +1342,21 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             data.setBindingMap(bindingMap);
 
             return data;
+        }
+        return null;
+    }
+
+    private String findResourcePropertyByName(String resId, String name) {
+        Resource r = resourceService.getResourceDTO(resId);
+        if (r != null) {
+            Set<ResourceProp> rpSet = r.getResourceProps();
+            if (CollectionUtils.isNotEmpty(rpSet)) {
+                for (ResourceProp rp : rpSet) {
+                    if (StringUtils.equalsIgnoreCase(rp.getName(), name))  {
+                        return rp.getValue();
+                    }
+                }
+            }
         }
         return null;
     }
@@ -1326,11 +1371,24 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             return null;
         }
 
+        String onDeleteProp = findResourcePropertyByName(res.getId(), "ON_DELETE");
+        ProvLoginStatusEnum provLoginStatus = null;
+        switch (onDeleteProp) {
+            case "DELETE":
+                provLoginStatus = ProvLoginStatusEnum.PENDING_DELETE;
+                break;
+            case "DISABLE":
+                provLoginStatus = ProvLoginStatusEnum.PENDING_DISABLE;
+                break;
+            default:
+                provLoginStatus = ProvLoginStatusEnum.PENDING_UPDATE;
+        }
+
         LoginEntity mLg = null;
         for (LoginEntity l : userEntity.getPrincipalList()) {
             if (managedSysId != null && managedSysId.equals(l.getManagedSysId())) {
-                // TODO: check if another props need to be updated
-                l.setStatus(LoginStatusEnum.PENDING_UPDATE);
+                l.setStatus(LoginStatusEnum.INACTIVE);
+                l.setProvStatus(provLoginStatus);
                 mLg = l;
             }
         }
@@ -1350,7 +1408,18 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             data.setRequestId(requestId);
             data.setResourceId(res.getId());
             data.setIdentity(targetSysLogin);
-            data.setOperation(AttributeOperationEnum.DELETE);
+
+            switch (onDeleteProp) {
+                case "DELETE":
+                    data.setOperation(ProvOperationEnum.DELETE);
+                    break;
+                case "DISABLE":
+                    data.setOperation(ProvOperationEnum.DISABLE);
+                    break;
+                default:
+                    data.setOperation(ProvOperationEnum.UPDATE);
+            }
+
             return data;
         }
         return null;
