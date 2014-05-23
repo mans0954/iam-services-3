@@ -65,6 +65,7 @@ public class SendNewHireRequestDelegate extends AbstractEntitlementsDelegate {
         request.getParamList().add(new NotificationParam("REQUEST_REASON", getTaskDescription(execution)));
         request.getParamList().add(new NotificationParam("REQUESTOR",  user.getDisplayName()));
         request.getParamList().add(new NotificationParam("TARGET_USER", profileModel.getUser().getDisplayName()));
+        request.getParamList().add(new NotificationParam("COMMENT", getComment(execution)));
         mailService.sendNotification(request);
 	}
 }

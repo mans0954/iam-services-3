@@ -159,6 +159,10 @@ public abstract class AbstractActivitiJob implements JavaDelegate, TaskListener 
 		return retVal;
 	}
 	
+	protected String getComment(final DelegateExecution execution) {
+		return getStringVariable(execution, ActivitiConstants.COMMENT);
+	}
+	
 	protected String getAssociationId(final DelegateExecution execution) {
 		return getStringVariable(execution, ActivitiConstants.ASSOCIATION_ID);
 	}
