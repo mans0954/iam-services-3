@@ -11,9 +11,12 @@ import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.connector.type.constant.ErrorCode;
+import org.openiam.connector.type.constant.StatusCodeType;
 import org.openiam.connector.type.request.SuspendResumeRequest;
+import org.openiam.connector.type.response.ResponseType;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
+import org.openiam.idm.srvc.auth.dto.ProvLoginStatusEnum;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
@@ -180,11 +183,16 @@ public class DisableUserDelegate {
                         suspendReq.setHostUrl(mSys.getHostUrl());
 
 
-                        connectorAdapter.suspendRequest(mSys, suspendReq,
+                        ResponseType resp = connectorAdapter.suspendRequest(mSys, suspendReq,
                                 muleContext);
 
-                        lg.setStatus(LoginStatusEnum.INACTIVE);
+                        if (StatusCodeType.SUCCESS.equals(resp.getStatus())) {
+                            lg.setProvStatus(ProvLoginStatusEnum.DISABLED);
+                        } else {
+                            lg.setProvStatus(ProvLoginStatusEnum.FAIL_DISABLE);
+                        }
                         loginManager.updateLogin(lg);
+
                     } else {
                         // resume - re-enable
                         log.debug("preparing resumeRequest object");
@@ -211,8 +219,15 @@ public class DisableUserDelegate {
                         resumeReq.setHostLoginPassword(passwordDecoded);
                         resumeReq.setHostUrl(mSys.getHostUrl());
 
-                        connectorAdapter.resumeRequest(mSys,
+                        ResponseType resp = connectorAdapter.resumeRequest(mSys,
                                 resumeReq, MuleContextProvider.getCtx());
+
+                        if (StatusCodeType.SUCCESS.equals(resp.getStatus())) {
+                            lg.setProvStatus(ProvLoginStatusEnum.ENABLED);
+                        } else {
+                            lg.setProvStatus(ProvLoginStatusEnum.FAIL_ENABLE);
+                        }
+                        loginManager.updateLogin(lg);
                     }
 
                     String loginId = null;
