@@ -152,37 +152,21 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
     }
 
     @Override
-    public Response saveResource(Resource resource, final String requestorId) {
+    public Response saveResource(Resource resource, final String requesterId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
-        IdmAuditLog idmAuditLog = new IdmAuditLog();
-        idmAuditLog.setAction(AuditAction.SAVE_RESOURCE.value());
-        idmAuditLog.setRequestorUserId(resource.getRequestorUserId());
-        idmAuditLog.setTargetResource(resource.getId(), resource.getName());
         try {
             validate(resource);
-            if (StringUtils.isBlank(resource.getId())) {
-                idmAuditLog.setAction(AuditAction.ADD_RESOURCE.value());
-            }
-
             final ResourceEntity entity = resourceConverter.convertToEntity(resource, true);
-            resourceService.save(entity, requestorId);
+            resourceService.save(entity, requesterId);
             response.setResponseValue(entity.getId());
-            idmAuditLog.succeed();
         } catch (BasicDataServiceException e) {
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(e.getCode());
             response.setErrorTokenList(e.getErrorTokenList());
-            idmAuditLog.fail();
-            idmAuditLog.setFailureReason(e.getCode());
-            idmAuditLog.setException(e);
         } catch (Throwable e) {
             log.error("Can't save or update resource", e);
             response.setErrorText(e.getMessage());
             response.setStatus(ResponseStatus.FAILURE);
-            idmAuditLog.fail();
-            idmAuditLog.setException(e);
-        } finally {
-            auditLogService.enqueue(idmAuditLog);
         }
         return response;
     }
@@ -415,9 +399,6 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
     @Override
     public Response deleteResource(final String resourceId, final String requesterId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
-        IdmAuditLog idmAuditLog = new IdmAuditLog ();
-        idmAuditLog.setRequestorUserId(requesterId);
-        idmAuditLog.setAction(AuditAction.DELETE_RESOURCE.value());
         try {
             if (resourceId == null) {
                 throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND, "Resource ID is not specified");
@@ -425,22 +406,14 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
 
             resourceService.validateResourceDeletion(resourceId);
             resourceService.deleteResource(resourceId);
-            idmAuditLog.succeed();
         } catch (BasicDataServiceException e) {
             response.setErrorCode(e.getCode());
             response.setStatus(ResponseStatus.FAILURE);
             response.setResponseValue(e.getResponseValue());
-            idmAuditLog.fail();
-            idmAuditLog.setFailureReason(e.getCode());
-            idmAuditLog.setException(e);
         } catch (Throwable e) {
             log.error("Can't delete resource", e);
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorText(e.getMessage());
-            idmAuditLog.fail();
-            idmAuditLog.setException(e);
-        } finally {
-            auditLogService.enqueue(idmAuditLog);
         }
         return response;
     }

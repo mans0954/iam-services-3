@@ -1,3 +1,4 @@
 Release 3.1
 ----------------------------------------------
-2014.05.06 IDMAPPS-1719 [Refactoring] Unified ProvisionServicePreProcessor,ProvisionServicePostProcessor,PreProcessor,PostProcessor
+2014/05/25 IDMAPPS-1736 AUDIT: Log create / modify / delete event on a Resource
+2014/05/06 IDMAPPS-1719 [Refactoring] Unified ProvisionServicePreProcessor,ProvisionServicePostProcessor,PreProcessor,PostProcessor
