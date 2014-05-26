@@ -2,6 +2,7 @@ package org.openiam.provision.service;
 
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.idm.srvc.auth.dto.Login;
+import org.openiam.provision.dto.ProvOperationEnum;
 import org.openiam.provision.dto.ProvisionUser;
 
 import java.io.Serializable;
@@ -10,7 +11,7 @@ import java.util.Map;
 public class ProvisionDataContainer implements Serializable {
 
     private String requestId;
-    private AttributeOperationEnum operation;
+    private ProvOperationEnum operation;
     private String resourceId;
     private Login identity;
     private ProvisionUser provUser;
@@ -25,11 +26,11 @@ public class ProvisionDataContainer implements Serializable {
         this.requestId = requestId;
     }
 
-    public AttributeOperationEnum getOperation() {
+    public ProvOperationEnum getOperation() {
         return operation;
     }
 
-    public void setOperation(AttributeOperationEnum operation) {
+    public void setOperation(ProvOperationEnum operation) {
         this.operation = operation;
     }
 

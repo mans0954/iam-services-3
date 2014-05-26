@@ -55,6 +55,7 @@ public class SendAttestationRequestDelegate extends AbstractEntitlementsDelegate
         request.setNotificationType(getNotificationType(execution));
         request.getParamList().add(new NotificationParam("EMPLOYEE", employee));
         request.getParamList().add(new NotificationParam("SUPERVISOR", supervisor));
+        request.getParamList().add(new NotificationParam("COMMENT", getComment(execution)));
         mailService.sendNotification(request);
 	}
 	

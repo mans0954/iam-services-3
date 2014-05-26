@@ -11,6 +11,7 @@ import org.openiam.core.dao.lucene.LuceneLastUpdate;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
+import org.openiam.idm.srvc.auth.dto.ProvLoginStatusEnum;
 
 import javax.persistence.*;
 import javax.persistence.CascadeType;
@@ -79,6 +80,10 @@ public class LoginEntity implements java.io.Serializable {
     @Enumerated(EnumType.STRING)
     @Column(name="STATUS",length = 20)
     protected LoginStatusEnum status;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name="PROV_STATUS",length = 20)
+    protected ProvLoginStatusEnum provStatus;
 
     @Column(name="GRACE_PERIOD",length=19)
     @Temporal(TemporalType.TIMESTAMP)
@@ -217,6 +222,14 @@ public class LoginEntity implements java.io.Serializable {
 
     public void setStatus(LoginStatusEnum status) {
         this.status = status;
+    }
+
+    public ProvLoginStatusEnum getProvStatus() {
+        return provStatus;
+    }
+
+    public void setProvStatus(ProvLoginStatusEnum provStatus) {
+        this.provStatus = provStatus;
     }
 
     public Date getGracePeriod() {
@@ -458,6 +471,7 @@ public class LoginEntity implements java.io.Serializable {
 		result = prime * result + ((pwdExp == null) ? 0 : pwdExp.hashCode());
 		result = prime * result + resetPassword;
 		result = prime * result + ((status == null) ? 0 : status.hashCode());
+        result = prime * result + ((provStatus == null) ? 0 : provStatus.hashCode());
 		result = prime * result + ((userId == null) ? 0 : userId.hashCode());
 		return result;
 	}
@@ -597,6 +611,11 @@ public class LoginEntity implements java.io.Serializable {
 				return false;
 		} else if (!status.equals(other.status))
 			return false;
+        if (provStatus == null) {
+            if (other.provStatus != null)
+                return false;
+        } else if (!provStatus.equals(other.provStatus))
+            return false;
 		if (userId == null) {
 			if (other.userId != null)
 				return false;
@@ -614,6 +633,7 @@ public class LoginEntity implements java.io.Serializable {
         sb.append(", pwdChanged=").append(pwdChanged);
         sb.append(", pwdExp=").append(pwdExp);
         sb.append(", status=").append(status);
+        sb.append(", provStatus=").append(provStatus);
         sb.append(", lastUpdate=").append(lastUpdate);
         sb.append('}');
         return sb.toString();

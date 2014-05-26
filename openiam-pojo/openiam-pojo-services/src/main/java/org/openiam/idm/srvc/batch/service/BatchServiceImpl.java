@@ -33,7 +33,11 @@ public class BatchServiceImpl implements BatchService {
             if (StringUtils.isBlank(entity.getId())) {
                 batchDao.save(entity);
             } else {
-                batchDao.merge(entity);
+            	final BatchTaskEntity dbEntity = batchDao.findById(entity.getId());
+            	if(dbEntity != null) {
+            		entity.setLastExecTime(dbEntity.getLastExecTime());
+            		batchDao.merge(entity);
+            	}
             }
         }
     }

@@ -309,11 +309,6 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 	@Override
 	public Response removeRole(String roleId, String requesterId) {
 		final Response response = new Response(ResponseStatus.SUCCESS);
-        IdmAuditLog idmAuditLog = new IdmAuditLog();
-        idmAuditLog.setAction(AuditAction.DELETE_ROLE.value());
-        idmAuditLog.setRequestorUserId(requesterId);
-        RoleEntity roleEntity = roleDataService.getRole(roleId);
-        idmAuditLog.setTargetRole(roleId, roleEntity.getName());
 		try {
 			if(roleId == null) {
 				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "RoleId  is null or empty");
@@ -324,23 +319,15 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND, String.format("No Role is found for roleId: %s", roleId));
 			}
 			roleDataService.removeRole(roleId);
-            idmAuditLog.succeed();
 		} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
             response.setErrorTokenList(e.getErrorTokenList());
-            idmAuditLog.fail();
-            idmAuditLog.setFailureReason(e.getCode());
-            idmAuditLog.setException(e);
 		} catch(Throwable e) {
 			LOG.error("Exception", e);
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorText(e.getMessage());
-            idmAuditLog.fail();
-            idmAuditLog.setException(e);
-		}finally {
-            auditLogService.enqueue(idmAuditLog);
-        }
+		}
 
 		return response;
 	}
@@ -384,38 +371,20 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 	@Override
 	public Response saveRole(Role role, final String requesterId) {
 		final Response response = new Response(ResponseStatus.SUCCESS);
-        IdmAuditLog idmAuditLog = new IdmAuditLog();
-        idmAuditLog.setAction(AuditAction.SAVE_ROLE.value());
 		try {
-            idmAuditLog.setRequestorUserId(requesterId);
-
-            if(StringUtils.isBlank(role.getId())) {
-                idmAuditLog.setAction(AuditAction.ADD_ROLE.value());
-            }
-            
             validate(role);
-			
 			final RoleEntity entity = roleDozerConverter.convertToEntity(role, true);
 			roleDataService.saveRole(entity, requesterId);
-            idmAuditLog.setTargetRole(entity.getId(), entity.getName());
             response.setResponseValue(entity.getId());
-            idmAuditLog.succeed();
 		} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
             response.setErrorTokenList(e.getErrorTokenList());
-            idmAuditLog.fail();
-            idmAuditLog.setFailureReason(e.getCode());
-            idmAuditLog.setException(e);
 		} catch(Throwable e) {
 			LOG.error("Exception", e);
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorText(e.getMessage());
-            idmAuditLog.fail();
-            idmAuditLog.setException(e);
-		}finally {
-            auditLogService.enqueue(idmAuditLog);
-        }
+		}
 		return response;
 	}
 

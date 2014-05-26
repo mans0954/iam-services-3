@@ -15,6 +15,7 @@ import org.apache.log4j.Logger;
 import org.openiam.bpm.activiti.model.ActivitiJSONStringWrapper;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.bpm.util.ActivitiRequestType;
+import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.ws.GroupDataWebService;
 import org.openiam.idm.srvc.mngsys.service.ApproverAssociationDAO;
@@ -43,7 +44,10 @@ public abstract class AbstractActivitiJob implements JavaDelegate, TaskListener 
 	private FixedValue notificationType;
 	private FixedValue targetVariable;
 	private FixedValue provisioningEnabled;
-	
+
+    @Autowired
+    protected AuditLogService auditLogService;
+
 	@Autowired
 	protected MailService mailService;
 	
@@ -157,6 +161,10 @@ public abstract class AbstractActivitiJob implements JavaDelegate, TaskListener 
 			}
 		}
 		return retVal;
+	}
+	
+	protected String getComment(final DelegateExecution execution) {
+		return getStringVariable(execution, ActivitiConstants.COMMENT);
 	}
 	
 	protected String getAssociationId(final DelegateExecution execution) {
