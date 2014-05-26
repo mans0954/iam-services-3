@@ -148,41 +148,23 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
 
     @Override
     public Response saveGroup(final Group group, final String requesterId) {
-        IdmAuditLog auditLog = new IdmAuditLog();
-        auditLog.setRequestorUserId(requesterId);
 
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
             validate(group);
-
-            if (StringUtils.isBlank(group.getId())) {
-                auditLog.setAction(AuditAction.ADD_GROUP.value());
-            } else {
-                auditLog.setAction(AuditAction.SAVE_GROUP.value());
-            }
-
             final GroupEntity entity = groupDozerConverter.convertToEntity(group, true);
             groupManager.saveGroup(entity, requesterId);
-            auditLog.setTargetGroup(entity.getId(), entity.getName());
             response.setResponseValue(entity.getId());
-            auditLog.succeed();
         } catch (BasicDataServiceException e) {
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(e.getCode());
             response.setErrorTokenList(e.getErrorTokenList());
-            auditLog.fail();
-            auditLog.setFailureReason(e.getCode());
-            auditLog.setException(e);
         } catch (Throwable e) {
             log.error("Can't save", e);
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorText(e.getMessage());
             response.setErrorCode(ResponseCode.INTERNAL_ERROR);
             response.addErrorToken(new EsbErrorToken(e.getMessage()));
-            auditLog.fail();
-            auditLog.setException(e);
-        } finally {
-            auditLogService.enqueue(auditLog);
         }
         return response;
     }
@@ -207,32 +189,17 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
     @Override
     public Response deleteGroup(final String groupId, final String requesterId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
-        IdmAuditLog auditLog = new IdmAuditLog();
-        auditLog.setRequestorUserId(requesterId);
-
-        auditLog.setAction(AuditAction.DELETE_GROUP.value());
-        GroupEntity groupEntity = groupManager.getGroup(groupId);
-        auditLog.setTargetGroup(groupId, groupEntity.getName());
-
         try {
             validateDeleteInternal(groupId);
 
             groupManager.deleteGroup(groupId);
-            auditLog.succeed();
         } catch (BasicDataServiceException e) {
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(e.getCode());
-            auditLog.fail();
-            auditLog.setFailureReason(e.getCode());
-            auditLog.setException(e);
         } catch (Throwable e) {
             log.error("Can't delete", e);
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorText(e.getMessage());
-            auditLog.fail();
-            auditLog.setException(e);
-        } finally {
-            auditLogService.enqueue(auditLog);
         }
 
         return response;
