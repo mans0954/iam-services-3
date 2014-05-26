@@ -176,6 +176,7 @@ public enum AuditAction {
 
     ADD_ORG("ADD ORG"),
     EDIT_ORG("EDIT ORG"),
+    DELETE_ORG("DELETE_ORG"),
     //-----------------------------------------
     ;
 
