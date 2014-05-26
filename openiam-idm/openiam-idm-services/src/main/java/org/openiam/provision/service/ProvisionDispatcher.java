@@ -380,6 +380,7 @@ public class ProvisionDispatcher implements Sweepable {
         request.setHostUrl(mSys.getHostUrl());
         request.setOperation("DELETE");
         request.setScriptHandler(mSys.getDeleteHandler());
+        request.setExtensibleObject(new ExtensibleUser());
 
         return connectorAdapter.deleteRequest(mSys, request, MuleContextProvider.getCtx());
 
