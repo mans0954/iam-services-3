@@ -7,7 +7,8 @@ public enum AuditTarget {
     RESOURCE("RESOURCE"),
     MANAGED_SYS("MANAGED_SYS"),
     POLICY("POLICY"),
-    ORG("ORG");
+    ORG("ORG"),
+    TASK("TASK");
 
     private String value;
 

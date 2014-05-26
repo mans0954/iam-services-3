@@ -31,7 +31,8 @@ public class DeleteGroupDelegate extends AbstractActivitiJob {
             idmAuditLog.setAction(AuditAction.DELETE_GROUP.value());
             idmAuditLog.setAuditDescription("Delete group");
             idmAuditLog.setTargetGroup(group.getId(), group.getName());
-            idmAuditLog.setSource(AuditSource.DELEGATE.value());
+            idmAuditLog.setTargetTask(execution.getId(),execution.getCurrentActivityName());
+            idmAuditLog.setSource(AuditSource.WORKFLOW.value());
             try {
                 wsResponse = groupDataService.deleteGroup(group.getId(), systemUserId);
                 if (wsResponse.isSuccess()) {
