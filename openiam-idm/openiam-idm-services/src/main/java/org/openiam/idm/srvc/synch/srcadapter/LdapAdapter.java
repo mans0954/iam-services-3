@@ -450,10 +450,9 @@ public class LdapAdapter extends AbstractSrcAdapter { // implements SourceAdapte
 
     }
 
-    public Response testConnection(SynchConfig config) {
+   public Response testConnection(SynchConfig config) {
         try {
             if (connect(config)) {
-                closeConnection();
                 Response resp = new Response(ResponseStatus.SUCCESS);
                 return resp;
             } else {
@@ -470,8 +469,11 @@ public class LdapAdapter extends AbstractSrcAdapter { // implements SourceAdapte
             resp.setErrorCode(ResponseCode.FAIL_CONNECTION);
             resp.setErrorText(e.getMessage());
             return resp;
+
+        } finally {
+            closeConnection();
         }
-    }
+   }
 
     private LastRecordTime getRowTime(LineObject rowObj) {
         Attribute atr = rowObj.get("modifyTimestamp");
