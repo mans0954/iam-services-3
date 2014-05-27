@@ -32,7 +32,6 @@ import java.util.List;
         "value",
         "values",
         "isMultivalued",
-        "attrGroup",
         "operation",
         "required"/*,
         "elementId"*/
@@ -51,8 +50,6 @@ public class UserAttribute extends BaseObject {
     protected List<String> values = new ArrayList<String>();
 
     protected Boolean isMultivalued = Boolean.FALSE;
-
-    protected String attrGroup;
 
     protected AttributeOperationEnum operation = AttributeOperationEnum.NO_CHANGE;
 
@@ -101,7 +98,6 @@ public class UserAttribute extends BaseObject {
 
 
     public void updateUserAttribute(UserAttribute attr) {
-        this.attrGroup = attr.getAttrGroup();
         this.metadataElementId = attr.getMetadataElementId();
         this.name = attr.getName();
         this.value = attr.getValue();
@@ -157,14 +153,6 @@ public class UserAttribute extends BaseObject {
         this.metadataElementId = metadataElementId;
     }
 
-    public String getAttrGroup() {
-        return attrGroup;
-    }
-
-    public void setAttrGroup(String attrGroup) {
-        this.attrGroup = attrGroup;
-    }
-
     public AttributeOperationEnum getOperation() {
         return operation;
     }
@@ -209,7 +197,6 @@ public class UserAttribute extends BaseObject {
                 ", name='" + name + '\'' +
                 ", userId='" + userId +
                 ", value='" + value + '\'' +
-                ", attrGroup='" + attrGroup + '\'' +
                 ", operation=" + operation +
                 '}';
     }
@@ -218,8 +205,6 @@ public class UserAttribute extends BaseObject {
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
-		result = prime * result
-				+ ((attrGroup == null) ? 0 : attrGroup.hashCode());
 		/*
 		result = prime * result
 				+ ((elementId == null) ? 0 : elementId.hashCode());
@@ -249,11 +234,6 @@ public class UserAttribute extends BaseObject {
 		if (getClass() != obj.getClass())
 			return false;
 		UserAttribute other = (UserAttribute) obj;
-		if (attrGroup == null) {
-			if (other.attrGroup != null)
-				return false;
-		} else if (!attrGroup.equals(other.attrGroup))
-			return false;
 		/*
 		if (elementId == null) {
 			if (other.elementId != null)

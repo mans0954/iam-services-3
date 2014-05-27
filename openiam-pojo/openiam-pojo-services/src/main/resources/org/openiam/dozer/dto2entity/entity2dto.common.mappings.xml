@@ -38,6 +38,14 @@
 			<a>role.id</a>
 			<b>roleId</b>
 		</field>
+		<field>
+			<a>element.id</a>
+			<b>metadataId</b>
+		</field>
+		<field>
+			<a>element.displayName</a>
+			<b>metadataName</b>
+		</field>
 	</mapping>
 
 	<mapping>

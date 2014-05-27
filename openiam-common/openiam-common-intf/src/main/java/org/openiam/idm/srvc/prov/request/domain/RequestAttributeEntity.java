@@ -33,9 +33,6 @@ public class RequestAttributeEntity {
 	@Column(name="METADATA_ID",length=20)
 	private String metadataTypeId;
 	
-	@Column(name="ATTR_GROUP",length=20)
-	private String attrGroup;
-	
 	public String getId() {
 		return id;
 	}
@@ -66,18 +63,10 @@ public class RequestAttributeEntity {
 	public void setMetadataTypeId(String metadataTypeId) {
 		this.metadataTypeId = metadataTypeId;
 	}
-	public String getAttrGroup() {
-		return attrGroup;
-	}
-	public void setAttrGroup(String attrGroup) {
-		this.attrGroup = attrGroup;
-	}
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result
-				+ ((attrGroup == null) ? 0 : attrGroup.hashCode());
 		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		result = prime * result
 				+ ((metadataTypeId == null) ? 0 : metadataTypeId.hashCode());
@@ -96,11 +85,6 @@ public class RequestAttributeEntity {
 		if (getClass() != obj.getClass())
 			return false;
 		RequestAttributeEntity other = (RequestAttributeEntity) obj;
-		if (attrGroup == null) {
-			if (other.attrGroup != null)
-				return false;
-		} else if (!attrGroup.equals(other.attrGroup))
-			return false;
 		if (id == null) {
 			if (other.id != null)
 				return false;
@@ -132,8 +116,7 @@ public class RequestAttributeEntity {
 	public String toString() {
 		return "RequestAttributeEntity [id=" + id + ", provRequestId="
 				+ provRequestId + ", name=" + name + ", value=" + value
-				+ ", metadataTypeId=" + metadataTypeId + ", attrGroup="
-				+ attrGroup + "]";
+				+ ", metadataTypeId=" + metadataTypeId + "]";
 	}
 	
 	

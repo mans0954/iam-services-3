@@ -28,6 +28,7 @@ import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.exception.BasicDataServiceException;
+import org.openiam.dozer.converter.LanguageDozerConverter;
 import org.openiam.dozer.converter.RoleDozerConverter;
 import org.openiam.dozer.converter.RolePolicyDozerConverter;
 import org.openiam.idm.searchbeans.RoleSearchBean;
@@ -36,7 +37,9 @@ import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.base.AbstractBaseService;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
+import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.service.GroupDataService;
+import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.domain.RolePolicyEntity;
 import org.openiam.idm.srvc.role.dto.Role;
@@ -44,6 +47,7 @@ import org.openiam.idm.srvc.role.dto.RolePolicy;
 import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.service.UserDataService;
+import org.openiam.internationalization.LocalizedServiceGet;
 import org.openiam.util.UserUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -81,6 +85,9 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 
     @Autowired
     protected SysConfiguration sysConfiguration;
+    
+    @Autowired
+    private LanguageDozerConverter languageConverter;
 
 	@Override
 	public Response validateEdit(Role role) {
@@ -187,7 +194,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
         IdmAuditLog idmAuditLog = new IdmAuditLog();
         idmAuditLog.setAction(AuditAction.ADD_USER_TO_ROLE.value());
         UserEntity user = userDataService.getUser(userId);
-        LoginEntity primaryIdentity = UserUtils.getPrimaryIdentityEntity(sysConfiguration.getDefaultManagedSysId(), user.getPrincipalList());
+        LoginEntity primaryIdentity = UserUtils.getUserManagedSysIdentityEntity(sysConfiguration.getDefaultManagedSysId(), user.getPrincipalList());
         idmAuditLog.setTargetUser(userId, primaryIdentity.getLogin());
         RoleEntity roleEntity = roleDataService.getRole(roleId);
         idmAuditLog.setTargetRole(roleId, roleEntity.getName());
@@ -217,8 +224,20 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
         }
 		return response;
 	}
+	
+	@Override
+	@LocalizedServiceGet
+	public Role getRoleLocalized(final String roleId, final String requesterId, final Language language) {
+		Role retVal = null;
+		 if (StringUtils.isNotBlank(roleId)) {
+			 final RoleEntity entity = roleDataService.getRoleLocalized(roleId, requesterId, languageConverter.convertToEntity(language, false));
+			 retVal = roleDozerConverter.convertToDTO(entity, true);
+		 }
+		 return retVal;
+	}
 
 	@Override
+	@Deprecated
 	public Role getRole(String roleId, String requesterId) {
 		Role retVal = null;
         try{
@@ -290,11 +309,6 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 	@Override
 	public Response removeRole(String roleId, String requesterId) {
 		final Response response = new Response(ResponseStatus.SUCCESS);
-        IdmAuditLog idmAuditLog = new IdmAuditLog();
-        idmAuditLog.setAction(AuditAction.DELETE_ROLE.value());
-        idmAuditLog.setRequestorUserId(requesterId);
-        RoleEntity roleEntity = roleDataService.getRole(roleId);
-        idmAuditLog.setTargetRole(roleId, roleEntity.getName());
 		try {
 			if(roleId == null) {
 				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "RoleId  is null or empty");
@@ -305,23 +319,15 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND, String.format("No Role is found for roleId: %s", roleId));
 			}
 			roleDataService.removeRole(roleId);
-            idmAuditLog.succeed();
 		} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
             response.setErrorTokenList(e.getErrorTokenList());
-            idmAuditLog.fail();
-            idmAuditLog.setFailureReason(e.getCode());
-            idmAuditLog.setException(e);
 		} catch(Throwable e) {
 			LOG.error("Exception", e);
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorText(e.getMessage());
-            idmAuditLog.fail();
-            idmAuditLog.setException(e);
-		}finally {
-            auditLogService.enqueue(idmAuditLog);
-        }
+		}
 
 		return response;
 	}
@@ -332,7 +338,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
         IdmAuditLog idmAuditLog = new IdmAuditLog();
         idmAuditLog.setAction(AuditAction.REMOVE_USER_FROM_ROLE.value());
         UserEntity userEntity = userDataService.getUser(userId);
-        LoginEntity primaryIdentity = UserUtils.getPrimaryIdentityEntity(sysConfiguration.getDefaultManagedSysId(), userEntity.getPrincipalList());
+        LoginEntity primaryIdentity = UserUtils.getUserManagedSysIdentityEntity(sysConfiguration.getDefaultManagedSysId(), userEntity.getPrincipalList());
         idmAuditLog.setTargetUser(userId, primaryIdentity.getLogin());
         RoleEntity roleEntity = roleDataService.getRole(roleId);
         idmAuditLog.setTargetRole(roleId, roleEntity.getName());
@@ -365,38 +371,20 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 	@Override
 	public Response saveRole(Role role, final String requesterId) {
 		final Response response = new Response(ResponseStatus.SUCCESS);
-        IdmAuditLog idmAuditLog = new IdmAuditLog();
-        idmAuditLog.setAction(AuditAction.SAVE_ROLE.value());
 		try {
-            idmAuditLog.setRequestorUserId(requesterId);
-
-            if(StringUtils.isBlank(role.getId())) {
-                idmAuditLog.setAction(AuditAction.ADD_ROLE.value());
-            }
-            
             validate(role);
-			
 			final RoleEntity entity = roleDozerConverter.convertToEntity(role, true);
 			roleDataService.saveRole(entity, requesterId);
-            idmAuditLog.setTargetRole(entity.getId(), entity.getName());
             response.setResponseValue(entity.getId());
-            idmAuditLog.succeed();
 		} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
             response.setErrorTokenList(e.getErrorTokenList());
-            idmAuditLog.fail();
-            idmAuditLog.setFailureReason(e.getCode());
-            idmAuditLog.setException(e);
 		} catch(Throwable e) {
 			LOG.error("Exception", e);
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorText(e.getMessage());
-            idmAuditLog.fail();
-            idmAuditLog.setException(e);
-		}finally {
-            auditLogService.enqueue(idmAuditLog);
-        }
+		}
 		return response;
 	}
 

@@ -5,6 +5,8 @@ import org.openiam.validator.EntityValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
+import java.util.Map;
+
 public abstract class AbstractBaseService {
     @Autowired
     protected AuditLogService auditLogService;
@@ -12,6 +14,5 @@ public abstract class AbstractBaseService {
 	@Autowired
     @Qualifier("entityValidator")
 	protected EntityValidator entityValidator;
-
 
 }

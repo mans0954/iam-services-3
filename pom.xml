@@ -833,11 +833,11 @@
 		</repository>
 
 
-		<repository>
-			<id>openiam01.managed.contegix.com</id>
-			<name>openiam01.managed.contegix.com-releases</name>
-			<url>http://artifactory.openiam.org/artifactory/libs-release-local</url>
-		</repository>
+		<!--<repository>-->
+			<!--<id>openiam01.managed.contegix.com</id>-->
+			<!--<name>openiam01.managed.contegix.com-releases</name>-->
+			<!--<url>http://artifactory.openiam.org/artifactory/libs-release-local</url>-->
+		<!--</repository>-->
 
 
 		<repository>

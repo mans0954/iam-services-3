@@ -16,14 +16,12 @@ import org.openiam.idm.searchbeans.GroupSearchBean;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
-import org.openiam.idm.srvc.auth.login.IdentityService;
 import org.openiam.idm.srvc.base.AbstractBaseService;
 import org.openiam.idm.srvc.grp.domain.GroupAttributeEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.dto.GroupAttribute;
 import org.openiam.idm.srvc.grp.service.GroupDataService;
-import org.openiam.idm.srvc.lang.domain.LanguageEntity;
 import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.lang.service.LanguageDataService;
 import org.openiam.idm.srvc.user.domain.UserEntity;
@@ -32,7 +30,6 @@ import org.openiam.internationalization.LocalizedServiceGet;
 import org.openiam.util.UserUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import twitter4j.api.HelpResources;
 
 import javax.jws.WebMethod;
 import javax.jws.WebService;
@@ -151,41 +148,23 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
 
     @Override
     public Response saveGroup(final Group group, final String requesterId) {
-        IdmAuditLog auditLog = new IdmAuditLog();
-        auditLog.setRequestorUserId(requesterId);
 
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
             validate(group);
-
-            if (StringUtils.isBlank(group.getId())) {
-                auditLog.setAction(AuditAction.ADD_GROUP.value());
-            } else {
-                auditLog.setAction(AuditAction.SAVE_GROUP.value());
-            }
-
             final GroupEntity entity = groupDozerConverter.convertToEntity(group, true);
             groupManager.saveGroup(entity, requesterId);
-            auditLog.setTargetGroup(entity.getId(), entity.getName());
             response.setResponseValue(entity.getId());
-            auditLog.succeed();
         } catch (BasicDataServiceException e) {
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(e.getCode());
             response.setErrorTokenList(e.getErrorTokenList());
-            auditLog.fail();
-            auditLog.setFailureReason(e.getCode());
-            auditLog.setException(e);
         } catch (Throwable e) {
             log.error("Can't save", e);
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorText(e.getMessage());
             response.setErrorCode(ResponseCode.INTERNAL_ERROR);
             response.addErrorToken(new EsbErrorToken(e.getMessage()));
-            auditLog.fail();
-            auditLog.setException(e);
-        } finally {
-            auditLogService.enqueue(auditLog);
         }
         return response;
     }
@@ -210,32 +189,17 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
     @Override
     public Response deleteGroup(final String groupId, final String requesterId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
-        IdmAuditLog auditLog = new IdmAuditLog();
-        auditLog.setRequestorUserId(requesterId);
-
-        auditLog.setAction(AuditAction.DELETE_GROUP.value());
-        GroupEntity groupEntity = groupManager.getGroup(groupId);
-        auditLog.setTargetGroup(groupId, groupEntity.getName());
-
         try {
             validateDeleteInternal(groupId);
 
             groupManager.deleteGroup(groupId);
-            auditLog.succeed();
         } catch (BasicDataServiceException e) {
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(e.getCode());
-            auditLog.fail();
-            auditLog.setFailureReason(e.getCode());
-            auditLog.setException(e);
         } catch (Throwable e) {
             log.error("Can't delete", e);
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorText(e.getMessage());
-            auditLog.fail();
-            auditLog.setException(e);
-        } finally {
-            auditLogService.enqueue(auditLog);
         }
 
         return response;
@@ -305,7 +269,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
         IdmAuditLog auditLog = new IdmAuditLog();
         auditLog.setAction(AuditAction.ADD_USER_TO_GROUP.value());
         UserEntity user = userManager.getUser(userId);
-        LoginEntity userPrimaryIdentity =  UserUtils.getPrimaryIdentityEntity(sysConfiguration.getDefaultManagedSysId(), user.getPrincipalList());
+        LoginEntity userPrimaryIdentity =  UserUtils.getUserManagedSysIdentityEntity(sysConfiguration.getDefaultManagedSysId(), user.getPrincipalList());
         auditLog.setTargetUser(userId,userPrimaryIdentity.getLogin());
         GroupEntity groupEntity = groupManager.getGroup(groupId);
         auditLog.setTargetGroup(groupId, groupEntity.getName());

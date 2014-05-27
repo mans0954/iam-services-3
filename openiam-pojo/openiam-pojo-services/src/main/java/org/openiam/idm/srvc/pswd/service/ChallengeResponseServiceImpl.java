@@ -3,6 +3,7 @@ package org.openiam.idm.srvc.pswd.service;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.idm.searchbeans.IdentityAnswerSearchBean;
 import org.openiam.idm.searchbeans.IdentityQuestionSearchBean;
+import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
 import org.openiam.idm.srvc.pswd.domain.IdentityQuestionEntity;
@@ -13,13 +14,12 @@ import org.openiam.idm.srvc.user.service.UserDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
 
 @Service
-@Transactional
+//@Transactional
 public class ChallengeResponseServiceImpl implements ChallengeResponseService {
 
     @Value("${org.openiam.challenge.response.validator.object.name}")
@@ -39,6 +39,9 @@ public class ChallengeResponseServiceImpl implements ChallengeResponseService {
     
     @Autowired
     private PasswordService passwordMgr;
+
+    @Autowired
+    private KeyManagementService keyManagementService;
 	
 	@Override
 	public Integer getNumOfRequiredQuestions(String userId) {
@@ -64,9 +67,27 @@ public class ChallengeResponseServiceImpl implements ChallengeResponseService {
 
 	@Override
 	public List<UserIdentityAnswerEntity> findAnswerBeans(
-			IdentityAnswerSearchBean searchBean, int from, int size) {
-		return getResponseValidator().findAnswerBeans(searchBean, from, size);
+			IdentityAnswerSearchBean searchBean, String requesterId, int from, int size) throws Exception {
+        List<UserIdentityAnswerEntity> beans= getResponseValidator().findAnswerBeans(searchBean, requesterId, from, size);
+return beans;
+//        return decryptAnswers(beans, requesterId);
 	}
+
+//    private List<UserIdentityAnswerEntity> decryptAnswers(List<UserIdentityAnswerEntity> answerList, String requesterId)
+//            throws Exception {
+//        if(CollectionUtils.isNotEmpty(answerList)){
+//            for(UserIdentityAnswerEntity entity: answerList){
+//                if(StringUtils.isNotBlank(requesterId)
+//                   && requesterId.equals(entity.getUserId())
+//                   && entity.getIsEncrypted()){
+//
+//                    entity.setQuestionAnswer(keyManagementService.decrypt(entity.getUserId(), KeyName.challengeResponse,
+//                                                                          entity.getQuestionAnswer()));
+//                }
+//            }
+//        }
+//        return answerList;
+//    }
 
 	@Override
 	public void saveQuestion(IdentityQuestionEntity entity) throws Exception {
@@ -109,7 +130,7 @@ public class ChallengeResponseServiceImpl implements ChallengeResponseService {
 	}
 
 	@Override
-	public boolean isResponseValid(String userId, List<UserIdentityAnswerEntity> newAnswerList) {
+	public boolean isResponseValid(String userId, List<UserIdentityAnswerEntity> newAnswerList) throws Exception {
 		 int requiredCorrect = newAnswerList.size();
 
 		 final UserEntity user = userDAO.findById(userId);
@@ -129,7 +150,7 @@ public class ChallengeResponseServiceImpl implements ChallengeResponseService {
 	 }
 
 	@Override
-	public boolean isUserAnsweredSecurityQuestions(final String userId) {
+	public boolean isUserAnsweredSecurityQuestions(final String userId) throws Exception {
 		return getResponseValidator().isUserAnsweredSecurityQuestions(userId);
 	}
 

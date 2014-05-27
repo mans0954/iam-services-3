@@ -134,7 +134,7 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
         IdmAuditLog newLogoutEvent = new IdmAuditLog();
         newLogoutEvent.setUserId(userId);
         UserEntity userEntity = userManager.getUser(userId);
-        LoginEntity primaryIdentity = UserUtils.getPrimaryIdentityEntity(sysConfiguration.getDefaultManagedSysId(), userEntity.getPrincipalList());
+        LoginEntity primaryIdentity = UserUtils.getUserManagedSysIdentityEntity(sysConfiguration.getDefaultManagedSysId(), userEntity.getPrincipalList());
         newLogoutEvent.addTarget(userId, AuditTarget.USER.value(), primaryIdentity.getLogin());
         newLogoutEvent.setAction(AuditAction.LOGOUT.value());
 

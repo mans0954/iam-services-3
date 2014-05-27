@@ -1,22 +1,11 @@
 package org.openiam.idm.srvc.pswd.domain;
 
-import java.io.Serializable;
-
-import javax.persistence.AttributeOverride;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
-
-import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Type;
 import org.openiam.base.domain.KeyEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.pswd.dto.UserIdentityAnswer;
+
+import javax.persistence.*;
 
 @Entity
 @Table(name = "USER_IDENTITY_ANS")
@@ -33,6 +22,10 @@ public class UserIdentityAnswerEntity extends KeyEntity {
 	
 	@Column(name = "QUESTION_ANSWER")
 	private String questionAnswer;
+
+    @Column(name="IS_ENCRYPTED")
+    @Type(type = "yes_no")
+    private boolean isEncrypted=false;
 
 	public IdentityQuestionEntity getIdentityQuestion() {
 		return identityQuestion;
@@ -58,7 +51,16 @@ public class UserIdentityAnswerEntity extends KeyEntity {
 		this.questionAnswer = questionAnswer;
 	}
 
-	@Override
+
+    public boolean getIsEncrypted() {
+        return isEncrypted;
+    }
+
+    public void setIsEncrypted(boolean isEncrypted) {
+        this.isEncrypted = isEncrypted;
+    }
+
+    @Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;

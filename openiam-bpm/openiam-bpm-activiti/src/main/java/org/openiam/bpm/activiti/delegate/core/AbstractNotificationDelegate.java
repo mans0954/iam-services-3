@@ -21,7 +21,6 @@ public abstract class AbstractNotificationDelegate extends AbstractActivitiJob {
 		
 		final String taskName = getStringVariable(execution, ActivitiConstants.TASK_NAME);
 		final String taskDescription = getStringVariable(execution, ActivitiConstants.TASK_DESCRIPTION);
-		final String comment = getStringVariable(execution, ActivitiConstants.COMMENT);
 		
 		final String taskOwner = getRequestorId(execution);
 		final UserEntity owner = getUserEntity(taskOwner);
@@ -32,7 +31,7 @@ public abstract class AbstractNotificationDelegate extends AbstractActivitiJob {
 		request.getParamList().add(new NotificationParam("TO_NOTIFY", toNotify));
 		request.getParamList().add(new NotificationParam("TARGET_USER", targetUser));
 		request.getParamList().add(new NotificationParam("REQUESTOR", owner));
-		request.getParamList().add(new NotificationParam("COMMENT", comment));
+		request.getParamList().add(new NotificationParam("COMMENT", getComment(execution)));
 		request.getParamList().add(new NotificationParam("REQUEST_REASON", taskName));
 		request.getParamList().add(new NotificationParam("REQUEST_DESCRIPTION", taskDescription));
 		mailService.sendNotification(request);

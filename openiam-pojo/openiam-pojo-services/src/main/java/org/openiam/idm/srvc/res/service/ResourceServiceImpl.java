@@ -43,6 +43,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -196,29 +197,41 @@ public class ResourceServiceImpl implements ResourceService {
     }
 
     private void mergeAttribute(final ResourceEntity bean, final ResourceEntity dbObject) {
-        final Set<ResourcePropEntity> renewedProperties = new HashSet<ResourcePropEntity>();
 
         Set<ResourcePropEntity> beanProps = (bean.getResourceProps() != null) ? bean.getResourceProps() : new HashSet<ResourcePropEntity>();
-        Set<ResourcePropEntity> dbProps = (dbObject.getResourceProps() != null) ? dbObject.getResourceProps() : new HashSet<ResourcePropEntity>();
+        Set<ResourcePropEntity> dbProps = (dbObject.getResourceProps() != null) ? new HashSet<ResourcePropEntity>(dbObject.getResourceProps()) : new HashSet<ResourcePropEntity>();
 
         /* update */
-        for (ResourcePropEntity dbProp : dbProps) {
+        Iterator<ResourcePropEntity> dbIteroator = dbProps.iterator();
+        while(dbIteroator.hasNext()) {
+        	final ResourcePropEntity dbProp = dbIteroator.next();
+        	
+        	boolean contains = false;
             for (final ResourcePropEntity beanProp : beanProps) {
                 if (StringUtils.equals(dbProp.getId(), beanProp.getId())) {
                     dbProp.setValue(beanProp.getValue());
-                    dbProp.setElement(beanProp.getElement());
+                    dbProp.setElement(getEntity(beanProp.getElement()));
                     dbProp.setName(beanProp.getName());
                     dbProp.setIsMultivalued(beanProp.getIsMultivalued());
-                    renewedProperties.add(dbProp);
+                    //renewedProperties.add(dbProp);
+                    contains = true;
                     break;
                 }
+            }
+            
+            /* remove */
+            if(!contains) {
+            	dbIteroator.remove();
             }
         }
 
         /* add */
+        final Set<ResourcePropEntity> toAdd = new HashSet<>();
         for (final ResourcePropEntity beanProp : beanProps) {
             boolean contains = false;
-            for (ResourcePropEntity dbProp : dbProps) {
+            dbIteroator = dbProps.iterator();
+            while(dbIteroator.hasNext()) {
+            	final ResourcePropEntity dbProp = dbIteroator.next();
                 if (StringUtils.equals(dbProp.getId(), beanProp.getId())) {
                     contains = true;
                 }
@@ -226,23 +239,21 @@ public class ResourceServiceImpl implements ResourceService {
 
             if (!contains) {
                 beanProp.setResource(bean);
-                // dbProps.add(beanProp);
-                renewedProperties.add(beanProp);
+                beanProp.setElement(getEntity(beanProp.getElement()));
+                toAdd.add(beanProp);
             }
         }
+        dbProps.addAll(toAdd);
         
-        if(CollectionUtils.isNotEmpty(renewedProperties)) {
-        	for(final ResourcePropEntity prop : renewedProperties) {
-        		if(prop.getElement() != null && StringUtils.isNotBlank(prop.getElement().getId())) {
-        			final MetadataElementEntity entity = elementDAO.findInitializedObjectById(prop.getElement().getId());
-        			prop.setElement(entity);
-        		} else {
-        			prop.setElement(null);
-        		}
-        	}
-        }
-        
-        bean.setResourceProps(renewedProperties);
+        bean.setResourceProps(dbProps);
+    }
+    
+    private MetadataElementEntity getEntity(final MetadataElementEntity bean) {
+    	if(bean != null && StringUtils.isNotBlank(bean.getId())) {
+    		return elementDAO.findById(bean.getId());
+    	} else {
+    		return null;
+    	}
     }
 
     @Override

@@ -232,10 +232,29 @@ public interface ProvisionService {
             @WebParam(name = "userId", targetNamespace = "") String userId,
             @WebParam(name = "managedSysId", targetNamespace = "") String managedSysId);
 
+    /**
+     * Adds user directly to a given target system bypassing policy map attributes script logic
+     * @param extUser
+     * @param login
+     * @param requestorId
+     * @return
+     */
     @WebMethod
-    public Response requestModify(@WebParam(name = "extUser", targetNamespace = "") ExtensibleUser extUser,
+    public Response requestAdd(@WebParam(name = "extUser", targetNamespace = "") ExtensibleUser extUser,
             @WebParam(name = "login", targetNamespace = "") Login login,
             @WebParam(name = "requestorId", targetNamespace = "") String requestorId);
+
+    /**
+     * Modifies user directly in a given target system bypassing policy map attributes script logic
+     * @param extUser
+     * @param login
+     * @param requestorId
+     * @return
+     */
+    @WebMethod
+    public Response requestModify(@WebParam(name = "extUser", targetNamespace = "") ExtensibleUser extUser,
+                                  @WebParam(name = "login", targetNamespace = "") Login login,
+                                  @WebParam(name = "requestorId", targetNamespace = "") String requestorId);
 
     @WebMethod
     public ObjectResponse requestAddModify(@WebParam(name = "extUser", targetNamespace = "") ExtensibleUser extUser,

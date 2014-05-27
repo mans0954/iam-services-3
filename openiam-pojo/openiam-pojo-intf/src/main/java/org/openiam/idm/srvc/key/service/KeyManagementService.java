@@ -1,6 +1,7 @@
 package org.openiam.idm.srvc.key.service;
 
 import org.openiam.exception.EncryptionException;
+import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 
 /**
@@ -27,4 +28,10 @@ public interface KeyManagementService {
     public String decryptData(String encryptedData)throws Exception;
     public String encryptData(String userId, String data)throws Exception;
     public String decryptData(String userId, String encryptedData)throws Exception;
+
+    public String encrypt(String userId, KeyName keyName, String data)throws Exception;
+    public String encrypt(byte[] key, String data)throws Exception;
+    public String decrypt(String userId, KeyName keyName, String encryptedData)throws Exception;
+    public String decrypt(byte[] key, String encryptedData)throws Exception;
+
 }

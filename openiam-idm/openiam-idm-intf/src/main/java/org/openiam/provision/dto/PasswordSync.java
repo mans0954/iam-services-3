@@ -39,6 +39,7 @@ import java.util.List;
 @XmlType(name = "PasswordSync", propOrder = {
     "managedSystemId",
     "principal",
+    "userId",
     "password",
     "requestorId",
     "sendPasswordToUser",
@@ -54,7 +55,8 @@ public class PasswordSync extends BaseObject  {
 	private static final long serialVersionUID = 2746720616086920826L;
 
 	private String managedSystemId;
-	private String principal;
+    private String principal;
+    private String userId;
 	private String password;
 	private String requestorId;
 	private boolean sendPasswordToUser = false;
@@ -72,12 +74,18 @@ public class PasswordSync extends BaseObject  {
 	public void setManagedSystemId(String managedSystemId) {
 		this.managedSystemId = managedSystemId;
 	}
-	public String getPrincipal() {
-		return principal;
-	}
-	public void setPrincipal(String principal) {
-		this.principal = principal;
-	}
+    public String getPrincipal() {
+        return principal;
+    }
+    public void setPrincipal(String principal) {
+        this.principal = principal;
+    }
+    public String getUserId() {
+        return userId;
+    }
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
 	public String getPassword() {
 		return password;
 	}

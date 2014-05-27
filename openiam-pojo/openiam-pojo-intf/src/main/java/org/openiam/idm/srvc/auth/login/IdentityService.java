@@ -10,9 +10,9 @@ public interface IdentityService {
 
     IdentityDto getIdentity(String referredId, String managedSysId);
 
-    List<IdentityDto> getIdentities(String referredID);
+    List<IdentityDto> getIdentities(String referredId);
 
-    void deleteIdentity(String identityID);
+    void deleteIdentity(String identityId);
 
     void updateIdentity(IdentityDto identityDto);
 }

@@ -71,6 +71,20 @@
         </service>
     </model>
 
+    <model name="IdentityWebServiceModel">
+        <service name="IdentityWebService">
+            <inbound>
+                <inbound-endpoint address="${webservice.path}IdentityWebService"
+                                  exchange-pattern="request-response">
+                    <cxf:jaxws-service />
+                </inbound-endpoint>
+            </inbound>
+            <component>
+                <spring-object bean="identityWS" />
+            </component>
+        </service>
+    </model>
+
 	<model name="AsynchProvisionServiceModel">
 		<service name="AsynchProvisionService">
 			<inbound>

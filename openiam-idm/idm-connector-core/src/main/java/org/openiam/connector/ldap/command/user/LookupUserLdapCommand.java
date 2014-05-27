@@ -61,8 +61,10 @@ public class LookupUserLdapCommand extends AbstractLookupLdapCommand<ExtensibleU
             log.debug("looking up identity: " + identity);
 
             List<String> attrList = new ArrayList<String>();
-            if (CollectionUtils.isNotEmpty(lookupRequest.getRequestedAttributes())) {
-                for (ExtensibleAttribute ea: lookupRequest.getRequestedAttributes()) {
+            ExtensibleObject object = lookupRequest.getExtensibleObject();
+            List<ExtensibleAttribute> listAttrs = (object != null) ? object.getAttributes() : new ArrayList<ExtensibleAttribute>();
+            if (CollectionUtils.isNotEmpty(listAttrs)) {
+                for (ExtensibleAttribute ea: listAttrs) {
                     attrList.add(ea.getName());
                 }
             } else {

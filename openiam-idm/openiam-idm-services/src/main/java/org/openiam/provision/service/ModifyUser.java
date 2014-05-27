@@ -393,12 +393,12 @@ public class ModifyUser {
         for (Login l : principalList) {
             if (l.getManagedSysId().equalsIgnoreCase(managedSysId)) {
 
-                log.debug("getPrimaryIdentityEntity() return ->" + l);
+                log.debug("getUserManagedSysIdentityEntity() return ->" + l);
 
                 return l;
             }
         }
-        log.debug("getPrimaryIdentityEntity() not found. returning null");
+        log.debug("getUserManagedSysIdentityEntity() not found. returning null");
         return null;
     }
 
@@ -804,7 +804,7 @@ public class ModifyUser {
                             try {
                                 newLg.setPassword(loginManager.encryptPassword(
                                         l.getUserId(), newPassword));
-                            } catch (EncryptionException e) {
+                            } catch (Exception e) {
                                 log.error(e);
                                 e.printStackTrace();
                             }

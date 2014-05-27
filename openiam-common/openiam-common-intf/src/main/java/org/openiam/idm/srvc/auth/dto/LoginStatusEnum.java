@@ -9,24 +9,10 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "LoginStatus")
 @XmlEnum
 public enum LoginStatusEnum {
-    @XmlEnumValue("pending_initial_login")
-    PENDING_INITIAL_LOGIN("PENDING_INITIAL_LOGIN"),
     @XmlEnumValue("Active")
     ACTIVE("ACTIVE"),
     @XmlEnumValue("Inactive")
-    INACTIVE("INACTIVE"),
-    @XmlEnumValue("Pending create")
-    PENDING_CREATE("PENDING_CREATE"),
-    @XmlEnumValue("Pending update")
-    PENDING_UPDATE("PENDING_UPDATE"),
-    @XmlEnumValue("Fail create")
-    FAIL_CREATE("FAIL_CREATE"),
-    @XmlEnumValue("Fail delete")
-    FAIL_DELETE("FAIL_DELETE"),
-    @XmlEnumValue("Fail remove")
-    FAIL_REMOVE("FAIL_REMOVE"),
-    @XmlEnumValue("Fail update")
-    FAIL_UPDATE("FAIL_UPDATE");
+    INACTIVE("INACTIVE");
 
     private String value;
 

@@ -393,7 +393,7 @@ public class LDAPLoginModule extends AbstractLoginModule {
         sub.setUserId(lg.getUserId());
         sub.setPrincipal(distinguishedName);
         sub.setSsoToken(token(lg.getUserId(), tokenParam));
-        setResultCode(lg, sub, curDate);
+        setResultCode(lg, sub, curDate, null);
 
         // send message into to audit log
 

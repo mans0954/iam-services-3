@@ -113,6 +113,7 @@ public class AcceptProfileProvisionDelegate extends AcceptEntitlementsNotifierDe
 	    request.setUserId(userId);
 	    request.setNotificationType(getNotificationType(execution));
 	    request.setTo(email);
+	    request.getParamList().add(new NotificationParam("COMMENT", getComment(execution)));
 	    request.getParamList().add(new NotificationParam("REQUEST_REASON", getTaskDescription(execution)));
 	    request.getParamList().add(new NotificationParam("TARGET_USER", newUser.getDisplayName()));
 	    request.getParamList().add(new NotificationParam("IDENTITY", identity));

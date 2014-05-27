@@ -13,6 +13,7 @@ import org.openiam.idm.searchbeans.GroupSearchBean;
 import org.openiam.idm.srvc.auth.domain.IdentityEntity;
 import org.openiam.idm.srvc.auth.dto.IdentityTypeEnum;
 import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
+import org.openiam.idm.srvc.auth.dto.ProvLoginStatusEnum;
 import org.openiam.idm.srvc.auth.login.IdentityDAO;
 import org.openiam.idm.srvc.grp.domain.GroupAttributeEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
@@ -353,7 +354,7 @@ public class GroupDataServiceImpl implements GroupDataService {
                 groupDefaultEntity.setCreatedBy(requestorId);
                 groupDefaultEntity.setManagedSysId(sysConfiguration.getDefaultManagedSysId());
                 groupDefaultEntity.setReferredObjectId(group.getId());
-                groupDefaultEntity.setStatus(LoginStatusEnum.PENDING_CREATE);
+                groupDefaultEntity.setStatus(LoginStatusEnum.ACTIVE);
                 groupDefaultEntity.setIdentity(group.getName());
                 identityDAO.save(groupDefaultEntity);
 				group.addApproverAssociation(createDefaultApproverAssociations(group, requestorId));
@@ -381,29 +382,39 @@ public class GroupDataServiceImpl implements GroupDataService {
 	}
 	
 	private void mergeAttribute(final GroupEntity bean, final GroupEntity dbObject) {
-		final Set<GroupAttributeEntity> renewedProperties = new HashSet<GroupAttributeEntity>();
-
-        Set<GroupAttributeEntity> beanProps = (bean.getAttributes() != null) ? bean.getAttributes() : new HashSet<GroupAttributeEntity>();
-        Set<GroupAttributeEntity> dbProps = (dbObject.getAttributes() != null) ? dbObject.getAttributes() : new HashSet<GroupAttributeEntity>();
+		Set<GroupAttributeEntity> beanProps = (bean.getAttributes() != null) ? bean.getAttributes() : new HashSet<GroupAttributeEntity>();
+        Set<GroupAttributeEntity> dbProps = (dbObject.getAttributes() != null) ? new HashSet<GroupAttributeEntity>(dbObject.getAttributes()) : new HashSet<GroupAttributeEntity>();
 
         /* update */
-        for (GroupAttributeEntity dbProp : dbProps) {
+        Iterator<GroupAttributeEntity> dbIteroator = dbProps.iterator();
+        while(dbIteroator.hasNext()) {
+        	final GroupAttributeEntity dbProp = dbIteroator.next();
+        	
+        	boolean contains = false;
             for (final GroupAttributeEntity beanProp : beanProps) {
                 if (StringUtils.equals(dbProp.getId(), beanProp.getId())) {
                     dbProp.setValue(beanProp.getValue());
-                    dbProp.setElement(beanProp.getElement());
+                    dbProp.setElement(getEntity(beanProp.getElement()));
                     dbProp.setName(beanProp.getName());
                     dbProp.setIsMultivalued(beanProp.getIsMultivalued());
-                    renewedProperties.add(dbProp);
+                    contains = true;
                     break;
                 }
+            }
+            
+            /* remove */
+            if(!contains) {
+            	dbIteroator.remove();
             }
         }
 
         /* add */
+        final Set<GroupAttributeEntity> toAdd = new HashSet<>();
         for (final GroupAttributeEntity beanProp : beanProps) {
             boolean contains = false;
-            for (GroupAttributeEntity dbProp : dbProps) {
+            dbIteroator = dbProps.iterator();
+            while(dbIteroator.hasNext()) {
+            	final GroupAttributeEntity dbProp = dbIteroator.next();
                 if (StringUtils.equals(dbProp.getId(), beanProp.getId())) {
                     contains = true;
                 }
@@ -411,24 +422,22 @@ public class GroupDataServiceImpl implements GroupDataService {
 
             if (!contains) {
                 beanProp.setGroup(bean);
-                // dbProps.add(beanProp);
-                renewedProperties.add(beanProp);
+                beanProp.setElement(getEntity(beanProp.getElement()));
+                toAdd.add(beanProp);
             }
         }
+        dbProps.addAll(toAdd);
         
-        if(CollectionUtils.isNotEmpty(renewedProperties)) {
-        	for(final GroupAttributeEntity prop : renewedProperties) {
-        		if(prop.getElement() != null && StringUtils.isNotBlank(prop.getElement().getId())) {
-        			final MetadataElementEntity entity = metadataElementDAO.findInitializedObjectById(prop.getElement().getId());
-        			prop.setElement(entity);
-        		} else {
-        			prop.setElement(null);
-        		}
-        	}
-        }
-        
-        bean.setAttributes(renewedProperties);
+        bean.setAttributes(dbProps);
 	}
+	
+	private MetadataElementEntity getEntity(final MetadataElementEntity bean) {
+    	if(bean != null && StringUtils.isNotBlank(bean.getId())) {
+    		return metadataElementDAO.findById(bean.getId());
+    	} else {
+    		return null;
+    	}
+    }
 
 	@Override
 	@Transactional

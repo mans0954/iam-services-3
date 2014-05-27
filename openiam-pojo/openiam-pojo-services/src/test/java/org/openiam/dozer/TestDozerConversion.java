@@ -63,7 +63,7 @@ public class TestDozerConversion extends AbstractTestNGSpringContextTests {
 		user.setLocationName(rs(2));
 		user.setMaidenName(rs(2));
 		user.setMailCode(rs(2));
-		user.setMetadataTypeId(rs(2));
+		user.setMdTypeId(rs(2));
 		user.setMiddleInit(rs(2));
 		user.setNickname(rs(2));
 		user.setObjectState(rs(2));
@@ -255,7 +255,7 @@ public class TestDozerConversion extends AbstractTestNGSpringContextTests {
 		Assert.assertEquals(original.getLocationName(), copy.getLocationName());
 		Assert.assertEquals(original.getMaidenName(), copy.getMaidenName());
 		Assert.assertEquals(original.getMailCode(), copy.getMailCode());
-		Assert.assertEquals(original.getMetadataTypeId(), copy.getMetadataTypeId());
+		Assert.assertEquals(original.getMdTypeId(), copy.getMdTypeId());
 		Assert.assertEquals(original.getMiddleInit(), copy.getMiddleInit());
 		Assert.assertEquals(original.getNickname(), copy.getNickname());
 		Assert.assertEquals(original.getObjectState(), copy.getObjectState());

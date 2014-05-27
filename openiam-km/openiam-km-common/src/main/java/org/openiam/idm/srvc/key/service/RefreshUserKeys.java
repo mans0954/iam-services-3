@@ -1,5 +1,5 @@
 
-package org.openiam.idm.srvc.res.service;
+package org.openiam.idm.srvc.key.service;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;

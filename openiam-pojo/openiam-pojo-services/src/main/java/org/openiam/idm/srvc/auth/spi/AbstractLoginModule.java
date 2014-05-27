@@ -32,6 +32,7 @@ import org.openiam.idm.srvc.auth.service.AuthenticationConstants;
 import org.openiam.idm.srvc.auth.sso.SSOTokenModule;
 import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
+import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.policy.service.PolicyDataService;
 import org.openiam.idm.srvc.pswd.service.PasswordService;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
@@ -134,8 +135,7 @@ public abstract class AbstractLoginModule implements LoginModule {
         }
 
     }
-
-    public void setResultCode(LoginEntity lg, Subject sub, Date curDate) throws AuthenticationException {
+    public void setResultCode(LoginEntity lg, Subject sub, Date curDate, Policy pwdPolicy) throws AuthenticationException {
         if (lg.getFirstTimeLogin() == 1) {
             sub.setResultCode(AuthenticationConstants.RESULT_SUCCESS_FIRST_TIME);
         } else if (lg.getPwdExp() != null) {
@@ -145,8 +145,18 @@ public abstract class AbstractLoginModule implements LoginModule {
             	//throw new AuthenticationException(AuthenticationConstants.RESULT_SUCCESS_PASSWORD_EXP);
             }
         } else {
-        	throw new AuthenticationException(AuthenticationConstants.RESULT_PASSWORD_EXPIRED);
-            //sub.setResultCode(AuthenticationConstants.RESULT_SUCCESS);
+            if(pwdPolicy!=null){
+                Integer pwdExp = 0;
+                try{
+                    pwdExp = Integer.parseInt(pwdPolicy.getAttribute("PWD_EXPIRATION").getValue1());
+                } catch (Exception ex){
+                    log.warn("Cannot read value of PWD_EXPIRATION attribute. User 0 as default");
+                }
+                if(pwdExp>0){
+                    throw new AuthenticationException(AuthenticationConstants.RESULT_PASSWORD_EXPIRED);
+                }
+            }
+            sub.setResultCode(AuthenticationConstants.RESULT_SUCCESS);
         }
 
     }

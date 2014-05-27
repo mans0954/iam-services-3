@@ -82,8 +82,10 @@ public class RejectProfileProvisionDelegate extends RejectEntitlementsNotifierDe
 	     request.setUserId(userId);
 	     request.setNotificationType(getNotificationType(execution));
 	     request.setTo(email);
+	     
 	     request.getParamList().add(new NotificationParam("REQUEST_REASON", getTaskDescription(execution)));
 	     request.getParamList().add(new NotificationParam("TARGET_USER", user.getDisplayName()));
+	     request.getParamList().add(new NotificationParam("COMMENT", getComment(execution)));
 	     if(requestor != null) {
 	    	 request.getParamList().add(new NotificationParam("REQUESTOR", requestor.getDisplayName()));
 	     }

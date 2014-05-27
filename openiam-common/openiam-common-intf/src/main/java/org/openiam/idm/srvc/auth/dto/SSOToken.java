@@ -22,7 +22,8 @@ import java.util.Date;
         "maxIdleTime",
         "expirationTime",
         "createTime",
-        "userId"
+        "userId",
+        "expireOnBrowserClose"
 })
 public class SSOToken {
 
@@ -38,6 +39,8 @@ public class SSOToken {
     private Date expirationTime;
     @XmlSchemaType(name = "dateTime")
     private Date createTime;
+    
+    private boolean expireOnBrowserClose = true;
 
     public SSOToken() {
 
@@ -156,4 +159,16 @@ public class SSOToken {
 	public void setUserId(String userId) {
 		this.userId = userId;
 	}
+
+
+	public boolean isExpireOnBrowserClose() {
+		return expireOnBrowserClose;
+	}
+
+
+	public void setExpireOnBrowserClose(boolean expireOnBrowserClose) {
+		this.expireOnBrowserClose = expireOnBrowserClose;
+	}
+	
+	
 }

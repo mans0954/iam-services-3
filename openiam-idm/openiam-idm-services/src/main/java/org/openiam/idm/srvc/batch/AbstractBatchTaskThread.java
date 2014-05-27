@@ -5,6 +5,7 @@ import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.idm.srvc.batch.domain.BatchTaskEntity;
+import org.openiam.idm.srvc.batch.service.BatchService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
@@ -17,6 +18,8 @@ public abstract class AbstractBatchTaskThread implements Runnable {
     protected String systemUserId;
     @Autowired
     protected AuditLogService auditLogService;
+    @Autowired
+    protected BatchService batchService;
 
     public AbstractBatchTaskThread(final BatchTaskEntity entity,
             final ApplicationContext ctx) {

@@ -11,7 +11,7 @@ public class UserUtils {
 
     private static final Log log = LogFactory.getLog(UserUtils.class);
 
-    public static LoginEntity getPrimaryIdentityEntity(final String managedSysId, final List<LoginEntity> principalList) {
+    public static LoginEntity getUserManagedSysIdentityEntity(final String managedSysId, final List<LoginEntity> principalList) {
         if (principalList == null ||
                 principalList.size() == 0) {
             return null;
@@ -19,16 +19,16 @@ public class UserUtils {
         for (LoginEntity l  : principalList) {
             if (l.getManagedSysId().equalsIgnoreCase(managedSysId)) {
 
-                log.debug("getPrimaryIdentityEntity() return ->" + l);
+                log.debug("getUserManagedSysIdentityEntity() return ->" + l);
 
                 return l;
             }
         }
-        log.debug("getPrimaryIdentityEntity() not found. returning null" );
+        log.debug("getUserManagedSysIdentityEntity() not found. returning null" );
         return null;
     }
 
-    public static Login getPrimaryIdentity(final String managedSysId, final List<Login> principalList) {
+    public static Login getUserManagedSysIdentity(final String managedSysId, final List<Login> principalList) {
         if (principalList == null ||
                 principalList.size() == 0) {
             return null;
@@ -36,12 +36,12 @@ public class UserUtils {
         for (Login l  : principalList) {
             if (l.getManagedSysId().equalsIgnoreCase(managedSysId)) {
 
-                log.debug("getPrimaryIdentityEntity() return ->" + l);
+                log.debug("getUserManagedSysIdentityEntity() return ->" + l);
 
                 return l;
             }
         }
-        log.debug("getPrimaryIdentityEntity() not found. returning null" );
+        log.debug("getUserManagedSysIdentityEntity() not found. returning null" );
         return null;
     }
 }
