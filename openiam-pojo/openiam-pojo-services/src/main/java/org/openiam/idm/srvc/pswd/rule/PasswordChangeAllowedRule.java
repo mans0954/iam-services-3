@@ -25,6 +25,7 @@ package org.openiam.idm.srvc.pswd.rule;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
+import org.openiam.idm.srvc.pswd.dto.PasswordRule;
 
 /**
  * Validates a password to ensure the password is not equal to the principal
@@ -38,14 +39,13 @@ public class PasswordChangeAllowedRule extends AbstractPasswordRule {
 	public void validate() throws PasswordRuleException {
 		boolean enabled = false;
 				
-		PolicyAttribute attribute = policy.getAttribute("PASSWORD_CHANGE_ALLOWED");
-		if (!skipPasswordFrequencyCheck && attribute != null && StringUtils.isNotBlank(attribute.getValue1())) {
+		PolicyAttribute attribute = getAttribute("PASSWORD_CHANGE_ALLOWED");
+		if (!skipPasswordFrequencyCheck && isValue1Present(attribute)) {
 			enabled = true;
-
 		}
 		if (enabled) {
 			int changeCount =  lg.getPasswordChangeCount();
-			int changesAllowed =  Integer.parseInt(attribute.getValue1());
+			int changesAllowed =  getValue1(attribute);
 
 			if (changeCount >= changesAllowed) {
 				final PasswordRuleException ex = new PasswordRuleException(ResponseCode.FAIL_PASSWORD_CHANGE_FREQUENCY, new Object[] {changesAllowed});
@@ -55,7 +55,36 @@ public class PasswordChangeAllowedRule extends AbstractPasswordRule {
 		}
 	}
 
-	
+	@Override
+	public PasswordRuleException createException() {
+		boolean enabled = false;
+		PolicyAttribute attribute = getAttribute("PASSWORD_CHANGE_ALLOWED");
+		if (!skipPasswordFrequencyCheck && isValue1Present(attribute)) {
+			enabled = true;
+		}
+		if (enabled) {
+			int changesAllowed =  getValue1(attribute);
+			return new PasswordRuleException(ResponseCode.FAIL_PASSWORD_CHANGE_FREQUENCY, new Object[] {changesAllowed});
+		} else {
+			return null;
+		}
+	}
+
+	@Override
+	public PasswordRule createRule() {
+		boolean enabled = false;
+		PolicyAttribute attribute = getAttribute("PASSWORD_CHANGE_ALLOWED");
+		if (!skipPasswordFrequencyCheck && isValue1Present(attribute)) {
+			enabled = true;
+		}
+		if (enabled) {
+			int changesAllowed =  getValue1(attribute);
+			return new PasswordRule(ResponseCode.FAIL_PASSWORD_CHANGE_FREQUENCY, new Object[] {changesAllowed});
+		} else {
+			return null;
+		}
+	}
+
 }
 
 
