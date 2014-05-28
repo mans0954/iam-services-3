@@ -23,7 +23,9 @@ package org.openiam.idm.srvc.pswd.rule;
 
 import org.apache.commons.lang.StringUtils;
 import org.openiam.base.ws.ResponseCode;
+import org.openiam.exception.CreateException;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
+import org.openiam.idm.srvc.pswd.dto.PasswordRule;
 
 /**
  * Validates a password to ensure that a character in password does not repeat
@@ -36,14 +38,9 @@ public class LimitNumberRepeatCharRule extends AbstractPasswordRule {
 
 	@Override
 	public void validate() throws PasswordRuleException {
-		int numberOfRepeatingChar = 0;
 
-		PolicyAttribute attribute = policy
-				.getAttribute("LIMIT_NUM_REPEAT_CHAR");
-
-		if (attribute != null && StringUtils.isNotBlank(attribute.getValue1())) {
-			numberOfRepeatingChar = Integer.parseInt(attribute.getValue1());
-		}
+		PolicyAttribute attribute = getAttribute("LIMIT_NUM_REPEAT_CHAR");
+		int numberOfRepeatingChar = getValue1(attribute);
 
 		// check for every char
 		if (password == null) {
@@ -60,13 +57,35 @@ public class LimitNumberRepeatCharRule extends AbstractPasswordRule {
 					if (charAtPosition == password.charAt(i)) {
 						count++;
 						if (count > numberOfRepeatingChar) {
-							throw new PasswordRuleException(ResponseCode.FAIL_LIMIT_NUM_REPEAT_CHAR, new Object[] {numberOfRepeatingChar});
+							throw createException();
 						}
 					} else {
 						count = 0;
 					}
 				}
 			}
+		}
+	}
+
+	@Override
+	public PasswordRuleException createException() {
+		PolicyAttribute attribute = getAttribute("LIMIT_NUM_REPEAT_CHAR");
+		int numberOfRepeatingChar = getValue1(attribute);
+		if(numberOfRepeatingChar > 0) {
+			return new PasswordRuleException(ResponseCode.FAIL_LIMIT_NUM_REPEAT_CHAR, new Object[] {numberOfRepeatingChar});
+		} else {
+			return null;
+		}
+	}
+
+	@Override
+	public PasswordRule createRule() {
+		PolicyAttribute attribute = getAttribute("LIMIT_NUM_REPEAT_CHAR");
+		int numberOfRepeatingChar = getValue1(attribute);
+		if(numberOfRepeatingChar > 0) {
+			return new PasswordRule(ResponseCode.FAIL_LIMIT_NUM_REPEAT_CHAR, new Object[] {numberOfRepeatingChar});
+		} else {
+			return null;
 		}
 	}
 

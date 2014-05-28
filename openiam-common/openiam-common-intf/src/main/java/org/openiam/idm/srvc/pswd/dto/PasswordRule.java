@@ -1,5 +1,6 @@
-package org.openiam.idm.srvc.pswd.rule;
+package org.openiam.idm.srvc.pswd.dto;
 
+import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -10,24 +11,25 @@ import javax.xml.bind.annotation.XmlType;
 import org.openiam.base.ws.ResponseCode;
 
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "PasswordRuleException", propOrder = { 
+@XmlType(name = "PasswordRule", propOrder = { 
 	"minBound", 
 	"maxBound", 
 	"code",
-	"responseValues" })
-public class PasswordRuleException extends Exception {
+	"responseValues"})
+public class PasswordRule implements Serializable {
 	private Object minBound;
 	private Object maxBound;
 	private ResponseCode code;
 	private List<Object> responseValues;
 	
-	public PasswordRuleException() {}
+
+	public PasswordRule() {}
 	
-	public PasswordRuleException(final ResponseCode code) {
+	public PasswordRule(final ResponseCode code) {
 		this.code = code;
 	}
 	
-	public PasswordRuleException(final ResponseCode code, final Object[] args) {
+	public PasswordRule(final ResponseCode code, final Object[] args) {
 		this.code = code;
 		addResponseValues(args);
 	}
@@ -79,5 +81,25 @@ public class PasswordRuleException extends Exception {
 				addResponseValue(obj);
 			}
 		}
+	}
+	
+	public Object[] getResponseValueAsArray() {
+		Object[] retVal = null;
+		if(responseValues != null) {
+			retVal = new Object[responseValues.size()];
+			for(int i = 0; i < responseValues.size(); i++) {
+				retVal[i] = responseValues.get(i);
+			}
+		}
+		return retVal;
+	}
+	
+
+	public boolean hasMinBound() {
+		return (minBound != null);
+	}
+	
+	public boolean hasMaxBound() {
+		return (maxBound != null);
 	}
 }

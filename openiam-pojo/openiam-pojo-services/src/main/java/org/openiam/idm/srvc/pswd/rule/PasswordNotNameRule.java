@@ -25,6 +25,7 @@ package org.openiam.idm.srvc.pswd.rule;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
+import org.openiam.idm.srvc.pswd.dto.PasswordRule;
 
 /**
  * Validates a password to ensure the password is not equal to the principal
@@ -38,7 +39,7 @@ public class PasswordNotNameRule extends AbstractPasswordRule {
 	public void validate() throws PasswordRuleException {
 		boolean enabled = false;
 				
-		PolicyAttribute attribute = policy.getAttribute("PWD_NAME");
+		PolicyAttribute attribute = getAttribute("PWD_NAME");
 		if (attribute != null && StringUtils.isNotBlank(attribute.getValue1())) {
 			enabled = Boolean.parseBoolean(attribute.getValue1());
 
@@ -55,8 +56,36 @@ public class PasswordNotNameRule extends AbstractPasswordRule {
 			}			
 		}
 	}
-	
 
-	
-	
+	@Override
+	public PasswordRuleException createException() {
+		boolean enabled = false;
+		
+		PolicyAttribute attribute = getAttribute("PWD_NAME");
+		if (attribute != null && StringUtils.isNotBlank(attribute.getValue1())) {
+			enabled = Boolean.parseBoolean(attribute.getValue1());
+
+		}
+		if (enabled) {
+			return new PasswordRuleException(ResponseCode.FAIL_NEQ_NAME);
+		} else {
+			return null;
+		}
+	}
+
+	@Override
+	public PasswordRule createRule() {
+		boolean enabled = false;
+		
+		PolicyAttribute attribute = getAttribute("PWD_NAME");
+		if (attribute != null && StringUtils.isNotBlank(attribute.getValue1())) {
+			enabled = Boolean.parseBoolean(attribute.getValue1());
+
+		}
+		if (enabled) {
+			return new PasswordRule(ResponseCode.FAIL_NEQ_NAME);
+		} else {
+			return null;
+		}
+	}
 }
