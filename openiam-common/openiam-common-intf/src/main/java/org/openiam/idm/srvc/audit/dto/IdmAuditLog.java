@@ -400,7 +400,14 @@ public class IdmAuditLog implements Serializable {
     public void setTargetOrg(final String orgId,final String orgPrincipal) {
         addTarget(orgId, AuditTarget.ORG.value(),  orgPrincipal);
     }
-
+    /**
+     * Sets a 'target' task - against which this operations is being performed
+     * @param taskId
+     * @return this
+     */
+    public void setTargetTask(final String taskId, final String taskPrincipal) {
+        addTarget(taskId, AuditTarget.TASK.value(),  taskPrincipal);
+    }
     /**
      * Sets the principal of who triggered this event
      * @param principal - the caller

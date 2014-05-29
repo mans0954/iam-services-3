@@ -5,12 +5,12 @@ import org.apache.commons.lang.StringUtils;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
-import org.hibernate.transform.Transformers;
 import org.openiam.core.dao.BaseDaoImpl;
+import org.openiam.dozer.converter.OrgType2OrgTypeXrefConverter;
 import org.openiam.idm.searchbeans.OrganizationTypeSearchBean;
 import org.openiam.idm.searchbeans.SearchBean;
+import org.openiam.idm.srvc.org.domain.OrgType2OrgTypeXrefEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationTypeEntity;
-import org.openiam.idm.srvc.org.dto.OrgType2OrgTypeXref;
 import org.openiam.idm.srvc.searchbean.converter.OrganizationTypeSearchBeanConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -19,6 +19,8 @@ import java.util.List;
 
 @Repository
 public class OrganizationTypeDAOImpl extends BaseDaoImpl<OrganizationTypeEntity, String> implements OrganizationTypeDAO {
+    @Autowired
+    private OrgType2OrgTypeXrefConverter orgType2OrgTypeXrefConverter;
 
 	@Autowired
 	private OrganizationTypeSearchBeanConverter converter;
@@ -71,10 +73,9 @@ public class OrganizationTypeDAOImpl extends BaseDaoImpl<OrganizationTypeEntity,
 		return "id";
 	}
     @Override
-    public List<OrgType2OrgTypeXref> getOrgTypeToOrgTypeXrefList(){
-        return this.getSession().createSQLQuery("SELECT ORG_TYPE_ID as organizationTypeId, MEMBER_ORG_TYPE_ID as memberOrganizationTypeId FROM ORG_TYPE_VALID_MEMBERSHIP")
-                .addScalar("organizationTypeId").addScalar("memberOrganizationTypeId")
-                .setResultTransformer(Transformers.aliasToBean(OrgType2OrgTypeXref.class)).list();
+    public List<OrgType2OrgTypeXrefEntity> getOrgTypeToOrgTypeXrefList(){
+        List<OrgType2OrgTypeXrefEntity>  orgTypeXrefEntities = this.getSession().createCriteria(OrgType2OrgTypeXrefEntity.class).list();
+        return orgTypeXrefEntities;
     }
 
     @Override

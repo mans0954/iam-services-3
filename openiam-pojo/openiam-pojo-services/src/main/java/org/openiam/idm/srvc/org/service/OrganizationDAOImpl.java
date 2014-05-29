@@ -10,6 +10,7 @@ import org.hibernate.transform.Transformers;
 import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.idm.searchbeans.OrganizationSearchBean;
 import org.openiam.idm.searchbeans.SearchBean;
+import org.openiam.idm.srvc.org.domain.Org2OrgXrefEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.dto.Org2OrgXref;
 import org.openiam.idm.srvc.searchbean.converter.OrganizationSearchBeanConverter;
@@ -18,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -255,10 +257,9 @@ public class OrganizationDAOImpl extends
 	}
 
     @Override
-    public List<Org2OrgXref> getOrgToOrgXrefList(){
-        return this.getSession().createSQLQuery("SELECT COMPANY_ID as organizationId, MEMBER_COMPANY_ID as memberOrganizationId FROM COMPANY_TO_COMPANY_MEMBERSHIP")
-                .addScalar("organizationId").addScalar("memberOrganizationId")
-                .setResultTransformer(Transformers.aliasToBean(Org2OrgXref.class)).list();
+    public List<Org2OrgXrefEntity> getOrgToOrgXrefList(){
+        List<Org2OrgXrefEntity>  orgTypeXrefEntities = this.getSession().createCriteria(Org2OrgXrefEntity.class).list();
+        return orgTypeXrefEntities;
     }
 
     @Override
