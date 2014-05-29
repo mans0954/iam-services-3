@@ -36,6 +36,7 @@ import org.openiam.idm.srvc.meta.domain.pk.MetadataElementPageTemplateXrefIdEnti
 import org.openiam.idm.srvc.meta.dto.MetadataElement;
 import org.openiam.idm.srvc.meta.dto.MetadataType;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
+import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
 import org.openiam.idm.srvc.res.domain.ResourceTypeEntity;
 import org.openiam.idm.srvc.res.service.ResourceDAO;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
@@ -109,8 +110,6 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 	@Transactional
 	public void save(MetadataElementEntity entity) {
 		if(entity != null) {
-			final Set<MetadataValidValueEntity> validValues = entity.getValidValues();
-			
 			if(StringUtils.isBlank(entity.getId())) {
 				final ResourceEntity resource = new ResourceEntity();
 				resource.setName(String.format("%s_%s", entity.getAttributeName(), "" + System.currentTimeMillis()));
@@ -120,16 +119,19 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 	            entity.setResource(resource);
 				entity.setMetadataType(metadataTypeDao.findById(entity.getMetadataType().getId()));
 				
-				entity.setValidValues(null);
 				entity.setTemplateSet(null);
+				if(CollectionUtils.isNotEmpty(entity.getValidValues())) {
+					for(final MetadataValidValueEntity validValue : entity.getValidValues()) {
+						validValue.setEntity(entity);
+					}
+				}
 				metadataElementDao.save(entity);
-				entity.setValidValues(mergeValidValues(entity.getValidValues(), validValues));
 			} else {
 				final MetadataElementEntity dbEntity = metadataElementDao.findById(entity.getId());
-				entity.setValidValues(dbEntity.getValidValues());
+				//entity.setValidValues(dbEntity.getValidValues());
 				entity.setUserAttributes(dbEntity.getUserAttributes());
 				
-				entity.setValidValues(mergeValidValues(dbEntity.getValidValues(), validValues));
+				mergeValidValues(entity, dbEntity);
 
 				/* don't let the caller update these */
 				entity.setMetadataType(dbEntity.getMetadataType());
@@ -139,73 +141,67 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
                 entity.setGroupAttributes(dbEntity.getGroupAttributes());
                 entity.setUserAttributes(dbEntity.getUserAttributes());
                 entity.setResourceAttributes(dbEntity.getResourceAttributes());
-			}
-			
-			if(CollectionUtils.isNotEmpty(entity.getValidValues())) {
-				for(final MetadataValidValueEntity validValue : entity.getValidValues()) {
-					validValue.setEntity(entity);
-					save(validValue);
-				}
+    			if(CollectionUtils.isNotEmpty(entity.getValidValues())) {
+    				for(final MetadataValidValueEntity validValue : entity.getValidValues()) {
+    					validValue.setEntity(entity);
+    					if(StringUtils.isEmpty(validValue.getId())) {
+    						validValueDAO.save(validValue);
+    					}
+    				}
+    			}
 			}
 			
 			metadataElementDao.merge(entity);
 		}
 	}
 	
-	private Set<MetadataValidValueEntity> mergeValidValues(final Set<MetadataValidValueEntity> persistentSet, Set<MetadataValidValueEntity> transientSet) {
-		final Set<MetadataValidValueEntity> retval = (persistentSet != null) ? persistentSet : new HashSet<MetadataValidValueEntity>();
-		transientSet = (transientSet != null) ? transientSet : new HashSet<MetadataValidValueEntity>();
-		
-		/* add new entities */
-		for(final MetadataValidValueEntity transientEntity : transientSet) {
-			boolean exists = false;
-			if(StringUtils.isNotBlank(transientEntity.getId())) {
-				for(final MetadataValidValueEntity persistentEntity : retval) {
-					if(StringUtils.equals(persistentEntity.getId(), transientEntity.getId())) {
-						//transientEntity.setUiValue(persistentEntity.getUiValue());
-						exists = true;
-					}
-				}
-			}
-			
-			if(!exists) {
-				retval.add(transientEntity);
-			}
-		}
-		
-		/* purge old entities */
-		for(final Iterator<MetadataValidValueEntity> it = retval.iterator(); it.hasNext();) {
-			boolean exists = false;
-			final MetadataValidValueEntity persistentEntity = it.next();
-			if(StringUtils.isNotBlank(persistentEntity.getId())) {
-				for(final MetadataValidValueEntity transientEntity : transientSet) {
-					if(StringUtils.equals(persistentEntity.getId(), transientEntity.getId())) {
-						//transientEntity.setUiValue(persistentEntity.getUiValue());
-						exists = true;
-					}
-				}
-			
-				if(!exists) {
-					it.remove();
-				}
-			}
-		}
-		
-		/* now that you have the valid values to persist, update the underlying collections */
-		for(final Iterator<MetadataValidValueEntity> it = retval.iterator(); it.hasNext();) {
-			final MetadataValidValueEntity persistentEntity = it.next();
-			for(final MetadataValidValueEntity transientEntity : transientSet) {
-				if(persistentEntity.getId() != null && transientEntity.getId() != null) {
-					if(StringUtils.equals(persistentEntity.getId(), transientEntity.getId())) {
-						persistentEntity.setUiValue(transientEntity.getUiValue());
-						persistentEntity.setDisplayOrder(transientEntity.getDisplayOrder());
-						persistentEntity.setLanguageMap(transientEntity.getLanguageMap());
-					}
-				}
-			}
-		}
-		
-		return retval;
+	private void mergeValidValues(final MetadataElementEntity bean, final MetadataElementEntity dbObject) {
+		 Set<MetadataValidValueEntity> beanProps = (bean.getValidValues() != null) ? bean.getValidValues() : new HashSet<MetadataValidValueEntity>();
+		 Set<MetadataValidValueEntity> dbProps = (dbObject.getValidValues() != null) ? new HashSet<MetadataValidValueEntity>(dbObject.getValidValues()) : new HashSet<MetadataValidValueEntity>();
+
+        /* update */
+        Iterator<MetadataValidValueEntity> dbIteroator = dbProps.iterator();
+        while(dbIteroator.hasNext()) {
+        	final MetadataValidValueEntity dbProp = dbIteroator.next();
+        	
+        	boolean contains = false;
+            for (final MetadataValidValueEntity beanProp : beanProps) {
+                if (StringUtils.equals(dbProp.getId(), beanProp.getId())) {
+                	dbProp.setDisplayName(beanProp.getDisplayName());
+                	dbProp.setDisplayOrder(beanProp.getDisplayOrder());
+                	dbProp.setLanguageMap(beanProp.getLanguageMap());
+                	dbProp.setUiValue(beanProp.getUiValue());
+                    contains = true;
+                    break;
+                }
+            }
+            
+            /* remove */
+            if(!contains) {
+            	dbIteroator.remove();
+            }
+        }
+
+        /* add */
+        final Set<MetadataValidValueEntity> toAdd = new HashSet<>();
+        for (final MetadataValidValueEntity beanProp : beanProps) {
+            boolean contains = false;
+            dbIteroator = dbProps.iterator();
+            while(dbIteroator.hasNext()) {
+            	final MetadataValidValueEntity dbProp = dbIteroator.next();
+                if (StringUtils.equals(dbProp.getId(), beanProp.getId())) {
+                    contains = true;
+                }
+            }
+
+            if (!contains) {
+            	beanProp.setEntity(bean);
+                toAdd.add(beanProp);
+            }
+        }
+        dbProps.addAll(toAdd);
+        
+        bean.setValidValues(dbProps);
 	}
 	
 	@Override
@@ -277,22 +273,6 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 		return retVal;
 	}
 
-	//@Override
-	//@Transactional
-	private void save(MetadataValidValueEntity entity) {
-		if(StringUtils.isEmpty(entity.getId())) {
-			//entity.setLanguageMap(null);
-			//entity.setEntity(metadataElementDao.findById(entity.getEntity().getId()));
-			validValueDAO.save(entity);
-		} else {
-			//final MetadataValidValueEntity dbEntity = validValueDAO.findById(entity.getId());
-			//entity.setEntity(dbEntity.getEntity());
-			//entity.setLanguageMap(mergeLanguageMaps(dbEntity.getLanguageMap(), languageMap));
-			validValueDAO.merge(entity);
-		}
-		//validValueDAO.merge(entity);
-	}
-	
 	@Override
 	@Transactional
 	public void delteMetaValidValue(String validValueId) {

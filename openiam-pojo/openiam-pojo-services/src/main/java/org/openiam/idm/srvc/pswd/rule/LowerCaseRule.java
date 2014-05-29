@@ -74,7 +74,7 @@ public class LowerCaseRule extends AbstractPasswordRule {
 		int minChar = getValue1(attribute);
 		int maxChar = getValue2(attribute);
 		if (minChar > 0 || maxChar > 0) {
-			return createException(ResponseCode.FAIL_LOWER_CASE_RULE, (minChar > 0) ? minChar : null, (maxChar > 0) ? maxChar : null);
+			return createException(ResponseCode.FAIL_LOWER_CASE_RULE, minChar, maxChar);
 		} else {
 			return null;
 		}
@@ -86,7 +86,7 @@ public class LowerCaseRule extends AbstractPasswordRule {
 		int minChar = getValue1(attribute);
 		int maxChar = getValue2(attribute);
 		if (minChar > 0 || maxChar > 0) {
-			return createRule(ResponseCode.FAIL_LOWER_CASE_RULE, (minChar > 0) ? minChar : null, (maxChar > 0) ? maxChar : null);
+			return createRule(ResponseCode.FAIL_LOWER_CASE_RULE, minChar, maxChar);
 		} else {
 			return null;
 		}

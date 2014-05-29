@@ -25,7 +25,8 @@ public class SaveGroupDelegate extends AbstractActivitiJob {
 		final Group group = getObjectVariable(execution, ActivitiConstants.GROUP, Group.class);
         IdmAuditLog idmAuditLog = new IdmAuditLog();
         idmAuditLog.setRequestorUserId(getRequestorId(execution));
-        idmAuditLog.setSource(AuditSource.DELEGATE.value());
+        idmAuditLog.setSource(AuditSource.WORKFLOW.value());
+        idmAuditLog.setTargetTask(execution.getId(),execution.getCurrentActivityName());
         if (group.getId() == null) {
             idmAuditLog.setAction(AuditAction.ADD_GROUP.value());
             idmAuditLog.setAuditDescription("Create new group");
