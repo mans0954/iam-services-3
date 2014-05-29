@@ -21,10 +21,13 @@
  */
 package org.openiam.idm.srvc.pswd.rule;
 
+import org.apache.commons.lang.StringUtils;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.policy.dto.Policy;
+import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
+import org.openiam.idm.srvc.pswd.dto.PasswordRule;
 import org.openiam.idm.srvc.pswd.service.PasswordHistoryDAO;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.util.encrypt.Cryptor;
@@ -47,13 +50,55 @@ public abstract class AbstractPasswordRule {
 	protected Cryptor cryptor;
     protected KeyManagementService keyManagementService;
 
+    
 	public abstract void validate() throws PasswordRuleException; 
+	public abstract PasswordRuleException createException();
+	public abstract PasswordRule createRule();
+	
+	protected PasswordRule createRule(final ResponseCode code, final int minBound, final int maxBound) {
+		final PasswordRule rule = new PasswordRule(code);
+		rule.setMinBound((minBound > 0) ? Integer.valueOf(minBound) : null);
+		rule.setMaxBound((maxBound > 0) ? Integer.valueOf(maxBound) : null);
+		return rule;
+	}
 	
 	protected PasswordRuleException createException(final ResponseCode code, final int minBound, final int maxBound) {
 		final PasswordRuleException ex = new PasswordRuleException(code);
 		ex.setMinBound((minBound > 0) ? Integer.valueOf(minBound) : null);
 		ex.setMaxBound((maxBound > 0) ? Integer.valueOf(maxBound) : null);
 		return ex;
+	}
+	
+	protected PolicyAttribute getAttribute(final String name) {
+		return policy.getAttribute(name);
+	}
+	
+	protected boolean getBoolean(final PolicyAttribute attribute) {
+		boolean enabled = false;
+		if (attribute != null && StringUtils.isNotBlank(attribute.getValue1())) {
+			enabled = Boolean.getBoolean(attribute.getValue1());
+		}
+		return enabled;
+	}
+	
+	protected boolean isValue1Present(final PolicyAttribute attribute) {
+		return (attribute != null && StringUtils.isNotBlank(attribute.getValue1()));
+	}
+	
+	protected int getValue1(final PolicyAttribute attribute) {
+		int minlen = 0;
+		if (attribute != null && StringUtils.isNotBlank(attribute.getValue1())) {
+			minlen = Integer.parseInt(attribute.getValue1());
+		}
+		return minlen;
+	}
+	
+	protected int getValue2(final PolicyAttribute attribute) {
+		int maxlen = 0;
+		if (attribute != null && StringUtils.isNotBlank(attribute.getValue2())) {
+			maxlen = Integer.parseInt(attribute.getValue2());
+		}
+		return maxlen;
 	}
 	
 	public Policy getPolicy() {

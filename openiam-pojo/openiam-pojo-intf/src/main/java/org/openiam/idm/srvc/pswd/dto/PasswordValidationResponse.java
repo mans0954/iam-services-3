@@ -10,12 +10,14 @@ import javax.xml.bind.annotation.XmlType;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
+import org.openiam.idm.srvc.pswd.rule.PasswordRuleException;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "PasswordValidationResponse", propOrder = {
         "responseValues",
         "minBound",
-        "maxBound"
+        "maxBound",
+        "rules"
 })
 public class PasswordValidationResponse extends Response {
 	
@@ -25,6 +27,7 @@ public class PasswordValidationResponse extends Response {
 		super(status);
 	}
 
+	private List<PasswordRule> rules;
 	private Object minBound;
 	private Object maxBound;
 	private List<Object> responseValues;
@@ -79,4 +82,14 @@ public class PasswordValidationResponse extends Response {
 	public boolean hasMaxBound() {
 		return (maxBound != null);
 	}
+
+	public List<PasswordRule> getRules() {
+		return rules;
+	}
+
+	public void setRules(List<PasswordRule> rules) {
+		this.rules = rules;
+	}
+	
+	
 }

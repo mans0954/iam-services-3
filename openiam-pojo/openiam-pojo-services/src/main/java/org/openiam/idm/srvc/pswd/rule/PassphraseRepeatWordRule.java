@@ -29,6 +29,7 @@ import java.util.StringTokenizer;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
+import org.openiam.idm.srvc.pswd.dto.PasswordRule;
 
 /**
  * Validates a password to ensure that the repetition of words in passphrase is
@@ -43,8 +44,7 @@ public class PassphraseRepeatWordRule extends AbstractPasswordRule {
 	public void validate() throws PasswordRuleException {
 		boolean enabled = false;
 
-		PolicyAttribute attribute = policy
-				.getAttribute("REPEAT_SAME_WORD_PASSPHRASE");
+		PolicyAttribute attribute = getAttribute("REPEAT_SAME_WORD_PASSPHRASE");
 		if (attribute != null && StringUtils.isNotBlank(attribute.getValue1())) {
 			enabled = Boolean.parseBoolean(attribute.getValue1());
 
@@ -64,6 +64,38 @@ public class PassphraseRepeatWordRule extends AbstractPasswordRule {
 					throw new PasswordRuleException(ResponseCode.FAIL_MIN_WORDS_PASSPHRASE_RULE);
 				}
 			}
+		}
+	}
+
+	@Override
+	public PasswordRuleException createException() {
+		boolean enabled = false;
+
+		PolicyAttribute attribute = getAttribute("REPEAT_SAME_WORD_PASSPHRASE");
+		if (attribute != null && StringUtils.isNotBlank(attribute.getValue1())) {
+			enabled = Boolean.parseBoolean(attribute.getValue1());
+
+		}
+		if (!enabled){
+			return new PasswordRuleException(ResponseCode.FAIL_MIN_WORDS_PASSPHRASE_RULE);
+		} else {
+			return null;
+		}
+	}
+
+	@Override
+	public PasswordRule createRule() {
+		boolean enabled = false;
+
+		PolicyAttribute attribute = getAttribute("REPEAT_SAME_WORD_PASSPHRASE");
+		if (attribute != null && StringUtils.isNotBlank(attribute.getValue1())) {
+			enabled = Boolean.parseBoolean(attribute.getValue1());
+
+		}
+		if (!enabled){
+			return new PasswordRule(ResponseCode.FAIL_MIN_WORDS_PASSPHRASE_RULE);
+		} else {
+			return null;
 		}
 	}
 

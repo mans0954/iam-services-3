@@ -46,6 +46,7 @@ import org.openiam.idm.srvc.policy.service.PolicyObjectAssocDAO;
 import org.openiam.idm.srvc.pswd.dto.Password;
 import org.openiam.idm.srvc.pswd.dto.PasswordResetTokenRequest;
 import org.openiam.idm.srvc.pswd.dto.PasswordResetTokenResponse;
+import org.openiam.idm.srvc.pswd.dto.PasswordRule;
 import org.openiam.idm.srvc.pswd.dto.PasswordValidationResponse;
 import org.openiam.idm.srvc.pswd.dto.ValidatePasswordResetTokenResponse;
 import org.openiam.idm.srvc.pswd.rule.PasswordRuleException;
@@ -133,6 +134,8 @@ public class PasswordServiceImpl implements PasswordService {
 		log.info(String.format("Selected Password policy=%s", pswdPolicy.getPolicyId()));
 
 		try {
+			final List<PasswordRule> rules = passwordValidator.getPasswordRules(pswdPolicy, pswd);
+			retVal.setRules(rules);
 			passwordValidator.validate(pswdPolicy, pswd);
 		} catch(PasswordRuleException e) {
 			retVal.setErrorCode(e.getCode());
@@ -164,8 +167,9 @@ public class PasswordServiceImpl implements PasswordService {
 		log.info("Selected Password policy=" + pswdPolicy.getPolicyId());
 
 		try {
-			passwordValidator.validateForUser(pswdPolicy, pswd, user,
-					lg);
+			final List<PasswordRule> rules = passwordValidator.getPasswordRules(pswdPolicy, pswd, user, lg);
+			retVal.setRules(rules);
+			passwordValidator.validateForUser(pswdPolicy, pswd, user, lg);
 		} catch(PasswordRuleException e) {
 			retVal.setErrorCode(e.getCode());
 			retVal.setMinBound(e.getMinBound());
@@ -199,6 +203,8 @@ public class PasswordServiceImpl implements PasswordService {
 		log.info(String.format("Selected Password policy=%s",pswdPolicy.getPolicyId()));
 
 		try {
+			final List<PasswordRule> rules = passwordValidator.getPasswordRules(pswdPolicy, pswd, user, lg);
+			retVal.setRules(rules);
 			passwordValidator.validateForUser(pswdPolicy, pswd, user, lg);
 		} catch(PasswordRuleException e) {
 			retVal.setErrorCode(e.getCode());
