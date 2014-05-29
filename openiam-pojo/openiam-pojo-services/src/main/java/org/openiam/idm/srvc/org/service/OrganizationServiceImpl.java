@@ -14,6 +14,7 @@ import org.openiam.idm.srvc.lang.domain.LanguageEntity;
 import org.openiam.idm.srvc.meta.service.MetadataElementDAO;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.mngsys.domain.AssociationType;
+import org.openiam.idm.srvc.org.domain.Org2OrgXrefEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.dto.Org2OrgXref;
@@ -512,14 +513,14 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
     }
 
     private Map<String, Set<String>> getAllOrgMap() {
-        List<Org2OrgXref> xrefList = orgDao.getOrgToOrgXrefList();
+        List<Org2OrgXrefEntity> xrefList = orgDao.getOrgToOrgXrefList();
 
         final Map<String, Set<String>> parentOrg2ChildOrgMap = new HashMap<String, Set<String>>();
         final Map<String, String> child2ParentOrgMap = new HashMap<String, String>();
 
-        for(final Org2OrgXref xref : xrefList) {
-            final String orgId = xref.getOrganizationId();
-            final String memberOrgId = xref.getMemberOrganizationId();
+        for(final Org2OrgXrefEntity xref : xrefList) {
+            final String orgId = xref.getId().getOrganizationId();
+            final String memberOrgId = xref.getId().getMemberOrganizationId();
 
             if(!parentOrg2ChildOrgMap.containsKey(orgId)) {
                 parentOrg2ChildOrgMap.put(orgId, new HashSet<String>());

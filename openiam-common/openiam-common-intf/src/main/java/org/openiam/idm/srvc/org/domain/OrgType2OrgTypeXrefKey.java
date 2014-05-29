@@ -1,25 +1,25 @@
-package org.openiam.idm.srvc.org.dto;
+package org.openiam.idm.srvc.org.domain;
 
-import org.openiam.dozer.DozerDTOCorrespondence;
-import org.openiam.idm.srvc.org.domain.OrgType2OrgTypeXrefEntity;
+import javax.persistence.Column;
+import javax.persistence.Embeddable;
+import java.io.Serializable;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlType;
+@Embeddable
+public class OrgType2OrgTypeXrefKey implements Serializable {
 
-/**
- * Created by: Alexander Duckardt
- * Date: 2/14/14.
- */
-@XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "organization", propOrder = {
-        "organizationTypeId",
-        "memberOrganizationTypeId"
-})
-@DozerDTOCorrespondence(OrgType2OrgTypeXrefEntity.class)
-public class OrgType2OrgTypeXref {
+    @Column(name = "ORG_TYPE_ID")
     private String organizationTypeId;
+
+    @Column(name = "MEMBER_ORG_TYPE_ID")
     private String memberOrganizationTypeId;
+
+    public OrgType2OrgTypeXrefKey() {
+    }
+
+    public OrgType2OrgTypeXrefKey(final String organizationTypeId, final String memberOrganizationTypeId) {
+        this.organizationTypeId = organizationTypeId;
+        this.memberOrganizationTypeId = memberOrganizationTypeId;
+    }
 
     public String getOrganizationTypeId() {
         return organizationTypeId;
@@ -42,7 +42,7 @@ public class OrgType2OrgTypeXref {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        OrgType2OrgTypeXref that = (OrgType2OrgTypeXref) o;
+        OrgType2OrgTypeXrefKey that = (OrgType2OrgTypeXrefKey) o;
 
         if (memberOrganizationTypeId != null ? !memberOrganizationTypeId.equals(that.memberOrganizationTypeId) : that.memberOrganizationTypeId != null)
             return false;
@@ -62,7 +62,7 @@ public class OrgType2OrgTypeXref {
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder();
-        sb.append("OrgType2OrgTypeXref");
+        sb.append("OrgType2OrgTypeXrefKey");
         sb.append("{organizationTypeId='").append(organizationTypeId).append('\'');
         sb.append(", memberOrganizationTypeId='").append(memberOrganizationTypeId).append('\'');
         sb.append('}');

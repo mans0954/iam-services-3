@@ -1,27 +1,25 @@
-package org.openiam.idm.srvc.org.dto;
+package org.openiam.idm.srvc.org.domain;
 
-import org.openiam.dozer.DozerDTOCorrespondence;
-import org.openiam.idm.srvc.org.domain.Org2OrgXrefEntity;
-import org.openiam.idm.srvc.org.domain.OrgType2OrgTypeXrefEntity;
-
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlType;
+import javax.persistence.Column;
+import javax.persistence.Embeddable;
 import java.io.Serializable;
 
-/**
- * Created by: Alexander Duckardt
- * Date: 1/31/14.
- */
-@XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "organization", propOrder = {
-        "organizationId",
-        "memberOrganizationId"
-})
-@DozerDTOCorrespondence(Org2OrgXrefEntity.class)
-public class Org2OrgXref implements Serializable {
+@Embeddable
+public class Org2OrgXrefKey implements Serializable {
+
+    @Column(name = "COMPANY_ID")
     private String organizationId;
+
+    @Column(name = "MEMBER_COMPANY_ID")
     private String memberOrganizationId;
+
+    public Org2OrgXrefKey() {
+    }
+
+    public Org2OrgXrefKey(final String organizationId, final String memberOrganizationId) {
+        this.organizationId = organizationId;
+        this.memberOrganizationId = memberOrganizationId;
+    }
 
     public String getOrganizationId() {
         return organizationId;
@@ -44,7 +42,7 @@ public class Org2OrgXref implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        Org2OrgXref that = (Org2OrgXref) o;
+        Org2OrgXrefKey that = (Org2OrgXrefKey) o;
 
         if (memberOrganizationId != null ? !memberOrganizationId.equals(that.memberOrganizationId) : that.memberOrganizationId != null)
             return false;
@@ -64,7 +62,7 @@ public class Org2OrgXref implements Serializable {
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder();
-        sb.append("Org2OrgXref");
+        sb.append("Org2OrgXrefKey");
         sb.append("{organizationId='").append(organizationId).append('\'');
         sb.append(", memberOrganizationId='").append(memberOrganizationId).append('\'');
         sb.append('}');
