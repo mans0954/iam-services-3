@@ -21,6 +21,7 @@ import javax.persistence.MapKey;
 import javax.persistence.MapKeyColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
+import javax.persistence.OrderBy;
 import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -104,8 +105,11 @@ public class MetadataElementEntity extends KeyEntity {
     @Transient
     private String displayName;
     
+    //@Internationalized
+    //@OneToMany(orphanRemoval = true, cascade = {CascadeType.REMOVE, CascadeType.DETACH}, mappedBy = "entity", fetch = FetchType.LAZY)
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy="entity", orphanRemoval=true)
+    @Fetch(FetchMode.SUBSELECT)
     @Internationalized
-    @OneToMany(orphanRemoval = true, cascade = {CascadeType.REMOVE, CascadeType.DETACH}, mappedBy = "entity", fetch = FetchType.LAZY)
     private Set<MetadataValidValueEntity> validValues;
     
     @Column(name="STATIC_DEFAULT_VALUE", length=4096)
