@@ -165,7 +165,11 @@
 		<class-b>org.openiam.idm.srvc.org.dto.OrganizationAttribute</class-b>
 		<field>
 			<a>element.id</a>
-			<b>metadataElementId</b>
+			<b>metadataId</b>
+		</field>
+		<field>
+			<a>element.displayName</a>
+			<b>metadataName</b>
 		</field>
 		<field>
 			<a>organization.id</a>
