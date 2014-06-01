@@ -1782,8 +1782,8 @@ public class UserMgr implements UserDataService {
                 origUserEntity.setEmployeeId(newUserEntity.getEmployeeId());
             }
         }
-        if (newUserEntity.getEmployeeType() != null) {
-           origUserEntity.setEmployeeType(newUserEntity.getEmployeeType());
+        if (newUserEntity.getEmployeeType() != null && StringUtils.isNotBlank(newUserEntity.getEmployeeType().getId())) {
+           origUserEntity.setEmployeeType(metadataTypeDAO.findById(newUserEntity.getEmployeeType().getId()));
         } else {
             origUserEntity.setEmployeeType(null);
         }
@@ -1795,8 +1795,8 @@ public class UserMgr implements UserDataService {
                 origUserEntity.setFirstName(newUserEntity.getFirstName());
             }
         }
-        if (newUserEntity.getJobCode() != null) {
-            origUserEntity.setJobCode(newUserEntity.getJobCode());
+        if (newUserEntity.getJobCode() != null && StringUtils.isNotBlank(newUserEntity.getJobCode().getId())) {
+            origUserEntity.setJobCode(metadataTypeDAO.findById(newUserEntity.getJobCode().getId()));
         } else {
             origUserEntity.setJobCode(null);
         }
@@ -1822,8 +1822,8 @@ public class UserMgr implements UserDataService {
                 origUserEntity.setMaidenName(newUserEntity.getMaidenName());
             }
         }
-        if (newUserEntity.getType() != null) {
-                origUserEntity.setType(newUserEntity.getType());
+        if (newUserEntity.getType() != null && StringUtils.isNotBlank(newUserEntity.getType().getId())) {
+                origUserEntity.setType(metadataTypeDAO.findById(newUserEntity.getType().getId()));
         }
         if (newUserEntity.getMiddleInit() != null) {
             if (newUserEntity.getMiddleInit().equalsIgnoreCase(BaseConstants.NULL_STRING)) {

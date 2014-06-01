@@ -51,6 +51,7 @@ import org.openiam.internationalization.LocalizedServiceGet;
 import org.openiam.util.UserUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.jws.WebMethod;
 import javax.jws.WebService;
@@ -227,6 +228,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 	
 	@Override
 	@LocalizedServiceGet
+	@Transactional(readOnly=true)
 	public Role getRoleLocalized(final String roleId, final String requesterId, final Language language) {
 		Role retVal = null;
 		 if (StringUtils.isNotBlank(roleId)) {
@@ -239,18 +241,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 	@Override
 	@Deprecated
 	public Role getRole(String roleId, String requesterId) {
-		Role retVal = null;
-        try{
-            if(roleId != null) {
-                final RoleEntity entity = roleDataService.getRole(roleId, requesterId);
-                if(entity != null) {
-                    retVal = roleDozerConverter.convertToDTO(entity, true);
-                }
-            }
-        } catch(Throwable e) {
-            LOG.error("Exception", e);
-        }
-		return retVal;
+		return getRoleLocalized(roleId, requesterId, null);
 	}
 
 	@Override

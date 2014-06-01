@@ -38,6 +38,7 @@ import org.openiam.internationalization.LocalizedServiceGet;
 import org.openiam.util.UserUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service("resourceDataService")
 @WebService(endpointInterface = "org.openiam.idm.srvc.res.service.ResourceDataService", targetNamespace = "urn:idm.openiam.org/srvc/res/service", portName = "ResourceDataWebServicePort", serviceName = "ResourceDataWebService")
@@ -70,6 +71,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
 
     @Override
     @LocalizedServiceGet
+    @Transactional(readOnly=true)
     public Resource getResource(final String resourceId, final Language language) {
         Resource resource = null;
         try {
