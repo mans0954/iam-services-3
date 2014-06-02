@@ -1048,7 +1048,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 String managedSysId = mSys != null ? mSys.getId() : null;
                 for (LoginEntity l : userEntity.getPrincipalList()) {
                     if (managedSysId != null && managedSysId.equals(l.getManagedSysId())) {
-                        if (!LoginStatusEnum.ACTIVE.equals(l.getStatus())) {
+                        if (LoginStatusEnum.INACTIVE.equals(l.getStatus())) {
                             inactiveResources.add(res);
                         }
                         break;
