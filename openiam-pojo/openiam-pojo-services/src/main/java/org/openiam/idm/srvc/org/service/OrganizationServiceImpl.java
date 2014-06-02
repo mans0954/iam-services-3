@@ -11,15 +11,19 @@ import org.openiam.dozer.converter.OrganizationDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.OrganizationSearchBean;
 import org.openiam.idm.srvc.lang.domain.LanguageEntity;
+import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 import org.openiam.idm.srvc.meta.service.MetadataElementDAO;
+import org.openiam.idm.srvc.meta.service.MetadataTypeDAO;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.mngsys.domain.AssociationType;
+import org.openiam.idm.srvc.org.domain.Org2OrgXrefEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.dto.Org2OrgXref;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
+import org.openiam.idm.srvc.role.domain.RoleAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
 import org.openiam.idm.srvc.user.service.UserDAO;
@@ -71,6 +75,9 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
 	
 	@Autowired
     private ResourceTypeDAO resourceTypeDao;
+	
+    @Autowired
+    private MetadataTypeDAO typeDAO;
 
     private Map<String, Set<String>> organizationTree;
 
@@ -197,6 +204,12 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
     		entity.setOrganizationType(orgTypeDAO.findById(entity.getOrganizationType().getId()));
     	}
     	
+    	if(entity.getType() != null && StringUtils.isNotBlank(entity.getType().getId())) {
+    		entity.setType(typeDAO.findById(entity.getType().getId()));
+        } else {
+        	entity.setType(null);
+        }
+    	
         if (StringUtils.isNotBlank(entity.getId())) {
             final OrganizationEntity dbOrg = orgDao.findById(entity.getId());
             if (dbOrg != null) {
@@ -268,51 +281,62 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
 
     private void mergeAttributes(final OrganizationEntity bean, final OrganizationEntity dbObject) {
 		
-		final Set<OrganizationAttributeEntity> renewedSet = new HashSet<OrganizationAttributeEntity>();
-		
-		final Set<OrganizationAttributeEntity> beanProps = (bean.getAttributes() != null) ? bean.getAttributes() : new HashSet<OrganizationAttributeEntity>();
-		final Set<OrganizationAttributeEntity> dbProps = (dbObject.getAttributes() != null) ? dbObject.getAttributes() : new HashSet<OrganizationAttributeEntity>();
+    	Set<OrganizationAttributeEntity> beanProps = (bean.getAttributes() != null) ? bean.getAttributes() : new HashSet<OrganizationAttributeEntity>();
+        Set<OrganizationAttributeEntity> dbProps = (dbObject.getAttributes() != null) ? new HashSet<OrganizationAttributeEntity>(dbObject.getAttributes()) : new HashSet<OrganizationAttributeEntity>();
 
-
-
-		/* update */
-		for(final Iterator<OrganizationAttributeEntity> dbIt = dbProps.iterator(); dbIt.hasNext();) {
-			final OrganizationAttributeEntity dbProp = dbIt.next();
-			for(final Iterator<OrganizationAttributeEntity> it = beanProps.iterator(); it.hasNext();) {
-				final OrganizationAttributeEntity beanProp = it.next();
-				if(StringUtils.equals(dbProp.getId(), beanProp.getId())) {
-					setMetadataTypeOnOrgAttribute(dbProp);
-					dbProp.setName(beanProp.getName());
-					dbProp.setValue(beanProp.getValue());
+        /* update */
+        Iterator<OrganizationAttributeEntity> dbIteroator = dbProps.iterator();
+        while(dbIteroator.hasNext()) {
+        	final OrganizationAttributeEntity dbProp = dbIteroator.next();
+        	
+        	boolean contains = false;
+            for (final OrganizationAttributeEntity beanProp : beanProps) {
+                if (StringUtils.equals(dbProp.getId(), beanProp.getId())) {
+                    dbProp.setValue(beanProp.getValue());
+                    dbProp.setElement(getEntity(beanProp.getElement()));
+                    dbProp.setName(beanProp.getName());
                     dbProp.setIsMultivalued(beanProp.getIsMultivalued());
-                    dbProp.setValues(beanProp.getValues());
-					renewedSet.add(dbProp);
-					break;
-				}
-			}
-		}
-		
-		/* add */
-		for(final Iterator<OrganizationAttributeEntity> it = beanProps.iterator(); it.hasNext();) {
-			boolean contains = false;
-			final OrganizationAttributeEntity beanProp = it.next();
-			for(final Iterator<OrganizationAttributeEntity> dbIt = dbProps.iterator(); dbIt.hasNext();) {
-				final OrganizationAttributeEntity dbProp = dbIt.next();
-				if(StringUtils.equals(dbProp.getId(), beanProp.getId())) {
-					contains = true;
-				}
-			}
-			
-			if(!contains) {
-				beanProp.setOrganization(bean);
-				setMetadataTypeOnOrgAttribute(beanProp);
-				//dbProps.add(beanProp);
-				renewedSet.add(beanProp);
-			}
-		}
-		
-		bean.setAttributes(renewedSet);
+                    contains = true;
+                    break;
+                }
+            }
+            
+            /* remove */
+            if(!contains) {
+            	dbIteroator.remove();
+            }
+        }
+
+        /* add */
+        final Set<OrganizationAttributeEntity> toAdd = new HashSet<>();
+        for (final OrganizationAttributeEntity beanProp : beanProps) {
+            boolean contains = false;
+            dbIteroator = dbProps.iterator();
+            while(dbIteroator.hasNext()) {
+            	final OrganizationAttributeEntity dbProp = dbIteroator.next();
+                if (StringUtils.equals(dbProp.getId(), beanProp.getId())) {
+                    contains = true;
+                }
+            }
+
+            if (!contains) {
+                beanProp.setOrganization(bean);
+                beanProp.setElement(getEntity(beanProp.getElement()));
+                toAdd.add(beanProp);
+            }
+        }
+        dbProps.addAll(toAdd);
+        
+        bean.setAttributes(dbProps);
 	}
+    
+    private MetadataElementEntity getEntity(final MetadataElementEntity bean) {
+    	if(bean != null && StringUtils.isNotBlank(bean.getId())) {
+    		return metadataElementDAO.findById(bean.getId());
+    	} else {
+    		return null;
+    	}
+    }
     
     private void setMetadataTypeOnOrgAttribute(final OrganizationAttributeEntity bean) {
     	if(bean.getElement() != null && bean.getElement().getId() != null) {
@@ -512,14 +536,14 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
     }
 
     private Map<String, Set<String>> getAllOrgMap() {
-        List<Org2OrgXref> xrefList = orgDao.getOrgToOrgXrefList();
+        List<Org2OrgXrefEntity> xrefList = orgDao.getOrgToOrgXrefList();
 
         final Map<String, Set<String>> parentOrg2ChildOrgMap = new HashMap<String, Set<String>>();
         final Map<String, String> child2ParentOrgMap = new HashMap<String, String>();
 
-        for(final Org2OrgXref xref : xrefList) {
-            final String orgId = xref.getOrganizationId();
-            final String memberOrgId = xref.getMemberOrganizationId();
+        for(final Org2OrgXrefEntity xref : xrefList) {
+            final String orgId = xref.getId().getOrganizationId();
+            final String memberOrgId = xref.getId().getMemberOrganizationId();
 
             if(!parentOrg2ChildOrgMap.containsKey(orgId)) {
                 parentOrg2ChildOrgMap.put(orgId, new HashSet<String>());

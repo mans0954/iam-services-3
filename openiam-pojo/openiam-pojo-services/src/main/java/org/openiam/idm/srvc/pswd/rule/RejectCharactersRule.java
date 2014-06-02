@@ -25,6 +25,7 @@ package org.openiam.idm.srvc.pswd.rule;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
+import org.openiam.idm.srvc.pswd.dto.PasswordRule;
 /**
  * Validates a password to ensure that it does not contain the characters defined in the rule
  * the password.
@@ -39,7 +40,7 @@ public class RejectCharactersRule extends AbstractPasswordRule {
 		String excludeCharList=null;
 
 				
-		PolicyAttribute attribute = policy.getAttribute("REJECT_CHARS_IN_PSWD");
+		PolicyAttribute attribute = getAttribute("REJECT_CHARS_IN_PSWD");
 		if (attribute != null && StringUtils.isNotBlank(attribute.getValue1())) {
 			excludeCharList = attribute.getValue1();
 		}
@@ -69,8 +70,38 @@ public class RejectCharactersRule extends AbstractPasswordRule {
 			}
 		}
 	}
-	
 
-	
-	
+	@Override
+	public PasswordRuleException createException() {
+		String excludeCharList=null;
+
+		
+		PolicyAttribute attribute = getAttribute("REJECT_CHARS_IN_PSWD");
+		if (attribute != null && StringUtils.isNotBlank(attribute.getValue1())) {
+			excludeCharList = attribute.getValue1();
+		}
+		
+		if ( excludeCharList == null) {
+			return null;
+		} else {
+			return new PasswordRuleException(ResponseCode.FAIL_REJECT_CHARS_IN_PSWD, new Object[] {excludeCharList});
+		}
+	}
+
+	@Override
+	public PasswordRule createRule() {
+		String excludeCharList=null;
+
+		
+		PolicyAttribute attribute = getAttribute("REJECT_CHARS_IN_PSWD");
+		if (attribute != null && StringUtils.isNotBlank(attribute.getValue1())) {
+			excludeCharList = attribute.getValue1();
+		}
+		
+		if ( excludeCharList == null) {
+			return null;
+		} else {
+			return new PasswordRule(ResponseCode.FAIL_REJECT_CHARS_IN_PSWD, new Object[] {excludeCharList});
+		}
+	}	
 }

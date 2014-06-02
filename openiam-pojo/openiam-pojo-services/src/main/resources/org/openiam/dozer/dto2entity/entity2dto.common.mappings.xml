@@ -30,7 +30,31 @@
 			<b>metadataName</b>
 		</field>
 	</mapping>
-	
+
+    <mapping>
+        <class-a>org.openiam.idm.srvc.org.domain.OrgType2OrgTypeXrefEntity</class-a>
+        <class-b>org.openiam.idm.srvc.org.dto.OrgType2OrgTypeXref</class-b>
+        <field>
+            <a>id.organizationTypeId</a>
+            <b>organizationTypeId</b>
+        </field>
+        <field>
+            <a>id.memberOrganizationTypeId</a>
+            <b>memberOrganizationTypeId</b>
+        </field>
+    </mapping>
+    <mapping>
+        <class-a>org.openiam.idm.srvc.org.domain.Org2OrgXrefEntity</class-a>
+        <class-b>org.openiam.idm.srvc.org.dto.Org2OrgXref</class-b>
+        <field>
+            <a>id.organizationId</a>
+            <b>organizationId</b>
+        </field>
+        <field>
+            <a>id.memberOrganizationId</a>
+            <b>memberOrganizationId</b>
+        </field>
+    </mapping>
 	<mapping>
 		<class-a>org.openiam.idm.srvc.role.domain.RoleAttributeEntity</class-a>
 		<class-b>org.openiam.idm.srvc.role.dto.RoleAttribute</class-b>
@@ -141,7 +165,11 @@
 		<class-b>org.openiam.idm.srvc.org.dto.OrganizationAttribute</class-b>
 		<field>
 			<a>element.id</a>
-			<b>metadataElementId</b>
+			<b>metadataId</b>
+		</field>
+		<field>
+			<a>element.displayName</a>
+			<b>metadataName</b>
 		</field>
 		<field>
 			<a>organization.id</a>

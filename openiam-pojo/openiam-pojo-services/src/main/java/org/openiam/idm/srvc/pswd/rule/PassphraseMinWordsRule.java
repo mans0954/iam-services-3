@@ -27,6 +27,7 @@ import java.util.StringTokenizer;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
+import org.openiam.idm.srvc.pswd.dto.PasswordRule;
 
 /**
  * Validates a password to ensure that there are minimum words in passphrase as
@@ -39,12 +40,9 @@ public class PassphraseMinWordsRule extends AbstractPasswordRule {
 
 	@Override
 	public void validate() throws PasswordRuleException {
-		int minWords = 0;
-				
-		PolicyAttribute attribute = policy.getAttribute("MIN_WORDS_PASSPHRASE");
-		if (attribute != null && StringUtils.isNotBlank(attribute.getValue1())) {
-			minWords = Integer.parseInt(attribute.getValue1());
-		}
+		
+		PolicyAttribute attribute = getAttribute("MIN_WORDS_PASSPHRASE");
+		int minWords = getValue1(attribute);
 		if (password == null) {
 			throw new PasswordRuleException(ResponseCode.FAIL_MIN_WORDS_PASSPHRASE_RULE);
 		}
@@ -55,6 +53,28 @@ public class PassphraseMinWordsRule extends AbstractPasswordRule {
 			if (tokenizer.countTokens() < minWords) {
 				throw new PasswordRuleException(ResponseCode.FAIL_MIN_WORDS_PASSPHRASE_RULE);
 			}
+		}
+	}
+
+	@Override
+	public PasswordRuleException createException() {
+		PolicyAttribute attribute = getAttribute("MIN_WORDS_PASSPHRASE");
+		int minWords = getValue1(attribute);
+		if (minWords > 0 ) {
+			return new PasswordRuleException(ResponseCode.FAIL_MIN_WORDS_PASSPHRASE_RULE, new Object[] {minWords});
+		} else {
+			return null;
+		}
+	}
+
+	@Override
+	public PasswordRule createRule() {
+		PolicyAttribute attribute = getAttribute("MIN_WORDS_PASSPHRASE");
+		int minWords = getValue1(attribute);
+		if (minWords > 0 ) {
+			return new PasswordRule(ResponseCode.FAIL_MIN_WORDS_PASSPHRASE_RULE, new Object[] {minWords});
+		} else {
+			return null;
 		}
 	}	
 }

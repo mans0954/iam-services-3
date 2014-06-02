@@ -30,6 +30,7 @@ import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
 import org.openiam.idm.srvc.pswd.domain.PasswordHistoryEntity;
 import org.openiam.idm.srvc.pswd.dto.Password;
+import org.openiam.idm.srvc.pswd.dto.PasswordRule;
 
 import java.util.List;
 
@@ -50,13 +51,12 @@ public class PasswordHistoryRule extends AbstractPasswordRule {
 		
 		boolean enabled = false;
 						
-		PolicyAttribute attribute = policy.getAttribute("PWD_HIST_VER");
+		PolicyAttribute attribute = getAttribute("PWD_HIST_VER");
 		if (attribute != null && StringUtils.isNotBlank(attribute.getValue1())) {
 			enabled = true;
-
 		}
 		
-		if (enabled) {			
+		if (enabled) {
 			log.info("password history rule is enabled.");
 			Password pswd = new Password();
 			pswd.setManagedSysId(lg.getManagedSysId());
@@ -88,5 +88,39 @@ public class PasswordHistoryRule extends AbstractPasswordRule {
 				}
 			}
 		}	
+	}
+
+	@Override
+	public PasswordRuleException createException() {
+		boolean enabled = false;
+		
+		PolicyAttribute attribute = getAttribute("PWD_HIST_VER");
+		if (attribute != null && StringUtils.isNotBlank(attribute.getValue1())) {
+			enabled = true;
+		}
+		
+		if (enabled) {
+			int version =  Integer.parseInt( attribute.getValue1() );
+			return new PasswordRuleException(ResponseCode.FAIL_HISTORY_RULE, new Object[] {version});
+		} else {
+			return null;
+		}
+	}
+
+	@Override
+	public PasswordRule createRule() {
+		boolean enabled = false;
+		
+		PolicyAttribute attribute = getAttribute("PWD_HIST_VER");
+		if (attribute != null && StringUtils.isNotBlank(attribute.getValue1())) {
+			enabled = true;
+		}
+		
+		if (enabled) {
+			int version =  Integer.parseInt( attribute.getValue1() );
+			return new PasswordRule(ResponseCode.FAIL_HISTORY_RULE, new Object[] {version});
+		} else {
+			return null;
+		}
 	}
 }

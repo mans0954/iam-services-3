@@ -743,8 +743,9 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
 		final Map<String, MetadataElementEntity> elementMap = new HashMap<String, MetadataElementEntity>();
 		if(CollectionUtils.isNotEmpty(template.getMetadataElements())) {
 			for(final MetadataElementPageTemplateXrefEntity xref : template.getMetadataElements()) {
-				final MetadataElementEntity element = xref.getMetadataElement();
-				if(element != null) {
+				MetadataElementEntity element = xref.getMetadataElement();
+				if(element != null && element.getId() != null) {
+					element = elementDAO.findById(element.getId());
 					elementMap.put(element.getId(), element);
 				}
 			}

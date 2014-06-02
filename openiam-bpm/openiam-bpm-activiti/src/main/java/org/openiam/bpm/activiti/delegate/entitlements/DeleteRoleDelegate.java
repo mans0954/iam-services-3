@@ -31,7 +31,8 @@ public class DeleteRoleDelegate extends AbstractActivitiJob {
             idmAuditLog.setAction(AuditAction.DELETE_ROLE.value());
             idmAuditLog.setAuditDescription("Delete role");
             idmAuditLog.setTargetRole(role.getId(), role.getName());
-            idmAuditLog.setSource(AuditSource.DELEGATE.value());
+            idmAuditLog.setTargetTask(execution.getId(),execution.getCurrentActivityName());
+            idmAuditLog.setSource(AuditSource.WORKFLOW.value());
             try {
                 wsResponse = roleService.removeRole(role.getId(), systemUserId);
                 if (wsResponse.isSuccess()) {

@@ -9,7 +9,6 @@ import org.openiam.idm.srvc.audit.constant.AuditSource;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
-import org.openiam.idm.srvc.res.service.ResourceService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public class SaveResourceDelegate extends AbstractActivitiJob {
@@ -26,7 +25,8 @@ public class SaveResourceDelegate extends AbstractActivitiJob {
         final Resource resource = getObjectVariable(execution, ActivitiConstants.RESOURCE, Resource.class);
         IdmAuditLog idmAuditLog = new IdmAuditLog();
         idmAuditLog.setRequestorUserId(getRequestorId(execution));
-        idmAuditLog.setSource(AuditSource.DELEGATE.value());
+        idmAuditLog.setSource(AuditSource.WORKFLOW.value());
+        idmAuditLog.setTargetTask(execution.getId(),execution.getCurrentActivityName());
         if (resource.getId() == null) {
             idmAuditLog.setAction(AuditAction.ADD_RESOURCE.value());
             idmAuditLog.setAuditDescription("Create new resource");

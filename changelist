@@ -1,4 +1,7 @@
 Release 3.1
 ----------------------------------------------
+2014/05/26 IDMAPPS-1733 AUDIT - Organization events are not being logged.
+2014/05/25 IDMAPPS-1734 AUDIT: Log create / modify / delete event on a group
+2014/05/25 IDMAPPS-1735 AUDIT: Log create / modify / delete event on a Role
 2014/05/25 IDMAPPS-1736 AUDIT: Log create / modify / delete event on a Resource
 2014/05/06 IDMAPPS-1719 [Refactoring] Unified ProvisionServicePreProcessor,ProvisionServicePostProcessor,PreProcessor,PostProcessor

@@ -26,11 +26,13 @@ import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.pswd.dto.Password;
+import org.openiam.idm.srvc.pswd.dto.PasswordRule;
 import org.openiam.idm.srvc.pswd.dto.PasswordValidationResponse;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  * Interface for the PasswordValidator
@@ -54,4 +56,8 @@ public interface PasswordValidator {
      * @return
      */
 	public void validateForUser(Policy policy, Password password, UserEntity usr, LoginEntity lg) throws ObjectNotFoundException, IOException, PasswordRuleException;
+	
+	public List<PasswordRule> getPasswordRules(Policy policy, Password password, UserEntity usr, LoginEntity lg) throws ObjectNotFoundException, IOException;
+	
+	public List<PasswordRule> getPasswordRules(Policy policy, Password password) throws ObjectNotFoundException, IOException;
 }

@@ -8,8 +8,8 @@ import org.apache.commons.logging.LogFactory;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.OrganizationTypeSearchBean;
+import org.openiam.idm.srvc.org.domain.OrgType2OrgTypeXrefEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationTypeEntity;
-import org.openiam.idm.srvc.org.dto.OrgType2OrgTypeXref;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.srvc.user.util.DelegationFilterHelper;
@@ -215,11 +215,11 @@ public class OrganizationTypeServiceImpl implements OrganizationTypeService, Ini
         } else {
             result = new HashSet<>(organizationTypeDAO.findAllIds());
         }
-        List<OrgType2OrgTypeXref> xrefList = organizationTypeDAO.getOrgTypeToOrgTypeXrefList();
+        List<OrgType2OrgTypeXrefEntity> xrefList = organizationTypeDAO.getOrgTypeToOrgTypeXrefList();
 
-        for(final OrgType2OrgTypeXref xref : xrefList) {
-            final String orgTypeId = xref.getOrganizationTypeId();
-            final String memberOrgTypeId = xref.getMemberOrganizationTypeId();
+        for(final OrgType2OrgTypeXrefEntity xref : xrefList) {
+            final String orgTypeId = xref.getId().getOrganizationTypeId();
+            final String memberOrgTypeId = xref.getId().getMemberOrganizationTypeId();
 
             if(StringUtils.equals(memberOrgTypeId, organizationTypeId)) {
                 allowedParentTypesIds.add(orgTypeId);
@@ -283,14 +283,14 @@ public class OrganizationTypeServiceImpl implements OrganizationTypeService, Ini
     }
 
     private OrgTypeResponse getAllOrgTypeMap() {
-        List<OrgType2OrgTypeXref> xrefList = organizationTypeDAO.getOrgTypeToOrgTypeXrefList();
+        List<OrgType2OrgTypeXrefEntity> xrefList = organizationTypeDAO.getOrgTypeToOrgTypeXrefList();
 
         final Map<String, Set<String>> parentOrg2ChildOrgTypeMap = new HashMap<String, Set<String>>();
         final Map<String, Set<String>> child2ParentOrgMap = new HashMap<String, Set<String>>();
 
-        for(final OrgType2OrgTypeXref xref : xrefList) {
-            final String orgTypeId = xref.getOrganizationTypeId();
-            final String memberOrgTypeId = xref.getMemberOrganizationTypeId();
+        for(final OrgType2OrgTypeXrefEntity xref : xrefList) {
+            final String orgTypeId = xref.getId().getOrganizationTypeId();
+            final String memberOrgTypeId = xref.getId().getMemberOrganizationTypeId();
 
             if(!parentOrg2ChildOrgTypeMap.containsKey(orgTypeId)) {
                 parentOrg2ChildOrgTypeMap.put(orgTypeId, new HashSet<String>());

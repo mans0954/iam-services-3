@@ -10,7 +10,7 @@ package org.openiam.idm.srvc.audit.constant;
 public enum AuditSource {
     WEBCONSOLE("WEBCONSOLE"),
     SELFSERVICE("SELFSERVICE"),
-    DELEGATE("DELEGATE"),
+    WORKFLOW("WORKFLOW"),
     IDP("IDP"),
     ESB("ESB"),
     PROXY("PROXY");

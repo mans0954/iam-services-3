@@ -25,7 +25,8 @@ public class SaveRoleDeletage extends AbstractActivitiJob {
         final Role role = getObjectVariable(execution, ActivitiConstants.ROLE, Role.class);
         IdmAuditLog idmAuditLog = new IdmAuditLog();
         idmAuditLog.setRequestorUserId(getRequestorId(execution));
-        idmAuditLog.setSource(AuditSource.DELEGATE.value());
+        idmAuditLog.setSource(AuditSource.WORKFLOW.value());
+        idmAuditLog.setTargetTask(execution.getId(),execution.getCurrentActivityName());
         if (role.getId() == null) {
             idmAuditLog.setAction(AuditAction.ADD_ROLE.value());
             idmAuditLog.setAuditDescription("Create new role");

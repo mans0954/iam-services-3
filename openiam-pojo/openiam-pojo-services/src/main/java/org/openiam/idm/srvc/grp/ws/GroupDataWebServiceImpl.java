@@ -30,6 +30,7 @@ import org.openiam.internationalization.LocalizedServiceGet;
 import org.openiam.util.UserUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.jws.WebMethod;
 import javax.jws.WebService;
@@ -177,6 +178,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
 
     @Override
     @LocalizedServiceGet
+    @Transactional(readOnly=true)
     public Group getGroupLocalize(final String groupId, final String requesterId, final Language language) {
         Group retVal = null;
         if (StringUtils.isNotBlank(groupId)) {

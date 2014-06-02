@@ -25,6 +25,7 @@ package org.openiam.idm.srvc.pswd.rule;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
+import org.openiam.idm.srvc.pswd.dto.PasswordRule;
 
 /**
  * Validates a password to ensure that it contains the appropriate number of non-alpha numeric (symbols such as &, $, #, etc) characters in
@@ -37,19 +38,12 @@ public class NonAlphaNumericRule extends AbstractPasswordRule {
 
 	@Override
 	public void validate() throws PasswordRuleException {
-		int minChar = 0;
-		int maxChar = 0;
-				
-		PolicyAttribute attribute = policy.getAttribute("NON_ALPHA_CHARS");
-		if (attribute != null && StringUtils.isNotBlank(attribute.getValue1())) {
-			minChar = Integer.parseInt(attribute.getValue1());
-		}
 		
-		if (attribute != null && StringUtils.isNotBlank(attribute.getValue2())) {
-			maxChar = Integer.parseInt(attribute.getValue2());
-		}
+		PolicyAttribute attribute = getAttribute("NON_ALPHA_CHARS");
+		int minChar = getValue1(attribute);
+		int maxChar = getValue2(attribute);
 		
-		final PasswordRuleException ex = createException(ResponseCode.FAIL_NON_APHANUMERIC_RULE, minChar, maxChar);
+		final PasswordRuleException ex = createException();
 		
 		// count the number of characters in the password
 		if (password == null) {
@@ -73,5 +67,21 @@ public class NonAlphaNumericRule extends AbstractPasswordRule {
 				throw ex;
 			}
 		}
+	}
+
+	@Override
+	public PasswordRuleException createException() {
+		PolicyAttribute attribute = getAttribute("NON_ALPHA_CHARS");
+		int minChar = getValue1(attribute);
+		int maxChar = getValue2(attribute);
+		return createException(ResponseCode.FAIL_NON_APHANUMERIC_RULE, minChar, maxChar);
+	}
+
+	@Override
+	public PasswordRule createRule() {
+		PolicyAttribute attribute = getAttribute("NON_ALPHA_CHARS");
+		int minChar = getValue1(attribute);
+		int maxChar = getValue2(attribute);
+		return createRule(ResponseCode.FAIL_NON_APHANUMERIC_RULE, minChar, maxChar);
 	}	
 }

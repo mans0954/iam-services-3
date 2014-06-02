@@ -30,7 +30,8 @@ public class DeleteResourceDelegate extends AbstractActivitiJob {
             idmAuditLog.setAction(AuditAction.DELETE_RESOURCE.value());
             idmAuditLog.setAuditDescription("Delete resource");
             idmAuditLog.setTargetResource(resource.getId(), resource.getName());
-            idmAuditLog.setSource(AuditSource.DELEGATE.value());
+            idmAuditLog.setTargetTask(execution.getId(),execution.getCurrentActivityName());
+            idmAuditLog.setSource(AuditSource.WORKFLOW.value());
             try {
                 wsResponse = resourceService.deleteResource(resource.getId(), systemUserId);
                 if (wsResponse.isSuccess()) {
