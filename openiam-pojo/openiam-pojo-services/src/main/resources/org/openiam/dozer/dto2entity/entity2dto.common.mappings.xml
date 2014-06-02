@@ -114,6 +114,10 @@
             <a>metadataType.description</a>
             <b>typeDescription</b>
         </field>
+        <field>
+        	<a>parent.id</a>
+        	<b>parentId</b>
+        </field>
 	</mapping>
 	<mapping>
 		<class-a>org.openiam.idm.srvc.continfo.domain.PhoneEntity</class-a>
