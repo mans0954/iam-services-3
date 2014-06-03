@@ -1303,6 +1303,8 @@ public class UserMgr implements UserDataService {
         return getEmailAddressList(searchBean, size, from);
     }
 
+    @Override
+    @Transactional(readOnly = true)
     public List<EmailAddressEntity> getEmailAddressList(EmailSearchBean searchBean, Integer size, Integer from) {
         if (searchBean == null)
             throw new NullPointerException("searchBean is null");

@@ -9,6 +9,7 @@ import javax.jws.WebParam;
 import javax.jws.WebService;
 
 import org.openiam.base.ws.Response;
+import org.openiam.idm.searchbeans.EmailSearchBean;
 import org.openiam.idm.searchbeans.PotentialSupSubSearchBean;
 import org.openiam.idm.searchbeans.UserSearchBean;
 import org.openiam.idm.srvc.continfo.dto.Address;
@@ -85,6 +86,13 @@ public interface UserDataWebService {
     @WebMethod
     public List<User> findUserByOrganization(@WebParam(name = "orgId", targetNamespace = "") String orgId);
 
+    /**
+     * Call to find users by various criteria
+     * @param userSearchBean  
+     * @param from - where to start paging
+     * @param size - how many results to return
+     * @return a List of matched User objects
+     */
     @WebMethod
     List<User> findBeans(@WebParam(name = "searchBean", targetNamespace = "") UserSearchBean userSearchBean,
                          @WebParam(name = "from", targetNamespace = "") int from, @WebParam(name = "size", targetNamespace = "") int size);
@@ -361,6 +369,11 @@ public interface UserDataWebService {
                                                         @WebParam(name = "size", targetNamespace = "") Integer size,
                                                         @WebParam(name = "from", targetNamespace = "") Integer from);
 
+    @WebMethod
+    public List<EmailAddress> findEmailBeans(final @WebParam(name="searchBean") EmailSearchBean searchBean,
+    										 final @WebParam(name = "size", targetNamespace = "") int size,
+    										 final @WebParam(name = "from", targetNamespace = "") int from);
+    
     /**
      * Add a Supervisor record
      * 

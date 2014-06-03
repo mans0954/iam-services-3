@@ -1178,6 +1178,13 @@ public class UserDataWebServiceImpl implements UserDataWebService {
         return userManager.getAllSuperiorsCount();
     }
 
+	@Override
+	@Transactional(readOnly = true)
+	public List<EmailAddress> findEmailBeans(final EmailSearchBean searchBean, final int size, final int from) {
+		final List<EmailAddressEntity> emailAddresses = userManager.getEmailAddressList(searchBean, size, from);
+		return emailAddressDozerConverter.convertToDTOList(emailAddresses, searchBean.isDeepCopy());
+	}
+
 //    @Override
 //    public Map<String, UserAttribute> getUserAttributesAsMap(@WebParam(name = "userId", targetNamespace = "") String userId){
 //        return userManager.getUserAttributesDto(userId);
