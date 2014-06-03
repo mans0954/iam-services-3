@@ -1,4 +1,8 @@
-Release 3.1
+
+
+2014/06/03 IDMAPPS-1819 Add search by attributes in GroupSearchBean, OrganzationSearchBean
+----------------------------------------------
+Release 3.1Beta2
 ----------------------------------------------
 2014/05/26 IDMAPPS-1733 AUDIT - Organization events are not being logged.
 2014/05/25 IDMAPPS-1734 AUDIT: Log create / modify / delete event on a group

@@ -1,6 +1,8 @@
 package org.openiam.idm.searchbeans;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+import org.openiam.base.Tuple;
 import org.openiam.idm.srvc.org.dto.Organization;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -8,6 +10,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 import java.io.Serializable;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -24,7 +27,8 @@ import java.util.Set;
 		"parentId",
 		"childId",
 		"validParentTypeId",
-        "internalOrgId"
+        "internalOrgId",
+        "attributes"
 })
 public class OrganizationSearchBean extends AbstractSearchBean<Organization, String> implements SearchBean<Organization, String>,
         Serializable {
@@ -37,6 +41,7 @@ public class OrganizationSearchBean extends AbstractSearchBean<Organization, Str
     private String childId;
     private String validParentTypeId;
     private String internalOrgId;
+    private List<Tuple<String,String>> attributes;
 
     public String getName() {
 		return name;
@@ -154,5 +159,55 @@ public class OrganizationSearchBean extends AbstractSearchBean<Organization, Str
 
     public void setInternalOrgId(String internalOrgId) {
         this.internalOrgId = internalOrgId;
+    }
+
+    public void addAttribute(final String key, final String value) {
+        if(StringUtils.isNotBlank(key) || StringUtils.isNotBlank(value)) {
+            if(this.attributes == null) {
+                this.attributes = new LinkedList<Tuple<String,String>>();
+            }
+            final Tuple<String, String> tuple = new Tuple<String, String>(key, value);
+            this.attributes.add(tuple);
+        }
+    }
+
+    public List<Tuple<String, String>> getAttributes() {
+        return attributes;
+    }
+
+    public void setAttributes(List<Tuple<String, String>> attributes) {
+        this.attributes = attributes;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+
+        OrganizationSearchBean that = (OrganizationSearchBean) o;
+
+        if (childId != null ? !childId.equals(that.childId) : that.childId != null) return false;
+        if (internalOrgId != null ? !internalOrgId.equals(that.internalOrgId) : that.internalOrgId != null)
+            return false;
+        if (name != null ? !name.equals(that.name) : that.name != null) return false;
+        if (parentId != null ? !parentId.equals(that.parentId) : that.parentId != null) return false;
+        if (userId != null ? !userId.equals(that.userId) : that.userId != null) return false;
+        if (validParentTypeId != null ? !validParentTypeId.equals(that.validParentTypeId) : that.validParentTypeId != null)
+            return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = super.hashCode();
+        result = 31 * result + (name != null ? name.hashCode() : 0);
+        result = 31 * result + (userId != null ? userId.hashCode() : 0);
+        result = 31 * result + (parentId != null ? parentId.hashCode() : 0);
+        result = 31 * result + (childId != null ? childId.hashCode() : 0);
+        result = 31 * result + (validParentTypeId != null ? validParentTypeId.hashCode() : 0);
+        result = 31 * result + (internalOrgId != null ? internalOrgId.hashCode() : 0);
+        return result;
     }
 }
