@@ -4,6 +4,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
+import org.openiam.base.AbstractAttributeDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity;
 
@@ -12,56 +13,24 @@ import java.util.List;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "organizationAttribute", propOrder = {
-        "id",
-        "metadataElementId",
-        "name",
         "organizationId",
-        "value",
         "values",
         "isMultivalued"
 })
 @DozerDTOCorrespondence(OrganizationAttributeEntity.class)
-public class OrganizationAttribute implements java.io.Serializable {
+public class OrganizationAttribute extends AbstractAttributeDTO {
 
     private static final long serialVersionUID = -231974705360001659L;
 
-    private String id;
-    private String metadataElementId;
-    private String name;
     private String organizationId;
-    private String value;
     protected List<String> values = new ArrayList<String>();
     protected Boolean isMultivalued = Boolean.FALSE;
 
     public OrganizationAttribute() {
     }
 
-    public String getId() {
-		return id;
-	}
-
-	public void setId(String id) {
-		this.id = id;
-	}
-
-	public String getName() {
-        return name;
-    }
-
-    public void setName(String value) {
-        this.name = value;
-    }
-
     public String getOrganizationId() {
         return this.organizationId;
-    }
-
-    public String getValue() {
-        return value;
-    }
-
-    public void setValue(String value) {
-        this.value = value;
     }
 
     public List<String> getValues() {
@@ -80,14 +49,6 @@ public class OrganizationAttribute implements java.io.Serializable {
         this.isMultivalued = isMultivalued;
     }
 
-    public String getMetadataElementId() {
-        return metadataElementId;
-    }
-
-    public void setMetadataElementId(String metadataElementId) {
-        this.metadataElementId = metadataElementId;
-    }
-
     public void setOrganizationId(String organizationId) {
         this.organizationId = organizationId;
     }
@@ -95,18 +56,12 @@ public class OrganizationAttribute implements java.io.Serializable {
 	@Override
 	public int hashCode() {
 		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
-		result = prime
-				* result
-				+ ((metadataElementId == null) ? 0 : metadataElementId
-						.hashCode());
-		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		int result = super.hashCode();
+		result = prime * result
+				+ ((isMultivalued == null) ? 0 : isMultivalued.hashCode());
 		result = prime * result
 				+ ((organizationId == null) ? 0 : organizationId.hashCode());
-		result = prime * result + ((value == null) ? 0 : value.hashCode());
-        result = prime * result + ((isMultivalued == null) ? 0 : isMultivalued.hashCode());
-
+		result = prime * result + ((values == null) ? 0 : values.hashCode());
 		return result;
 	}
 
@@ -114,44 +69,28 @@ public class OrganizationAttribute implements java.io.Serializable {
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
-		if (obj == null)
+		if (!super.equals(obj))
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
 		OrganizationAttribute other = (OrganizationAttribute) obj;
-		if (id == null) {
-			if (other.id != null)
+		if (isMultivalued == null) {
+			if (other.isMultivalued != null)
 				return false;
-		} else if (!id.equals(other.id))
-			return false;
-		if (metadataElementId == null) {
-			if (other.metadataElementId != null)
-				return false;
-		} else if (!metadataElementId.equals(other.metadataElementId))
-			return false;
-		if (name == null) {
-			if (other.name != null)
-				return false;
-		} else if (!name.equals(other.name))
+		} else if (!isMultivalued.equals(other.isMultivalued))
 			return false;
 		if (organizationId == null) {
 			if (other.organizationId != null)
 				return false;
 		} else if (!organizationId.equals(other.organizationId))
 			return false;
-		if (value == null) {
-			if (other.value != null)
+		if (values == null) {
+			if (other.values != null)
 				return false;
-		} else if (!value.equals(other.value))
+		} else if (!values.equals(other.values))
 			return false;
-        if (isMultivalued == null) {
-            if (other.isMultivalued != null)
-                return false;
-        } else if (!isMultivalued.equals(other.isMultivalued))
-            return false;
-
 		return true;
 	}
-    
-    
+
+	
 }

@@ -71,6 +71,7 @@ public class RoleEntity extends AbstractMetdataTypeEntity {
     @OrderBy("name asc")
     //@JoinColumn(name = "ROLE_ID")
     @Fetch(FetchMode.SUBSELECT)
+    @Internationalized
 	private Set<RoleAttributeEntity> roleAttributes;
 	
 	@OneToMany(fetch=FetchType.LAZY,orphanRemoval=true,cascade=CascadeType.ALL)

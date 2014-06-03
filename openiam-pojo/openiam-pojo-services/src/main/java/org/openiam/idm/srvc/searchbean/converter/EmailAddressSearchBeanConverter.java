@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.searchbean.converter;
 
+import org.apache.commons.lang.StringUtils;
 import org.openiam.idm.searchbeans.EmailSearchBean;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
@@ -26,7 +27,7 @@ public class EmailAddressSearchBeanConverter implements SearchBeanConverter<Emai
             type.setId(searchBean.getMetadataTypeId());
             email.setMetadataType(type);
         }
-
+        email.setEmailAddress(StringUtils.trimToNull(searchBean.getEmail()));
         return email;
     }
 }

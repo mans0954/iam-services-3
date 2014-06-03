@@ -11,8 +11,8 @@ import java.io.Serializable;
 @XmlType(name = "EmailSearchBean", propOrder = {
         "name",
         "parentId",
-        "metadataTypeId"/*,
-        "parentType"*/
+        "metadataTypeId",
+        "email"
 })
 public class EmailSearchBean extends AbstractSearchBean<EmailAddress, String> implements SearchBean<EmailAddress, String>,
         Serializable {

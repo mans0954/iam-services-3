@@ -206,10 +206,12 @@ public class DefaultLoginModule extends AbstractLoginModule {
             }
             // check password policy if it is necessary to change it after reset
 
-            String chngPwdAttr = getPolicyAttribute(pwdPlcy.getPolicyAttributes(),"CHNG_PSWD_ON_RESET");
-            if(lg.getResetPassword()>0 && StringUtils.isNotBlank(chngPwdAttr)){
-                throw new AuthenticationException(
-                        AuthenticationConstants.RESULT_PASSWORD_CHANGE_AFTER_RESET);
+            if(lg.getResetPassword()>0){
+                String chngPwdAttr = getPolicyAttribute(pwdPlcy.getPolicyAttributes(),"CHNG_PSWD_ON_RESET");
+                if (StringUtils.isNotBlank(chngPwdAttr) && Integer.parseInt(chngPwdAttr) > 0) {
+                    throw new AuthenticationException(
+                            AuthenticationConstants.RESULT_PASSWORD_CHANGE_AFTER_RESET);
+                }
             }
 
             log.debug("-login successful");
