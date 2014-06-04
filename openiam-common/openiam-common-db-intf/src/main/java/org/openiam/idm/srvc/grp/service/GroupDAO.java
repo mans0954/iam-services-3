@@ -36,5 +36,4 @@ public interface GroupDAO extends BaseDao<GroupEntity, String> {
     public List<GroupEntity> getChildGroups(final String groupId, Set<String> filter, final int from, final int size);
     public List<GroupEntity> getParentGroups(final String groupId, Set<String> filter, final int from, final int size);
 
-    public List<GroupEntity> findGroupsByAttributeValue(final String attrName, final String attrValue);
 }

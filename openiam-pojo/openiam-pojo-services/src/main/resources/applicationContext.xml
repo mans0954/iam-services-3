@@ -243,7 +243,7 @@
 
 	<!-- Hibernate SessionFactory -->
 	<bean id="sessionFactory"
-		class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean">
+		class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
 		<property name="dataSource" ref="dataSource" />
 		<!-- <property name="jtaTransactionManager"> <bean factory-bean="transactionManager" 
 			factory-method="getTransactionManager" /> </property> -->
@@ -268,10 +268,6 @@
 		<!--<prop key="hibernate.validationQuery">${openiam.hibernate.validationQuery}</prop>-->
 	</util:properties>
 
-	<bean id="hibernateTemplate" class="org.springframework.orm.hibernate3.HibernateTemplate">
-		<property name="sessionFactory" ref="sessionFactory" />
-	</bean>
-
 	<jee:jndi-lookup jndi-name="${datasource.jndi.name}"
 		id="dataSource" />
 
@@ -293,7 +289,7 @@
 	</bean>
 
 	<bean id="transactionManager"
-		class="org.springframework.orm.hibernate3.HibernateTransactionManager">
+		class="org.springframework.orm.hibernate4.HibernateTransactionManager">
 		<property name="sessionFactory" ref="sessionFactory" />
 	</bean>
 

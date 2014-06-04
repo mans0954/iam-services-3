@@ -11,8 +11,6 @@ import org.dozer.CustomConverter;
 import org.dozer.DozerConverter;
 import org.dozer.Mapper;
 import org.dozer.MapperAware;
-import org.hibernate.collection.PersistentList;
-import org.hibernate.collection.PersistentSet;
 import org.openiam.util.SpringContextProvider;
 
 public class PersistentListConverter implements ConfigurableCustomConverter {

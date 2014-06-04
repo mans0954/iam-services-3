@@ -453,7 +453,9 @@ public class RoleDataServiceImpl implements RoleDataService {
     @Override
     @Transactional(readOnly = true)
     public List<RoleEntity> findRolesByAttributeValue(String attrName, String attrValue) {
-        return roleDao.findRolesByAttributeValue(attrName, attrValue);
+    	final RoleSearchBean searchBean = new RoleSearchBean();
+    	searchBean.addAttribute(attrName, attrValue);
+        return roleDao.getByExample(searchBean);
     }
 
 	@Override

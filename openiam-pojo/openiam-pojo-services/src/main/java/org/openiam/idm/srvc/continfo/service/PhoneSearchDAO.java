@@ -42,7 +42,7 @@ public class PhoneSearchDAO extends AbstractHibernateSearchDao<PhoneEntity, Phon
     	if ((query != null)) {
             final Query luceneQuery = parse(query);
             if (luceneQuery != null) {
-				final List idList = findIds(buildFullTextSessionQuery(getFullTextSession(), luceneQuery, from, size, null).setProjection("parent"));
+				final List idList = findIds(buildFullTextSessionQuery(getFullTextSession(null), luceneQuery, from, size, null).setProjection("parent"));
 				for (final Object row : idList) {
 					final Object[] columns = (Object[]) row;
 					final UserEntity id = (UserEntity) columns[0];

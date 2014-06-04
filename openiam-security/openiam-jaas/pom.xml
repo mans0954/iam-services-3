@@ -95,7 +95,11 @@
                 </exclusion>
                 <exclusion>
                     <groupId>org.hibernate</groupId>
-                    <artifactId>hibernate-search</artifactId>
+                    <artifactId>hibernate-search-orm</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.hibernate</groupId>
+                    <artifactId>hibernate-search-analyzers</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>org.hibernate</groupId>

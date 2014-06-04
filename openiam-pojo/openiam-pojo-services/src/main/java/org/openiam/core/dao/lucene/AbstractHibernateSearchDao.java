@@ -1,5 +1,6 @@
 package org.openiam.core.dao.lucene;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.StopWatch;
 import org.apache.log4j.Logger;
@@ -8,6 +9,8 @@ import org.apache.lucene.search.*;
 import org.hibernate.CacheMode;
 import org.hibernate.Criteria;
 import org.hibernate.FlushMode;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.criterion.DetachedCriteria;
 import org.hibernate.criterion.Order;
@@ -17,21 +20,28 @@ import org.hibernate.search.FullTextQuery;
 import org.hibernate.search.FullTextSession;
 import org.hibernate.search.Search;
 import org.hibernate.search.SearchException;
+import org.hibernate.search.SearchFactory;
+import org.hibernate.search.engine.spi.SearchFactoryImplementor;
+import org.hibernate.search.store.impl.DirectoryProviderHelper;
+import org.openiam.core.dao.BaseDaoImpl;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.orm.hibernate3.HibernateTemplate;
-import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
 
-public abstract class AbstractHibernateSearchDao<T, Q, KeyType> extends HibernateDaoSupport implements HibernateSearchDao<T, Q, KeyType>, DisposableBean, InitializingBean {
+public abstract class AbstractHibernateSearchDao<T, Q, KeyType extends Serializable> implements HibernateSearchDao<T, Q, KeyType>, DisposableBean {
 
 	protected static Logger logger = Logger.getLogger(AbstractHibernateSearchDao.class);
 	
@@ -46,10 +56,15 @@ public abstract class AbstractHibernateSearchDao<T, Q, KeyType> extends Hibernat
 	
 	private String lastModifiedFieldName;
 	private String idFieldName;
+	private SessionFactory sessionFactory;
 	
 	@Autowired
-	public void setTemplate(final @Qualifier("hibernateTemplate") HibernateTemplate hibernateTemplate) {
-		super.setHibernateTemplate(hibernateTemplate);
+	public void setTemplate(final @Qualifier("sessionFactory") SessionFactory sessionFactory) {
+		this.sessionFactory = sessionFactory;
+	}
+	
+	private Session getSession() {
+		return sessionFactory.getCurrentSession();
 	}
 
     static {
@@ -64,44 +79,32 @@ public abstract class AbstractHibernateSearchDao<T, Q, KeyType> extends Hibernat
 
 	@Resource(name = "hibernateProperties")
     public void setHibernateProperties(final Properties hibernateProperties) {
-    	final String directoryName = String.format("%s.", getEntityClass().getName());
-    	this.hibernateProperties = new Properties();
-    	for (final Object key : hibernateProperties.keySet()) {
-    		String _key = key.toString();
-    		if (_key.startsWith("hibernate.search.")) {
-    			_key = _key.substring("hibernate.search.".length());
-    			if (_key.startsWith(directoryName)) {
-    				_key = _key.substring(directoryName.length());
-    			} else if (_key.startsWith("default.")) {
-    				_key = _key.substring("default.".length());
-    			}
-    			this.hibernateProperties.put(_key, hibernateProperties.get(key));
-    		}
-    	}
+		this.hibernateProperties = hibernateProperties;
 	}
 
-    @Override public int count(final Q query) {
-    	int count = 0;
+    @Override public int count(final Q query) { 
+        int count = 0;
     	if (query != null) {
             final Query luceneQuery = parse(query);
             if (luceneQuery == null) {
             	// count all objects
                 final Criteria criteria = getSession().createCriteria(getEntityClass()).setCacheable(true);
+        		criteria.add(Restrictions.eq("active", Boolean.TRUE));
         		criteria.setProjection(Projections.rowCount());
         		count = ((Number) criteria.uniqueResult()).intValue();
             } else {
-            	count = count(buildFullTextSessionQuery(getFullTextSession(), luceneQuery, null));
+            	count = count(buildFullTextSessionQuery(getFullTextSession(null), luceneQuery, null));
             }
     	}
         return count;
     }
 
-    @Override public List<T> find(final int from, final int size, final SortType sort, final Q query) {
-    	List<T> result = Collections.emptyList();
+    @Override public List<T> find(final int from, final int size, final SortType sort, final Q query) {        
+        List<T> result = Collections.emptyList();
     	if ((from >=0) && (size > 0) && (query != null)) {
             final Query luceneQuery = parse(query);
             if (luceneQuery != null) {
-            	result = find(buildFullTextSessionQuery(getFullTextSession(), luceneQuery, from, size, sort));
+            	result = find(buildFullTextSessionQuery(getFullTextSession(null), luceneQuery, from, size, sort));
             }
     	}
         return result;
@@ -113,7 +116,7 @@ public abstract class AbstractHibernateSearchDao<T, Q, KeyType> extends Hibernat
     	if ((query != null)) {
             final Query luceneQuery = parse(query);
             if (luceneQuery != null) {
-				final List idList = findIds(buildFullTextSessionQuery(getFullTextSession(), luceneQuery, sort).setProjection(idFieldName));
+				final List idList = findIds(buildFullTextSessionQuery(getFullTextSession(null), luceneQuery, sort).setProjection(idFieldName));
 				for (final Object row : idList) {
 					final Object[] columns = (Object[]) row;
 					final KeyType id = (KeyType) columns[0];
@@ -131,7 +134,7 @@ public abstract class AbstractHibernateSearchDao<T, Q, KeyType> extends Hibernat
             final Query luceneQuery = parse(query);
             if (luceneQuery != null) {
 				final List idList = findIds(buildFullTextSessionQuery(
-						getFullTextSession(), luceneQuery, from, size, sort)
+						getFullTextSession(null), luceneQuery, from, size, sort)
 						.setProjection(idFieldName));
 				for (final Object row : idList) {
 					final Object[] columns = (Object[]) row;
@@ -159,8 +162,9 @@ public abstract class AbstractHibernateSearchDao<T, Q, KeyType> extends Hibernat
         return hiberQuery;
     }
 
-    protected FullTextSession getFullTextSession() {
-    	return Search.getFullTextSession(getSession());
+    protected FullTextSession getFullTextSession(Session session) {
+    	session = (session != null) ? session : getSession();
+        return Search.getFullTextSession(session);
     }
 
     @SuppressWarnings({ "unchecked" })
@@ -183,39 +187,57 @@ public abstract class AbstractHibernateSearchDao<T, Q, KeyType> extends Hibernat
 
     protected abstract Query parse(Q query);
     protected abstract Class<T> getEntityClass();
-
-    private void buidIndexes() throws Exception {
+    
+    private void buidIndexes(Session session) throws Exception {
     	final DetachedCriteria criteria = DetachedCriteria.forClass(getEntityClass()).addOrder(Order.asc(idFieldName));
         try {
-        	doIndex(criteria, true);
+        	doIndex(criteria, true, session);
     	} catch (SearchException e) {
-    		logger.error("Can't reindex", e);
-    		throw e;
-    		/*
+//    		if (logger.isErrorEnabled()) {
+    			logger.error(String.format("can't build indexes : '%s'. Trying to recreate indexes dir", e));
+//    		}
     		//clean-up lucene indexes directory
-    		final SearchFactory searchFactory = getFullTextSession().getSearchFactory();
+    		final SearchFactory searchFactory = getFullTextSession(session).getSearchFactory();
     		if (searchFactory instanceof SearchFactoryImplementor) {
-    			final Class<T> entityClass = getEntityClass();
-    			final String directoryProviderName = entityClass.getName();
-    			DirectoryProviderHelper.getSourceDirectory(directoryProviderName, hibernateProperties, true).delete();
-    			FileUtils.deleteDirectory(DirectoryProviderHelper.getSourceDirectory(directoryProviderName, hibernateProperties, true));
-    			for (final DirectoryProvider<?> directoryProvider : searchFactory.getDirectoryProviders(entityClass)) {
+    			reintializeCurrentIndex(session, (SearchFactoryImplementor)searchFactory);
+    			/*
+    			for (final DocumentBuilderContainedEntity<?> directoryProvider : searchFactory.getDirectoryProviders(entityClass)) {
+    				directoryProvider.initialize(arg0, arg1, arg2);
     				directoryProvider.initialize(directoryProviderName, hibernateProperties, (SearchFactoryImplementor) searchFactory);
     			}
+    			*/
     			//trying to build indexes again
     			//don't call buidIndexes(), cause if it's possible to get short circle recursion
-    			doIndex(criteria, true);
+    			doIndex(criteria, true, session);
+    			if (logger.isDebugEnabled()) {
+    				logger.debug("indexes dir recreated, indexes rebuilt");
+    			}
     		} else {
     			//just rethrow exception
     			throw e;
     		}
-    		*/
     	}
     }
-
+    
+    private void reintializeCurrentIndex(Session session, final SearchFactoryImplementor searchFactory) throws IOException {
+    	session = (session != null) ? session : getSession();
+    	final Class<T> entityClass = getEntityClass();
+		final String directoryProviderName = hibernateProperties.getProperty("hibernate.search.default.indexBase") + "/" + entityClass.getName();
+		final File sourceDir = DirectoryProviderHelper.getSourceDirectory(directoryProviderName, hibernateProperties, true);
+		sourceDir.delete();
+		FileUtils.deleteDirectory(sourceDir);
+		DirectoryProviderHelper.createFSIndex(sourceDir, hibernateProperties);
+		
+		/*
+		for(final IndexManager indexManager : searchFactory.getIndexBindingForEntity(entityClass).getIndexManagers()) {
+			indexManager.initialize(directoryProviderName, hibernateProperties, searchFactory.getWorker());
+		}
+		*/
+    }
+    
     @SuppressWarnings("unchecked")
-	private void doIndex(final DetachedCriteria load, final boolean purgeAll) {
-        final FullTextSession fullTextSession = getFullTextSession();
+	private void doIndex(final DetachedCriteria load, final boolean purgeAll, final Session session) {
+        final FullTextSession fullTextSession = getFullTextSession(session);
         fullTextSession.setFlushMode(FlushMode.COMMIT);
         //fullTextSession.setCacheMode(CacheMode.IGNORE);
         fullTextSession.setCacheMode(CacheMode.REFRESH);
@@ -309,16 +331,18 @@ public abstract class AbstractHibernateSearchDao<T, Q, KeyType> extends Hibernat
     	reentrantLock.lock();
 		final StopWatch stopWatch = new StopWatch();
 		stopWatch.start();
+		Session session = null;
     	try {
+    		session = sessionFactory.openSession();
     		boolean reindexed = false;
     		final Date updateDate = getLastDbUpdateDateInternal();
     		if (lastUpdateDBDate == null || forcePurgeAll) {
     			final DetachedCriteria criteria = DetachedCriteria.forClass(getEntityClass()).addOrder(Order.asc(idFieldName));
-    			doIndex(criteria, forcePurgeAll);
+    			doIndex(criteria, forcePurgeAll, session);
     			reindexed = true;
     		} else if (((null != updateDate) && (updateDate.after(lastUpdateDBDate)))) {
     			final DetachedCriteria criteria = DetachedCriteria.forClass(getEntityClass()).add(Restrictions.gt(lastModifiedFieldName, lastUpdateDBDate)).addOrder(Order.asc(idFieldName));
-    			doIndex(criteria, forcePurgeAll);
+    			doIndex(criteria, forcePurgeAll, session);
     			reindexed = true;
         	}
 
@@ -333,6 +357,11 @@ public abstract class AbstractHibernateSearchDao<T, Q, KeyType> extends Hibernat
     				reindexDuration = stopWatch.getTime();
 				}
     			reentrantLock.unlock();
+    		}
+    		if(session != null) {
+    			if(session.isOpen()) {
+    				session.close();
+    			}
     		}
     	}
     }
@@ -374,28 +403,40 @@ public abstract class AbstractHibernateSearchDao<T, Q, KeyType> extends Hibernat
     	}
     }
 
-	@Override
+	@PostConstruct
 	public void initDao() throws Exception {
-		super.initDao();
+		Session session = null;
 		initMetadata();
-    	if (rebuildIndexesAtInit) {
-    		StopWatch stopWatch = new StopWatch();
-    		logger.info(String.format("begin re-indexing %s", getEntityClass().getSimpleName()));
-    		stopWatch.start();
-    		buidIndexes();
-    		stopWatch.stop();
-			synchronized (this) {
-				reindexDuration = stopWatch.getTime();
+		try {
+			session = sessionFactory.openSession();
+	    	if (rebuildIndexesAtInit) {
+	    		StopWatch stopWatch = new StopWatch();
+	    		logger.info(String.format("begin re-indexing %s", getEntityClass().getSimpleName()));
+	    		stopWatch.start();
+	    		buidIndexes(session);
+	    		stopWatch.stop();
+				synchronized (this) {
+					reindexDuration = stopWatch.getTime();
+				}
+				lastUpdateDBDate = getLastDbUpdateDateInternal();
+				if (lastUpdateDBDate == null) {
+					lastUpdateDBDate = new Date(System.currentTimeMillis());
+				}
+				reindexingCompletedOn = new Date(System.currentTimeMillis());
+				logger.info(String.format("end re-indexing %s after %s", getEntityClass().getSimpleName(), stopWatch.toString()));
+	    	} else {
+	    		logger.info(String.format("skip re-indexing %s", getEntityClass().getSimpleName()));
+	    	}
+		} catch(Throwable e) {
+			logger.error("Can't reinex", e);
+			throw e;
+		} finally {
+			if(session != null) {
+				if(session.isOpen()) {
+					session.close();
+				}
 			}
-			lastUpdateDBDate = getLastDbUpdateDateInternal();
-			if (lastUpdateDBDate == null) {
-				lastUpdateDBDate = new Date(System.currentTimeMillis());
-			}
-			reindexingCompletedOn = new Date(System.currentTimeMillis());
-			logger.info(String.format("end re-indexing %s after %s", getEntityClass().getSimpleName(), stopWatch.toString()));
-    	} else {
-    		logger.info(String.format("skip re-indexing %s", getEntityClass().getSimpleName()));
-    	}
+		}
 	}
     
     

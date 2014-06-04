@@ -251,16 +251,6 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
         }
         return criteria.list();
     }
-
-    public List<GroupEntity> findGroupsByAttributeValue(final String attrName, final String attrValue) {
-        List ret = new ArrayList<GroupEntity>();
-        if (StringUtils.isNotBlank(attrName)) {
-            // Can't use Criteria for @ElementCollection due to Hibernate bug
-            // (org.hibernate.MappingException: collection was not an association)
-            ret = getHibernateTemplate().find("select ga.group from GroupAttributeEntity ga left join ga.values av where ga.name = ? and ((ga.isMultivalued = false and ga.value = ?) or (ga.isMultivalued = true and av in ?))", attrName, attrValue, attrValue);
-        }
-        return ret;
-    }
 }
 
 
