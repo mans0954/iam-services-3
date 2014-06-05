@@ -20,6 +20,7 @@
  */
 package org.openiam.idm.srvc.auth.spi;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.SysConfiguration;
@@ -161,7 +162,10 @@ public abstract class AbstractLoginModule implements LoginModule {
 
     }
 
-    public int setDaysToPassworExpiration(LoginEntity lg, Date curDate, Subject sub) {
+    public Integer setDaysToPassworExpiration(LoginEntity lg, Date curDate, Subject sub, Policy pwdPolicy) {
+        if(pwdPolicy!=null && StringUtils.isBlank(pwdPolicy.getAttribute("PWD_EXPIRATION").getValue1())){
+            return null;
+        }
         if (lg.getPwdExp() == null) {
             return -1;
         }

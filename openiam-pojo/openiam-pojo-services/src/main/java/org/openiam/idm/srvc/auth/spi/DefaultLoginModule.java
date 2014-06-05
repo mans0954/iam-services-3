@@ -200,9 +200,11 @@ public class DefaultLoginModule extends AbstractLoginModule {
                 throw new AuthenticationException(
                         AuthenticationConstants.RESULT_PASSWORD_EXPIRED);
             }
-            int daysToExp = setDaysToPassworExpiration(lg, curDate, sub);
-            if (daysToExp > -1) {
-                sub.setDaysToPwdExp(daysToExp);
+            Integer daysToExp = setDaysToPassworExpiration(lg, curDate, sub, pwdPlcy);
+            if (daysToExp!=null) {
+                sub.setDaysToPwdExp(0);
+                if(daysToExp > -1)
+                    sub.setDaysToPwdExp(daysToExp);
             }
             // check password policy if it is necessary to change it after reset
 
