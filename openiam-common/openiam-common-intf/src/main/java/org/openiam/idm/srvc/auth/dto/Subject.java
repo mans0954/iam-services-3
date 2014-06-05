@@ -43,7 +43,7 @@ public class Subject implements Serializable {
     //private  String token;
     private String saml;
     private String samlType;
-    private int daysToPwdExp = 0;
+    private Integer daysToPwdExp;
 
     private SSOToken ssoToken;    /* Object containing the sso token and related information */
 
@@ -56,7 +56,7 @@ public class Subject implements Serializable {
      *
      * @return
      */
-    public int getDaysToPwdExp() {
+    public Integer getDaysToPwdExp() {
         return daysToPwdExp;
     }
 
@@ -65,7 +65,7 @@ public class Subject implements Serializable {
      *
      * @param daysToPwdExp
      */
-    public void setDaysToPwdExp(int daysToPwdExp) {
+    public void setDaysToPwdExp(Integer daysToPwdExp) {
         this.daysToPwdExp = daysToPwdExp;
     }
 
