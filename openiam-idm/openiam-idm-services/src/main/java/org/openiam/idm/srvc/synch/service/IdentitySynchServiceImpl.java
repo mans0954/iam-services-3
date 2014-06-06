@@ -272,6 +272,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
             idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "ERROR: "+cnfe.getMessage());
         } catch(Exception e) {
 			log.error(e);
+            e.printStackTrace();
             syncResponse = new SyncResponse(ResponseStatus.FAILURE);
             syncResponse.setErrorText(e.getMessage());
             idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "ERROR: "+e.getMessage());
