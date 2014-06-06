@@ -541,8 +541,8 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             // loginManager.deleteLogin(login.getLogin());
             try {
                 userMgr.removeUser(userId);
-            } catch (Exception e) {
-                e.printStackTrace();
+            } catch (Throwable e) {
+                log.error("Can't remove user", e);
                 response.setStatus(ResponseStatus.FAILURE);
                 response.setErrorCode(ResponseCode.FAIL_SQL_ERROR);
                 return response;

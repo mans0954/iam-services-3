@@ -3,16 +3,14 @@ package org.openiam.idm.srvc.org.service;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.Criteria;
-import org.hibernate.criterion.MatchMode;
-import org.hibernate.criterion.Order;
-import org.hibernate.criterion.Restrictions;
-import org.hibernate.transform.Transformers;
+import org.hibernate.criterion.*;
+import org.openiam.base.Tuple;
 import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.idm.searchbeans.OrganizationSearchBean;
 import org.openiam.idm.searchbeans.SearchBean;
 import org.openiam.idm.srvc.org.domain.Org2OrgXrefEntity;
+import org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
-import org.openiam.idm.srvc.org.dto.Org2OrgXref;
 import org.openiam.idm.srvc.searchbean.converter.OrganizationSearchBeanConverter;
 import org.openiam.internationalization.LocalizedDatabaseGet;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -82,10 +80,10 @@ public class OrganizationDAOImpl extends
 		if (searchBean != null && searchBean instanceof OrganizationSearchBean) {
 			final OrganizationSearchBean organizationSearchBean = (OrganizationSearchBean) searchBean;
 
-			final OrganizationEntity exampleEnity = organizationSearchBeanConverter
+			final OrganizationEntity exampleEntity = organizationSearchBeanConverter
 					.convert(organizationSearchBean);
-			exampleEnity.setId(null);
-			criteria = this.getExampleCriteria(exampleEnity);
+            exampleEntity.setId(null);
+			criteria = this.getExampleCriteria(exampleEntity);
 
 			if (organizationSearchBean.hasMultipleKeys()) {
 				criteria.add(Restrictions.in(getPKfieldName(),
@@ -130,6 +128,23 @@ public class OrganizationDAOImpl extends
                 criteria.add(Restrictions.in("organizationType.id",
                                              organizationSearchBean.getOrganizationTypeIdSet()));
             }
+
+            if(CollectionUtils.isNotEmpty(organizationSearchBean.getAttributes())) {
+                for(final Tuple<String, String> attribute : organizationSearchBean.getAttributes()) {
+                    DetachedCriteria crit = DetachedCriteria.forClass(OrganizationAttributeEntity.class);
+                    if(StringUtils.isNotBlank(attribute.getKey()) && StringUtils.isNotBlank(attribute.getValue())) {
+                        crit.add(Restrictions.and(Restrictions.eq("name", attribute.getKey()),
+                                Restrictions.eq("value", attribute.getValue())));
+                    } else if(StringUtils.isNotBlank(attribute.getKey())) {
+                        crit.add(Restrictions.eq("name", attribute.getKey()));
+                    } else if(StringUtils.isNotBlank(attribute.getValue())) {
+                        crit.add(Restrictions.eq("value", attribute.getValue()));
+                    }
+                    crit.setProjection(Projections.property("organization.id"));
+                    criteria.add(Subqueries.propertyIn("id", crit));
+                }
+            }
+
 		}
 		return criteria;
 	}
