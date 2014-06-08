@@ -232,7 +232,7 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 			ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(requestType.getKey(), variables);
 
             for(Map.Entry<String,Object> varEntry : variables.entrySet()) {
-                idmAuditLog.addCustomRecord(varEntry.getKey(), varEntry.getValue().toString());
+                idmAuditLog.addCustomRecord(varEntry.getKey(), (varEntry.getValue() != null) ? varEntry.getValue().toString() : null);
             }
             idmAuditLog.setTargetTask(processInstance.getId(), taskName);
 
