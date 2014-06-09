@@ -1,5 +1,8 @@
 package org.openiam.connector.ldap.command.base;
 
+import org.openiam.base.AttributeOperationEnum;
+import org.openiam.base.BaseAttribute;
+import org.openiam.base.BaseAttributeContainer;
 import org.openiam.connector.common.data.ConnectorConfiguration;
 import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.connector.type.ObjectValue;
@@ -62,45 +65,50 @@ public abstract class AbstractSearchLdapCommand<ExtObject extends ExtensibleObje
                     Attributes attrs = sr.getAttributes();
                     if (attrs != null) {
                         found = true;
-                        boolean firstIteration = true;
+
+                        try {
+                            ExtensibleAttribute extAttr = new ExtensibleAttribute();
+                            extAttr.setName("dn");
+                            String dnValue = sr.getNameInNamespace();
+                            extAttr.setValue(dnValue);
+                            objectValue.getAttributeList().add(extAttr);
+                        } catch (UnsupportedOperationException e) {
+                            log.error(e.getMessage(), e);
+                        }
+
                         for (NamingEnumeration ae = attrs.getAll(); ae.hasMore();) {
                             ExtensibleAttribute extAttr = new ExtensibleAttribute();
+                            Attribute attr = (Attribute) ae.next();
+
                             boolean addToList = false;
 
-                            if (firstIteration) {
-                                try {
-                                    extAttr.setName("dn");
-                                    String dnValue = sr.getNameInNamespace();
-                                    extAttr.setValue(dnValue);
-                                    addToList = true;
-                                } catch (UnsupportedOperationException e) {
-                                    log.error(e.getMessage(), e);
-                                }
-                                firstIteration = false;
-                            } else {
-                                Attribute attr = (Attribute) ae.next();
+                            extAttr.setName(attr.getID());
 
-                                extAttr.setName(attr.getID());
-                                NamingEnumeration e = attr.getAll();
-
-                                while (e.hasMore()) {
-                                    Object o = e.next();
-                                    if (o instanceof String) {
+                            NamingEnumeration e = attr.getAll();
+                            boolean isMultivalued = (attr.size() > 1);
+                            while (e.hasMore()) {
+                                Object o = e.next();
+                                if (o instanceof String) {
+                                    if (isMultivalued) {
+                                        BaseAttributeContainer container = extAttr.getAttributeContainer();
+                                        if (container == null) {
+                                            container = new BaseAttributeContainer();
+                                            extAttr.setAttributeContainer(container);
+                                        }
+                                        container.getAttributeList().add(0,
+                                                new BaseAttribute(attr.getID(), o.toString(), AttributeOperationEnum.NO_CHANGE));
+                                    } else {
                                         extAttr.setValue(o.toString());
-                                        addToList = true;
                                     }
+                                    addToList = true;
                                 }
-                            }
-                            if(identityAttrName.equalsIgnoreCase(extAttr.getName())) {
-                                objectValue.setObjectIdentity(extAttr.getValue());
                             }
                             if (addToList) {
                                 objectValue.getAttributeList().add(extAttr);
                             }
                         }
+
                         objectValueList.add(objectValue);
-                        objectValue = new ObjectValue();
-                        objectValue.setAttributeList(new LinkedList<ExtensibleAttribute>());
                     }
                 }
                 Control[] controls = ldapContext.getResponseControls();

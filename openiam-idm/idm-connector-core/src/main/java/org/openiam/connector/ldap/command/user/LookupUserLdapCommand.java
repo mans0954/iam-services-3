@@ -104,6 +104,17 @@ public class LookupUserLdapCommand extends AbstractLookupLdapCommand<ExtensibleU
                     Attributes attrs = sr.getAttributes();
                     if (attrs != null) {
                         found = true;
+
+                        try {
+                            ExtensibleAttribute extAttr = new ExtensibleAttribute();
+                            extAttr.setName("dn");
+                            String dnValue = sr.getNameInNamespace();
+                            extAttr.setValue(dnValue);
+                            userValue.getAttributeList().add(extAttr);
+                        } catch (UnsupportedOperationException e) {
+                            log.error(e.getMessage(), e);
+                        }
+
                         for (NamingEnumeration ae = attrs.getAll(); ae.hasMore();) {
                             ExtensibleAttribute extAttr = new ExtensibleAttribute();
                             Attribute attr = (Attribute) ae.next();
