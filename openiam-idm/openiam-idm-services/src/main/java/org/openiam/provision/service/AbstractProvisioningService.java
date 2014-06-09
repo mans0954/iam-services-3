@@ -470,7 +470,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
 
         ProvisionServicePreProcessor addPreProcessScript = null;
         if ( pUser != null) {
-            System.out.println("======= callPreProcessor: isSkipPreprocessor="+pUser.isSkipPreprocessor()+", ");
+            log.info("======= callPreProcessor: isSkipPreprocessor="+pUser.isSkipPreprocessor()+", ");
             if (!pUser.isSkipPreprocessor() &&
                     (addPreProcessScript = createProvPreProcessScript(preProcessor, bindingMap)) != null) {
                 addPreProcessScript.setMuleContext(MuleContextProvider.getCtx());
@@ -478,7 +478,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                 return executeProvisionPreProcess(addPreProcessScript, bindingMap, pUser, null, operation);
 
             }
-            System.out.println("======= callPreProcessor: addPreProcessScript="+addPreProcessScript+", ");
+            log.info("======= callPreProcessor: addPreProcessScript="+addPreProcessScript+", ");
         }
         // pre-processor was skipped
         return ProvisioningConstants.SUCCESS;
@@ -1360,7 +1360,6 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
             return null;
         }
         log.debug("updateAttributeList: Updating operations on attributes being passed to connectors");
-        log.debug("updateAttributeList: Current attributeMap = " + currentValueMap);
 
 
         List<ExtensibleAttribute> extAttrList = extUser.getAttributes();
@@ -1371,7 +1370,6 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
             return null;
         }
 
-        log.debug("updateAttributeList: New Attribute List = " + extAttrList);
         if ( extAttrList != null && currentValueMap == null) {
             for (ExtensibleAttribute attr  : extAttrList) {
                 attr.setOperation(1);

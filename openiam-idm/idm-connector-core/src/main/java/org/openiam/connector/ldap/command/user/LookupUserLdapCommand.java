@@ -2,6 +2,9 @@ package org.openiam.connector.ldap.command.user;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.openiam.base.AttributeOperationEnum;
+import org.openiam.base.BaseAttribute;
+import org.openiam.base.BaseAttributeContainer;
 import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.connector.type.ObjectValue;
 import org.openiam.connector.type.constant.ErrorCode;
@@ -101,6 +104,17 @@ public class LookupUserLdapCommand extends AbstractLookupLdapCommand<ExtensibleU
                     Attributes attrs = sr.getAttributes();
                     if (attrs != null) {
                         found = true;
+
+                        try {
+                            ExtensibleAttribute extAttr = new ExtensibleAttribute();
+                            extAttr.setName("dn");
+                            String dnValue = sr.getNameInNamespace();
+                            extAttr.setValue(dnValue);
+                            userValue.getAttributeList().add(extAttr);
+                        } catch (UnsupportedOperationException e) {
+                            log.error(e.getMessage(), e);
+                        }
+
                         for (NamingEnumeration ae = attrs.getAll(); ae.hasMore();) {
                             ExtensibleAttribute extAttr = new ExtensibleAttribute();
                             Attribute attr = (Attribute) ae.next();
@@ -110,11 +124,21 @@ public class LookupUserLdapCommand extends AbstractLookupLdapCommand<ExtensibleU
                             extAttr.setName(attr.getID());
 
                             NamingEnumeration e = attr.getAll();
-
+                            boolean isMultivalued = (attr.size() > 1);
                             while (e.hasMore()) {
                                 Object o = e.next();
                                 if (o instanceof String) {
-                                    extAttr.setValue(o.toString());
+                                    if (isMultivalued) {
+                                        BaseAttributeContainer container = extAttr.getAttributeContainer();
+                                        if (container == null) {
+                                            container = new BaseAttributeContainer();
+                                            extAttr.setAttributeContainer(container);
+                                        }
+                                        container.getAttributeList().add(0,
+                                                new BaseAttribute(attr.getID(), o.toString(), AttributeOperationEnum.NO_CHANGE));
+                                    } else {
+                                        extAttr.setValue(o.toString());
+                                    }
                                     addToList = true;
                                 }
                             }
