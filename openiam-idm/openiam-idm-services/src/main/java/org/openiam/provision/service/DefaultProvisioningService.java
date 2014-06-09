@@ -1260,7 +1260,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             // }
 
             if (mLg != null) {
-                log.debug("PROCESSING IDENTITY =" + mLg);
+                log.debug("PROCESSING IDENTITY =" );
             } else {
                 log.debug("BUILDING NEW IDENTITY");
             }
@@ -1281,7 +1281,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     log.debug(" - New principalName = " + newPrincipalName);
 
                     mLg = new LoginEntity();
-                    log.debug(" - PrimaryIdentity for build new identity for target system = " + primaryIdentity);
+                    log.debug(" - PrimaryIdentity for build new identity for target system");
 
                     mLg.setLogin(newPrincipalName);
                     mLg.setManagedSysId(managedSysId);
@@ -1539,12 +1539,12 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                 matchObj = matchList.get(0);
                             }
 
-                            System.out.println("============== Connector Reset Password call: " + new Date());
+                            log.info("============== Connector Reset Password call: " + new Date());
                             ResponseType resp = resetPassword(requestId,
                                     loginDozerConverter.convertToDTO(lg, false), password,
                                     managedSysDozerConverter.convertToDTO(mSys, false),
                                     objectMatchDozerConverter.convertToDTO(matchObj, false));
-                            System.out.println("============== Connector Reset Password get : " + new Date());
+                            log.info("============== Connector Reset Password get : " + new Date());
                             idmAuditLog.setTargetUser(lg.getUserId(), lg.getLogin());
                             if (resp != null && resp.getStatus() == StatusCodeType.SUCCESS) {
                                 idmAuditLog.succeed();
@@ -2050,7 +2050,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             if (l.getManagedSysId().equalsIgnoreCase(passwordSync.getManagedSystemId())
                     || l.getManagedSysId().equalsIgnoreCase(sysConfiguration.getDefaultManagedSysId())) {
 
-                log.debug("Updating password for " + l);
+                log.debug("Updating password for " + l.getLogin());
 
                 boolean retval = loginManager.setPassword(l.getLogin(), l.getManagedSysId(), encPassword,
                         passwordSync.isPreventChangeCountIncrement());
