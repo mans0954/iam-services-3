@@ -62,19 +62,33 @@ public abstract class AbstractSearchLdapCommand<ExtObject extends ExtensibleObje
                     Attributes attrs = sr.getAttributes();
                     if (attrs != null) {
                         found = true;
+                        boolean firstIteration = true;
                         for (NamingEnumeration ae = attrs.getAll(); ae.hasMore();) {
                             ExtensibleAttribute extAttr = new ExtensibleAttribute();
-                            Attribute attr = (Attribute) ae.next();
-
                             boolean addToList = false;
-                            extAttr.setName(attr.getID());
-                            NamingEnumeration e = attr.getAll();
 
-                            while (e.hasMore()) {
-                                Object o = e.next();
-                                if (o instanceof String) {
-                                    extAttr.setValue(o.toString());
+                            if (firstIteration) {
+                                try {
+                                    extAttr.setName("dn");
+                                    String dnValue = sr.getNameInNamespace();
+                                    extAttr.setValue(dnValue);
                                     addToList = true;
+                                } catch (UnsupportedOperationException e) {
+                                    log.error(e.getMessage(), e);
+                                }
+                                firstIteration = false;
+                            } else {
+                                Attribute attr = (Attribute) ae.next();
+
+                                extAttr.setName(attr.getID());
+                                NamingEnumeration e = attr.getAll();
+
+                                while (e.hasMore()) {
+                                    Object o = e.next();
+                                    if (o instanceof String) {
+                                        extAttr.setValue(o.toString());
+                                        addToList = true;
+                                    }
                                 }
                             }
                             if(identityAttrName.equalsIgnoreCase(extAttr.getName())) {
