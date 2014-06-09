@@ -25,7 +25,7 @@ public class TestUserGoogleCommand<ExtObject extends ExtensibleObject> extends
         String domain = mSys.getHostUrl();
         try {
             GoogleAgent client = new GoogleAgent();
-            client.getAllUsers(adminEmail, password, domain);
+            client.getUser(adminEmail, password, domain, adminEmail);
             response.setStatus(StatusCodeType.SUCCESS);
         } catch (Exception e) {
             response.setStatus(StatusCodeType.FAILURE);
