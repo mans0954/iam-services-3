@@ -1,10 +1,12 @@
 package org.openiam.idm.srvc.recon.command;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.mule.api.MuleContext;
 import org.openiam.base.AttributeOperationEnum;
+import org.openiam.base.BaseAttribute;
 import org.openiam.connector.type.request.CrudRequest;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
@@ -87,7 +89,23 @@ public class DeleteResourceAccountCommand implements ReconciliationCommand {
             try {
                 Map<String, String> line = new HashMap<String, String>();
                 for (ExtensibleAttribute attr : attributes) {
-                    line.put(attr.getName(), attr.getValue());
+                    if (attr.getValue() != null) {
+                        line.put(attr.getName(), attr.getValue());
+                    } else if (attr.getAttributeContainer() != null &&
+                            CollectionUtils.isNotEmpty(attr.getAttributeContainer().getAttributeList()) &&
+                            line.get(attr.getName()) == null) {
+                        StringBuilder value = new StringBuilder();
+                        boolean isFirst = true;
+                        for (BaseAttribute ba : attr.getAttributeContainer().getAttributeList()) {
+                            if (!isFirst) {
+                                value.append('^');
+                            } else {
+                                isFirst = false;
+                            }
+                            value.append(ba.getValue());
+                        }
+                        line.put(attr.getName(), value.toString());
+                    }
                 }
                 Map<String, Object> bindingMap = new HashMap<String, Object>();
                 bindingMap.put(AbstractProvisioningService.TARGET_SYS_MANAGED_SYS_ID, login.getManagedSysId());
