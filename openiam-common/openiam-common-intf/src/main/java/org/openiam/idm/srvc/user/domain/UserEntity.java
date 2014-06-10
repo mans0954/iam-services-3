@@ -150,8 +150,8 @@ public class UserEntity {
     @Size(max = 20, message = "validator.user.suffix.toolong")
     private String suffix;
 
-    @Column(name = "TITLE", length = 30)
-    @Size(max = 30, message = "validator.user.title.toolong")
+    @Column(name = "TITLE", length = 100)
+    @Size(max = 100, message = "validator.user.title.toolong")
     private String title;
 
     @Column(name = "USER_TYPE_IND", length = 20)
