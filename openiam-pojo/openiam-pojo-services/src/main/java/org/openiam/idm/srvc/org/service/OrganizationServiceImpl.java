@@ -19,11 +19,9 @@ import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 import org.openiam.idm.srvc.org.domain.Org2OrgXrefEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
-import org.openiam.idm.srvc.org.dto.Org2OrgXref;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
-import org.openiam.idm.srvc.role.domain.RoleAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
 import org.openiam.idm.srvc.user.service.UserDAO;
@@ -296,6 +294,7 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
                     dbProp.setElement(getEntity(beanProp.getElement()));
                     dbProp.setName(beanProp.getName());
                     dbProp.setIsMultivalued(beanProp.getIsMultivalued());
+                    dbProp.setValues(beanProp.getValues());
                     contains = true;
                     break;
                 }
