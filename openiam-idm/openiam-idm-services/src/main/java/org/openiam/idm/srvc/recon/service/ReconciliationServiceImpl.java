@@ -594,7 +594,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
                                     "Reconciliation was manually stopped at " + new Date());
                             return new ReconciliationResponse(ResponseStatus.SUCCESS);
                         }
-                        counter++;
+                        counter=0;
                     }
                     List<ExtensibleAttribute> extensibleAttributes = userValue.getAttributeList() != null ? userValue
                             .getAttributeList() : new LinkedList<ExtensibleAttribute>();
