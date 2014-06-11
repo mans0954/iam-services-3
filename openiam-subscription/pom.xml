@@ -6,14 +6,14 @@
     <parent>
         <groupId>org.openiam</groupId>
         <artifactId>iam-services</artifactId>
-        <version>3.1.0</version>
+        <version>3.1.0.RELEASE</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.openiam</groupId>
     <artifactId>openiam-subscription</artifactId>
     <name>openiam-subscription</name>
-    <version>3.1.0</version>
+    <version>3.1.0.RELEASE</version>
     <packaging>war</packaging>
     <description>OpenIAM report subcsription service.</description>
 
