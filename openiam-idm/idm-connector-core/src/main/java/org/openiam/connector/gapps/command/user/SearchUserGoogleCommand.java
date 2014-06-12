@@ -1,6 +1,7 @@
 package org.openiam.connector.gapps.command.user;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -42,13 +43,55 @@ public class SearchUserGoogleCommand
 			if (StringUtils.isBlank(searchValue) || "*".equals(searchValue)) {
 				googleUsers = client.getAllUsers(adminEmail, password, domain);
 			} else {
-				String[] ouPathes = searchValue.split(",");
-				if (ouPathes != null) {
+				// search process
+				String[] filter = searchValue.split(";");
+				boolean isAll = false;
+				List<String> ous = new ArrayList<String>();
+				List<String> exOus = new ArrayList<String>();
+				if (filter != null) {
+					for (String f : filter) {
+						if ("*".equals(f)) {
+							isAll = true;
+							continue;
+						}
+						if (f.length() > 3 && "ou=".equals(f.substring(0, 3))) {
+							String[] ouPathes = f.substring(3).split(",");
+							for (String ou : ouPathes) {
+								if (ou.charAt(0) == '!') {
+									exOus.add(ou.substring(1));
+								} else {
+									ous.add(ou);
+								}
+							}
+						}
+					}
 					googleUsers = new ArrayList<GenericEntry>();
-					for (String ou : ouPathes) {
+					if (isAll) {
+						googleUsers = client.getAllUsers(adminEmail, password,
+								domain);
+					}
+					for (String ou : ous) {
 						googleUsers.addAll(client
 								.retrieveAllOrganizationUsersByOrgUnit(
 										adminEmail, password, domain, ou));
+					}
+					List<GenericEntry> exclude = new ArrayList<GenericEntry>();
+					for (String ou : exOus) {
+						exclude.addAll(client
+								.retrieveAllOrganizationUsersByOrgUnit(
+										adminEmail, password, domain, ou));
+					}
+					// exctude
+					Iterator<GenericEntry> googleAppsIter = googleUsers
+							.iterator();
+					for (GenericEntry ge : exclude) {
+						while (googleAppsIter.hasNext()) {
+							GenericEntry e = googleAppsIter.next();
+							if (e.getProperty("userEmail").equals(
+									ge.getProperty("userEmail"))) {
+								googleAppsIter.remove();
+							}
+						}
 					}
 				}
 			}
