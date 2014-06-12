@@ -38,7 +38,7 @@ public class LanguageMappingEntity implements Serializable {
 	private String languageId;
 	
 	@Column(name="REFERENCE_TYPE", nullable=false)
-    @Enumerated(value=EnumType.STRING)
+    //@Enumerated(value=EnumType.STRING)
 	private String referenceType;
 	
 	@Column(name="REFERENCE_ID")
