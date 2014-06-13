@@ -1000,6 +1000,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     UserAttributeEntity entity = userEntity.getUserAttributes().get(entry.getKey());
                     if (entity != null) {
                         userEntity.getUserAttributes().remove(entry.getKey());
+                        entity.setUser(null);  // Prevent cascade evict
                         userMgr.evict(entity);
                         UserAttributeEntity e = userAttributeDozerConverter.convertToEntity(entry.getValue(), true);
                         e.setUser(userEntity);
