@@ -8,7 +8,6 @@
         <listener-class>org.springframework.web.util.IntrospectorCleanupListener</listener-class>
     </listener>
     
-    <!--
     <filter>
 		<filter-name>OpenSessionInViewFilter</filter-name>
 		<filter-class>org.springframework.orm.hibernate4.support.OpenSessionInViewFilter</filter-class>
@@ -18,7 +17,7 @@
 		<filter-name>OpenSessionInViewFilter</filter-name>
 		<url-pattern>/idmsrvc/*</url-pattern>
 	</filter-mapping>
-	-->
+
     <!--
     <context-param>
 		<param-name>contextConfigLocation</param-name>
