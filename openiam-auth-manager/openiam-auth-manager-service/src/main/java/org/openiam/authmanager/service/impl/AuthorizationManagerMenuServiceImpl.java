@@ -41,7 +41,10 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.jmx.export.annotation.ManagedOperation;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.*;
 
@@ -92,6 +95,10 @@ public class AuthorizationManagerMenuServiceImpl extends AbstractBaseService imp
 	
 	@Autowired
 	private org.openiam.idm.srvc.res.service.ResourceDAO hibernateResourceDAO;
+	
+	 @Autowired
+	 @Qualifier("transactionTemplate")
+	 private TransactionTemplate transactionTemplate;
 
 	/*
 	private boolean forceThreadShutdown = false;
@@ -512,8 +519,14 @@ public class AuthorizationManagerMenuServiceImpl extends AbstractBaseService imp
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		sweep();
-		//service.submit(this);
+		transactionTemplate.execute(new TransactionCallback<Void>() {
+
+			@Override
+			public Void doInTransaction(TransactionStatus status) {
+				sweep();
+				return null;
+			}
+		});
 	}
 
 	@Override
