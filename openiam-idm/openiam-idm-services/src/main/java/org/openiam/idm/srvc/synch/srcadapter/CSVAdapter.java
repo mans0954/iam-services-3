@@ -23,7 +23,6 @@ package org.openiam.idm.srvc.synch.srcadapter;
 
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.SftpException;
-import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVStrategy;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -33,7 +32,7 @@ import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 
-import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
+import org.openiam.idm.parser.csv.CSVHelper;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.idm.srvc.synch.dto.Attribute;
 import org.openiam.idm.srvc.synch.dto.LineObject;
@@ -94,24 +93,21 @@ public class CSVAdapter extends AbstractSrcAdapter {
 
  //       auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "CSV startSynch CALLED.^^^^^^^^");
 
-
-        InputStreamReader isr = null;
-
         final ProvisionService provService = (ProvisionService) SpringContextProvider.getBean("defaultProvision");
 
         String requestId = UUIDGen.getUUID();
+        InputStream input = null;
 
         try {
-            CSVParser parser;
+            CSVHelper parser;
             String csvFileName = config.getFileName();
             if(useRemoteFilestorage) {
-                isr = new InputStreamReader(remoteFileStorageManager.downloadFile(SYNC_DIR, csvFileName), "UTF-8");
-                parser = new CSVParser(isr);
-
+                input = remoteFileStorageManager.downloadFile(SYNC_DIR, csvFileName);
+                parser = new CSVHelper(input, "UTF-8");
             } else {
                 String fileName = uploadRoot + File.separator + SYNC_DIR + File.separator + csvFileName;
-                isr = new InputStreamReader( new FileInputStream(fileName), "UTF-8");
-                parser = new CSVParser(isr, CSVStrategy.EXCEL_STRATEGY);
+                input = new FileInputStream(fileName);
+                parser = new CSVHelper(input, "UTF-8", CSVStrategy.EXCEL_STRATEGY);
             }
 
             String[][] rows = parser.getAllValues();
@@ -177,9 +173,9 @@ public class CSVAdapter extends AbstractSrcAdapter {
             resp.setErrorCode(ResponseCode.FILE_EXCEPTION);
             jsche.printStackTrace();
         } finally {
-            if (isr != null) {
+            if (input != null) {
                 try {
-                    isr.close();
+                    input.close();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -388,8 +384,7 @@ public class CSVAdapter extends AbstractSrcAdapter {
             String key = it.next();
             Attribute attr = rowObj.get(key);
             int colNbr = attr.getColumnNbr();
-            String colValue = lineAry[colNbr];
-
+            String colValue = lineAry.length > colNbr ? lineAry[colNbr] : "";
             attr.setValue(colValue);
         }
     }
