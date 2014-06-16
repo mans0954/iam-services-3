@@ -95,7 +95,7 @@ public abstract class AbstractSearchLdapCommand<ExtObject extends ExtensibleObje
                                             container = new BaseAttributeContainer();
                                             extAttr.setAttributeContainer(container);
                                         }
-                                        container.getAttributeList().add(0,
+                                        container.getAttributeList().add(
                                                 new BaseAttribute(attr.getID(), o.toString(), AttributeOperationEnum.NO_CHANGE));
                                     } else {
                                         extAttr.setValue(o.toString());
