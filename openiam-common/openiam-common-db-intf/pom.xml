@@ -105,9 +105,25 @@
         
         <dependency>
    			<groupId>org.hibernate</groupId>
-   			<artifactId>hibernate-search</artifactId>
-   			<version>${hibernatesearch.version}</version>
+   			<artifactId>hibernate-search-orm</artifactId>
+   			<version>${hibernate.search.orm.version}</version>
             <exclusions>
+                <exclusion>
+                    <artifactId>cglib</artifactId>
+                    <groupId>cglib</groupId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+            </exclusions>
+		</dependency>
+		
+		<dependency>
+   			<groupId>org.hibernate</groupId>
+   			<artifactId>hibernate-search-analyzers</artifactId>
+   			<version>${hibernate.search.analyzers.version}</version>
+   			<exclusions>
                 <exclusion>
                     <artifactId>cglib</artifactId>
                     <groupId>cglib</groupId>

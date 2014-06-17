@@ -8,6 +8,7 @@ import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlTransient;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
+import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.DocumentId;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.FieldBridge;
@@ -41,8 +42,8 @@ public class PhoneEntity {
     private boolean isActive = true;
 
     @Fields ({
-        @Field(index = Index.UN_TOKENIZED),
-        @Field(name = "areaCd", index = Index.UN_TOKENIZED, store = Store.YES)
+        @Field(analyze = Analyze.NO),
+        @Field(name = "areaCd", analyze = Analyze.NO, store = Store.YES)
     })
     @Column(name="AREA_CD", length=10)
     @Size(max = 10, message = "validator.phone.area.code.toolong")
@@ -71,8 +72,8 @@ public class PhoneEntity {
     private String phoneExt;
 
     @Fields ({
-        @Field(index = Index.TOKENIZED),
-        @Field(name = "phoneNbr", index = Index.TOKENIZED, store = Store.YES)
+        @Field(analyze = Analyze.NO),
+        @Field(name = "phoneNbr", analyze = Analyze.NO, store = Store.YES)
     })
     @Column(name="PHONE_NBR", length=50)
     @Size(max = 50, message = "validator.phone.number.toolong")

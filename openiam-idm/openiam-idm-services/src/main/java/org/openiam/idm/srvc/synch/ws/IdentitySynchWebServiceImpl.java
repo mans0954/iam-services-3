@@ -36,7 +36,6 @@ import org.openiam.dozer.converter.SynchConfigDozerConverter;
 import org.openiam.idm.searchbeans.AttributeMapSearchBean;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
-import org.openiam.idm.srvc.msg.ws.SysMessageResponse;
 import org.openiam.idm.srvc.synch.domain.SynchConfigEntity;
 import org.openiam.idm.srvc.synch.dto.BulkMigrationConfig;
 import org.openiam.idm.srvc.synch.dto.SyncResponse;
@@ -128,7 +127,7 @@ public class IdentitySynchWebServiceImpl implements IdentitySynchWebService {
 	 * @see org.openiam.idm.srvc.synch.ws.IdentitySynchWebService#removeConfig(java.lang.String)
 	 */
 	public Response removeConfig(String configId) {
-		SysMessageResponse resp = new SysMessageResponse(ResponseStatus.SUCCESS);
+		Response resp = new Response(ResponseStatus.SUCCESS);
 		synchService.removeConfig(configId);
 		return resp;
 	}

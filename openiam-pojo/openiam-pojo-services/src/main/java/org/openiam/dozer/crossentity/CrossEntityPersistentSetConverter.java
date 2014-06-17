@@ -12,7 +12,6 @@ import org.dozer.ConfigurableCustomConverter;
 import org.dozer.DozerConverter;
 import org.dozer.Mapper;
 import org.dozer.MapperAware;
-import org.hibernate.collection.PersistentSet;
 import org.openiam.util.SpringContextProvider;
 
 public class CrossEntityPersistentSetConverter extends AbstractCrossEntityCollectionConverter implements ConfigurableCustomConverter {

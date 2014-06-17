@@ -16,8 +16,6 @@ import org.openiam.internationalization.LocalizedDatabaseGet;
 import org.openiam.internationalization.LocalizedDatabaseOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.orm.hibernate3.HibernateTemplate;
-import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.Serializable;
@@ -30,14 +28,15 @@ import java.util.List;
 import static org.hibernate.criterion.Projections.rowCount;
 import static org.hibernate.criterion.Restrictions.eq;
 
-public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends HibernateDaoSupport
+public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable>
         implements BaseDao<T, PrimaryKey> {
     protected final Logger log = Logger.getLogger(this.getClass());
     protected final Class<T> domainClass;
+    private SessionFactory sessionFactory;
 
 	@Autowired
-	public void setTemplate(final @Qualifier("hibernateTemplate") HibernateTemplate hibernateTemplate) {
-		super.setHibernateTemplate(hibernateTemplate);
+	public void setTemplate(final @Qualifier("sessionFactory") SessionFactory sessionFactory) {
+		this.sessionFactory = sessionFactory;
 	}
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -83,6 +82,10 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
     
     public void flush() {
     	getSession().flush();
+    }
+    
+    protected Session getSession() {
+    	return sessionFactory.getCurrentSession();
     }
 
     @Override
