@@ -16,9 +16,14 @@ import org.openiam.idm.srvc.user.util.DelegationFilterHelper;
 import org.openiam.thread.Sweepable;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.*;
 
@@ -41,6 +46,10 @@ public class OrganizationTypeServiceImpl implements OrganizationTypeService, Ini
 
     private Map<String, Set<String>> parent2childOrgTypeCached;
     private Map<String, Set<String>> child2parentOrgTypeCached;
+    
+    @Autowired
+    @Qualifier("transactionTemplate")
+    private TransactionTemplate transactionTemplate;
 
 	@Override
 	public OrganizationTypeEntity findById(String id) {
@@ -264,7 +273,15 @@ public class OrganizationTypeServiceImpl implements OrganizationTypeService, Ini
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        sweep();
+    	transactionTemplate.execute(new TransactionCallback<Void>() {
+
+			@Override
+			public Void doInTransaction(TransactionStatus status) {
+				sweep();
+	    		return null;
+			}
+    		
+		});
     }
 
     @Override

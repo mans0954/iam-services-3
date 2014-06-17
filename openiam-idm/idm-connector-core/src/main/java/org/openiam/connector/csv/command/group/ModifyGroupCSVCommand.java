@@ -17,15 +17,16 @@ import java.util.List;
 
 @Service("modifyGroupCSVCommand")
 public class ModifyGroupCSVCommand  extends AbstractCrudCSVCommand<ExtensibleGroup> {
-    @Autowired
+    /*
+	@Autowired
     @Qualifier("groupCsvParser")
     protected CSVParser<ExtensibleGroup> groupCsvParser;
-
+	*/
     @Override
     protected void performObjectOperation(String objectIdentity, ExtensibleGroup extensibleObject, ManagedSysEntity managedSys) throws ConnectorDataException {
         try {
             List<AttributeMapEntity> attrMapList = managedSysService.getResourceAttributeMaps(managedSys.getResourceId());
-            groupCsvParser.update(new ReconciliationObject<ExtensibleGroup>(objectIdentity, extensibleObject), managedSys, attrMapList, CSVSource.IDM);
+            //groupCsvParser.update(new ReconciliationObject<ExtensibleGroup>(objectIdentity, extensibleObject), managedSys, attrMapList, CSVSource.IDM);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             throw new  ConnectorDataException(ErrorCode.CSV_ERROR, e.getMessage());

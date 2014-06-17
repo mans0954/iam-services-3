@@ -66,7 +66,10 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.jmx.export.annotation.ManagedOperation;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.transaction.support.TransactionTemplate;
 
 @Service("uriFederationService")
 //@ManagedResource(objectName="org.openiam.am.srvc.service:name=URIFederationService")
@@ -109,10 +112,23 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
     
     @Autowired
     private AuthLevelGroupingDozerConverter authLevelGroupingDozerConverter;
+    
+
+    @Autowired
+    @Qualifier("transactionTemplate")
+    private TransactionTemplate transactionTemplate;
 	
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		sweep();
+		transactionTemplate.execute(new TransactionCallback<Void>() {
+
+			@Override
+			public Void doInTransaction(TransactionStatus status) {
+				sweep();
+	    		return null;
+			}
+    		
+		});
 	}
 	
 	/*

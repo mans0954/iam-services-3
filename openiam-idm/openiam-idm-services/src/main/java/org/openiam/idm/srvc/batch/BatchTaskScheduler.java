@@ -38,7 +38,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Component("batchTaskScheduler")
 public class BatchTaskScheduler implements ApplicationContextAware, InitializingBean, Sweepable {
 	
-	private Map<String, ScheduledFuture<Void>> synchronizedBatchScheduleMap = new ConcurrentHashMap<String, ScheduledFuture<Void>>();
+	private Map<String, ScheduledFuture<?>> synchronizedBatchScheduleMap = new ConcurrentHashMap<String, ScheduledFuture<?>>();
 	
 	private static final Log log = LogFactory.getLog(BatchTaskScheduler.class);
 	
@@ -123,13 +123,13 @@ public class BatchTaskScheduler implements ApplicationContextAware, Initializing
 	}
 	
 	public boolean isDone(final BatchTaskEntity entity) {
-		final ScheduledFuture<Void> future = synchronizedBatchScheduleMap.get(entity.getId());
+		final ScheduledFuture<?> future = synchronizedBatchScheduleMap.get(entity.getId());
 		return (future != null) ? future.isDone() : false;
 	}
 	
 	public boolean unSchedule(final BatchTaskEntity entity, boolean forceInterrupt) {
 		boolean success = true;
-		final ScheduledFuture<Void> future = synchronizedBatchScheduleMap.remove(entity.getId());
+		final ScheduledFuture<?> future = synchronizedBatchScheduleMap.remove(entity.getId());
 		if(future != null) {
 			try {
 				future.cancel(forceInterrupt);
@@ -144,7 +144,7 @@ public class BatchTaskScheduler implements ApplicationContextAware, Initializing
 	
 	public boolean unSchedule(final String id, boolean forceInterrupt) {
 		boolean success = true;
-		final ScheduledFuture<Void> future = synchronizedBatchScheduleMap.remove(id);
+		final ScheduledFuture<?> future = synchronizedBatchScheduleMap.remove(id);
 		if(future != null) {
 			try {
 				future.cancel(forceInterrupt);
@@ -172,13 +172,13 @@ public class BatchTaskScheduler implements ApplicationContextAware, Initializing
 					if(runnable != null) {
 						if(entity.getCronExpression() == null && entity.getRunOn() != null) {
 							if(entity.getRunOn().after(new Date())) {
-								final ScheduledFuture<Void> future = taskScheduler.schedule(runnable, entity.getRunOn());
+								final ScheduledFuture<?> future = taskScheduler.schedule(runnable, entity.getRunOn());
 								synchronizedBatchScheduleMap.put(entity.getId(), future);
 							}
 						} else {
 							final Trigger trigger = getCronTrigger(entity);
 							if(trigger != null) {
-								final ScheduledFuture<Void> future = taskScheduler.schedule(runnable, trigger);
+								final ScheduledFuture<?> future = taskScheduler.schedule(runnable, trigger);
 								synchronizedBatchScheduleMap.put(entity.getId(), future);
 							}
 						}

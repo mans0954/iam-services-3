@@ -107,7 +107,6 @@ public class LuceneReindexService implements InitializingBean, Sweepable/*, Runn
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		sweep();
-		//service.submit(this);
+		
 	}
 }

@@ -270,7 +270,7 @@ public abstract class AbstractHibernateSearchDao<T, Q, KeyType extends Serializa
             	}
         	}
         } finally {
-        	fullTextSession.close();
+        	//fullTextSession.close();
         }
     }
 
@@ -285,8 +285,9 @@ public abstract class AbstractHibernateSearchDao<T, Q, KeyType extends Serializa
 		return ((Class<T>)type);
     }
 
-    private Date getLastDbUpdateDateInternal() {
-    	return (Date)getSession().createCriteria(getEntityClass())
+    private Date getLastDbUpdateDateInternal(Session session) {
+    	session = (session != null) ? session : getSession();
+    	return (Date)session.createCriteria(getEntityClass())
 			.setProjection(Projections.max(lastModifiedFieldName)).uniqueResult();
     }
     
@@ -335,7 +336,7 @@ public abstract class AbstractHibernateSearchDao<T, Q, KeyType extends Serializa
     	try {
     		session = sessionFactory.openSession();
     		boolean reindexed = false;
-    		final Date updateDate = getLastDbUpdateDateInternal();
+    		final Date updateDate = getLastDbUpdateDateInternal(session);
     		if (lastUpdateDBDate == null || forcePurgeAll) {
     			final DetachedCriteria criteria = DetachedCriteria.forClass(getEntityClass()).addOrder(Order.asc(idFieldName));
     			doIndex(criteria, forcePurgeAll, session);
@@ -418,7 +419,7 @@ public abstract class AbstractHibernateSearchDao<T, Q, KeyType extends Serializa
 				synchronized (this) {
 					reindexDuration = stopWatch.getTime();
 				}
-				lastUpdateDBDate = getLastDbUpdateDateInternal();
+				lastUpdateDBDate = getLastDbUpdateDateInternal(session);
 				if (lastUpdateDBDate == null) {
 					lastUpdateDBDate = new Date(System.currentTimeMillis());
 				}

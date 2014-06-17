@@ -62,5 +62,6 @@ public interface HibernateSearchDao<T, Q, KeyType> {
      * @return date time of the last search index synchronization
      */
     Date getLastDbUpdateDate();
+    
 
 }

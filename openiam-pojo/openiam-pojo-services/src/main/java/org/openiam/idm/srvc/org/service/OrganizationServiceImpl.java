@@ -31,9 +31,13 @@ import org.openiam.internationalization.LocalizedServiceGet;
 import org.openiam.thread.Sweepable;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.*;
 
@@ -79,6 +83,10 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
 
     private Map<String, Set<String>> organizationTree;
 
+
+    @Autowired
+    @Qualifier("transactionTemplate")
+    private TransactionTemplate transactionTemplate;
 
 
     @Value("${org.openiam.delegation.filter.organization}")
@@ -587,7 +595,15 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        sweep();
+    	transactionTemplate.execute(new TransactionCallback<Void>() {
+
+			@Override
+			public Void doInTransaction(TransactionStatus status) {
+				sweep();
+	    		return null;
+			}
+    		
+		});
     }
 
 
