@@ -95,7 +95,7 @@ public class LdapConnectionMgr implements ConnectionMgr {
         log.debug("connect: Managed System object : " + managedSys);
 
 		log.info(" directory login = " + managedSys.getUserId() );
-		log.info(" directory login passwrd= " + decryptedPassword );
+		log.info(" directory login passwrd= *****" ); //IDMAPPS-1846
         log.info(" javax.net.ssl.trustStore= " + System.getProperty("javax.net.ssl.trustStore"));
         log.info(" javax.net.ssl.keyStorePassword= " + System.getProperty("javax.net.ssl.keyStorePassword"));
 

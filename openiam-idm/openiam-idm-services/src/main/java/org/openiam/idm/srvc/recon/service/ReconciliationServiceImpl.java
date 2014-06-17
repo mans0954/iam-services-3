@@ -60,6 +60,8 @@ import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
+import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
+import org.openiam.idm.srvc.auth.dto.ProvLoginStatusEnum;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.grp.service.GroupDataService;
 import org.openiam.idm.srvc.key.constant.KeyName;
@@ -592,7 +594,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
                                     "Reconciliation was manually stopped at " + new Date());
                             return new ReconciliationResponse(ResponseStatus.SUCCESS);
                         }
-                        counter++;
+                        counter=0;
                     }
                     List<ExtensibleAttribute> extensibleAttributes = userValue.getAttributeList() != null ? userValue
                             .getAttributeList() : new LinkedList<ExtensibleAttribute>();
@@ -666,6 +668,8 @@ public class ReconciliationServiceImpl implements ReconciliationService {
                         principal.setLogin(targetUserPrincipal);
                         principal.setManagedSysId(managedSysId);
                         principal.setOperation(AttributeOperationEnum.ADD);
+                        principal.setStatus(LoginStatusEnum.ACTIVE);
+                        principal.setProvStatus(ProvLoginStatusEnum.CREATED);
                         // ADD Target user principal
                         newUser.getPrincipalList().add(principal);
                     }

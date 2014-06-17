@@ -517,8 +517,10 @@ public class LdapAdapter extends AbstractSrcAdapter { // implements SourceAdapte
             Object attrNames = new ArrayList<String>();
             if (StringUtils.isNotBlank(config.getAttributeNamesLookup())) {
                 try {
+                    Map<String, Object> binding = new HashMap<String, Object>();
+                    binding.put("config", config);
                     Map<String, Object> bindingMap = new HashMap<String, Object>();
-                    bindingMap.put("config", config);
+                    bindingMap.put("binding", binding);
                     AttributeNamesLookupService lookupScript =
                             (AttributeNamesLookupService) scriptRunner.instantiateClass(bindingMap,
                                     config.getAttributeNamesLookup());

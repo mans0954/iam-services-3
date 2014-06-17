@@ -7,12 +7,13 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Criteria;
-import org.hibernate.criterion.MatchMode;
-import org.hibernate.criterion.Restrictions;
+import org.hibernate.criterion.*;
+import org.openiam.base.Tuple;
 import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.idm.searchbeans.RoleSearchBean;
 import org.openiam.idm.searchbeans.SearchBean;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
+import org.openiam.idm.srvc.role.domain.RoleAttributeEntity;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.searchbean.converter.RoleSearchBeanConverter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,6 +52,22 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
                 criteria.add(Restrictions.in(getPKfieldName(), roleSearchBean.getKeys()));
             }else if(StringUtils.isNotBlank(roleSearchBean.getKey())) {
                 criteria.add(Restrictions.eq(getPKfieldName(), roleSearchBean.getKey()));
+            }
+
+            if(CollectionUtils.isNotEmpty(roleSearchBean.getAttributes())) {
+                for(final Tuple<String, String> attribute : roleSearchBean.getAttributes()) {
+                    DetachedCriteria crit = DetachedCriteria.forClass(RoleAttributeEntity.class);
+                    if(StringUtils.isNotBlank(attribute.getKey()) && StringUtils.isNotBlank(attribute.getValue())) {
+                        crit.add(Restrictions.and(Restrictions.eq("name", attribute.getKey()),
+                                Restrictions.eq("value", attribute.getValue())));
+                    } else if(StringUtils.isNotBlank(attribute.getKey())) {
+                        crit.add(Restrictions.eq("name", attribute.getKey()));
+                    } else if(StringUtils.isNotBlank(attribute.getValue())) {
+                        crit.add(Restrictions.eq("value", attribute.getValue()));
+                    }
+                    crit.setProjection(Projections.property("role.id"));
+                    criteria.add(Subqueries.propertyIn("id", crit));
+                }
             }
         }
         return criteria;

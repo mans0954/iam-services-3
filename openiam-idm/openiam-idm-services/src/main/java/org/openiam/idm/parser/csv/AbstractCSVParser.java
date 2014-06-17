@@ -1,11 +1,7 @@
 package org.openiam.idm.parser.csv;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
+import java.io.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -119,7 +115,7 @@ public abstract class AbstractCSVParser<T, E extends Enum<E>> {
     protected abstract String putValueIntoString(T obj, E field);
 
     @SuppressWarnings("resource")
-    private FileReader getCSVFile(ManagedSysEntity mngSys,
+    private InputStream getCSVFile(ManagedSysEntity mngSys,
             List<AttributeMapEntity> attrMapList, Class<E> clazz,
             CSVSource source) throws Exception {
         if (attrMapList == null || attrMapList.isEmpty())
@@ -140,7 +136,7 @@ public abstract class AbstractCSVParser<T, E extends Enum<E>> {
             writer.flush();
             writer.close();
         }
-        return new FileReader(file);
+        return new FileInputStream(file);
     }
 
     /**
@@ -230,7 +226,7 @@ public abstract class AbstractCSVParser<T, E extends Enum<E>> {
     private Map<String, String> generataPairs(String[] header, String[] object) {
         Map<String, String> pairs = new HashMap<String, String>(0);
         for (int i = 0; i < header.length; i++) {
-            pairs.put(header[i], object[i]);
+            pairs.put(header[i], i < object.length ? object[i] : "");
         }
         return pairs;
     }
@@ -318,14 +314,15 @@ public abstract class AbstractCSVParser<T, E extends Enum<E>> {
             throws Exception {
         List<ReconciliationObject<T>> objects = new ArrayList<ReconciliationObject<T>>(
                 0);
-        FileReader fr = this.getCSVFile(managedSys, attrMapList, enumClass,
-                source);
-        if (fr == null) {
+        InputStream input = this.getCSVFile(managedSys, attrMapList, enumClass, source);
+        if (input == null) {
             return objects;
         }
-        CSVParser parser = new CSVParser(fr);
 
+        CSVHelper parser = new CSVHelper(input);
         String[][] fromParse = parser.getAllValues();
+        input.close();
+
         if (fromParse.length > 1) {
             if (this.validateCSVHeader(attrMapList, fromParse[0], enumClass)) {
                 for (int i = 1; i < fromParse.length; i++) {
@@ -334,7 +331,6 @@ public abstract class AbstractCSVParser<T, E extends Enum<E>> {
                 }
             }
         }
-        fr.close();
         return objects;
     }
 

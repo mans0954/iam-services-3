@@ -232,7 +232,7 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 			ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(requestType.getKey(), variables);
 
             for(Map.Entry<String,Object> varEntry : variables.entrySet()) {
-                idmAuditLog.addCustomRecord(varEntry.getKey(), varEntry.getValue().toString());
+                idmAuditLog.addCustomRecord(varEntry.getKey(), (varEntry.getValue() != null) ? varEntry.getValue().toString() : null);
             }
             idmAuditLog.setTargetTask(processInstance.getId(), taskName);
 
@@ -409,7 +409,7 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 
             ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(ActivitiRequestType.EDIT_USER.getKey(), variables);
             for(Map.Entry<String,Object> varEntry : variables.entrySet()) {
-                idmAuditLog.addCustomRecord(varEntry.getKey(), varEntry.getValue().toString());
+                idmAuditLog.addCustomRecord(varEntry.getKey(), (varEntry.getValue() != null) ? varEntry.getValue().toString() : null);
             }
 
             idmAuditLog.setTargetTask(processInstance.getId(), description);
@@ -563,8 +563,7 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 			final ProcessInstance instance = runtimeService.startProcessInstanceByKey(request.getActivitiRequestType(), variables);
             idmAuditLog.setTargetTask(instance.getId(), request.getName());
             for(Map.Entry<String,Object> varEntry : variables.entrySet()) {
-                idmAuditLog.addCustomRecord(varEntry.getKey(), varEntry.getValue().toString());
-            }
+                idmAuditLog.addCustomRecord(varEntry.getKey(), (varEntry.getValue() != null) ? varEntry.getValue().toString() : null);            }
 
 			response.setStatus(ResponseStatus.SUCCESS);
 
@@ -624,8 +623,7 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 
             idmAuditLog.setTargetTask(assignedTask.getId(), assignedTask.getName());
             for(Map.Entry<String,Object> varEntry : variables.entrySet()) {
-                idmAuditLog.addCustomRecord(varEntry.getKey(), varEntry.getValue().toString());
-            }
+                idmAuditLog.addCustomRecord(varEntry.getKey(), (varEntry.getValue() != null) ? varEntry.getValue().toString() : null);            }
         	taskService.complete(assignedTask.getId(), variables);
         	response.setStatus(ResponseStatus.SUCCESS);
 

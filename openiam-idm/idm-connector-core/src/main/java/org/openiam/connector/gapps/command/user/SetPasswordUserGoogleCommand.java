@@ -13,30 +13,29 @@ import com.google.gdata.data.appsforyourdomain.generic.GenericEntry;
 
 @Service("setPasswordGoogleAppsCommand")
 public class SetPasswordUserGoogleCommand extends
-        AbstractGoogleAppsCommand<PasswordRequest, ResponseType> {
+		AbstractGoogleAppsCommand<PasswordRequest, ResponseType> {
 
-    @Override
-    public ResponseType execute(PasswordRequest passwordReq)
-            throws ConnectorDataException {
-        ResponseType responseType = new ResponseType();
-        ManagedSysEntity mSys = managedSysService.getManagedSysById(passwordReq
-                .getTargetID());
-        String adminEmail = mSys.getUserId();
-        String password = this.getPassword(mSys.getId());
-        String domain = mSys.getHostUrl();
-        try {
-            GoogleAgent agent = new GoogleAgent();
-            GenericEntry getUser = agent.getUser(adminEmail, password, domain,
-                    passwordReq.getObjectIdentity());
-            getUser.getAllProperties().put("password",
-                    passwordReq.getPassword());
-            agent.updateUser(adminEmail, password, domain,
-                    getUser.getAllProperties(), passwordReq.getObjectIdentity());
-        } catch (Exception e) {
-            throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR,
-                    e.getMessage());
-        }
+	@Override
+	public ResponseType execute(PasswordRequest passwordReq)
+			throws ConnectorDataException {
+		ResponseType responseType = new ResponseType();
+		ManagedSysEntity mSys = managedSysService.getManagedSysById(passwordReq
+				.getTargetID());
+		String adminEmail = mSys.getUserId();
+		String password = this.getPassword(mSys.getId());
+		String domain = mSys.getHostUrl();
+		try {
+			GoogleAgent agent = new GoogleAgent();
+			GenericEntry getUser = agent.getUser(adminEmail, password, domain,
+					passwordReq.getObjectIdentity());
+			getUser.addProperty("password", passwordReq.getPassword());
+			agent.updateUser(adminEmail, password, domain,
+					getUser.getAllProperties(), passwordReq.getObjectIdentity());
+		} catch (Exception e) {
+			throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR,
+					e.getMessage());
+		}
 
-        return responseType;
-    }
+		return responseType;
+	}
 }

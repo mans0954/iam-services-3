@@ -40,8 +40,12 @@ public class LookupAttributeNamesCommand<ExtObject extends ExtensibleObject> ext
         Object attrNames = null;
         if (StringUtils.isNotBlank(mngSys.getAttributeNamesLookup())) {
             try {
+
+                Map<String, Object> binding = new HashMap<String, Object>();
+                binding.put("managedSys", mngSys);
                 Map<String, Object> bindingMap = new HashMap<String, Object>();
-                bindingMap.put("managedSys", mngSys);
+                bindingMap.put("binding", binding);
+
                 AttributeNamesLookupService lookupScript =
                         (AttributeNamesLookupService) scriptRunner.instantiateClass(bindingMap,
                                 mngSys.getAttributeNamesLookup());

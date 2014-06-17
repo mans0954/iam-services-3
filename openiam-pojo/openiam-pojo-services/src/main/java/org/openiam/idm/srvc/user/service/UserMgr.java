@@ -433,10 +433,10 @@ public class UserMgr implements UserDataService {
        // removeAllEmailAddresses(id);
 
         // userKeyDao.deleteByUserId(id);
-        List<UserEntity> supervisors = getSuperiors(id, 0, Integer.MAX_VALUE);
-        for(UserEntity se : supervisors) {
-           removeSupervisor(se.getId(), id);
-        }
+        //List<UserEntity> supervisors = getSuperiors(id, 0, Integer.MAX_VALUE);
+        //for(UserEntity se : supervisors) {
+        //   removeSupervisor(se.getId(), id);
+        //}
 
         List<LoginEntity> userLogin = loginDao.findUser(id);
         if(CollectionUtils.isNotEmpty(userLogin)){
@@ -1303,6 +1303,8 @@ public class UserMgr implements UserDataService {
         return getEmailAddressList(searchBean, size, from);
     }
 
+    @Override
+    @Transactional(readOnly = true)
     public List<EmailAddressEntity> getEmailAddressList(EmailSearchBean searchBean, Integer size, Integer from) {
         if (searchBean == null)
             throw new NullPointerException("searchBean is null");

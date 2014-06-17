@@ -13,28 +13,28 @@ import com.google.gdata.data.appsforyourdomain.generic.GenericEntry;
 
 @Service("suspendUserGoogleAppsCommand")
 public class SuspendedUserGoogleCommand extends
-        AbstractGoogleAppsCommand<SuspendResumeRequest, ResponseType> {
+		AbstractGoogleAppsCommand<SuspendResumeRequest, ResponseType> {
 
-    @Override
-    public ResponseType execute(SuspendResumeRequest req)
-            throws ConnectorDataException {
-        ResponseType responseType = new ResponseType();
-        ManagedSysEntity mSys = managedSysService.getManagedSysById(req
-                .getTargetID());
-        String adminEmail = mSys.getUserId();
-        String password = this.getPassword(mSys.getId());
-        String domain = mSys.getHostUrl();
-        try {
-            GoogleAgent agent = new GoogleAgent();
-            GenericEntry getUser = agent.getUser(adminEmail, password, domain,
-                    req.getObjectIdentity());
-            getUser.getAllProperties().put("isSuspended", "true");
-            agent.updateUser(adminEmail, password, domain,
-                    getUser.getAllProperties(), req.getObjectIdentity());
-        } catch (Exception e) {
-            throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR,
-                    e.getMessage());
-        }
-        return responseType;
-    }
+	@Override
+	public ResponseType execute(SuspendResumeRequest req)
+			throws ConnectorDataException {
+		ResponseType responseType = new ResponseType();
+		ManagedSysEntity mSys = managedSysService.getManagedSysById(req
+				.getTargetID());
+		String adminEmail = mSys.getUserId();
+		String password = this.getPassword(mSys.getId());
+		String domain = mSys.getHostUrl();
+		try {
+			GoogleAgent agent = new GoogleAgent();
+			GenericEntry getUser = agent.getUser(adminEmail, password, domain,
+					req.getObjectIdentity());
+			getUser.addProperty("isSuspended", "true");
+			agent.updateUser(adminEmail, password, domain,
+					getUser.getAllProperties(), req.getObjectIdentity());
+		} catch (Exception e) {
+			throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR,
+					e.getMessage());
+		}
+		return responseType;
+	}
 }

@@ -4,14 +4,14 @@
     <parent>
         <artifactId>idm-core</artifactId>
         <groupId>org.openiam</groupId>
-        <version>3.1.beta1.RELEASE</version>
+        <version>3.1.0.RELEASE</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.openiam</groupId>
     <artifactId>openiam-idm-intf</artifactId>
     <packaging>jar</packaging>
     <name>openiam-idm-intf</name>
-    <version>3.1.beta1.RELEASE</version>
+    <version>3.1.0.RELEASE</version>
     <description>Interfaces and DTO for the IDM specific services</description>
     <ciManagement>
         <system>idm</system>
@@ -131,14 +131,14 @@
         <dependency>
             <groupId>org.openiam</groupId>
             <artifactId>openiam-common-intf</artifactId>
-            <version>3.1.beta1.RELEASE</version>
+            <version>3.1.0.RELEASE</version>
             <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>org.openiam</groupId>
             <artifactId>openiam-common-db-intf</artifactId>
-            <version>3.1.beta1.RELEASE</version>
+            <version>3.1.0.RELEASE</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>

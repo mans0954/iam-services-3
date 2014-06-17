@@ -171,9 +171,9 @@ public class ProvisionDispatcher implements Sweepable {
                             @Override
                             public Boolean doInTransaction(TransactionStatus status) {
 
-                                    for (final List<ProvisionDataContainer> entityList : batchList) {
-                                        process(entityList);
-                                    }
+                                for (final List<ProvisionDataContainer> entityList : batchList) {
+                                    process(entityList);
+                                }
 
                                 return true;
                             }
@@ -200,85 +200,107 @@ public class ProvisionDispatcher implements Sweepable {
             idmAuditLog.setTargetUser(identity.getUserId(), identity.getLogin());
             idmAuditLog.succeed();
             try {
-                LoginEntity loginEntity = loginManager.getLoginByManagedSys(identity.getLogin(), identity.getManagedSysId());
-            if (loginEntity == null) {
-                loginEntity = loginDozerConverter.convertToEntity(identity, true);
-                log.error(String.format("Identity %s for managed sys %s has't saved yet to a database", identity.getLogin(), identity.getManagedSysId()));
-            }
-
-            if (data.getOperation() == ProvOperationEnum.DELETE) {
-                try {
-                    // udate target sys identity
-                    // do de-provisioning
-                    ObjectResponse response = deprovision(data);
-                    StatusCodeType statusCodeType = response.getStatus();
-                    if (statusCodeType == StatusCodeType.FAILURE &&
-                            ErrorCode.NO_SUCH_IDENTIFIER.equals(response.getError())) {
-                        statusCodeType = StatusCodeType.SUCCESS; // User doesn't exist in target system
-                    }
-
-                    if (StatusCodeType.SUCCESS.equals(statusCodeType)) {
-                        loginEntity.setProvStatus(ProvLoginStatusEnum.DELETED);
-                        loginEntity.setAuthFailCount(0);
-                        loginEntity.setPasswordChangeCount(0);
-                        loginEntity.setIsLocked(0);
-
-                        String scrambledPassword = PasswordGenerator.generatePassword(10);
-                        try {
-                            loginEntity.setPassword(loginManager.encryptPassword(loginEntity.getUserId(),
-                                    scrambledPassword));
-                        } catch (EncryptionException ee) {
-                            log.error(ee);
-                            // put the password in a clean state so that the
-                            // operation continues
-                            loginEntity.setPassword(null);
-                        }
-
-                    } else {
-                        idmAuditLog.setFailureReason(ProvLoginStatusEnum.FAIL_DELETE.getValue());
-                        loginEntity.setProvStatus(ProvLoginStatusEnum.FAIL_DELETE);
-                    }
-                } catch (Throwable th) {
-                    idmAuditLog.fail();
-                    idmAuditLog.setFailureReason(th.getMessage());
-                    idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION,
-                            "DELETE IDENTITY=" + identity + " from MANAGED_SYS_ID=" + identity.getManagedSysId()
-                                    + " status=" + th.getMessage());
-                    loginEntity.setProvStatus(ProvLoginStatusEnum.FAIL_DELETE);
+                LoginEntity loginEntity = loginManager.getLoginByManagedSys(identity.getLogin(),
+                        identity.getManagedSysId());
+                if (loginEntity == null) {
+                    loginEntity = loginDozerConverter.convertToEntity(identity, true);
+                    log.error(String.format("Identity %s for managed sys %s has't saved yet to a database",
+                            identity.getLogin(), identity.getManagedSysId()));
                 }
 
-            } else if (data.getOperation() == ProvOperationEnum.CREATE) {
-                try {
-                    // do provisioning to target system
-                    ProvisionUserResponse response = provision(data, idmAuditLog);
-                    if (response.isSuccess()) {
-                        loginEntity.setProvStatus(ProvLoginStatusEnum.CREATED);
-                    } else {
+                if (data.getOperation() == ProvOperationEnum.DELETE) {
+                    try {
+                        // udate target sys identity
+                        // do de-provisioning
+                        ObjectResponse response = deprovision(data);
+                        StatusCodeType statusCodeType = response.getStatus();
+                        if (statusCodeType == StatusCodeType.FAILURE
+                                && ErrorCode.NO_SUCH_IDENTIFIER.equals(response.getError())) {
+                            statusCodeType = StatusCodeType.SUCCESS; // User
+                                                                     // doesn't
+                                                                     // exist in
+                                                                     // target
+                                                                     // system
+                        }
+
+                        if (StatusCodeType.SUCCESS.equals(statusCodeType)) {
+                            loginEntity.setProvStatus(ProvLoginStatusEnum.DELETED);
+                            loginEntity.setAuthFailCount(0);
+                            loginEntity.setPasswordChangeCount(0);
+                            loginEntity.setIsLocked(0);
+
+                            String scrambledPassword = PasswordGenerator.generatePassword(10);
+                            try {
+                                loginEntity.setPassword(loginManager.encryptPassword(loginEntity.getUserId(),
+                                        scrambledPassword));
+                            } catch (EncryptionException ee) {
+                                log.error(ee);
+                                // put the password in a clean state so that the
+                                // operation continues
+                                loginEntity.setPassword(null);
+                            }
+
+                        } else {
+                            idmAuditLog.setFailureReason(ProvLoginStatusEnum.FAIL_DELETE.getValue());
+                            loginEntity.setProvStatus(ProvLoginStatusEnum.FAIL_DELETE);
+                        }
+                    } catch (Throwable th) {
                         idmAuditLog.fail();
-                        idmAuditLog.setFailureReason(response.getErrorText());
+                        idmAuditLog.setFailureReason(th.getMessage());
+                        idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "DELETE IDENTITY=" + identity
+                                + " from MANAGED_SYS_ID=" + identity.getManagedSysId() + " status=" + th.getMessage());
+                        loginEntity.setProvStatus(ProvLoginStatusEnum.FAIL_DELETE);
+                    }
+
+                } else if (data.getOperation() == ProvOperationEnum.CREATE) {
+                    try {
+                        // do provisioning to target system
+                        ProvisionUserResponse response = provision(data, idmAuditLog);
+                        if (response.isSuccess()) {
+                            loginEntity.setProvStatus(ProvLoginStatusEnum.CREATED);
+                        } else {
+                            idmAuditLog.fail();
+                            idmAuditLog.setFailureReason(response.getErrorText());
+                            loginEntity.setProvStatus(ProvLoginStatusEnum.FAIL_CREATE);
+                        }
+
+                    } catch (Throwable th) {
+                        idmAuditLog.fail();
+                        idmAuditLog.setFailureReason(th.getMessage());
+                        idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "ADD IDENTITY=" + identity
+                                + " from MANAGED_SYS_ID=" + identity.getManagedSysId() + " status="
+                                + ProvLoginStatusEnum.FAIL_CREATE + " details=" + th.getMessage());
                         loginEntity.setProvStatus(ProvLoginStatusEnum.FAIL_CREATE);
                     }
 
-                } catch (Throwable th) {
-                    idmAuditLog.fail();
-                    idmAuditLog.setFailureReason(th.getMessage());
-                    idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "ADD IDENTITY=" + identity
-                            + " from MANAGED_SYS_ID=" + identity.getManagedSysId() + " status="
-                            + ProvLoginStatusEnum.FAIL_CREATE + " details=" + th.getMessage());
-                    loginEntity.setProvStatus(ProvLoginStatusEnum.FAIL_CREATE);
-                }
+                } else if (data.getOperation() == ProvOperationEnum.UPDATE) {
+                    try {
+                        // do provisioning to target system
+                        ProvisionUserResponse response = provision(data, idmAuditLog);
+                        // auditBuilderDispatcherChild.addAttribute(AuditAttributeName.DESCRIPTION,
+                        // "UPDATE IDENTITY=" + identity +
+                        // " from MANAGED_SYS_ID=" + identity.getManagedSysId()
+                        // + " status=" + response.getStatus() + " details=" +
+                        // response.getErrorText());
+                        if (response.isSuccess()) {
+                            loginEntity.setProvStatus(ProvLoginStatusEnum.UPDATED);
+                        } else {
+                            idmAuditLog.fail();
+                            idmAuditLog.setFailureReason(response.getErrorText());
 
-            } else if (data.getOperation() == ProvOperationEnum.UPDATE) {
-                try {
-                    // do provisioning to target system
-                    ProvisionUserResponse response = provision(data,idmAuditLog);
-                //    auditBuilderDispatcherChild.addAttribute(AuditAttributeName.DESCRIPTION, "UPDATE IDENTITY=" + identity + " from MANAGED_SYS_ID=" + identity.getManagedSysId() + " status=" + response.getStatus() + " details=" + response.getErrorText());
-                    if (response.isSuccess()) {
-                        loginEntity.setProvStatus(ProvLoginStatusEnum.UPDATED);
-                    } else {
+                            loginEntity.setProvStatus(ProvLoginStatusEnum.FAIL_UPDATE);
+                            // if we have changed identity for managed sys when
+                            // rename we have to revert it because failed
+                            if (StringUtils.isNotEmpty(data.getIdentity().getOrigPrincipalName())) {
+                                loginEntity.setLogin(data.getIdentity().getOrigPrincipalName());
+                            }
+                        }
+                    } catch (Throwable th) {
                         idmAuditLog.fail();
-                        idmAuditLog.setFailureReason(response.getErrorText());
-
+                        idmAuditLog.setFailureReason(th.getMessage());
+                        idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "UPDATE IDENTITY=" + identity
+                                + " from MANAGED_SYS_ID=" + identity.getManagedSysId() + " status="
+                                + ProvLoginStatusEnum.FAIL_UPDATE + " details=" + th.getMessage());
                         loginEntity.setProvStatus(ProvLoginStatusEnum.FAIL_UPDATE);
                         // if we have changed identity for managed sys when
                         // rename we have to revert it because failed
@@ -286,64 +308,52 @@ public class ProvisionDispatcher implements Sweepable {
                             loginEntity.setLogin(data.getIdentity().getOrigPrincipalName());
                         }
                     }
-                } catch (Throwable th) {
-                    idmAuditLog.fail();
-                    idmAuditLog.setFailureReason(th.getMessage());
-                    idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "UPDATE IDENTITY="
-                            + identity + " from MANAGED_SYS_ID=" + identity.getManagedSysId() + " status="
-                            + ProvLoginStatusEnum.FAIL_UPDATE + " details=" + th.getMessage());
-                    loginEntity.setProvStatus(ProvLoginStatusEnum.FAIL_UPDATE);
-                    // if we have changed identity for managed sys when
-                    // rename we have to revert it because failed
-                    if (StringUtils.isNotEmpty(data.getIdentity().getOrigPrincipalName())) {
-                        loginEntity.setLogin(data.getIdentity().getOrigPrincipalName());
+
+                } else if (data.getOperation() == ProvOperationEnum.DISABLE) {
+
+                    String requestId = data.getRequestId();
+                    ResourceEntity resEntity = resourceService.findResourceById(data.getResourceId());
+                    Resource res = resourceDozerConverter.convertToDTO(resEntity, true);
+                    ManagedSysDto mSys = managedSysDozerConverter.convertToDTO(
+                            managedSystemService.getManagedSysByResource(res.getId(), "ACTIVE"), true);
+                    String managedSysId = (mSys != null) ? mSys.getId() : null;
+
+                    Login targetSysLogin = data.getIdentity();
+
+                    SuspendResumeRequest suspendReq = new SuspendResumeRequest();
+                    suspendReq.setObjectIdentity(targetSysLogin.getLogin());
+                    suspendReq.setTargetID(managedSysId);
+                    suspendReq.setRequestID(requestId);
+                    suspendReq.setScriptHandler(mSys.getSuspendHandler());
+                    suspendReq.setHostLoginId(mSys.getUserId());
+                    String passwordDecoded = mSys.getPswd();
+                    try {
+                        passwordDecoded = getDecryptedPassword(mSys);
+                    } catch (ConnectorDataException e) {
+                        e.printStackTrace();
                     }
-                }
+                    suspendReq.setHostLoginPassword(passwordDecoded);
+                    suspendReq.setHostUrl(mSys.getHostUrl());
 
-            } else if (data.getOperation() == ProvOperationEnum.DISABLE) {
-
-                String requestId = data.getRequestId();
-                ResourceEntity resEntity = resourceService.findResourceById(data.getResourceId());
-                Resource res = resourceDozerConverter.convertToDTO(resEntity, true);
-                ManagedSysDto mSys = managedSysDozerConverter.convertToDTO(
-                        managedSystemService.getManagedSysByResource(res.getId(), "ACTIVE"), true);
-                String managedSysId = (mSys != null) ? mSys.getId() : null;
-
-                Login targetSysLogin = data.getIdentity();
-
-                SuspendResumeRequest suspendReq = new SuspendResumeRequest();
-                suspendReq.setObjectIdentity(targetSysLogin.getLogin());
-                suspendReq.setTargetID(managedSysId);
-                suspendReq.setRequestID(requestId);
-                suspendReq.setScriptHandler(mSys.getSuspendHandler());
-                suspendReq.setHostLoginId(mSys.getUserId());
-                String passwordDecoded = mSys.getPswd();
-                try {
-                    passwordDecoded = getDecryptedPassword(mSys);
-                } catch (ConnectorDataException e) {
-                    e.printStackTrace();
-                }
-                suspendReq.setHostLoginPassword(passwordDecoded);
-                suspendReq.setHostUrl(mSys.getHostUrl());
-
-                try {
-                    ResponseType resp = connectorAdapter.suspendRequest(mSys, suspendReq, MuleContextProvider.getCtx());
-                    if (StatusCodeType.SUCCESS.equals(resp.getStatus())) {
-                        loginEntity.setProvStatus(ProvLoginStatusEnum.DISABLED);
-                    } else {
+                    try {
+                        ResponseType resp = connectorAdapter.suspendRequest(mSys, suspendReq,
+                                MuleContextProvider.getCtx());
+                        if (StatusCodeType.SUCCESS.equals(resp.getStatus())) {
+                            loginEntity.setProvStatus(ProvLoginStatusEnum.DISABLED);
+                        } else {
+                            idmAuditLog.fail();
+                            idmAuditLog.setFailureReason(resp.getErrorMsgAsStr());
+                            loginEntity.setProvStatus(ProvLoginStatusEnum.FAIL_DISABLE);
+                        }
+                    } catch (Throwable th) {
                         idmAuditLog.fail();
-                        idmAuditLog.setFailureReason(resp.getErrorMsgAsStr());
+                        idmAuditLog.setFailureReason(th.getMessage());
+                        idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "DISABLE IDENTITY=" + identity
+                                + " from MANAGED_SYS_ID=" + identity.getManagedSysId() + " status="
+                                + ProvLoginStatusEnum.FAIL_DISABLE + " details=" + th.getMessage());
                         loginEntity.setProvStatus(ProvLoginStatusEnum.FAIL_DISABLE);
                     }
-                } catch (Throwable th) {
-                    idmAuditLog.fail();
-                    idmAuditLog.setFailureReason(th.getMessage());
-                    idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "DISABLE IDENTITY="
-                            + identity + " from MANAGED_SYS_ID=" + identity.getManagedSysId() + " status="
-                            + ProvLoginStatusEnum.FAIL_DISABLE + " details=" + th.getMessage());
-                    loginEntity.setProvStatus(ProvLoginStatusEnum.FAIL_DISABLE);
                 }
-            }
 
             } finally {
                 auditLogService.enqueue(idmAuditLog);
@@ -386,8 +396,7 @@ public class ProvisionDispatcher implements Sweepable {
 
     }
 
-    private ProvisionUserResponse provision(ProvisionDataContainer data,
-            final IdmAuditLog idmAuditLog) {
+    private ProvisionUserResponse provision(ProvisionDataContainer data, final IdmAuditLog idmAuditLog) {
 
         String requestId = data.getRequestId();
         ProvisionUserResponse response = new ProvisionUserResponse();
@@ -414,8 +423,8 @@ public class ProvisionDispatcher implements Sweepable {
 
             ExtensibleUser extUser = buildFromRules(targetSysProvUser, attrMap, bindingMap);
             try {
-                idmAuditLog.addCustomRecord("ATTRIBUTES",extUser.getAttributesAsJSON());
-            } catch(JsonGenerationException jge) {
+                idmAuditLog.addCustomRecord("ATTRIBUTES", extUser.getAttributesAsJSON());
+            } catch (JsonGenerationException jge) {
                 log.error(jge);
             }
             // get the attributes at the target system
@@ -436,9 +445,8 @@ public class ProvisionDispatcher implements Sweepable {
                 if (ppScript != null) {
                     int executePreProcessResult = executePreProcess(ppScript, bindingMap, targetSysProvUser,
                             isExistedInTargetSystem ? "MODIFY" : "ADD");
-                    idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION,
-                            "executePreProcessResult: " + (isExistedInTargetSystem ? "[MODIFY]" : "[ADD] = ")
-                                    + executePreProcessResult);
+                    idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "executePreProcessResult: "
+                            + (isExistedInTargetSystem ? "[MODIFY]" : "[ADD] = ") + executePreProcessResult);
                     if (executePreProcessResult == ProvisioningConstants.FAIL) {
                         response.setStatus(ResponseStatus.FAILURE);
                         response.setErrorCode(ResponseCode.FAIL_PREPROCESSOR);
@@ -448,7 +456,8 @@ public class ProvisionDispatcher implements Sweepable {
             }
 
             if (!isExistedInTargetSystem) {
-                ObjectResponse resp = provisionService.requestAddModify(extUser, targetSysLogin, true, requestId, idmAuditLog);
+                ObjectResponse resp = provisionService.requestAddModify(extUser, targetSysLogin, true, requestId,
+                        idmAuditLog);
                 connectorSuccess = resp.getStatus() != StatusCodeType.FAILURE;
 
             } else { // if user exists in target system
@@ -462,7 +471,8 @@ public class ProvisionDispatcher implements Sweepable {
                             new ExtensibleAttribute("ORIG_IDENTITY", targetSysLogin.getOrigPrincipalName(),
                                     AttributeOperationEnum.REPLACE.getValue(), "String"));
                 }
-                ObjectResponse resp = provisionService.requestAddModify(extUser, targetSysLogin, false, requestId, idmAuditLog);
+                ObjectResponse resp = provisionService.requestAddModify(extUser, targetSysLogin, false, requestId,
+                        idmAuditLog);
                 connectorSuccess = resp.getStatus() != StatusCodeType.FAILURE;
             }
 
@@ -474,9 +484,8 @@ public class ProvisionDispatcher implements Sweepable {
                 if (ppScript != null) {
                     int executePostProcessResult = executePostProcess(ppScript, bindingMap, targetSysProvUser,
                             isExistedInTargetSystem ? "MODIFY" : "ADD", connectorSuccess);
-                    idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION,
-                            "executePostProcessResult " + (isExistedInTargetSystem ? "[MODIFY]" : "[ADD] =")
-                                    + executePostProcessResult);
+                    idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "executePostProcessResult "
+                            + (isExistedInTargetSystem ? "[MODIFY]" : "[ADD] =") + executePostProcessResult);
                     if (executePostProcessResult == ProvisioningConstants.FAIL) {
                         response.setStatus(ResponseStatus.FAILURE);
                         response.setErrorCode(ResponseCode.FAIL_POSTPROCESSOR);
@@ -509,7 +518,8 @@ public class ProvisionDispatcher implements Sweepable {
             return null;
         }
         log.debug("updateAttributeList: Updating operations on attributes being passed to connectors");
-        log.debug("updateAttributeList: Current attributeMap = " + currentValueMap);
+        // log.debug("updateAttributeList: Current attributeMap = " +
+        // currentValueMap);
 
         List<ExtensibleAttribute> extAttrList = extUser.getAttributes();
         if (extAttrList == null) {
@@ -517,7 +527,8 @@ public class ProvisionDispatcher implements Sweepable {
             return null;
         }
 
-        log.debug("updateAttributeList: New Attribute List = " + extAttrList);
+        // log.debug("updateAttributeList: New Attribute List = " +
+        // extAttrList);
         if (extAttrList != null && currentValueMap == null) {
             for (ExtensibleAttribute attr : extAttrList) {
                 attr.setOperation(1);
@@ -622,13 +633,10 @@ public class ProvisionDispatcher implements Sweepable {
                     continue;
                 }
 
-
-
                 String objectType = attr.getMapForObjectType();
                 if (objectType != null) {
 
-                    if (objectType.equalsIgnoreCase("USER")
-                            || objectType.equalsIgnoreCase("PASSWORD")) {
+                    if (objectType.equalsIgnoreCase("USER") || objectType.equalsIgnoreCase("PASSWORD")) {
                         Object output = "";
                         try {
                             output = ProvisionServiceUtil.getOutputFromAttrMap(attr, bindingMap, scriptRunner);
