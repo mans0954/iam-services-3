@@ -47,7 +47,7 @@ public abstract class AbstractSearchLdapCommand<ExtObject extends ExtensibleObje
             log.debug("Searching BaseDN=" + searchRequest.getBaseDN());
 
             SearchControls searchControls = new SearchControls();
-            ldapContext.setRequestControls(new Control[] { new PagedResultsControl(PAGE_SIZE, Control.CRITICAL) });
+            ldapContext.setRequestControls(new Control[] { new PagedResultsControl(PAGE_SIZE, Control.NONCRITICAL) });
             searchControls.setSearchScope(managedSys.getSearchScope().getValue());
             String identityAttrName = matchObj != null ? matchObj.getKeyField() : "cn";
 
@@ -95,7 +95,7 @@ public abstract class AbstractSearchLdapCommand<ExtObject extends ExtensibleObje
                                             container = new BaseAttributeContainer();
                                             extAttr.setAttributeContainer(container);
                                         }
-                                        container.getAttributeList().add(0,
+                                        container.getAttributeList().add(
                                                 new BaseAttribute(attr.getID(), o.toString(), AttributeOperationEnum.NO_CHANGE));
                                     } else {
                                         extAttr.setValue(o.toString());
