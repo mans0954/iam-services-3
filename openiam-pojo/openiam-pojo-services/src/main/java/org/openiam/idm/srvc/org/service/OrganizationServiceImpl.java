@@ -498,7 +498,9 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
     @Transactional(readOnly = true)
     @LocalizedServiceGet
     public List<OrganizationEntity> findOrganizationsByAttributeValue(final String attrName, String attrValue, final LanguageEntity langauge) {
-        return orgDao.findOrganizationsByAttributeValue(attrName, attrValue);
+    	final OrganizationSearchBean searchBean = new OrganizationSearchBean();
+    	searchBean.addAttribute(attrName, attrValue);
+        return orgDao.getByExample(searchBean);
     }
 	
 	private boolean causesCircularDependency(final OrganizationEntity parent, final OrganizationEntity child, final Set<OrganizationEntity> visitedSet) {

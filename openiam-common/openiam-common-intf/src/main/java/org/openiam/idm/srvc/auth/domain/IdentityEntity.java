@@ -28,15 +28,15 @@ public class IdentityEntity implements java.io.Serializable  {
     @DocumentId
     private String id;
 
-    @Field(name = "identity", index = Index.TOKENIZED, store = Store.YES)
+    @Field(name = "identity", analyze = Analyze.YES, store = Store.YES)
     @Column(name="IDENTITY",length=320)
     private String identity;
 
-    @Field(name = "managedSysId", index = Index.UN_TOKENIZED, store = Store.YES)
+    @Field(name = "managedSysId", analyze = Analyze.NO, store = Store.YES)
     @Column(name="MANAGED_SYS_ID",length=50)
     private String managedSysId;
 
-    @Field(name = "referredObjectId", index = Index.UN_TOKENIZED, store = Store.YES)
+    @Field(name = "referredObjectId", analyze = Analyze.NO, store = Store.YES)
     @Column(name="REFERRED_OBJECT_ID",length=32)
     private String referredObjectId;
 

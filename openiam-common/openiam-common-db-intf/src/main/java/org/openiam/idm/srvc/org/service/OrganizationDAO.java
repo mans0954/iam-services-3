@@ -30,6 +30,5 @@ public interface OrganizationDAO extends BaseDao<OrganizationEntity, String> {
 
     public List<OrganizationEntity> findAllByTypesAndIds(Set<String> allowedOrgTypes, Set<String> filterData);
 
-    public List<OrganizationEntity> findOrganizationsByAttributeValue(final String attrName, final String attrValue);
 
 }

@@ -292,15 +292,4 @@ public class OrganizationDAOImpl extends
         return criteria.list();
     }
 
-    @Override
-    @LocalizedDatabaseGet
-    public List<OrganizationEntity> findOrganizationsByAttributeValue(final String attrName, final String attrValue) {
-        List ret = new ArrayList<OrganizationEntity>();
-        if (StringUtils.isNotBlank(attrName)) {
-            // Can't use Criteria for @ElementCollection due to Hibernate bug
-            // (org.hibernate.MappingException: collection was not an association)
-            ret = getHibernateTemplate().find("select oa.organization from OrganizationAttributeEntity oa left join oa.values av where oa.name = ? and ((oa.isMultivalued = false and oa.value = ?) or (oa.isMultivalued = true and av in ?))", attrName, attrValue, attrValue);
-        }
-        return ret;
-    }
 }

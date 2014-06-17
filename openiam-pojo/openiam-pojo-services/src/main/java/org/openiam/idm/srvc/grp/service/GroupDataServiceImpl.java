@@ -581,6 +581,8 @@ public class GroupDataServiceImpl implements GroupDataService {
     @Transactional(readOnly = true)
     @LocalizedServiceGet
     public List<GroupEntity> findGroupsByAttributeValueLocalize(String attrName, String attrValue, LanguageEntity language) {
-        return groupDao.findGroupsByAttributeValue(attrName, attrValue);
+    	final GroupSearchBean searchBean = new GroupSearchBean();
+    	searchBean.addAttribute(attrName, attrValue);
+        return groupDao.getByExample(searchBean);
     }
 }

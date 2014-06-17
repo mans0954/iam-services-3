@@ -4,6 +4,7 @@ import java.util.Date;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
+import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.DocumentId;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.FieldBridge;
@@ -45,8 +46,8 @@ public class EmailAddressEntity {
     private String description;
 
     @Fields ({
-        @Field(index = Index.TOKENIZED),
-        @Field(name = "emailAddress", index = Index.TOKENIZED, store = Store.YES)
+        @Field(analyze = Analyze.YES),
+        @Field(name = "emailAddress", analyze = Analyze.YES, store = Store.YES)
     })
     @Column(name = "EMAIL_ADDRESS", length = 320)
     @Size(max = 320, message = "validator.email.toolong")

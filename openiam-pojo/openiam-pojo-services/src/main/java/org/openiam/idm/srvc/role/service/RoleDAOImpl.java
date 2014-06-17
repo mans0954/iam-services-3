@@ -247,14 +247,4 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
         return criteria.list();
     }
 
-    public List<RoleEntity> findRolesByAttributeValue(String attrName, String attrValue) {
-        List ret = new ArrayList<RoleEntity>();
-        if (StringUtils.isNotBlank(attrName)) {
-            // Can't use Criteria for @ElementCollection due to Hibernate bug
-            // (org.hibernate.MappingException: collection was not an association)
-            ret = getHibernateTemplate().find("select ra.role from RoleAttributeEntity ra left join ra.values av where ra.name = ? and ((ra.isMultivalued = false and ra.value = ?) or (ra.isMultivalued = true and av in ?))", attrName, attrValue, attrValue);
-        }
-        return ret;
-    }
-
 }

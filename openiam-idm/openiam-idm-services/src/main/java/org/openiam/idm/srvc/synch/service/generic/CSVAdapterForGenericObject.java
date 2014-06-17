@@ -20,11 +20,7 @@
  */
 package org.openiam.idm.srvc.synch.service.generic;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.Reader;
+import java.io.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
@@ -39,6 +35,7 @@ import org.openiam.base.id.UUIDGen;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
+import org.openiam.idm.parser.csv.CSVHelper;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.synch.dto.Attribute;
@@ -85,8 +82,6 @@ public class CSVAdapterForGenericObject implements SourceAdapter {
 
         log.debug("Starting to Sync CSV File..^^^^^^^^");
 
-        Reader reader = null;
-
         String requestId = UUIDGen.getUUID();
         /*
         IdmAuditLog synchStartLog = new IdmAuditLog();
@@ -112,8 +107,10 @@ public class CSVAdapterForGenericObject implements SourceAdapter {
          */
 
         File file = new File(config.getFileName());
+        InputStream input = null;
+
         try {
-            reader = new FileReader(file);
+            input = new FileInputStream(file);
         } catch (FileNotFoundException fe) {
             fe.printStackTrace();
 
@@ -129,12 +126,11 @@ public class CSVAdapterForGenericObject implements SourceAdapter {
 
         }
 
-        CSVParser parser = new CSVParser(reader, CSVStrategy.EXCEL_STRATEGY);
         try {
-            int ctr = 0;
+            CSVHelper parser = new CSVHelper(input, CSVStrategy.EXCEL_STRATEGY);
             String[][] fileContentAry = parser.getAllValues();
-            int size = fileContentAry.length;
 
+            int ctr = 0;
             for (String[] lineAry : fileContentAry) {
                 log.debug("File Row #= " + lineAry[0]);
 
@@ -205,6 +201,14 @@ public class CSVAdapterForGenericObject implements SourceAdapter {
             resp.setErrorCode(ResponseCode.IO_EXCEPTION);
             return resp;
 
+        } finally {
+            if (input != null) {
+                try {
+                    input.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
         }
 
         log.debug("CSV SYNCHRONIZATION COMPLETE^^^^^^^^");
@@ -266,7 +270,7 @@ public class CSVAdapterForGenericObject implements SourceAdapter {
             String key = it.next();
             Attribute attr = rowObj.get(key);
             int colNbr = attr.getColumnNbr();
-            String colValue = lineAry[colNbr];
+            String colValue = lineAry.length > colNbr ? lineAry[colNbr] : "";
 
             attr.setValue(colValue);
         }
