@@ -4,14 +4,14 @@
 
         <groupId>org.openiam</groupId>
         <artifactId>iam-services</artifactId>
-        <version>3.1.0.RELEASE</version>
+        <version>3.1.1.RELEASE</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.openiam</groupId>
     <artifactId>openiam-esb</artifactId>
     <name>openiam-esb</name>
     <packaging>war</packaging>
-    <version>3.1.0.RELEASE</version>
+    <version>3.1.1.RELEASE</version>
     <description>OpenIAM ESB Module based on Mule</description>
 	<properties>
     	<skipTests>true</skipTests>
@@ -84,7 +84,7 @@
         <dependency>
             <groupId>org.openiam</groupId>
             <artifactId>openiam-bpm-activiti</artifactId>
-            <version>3.1.0.RELEASE</version>
+            <version>3.1.1.RELEASE</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.slf4j</groupId>
@@ -100,7 +100,7 @@
         <dependency>
             <groupId>org.openiam</groupId>
             <artifactId>openiam-auth-manager-service</artifactId>
-            <version>3.1.0.RELEASE</version>
+            <version>3.1.1.RELEASE</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.slf4j</groupId>
@@ -116,7 +116,7 @@
         <dependency>
             <groupId>org.openiam</groupId>
             <artifactId>openiam-auth-manager-web</artifactId>
-            <version>3.1.0.RELEASE</version>
+            <version>3.1.1.RELEASE</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.slf4j</groupId>
@@ -132,7 +132,7 @@
         <dependency>
             <groupId>org.openiam</groupId>
             <artifactId>openiam-auth-manager-client</artifactId>
-            <version>3.1.0.RELEASE</version>
+            <version>3.1.1.RELEASE</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.slf4j</groupId>
