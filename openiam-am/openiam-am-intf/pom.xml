@@ -138,7 +138,6 @@
         <dependency>
             <groupId>org.openiam</groupId>
             <artifactId>openiam-common-intf</artifactId>
-            <version>3.1.1.RELEASE</version>
             <scope>compile</scope>
         </dependency>
 
