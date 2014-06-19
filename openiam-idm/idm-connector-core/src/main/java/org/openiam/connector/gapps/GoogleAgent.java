@@ -96,11 +96,9 @@ public class GoogleAgent {
 		if (!StringUtils.hasText(entity))
 			return null;
 		String id = entity;
-		if (entity.contains("@")) {
-			id = entity.split("@")[0];
-		}
 		return this.getService(adminEmail, password, domain).getEntry(
-				new URL(URL + domain + "/" + id + "@" + domain),
+				new URL(URL + domain + "/"
+						+ GoogleUtils.makeGoogleId(id.toLowerCase(), domain)),
 				GenericEntry.class);
 	}
 
@@ -215,9 +213,9 @@ public class GoogleAgent {
 			MalformedURLException, IOException, ServiceException {
 		GenericEntry entry = new GenericEntry();
 		entry.addProperties(googleUserProps);
-		GenericEntry newE = this
-				.getService(adminEmail, password, domain)
-				.update(new URL(APP_URL_USER + domain + "/" + id + "@" + domain),
+		GenericEntry newE = this.getService(adminEmail, password, domain)
+				.update(new URL(APP_URL_USER + domain + "/"
+						+ GoogleUtils.makeGoogleId(id.toLowerCase(), domain)),
 						entry);
 		log.info("Google connector update run:"
 				+ newE.getAllProperties().get("userEmail"));
@@ -230,8 +228,9 @@ public class GoogleAgent {
 		GenericEntry entry = new GenericEntry();
 		entry.addProperties(googleGroupProps);
 		GenericEntry newE = this.getService(adminEmail, password, domain)
-				.update(new URL(APP_URL_GROUP + domain + "/" + id + "@"
-						+ domain), entry);
+				.update(new URL(APP_URL_GROUP + domain + "/"
+						+ GoogleUtils.makeGoogleId(id.toLowerCase(), domain)),
+						entry);
 		log.info("Google connector update run:"
 				+ newE.getAllProperties().get("groupId"));
 	}
@@ -239,16 +238,20 @@ public class GoogleAgent {
 	public void deleteUser(String adminEmail, String password, String domain,
 			String email) throws AppsForYourDomainException,
 			MalformedURLException, IOException, ServiceException {
-		this.getService(adminEmail, password, domain).delete(
-				new URL(APP_URL_USER + domain + "/" + email + "@" + domain));
+		this.getService(adminEmail, password, domain)
+				.delete(new URL(APP_URL_USER + domain + "/"
+						+ GoogleUtils.makeGoogleId(email.toLowerCase(), domain)));
 	}
 
 	public void deleteGroup(String adminEmail, String password, String domain,
 			String groupName) throws AppsForYourDomainException,
 			MalformedURLException, IOException, ServiceException {
-		this.getService(adminEmail, password, domain)
-				.delete(new URL(APP_URL_GROUP + domain + "/" + groupName + "@"
-						+ domain));
+		this.getService(adminEmail, password, domain).delete(
+				new URL(APP_URL_GROUP
+						+ domain
+						+ "/"
+						+ GoogleUtils.makeGoogleId(groupName.toLowerCase(),
+								domain)));
 	}
 
 	// test for groups
