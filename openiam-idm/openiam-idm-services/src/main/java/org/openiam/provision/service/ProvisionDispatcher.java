@@ -3,13 +3,7 @@ package org.openiam.provision.service;
 import groovy.lang.MissingPropertyException;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import javax.jms.JMSException;
 import javax.jms.ObjectMessage;
@@ -49,7 +43,6 @@ import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
-import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
 import org.openiam.idm.srvc.auth.dto.ProvLoginStatusEnum;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.key.constant.KeyName;
@@ -68,7 +61,6 @@ import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.idm.srvc.res.service.ResourceService;
-import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.provision.dto.ProvOperationEnum;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.resp.ProvisionUserResponse;
@@ -430,7 +422,7 @@ public class ProvisionDispatcher implements Sweepable {
             // get the attributes at the target system
             // this lookup only for getting attributes from the
             // system
-            Map<String, String> currentValueMap = new HashMap<String, String>();
+            Map<String, ExtensibleAttribute> currentValueMap = new HashMap<>();
             boolean isExistedInTargetSystem = getCurrentObjectAtTargetSystem(requestId, targetSysLogin, extUser, mSys,
                     matchObj, currentValueMap);
             boolean connectorSuccess = false;
@@ -513,7 +505,7 @@ public class ProvisionDispatcher implements Sweepable {
      * they can be passed to the connector
      */
     private ExtensibleUser updateAttributeList(org.openiam.provision.type.ExtensibleUser extUser,
-            Map<String, String> currentValueMap) {
+            Map<String, ExtensibleAttribute> currentValueMap) {
         if (extUser == null) {
             return null;
         }
@@ -540,23 +532,16 @@ public class ProvisionDispatcher implements Sweepable {
                 if (currentValueMap == null) {
                     attr.setOperation(1);
                 } else {
-                    String curVal = currentValueMap.get(nm);
-                    if (curVal == null) {
-                        // temp hack
-                        if (nm.equalsIgnoreCase("objectclass")) {
-                            attr.setOperation(2);
-                        } else {
-                            log.debug("- Op = 1 - AttrName = " + nm);
-                            attr.setOperation(1);
-                        }
+                    ExtensibleAttribute curAttr = currentValueMap.get(nm);
+                    if (attr.valuesAreEqual(curAttr)) {
+                        log.debug("- Op = 0 - AttrName = " + nm);
+                        attr.setOperation(0);
+                    } else if (!curAttr.containsAnyValue()) {
+                        log.debug("- Op = 1 - AttrName = " + nm);
+                        attr.setOperation(1);
                     } else {
-                        if (curVal.equalsIgnoreCase(attr.getValue())) {
-                            log.debug("- Op = 0 - AttrName = " + nm);
-                            attr.setOperation(0);
-                        } else {
-                            log.debug("- Op = 2 - AttrName = " + nm);
-                            attr.setOperation(2);
-                        }
+                        log.debug("- Op = 2 - AttrName = " + nm);
+                        attr.setOperation(2);
                     }
                 }
             }
@@ -565,7 +550,7 @@ public class ProvisionDispatcher implements Sweepable {
     }
 
     private boolean getCurrentObjectAtTargetSystem(String requestId, Login mLg, ExtensibleUser extUser,
-            ManagedSysDto mSys, ManagedSystemObjectMatch matchObj, Map<String, String> curValueMap) {
+            ManagedSysDto mSys, ManagedSystemObjectMatch matchObj, Map<String, ExtensibleAttribute> curValueMap) {
 
         String identity = mLg.getLogin();
         MuleContext muleContext = MuleContextProvider.getCtx();
@@ -604,10 +589,8 @@ public class ProvisionDispatcher implements Sweepable {
                     : new LinkedList<ExtensibleAttribute>();
 
             if (extAttrList != null) {
-                for (ExtensibleAttribute obj : extAttrList) {
-                    String name = obj.getName();
-                    String value = obj.getValue();
-                    curValueMap.put(name, value);
+                for (ExtensibleAttribute attr : extAttrList) {
+                    curValueMap.put(attr.getName(), attr);
                 }
             } else {
                 log.debug(" - NO attributes found in target system lookup ");
