@@ -13,7 +13,6 @@ import java.io.Serializable;
 
 @Entity
 @Table(name = "SYNCH_CONFIG")
-@Cacheable
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @DozerDTOCorrespondence(SynchConfig.class)
 public class SynchConfigEntity implements Serializable {

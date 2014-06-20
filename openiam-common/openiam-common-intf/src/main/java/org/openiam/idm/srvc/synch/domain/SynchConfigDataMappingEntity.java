@@ -9,7 +9,6 @@ import javax.persistence.*;
 
 @Entity
 @Table(name = "SYNCH_CONFIG_DATA_MAPPING")
-@Cacheable
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @DozerDTOCorrespondence(SynchConfigDataMapping.class)
 public class SynchConfigDataMappingEntity implements java.io.Serializable {

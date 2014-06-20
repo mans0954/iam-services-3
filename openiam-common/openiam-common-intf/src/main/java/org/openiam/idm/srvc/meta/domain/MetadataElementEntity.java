@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.persistence.AttributeOverride;
-import javax.persistence.Cacheable;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -47,7 +46,6 @@ import org.openiam.internationalization.InternationalizedCollection;
 
 @Entity
 @Table(name = "METADATA_ELEMENT")
-@Cacheable
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @DozerDTOCorrespondence(MetadataElement.class)
 @AttributeOverride(name = "id", column = @Column(name = "METADATA_ID"))

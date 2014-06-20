@@ -127,15 +127,6 @@
         <property name="target" ref="targetConfigurableGroovyScriptEngine"/>
     </bean>
 
-	<!-- QueryDataService -->
-	<bean id="queryWS" class="org.openiam.idm.srvc.qry.ws.QueryDataWebServiceImpl">
-		<property name="queryService" ref="queryDataService" />
-	</bean>
-
-	<bean id="queryDataService" class="org.openiam.idm.srvc.qry.service.QueryDataServiceImpl">
-		<property name="sessionFactory" ref="sessionFactory"></property>
-	</bean>
-
 	<bean id="luceneReindexService" class="org.openiam.idm.srvc.lucene.LuceneReindexService">
 		<property name="hibernateSearchDAOs">
 			<list>
@@ -252,13 +243,10 @@
 
 	</bean>
 	<util:properties id="hibernateProperties"
-		location="classpath:openiam.search.hibernate.properties">
+		location="classpath:openiam.hibernate.properties">
 		<prop key="hibernate.dialect">${openiam.hibernate.dialect}</prop>
 		<prop key="hibernate.show_sql">${openiam.hibernate.show.sql}</prop>
 		<prop key="hibernate.generate_statistics">${openiam.hibernate.generate.statistics}</prop>
-		<!--prop key="hibernate.cache.provider_class">org.hibernate.cache.EhCacheProvider</prop -->
-		<prop key="hibernate.cache.use_second_level_cache">${openiam.hibernate.second.level.cache.enabled}</prop>
-		<prop key="hibernate.cache.use_query_cache">${openiam.hibernate.query.cache.enabled}</prop>
 		<prop key="hibernate.use_sql_comments">${openiam.hibernate.sql.comments.enabled}</prop>
 		<prop key="hibernate.connection.autoReconnect">${openiam.hibernate.auto.connect.enabled}</prop>
 

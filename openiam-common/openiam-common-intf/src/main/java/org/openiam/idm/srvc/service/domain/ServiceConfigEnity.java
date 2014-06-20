@@ -2,7 +2,6 @@ package org.openiam.idm.srvc.service.domain;
 
 import java.io.Serializable;
 
-import javax.persistence.Cacheable;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;

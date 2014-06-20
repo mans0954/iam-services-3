@@ -5,7 +5,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import javax.persistence.AttributeOverride;
-import javax.persistence.Cacheable;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -35,7 +34,6 @@ import org.openiam.internationalization.Internationalized;
 
 @Entity
 @Table(name = "METADATA_ELEMENT_PAGE_TEMPLATE")
-@Cacheable
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @DozerDTOCorrespondence(MetadataElementPageTemplate.class)
 @Internationalized

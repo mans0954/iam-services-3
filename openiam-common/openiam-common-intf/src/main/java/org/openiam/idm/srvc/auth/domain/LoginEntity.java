@@ -23,7 +23,6 @@ import java.util.Set;
 
 @Entity
 @Table(name="LOGIN")
-@Cacheable
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @DozerDTOCorrespondence(Login.class)
 @Indexed

@@ -138,19 +138,6 @@
             </service>
         </model>
 
-		<model name="queryServiceModel">
-			<service name="queryService">
-				<inbound>
-						<inbound-endpoint address="${webservice.path}QueryDataWebService" 		exchange-pattern="request-response">
-						<cxf:jaxws-service />
-					</inbound-endpoint>
-				</inbound>
-				<component>
-					<spring-object bean="queryWS" />
-				</component>
-			</service>
-		</model>
-
 		<model name="groupDataServiceModel">
 			<service name="groupDataService">
 				<inbound>

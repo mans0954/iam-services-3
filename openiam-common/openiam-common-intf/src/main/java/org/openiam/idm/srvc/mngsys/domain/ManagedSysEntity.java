@@ -21,7 +21,6 @@ import java.util.Set;
 
 @Entity
 @Table(name = "MANAGED_SYS")
-@Cacheable
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @DozerDTOCorrespondence(ManagedSysDto.class)
 public class ManagedSysEntity implements Serializable {

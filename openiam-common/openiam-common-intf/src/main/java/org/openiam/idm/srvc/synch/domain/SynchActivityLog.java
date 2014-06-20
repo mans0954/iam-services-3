@@ -9,7 +9,6 @@ import java.util.Date;
 
 @Entity
 @Table(name = "SYNCH_ACTIVITY_LOG")
-@Cacheable
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class SynchActivityLog implements java.io.Serializable {
 

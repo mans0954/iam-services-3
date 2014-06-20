@@ -8,7 +8,6 @@ import javax.persistence.*;
 
 @Entity
 @Table(name = "ACTIVITY_LOG_DETAIL")
-@Cacheable
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class ActivityLogDetail implements java.io.Serializable {
 	private static final long serialVersionUID = -8378687671721851836L;

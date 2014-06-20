@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.persistence.AttributeOverride;
-import javax.persistence.Cacheable;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -37,7 +36,6 @@ import org.openiam.internationalization.InternationalizedCollection;
 
 @Entity
 @Table(name = "MD_ELEMENT_VALID_VALUES")
-@Cacheable
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @DozerDTOCorrespondence(MetadataValidValue.class)
 @AttributeOverride(name = "id", column = @Column(name = "ID"))

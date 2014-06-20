@@ -11,7 +11,6 @@ import java.io.Serializable;
 
 @Entity
 @Table(name = "PAGE_TEMPLATE_XREF")
-@Cacheable
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @DozerDTOCorrespondence(MetadataElementPageTemplateXref.class)
 public class MetadataElementPageTemplateXrefEntity implements Serializable {

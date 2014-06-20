@@ -29,7 +29,6 @@ import java.util.Set;
 
 @Entity
 @Table(name = "RES")
-@Cacheable
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @DozerDTOCorrespondence(Resource.class)
 @AttributeOverride(name = "id", column = @Column(name = "RESOURCE_ID"))

@@ -172,6 +172,7 @@
 		<git.commit.id.plugin.version>2.0.3</git.commit.id.plugin.version>
 		<maven.build.timestamp.format>yyyy/MM/dd HH:mm Z</maven.build.timestamp.format>
 		<maven.war.plugin.version>2.2</maven.war.plugin.version>
+		<hazelcast.version>3.2.2</hazelcast.version>
 		<skipTests>true</skipTests>
 	</properties>
 
@@ -672,6 +673,32 @@
 				<artifactId>maven-invoker</artifactId>
 				<version>2.0.11</version>
 			</dependency>
+			
+			<dependency>
+				<groupId>com.hazelcast</groupId>
+				<artifactId>hazelcast</artifactId>
+				<version>${hazelcast.version}</version>
+				<scope>provided</scope>
+			</dependency>
+			
+			<dependency>
+				<groupId>com.hazelcast</groupId>
+				<artifactId>hazelcast-client</artifactId>
+				<version>${hazelcast.version}</version>
+			</dependency>
+			
+			<dependency>
+				<groupId>com.hazelcast</groupId>
+				<artifactId>hazelcast-spring</artifactId>
+				<version>${hazelcast.version}</version>
+			</dependency>
+			
+			<dependency>
+				<groupId>com.hazelcast</groupId>
+				<artifactId>hazelcast-hibernate4</artifactId>
+				<version>${hazelcast.version}</version>
+			</dependency>
+			
 		</dependencies>
 	</dependencyManagement>
 

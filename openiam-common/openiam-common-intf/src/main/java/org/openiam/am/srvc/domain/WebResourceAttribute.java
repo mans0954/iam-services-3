@@ -13,7 +13,6 @@ import java.io.Serializable;
  */
 @Entity
 @Table(name = "WEB_RESOURCE_ATTRIBUTE")
-@Cacheable
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class WebResourceAttribute implements Serializable {
     @Id

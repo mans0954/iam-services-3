@@ -17,6 +17,8 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
 import org.apache.commons.lang.StringUtils;
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.policy.dto.Policy;
@@ -24,6 +26,7 @@ import org.openiam.idm.srvc.policy.dto.Policy;
 @Entity
 @Table(name = "POLICY")
 @DozerDTOCorrespondence(Policy.class)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class PolicyEntity implements java.io.Serializable {
 
     /**

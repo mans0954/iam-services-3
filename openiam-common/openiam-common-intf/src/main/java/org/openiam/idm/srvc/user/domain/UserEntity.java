@@ -2,6 +2,7 @@ package org.openiam.idm.srvc.user.domain;
 
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.annotations.*;
+import org.hibernate.annotations.Cache;
 import org.hibernate.search.annotations.*;
 import org.hibernate.search.annotations.Index;
 import org.openiam.base.BaseConstants;
@@ -25,7 +26,6 @@ import org.openiam.internationalization.Internationalized;
 import javax.persistence.CascadeType;
 import javax.persistence.*;
 import javax.persistence.Entity;
-import javax.persistence.MapKey;
 import javax.persistence.Table;
 import javax.validation.constraints.Size;
 import java.util.*;
@@ -37,6 +37,7 @@ import java.util.Map.Entry;
 @DozerDTOCorrespondence(User.class)
 @Indexed
 @Internationalized
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class UserEntity {
     @Id
     @GeneratedValue(generator = "system-uuid")

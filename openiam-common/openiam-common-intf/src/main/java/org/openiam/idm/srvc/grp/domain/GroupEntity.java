@@ -29,7 +29,6 @@ import org.openiam.internationalization.Internationalized;
 
 @Entity
 @Table(name = "GRP")
-@Cacheable
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @AttributeOverride(name = "id", column = @Column(name = "GRP_ID"))
 @DozerDTOCorrespondence(Group.class)
