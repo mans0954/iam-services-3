@@ -536,7 +536,7 @@ public class ProvisionDispatcher implements Sweepable {
                     if (attr.valuesAreEqual(curAttr)) {
                         log.debug("- Op = 0 - AttrName = " + nm);
                         attr.setOperation(0);
-                    } else if (!curAttr.containsAnyValue()) {
+                    } else if (curAttr == null || !curAttr.containsAnyValue()) {
                         log.debug("- Op = 1 - AttrName = " + nm);
                         attr.setOperation(1);
                     } else {

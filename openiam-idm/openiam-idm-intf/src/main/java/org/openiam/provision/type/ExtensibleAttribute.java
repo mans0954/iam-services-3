@@ -286,7 +286,10 @@ public class ExtensibleAttribute extends Attribute implements Serializable {
     public boolean valuesAreEqual(ExtensibleAttribute o) {
         if (this == o) return true;
         if (!containsAnyValue()) {
-            return !o.containsAnyValue();
+            return o == null || !o.containsAnyValue();
+        }
+        if (o == null || !o.containsAnyValue()) {
+            return false;
         }
 
         if (value != null && o.value != null && value.equals(o.value)) {
