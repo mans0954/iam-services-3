@@ -220,7 +220,7 @@ public abstract class AbstractLdapCommand<Request extends RequestType, Response 
             } else if (att.getName() != null) {
 
                 // set an attribute to null
-                if ((att.getValue() == null || att.getValue().contains("null")) &&
+                if ((att.getValue() == null || att.getValue().equals("null")) &&
                         (att.getValueList() == null || att.getValueList().size() == 0)) {
 
                     attrs.put(new BasicAttribute(att.getName(), null));
