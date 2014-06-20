@@ -173,7 +173,7 @@ public abstract class AbstractLdapCommand<Request extends RequestType, Response 
         BasicAttributes attrs = new BasicAttributes();
 
         // add the object class
-        Attribute oc = new BasicAttribute("objectclass");
+        Attribute oc = new BasicAttribute("objectClass");
         oc.add("top");
 
         // add the ou for this record
