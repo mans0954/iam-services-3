@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
+import org.openiam.base.BaseAttribute;
+import org.openiam.base.BaseAttributeContainer;
 import org.openiam.connector.gapps.GoogleAgent;
 import org.openiam.connector.gapps.command.base.AbstractGoogleAppsCommand;
 import org.openiam.connector.type.ConnectorDataException;
@@ -15,6 +17,7 @@ import org.openiam.connector.type.constant.StatusCodeType;
 import org.openiam.connector.type.request.SearchRequest;
 import org.openiam.connector.type.response.SearchResponse;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
+import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
 import org.openiam.provision.type.ExtensibleUser;
 import org.springframework.stereotype.Service;
@@ -26,6 +29,8 @@ import com.google.gdata.data.appsforyourdomain.generic.GenericEntry;
 public class SearchUserGoogleCommand
 		extends
 		AbstractGoogleAppsCommand<SearchRequest<ExtensibleUser>, SearchResponse> {
+
+	private static final String USER_EMAIL = "userEmail";
 
 	@Override
 	public SearchResponse execute(SearchRequest<ExtensibleUser> searchRequest)
@@ -87,8 +92,8 @@ public class SearchUserGoogleCommand
 					for (GenericEntry ge : exclude) {
 						while (googleAppsIter.hasNext()) {
 							GenericEntry e = googleAppsIter.next();
-							if (e.getProperty("userEmail").equals(
-									ge.getProperty("userEmail"))) {
+							if (e.getProperty(USER_EMAIL).equals(
+									ge.getProperty(USER_EMAIL))) {
 								googleAppsIter.remove();
 							}
 						}
@@ -98,10 +103,31 @@ public class SearchUserGoogleCommand
 			List<ObjectValue> objList = new ArrayList<ObjectValue>();
 			if (googleUsers != null)
 				for (GenericEntry u : googleUsers) {
+					List<GenericEntry> aliases = client.getAllUserAliases(
+							adminEmail, password, u.getProperty(USER_EMAIL),
+							domain);
+					ExtensibleAttribute ea = null;
+					if (!org.apache.cxf.common.util.CollectionUtils
+							.isEmpty(aliases)) {
+						ea = new ExtensibleAttribute();
+						BaseAttributeContainer bac = new BaseAttributeContainer();
+						List<BaseAttribute> balist = new ArrayList<BaseAttribute>();
+						bac.setAttributeList(balist);
+						ea.setAttributeContainer(bac);
+						ea.setName(ALIAS);
+						int i = 1;
+						for (GenericEntry e : aliases) {
+							balist.add(new BaseAttribute(ALIAS + (i++), e
+									.getProperty(ALIAS)));
+						}
+					}
+
 					ExtensibleObject o = this
 							.googleUserToExtensibleAttributes(u
 									.getAllProperties());
 					ObjectValue ov = new ObjectValue();
+					if (ea != null)
+						o.getAttributes().add(ea);
 					ov.setAttributeList(o.getAttributes());
 					ov.setObjectIdentity(o.getObjectId());
 					objList.add(ov);

@@ -21,7 +21,7 @@ public abstract class AbstractGoogleAppsCommand<Request extends RequestType, Res
 	@Autowired
 	@Qualifier("configurableGroovyScriptEngine")
 	protected ScriptIntegration scriptRunner;
-
+protected final static String ALIAS = "aliasEmail";
 	protected ExtensibleUser googleUserToExtensibleAttributes(
 			Map<String, String> googleUser) {
 		ExtensibleUser user = new ExtensibleUser();
