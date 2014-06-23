@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.auth.login;
 
+import org.openiam.exception.BasicDataServiceException;
 import org.openiam.exception.EncryptionException;
 import org.openiam.idm.searchbeans.LoginSearchBean;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
@@ -181,4 +182,6 @@ public interface LoginDataService {
     List<LoginEntity> findBeans(LoginSearchBean searchBean, Integer from, Integer size);
 
     void evict(LoginEntity entity);
+
+    void forgotUsername(String email) throws BasicDataServiceException;
 }
