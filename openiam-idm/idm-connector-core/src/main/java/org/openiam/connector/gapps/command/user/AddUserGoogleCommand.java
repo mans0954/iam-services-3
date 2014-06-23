@@ -42,9 +42,8 @@ public class AddUserGoogleCommand extends
 					this.extensibleUserToGoogle(
 							crudRequest.getExtensibleObject(),
 							crudRequest.getObjectIdentity(), domain));
-			boolean isGroupsExists = this.addGroups(
-					crudRequest.getExtensibleObject(), agent, adminEmail,
-					password, domain, userId);
+			this.addGroups(crudRequest.getExtensibleObject(), agent,
+					adminEmail, password, domain, userId);
 
 			ConnectorConfiguration configuration = super.getConfiguration(
 					crudRequest.getTargetID(), ConnectorConfiguration.class);
@@ -70,7 +69,8 @@ public class AddUserGoogleCommand extends
 
 			Runtime rt = Runtime.getRuntime();
 			Process proc = rt.exec(command);
-			int exitVal = proc.exitValue();
+
+			int exitVal = proc.waitFor();
 			if (exitVal == 0) {
 				log.info("Command: " + command
 						+ " was executed succesfully. RetVal=" + exitVal);

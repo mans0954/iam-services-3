@@ -17,6 +17,7 @@ import org.springframework.util.StringUtils;
 import com.google.gdata.client.appsforyourdomain.AppsForYourDomainService;
 import com.google.gdata.client.appsforyourdomain.AppsPropertyService;
 import com.google.gdata.client.appsforyourdomain.adminsettings.SingleSignOnService;
+import com.google.gdata.data.appsforyourdomain.AppsForYourDomainErrorCode;
 import com.google.gdata.data.appsforyourdomain.AppsForYourDomainException;
 import com.google.gdata.data.appsforyourdomain.generic.GenericEntry;
 import com.google.gdata.data.appsforyourdomain.generic.GenericFeed;
@@ -149,7 +150,15 @@ public class GoogleAgent {
 			String aliases[] = as.split(",");
 			if (aliases != null && aliases.length > 0) {
 				for (String als : aliases) {
-					this.createAlias(service, als.trim(), userEmail, domain);
+					try {
+						this.createAlias(service, als.trim(), userEmail, domain);
+					} catch (AppsForYourDomainException ex) {
+						if (AppsForYourDomainErrorCode.EntityExists.equals(ex
+								.getErrorCode())) {
+							log.info("Such Alias already exists! Skip: "
+									+ als.trim());
+						}
+					}
 				}
 			}
 		}
@@ -248,10 +257,15 @@ public class GoogleAgent {
 			String aliases[] = as.split(",");
 			if (aliases != null && aliases.length > 0) {
 				for (String als : aliases) {
-					GenericEntry ge = this.retrieveAlias(service, als.trim(),
-							domain);
-					if (ge == null)
+					try {
 						this.createAlias(service, als.trim(), userEmail, domain);
+					} catch (AppsForYourDomainException ex) {
+						if (AppsForYourDomainErrorCode.EntityExists.equals(ex
+								.getErrorCode())) {
+							log.info("Such Alias already exists! Skip: "
+									+ als.trim());
+						}
+					}
 				}
 			}
 		}
