@@ -25,7 +25,8 @@
     								      org.openiam.provision.*,
     								      org.openiam.dozer.converter,
     								      org.openiam.validator,
-    								      org.openiam.internationalization" />
+    								      org.openiam.internationalization,
+    								      org.openiam.elasticsearch" />
 
 	<bean id="springContextProvider" class="org.openiam.util.SpringContextProvider" />
 
