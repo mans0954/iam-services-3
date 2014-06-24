@@ -1,5 +1,6 @@
 package org.openiam.connector.ldap.dirtype;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -14,8 +15,8 @@ import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.idm.srvc.pswd.service.PasswordGenerator;
+import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
-import org.openiam.exception.EncryptionException;
 
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
@@ -26,6 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.naming.ldap.LdapContext;
+
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -33,29 +35,33 @@ import org.springframework.beans.factory.annotation.Autowired;
  * User: suneetshah
  */
 public class LdapV3 implements Directory {
-	
+
 	@Autowired
 	private PasswordGenerator passwordGenerator;
-    
+
+    final static String PASSWORD_ATTRIBUTE = "userPassword";
+
     Map<String, Object> objectMap = new HashMap<String, Object>();
     private static final Log log = LogFactory.getLog(LdapV3.class);
-    //HashDigest hash = new SHA1Hash();
-    
 
     public ModificationItem[] setPassword(PasswordRequest reqType) throws UnsupportedEncodingException {
 
         ModificationItem[] mods = new ModificationItem[1];
-        mods[0] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute("userPassword", reqType.getPassword()));
+        String userPassword = getUserPassword(reqType.getExtensibleObject());
+        if (StringUtils.isEmpty(userPassword)) {
+            userPassword = reqType.getPassword();
+        }
+        mods[0] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute(PASSWORD_ATTRIBUTE, userPassword));
 
         return mods;
     }
 
     public ModificationItem[] suspend(SuspendResumeRequest request)  {
 
-        String scrambledPswd =	passwordGenerator.generatePassword(10);
+        String scrambledPswd = getScrambledPswd(request.getExtensibleObject());
 
         ModificationItem[] mods = new ModificationItem[1];
-        mods[0] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute("userPassword", scrambledPswd));
+        mods[0] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute(PASSWORD_ATTRIBUTE, scrambledPswd));
 
         return mods;
     }
@@ -69,13 +75,16 @@ public class LdapV3 implements Directory {
 
         try {
 
-             // get the current password for the user.
-            LoginEntity login = loginManager.getLoginByManagedSys(ldapName, targetID);
-            String encPassword = login.getPassword();
-            String decPassword = loginManager.decryptPassword(login.getUserId(),encPassword);
+            String decPassword = getUserPassword(request.getExtensibleObject());
+            if (StringUtils.isEmpty(decPassword)) {
+                // get the current password for the user.
+                LoginEntity login = loginManager.getLoginByManagedSys(ldapName, targetID);
+                String encPassword = login.getPassword();
+                decPassword = loginManager.decryptPassword(login.getUserId(),encPassword);
+            }
 
             ModificationItem[] mods = new ModificationItem[1];
-            mods[0] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute("userPassword", decPassword));
+            mods[0] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute(PASSWORD_ATTRIBUTE, decPassword));
             return mods;
         } catch(Exception e) {
             log.error(e.toString());
@@ -91,10 +100,10 @@ public class LdapV3 implements Directory {
 
         } else if ( "DISABLE".equalsIgnoreCase(onDelete)) {
 
-            String scrambledPswd = passwordGenerator.generatePassword(10);
+            String scrambledPswd = getScrambledPswd(reqType.getExtensibleObject());
 
             ModificationItem[] mods = new ModificationItem[1];
-            mods[0] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute("userPassword", scrambledPswd));
+            mods[0] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute(PASSWORD_ATTRIBUTE, scrambledPswd));
             ldapctx.modifyAttributes(ldapName, mods);
 
         }
@@ -370,6 +379,27 @@ public class LdapV3 implements Directory {
 
         return currentSupervisorMembershipList;
 
+    }
+
+    protected String getScrambledPswd(ExtensibleObject extObject) {
+        String scrambledPswd = getUserPassword(extObject);
+        if (StringUtils.isEmpty(scrambledPswd)) {
+            scrambledPswd =	passwordGenerator.generatePassword(10);
+        }
+        return scrambledPswd;
+    }
+
+    private String getUserPassword(ExtensibleObject extObject) {
+        String scrambledPswd = null;
+        if (extObject != null && CollectionUtils.isNotEmpty(extObject.getAttributes())) {
+            for(final ExtensibleAttribute attr : extObject.getAttributes()) {
+                if (attr.getName().equalsIgnoreCase(PASSWORD_ATTRIBUTE)) {
+                    scrambledPswd = attr.getValue();
+                    break;
+                }
+            }
+        }
+        return scrambledPswd;
     }
 
 }
