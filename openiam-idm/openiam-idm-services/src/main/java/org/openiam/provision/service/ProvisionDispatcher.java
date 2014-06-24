@@ -318,6 +318,10 @@ public class ProvisionDispatcher implements Sweepable {
                     suspendReq.setRequestID(requestId);
                     suspendReq.setScriptHandler(mSys.getSuspendHandler());
                     suspendReq.setHostLoginId(mSys.getUserId());
+
+                    ExtensibleUser extUser = buildFromRules(managedSysId, data.getBindingMap());
+                    suspendReq.setExtensibleObject(extUser);
+
                     String passwordDecoded = mSys.getPswd();
                     try {
                         passwordDecoded = getDecryptedPassword(mSys);
@@ -403,9 +407,6 @@ public class ProvisionDispatcher implements Sweepable {
         try {
             Login targetSysLogin = data.getIdentity();
             Map<String, Object> bindingMap = data.getBindingMap();
-            List<AttributeMapEntity> attrMapEntities = managedSystemService
-                    .getAttributeMapsByManagedSysId(managedSysId);
-            List<AttributeMap> attrMap = attributeMapDozerConverter.convertToDTOList(attrMapEntities, true);
             ManagedSystemObjectMatch matchObj = null;
             List<ManagedSystemObjectMatchEntity> objList = managedSystemService.managedSysObjectParam(managedSysId,
                     ManagedSystemObjectMatch.USER);
@@ -413,7 +414,7 @@ public class ProvisionDispatcher implements Sweepable {
                 matchObj = managedSystemObjectMatchDozerConverter.convertToDTO(objList.get(0), false);
             }
 
-            ExtensibleUser extUser = buildFromRules(targetSysProvUser, attrMap, bindingMap);
+            ExtensibleUser extUser = buildFromRules(managedSysId, bindingMap);
             try {
                 idmAuditLog.addCustomRecord("ATTRIBUTES", extUser.getAttributesAsJSON());
             } catch (JsonGenerationException jge) {
@@ -601,8 +602,12 @@ public class ProvisionDispatcher implements Sweepable {
         return false;
     }
 
-    private ExtensibleUser buildFromRules(ProvisionUser pUser, List<AttributeMap> attrMap,
-            Map<String, Object> bindingMap) {
+    private ExtensibleUser buildFromRules(String managedSysId, Map<String, Object> bindingMap) {
+
+        List<AttributeMapEntity> attrMapEntities = managedSystemService
+                .getAttributeMapsByManagedSysId(managedSysId);
+        List<AttributeMap> attrMap = attributeMapDozerConverter.convertToDTOList(attrMapEntities, true);
+
 
         ExtensibleUser extUser = new ExtensibleUser();
 
