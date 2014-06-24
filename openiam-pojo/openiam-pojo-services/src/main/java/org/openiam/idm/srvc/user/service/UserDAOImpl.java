@@ -1,28 +1,11 @@
 package org.openiam.idm.srvc.user.service;
 
-import static org.hibernate.criterion.Projections.rowCount;
-
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.Criteria;
 import org.hibernate.FetchMode;
 import org.hibernate.HibernateException;
-import org.hibernate.criterion.Criterion;
-import org.hibernate.criterion.DetachedCriteria;
-import org.hibernate.criterion.Disjunction;
-import org.hibernate.criterion.MatchMode;
-import org.hibernate.criterion.Order;
-import org.hibernate.criterion.Projections;
-import org.hibernate.criterion.Restrictions;
-import org.hibernate.criterion.Subqueries;
+import org.hibernate.criterion.*;
 import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.idm.searchbeans.DelegationFilterSearchBean;
 import org.openiam.idm.searchbeans.UserSearchBean;
@@ -33,6 +16,10 @@ import org.openiam.idm.srvc.user.dto.SearchAttribute;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
+
+import java.util.*;
+
+import static org.hibernate.criterion.Projections.rowCount;
 
 /**
  * Data access implementation for domain model class User and UserWS. UserWS is
@@ -651,6 +638,15 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
             List<UserEntity> retVal = new ArrayList<UserEntity>();
             final Criteria criteria = getCriteria().add(
                     Restrictions.lt("lastDate", lastDate));
+            return criteria.list();
+        } else
+            return null;
+    }
+
+    public List<UserEntity> getByEmail(String email){
+        if (email != null) {
+            final Criteria criteria = getCriteria();
+            criteria.createAlias("emailAddresses", "em").add(Restrictions.eq("em.emailAddress", email));
             return criteria.list();
         } else
             return null;

@@ -1640,9 +1640,9 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 return response;
             }
 
-            String targetPrincipalName = responseType.getObjectList().get(0).getObjectIdentity() != null ? responseType
-                    .getObjectList().get(0).getObjectIdentity() : parseUserPrincipal(responseType.getObjectList()
-                    .get(0).getAttributeList());
+            String targetPrincipalName = responseType.getObjectList().get(0).getObjectIdentity() != null
+                    ? responseType.getObjectList().get(0).getObjectIdentity()
+                    : parseUserPrincipal(responseType.getObjectList().get(0).getAttributeList());
             response.setPrincipalName(targetPrincipalName);
             response.setAttrList(responseType.getObjectList().get(0).getAttributeList());
             response.setResponseValue(responseType.getObjectList().get(0));

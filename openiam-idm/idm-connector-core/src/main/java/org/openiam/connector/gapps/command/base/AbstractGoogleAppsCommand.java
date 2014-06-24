@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.openiam.connector.common.command.AbstractCommand;
+import org.openiam.connector.gapps.GoogleUtils;
 import org.openiam.connector.type.request.RequestType;
 import org.openiam.connector.type.response.ResponseType;
 import org.openiam.provision.type.ExtensibleAttribute;
@@ -20,7 +21,7 @@ public abstract class AbstractGoogleAppsCommand<Request extends RequestType, Res
 	@Autowired
 	@Qualifier("configurableGroovyScriptEngine")
 	protected ScriptIntegration scriptRunner;
-
+protected final static String ALIAS = "aliasEmail";
 	protected ExtensibleUser googleUserToExtensibleAttributes(
 			Map<String, String> googleUser) {
 		ExtensibleUser user = new ExtensibleUser();
@@ -28,15 +29,6 @@ public abstract class AbstractGoogleAppsCommand<Request extends RequestType, Res
 		for (String key : googleUser.keySet()) {
 			user.getAttributes().add(
 					new ExtensibleAttribute(key, googleUser.get(key)));
-			if ("userEmail".equals(key)) {
-				String email = googleUser.get(key);
-				String[] strs = email.split("@");
-				if (strs != null && strs.length > 1) {
-					user.setObjectId(strs[0]);
-				}
-				user.getAttributes().add(
-						new ExtensibleAttribute("login", strs[0]));
-			}
 		}
 		return user;
 	}
@@ -66,10 +58,8 @@ public abstract class AbstractGoogleAppsCommand<Request extends RequestType, Res
 			if (a.getValue() != null && !a.isMultivalued())
 				googleUser.put(a.getName(), a.getValue());
 		}
-		if (id.contains("@")) {
-			googleUser.put("userEmail", id.toLowerCase());
-		} else
-			googleUser.put("userEmail", id.toLowerCase() + "@" + domain);
+		googleUser.put("userEmail",
+				GoogleUtils.makeGoogleId(id.toLowerCase(), domain));
 		return googleUser;
 	}
 

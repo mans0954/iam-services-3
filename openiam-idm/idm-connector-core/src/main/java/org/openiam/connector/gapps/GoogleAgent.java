@@ -10,10 +10,14 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.cxf.common.util.CollectionUtils;
+import org.egothor.stemmer.Gener;
 import org.springframework.util.StringUtils;
 
+import com.google.gdata.client.appsforyourdomain.AppsForYourDomainService;
 import com.google.gdata.client.appsforyourdomain.AppsPropertyService;
 import com.google.gdata.client.appsforyourdomain.adminsettings.SingleSignOnService;
+import com.google.gdata.data.appsforyourdomain.AppsForYourDomainErrorCode;
 import com.google.gdata.data.appsforyourdomain.AppsForYourDomainException;
 import com.google.gdata.data.appsforyourdomain.generic.GenericEntry;
 import com.google.gdata.data.appsforyourdomain.generic.GenericFeed;
@@ -27,6 +31,7 @@ public class GoogleAgent {
 	private static final String APP_URL_GROUP = "https://apps-apis.google.com/a/feeds/group/2.0/";
 	private static final String APP_URL_USER = "https://apps-apis.google.com/a/feeds/user/2.0/";
 	private static final String APP_URL_OU = "https://apps-apis.google.com/a/feeds/orguser/2.0/";
+	private static final String APP_URL_ALIAS = "https://apps-apis.google.com/a/feeds/alias/2.0/";
 	protected final Log log = LogFactory.getLog(this.getClass());
 
 	public AppsPropertyService getService(String adminEmail, String password,
@@ -96,11 +101,9 @@ public class GoogleAgent {
 		if (!StringUtils.hasText(entity))
 			return null;
 		String id = entity;
-		if (entity.contains("@")) {
-			id = entity.split("@")[0];
-		}
 		return this.getService(adminEmail, password, domain).getEntry(
-				new URL(URL + domain + "/" + id + "@" + domain),
+				new URL(URL + domain + "/"
+						+ GoogleUtils.makeGoogleId(id.toLowerCase(), domain)),
 				GenericEntry.class);
 	}
 
@@ -137,13 +140,40 @@ public class GoogleAgent {
 		entry.addProperties(googleUserProps);
 		entry.addProperty("isAdmin", "false");
 		entry.addProperty("isSuspended", "false");
+		AppsPropertyService service = this.getService(adminEmail, password,
+				domain);
+		GenericEntry newE = service.insert(new URL(APP_URL_USER + domain),
+				entry);
+		String userEmail = newE.getAllProperties().get("userEmail");
+		if (googleUserProps.get("aliasEmail") != null) {
+			String as = googleUserProps.get("aliasEmail");
+			String aliases[] = as.split(",");
+			if (aliases != null && aliases.length > 0) {
+				for (String als : aliases) {
+					try {
+						this.createAlias(service, als.trim(), userEmail, domain);
+					} catch (AppsForYourDomainException ex) {
+						if (AppsForYourDomainErrorCode.EntityExists.equals(ex
+								.getErrorCode())) {
+							log.info("Such Alias already exists! Skip: "
+									+ als.trim());
+						}
+					}
+				}
+			}
+		}
 
-		GenericEntry newE = this.getService(adminEmail, password, domain)
-				.insert(new URL(APP_URL_USER + domain), entry);
-		if (googleUserProps.get("groups") != null)
-			log.info("Google connector add run:"
-					+ newE.getAllProperties().get("userEmail"));
 		return newE.getAllProperties().get("userEmail");
+	}
+
+	public GenericEntry createAlias(AppsPropertyService service,
+			String aliasEmail, String userEmail, String domain)
+			throws AppsForYourDomainException, MalformedURLException,
+			IOException, ServiceException {
+		GenericEntry entry = new GenericEntry();
+		entry.addProperty("userEmail", userEmail);
+		entry.addProperty("aliasEmail", aliasEmail);
+		return service.insert(new URL(APP_URL_ALIAS + domain), entry);
 	}
 
 	public void addGroup(String adminEmail, String password, String domain,
@@ -215,12 +245,48 @@ public class GoogleAgent {
 			MalformedURLException, IOException, ServiceException {
 		GenericEntry entry = new GenericEntry();
 		entry.addProperties(googleUserProps);
-		GenericEntry newE = this
-				.getService(adminEmail, password, domain)
-				.update(new URL(APP_URL_USER + domain + "/" + id + "@" + domain),
-						entry);
+		AppsPropertyService service = this.getService(adminEmail, password,
+				domain);
+
+		GenericEntry newE = service.update(new URL(APP_URL_USER + domain + "/"
+				+ GoogleUtils.makeGoogleId(id.toLowerCase(), domain)), entry);
+
+		String userEmail = newE.getAllProperties().get("userEmail");
+		if (googleUserProps.get("aliasEmail") != null) {
+			String as = googleUserProps.get("aliasEmail");
+			String aliases[] = as.split(",");
+			if (aliases != null && aliases.length > 0) {
+				for (String als : aliases) {
+					try {
+						this.createAlias(service, als.trim(), userEmail, domain);
+					} catch (AppsForYourDomainException ex) {
+						if (AppsForYourDomainErrorCode.EntityExists.equals(ex
+								.getErrorCode())) {
+							log.info("Such Alias already exists! Skip: "
+									+ als.trim());
+						}
+					}
+				}
+			}
+		}
+
 		log.info("Google connector update run:"
 				+ newE.getAllProperties().get("userEmail"));
+	}
+
+	public GenericEntry retrieveAlias(AppsPropertyService service,
+			String aliasEmail, String domain)
+			throws AppsForYourDomainException, MalformedURLException,
+			IOException, ServiceException {
+
+		return service.getEntry(new URL(APP_URL_ALIAS + domain + "/"
+				+ aliasEmail), GenericEntry.class);
+	}
+
+	public void deleteAlias(AppsPropertyService service, String aliasEmail,
+			String domain) throws AppsForYourDomainException,
+			MalformedURLException, IOException, ServiceException {
+		service.delete(new URL(APP_URL_ALIAS + domain + "/" + aliasEmail));
 	}
 
 	public void updateGroup(String adminEmail, String password, String domain,
@@ -230,8 +296,9 @@ public class GoogleAgent {
 		GenericEntry entry = new GenericEntry();
 		entry.addProperties(googleGroupProps);
 		GenericEntry newE = this.getService(adminEmail, password, domain)
-				.update(new URL(APP_URL_GROUP + domain + "/" + id + "@"
-						+ domain), entry);
+				.update(new URL(APP_URL_GROUP + domain + "/"
+						+ GoogleUtils.makeGoogleId(id.toLowerCase(), domain)),
+						entry);
 		log.info("Google connector update run:"
 				+ newE.getAllProperties().get("groupId"));
 	}
@@ -239,16 +306,45 @@ public class GoogleAgent {
 	public void deleteUser(String adminEmail, String password, String domain,
 			String email) throws AppsForYourDomainException,
 			MalformedURLException, IOException, ServiceException {
-		this.getService(adminEmail, password, domain).delete(
-				new URL(APP_URL_USER + domain + "/" + email + "@" + domain));
+		List<GenericEntry> aliases = this.getAllUserAliases(adminEmail,
+				password, email, domain);
+		AppsPropertyService service = this.getService(adminEmail, password,
+				domain);
+		if (!CollectionUtils.isEmpty(aliases)) {
+			for (GenericEntry e : aliases)
+				this.deleteAlias(service, e.getProperty("aliasEmail"), domain);
+		}
+		service.delete(new URL(APP_URL_USER + domain + "/"
+				+ GoogleUtils.makeGoogleId(email.toLowerCase(), domain)));
 	}
 
 	public void deleteGroup(String adminEmail, String password, String domain,
 			String groupName) throws AppsForYourDomainException,
 			MalformedURLException, IOException, ServiceException {
-		this.getService(adminEmail, password, domain)
-				.delete(new URL(APP_URL_GROUP + domain + "/" + groupName + "@"
-						+ domain));
+		this.getService(adminEmail, password, domain).delete(
+				new URL(APP_URL_GROUP
+						+ domain
+						+ "/"
+						+ GoogleUtils.makeGoogleId(groupName.toLowerCase(),
+								domain)));
+	}
+
+	public List<GenericEntry> getAllUserAliases(String adminEmail,
+			String password, String id, String domain)
+			throws AppsForYourDomainException, MalformedURLException,
+			IOException, ServiceException {
+		AppsPropertyService service = this.getService(adminEmail, password,
+				domain);
+		List<GenericEntry> allEntries = new ArrayList<GenericEntry>();
+		URL feedURL = new URL(APP_URL_ALIAS + domain + "?userEmail="
+				+ GoogleUtils.makeGoogleId(id, domain));
+		do {
+			GenericFeed feed = service.getFeed(feedURL, GenericFeed.class);
+			allEntries.addAll(feed.getEntries());
+			feedURL = (feed.getNextLink() == null) ? null : new URL(feed
+					.getNextLink().getHref());
+		} while (feedURL != null);
+		return allEntries;
 	}
 
 	// test for groups

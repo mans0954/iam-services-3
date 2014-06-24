@@ -32,7 +32,6 @@ import org.springframework.stereotype.Service;
 
 import javax.jws.WebService;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -339,7 +338,9 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 		resource.setURL(menu.getUrl());
 		resource.setName(menu.getName());
 		resource.setDisplayOrder(menu.getDisplayOrder());
-        resource.setRisk(ResourceRisk.valueOf(menu.getRisk()));
+        if(StringUtils.isNotBlank(menu.getRisk())){
+            resource.setRisk(ResourceRisk.valueOf(menu.getRisk()));
+        }
 		resource.setIsPublic(menu.getIsPublic());
 		resource.setResourceType(resourceService.findResourceTypeById(AuthorizationConstants.MENU_ITEM_RESOURCE_TYPE));
 		resource.setDisplayNameMap(convert(menu.getDisplayNameMap()));

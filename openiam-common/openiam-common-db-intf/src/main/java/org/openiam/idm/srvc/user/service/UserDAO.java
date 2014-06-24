@@ -84,4 +84,6 @@ public interface UserDAO extends BaseDao<UserEntity, String> {
     public UserEntity findPrimarySupervisor(String employeeId);
 
     public List<UserEntity> getUserByLastDate(Date lastDate);
+
+    public List<UserEntity> getByEmail(String email);
 }
