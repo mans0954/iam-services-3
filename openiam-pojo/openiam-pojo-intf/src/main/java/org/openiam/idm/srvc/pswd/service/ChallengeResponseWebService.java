@@ -84,6 +84,8 @@ public interface ChallengeResponseWebService {
 	@WebMethod
 	public Response saveAnswers(@WebParam(name = "answerList", targetNamespace = "") final List<UserIdentityAnswer> answerList);
 
+    @WebMethod
+    public Response validateAnswers(@WebParam(name = "answerList", targetNamespace = "") final List<UserIdentityAnswer> answerList);
 
     /**
      * Determines is the answers that are provided by the user are the same as those stored in

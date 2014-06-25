@@ -219,42 +219,59 @@ public class ChallengeResponseWebServiceImpl implements ChallengeResponseWebServ
 		return response;
 	}
     @Override
-	public Response saveAnswers(List<UserIdentityAnswer> answerList) {
-		final Response response = new Response(ResponseStatus.SUCCESS);
-		try {
-			if (CollectionUtils.isEmpty(answerList)) {
-				throw new BasicDataServiceException(
-						ResponseCode.OBJECT_NOT_FOUND);
-			}
-			String requestId = "R" + UUIDGen.getUUID();
+    public Response validateAnswers(List<UserIdentityAnswer> answerList) {
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+            if (CollectionUtils.isEmpty(answerList)) {
+                throw new BasicDataServiceException(
+                        ResponseCode.OBJECT_NOT_FOUND);
+            }
+            String requestId = "R" + UUIDGen.getUUID();
 
 			/* check for duplicates */
-			final Set<String> questionIdSet = new HashSet<String>();
-			for (final UserIdentityAnswer answer : answerList) {
-				if (questionIdSet.contains(answer.getQuestionId())) {
-					throw new BasicDataServiceException(
-							ResponseCode.IDENTICAL_QUESTIONS);
-				}
-				if(StringUtils.isBlank(answer.getQuestionId())){
-					throw new BasicDataServiceException(
-							ResponseCode.QUEST_NOT_SELECTED);
-				}
-				
-				if(StringUtils.isBlank(answer.getQuestionAnswer())){
-					throw new BasicDataServiceException(
-							ResponseCode.ANSWER_NOT_TAKEN);
-				}
-				questionIdSet.add(answer.getQuestionId());
-			}
+            final Set<String> questionIdSet = new HashSet<String>();
+            for (final UserIdentityAnswer answer : answerList) {
+                if (questionIdSet.contains(answer.getQuestionId())) {
+                    throw new BasicDataServiceException(
+                            ResponseCode.IDENTICAL_QUESTIONS);
+                }
+                if(StringUtils.isBlank(answer.getQuestionId())){
+                    throw new BasicDataServiceException(
+                            ResponseCode.QUEST_NOT_SELECTED);
+                }
 
-			final List<UserIdentityAnswerEntity> answerEntityList = new LinkedList<UserIdentityAnswerEntity>();
-			for (final UserIdentityAnswer answer : answerList) {
-				
-				final UserIdentityAnswerEntity entity = answerDozerConverter
-						.convertToEntity(answer, true);
-				answerEntityList.add(entity);
-			}
-			challengeResponseService.saveAnswers(answerEntityList);
+                if(StringUtils.isBlank(answer.getQuestionAnswer())){
+                    throw new BasicDataServiceException(
+                            ResponseCode.ANSWER_NOT_TAKEN);
+                }
+                questionIdSet.add(answer.getQuestionId());
+            }
+
+        } catch (BasicDataServiceException e) {
+            response.setErrorCode(e.getCode());
+            response.setStatus(ResponseStatus.FAILURE);
+        } catch (Throwable e) {
+            log.error("Can't save or update resource", e);
+            response.setErrorText(e.getMessage());
+            response.setStatus(ResponseStatus.FAILURE);
+        }
+        return response;
+
+    }
+    @Override
+	public Response saveAnswers(List<UserIdentityAnswer> answerList) {
+        Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+            response = validateAnswers(answerList);
+            if (response.isSuccess()) {
+                final List<UserIdentityAnswerEntity> answerEntityList = new LinkedList<UserIdentityAnswerEntity>();
+                for (final UserIdentityAnswer answer : answerList) {
+                    final UserIdentityAnswerEntity entity = answerDozerConverter
+                            .convertToEntity(answer, true);
+                    answerEntityList.add(entity);
+                }
+                challengeResponseService.saveAnswers(answerEntityList);
+            }
 		} catch (BasicDataServiceException e) {
 			response.setErrorCode(e.getCode());
 			response.setStatus(ResponseStatus.FAILURE);
