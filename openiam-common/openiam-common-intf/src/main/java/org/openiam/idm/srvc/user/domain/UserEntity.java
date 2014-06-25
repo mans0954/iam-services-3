@@ -3,8 +3,8 @@ package org.openiam.idm.srvc.user.domain;
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.annotations.*;
 import org.hibernate.annotations.Cache;
-import org.hibernate.search.annotations.*;
-import org.hibernate.search.annotations.Index;
+//import org.hibernate.search.annotations.*;
+//import org.hibernate.search.annotations.Index;
 import org.openiam.base.BaseConstants;
 import org.openiam.core.dao.lucene.LuceneId;
 import org.openiam.core.dao.lucene.LuceneLastUpdate;
@@ -35,7 +35,7 @@ import java.util.Map.Entry;
 @FilterDef(name = "parentTypeFilter", parameters = @ParamDef(name = "parentFilter", type = "string"))
 @Table(name = "USERS")
 @DozerDTOCorrespondence(User.class)
-@Indexed
+//@Indexed
 @Internationalized
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class UserEntity {
@@ -44,7 +44,7 @@ public class UserEntity {
     @GenericGenerator(name = "system-uuid", strategy = "uuid")
     @Column(name = "USER_ID", length = 32, nullable = false)
     @LuceneId
-    @DocumentId
+//    @DocumentId
     private String id;
 
     @Column(name = "BIRTHDATE", length = 19)
@@ -60,7 +60,7 @@ public class UserEntity {
     private String createdBy;
 
     @Column(name = "EMPLOYEE_ID", length = 32)
-    @Field(analyze = Analyze.NO, name="employeeId", store=Store.YES)
+//    @Field(analyze = Analyze.NO, name="employeeId", store=Store.YES)
     @Size(max = 32, message = "validator.user.employee.id.toolong")
     private String employeeId;
 
@@ -72,14 +72,14 @@ public class UserEntity {
     @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch= FetchType.LAZY)
     @JoinColumn(name = "EMPLOYEE_TYPE", insertable = true, updatable = true, nullable=true)
     @Internationalized
-    @IndexedEmbedded
+//    @IndexedEmbedded
     private MetadataTypeEntity employeeType;
 
     @Column(name = "FIRST_NAME", length = 50)
-    @Fields ({
-        @Field(analyze = Analyze.YES),
-        @Field(name = "firstName", analyze = Analyze.YES, store = Store.YES)
-    })
+//    @Fields ({
+//        @Field(analyze = Analyze.YES),
+//        @Field(name = "firstName", analyze = Analyze.YES, store = Store.YES)
+//    })
     @Size(max = 50, message = "validator.user.first.name.toolong")
     private String firstName;
 
@@ -90,14 +90,14 @@ public class UserEntity {
     @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch= FetchType.LAZY)
     @JoinColumn(name = "JOB_CODE", insertable = true, updatable = true, nullable=true)
     @Internationalized
-    @IndexedEmbedded
+//    @IndexedEmbedded
     private MetadataTypeEntity jobCode;
 
     @Column(name = "LAST_NAME", length = 50)
-    @Fields ({
-        @Field(analyze = Analyze.YES),
-        @Field(name = "lastName", analyze = Analyze.YES, store = Store.YES)
-    })
+//    @Fields ({
+//        @Field(analyze = Analyze.YES),
+//        @Field(name = "lastName", analyze = Analyze.YES, store = Store.YES)
+//    })
     @Size(max = 50, message = "validator.user.last.name.toolong")
     private String lastName;
 
@@ -139,12 +139,12 @@ public class UserEntity {
 
     @Column(name = "STATUS", length = 40)
     @Enumerated(EnumType.STRING)
-    @Field(analyze = Analyze.NO, name="userStatus", store=Store.YES)
+//    @Field(analyze = Analyze.NO, name="userStatus", store=Store.YES)
     private UserStatusEnum status;
 
     @Column(name = "SECONDARY_STATUS", length = 40)
     @Enumerated(EnumType.STRING)
-    @Field(analyze = Analyze.NO ,name="accountStatus", store=Store.YES)
+//    @Field(analyze = Analyze.NO ,name="accountStatus", store=Store.YES)
     private UserStatusEnum secondaryStatus;
 
     @Column(name = "SUFFIX", length = 20)
@@ -179,10 +179,10 @@ public class UserEntity {
 
     @Column(name = "MAIDEN_NAME", length = 40)
     @Size(max = 40, message = "validator.user.maiden.name.toolong")
-    @Fields ({
-        @Field(analyze = Analyze.YES),
-        @Field(name = "maidenName", analyze = Analyze.YES, store = Store.YES)
-    })
+//    @Fields ({
+//        @Field(analyze = Analyze.YES),
+//        @Field(name = "maidenName", analyze = Analyze.YES, store = Store.YES)
+//    })
     private String maidenName;
 
     @Column(name = "PASSWORD_THEME", length = 20)

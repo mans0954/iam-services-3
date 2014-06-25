@@ -30,7 +30,7 @@ import org.openiam.idm.srvc.user.domain.UserEntity;
 @Entity
 @Table(name = "PHONE")
 @DozerDTOCorrespondence(Phone.class)
-@Indexed
+//@Indexed
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class PhoneEntity {
     @Id
@@ -38,17 +38,17 @@ public class PhoneEntity {
     @GenericGenerator(name = "system-uuid", strategy = "uuid")
     @Column(name = "PHONE_ID", length = 32, nullable = false)
     @LuceneId
-    @DocumentId
+//    @DocumentId
     private String phoneId;
 
     @Column(name="ACTIVE")
     @Type(type = "yes_no")
     private boolean isActive = true;
 
-    @Fields ({
-        @Field(analyze = Analyze.NO),
-        @Field(name = "areaCd", analyze = Analyze.NO, store = Store.YES)
-    })
+//    @Fields ({
+//        @Field(analyze = Analyze.NO),
+//        @Field(name = "areaCd", analyze = Analyze.NO, store = Store.YES)
+//    })
     @Column(name="AREA_CD", length=10)
     @Size(max = 10, message = "validator.phone.area.code.toolong")
     private String areaCd;
@@ -68,17 +68,17 @@ public class PhoneEntity {
     @XmlTransient
     @ManyToOne
     @JoinColumn(name="PARENT_ID")
-    @Field(name="parent", bridge=@FieldBridge(impl=UserBridge.class), store=Store.YES)
+//    @Field(name="parent", bridge=@FieldBridge(impl=UserBridge.class), store=Store.YES)
     private UserEntity parent;
 
     @Column(name="PHONE_EXT", length=20)
     @Size(max = 20, message = "validator.phone.extension.toolong")
     private String phoneExt;
 
-    @Fields ({
-        @Field(analyze = Analyze.NO),
-        @Field(name = "phoneNbr", analyze = Analyze.NO, store = Store.YES)
-    })
+//    @Fields ({
+//        @Field(analyze = Analyze.NO),
+//        @Field(name = "phoneNbr", analyze = Analyze.NO, store = Store.YES)
+//    })
     @Column(name="PHONE_NBR", length=50)
     @Size(max = 50, message = "validator.phone.number.toolong")
     private String phoneNbr;

@@ -20,11 +20,6 @@ public abstract class ESAbstractFactoryBean<T> implements FactoryBean<T>, Initia
     }
 
     @Override
-    public Class<T> getObjectType() {
-        return (Class<T>) object.getClass();
-    }
-
-    @Override
     public boolean isSingleton() {
         return true;
     }

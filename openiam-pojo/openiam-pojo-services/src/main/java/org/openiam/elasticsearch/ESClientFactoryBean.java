@@ -37,4 +37,9 @@ public class ESClientFactoryBean extends ESAbstractFactoryBean<Client> {
             logger.error("Error closing ElasticSearch client: ", e);
         }
     }
+
+    @Override
+    public Class<Client> getObjectType() {
+        return Client.class;
+    }
 }

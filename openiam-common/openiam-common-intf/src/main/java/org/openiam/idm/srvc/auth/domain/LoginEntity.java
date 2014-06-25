@@ -4,8 +4,8 @@ package org.openiam.idm.srvc.auth.domain;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.*;
-import org.hibernate.search.annotations.*;
-import org.hibernate.search.annotations.Index;
+//import org.hibernate.search.annotations.*;
+//import org.hibernate.search.annotations.Index;
 import org.openiam.core.dao.lucene.LuceneId;
 import org.openiam.core.dao.lucene.LuceneLastUpdate;
 import org.openiam.dozer.DozerDTOCorrespondence;
@@ -25,7 +25,7 @@ import java.util.Set;
 @Table(name="LOGIN")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @DozerDTOCorrespondence(Login.class)
-@Indexed
+//@Indexed
 @Embeddable
 public class LoginEntity implements java.io.Serializable {
     private static final long serialVersionUID = -1972779170001619759L;
@@ -35,21 +35,21 @@ public class LoginEntity implements java.io.Serializable {
     @GenericGenerator(name = "system-uuid", strategy = "uuid")
 	@Column(name = "LOGIN_ID", length = 32, nullable = false)
     @LuceneId
-    @DocumentId
+//    @DocumentId
     private String loginId;
     
-    @Field(name = "login", analyze = Analyze.YES, store = Store.YES)
+//    @Field(name = "login", analyze = Analyze.YES, store = Store.YES)
     @Column(name="LOGIN",length=320)
     private String login;
     
     @Column(name="LOWERCASE_LOGIN",length=320)
     private String lowerCaseLogin;
     
-    @Field(name = "managedSysId", analyze = Analyze.NO, store = Store.YES)
+//    @Field(name = "managedSysId", analyze = Analyze.NO, store = Store.YES)
     @Column(name="MANAGED_SYS_ID",length=50)
     private String managedSysId;
 
-    @Field(name = "userId", analyze = Analyze.NO, store = Store.YES)
+//    @Field(name = "userId", analyze = Analyze.NO, store = Store.YES)
     @Column(name="USER_ID",length=32)
     protected String userId;
 

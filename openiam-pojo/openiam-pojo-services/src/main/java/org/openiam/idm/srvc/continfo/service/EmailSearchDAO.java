@@ -1,17 +1,15 @@
 package org.openiam.idm.srvc.continfo.service;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
 import org.openiam.core.dao.lucene.AbstractHibernateSearchDao;
 import org.openiam.idm.searchbeans.EmailSearchBean;
-import org.openiam.idm.searchbeans.PhoneSearchBean;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
-import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.springframework.stereotype.Repository;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Repository("emailSearchDAO")
 public class EmailSearchDAO extends AbstractHibernateSearchDao<EmailAddressEntity, EmailSearchBean, String> {
@@ -36,12 +34,12 @@ public class EmailSearchDAO extends AbstractHibernateSearchDao<EmailAddressEntit
     	if ((query != null)) {
             final Query luceneQuery = parse(query);
             if (luceneQuery != null) {
-				final List idList = findIds(buildFullTextSessionQuery(getFullTextSession(null), luceneQuery, from, size, null).setProjection("parent"));
-				for (final Object row : idList) {
-					final Object[] columns = (Object[]) row;
-					final UserEntity id = (UserEntity) columns[0];
-					result.add(id.getId());
-				}
+//				final List idList = findIds(buildFullTextSessionQuery(getFullTextSession(null), luceneQuery, from, size, null).setProjection("parent"));
+//				for (final Object row : idList) {
+//					final Object[] columns = (Object[]) row;
+//					final UserEntity id = (UserEntity) columns[0];
+//					result.add(id.getId());
+//				}
             }
     	}
         return result;

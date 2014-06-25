@@ -27,7 +27,7 @@ import org.openiam.idm.srvc.user.domain.UserEntity;
 @Entity
 @Table(name = "ADDRESS")
 @DozerDTOCorrespondence(Address.class)
-@Indexed
+//@Indexed
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class AddressEntity {
     @Id
@@ -35,7 +35,7 @@ public class AddressEntity {
     @GenericGenerator(name = "system-uuid", strategy = "uuid")
     @Column(name = "ADDRESS_ID", length = 32, nullable = false)
     @LuceneId
-    @DocumentId
+//    @DocumentId
     private String addressId;
 
     @Column(name = "ACTIVE")
@@ -99,7 +99,7 @@ public class AddressEntity {
 
     @ManyToOne
     @JoinColumn(name = "PARENT_ID")
-    @Field(name="parent", bridge=@FieldBridge(impl=UserBridge.class), store=Store.YES)
+//    @Field(name="parent", bridge=@FieldBridge(impl=UserBridge.class), store=Store.YES)
     private UserEntity parent;
 
     @Column(name = "POSTAL_CD", length = 100)

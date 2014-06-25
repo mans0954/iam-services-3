@@ -1,5 +1,7 @@
 package org.openiam.elasticsearch;
 
+import org.elasticsearch.common.settings.ImmutableSettings;
+import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.node.Node;
 import org.elasticsearch.node.NodeBuilder;
 import org.springframework.stereotype.Component;
@@ -38,12 +40,29 @@ public class ESNodeFactoryBean extends ESAbstractFactoryBean<Node> {
 
         logger.debug("Starting ElasticSearch node...");
 
-        Node node = nodeBuilder.node();
+        Node node = nodeBuilder.settings(buildNodeSettings()).node();
 
         logger.info("Node [" + node.settings().get("name") + "] for [" + node.settings().get("cluster.name") + "] cluster started...");
         logger.debug("  - data : " + node.settings().get("path.data"));
         logger.debug("  - logs : " + node.settings().get("path.logs"));
 
         return node;
+    }
+
+    protected Settings buildNodeSettings() {
+        // Build settings
+        ImmutableSettings.Builder builder = ImmutableSettings.settingsBuilder()
+                                                             .put("node.name", "node-test-" + System.currentTimeMillis())
+                                                             .put("cluster.name", "ES_OpenIAM")
+                                                             .put("path.data", "/home/alexander/elasticsearch/data")
+                                                             .put("path.work", "/home/alexander/elasticsearch/work")
+                                                             .put("path.logs", "/home/alexander/elasticsearch/logs");
+
+        return builder.build();
+    }
+
+    @Override
+    public Class<Node> getObjectType() {
+        return Node.class;
     }
 }

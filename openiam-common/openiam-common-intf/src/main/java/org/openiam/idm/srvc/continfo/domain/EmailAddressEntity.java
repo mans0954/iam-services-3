@@ -19,6 +19,12 @@ import org.openiam.core.dao.lucene.LuceneLastUpdate;
 import org.openiam.core.dao.lucene.bridge.OrganizationBridge;
 import org.openiam.core.dao.lucene.bridge.UserBridge;
 import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.elasticsearch.annotation.ESField;
+import org.openiam.elasticsearch.annotation.ESId;
+import org.openiam.elasticsearch.annotation.ESIndex;
+import org.openiam.elasticsearch.constants.ESAnalyze;
+import org.openiam.elasticsearch.constants.ESIndexName;
+import org.openiam.elasticsearch.constants.ESIndexType;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
@@ -29,15 +35,16 @@ import javax.validation.constraints.Size;
 @Entity
 @Table(name = "EMAIL_ADDRESS")
 @DozerDTOCorrespondence(EmailAddress.class)
-@Indexed
+//@Indexed
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@ESIndex(indexName = ESIndexName.CONTACT_INFO, indexType = ESIndexType.EMAIL)
 public class EmailAddressEntity {
     @Id
     @GeneratedValue(generator = "system-uuid")
     @GenericGenerator(name = "system-uuid", strategy = "uuid")
     @Column(name = "EMAIL_ID", length = 32, nullable = false)
-    @LuceneId
-    @DocumentId
+    @ESId
+//    @DocumentId
     private String emailId;
 
     @Column(name = "ACTIVE")
@@ -48,10 +55,11 @@ public class EmailAddressEntity {
     @Size(max = 100, message = "validator.email.description.toolong")
     private String description;
 
-    @Fields ({
-        @Field(analyze = Analyze.YES),
-        @Field(name = "emailAddress", analyze = Analyze.YES, store = Store.YES)
-    })
+//    @Fields ({
+//        @Field(analyze = Analyze.YES),
+//        @Field(name = "emailAddress", analyze = Analyze.YES, store = Store.YES)
+//    })
+    @ESField(name = "emailAddress", analyze = ESAnalyze.Yes)
     @Column(name = "EMAIL_ADDRESS", length = 320)
     @Size(max = 320, message = "validator.email.toolong")
     private String emailAddress;
@@ -62,7 +70,7 @@ public class EmailAddressEntity {
 
     @ManyToOne
     @JoinColumn(name = "PARENT_ID")
-    @Field(name="parent", bridge=@FieldBridge(impl=UserBridge.class), store=Store.YES)
+//    @Field(name="parent", bridge=@FieldBridge(impl=UserBridge.class), store=Store.YES)
     private UserEntity parent;
 
     @Column(name = "NAME", length = 100)
