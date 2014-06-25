@@ -96,7 +96,10 @@ public class Organization extends AdminResourceDTO implements Serializable, Comp
 
     protected AttributeOperationEnum operation = AttributeOperationEnum.NO_CHANGE;
 
+    @Deprecated
     private Set<Organization> parentOrganizations;
+    
+    @Deprecated
     private Set<Organization> childOrganizations;
     
     private boolean selectable = true;
@@ -327,18 +330,22 @@ public class Organization extends AdminResourceDTO implements Serializable, Comp
         this.operation = operation;
     }
 
+    @Deprecated
 	public Set<Organization> getParentOrganizations() {
 		return parentOrganizations;
 	}
 
+    @Deprecated
 	public void setParentOrganizations(Set<Organization> parentOrganizations) {
 		this.parentOrganizations = parentOrganizations;
 	}
 
+    @Deprecated
 	public Set<Organization> getChildOrganizations() {
 		return childOrganizations;
 	}
 
+    @Deprecated
 	public void setChildOrganizations(Set<Organization> childOrganizations) {
 		this.childOrganizations = childOrganizations;
 	}

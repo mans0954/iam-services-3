@@ -637,18 +637,14 @@
 			<a>attributes</a>
 			<b>attributes</b>
 		</field>
-		<field
-			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
-			custom-converter-param="dto2entityShallowDozerMapper">
+		<field-exclude>
 			<a>parentOrganizations</a>
 			<b>parentOrganizations</b>
-		</field>
-		<field
-			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
-			custom-converter-param="dto2entityShallowDozerMapper">
+		</field-exclude>
+		<field-exclude>
 			<a>childOrganizations</a>
 			<b>childOrganizations</b>
-		</field>
+		</field-exclude>
 		<field>
 			<a>organizationType.id</a>
 			<b>organizationTypeId</b>
