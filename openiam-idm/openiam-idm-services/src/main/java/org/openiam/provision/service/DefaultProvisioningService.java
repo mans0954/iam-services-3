@@ -1825,11 +1825,13 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                 matchObj = matchList.get(0);
                             }
 
+                            Login login = loginDozerConverter.convertToDTO(lg, false);
                             ResponseType resp = setPassword(requestId,
-                                    loginDozerConverter.convertToDTO(lg, false), prevDecodedPassword,
+                                    login, prevDecodedPassword,
                                     passwordSync.getPassword(),
                                     managedSysDozerConverter.convertToDTO(mSys, false),
-                                    objectMatchDozerConverter.convertToDTO(matchObj, false));
+                                    objectMatchDozerConverter.convertToDTO(matchObj, false),
+                                    buildMngSysAttributes(login, "SET_PASSWORD"));
 
                             boolean connectorSuccess = false;
                             if (resp.getStatus() == StatusCodeType.SUCCESS) {
