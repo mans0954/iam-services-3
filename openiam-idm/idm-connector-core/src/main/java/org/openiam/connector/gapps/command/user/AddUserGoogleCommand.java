@@ -3,6 +3,7 @@ package org.openiam.connector.gapps.command.user;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import org.openiam.connector.common.data.ConnectorConfiguration;
 import org.openiam.connector.gapps.GoogleAgent;
@@ -35,7 +36,7 @@ public class AddUserGoogleCommand extends
 
 		try {
 			GoogleAgent agent = new GoogleAgent();
-			String userId = agent.addUser(
+			GenericEntry e = agent.addUser(
 					adminEmail,
 					password,
 					domain,
@@ -43,41 +44,42 @@ public class AddUserGoogleCommand extends
 							crudRequest.getExtensibleObject(),
 							crudRequest.getObjectIdentity(), domain));
 			this.addGroups(crudRequest.getExtensibleObject(), agent,
-					adminEmail, password, domain, userId);
+					adminEmail, password, domain, e.getProperty("userEmail"));
 
 			ConnectorConfiguration configuration = super.getConfiguration(
 					crudRequest.getTargetID(), ConnectorConfiguration.class);
-			Resource res = configuration.getResource();
-			String isProfileShared = "shared";
-			String gamLocation = "/data/openiam/conf/gam/";
-			if (res != null) {
-				ResourceProp resprop = configuration.getResource()
-						.getResourceProperty("IS_PROFILE_SHARED");
-				if (resprop != null) {
-					isProfileShared = resprop.getValue();
-				}
-				ResourceProp resprop2 = configuration.getResource()
-						.getResourceProperty("GAM_LOCATION");
-				if (resprop2 != null) {
-					gamLocation = resprop2.getValue();
-				}
-			}
-
-			String command = String.format(
-					"python %sgam.py user %s profile %s", gamLocation, userId,
-					isProfileShared);
-
-			Runtime rt = Runtime.getRuntime();
-			Process proc = rt.exec(command);
-
-			int exitVal = proc.waitFor();
-			if (exitVal == 0) {
-				log.info("Command: " + command
-						+ " was executed succesfully. RetVal=" + exitVal);
-			} else {
-				log.info("Command: " + command
-						+ " was executed with error. RetVal=" + exitVal);
-			}
+			// Run Gam commands
+			this.runGamCommands("ADD", configuration.getResource(), e);
+			// String isProfileShared = "shared";
+			// String gamLocation = "/data/openiam/conf/gam/";
+			// if (res != null) {
+			// ResourceProp resprop = configuration.getResource()
+			// .getResourceProperty("IS_PROFILE_SHARED");
+			// if (resprop != null) {
+			// isProfileShared = resprop.getValue();
+			// }
+			// ResourceProp resprop2 = configuration.getResource()
+			// .getResourceProperty("GAM_LOCATION");
+			// if (resprop2 != null) {
+			// gamLocation = resprop2.getValue();
+			// }
+			// }
+			//
+			// String command = String.format(
+			// "python %sgam.py user %s profile %s", gamLocation, userId,
+			// isProfileShared);
+			//
+			// Runtime rt = Runtime.getRuntime();
+			// Process proc = rt.exec(command);
+			//
+			// int exitVal = proc.waitFor();
+			// if (exitVal == 0) {
+			// log.info("Command: " + command
+			// + " was executed succesfully. RetVal=" + exitVal);
+			// } else {
+			// log.info("Command: " + command
+			// + " was executed with error. RetVal=" + exitVal);
+			// }
 
 		} catch (Exception e) {
 			throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR,
