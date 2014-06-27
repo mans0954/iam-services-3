@@ -1,5 +1,7 @@
 package org.openiam.connector.gapps.command.base;
 
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -10,6 +12,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.connector.common.command.AbstractCommand;
 import org.openiam.connector.gapps.GoogleUtils;
@@ -26,6 +29,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.google.gdata.data.appsforyourdomain.generic.GenericEntry;
+import com.google.gdata.data.codesearch.File;
+import com.jcraft.jsch.jce.Random;
 
 public abstract class AbstractGoogleAppsCommand<Request extends RequestType, Response extends ResponseType>
 		extends AbstractCommand<Request, Response> {
@@ -83,30 +88,55 @@ public abstract class AbstractGoogleAppsCommand<Request extends RequestType, Res
 		// Run Gam commands
 		String format = "python %sgam.py %s";
 		Map<String, String> props = e.getAllProperties();
+		String runnableFilePath = gamLocation
+				+ RandomStringUtils.randomAlphabetic(12) + ".sh";
+		java.io.File f = new java.io.File(runnableFilePath);
+		if (!f.exists()) {
+			try {
+				f.createNewFile();
+			} catch (IOException e1) {
+				log.error("Can create file. Please share access! Can't run GAM commands! "
+						+ runnableFilePath);
+				return;
+			}
+		}
 		for (GoogleGamCommand c : gamCommands) {
 			String command = c.getCommand();
 			for (String str : props.keySet()) {
 				if (props.get(str) != null)
-					command= command.replace(str, props.get(str));
+					command = command.replace(str, props.get(str));
 			}
 
 			String togo = String.format(format, gamLocation, command);
 			try {
+				PrintWriter writer = new PrintWriter(f);
+				writer.println("#!/bin/bash");
+				writer.println(togo);
+				writer.close();
 				Runtime rt = Runtime.getRuntime();
-				Process proc = rt.exec(togo);
+				Process proc = rt.exec("sh " + runnableFilePath);
 				int exitVal = proc.waitFor();
 				if (exitVal == 0) {
-					log.info("Command: " + command
-							+ " was executed succesfully. RetVal=" + exitVal);
+					log.info("Command: " + togo
+							+ " was executed succesfully. RetVal=" + exitVal
+							+ "\n Result: "
+							+ this.convertStreamToString(proc.getInputStream()));
 				} else {
-					log.info("Command: " + command
-							+ " was executed with error. RetVal=" + exitVal);
+					log.error("Command: " + togo
+							+ " was executed with errors. RetVal=" + exitVal
+							+ "\n Result: "
+							+ this.convertStreamToString(proc.getInputStream()));
 				}
 			} catch (Exception exf) {
 				log.error("Gam execution is broken!" + exf);
 			}
 		}
+		f.delete();
+	}
 
+	private String convertStreamToString(java.io.InputStream is) {
+		java.util.Scanner s = new java.util.Scanner(is).useDelimiter("\\A");
+		return s.hasNext() ? s.next() : "";
 	}
 
 	protected ExtensibleGroup googleGroupToExtensibleAttributes(

@@ -19,7 +19,7 @@ public class GoogleGamCommand implements Comparable<GoogleGamCommand> {
 	private final static Pattern methodsPattern = Pattern
 			.compile("(methods=)([0-9a-zA-Z,]*)");
 	private final static Pattern commandPattern = Pattern
-			.compile("(command=)([0-9a-zA-Z, @._]*)");
+			.compile("(command=)(.*)");
 	private int displayOrder;
 	private String command;
 	private List<String> methods;
