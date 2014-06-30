@@ -132,8 +132,8 @@ public class GoogleAgent {
 		return entry;
 	}
 
-	public String addUser(String adminEmail, String password, String domain,
-			Map<String, String> googleUserProps)
+	public GenericEntry addUser(String adminEmail, String password,
+			String domain, Map<String, String> googleUserProps)
 			throws AppsForYourDomainException, AuthenticationException,
 			MalformedURLException, IOException, ServiceException {
 		GenericEntry entry = new GenericEntry();
@@ -163,7 +163,7 @@ public class GoogleAgent {
 			}
 		}
 
-		return newE.getAllProperties().get("userEmail");
+		return newE;
 	}
 
 	public GenericEntry createAlias(AppsPropertyService service,
@@ -239,8 +239,8 @@ public class GoogleAgent {
 		return resultList;
 	}
 
-	public void updateUser(String adminEmail, String password, String domain,
-			Map<String, String> googleUserProps, String id)
+	public GenericEntry updateUser(String adminEmail, String password,
+			String domain, Map<String, String> googleUserProps, String id)
 			throws AppsForYourDomainException, AuthenticationException,
 			MalformedURLException, IOException, ServiceException {
 		GenericEntry entry = new GenericEntry();
@@ -272,6 +272,8 @@ public class GoogleAgent {
 
 		log.info("Google connector update run:"
 				+ newE.getAllProperties().get("userEmail"));
+
+		return newE;
 	}
 
 	public GenericEntry retrieveAlias(AppsPropertyService service,

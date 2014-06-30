@@ -37,14 +37,19 @@ public class ActiveDirectoryImpl implements Directory {
 
     protected static final Log log = LogFactory.getLog(ActiveDirectoryImpl.class);
 
+    final static String PASSWORD_ATTRIBUTE = "unicodePwd";
 
     public ModificationItem[] setPassword(PasswordRequest reqType) throws UnsupportedEncodingException {
 
+        String password = getUnicodePassword(reqType.getExtensibleObject());
+        if (StringUtils.isEmpty(password)) {
+            password = reqType.getPassword();
+        }
 
-        byte[] password = ("\"" + reqType.getPassword() + "\"").getBytes("UTF-16LE");
+        byte[] passwordBytes = ("\"" + password + "\"").getBytes("UTF-16LE");
 
         ModificationItem[] mods = new ModificationItem[1];
-        mods[0] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute("unicodePwd", password));
+        mods[0] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute(PASSWORD_ATTRIBUTE, passwordBytes));
         return mods;
 
 
@@ -373,4 +378,16 @@ public class ActiveDirectoryImpl implements Directory {
 
     }
 
+    private String getUnicodePassword(ExtensibleObject extObject) {
+        String scrambledPswd = null;
+        if (extObject != null && CollectionUtils.isNotEmpty(extObject.getAttributes())) {
+            for(final ExtensibleAttribute attr : extObject.getAttributes()) {
+                if (attr.getName().equalsIgnoreCase(PASSWORD_ATTRIBUTE)) {
+                    scrambledPswd = attr.getValue();
+                    break;
+                }
+            }
+        }
+        return scrambledPswd;
+    }
 }

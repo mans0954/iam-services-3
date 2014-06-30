@@ -1523,13 +1523,14 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
 
     protected ResponseType resetPassword(String requestId, Login login,
             String password, ManagedSysDto mSys,
-            ManagedSystemObjectMatch matchObj) {
+            ManagedSystemObjectMatch matchObj, ExtensibleUser extensibleUser) {
 
         PasswordRequest req = new PasswordRequest();
         req.setObjectIdentity(login.getLogin());
         req.setRequestID(requestId);
         req.setTargetID(login.getManagedSysId());
         req.setHostLoginId(mSys.getUserId());
+        req.setExtensibleObject(extensibleUser);
         String passwordDecoded = mSys.getPswd();
         try {
             passwordDecoded = getDecryptedPassword(mSys);
@@ -1548,17 +1549,19 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         return connectorAdapter.resetPasswordRequest(mSys, req, MuleContextProvider.getCtx());
 
     }
-    
+
     protected ResponseType setPassword(String requestId, Login login, String prevDecPassword,
                                                                       String newDecPasswordSync,
                                                                       ManagedSysDto mSys,
-                                                                      ManagedSystemObjectMatch matchObj) {
+                                                                      ManagedSystemObjectMatch matchObj,
+                                                                      ExtensibleUser extensibleUser) {
 
         PasswordRequest req = new PasswordRequest();
         req.setObjectIdentity(login.getLogin());
         req.setRequestID(requestId);
         req.setTargetID(login.getManagedSysId());
         req.setHostLoginId(mSys.getUserId());
+        req.setExtensibleObject(extensibleUser);
         String passwordDecoded = mSys.getPswd();
         try {
             passwordDecoded = getDecryptedPassword(mSys);
