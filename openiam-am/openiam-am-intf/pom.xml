@@ -4,14 +4,14 @@
     <parent>
         <artifactId>am-core</artifactId>
         <groupId>org.openiam</groupId>
-        <version>3.1.2.RELEASE</version>
+        <version>3.1.3.RELEASE</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.openiam</groupId>
     <artifactId>openiam-am-intf</artifactId>
     <packaging>jar</packaging>
     <name>openiam-am-intf</name>
-    <version>3.1.2.RELEASE</version>
+    <version>3.1.3.RELEASE</version>
     <description>Interfaces and DTO for the Access Manager specific services</description>
     <ciManagement>
         <system>am</system>
