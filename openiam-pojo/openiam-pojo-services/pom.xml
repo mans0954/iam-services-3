@@ -166,12 +166,12 @@
             <groupId>c3p0</groupId>
             <artifactId>c3p0</artifactId>
         </dependency>
-
+		<!--
         <dependency>
             <groupId>javassist</groupId>
             <artifactId>javassist</artifactId>
         </dependency>
-
+		-->
         <dependency>
             <groupId>joda-time</groupId>
             <artifactId>joda-time</artifactId>
