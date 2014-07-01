@@ -48,6 +48,11 @@ public class ChallengeResponseServiceImpl implements ChallengeResponseService {
 		return getResponseValidator().getNumOfRequiredQuestions(userId);
 	}
 
+    @Override
+    public Integer getNumOfCorrectAnswers(String userId) {
+        return getResponseValidator().getNumOfCorrectAnswers(userId);
+    }
+
 	@Override
 	public Integer count(final IdentityQuestionSearchBean searchBean){
 		return getResponseValidator().count(searchBean);

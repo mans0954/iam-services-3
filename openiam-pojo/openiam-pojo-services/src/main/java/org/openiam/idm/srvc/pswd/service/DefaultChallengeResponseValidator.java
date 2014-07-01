@@ -121,6 +121,29 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
 		}
 		return count;
 	}
+
+    @Override
+    public Integer getNumOfCorrectAnswers(final String userId) {
+        Policy passwordPolicy = null;
+        if(StringUtils.isNotBlank(userId)) {
+            final UserEntity user = userDAO.findById(userId);
+            passwordPolicy = passwordService.getPasswordPolicyForUser(user);
+        }
+        if(passwordPolicy == null) {
+            passwordPolicy = passwordService.getGlobalPasswordPolicy();
+        }
+
+        Integer count = null;
+        if(passwordPolicy != null) {
+            PolicyAttribute countAttr = passwordPolicy.getAttribute("QUEST_ANSWER_CORRECT");
+            try {
+                count = Integer.valueOf(countAttr.getValue1());
+            } catch(Throwable e) {
+                log.warn("Cannot parse policy attribute value");
+            }
+        }
+        return count;
+    }
 	
 	@Override
 	public boolean isUserAnsweredSecurityQuestions(final String userId) throws Exception {
