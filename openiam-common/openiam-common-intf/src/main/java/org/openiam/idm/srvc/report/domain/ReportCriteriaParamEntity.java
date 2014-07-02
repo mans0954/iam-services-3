@@ -6,6 +6,7 @@ import javax.persistence.Entity;
 import javax.persistence.Table;
 
 import org.hibernate.annotations.*;
+import org.hibernate.annotations.Cache;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.report.dto.ReportCriteriaParamDto;
 
@@ -17,6 +18,7 @@ import org.openiam.idm.srvc.report.dto.ReportCriteriaParamDto;
 @Entity
 @Table(name = "REPORT_CRITERIA_PARAMETER")
 @DozerDTOCorrespondence(ReportCriteriaParamDto.class)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class ReportCriteriaParamEntity {
     @Id
     @GeneratedValue(generator = "system-uuid")

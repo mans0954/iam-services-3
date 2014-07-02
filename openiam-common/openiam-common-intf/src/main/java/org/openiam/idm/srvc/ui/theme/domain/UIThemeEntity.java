@@ -14,6 +14,8 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.validation.constraints.Size;
 
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.am.srvc.domain.ContentProviderEntity;
 import org.openiam.am.srvc.domain.URIPatternEntity;
@@ -25,6 +27,7 @@ import org.openiam.idm.srvc.ui.theme.dto.UITheme;
 @Entity
 @Table(name = "UI_THEME")
 @DozerDTOCorrespondence(UITheme.class)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class UIThemeEntity implements Serializable {
 	
 	public UIThemeEntity() {}

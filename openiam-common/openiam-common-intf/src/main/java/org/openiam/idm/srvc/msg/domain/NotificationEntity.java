@@ -1,5 +1,7 @@
 package org.openiam.idm.srvc.msg.domain;
 
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.msg.dto.NotificationDto;
@@ -12,6 +14,7 @@ import java.util.Date;
 @Entity
 @Table(name = "NOTIFICATION")
 @DozerDTOCorrespondence(NotificationDto.class)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class NotificationEntity implements Serializable {
 
     private static final long serialVersionUID = 4317232961173999077L;

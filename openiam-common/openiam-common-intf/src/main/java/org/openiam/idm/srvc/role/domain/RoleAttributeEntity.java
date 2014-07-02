@@ -6,6 +6,8 @@ import java.util.List;
 
 import javax.persistence.*;
 
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 import org.openiam.base.domain.AbstractAttributeEntity;
@@ -18,6 +20,7 @@ import org.openiam.idm.srvc.role.dto.RoleAttribute;
 @Table(name="ROLE_ATTRIBUTE")
 @AttributeOverride(name = "id", column = @Column(name = "ROLE_ATTR_ID"))
 @DozerDTOCorrespondence(RoleAttribute.class)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class RoleAttributeEntity extends AbstractAttributeEntity {
     
     @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})

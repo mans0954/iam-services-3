@@ -19,6 +19,8 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.GenericGenerator;
@@ -37,6 +39,7 @@ import org.openiam.internationalization.InternationalizedCollection;
 @DozerDTOCorrespondence(MetadataFieldTemplateXref.class)
 @AttributeOverride(name = "id", column = @Column(name = "XREF_ID"))
 @Internationalized
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class MetadataFieldTemplateXrefEntity extends KeyEntity {
 
 	@ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})

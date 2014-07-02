@@ -17,6 +17,8 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.am.srvc.dto.AuthLevelGrouping;
 import org.openiam.am.srvc.dto.AuthLevelGroupingURIPatternXref;
@@ -25,6 +27,7 @@ import org.openiam.dozer.DozerDTOCorrespondence;
 @Entity
 @Table(name = "AUTH_LEVEL_GROUPING")
 @DozerDTOCorrespondence(AuthLevelGrouping.class)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class AuthLevelGroupingEntity implements Serializable {
 
 	@Id

@@ -8,6 +8,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.pswd.dto.PasswordHistory;
@@ -15,6 +17,7 @@ import org.openiam.idm.srvc.pswd.dto.PasswordHistory;
 @Entity
 @Table(name = "PWD_HISTORY")
 @DozerDTOCorrespondence(PasswordHistory.class)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class PasswordHistoryEntity {
 
 	@Id

@@ -20,6 +20,8 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import org.apache.commons.lang.StringUtils;
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.GenericGenerator;
@@ -35,6 +37,7 @@ import org.openiam.internationalization.InternationalizedCollection;
 @DozerDTOCorrespondence(OrganizationType.class)
 @AttributeOverride(name = "id", column = @Column(name = "ORG_TYPE_ID"))
 @Internationalized
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class OrganizationTypeEntity extends KeyEntity {
 	
 	@Column(name="NAME", length=100, nullable = false)

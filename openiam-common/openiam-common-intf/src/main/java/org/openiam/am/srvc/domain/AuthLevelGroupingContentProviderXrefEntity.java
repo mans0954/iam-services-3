@@ -9,6 +9,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.openiam.am.srvc.domain.pk.AuthLevelGroupingContentProviderXrefIdEntity;
 import org.openiam.am.srvc.dto.AuthLevelGroupingContentProviderXref;
 import org.openiam.dozer.DozerDTOCorrespondence;
@@ -16,6 +18,7 @@ import org.openiam.dozer.DozerDTOCorrespondence;
 @Entity
 @Table(name = "CP_AUTH_LEVEL_GRP_XREF")
 @DozerDTOCorrespondence(AuthLevelGroupingContentProviderXref.class)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class AuthLevelGroupingContentProviderXrefEntity {
 
 	@EmbeddedId

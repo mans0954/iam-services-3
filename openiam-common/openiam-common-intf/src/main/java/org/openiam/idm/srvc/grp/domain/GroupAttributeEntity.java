@@ -2,6 +2,8 @@ package org.openiam.idm.srvc.grp.domain;
 
 import javax.persistence.*;
 
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 import org.openiam.base.domain.AbstractAttributeEntity;
@@ -18,6 +20,7 @@ import java.util.List;
 @DozerDTOCorrespondence(GroupAttribute.class)
 @AttributeOverride(name = "id", column = @Column(name = "ID"))
 @Internationalized
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class GroupAttributeEntity extends AbstractAttributeEntity {
 
     @ElementCollection

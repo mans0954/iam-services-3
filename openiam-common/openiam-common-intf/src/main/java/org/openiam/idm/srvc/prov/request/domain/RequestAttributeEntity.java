@@ -6,6 +6,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.prov.request.dto.RequestAttribute;
@@ -13,6 +15,7 @@ import org.openiam.idm.srvc.prov.request.dto.RequestAttribute;
 @Entity
 @Table(name="REQUEST_ATTRIBUTE")
 @DozerDTOCorrespondence(RequestAttribute.class)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class RequestAttributeEntity {
 
 	@Id

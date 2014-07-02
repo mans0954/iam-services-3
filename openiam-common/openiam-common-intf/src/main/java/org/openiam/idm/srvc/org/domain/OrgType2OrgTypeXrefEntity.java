@@ -1,5 +1,7 @@
 package org.openiam.idm.srvc.org.domain;
 
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.org.dto.OrgType2OrgTypeXref;
 
@@ -10,6 +12,7 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "ORG_TYPE_VALID_MEMBERSHIP")
 @DozerDTOCorrespondence(OrgType2OrgTypeXref.class)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class OrgType2OrgTypeXrefEntity {
 
     @EmbeddedId

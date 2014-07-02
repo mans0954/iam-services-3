@@ -4,6 +4,8 @@ import java.util.Date;
 
 import javax.persistence.*;
 
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
@@ -15,6 +17,7 @@ import org.openiam.idm.srvc.mngsys.dto.PolicyMapDataTypeOptions;
 @Entity
 @Table(name = "ATTRIBUTE_MAP")
 @DozerDTOCorrespondence(AttributeMap.class)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class AttributeMapEntity implements java.io.Serializable {
     /**
 	 * 

@@ -1,5 +1,7 @@
 package org.openiam.idm.srvc.report.domain;
 
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 import org.openiam.dozer.DozerDTOCorrespondence;
@@ -14,6 +16,7 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "REPORT_PARAMETER_METATYPE")
 @DozerDTOCorrespondence(ReportParamMetaTypeDto.class)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class ReportParamMetaTypeEntity {
     @Id
     @GeneratedValue(generator = "system-uuid")

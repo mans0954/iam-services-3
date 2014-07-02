@@ -8,11 +8,11 @@
     </exclusions>
     <!-- This allows you to define additional dependencies, it is the same as using the Dependencies: manifest attribute -->
     <dependencies>
-<!--       <module name="openiam.conf" /> -->
         <module name="org.jboss.ironjacamar.jdbcadapters" slot="main" />
-      <module name="com.mysql" />
-      <module name="oracle.jdbc" />
-      <module name="org.bouncycastle" slot="main" export="true" />
+      	<module name="com.mysql" />
+      	<module name="oracle.jdbc" />
+      	<module name="com.hazelcast" />
+      	<module name="org.bouncycastle" slot="main" export="true" />
       </dependencies>
   </deployment>
 

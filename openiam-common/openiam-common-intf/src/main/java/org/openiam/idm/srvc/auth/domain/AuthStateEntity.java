@@ -8,11 +8,15 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
 /**
  * Used to track the authentication state of a user.  Also used with SSO.
  */
 @Entity
 @Table(name = "AUTH_STATE")
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class AuthStateEntity implements java.io.Serializable {
 
     @Id

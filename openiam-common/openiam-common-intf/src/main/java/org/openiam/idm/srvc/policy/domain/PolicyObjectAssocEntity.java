@@ -7,6 +7,9 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.policy.dto.PolicyObjectAssoc;
@@ -19,6 +22,7 @@ import org.openiam.idm.srvc.policy.dto.PolicyObjectAssoc;
 @Entity
 @Table(name = "POLICY_OBJECT_ASSOC")
 @DozerDTOCorrespondence(PolicyObjectAssoc.class)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class PolicyObjectAssocEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;

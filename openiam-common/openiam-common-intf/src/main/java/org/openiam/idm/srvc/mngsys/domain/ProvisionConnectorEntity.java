@@ -1,5 +1,7 @@
 package org.openiam.idm.srvc.mngsys.domain;
 
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorDto;
@@ -10,6 +12,7 @@ import java.io.Serializable;
 @Entity
 @Table(name = "PROVISION_CONNECTOR")
 @DozerDTOCorrespondence(ProvisionConnectorDto.class)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class ProvisionConnectorEntity implements Serializable {
     @Id
     @GeneratedValue(generator = "system-uuid")

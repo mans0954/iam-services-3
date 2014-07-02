@@ -1,5 +1,7 @@
 package org.openiam.am.srvc.domain;
 
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 import org.openiam.am.srvc.dto.AuthProvider;
@@ -16,6 +18,7 @@ import java.util.Set;
 @Entity
 @Table(name = "AUTH_PROVIDER")
 @DozerDTOCorrespondence(AuthProvider.class)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class AuthProviderEntity implements Serializable {
     @Id
     @GeneratedValue(generator = "system-uuid")

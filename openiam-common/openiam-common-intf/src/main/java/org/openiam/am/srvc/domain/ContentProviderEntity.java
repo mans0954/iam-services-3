@@ -1,5 +1,7 @@
 package org.openiam.am.srvc.domain;
 
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 import org.openiam.am.srvc.dto.ContentProvider;
@@ -16,6 +18,7 @@ import java.util.Set;
 @Entity
 @Table(name = "CONTENT_PROVIDER")
 @DozerDTOCorrespondence(ContentProvider.class)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class ContentProviderEntity implements Serializable {
 
 	/**

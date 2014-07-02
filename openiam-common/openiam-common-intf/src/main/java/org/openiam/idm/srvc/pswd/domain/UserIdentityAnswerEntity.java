@@ -1,5 +1,7 @@
 package org.openiam.idm.srvc.pswd.domain;
 
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.Type;
 import org.openiam.base.domain.KeyEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
@@ -11,6 +13,7 @@ import javax.persistence.*;
 @Table(name = "USER_IDENTITY_ANS")
 @DozerDTOCorrespondence(UserIdentityAnswer.class)
 @AttributeOverride(name = "id", column = @Column(name = "IDENTITY_ANS_ID"))
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class UserIdentityAnswerEntity extends KeyEntity {
 
 	@ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})

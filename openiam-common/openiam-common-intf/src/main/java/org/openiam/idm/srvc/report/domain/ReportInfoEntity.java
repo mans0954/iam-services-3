@@ -13,6 +13,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.GenericGenerator;
@@ -28,6 +30,7 @@ import org.openiam.idm.srvc.report.dto.ReportInfoDto;
 @Entity
 @Table(name = "REPORT_INFO")
 @DozerDTOCorrespondence(ReportInfoDto.class)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class ReportInfoEntity {
 
     @Id

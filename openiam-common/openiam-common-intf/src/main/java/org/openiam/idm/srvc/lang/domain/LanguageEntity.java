@@ -1,5 +1,7 @@
 package org.openiam.idm.srvc.lang.domain;
 
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.Type;
@@ -17,6 +19,7 @@ import java.util.Map;
 @DozerDTOCorrespondence(Language.class)
 @AttributeOverride(name = "id", column = @Column(name = "ID"))
 @Internationalized
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class LanguageEntity extends KeyEntity {
     private static final long serialVersionUID = 6695606794883491243L;
     

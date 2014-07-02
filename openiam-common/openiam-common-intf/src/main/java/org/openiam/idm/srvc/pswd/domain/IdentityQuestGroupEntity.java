@@ -12,6 +12,8 @@ import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.pswd.dto.IdentityQuestGroup;
@@ -19,6 +21,7 @@ import org.openiam.idm.srvc.pswd.dto.IdentityQuestGroup;
 @Entity
 @Table(name = "IDENTITY_QUEST_GRP")
 @DozerDTOCorrespondence(IdentityQuestGroup.class)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class IdentityQuestGroupEntity {
 
 

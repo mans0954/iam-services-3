@@ -1,5 +1,7 @@
 package org.openiam.am.srvc.domain;
 
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.am.srvc.dto.ContentProviderServer;
 import org.openiam.dozer.DozerDTOCorrespondence;
@@ -9,6 +11,7 @@ import javax.persistence.*;
 @Entity
 @Table(name = "CONTENT_PROVIDER_SERVER")
 @DozerDTOCorrespondence(ContentProviderServer.class)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class ContentProviderServerEntity {
 
 	@Id

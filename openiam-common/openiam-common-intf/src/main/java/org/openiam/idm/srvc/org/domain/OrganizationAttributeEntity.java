@@ -2,6 +2,8 @@ package org.openiam.idm.srvc.org.domain;
 
 import javax.persistence.*;
 
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 import org.openiam.base.domain.AbstractAttributeEntity;
@@ -18,6 +20,7 @@ import java.util.List;
 @AttributeOverride(name = "id", column = @Column(name = "COMPANY_ATTR_ID"))
 @DozerDTOCorrespondence(OrganizationAttribute.class)
 @Internationalized
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class OrganizationAttributeEntity extends AbstractAttributeEntity {
    
     @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})

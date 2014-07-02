@@ -8,6 +8,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysRuleDto;
@@ -15,6 +17,7 @@ import org.openiam.idm.srvc.mngsys.dto.ManagedSysRuleDto;
 @Entity
 @Table(name = "MANAGED_SYS_RULE")
 @DozerDTOCorrespondence(ManagedSysRuleDto.class)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class ManagedSysRuleEntity implements Serializable {
     private static final long serialVersionUID = -648884785253890053L;
     @Id

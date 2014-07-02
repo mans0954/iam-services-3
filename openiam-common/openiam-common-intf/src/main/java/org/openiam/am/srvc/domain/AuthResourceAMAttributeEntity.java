@@ -1,5 +1,7 @@
 package org.openiam.am.srvc.domain;
 
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.am.srvc.dto.AuthResourceAMAttribute;
 import org.openiam.dozer.DozerDTOCorrespondence;
@@ -12,6 +14,7 @@ import java.util.Set;
 @Entity
 @Table(name = "AUTH_RESOURCE_AM_ATTRIBUTE")
 @DozerDTOCorrespondence(AuthResourceAMAttribute.class)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class AuthResourceAMAttributeEntity implements Serializable {
     @Id
     @GeneratedValue(generator="system-uuid")

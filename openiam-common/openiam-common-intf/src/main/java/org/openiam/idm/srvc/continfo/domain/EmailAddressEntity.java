@@ -2,6 +2,8 @@ package org.openiam.idm.srvc.continfo.domain;
 
 import java.util.Date;
 
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 import org.hibernate.search.annotations.Analyze;
@@ -28,6 +30,7 @@ import javax.validation.constraints.Size;
 @Table(name = "EMAIL_ADDRESS")
 @DozerDTOCorrespondence(EmailAddress.class)
 @Indexed
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class EmailAddressEntity {
     @Id
     @GeneratedValue(generator = "system-uuid")

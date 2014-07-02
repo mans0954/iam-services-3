@@ -1,5 +1,7 @@
 package org.openiam.idm.srvc.policy.domain;
 
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 import org.openiam.dozer.DozerDTOCorrespondence;
@@ -12,6 +14,7 @@ import java.util.Date;
 @Entity
 @Table(name = "IT_POLICY")
 @DozerDTOCorrespondence(ITPolicy.class)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class ITPolicyEntity implements java.io.Serializable {
 
     private static final long serialVersionUID = 1L;

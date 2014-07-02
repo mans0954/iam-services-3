@@ -10,6 +10,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.lang.dto.LanguageLocale;
@@ -17,6 +19,7 @@ import org.openiam.idm.srvc.lang.dto.LanguageLocale;
 @Entity
 @Table(name = "LANGUAGE_LOCALE")
 @DozerDTOCorrespondence(LanguageLocale.class)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class LanguageLocaleEntity implements Serializable {
 
     @Id

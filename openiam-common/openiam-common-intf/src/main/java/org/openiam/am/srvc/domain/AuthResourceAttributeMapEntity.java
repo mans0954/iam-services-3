@@ -1,5 +1,7 @@
 package org.openiam.am.srvc.domain;
 
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.am.srvc.constants.SsoAttributeType;
 import org.openiam.am.srvc.dto.AuthResourceAttributeMap;
@@ -13,6 +15,7 @@ import java.io.Serializable;
         @UniqueConstraint(columnNames={"PROVIDER_ID","TARGET_ATTRIBUTE_NAME"})
 })
 @DozerDTOCorrespondence(AuthResourceAttributeMap.class)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class AuthResourceAttributeMapEntity implements Serializable {
 
     @Id

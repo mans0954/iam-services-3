@@ -1,5 +1,7 @@
 package org.openiam.am.srvc.domain;
 
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.am.srvc.constants.AuthAttributeDataType;
 import org.openiam.am.srvc.dto.AuthProviderAttribute;
@@ -13,6 +15,7 @@ import java.io.Serializable;
         @UniqueConstraint(columnNames={"PROVIDER_ID", "AUTH_ATTRIBUTE_ID"})
 })
 @DozerDTOCorrespondence(AuthProviderAttribute.class)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class AuthProviderAttributeEntity implements Serializable {
     @Id
     @GeneratedValue(generator = "system-uuid")

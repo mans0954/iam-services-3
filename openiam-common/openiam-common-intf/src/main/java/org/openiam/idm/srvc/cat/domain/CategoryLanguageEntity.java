@@ -5,6 +5,9 @@ import javax.persistence.Column;
 import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
 import javax.persistence.Table;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.cat.dto.CategoryLanguage;
 
@@ -17,6 +20,7 @@ import org.openiam.idm.srvc.cat.dto.CategoryLanguage;
 @Entity
 @Table(name="CATEGORY_LANGUAGE")
 @DozerDTOCorrespondence(CategoryLanguage.class)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class CategoryLanguageEntity implements Serializable {
 
     @EmbeddedId

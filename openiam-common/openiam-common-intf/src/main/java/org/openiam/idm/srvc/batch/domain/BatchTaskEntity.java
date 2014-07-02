@@ -9,6 +9,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 import org.openiam.dozer.DozerDTOCorrespondence;
@@ -17,6 +19,7 @@ import org.openiam.idm.srvc.batch.dto.BatchTask;
 @Entity
 @Table(name = "BATCH_CONFIG")
 @DozerDTOCorrespondence(BatchTask.class)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class BatchTaskEntity implements Serializable {
 
 	@Id

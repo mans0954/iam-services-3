@@ -5,6 +5,9 @@ import java.util.Date;
 import javax.persistence.*;
 import javax.validation.constraints.Size;
 import javax.xml.bind.annotation.XmlTransient;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 import org.hibernate.search.annotations.DocumentId;
@@ -25,6 +28,7 @@ import org.openiam.idm.srvc.user.domain.UserEntity;
 @Table(name = "ADDRESS")
 @DozerDTOCorrespondence(Address.class)
 @Indexed
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class AddressEntity {
     @Id
     @GeneratedValue(generator = "system-uuid")

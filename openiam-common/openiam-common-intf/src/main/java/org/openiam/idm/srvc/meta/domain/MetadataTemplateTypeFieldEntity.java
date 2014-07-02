@@ -14,6 +14,8 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.GenericGenerator;
@@ -24,6 +26,7 @@ import org.openiam.idm.srvc.meta.dto.MetadataTemplateTypeField;
 @Entity
 @Table(name = "UI_TEMPLATE_FIELDS")
 @DozerDTOCorrespondence(MetadataTemplateTypeField.class)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class MetadataTemplateTypeFieldEntity implements Serializable {
 
 	@Id

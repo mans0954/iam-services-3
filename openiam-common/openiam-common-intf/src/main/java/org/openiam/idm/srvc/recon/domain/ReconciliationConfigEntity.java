@@ -6,6 +6,8 @@ import java.util.Set;
 
 import javax.persistence.*;
 
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 import org.openiam.dozer.DozerDTOCorrespondence;
@@ -17,6 +19,7 @@ import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
 @Entity
 @Table(name = "RECONCILIATION_CONFIG")
 @DozerDTOCorrespondence(ReconciliationConfig.class)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class ReconciliationConfigEntity implements java.io.Serializable {
 
     private static final long serialVersionUID = 431603790346613674L;

@@ -13,6 +13,8 @@ import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.am.srvc.dto.AuthLevelAttribute;
 import org.openiam.dozer.DozerDTOCorrespondence;
@@ -21,6 +23,7 @@ import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 @Entity
 @Table(name = "AUTH_LEVEL_ATTRIBUTE")
 @DozerDTOCorrespondence(AuthLevelAttribute.class)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class AuthLevelAttributeEntity implements Serializable {
 
 	@Id

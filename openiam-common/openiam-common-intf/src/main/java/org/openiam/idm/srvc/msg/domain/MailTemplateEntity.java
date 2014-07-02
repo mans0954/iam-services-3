@@ -1,5 +1,7 @@
 package org.openiam.idm.srvc.msg.domain;
 
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.msg.dto.MailTemplateDto;
@@ -11,6 +13,7 @@ import java.io.Serializable;
 @Entity
 @Table(name = "MAIL_TEMPLATE")
 @DozerDTOCorrespondence(MailTemplateDto.class)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class MailTemplateEntity implements Serializable {
 
     @Id

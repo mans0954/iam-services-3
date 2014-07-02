@@ -8,6 +8,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.mngsys.dto.ReconciliationResourceAttributeMap;
@@ -19,6 +21,7 @@ import org.openiam.idm.srvc.policy.domain.PolicyEntity;
 @Entity
 @Table(name = "RECON_RES_ATTR_MAP")
 @DozerDTOCorrespondence(ReconciliationResourceAttributeMap.class)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class ReconciliationResourceAttributeMapEntity implements
         java.io.Serializable {
 

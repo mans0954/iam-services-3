@@ -1,5 +1,7 @@
 package org.openiam.idm.srvc.org.domain;
 
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.org.dto.Org2OrgXref;
 import javax.persistence.EmbeddedId;
@@ -9,6 +11,7 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "COMPANY_TO_COMPANY_MEMBERSHIP")
 @DozerDTOCorrespondence(Org2OrgXref.class)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class Org2OrgXrefEntity {
     @EmbeddedId
     private Org2OrgXrefKey id;

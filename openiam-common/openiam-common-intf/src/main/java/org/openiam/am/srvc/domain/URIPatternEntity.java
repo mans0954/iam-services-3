@@ -1,5 +1,7 @@
 package org.openiam.am.srvc.domain;
 
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.GenericGenerator;
@@ -21,6 +23,7 @@ import java.util.Set;
 @Entity
 @Table(name = "URI_PATTERN")
 @DozerDTOCorrespondence(URIPattern.class)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class URIPatternEntity implements Serializable {
 
 	@Id

@@ -5,8 +5,12 @@ import java.util.Date;
 
 import javax.persistence.*;
 
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
 @Entity
 @Table(name = "REQUEST_FORM")
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class RequestFormEntity implements Serializable {
 
 	@EmbeddedId

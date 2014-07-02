@@ -13,6 +13,8 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 import org.apache.commons.lang.StringUtils;
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.meta.dto.MetadataTemplateType;
@@ -20,6 +22,7 @@ import org.openiam.idm.srvc.meta.dto.MetadataTemplateType;
 @Entity
 @Table(name = "UI_TEMPLATE_TYPE")
 @DozerDTOCorrespondence(MetadataTemplateType.class)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class MetadataTemplateTypeEntity implements Serializable {
 
 	@Id

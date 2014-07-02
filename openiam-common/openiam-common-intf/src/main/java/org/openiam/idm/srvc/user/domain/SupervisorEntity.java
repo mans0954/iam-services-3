@@ -2,6 +2,8 @@ package org.openiam.idm.srvc.user.domain;
 
 import javax.persistence.*;
 
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.Type;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.user.dto.Supervisor;
@@ -9,6 +11,7 @@ import org.openiam.idm.srvc.user.dto.Supervisor;
 @Entity
 @Table(name = "ORG_STRUCTURE")
 @DozerDTOCorrespondence(Supervisor.class)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class SupervisorEntity {
     @EmbeddedId
     private SupervisorIDEntity id;

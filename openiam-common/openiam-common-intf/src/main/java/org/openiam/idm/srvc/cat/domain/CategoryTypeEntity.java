@@ -3,12 +3,15 @@ package org.openiam.idm.srvc.cat.domain;
 import java.io.Serializable;
 import javax.persistence.*;
 
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.cat.dto.CategoryType;
 
 @Entity
 @Table(name="CATEGORY_TYPE")
 @DozerDTOCorrespondence(CategoryType.class)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class CategoryTypeEntity implements Serializable {
     /**
      * 

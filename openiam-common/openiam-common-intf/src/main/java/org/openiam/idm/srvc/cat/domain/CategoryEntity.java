@@ -17,6 +17,9 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.base.domain.KeyEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
@@ -26,6 +29,7 @@ import org.openiam.idm.srvc.cat.dto.Category;
 @Table(name = "CATEGORY")
 @DozerDTOCorrespondence(Category.class)
 @AttributeOverride(name = "id", column = @Column(name = "CATEGORY_ID"))
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class CategoryEntity extends KeyEntity {
 
     @Column(name = "CREATED_BY", length = 20)

@@ -9,6 +9,8 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.recon.dto.ReconciliationSituation;
@@ -21,6 +23,7 @@ import org.openiam.idm.srvc.recon.dto.ReconciliationSituation;
 @Entity
 @Table(name = "RECONCILIATION_SITUATION")
 @DozerDTOCorrespondence(ReconciliationSituation.class)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class ReconciliationSituationEntity implements java.io.Serializable {
 
     private static final long serialVersionUID = -8870989951105414407L;

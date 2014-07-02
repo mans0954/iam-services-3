@@ -2,6 +2,8 @@ package org.openiam.idm.srvc.res.domain;
 
 import javax.persistence.*;
 
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 import org.openiam.base.domain.AbstractAttributeEntity;
@@ -16,6 +18,7 @@ import org.openiam.internationalization.Internationalized;
 @AttributeOverride(name = "id", column = @Column(name = "RESOURCE_PROP_ID"))
 @DozerDTOCorrespondence(ResourceProp.class)
 @Internationalized
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class ResourcePropEntity extends AbstractAttributeEntity {
    
     @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})

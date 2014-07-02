@@ -12,8 +12,8 @@ import java.util.Set;
 
 @Entity
 @Table(name = "AUTH_PROVIDER_TYPE")
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @DozerDTOCorrespondence(AuthProviderType.class)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class AuthProviderTypeEntity implements Serializable {
     @Id
     @Column(name="PROVIDER_TYPE", length = 32, nullable = false)

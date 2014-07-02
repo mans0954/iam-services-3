@@ -5,6 +5,9 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.report.dto.ReportSubscriptionDto;
@@ -13,6 +16,7 @@ import org.openiam.idm.srvc.report.dto.ReportSubscriptionDto;
 @Entity
 @Table(name = "REPORT_SUBSCRIPTIONS")
 @DozerDTOCorrespondence(ReportSubscriptionDto.class)
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class ReportSubscriptionEntity {
 
     @Id
