@@ -1,6 +1,6 @@
 package org.openiam.elasticsearch.annotation;
 
-import org.openiam.elasticsearch.constants.ESIndexName;
+import org.openiam.elasticsearch.constants.ElasticsearchSettingName;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -9,13 +9,11 @@ import java.lang.annotation.Target;
 
 /**
  * Created by: Alexander Duckardt
- * Date: 6/25/14.
+ * Date: 7/3/14.
  */
-@Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface ESIndex {
-
-    String indexName() default ESIndexName.USERS;
-
-    String indexType();
+@Target(ElementType.TYPE)
+public @interface ElasticsearchSetting {
+    ElasticsearchSettingName name();
+    String value();
 }

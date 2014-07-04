@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
  * Created by: Alexander Duckardt
  * Date: 6/21/14.
  */
-@Component
+@Component("clientFactoryBean")
 public class ESClientFactoryBean extends ESAbstractFactoryBean<Client> {
 
     private Node node;

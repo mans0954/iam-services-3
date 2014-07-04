@@ -1,5 +1,6 @@
 package org.openiam.core.dao.lucene;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.StopWatch;
 import org.apache.log4j.Logger;
@@ -8,6 +9,10 @@ import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
+import org.elasticsearch.action.deletebyquery.DeleteByQueryResponse;
+import org.elasticsearch.common.xcontent.XContentBuilder;
+import org.elasticsearch.common.xcontent.XContentFactory;
+import org.elasticsearch.index.query.QueryBuilders;
 import org.hibernate.Criteria;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -15,6 +20,10 @@ import org.hibernate.criterion.DetachedCriteria;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
+import org.openiam.elasticsearch.ElasticsearchHelper;
+import org.openiam.elasticsearch.annotation.ESField;
+import org.openiam.elasticsearch.annotation.ESId;
+import org.openiam.elasticsearch.annotation.ElasticsearchIndex;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -52,11 +61,27 @@ public abstract class AbstractHibernateSearchDao<T, Q, KeyType extends Serializa
 	private String lastModifiedFieldName;
 	private String idFieldName;
 	private SessionFactory sessionFactory;
+
+
+//    protected ESClientFactoryBean clientFactory;
+    private static Map<String, List<Field>> indexedFieldMap = new HashMap<>();
+
+    @Autowired
+    protected ElasticsearchHelper esHelper;
 	
 	@Autowired
 	public void setTemplate(final @Qualifier("sessionFactory") SessionFactory sessionFactory) {
 		this.sessionFactory = sessionFactory;
 	}
+
+//    @Autowired
+//    public void setClientFactory(ESClientFactoryBean clientFactory) {
+//        this.clientFactory = clientFactory;
+//    }
+
+//    private Client getClient() throws Exception {
+//        return this.clientFactory.getObject();
+//    }
 	
 	private Session getSession() {
 		return sessionFactory.getCurrentSession();
@@ -236,37 +261,88 @@ public abstract class AbstractHibernateSearchDao<T, Q, KeyType extends Serializa
 //        fullTextSession.setFlushMode(FlushMode.COMMIT);
 //        //fullTextSession.setCacheMode(CacheMode.IGNORE);
 //        fullTextSession.setCacheMode(CacheMode.REFRESH);
-//        final Class<T> entityClass = getEntityClass();
-//        try {
-//        	if (purgeAll) {
-//        		fullTextSession.purgeAll(entityClass);
-//        	}
-//
-//        	final int maxSize = getMaxFetchSizeOnReinex();
-//        	final Criteria criteria = load.getExecutableCriteria(fullTextSession);
-//        	for (int from = 0; ; from += maxSize) {
+        final Class<T> entityClass = getEntityClass();
+        try {
+        	if (purgeAll) {
+        		this.purgeAll(entityClass);
+        	}
+        	final int maxSize = getMaxFetchSizeOnReinex();
+        	final Criteria criteria = load.getExecutableCriteria(session);
+
+        	for (int from = 0; ; from += maxSize) {
 //        		final Transaction transaction = fullTextSession.beginTransaction();
-//        		try {
-//        			logger.info(String.format("Fetching from %s, size: %s", from, maxSize));
-//        			final List<T> list = criteria.setFirstResult(from).setMaxResults(maxSize).list();
-//        			logger.info(String.format("Fetched from %s, size: %s.  Indexing...", from, maxSize));
-//                	for (final T entity : list) {
-//                		fullTextSession.index(entity);
-//                	}
-//                	logger.info(String.format("Fetched from %s, size: %s.  Done indexing... committing", from, maxSize));
+        		try {
+        			logger.info(String.format("Fetching from %s, size: %s", from, maxSize));
+        			final List<T> list = criteria.setFirstResult(from).setMaxResults(maxSize).list();
+        			logger.info(String.format("Fetched from %s, size: %s.  Indexing...", from, maxSize));
+                	for (final T entity : list) {
+                		doIndex(entity, entityClass);
+                	}
+                	logger.info(String.format("Fetched from %s, size: %s.  Done indexing... committing", from, maxSize));
 //                	transaction.commit();
-//                	logger.info(String.format("Fetched from %s, size: %s.  Done indexing... committed", from, maxSize));
-//                	if (list.isEmpty() || list.size() < maxSize) {
-//                		break;
-//                	}
-//            	} catch (Exception e) {
-//            		logger.error("Can't index - rolling back", e);
+                	logger.info(String.format("Fetched from %s, size: %s.  Done indexing... committed", from, maxSize));
+                	if (list.isEmpty() || list.size() < maxSize) {
+                		break;
+                	}
+            	} catch (Exception e) {
+            		logger.error("Can't index - rolling back", e);
 //            		transaction.rollback();
-//            	}
-//        	}
-//        } finally {
-//        	//fullTextSession.close();
-//        }
+            	}
+        	}
+        } catch (Exception e){
+            logger.error("Can't index ", e);
+        } finally {
+        	//fullTextSession.close();
+        }
+    }
+
+    private void doIndex(T entity, Class<T> entityClass) throws Exception {
+        ElasticsearchIndex esIndex = getIndexAnnotation(entityClass);
+        if(esIndex!=null){
+            List<Field> indexedFields = getIndexedField(entityClass);
+
+            if(CollectionUtils.isNotEmpty(indexedFields)){
+                String entityId=null;
+                XContentBuilder builder = XContentFactory.jsonBuilder().startObject();
+                for(Field field :indexedFields){
+                    Object value = field.get(entity);
+
+                    if(isFieldAnnotated(field, ESId.class)){
+                        entityId = (String)value;
+                        if(StringUtils.isBlank(entityId)){
+                            logger.warn("Skipping indexing the entity due to entityId is empty");
+                            return;
+                        }
+                        builder.field("id", entityId);
+                    } else {
+                        ESField fieldAnnotation = getFieldAnnotation(field, ESField.class);
+                        if(fieldAnnotation!=null){
+                            builder.field(fieldAnnotation.name(), value);
+                        }
+                    }
+                }
+                builder.endObject();
+                getClient().prepareIndex(esIndex.indexName(), esIndex.indexType(), entityId)
+                                                    .setSource(builder).execute().actionGet();
+
+            }
+
+        }
+    }
+
+
+
+    private void purgeAll(Class<T> entityClass) throws Exception {
+        ElasticsearchIndex esIndex = getIndexAnnotation(entityClass);
+        if(esIndex!=null){
+            DeleteByQueryResponse response = this.getClient().prepareDeleteByQuery(esIndex.indexName())
+                                               .setQuery(QueryBuilders.matchAllQuery())
+                                               .setTypes(esIndex.indexType()).execute().actionGet();
+        }
+    }
+
+    private ElasticsearchIndex getIndexAnnotation(Class<T> entityClass){
+        return entityClass.getAnnotation(ElasticsearchIndex.class);
     }
 
     @Override public void destroy() throws Exception {

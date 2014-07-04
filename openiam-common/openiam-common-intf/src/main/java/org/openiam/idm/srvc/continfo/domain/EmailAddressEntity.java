@@ -1,50 +1,47 @@
 package org.openiam.idm.srvc.continfo.domain;
 
-import java.util.Date;
-
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
-import org.hibernate.search.annotations.Analyze;
-import org.hibernate.search.annotations.DocumentId;
-import org.hibernate.search.annotations.Field;
-import org.hibernate.search.annotations.FieldBridge;
-import org.hibernate.search.annotations.Fields;
-import org.hibernate.search.annotations.Index;
-import org.hibernate.search.annotations.Indexed;
-import org.hibernate.search.annotations.Store;
-import org.openiam.core.dao.lucene.LuceneId;
 import org.openiam.core.dao.lucene.LuceneLastUpdate;
-import org.openiam.core.dao.lucene.bridge.OrganizationBridge;
-import org.openiam.core.dao.lucene.bridge.UserBridge;
 import org.openiam.dozer.DozerDTOCorrespondence;
-import org.openiam.elasticsearch.annotation.ESField;
-import org.openiam.elasticsearch.annotation.ESId;
-import org.openiam.elasticsearch.annotation.ESIndex;
-import org.openiam.elasticsearch.constants.ESAnalyze;
+import org.openiam.elasticsearch.annotation.ElasticsearchField;
+import org.openiam.elasticsearch.annotation.ElasticsearchId;
+import org.openiam.elasticsearch.annotation.ElasticsearchIndex;
+import org.openiam.elasticsearch.annotation.ElasticsearchMapping;
 import org.openiam.elasticsearch.constants.ESIndexName;
 import org.openiam.elasticsearch.constants.ESIndexType;
+import org.openiam.elasticsearch.constants.ElasticsearchStore;
+import org.openiam.elasticsearch.constants.Index;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 
 import javax.persistence.*;
 import javax.validation.constraints.Size;
+import java.util.Date;
+
+//import org.hibernate.search.annotations.Analyze;
+//import org.hibernate.search.annotations.DocumentId;
+//import org.hibernate.search.annotations.Field;
+//import org.hibernate.search.annotations.FieldBridge;
+//import org.hibernate.search.annotations.Fields;
+//import org.hibernate.search.annotations.Index;
+//import org.hibernate.search.annotations.Indexed;
+//import org.hibernate.search.annotations.Store;
 
 @Entity
 @Table(name = "EMAIL_ADDRESS")
 @DozerDTOCorrespondence(EmailAddress.class)
 //@Indexed
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-@ESIndex(indexName = ESIndexName.CONTACT_INFO, indexType = ESIndexType.EMAIL)
+@ElasticsearchIndex(indexName = ESIndexName.USERS)
+@ElasticsearchMapping(typeName = ESIndexType.EMAIL, store = ElasticsearchStore.No)
 public class EmailAddressEntity {
     @Id
     @GeneratedValue(generator = "system-uuid")
     @GenericGenerator(name = "system-uuid", strategy = "uuid")
     @Column(name = "EMAIL_ID", length = 32, nullable = false)
-    @ESId
-//    @DocumentId
+    @ElasticsearchId
     private String emailId;
 
     @Column(name = "ACTIVE")
@@ -59,7 +56,7 @@ public class EmailAddressEntity {
 //        @Field(analyze = Analyze.YES),
 //        @Field(name = "emailAddress", analyze = Analyze.YES, store = Store.YES)
 //    })
-    @ESField(name = "emailAddress", analyze = ESAnalyze.Yes)
+    @ElasticsearchField(name = "emailAddress", store = ElasticsearchStore.Yes, index = Index.Analyzed)
     @Column(name = "EMAIL_ADDRESS", length = 320)
     @Size(max = 320, message = "validator.email.toolong")
     private String emailAddress;
