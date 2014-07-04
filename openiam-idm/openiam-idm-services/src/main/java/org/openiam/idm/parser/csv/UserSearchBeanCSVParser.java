@@ -107,13 +107,13 @@ public class UserSearchBeanCSVParser extends
                     .format(user.getCreateDate()));
             break;
         case employeeId:
-            objValue = toString((user.getEmployeeIdMatchToken() != null) ? user.getEmployeeIdMatchToken().getParam() : null);
+            objValue = toString((user.getEmployeeIdMatchToken() != null) ? user.getEmployeeIdMatchToken().getValue() : null);
             break;
         case firstName:
-            objValue = toString((user.getFirstNameMatchToken() != null) ? user.getFirstNameMatchToken().getParam() : null);
+            objValue = toString((user.getFirstNameMatchToken() != null) ? user.getFirstNameMatchToken().getValue() : null);
             break;
         case lastName:
-            objValue = toString((user.getLastNameMatchToken() != null) ? user.getLastNameMatchToken().getParam() : null);
+            objValue = toString((user.getLastNameMatchToken() != null) ? user.getLastNameMatchToken().getValue() : null);
             break;
         case locationCd:
             objValue = toString(user.getLocationCd());

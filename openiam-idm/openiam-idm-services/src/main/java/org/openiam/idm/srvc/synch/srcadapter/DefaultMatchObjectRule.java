@@ -71,8 +71,7 @@ public class DefaultMatchObjectRule implements MatchObjectRule {
 			System.out.println("- src field value=.." + matchAttrValue);
 			matchAttrName = matchConfig.getMatchSrcFieldName();
 
-			searchBean.setAttributeName(matchAttrName);
-			searchBean.setAttributeValue(matchAttrValue);
+			searchBean.addAttribute(matchAttrName, matchAttrValue);
 
 		}
 

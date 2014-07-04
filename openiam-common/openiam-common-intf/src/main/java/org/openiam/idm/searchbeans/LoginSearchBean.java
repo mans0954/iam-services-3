@@ -9,6 +9,11 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 import java.io.Serializable;
 
+/**
+ * Search Bean to search login records
+ * @author lbornov2
+ *
+ */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "GroupSearchBean", propOrder = {
 	"login",
@@ -20,13 +25,25 @@ public class LoginSearchBean extends AbstractSearchBean<Login, String> implement
 
 	@Deprecated
 	private String login;
+	
+	/**
+	 * The managed system ID of the login 
+	 */
 	private String managedSysId;
+	
+	/**
+	 * The user ID that the matched login should belong to
+	 */
 	private String userId;
+	
+	/**
+	 * The login token to search by
+	 */
 	private SearchParam loginMatchToken;
 	
 	@Deprecated
 	public String getLogin() {
-		return (loginMatchToken != null) ? loginMatchToken.getParam() : null;
+		return (loginMatchToken != null) ? loginMatchToken.getValue() : null;
 	}
 	
 	@Deprecated

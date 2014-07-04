@@ -22,10 +22,10 @@ public class UserSearchDAO extends AbstractHibernateSearchDao<UserEntity, UserSe
 			Query clause = null;
 			switch(param.getMatchType()) {
 				case EXACT:
-					clause = buildExactClause("firstName", param.getParam());
+					clause = buildExactClause("firstName", param.getValue());
 					break;
 				case STARTS_WITH:
-					clause = buildTokenizedClause("firstName", param.getParam());
+					clause = buildTokenizedClause("firstName", param.getValue());
 					break;
 				default:
 					break;
@@ -41,10 +41,10 @@ public class UserSearchDAO extends AbstractHibernateSearchDao<UserEntity, UserSe
 			Query clause = null;
 			switch(param.getMatchType()) {
 				case EXACT:
-					clause = buildExactClause("lastName", param.getParam());
+					clause = buildExactClause("lastName", param.getValue());
 					break;
 				case STARTS_WITH:
-					clause = buildTokenizedClause("lastName", param.getParam());
+					clause = buildTokenizedClause("lastName", param.getValue());
 					break;
 				default:
 					break;
@@ -60,10 +60,10 @@ public class UserSearchDAO extends AbstractHibernateSearchDao<UserEntity, UserSe
 			Query clause = null;
 			switch(param.getMatchType()) {
 				case EXACT:
-					clause = buildExactClause("maidenName", param.getParam());
+					clause = buildExactClause("maidenName", param.getValue());
 					break;
 				case STARTS_WITH:
-					clause = buildTokenizedClause("maidenName", param.getParam());
+					clause = buildTokenizedClause("maidenName", param.getValue());
 					break;
 				default:
 					break;
@@ -79,10 +79,10 @@ public class UserSearchDAO extends AbstractHibernateSearchDao<UserEntity, UserSe
 			Query clause = null;
 			switch(param.getMatchType()) {
 				case EXACT:
-					clause = buildExactClause("employeeId", param.getParam());
+					clause = buildExactClause("employeeId", param.getValue());
 					break;
 				case STARTS_WITH:
-					clause = buildTokenizedClause("employeeId", param.getParam());
+					clause = buildTokenizedClause("employeeId", param.getValue());
 					break;
 				default:
 					break;

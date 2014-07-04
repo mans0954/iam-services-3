@@ -150,10 +150,10 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
                 criteria.add(Restrictions.eq("showInSearch", searchBean.getShowInSearch()));
             }
             if (searchBean.getFirstNameMatchToken() != null && searchBean.getFirstNameMatchToken().isValid()) {
-                criteria.add(getStringCriterion("firstName", searchBean.getFirstNameMatchToken().getParam(), ORACLE_INSENSITIVE));
+                criteria.add(getStringCriterion("firstName", searchBean.getFirstNameMatchToken().getValue(), ORACLE_INSENSITIVE));
             }
             if (searchBean.getLastNameMatchToken() != null && searchBean.getLastNameMatchToken().isValid()) {
-                criteria.add(getStringCriterion("lastName", searchBean.getLastNameMatchToken().getParam(), ORACLE_INSENSITIVE));
+                criteria.add(getStringCriterion("lastName", searchBean.getLastNameMatchToken().getValue(), ORACLE_INSENSITIVE));
             }
             if (StringUtils.isNotEmpty(searchBean.getNickName())) {
                 criteria.add(getStringCriterion("nickname", searchBean.getNickName()));
@@ -204,8 +204,8 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
             if (searchBean.getEmailAddressMatchToken() != null) {
                 criteria.createAlias("emailAddresses", "em");
                 final Disjunction disjunction = Restrictions.disjunction();
-                disjunction.add(getStringCriterion("em.emailAddress", searchBean.getEmailAddressMatchToken().getParam(), ORACLE_INSENSITIVE))
-                                .add(getStringCriterion("email", searchBean.getEmailAddressMatchToken().getParam(), ORACLE_INSENSITIVE));
+                disjunction.add(getStringCriterion("em.emailAddress", searchBean.getEmailAddressMatchToken().getValue(), ORACLE_INSENSITIVE))
+                                .add(getStringCriterion("email", searchBean.getEmailAddressMatchToken().getValue(), ORACLE_INSENSITIVE));
                 criteria.add(disjunction);
             }
             if (CollectionUtils.isNotEmpty(searchBean.getGroupIdSet())) {
@@ -217,10 +217,10 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
             if(searchParam != null && searchParam.isValid()) {
             	switch(searchParam.getMatchType()) {
             		case EXACT:
-            			criteria.add(Restrictions.eq("employeeId", searchParam.getParam()));
+            			criteria.add(Restrictions.eq("employeeId", searchParam.getValue()));
             			break;
             		case STARTS_WITH:
-            			criteria.add(Restrictions.like("employeeId", searchParam.getParam(), MatchMode.START));
+            			criteria.add(Restrictions.like("employeeId", searchParam.getValue(), MatchMode.START));
             			break;
             		default:
     					break;
@@ -234,8 +234,7 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
                 criteria.add(Restrictions.in("r.id", searchBean.getRoleIdSet()));
             }
 
-            if (StringUtils.isNotEmpty(searchBean.getAttributeName()) || StringUtils.isNotEmpty(searchBean.getAttributeValue())
-                || StringUtils.isNotEmpty(searchBean.getAttributeElementId())
+            if (StringUtils.isNotEmpty(searchBean.getAttributeElementId())
                 || (searchBean.getAttributeList() != null && !searchBean.getAttributeList().isEmpty())) {
                 criteria.createAlias("userAttributes", "ua");
                 if (searchBean.getAttributeList() != null && !searchBean.getAttributeList().isEmpty()) {
@@ -257,13 +256,6 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
                         criteria.add(Restrictions.in("ua.value", valueList));
                     }
                 }
-                if (StringUtils.isNotEmpty(searchBean.getAttributeName())) {
-                    criteria.add((ORACLE_INSENSITIVE) ? Restrictions.eq("ua.name", searchBean.getAttributeName()).ignoreCase() : Restrictions
-                                    .eq("ua.name", searchBean.getAttributeName()));
-                }
-                if (StringUtils.isNotEmpty(searchBean.getAttributeValue())) {
-                    criteria.add(getStringCriterion("ua.value", searchBean.getAttributeValue(), ORACLE_INSENSITIVE));
-                }
                 if (StringUtils.isNotEmpty(searchBean.getAttributeElementId())) {
                     criteria.add(Restrictions.eq("ua.metadataElementId", searchBean.getAttributeElementId()));
                 }
@@ -275,7 +267,7 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
                 if (searchBean.getPrincipal() != null) {
                 	final SearchParam param = searchBean.getPrincipal().getLoginMatchToken();
                 	if(param != null && param.isValid()) {
-                		criteria.add(getStringCriterion("lg.login", param.getParam(), ORACLE_INSENSITIVE));
+                		criteria.add(getStringCriterion("lg.login", param.getValue(), ORACLE_INSENSITIVE));
                 	}
                 	if (StringUtils.isNotEmpty(searchBean.getPrincipal().getManagedSysId())) {
                 		criteria.add(Restrictions.eq("lg.managedSysId", searchBean.getPrincipal().getManagedSysId()));

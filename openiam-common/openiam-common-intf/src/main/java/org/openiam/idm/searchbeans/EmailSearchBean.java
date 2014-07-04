@@ -56,7 +56,7 @@ public class EmailSearchBean extends AbstractSearchBean<EmailAddress, String> im
 
     @Deprecated
 	public String getEmail() {
-		return (emailMatchToken != null) ? emailMatchToken.getParam() : null;
+		return (emailMatchToken != null) ? emailMatchToken.getValue() : null;
 	}
 
     @Deprecated

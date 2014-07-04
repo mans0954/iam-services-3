@@ -449,8 +449,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
         }
 
         if (config.getAttributeName() != null && !config.getAttributeName().isEmpty()) {
-            search.setAttributeName(config.getAttributeName());
-            search.setAttributeValue(config.getAttributeValue());
+        	search.addAttribute(config.getAttributeName(), config.getAttributeValue());
         }
 
         if (config.getUserStatus() != null ) {

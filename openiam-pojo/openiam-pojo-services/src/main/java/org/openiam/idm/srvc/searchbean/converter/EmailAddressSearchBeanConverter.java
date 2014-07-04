@@ -27,7 +27,7 @@ public class EmailAddressSearchBeanConverter implements SearchBeanConverter<Emai
             type.setId(searchBean.getMetadataTypeId());
             email.setMetadataType(type);
         }
-        email.setEmailAddress(StringUtils.trimToNull((searchBean.getEmailMatchToken() != null) ? searchBean.getEmailMatchToken().getParam() : null));
+        email.setEmailAddress(StringUtils.trimToNull((searchBean.getEmailMatchToken() != null) ? searchBean.getEmailMatchToken().getValue() : null));
         return email;
     }
 }

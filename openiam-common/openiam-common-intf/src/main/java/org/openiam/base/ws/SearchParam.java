@@ -6,28 +6,40 @@ import javax.xml.bind.annotation.XmlType;
 
 import org.apache.commons.lang.StringUtils;
 
+/**
+ * Class to wrap a search parameter, and the matching type to use
+ * @author lbornov2
+ *
+ */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "SearchParam", propOrder = {
-	"param",
+	"value",
 	"matchType"
 })
 public class SearchParam {
 
-	private String param;
+	/**
+	 * The value to search for
+	 */
+	private String value;
+	
+	/**
+	 * The match type to use when searching
+	 */
 	private MatchType matchType = MatchType.STARTS_WITH;
 	
 	public SearchParam() {}
 	
-	public SearchParam(final String param, final MatchType matchType) {
-		this.param = param;
+	public SearchParam(final String value, final MatchType matchType) {
+		this.value = value;
 		this.matchType = matchType;
 	}
 	
-	public String getParam() {
-		return param;
+	public String getValue() {
+		return value;
 	}
-	public void setParam(String param) {
-		this.param = param;
+	public void setValue(String value) {
+		this.value = value;
 	}
 	public MatchType getMatchType() {
 		return matchType;
@@ -37,7 +49,7 @@ public class SearchParam {
 	}
 	
 	public boolean isValid() {
-		return StringUtils.isNotBlank(param) && matchType != null;
+		return StringUtils.isNotBlank(value) && matchType != null;
 	}
 
 	@Override
@@ -46,7 +58,7 @@ public class SearchParam {
 		int result = 1;
 		result = prime * result
 				+ ((matchType == null) ? 0 : matchType.hashCode());
-		result = prime * result + ((param == null) ? 0 : param.hashCode());
+		result = prime * result + ((value == null) ? 0 : value.hashCode());
 		return result;
 	}
 
@@ -61,17 +73,17 @@ public class SearchParam {
 		SearchParam other = (SearchParam) obj;
 		if (matchType != other.matchType)
 			return false;
-		if (param == null) {
-			if (other.param != null)
+		if (value == null) {
+			if (other.value != null)
 				return false;
-		} else if (!param.equals(other.param))
+		} else if (!value.equals(other.value))
 			return false;
 		return true;
 	}
 
 	@Override
 	public String toString() {
-		return String.format("SearchParam [param=%s, matchType=%s]", param,
+		return String.format("SearchParam [value=%s, matchType=%s]", value,
 				matchType);
 	}
 	
