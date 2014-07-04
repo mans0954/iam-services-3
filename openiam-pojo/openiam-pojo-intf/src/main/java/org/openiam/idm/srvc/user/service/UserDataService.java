@@ -65,13 +65,7 @@ public interface UserDataService {
      */
     public void removeUser(String id) throws Exception;
 
-    public UserEntity getUserByName(String firstName, String lastName) throws BasicDataServiceException;
-
-    public List<UserEntity> findUsersByLastUpdateRange(Date startDate, Date endDate);
-
     public List<UserEntity> findUserByOrganization(String orgId) throws BasicDataServiceException;
-
-    public List<UserEntity> findUsersByStatus(UserStatusEnum status) throws BasicDataServiceException;
 
     public List<UserEntity> searchByDelegationProperties(DelegationFilterSearch search);
 

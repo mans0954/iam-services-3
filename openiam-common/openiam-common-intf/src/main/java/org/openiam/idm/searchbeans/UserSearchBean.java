@@ -1,6 +1,9 @@
 package org.openiam.idm.searchbeans;
 
 import org.apache.commons.lang.StringUtils;
+import org.openiam.base.ws.MatchType;
+import org.openiam.base.ws.SearchMode;
+import org.openiam.base.ws.SearchParam;
 import org.openiam.idm.srvc.user.dto.SearchAttribute;
 import org.openiam.idm.srvc.user.dto.User;
 
@@ -52,26 +55,44 @@ import java.util.*;
         "organizationIdList",
         "attributeList",
         "requesterId",
-        "updatedSince"
+        "updatedSince",
+        "firstNameMatchToken",
+        "lastNameMatchToken",
+        "maidenNameMatchToken",
+        "employeeIdMatchToken",
+        "emailAddressMatchToken",
+        "searchMode"
 })
 public class UserSearchBean extends AbstractSearchBean<User, String> implements SearchBean<User, String>,
         Serializable {
 
 	protected String jobCode = null;
+	
+	@Deprecated
     protected String firstName = null;
+	
+	@Deprecated
     protected String lastName = null;
     protected String nickName = null;
+    
+    @Deprecated
     protected String maidenName = null;
     protected String accountStatus = null;
     protected String userStatus = null;
     protected String phoneAreaCd = null;
     protected String phoneNbr = null;
     protected String employeeType = null;
+    
+    @Deprecated
     protected String employeeId = null;
     protected Set<String> groupIdSet = null;
     protected Set<String> roleIdSet = null;
     protected Set<String> resourceIdSet = null;
+    
+    @Deprecated
     protected String emailAddress = null;
+    private SearchParam emailAddressMatchToken = null;
+    
     protected LoginSearchBean principal;
     protected String attributeName;
     protected String attributeValue;
@@ -103,8 +124,46 @@ public class UserSearchBean extends AbstractSearchBean<User, String> implements 
     protected List<SearchAttribute> attributeList = new ArrayList<SearchAttribute>();
 
     private String requesterId;
+    
+    private SearchParam firstNameMatchToken = null;
+    private SearchParam lastNameMatchToken = null;
+    private SearchParam maidenNameMatchToken = null;
+    private SearchParam employeeIdMatchToken = null;
+    private SearchMode searchMode  = SearchMode.AND;
 
-    public String getRequesterId() {
+    public SearchParam getFirstNameMatchToken() {
+		return firstNameMatchToken;
+	}
+
+	public void setFirstNameMatchToken(SearchParam firstNameMatchToken) {
+		this.firstNameMatchToken = firstNameMatchToken;
+	}
+
+	public SearchParam getLastNameMatchToken() {
+		return lastNameMatchToken;
+	}
+
+	public void setLastNameMatchToken(SearchParam lastNameMatchToken) {
+		this.lastNameMatchToken = lastNameMatchToken;
+	}
+
+	public SearchParam getMaidenNameMatchToken() {
+		return maidenNameMatchToken;
+	}
+
+	public void setMaidenNameMatchToken(SearchParam maidenNameMatchToken) {
+		this.maidenNameMatchToken = maidenNameMatchToken;
+	}
+
+	public SearchParam getEmployeeIdMatchToken() {
+		return employeeIdMatchToken;
+	}
+
+	public void setEmployeeIdMatchToken(SearchParam employeeIdMatchToken) {
+		this.employeeIdMatchToken = employeeIdMatchToken;
+	}
+
+	public String getRequesterId() {
         return requesterId;
     }
 
@@ -144,20 +203,24 @@ public class UserSearchBean extends AbstractSearchBean<User, String> implements 
         this.delAdmin = delAdmin;
     }
 
+    @Deprecated
     public String getFirstName() {
-        return firstName;
+        return (firstNameMatchToken != null) ? firstNameMatchToken.getParam() : null;
     }
 
+    @Deprecated
     public void setFirstName(String firstName) {
-        this.firstName = firstName;
+        firstNameMatchToken = new SearchParam(firstName, MatchType.STARTS_WITH);
     }
 
+    @Deprecated
     public String getLastName() {
-        return lastName;
+        return (lastNameMatchToken != null) ? lastNameMatchToken.getParam() : null;
     }
 
+    @Deprecated
     public void setLastName(String lastName) {
-        this.lastName = lastName;
+        lastNameMatchToken = new SearchParam(lastName, MatchType.STARTS_WITH);
     }
 
     public String getNickName() {
@@ -200,12 +263,14 @@ public class UserSearchBean extends AbstractSearchBean<User, String> implements 
         this.phoneNbr = phoneNbr;
     }
 
+    @Deprecated
     public String getEmployeeId() {
-        return employeeId;
+        return (employeeIdMatchToken != null) ? employeeIdMatchToken.getParam() : null;
     }
 
+    @Deprecated
     public void setEmployeeId(String employeeId) {
-        this.employeeId = employeeId;
+        employeeIdMatchToken = new SearchParam(employeeId, MatchType.EXACT);
     }
 
     public Set<String> getGroupIdSet() {
@@ -244,15 +309,25 @@ public class UserSearchBean extends AbstractSearchBean<User, String> implements 
         }
     }
 
+    @Deprecated
     public String getEmailAddress() {
-        return emailAddress;
+        return (emailAddressMatchToken != null) ? emailAddressMatchToken.getParam() : null;
     }
 
+    @Deprecated
     public void setEmailAddress(String emailAddress) {
-        this.emailAddress = emailAddress;
+        emailAddressMatchToken = new SearchParam(emailAddress, MatchType.STARTS_WITH);
     }
 
-    public LoginSearchBean getPrincipal() {
+    public SearchParam getEmailAddressMatchToken() {
+		return emailAddressMatchToken;
+	}
+
+	public void setEmailAddressMatchToken(SearchParam emailAddressMatchToken) {
+		this.emailAddressMatchToken = emailAddressMatchToken;
+	}
+
+	public LoginSearchBean getPrincipal() {
         return principal;
     }
 
@@ -421,12 +496,16 @@ public class UserSearchBean extends AbstractSearchBean<User, String> implements 
         }
     }
 
+    @Deprecated
 	public String getMaidenName() {
-		return maidenName;
+		//return maidenName;
+    	return (maidenNameMatchToken != null) ? maidenNameMatchToken.getParam() : null;
 	}
 
+    @Deprecated
 	public void setMaidenName(String maidenName) {
-		this.maidenName = maidenName;
+		//this.maidenName = maidenName;
+    	maidenNameMatchToken = new SearchParam(maidenName, MatchType.STARTS_WITH);
 	}
 
 	public String getJobCode() {
@@ -435,6 +514,14 @@ public class UserSearchBean extends AbstractSearchBean<User, String> implements 
 
 	public void setJobCode(String jobCode) {
 		this.jobCode = jobCode;
+	}
+
+	public SearchMode getSearchMode() {
+		return searchMode;
+	}
+
+	public void setSearchMode(SearchMode searchMode) {
+		this.searchMode = searchMode;
 	}
     
     

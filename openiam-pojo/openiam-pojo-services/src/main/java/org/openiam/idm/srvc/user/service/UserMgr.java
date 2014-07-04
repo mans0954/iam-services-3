@@ -10,6 +10,7 @@ import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.BaseConstants;
 import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.ResponseCode;
+import org.openiam.base.ws.SearchMode;
 import org.openiam.core.dao.UserKeyDao;
 import org.openiam.dozer.converter.*;
 import org.openiam.exception.BasicDataServiceException;
@@ -449,41 +450,11 @@ public class UserMgr implements UserDataService {
         userDao.delete(userDao.findById(id));
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.openiam.idm.srvc.user.service.UserDataService#findUsersByLastUpdateRange
-     * (java.util.Date, java.util.Date)
-     */
-    @Transactional(readOnly = true)
-    public List findUsersByLastUpdateRange(Date startDate, Date endDate) {
-        return userDao.findByLastUpdateRange(startDate, endDate);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public UserEntity getUserByName(String firstName, String lastName) throws BasicDataServiceException {
-        UserSearchBean searchBean = new UserSearchBean();
-        searchBean.setFirstName(firstName);
-        searchBean.setLastName(lastName);
-        List<UserEntity> userList = findBeans(searchBean, 0, 1);
-        return (userList != null && !userList.isEmpty()) ? userList.get(0) : null;
-    }
-
     @Override
     @Transactional(readOnly = true)
     public List<UserEntity> findUserByOrganization(String orgId) throws BasicDataServiceException {
         UserSearchBean searchBean = new UserSearchBean();
         searchBean.addOrganizationId(orgId);
-        return findBeans(searchBean);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List findUsersByStatus(UserStatusEnum status) throws BasicDataServiceException {
-        UserSearchBean searchBean = new UserSearchBean();
-        searchBean.setAccountStatus(status.name());
         return findBeans(searchBean);
     }
 
@@ -575,9 +546,9 @@ public class UserMgr implements UserDataService {
             nonEmptyListOfLists.add(loginSearchDAO.findUserIds(0, MAX_USER_SEARCH_RESULTS, searchBean.getPrincipal()));
         }
 
-        if (StringUtils.isNotBlank(searchBean.getEmailAddress())) {
+        if (searchBean.getEmailAddressMatchToken() != null && searchBean.getEmailAddressMatchToken().isValid()) {
             final EmailSearchBean emailSearchBean = new EmailSearchBean();
-            emailSearchBean.setEmail(searchBean.getEmailAddress());
+            emailSearchBean.setEmailMatchToken(searchBean.getEmailAddressMatchToken());
             nonEmptyListOfLists.add(emailSearchDAO.findUserIds(0, MAX_USER_SEARCH_RESULTS, emailSearchBean));
         }
 
@@ -598,16 +569,36 @@ public class UserMgr implements UserDataService {
         // }
 
         List<String> finalizedIdList = null;
-        for (final Iterator<List<String>> it = nonEmptyListOfLists.iterator(); it.hasNext();) {
-            List<String> nextSubList = it.next();
-            if (CollectionUtils.isEmpty(nextSubList))
-                nextSubList = Collections.EMPTY_LIST;
-
-            if (CollectionUtils.isEmpty(finalizedIdList)) {
-                finalizedIdList = nextSubList;
-            } else {
-                finalizedIdList = ListUtils.intersection(finalizedIdList, nextSubList);
-            }
+        
+        if(SearchMode.AND.equals(searchBean.getSearchMode())) {
+	        for (final Iterator<List<String>> it = nonEmptyListOfLists.iterator(); it.hasNext();) {
+	            List<String> nextSubList = it.next();
+	            if (CollectionUtils.isEmpty(nextSubList))
+	                nextSubList = Collections.EMPTY_LIST;
+	
+	            if (CollectionUtils.isEmpty(finalizedIdList)) {
+	                finalizedIdList = nextSubList;
+	            } else {
+	                finalizedIdList = ListUtils.intersection(finalizedIdList, nextSubList);
+	            }
+	        }
+        } else { //OR
+        	final Set<String> resultSet = new HashSet<>();
+        	for (final Iterator<List<String>> it = nonEmptyListOfLists.iterator(); it.hasNext();) {
+	            List<String> nextSubList = it.next();
+	            if(CollectionUtils.isNotEmpty(nextSubList)) {
+	            	resultSet.addAll(nextSubList);
+	            }
+        	}
+        	
+        	for(final String result : resultSet) {
+        		if(finalizedIdList == null) {
+        			finalizedIdList = new LinkedList<>();
+        		}
+        		if(finalizedIdList.size() < MAX_USER_SEARCH_RESULTS) {
+        			finalizedIdList.add(result);
+        		}
+        	}
         }
 
         return (finalizedIdList != null) ? finalizedIdList : Collections.EMPTY_LIST;

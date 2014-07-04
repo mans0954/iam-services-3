@@ -1,5 +1,7 @@
 package org.openiam.idm.searchbeans;
 
+import org.openiam.base.ws.MatchType;
+import org.openiam.base.ws.SearchParam;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -12,16 +14,20 @@ import java.io.Serializable;
         "name",
         "parentId",
         "metadataTypeId",
-        "email"
+        "email",
+        "emailMatchToken"
 })
 public class EmailSearchBean extends AbstractSearchBean<EmailAddress, String> implements SearchBean<EmailAddress, String>,
         Serializable {
     private String name;
     private String parentId;
     //private String parentType;
+    
+    @Deprecated
     private String email;
     private String metadataTypeId;
-
+    private SearchParam emailMatchToken;
+    
     public String getName() {
         return name;
     }
@@ -48,15 +54,25 @@ public class EmailSearchBean extends AbstractSearchBean<EmailAddress, String> im
     }
     */
 
+    @Deprecated
 	public String getEmail() {
-		return email;
+		return (emailMatchToken != null) ? emailMatchToken.getParam() : null;
 	}
 
+    @Deprecated
 	public void setEmail(String email) {
-		this.email = email;
+		this.emailMatchToken = new SearchParam(email, MatchType.STARTS_WITH);
+	}
+    
+    public SearchParam getEmailMatchToken() {
+		return emailMatchToken;
 	}
 
-    public String getMetadataTypeId() {
+	public void setEmailMatchToken(SearchParam emailMatchToken) {
+		this.emailMatchToken = emailMatchToken;
+	}
+
+	public String getMetadataTypeId() {
         return metadataTypeId;
     }
 

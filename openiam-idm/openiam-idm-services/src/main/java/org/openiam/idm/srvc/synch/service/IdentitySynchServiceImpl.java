@@ -31,9 +31,11 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.mule.module.client.MuleClient;
 import org.openiam.base.AttributeOperationEnum;
+import org.openiam.base.ws.MatchType;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
+import org.openiam.base.ws.SearchParam;
 import org.openiam.dozer.converter.SynchConfigDozerConverter;
 import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
@@ -435,7 +437,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
         }
 
         if (config.getLastName() != null && !config.getLastName().isEmpty()) {
-            search.setLastName(config.getLastName());
+            search.setLastNameMatchToken(new SearchParam(config.getLastName(), MatchType.EXACT));
         }
 
         if (config.getDeptId() != null && !config.getDeptId().isEmpty()) {

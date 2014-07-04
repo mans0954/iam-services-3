@@ -38,11 +38,6 @@ public class UserDAOTouchTest extends AbstractTransactionalTestNGSpringContextTe
   }
 
   @Test
-  public void touchFindByLastUpdateRange() {
-      userDAO.findByLastUpdateRange(new Date(), new Date());
-  }
-
-  @Test
   public void touchRemove() {
       userDAO.delete(new UserEntity());
   }

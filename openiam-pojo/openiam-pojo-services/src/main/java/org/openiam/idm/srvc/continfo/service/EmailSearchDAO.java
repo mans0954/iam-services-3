@@ -3,6 +3,7 @@ package org.openiam.idm.srvc.continfo.service;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
+import org.openiam.base.ws.SearchParam;
 import org.openiam.core.dao.lucene.AbstractHibernateSearchDao;
 import org.openiam.idm.searchbeans.EmailSearchBean;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
@@ -18,9 +19,23 @@ public class EmailSearchDAO extends AbstractHibernateSearchDao<EmailAddressEntit
 	@Override
 	protected Query parse(final EmailSearchBean query) {
 		final BooleanQuery luceneQuery = new BooleanQuery();
-		Query clause = buildTokenizedClause("emailAddress", query.getEmail());
-		if(clause != null) {
-			luceneQuery.add(clause, BooleanClause.Occur.MUST);
+		final SearchParam param = query.getEmailMatchToken();
+		if(param != null && param.isValid()) {
+			Query clause = null;
+			switch(param.getMatchType()) {
+				case EXACT:
+					clause = buildExactClause("emailAddress", param.getParam());
+					break;
+				case STARTS_WITH:
+					clause = buildTokenizedClause("emailAddress", param.getParam());
+					break;
+				default:
+					break;
+			}
+			
+			if(clause != null) {
+				luceneQuery.add(clause, BooleanClause.Occur.MUST);
+			}
 		}
 		return luceneQuery;
 	}
