@@ -1,6 +1,5 @@
 package org.openiam.core.dao.lucene;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.StopWatch;
 import org.apache.log4j.Logger;
@@ -9,10 +8,6 @@ import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
-import org.elasticsearch.action.deletebyquery.DeleteByQueryResponse;
-import org.elasticsearch.common.xcontent.XContentBuilder;
-import org.elasticsearch.common.xcontent.XContentFactory;
-import org.elasticsearch.index.query.QueryBuilders;
 import org.hibernate.Criteria;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -21,8 +16,6 @@ import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.openiam.elasticsearch.ElasticsearchHelper;
-import org.openiam.elasticsearch.annotation.ESField;
-import org.openiam.elasticsearch.annotation.ESId;
 import org.openiam.elasticsearch.annotation.ElasticsearchIndex;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -297,37 +290,37 @@ public abstract class AbstractHibernateSearchDao<T, Q, KeyType extends Serializa
     }
 
     private void doIndex(T entity, Class<T> entityClass) throws Exception {
-        ElasticsearchIndex esIndex = getIndexAnnotation(entityClass);
-        if(esIndex!=null){
-            List<Field> indexedFields = getIndexedField(entityClass);
-
-            if(CollectionUtils.isNotEmpty(indexedFields)){
-                String entityId=null;
-                XContentBuilder builder = XContentFactory.jsonBuilder().startObject();
-                for(Field field :indexedFields){
-                    Object value = field.get(entity);
-
-                    if(isFieldAnnotated(field, ESId.class)){
-                        entityId = (String)value;
-                        if(StringUtils.isBlank(entityId)){
-                            logger.warn("Skipping indexing the entity due to entityId is empty");
-                            return;
-                        }
-                        builder.field("id", entityId);
-                    } else {
-                        ESField fieldAnnotation = getFieldAnnotation(field, ESField.class);
-                        if(fieldAnnotation!=null){
-                            builder.field(fieldAnnotation.name(), value);
-                        }
-                    }
-                }
-                builder.endObject();
-                getClient().prepareIndex(esIndex.indexName(), esIndex.indexType(), entityId)
-                                                    .setSource(builder).execute().actionGet();
-
-            }
-
-        }
+//        ElasticsearchIndex esIndex = getIndexAnnotation(entityClass);
+//        if(esIndex!=null){
+//            List<Field> indexedFields = getIndexedField(entityClass);
+//
+//            if(CollectionUtils.isNotEmpty(indexedFields)){
+//                String entityId=null;
+//                XContentBuilder builder = XContentFactory.jsonBuilder().startObject();
+//                for(Field field :indexedFields){
+//                    Object value = field.get(entity);
+//
+//                    if(isFieldAnnotated(field, ESId.class)){
+//                        entityId = (String)value;
+//                        if(StringUtils.isBlank(entityId)){
+//                            logger.warn("Skipping indexing the entity due to entityId is empty");
+//                            return;
+//                        }
+//                        builder.field("id", entityId);
+//                    } else {
+//                        ESField fieldAnnotation = getFieldAnnotation(field, ESField.class);
+//                        if(fieldAnnotation!=null){
+//                            builder.field(fieldAnnotation.name(), value);
+//                        }
+//                    }
+//                }
+//                builder.endObject();
+//                getClient().prepareIndex(esIndex.indexName(), esIndex.indexType(), entityId)
+//                                                    .setSource(builder).execute().actionGet();
+//
+//            }
+//
+//        }
     }
 
 
@@ -335,9 +328,9 @@ public abstract class AbstractHibernateSearchDao<T, Q, KeyType extends Serializa
     private void purgeAll(Class<T> entityClass) throws Exception {
         ElasticsearchIndex esIndex = getIndexAnnotation(entityClass);
         if(esIndex!=null){
-            DeleteByQueryResponse response = this.getClient().prepareDeleteByQuery(esIndex.indexName())
-                                               .setQuery(QueryBuilders.matchAllQuery())
-                                               .setTypes(esIndex.indexType()).execute().actionGet();
+//            DeleteByQueryResponse response = this.getClient().prepareDeleteByQuery(esIndex.indexName())
+//                                               .setQuery(QueryBuilders.matchAllQuery())
+//                                               .setTypes(esIndex.indexType()).execute().actionGet();
         }
     }
 
