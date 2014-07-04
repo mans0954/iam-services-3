@@ -1,5 +1,7 @@
 package org.openiam.idm.srvc.continfo.domain;
 
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 import org.openiam.core.dao.lucene.LuceneLastUpdate;
@@ -20,22 +22,13 @@ import javax.persistence.*;
 import javax.validation.constraints.Size;
 import java.util.Date;
 
-//import org.hibernate.search.annotations.Analyze;
-//import org.hibernate.search.annotations.DocumentId;
-//import org.hibernate.search.annotations.Field;
-//import org.hibernate.search.annotations.FieldBridge;
-//import org.hibernate.search.annotations.Fields;
-//import org.hibernate.search.annotations.Index;
-//import org.hibernate.search.annotations.Indexed;
-//import org.hibernate.search.annotations.Store;
-
 @Entity
 @Table(name = "EMAIL_ADDRESS")
 @DozerDTOCorrespondence(EmailAddress.class)
 //@Indexed
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @ElasticsearchIndex(indexName = ESIndexName.USERS)
-@ElasticsearchMapping(typeName = ESIndexType.EMAIL, store = ElasticsearchStore.No)
+@ElasticsearchMapping(typeName = ESIndexType.EMAIL, source = ElasticsearchStore.No)
 public class EmailAddressEntity {
     @Id
     @GeneratedValue(generator = "system-uuid")
