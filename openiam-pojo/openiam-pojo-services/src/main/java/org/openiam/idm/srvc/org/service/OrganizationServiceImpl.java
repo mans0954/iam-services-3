@@ -214,7 +214,7 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
             	mergeAttributes(entity, dbOrg);
                 mergeParents(entity, dbOrg);
                 entity.setChildOrganizations(dbOrg.getChildOrganizations());
-//                entity.setParentOrganizations(dbOrg.getParentOrganizations());
+                entity.setParentOrganizations(dbOrg.getParentOrganizations());
                 entity.setUsers(dbOrg.getUsers());
                 entity.setAdminResource(dbOrg.getAdminResource());
                 if(entity.getAdminResource() == null) {
