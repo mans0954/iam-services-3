@@ -6,6 +6,8 @@ import javax.xml.bind.annotation.XmlType;
 
 import org.apache.commons.lang.StringUtils;
 
+import java.io.Serializable;
+
 /**
  * Class to wrap a search parameter, and the matching type to use
  * @author lbornov2
@@ -16,7 +18,7 @@ import org.apache.commons.lang.StringUtils;
 	"value",
 	"matchType"
 })
-public class SearchParam {
+public class SearchParam implements Serializable {
 
 	/**
 	 * The value to search for
