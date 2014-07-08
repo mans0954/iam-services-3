@@ -166,6 +166,25 @@ public class TestUserSearchService extends AbstractTestNGSpringContextTests {
     	}
     }
     
+    @Test
+    public void testFirstLastNameExactSearch() {
+    	MatchType matchType = MatchType.EXACT;
+    	for(int i = 0; i < userList.size(); i++) {
+    		final User user = userList.get(i);
+    		if(StringUtils.isNotBlank(user.getLastName()) && StringUtils.isNotBlank(user.getFirstName())) {
+	    		final UserSearchBean searchBean = new UserSearchBean();
+	    		searchBean.setLastNameMatchToken(new SearchParam(user.getLastName(), matchType));
+	    		searchBean.setFirstNameMatchToken(new SearchParam(user.getFirstName(), matchType));
+	    		final List<User> results = userDataWebService.findBeans(searchBean, 0, 10);
+	    		Assert.assertTrue(String.format("No results were produced for name:%s %s", user.getFirstName(), user.getLastName()), CollectionUtils.isNotEmpty(results));
+	    		for(final User result : results) {
+	    			Assert.assertEquals(String.format("User result: %s did not match query:%s", result.getFirstName(), user.getFirstName()), user.getFirstName(), result.getFirstName());
+	    			Assert.assertEquals(String.format("User result: %s did not match query:%s", result.getLastName(), user.getLastName()), user.getLastName(), result.getLastName());
+	    		}
+    		}
+    	}
+    }
+    
 
     @Test
     public void testLastNameStartsWithSearch() {
