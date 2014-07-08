@@ -46,7 +46,8 @@ public class EmailAddressEntity {
 
     @Fields ({
         @Field(index = Index.TOKENIZED),
-        @Field(name = "emailAddress", index = Index.TOKENIZED, store = Store.YES)
+        @Field(name = "emailAddress", index = Index.TOKENIZED, store = Store.YES),
+        @Field(name = "emailAddressUntokenized", index = Index.UN_TOKENIZED, store = Store.YES)
     })
     @Column(name = "EMAIL_ADDRESS", length = 320)
     @Size(max = 320, message = "validator.email.toolong")

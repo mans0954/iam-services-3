@@ -22,7 +22,7 @@ public class UserSearchDAO extends AbstractHibernateSearchDao<UserEntity, UserSe
 			Query clause = null;
 			switch(param.getMatchType()) {
 				case EXACT:
-					clause = buildExactClause("firstName", param.getValue());
+					clause = buildExactClause("firstNameUntokenized", param.getValue());
 					break;
 				case STARTS_WITH:
 					clause = buildTokenizedClause("firstName", param.getValue());
@@ -41,7 +41,7 @@ public class UserSearchDAO extends AbstractHibernateSearchDao<UserEntity, UserSe
 			Query clause = null;
 			switch(param.getMatchType()) {
 				case EXACT:
-					clause = buildExactClause("lastName", param.getValue());
+					clause = buildExactClause("lastNameUntokenized", param.getValue());
 					break;
 				case STARTS_WITH:
 					clause = buildTokenizedClause("lastName", param.getValue());
@@ -60,7 +60,7 @@ public class UserSearchDAO extends AbstractHibernateSearchDao<UserEntity, UserSe
 			Query clause = null;
 			switch(param.getMatchType()) {
 				case EXACT:
-					clause = buildExactClause("maidenName", param.getValue());
+					clause = buildExactClause("maidenNameUntokenized", param.getValue());
 					break;
 				case STARTS_WITH:
 					clause = buildTokenizedClause("maidenName", param.getValue());
@@ -79,7 +79,7 @@ public class UserSearchDAO extends AbstractHibernateSearchDao<UserEntity, UserSe
 			Query clause = null;
 			switch(param.getMatchType()) {
 				case EXACT:
-					clause = buildExactClause("employeeId", param.getValue());
+					clause = buildExactClause("employeeIdUntokenized", param.getValue());
 					break;
 				case STARTS_WITH:
 					clause = buildTokenizedClause("employeeId", param.getValue());
