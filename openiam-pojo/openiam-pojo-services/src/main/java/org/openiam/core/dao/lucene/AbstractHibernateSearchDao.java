@@ -256,9 +256,8 @@ public abstract class AbstractHibernateSearchDao<T, Q, KeyType extends Serializa
 //        fullTextSession.setCacheMode(CacheMode.REFRESH);
         final Class<T> entityClass = getEntityClass();
         try {
-        	if (purgeAll) {
-        		this.purgeAll(entityClass);
-        	}
+            esHelper.buildIndex(entityClass, purgeAll);
+
         	final int maxSize = getMaxFetchSizeOnReinex();
         	final Criteria criteria = load.getExecutableCriteria(session);
 
@@ -268,9 +267,8 @@ public abstract class AbstractHibernateSearchDao<T, Q, KeyType extends Serializa
         			logger.info(String.format("Fetching from %s, size: %s", from, maxSize));
         			final List<T> list = criteria.setFirstResult(from).setMaxResults(maxSize).list();
         			logger.info(String.format("Fetched from %s, size: %s.  Indexing...", from, maxSize));
-                	for (final T entity : list) {
-                		doIndex(entity, entityClass);
-                	}
+                    esHelper.doIndex(list, entityClass);
+
                 	logger.info(String.format("Fetched from %s, size: %s.  Done indexing... committing", from, maxSize));
 //                	transaction.commit();
                 	logger.info(String.format("Fetched from %s, size: %s.  Done indexing... committed", from, maxSize));
@@ -289,54 +287,6 @@ public abstract class AbstractHibernateSearchDao<T, Q, KeyType extends Serializa
         }
     }
 
-    private void doIndex(T entity, Class<T> entityClass) throws Exception {
-//        ElasticsearchIndex esIndex = getIndexAnnotation(entityClass);
-//        if(esIndex!=null){
-//            List<Field> indexedFields = getIndexedField(entityClass);
-//
-//            if(CollectionUtils.isNotEmpty(indexedFields)){
-//                String entityId=null;
-//                XContentBuilder builder = XContentFactory.jsonBuilder().startObject();
-//                for(Field field :indexedFields){
-//                    Object value = field.get(entity);
-//
-//                    if(isFieldAnnotated(field, ESId.class)){
-//                        entityId = (String)value;
-//                        if(StringUtils.isBlank(entityId)){
-//                            logger.warn("Skipping indexing the entity due to entityId is empty");
-//                            return;
-//                        }
-//                        builder.field("id", entityId);
-//                    } else {
-//                        ESField fieldAnnotation = getFieldAnnotation(field, ESField.class);
-//                        if(fieldAnnotation!=null){
-//                            builder.field(fieldAnnotation.name(), value);
-//                        }
-//                    }
-//                }
-//                builder.endObject();
-//                getClient().prepareIndex(esIndex.indexName(), esIndex.indexType(), entityId)
-//                                                    .setSource(builder).execute().actionGet();
-//
-//            }
-//
-//        }
-    }
-
-
-
-    private void purgeAll(Class<T> entityClass) throws Exception {
-        ElasticsearchIndex esIndex = getIndexAnnotation(entityClass);
-        if(esIndex!=null){
-//            DeleteByQueryResponse response = this.getClient().prepareDeleteByQuery(esIndex.indexName())
-//                                               .setQuery(QueryBuilders.matchAllQuery())
-//                                               .setTypes(esIndex.indexType()).execute().actionGet();
-        }
-    }
-
-    private ElasticsearchIndex getIndexAnnotation(Class<T> entityClass){
-        return entityClass.getAnnotation(ElasticsearchIndex.class);
-    }
 
     @Override public void destroy() throws Exception {
     	hibernateProperties.clear();
