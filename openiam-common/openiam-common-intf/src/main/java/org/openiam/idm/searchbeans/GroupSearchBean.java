@@ -17,27 +17,17 @@ import java.util.Set;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "GroupSearchBean", propOrder = {
         "keySet",
-        "name",
         "isRootsOnly",
         "managedSysId",
         "attributes"
 })
-public class GroupSearchBean extends AbstractSearchBean<Group, String> implements SearchBean<Group, String>, Serializable {
+public class GroupSearchBean extends AbstractKeyNameSearchBean<Group, String> {
 
 	private static final long serialVersionUID = 1L;
     private Set<String> keySet;
-	private String name;
 	private String managedSysId;
 	private boolean isRootsOnly;
 	private List<Tuple<String, String>> attributes;
-	
-	public String getName() {
-		return name;
-	}
-	
-	public void setName(String name) {
-		this.name = name;
-	}
 
 	public boolean getIsRootsOnly() {
 		return isRootsOnly;
@@ -78,7 +68,6 @@ public class GroupSearchBean extends AbstractSearchBean<Group, String> implement
 		final int prime = 31;
 		int result = super.hashCode();
 		result = prime * result + (isRootsOnly ? 1231 : 1237);
-		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		return result;
 	}
 
@@ -93,19 +82,14 @@ public class GroupSearchBean extends AbstractSearchBean<Group, String> implement
 		GroupSearchBean other = (GroupSearchBean) obj;
 		if (isRootsOnly != other.isRootsOnly)
 			return false;
-		if (name == null) {
-			if (other.name != null)
-				return false;
-		} else if (!name.equals(other.name))
-			return false;
 		return true;
 	}
 
 	@Override
 	public String toString() {
 		return String.format(
-				"GroupSearchBean [name=%s, isRootsOnly=%s, keySet=%s, toString()=%s]",
-				name, isRootsOnly, keySet, super.toString());
+				"GroupSearchBean [isRootsOnly=%s, keySet=%s, toString()=%s]",
+				isRootsOnly, keySet, super.toString());
 	}
 
     @Override

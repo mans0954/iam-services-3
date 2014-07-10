@@ -97,7 +97,7 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 	@Override
 	public List<MetadataTypeEntity> findBeans(final MetadataTypeSearchBean searchBean, final int from, final int size) {
 		List<MetadataTypeEntity> retVal = null;
-		if(searchBean.hasMultipleKeys()) {
+		if(searchBean != null && searchBean.hasMultipleKeys()) {
 			retVal = metadataTypeDao.findByIds(searchBean.getKeys());
 		} else {
 			final MetadataTypeEntity entity = metadataTypeSearchBeanConverter.convert(searchBean);

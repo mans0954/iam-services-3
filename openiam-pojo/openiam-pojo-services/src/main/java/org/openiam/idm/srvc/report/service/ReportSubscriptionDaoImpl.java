@@ -24,7 +24,7 @@ public class ReportSubscriptionDaoImpl extends BaseDaoImpl<ReportSubscriptionEnt
 
     @Override
     public ReportSubscriptionEntity findByName(String name) {
-        Criteria criteria = getSession().createCriteria(ReportSubscriptionEntity.class).add(Restrictions.eq("reportName", name));
+        Criteria criteria = getCriteria().add(Restrictions.eq("reportName", name));
         return (ReportSubscriptionEntity) criteria.uniqueResult();
     }
 
@@ -46,7 +46,7 @@ public class ReportSubscriptionDaoImpl extends BaseDaoImpl<ReportSubscriptionEnt
     
     @Override
     public List<ReportSubscriptionEntity> getAllActiveSubscribedReports(){
-        Criteria criteria = getSession().createCriteria(ReportSubscriptionEntity.class).add(Restrictions.eq("status", "ACTIVE"));
+        Criteria criteria = getCriteria().add(Restrictions.eq("status", "ACTIVE"));
         return (List<ReportSubscriptionEntity>) criteria.list();
     }
 

@@ -25,7 +25,7 @@ public class ReportCriteriaParamDaoImpl extends BaseDaoImpl<ReportCriteriaParamE
     @Override
     @SuppressWarnings("unchecked")
     public List<ReportCriteriaParamEntity> findByReportInfoId(String reportInfoId) {
-        Criteria criteria = getSession().createCriteria(ReportCriteriaParamEntity.class)
+        Criteria criteria = getCriteria()
                 .add(Restrictions.eq("report.id", reportInfoId))
                 .addOrder(Order.asc("name"));
 
@@ -34,7 +34,7 @@ public class ReportCriteriaParamDaoImpl extends BaseDaoImpl<ReportCriteriaParamE
 
     @Override
     public List<ReportCriteriaParamEntity> findByReportInfoName(String reportInfoName) {
-        Criteria criteria = getSession().createCriteria(ReportCriteriaParamEntity.class)
+        Criteria criteria = getCriteria()
                 .createAlias("report","r")
                 .add(Restrictions.eq("r.reportName", reportInfoName))
                 .addOrder(Order.asc("name"));
@@ -44,7 +44,7 @@ public class ReportCriteriaParamDaoImpl extends BaseDaoImpl<ReportCriteriaParamE
     
     @Override
     public ReportCriteriaParamEntity getReportParameterByName(String reportId, String paramName){
-    	Criteria criteria = getSession().createCriteria(ReportCriteriaParamEntity.class)
+    	Criteria criteria = getCriteria()
         .createAlias("report","r")
         .add(Restrictions.eq("report.id", reportId))
         .add(Restrictions.eq("name", paramName))

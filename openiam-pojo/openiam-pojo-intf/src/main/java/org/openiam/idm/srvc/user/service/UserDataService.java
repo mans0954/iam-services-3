@@ -256,8 +256,6 @@ public interface UserDataService {
 
     public void mergeUserFields(UserEntity origUserEntity, UserEntity newUserEntity);
 
-    List<UserEntity> getUsersForMSys(String mSysId);
-
     public Map<String, UserAttribute> getUserAttributesDto(String userId);
 
     public Map<String, UserAttributeEntity> getUserAttributes(String userId);

@@ -33,6 +33,11 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable>
     protected final Logger log = Logger.getLogger(this.getClass());
     protected final Class<T> domainClass;
     private SessionFactory sessionFactory;
+    private boolean cacheable = true;
+    
+    protected boolean isCachable() {
+    	return cacheable;
+    }
 
 	@Autowired
 	public void setTemplate(final @Qualifier("sessionFactory") SessionFactory sessionFactory) {
@@ -161,7 +166,7 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable>
     }
 
     protected Criteria getCriteria() {
-        return getSession().createCriteria(domainClass);
+        return getSession().createCriteria(domainClass).setCacheable(isCachable());
     }
 
     @SuppressWarnings({ "unchecked" })

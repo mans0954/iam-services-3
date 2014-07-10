@@ -2089,11 +2089,6 @@ public class UserMgr implements UserDataService {
         return filter;
     }
 
-    @Transactional(readOnly = true)
-    public List<UserEntity> getUsersForMSys(String mSysId) {
-        return userDao.getUsersForMSys(mSysId);
-    }
-
     public Map<String, UserAttribute> getUserAttributesDto(String userId) {
         Map<String, UserAttributeEntity> attributeEntityMap = this.getUserAttributes(userId);
         if (attributeEntityMap != null && !attributeEntityMap.isEmpty()) {

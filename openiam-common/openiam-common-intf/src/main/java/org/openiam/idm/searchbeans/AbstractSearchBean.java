@@ -1,6 +1,9 @@
 package org.openiam.idm.searchbeans;
 
+import java.io.Serializable;
+
 import org.openiam.base.OrderConstants;
+import org.openiam.idm.srvc.grp.dto.Group;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -13,7 +16,7 @@ import javax.xml.bind.annotation.XmlType;
         "orderBy",
         "sortBy"
 })
-public class AbstractSearchBean<T, KeyType> {
+public class AbstractSearchBean<T, KeyType>implements SearchBean<T, KeyType>, Serializable {
 
 	private boolean deepCopy = true;
 	private KeyType key;

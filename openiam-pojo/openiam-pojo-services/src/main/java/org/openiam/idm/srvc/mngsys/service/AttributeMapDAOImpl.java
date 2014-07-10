@@ -66,8 +66,7 @@ public class AttributeMapDAOImpl extends
     }
 
     public void removeResourceAttributeMaps(String resourceId) {
-        AttributeMapEntity ame = (AttributeMapEntity)getSession()
-                .createCriteria(AttributeMapEntity.class)
+        AttributeMapEntity ame = (AttributeMapEntity)getCriteria()
                 .add(Restrictions.eq("attributeMapId", resourceId)).uniqueResult();
         getSession().delete(ame);
     }
@@ -95,7 +94,7 @@ public class AttributeMapDAOImpl extends
     @Override
     public void delete(List<String> ids) {
         if (!CollectionUtils.isEmpty(ids)) {
-            List attrMap = getSession().createCriteria(AttributeMapEntity.class)
+            List attrMap = getCriteria()
                     .add(Restrictions.in("attributeMapId", ids)).list();
             deleteAttributesMapList(attrMap);
         }

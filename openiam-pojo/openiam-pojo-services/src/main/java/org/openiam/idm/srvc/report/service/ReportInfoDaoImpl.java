@@ -27,7 +27,7 @@ public class ReportInfoDaoImpl extends BaseDaoImpl<ReportInfoEntity, String> imp
 
     @Override
     public ReportInfoEntity findByName(String name) {
-        Criteria criteria = getSession().createCriteria(ReportInfoEntity.class).add(Restrictions.eq("reportName", name));
+        Criteria criteria = getCriteria().add(Restrictions.eq("reportName", name));
         return (ReportInfoEntity) criteria.uniqueResult();
     }
 

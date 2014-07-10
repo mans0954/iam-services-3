@@ -70,6 +70,7 @@ public class RoleEntity extends AbstractMetdataTypeEntity {
     //@JoinColumn(name = "ROLE_ID")
     @Fetch(FetchMode.SUBSELECT)
     @Internationalized
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	private Set<RoleAttributeEntity> roleAttributes;
 	
 	@OneToMany(fetch=FetchType.LAZY,orphanRemoval=true,cascade=CascadeType.ALL)

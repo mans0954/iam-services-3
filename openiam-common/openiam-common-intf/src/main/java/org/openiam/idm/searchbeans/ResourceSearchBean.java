@@ -2,6 +2,7 @@ package org.openiam.idm.searchbeans;
 
 import org.apache.commons.lang.StringUtils;
 import org.openiam.base.Tuple;
+import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.dto.ResourceRisk;
 
@@ -16,7 +17,6 @@ import java.util.Set;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "ResourceSearchBean", propOrder = {
-        "name",
         "resourceTypeId",
         "rootsOnly",
         "attributes",
@@ -24,11 +24,10 @@ import java.util.Set;
         "risk",
         "URL"
 })
-public class ResourceSearchBean extends AbstractSearchBean<Resource, String> implements SearchBean<Resource, String>, Serializable {
+public class ResourceSearchBean extends AbstractKeyNameSearchBean<Resource, String> {
 
 	private static final long serialVersionUID = 1L;
 
-	private String name;
 	private String resourceTypeId;
 	private Boolean rootsOnly;
 	private List<Tuple<String, String>> attributes;
@@ -36,14 +35,6 @@ public class ResourceSearchBean extends AbstractSearchBean<Resource, String> imp
     private ResourceRisk risk;
     private String URL;
 	
-	public String getName() {
-		return name;
-	}
-	
-	public void setName(final String name) {
-		this.name = name;
-	}
-
 	public String getResourceTypeId() {
 		return resourceTypeId;
 	}
@@ -110,4 +101,64 @@ public class ResourceSearchBean extends AbstractSearchBean<Resource, String> imp
     public void setURL(String URL) {
         this.URL = URL;
     }
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result + ((URL == null) ? 0 : URL.hashCode());
+		result = prime * result
+				+ ((attributes == null) ? 0 : attributes.hashCode());
+		result = prime
+				* result
+				+ ((excludeResourceTypes == null) ? 0 : excludeResourceTypes
+						.hashCode());
+		result = prime * result
+				+ ((resourceTypeId == null) ? 0 : resourceTypeId.hashCode());
+		result = prime * result + ((risk == null) ? 0 : risk.hashCode());
+		result = prime * result
+				+ ((rootsOnly == null) ? 0 : rootsOnly.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		ResourceSearchBean other = (ResourceSearchBean) obj;
+		if (URL == null) {
+			if (other.URL != null)
+				return false;
+		} else if (!URL.equals(other.URL))
+			return false;
+		if (attributes == null) {
+			if (other.attributes != null)
+				return false;
+		} else if (!attributes.equals(other.attributes))
+			return false;
+		if (excludeResourceTypes == null) {
+			if (other.excludeResourceTypes != null)
+				return false;
+		} else if (!excludeResourceTypes.equals(other.excludeResourceTypes))
+			return false;
+		if (resourceTypeId == null) {
+			if (other.resourceTypeId != null)
+				return false;
+		} else if (!resourceTypeId.equals(other.resourceTypeId))
+			return false;
+		if (risk != other.risk)
+			return false;
+		if (rootsOnly == null) {
+			if (other.rootsOnly != null)
+				return false;
+		} else if (!rootsOnly.equals(other.rootsOnly))
+			return false;
+		return true;
+	}
+    
+    
 }

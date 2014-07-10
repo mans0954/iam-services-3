@@ -423,13 +423,6 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
         return criteria;
     }
 
-    @Override
-    public List<UserEntity> getUsersForMSys(final String mSysId) {
-        Criteria criteria = getSession().createCriteria(UserEntity.class).createAlias("principalList", "l")
-                        .add(Restrictions.eq("l.managedSysId", mSysId)).setFetchMode("principalList", FetchMode.JOIN);
-        return criteria.list();
-    }
-
     public List<UserEntity> getSuperiors(String userId, final int from, final int size) {
         Criteria criteria = getSuperiorsCriteria(userId);
         if (from > -1) {

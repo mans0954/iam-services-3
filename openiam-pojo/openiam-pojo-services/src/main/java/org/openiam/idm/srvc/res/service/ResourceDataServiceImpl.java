@@ -784,8 +784,9 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
     @Override
     @LocalizedServiceGet
     public List<ResourceType> findResourceTypes(final ResourceTypeSearchBean searchBean, final int from, final int size, final Language language) {
+    	final boolean deepCopy = (searchBean != null) ? searchBean.isDeepCopy() : false;
         final List<ResourceTypeEntity> entityList = resourceService.findResourceTypes(searchBean, from, size);
-        return resourceTypeConverter.convertToDTOList(entityList, searchBean.isDeepCopy());
+        return resourceTypeConverter.convertToDTOList(entityList, deepCopy);
     }
 
     @Override

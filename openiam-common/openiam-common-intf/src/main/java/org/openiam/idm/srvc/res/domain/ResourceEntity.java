@@ -78,6 +78,7 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
     //@JoinColumn(name = "RESOURCE_ID")
     @Fetch(FetchMode.SUBSELECT)
     @Internationalized
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<ResourcePropEntity> resourceProps = new HashSet<ResourcePropEntity>(0); // defined as a Set in Hibernate map
 
     @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})

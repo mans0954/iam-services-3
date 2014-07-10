@@ -3,6 +3,7 @@ package org.openiam.idm.searchbeans;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.base.Tuple;
+import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.role.dto.Role;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -17,27 +18,17 @@ import java.util.Set;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "RoleSearchBean", propOrder = {
         "keySet",
-        "name",
         "isRootsOnly",
         "managedSysId",
         "attributes"
 })
-public class RoleSearchBean extends AbstractSearchBean<Role, String> implements SearchBean<Role, String>, Serializable {
+public class RoleSearchBean  extends AbstractKeyNameSearchBean<Role, String> {
 
 	private static final long serialVersionUID = 1L;
     private Set<String> keySet;
-	private String name;
     private String managedSysId;
 	private Boolean isRootsOnly;
     private List<Tuple<String,String>> attributes;
-
-	public String getName() {
-		return name;
-	}
-	
-	public void setName(String name) {
-		this.name = name;
-	}
 
 	public boolean getIsRootsOnly() {
 		return isRootsOnly;
@@ -79,7 +70,6 @@ public class RoleSearchBean extends AbstractSearchBean<Role, String> implements 
 		int result = super.hashCode();
 		result = prime * result
 				+ ((isRootsOnly == null) ? 0 : isRootsOnly.hashCode());
-		result = prime * result + ((name == null) ? 0 : name.hashCode());
         result = prime * result + ((managedSysId == null) ? 0 : managedSysId.hashCode());
 		return result;
 	}
@@ -98,11 +88,6 @@ public class RoleSearchBean extends AbstractSearchBean<Role, String> implements 
 				return false;
 		} else if (!isRootsOnly.equals(other.isRootsOnly))
 			return false;
-		if (name == null) {
-			if (other.name != null)
-				return false;
-		} else if (!name.equals(other.name))
-			return false;
         if (managedSysId == null) {
             if (other.managedSysId != null)
                 return false;
@@ -114,7 +99,7 @@ public class RoleSearchBean extends AbstractSearchBean<Role, String> implements 
 	@Override
 	public String toString() {
 		return String.format(
-				"RoleSearchBean [keySet=%s, name=%s, isRootsOnly=%s]", keySet, name,
+				"RoleSearchBean [keySet=%s, isRootsOnly=%s]", keySet,
 				isRootsOnly);
 	}
 

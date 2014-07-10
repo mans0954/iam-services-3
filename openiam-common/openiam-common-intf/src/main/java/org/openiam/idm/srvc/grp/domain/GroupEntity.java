@@ -89,6 +89,7 @@ public class GroupEntity extends AbstractMetdataTypeEntity {
     @MapKeyColumn(name = "name")
     @Fetch(FetchMode.SUBSELECT)
     @Internationalized
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<GroupAttributeEntity> attributes;
 
     @ManyToMany(cascade = { CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH }, fetch = FetchType.LAZY)
