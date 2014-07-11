@@ -14,7 +14,7 @@ public class ElasticsearchMetadata {
     private ElasticsearchIndex index;
     private ElasticsearchMapping typeMapping;
     private List<ElasticsearchFieldMetadata> indexedFields;
-
+    private String idFieldName;
 
     public ElasticsearchIndex getIndex() {
         return index;
@@ -44,5 +44,13 @@ public class ElasticsearchMetadata {
         if(indexedFields==null)
             indexedFields=new ArrayList<>();
         indexedFields.add(field);
+    }
+
+    public String getIdFieldName() {
+        return idFieldName;
+    }
+
+    public void setIdFieldName(String idFieldName) {
+        this.idFieldName = idFieldName;
     }
 }

@@ -9,6 +9,12 @@ import org.hibernate.annotations.*;
 import org.openiam.core.dao.lucene.LuceneId;
 import org.openiam.core.dao.lucene.LuceneLastUpdate;
 import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.elasticsearch.annotation.ElasticsearchField;
+import org.openiam.elasticsearch.annotation.ElasticsearchId;
+import org.openiam.elasticsearch.annotation.ElasticsearchIndex;
+import org.openiam.elasticsearch.annotation.ElasticsearchMapping;
+import org.openiam.elasticsearch.constants.*;
+import org.openiam.elasticsearch.constants.Index;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
 import org.openiam.idm.srvc.auth.dto.ProvLoginStatusEnum;
@@ -27,6 +33,8 @@ import java.util.Set;
 @DozerDTOCorrespondence(Login.class)
 //@Indexed
 @Embeddable
+@ElasticsearchIndex(indexName = ESIndexName.USERS)
+@ElasticsearchMapping(typeName = ESIndexType.LOGIN, parent = ESIndexType.USER)
 public class LoginEntity implements java.io.Serializable {
     private static final long serialVersionUID = -1972779170001619759L;
     
@@ -34,11 +42,11 @@ public class LoginEntity implements java.io.Serializable {
     @GeneratedValue(generator = "system-uuid")
     @GenericGenerator(name = "system-uuid", strategy = "uuid")
 	@Column(name = "LOGIN_ID", length = 32, nullable = false)
-    @LuceneId
-//    @DocumentId
+    @ElasticsearchId
     private String loginId;
     
 //    @Field(name = "login", analyze = Analyze.YES, store = Store.YES)
+    @ElasticsearchField(name = "login", store = ElasticsearchStore.Yes, index = Index.Analyzed)
     @Column(name="LOGIN",length=320)
     private String login;
     
@@ -46,10 +54,12 @@ public class LoginEntity implements java.io.Serializable {
     private String lowerCaseLogin;
     
 //    @Field(name = "managedSysId", analyze = Analyze.NO, store = Store.YES)
+    @ElasticsearchField(name = "managedSysId", store = ElasticsearchStore.Yes, index = Index.Not_Analyzed)
     @Column(name="MANAGED_SYS_ID",length=50)
     private String managedSysId;
 
 //    @Field(name = "userId", analyze = Analyze.NO, store = Store.YES)
+    @ElasticsearchField(name = "userId", store = ElasticsearchStore.Yes, index = Index.Not_Analyzed)
     @Column(name="USER_ID",length=32)
     protected String userId;
 

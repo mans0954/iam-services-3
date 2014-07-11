@@ -16,7 +16,6 @@ import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.openiam.elasticsearch.ElasticsearchHelper;
-import org.openiam.elasticsearch.annotation.ElasticsearchIndex;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -55,10 +54,6 @@ public abstract class AbstractHibernateSearchDao<T, Q, KeyType extends Serializa
 	private String idFieldName;
 	private SessionFactory sessionFactory;
 
-
-//    protected ESClientFactoryBean clientFactory;
-    private static Map<String, List<Field>> indexedFieldMap = new HashMap<>();
-
     @Autowired
     protected ElasticsearchHelper esHelper;
 	
@@ -67,15 +62,6 @@ public abstract class AbstractHibernateSearchDao<T, Q, KeyType extends Serializa
 		this.sessionFactory = sessionFactory;
 	}
 
-//    @Autowired
-//    public void setClientFactory(ESClientFactoryBean clientFactory) {
-//        this.clientFactory = clientFactory;
-//    }
-
-//    private Client getClient() throws Exception {
-//        return this.clientFactory.getObject();
-//    }
-	
 	private Session getSession() {
 		return sessionFactory.getCurrentSession();
 	}
@@ -202,14 +188,14 @@ public abstract class AbstractHibernateSearchDao<T, Q, KeyType extends Serializa
     protected abstract Class<T> getEntityClass();
     
     private void buidIndexes(Session session) throws Exception {
-    	final DetachedCriteria criteria = DetachedCriteria.forClass(getEntityClass()).addOrder(Order.asc(idFieldName));
-//        try {
-//        	doIndex(criteria, true, session);
-//    	} catch (SearchException e) {
-////    		if (logger.isErrorEnabled()) {
-//    			logger.error(String.format("can't build indexes : '%s'. Trying to recreate indexes dir", e));
-////    		}
-//    		//clean-up lucene indexes directory
+    	final DetachedCriteria criteria = DetachedCriteria.forClass(getEntityClass()).addOrder(Order.asc(esHelper.getIdFieldName(getEntityClass())));
+        try {
+        	doIndex(criteria, true, session);
+    	} catch (Exception e) {
+//    		if (logger.isErrorEnabled()) {
+    			logger.error(String.format("can't build indexes : '%s'. Trying to recreate indexes dir", e));
+//    		}
+    		//clean-up lucene indexes directory
 //    		final SearchFactory searchFactory = getFullTextSession(session).getSearchFactory();
 //    		if (searchFactory instanceof SearchFactoryImplementor) {
 //    			reintializeCurrentIndex(session, (SearchFactoryImplementor)searchFactory);
@@ -226,10 +212,10 @@ public abstract class AbstractHibernateSearchDao<T, Q, KeyType extends Serializa
 //    				logger.debug("indexes dir recreated, indexes rebuilt");
 //    			}
 //    		} else {
-//    			//just rethrow exception
-//    			throw e;
+    			//just rethrow exception
+    			throw e;
 //    		}
-//    	}
+    	}
     }
     
 //    private void reintializeCurrentIndex(Session session, final SearchFactoryImplementor searchFactory) throws IOException {
@@ -249,7 +235,7 @@ public abstract class AbstractHibernateSearchDao<T, Q, KeyType extends Serializa
 //    }
     
     @SuppressWarnings("unchecked")
-	private void doIndex(final DetachedCriteria load, final boolean purgeAll, final Session session) {
+	private void doIndex(final DetachedCriteria load, final boolean purgeAll, final Session session) throws Exception {
 //        final FullTextSession fullTextSession = getFullTextSession(session);
 //        fullTextSession.setFlushMode(FlushMode.COMMIT);
 //        //fullTextSession.setCacheMode(CacheMode.IGNORE);
@@ -282,6 +268,7 @@ public abstract class AbstractHibernateSearchDao<T, Q, KeyType extends Serializa
         	}
         } catch (Exception e){
             logger.error("Can't index ", e);
+          //  throw e;
         } finally {
         	//fullTextSession.close();
         }
@@ -299,16 +286,17 @@ public abstract class AbstractHibernateSearchDao<T, Q, KeyType extends Serializa
 		return ((Class<T>)type);
     }
 
-    private Date getLastDbUpdateDateInternal(Session session) {
-    	session = (session != null) ? session : getSession();
-    	return (Date)session.createCriteria(getEntityClass())
-			.setProjection(Projections.max(lastModifiedFieldName)).uniqueResult();
-    }
+//    private Date getLastDbUpdateDateInternal(Session session) {
+//    	session = (session != null) ? session : getSession();
+//    	return (Date)session.createCriteria(getEntityClass())
+//			.setProjection(Projections.max(lastModifiedFieldName)).uniqueResult();
+//    }
     
     protected Query buildTokenizedClause(final String paramName, final String paramValue) {
     	if (StringUtils.isNotBlank(paramValue) && StringUtils.isNotBlank(paramName)) {
+//            QueryBuilders.boolQuery().should(QueryBuilders.termQuery())
             final BooleanQuery paramsQuery = new BooleanQuery();
-//            paramsQuery.add(QueryBuilder.buildQuery(paramName, BooleanClause.Occur.SHOULD, paramValue), BooleanClause.Occur.SHOULD);
+            paramsQuery.add(QueryBuilder.buildQuery(paramName, BooleanClause.Occur.SHOULD, paramValue), BooleanClause.Occur.SHOULD);
             return paramsQuery;
         }
     	return null;
@@ -343,42 +331,42 @@ public abstract class AbstractHibernateSearchDao<T, Q, KeyType extends Serializa
     }
 
     @Override public void synchronizeIndexes(final boolean forcePurgeAll) {
-    	reentrantLock.lock();
-		final StopWatch stopWatch = new StopWatch();
-		stopWatch.start();
-		Session session = null;
-    	try {
-    		session = sessionFactory.openSession();
-    		boolean reindexed = false;
-    		final Date updateDate = getLastDbUpdateDateInternal(session);
-    		if (lastUpdateDBDate == null || forcePurgeAll) {
-    			final DetachedCriteria criteria = DetachedCriteria.forClass(getEntityClass()).addOrder(Order.asc(idFieldName));
-    			doIndex(criteria, forcePurgeAll, session);
-    			reindexed = true;
-    		} else if (((null != updateDate) && (updateDate.after(lastUpdateDBDate)))) {
-    			final DetachedCriteria criteria = DetachedCriteria.forClass(getEntityClass()).add(Restrictions.gt(lastModifiedFieldName, lastUpdateDBDate)).addOrder(Order.asc(idFieldName));
-    			doIndex(criteria, forcePurgeAll, session);
-    			reindexed = true;
-        	}
-
-    		if(reindexed) {
-    			lastUpdateDBDate = updateDate;
-    			reindexingCompletedOn = new Date(System.currentTimeMillis());
-    		}
-    	} finally {
-    		if (reentrantLock.isHeldByCurrentThread()) {
-    			stopWatch.stop();
-    			synchronized (this) {
-    				reindexDuration = stopWatch.getTime();
-				}
-    			reentrantLock.unlock();
-    		}
-    		if(session != null) {
-    			if(session.isOpen()) {
-    				session.close();
-    			}
-    		}
-    	}
+//    	reentrantLock.lock();
+//		final StopWatch stopWatch = new StopWatch();
+//		stopWatch.start();
+//		Session session = null;
+//    	try {
+//    		session = sessionFactory.openSession();
+//    		boolean reindexed = false;
+//    		final Date updateDate = getLastDbUpdateDateInternal(session);
+//    		if (lastUpdateDBDate == null || forcePurgeAll) {
+//    			final DetachedCriteria criteria = DetachedCriteria.forClass(getEntityClass()).addOrder(Order.asc(idFieldName));
+//    			doIndex(criteria, forcePurgeAll, session);
+//    			reindexed = true;
+//    		} else if (((null != updateDate) && (updateDate.after(lastUpdateDBDate)))) {
+//    			final DetachedCriteria criteria = DetachedCriteria.forClass(getEntityClass()).add(Restrictions.gt(lastModifiedFieldName, lastUpdateDBDate)).addOrder(Order.asc(idFieldName));
+//    			doIndex(criteria, forcePurgeAll, session);
+//    			reindexed = true;
+//        	}
+//
+//    		if(reindexed) {
+//    			lastUpdateDBDate = updateDate;
+//    			reindexingCompletedOn = new Date(System.currentTimeMillis());
+//    		}
+//    	} finally {
+//    		if (reentrantLock.isHeldByCurrentThread()) {
+//    			stopWatch.stop();
+//    			synchronized (this) {
+//    				reindexDuration = stopWatch.getTime();
+//				}
+//    			reentrantLock.unlock();
+//    		}
+//    		if(session != null) {
+//    			if(session.isOpen()) {
+//    				session.close();
+//    			}
+//    		}
+//    	}
     }
 
     public long getLastSynchronizationDuration() {
@@ -392,6 +380,7 @@ public abstract class AbstractHibernateSearchDao<T, Q, KeyType extends Serializa
     }
     
     private void initMetadata() throws Exception {
+
     	final Class<T> clazz = getEntityClass();    	
     	if(clazz != null) {
     		if(clazz.getDeclaredFields() != null) {
@@ -421,7 +410,7 @@ public abstract class AbstractHibernateSearchDao<T, Q, KeyType extends Serializa
 	@PostConstruct
 	public void initDao() throws Exception {
 		Session session = null;
-		initMetadata();
+		//initMetadata();
 		try {
 			session = sessionFactory.openSession();
 	    	if (rebuildIndexesAtInit) {
@@ -433,7 +422,7 @@ public abstract class AbstractHibernateSearchDao<T, Q, KeyType extends Serializa
 				synchronized (this) {
 					reindexDuration = stopWatch.getTime();
 				}
-				lastUpdateDBDate = getLastDbUpdateDateInternal(session);
+//				lastUpdateDBDate = getLastDbUpdateDateInternal(session);
 				if (lastUpdateDBDate == null) {
 					lastUpdateDBDate = new Date(System.currentTimeMillis());
 				}

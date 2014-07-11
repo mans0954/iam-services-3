@@ -5,6 +5,8 @@ import org.openiam.elasticsearch.constants.ElasticsearchStore;
 import org.openiam.elasticsearch.constants.ElasticsearchType;
 import org.openiam.elasticsearch.constants.Index;
 
+import java.lang.reflect.Field;
+
 /**
  * Created by: Alexander Duckardt
  * Date: 7/4/14.
@@ -18,15 +20,17 @@ public class ElasticsearchFieldMetadata {
     private String analyzerName;
     private String indexAnalyzerName;
     private String searchAnalyzerName;
+    private Field field;
 
-    public ElasticsearchFieldMetadata(boolean isId, String name, ElasticsearchType type,
+    public ElasticsearchFieldMetadata(boolean isId, Field field, String name, ElasticsearchType type,
                                       ElasticsearchStore store, Index index){
-        this(isId, name, type, store, index, null, null, null);
+        this(isId, field, name, type, store, index, null, null, null);
     }
-    public ElasticsearchFieldMetadata(boolean isId, String name, ElasticsearchType type,
+    public ElasticsearchFieldMetadata(boolean isId, Field field, String name, ElasticsearchType type,
                                       ElasticsearchStore store, Index index, String analyzerName,
                                       String indexAnalyzerName, String searchAnalyzerName) {
         this.isId = isId;
+        this.field = field;
         this.name = name;
         this.type = type;
         this.store = store;
@@ -101,5 +105,13 @@ public class ElasticsearchFieldMetadata {
 
     public void setSearchAnalyzerName(String searchAnalyzerName) {
         this.searchAnalyzerName = searchAnalyzerName;
+    }
+
+    public Field getField() {
+        return field;
+    }
+
+    public void setField(Field field) {
+        this.field = field;
     }
 }

@@ -3,16 +3,18 @@ package org.openiam.elasticsearch;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.elasticsearch.action.admin.cluster.state.ClusterStateResponse;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
 import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexResponse;
 import org.elasticsearch.action.admin.indices.exists.indices.IndicesExistsResponse;
+import org.elasticsearch.action.admin.indices.mapping.delete.DeleteMappingResponse;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingResponse;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.bulk.BulkResponse;
-import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexRequestBuilder;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.cluster.metadata.MappingMetaData;
 import org.elasticsearch.common.settings.ImmutableSettings;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.xcontent.XContentBuilder;
@@ -71,12 +73,12 @@ public class ElasticsearchHelper {
         ElasticsearchMetadata metadata = indexeMetadataMap.get(clazz.getSimpleName());
         String entityId=null;
         XContentBuilder builder = XContentFactory.jsonBuilder().startObject();
-        for(ElasticsearchFieldMetadata field :metadata.getIndexedFields()){
-            Field f = clazz.getField(field.getName());
+        for(ElasticsearchFieldMetadata fieldMetadata :metadata.getIndexedFields()){
+            Field f = fieldMetadata.getField();
             f.setAccessible(true);
             Object value =f.get(entity);
 
-            if(field.isId()){
+            if(fieldMetadata.isId()){
                 entityId = (String)value;
                 if(StringUtils.isBlank(entityId)){
                     logger.warn("Skipping indexing the entity due to entityId is empty");
@@ -84,7 +86,7 @@ public class ElasticsearchHelper {
                 }
 
             }
-            builder.field(field.getName(), value);
+            builder.field(fieldMetadata.getName(), value);
         }
         builder.endObject();
         IndexRequestBuilder request = getClient().prepareIndex(metadata.getIndex().indexName(), metadata.getTypeMapping().typeName(), entityId)
@@ -97,16 +99,30 @@ public class ElasticsearchHelper {
     }
 
     public void buildIndex(ElasticsearchMetadata indexMetadata, boolean purgeAll) throws Exception {
-        if(isIndexExists(indexMetadata.getIndex().indexName())){
-            if(purgeAll){
-                deleteIndex(indexMetadata.getIndex().indexName());
-                createIndex(indexMetadata.getIndex().indexName(), buildIndexSettings(indexMetadata));
-            }
-        } else {
+        if(!isIndexExists(indexMetadata.getIndex().indexName())){
             createIndex(indexMetadata.getIndex().indexName(), buildIndexSettings(indexMetadata));
         }
-        // Build & update fields mappings
-        putIndexMapping(indexMetadata.getIndex().indexName(), indexMetadata.getTypeMapping().typeName(), buildMapping(indexMetadata));
+
+        if(isMappingExists(indexMetadata.getIndex().indexName(), indexMetadata.getTypeMapping().typeName())){
+            if(purgeAll){
+                deleteMapping(indexMetadata.getIndex().indexName(), indexMetadata.getTypeMapping().typeName());
+                // Build & update fields mappings
+                putIndexMapping(indexMetadata.getIndex().indexName(), indexMetadata.getTypeMapping().typeName(), buildMapping(indexMetadata));
+            }
+        }else{
+            // Build & update fields mappings
+            putIndexMapping(indexMetadata.getIndex().indexName(), indexMetadata.getTypeMapping().typeName(), buildMapping(indexMetadata));
+        }
+    }
+
+    private boolean isMappingExists(String indexName, String typeName) throws Exception {
+        ClusterStateResponse resp = this.getClient().admin().cluster().prepareState().execute().actionGet();
+        MappingMetaData mapping = resp.getState().metaData().index(indexName).mapping(typeName);
+        return mapping!=null;
+    }
+
+    public String getIdFieldName(Class<?> entityClass) throws Exception {
+        return this.getIndexMetadata(entityClass).getIdFieldName();
     }
 
     public ElasticsearchMetadata getIndexMetadata(Class<?> entityClass) throws Exception {
@@ -135,13 +151,14 @@ public class ElasticsearchHelper {
                     Annotation annotation =  getFieldAnnotation(field, ElasticsearchId.class);
                     if(annotation!=null){
                         hasId=true;
-                        result.addField(new ElasticsearchFieldMetadata(true, field.getName(), ElasticsearchType.String, ElasticsearchStore.Yes, Index.Not_Analyzed));
+                        result.setIdFieldName(field.getName());
+                        result.addField(new ElasticsearchFieldMetadata(true, field, field.getName(), ElasticsearchType.String, ElasticsearchStore.Yes, Index.Not_Analyzed));
                         continue;
                     }
                     annotation =  getFieldAnnotation(field, ElasticsearchField.class);
                     if(annotation!=null){
                         ElasticsearchField esAnnotation = (ElasticsearchField)annotation;
-                        result.addField(new ElasticsearchFieldMetadata(false, esAnnotation.name(), esAnnotation.type(), esAnnotation.store(), esAnnotation.index(),
+                        result.addField(new ElasticsearchFieldMetadata(false, field, esAnnotation.name(), esAnnotation.type(), esAnnotation.store(), esAnnotation.index(),
                                                                        esAnnotation.analyzerName(),esAnnotation.indexAnalyzerName(),esAnnotation.searchAnalyzerName()));
                     }
                 }
@@ -255,6 +272,13 @@ public class ElasticsearchHelper {
         DeleteIndexResponse response = this.getClient().admin().indices().prepareDelete(indexName).execute().actionGet();
         if (!response.isAcknowledged()) {
             throw new Exception("Could not delete index [" + indexName + "]");
+        }
+    }
+
+    private void deleteMapping(String indexName, String typeName) throws Exception {
+        DeleteMappingResponse response = this.getClient().admin().indices().prepareDeleteMapping(indexName).setType(typeName).execute().actionGet();
+        if (!response.isAcknowledged()) {
+            throw new Exception("Could not delete type [" + typeName + "]");
         }
     }
 

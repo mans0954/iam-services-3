@@ -1,15 +1,20 @@
 package org.openiam.idm.srvc.user.domain;
 
 import org.apache.commons.lang.StringUtils;
-import org.hibernate.annotations.*;
 import org.hibernate.annotations.Cache;
-//import org.hibernate.search.annotations.*;
-//import org.hibernate.search.annotations.Index;
+import org.hibernate.annotations.*;
 import org.openiam.base.BaseConstants;
-import org.openiam.core.dao.lucene.LuceneId;
 import org.openiam.core.dao.lucene.LuceneLastUpdate;
 import org.openiam.core.domain.UserKey;
 import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.elasticsearch.annotation.ElasticsearchField;
+import org.openiam.elasticsearch.annotation.ElasticsearchId;
+import org.openiam.elasticsearch.annotation.ElasticsearchIndex;
+import org.openiam.elasticsearch.annotation.ElasticsearchMapping;
+import org.openiam.elasticsearch.constants.ESIndexName;
+import org.openiam.elasticsearch.constants.ESIndexType;
+import org.openiam.elasticsearch.constants.ElasticsearchStore;
+import org.openiam.elasticsearch.constants.Index;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.continfo.domain.AddressEntity;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
@@ -31,6 +36,9 @@ import javax.validation.constraints.Size;
 import java.util.*;
 import java.util.Map.Entry;
 
+//import org.hibernate.search.annotations.*;
+//import org.hibernate.search.annotations.Index;
+
 @Entity
 @FilterDef(name = "parentTypeFilter", parameters = @ParamDef(name = "parentFilter", type = "string"))
 @Table(name = "USERS")
@@ -38,13 +46,14 @@ import java.util.Map.Entry;
 //@Indexed
 @Internationalized
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@ElasticsearchIndex(indexName = ESIndexName.USERS)
+@ElasticsearchMapping(typeName = ESIndexType.USER, source = ElasticsearchStore.No)
 public class UserEntity {
     @Id
     @GeneratedValue(generator = "system-uuid")
     @GenericGenerator(name = "system-uuid", strategy = "uuid")
     @Column(name = "USER_ID", length = 32, nullable = false)
-    @LuceneId
-//    @DocumentId
+    @ElasticsearchId
     private String id;
 
     @Column(name = "BIRTHDATE", length = 19)
@@ -60,7 +69,7 @@ public class UserEntity {
     private String createdBy;
 
     @Column(name = "EMPLOYEE_ID", length = 32)
-//    @Field(analyze = Analyze.NO, name="employeeId", store=Store.YES)
+    @ElasticsearchField(name = "employeeId", store = ElasticsearchStore.Yes, index = Index.Not_Analyzed)
     @Size(max = 32, message = "validator.user.employee.id.toolong")
     private String employeeId;
 
@@ -76,10 +85,7 @@ public class UserEntity {
     private MetadataTypeEntity employeeType;
 
     @Column(name = "FIRST_NAME", length = 50)
-//    @Fields ({
-//        @Field(analyze = Analyze.YES),
-//        @Field(name = "firstName", analyze = Analyze.YES, store = Store.YES)
-//    })
+    @ElasticsearchField(name = "firstName", store = ElasticsearchStore.Yes, index = Index.Analyzed)
     @Size(max = 50, message = "validator.user.first.name.toolong")
     private String firstName;
 
@@ -94,10 +100,7 @@ public class UserEntity {
     private MetadataTypeEntity jobCode;
 
     @Column(name = "LAST_NAME", length = 50)
-//    @Fields ({
-//        @Field(analyze = Analyze.YES),
-//        @Field(name = "lastName", analyze = Analyze.YES, store = Store.YES)
-//    })
+    @ElasticsearchField(name = "lastName", store = ElasticsearchStore.Yes, index = Index.Analyzed)
     @Size(max = 50, message = "validator.user.last.name.toolong")
     private String lastName;
 
@@ -139,12 +142,12 @@ public class UserEntity {
 
     @Column(name = "STATUS", length = 40)
     @Enumerated(EnumType.STRING)
-//    @Field(analyze = Analyze.NO, name="userStatus", store=Store.YES)
+    @ElasticsearchField(name = "userStatus", store = ElasticsearchStore.Yes, index = Index.Not_Analyzed)
     private UserStatusEnum status;
 
     @Column(name = "SECONDARY_STATUS", length = 40)
     @Enumerated(EnumType.STRING)
-//    @Field(analyze = Analyze.NO ,name="accountStatus", store=Store.YES)
+    @ElasticsearchField(name = "accountStatus", store = ElasticsearchStore.Yes, index = Index.Not_Analyzed)
     private UserStatusEnum secondaryStatus;
 
     @Column(name = "SUFFIX", length = 20)
@@ -179,10 +182,7 @@ public class UserEntity {
 
     @Column(name = "MAIDEN_NAME", length = 40)
     @Size(max = 40, message = "validator.user.maiden.name.toolong")
-//    @Fields ({
-//        @Field(analyze = Analyze.YES),
-//        @Field(name = "maidenName", analyze = Analyze.YES, store = Store.YES)
-//    })
+    @ElasticsearchField(name = "maidenName", store = ElasticsearchStore.Yes, index = Index.Analyzed)
     private String maidenName;
 
     @Column(name = "PASSWORD_THEME", length = 20)

@@ -21,6 +21,8 @@ public class EmailSearchDAO extends AbstractHibernateSearchDao<EmailAddressEntit
 		if(clause != null) {
 			luceneQuery.add(clause, BooleanClause.Occur.MUST);
 		}
+
+
 		return luceneQuery;
 	}
 	

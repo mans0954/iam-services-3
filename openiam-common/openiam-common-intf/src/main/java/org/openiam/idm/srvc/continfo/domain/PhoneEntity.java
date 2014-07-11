@@ -1,44 +1,41 @@
 package org.openiam.idm.srvc.continfo.domain;
 
-import java.util.Date;
-
-import javax.persistence.*;
-import javax.validation.constraints.Size;
-import javax.xml.bind.annotation.XmlSchemaType;
-import javax.xml.bind.annotation.XmlTransient;
-
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
-import org.hibernate.search.annotations.Analyze;
-import org.hibernate.search.annotations.DocumentId;
-import org.hibernate.search.annotations.Field;
-import org.hibernate.search.annotations.FieldBridge;
-import org.hibernate.search.annotations.Fields;
-import org.hibernate.search.annotations.Index;
-import org.hibernate.search.annotations.Indexed;
-import org.hibernate.search.annotations.Store;
-import org.openiam.core.dao.lucene.LuceneId;
 import org.openiam.core.dao.lucene.LuceneLastUpdate;
-import org.openiam.core.dao.lucene.bridge.UserBridge;
 import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.elasticsearch.annotation.ElasticsearchField;
+import org.openiam.elasticsearch.annotation.ElasticsearchId;
+import org.openiam.elasticsearch.annotation.ElasticsearchIndex;
+import org.openiam.elasticsearch.annotation.ElasticsearchMapping;
+import org.openiam.elasticsearch.constants.ESIndexName;
+import org.openiam.elasticsearch.constants.ESIndexType;
+import org.openiam.elasticsearch.constants.ElasticsearchStore;
+import org.openiam.elasticsearch.constants.Index;
 import org.openiam.idm.srvc.continfo.dto.Phone;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
+
+import javax.persistence.*;
+import javax.validation.constraints.Size;
+import javax.xml.bind.annotation.XmlTransient;
+import java.util.Date;
 
 @Entity
 @Table(name = "PHONE")
 @DozerDTOCorrespondence(Phone.class)
 //@Indexed
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@ElasticsearchIndex(indexName = ESIndexName.USERS)
+@ElasticsearchMapping(typeName = ESIndexType.PHONE, parent = ESIndexType.USER)
 public class PhoneEntity {
     @Id
     @GeneratedValue(generator = "system-uuid")
     @GenericGenerator(name = "system-uuid", strategy = "uuid")
     @Column(name = "PHONE_ID", length = 32, nullable = false)
-    @LuceneId
-//    @DocumentId
+    @ElasticsearchId
     private String phoneId;
 
     @Column(name="ACTIVE")
@@ -49,6 +46,7 @@ public class PhoneEntity {
 //        @Field(analyze = Analyze.NO),
 //        @Field(name = "areaCd", analyze = Analyze.NO, store = Store.YES)
 //    })
+    @ElasticsearchField(name = "areaCd", store = ElasticsearchStore.Yes, index = Index.Not_Analyzed)
     @Column(name="AREA_CD", length=10)
     @Size(max = 10, message = "validator.phone.area.code.toolong")
     private String areaCd;
@@ -79,6 +77,7 @@ public class PhoneEntity {
 //        @Field(analyze = Analyze.NO),
 //        @Field(name = "phoneNbr", analyze = Analyze.NO, store = Store.YES)
 //    })
+    @ElasticsearchField(name = "phoneNbr", store = ElasticsearchStore.Yes, index = Index.Not_Analyzed)
     @Column(name="PHONE_NBR", length=50)
     @Size(max = 50, message = "validator.phone.number.toolong")
     private String phoneNbr;

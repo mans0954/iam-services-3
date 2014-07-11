@@ -28,7 +28,7 @@ import java.util.Date;
 //@Indexed
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @ElasticsearchIndex(indexName = ESIndexName.USERS)
-@ElasticsearchMapping(typeName = ESIndexType.EMAIL, source = ElasticsearchStore.No)
+@ElasticsearchMapping(typeName = ESIndexType.EMAIL, parent = ESIndexType.USER)
 public class EmailAddressEntity {
     @Id
     @GeneratedValue(generator = "system-uuid")

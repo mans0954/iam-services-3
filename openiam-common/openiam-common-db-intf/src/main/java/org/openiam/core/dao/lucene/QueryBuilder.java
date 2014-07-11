@@ -1,10 +1,12 @@
 package org.openiam.core.dao.lucene;
 
 import org.apache.log4j.Logger;
+
+import java.util.Set;
 //import org.apache.lucene.analysis.StopAnalyzer;
 //import org.apache.lucene.analysis.Token;
 //import org.apache.lucene.analysis.TokenStream;
-//import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.analysis.*;//standard.StandardAnalyzer;
 //import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 //import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
 //import org.apache.lucene.index.Term;
@@ -44,27 +46,27 @@ public final class QueryBuilder {
 //        return query;
 //    }
 //
-//    private static Set<String> separateTerms(final String keyword) {
-//    	final Set<String> result = new HashSet<String>();
-//    	TokenStream tokenStream = null;
-//    	StandardAnalyzer analyzer = null;
-//    	try {
-//    		analyzer = new StandardAnalyzer(Version.LUCENE_31);
-//    		tokenStream = analyzer.tokenStream(null, new StringReader(keyword));
-//    		final OffsetAttribute offsetAttribute = tokenStream.addAttribute(OffsetAttribute.class);
-//    		final CharTermAttribute charTermAttribute = tokenStream.addAttribute(CharTermAttribute.class);
-//    		while (tokenStream.incrementToken()) {
-//    			int startOffset = offsetAttribute.startOffset();
-//    			int endOffset = offsetAttribute.endOffset();
-//    			final String term = charTermAttribute.toString();
-//    			result.add(term);
-//    		}
-//    	} catch (IOException e) {
-//			LOGGER.error(String.format("can't parse '%s'", keyword), e);
-//		} finally {
-//			try {tokenStream.close();} catch (Throwable e) {}
-//			try {analyzer.close();} catch (Throwable e) {}
-//		}
-//    	return result;
-//    }
+    private static Set<String> separateTerms(final String keyword) {
+    	final Set<String> result = new HashSet<String>();
+    	TokenStream tokenStream = null;
+    	StandardAnalyzer analyzer = null;
+    	try {
+    		analyzer = new StandardAnalyzer(Version.LUCENE_31);
+    		tokenStream = analyzer.tokenStream(null, new StringReader(keyword));
+    		final OffsetAttribute offsetAttribute = tokenStream.addAttribute(OffsetAttribute.class);
+    		final CharTermAttribute charTermAttribute = tokenStream.addAttribute(CharTermAttribute.class);
+    		while (tokenStream.incrementToken()) {
+    			int startOffset = offsetAttribute.startOffset();
+    			int endOffset = offsetAttribute.endOffset();
+    			final String term = charTermAttribute.toString();
+    			result.add(term);
+    		}
+    	} catch (IOException e) {
+			LOGGER.error(String.format("can't parse '%s'", keyword), e);
+		} finally {
+			try {tokenStream.close();} catch (Throwable e) {}
+			try {analyzer.close();} catch (Throwable e) {}
+		}
+    	return result;
+    }
 }
