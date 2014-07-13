@@ -1,6 +1,7 @@
 package org.openiam.am.srvc.dto;
 
 import org.openiam.am.srvc.domain.URIPatternMetaEntity;
+import org.openiam.base.KeyNameDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -11,40 +12,23 @@ import java.util.Set;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "URIPatternMeta", propOrder = {
-        "id",
         "uriPatternId",
-        "name",
         "metaType",
         "metaValueSet"
 })
 @DozerDTOCorrespondence(URIPatternMetaEntity.class)
-public class URIPatternMeta implements Serializable {
+public class URIPatternMeta extends KeyNameDTO {
 
-	private String id;
 	private String uriPatternId;
-    private String name;
 	private URIPatternMetaType metaType;
 	private Set<URIPatternMetaValue> metaValueSet;
-	public String getId() {
-		return id;
-	}
-	public void setId(String id) {
-		this.id = id;
-	}
+	
 	public String getUriPatternId() {
 		return uriPatternId;
 	}
 	public void setUriPatternId(String uriPatternId) {
 		this.uriPatternId = uriPatternId;
 	}
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
 
     public URIPatternMetaType getMetaType() {
 		return metaType;
@@ -61,8 +45,7 @@ public class URIPatternMeta implements Serializable {
 	@Override
 	public int hashCode() {
 		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		int result = super.hashCode();
 		result = prime * result
 				+ ((metaType == null) ? 0 : metaType.hashCode());
 		result = prime * result
@@ -73,16 +56,11 @@ public class URIPatternMeta implements Serializable {
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
-		if (obj == null)
+		if (!super.equals(obj))
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
 		URIPatternMeta other = (URIPatternMeta) obj;
-		if (id == null) {
-			if (other.id != null)
-				return false;
-		} else if (!id.equals(other.id))
-			return false;
 		if (metaType == null) {
 			if (other.metaType != null)
 				return false;
@@ -95,4 +73,12 @@ public class URIPatternMeta implements Serializable {
 			return false;
 		return true;
 	}
+	@Override
+	public String toString() {
+		return String.format(
+				"URIPatternMeta [uriPatternId=%s, metaType=%s, toString()=%s]",
+				uriPatternId, metaType, super.toString());
+	}
+	
+	
 }

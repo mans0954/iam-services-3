@@ -2,6 +2,8 @@ package org.openiam.am.srvc.domain;
 
 import java.io.Serializable;
 
+import javax.persistence.AttributeOverride;
+import javax.persistence.AttributeOverrides;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -13,41 +15,23 @@ import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.am.srvc.dto.URIPatternMetaType;
+import org.openiam.base.domain.AbstractKeyNameEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 
 @Entity
 @Table(name = "URI_PATTERN_META_TYPE")
 @DozerDTOCorrespondence(URIPatternMetaType.class)
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class URIPatternMetaTypeEntity  implements Serializable {
+@AttributeOverrides({
+	@AttributeOverride(name = "id", column = @Column(name = "URI_PATTERN_META_TYPE_ID")),
+	@AttributeOverride(name = "name", column = @Column(name = "METADATA_TYPE_NAME", length = 100, nullable = false))
+})
+public class URIPatternMetaTypeEntity extends AbstractKeyNameEntity {
+	
+	public URIPatternMetaTypeEntity() {}
 
-	@Id
-    @GeneratedValue(generator = "system-uuid")
-    @GenericGenerator(name = "system-uuid", strategy = "uuid")
-    @Column(name = "URI_PATTERN_META_TYPE_ID", length = 32, nullable = false)
-	private String id;
-	
-	@Column(name = "METADATA_TYPE_NAME", length = 100, nullable = false)
-	private String name;
-	
 	@Column(name = "SPRING_BEAN_NAME", length = 100, nullable = false)
 	private String springBeanName;
-
-	public String getId() {
-		return id;
-	}
-
-	public void setId(String id) {
-		this.id = id;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
 
 	public String getSpringBeanName() {
 		return springBeanName;
@@ -60,9 +44,7 @@ public class URIPatternMetaTypeEntity  implements Serializable {
 	@Override
 	public int hashCode() {
 		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
-		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		int result = super.hashCode();
 		result = prime * result
 				+ ((springBeanName == null) ? 0 : springBeanName.hashCode());
 		return result;
@@ -72,21 +54,11 @@ public class URIPatternMetaTypeEntity  implements Serializable {
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
-		if (obj == null)
+		if (!super.equals(obj))
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
 		URIPatternMetaTypeEntity other = (URIPatternMetaTypeEntity) obj;
-		if (id == null) {
-			if (other.id != null)
-				return false;
-		} else if (!id.equals(other.id))
-			return false;
-		if (name == null) {
-			if (other.name != null)
-				return false;
-		} else if (!name.equals(other.name))
-			return false;
 		if (springBeanName == null) {
 			if (other.springBeanName != null)
 				return false;
@@ -98,9 +70,9 @@ public class URIPatternMetaTypeEntity  implements Serializable {
 	@Override
 	public String toString() {
 		return String.format(
-				"URIPatternMetaTypeEntity [id=%s, name=%s, springBeanName=%s]",
-				id, name, springBeanName);
+				"URIPatternMetaTypeEntity [springBeanName=%s, toString()=%s]",
+				springBeanName, super.toString());
 	}
-	
+
 	
 }

@@ -3,6 +3,8 @@ package org.openiam.idm.srvc.ui.theme.domain;
 import java.io.Serializable;
 import java.util.Set;
 
+import javax.persistence.AttributeOverride;
+import javax.persistence.AttributeOverrides;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -21,6 +23,7 @@ import org.openiam.am.srvc.domain.ContentProviderEntity;
 import org.openiam.am.srvc.domain.URIPatternEntity;
 import org.openiam.am.srvc.dto.ContentProvider;
 import org.openiam.am.srvc.dto.URIPattern;
+import org.openiam.base.domain.KeyEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.ui.theme.dto.UITheme;
 
@@ -28,16 +31,13 @@ import org.openiam.idm.srvc.ui.theme.dto.UITheme;
 @Table(name = "UI_THEME")
 @DozerDTOCorrespondence(UITheme.class)
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class UIThemeEntity implements Serializable {
+@AttributeOverrides({
+	@AttributeOverride(name = "id", column = @Column(name = "UI_THEME_ID"))
+})
+public class UIThemeEntity extends KeyEntity {
 	
 	public UIThemeEntity() {}
 
-	@Id
-    @GeneratedValue(generator = "system-uuid")
-    @GenericGenerator(name = "system-uuid", strategy = "uuid")
-    @Column(name = "UI_THEME_ID", length = 32)
-	private String id;
-	
 	@Column(name = "UI_THEME_NAME", length = 100)
     @Size(max = 100, message = "ui.theme.name.too.long")
 	private String name;
@@ -51,14 +51,6 @@ public class UIThemeEntity implements Serializable {
 	
 	@OneToMany(orphanRemoval = false, cascade = {CascadeType.DETACH, CascadeType.REFRESH}, mappedBy = "uiTheme", fetch = FetchType.LAZY)
 	private Set<URIPatternEntity> uriPatterns;
-
-	public String getId() {
-		return id;
-	}
-
-	public void setId(String id) {
-		this.id = id;
-	}
 
 	public String getName() {
 		return name;
@@ -95,8 +87,7 @@ public class UIThemeEntity implements Serializable {
 	@Override
 	public int hashCode() {
 		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		int result = super.hashCode();
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result + ((url == null) ? 0 : url.hashCode());
 		return result;
@@ -106,16 +97,11 @@ public class UIThemeEntity implements Serializable {
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
-		if (obj == null)
+		if (!super.equals(obj))
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
 		UIThemeEntity other = (UIThemeEntity) obj;
-		if (id == null) {
-			if (other.id != null)
-				return false;
-		} else if (!id.equals(other.id))
-			return false;
 		if (name == null) {
 			if (other.name != null)
 				return false;
@@ -131,9 +117,9 @@ public class UIThemeEntity implements Serializable {
 
 	@Override
 	public String toString() {
-		return String.format("UIThemeEntity [id=%s, name=%s, url=%s]", id,
-				name, url);
+		return String.format("UIThemeEntity [name=%s, url=%s, toString()=%s]",
+				name, url, super.toString());
 	}
-	
+
 	
 }

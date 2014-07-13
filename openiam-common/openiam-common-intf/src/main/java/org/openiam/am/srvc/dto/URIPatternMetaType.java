@@ -3,6 +3,7 @@ package org.openiam.am.srvc.dto;
 import java.io.Serializable;
 
 import org.openiam.am.srvc.domain.URIPatternMetaTypeEntity;
+import org.openiam.base.KeyNameDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -12,33 +13,17 @@ import java.io.Serializable;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "URIPatternMetaType", propOrder = {
-        "id",
-        "name",
         "springBeanName"
 })
 @DozerDTOCorrespondence(URIPatternMetaTypeEntity.class)
-public class URIPatternMetaType implements Serializable {
+public class URIPatternMetaType extends KeyNameDTO {
 
-	
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
-	private String id;
-	private String name;
+	
+	public URIPatternMetaType() {}
+	
 	private String springBeanName;
-	public String getId() {
-		return id;
-	}
-	public void setId(String id) {
-		this.id = id;
-	}
-	public String getName() {
-		return name;
-	}
-	public void setName(String name) {
-		this.name = name;
-	}
+	
 	public String getSpringBeanName() {
 		return springBeanName;
 	}
@@ -48,9 +33,7 @@ public class URIPatternMetaType implements Serializable {
 	@Override
 	public int hashCode() {
 		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
-		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		int result = super.hashCode();
 		result = prime * result
 				+ ((springBeanName == null) ? 0 : springBeanName.hashCode());
 		return result;
@@ -59,21 +42,11 @@ public class URIPatternMetaType implements Serializable {
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
-		if (obj == null)
+		if (!super.equals(obj))
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
 		URIPatternMetaType other = (URIPatternMetaType) obj;
-		if (id == null) {
-			if (other.id != null)
-				return false;
-		} else if (!id.equals(other.id))
-			return false;
-		if (name == null) {
-			if (other.name != null)
-				return false;
-		} else if (!name.equals(other.name))
-			return false;
 		if (springBeanName == null) {
 			if (other.springBeanName != null)
 				return false;
@@ -84,8 +57,8 @@ public class URIPatternMetaType implements Serializable {
 	@Override
 	public String toString() {
 		return String.format(
-				"URIPatternMetaType [id=%s, name=%s, springBeanName=%s]", id,
-				name, springBeanName);
+				"URIPatternMetaType [springBeanName=%s, toString()=%s]",
+				springBeanName, super.toString());
 	}
 	
 	

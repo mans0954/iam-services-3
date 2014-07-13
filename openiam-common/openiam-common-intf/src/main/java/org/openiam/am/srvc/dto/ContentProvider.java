@@ -4,6 +4,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.openiam.am.srvc.comparator.AuthLevelGroupingXrefComparator;
 import org.openiam.am.srvc.domain.AuthLevelGroupingContentProviderXrefEntity;
 import org.openiam.am.srvc.domain.ContentProviderEntity;
+import org.openiam.base.KeyNameDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -19,8 +20,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "ContentProvider", propOrder = {
-        "id",
-        "name",
         "isPublic",
         "domainPattern",
         "isSSL",
@@ -35,10 +34,7 @@ import java.util.concurrent.atomic.AtomicInteger;
         "groupingXrefs"
 })
 @DozerDTOCorrespondence(ContentProviderEntity.class)
-public class ContentProvider implements Serializable {
-
-	private String id;
-	private String name;
+public class ContentProvider extends KeyNameDTO {
 	private boolean isPublic;
 	private String domainPattern;
 	private Boolean isSSL;
@@ -61,18 +57,6 @@ public class ContentProvider implements Serializable {
 	@XmlTransient
 	private List<ContentProviderServer> serverList;
 	
-	public String getId() {
-		return id;
-	}
-	public void setId(String id) {
-		this.id = id;
-	}
-	public String getName() {
-		return name;
-	}
-	public void setName(String name) {
-		this.name = name;
-	}
 	public boolean getIsPublic() {
 		return isPublic;
 	}
@@ -183,26 +167,24 @@ public class ContentProvider implements Serializable {
 	@Override
 	public int hashCode() {
 		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((domainPattern == null) ? 0 : domainPattern.hashCode());
-		/*
-        result = prime * result
-                 + ((contextPath == null) ? 0 : contextPath.hashCode());
-		*/
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		int result = super.hashCode();
+		result = prime * result
+				+ ((domainPattern == null) ? 0 : domainPattern.hashCode());
 		result = prime * result + (isPublic ? 1231 : 1237);
 		result = prime * result + ((isSSL == null) ? 0 : isSSL.hashCode());
-		result = prime * result + ((name == null) ? 0 : name.hashCode());
-		result = prime * result + ((resourceId == null) ? 0 : resourceId.hashCode());
-		result = prime * result + ((url == null) ? 0 : url.hashCode());
+		result = prime * result
+				+ ((managedSysId == null) ? 0 : managedSysId.hashCode());
+		result = prime * result
+				+ ((resourceId == null) ? 0 : resourceId.hashCode());
 		result = prime * result + ((themeId == null) ? 0 : themeId.hashCode());
+		result = prime * result + ((url == null) ? 0 : url.hashCode());
 		return result;
 	}
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
-		if (obj == null)
+		if (!super.equals(obj))
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
@@ -212,24 +194,6 @@ public class ContentProvider implements Serializable {
 				return false;
 		} else if (!domainPattern.equals(other.domainPattern))
 			return false;
-		
-		if (url == null) {
-			if (other.url != null)
-				return false;
-		} else if (!url.equals(other.url))
-			return false;
-		/*
-        if (contextPath == null) {
-            if (other.contextPath != null)
-                return false;
-        } else if (!contextPath.equals(other.contextPath))
-            return false;
-		*/
-		if (id == null) {
-			if (other.id != null)
-				return false;
-		} else if (!id.equals(other.id))
-			return false;
 		if (isPublic != other.isPublic)
 			return false;
 		if (isSSL == null) {
@@ -237,29 +201,34 @@ public class ContentProvider implements Serializable {
 				return false;
 		} else if (!isSSL.equals(other.isSSL))
 			return false;
-		if (name == null) {
-			if (other.name != null)
+		if (managedSysId == null) {
+			if (other.managedSysId != null)
 				return false;
-		} else if (!name.equals(other.name))
+		} else if (!managedSysId.equals(other.managedSysId))
 			return false;
 		if (resourceId == null) {
 			if (other.resourceId != null)
 				return false;
 		} else if (!resourceId.equals(other.resourceId))
 			return false;
-		
 		if (themeId == null) {
 			if (other.themeId != null)
 				return false;
 		} else if (!themeId.equals(other.themeId))
+			return false;
+		if (url == null) {
+			if (other.url != null)
+				return false;
+		} else if (!url.equals(other.url))
 			return false;
 		return true;
 	}
 	@Override
 	public String toString() {
 		return String
-				.format("ContentProvider [id=%s, name=%s, isPublic=%s, domainPattern=%s, isSSL=%s, resourceId=%s]",
-						id, name, isPublic, domainPattern, isSSL, resourceId);
+				.format("ContentProvider [isPublic=%s, domainPattern=%s, isSSL=%s, managedSysId=%s, resourceId=%s, url=%s, themeId=%s]",
+						isPublic, domainPattern, isSSL, managedSysId,
+						resourceId, url, themeId);
 	}
 	
 	

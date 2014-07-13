@@ -50,7 +50,7 @@ public class MetadataElementPageTemplateEntity extends AbstractKeyNameEntity {
 	private ResourceEntity resource;
 	
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "template", fetch = FetchType.LAZY)
-    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+    //@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<MetadataElementPageTemplateXrefEntity> metadataElements;
     
     //@ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY, optional=true)
@@ -61,7 +61,7 @@ public class MetadataElementPageTemplateEntity extends AbstractKeyNameEntity {
             joinColumns = {@JoinColumn(name = "TEMPLATE_ID")},
             inverseJoinColumns = {@JoinColumn(name = "URI_PATTERN_ID")})
     @Fetch(FetchMode.SUBSELECT)
-    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+    //@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<URIPatternEntity> uriPatterns;
     
     @ManyToOne(fetch=FetchType.EAGER)
@@ -71,7 +71,7 @@ public class MetadataElementPageTemplateEntity extends AbstractKeyNameEntity {
     
     @Internationalized
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "template", fetch = FetchType.LAZY)
-    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+    //@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<MetadataFieldTemplateXrefEntity> fieldXrefs;
     
 	@Column(name = "IS_PUBLIC", nullable = false)

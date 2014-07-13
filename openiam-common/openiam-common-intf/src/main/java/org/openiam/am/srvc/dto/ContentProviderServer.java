@@ -1,6 +1,7 @@
 package org.openiam.am.srvc.dto;
 
 import org.openiam.am.srvc.domain.ContentProviderServerEntity;
+import org.openiam.base.KeyDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -10,23 +11,15 @@ import javax.xml.bind.annotation.XmlType;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "ContentProviderServer", propOrder = {
-        "id",
         "contentProviderId",
         "serverURL"
 })
 @DozerDTOCorrespondence(ContentProviderServerEntity.class)
-public class ContentProviderServer {
+public class ContentProviderServer extends KeyDTO {
 
-	private String id;
 	private String contentProviderId;
 	private String serverURL;
 
-	public String getId() {
-		return id;
-	}
-	public void setId(String id) {
-		this.id = id;
-	}
 	public String getContentProviderId() {
 		return contentProviderId;
 	}
@@ -42,12 +35,11 @@ public class ContentProviderServer {
 	@Override
 	public int hashCode() {
 		final int prime = 31;
-		int result = 1;
+		int result = super.hashCode();
 		result = prime
 				* result
 				+ ((contentProviderId == null) ? 0 : contentProviderId
 						.hashCode());
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		result = prime * result
 				+ ((serverURL == null) ? 0 : serverURL.hashCode());
 		return result;
@@ -56,7 +48,7 @@ public class ContentProviderServer {
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
-		if (obj == null)
+		if (!super.equals(obj))
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
@@ -65,11 +57,6 @@ public class ContentProviderServer {
 			if (other.contentProviderId != null)
 				return false;
 		} else if (!contentProviderId.equals(other.contentProviderId))
-			return false;
-		if (id == null) {
-			if (other.id != null)
-				return false;
-		} else if (!id.equals(other.id))
 			return false;
 		if (serverURL == null) {
 			if (other.serverURL != null)
@@ -81,8 +68,8 @@ public class ContentProviderServer {
 	@Override
 	public String toString() {
 		return String
-				.format("ContentProviderServer [id=%s, contentProviderId=%s, serverURL=%s]",
-						id, contentProviderId, serverURL);
+				.format("ContentProviderServer [contentProviderId=%s, serverURL=%s, toString()=%s]",
+						contentProviderId, serverURL, super.toString());
 	}
 	
 	

@@ -3,6 +3,7 @@ package org.openiam.am.srvc.dto;
 import org.openiam.am.srvc.comparator.AuthLevelGroupingXrefComparator;
 import org.openiam.am.srvc.domain.AuthLevelGroupingURIPatternXrefEntity;
 import org.openiam.am.srvc.domain.URIPatternEntity;
+import org.openiam.base.KeyDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.meta.dto.MetadataElementPageTemplate;
 
@@ -17,7 +18,6 @@ import java.util.Set;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "URIPattern", propOrder = {
-        "id",
         "contentProviderId",
         "contentProviderName",
         "pattern",
@@ -30,9 +30,8 @@ import java.util.Set;
         "groupingXrefs"
 })
 @DozerDTOCorrespondence(URIPatternEntity.class)
-public class URIPattern implements Serializable {
+public class URIPattern extends KeyDTO {
 
-	private String id;
 	private String contentProviderId;
 	private String contentProviderName;
 	private String pattern;
@@ -44,12 +43,6 @@ public class URIPattern implements Serializable {
 	private String themeId;
 	private Set<AuthLevelGroupingURIPatternXref> groupingXrefs;
 	
-	public String getId() {
-		return id;
-	}
-	public void setId(String id) {
-		this.id = id;
-	}
 	public String getContentProviderId() {
 		return contentProviderId;
 	}
@@ -127,12 +120,15 @@ public class URIPattern implements Serializable {
 	@Override
 	public int hashCode() {
 		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((contentProviderId == null) ? 0 : contentProviderId.hashCode());
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		int result = super.hashCode();
+		result = prime
+				* result
+				+ ((contentProviderId == null) ? 0 : contentProviderId
+						.hashCode());
 		result = prime * result + (isPublic ? 1231 : 1237);
 		result = prime * result + ((pattern == null) ? 0 : pattern.hashCode());
-		result = prime * result + ((resourceId == null) ? 0 : resourceId.hashCode());
+		result = prime * result
+				+ ((resourceId == null) ? 0 : resourceId.hashCode());
 		result = prime * result + ((themeId == null) ? 0 : themeId.hashCode());
 		return result;
 	}
@@ -140,7 +136,7 @@ public class URIPattern implements Serializable {
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
-		if (obj == null)
+		if (!super.equals(obj))
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
@@ -149,11 +145,6 @@ public class URIPattern implements Serializable {
 			if (other.contentProviderId != null)
 				return false;
 		} else if (!contentProviderId.equals(other.contentProviderId))
-			return false;
-		if (id == null) {
-			if (other.id != null)
-				return false;
-		} else if (!id.equals(other.id))
 			return false;
 		if (isPublic != other.isPublic)
 			return false;
@@ -167,7 +158,6 @@ public class URIPattern implements Serializable {
 				return false;
 		} else if (!resourceId.equals(other.resourceId))
 			return false;
-		
 		if (themeId == null) {
 			if (other.themeId != null)
 				return false;
@@ -178,9 +168,11 @@ public class URIPattern implements Serializable {
 	@Override
 	public String toString() {
 		return String
-				.format("URIPattern [id=%s, contentProviderId=%s, pattern=%s, isPublic=%s, resourceId=%s]",
-						id, contentProviderId, pattern, isPublic, resourceId);
+				.format("URIPattern [contentProviderId=%s, pattern=%s, isPublic=%s, resourceId=%s, themeId=%s, toString()=%s]",
+						contentProviderId, pattern, isPublic, resourceId,
+						themeId, super.toString());
 	}
+	
 	
 	
 }

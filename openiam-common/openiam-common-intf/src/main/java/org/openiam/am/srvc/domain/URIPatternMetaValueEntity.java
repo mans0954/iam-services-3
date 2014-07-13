@@ -5,27 +5,24 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.am.srvc.dto.URIPatternMetaValue;
 import org.openiam.base.AttributeOperationEnum;
+import org.openiam.base.domain.AbstractKeyNameEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 
 import javax.persistence.*;
+
 import java.io.Serializable;
 
 @Entity
 @Table(name = "URI_PATTERN_META_VALUE")
 @DozerDTOCorrespondence(URIPatternMetaValue.class)
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class URIPatternMetaValueEntity implements Serializable {
+@AttributeOverrides({
+	@AttributeOverride(name = "id", column = @Column(name = "URI_PATTERN_META_VALUE_ID")),
+	@AttributeOverride(name = "name", column = @Column(name = "META_ATTRIBUTE_NAME", length = 100, nullable = false))
+})
+public class URIPatternMetaValueEntity extends AbstractKeyNameEntity {
 
 	private static final long serialVersionUID = 1L;
-	
-	@Id
-    @GeneratedValue(generator = "system-uuid")
-    @GenericGenerator(name = "system-uuid", strategy = "uuid")
-    @Column(name = "URI_PATTERN_META_VALUE_ID", length = 32, nullable = false)
-	private String id;
-	
-	@Column(name = "META_ATTRIBUTE_NAME", length = 100, nullable = false)
-	private String name;
 	
 	@Column(name = "STATIC_VALUE", length = 4096, nullable = true)
 	private String staticValue;
@@ -42,22 +39,6 @@ public class URIPatternMetaValueEntity implements Serializable {
 	private URIPatternMetaEntity metaEntity;
     //@Transient
 	//private AttributeOperationEnum operation = AttributeOperationEnum.NO_CHANGE;
-	
-	public String getId() {
-		return id;
-	}
-	
-	public void setId(String id) {
-		this.id = id;
-	}
-	
-	public String getName() {
-		return name;
-	}
-	
-	public void setName(String name) {
-		this.name = name;
-	}
 	
 	public AuthResourceAMAttributeEntity getAmAttribute() {
 		return amAttribute;
@@ -94,15 +75,13 @@ public class URIPatternMetaValueEntity implements Serializable {
 	@Override
 	public int hashCode() {
 		final int prime = 31;
-		int result = 1;
+		int result = super.hashCode();
 		result = prime * result
 				+ ((amAttribute == null) ? 0 : amAttribute.hashCode());
 		result = prime * result
 				+ ((groovyScript == null) ? 0 : groovyScript.hashCode());
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		result = prime * result
 				+ ((metaEntity == null) ? 0 : metaEntity.hashCode());
-		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result
 				+ ((staticValue == null) ? 0 : staticValue.hashCode());
 		return result;
@@ -112,7 +91,7 @@ public class URIPatternMetaValueEntity implements Serializable {
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
-		if (obj == null)
+		if (!super.equals(obj))
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
@@ -127,20 +106,10 @@ public class URIPatternMetaValueEntity implements Serializable {
 				return false;
 		} else if (!groovyScript.equals(other.groovyScript))
 			return false;
-		if (id == null) {
-			if (other.id != null)
-				return false;
-		} else if (!id.equals(other.id))
-			return false;
 		if (metaEntity == null) {
 			if (other.metaEntity != null)
 				return false;
 		} else if (!metaEntity.equals(other.metaEntity))
-			return false;
-		if (name == null) {
-			if (other.name != null)
-				return false;
-		} else if (!name.equals(other.name))
 			return false;
 		if (staticValue == null) {
 			if (other.staticValue != null)
@@ -152,13 +121,10 @@ public class URIPatternMetaValueEntity implements Serializable {
 
 	@Override
 	public String toString() {
-		return "URIPatternMetaValueEntity [id=" + id + ", name=" + name
-				+ ", staticValue=" + staticValue + ", groovyScript="
-				+ groovyScript + ", amAttribute=" + amAttribute
-				+ ", metaEntity=" + metaEntity + "]";
+		return String
+				.format("URIPatternMetaValueEntity [staticValue=%s, groovyScript=%s, amAttribute=%s, metaEntity=%s]",
+						staticValue, groovyScript, amAttribute, metaEntity);
 	}
-
-    
 
 	
 }

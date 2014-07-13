@@ -9,36 +9,27 @@ import javax.xml.bind.annotation.XmlType;
 
 import org.openiam.am.srvc.dto.ContentProvider;
 import org.openiam.am.srvc.dto.URIPattern;
+import org.openiam.base.KeyDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.ui.theme.domain.UIThemeEntity;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "UITheme", propOrder = {
-	"id",
 	"name",
 	"url",
 	"contentProviders",
 	"uriPatterns"
 })
 @DozerDTOCorrespondence(UIThemeEntity.class)
-public class UITheme implements Serializable {
+public class UITheme extends KeyDTO {
 	
 	public UITheme() {}
 
-	private String id;
 	private String name;
 	private String url;
 	
 	private Set<ContentProvider> contentProviders;
 	private Set<URIPattern> uriPatterns;
-	
-	public String getId() {
-		return id;
-	}
-
-	public void setId(String id) {
-		this.id = id;
-	}
 
 	public String getName() {
 		return name;
@@ -75,8 +66,7 @@ public class UITheme implements Serializable {
 	@Override
 	public int hashCode() {
 		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		int result = super.hashCode();
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result + ((url == null) ? 0 : url.hashCode());
 		return result;
@@ -86,16 +76,11 @@ public class UITheme implements Serializable {
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
-		if (obj == null)
+		if (!super.equals(obj))
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
 		UITheme other = (UITheme) obj;
-		if (id == null) {
-			if (other.id != null)
-				return false;
-		} else if (!id.equals(other.id))
-			return false;
 		if (name == null) {
 			if (other.name != null)
 				return false;
@@ -111,9 +96,12 @@ public class UITheme implements Serializable {
 
 	@Override
 	public String toString() {
-		return String.format("UITheme [id=%s, name=%s, url=%s]", id,
-				name, url);
+		return String
+				.format("UITheme [name=%s, url=%s, contentProviders=%s, uriPatterns=%s, toString()=%s]",
+						name, url, contentProviders, uriPatterns,
+						super.toString());
 	}
+
 	
 	
 }

@@ -8,6 +8,7 @@ import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 import org.openiam.am.srvc.dto.AuthLevelGroupingURIPatternXref;
 import org.openiam.am.srvc.dto.URIPattern;
+import org.openiam.base.domain.KeyEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.meta.domain.MetadataElementPageTemplateEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
@@ -24,14 +25,11 @@ import java.util.Set;
 @Table(name = "URI_PATTERN")
 @DozerDTOCorrespondence(URIPattern.class)
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class URIPatternEntity implements Serializable {
+@AttributeOverrides({
+	@AttributeOverride(name = "id", column = @Column(name = "URI_PATTERN_ID"))
+})
+public class URIPatternEntity extends KeyEntity {
 
-	@Id
-    @GeneratedValue(generator = "system-uuid")
-    @GenericGenerator(name = "system-uuid", strategy = "uuid")
-    @Column(name = "URI_PATTERN_ID", length = 32, nullable = false)
-	private String id;
-	
 	@ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name="CONTENT_PROVIDER_ID", referencedColumnName = "CONTENT_PROVIDER_ID")
 	private ContentProviderEntity contentProvider;
@@ -57,7 +55,7 @@ public class URIPatternEntity implements Serializable {
 	private ResourceEntity resource;
 	
 	@OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL, mappedBy = "pattern")
-	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+	//@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	private Set<URIPatternMetaEntity> metaEntitySet;
 
 	//@OneToMany(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, mappedBy="uriPattern")
@@ -66,22 +64,14 @@ public class URIPatternEntity implements Serializable {
             joinColumns = {@JoinColumn(name = "URI_PATTERN_ID")},
             inverseJoinColumns = {@JoinColumn(name = "TEMPLATE_ID")})
     @Fetch(FetchMode.SUBSELECT)
-	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+	//@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	private Set<MetadataElementPageTemplateEntity> pageTemplates;
 	
 	@OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "pattern", fetch = FetchType.LAZY)
 	@OrderBy("order ASC")
-	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+	//@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	private Set<AuthLevelGroupingURIPatternXrefEntity> groupingXrefs;
 	
-	public String getId() {
-		return id;
-	}
-
-	public void setId(String id) {
-		this.id = id;
-	}
-
 	public ContentProviderEntity getContentProvider() {
 		return contentProvider;
 	}
@@ -168,16 +158,14 @@ public class URIPatternEntity implements Serializable {
 	@Override
 	public int hashCode() {
 		final int prime = 31;
-		int result = 1;
+		int result = super.hashCode();
 		result = prime * result
 				+ ((contentProvider == null) ? 0 : contentProvider.hashCode());
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		result = prime * result + (isPublic ? 1231 : 1237);
 		result = prime * result + ((pattern == null) ? 0 : pattern.hashCode());
 		result = prime * result
 				+ ((resource == null) ? 0 : resource.hashCode());
-		result = prime * result
-				+ ((uiTheme == null) ? 0 : uiTheme.hashCode());
+		result = prime * result + ((uiTheme == null) ? 0 : uiTheme.hashCode());
 		return result;
 	}
 
@@ -185,7 +173,7 @@ public class URIPatternEntity implements Serializable {
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
-		if (obj == null)
+		if (!super.equals(obj))
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
@@ -194,11 +182,6 @@ public class URIPatternEntity implements Serializable {
 			if (other.contentProvider != null)
 				return false;
 		} else if (!contentProvider.equals(other.contentProvider))
-			return false;
-		if (id == null) {
-			if (other.id != null)
-				return false;
-		} else if (!id.equals(other.id))
 			return false;
 		if (isPublic != other.isPublic)
 			return false;
@@ -212,7 +195,6 @@ public class URIPatternEntity implements Serializable {
 				return false;
 		} else if (!resource.equals(other.resource))
 			return false;
-		
 		if (uiTheme == null) {
 			if (other.uiTheme != null)
 				return false;
@@ -220,6 +202,14 @@ public class URIPatternEntity implements Serializable {
 			return false;
 		return true;
 	}
-	
+
+	@Override
+	public String toString() {
+		return String
+				.format("URIPatternEntity [contentProvider=%s, pattern=%s, isPublic=%s, uiTheme=%s, resource=%s, toString()=%s]",
+						contentProvider, pattern, isPublic, uiTheme, resource,
+						super.toString());
+	}
+
 	
 }
