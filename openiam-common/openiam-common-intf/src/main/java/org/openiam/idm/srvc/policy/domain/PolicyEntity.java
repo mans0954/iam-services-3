@@ -4,6 +4,9 @@ package org.openiam.idm.srvc.policy.domain;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
+
+import javax.persistence.AttributeOverride;
+import javax.persistence.AttributeOverrides;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -19,7 +22,10 @@ import javax.persistence.TemporalType;
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.GenericGenerator;
+import org.openiam.base.domain.AbstractKeyNameEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.policy.dto.Policy;
 
@@ -27,23 +33,19 @@ import org.openiam.idm.srvc.policy.dto.Policy;
 @Table(name = "POLICY")
 @DozerDTOCorrespondence(Policy.class)
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class PolicyEntity implements java.io.Serializable {
+@AttributeOverrides({
+	@AttributeOverride(name = "id", column = @Column(name = "POLICY_ID")),
+	@AttributeOverride(name = "name", column = @Column(name = "NAME", length = 60))
+})
+public class PolicyEntity extends AbstractKeyNameEntity {
 
     /**
      *
      */
     private static final long serialVersionUID = 1L;
-	@Id
-	@GeneratedValue(generator = "system-uuid")
-	@GenericGenerator(name = "system-uuid", strategy = "uuid")
-	@Column(name = "POLICY_ID", length = 32)
-	private String policyId;
 
 	@Column(name = "POLICY_DEF_ID", length = 32)
 	private String policyDefId;
-
-	@Column(name = "NAME", length = 60)
-	private String name;
 
 	@Column(name = "DESCRIPTION", length = 255)
 	private String description;
@@ -74,32 +76,14 @@ public class PolicyEntity implements java.io.Serializable {
 	@Column(name = "ENABLEMENT")
     private Integer enablement;
 
-	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-	@JoinColumn(name = "POLICY_ID", insertable = true, updatable = true)
+	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy="policy", orphanRemoval=true)
+	@Fetch(FetchMode.SUBSELECT)
+	//@JoinColumn(name = "POLICY_ID", insertable = true, updatable = true)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	private Set<PolicyAttributeEntity> policyAttributes = new HashSet<PolicyAttributeEntity>(
 			0);
 
     public PolicyEntity() {
-    }
-
-    public PolicyEntity(String policyId) {
-        this.policyId = policyId;
-    }
-
-    public String getPolicyId() {
-        return this.policyId;
-    }
-
-    public void setPolicyId(String policyId) {
-        this.policyId = policyId;
-    }
-
-    public String getName() {
-        return this.name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public String getDescription() {
@@ -207,19 +191,101 @@ public class PolicyEntity implements java.io.Serializable {
         this.enablement = enablemement;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Object#toString()
-	 */
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result
+				+ ((createDate == null) ? 0 : createDate.hashCode());
+		result = prime * result
+				+ ((createdBy == null) ? 0 : createdBy.hashCode());
+		result = prime * result
+				+ ((description == null) ? 0 : description.hashCode());
+		result = prime * result
+				+ ((enablement == null) ? 0 : enablement.hashCode());
+		result = prime * result
+				+ ((lastUpdate == null) ? 0 : lastUpdate.hashCode());
+		result = prime * result
+				+ ((lastUpdatedBy == null) ? 0 : lastUpdatedBy.hashCode());
+		result = prime * result
+				+ ((policyDefId == null) ? 0 : policyDefId.hashCode());
+		result = prime * result + ((rule == null) ? 0 : rule.hashCode());
+		result = prime * result
+				+ ((ruleSrcUrl == null) ? 0 : ruleSrcUrl.hashCode());
+		result = prime * result + ((status == null) ? 0 : status.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		PolicyEntity other = (PolicyEntity) obj;
+		if (createDate == null) {
+			if (other.createDate != null)
+				return false;
+		} else if (!createDate.equals(other.createDate))
+			return false;
+		if (createdBy == null) {
+			if (other.createdBy != null)
+				return false;
+		} else if (!createdBy.equals(other.createdBy))
+			return false;
+		if (description == null) {
+			if (other.description != null)
+				return false;
+		} else if (!description.equals(other.description))
+			return false;
+		if (enablement == null) {
+			if (other.enablement != null)
+				return false;
+		} else if (!enablement.equals(other.enablement))
+			return false;
+		if (lastUpdate == null) {
+			if (other.lastUpdate != null)
+				return false;
+		} else if (!lastUpdate.equals(other.lastUpdate))
+			return false;
+		if (lastUpdatedBy == null) {
+			if (other.lastUpdatedBy != null)
+				return false;
+		} else if (!lastUpdatedBy.equals(other.lastUpdatedBy))
+			return false;
+		if (policyDefId == null) {
+			if (other.policyDefId != null)
+				return false;
+		} else if (!policyDefId.equals(other.policyDefId))
+			return false;
+		if (rule == null) {
+			if (other.rule != null)
+				return false;
+		} else if (!rule.equals(other.rule))
+			return false;
+		if (ruleSrcUrl == null) {
+			if (other.ruleSrcUrl != null)
+				return false;
+		} else if (!ruleSrcUrl.equals(other.ruleSrcUrl))
+			return false;
+		if (status == null) {
+			if (other.status != null)
+				return false;
+		} else if (!status.equals(other.status))
+			return false;
+		return true;
+	}
+
 	@Override
 	public String toString() {
-		return "PolicyEntity [policyId=" + policyId + ", policyDefId="
-				+ policyDefId + ", name=" + name + ", description="
-				+ description + ", status=" + status + ", createDate="
-				+ createDate + ", createdBy=" + createdBy + ", lastUpdate="
-				+ lastUpdate + ", lastUpdatedBy=" + lastUpdatedBy + ", rule="
-                + rule + ", ruleSrcUrl=" + ruleSrcUrl + ", enablement="
-                + enablement + ", policyAttributes=" + policyAttributes + "]";
+		return String
+				.format("PolicyEntity [policyDefId=%s, description=%s, status=%s, createDate=%s, createdBy=%s, lastUpdate=%s, lastUpdatedBy=%s, rule=%s, ruleSrcUrl=%s, enablement=%s, toString()=%s]",
+						policyDefId, description, status, createDate,
+						createdBy, lastUpdate, lastUpdatedBy, rule, ruleSrcUrl,
+						enablement, super.toString());
 	}
+
+	
 }

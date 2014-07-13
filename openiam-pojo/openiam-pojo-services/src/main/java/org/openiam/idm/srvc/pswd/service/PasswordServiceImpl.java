@@ -131,7 +131,7 @@ public class PasswordServiceImpl implements PasswordService {
 			retVal.fail();
 			return retVal;
 		}
-		log.info(String.format("Selected Password policy=%s", pswdPolicy.getPolicyId()));
+		log.info(String.format("Selected Password policy=%s", pswdPolicy.getId()));
 
 		try {
 			final List<PasswordRule> rules = passwordValidator.getPasswordRules(pswdPolicy, pswd);
@@ -164,7 +164,7 @@ public class PasswordServiceImpl implements PasswordService {
 			retVal.fail();
 			return retVal;
 		}
-		log.info("Selected Password policy=" + pswdPolicy.getPolicyId());
+		log.info("Selected Password policy=" + pswdPolicy.getId());
 
 		try {
 			final List<PasswordRule> rules = passwordValidator.getPasswordRules(pswdPolicy, pswd, user, lg);
@@ -200,7 +200,7 @@ public class PasswordServiceImpl implements PasswordService {
 			retVal.fail();
 			return retVal;
 		}
-		log.info(String.format("Selected Password policy=%s",pswdPolicy.getPolicyId()));
+		log.info(String.format("Selected Password policy=%s",pswdPolicy.getId()));
 
 		try {
 			final List<PasswordRule> rules = passwordValidator.getPasswordRules(pswdPolicy, pswd, user, lg);

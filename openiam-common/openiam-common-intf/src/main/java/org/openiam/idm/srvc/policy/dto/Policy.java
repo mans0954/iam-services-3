@@ -9,6 +9,7 @@ import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 
 import org.apache.commons.lang.StringUtils;
+import org.openiam.base.KeyNameDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.policy.domain.PolicyEntity;
 
@@ -16,16 +17,24 @@ import org.openiam.idm.srvc.policy.domain.PolicyEntity;
  * <code>Policy</code> represents a policy object that is used by the policy service.
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "Policy", propOrder = { "policyId", "policyDefId", "name",
-        "description", "status", "createDate", "createdBy", "lastUpdate",
-        "lastUpdatedBy", "rule", "ruleSrcUrl", "policyAttributes", "enablement" })
+@XmlType(name = "Policy", propOrder = {
+	"policyDefId",
+	"description", 
+	"status", 
+	"createDate", 
+	"createdBy", 
+	"lastUpdate",
+	"lastUpdatedBy", 
+	"rule", 
+	"ruleSrcUrl", 
+	"policyAttributes", 
+	"enablement" 
+})
 @DozerDTOCorrespondence(PolicyEntity.class)
-public class Policy implements java.io.Serializable {
+public class Policy extends KeyNameDTO {
 
     private static final long serialVersionUID = 5733143745301294956L;
-    private String policyId;
     private String policyDefId;
-    private String name;
     private String description;
     private Integer status;
     @XmlSchemaType(name = "dateTime")
@@ -42,22 +51,6 @@ public class Policy implements java.io.Serializable {
             0);
 
     public Policy() {
-    }
-
-    public String getPolicyId() {
-        return this.policyId;
-    }
-
-    public void setPolicyId(String policyId) {
-        this.policyId = policyId;
-    }
-
-    public String getName() {
-        return this.name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public String getDescription() {
@@ -173,19 +166,101 @@ public class Policy implements java.io.Serializable {
         this.enablement = enablemement;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see java.lang.Object#toString()
-     */
-    @Override
-    public String toString() {
-        return "Policy [policyId=" + policyId + ", policyDefId=" + policyDefId
-                + ", name=" + name + ", description=" + description
-                + ", status=" + status + ", createDate=" + createDate
-                + ", createdBy=" + createdBy + ", lastUpdate=" + lastUpdate
-                + ", lastUpdatedBy=" + lastUpdatedBy + ", rule=" + rule
-                + ", ruleSrcUrl=" + ruleSrcUrl + ", enablement=" + enablement
-                + ", policyAttributes=" + policyAttributes + "]";
-    }
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result
+				+ ((createDate == null) ? 0 : createDate.hashCode());
+		result = prime * result
+				+ ((createdBy == null) ? 0 : createdBy.hashCode());
+		result = prime * result
+				+ ((description == null) ? 0 : description.hashCode());
+		result = prime * result
+				+ ((enablement == null) ? 0 : enablement.hashCode());
+		result = prime * result
+				+ ((lastUpdate == null) ? 0 : lastUpdate.hashCode());
+		result = prime * result
+				+ ((lastUpdatedBy == null) ? 0 : lastUpdatedBy.hashCode());
+		result = prime * result
+				+ ((policyDefId == null) ? 0 : policyDefId.hashCode());
+		result = prime * result + ((rule == null) ? 0 : rule.hashCode());
+		result = prime * result
+				+ ((ruleSrcUrl == null) ? 0 : ruleSrcUrl.hashCode());
+		result = prime * result + ((status == null) ? 0 : status.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Policy other = (Policy) obj;
+		if (createDate == null) {
+			if (other.createDate != null)
+				return false;
+		} else if (!createDate.equals(other.createDate))
+			return false;
+		if (createdBy == null) {
+			if (other.createdBy != null)
+				return false;
+		} else if (!createdBy.equals(other.createdBy))
+			return false;
+		if (description == null) {
+			if (other.description != null)
+				return false;
+		} else if (!description.equals(other.description))
+			return false;
+		if (enablement == null) {
+			if (other.enablement != null)
+				return false;
+		} else if (!enablement.equals(other.enablement))
+			return false;
+		if (lastUpdate == null) {
+			if (other.lastUpdate != null)
+				return false;
+		} else if (!lastUpdate.equals(other.lastUpdate))
+			return false;
+		if (lastUpdatedBy == null) {
+			if (other.lastUpdatedBy != null)
+				return false;
+		} else if (!lastUpdatedBy.equals(other.lastUpdatedBy))
+			return false;
+		if (policyDefId == null) {
+			if (other.policyDefId != null)
+				return false;
+		} else if (!policyDefId.equals(other.policyDefId))
+			return false;
+		if (rule == null) {
+			if (other.rule != null)
+				return false;
+		} else if (!rule.equals(other.rule))
+			return false;
+		if (ruleSrcUrl == null) {
+			if (other.ruleSrcUrl != null)
+				return false;
+		} else if (!ruleSrcUrl.equals(other.ruleSrcUrl))
+			return false;
+		if (status == null) {
+			if (other.status != null)
+				return false;
+		} else if (!status.equals(other.status))
+			return false;
+		return true;
+	}
+
+	@Override
+	public String toString() {
+		return String
+				.format("Policy [policyDefId=%s, description=%s, status=%s, createDate=%s, createdBy=%s, lastUpdate=%s, lastUpdatedBy=%s, rule=%s, ruleSrcUrl=%s, enablement=%s]",
+						policyDefId, description, status, createDate,
+						createdBy, lastUpdate, lastUpdatedBy, rule, ruleSrcUrl,
+						enablement);
+	}
+
+    
 }

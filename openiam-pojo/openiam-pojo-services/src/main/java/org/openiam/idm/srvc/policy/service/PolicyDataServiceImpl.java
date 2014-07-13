@@ -59,7 +59,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 @WebService(endpointInterface = "org.openiam.idm.srvc.policy.service.PolicyDataService", targetNamespace = "urn:idm.openiam.org/srvc/policy/service", portName = "PolicyWebServicePort", serviceName = "PolicyWebService")
 @Service("policyDataService")
-@Transactional
 public class PolicyDataServiceImpl implements PolicyDataService {
 
 	private static final Log log = LogFactory.getLog(PolicyDataServiceImpl.class);
@@ -88,6 +87,7 @@ public class PolicyDataServiceImpl implements PolicyDataService {
 	private PolicyService policyService;
 
 	@Override
+	@Transactional(readOnly=true)
 	public Policy getPolicy(String policyId) {
 		if (policyId == null) {
 			throw new NullPointerException("PolicyId is null");
@@ -98,6 +98,7 @@ public class PolicyDataServiceImpl implements PolicyDataService {
 
 	@Override
 	@Deprecated
+	@Transactional(readOnly=true)
 	public List<Policy> getAllPolicies(String policyDefId, final int from, final int size) {
 		final PolicySearchBean searchBean = new PolicySearchBean();
 		searchBean.setPolicyDefId(policyDefId);
@@ -106,6 +107,7 @@ public class PolicyDataServiceImpl implements PolicyDataService {
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public List<PolicyDefParam> getAllPolicyAttributes(String policyDefId,
 			String pswdGroup) {
 		if (policyDefId == null) {
@@ -123,6 +125,7 @@ public class PolicyDataServiceImpl implements PolicyDataService {
 
 	}
 
+	@Override
 	public Response savePolicy(final Policy policy) {
 		final Response response = new Response(ResponseStatus.SUCCESS);
 
@@ -138,20 +141,20 @@ public class PolicyDataServiceImpl implements PolicyDataService {
 
 			final List<PolicyEntity> found = policyService.findPolicyByName(policy.getPolicyDefId(), policy.getName());
 			if (found != null && found.size() > 0) {
-				if (StringUtils.isBlank(policy.getPolicyId()) && found != null) {
+				if (StringUtils.isBlank(policy.getId()) && found != null) {
 					throw new BasicDataServiceException(ResponseCode.NAME_TAKEN);
 				}
 
-				if (StringUtils.isNotBlank(policy.getPolicyId())
-						&& !policy.getPolicyId().equals(
-								found.get(0).getPolicyId())) {
+				if (StringUtils.isNotBlank(policy.getId())
+						&& !policy.getId().equals(
+								found.get(0).getId())) {
 					throw new BasicDataServiceException(ResponseCode.NAME_TAKEN);
 				}
 			}
 			final PolicyEntity pe = policyDozerConverter.convertToEntity(policy, true);
 
 			policyService.save(pe);
-			response.setResponseValue(pe.getPolicyId());
+			response.setResponseValue(pe.getId());
 		} catch (BasicDataServiceException e) {
 			log.warn("Can't save policty", e);
 			response.setErrorCode(e.getCode());
@@ -202,6 +205,7 @@ public class PolicyDataServiceImpl implements PolicyDataService {
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public List<PolicyObjectAssoc> getAssociationsForPolicy(String policyId) {
 
 		List<PolicyObjectAssoc> policyObjectAssoc = policyAssocObjectDozerConverter
@@ -212,6 +216,7 @@ public class PolicyDataServiceImpl implements PolicyDataService {
 	}
 
 	@Override
+	@Transactional
 	public Response savePolicyAssoc(PolicyObjectAssoc poa) {
 		final Response response = new Response(ResponseStatus.SUCCESS);
 		try {
@@ -244,6 +249,7 @@ public class PolicyDataServiceImpl implements PolicyDataService {
 	}
 
 	@Override
+	@Transactional(readOnly=true)
 	public List<Policy> findBeans(final PolicySearchBean searchBean, int from, int size) {
         return policyDozerConverter.convertToDTOList(policyService.findBeans(searchBean, from, size), true);
 	}
@@ -254,11 +260,13 @@ public class PolicyDataServiceImpl implements PolicyDataService {
 	}
 
     @Override
+    @Transactional(readOnly=true)
     public ITPolicy findITPolicy() {
         return itPolicyDozerConverter.convertToDTO(itPolicyDao.findITPolicy(), true);
     }
 
     @Override
+    @Transactional(readOnly=true)
     public Response resetITPolicy() {
         final Response response = new Response(ResponseStatus.SUCCESS);
         final ITPolicyEntity itPolicy = itPolicyDao.findITPolicy();
@@ -269,6 +277,7 @@ public class PolicyDataServiceImpl implements PolicyDataService {
     }
 
     @Override
+    @Transactional
     public Response saveOrUpdateITPolicy(ITPolicy itPolicy) {
         final Response response = new Response(ResponseStatus.SUCCESS);
 

@@ -1,6 +1,9 @@
 package org.openiam.idm.srvc.policy.service;
 
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -9,6 +12,8 @@ import org.openiam.idm.searchbeans.PolicySearchBean;
 import org.openiam.idm.srvc.policy.domain.PolicyAttributeEntity;
 import org.openiam.idm.srvc.policy.domain.PolicyDefParamEntity;
 import org.openiam.idm.srvc.policy.domain.PolicyEntity;
+import org.openiam.idm.srvc.res.domain.ResourceEntity;
+import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,35 +36,78 @@ public class PolicyServiceImpl implements PolicyService {
 	@Override
 	@Transactional
 	public void save(final PolicyEntity pe) {
-		if (StringUtils.isNotBlank(pe.getPolicyId())) {
-			final PolicyEntity poObject = policyDao.findById(pe.getPolicyId());
+		if (StringUtils.isNotBlank(pe.getId())) {
 			
 			if(CollectionUtils.isNotEmpty(pe.getPolicyAttributes())) {
 				for(final PolicyAttributeEntity attribute : pe.getPolicyAttributes()) {
-					attribute.setPolicyId(poObject.getPolicyId());
+					attribute.setPolicy(pe);
 				}
 			}
-
-			// TODO: extend this merge
-			poObject.setCreateDate(pe.getCreateDate());
-			poObject.setCreatedBy(pe.getCreatedBy());
-			poObject.setDescription(pe.getDescription());
-			poObject.setPolicyId(pe.getPolicyId());
-			poObject.setPolicyDefId(pe.getPolicyDefId());
-			poObject.setName(pe.getName());
-			poObject.setLastUpdate(pe.getLastUpdate());
-			poObject.setLastUpdatedBy(pe.getLastUpdatedBy());
-			poObject.setRule(pe.getRule());
-			poObject.setRuleSrcUrl(pe.getRuleSrcUrl());
-			poObject.setStatus(pe.getStatus());
-			poObject.setPolicyAttributes(pe.getPolicyAttributes());
-			// Updating Policy.
-			policyDao.update(poObject);
+			policyDao.merge(pe);
 		} else {
+			if(CollectionUtils.isNotEmpty(pe.getPolicyAttributes())) {
+				for(final PolicyAttributeEntity attribute : pe.getPolicyAttributes()) {
+					attribute.setPolicy(pe);
+				}
+			}
+			
 			// creating new Policy
 			policyDao.save(pe);
 		}
 	}
+	
+    private void mergeAttribute(final PolicyEntity bean, final PolicyEntity dbObject) {
+
+        Set<PolicyAttributeEntity> beanProps = (bean.getPolicyAttributes() != null) ? bean.getPolicyAttributes() : new HashSet<PolicyAttributeEntity>();
+        Set<PolicyAttributeEntity> dbProps = (dbObject.getPolicyAttributes() != null) ? new HashSet<PolicyAttributeEntity>(dbObject.getPolicyAttributes()) : new HashSet<PolicyAttributeEntity>();
+
+        /* update */
+        Iterator<PolicyAttributeEntity> dbIteroator = dbProps.iterator();
+        while(dbIteroator.hasNext()) {
+        	final PolicyAttributeEntity dbProp = dbIteroator.next();
+        	
+        	boolean contains = false;
+            for (final PolicyAttributeEntity beanProp : beanProps) {
+                if (StringUtils.equals(dbProp.getId(), beanProp.getId())) {
+                	dbProp.setDefParamId(beanProp.getDefParamId());
+                	dbProp.setName(beanProp.getName());
+                	dbProp.setOperation(beanProp.getOperation());
+                	dbProp.setRequired(beanProp.isRequired());
+                	dbProp.setRule(beanProp.getRule());
+                	dbProp.setValue1(beanProp.getValue1());
+                	dbProp.setValue2(beanProp.getValue2());
+                    contains = true;
+                    break;
+                }
+            }
+            
+            /* remove */
+            if(!contains) {
+            	dbIteroator.remove();
+            }
+        }
+
+        /* add */
+        final Set<PolicyAttributeEntity> toAdd = new HashSet<>();
+        for (final PolicyAttributeEntity beanProp : beanProps) {
+            boolean contains = false;
+            dbIteroator = dbProps.iterator();
+            while(dbIteroator.hasNext()) {
+            	final PolicyAttributeEntity dbProp = dbIteroator.next();
+                if (StringUtils.equals(dbProp.getId(), beanProp.getId())) {
+                    contains = true;
+                }
+            }
+
+            if (!contains) {
+                beanProp.setPolicy(bean);
+                toAdd.add(beanProp);
+            }
+        }
+        dbProps.addAll(toAdd);
+        
+        bean.setPolicyAttributes(dbProps);
+    }
 
 	@Override
 	@Transactional(readOnly=true)

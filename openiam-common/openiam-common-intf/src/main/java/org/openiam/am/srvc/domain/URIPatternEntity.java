@@ -57,6 +57,7 @@ public class URIPatternEntity implements Serializable {
 	private ResourceEntity resource;
 	
 	@OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL, mappedBy = "pattern")
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	private Set<URIPatternMetaEntity> metaEntitySet;
 
 	//@OneToMany(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, mappedBy="uriPattern")
@@ -65,10 +66,12 @@ public class URIPatternEntity implements Serializable {
             joinColumns = {@JoinColumn(name = "URI_PATTERN_ID")},
             inverseJoinColumns = {@JoinColumn(name = "TEMPLATE_ID")})
     @Fetch(FetchMode.SUBSELECT)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	private Set<MetadataElementPageTemplateEntity> pageTemplates;
 	
 	@OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "pattern", fetch = FetchType.LAZY)
 	@OrderBy("order ASC")
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	private Set<AuthLevelGroupingURIPatternXrefEntity> groupingXrefs;
 	
 	public String getId() {

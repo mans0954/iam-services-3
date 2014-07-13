@@ -38,6 +38,7 @@ public class URIPatternMetaEntity implements Serializable {
 	private URIPatternMetaTypeEntity metaType;
 	
 	@OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL, mappedBy = "metaEntity", orphanRemoval=true)
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	private Set<URIPatternMetaValueEntity> metaValueSet;
 
     public String getName() {

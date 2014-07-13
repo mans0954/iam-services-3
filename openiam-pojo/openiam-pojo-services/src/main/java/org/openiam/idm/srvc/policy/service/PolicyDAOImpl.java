@@ -19,8 +19,7 @@ import org.springframework.stereotype.Repository;
  * DAO Implementation for the Policy. @
  */
 @Repository("policyDAO")
-public class PolicyDAOImpl extends BaseDaoImpl<PolicyEntity, String> implements
-		PolicyDAO {
+public class PolicyDAOImpl extends BaseDaoImpl<PolicyEntity, String> implements PolicyDAO {
 	@SuppressWarnings("unchecked")
 	@Override
 	public List<PolicyEntity> findAllPolicies(String policyDefId, int startAt, int size) {
@@ -29,7 +28,7 @@ public class PolicyDAOImpl extends BaseDaoImpl<PolicyEntity, String> implements
 
 			Criteria cr = this.getCriteria()
 					.add(Restrictions.eq("policyDefId", policyDefId))
-					.addOrder(Order.asc("policyId"));
+					.addOrder(Order.asc(getPKfieldName()));
 			if (startAt > -1) {
 	            cr.setFirstResult(startAt);
 	        }
@@ -46,21 +45,13 @@ public class PolicyDAOImpl extends BaseDaoImpl<PolicyEntity, String> implements
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<PolicyEntity> findPolicyByName(String policyDefId,
-			String policyName) {
-		log.debug("finding Policy instance by name");
-		try {
+	public List<PolicyEntity> findPolicyByName(String policyDefId, String policyName) {
 			Criteria cr = this.getCriteria().add(
 					Restrictions.and(
 							Restrictions.eq("policyDefId", policyDefId),
 							Restrictions.eq("name", policyName)));
 
 			return (List<PolicyEntity>) cr.list();
-		} catch (HibernateException re) {
-			log.error("find by example failed", re);
-			throw re;
-		}
-
 	}
 
     @Override
@@ -82,7 +73,11 @@ public class PolicyDAOImpl extends BaseDaoImpl<PolicyEntity, String> implements
                     name = name.substring(0, name.length() - 1);
                     matchMode = (matchMode == MatchMode.END) ? MatchMode.ANYWHERE : MatchMode.START;
                 }
-                criteria.add(Restrictions.ilike("name", name, matchMode));
+                if (matchMode != null) {
+					criteria.add(Restrictions.ilike("name", name, matchMode));
+				} else {
+					criteria.add(Restrictions.eq("name", name));
+				}
             }
         }
         return criteria;
@@ -90,7 +85,7 @@ public class PolicyDAOImpl extends BaseDaoImpl<PolicyEntity, String> implements
 
 	@Override
 	protected String getPKfieldName() {
-		return "policyId";
+		return "id";
 	}
 
 }

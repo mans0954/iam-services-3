@@ -14,6 +14,7 @@ import org.openiam.idm.searchbeans.AbstractKeyNameSearchBean;
 import org.openiam.idm.searchbeans.AbstractSearchBean;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.meta.ws.MetadataWebService;
+import org.openiam.service.integration.AbstractKeyNameServiceTest.ClusterKey;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.test.context.ContextConfiguration;
@@ -33,41 +34,21 @@ public abstract class AbstractMetadataTypeServiceTest<T extends AbstractMetadata
        
     }
 	
-	@Test
-	public void clusterTest() throws Exception {
-		/* create and save */
-		T instance = createBean();
-		Response response = saveAndAssert(instance);
-		instance.setId((String)response.getResponseValue());
+	@Override
+	public ClusterKey<T, S> doClusterTest() throws Exception {
+		ClusterKey<T, S> key = super.doClusterTest();
+		T instance = key.getDto();
+		S searchBean = key.getSearchBean();
 		
-		/* find */
-		final S searchBean = newSearchBean();
-		searchBean.setDeepCopy(false);
-    	searchBean.setName(instance.getName());
-    	
-    	/* confirm save on both nodes */
-    	instance = assertClusteredSave(searchBean);
-    	
-    	/* change name */
-    	instance.setName(getRandomName());
-    	response = saveAndAssert(instance);
-    	
-    	/* confirm update went through on both nodes */
-    	searchBean.setName(instance.getName());
-    	instance = assertClusteredSave(searchBean);
-    	
-    	/* add metadata type */
-    	instance.setMdTypeId(metadataServiceClient.findTypeBeans(null, 0, 1, null).get(0).getId());
-    	response = saveAndAssert(instance);
+		instance.setMdTypeId(metadataServiceClient.findTypeBeans(null, 0, 1, null).get(0).getId());
+    	Response response = saveAndAssert(instance);
     	instance = assertClusteredSave(searchBean);
     	
     	instance.setMdTypeId(null);
     	response = saveAndAssert(instance);
     	instance = assertClusteredSave(searchBean);
+    	return key;
     	
-    	if(instance != null && instance.getId() != null) {
-    		delete(instance);
-    	}
 	}
 	
 	@AfterClass

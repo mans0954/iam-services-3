@@ -22,7 +22,7 @@ import java.util.Set;
         "managedSysId",
         "attributes"
 })
-public class RoleSearchBean  extends AbstractKeyNameSearchBean<Role, String> {
+public class RoleSearchBean extends AbstractKeyNameSearchBean<Role, String> {
 
 	private static final long serialVersionUID = 1L;
     private Set<String> keySet;

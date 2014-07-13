@@ -25,7 +25,7 @@ public class PolicyAttributeDAOImpl extends BaseDaoImpl<PolicyAttributeEntity, S
 	@Override
 	protected String getPKfieldName() {
 		// TODO Auto-generated method stub
-		return "policyAttrId";
+		return "id";
 	}
 
 	

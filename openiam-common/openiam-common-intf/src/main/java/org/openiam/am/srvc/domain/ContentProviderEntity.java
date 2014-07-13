@@ -69,13 +69,16 @@ public class ContentProviderEntity implements Serializable {
 	private ResourceEntity resource;
 	
 	@OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL, mappedBy = "contentProvider")
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	private Set<ContentProviderServerEntity> serverSet;
 	
 	@OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL, mappedBy = "contentProvider")
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	private Set<URIPatternEntity> patternSet;
 	
 	@OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "contentProvider", fetch = FetchType.LAZY)
 	@OrderBy("order ASC")
+	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	private Set<AuthLevelGroupingContentProviderXrefEntity> groupingXrefs;
 	
 

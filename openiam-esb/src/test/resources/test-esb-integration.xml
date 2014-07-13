@@ -221,4 +221,14 @@
 		<property name="address"
 			value="${openiam.service_host}${openiam.idm.ws.path}CSVConnectorService" />
 	</bean>
+	
+	<bean id="policyServiceClient" class="org.openiam.idm.srvc.policy.service.PolicyDataService"
+		factory-bean="policyServiceClientFactory" factory-method="create" />
+
+	<bean id="policyServiceClientFactory" class="org.apache.cxf.jaxws.JaxWsProxyFactoryBean">
+		<property name="serviceClass"
+			value="org.openiam.idm.srvc.policy.service.PolicyDataService" />
+		<property name="address"
+			value="${openiam.service_host}${openiam.idm.ws.path}PolicyWebService" />
+	</bean>
 </beans>

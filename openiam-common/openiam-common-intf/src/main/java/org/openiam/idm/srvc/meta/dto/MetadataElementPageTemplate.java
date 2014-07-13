@@ -2,6 +2,7 @@ package org.openiam.idm.srvc.meta.dto;
 
 import org.openiam.am.srvc.dto.URIPattern;
 import org.openiam.base.KeyDTO;
+import org.openiam.base.KeyNameDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.meta.domain.MetadataElementPageTemplateEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataFieldTemplateXrefEntity;
@@ -16,7 +17,6 @@ import java.util.Set;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "MetaElementPageTemplate", propOrder = {
-        "name",
         "metadataTemplateTypeId",
         "metadataTemplateTypeName",
         "resourceId",
@@ -26,22 +26,15 @@ import java.util.Set;
         "fieldXrefs"
 })
 @DozerDTOCorrespondence(MetadataElementPageTemplateEntity.class)
-public class MetadataElementPageTemplate extends KeyDTO {
+public class MetadataElementPageTemplate extends KeyNameDTO {
 	private String metadataTemplateTypeId;
 	private String metadataTemplateTypeName;
-	private String name;
 	private String resourceId;
 	private Set<URIPattern> uriPatterns;
 	private Set<MetadataElementPageTemplateXref> metadataElements;
 	private boolean isPublic = true;
 	private Set<MetadataFieldTemplateXref> fieldXrefs;
 	
-	public String getName() {
-		return name;
-	}
-	public void setName(String name) {
-		this.name = name;
-	}
 	public String getResourceId() {
 		return resourceId;
 	}
@@ -123,12 +116,10 @@ public class MetadataElementPageTemplate extends KeyDTO {
 			this.fieldXrefs.add(xref);
 		}
 	}
-	
 	@Override
 	public int hashCode() {
 		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		int result = super.hashCode();
 		result = prime * result + (isPublic ? 1231 : 1237);
 		result = prime
 				* result
@@ -138,7 +129,6 @@ public class MetadataElementPageTemplate extends KeyDTO {
 				* result
 				+ ((metadataTemplateTypeName == null) ? 0
 						: metadataTemplateTypeName.hashCode());
-		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result
 				+ ((resourceId == null) ? 0 : resourceId.hashCode());
 		return result;
@@ -147,16 +137,11 @@ public class MetadataElementPageTemplate extends KeyDTO {
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
-		if (obj == null)
+		if (!super.equals(obj))
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
 		MetadataElementPageTemplate other = (MetadataElementPageTemplate) obj;
-		if (id == null) {
-			if (other.id != null)
-				return false;
-		} else if (!id.equals(other.id))
-			return false;
 		if (isPublic != other.isPublic)
 			return false;
 		if (metadataTemplateTypeId == null) {
@@ -170,11 +155,6 @@ public class MetadataElementPageTemplate extends KeyDTO {
 		} else if (!metadataTemplateTypeName
 				.equals(other.metadataTemplateTypeName))
 			return false;
-		if (name == null) {
-			if (other.name != null)
-				return false;
-		} else if (!name.equals(other.name))
-			return false;
 		if (resourceId == null) {
 			if (other.resourceId != null)
 				return false;
@@ -184,11 +164,10 @@ public class MetadataElementPageTemplate extends KeyDTO {
 	}
 	@Override
 	public String toString() {
-		return "MetadataElementPageTemplate [id=" + id
-				+ ", metadataTemplateTypeId=" + metadataTemplateTypeId
-				+ ", metadataTemplateTypeName=" + metadataTemplateTypeName
-				+ ", name=" + name + ", resourceId=" + resourceId
-				+ ", isPublic=" + isPublic + "]";
+		return String
+				.format("MetadataElementPageTemplate [metadataTemplateTypeId=%s, metadataTemplateTypeName=%s, resourceId=%s, isPublic=%s, toString()=%s]",
+						metadataTemplateTypeId, metadataTemplateTypeName,
+						resourceId, isPublic, super.toString());
 	}
 	
 	

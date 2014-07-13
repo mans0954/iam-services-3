@@ -299,7 +299,7 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
         }
         if (entity.getAttributePolicy() != null) {
             entity.setAttributePolicy(policyDAO.findById(entity
-                    .getAttributePolicy().getPolicyId()));
+                    .getAttributePolicy().getId()));
             entity.setDefaultAttributePolicy(null);
         } else if (entity.getDefaultAttributePolicy() != null) {
             entity.setDefaultAttributePolicy(defaultReconciliationAttributeMapDAO

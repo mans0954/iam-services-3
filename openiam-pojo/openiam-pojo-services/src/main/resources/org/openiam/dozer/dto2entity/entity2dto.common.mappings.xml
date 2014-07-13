@@ -181,9 +181,12 @@
 		</field>
 	</mapping>
 	<mapping>
-		<class-a>org.openiam.idm.srvc.policy.domain.PolicyAttributeEntity
-		</class-a>
+		<class-a>org.openiam.idm.srvc.policy.domain.PolicyAttributeEntity</class-a>
 		<class-b>org.openiam.idm.srvc.policy.dto.PolicyAttribute</class-b>
+		<field>
+			<a>policy.id</a>
+			<b>policyId</b>
+		</field>
 	</mapping>
 	<mapping>
 		<class-a>org.openiam.idm.srvc.policy.domain.PolicyObjectAssocEntity
