@@ -5,6 +5,7 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 import org.openiam.core.dao.lucene.LuceneLastUpdate;
+import org.openiam.core.dao.lucene.bridge.UserBridge;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.elasticsearch.annotation.ElasticsearchField;
 import org.openiam.elasticsearch.annotation.ElasticsearchId;
@@ -60,7 +61,7 @@ public class EmailAddressEntity {
 
     @ManyToOne
     @JoinColumn(name = "PARENT_ID")
-//    @Field(name="parent", bridge=@FieldBridge(impl=UserBridge.class), store=Store.YES)
+    @Field(name="parent", bridge=@FieldBridge(impl=UserBridge.class), store=Store.YES)
     private UserEntity parent;
 
     @Column(name = "NAME", length = 100)

@@ -296,7 +296,7 @@ public abstract class AbstractHibernateSearchDao<T, Q, KeyType extends Serializa
     	if (StringUtils.isNotBlank(paramValue) && StringUtils.isNotBlank(paramName)) {
 //            QueryBuilders.boolQuery().should(QueryBuilders.termQuery())
             final BooleanQuery paramsQuery = new BooleanQuery();
-            paramsQuery.add(QueryBuilder.buildQuery(paramName, BooleanClause.Occur.SHOULD, paramValue), BooleanClause.Occur.SHOULD);
+//            paramsQuery.add(QueryBuilder.buildQuery(paramName, BooleanClause.Occur.SHOULD, paramValue), BooleanClause.Occur.SHOULD);
             return paramsQuery;
         }
     	return null;
