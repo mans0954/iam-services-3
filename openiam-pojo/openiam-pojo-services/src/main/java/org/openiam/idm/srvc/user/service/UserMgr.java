@@ -31,6 +31,8 @@ import org.openiam.idm.srvc.continfo.service.*;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.service.GroupDAO;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
+import org.openiam.idm.srvc.lang.domain.LanguageEntity;
+import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.meta.service.MetadataElementDAO;
@@ -52,6 +54,7 @@ import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.idm.srvc.user.util.DelegationFilterHelper;
+import org.openiam.internationalization.LocalizedServiceGet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -393,7 +396,7 @@ public class UserMgr implements UserDataService {
                 existingEntity.setElement(incomingEntity.getElement());
                 existingEntity.setName(incomingEntity.getName());
                 existingEntity.setValue(incomingEntity.getValue());
-                existingEntity.setIsMultivalued(incomingEntity.getIsMultivalued());
+                existingEntity.setMultivalued(incomingEntity.isMultivalued());
                 existingEntity.setValues(incomingEntity.getValues());
                 editList.add(existingEntity);
             }
@@ -2100,6 +2103,13 @@ public class UserMgr implements UserDataService {
         return null;
     }
 
+    @Transactional(readOnly = true)
+    @LocalizedServiceGet
+    public List<UserAttributeEntity> getUserAttributeList(String userId, final LanguageEntity language) {
+    	return userAttributeDao.findUserAttributes(userId);
+    }
+    
+    @Transactional(readOnly = true)
     public Map<String, UserAttributeEntity> getUserAttributes(String userId) {
         Map<String, UserAttributeEntity> result = null;
         List<UserAttributeEntity> userAttributes = userAttributeDao.findUserAttributes(userId);
