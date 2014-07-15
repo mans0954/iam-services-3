@@ -11,6 +11,8 @@ import org.openiam.connector.type.request.CrudRequest;
 import org.openiam.connector.type.response.ObjectResponse;
 import org.openiam.connector.type.response.ResponseType;
 import org.openiam.dozer.converter.LoginDozerConverter;
+import org.openiam.dozer.converter.UserDozerConverter;
+import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.login.LoginDAO;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
@@ -34,6 +36,7 @@ import org.openiam.util.MuleContextProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.transaction.PlatformTransactionManager;
 
 /**
  * Base class that will be extended by all the helper classes that will be used by the DefaultProvisioningService
@@ -67,16 +70,28 @@ public class BaseProvisioningHelper {
     protected PasswordService passwordDS;
     @Autowired
     protected ConnectorAdapter connectorAdapter;
+    @Autowired
+    protected ProvisionQueueService provQueueService;
+
+    @Autowired
+    protected AuditLogService auditLogService;
+
+    @Autowired
+    @Qualifier("transactionManager")
+    protected PlatformTransactionManager platformTransactionManager;
 
     @Autowired
     @Qualifier("configurableGroovyScriptEngine")
-    private ScriptIntegration scriptRunner;
+    protected ScriptIntegration scriptRunner;
     
     @Autowired
     protected ProvisionConnectorWebService connectorService;
 
     @Autowired
     protected LoginDozerConverter loginDozerConverter;
+
+    @Autowired
+    protected UserDozerConverter userDozerConverter;
 
     @Value("${openiam.service_base}")
     private String serviceHost;

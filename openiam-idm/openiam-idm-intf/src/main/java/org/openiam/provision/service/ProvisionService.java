@@ -27,6 +27,7 @@ import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.prov.request.dto.BulkOperationRequest;
 import org.openiam.idm.srvc.pswd.dto.PasswordValidationResponse;
+import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.provision.dto.AccountLockEnum;
 import org.openiam.provision.dto.PasswordSync;
@@ -135,6 +136,91 @@ public interface ProvisionService {
             @WebParam(name = "userId", targetNamespace = "") String userId,
             @WebParam(name = "requestorUserId", targetNamespace = "") String requestorUserId,
             @WebParam(name = "resourceList", targetNamespace = "") List<String> resourceList);
+
+    /**
+     * De Provisioning Users from selected resources only
+     *
+     * @param users          - users id list
+     * @param requestorUserId - requestor
+     * @param resources    - selected resources
+     * @return
+     */
+    @WebMethod
+    public ProvisionUserResponse deProvisionUsersToResource(
+            @WebParam(name = "usersIds", targetNamespace = "") List<String> users,
+            @WebParam(name = "requestorUserId", targetNamespace = "") String requestorUserId,
+            @WebParam(name = "resourcesIds", targetNamespace = "") List<String> resources);
+
+    /**
+     * Provisioning User only to selected resources
+     *
+     * @param users          - users id list
+     * @param requestorUserId - requestor
+     * @param resources    - selected resources
+     * @return
+     */
+    @WebMethod
+    public ProvisionUserResponse provisionUsersToResource(
+            @WebParam(name = "usersIds", targetNamespace = "") List<String> users,
+            @WebParam(name = "requestorUserId", targetNamespace = "") String requestorUserId,
+            @WebParam(name = "resourcesIds", targetNamespace = "") List<String> resources);
+
+    /**
+     * Provisioning User only to selected resources by roles
+     *
+     * @param users          - users id list
+     * @param requestorUserId - requestor
+     * @param roles    - selected roles
+     * @return
+     */
+    @WebMethod
+    public ProvisionUserResponse provisionUsersToResourceByRole(
+            @WebParam(name = "usersIds", targetNamespace = "") List<String> users,
+            @WebParam(name = "requestorUserId", targetNamespace = "") String requestorUserId,
+            @WebParam(name = "rolesIds", targetNamespace = "") List<String> roles);
+
+    /**
+     * De Provisioning Users from selected resources by roles
+     *
+     * @param users          - users id list
+     * @param requestorUserId - requestor
+     * @param roles    - selected roles
+     * @return
+     */
+    @WebMethod
+    public ProvisionUserResponse deProvisionUsersToResourceByRole(
+            @WebParam(name = "usersIds", targetNamespace = "") List<String> users,
+            @WebParam(name = "requestorUserId", targetNamespace = "") String requestorUserId,
+            @WebParam(name = "rolesIds", targetNamespace = "") List<String> roles);
+
+
+    /**
+     * Provisioning User only to selected resources by groups
+     *
+     * @param users          - users id list
+     * @param requestorUserId - requestor
+     * @param groups    - selected groups
+     * @return
+     */
+    @WebMethod
+    public ProvisionUserResponse provisionUsersToResourceByGroup(
+            @WebParam(name = "usersIds", targetNamespace = "") List<String> users,
+            @WebParam(name = "requestorUserId", targetNamespace = "") String requestorUserId,
+            @WebParam(name = "groupsIds", targetNamespace = "") List<String> groups);
+
+    /**
+     * DeProvisioning User only to selected resources by groups
+     *
+     * @param users          - users id list
+     * @param requestorUserId - requestor
+     * @param groups    - selected groups
+     * @return
+     */
+    @WebMethod
+    public ProvisionUserResponse deProvisionUsersToResourceByGroup(
+            @WebParam(name = "usersIds", targetNamespace = "") List<String> users,
+            @WebParam(name = "requestorUserId", targetNamespace = "") String requestorUserId,
+            @WebParam(name = "groupsIds", targetNamespace = "") List<String> groups);
 
     /**
      * The setPassword operation enables a requestor to specify a new password

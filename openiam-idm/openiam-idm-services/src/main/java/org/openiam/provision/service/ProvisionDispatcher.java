@@ -202,7 +202,7 @@ public class ProvisionDispatcher implements Sweepable {
 
                 if (data.getOperation() == ProvOperationEnum.DELETE) {
                     try {
-                        // udate target sys identity
+                        // update target sys identity
                         // do de-provisioning
                         ObjectResponse response = deprovision(data);
                         StatusCodeType statusCodeType = response.getStatus();
