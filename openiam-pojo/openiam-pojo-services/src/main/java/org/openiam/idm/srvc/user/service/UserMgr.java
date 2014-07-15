@@ -2230,7 +2230,7 @@ public class UserMgr implements UserDataService {
             }
 
             if (CollectionUtils.isNotEmpty(searchBean.getRoleIdSet()) && isRoleFilterSet) {
-                filterData = new HashSet<String>(DelegationFilterHelper.getGroupFilterFromString(requesterAttributes));
+                filterData = new HashSet<String>(DelegationFilterHelper.getRoleFilterFromString(requesterAttributes));
                 for(String pk : searchBean.getRoleIdSet()) {
                     if(!DelegationFilterHelper.isAllowed(pk, filterData)){
                         throw new BasicDataServiceException(ResponseCode.NOT_ALLOWED_ROLE_IN_SEARCH);

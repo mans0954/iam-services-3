@@ -26,7 +26,6 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.mule.api.MuleContext;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.BaseAttributeContainer;
 import org.openiam.base.BaseObject;
@@ -41,6 +40,7 @@ import org.openiam.connector.type.request.SuspendResumeRequest;
 import org.openiam.connector.type.response.*;
 import org.openiam.exception.ObjectNotFoundException;
 import org.openiam.exception.ScriptEngineException;
+import org.openiam.idm.searchbeans.ResourceSearchBean;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
@@ -53,7 +53,6 @@ import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
 import org.openiam.idm.srvc.mngsys.domain.ProvisionConnectorEntity;
-import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.idm.srvc.prov.request.dto.BulkOperationEnum;
@@ -93,6 +92,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import javax.jws.WebParam;
 import javax.jws.WebService;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -109,6 +109,9 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
     @Autowired
     private DeprovisionSelectedResourceHelper deprovisionSelectedResource;
+
+    @Autowired
+    private ProvisionSelectedResourceHelper provisionSelectedResourceHelper;
 
     @Autowired
     @Qualifier("transactionManager")
@@ -133,6 +136,72 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         } finally {
             auditLogService.enqueue(idmAuditLog);
         }
+    }
+
+    @Override
+    public ProvisionUserResponse provisionUsersToResource(final List<String> usersIds, final String requestorUserId, final List<String> resourceList) {
+        return provisionSelectedResourceHelper.provisionSelectedResources(usersIds, requestorUserId, resourceList);
+    }
+
+    @Override
+    public ProvisionUserResponse deProvisionUsersToResource(@WebParam(name = "usersIds", targetNamespace = "") List<String> users, @WebParam(name = "requestorUserId", targetNamespace = "") String requestorUserId, @WebParam(name = "resourcesIds", targetNamespace = "") List<String> resources) {
+        return deprovisionSelectedResource.deprovisionSelectedResourcesAsync(users,requestorUserId,resources);
+    }
+
+    @Override
+    public ProvisionUserResponse deProvisionUsersToResourceByRole(@WebParam(name = "usersIds", targetNamespace = "") List<String> users, @WebParam(name = "requestorUserId", targetNamespace = "") String requestorUserId, @WebParam(name = "rolesIds", targetNamespace = "") List<String> roles) {
+        Set<String> resourceIds = new HashSet<String>();
+        for(String roleId : roles) {
+            ResourceSearchBean rsb = new ResourceSearchBean();
+            rsb.setDeepCopy(false);
+            List<org.openiam.idm.srvc.res.dto.Resource> resources = resourceDataService.getResourcesForRole(roleId, -1, -1, rsb, null);
+            for(Resource res : resources) {
+                resourceIds.add(res.getId());
+            }
+        }
+        return deprovisionSelectedResource.deprovisionSelectedResourcesAsync(users,requestorUserId,resourceIds);
+    }
+
+    @Override
+    public ProvisionUserResponse deProvisionUsersToResourceByGroup(@WebParam(name = "usersIds", targetNamespace = "") List<String> users, @WebParam(name = "requestorUserId", targetNamespace = "") String requestorUserId, @WebParam(name = "groupsIds", targetNamespace = "") List<String> groups) {
+        Set<String> resourceIds = new HashSet<String>();
+        for(String groupId : groups) {
+            ResourceSearchBean rsb = new ResourceSearchBean();
+            rsb.setDeepCopy(false);
+            List<org.openiam.idm.srvc.res.dto.Resource> resources = resourceDataService.getResourcesForGroup(groupId, -1, -1, rsb, null);
+            for(Resource res : resources) {
+                resourceIds.add(res.getId());
+            }
+        }
+        return deprovisionSelectedResource.deprovisionSelectedResourcesAsync(users,requestorUserId,resourceIds);
+    }
+
+    @Override
+    public ProvisionUserResponse provisionUsersToResourceByRole(final List<String> usersIds, final String requestorUserId, final List<String> roleList) {
+        Set<String> resourceIds = new HashSet<String>();
+        for(String roleId : roleList) {
+            ResourceSearchBean rsb = new ResourceSearchBean();
+            rsb.setDeepCopy(false);
+            List<org.openiam.idm.srvc.res.dto.Resource> resources = resourceDataService.getResourcesForRole(roleId, -1, -1, rsb, null);
+            for(Resource res : resources) {
+                resourceIds.add(res.getId());
+            }
+        }
+        return provisionSelectedResourceHelper.provisionSelectedResources(usersIds, requestorUserId, resourceIds);
+    }
+
+    @Override
+    public ProvisionUserResponse provisionUsersToResourceByGroup(final List<String> usersIds, final String requestorUserId, final List<String> groupList) {
+        Set<String> resourceIds = new HashSet<String>();
+        for(String groupId : groupList) {
+            ResourceSearchBean rsb = new ResourceSearchBean();
+            rsb.setDeepCopy(false);
+            List<org.openiam.idm.srvc.res.dto.Resource> resources = resourceDataService.getResourcesForGroup(groupId, -1, -1, rsb, null);
+            for(Resource res : resources) {
+                resourceIds.add(res.getId());
+            }
+        }
+        return provisionSelectedResourceHelper.provisionSelectedResources(usersIds, requestorUserId, resourceIds);
     }
 
     /*
@@ -576,7 +645,6 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         return deprovisionSelectedResource.deprovisionSelectedResources(userId, requestorUserId, resourceList);
     }
 
-
     /*
      * (non-Javadoc)
      * 
@@ -736,6 +804,11 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         return response;
     }
 
+    @Override
+    public void updateResources(UserEntity userEntity, ProvisionUser pUser, Set<Resource> resourceSet, Set<Resource> deleteResourceSet, IdmAuditLog parentLog) {
+        super.updateResources(userEntity, pUser, resourceSet, deleteResourceSet, parentLog);    //To change body of overridden methods use File | Settings | File Templates.
+    }
+
     private ProvisionUserResponse addModifyUser(ProvisionUser pUser, boolean isAdd,
             List<ProvisionDataContainer> dataList, final IdmAuditLog auditLog) {
 
@@ -781,7 +854,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         bindingMap.put(TARGET_SYSTEM_IDENTITY, null);
         if (!isAdd) {
             ProvisionUser u = new ProvisionUser(userDozerConverter.convertToDTO(userEntity, true));
-            setCurrentSuperiors(u);
+            provisionSelectedResourceHelper.setCurrentSuperiors(u);
             bindingMap.put("userBeforeModify", u);
         }
         int callPreProcessor = callPreProcessor(isAdd ? "ADD" : "MODIFY", pUser, bindingMap);
@@ -1035,18 +1108,20 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             for (Resource res : resourceSet) {
                 ManagedSysDto mSys = managedSysService.getManagedSysByResource(res.getId());
                 String managedSysId = mSys != null ? mSys.getId() : null;
-                for (LoginEntity l : userEntity.getPrincipalList()) {
-                    if (managedSysId != null && managedSysId.equals(l.getManagedSysId())) {
-                        if (LoginStatusEnum.INACTIVE.equals(l.getStatus())) {
-                            inactiveResources.add(res);
+                if (AttributeOperationEnum.NO_CHANGE.equals(res.getOperation())) { // if not adding resource
+                    for (LoginEntity l : userEntity.getPrincipalList()) {
+                        if (managedSysId != null && managedSysId.equals(l.getManagedSysId())) {
+                            if (LoginStatusEnum.INACTIVE.equals(l.getStatus())) {
+                                inactiveResources.add(res);
+                            }
+                            break;
                         }
-                        break;
+                    }
+                    if (CollectionUtils.isNotEmpty(inactiveResources)) {
+                        resourceSet.removeAll(inactiveResources);
+                        deleteResourceSet.addAll(inactiveResources); // inactive resources should be marked for deletion
                     }
                 }
-            }
-            if (CollectionUtils.isNotEmpty(inactiveResources)) {
-                resourceSet.removeAll(inactiveResources);
-                deleteResourceSet.addAll(inactiveResources);
             }
         }
 
@@ -1069,7 +1144,8 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     }
                     try {
                         // Protects other resources if one resource failed
-                        ProvisionDataContainer data = deprovisionResource(res, userEntity, pUser, requestId);
+                        ProvisionDataContainer data = deprovisionSelectedResource.deprovisionResourceDataPrepare(res, userEntity, pUser, requestId);
+
                         auditLog.addAttribute(AuditAttributeName.DESCRIPTION,
                                 "De-Provisioning for resource: " + res.getName());
                         if (data != null) {
@@ -1120,7 +1196,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                                                                               // rewrite
                                                                                               // in
                                                                                               // dataList
-                        ProvisionDataContainer data = provisionResource(isAdd, res, userEntity, pUser, tmpMap,
+                        ProvisionDataContainer data = provisionSelectedResourceHelper.provisionResource(res, userEntity, pUser, tmpMap,
                                 primaryIdentity, requestId);
                         auditLog.addAttribute(AuditAttributeName.DESCRIPTION,
                                 "Provisioning for resource: " + res.getName());
@@ -1182,236 +1258,6 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         resp.setStatus(ResponseStatus.SUCCESS);
         resp.setUser(finalProvUser);
         return resp;
-    }
-
-    private ProvisionDataContainer provisionResource(boolean isAdd, Resource res, UserEntity userEntity,
-            ProvisionUser pUser, Map<String, Object> bindingMap, Login primaryIdentity, String requestId) {
-        ManagedSysDto managedSys = managedSysService.getManagedSysByResource(res.getId());
-        String managedSysId = (managedSys != null) ? managedSys.getId() : null;
-        if (managedSysId != null) {
-            if (pUser.getSrcSystemId() != null) {
-                // we are checking if SrcSystemId is set in ProvisionUser it
-                // means we should ignore this resource from provisioning to
-                // avoid cyclic. Used in Reconciliation of one managed system to
-                // another
-                if (res.getId().equalsIgnoreCase(pUser.getSrcSystemId())) {
-                    return null;
-                }
-            }
-            // what the new object will look like
-            // Provision user that goes to the target system. Derived from
-            // userEntity after all changes
-            ProvisionUser targetSysProvUser = new ProvisionUser(userDozerConverter.convertToDTO(userEntity, true));
-            setCurrentSuperiors(targetSysProvUser); // TODO: Consider the
-                                                    // possibility to add and
-                                                    // update superiors by
-                                                    // cascade from UserEntity
-            targetSysProvUser.setStatus(pUser.getStatus()); // copying user
-                                                            // status (need to
-                                                            // define
-                                                            // enable/disable
-                                                            // status)
-
-            bindingMap.put(TARGET_SYS_RES_ID, res.getId());
-            bindingMap.put(TARGET_SYS_MANAGED_SYS_ID, managedSysId);
-            bindingMap.put(USER, targetSysProvUser);
-
-            List<AttributeMap> attrMap = managedSysService.getResourceAttributeMaps(res.getId());
-            ManagedSysDto mSys = managedSysService.getManagedSys(managedSysId);
-            if (mSys == null || mSys.getConnectorId() == null) {
-                return null;
-            }
-
-            ManagedSystemObjectMatch matchObj = null;
-            ManagedSystemObjectMatch[] matchObjAry = managedSysService.managedSysObjectParam(managedSysId, ManagedSystemObjectMatch.USER);
-            if (matchObjAry != null && matchObjAry.length > 0) {
-                matchObj = matchObjAry[0];
-                bindingMap.put(MATCH_PARAM, matchObj);
-            }
-
-            // get the identity linked to this resource / managedsys
-            LoginEntity mLg = null;
-            for (LoginEntity l : userEntity.getPrincipalList()) {
-                if (managedSysId != null && managedSysId.equals(l.getManagedSysId())) {
-                    l.setStatus(LoginStatusEnum.ACTIVE);
-                    l.setProvStatus(ProvLoginStatusEnum.PENDING_UPDATE);
-                    mLg = l;
-                }
-            }
-
-            // determine if this identity exists in IDM or not
-            // if not, do an ADD otherwise, do an UPDATE
-
-            // if (mLg != null && mLg.getLoginId() != null) {
-            // bindingMap.put(TARGET_SYS_SECURITY_DOMAIN, mLg.getDomainId());
-            // } else {
-            // bindingMap.put(TARGET_SYS_SECURITY_DOMAIN, mSys.getDomainId());
-            // }
-
-            if (mLg != null) {
-                log.debug("PROCESSING IDENTITY =" );
-            } else {
-                log.debug("BUILDING NEW IDENTITY");
-            }
-
-            boolean isMngSysIdentityExistsInOpeniam = (mLg != null);
-            bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS, isMngSysIdentityExistsInOpeniam ? IDENTITY_EXIST
-                    : IDENTITY_NEW);
-
-            if (!isMngSysIdentityExistsInOpeniam) {
-                try {
-                    log.debug(" - Building principal Name for: " + managedSysId);
-                    String newPrincipalName = ProvisionServiceUtil
-                            .buildUserPrincipalName(attrMap, scriptRunner, bindingMap);
-                    if (StringUtils.isBlank(newPrincipalName)) {
-                        log.debug("Principal name for managed sys " + managedSysId + " is blank.");
-                        return null;
-                    }
-                    log.debug(" - New principalName = " + newPrincipalName);
-
-                    mLg = new LoginEntity();
-                    log.debug(" - PrimaryIdentity for build new identity for target system");
-
-                    mLg.setLogin(newPrincipalName);
-                    mLg.setManagedSysId(managedSysId);
-                    mLg.setPassword(primaryIdentity.getPassword());
-                    mLg.setUserId(primaryIdentity.getUserId());
-                    mLg.setAuthFailCount(0);
-                    mLg.setCreateDate(new Date(System.currentTimeMillis()));
-                    mLg.setCreatedBy(userEntity.getLastUpdatedBy());
-                    mLg.setIsLocked(0);
-                    mLg.setFirstTimeLogin(1);
-                    mLg.setStatus(LoginStatusEnum.ACTIVE);
-                    mLg.setProvStatus(ProvLoginStatusEnum.PENDING_CREATE);
-
-                    userEntity.getPrincipalList().add(mLg); // add new identity
-                                                            // to user
-                                                            // principals
-
-                } catch (ScriptEngineException e) {
-                    e.printStackTrace();
-                }
-            }
-
-            bindingMap.put(TARGET_SYSTEM_ATTRIBUTES, null);
-            bindingMap.put(TARGET_SYSTEM_IDENTITY, mLg != null ? mLg.getLogin() : null);
-
-            if (mLg!=null) {
-                bindingMap.put("lg", mLg);
-                String decPassword = "";
-                try {
-                    decPassword = loginManager.decryptPassword(mLg.getUserId(), mLg.getPassword());
-                } catch (Exception e) {
-                    log.debug(" - Failed to decrypt password for " + mLg.getUserId());
-                }
-                bindingMap.put("password", decPassword);
-            }
-
-            // Identity of current target system
-            Login targetSysLogin = loginDozerConverter.convertToDTO(mLg, false);
-            for (Login l : pUser.getPrincipalList()) { // saving Login
-                                                       // properties from pUser
-                if (l.getLoginId() != null && l.getLoginId().equals(targetSysLogin.getLoginId())) {
-                    targetSysLogin.setOperation(l.getOperation());
-                    targetSysLogin.setOrigPrincipalName(l.getOrigPrincipalName());
-                    targetSysLogin.setInitialStatus(l.getStatus());
-                }
-            }
-
-            ProvisionDataContainer data = new ProvisionDataContainer();
-            if (isMngSysIdentityExistsInOpeniam) {
-                data.setOperation(ProvOperationEnum.UPDATE);
-            } else {
-                data.setOperation(ProvOperationEnum.CREATE);
-            }
-            data.setRequestId(requestId);
-            data.setResourceId(res.getId());
-            data.setIdentity(targetSysLogin);
-            data.setProvUser(targetSysProvUser);
-            data.setBindingMap(bindingMap);
-
-            return data;
-        }
-        return null;
-    }
-
-    private String findResourcePropertyByName(String resId, String name) {
-        Resource r = resourceService.getResourceDTO(resId);
-        if (r != null) {
-            Set<ResourceProp> rpSet = r.getResourceProps();
-            if (CollectionUtils.isNotEmpty(rpSet)) {
-                for (ResourceProp rp : rpSet) {
-                    if (StringUtils.equalsIgnoreCase(rp.getName(), name))  {
-                        return rp.getValue();
-                    }
-                }
-            }
-        }
-        return null;
-    }
-
-    private ProvisionDataContainer deprovisionResource(Resource res, UserEntity userEntity, ProvisionUser pUser,
-            String requestId) {
-
-        // ManagedSysDto mSys = managedSysService.getManagedSys(managedSysId);
-        ManagedSysDto mSys = managedSysService.getManagedSysByResource(res.getId());
-        String managedSysId = (mSys != null) ? mSys.getId() : null;
-        if (mSys == null || mSys.getConnectorId() == null) {
-            return null;
-        }
-
-        String onDeleteProp = findResourcePropertyByName(res.getId(), "ON_DELETE");
-        ProvLoginStatusEnum provLoginStatus = null;
-        switch (onDeleteProp) {
-            case "DELETE":
-                provLoginStatus = ProvLoginStatusEnum.PENDING_DELETE;
-                break;
-            case "DISABLE":
-                provLoginStatus = ProvLoginStatusEnum.PENDING_DISABLE;
-                break;
-            default:
-                provLoginStatus = ProvLoginStatusEnum.PENDING_UPDATE;
-        }
-
-        LoginEntity mLg = null;
-        for (LoginEntity l : userEntity.getPrincipalList()) {
-            if (managedSysId != null && managedSysId.equals(l.getManagedSysId())) {
-                l.setStatus(LoginStatusEnum.INACTIVE);
-                l.setProvStatus(provLoginStatus);
-                mLg = l;
-            }
-        }
-
-        if (mLg != null) {
-            Login targetSysLogin = loginDozerConverter.convertToDTO(mLg, false);
-            for (Login l : pUser.getPrincipalList()) { // saving Login
-                                                       // properties from pUser
-                if (l.getLoginId() != null && l.getLoginId().equals(targetSysLogin.getLoginId())) {
-                    targetSysLogin.setOperation(l.getOperation());
-                    targetSysLogin.setOrigPrincipalName(l.getOrigPrincipalName());
-                    targetSysLogin.setInitialStatus(l.getStatus());
-                }
-            }
-
-            ProvisionDataContainer data = new ProvisionDataContainer();
-            data.setRequestId(requestId);
-            data.setResourceId(res.getId());
-            data.setIdentity(targetSysLogin);
-
-            switch (onDeleteProp) {
-                case "DELETE":
-                    data.setOperation(ProvOperationEnum.DELETE);
-                    break;
-                case "DISABLE":
-                    data.setOperation(ProvOperationEnum.DISABLE);
-                    break;
-                default:
-                    data.setOperation(ProvOperationEnum.UPDATE);
-            }
-
-            return data;
-        }
-        return null;
     }
 
     /*
@@ -1917,9 +1763,13 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         if (CollectionUtils.isNotEmpty(roleSet)) {
             for (Role rl : roleSet) {
                 if (rl.getId() != null) {
-                    List<ResourceEntity> resources = resourceService.getResourcesForRole(rl.getId(), -1, -1, null);
+                    List<ResourceEntity> resources = resourceService.getResourcesForRole(rl.getId(), 0, Integer.MAX_VALUE, null);
                     if (CollectionUtils.isNotEmpty(resources)) {
-                        resourceList.addAll(resourceDozerConverter.convertToDTOList(resources, false));
+                        List<Resource> list = resourceDozerConverter.convertToDTOList(resources, true);
+                        for (Resource r : list) {
+                            r.setOperation(rl.getOperation()); // get operation value from role
+                        }
+                        resourceList.addAll(list);
                     }
                 }
             }
@@ -2407,7 +2257,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         }
 
         ProvisionUser u = new ProvisionUser(userDozerConverter.convertToDTO(userEntity, true));
-        setCurrentSuperiors(u);
+        provisionSelectedResourceHelper.setCurrentSuperiors(u);
         bindingMap.put("userBeforeModify", u);
 
         List<Role> curRoleList = roleDataService.getUserRolesAsFlatList(pUser.getId());
