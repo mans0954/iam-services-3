@@ -17,7 +17,11 @@
 		<class-b>org.openiam.idm.srvc.user.dto.UserAttribute</class-b>
         <field>
             <a>element.id</a>
-            <b>metadataElementId</b>
+            <b>metadataId</b>
+        </field>
+        <field>
+            <a>element.displayName</a>
+            <b>metadataName</b>
         </field>
 	</mapping>
 	<mapping>

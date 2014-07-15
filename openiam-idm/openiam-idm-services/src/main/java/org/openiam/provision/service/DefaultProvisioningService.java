@@ -1108,18 +1108,20 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             for (Resource res : resourceSet) {
                 ManagedSysDto mSys = managedSysService.getManagedSysByResource(res.getId());
                 String managedSysId = mSys != null ? mSys.getId() : null;
-                for (LoginEntity l : userEntity.getPrincipalList()) {
-                    if (managedSysId != null && managedSysId.equals(l.getManagedSysId())) {
-                        if (LoginStatusEnum.INACTIVE.equals(l.getStatus())) {
-                            inactiveResources.add(res);
+                if (AttributeOperationEnum.NO_CHANGE.equals(res.getOperation())) { // if not adding resource
+                    for (LoginEntity l : userEntity.getPrincipalList()) {
+                        if (managedSysId != null && managedSysId.equals(l.getManagedSysId())) {
+                            if (LoginStatusEnum.INACTIVE.equals(l.getStatus())) {
+                                inactiveResources.add(res);
+                            }
+                            break;
                         }
-                        break;
+                    }
+                    if (CollectionUtils.isNotEmpty(inactiveResources)) {
+                        resourceSet.removeAll(inactiveResources);
+                        deleteResourceSet.addAll(inactiveResources); // inactive resources should be marked for deletion
                     }
                 }
-            }
-            if (CollectionUtils.isNotEmpty(inactiveResources)) {
-                resourceSet.removeAll(inactiveResources);
-                deleteResourceSet.addAll(inactiveResources);
             }
         }
 
@@ -1143,6 +1145,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     try {
                         // Protects other resources if one resource failed
                         ProvisionDataContainer data = deprovisionSelectedResource.deprovisionResourceDataPrepare(res, userEntity, pUser, requestId);
+
                         auditLog.addAttribute(AuditAttributeName.DESCRIPTION,
                                 "De-Provisioning for resource: " + res.getName());
                         if (data != null) {
@@ -1760,9 +1763,13 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         if (CollectionUtils.isNotEmpty(roleSet)) {
             for (Role rl : roleSet) {
                 if (rl.getId() != null) {
-                    List<ResourceEntity> resources = resourceService.getResourcesForRole(rl.getId(), -1, -1, null);
+                    List<ResourceEntity> resources = resourceService.getResourcesForRole(rl.getId(), 0, Integer.MAX_VALUE, null);
                     if (CollectionUtils.isNotEmpty(resources)) {
-                        resourceList.addAll(resourceDozerConverter.convertToDTOList(resources, false));
+                        List<Resource> list = resourceDozerConverter.convertToDTOList(resources, true);
+                        for (Resource r : list) {
+                            r.setOperation(rl.getOperation()); // get operation value from role
+                        }
+                        resourceList.addAll(list);
                     }
                 }
             }

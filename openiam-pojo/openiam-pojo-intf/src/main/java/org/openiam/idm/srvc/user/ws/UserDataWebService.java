@@ -15,6 +15,7 @@ import org.openiam.idm.searchbeans.UserSearchBean;
 import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
+import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.meta.dto.SaveTemplateProfileResponse;
 import org.openiam.idm.srvc.user.dto.Supervisor;
 import org.openiam.idm.srvc.user.dto.User;
@@ -148,7 +149,12 @@ public interface UserDataWebService {
      * @return a List of UserAttributes associated with this user
      */
     @WebMethod
+    @Deprecated
     public List<UserAttribute> getUserAttributes(@WebParam(name = "userId", targetNamespace = "") String userId);
+    
+    @WebMethod
+    public List<UserAttribute> getUserAttributesInternationalized(final @WebParam(name = "userId", targetNamespace = "") String userId,
+    															  final @WebParam(name = "language", targetNamespace = "") Language language);
 
     /*
      * @WebMethod public Response addNote(@WebParam(name = "note",

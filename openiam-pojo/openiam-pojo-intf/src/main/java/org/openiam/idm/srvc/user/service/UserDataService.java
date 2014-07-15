@@ -17,6 +17,7 @@ import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
 import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
+import org.openiam.idm.srvc.lang.domain.LanguageEntity;
 import org.openiam.idm.srvc.user.domain.SupervisorEntity;
 import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
@@ -253,6 +254,8 @@ public interface UserDataService {
     List<UserEntity> getUsersForMSys(String mSysId);
 
     public Map<String, UserAttribute> getUserAttributesDto(String userId);
+    
+    public List<UserAttributeEntity> getUserAttributeList(String userId, final LanguageEntity language);
 
     public Map<String, UserAttributeEntity> getUserAttributes(String userId);
 
