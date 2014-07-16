@@ -85,8 +85,8 @@ public class DeprovisionSelectedResourceHelper extends BaseProvisioningHelper {
                                 // set
                                 Resource res = resourceDataService.getResource(resId, null);
                                 try {
-
-                                    ProvisionDataContainer data = deprovisionResourceDataPrepare(res, userEntity, new ProvisionUser(user), requestorUserId);
+                                    Map<String, Object> bindingMap = new HashMap<String, Object>(); //TODO: check if enough bindingMap data for UPDATE
+                                    ProvisionDataContainer data = deprovisionResourceDataPrepare(res, userEntity, new ProvisionUser(user), requestorUserId, bindingMap);
 
                                     auditLog.addAttribute(AuditAttributeName.DESCRIPTION,
                                             "De-Provisioning for resource: " + res.getName());
@@ -139,7 +139,9 @@ public class DeprovisionSelectedResourceHelper extends BaseProvisioningHelper {
     }
 
     public ProvisionDataContainer deprovisionResourceDataPrepare(Resource res, UserEntity userEntity, ProvisionUser pUser,
-                                                       String requestId) {
+                                                       String requestId, Map<String, Object> tmpMap) {
+
+        Map<String, Object> bindingMap = new HashMap<String, Object>(tmpMap); // prevent data rewriting
 
         // ManagedSysDto mSys = managedSysService.getManagedSys(managedSysId);
         ManagedSysDto mSys = managedSysService.getManagedSysByResource(res.getId());
@@ -147,6 +149,22 @@ public class DeprovisionSelectedResourceHelper extends BaseProvisioningHelper {
         if (mSys == null || mSys.getConnectorId() == null) {
             return null;
         }
+
+        ProvisionUser targetSysProvUser = new ProvisionUser(userDozerConverter.convertToDTO(userEntity, true));
+        setCurrentSuperiors(targetSysProvUser);
+        targetSysProvUser.setStatus(pUser.getStatus());
+
+        bindingMap.put(AbstractProvisioningService.TARGET_SYS_RES_ID, res.getId());
+        bindingMap.put(AbstractProvisioningService.TARGET_SYS_MANAGED_SYS_ID, managedSysId);
+        bindingMap.put(AbstractProvisioningService.USER, targetSysProvUser);
+
+        ManagedSystemObjectMatch matchObj = null;
+        ManagedSystemObjectMatch[] matchObjAry = managedSysService.managedSysObjectParam(managedSysId, ManagedSystemObjectMatch.USER);
+        if (matchObjAry != null && matchObjAry.length > 0) {
+            matchObj = matchObjAry[0];
+            bindingMap.put(AbstractProvisioningService.MATCH_PARAM, matchObj);
+        }
+        bindingMap.put(AbstractProvisioningService.TARGET_SYSTEM_IDENTITY_STATUS, AbstractProvisioningService.IDENTITY_EXIST);
 
         String onDeleteProp = findResourcePropertyByName(res.getId(), "ON_DELETE");
         if(StringUtils.isEmpty(onDeleteProp)) {
@@ -184,10 +202,23 @@ public class DeprovisionSelectedResourceHelper extends BaseProvisioningHelper {
                 }
             }
 
+            bindingMap.put(AbstractProvisioningService.TARGET_SYSTEM_ATTRIBUTES, null);
+            bindingMap.put(AbstractProvisioningService.TARGET_SYSTEM_IDENTITY, mLg.getLogin());
+            bindingMap.put("lg", mLg);
+            String decPassword = "";
+            try {
+                decPassword = loginManager.decryptPassword(mLg.getUserId(), mLg.getPassword());
+            } catch (Exception e) {
+                log.debug(" - Failed to decrypt password for " + mLg.getUserId());
+            }
+            bindingMap.put("password", decPassword);
+
             ProvisionDataContainer data = new ProvisionDataContainer();
             data.setRequestId(requestId);
             data.setResourceId(res.getId());
             data.setIdentity(targetSysLogin);
+            data.setProvUser(targetSysProvUser);
+            data.setBindingMap(bindingMap);
 
             switch (onDeleteProp) {
                 case "DELETE":

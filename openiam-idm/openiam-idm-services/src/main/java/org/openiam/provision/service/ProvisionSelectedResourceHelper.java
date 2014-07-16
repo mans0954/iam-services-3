@@ -126,21 +126,14 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
         return res;
     }
 
-    public void setCurrentSuperiors(ProvisionUser pUser) {
-        if (org.mule.util.StringUtils.isNotEmpty(pUser.getId())) {
-            List<UserEntity> entities = userMgr.getSuperiors(pUser.getId(), -1, -1);
-            List<User> superiors = userDozerConverter.convertToDTOList(entities, true);
-            if (CollectionUtils.isNotEmpty(superiors)) {
-                pUser.setSuperiors(new HashSet<User>(superiors));
-            }
-        }
-    }
-
     public ProvisionDataContainer provisionResource(final Resource res, final UserEntity userEntity,
                                                     final ProvisionUser pUser,
-                                                    final Map<String, Object> bindingMap,
+                                                    final Map<String, Object> tmpMap,
                                                     final Login primaryIdentity,
                                                     final String requestId) {
+
+        Map<String, Object> bindingMap = new HashMap<String, Object>(tmpMap); // prevent data rewriting
+
         ManagedSysDto managedSys = managedSysService.getManagedSysByResource(res.getId());
         String managedSysId = (managedSys != null) ? managedSys.getId() : null;
         if (managedSysId != null) {
