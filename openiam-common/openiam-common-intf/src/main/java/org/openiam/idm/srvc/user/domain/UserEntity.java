@@ -862,9 +862,9 @@ public class UserEntity {
 	    }
 	    if (newUser.getMailCode() != null) {
 	        if (newUser.getMailCode().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-	            this.mailCode = newUser.getMailCode();
-	        } else {
 	            this.mailCode = null;
+	        } else {
+	            this.mailCode = newUser.getMailCode();
 	        }
 	    }
 	    if (newUser.getType() != null) {
