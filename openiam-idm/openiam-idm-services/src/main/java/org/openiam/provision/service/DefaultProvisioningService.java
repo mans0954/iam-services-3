@@ -72,7 +72,6 @@ import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.provision.dto.AccountLockEnum;
 import org.openiam.provision.dto.PasswordSync;
-import org.openiam.provision.dto.ProvOperationEnum;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.resp.LookupUserResponse;
 import org.openiam.provision.resp.ManagedSystemViewerResponse;
@@ -330,8 +329,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
     @Override
     @Transactional
-    public ProvisionUserResponse deleteByUserId(String userId, UserStatusEnum status, String requestorId) {
-
+    public ProvisionUserResponse deleteByUserIdWithSkipManagedSysList(String userId, UserStatusEnum status, String requestorId, List<String> skipManagedSysList) {
         log.debug("----deleteByUserId called.------");
         final IdmAuditLog idmAuditLog = new IdmAuditLog();
         idmAuditLog.setRequestorUserId(requestorId);
@@ -340,8 +338,8 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             List<LoginEntity> loginEntityList = loginManager.getLoginByUser(userId);
             LoginEntity primaryIdentity = UserUtils.getUserManagedSysIdentityEntity(this.sysConfiguration.getDefaultManagedSysId(), loginEntityList);
 
-            ProvisionUserResponse response = deleteUser(sysConfiguration.getDefaultManagedSysId(),
-                    primaryIdentity.getLogin(), status, requestorId);
+            ProvisionUserResponse response = deleteUserWithSkipManagedSysList(sysConfiguration.getDefaultManagedSysId(),
+                    primaryIdentity.getLogin(), status, requestorId, skipManagedSysList);
             if (response != null && response.isSuccess()) {
                 idmAuditLog.succeed();
                 idmAuditLog.setAuditDescription("User primary identity: " + primaryIdentity.getLogin());
@@ -355,17 +353,28 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         }
     }
 
+    @Override
+    @Transactional
+    public ProvisionUserResponse deleteByUserId(String userId, UserStatusEnum status, String requestorId) {
+        return deleteByUserIdWithSkipManagedSysList(userId, status, requestorId, null);
+    }
+
+    public ProvisionUserResponse deleteUser(String managedSystemId, String principal, UserStatusEnum status,
+                                            String requestorId) {
+        return deleteUserWithSkipManagedSysList(managedSystemId, principal, status, requestorId, null);
+    }
+
     /*
      * (non-Javadoc)
      * 
      * @see
-     * org.openiam.provision.service.ProvisionService#deleteUser(java.lang.String
+     * org.openiam.provision.service.ProvisionService#deleteUserWithSkipManagedSysList(java.lang.String
      * , java.lang.String, java.lang.String)
      */
     @Override
     @Transactional
-    public ProvisionUserResponse deleteUser(String managedSystemId, String principal, UserStatusEnum status,
-            String requestorId) {
+    public ProvisionUserResponse deleteUserWithSkipManagedSysList(String managedSystemId, String principal, UserStatusEnum status,
+                                                                  String requestorId, List<String> skipManagedSysList) {
         log.debug("----deleteUser called.------");
 
         ProvisionUserResponse response = new ProvisionUserResponse(ResponseStatus.SUCCESS);
@@ -420,7 +429,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             return response;
         }
 
-        if (!managedSystemId.equalsIgnoreCase(sysConfiguration.getDefaultManagedSysId())) {
+        if (!managedSystemId.equals(sysConfiguration.getDefaultManagedSysId())) {
             // managedSysId point to one of the seconardary identities- just
             // terminate that identity
 
@@ -457,9 +466,13 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 }
             }
 
-            boolean connectorSuccess = false;
-            ResponseType resp = delete(loginDozerConverter.convertToDTO(login, true), requestId, mSys, matchObj);
+            ResponseType resp = new ResponseType();
+            resp.setStatus(StatusCodeType.SUCCESS);
+            if (CollectionUtils.isEmpty(skipManagedSysList) || !skipManagedSysList.contains(managedSystemId)) {
+                resp = delete(loginDozerConverter.convertToDTO(login, true), requestId, mSys, matchObj);
+            }
 
+            boolean connectorSuccess = false;
             if (resp.getStatus() == StatusCodeType.SUCCESS) {
                 connectorSuccess = true;
                 // if REMOVE status: we do physically delete identity for
@@ -514,7 +527,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     try {
                         // only add the connectors if its a secondary
                         // identity.
-                        if (!l.getManagedSysId().equalsIgnoreCase(this.sysConfiguration.getDefaultManagedSysId())) {
+                        if (!l.getManagedSysId().equals(sysConfiguration.getDefaultManagedSysId())) {
 
                             ManagedSysDto mSys = managedSysService.getManagedSys(l.getManagedSysId());
 
@@ -559,15 +572,15 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                 }
                             }
 
-                            boolean connectorSuccess = false;
-
-                            ObjectResponse resp = delete(loginDozerConverter.convertToDTO(l, true), requestId,
-                                    mSys, matchObj);
-                            if (resp.getStatus() == StatusCodeType.SUCCESS) {
-                                connectorSuccess = true;
+                            ResponseType resp = new ResponseType();
+                            resp.setStatus(StatusCodeType.SUCCESS);
+                            if (CollectionUtils.isEmpty(skipManagedSysList) || !skipManagedSysList.contains(l.getManagedSysId())) {
+                                resp = delete(loginDozerConverter.convertToDTO(l, true), requestId, mSys, matchObj);
                             }
 
-                            if (connectorSuccess) {
+                            boolean connectorSuccess = false;
+                            if (resp.getStatus() == StatusCodeType.SUCCESS) {
+                                connectorSuccess = true;
                                 l.setStatus(LoginStatusEnum.INACTIVE);
                                 l.setProvStatus(ProvLoginStatusEnum.DELETED);
                                 l.setAuthFailCount(0);
