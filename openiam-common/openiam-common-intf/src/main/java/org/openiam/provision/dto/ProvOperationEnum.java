@@ -16,7 +16,9 @@ public enum ProvOperationEnum {
     @XmlEnumValue("delete")
     DELETE(3),
     @XmlEnumValue("disable")
-    DISABLE(4);
+    DISABLE(4),
+    @XmlEnumValue("enable")
+    ENABLE(5);
 
     private int value;
 

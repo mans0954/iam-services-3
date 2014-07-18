@@ -177,12 +177,25 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
                 bindingMap.put(AbstractProvisioningService.MATCH_PARAM, matchObj);
             }
 
+            String onDeleteProp = findResourcePropertyByName(res.getId(), "ON_DELETE");
+            if(StringUtils.isEmpty(onDeleteProp)) {
+                onDeleteProp = "DELETE";
+            }
+            ProvLoginStatusEnum provLoginStatus;
+            switch (onDeleteProp) {
+                case "DISABLE":
+                    provLoginStatus = ProvLoginStatusEnum.PENDING_ENABLE;
+                    break;
+                default:
+                    provLoginStatus = ProvLoginStatusEnum.PENDING_UPDATE;
+            }
+
             // get the identity linked to this resource / managedsys
             LoginEntity mLg = null;
             for (LoginEntity l : userEntity.getPrincipalList()) {
                 if (managedSysId != null && managedSysId.equals(l.getManagedSysId())) {
                     l.setStatus(LoginStatusEnum.ACTIVE);
-                    l.setProvStatus(ProvLoginStatusEnum.PENDING_UPDATE);
+                    l.setProvStatus(provLoginStatus);
                     mLg = l;
                 }
             }
@@ -259,7 +272,13 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
 
             ProvisionDataContainer data = new ProvisionDataContainer();
             if (isMngSysIdentityExistsInOpeniam) {
-                data.setOperation(ProvOperationEnum.UPDATE);
+                switch (onDeleteProp) {
+                    case "DISABLE":
+                        data.setOperation(ProvOperationEnum.ENABLE);
+                        break;
+                    default:
+                        data.setOperation(ProvOperationEnum.UPDATE);
+                }
             } else {
                 data.setOperation(ProvOperationEnum.CREATE);
             }

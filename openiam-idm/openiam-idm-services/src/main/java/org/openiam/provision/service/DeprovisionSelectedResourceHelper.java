@@ -123,21 +123,6 @@ public class DeprovisionSelectedResourceHelper extends BaseProvisioningHelper {
         return res;
     }
 
-    private String findResourcePropertyByName(final String resId, final String name) {
-        Resource r = resourceDataService.getResource(resId, null);
-        if (r != null) {
-            Set<ResourceProp> rpSet = r.getResourceProps();
-            if (CollectionUtils.isNotEmpty(rpSet)) {
-                for (ResourceProp rp : rpSet) {
-                    if (StringUtils.equalsIgnoreCase(rp.getName(), name))  {
-                        return rp.getValue();
-                    }
-                }
-            }
-        }
-        return null;
-    }
-
     public ProvisionDataContainer deprovisionResourceDataPrepare(Resource res, UserEntity userEntity, ProvisionUser pUser,
                                                        String requestId, Map<String, Object> tmpMap) {
 
