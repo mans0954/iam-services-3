@@ -778,6 +778,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                                 auditLog.setTargetUser(userEntity.getId(), login != null ? login.getLogin() : StringUtils.EMPTY);
                                 auditLog.setAction(AuditAction.DELETE_ADDRESS.value());
                                 auditLog.setAuditDescription("DELETE Address: "+en.toString());
+
                                 parentLog.addChild(auditLog);
                                 break;
                             }
