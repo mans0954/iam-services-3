@@ -1,8 +1,8 @@
 package org.openiam.provision.service;
 
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.mule.api.MuleContext;
@@ -28,6 +28,8 @@ import org.openiam.idm.srvc.pswd.service.PasswordService;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.openiam.idm.srvc.role.service.RoleDataService;
+import org.openiam.idm.srvc.user.domain.UserEntity;
+import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.type.ExtensibleUser;
@@ -101,6 +103,16 @@ public class BaseProvisioningHelper {
 
     protected static final Log log = LogFactory
             .getLog(BaseProvisioningHelper.class);
+
+    public void setCurrentSuperiors(ProvisionUser pUser) {
+        if (org.mule.util.StringUtils.isNotEmpty(pUser.getId())) {
+            List<UserEntity> entities = userMgr.getSuperiors(pUser.getId(), -1, -1);
+            List<User> superiors = userDozerConverter.convertToDTOList(entities, true);
+            if (CollectionUtils.isNotEmpty(superiors)) {
+                pUser.setSuperiors(new HashSet<User>(superiors));
+            }
+        }
+    }
 
     protected String getResProperty(Set<ResourceProp> resPropSet,
             String propertyName) {
@@ -216,5 +228,6 @@ public class BaseProvisioningHelper {
 
 
     }
+
 
 }

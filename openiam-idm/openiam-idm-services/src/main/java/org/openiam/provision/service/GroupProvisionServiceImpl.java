@@ -736,7 +736,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Gr
     @Override
     public ProvisionGroupResponse deleteGroup(@WebParam(name = "managedSystemId", targetNamespace = "") String managedSystemId, @WebParam(name = "groupId", targetNamespace = "") String groupId, @WebParam(name = "status", targetNamespace = "") UserStatusEnum status, @WebParam(name = "requesterId", targetNamespace = "") String requesterId) {
 
-        log.debug("----deleteUser called.------");
+        log.debug("----deleteGroup called.------");
 
         ProvisionGroupResponse response = new ProvisionGroupResponse(ResponseStatus.SUCCESS);
         Map<String, Object> bindingMap = new HashMap<String, Object>();
