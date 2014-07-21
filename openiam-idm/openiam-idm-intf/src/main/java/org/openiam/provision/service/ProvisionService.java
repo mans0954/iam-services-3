@@ -27,7 +27,6 @@ import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.prov.request.dto.BulkOperationRequest;
 import org.openiam.idm.srvc.pswd.dto.PasswordValidationResponse;
-import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.provision.dto.AccountLockEnum;
 import org.openiam.provision.dto.PasswordSync;
@@ -43,7 +42,6 @@ import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebService;
 import java.util.List;
-import java.util.Map;
 
 /**
  * <code>ProvisionService</code> Interface for the Provisioning service which is
@@ -92,6 +90,13 @@ public interface ProvisionService {
     public ProvisionUserResponse modifyUser (
             @WebParam(name = "user", targetNamespace = "") ProvisionUser user);
 
+    @WebMethod
+    public ProvisionUserResponse deleteUserWithSkipManagedSysList(
+            @WebParam(name = "managedSystemId", targetNamespace = "") String managedSystemId,
+            @WebParam(name = "principal", targetNamespace = "") String principal,
+            @WebParam(name = "status", targetNamespace = "") UserStatusEnum status,
+            @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
+            @WebParam(name = "skipManagedSysList", targetNamespace = "") List<String> skipManagedSysList);
     /**
      * The deleteUser operation enables the requester to delete an existing user
      * from the appropriate target systems
@@ -108,6 +113,13 @@ public interface ProvisionService {
             @WebParam(name = "principal", targetNamespace = "") String principal,
             @WebParam(name = "status", targetNamespace = "") UserStatusEnum status,
             @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
+
+    @WebMethod
+    public ProvisionUserResponse deleteByUserIdWithSkipManagedSysList(
+            @WebParam(name = "userId", targetNamespace = "") String userId,
+            @WebParam(name = "status", targetNamespace = "") UserStatusEnum status,
+            @WebParam(name = "requestorId", targetNamespace = "") String requestorId,
+            @WebParam(name = "skipManagedSysList", targetNamespace = "") List<String> skipManagedSysList);
 
     /**
      * Delete user from target system  by user id

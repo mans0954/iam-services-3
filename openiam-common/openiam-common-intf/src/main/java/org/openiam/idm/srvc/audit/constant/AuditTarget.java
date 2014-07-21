@@ -8,7 +8,10 @@ public enum AuditTarget {
     MANAGED_SYS("MANAGED_SYS"),
     POLICY("POLICY"),
     ORG("ORG"),
-    TASK("TASK");
+    TASK("TASK"),
+    USER_ATTRIBUTE("USER_ATTRIBUTE"),
+    ROLE_ATTRIBUTE("ROLE_ATTRIBUTE"),
+    GROUP_ATTRIBUTE("GROUP_ATTRIBUTE");
 
     private String value;
 

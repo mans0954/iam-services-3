@@ -126,21 +126,14 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
         return res;
     }
 
-    public void setCurrentSuperiors(ProvisionUser pUser) {
-        if (org.mule.util.StringUtils.isNotEmpty(pUser.getId())) {
-            List<UserEntity> entities = userMgr.getSuperiors(pUser.getId(), -1, -1);
-            List<User> superiors = userDozerConverter.convertToDTOList(entities, true);
-            if (CollectionUtils.isNotEmpty(superiors)) {
-                pUser.setSuperiors(new HashSet<User>(superiors));
-            }
-        }
-    }
-
     public ProvisionDataContainer provisionResource(final Resource res, final UserEntity userEntity,
                                                     final ProvisionUser pUser,
-                                                    final Map<String, Object> bindingMap,
+                                                    final Map<String, Object> tmpMap,
                                                     final Login primaryIdentity,
                                                     final String requestId) {
+
+        Map<String, Object> bindingMap = new HashMap<String, Object>(tmpMap); // prevent data rewriting
+
         ManagedSysDto managedSys = managedSysService.getManagedSysByResource(res.getId());
         String managedSysId = (managedSys != null) ? managedSys.getId() : null;
         if (managedSysId != null) {
@@ -184,12 +177,25 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
                 bindingMap.put(AbstractProvisioningService.MATCH_PARAM, matchObj);
             }
 
+            String onDeleteProp = findResourcePropertyByName(res.getId(), "ON_DELETE");
+            if(StringUtils.isEmpty(onDeleteProp)) {
+                onDeleteProp = "DELETE";
+            }
+            ProvLoginStatusEnum provLoginStatus;
+            switch (onDeleteProp) {
+                case "DISABLE":
+                    provLoginStatus = ProvLoginStatusEnum.PENDING_ENABLE;
+                    break;
+                default:
+                    provLoginStatus = ProvLoginStatusEnum.PENDING_UPDATE;
+            }
+
             // get the identity linked to this resource / managedsys
             LoginEntity mLg = null;
             for (LoginEntity l : userEntity.getPrincipalList()) {
                 if (managedSysId != null && managedSysId.equals(l.getManagedSysId())) {
                     l.setStatus(LoginStatusEnum.ACTIVE);
-                    l.setProvStatus(ProvLoginStatusEnum.PENDING_UPDATE);
+                    l.setProvStatus(provLoginStatus);
                     mLg = l;
                 }
             }
@@ -266,7 +272,13 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
 
             ProvisionDataContainer data = new ProvisionDataContainer();
             if (isMngSysIdentityExistsInOpeniam) {
-                data.setOperation(ProvOperationEnum.UPDATE);
+                switch (onDeleteProp) {
+                    case "DISABLE":
+                        data.setOperation(ProvOperationEnum.ENABLE);
+                        break;
+                    default:
+                        data.setOperation(ProvOperationEnum.UPDATE);
+                }
             } else {
                 data.setOperation(ProvOperationEnum.CREATE);
             }
