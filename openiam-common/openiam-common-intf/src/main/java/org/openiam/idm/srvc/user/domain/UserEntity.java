@@ -269,6 +269,9 @@ public class UserEntity {
     // @Fetch(FetchMode.SUBSELECT)
     private Set<SupervisorEntity> subordinates;
 
+    @Transient
+    private String defaultLogin;
+
     public UserEntity() {
     }
 
@@ -552,6 +555,44 @@ public class UserEntity {
         	}
         }
         return defaultEmail;
+    }
+
+    public PhoneEntity getDefaultPhone() {
+        PhoneEntity defaultPhone = null;
+        if(this.phones!=null && !this.phones.isEmpty()){
+            for (PhoneEntity phoneEntity: this.phones){
+                if(phoneEntity.getIsDefault()){
+                    defaultPhone = phoneEntity;
+                    break;
+                }
+            }
+        }
+        return defaultPhone;
+    }
+    public AddressEntity getDefaultAddress() {
+        AddressEntity defaultAddress = null;
+        if(this.addresses!=null && !this.addresses.isEmpty()){
+            for (AddressEntity addressEntity: this.addresses){
+                if(addressEntity.getIsDefault()){
+                    defaultAddress = addressEntity;
+                    break;
+                }
+            }
+        }
+        return defaultAddress;
+    }
+    public String getDefaultLogin() {
+        return defaultLogin;
+    }
+    public void setDefaultLogin(String managedSys) {
+        if(this.principalList!=null && !this.principalList.isEmpty()){
+            for (LoginEntity principal: this.principalList){
+                if(StringUtils.equals(principal.getManagedSysId(), managedSys)){
+                    defaultLogin = principal.getLogin();
+                    break;
+                }
+            }
+        }
     }
 
     public Integer getShowInSearch() {

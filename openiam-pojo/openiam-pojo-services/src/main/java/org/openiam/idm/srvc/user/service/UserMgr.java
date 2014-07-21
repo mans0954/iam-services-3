@@ -630,6 +630,13 @@ public class UserMgr implements UserDataService {
             }
             entityList = finalizedIdList;
         }
+
+        if(searchBean.getInitDefaulLoginFlag()){
+            for(UserEntity usr: entityList){
+                usr.setDefaultLogin(sysConfiguration.getDefaultManagedSysId());
+            }
+        }
+
         return entityList;
     }
 

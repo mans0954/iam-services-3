@@ -69,6 +69,9 @@ import java.util.*;
         "maidenName",
         "passwordTheme",
         "email",
+        "defaultPhone",
+        "defaultAddress",
+        "defaultLogin",
         "showInSearch",
         "principalList",
         "alternateContactId",
@@ -174,6 +177,12 @@ public class User extends AbstractMetadataTypeDTO {
     protected String passwordTheme;
 
     protected String email;
+
+    protected Phone defaultPhone;
+
+    protected Address defaultAddress;
+
+    protected String defaultLogin;
 
     protected Integer showInSearch = new Integer(0);
 
@@ -777,18 +786,40 @@ public class User extends AbstractMetadataTypeDTO {
     public void setEmail(String email) {
         this.email = email;
     }
-
-    @Deprecated
     public Phone getDefaultPhone() {
-        if(this.phones!=null && !this.phones.isEmpty()){
-            for (Phone p: this.phones){
-                if(p.getIsDefault()){
-                    return p;
-                }
-            }
-        }
-        return null;
+        return defaultPhone;
     }
+
+    public void setDefaultPhone(Phone defaultPhone) {
+        this.defaultPhone = defaultPhone;
+    }
+    public Address getDefaultAddress() {
+        return defaultAddress;
+    }
+
+    public void setDefaultAddress(Address defaultAddress) {
+        this.defaultAddress = defaultAddress;
+    }
+
+    public String getDefaultLogin() {
+        return defaultLogin;
+    }
+
+    public void setDefaultLogin(String defaultLogin) {
+        this.defaultLogin = defaultLogin;
+    }
+
+    //    @Deprecated
+//    public Phone getDefaultPhone() {
+//        if(this.phones!=null && !this.phones.isEmpty()){
+//            for (Phone p: this.phones){
+//                if(p.getIsDefault()){
+//                    return p;
+//                }
+//            }
+//        }
+//        return null;
+//    }
 
     public UserStatusEnum getStatus() {
         return status;
