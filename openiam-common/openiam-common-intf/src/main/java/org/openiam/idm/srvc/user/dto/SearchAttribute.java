@@ -20,6 +20,13 @@ import javax.xml.bind.annotation.XmlType;
 public class SearchAttribute {
     String attributeName;
     String attributeValue;
+    
+    public SearchAttribute() {}
+    
+    public SearchAttribute(final String name, final String value) {
+    	this.attributeName = name;
+    	this.attributeValue = value;
+    }
 
     public String getAttributeName() {
         return attributeName;

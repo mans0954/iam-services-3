@@ -17,6 +17,7 @@ import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
 import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
+import org.openiam.internationalization.LocalizedDatabaseGet;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,6 +36,7 @@ public class UserAttributeDAOImpl extends BaseDaoImpl<UserAttributeEntity, Strin
         return "id";
     }
 
+    @LocalizedDatabaseGet
     public List<UserAttributeEntity> findUserAttributes(String userId) {
 		return (List<UserAttributeEntity>)getCriteria().add(Restrictions.eq("user.id",userId)).addOrder(Order.asc("name")).list();
 	}

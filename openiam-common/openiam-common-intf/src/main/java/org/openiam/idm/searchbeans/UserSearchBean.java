@@ -1,6 +1,9 @@
 package org.openiam.idm.searchbeans;
 
 import org.apache.commons.lang.StringUtils;
+import org.openiam.base.ws.MatchType;
+import org.openiam.base.ws.SearchMode;
+import org.openiam.base.ws.SearchParam;
 import org.openiam.idm.srvc.user.dto.SearchAttribute;
 import org.openiam.idm.srvc.user.dto.User;
 
@@ -52,36 +55,128 @@ import java.util.*;
         "organizationIdList",
         "attributeList",
         "requesterId",
-        "updatedSince"
+        "updatedSince",
+        "firstNameMatchToken",
+        "lastNameMatchToken",
+        "maidenNameMatchToken",
+        "employeeIdMatchToken",
+        "emailAddressMatchToken",
+        "searchMode"
 })
 public class UserSearchBean extends AbstractSearchBean<User, String> implements SearchBean<User, String>,
         Serializable {
 
+	/**
+	 * Job code of the user
+	 */
 	protected String jobCode = null;
+	
+	@Deprecated
     protected String firstName = null;
+	
+	@Deprecated
     protected String lastName = null;
+	
+	/**
+	 * Nickname of the user
+	 */
     protected String nickName = null;
+    
+    @Deprecated
     protected String maidenName = null;
+    
+    /**
+     * Account status of the user
+     */
     protected String accountStatus = null;
+    
+    /**
+     * Secondary Status of the user
+     */
     protected String userStatus = null;
+    
+    /**
+     * Area code of the phone number
+     */
     protected String phoneAreaCd = null;
+    
+    /**
+     * Phone number
+     */
     protected String phoneNbr = null;
+    
+    /**
+     * Employee Type
+     */
     protected String employeeType = null;
+    
+    @Deprecated
     protected String employeeId = null;
+    
+    /**
+     * Set of Group IDs that this user belongs to.  
+     * The user must belong to at leat one of these groups
+     */
     protected Set<String> groupIdSet = null;
+    
+
+    /**
+     * Set of Role IDs that this user belongs to.  
+     * The user must belong to at leat one of these roles
+     */
     protected Set<String> roleIdSet = null;
+    
+
+    /**
+     * Set of Resource IDs that this user is entitled to.  
+     * The user must be entitled to at least one of these
+     */
     protected Set<String> resourceIdSet = null;
+    
+    @Deprecated
     protected String emailAddress = null;
+    
+    /**
+     * Email Address token to search by
+     */
+    private SearchParam emailAddressMatchToken = null;
+    
+    /**
+     * Login Search Bean to search by
+     */
     protected LoginSearchBean principal;
+    
+    @Deprecated
     protected String attributeName;
+    
+    @Deprecated
     protected String attributeValue;
+    
+    /**
+     * If set, the user's attribute will be searched.  A match indicates that the user has an attribute with metadata element ID
+     */
     protected String attributeElementId;
+    
+    /**
+     * The unique identifier of the user
+     */
     protected String userId;
+    
+    /**
+     * The location code of the user
+     */
     protected String locationCd;
     protected Integer showInSearch;
     protected Integer maxResultSize;
 
+    /**
+     * The user type identifier ID
+     */
     protected String userTypeInd;
+    
+    /**
+     * The classification of this user
+     */
     protected String classification;
     @XmlSchemaType(name = "dateTime")
     protected Date createDate;
@@ -94,17 +189,86 @@ public class UserSearchBean extends AbstractSearchBean<User, String> implements 
 
     @XmlSchemaType(name = "dateTime")
     protected Date dateOfBirth;
+    
+    /**
+     * The zipcode of this user
+     */
     protected String zipCode;
 
     protected String loggedIn = null;
     protected boolean delAdmin = false;
 
+    /**
+     * Set of Organization IDs that this user belongs to.  
+     * The user must belong to at leat one of these organizations
+     */
     protected Set<String> organizationIdList = new HashSet<String>();
+    
+    /**
+     * The attributes which belong to this user
+     */
     protected List<SearchAttribute> attributeList = new ArrayList<SearchAttribute>();
 
     private String requesterId;
+    
+    /**
+     * First name token to search by
+     */
+    private SearchParam firstNameMatchToken = null;
+    
+    /**
+     * Last Name token to search by
+     */
+    private SearchParam lastNameMatchToken = null;
+    
+    /**
+     * Maiden Name token to search by
+     */
+    private SearchParam maidenNameMatchToken = null;
+    
+    /**
+     * Employee ID token to search by
+     */
+    private SearchParam employeeIdMatchToken = null;
+    
+    /**
+     * The search mode which will determine the result set.
+     */
+    private SearchMode searchMode  = SearchMode.AND;
 
-    public String getRequesterId() {
+    public SearchParam getFirstNameMatchToken() {
+		return firstNameMatchToken;
+	}
+
+	public void setFirstNameMatchToken(SearchParam firstNameMatchToken) {
+		this.firstNameMatchToken = firstNameMatchToken;
+	}
+
+	public SearchParam getLastNameMatchToken() {
+		return lastNameMatchToken;
+	}
+
+	public void setLastNameMatchToken(SearchParam lastNameMatchToken) {
+		this.lastNameMatchToken = lastNameMatchToken;
+	}
+
+	public SearchParam getMaidenNameMatchToken() {
+		return maidenNameMatchToken;
+	}
+
+	public void setMaidenNameMatchToken(SearchParam maidenNameMatchToken) {
+		this.maidenNameMatchToken = maidenNameMatchToken;
+	}
+
+	public SearchParam getEmployeeIdMatchToken() {
+		return employeeIdMatchToken;
+	}
+
+	public void setEmployeeIdMatchToken(SearchParam employeeIdMatchToken) {
+		this.employeeIdMatchToken = employeeIdMatchToken;
+	}
+
+	public String getRequesterId() {
         return requesterId;
     }
 
@@ -144,20 +308,24 @@ public class UserSearchBean extends AbstractSearchBean<User, String> implements 
         this.delAdmin = delAdmin;
     }
 
+    @Deprecated
     public String getFirstName() {
-        return firstName;
+        return (firstNameMatchToken != null) ? firstNameMatchToken.getValue() : null;
     }
 
+    @Deprecated
     public void setFirstName(String firstName) {
-        this.firstName = firstName;
+        firstNameMatchToken = new SearchParam(firstName, MatchType.STARTS_WITH);
     }
 
+    @Deprecated
     public String getLastName() {
-        return lastName;
+        return (lastNameMatchToken != null) ? lastNameMatchToken.getValue() : null;
     }
 
+    @Deprecated
     public void setLastName(String lastName) {
-        this.lastName = lastName;
+        lastNameMatchToken = new SearchParam(lastName, MatchType.STARTS_WITH);
     }
 
     public String getNickName() {
@@ -200,12 +368,14 @@ public class UserSearchBean extends AbstractSearchBean<User, String> implements 
         this.phoneNbr = phoneNbr;
     }
 
+    @Deprecated
     public String getEmployeeId() {
-        return employeeId;
+        return (employeeIdMatchToken != null) ? employeeIdMatchToken.getValue() : null;
     }
 
+    @Deprecated
     public void setEmployeeId(String employeeId) {
-        this.employeeId = employeeId;
+        employeeIdMatchToken = new SearchParam(employeeId, MatchType.EXACT);
     }
 
     public Set<String> getGroupIdSet() {
@@ -244,15 +414,25 @@ public class UserSearchBean extends AbstractSearchBean<User, String> implements 
         }
     }
 
+    @Deprecated
     public String getEmailAddress() {
-        return emailAddress;
+        return (emailAddressMatchToken != null) ? emailAddressMatchToken.getValue() : null;
     }
 
+    @Deprecated
     public void setEmailAddress(String emailAddress) {
-        this.emailAddress = emailAddress;
+        emailAddressMatchToken = new SearchParam(emailAddress, MatchType.STARTS_WITH);
     }
 
-    public LoginSearchBean getPrincipal() {
+    public SearchParam getEmailAddressMatchToken() {
+		return emailAddressMatchToken;
+	}
+
+	public void setEmailAddressMatchToken(SearchParam emailAddressMatchToken) {
+		this.emailAddressMatchToken = emailAddressMatchToken;
+	}
+
+	public LoginSearchBean getPrincipal() {
         return principal;
     }
 
@@ -260,18 +440,22 @@ public class UserSearchBean extends AbstractSearchBean<User, String> implements 
         this.principal = principal;
     }
 
+    @Deprecated
     public String getAttributeName() {
         return attributeName;
     }
 
+    @Deprecated
     public void setAttributeName(String attributeName) {
         this.attributeName = attributeName;
     }
 
+    @Deprecated
     public String getAttributeValue() {
         return attributeValue;
     }
 
+    @Deprecated
     public void setAttributeValue(String attributeValue) {
         this.attributeValue = attributeValue;
     }
@@ -391,6 +575,13 @@ public class UserSearchBean extends AbstractSearchBean<User, String> implements 
     public List<SearchAttribute> getAttributeList() {
         return attributeList;
     }
+    
+    public void addAttribute(final String name, final String value) {
+    	if(this.attributeList == null) {
+    		this.attributeList = new LinkedList<>();
+    	}
+    	this.attributeList.add(new SearchAttribute(name, value));
+    }
 
     public void setAttributeList(List<SearchAttribute> attributeList) {
         this.attributeList = attributeList;
@@ -421,12 +612,16 @@ public class UserSearchBean extends AbstractSearchBean<User, String> implements 
         }
     }
 
+    @Deprecated
 	public String getMaidenName() {
-		return maidenName;
+		//return maidenName;
+    	return (maidenNameMatchToken != null) ? maidenNameMatchToken.getValue() : null;
 	}
 
+    @Deprecated
 	public void setMaidenName(String maidenName) {
-		this.maidenName = maidenName;
+		//this.maidenName = maidenName;
+    	maidenNameMatchToken = new SearchParam(maidenName, MatchType.STARTS_WITH);
 	}
 
 	public String getJobCode() {
@@ -435,6 +630,14 @@ public class UserSearchBean extends AbstractSearchBean<User, String> implements 
 
 	public void setJobCode(String jobCode) {
 		this.jobCode = jobCode;
+	}
+
+	public SearchMode getSearchMode() {
+		return searchMode;
+	}
+
+	public void setSearchMode(SearchMode searchMode) {
+		this.searchMode = searchMode;
 	}
     
     

@@ -778,6 +778,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                                 auditLog.setTargetUser(userEntity.getId(), login != null ? login.getLogin() : StringUtils.EMPTY);
                                 auditLog.setAction(AuditAction.DELETE_ADDRESS.value());
                                 auditLog.setAuditDescription("DELETE Address: "+en.toString());
+
                                 parentLog.addChild(auditLog);
                                 break;
                             }
@@ -1148,7 +1149,9 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                 } else if (operation == AttributeOperationEnum.DELETE) {
                     RoleEntity re = roleDataService.getRole(r.getId());
                     userEntity.getRoles().remove(re);
-                    deleteRoleSet.add(roleDozerConverter.convertToDTO(re, true));
+                    Role dr = roleDozerConverter.convertToDTO(re, true);
+                    dr.setOperation(operation);
+                    deleteRoleSet.add(dr);
                     // Audit Log ---------------------------------------------------
                     IdmAuditLog auditLog = new IdmAuditLog();
                     auditLog.setAction(AuditAction.DELETE_ROLE.value());
@@ -1166,7 +1169,13 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         }
         if (CollectionUtils.isNotEmpty(userEntity.getRoles())) {
             for (RoleEntity ure : userEntity.getRoles()) {
-                roleSet.add(roleDozerConverter.convertToDTO(ure, false));
+                Role ar = roleDozerConverter.convertToDTO(ure, true);
+                for (Role r : pUser.getRoles()) {
+                    if(r.getId().equals(ar.getId())) {
+                        ar.setOperation(r.getOperation()); // get operation value from pUser
+                    }
+                }
+                roleSet.add(ar);
             }
         }
     }
@@ -1181,7 +1190,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     return;
 
                 } else if (operation == AttributeOperationEnum.ADD) {
-                    OrganizationEntity org = organizationService.getOrganization(o.getId(), null);
+                    OrganizationEntity org = organizationService.getOrganizationLocalized(o.getId(), null);
                     userEntity.getAffiliations().add(org);
                     // Audit Log ---------------------------------------------------
                     IdmAuditLog auditLog = new IdmAuditLog();
@@ -1241,7 +1250,9 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                 } else if (operation == AttributeOperationEnum.DELETE) {
                     ResourceEntity re = resourceService.findResourceById(r.getId());
                     userEntity.getResources().remove(re);
-                    deleteResourceSet.add(resourceDozerConverter.convertToDTO(re, true));
+                    Resource dr = resourceDozerConverter.convertToDTO(re, true);
+                    dr.setOperation(operation);
+                    deleteResourceSet.add(dr);
                     // Audit Log ---------------------------------------------------
                     IdmAuditLog auditLog = new IdmAuditLog();
                     auditLog.setAction(AuditAction.REMOVE_USER_FROM_RESOURCE.value());
@@ -1259,7 +1270,13 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         }
         for (ResourceEntity rue : userEntity.getResources()) {
             ResourceEntity e = resourceService.findResourceById(rue.getId());
-            resourceSet.add(resourceDozerConverter.convertToDTO(e, false));
+            Resource ar = resourceDozerConverter.convertToDTO(e, true);
+            for (Resource r : pUser.getResources()) {
+                if(r.getId().equals(ar.getId())) {
+                    ar.setOperation(r.getOperation());  // get operation value from pUser
+                }
+            }
+            resourceSet.add(ar);
         }
     }
 
@@ -1617,14 +1634,5 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         return resp;
     }
 
-    protected void setCurrentSuperiors(ProvisionUser pUser) {
-        if (StringUtils.isNotEmpty(pUser.getId())) {
-            List<UserEntity> entities = userMgr.getSuperiors(pUser.getId(), -1, -1);
-            List<User> superiors = userDozerConverter.convertToDTOList(entities, true);
-            if (CollectionUtils.isNotEmpty(superiors)) {
-                pUser.setSuperiors(new HashSet<User>(superiors));
-            }
-        }
-    }
 
 }

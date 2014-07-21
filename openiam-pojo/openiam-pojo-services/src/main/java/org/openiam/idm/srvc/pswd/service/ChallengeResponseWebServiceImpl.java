@@ -70,6 +70,11 @@ public class ChallengeResponseWebServiceImpl implements ChallengeResponseWebServ
 		return challengeResponseService.getNumOfRequiredQuestions(userId);
 	}
 
+    @Override
+    public Integer getNumOfCorrectAnswers(String userId) {
+        return challengeResponseService.getNumOfCorrectAnswers(userId);
+    }
+
 	@Override
 	public Integer count(final IdentityQuestionSearchBean searchBean) {
 		return challengeResponseService.count(searchBean);

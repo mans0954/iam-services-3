@@ -3,6 +3,7 @@ package org.openiam.idm.srvc.auth.login.lucene;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
+import org.openiam.base.ws.SearchParam;
 import org.openiam.core.dao.lucene.AbstractHibernateSearchDao;
 import org.openiam.idm.searchbeans.LoginSearchBean;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
@@ -17,12 +18,25 @@ public class LoginSearchDAO extends AbstractHibernateSearchDao<LoginEntity, Logi
 	@Override
 	protected Query parse(LoginSearchBean query) {
 		final BooleanQuery luceneQuery = new BooleanQuery();
-		Query clause = buildTokenizedClause("login", query.getLogin());
-		if(clause != null) {
-			luceneQuery.add(clause, BooleanClause.Occur.MUST);
+		final SearchParam param = query.getLoginMatchToken();
+		if(param != null && param.isValid()) {
+			Query clause = null;
+			switch(param.getMatchType()) {
+				case EXACT:
+					clause = buildExactClause("loginUntokenized", param.getValue());
+					break;
+				case STARTS_WITH:
+					clause = buildTokenizedClause("login", param.getValue());
+					break;
+				default:
+					break;
+			}
+			if(clause != null) {
+				luceneQuery.add(clause, BooleanClause.Occur.MUST);
+			}
 		}
 		
-		clause = buildExactClause("managedSysId", query.getManagedSysId());
+		Query clause = buildExactClause("managedSysId", query.getManagedSysId());
 		if(clause != null) {
 			luceneQuery.add(clause, BooleanClause.Occur.MUST);
 		}

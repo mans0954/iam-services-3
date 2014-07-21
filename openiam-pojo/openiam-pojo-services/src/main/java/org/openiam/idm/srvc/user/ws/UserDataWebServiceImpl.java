@@ -34,6 +34,7 @@ import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.dozer.converter.AddressDozerConverter;
 import org.openiam.dozer.converter.EmailAddressDozerConverter;
+import org.openiam.dozer.converter.LanguageDozerConverter;
 import org.openiam.dozer.converter.PhoneDozerConverter;
 import org.openiam.dozer.converter.SupervisorDozerConverter;
 import org.openiam.dozer.converter.UserAttributeDozerConverter;
@@ -52,6 +53,7 @@ import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
 import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
+import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.meta.dto.SaveTemplateProfileResponse;
 import org.openiam.idm.srvc.meta.exception.PageTemplateException;
 import org.openiam.idm.srvc.msg.dto.NotificationParam;
@@ -68,6 +70,7 @@ import org.openiam.idm.srvc.user.dto.UserProfileRequestModel;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.srvc.user.service.UserProfileService;
+import org.openiam.internationalization.LocalizedServiceGet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -101,6 +104,10 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 
     @Autowired
     private UserNoteDozerConverter userNoteDozerConverter;
+    
+
+    @Autowired
+    private LanguageDozerConverter languageConverter;
 
     @Autowired
     private AddressDozerConverter addressDozerConverter;
@@ -1052,12 +1059,16 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 
     @Override
     @Transactional(readOnly = true)
+    @Deprecated
     public List<UserAttribute> getUserAttributes(final String userId) {
-        final UserEntity user = userManager.getUser(userId, null);
-        final List<UserAttributeEntity> attributes = (user != null && user.getUserAttributes() != null) ? new ArrayList<UserAttributeEntity>(user
-                        .getUserAttributes().values()) : null;
-        return userAttributeDozerConverter.convertToDTOList(attributes, true);
+        return getUserAttributesInternationalized(userId, null);
     }
+    
+	@Override
+	public List<UserAttribute> getUserAttributesInternationalized(final String userId, final Language language) {
+        final List<UserAttributeEntity> attributes = userManager.getUserAttributeList(userId, languageConverter.convertToEntity(language, false));
+        return userAttributeDozerConverter.convertToDTOList(attributes, true);
+	}
 
     @Override
     public SaveTemplateProfileResponse saveUserProfile(final UserProfileRequestModel request) {

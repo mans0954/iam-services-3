@@ -17,6 +17,7 @@ import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
 import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
+import org.openiam.idm.srvc.lang.domain.LanguageEntity;
 import org.openiam.idm.srvc.user.domain.SupervisorEntity;
 import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
@@ -65,13 +66,7 @@ public interface UserDataService {
      */
     public void removeUser(String id) throws Exception;
 
-    public UserEntity getUserByName(String firstName, String lastName) throws BasicDataServiceException;
-
-    public List<UserEntity> findUsersByLastUpdateRange(Date startDate, Date endDate);
-
     public List<UserEntity> findUserByOrganization(String orgId) throws BasicDataServiceException;
-
-    public List<UserEntity> findUsersByStatus(UserStatusEnum status) throws BasicDataServiceException;
 
     public List<UserEntity> searchByDelegationProperties(DelegationFilterSearch search);
 
@@ -259,6 +254,8 @@ public interface UserDataService {
     List<UserEntity> getUsersForMSys(String mSysId);
 
     public Map<String, UserAttribute> getUserAttributesDto(String userId);
+    
+    public List<UserAttributeEntity> getUserAttributeList(String userId, final LanguageEntity language);
 
     public Map<String, UserAttributeEntity> getUserAttributes(String userId);
 

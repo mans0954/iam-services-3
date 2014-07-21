@@ -42,7 +42,6 @@ import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebService;
 import java.util.List;
-import java.util.Map;
 
 /**
  * <code>ProvisionService</code> Interface for the Provisioning service which is
@@ -91,6 +90,13 @@ public interface ProvisionService {
     public ProvisionUserResponse modifyUser (
             @WebParam(name = "user", targetNamespace = "") ProvisionUser user);
 
+    @WebMethod
+    public ProvisionUserResponse deleteUserWithSkipManagedSysList(
+            @WebParam(name = "managedSystemId", targetNamespace = "") String managedSystemId,
+            @WebParam(name = "principal", targetNamespace = "") String principal,
+            @WebParam(name = "status", targetNamespace = "") UserStatusEnum status,
+            @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
+            @WebParam(name = "skipManagedSysList", targetNamespace = "") List<String> skipManagedSysList);
     /**
      * The deleteUser operation enables the requester to delete an existing user
      * from the appropriate target systems
@@ -107,6 +113,13 @@ public interface ProvisionService {
             @WebParam(name = "principal", targetNamespace = "") String principal,
             @WebParam(name = "status", targetNamespace = "") UserStatusEnum status,
             @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
+
+    @WebMethod
+    public ProvisionUserResponse deleteByUserIdWithSkipManagedSysList(
+            @WebParam(name = "userId", targetNamespace = "") String userId,
+            @WebParam(name = "status", targetNamespace = "") UserStatusEnum status,
+            @WebParam(name = "requestorId", targetNamespace = "") String requestorId,
+            @WebParam(name = "skipManagedSysList", targetNamespace = "") List<String> skipManagedSysList);
 
     /**
      * Delete user from target system  by user id
@@ -135,6 +148,91 @@ public interface ProvisionService {
             @WebParam(name = "userId", targetNamespace = "") String userId,
             @WebParam(name = "requestorUserId", targetNamespace = "") String requestorUserId,
             @WebParam(name = "resourceList", targetNamespace = "") List<String> resourceList);
+
+    /**
+     * De Provisioning Users from selected resources only
+     *
+     * @param users          - users id list
+     * @param requestorUserId - requestor
+     * @param resources    - selected resources
+     * @return
+     */
+    @WebMethod
+    public ProvisionUserResponse deProvisionUsersToResource(
+            @WebParam(name = "usersIds", targetNamespace = "") List<String> users,
+            @WebParam(name = "requestorUserId", targetNamespace = "") String requestorUserId,
+            @WebParam(name = "resourcesIds", targetNamespace = "") List<String> resources);
+
+    /**
+     * Provisioning User only to selected resources
+     *
+     * @param users          - users id list
+     * @param requestorUserId - requestor
+     * @param resources    - selected resources
+     * @return
+     */
+    @WebMethod
+    public ProvisionUserResponse provisionUsersToResource(
+            @WebParam(name = "usersIds", targetNamespace = "") List<String> users,
+            @WebParam(name = "requestorUserId", targetNamespace = "") String requestorUserId,
+            @WebParam(name = "resourcesIds", targetNamespace = "") List<String> resources);
+
+    /**
+     * Provisioning User only to selected resources by roles
+     *
+     * @param users          - users id list
+     * @param requestorUserId - requestor
+     * @param roles    - selected roles
+     * @return
+     */
+    @WebMethod
+    public ProvisionUserResponse provisionUsersToResourceByRole(
+            @WebParam(name = "usersIds", targetNamespace = "") List<String> users,
+            @WebParam(name = "requestorUserId", targetNamespace = "") String requestorUserId,
+            @WebParam(name = "rolesIds", targetNamespace = "") List<String> roles);
+
+    /**
+     * De Provisioning Users from selected resources by roles
+     *
+     * @param users          - users id list
+     * @param requestorUserId - requestor
+     * @param roles    - selected roles
+     * @return
+     */
+    @WebMethod
+    public ProvisionUserResponse deProvisionUsersToResourceByRole(
+            @WebParam(name = "usersIds", targetNamespace = "") List<String> users,
+            @WebParam(name = "requestorUserId", targetNamespace = "") String requestorUserId,
+            @WebParam(name = "rolesIds", targetNamespace = "") List<String> roles);
+
+
+    /**
+     * Provisioning User only to selected resources by groups
+     *
+     * @param users          - users id list
+     * @param requestorUserId - requestor
+     * @param groups    - selected groups
+     * @return
+     */
+    @WebMethod
+    public ProvisionUserResponse provisionUsersToResourceByGroup(
+            @WebParam(name = "usersIds", targetNamespace = "") List<String> users,
+            @WebParam(name = "requestorUserId", targetNamespace = "") String requestorUserId,
+            @WebParam(name = "groupsIds", targetNamespace = "") List<String> groups);
+
+    /**
+     * DeProvisioning User only to selected resources by groups
+     *
+     * @param users          - users id list
+     * @param requestorUserId - requestor
+     * @param groups    - selected groups
+     * @return
+     */
+    @WebMethod
+    public ProvisionUserResponse deProvisionUsersToResourceByGroup(
+            @WebParam(name = "usersIds", targetNamespace = "") List<String> users,
+            @WebParam(name = "requestorUserId", targetNamespace = "") String requestorUserId,
+            @WebParam(name = "groupsIds", targetNamespace = "") List<String> groups);
 
     /**
      * The setPassword operation enables a requestor to specify a new password

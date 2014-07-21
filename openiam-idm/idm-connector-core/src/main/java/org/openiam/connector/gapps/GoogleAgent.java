@@ -32,6 +32,7 @@ public class GoogleAgent {
 	private static final String APP_URL_USER = "https://apps-apis.google.com/a/feeds/user/2.0/";
 	private static final String APP_URL_OU = "https://apps-apis.google.com/a/feeds/orguser/2.0/";
 	private static final String APP_URL_ALIAS = "https://apps-apis.google.com/a/feeds/alias/2.0/";
+	private static final String APP_URL_USER_EMAIL = "https://apps-apis.google.com/a/feeds/user/userEmail/2.0/";
 	protected final Log log = LogFactory.getLog(this.getClass());
 
 	public AppsPropertyService getService(String adminEmail, String password,
@@ -240,20 +241,32 @@ public class GoogleAgent {
 	}
 
 	public GenericEntry updateUser(String adminEmail, String password,
-			String domain, Map<String, String> googleUserProps, String id)
+			String domain, GenericEntry entry)
 			throws AppsForYourDomainException, AuthenticationException,
 			MalformedURLException, IOException, ServiceException {
-		GenericEntry entry = new GenericEntry();
-		entry.addProperties(googleUserProps);
+		return updateUser(adminEmail, password, domain, entry,
+				entry.getProperty("userEmail"), false);
+	}
+
+	// to update primary email address
+	public GenericEntry updateUser(String adminEmail, String password,
+			String domain, GenericEntry entry, String id, boolean isPKUpdate)
+			throws AppsForYourDomainException, AuthenticationException,
+			MalformedURLException, IOException, ServiceException {
 		AppsPropertyService service = this.getService(adminEmail, password,
 				domain);
-
-		GenericEntry newE = service.update(new URL(APP_URL_USER + domain + "/"
-				+ GoogleUtils.makeGoogleId(id.toLowerCase(), domain)), entry);
-
+		URL url = null;
+		if (isPKUpdate) {
+			url = new URL(APP_URL_USER_EMAIL + domain + "/"
+					+ GoogleUtils.makeGoogleId(id.toLowerCase(), domain));
+		} else {
+			url = new URL(APP_URL_USER + domain + "/"
+					+ GoogleUtils.makeGoogleId(id.toLowerCase(), domain));
+		}
+		GenericEntry newE = service.update(url, entry);
 		String userEmail = newE.getAllProperties().get("userEmail");
-		if (googleUserProps.get("aliasEmail") != null) {
-			String as = googleUserProps.get("aliasEmail");
+		if (newE.getProperty("aliasEmail") != null) {
+			String as = newE.getProperty("aliasEmail");
 			String aliases[] = as.split(",");
 			if (aliases != null && aliases.length > 0) {
 				for (String als : aliases) {
@@ -272,6 +285,17 @@ public class GoogleAgent {
 
 		log.info("Google connector update run:"
 				+ newE.getAllProperties().get("userEmail"));
+
+		return newE;
+	}
+
+	public GenericEntry updateUser(String adminEmail, String password,
+			String domain, Map<String, String> googleUserProps, String id)
+			throws AppsForYourDomainException, AuthenticationException,
+			MalformedURLException, IOException, ServiceException {
+		GenericEntry entry = new GenericEntry();
+		entry.addProperties(googleUserProps);
+		GenericEntry newE = updateUser(adminEmail, password, domain, entry);
 
 		return newE;
 	}

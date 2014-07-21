@@ -102,6 +102,10 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
 			if(group.getManagedSystem() != null && StringUtils.isNotBlank(group.getManagedSystem().getId())) {
 				criteria.add(Restrictions.eq("managedSystem.id", group.getManagedSystem().getId()));
 			}
+			
+			if(group.getCompany() != null && StringUtils.isNotBlank(group.getCompany().getId())) {
+				criteria.add(Restrictions.eq("company.id", group.getCompany().getId()));
+			}
             
             if(CollectionUtils.isNotEmpty(group.getResources())) {
             	final Set<String> resourceIds = new HashSet<String>();

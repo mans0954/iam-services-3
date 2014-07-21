@@ -6,6 +6,8 @@ import java.util.Map;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.base.ws.MatchType;
+import org.openiam.base.ws.SearchParam;
 import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.LoginSearchBean;
@@ -48,17 +50,17 @@ public class DefaultMatchObjectRule implements MatchObjectRule {
 
         } else if (matchAttrName.equalsIgnoreCase("PRINCIPAL")) {
             LoginSearchBean lsb = new LoginSearchBean();
-            lsb.setLogin(matchAttrValue);
+            lsb.setLoginMatchToken(new SearchParam(matchAttrValue, MatchType.EXACT));
             lsb.setManagedSysId(matchConfig.getManagedSysId());
             searchBean.setPrincipal(lsb);
             //search.setPrincipal(matchAttrValue);
 
         } else if (matchAttrName.equalsIgnoreCase("EMAIL")) {
-			searchBean.setEmailAddress(matchAttrValue);
+			searchBean.setEmailAddressMatchToken(new SearchParam(matchAttrValue, MatchType.EXACT));
 			//search.setEmailAddress(matchAttrValue);
 
 		} else if (matchAttrName.equalsIgnoreCase("EMPLOYEE_ID")) {
-			searchBean.setEmployeeId(matchAttrValue);
+			searchBean.setEmployeeIdMatchToken(new SearchParam(matchAttrValue, MatchType.EXACT));
 			//search.setEmployeeId(matchAttrValue);
 
 		} else if (matchAttrName.equalsIgnoreCase("ATTRIBUTE")) {
@@ -69,8 +71,7 @@ public class DefaultMatchObjectRule implements MatchObjectRule {
 			System.out.println("- src field value=.." + matchAttrValue);
 			matchAttrName = matchConfig.getMatchSrcFieldName();
 
-			searchBean.setAttributeName(matchAttrName);
-			searchBean.setAttributeValue(matchAttrValue);
+			searchBean.addAttribute(matchAttrName, matchAttrValue);
 
 		}
 

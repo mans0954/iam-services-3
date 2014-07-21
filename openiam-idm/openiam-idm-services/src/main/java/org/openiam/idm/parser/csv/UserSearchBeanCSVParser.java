@@ -8,6 +8,8 @@ import java.util.Map;
 
 import org.openiam.am.srvc.constants.CSVSource;
 import org.openiam.am.srvc.constants.UserFields;
+import org.openiam.base.ws.MatchType;
+import org.openiam.base.ws.SearchParam;
 import org.openiam.idm.searchbeans.UserSearchBean;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
@@ -41,13 +43,13 @@ public class UserSearchBeanCSVParser extends
             }
             break;
         case employeeId:
-            user.setEmployeeId(objValue);
+            user.setEmployeeIdMatchToken(new SearchParam(objValue, MatchType.EXACT));
             break;
         case firstName:
-            user.setFirstName(objValue);
+            user.setFirstNameMatchToken(new SearchParam(objValue, MatchType.EXACT));
             break;
         case lastName:
-            user.setLastName(objValue);
+            user.setLastNameMatchToken(new SearchParam(objValue, MatchType.EXACT));
             break;
         case locationCd:
             user.setLocationCd(objValue);
@@ -105,13 +107,13 @@ public class UserSearchBeanCSVParser extends
                     .format(user.getCreateDate()));
             break;
         case employeeId:
-            objValue = toString(user.getEmployeeId());
+            objValue = toString((user.getEmployeeIdMatchToken() != null) ? user.getEmployeeIdMatchToken().getValue() : null);
             break;
         case firstName:
-            objValue = toString(user.getFirstName());
+            objValue = toString((user.getFirstNameMatchToken() != null) ? user.getFirstNameMatchToken().getValue() : null);
             break;
         case lastName:
-            objValue = toString(user.getLastName());
+            objValue = toString((user.getLastNameMatchToken() != null) ? user.getLastNameMatchToken().getValue() : null);
             break;
         case locationCd:
             objValue = toString(user.getLocationCd());

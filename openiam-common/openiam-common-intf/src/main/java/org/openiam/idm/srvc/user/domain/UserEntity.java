@@ -59,7 +59,11 @@ public class UserEntity {
     private String createdBy;
 
     @Column(name = "EMPLOYEE_ID", length = 32)
-    @Field(index=Index.UN_TOKENIZED, name="employeeId", store=Store.YES)
+    @Fields ({
+        @Field(index = Index.TOKENIZED),
+        @Field(name = "employeeId", index = Index.TOKENIZED, store = Store.YES),
+        @Field(name = "employeeIdUntokenized", index = Index.UN_TOKENIZED, store = Store.YES)
+    })
     @Size(max = 32, message = "validator.user.employee.id.toolong")
     private String employeeId;
 
@@ -77,7 +81,8 @@ public class UserEntity {
     @Column(name = "FIRST_NAME", length = 50)
     @Fields ({
         @Field(index = Index.TOKENIZED),
-        @Field(name = "firstName", index = Index.TOKENIZED, store = Store.YES)
+        @Field(name = "firstName", index = Index.TOKENIZED, store = Store.YES),
+        @Field(name = "firstNameUntokenized", index = Index.UN_TOKENIZED, store = Store.YES)
     })
     @Size(max = 50, message = "validator.user.first.name.toolong")
     private String firstName;
@@ -95,7 +100,8 @@ public class UserEntity {
     @Column(name = "LAST_NAME", length = 50)
     @Fields ({
         @Field(index = Index.TOKENIZED),
-        @Field(name = "lastName", index = Index.TOKENIZED, store = Store.YES)
+        @Field(name = "lastName", index = Index.TOKENIZED, store = Store.YES),
+        @Field(name = "lastNameUntokenized", index = Index.UN_TOKENIZED, store = Store.YES)
     })
     @Size(max = 50, message = "validator.user.last.name.toolong")
     private String lastName;
@@ -180,7 +186,8 @@ public class UserEntity {
     @Size(max = 40, message = "validator.user.maiden.name.toolong")
     @Fields ({
         @Field(index = Index.TOKENIZED),
-        @Field(name = "maidenName", index = Index.TOKENIZED, store = Store.YES)
+        @Field(name = "maidenName", index = Index.TOKENIZED, store = Store.YES),
+        @Field(name = "maidenNameUntokenized", index = Index.UN_TOKENIZED, store = Store.YES)
     })
     private String maidenName;
 
@@ -855,9 +862,9 @@ public class UserEntity {
 	    }
 	    if (newUser.getMailCode() != null) {
 	        if (newUser.getMailCode().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-	            this.mailCode = newUser.getMailCode();
-	        } else {
 	            this.mailCode = null;
+	        } else {
+	            this.mailCode = newUser.getMailCode();
 	        }
 	    }
 	    if (newUser.getType() != null) {

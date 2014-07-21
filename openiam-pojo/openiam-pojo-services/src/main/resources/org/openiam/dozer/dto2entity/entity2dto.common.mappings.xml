@@ -81,9 +81,13 @@
 		</class-a>
 		<class-b>org.openiam.idm.srvc.user.dto.UserAttribute</class-b>
 		<field>
-			<a>element.id</a>
-			<b>metadataElementId</b>
-		</field>
+            <a>element.id</a>
+            <b>metadataId</b>
+        </field>
+        <field>
+            <a>element.displayName</a>
+            <b>metadataName</b>
+        </field>
 		<field>
 			<a>user.id</a>
 			<b>userId</b>
