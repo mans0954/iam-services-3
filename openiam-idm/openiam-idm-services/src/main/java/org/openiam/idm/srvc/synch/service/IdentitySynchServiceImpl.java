@@ -194,39 +194,39 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
 
         }
 
-        String preScriptUrl = config.getPreSyncScript();
-        if (StringUtils.isNotBlank(preScriptUrl)) {
-            log.debug("-PRE synchronization script CALLED.^^^^^^^^");
-            Map<String, Object> bindingMap = new HashMap<String, Object>();
-            bindingMap.put("config", synchConfigDozerConverter.convertToDTO(config, false));
-            try {
-                int ret = (Integer)scriptRunner.execute(bindingMap, preScriptUrl);
-                if (ret == SyncConstants.FAIL) {
-                    syncResponse.setStatus(ResponseStatus.FAILURE);
-                    syncResponse.setErrorCode(ResponseCode.SYNCHRONIZATION_PRE_SRIPT_FAILURE);
-                    return syncResponse;
-                }
-                log.debug("-PRE synchronization script COMPLETE.^^^^^^^^");
-                if (ret == SyncConstants.SKIP) {
-                    return syncResponse;
-                }
-
-            } catch(Exception e) {
-                log.error(e);
-            }
-        }
-
-        Date startDate = new Date();
-
-        idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "Synchronization started..." + startDate);
-
         try {
+
             SynchConfig configDTO = synchConfigDozerConverter.convertToDTO(config, false);
 
-			SourceAdapter adapt = adapterFactory.create(configDTO);
+            String preScriptUrl = config.getPreSyncScript();
+            if (StringUtils.isNotBlank(preScriptUrl)) {
+                log.debug("-PRE synchronization script CALLED.^^^^^^^^");
+                Map<String, Object> bindingMap = new HashMap<String, Object>();
+                bindingMap.put("config", configDTO);
+                try {
+                    int ret = (Integer)scriptRunner.execute(bindingMap, preScriptUrl);
+                    if (ret == SyncConstants.FAIL) {
+                        syncResponse.setStatus(ResponseStatus.FAILURE);
+                        syncResponse.setErrorCode(ResponseCode.SYNCHRONIZATION_PRE_SRIPT_FAILURE);
+                        return syncResponse;
+                    }
+                    log.debug("-PRE synchronization script COMPLETE.^^^^^^^^");
+                    if (ret == SyncConstants.SKIP) {
+                        return syncResponse;
+                    }
+
+                } catch(Exception e) {
+                    log.error(e);
+                }
+            }
+
+            Date startDate = new Date();
+
+            idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "Synchronization started..." + startDate);
 
 			long newLastExecTime = System.currentTimeMillis();
 
+            SourceAdapter adapt = adapterFactory.create(configDTO);
             syncResponse = adapt.startSynch(configDTO);
 			
  			log.debug("SyncReponse updateTime value=" + newLastExecTime);
