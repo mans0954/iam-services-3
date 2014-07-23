@@ -2,17 +2,12 @@ package org.openiam.idm.srvc.user.domain;
 
 import javax.persistence.*;
 
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
-import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 import org.openiam.base.domain.AbstractAttributeEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
-import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
 import org.openiam.internationalization.Internationalized;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -51,11 +46,11 @@ public class UserAttributeEntity extends AbstractAttributeEntity {
 		this.values = values;
 	}
 
-	public boolean isMultivalued() {
+	public boolean getIsMultivalued() {
 		return isMultivalued;
 	}
 
-	public void setMultivalued(boolean isMultivalued) {
+	public void setIsMultivalued(boolean isMultivalued) {
 		this.isMultivalued = isMultivalued;
 	}
 
