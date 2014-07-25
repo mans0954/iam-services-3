@@ -62,7 +62,8 @@ import java.util.*;
         "employeeIdMatchToken",
         "emailAddressMatchToken",
         "searchMode",
-        "initDefaulLoginFlag"
+        "initDefaulLoginFlag",
+        "userType"
 })
 public class UserSearchBean extends AbstractSearchBean<User, String> implements SearchBean<User, String>,
         Serializable {
@@ -71,6 +72,11 @@ public class UserSearchBean extends AbstractSearchBean<User, String> implements 
 	 * Job code of the user
 	 */
 	protected String jobCode = null;
+
+    /**
+     * Type of the user
+     */
+    protected String userType = null;
 	
 	@Deprecated
     protected String firstName = null;
@@ -650,6 +656,12 @@ public class UserSearchBean extends AbstractSearchBean<User, String> implements 
 	public void setSearchMode(SearchMode searchMode) {
 		this.searchMode = searchMode;
 	}
-    
-    
+
+    public String getUserType() {
+        return userType;
+    }
+
+    public void setUserType(String userType) {
+        this.userType = userType;
+    }
 }

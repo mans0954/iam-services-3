@@ -20,7 +20,8 @@ import java.util.Set;
         "name",
         "isRootsOnly",
         "managedSysId",
-        "attributes"
+        "attributes",
+        "type"
 })
 public class RoleSearchBean extends AbstractSearchBean<Role, String> implements SearchBean<Role, String>, Serializable {
 
@@ -29,6 +30,7 @@ public class RoleSearchBean extends AbstractSearchBean<Role, String> implements 
 	private String name;
     private String managedSysId;
 	private Boolean isRootsOnly;
+    private String type;
     private List<Tuple<String,String>> attributes;
 
 	public String getName() {
@@ -53,6 +55,14 @@ public class RoleSearchBean extends AbstractSearchBean<Role, String> implements 
 
     public void setManagedSysId(String managedSysId) {
         this.managedSysId = managedSysId;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 
     public void addAttribute(final String key, final String value) {

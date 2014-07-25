@@ -1,23 +1,21 @@
 package org.openiam.idm.srvc.role.domain;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.persistence.*;
-
-import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 import org.openiam.base.domain.AbstractAttributeEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
-import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.role.dto.RoleAttribute;
+import org.openiam.internationalization.Internationalized;
+
+import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name="ROLE_ATTRIBUTE")
 @AttributeOverride(name = "id", column = @Column(name = "ROLE_ATTR_ID"))
 @DozerDTOCorrespondence(RoleAttribute.class)
+@Internationalized
 public class RoleAttributeEntity extends AbstractAttributeEntity {
     
     @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})

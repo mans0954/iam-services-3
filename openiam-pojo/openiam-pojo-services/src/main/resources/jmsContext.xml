@@ -44,4 +44,7 @@
 
     <jee:jndi-lookup id="subsQueue" jndi-name="queue/subs" expected-type="javax.jms.Queue" />
 
+
+    <jee:jndi-lookup id="metaElementQueue" jndi-name="queue/metaElem" expected-type="javax.jms.Queue" />
+
 </beans>

@@ -2252,4 +2252,5 @@ public class UserMgr implements UserDataService {
     public List<UserEntity> getUserByLastDate(Date lastDate) {
         return userDao.getUserByLastDate(lastDate);
     }
+
 }

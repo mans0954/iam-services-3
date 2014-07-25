@@ -17,7 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -145,6 +144,9 @@ public class OrganizationDAOImpl extends
                 }
             }
 
+            if(StringUtils.isNotBlank(organizationSearchBean.getMetadataType())){
+                criteria.add(Restrictions.eq("type.id", organizationSearchBean.getMetadataType()));
+            }
 		}
 		return criteria;
 	}
