@@ -84,6 +84,9 @@ public class IdmAuditLogEntity implements Serializable {
     
     public void addChild(final IdmAuditLogEntity entity) {
     	if(entity != null) {
+            if(entity.getResult() == null) {
+                entity.setResult(this.getResult());
+            }
     		this.childLogs.add(entity);
     	}
     }

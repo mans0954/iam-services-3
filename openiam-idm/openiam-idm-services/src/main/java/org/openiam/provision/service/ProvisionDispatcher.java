@@ -349,6 +349,55 @@ public class ProvisionDispatcher implements Sweepable {
                                 + ProvLoginStatusEnum.FAIL_DISABLE + " details=" + th.getMessage());
                         loginEntity.setProvStatus(ProvLoginStatusEnum.FAIL_DISABLE);
                     }
+
+                } else if (data.getOperation() == ProvOperationEnum.ENABLE) {
+
+                    String requestId = data.getRequestId();
+                    ResourceEntity resEntity = resourceService.findResourceById(data.getResourceId());
+                    Resource res = resourceDozerConverter.convertToDTO(resEntity, true);
+                    ManagedSysDto mSys = managedSysDozerConverter.convertToDTO(
+                            managedSystemService.getManagedSysByResource(res.getId(), "ACTIVE"), true);
+                    String managedSysId = (mSys != null) ? mSys.getId() : null;
+
+                    Login targetSysLogin = data.getIdentity();
+
+                    SuspendResumeRequest suspendReq = new SuspendResumeRequest();
+                    suspendReq.setObjectIdentity(targetSysLogin.getLogin());
+                    suspendReq.setTargetID(managedSysId);
+                    suspendReq.setRequestID(requestId);
+                    suspendReq.setScriptHandler(mSys.getSuspendHandler());
+                    suspendReq.setHostLoginId(mSys.getUserId());
+
+                    ExtensibleUser extUser = buildFromRules(managedSysId, data.getBindingMap());
+                    suspendReq.setExtensibleObject(extUser);
+
+                    String passwordDecoded = mSys.getPswd();
+                    try {
+                        passwordDecoded = getDecryptedPassword(mSys);
+                    } catch (ConnectorDataException e) {
+                        e.printStackTrace();
+                    }
+                    suspendReq.setHostLoginPassword(passwordDecoded);
+                    suspendReq.setHostUrl(mSys.getHostUrl());
+
+                    try {
+                        ResponseType resp = connectorAdapter.resumeRequest(mSys, suspendReq,
+                                MuleContextProvider.getCtx());
+                        if (StatusCodeType.SUCCESS.equals(resp.getStatus())) {
+                            loginEntity.setProvStatus(ProvLoginStatusEnum.ENABLED);
+                        } else {
+                            idmAuditLog.fail();
+                            idmAuditLog.setFailureReason(resp.getErrorMsgAsStr());
+                            loginEntity.setProvStatus(ProvLoginStatusEnum.FAIL_ENABLE);
+                        }
+                    } catch (Throwable th) {
+                        idmAuditLog.fail();
+                        idmAuditLog.setFailureReason(th.getMessage());
+                        idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "ENABLE IDENTITY=" + identity
+                                + " from MANAGED_SYS_ID=" + identity.getManagedSysId() + " status="
+                                + ProvLoginStatusEnum.FAIL_ENABLE + " details=" + th.getMessage());
+                        loginEntity.setProvStatus(ProvLoginStatusEnum.FAIL_ENABLE);
+                    }
                 }
 
             } finally {

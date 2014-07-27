@@ -86,11 +86,11 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
 
 
 
-    @Value("${org.openiam.delegation.filter.organization}")
+    @Value("${org.openiam.organization.type.id}")
     private String organizationTypeId;
-    @Value("${org.openiam.delegation.filter.division}")
+    @Value("${org.openiam.division.type.id}")
     private String divisionTypeId;
-    @Value("${org.openiam.delegation.filter.department}")
+    @Value("${org.openiam.department.type.id}")
     private String departmentTypeId;
 
     @Override

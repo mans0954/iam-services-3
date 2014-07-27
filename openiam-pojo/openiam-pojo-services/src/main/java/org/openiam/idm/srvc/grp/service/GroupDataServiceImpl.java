@@ -10,10 +10,12 @@ import org.openiam.base.ws.ResponseCode;
 import org.openiam.dozer.converter.GroupDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.GroupSearchBean;
+import org.openiam.idm.srvc.audit.constant.AuditAction;
+import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
+import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.idm.srvc.auth.domain.IdentityEntity;
 import org.openiam.idm.srvc.auth.dto.IdentityTypeEnum;
 import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
-import org.openiam.idm.srvc.auth.dto.ProvLoginStatusEnum;
 import org.openiam.idm.srvc.auth.login.IdentityDAO;
 import org.openiam.idm.srvc.grp.domain.GroupAttributeEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
@@ -25,12 +27,11 @@ import org.openiam.idm.srvc.meta.service.MetadataElementDAO;
 import org.openiam.idm.srvc.meta.service.MetadataTypeDAO;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.mngsys.domain.AssociationType;
-import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.service.ManagedSysDAO;
 import org.openiam.idm.srvc.org.service.OrganizationDAO;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
-import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
+import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.srvc.user.util.DelegationFilterHelper;
@@ -102,6 +103,9 @@ public class GroupDataServiceImpl implements GroupDataService {
 
     @Autowired
     protected LanguageDAO languageDAO;
+
+    @Autowired
+    protected AuditLogService auditLogService;
 
 	private static final Log log = LogFactory.getLog(GroupDataServiceImpl.class);
 
@@ -332,7 +336,7 @@ public class GroupDataServiceImpl implements GroupDataService {
 				if(dbGroup != null) {
 					group.setApproverAssociations(dbGroup.getApproverAssociations());
 					
-					mergeAttribute(group, dbGroup);
+					mergeAttribute(group, dbGroup, requestorId);
 					group.setChildGroups(dbGroup.getChildGroups());
 					group.setParentGroups(dbGroup.getParentGroups());
 					group.setResources(dbGroup.getResources());
@@ -381,7 +385,7 @@ public class GroupDataServiceImpl implements GroupDataService {
 		return adminResource;
 	}
 	
-	private void mergeAttribute(final GroupEntity bean, final GroupEntity dbObject) {
+	private void mergeAttribute(final GroupEntity bean, final GroupEntity dbObject, final String requesterId) {
 		Set<GroupAttributeEntity> beanProps = (bean.getAttributes() != null) ? bean.getAttributes() : new HashSet<GroupAttributeEntity>();
         Set<GroupAttributeEntity> dbProps = (dbObject.getAttributes() != null) ? new HashSet<GroupAttributeEntity>(dbObject.getAttributes()) : new HashSet<GroupAttributeEntity>();
 
@@ -404,6 +408,7 @@ public class GroupDataServiceImpl implements GroupDataService {
             
             /* remove */
             if(!contains) {
+                auditLogRemoveAttribute(bean, dbProp, requesterId);
             	dbIteroator.remove();
             }
         }
@@ -423,6 +428,7 @@ public class GroupDataServiceImpl implements GroupDataService {
             if (!contains) {
                 beanProp.setGroup(bean);
                 beanProp.setElement(getEntity(beanProp.getElement()));
+                auditLogAddAttribute(bean, beanProp, requesterId);
                 toAdd.add(beanProp);
             }
         }
@@ -430,7 +436,29 @@ public class GroupDataServiceImpl implements GroupDataService {
         
         bean.setAttributes(dbProps);
 	}
-	
+
+    private void auditLogRemoveAttribute(final GroupEntity group, final GroupAttributeEntity groupAttr, final String requesterId){
+        // Audit Log -----------------------------------------------------------------------------------
+        IdmAuditLog auditLog = new IdmAuditLog();
+        auditLog.setRequestorUserId(requesterId);
+        auditLog.setTargetGroup(group.getId(), group.getName());
+        auditLog.setTargetGroupAttribute(groupAttr.getId(), groupAttr.getName());
+        auditLog.setAction(AuditAction.DELETE_ATTRIBUTE.value());
+        auditLog.addCustomRecord(groupAttr.getName(), groupAttr.getValue());
+        auditLogService.enqueue(auditLog);
+    }
+
+    private void auditLogAddAttribute(final GroupEntity group, final GroupAttributeEntity groupAttr, final String requesterId){
+        // Audit Log -----------------------------------------------------------------------------------
+        IdmAuditLog auditLog = new IdmAuditLog();
+        auditLog.setRequestorUserId(requesterId);
+        auditLog.setTargetGroup(group.getId(), group.getName());
+        auditLog.setTargetGroupAttribute(groupAttr.getId(), groupAttr.getName());
+        auditLog.setAction(AuditAction.ADD_ATTRIBUTE.value());
+        auditLog.addCustomRecord(groupAttr.getName(), groupAttr.getValue());
+        auditLogService.enqueue(auditLog);
+    }
+
 	private MetadataElementEntity getEntity(final MetadataElementEntity bean) {
     	if(bean != null && StringUtils.isNotBlank(bean.getId())) {
     		return metadataElementDAO.findById(bean.getId());

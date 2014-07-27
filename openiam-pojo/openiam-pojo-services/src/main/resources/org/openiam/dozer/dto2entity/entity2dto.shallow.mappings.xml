@@ -111,10 +111,15 @@
             <a>resources</a>
             <b>resources</b>
         </field-exclude>
-        <field-exclude>
+        <!--<field-exclude>-->
+            <!--<a>affiliations</a>-->
+            <!--<b>affiliations</b>-->
+        <!--</field-exclude>-->
+        <field custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
+               custom-converter-param="dto2entityShallowDozerMapper">
             <a>affiliations</a>
             <b>affiliations</b>
-        </field-exclude>
+        </field>
         <field-exclude>
             <a>supervisors</a>
             <b>supervisors</b>

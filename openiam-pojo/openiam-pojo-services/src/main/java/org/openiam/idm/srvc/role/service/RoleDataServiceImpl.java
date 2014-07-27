@@ -9,6 +9,9 @@ import org.openiam.base.ws.ResponseCode;
 import org.openiam.dozer.converter.RoleDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.RoleSearchBean;
+import org.openiam.idm.srvc.audit.constant.AuditAction;
+import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
+import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.idm.srvc.grp.domain.GroupAttributeEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.service.GroupDAO;
@@ -79,6 +82,9 @@ public class RoleDataServiceImpl implements RoleDataService {
 	
     @Autowired
     private MetadataTypeDAO typeDAO;
+
+    @Autowired
+    protected AuditLogService auditLogService;
 
 	private static final Log log = LogFactory.getLog(RoleDataServiceImpl.class);
 
@@ -250,7 +256,7 @@ public class RoleDataServiceImpl implements RoleDataService {
 			} else {
 				final RoleEntity dbRole = roleDao.findById(role.getId());
 				if(dbRole != null) {
-					mergeAttributes(role, dbRole);
+					mergeAttributes(role, dbRole, requestorId);
 					role.setApproverAssociations(dbRole.getApproverAssociations());
 					role.setChildRoles(dbRole.getChildRoles());
 					role.setGroups(dbRole.getGroups());
@@ -269,7 +275,7 @@ public class RoleDataServiceImpl implements RoleDataService {
 		}
 	}
 	
-	private void mergeAttributes(final RoleEntity bean, final RoleEntity dbObject) {
+	private void mergeAttributes(final RoleEntity bean, final RoleEntity dbObject, final String requestorId) {
 		Set<RoleAttributeEntity> beanProps = (bean.getRoleAttributes() != null) ? bean.getRoleAttributes() : new HashSet<RoleAttributeEntity>();
         Set<RoleAttributeEntity> dbProps = (dbObject.getRoleAttributes() != null) ? new HashSet<RoleAttributeEntity>(dbObject.getRoleAttributes()) : new HashSet<RoleAttributeEntity>();
 
@@ -292,6 +298,7 @@ public class RoleDataServiceImpl implements RoleDataService {
             
             /* remove */
             if(!contains) {
+                auditLogRemoveAttribute(bean,dbProp, requestorId);
             	dbIteroator.remove();
             }
         }
@@ -311,6 +318,7 @@ public class RoleDataServiceImpl implements RoleDataService {
             if (!contains) {
                 beanProp.setRole(bean);
                 beanProp.setElement(getEntity(beanProp.getElement()));
+                auditLogAddAttribute(bean, beanProp, requestorId);
                 toAdd.add(beanProp);
             }
         }
@@ -318,7 +326,29 @@ public class RoleDataServiceImpl implements RoleDataService {
         
         bean.setRoleAttributes(dbProps);
 	}
-	
+
+    private void auditLogRemoveAttribute(final RoleEntity role, final RoleAttributeEntity roleAttr, final String requesterId){
+        // Audit Log -----------------------------------------------------------------------------------
+        IdmAuditLog auditLog = new IdmAuditLog();
+        auditLog.setRequestorUserId(requesterId);
+        auditLog.setTargetRole(role.getId(), role.getName());
+        auditLog.setTargetRoleAttribute(roleAttr.getId(), roleAttr.getName());
+        auditLog.setAction(AuditAction.DELETE_ATTRIBUTE.value());
+        auditLog.addCustomRecord(roleAttr.getName(), roleAttr.getValue());
+        auditLogService.enqueue(auditLog);
+    }
+
+    private void auditLogAddAttribute(final RoleEntity role, final RoleAttributeEntity roleAttr, final String requesterId){
+        // Audit Log -----------------------------------------------------------------------------------
+        IdmAuditLog auditLog = new IdmAuditLog();
+        auditLog.setRequestorUserId(requesterId);
+        auditLog.setTargetRole(role.getId(), role.getName());
+        auditLog.setTargetRoleAttribute(roleAttr.getId(), roleAttr.getName());
+        auditLog.setAction(AuditAction.ADD_ATTRIBUTE.value());
+        auditLog.addCustomRecord(roleAttr.getName(), roleAttr.getValue());
+        auditLogService.enqueue(auditLog);
+    }
+
 	private MetadataElementEntity getEntity(final MetadataElementEntity bean) {
     	if(bean != null && StringUtils.isNotBlank(bean.getId())) {
     		return metadataElementDAO.findById(bean.getId());

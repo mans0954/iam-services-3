@@ -22,7 +22,7 @@
         <birt.version>4.2.0</birt.version>
         <log4j.version>1.2.16</log4j.version>
         <aopalliance.version>1.0</aopalliance.version>
-        <openiam.esb.version>3.1.1.RELEASE</openiam.esb.version>
+        <openiam.esb.version>3.1.4.RELEASE</openiam.esb.version>
         <javax.jms.version>1.1</javax.jms.version>
         <cxf.version>2.5.1</cxf.version>
         <quartz.version>1.5.2</quartz.version>

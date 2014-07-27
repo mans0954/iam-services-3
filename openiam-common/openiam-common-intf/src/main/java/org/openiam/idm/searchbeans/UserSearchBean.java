@@ -61,7 +61,8 @@ import java.util.*;
         "maidenNameMatchToken",
         "employeeIdMatchToken",
         "emailAddressMatchToken",
-        "searchMode"
+        "searchMode",
+        "initDefaulLoginFlag"
 })
 public class UserSearchBean extends AbstractSearchBean<User, String> implements SearchBean<User, String>,
         Serializable {
@@ -235,6 +236,8 @@ public class UserSearchBean extends AbstractSearchBean<User, String> implements 
      * The search mode which will determine the result set.
      */
     private SearchMode searchMode  = SearchMode.AND;
+
+    private boolean initDefaulLoginFlag=false;
 
     public SearchParam getFirstNameMatchToken() {
 		return firstNameMatchToken;
@@ -624,7 +627,15 @@ public class UserSearchBean extends AbstractSearchBean<User, String> implements 
     	maidenNameMatchToken = new SearchParam(maidenName, MatchType.STARTS_WITH);
 	}
 
-	public String getJobCode() {
+    public boolean getInitDefaulLoginFlag() {
+        return initDefaulLoginFlag;
+    }
+
+    public void setInitDefaulLogin(boolean initDefaulLoginFlag) {
+        this.initDefaulLoginFlag = initDefaulLoginFlag;
+    }
+
+    public String getJobCode() {
 		return jobCode;
 	}
 

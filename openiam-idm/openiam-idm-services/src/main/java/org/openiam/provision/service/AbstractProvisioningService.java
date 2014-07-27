@@ -778,6 +778,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                                 auditLog.setTargetUser(userEntity.getId(), login != null ? login.getLogin() : StringUtils.EMPTY);
                                 auditLog.setAction(AuditAction.DELETE_ADDRESS.value());
                                 auditLog.setAuditDescription("DELETE Address: "+en.toString());
+
                                 parentLog.addChild(auditLog);
                                 break;
                             }
@@ -999,18 +1000,19 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                 } else if (operation == AttributeOperationEnum.REPLACE) {
                     UserAttributeEntity entity = userEntity.getUserAttributes().get(entry.getKey());
                     if (entity != null) {
-                        userEntity.getUserAttributes().remove(entry.getKey());
-                        entity.setUser(null);  // Prevent cascade evict
-                        userMgr.evict(entity);
-                        UserAttributeEntity e = userAttributeDozerConverter.convertToEntity(entry.getValue(), true);
-                        e.setUser(userEntity);
-                        userEntity.getUserAttributes().put(entry.getKey(), e);
+                        String oldValue = entity.getValue();
+                        if (entry.getValue().getIsMultivalued()) {
+                            entity.setValues(entry.getValue().getValues());
+                        } else {
+                            entity.setValue(entry.getValue().getValue());
+                        }
                         // Audit Log -----------------------------------------------------------------------------------
                         IdmAuditLog auditLog = new IdmAuditLog();
                         Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
                         auditLog.setTargetUser(userEntity.getId(), login != null ? login.getLogin() : StringUtils.EMPTY);
                         auditLog.setAction(AuditAction.REPLACE_ATTRIBUTE.value());
-                        auditLog.addCustomRecord(entry.getKey(), ("old= '"+e.getValue() + "' new= '"+e.getValue()+"'"));
+                        auditLog.addCustomRecord(entry.getKey(), ("old= '" + oldValue +
+                                "' new= '"+userEntity.getUserAttributes().get(entry.getKey()).getValue()+"'"));
                         parentLog.addChild(auditLog);
                         // ---------------------------------------------------------------------------------------------
                     }

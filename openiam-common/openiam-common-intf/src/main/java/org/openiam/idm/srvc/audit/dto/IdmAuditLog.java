@@ -56,7 +56,7 @@ public class IdmAuditLog implements Serializable {
     private String clientIP;
     private String nodeIP;
     private String action;
-    private String result;
+    private String result = AuditResult.SUCCESS.value();
     private String hash;
     private String sessionID;
     private String correlationId;
@@ -228,6 +228,9 @@ public class IdmAuditLog implements Serializable {
     		if(this.childLogs == null) {
     			this.childLogs = new HashSet<IdmAuditLog>();
     		}
+            if(entity.getResult() == null) {
+                entity.setResult(this.getResult());
+            }
     		this.childLogs.add(entity);
     	}
     }
@@ -375,6 +378,25 @@ public class IdmAuditLog implements Serializable {
         addTarget(groupId, AuditTarget.GROUP.value(), groupPrincipal);
     }
 
+    /**
+     * Sets a 'target' role attribute - against which this operations is being performed
+     * @param attrId
+     * @param attrName
+     * @return this
+     */
+    public void setTargetRoleAttribute(final String attrId, final String attrName) {
+        addTarget(attrId, AuditTarget.ROLE_ATTRIBUTE.value(), attrName);
+    }
+
+    /**
+     * Sets a 'target' group attribute - against which this operations is being performed
+     * @param attrId
+     * @param attrName
+     * @return this
+     */
+    public void setTargetGroupAttribute(final String attrId, final String attrName) {
+        addTarget(attrId, AuditTarget.GROUP_ATTRIBUTE.value(), attrName);
+    }
     /**
      * Sets a 'target' resource - against which this operations is being performed
      * @param resourceId

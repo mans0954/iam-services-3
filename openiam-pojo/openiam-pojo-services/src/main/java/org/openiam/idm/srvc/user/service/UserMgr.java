@@ -32,7 +32,6 @@ import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.service.GroupDAO;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.lang.domain.LanguageEntity;
-import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.meta.service.MetadataElementDAO;
@@ -396,7 +395,7 @@ public class UserMgr implements UserDataService {
                 existingEntity.setElement(incomingEntity.getElement());
                 existingEntity.setName(incomingEntity.getName());
                 existingEntity.setValue(incomingEntity.getValue());
-                existingEntity.setMultivalued(incomingEntity.isMultivalued());
+                existingEntity.setIsMultivalued(incomingEntity.getIsMultivalued());
                 existingEntity.setValues(incomingEntity.getValues());
                 editList.add(existingEntity);
             }
@@ -630,6 +629,13 @@ public class UserMgr implements UserDataService {
             }
             entityList = finalizedIdList;
         }
+
+        if(searchBean.getInitDefaulLoginFlag()){
+            for(UserEntity usr: entityList){
+                usr.setDefaultLogin(sysConfiguration.getDefaultManagedSysId());
+            }
+        }
+
         return entityList;
     }
 
