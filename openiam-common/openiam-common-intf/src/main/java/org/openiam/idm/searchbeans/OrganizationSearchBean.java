@@ -28,7 +28,8 @@ import java.util.Set;
 		"childId",
 		"validParentTypeId",
         "internalOrgId",
-        "attributes"
+        "attributes",
+        "metadataType"
 })
 public class OrganizationSearchBean extends AbstractSearchBean<Organization, String> implements SearchBean<Organization, String>,
         Serializable {
@@ -41,6 +42,7 @@ public class OrganizationSearchBean extends AbstractSearchBean<Organization, Str
     private String childId;
     private String validParentTypeId;
     private String internalOrgId;
+    private String metadataType;
     private List<Tuple<String,String>> attributes;
 
     public String getName() {
@@ -94,6 +96,14 @@ public class OrganizationSearchBean extends AbstractSearchBean<Organization, Str
 //        }
 //        keySet.add(key);
         this.addKey(key);
+    }
+
+    public String getMetadataType() {
+        return metadataType;
+    }
+
+    public void setMetadataType(String metadataType) {
+        this.metadataType = metadataType;
     }
 
     public Set<String> getKeys() {

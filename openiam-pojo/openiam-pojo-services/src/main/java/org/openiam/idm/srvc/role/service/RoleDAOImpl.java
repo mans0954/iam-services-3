@@ -69,6 +69,10 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
                     criteria.add(Subqueries.propertyIn("id", crit));
                 }
             }
+
+            if(StringUtils.isNotBlank(roleSearchBean.getType())){
+                criteria.add(Restrictions.eq("type.id", roleSearchBean.getType()));
+            }
         }
         return criteria;
     }
