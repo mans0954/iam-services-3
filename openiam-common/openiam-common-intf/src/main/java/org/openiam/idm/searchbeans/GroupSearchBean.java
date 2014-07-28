@@ -20,7 +20,8 @@ import java.util.Set;
         "name",
         "isRootsOnly",
         "managedSysId",
-        "attributes"
+        "attributes",
+        "type"
 })
 public class GroupSearchBean extends AbstractSearchBean<Group, String> implements SearchBean<Group, String>, Serializable {
 
@@ -28,6 +29,7 @@ public class GroupSearchBean extends AbstractSearchBean<Group, String> implement
     private Set<String> keySet;
 	private String name;
 	private String managedSysId;
+    private String type;
 	private boolean isRootsOnly;
 	private List<Tuple<String, String>> attributes;
 	
@@ -73,7 +75,15 @@ public class GroupSearchBean extends AbstractSearchBean<Group, String> implement
 		this.attributes = attributes;
 	}
 
-	@Override
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    @Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();

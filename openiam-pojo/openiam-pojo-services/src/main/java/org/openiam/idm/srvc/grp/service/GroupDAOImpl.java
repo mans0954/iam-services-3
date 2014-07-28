@@ -64,6 +64,10 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
                     criteria.add(Subqueries.propertyIn("id", crit));
                 }
             }
+
+            if(StringUtils.isNotBlank(groupSearchBean.getType())){
+                criteria.add(Restrictions.eq("type.id", groupSearchBean.getType()));
+            }
         }
         return criteria;
     }

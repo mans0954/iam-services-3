@@ -322,6 +322,10 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
 					}
 				}
 			}
+
+            if(StringUtils.isNotBlank(searchBean.getMetadataType())){
+                criteria.add(Restrictions.eq("type.id", searchBean.getMetadataType()));
+            }
 		}
 	}
 }
