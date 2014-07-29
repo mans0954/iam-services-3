@@ -52,6 +52,7 @@ public class IdmAuditLogDAOImpl extends BaseDaoImpl<IdmAuditLogEntity, String> i
         }
         return criteria;
     }
+
     @Override
     public List<String> getIDsByExample(SearchBean searchBean, int from, int size) {
         final Criteria criteria = getExampleCriteria(searchBean);
@@ -64,7 +65,9 @@ public class IdmAuditLogDAOImpl extends BaseDaoImpl<IdmAuditLogEntity, String> i
         }
         criteria.addOrder(Order.desc("timestamp"));
         criteria.setProjection(Projections.id());
-        return (List<String>)criteria.list();
+        List<String> resultList =  (List<String>)criteria.list();
+
+        return resultList;
     }
 
     @Override
@@ -96,7 +99,7 @@ public class IdmAuditLogDAOImpl extends BaseDaoImpl<IdmAuditLogEntity, String> i
             if(StringUtils.isNotBlank(auditSearch.getUserId()) &&
                     StringUtils.isNotBlank(auditSearch.getTargetId())) {
                 Criterion sourceCriterion = Restrictions.eq("userId", auditSearch.getUserId());
-                criteria.createAlias("targets", "tar", Criteria.LEFT_JOIN);
+                criteria.createAlias("targets", "tar", Criteria.INNER_JOIN);
 
                 criteria.add(Restrictions.or(sourceCriterion, Restrictions.and(Restrictions.eq("tar.targetId", auditSearch.getTargetId()),Restrictions.eq("tar.targetType", auditSearch.getTargetType()))));
             } else {
