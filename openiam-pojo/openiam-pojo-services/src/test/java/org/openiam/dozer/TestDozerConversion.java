@@ -247,7 +247,8 @@ public class TestDozerConversion extends AbstractTestNGSpringContextTests {
 		Assert.assertEquals(original.getEmployeeTypeId(), copy.getEmployeeTypeId());
 		Assert.assertEquals(original.getFirstName(), copy.getFirstName());
 		Assert.assertEquals(original.getJobCodeId(), copy.getJobCodeId());
-		Assert.assertEquals(original.getLastDate(), copy.getLastDate());
+        Assert.assertEquals(original.getLastDate(), copy.getLastDate());
+        Assert.assertEquals(original.getClaimDate(), copy.getClaimDate());
 		Assert.assertEquals(original.getLastName(), copy.getLastName());
 		Assert.assertEquals(original.getLastUpdate(), copy.getLastUpdate());
 		Assert.assertEquals(original.getLastUpdatedBy(), copy.getLastUpdatedBy());

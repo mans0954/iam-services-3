@@ -1817,6 +1817,13 @@ public class UserMgr implements UserDataService {
                 origUserEntity.setLastDate(newUserEntity.getLastDate());
             }
         }
+        if (newUserEntity.getClaimDate() != null) {
+            if (newUserEntity.getClaimDate().equals(BaseConstants.NULL_DATE)) {
+                origUserEntity.setClaimDate(null);
+            } else {
+                origUserEntity.setClaimDate(newUserEntity.getClaimDate());
+            }
+        }
         if (newUserEntity.getMaidenName() != null) {
             if (newUserEntity.getMaidenName().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
                 origUserEntity.setMaidenName(null);
