@@ -165,8 +165,8 @@ public class UserEntity {
     @Size(max = 20, message = "validator.user.type.identifier.toolong")
     private String userTypeInd;
 
-    @Column(name = "MAIL_CODE", length = 10)
-    @Size(max = 10, message = "validator.user.mailcode.toolong")
+    @Column(name = "MAIL_CODE", length = 100)
+    @Size(max = 100, message = "validator.user.mailcode.toolong")
     private String mailCode;
 
     @Column(name = "COST_CENTER", length = 20)
