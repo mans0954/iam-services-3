@@ -82,6 +82,13 @@ public class UserSearchBeanCSVParser extends
                 user.setLastDate(null);
             }
             break;
+        case claimDate:
+            try {
+                user.setClaimDate(sdf.parse(objValue));
+            } catch (Exception e) {
+                user.setClaimDate(null);
+            }
+            break;
         case showInSearch:
             try {
                 user.setShowInSearch(Integer.valueOf(objValue));
@@ -134,6 +141,10 @@ public class UserSearchBeanCSVParser extends
         case lastDate:
             objValue = user.getLastDate() == null ? "" : toString(sdf
                     .format(user.getLastDate()));
+            break;
+        case claimDate:
+            objValue = user.getClaimDate() == null ? "" : toString(sdf
+                    .format(user.getClaimDate()));
             break;
         case showInSearch:
             objValue = toString(user.getShowInSearch());

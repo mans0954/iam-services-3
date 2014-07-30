@@ -34,6 +34,7 @@ import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleUser;
 import org.openiam.script.ScriptIntegration;
 import org.openiam.base.BaseAttributeContainer;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.text.SimpleDateFormat;
@@ -51,6 +52,9 @@ import java.util.Map;
  */
 @Component
 public class AttributeListBuilder {
+
+    @Value(",${org.openiam.debug.hidden.attributes},")
+    private String hiddenAttributes;
 
     protected static final Log log = LogFactory
             .getLog(AttributeListBuilder.class);
@@ -263,10 +267,10 @@ public class AttributeListBuilder {
                         String objectType = attr.getMapForObjectType();
                         if (objectType != null) {
 
-                            log.debug("buildFromRules: OBJECTTYPE="
-                                    + objectType + " SCRIPT OUTPUT=" + output
-                                    + " attribute name="
-                                    + attr.getAttributeName());
+                            log.debug("buildFromRules: OBJECTTYPE="+objectType+", ATTRIBUTE=" + attr.getAttributeName() +
+                                    ", SCRIPT OUTPUT=" +
+                                    (hiddenAttributes.toLowerCase().contains(","+attr.getAttributeName().toLowerCase()+",")
+                                            ? "******" : output));
 
                             if (objectType.equalsIgnoreCase("USER")
                                     || objectType.equalsIgnoreCase("PASSWORD")) {

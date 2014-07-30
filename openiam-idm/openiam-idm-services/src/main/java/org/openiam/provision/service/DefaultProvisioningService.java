@@ -84,6 +84,7 @@ import org.openiam.util.MuleContextProvider;
 import org.openiam.util.UserUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
@@ -115,6 +116,9 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
     @Autowired
     @Qualifier("transactionManager")
     private PlatformTransactionManager platformTransactionManager;
+
+    @Value(",${org.openiam.debug.hidden.attributes},")
+    private String hiddenAttributes;
 
     private static final Log log = LogFactory.getLog(DefaultProvisioningService.class);
 
@@ -2320,8 +2324,12 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                         log.error("Error in script = '", mpe);
                         continue;
                     }
-                    log.debug("buildFromRules: OBJECTTYPE=" + objectType + " SCRIPT OUTPUT=" + output
-                            + " attribute name=" + attr.getAttributeName());
+
+                    log.debug("buildFromRules: OBJECTTYPE="+objectType+", ATTRIBUTE=" + attr.getAttributeName() +
+                              ", SCRIPT OUTPUT=" +
+                              (hiddenAttributes.toLowerCase().contains(","+attr.getAttributeName().toLowerCase()+",")
+                                      ? "******" : output));
+
                     if (output != null) {
                         ExtensibleAttribute newAttr;
                         if (output instanceof String) {

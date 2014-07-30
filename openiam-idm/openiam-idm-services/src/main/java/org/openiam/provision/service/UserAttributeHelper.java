@@ -727,6 +727,7 @@ public class UserAttributeHelper {
         newUser.setCostCenter(user.getCostCenter());
         newUser.setStartDate(user.getStartDate());
         newUser.setLastDate(user.getLastDate());
+        newUser.setClaimDate(user.getClaimDate());
         newUser.setNickname(user.getNickname());
         newUser.setMaidenName(user.getMaidenName());
         newUser.setPasswordTheme(user.getPasswordTheme());

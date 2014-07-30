@@ -179,6 +179,9 @@ public class UserEntity {
     @Column(name = "LAST_DATE", length = 10)
     private Date lastDate;
 
+    @Column(name = "CLAIM_DATE", length = 10)
+    private Date claimDate;
+
     @Column(name = "NICKNAME", length = 40)
     @Size(max = 40, message = "validator.user.nick.name.toolong")
     private String nickname;
@@ -881,6 +884,13 @@ public class UserEntity {
 	            this.lastDate = newUser.getLastDate();
 	        }
 	    }
+        if (newUser.getClaimDate() != null) {
+            if (newUser.getClaimDate().equals(BaseConstants.NULL_DATE)) {
+                this.claimDate = null;
+            } else {
+                this.claimDate = newUser.getClaimDate();
+            }
+        }
 	    if (newUser.getLocationCd() != null) {
 	        if (newUser.getLocationCd().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
 	            this.locationCd = null;
@@ -1043,6 +1053,15 @@ public class UserEntity {
     public void setSubordinates(Set<SupervisorEntity> subordinatesSet) {
         this.subordinates = subordinatesSet;
     }
+
+    public Date getClaimDate() {
+        return claimDate;
+    }
+
+    public void setClaimDate(Date claimDate) {
+        this.claimDate = claimDate;
+    }
+
 
     @Override
     public boolean equals(Object o) {
