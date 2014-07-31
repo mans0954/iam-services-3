@@ -32,6 +32,7 @@ public interface ValidationScript {
 	static int VALID 		= 1;
 	static int NOT_VALID 	= 2;
 	static int SKIP 		= 3;
+    static int SKIP_TO_REVIEW = 4;
 	
 	int isValid(LineObject rowObj);
 }

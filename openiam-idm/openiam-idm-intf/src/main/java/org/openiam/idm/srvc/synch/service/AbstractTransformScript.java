@@ -5,6 +5,8 @@ import java.util.Set;
 
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.role.dto.Role;
+import org.openiam.idm.srvc.synch.dto.SynchConfig;
+import org.openiam.idm.srvc.synch.dto.SynchReview;
 import org.openiam.idm.srvc.user.dto.User;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -17,6 +19,8 @@ public abstract class AbstractTransformScript implements TransformScript {
 	protected boolean isNewUser = false;
     protected ApplicationContext context;
     protected String synchConfigId;
+    protected SynchConfig config;
+    protected SynchReview review;
 
 	public User getUser() {
 		return user;
@@ -42,6 +46,23 @@ public abstract class AbstractTransformScript implements TransformScript {
 	public void setNewUser(boolean isNewUser) {
 		this.isNewUser = isNewUser;
 	}
+
+    public SynchConfig getConfig() {
+        return config;
+    }
+
+    public void setConfig(SynchConfig config) {
+        this.config = config;
+    }
+
+    public SynchReview getReview() {
+        return review;
+    }
+
+    public void setReview(SynchReview review) {
+        this.review = review;
+    }
+
     @Override
     public void setSynchConfigId(String synchConfigId) {
         this.synchConfigId = synchConfigId;

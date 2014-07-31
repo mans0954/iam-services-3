@@ -22,6 +22,7 @@
 package org.openiam.idm.srvc.synch.dto;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.sql.Timestamp;
@@ -31,7 +32,7 @@ import java.sql.Timestamp;
  *
  */
 public class LineObject implements Cloneable {
-    private Map<String,Attribute> columnMap = new HashMap<String, Attribute>();
+    private Map<String,Attribute> columnMap = new LinkedHashMap<String, Attribute>();
     private Timestamp lastUpdate = null;
 
     public void setColumnMap(Map<String, Attribute> columnMap) {
@@ -57,7 +58,7 @@ public class LineObject implements Cloneable {
     }
     protected Object clone() {
         LineObject obj = new LineObject();
-        Map<String,Attribute> newColumnMap = new HashMap<String, Attribute>();
+        Map<String,Attribute> newColumnMap = new LinkedHashMap<String, Attribute>();
 
         Set<String> keySet = columnMap.keySet();
         for (String key : keySet) {

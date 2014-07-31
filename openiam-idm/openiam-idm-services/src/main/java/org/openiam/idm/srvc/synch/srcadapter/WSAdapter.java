@@ -21,16 +21,15 @@
  */
 package org.openiam.idm.srvc.synch.srcadapter;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.id.UUIDGen;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.idm.srvc.synch.dto.Attribute;
-import org.openiam.idm.srvc.synch.dto.LineObject;
-import org.openiam.idm.srvc.synch.dto.SyncResponse;
-import org.openiam.idm.srvc.synch.dto.SynchConfig;
+import org.openiam.idm.srvc.synch.domain.SynchReviewEntity;
+import org.openiam.idm.srvc.synch.dto.*;
 import org.openiam.idm.srvc.synch.service.*;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
@@ -64,44 +63,28 @@ public class WSAdapter extends AbstractSrcAdapter { // implements SourceAdapter
 
 	private Connection con = null;
 
-	public SyncResponse startSynch(SynchConfig config) {
+    private LineObject lineHeader;
 
-		// rule used to match object from source system to data in IDM
-		MatchObjectRule matchRule = null;
-		String changeLog = null;
+    @Override
+    public SyncResponse startSynch(final SynchConfig config) {
+        return startSynch(config, null, null);
+    }
+
+    @Override
+    public SyncResponse startSynch(SynchConfig config, SynchReviewEntity sourceReview, SynchReviewEntity resultReview) {
+
 		Date mostRecentRecord = null;
 
 		log.debug("WS SYNCH STARTED ^^^^^^^^");
 
-        String requestId = UUIDGen.getUUID();
+        SyncResponse res = initializeScripts(config, sourceReview);
+        if (ResponseStatus.FAILURE.equals(res.getStatus())) {
+            return res;
+        }
 
-        /*
-        IdmAuditLog synchStartLog = new IdmAuditLog();
-        synchStartLog.setSynchAttributes("SYNCH_USER", config.getSynchConfigId(), "START", "SYSTEM", requestId);
-        synchStartLog = auditHelper.logEvent(synchStartLog);
-		*/
-		try {
-			matchRule = matchRuleFactory.create(config.getCustomMatchRule());
-		} catch(ClassNotFoundException cnfe) {
-			log.error(cnfe);
-			/*
-            synchStartLog.updateSynchAttributes("FAIL",ResponseCode.CLASS_NOT_FOUND.toString() , cnfe.toString());
-            auditHelper.logEvent(synchStartLog);
-			*/
-            SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
-            resp.setErrorCode(ResponseCode.CLASS_NOT_FOUND);
-            return resp;
-		}
-
-		Timestamp lastExec = null;
-        boolean incremental = false;
-		
-		if (config.getLastExecTime() != null) {
-			lastExec = new Timestamp( config.getLastExecTime().getTime() ) ;
-		}
-        if (config.getSynchType().equalsIgnoreCase("INCREMENTAL") && (lastExec != null)) {
-            incremental = true;
-	    }
+        if (sourceReview != null) {
+            return startSynchReview(config, sourceReview, resultReview);
+        }
 
 		try {
             WSOperationCommand serviceCmd = getServiceCommand(  config.getWsScript() );
@@ -112,159 +95,41 @@ public class WSAdapter extends AbstractSrcAdapter { // implements SourceAdapter
             }
             List<LineObject> lineObjectList =  serviceCmd.execute(config);
 
-            for (LineObject rowObj :  lineObjectList) {
-			//while ( rs.next()) {
-                log.debug("-SYNCHRONIZING NEW RECORD ---" );
-				// make sure we have a new object for each row
+            if (CollectionUtils.isNotEmpty(lineObjectList)) {
+                lineHeader = lineObjectList.get(0);
+            }
 
-			//	LineObject rowObj = rowHeader.copy();
-			//	DatabaseUtil.populateRowObject(rowObj, rs, changeLog);
-				
-			//	log.debug(" - Record update time=" + rowObj.getLastUpdate());
-				
+            for (LineObject rowObj :  lineObjectList) {
+                log.debug("-SYNCHRONIZING NEW RECORD ---" );
 				if (mostRecentRecord == null) {
 					mostRecentRecord = rowObj.getLastUpdate();
-				}else {
+
+				} else {
 					// if current record is newer than what we saved, then update the most recent record value
-					
 					if (mostRecentRecord.before(rowObj.getLastUpdate())) {
 						log.debug("- MostRecentRecord value updated to=" + rowObj.getLastUpdate());
 						mostRecentRecord.setTime(rowObj.getLastUpdate().getTime());
 					}
 				}
-				
-				// start the synch process 
-				// 1) Validate the data
-				// 2) Transform it
-				// 3) if not delete - then match the object and determine if its a new object or its an udpate
-				try {
-					// validate
-					if (config.getValidationRule() != null && config.getValidationRule().length() > 0) {
-						ValidationScript script = SynchScriptFactory.createValidationScript(config.getValidationRule());
-						int retval = script.isValid( rowObj );
-						if (retval == ValidationScript.NOT_VALID ) {
-							log.debug("Validation failed...");
-							// log this object in the exception log
-						}
-						if (retval == ValidationScript.SKIP) {
-							continue;
-						}
-					}
-					
-					// check if the user exists or not
-					Map<String, Attribute> rowAttr = rowObj.getColumnMap();					
-					//
-					matchRule =  matchRuleFactory.create(config.getCustomMatchRule());
-					User usr = matchRule.lookup(config, rowAttr);
 
-					// transform
-                    int retval = -1;
-                    ProvisionUser pUser = new ProvisionUser();
-                    List<TransformScript> transformScripts =  SynchScriptFactory.createTransformationScript(config);
-                    if (transformScripts != null && transformScripts.size() > 0) {
+                processLineObject(rowObj, config, resultReview);
 
-                        for (TransformScript transformScript : transformScripts) {
-                            // initialize the transform script
-                            if (usr != null) {
-                                transformScript.setNewUser(false);
-                                User u = userManager.getUserDto(usr.getId());
-                                pUser = new ProvisionUser(u);
-                                setCurrentSuperiors(pUser);
-                                transformScript.setUser(u);
-                                transformScript.setPrincipalList(loginDozerConverter.convertToDTOList(loginManager.getLoginByUser(usr.getId()), false));
-                                transformScript.setUserRoleList(roleDataService.getUserRolesAsFlatList(usr.getId()));
-
-                            } else {
-                                transformScript.setNewUser(true);
-                                transformScript.setUser(null);
-                                transformScript.setPrincipalList(null);
-                                transformScript.setUserRoleList(null);
-                            }
-                            pUser.setSkipPreprocessor(true);
-                            pUser.setSkipPostProcessor(true);
-                            retval = transformScript.execute(rowObj, pUser);
-
-                            log.debug("- Transform result=" + retval);
-                        }
-
-                        // show the user object
-                        log.debug("- User After Transformation =" + pUser);
-                        log.debug("- User = " + pUser.getId() + "-" + pUser.getFirstName() + " " + pUser.getLastName());
-                        log.debug("- User Attributes = " + pUser.getUserAttributes());
-                        /*
-						pUser.setSessionId(synchStartLog.getSessionId());
-						*/
-						if (retval == TransformScript.DELETE && usr != null) {
-							log.debug("deleting record - " + usr.getId());
-							ProvisionUserResponse userResp = provService.deleteByUserId(usr.getId(), UserStatusEnum.DELETED, systemAccount);
-
-						} else {
-							// call synch
-
-							if (retval != TransformScript.DELETE) {
-
-                                log.debug("-Provisioning user=" + pUser.getLastName());
-
-								if (usr != null) {
-									log.debug("-updating existing user...systemId=" + pUser.getId());
-									pUser.setId(usr.getId());
-
-                                    modifyUser(pUser);
-									
-								} else {
-									log.debug("-adding new user...");
-
-									pUser.setId(null);
-                                    addUser(pUser);
-								}
-							}
-						}
-					}
-
-				} catch(ClassNotFoundException cnfe) {
-					log.error(cnfe);
-					/*
-                    synchStartLog.updateSynchAttributes("FAIL",ResponseCode.CLASS_NOT_FOUND.toString() , cnfe.toString());
-                    auditHelper.logEvent(synchStartLog);
-					*/
-					SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
-					resp.setErrorCode(ResponseCode.CLASS_NOT_FOUND);
-                    resp.setErrorText(cnfe.toString());
-
-					return resp;
-
-				} catch (IOException fe ) {
-
-                    log.error(fe);
-                    /*
-                    synchStartLog.updateSynchAttributes("FAIL",ResponseCode.FILE_EXCEPTION.toString() , fe.toString());
-                    auditHelper.logEvent(synchStartLog);
-					*/
-                    SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
-                    resp.setErrorCode(ResponseCode.FILE_EXCEPTION);
-                    resp.setErrorText(fe.toString());
-
-                    return resp;
-                }
 			}
 						
 		} catch(Exception se) {
+
 			log.error(se);
-			/*
-            synchStartLog.updateSynchAttributes("FAIL",ResponseCode.SYNCHRONIZATION_EXCEPTION.toString() , se.toString());
-            auditHelper.logEvent(synchStartLog);
-			*/
 			SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
 			resp.setErrorCode(ResponseCode.SQL_EXCEPTION);
 			resp.setErrorText(se.toString());
 			return resp;
+
 		} finally {
-			// mark the end of the synch
-			/*
-			IdmAuditLog synchEndLog = new IdmAuditLog();
-			synchEndLog.setSynchAttributes("SYNCH_USER", config.getSynchConfigId(), "END", "SYSTEM", synchStartLog.getSessionId());
-			auditHelper.logEvent(synchEndLog);
-			*/			
+            if (resultReview != null) {
+                if (CollectionUtils.isNotEmpty(resultReview.getReviewRecords())) { // add header row
+                    resultReview.addRecord(generateSynchReviewRecord(lineHeader, true));
+                }
+            }
 		}
 		
 		log.debug("WS SYNCH COMPLETE.^^^^^^^^");

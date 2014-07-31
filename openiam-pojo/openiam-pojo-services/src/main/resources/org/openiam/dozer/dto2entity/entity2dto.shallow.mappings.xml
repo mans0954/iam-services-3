@@ -977,4 +977,36 @@
     		<b>contentProviderXrefs</b>
     	</field-exclude>
     </mapping>
+    <mapping>
+        <class-a>org.openiam.idm.srvc.synch.domain.SynchConfigEntity</class-a>
+        <class-b>org.openiam.idm.srvc.synch.dto.SynchConfig</class-b>
+        <field-exclude>
+            <a>synchReviews</a>
+            <b>synchReviews</b>
+        </field-exclude>
+    </mapping>
+    <mapping>
+        <class-a>org.openiam.idm.srvc.synch.domain.SynchReviewEntity</class-a>
+        <class-b>org.openiam.idm.srvc.synch.dto.SynchReview</class-b>
+        <field>
+            <a>synchConfig.synchConfigId</a>
+            <b>synchConfigId</b>
+        </field>
+        <field-exclude>
+            <a>reviewRecords</a>
+            <b>reviewRecords</b>
+        </field-exclude>
+    </mapping>
+    <mapping>
+        <class-a>org.openiam.idm.srvc.synch.domain.SynchReviewRecordEntity</class-a>
+        <class-b>org.openiam.idm.srvc.synch.dto.SynchReviewRecord</class-b>
+        <field>
+            <a>synchReview.synchReviewId</a>
+            <b>synchReviewId</b>
+        </field>
+        <field-exclude>
+            <a>reviewValues</a>
+            <b>reviewValues</b>
+        </field-exclude>
+    </mapping>
 </mappings>

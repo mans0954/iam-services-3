@@ -10,6 +10,7 @@ import org.openiam.idm.srvc.synch.dto.SynchConfig;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.List;
 
 @Entity
 @Table(name = "SYNCH_CONFIG")
@@ -87,7 +88,7 @@ public class SynchConfigEntity implements Serializable {
     @Column(name="QUERY_TIME_FIELD",length=50)
     private String queryTimeField;
     @Column(name="LAST_EXEC_TIME",length=19)
-    @Temporal(TemporalType.DATE)
+    @Temporal(TemporalType.TIMESTAMP)
     private java.util.Date lastExecTime;
     @Column(name="LAST_REC_PROCESSED",length=32)
     private String lastRecProcessed;
@@ -108,6 +109,8 @@ public class SynchConfigEntity implements Serializable {
     private String wsUrl;
     @Column(name="WS_SCRIPT",length=100)
     private String wsScript;
+    @OneToMany(mappedBy="synchConfig", cascade=CascadeType.ALL, fetch=FetchType.LAZY, orphanRemoval=true)
+    private List<SynchReviewEntity> synchReviews;
 
     public SynchConfigEntity() {
     }
@@ -434,6 +437,14 @@ public class SynchConfigEntity implements Serializable {
 
     public void setWsScript(String wsScript) {
         this.wsScript = wsScript;
+    }
+
+    public List<SynchReviewEntity> getSynchReviews() {
+        return synchReviews;
+    }
+
+    public void setSynchReviews(List<SynchReviewEntity> synchReviews) {
+        this.synchReviews = synchReviews;
     }
 
     @Override

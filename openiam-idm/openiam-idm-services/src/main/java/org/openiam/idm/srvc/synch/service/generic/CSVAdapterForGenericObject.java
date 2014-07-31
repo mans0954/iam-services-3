@@ -27,7 +27,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-import org.apache.commons.csv.CSVParser;
+
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.csv.CSVStrategy;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -35,13 +36,14 @@ import org.openiam.base.id.UUIDGen;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
+import org.openiam.dozer.converter.SynchReviewDozerConverter;
 import org.openiam.idm.parser.csv.CSVHelper;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.role.service.RoleDataService;
-import org.openiam.idm.srvc.synch.dto.Attribute;
-import org.openiam.idm.srvc.synch.dto.LineObject;
-import org.openiam.idm.srvc.synch.dto.SyncResponse;
-import org.openiam.idm.srvc.synch.dto.SynchConfig;
+import org.openiam.idm.srvc.synch.domain.SynchReviewEntity;
+import org.openiam.idm.srvc.synch.domain.SynchReviewRecordEntity;
+import org.openiam.idm.srvc.synch.domain.SynchReviewRecordValueEntity;
+import org.openiam.idm.srvc.synch.dto.*;
 import org.openiam.idm.srvc.synch.service.SourceAdapter;
 import org.openiam.idm.srvc.synch.service.ValidationScript;
 import org.openiam.idm.srvc.synch.srcadapter.MatchRuleFactory;
@@ -74,37 +76,21 @@ public class CSVAdapterForGenericObject implements SourceAdapter {
     String systemAccount;
     @Autowired
     MatchRuleFactory matchRuleFactory;
+    @Autowired
+    protected SynchReviewDozerConverter synchReviewDozerConverter;
 
     private static final Log log = LogFactory
             .getLog(CSVAdapterForGenericObject.class);
 
+    @Override
     public SyncResponse startSynch(SynchConfig config) {
+        return startSynch(config, null, null);
+    }
+
+    @Override
+    public SyncResponse startSynch(SynchConfig config, SynchReviewEntity sourceReview, SynchReviewEntity resultReview) {
 
         log.debug("Starting to Sync CSV File..^^^^^^^^");
-
-        String requestId = UUIDGen.getUUID();
-        /*
-        IdmAuditLog synchStartLog = new IdmAuditLog();
-        synchStartLog.setSynchAttributes("SYNCH_GENERIC_OBJECT",
-                config.getSynchConfigId(), "START", "SYSTEM", requestId);
-        synchStartLog = auditHelper.logEvent(synchStartLog);
-		*/
-        /*
-         * MatchObjectRule matchRule = null; provService =
-         * (ProvisionService)ac.getBean("defaultProvision");
-         * 
-         * try { matchRule = matchRuleFactory.create(config);
-         * }catch(ClassNotFoundException cnfe) { log.error(cnfe);
-         * 
-         * cnfe.printStackTrace();
-         * 
-         * synchStartLog.updateSynchAttributes("FAIL",ResponseCode.CLASS_NOT_FOUND
-         * .toString() , cnfe.toString()); auditHelper.logEvent(synchStartLog);
-         * 
-         * 
-         * SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
-         * resp.setErrorCode(ResponseCode.CLASS_NOT_FOUND); return resp; }
-         */
 
         File file = new File(config.getFileName());
         InputStream input = null;
@@ -115,11 +101,6 @@ public class CSVAdapterForGenericObject implements SourceAdapter {
             fe.printStackTrace();
 
             log.error(fe);
-            /*
-            synchStartLog.updateSynchAttributes("FAIL",
-                    ResponseCode.FILE_EXCEPTION.toString(), fe.toString());
-            auditHelper.logEvent(synchStartLog);
-			*/
             SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
             resp.setErrorCode(ResponseCode.FILE_EXCEPTION);
             return resp;
@@ -149,15 +130,25 @@ public class CSVAdapterForGenericObject implements SourceAdapter {
                         // validate
                         if (config.getValidationRule() != null
                                 && config.getValidationRule().length() > 0) {
+
+                            SynchReview review = null;
+                            if (sourceReview != null) {
+                                review = synchReviewDozerConverter.convertToDTO(sourceReview, false);
+                            }
+
                             ValidationScript script = SynchScriptFactory
-                                    .createValidationScript(config
-                                            .getValidationRule());
+                                    .createValidationScript(config, review);
                             int retval = script.isValid(rowObj);
                             if (retval == ValidationScript.NOT_VALID) {
                                 log.debug("Validation failed...");
                                 // log this object in the exception log
                             }
                             if (retval == ValidationScript.SKIP) {
+                                continue;
+                            } else if (retval == ValidationScript.SKIP_TO_REVIEW) {
+                                if (resultReview != null) {
+                                    resultReview.addRecord(generateSynchReviewRecord(rowObj));
+                                }
                                 continue;
                             }
                         }
@@ -173,12 +164,6 @@ public class CSVAdapterForGenericObject implements SourceAdapter {
 
                     } catch (ClassNotFoundException cnfe) {
                         log.error(cnfe);
-                        /*
-                        synchStartLog.updateSynchAttributes("FAIL",
-                                ResponseCode.CLASS_NOT_FOUND.toString(),
-                                cnfe.toString());
-                        auditHelper.logEvent(synchStartLog);
-						*/
                         SyncResponse resp = new SyncResponse(
                                 ResponseStatus.FAILURE);
                         resp.setErrorCode(ResponseCode.CLASS_NOT_FOUND);
@@ -192,16 +177,18 @@ public class CSVAdapterForGenericObject implements SourceAdapter {
         } catch (IOException io) {
 
             io.printStackTrace();
-            /*
-            synchStartLog.updateSynchAttributes("FAIL",
-                    ResponseCode.IO_EXCEPTION.toString(), io.toString());
-            auditHelper.logEvent(synchStartLog);
-			*/
             SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
             resp.setErrorCode(ResponseCode.IO_EXCEPTION);
             return resp;
 
         } finally {
+
+            if (resultReview != null) {
+                if (CollectionUtils.isNotEmpty(resultReview.getReviewRecords())) { // add header row
+                    resultReview.addRecord(generateSynchReviewRecord(rowHeader, true));
+                }
+            }
+
             if (input != null) {
                 try {
                     input.close();
@@ -323,5 +310,31 @@ public class CSVAdapterForGenericObject implements SourceAdapter {
 
     public void setAdapterMap(ObjectAdapterMap adapterMap) {
         this.adapterMap = adapterMap;
+    }
+
+    protected SynchReviewRecordEntity generateSynchReviewRecord(LineObject rowObj) {
+        return generateSynchReviewRecord(rowObj, false);
+    }
+
+    protected SynchReviewRecordEntity generateSynchReviewRecord(LineObject rowObj, boolean isHeader) {
+        if (rowObj != null) {
+            SynchReviewRecordEntity record = new SynchReviewRecordEntity();
+            record.setHeader(isHeader);
+            Map<String, Attribute> columnsMap = rowObj.getColumnMap();
+            for (String key : columnsMap.keySet()) {
+                SynchReviewRecordValueEntity reviewValue = new SynchReviewRecordValueEntity();
+                if (!isHeader) {
+                    Attribute attribute = columnsMap.get(key);
+                    if (attribute != null) {
+                        reviewValue.setValue(attribute.getValue());
+                    }
+                } else {
+                    reviewValue.setValue(key);
+                }
+                record.addValue(reviewValue);
+            }
+            return record;
+        }
+        return null;
     }
 }
