@@ -82,7 +82,7 @@ public class WSAdapter extends AbstractSrcAdapter { // implements SourceAdapter
             return res;
         }
 
-        if (sourceReview != null) {
+        if (sourceReview != null && !sourceReview.isSourceRejected()) {
             return startSynchReview(config, sourceReview, resultReview);
         }
 
