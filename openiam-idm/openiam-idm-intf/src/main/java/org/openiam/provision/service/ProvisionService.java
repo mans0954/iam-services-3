@@ -90,6 +90,17 @@ public interface ProvisionService {
     public ProvisionUserResponse modifyUser (
             @WebParam(name = "user", targetNamespace = "") ProvisionUser user);
 
+    /**
+     * The deleteUser operation enables the requester to delete an existing user
+     * from the appropriate target systems except 'skipManagedSysList' target systems
+     *
+     * @param managedSystemId - target system
+     * @param principal - identity of the user in target system
+     * @param status - status od delete operation
+     * @param requesterId - requester
+     * @param skipManagedSysList - the operations will not applied for this exception list of target systems
+     * @return
+     */
     @WebMethod
     public ProvisionUserResponse deleteUserWithSkipManagedSysList(
             @WebParam(name = "managedSystemId", targetNamespace = "") String managedSystemId,
@@ -114,8 +125,18 @@ public interface ProvisionService {
             @WebParam(name = "status", targetNamespace = "") UserStatusEnum status,
             @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
+    /**
+     *
+     * Delete user from target systems  except target systems that 'skipManagedSysList' by user id
+     *
+     * @param userId - deleted user ID
+     * @param status - delete status
+     * @param requestorId - requester
+     * @param skipManagedSysList - the operations will not applied for this exception list of target systems
+     * @return
+     */
     @WebMethod
-    public ProvisionUserResponse deleteByUserIdWithSkipManagedSysList(
+    public ProvisionUserResponse deleteByUserWithSkipManagedSysList(
             @WebParam(name = "userId", targetNamespace = "") String userId,
             @WebParam(name = "status", targetNamespace = "") UserStatusEnum status,
             @WebParam(name = "requestorId", targetNamespace = "") String requestorId,

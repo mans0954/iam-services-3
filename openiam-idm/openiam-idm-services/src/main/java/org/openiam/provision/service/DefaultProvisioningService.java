@@ -329,34 +329,23 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
     @Override
     @Transactional
-    public ProvisionUserResponse deleteByUserIdWithSkipManagedSysList(String userId, UserStatusEnum status, String requestorId, List<String> skipManagedSysList) {
+    public ProvisionUserResponse deleteByUserWithSkipManagedSysList(String userId, UserStatusEnum status, String requestorId, List<String> skipManagedSysList) {
         log.debug("----deleteByUserId called.------");
-        final IdmAuditLog idmAuditLog = new IdmAuditLog();
-        idmAuditLog.setRequestorUserId(requestorId);
-        idmAuditLog.setAction(AuditAction.PROVISIONING_DELETE.value());
-        try {
-            List<LoginEntity> loginEntityList = loginManager.getLoginByUser(userId);
-            LoginEntity primaryIdentity = UserUtils.getUserManagedSysIdentityEntity(this.sysConfiguration.getDefaultManagedSysId(), loginEntityList);
 
-            ProvisionUserResponse response = deleteUserWithSkipManagedSysList(sysConfiguration.getDefaultManagedSysId(),
-                    primaryIdentity.getLogin(), status, requestorId, skipManagedSysList);
-            if (response != null && response.isSuccess()) {
-                idmAuditLog.succeed();
-                idmAuditLog.setAuditDescription("User primary identity: " + primaryIdentity.getLogin());
-            } else {
-                idmAuditLog.fail();
-                idmAuditLog.setFailureReason(response.getErrorText());
-            }
-            return response;
-        } finally {
-            auditLogService.enqueue(idmAuditLog);
-        }
-    }
+        List<LoginEntity> loginEntityList = loginManager.getLoginByUser(userId);
+        LoginEntity primaryIdentity = UserUtils.getUserManagedSysIdentityEntity(this.sysConfiguration.getDefaultManagedSysId(), loginEntityList);
+
+        ProvisionUserResponse response = deleteUserWithSkipManagedSysList(sysConfiguration.getDefaultManagedSysId(),
+        primaryIdentity.getLogin(), status, requestorId, skipManagedSysList);
+
+
+        return response;
+     }
 
     @Override
     @Transactional
     public ProvisionUserResponse deleteByUserId(String userId, UserStatusEnum status, String requestorId) {
-        return deleteByUserIdWithSkipManagedSysList(userId, status, requestorId, null);
+        return deleteByUserWithSkipManagedSysList(userId, status, requestorId, null);
     }
 
     public ProvisionUserResponse deleteUser(String managedSystemId, String principal, UserStatusEnum status,
@@ -374,276 +363,313 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
     @Override
     @Transactional
     public ProvisionUserResponse deleteUserWithSkipManagedSysList(String managedSystemId, String principal, UserStatusEnum status,
-                                                                  String requestorId, List<String> skipManagedSysList) {
+                                            String requestorId, List<String> skipManagedSysList) {
         log.debug("----deleteUser called.------");
 
         ProvisionUserResponse response = new ProvisionUserResponse(ResponseStatus.SUCCESS);
         Map<String, Object> bindingMap = new HashMap<String, Object>();
+        final IdmAuditLog idmAuditLog = new IdmAuditLog();
+        idmAuditLog.setRequestorUserId(requestorId);
+        idmAuditLog.setAction(AuditAction.PROVISIONING_DELETE.value());
 
-        if (status != UserStatusEnum.DELETED && status != UserStatusEnum.REMOVE && status != UserStatusEnum.LEAVE
-                && status != UserStatusEnum.TERMINATE && status != UserStatusEnum.RETIRED) {
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorCode(ResponseCode.USER_STATUS);
-            return response;
-        }
-
-        String requestId = "R" + UUIDGen.getUUID();
-
-        // get the user object associated with this principal
-        final LoginEntity login = loginManager.getLoginByManagedSys(principal, managedSystemId);
-        if (login == null) {
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorCode(ResponseCode.PRINCIPAL_NOT_FOUND);
-            return response;
-        }
-        // check if the user active
-        String userId = login.getUserId();
-        if (userId == null) {
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorCode(ResponseCode.USER_NOT_FOUND);
-            return response;
-        }
-
-        User usr = userDozerConverter.convertToDTO(userMgr.getUser(userId), true);
-        if (usr == null) {
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorCode(ResponseCode.USER_NOT_FOUND);
-            return response;
-        }
-        ProvisionUser pUser = new ProvisionUser(usr);
-        // SET PRE ATTRIBUTES FOR DEFAULT SYS SCRIPT
-        bindingMap.put(TARGET_SYS_MANAGED_SYS_ID, managedSystemId);
-        bindingMap.put(TARGET_SYSTEM_IDENTITY, login.getLogin());
-        bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS, IDENTITY_EXIST);
-        bindingMap.put(TARGET_SYS_RES_ID, null);
-
-        if (callPreProcessor("DELETE", pUser, bindingMap) != ProvisioningConstants.SUCCESS) {
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorCode(ResponseCode.FAIL_PREPROCESSOR);
-            return response;
-        }
-
-        if (status != UserStatusEnum.REMOVE
-                && (usr.getStatus() == UserStatusEnum.DELETED || usr.getStatus() == UserStatusEnum.TERMINATE)) {
-            log.debug("User was already deleted. Nothing more to do.");
-            return response;
-        }
-
-        if (!managedSystemId.equals(sysConfiguration.getDefaultManagedSysId())) {
-            // managedSysId point to one of the seconardary identities- just
-            // terminate that identity
-
-            // call delete on the connector
-            ManagedSysDto mSys = managedSysService.getManagedSys(managedSystemId);
-
-            ManagedSystemObjectMatch matchObj = null;
-            ManagedSystemObjectMatch[] matchObjAry = managedSysService.managedSysObjectParam(mSys.getId(), ManagedSystemObjectMatch.USER);
-            if (matchObjAry != null && matchObjAry.length > 0) {
-                matchObj = matchObjAry[0];
-                bindingMap.put(MATCH_PARAM, matchObj);
+        try {
+            if (status != UserStatusEnum.DELETED && status != UserStatusEnum.REMOVE && status != UserStatusEnum.LEAVE
+                    && status != UserStatusEnum.TERMINATE && status != UserStatusEnum.RETIRED) {
+                response.setStatus(ResponseStatus.FAILURE);
+                response.setErrorCode(ResponseCode.USER_STATUS);
+                return response;
             }
-            // pre-processing
 
-            Resource res = null;
-            String resourceId = mSys.getResourceId();
+            String requestId = "R" + UUIDGen.getUUID();
 
-            bindingMap.put("IDENTITY", login);
-            bindingMap.put("RESOURCE", res);
+            // get the user object associated with this principal
+            final LoginEntity login = loginManager.getLoginByManagedSys(principal, managedSystemId);
+            if (login == null) {
+                response.setStatus(ResponseStatus.FAILURE);
+                response.setErrorCode(ResponseCode.PRINCIPAL_NOT_FOUND);
+                return response;
+            }
+            // check if the user active
+            String userId = login.getUserId();
+            if (userId == null) {
+                response.setStatus(ResponseStatus.FAILURE);
+                response.setErrorCode(ResponseCode.USER_NOT_FOUND);
+                return response;
+            }
+
+            User usr = userDozerConverter.convertToDTO(userMgr.getUser(userId), true);
+            if (usr == null) {
+                response.setStatus(ResponseStatus.FAILURE);
+                response.setErrorCode(ResponseCode.USER_NOT_FOUND);
+                return response;
+            }
+
+            idmAuditLog.setTargetUser(usr.getId(), principal);
+
+            ProvisionUser pUser = new ProvisionUser(usr);
+            // SET PRE ATTRIBUTES FOR DEFAULT SYS SCRIPT
+            bindingMap.put(TARGET_SYS_MANAGED_SYS_ID, managedSystemId);
             bindingMap.put(TARGET_SYSTEM_IDENTITY, login.getLogin());
             bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS, IDENTITY_EXIST);
-            bindingMap.put(TARGET_SYS_RES_ID, resourceId);
+            bindingMap.put(TARGET_SYS_RES_ID, null);
 
-            if (resourceId != null) {
-                res = resourceDataService.getResource(resourceId, null);
-                if (res != null) {
-                    String preProcessScript = getResProperty(res.getResourceProps(), "PRE_PROCESS");
-                    if (preProcessScript != null && !preProcessScript.isEmpty()) {
-                        PreProcessor ppScript = createPreProcessScript(preProcessScript, bindingMap);
-                        if (ppScript != null) {
-                            executePreProcess(ppScript, bindingMap, pUser, "DELETE");
+            if (callPreProcessor("DELETE", pUser, bindingMap) != ProvisioningConstants.SUCCESS) {
+                response.setStatus(ResponseStatus.FAILURE);
+                response.setErrorCode(ResponseCode.FAIL_PREPROCESSOR);
+                return response;
+            }
+
+            if (status != UserStatusEnum.REMOVE
+                    && (usr.getStatus() == UserStatusEnum.DELETED || usr.getStatus() == UserStatusEnum.TERMINATE)) {
+                log.debug("User was already deleted. Nothing more to do.");
+                return response;
+            }
+
+            if (!managedSystemId.equals(sysConfiguration.getDefaultManagedSysId())) {
+                final IdmAuditLog idmAuditLogChild = new IdmAuditLog();
+                idmAuditLogChild.setRequestorUserId(requestorId);
+                idmAuditLogChild.setAction(AuditAction.PROVISIONING_DELETE_IDENTITY.value());
+                idmAuditLogChild.setTargetUser(login.getUserId(), login.getLogin());
+                // managedSysId point to one of the seconardary identities- just
+                // terminate that identity
+
+                // call delete on the connector
+                ManagedSysDto mSys = managedSysService.getManagedSys(managedSystemId);
+
+                idmAuditLogChild.setTargetManagedSys(mSys.getId(), mSys.getName());
+
+                ManagedSystemObjectMatch matchObj = null;
+                ManagedSystemObjectMatch[] matchObjAry = managedSysService.managedSysObjectParam(mSys.getId(), ManagedSystemObjectMatch.USER);
+                if (matchObjAry != null && matchObjAry.length > 0) {
+                    matchObj = matchObjAry[0];
+                    bindingMap.put(MATCH_PARAM, matchObj);
+                }
+                // pre-processing
+
+                Resource res = null;
+                String resourceId = mSys.getResourceId();
+
+                bindingMap.put("IDENTITY", login);
+                bindingMap.put("RESOURCE", res);
+                bindingMap.put(TARGET_SYSTEM_IDENTITY, login.getLogin());
+                bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS, IDENTITY_EXIST);
+                bindingMap.put(TARGET_SYS_RES_ID, resourceId);
+
+                if (resourceId != null) {
+                    res = resourceDataService.getResource(resourceId, null);
+                    if (res != null) {
+                        String preProcessScript = getResProperty(res.getResourceProps(), "PRE_PROCESS");
+                        if (preProcessScript != null && !preProcessScript.isEmpty()) {
+                            PreProcessor ppScript = createPreProcessScript(preProcessScript, bindingMap);
+                            if (ppScript != null) {
+                                executePreProcess(ppScript, bindingMap, pUser, "DELETE");
+                            }
                         }
                     }
                 }
-            }
 
-            ResponseType resp = new ResponseType();
-            resp.setStatus(StatusCodeType.SUCCESS);
-            if (CollectionUtils.isEmpty(skipManagedSysList) || !skipManagedSysList.contains(managedSystemId)) {
-                resp = delete(loginDozerConverter.convertToDTO(login, true), requestId, mSys, matchObj);
-            }
+                ResponseType resp = new ResponseType();
+                resp.setStatus(StatusCodeType.SUCCESS);
+                if (CollectionUtils.isEmpty(skipManagedSysList) || !skipManagedSysList.contains(managedSystemId)) {
+                    resp = delete(loginDozerConverter.convertToDTO(login, true), requestId, mSys, matchObj);
+                }
 
-            boolean connectorSuccess = false;
-            if (resp.getStatus() == StatusCodeType.SUCCESS) {
-                connectorSuccess = true;
-                // if REMOVE status: we do physically delete identity for
-                // selected managed system after successful provisioning
-                // if DELETE status: we don't delete identity from database only
-                // set status to INACTIVE
-                if (status == UserStatusEnum.REMOVE) {
-                    loginManager.deleteLogin(login.getLoginId());
+                boolean connectorSuccess = false;
+                if (resp.getStatus() == StatusCodeType.SUCCESS) {
+                    connectorSuccess = true;
+                    // if REMOVE status: we do physically delete identity for
+                    // selected managed system after successful provisioning
+                    // if DELETE status: we don't delete identity from database only
+                    // set status to INACTIVE
+                    if (status == UserStatusEnum.REMOVE) {
+                        loginManager.deleteLogin(login.getLoginId());
+                    } else {
+                        login.setStatus(LoginStatusEnum.INACTIVE);
+                        login.setProvStatus(ProvLoginStatusEnum.DELETED);
+                        login.setAuthFailCount(0);
+                        login.setPasswordChangeCount(0);
+                        login.setIsLocked(1);
+                        loginManager.updateLogin(login);
+                    }
+
+                    idmAuditLogChild.succeed();
                 } else {
                     login.setStatus(LoginStatusEnum.INACTIVE);
-                    login.setProvStatus(ProvLoginStatusEnum.DELETED);
-                    login.setAuthFailCount(0);
-                    login.setPasswordChangeCount(0);
-                    login.setIsLocked(1);
+                    login.setProvStatus(ProvLoginStatusEnum.FAIL_DELETE);
                     loginManager.updateLogin(login);
+
+                    idmAuditLogChild.fail();
+                    idmAuditLogChild.setFailureReason(resp.getErrorMsgAsStr());
                 }
-            } else {
-                login.setStatus(LoginStatusEnum.INACTIVE);
-                login.setProvStatus(ProvLoginStatusEnum.FAIL_DELETE);
-                loginManager.updateLogin(login);
-            }
 
-            bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS, null);
-            String postProcessScript = getResProperty(res.getResourceProps(), "POST_PROCESS");
-            if (postProcessScript != null && !postProcessScript.isEmpty()) {
-                PostProcessor ppScript = createPostProcessScript(postProcessScript, bindingMap);
-                if (ppScript != null) {
-                    executePostProcess(ppScript, bindingMap, pUser, "DELETE", connectorSuccess);
+                bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS, null);
+                String postProcessScript = getResProperty(res.getResourceProps(), "POST_PROCESS");
+                if (postProcessScript != null && !postProcessScript.isEmpty()) {
+                    PostProcessor ppScript = createPostProcessScript(postProcessScript, bindingMap);
+                    if (ppScript != null) {
+                        executePostProcess(ppScript, bindingMap, pUser, "DELETE", connectorSuccess);
+                    }
                 }
-            }
-
-        } else {
-            // delete user and all its identities.
-            LoginEntity lRequestor = loginManager.getPrimaryIdentity(requestorId);
-            LoginEntity lTargetUser = loginManager.getPrimaryIdentity(userId);
-
-            if (lRequestor != null && lTargetUser != null) {
-                log.debug("Requestor identity=" + lRequestor);
-                log.debug("Target identity=" + lTargetUser);
+                idmAuditLog.addChild(idmAuditLogChild);
             } else {
-                log.debug("Unable to log disable operation. Of of the following is null:");
-                log.debug("Requestor identity=" + lRequestor);
-                log.debug("Target identity=" + lTargetUser);
-            }
+                // delete user and all its identities.
+                LoginEntity lRequestor = loginManager.getPrimaryIdentity(requestorId);
+                LoginEntity lTargetUser = loginManager.getPrimaryIdentity(userId);
 
-            // update the identities and set them to inactive
-            List<LoginEntity> principalList = loginManager.getLoginByUser(userId);
-            if (principalList != null) {
-                for (LoginEntity l : principalList) {
-                    // this try-catch block for protection other operations and
-                    // other resources if one resource was fall with error
-                    try {
-                        // only add the connectors if its a secondary
-                        // identity.
-                        if (!l.getManagedSysId().equals(sysConfiguration.getDefaultManagedSysId())) {
+                if (lRequestor != null && lTargetUser != null) {
+                    log.debug("Requestor identity=" + lRequestor);
+                    log.debug("Target identity=" + lTargetUser);
+                } else {
+                    log.debug("Unable to log disable operation. Of of the following is null:");
+                    log.debug("Requestor identity=" + lRequestor);
+                    log.debug("Target identity=" + lTargetUser);
+                }
 
-                            ManagedSysDto mSys = managedSysService.getManagedSys(l.getManagedSysId());
+                // update the identities and set them to inactive
+                List<LoginEntity> principalList = loginManager.getLoginByUser(userId);
+                if (principalList != null) {
+                    for (LoginEntity l : principalList) {
+                        final IdmAuditLog idmAuditLogChild = new IdmAuditLog();
+                        idmAuditLogChild.setRequestorUserId(requestorId);
+                        idmAuditLogChild.setAction(AuditAction.PROVISIONING_DELETE_IDENTITY.value());
+                        idmAuditLogChild.setTargetUser(l.getUserId(), l.getLogin());
 
-                            ManagedSystemObjectMatch matchObj = null;
-                            ManagedSystemObjectMatch[] matchObjAry = managedSysService.managedSysObjectParam(
-                                    mSys.getId(), ManagedSystemObjectMatch.USER);
-                            if (matchObjAry != null && matchObjAry.length > 0) {
-                                matchObj = matchObjAry[0];
-                                bindingMap.put(MATCH_PARAM, matchObj);
-                            }
-                            log.debug("Deleting id=" + l.getLogin());
-                            log.debug("- delete using managed sys id=" + mSys.getId());
+                        // this try-catch block for protection other operations and
+                        // other resources if one resource was fall with error
+                        try {
+                            // only add the connectors if its a secondary
+                            // identity.
+                            if (!l.getManagedSysId().equals(sysConfiguration.getDefaultManagedSysId())) {
 
-                            // pre-processing
-                            bindingMap.put(IDENTITY, l);
-                            bindingMap.put(TARGET_SYS_RES, null);
+                                ManagedSysDto mSys = managedSysService.getManagedSys(l.getManagedSysId());
+                                idmAuditLogChild.setTargetManagedSys(mSys.getId(), mSys.getName());
 
-                            Resource resource = null;
-                            String resourceId = mSys.getResourceId();
+                                ManagedSystemObjectMatch matchObj = null;
+                                ManagedSystemObjectMatch[] matchObjAry = managedSysService.managedSysObjectParam(
+                                        mSys.getId(), ManagedSystemObjectMatch.USER);
+                                if (matchObjAry != null && matchObjAry.length > 0) {
+                                    matchObj = matchObjAry[0];
+                                    bindingMap.put(MATCH_PARAM, matchObj);
+                                }
+                                log.debug("Deleting id=" + l.getLogin());
+                                log.debug("- delete using managed sys id=" + mSys.getId());
 
-                            // SET PRE ATTRIBUTES FOR TARGET SYS SCRIPT
-                            bindingMap.put(TARGET_SYSTEM_IDENTITY, l.getLogin());
-                            bindingMap.put(TARGET_SYS_MANAGED_SYS_ID, mSys.getId());
-                            bindingMap.put(TARGET_SYS_RES_ID, resourceId);
-                            bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS, IDENTITY_EXIST);
+                                // pre-processing
+                                bindingMap.put(IDENTITY, l);
+                                bindingMap.put(TARGET_SYS_RES, null);
 
-                            if (resourceId != null) {
-                                resource = resourceDataService.getResource(resourceId, null);
-                                if (resource != null) {
-                                    bindingMap.put(TARGET_SYS_RES, resource);
+                                Resource resource = null;
+                                String resourceId = mSys.getResourceId();
 
-                                    String preProcessScript = getResProperty(resource.getResourceProps(),
-                                            "PRE_PROCESS");
-                                    if (preProcessScript != null && !preProcessScript.isEmpty()) {
-                                        PreProcessor ppScript = createPreProcessScript(preProcessScript, bindingMap);
-                                        if (ppScript != null) {
-                                            if (executePreProcess(ppScript, bindingMap, pUser, "DELETE") == ProvisioningConstants.FAIL) {
-                                                continue;
+                                // SET PRE ATTRIBUTES FOR TARGET SYS SCRIPT
+                                bindingMap.put(TARGET_SYSTEM_IDENTITY, l.getLogin());
+                                bindingMap.put(TARGET_SYS_MANAGED_SYS_ID, mSys.getId());
+                                bindingMap.put(TARGET_SYS_RES_ID, resourceId);
+                                bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS, IDENTITY_EXIST);
+
+                                if (resourceId != null) {
+                                    resource = resourceDataService.getResource(resourceId, null);
+                                    if (resource != null) {
+                                        bindingMap.put(TARGET_SYS_RES, resource);
+
+                                        String preProcessScript = getResProperty(resource.getResourceProps(),
+                                                "PRE_PROCESS");
+                                        if (preProcessScript != null && !preProcessScript.isEmpty()) {
+                                            PreProcessor ppScript = createPreProcessScript(preProcessScript, bindingMap);
+                                            if (ppScript != null) {
+                                                if (executePreProcess(ppScript, bindingMap, pUser, "DELETE") == ProvisioningConstants.FAIL) {
+                                                    continue;
+                                                }
                                             }
                                         }
                                     }
                                 }
-                            }
 
-                            ResponseType resp = new ResponseType();
-                            resp.setStatus(StatusCodeType.SUCCESS);
-                            if (CollectionUtils.isEmpty(skipManagedSysList) || !skipManagedSysList.contains(l.getManagedSysId())) {
-                                resp = delete(loginDozerConverter.convertToDTO(l, true), requestId, mSys, matchObj);
-                            }
+                                ResponseType resp = new ResponseType();
+                                resp.setStatus(StatusCodeType.SUCCESS);
+                                if (CollectionUtils.isEmpty(skipManagedSysList) || !skipManagedSysList.contains(l.getManagedSysId())) {
+                                    resp = delete(loginDozerConverter.convertToDTO(l, true), requestId, mSys, matchObj);
+                                }
 
-                            boolean connectorSuccess = false;
-                            if (resp.getStatus() == StatusCodeType.SUCCESS) {
-                                connectorSuccess = true;
-                                l.setStatus(LoginStatusEnum.INACTIVE);
-                                l.setProvStatus(ProvLoginStatusEnum.DELETED);
-                                l.setAuthFailCount(0);
-                                l.setPasswordChangeCount(0);
-                                l.setIsLocked(1);
-                            } else {
-                                l.setStatus(LoginStatusEnum.INACTIVE);
-                                l.setProvStatus(ProvLoginStatusEnum.FAIL_DELETE);
+                                boolean connectorSuccess = false;
+                                if (resp.getStatus() == StatusCodeType.SUCCESS) {
+                                    connectorSuccess = true;
+                                    l.setStatus(LoginStatusEnum.INACTIVE);
+                                    l.setProvStatus(ProvLoginStatusEnum.DELETED);
+                                    l.setAuthFailCount(0);
+                                    l.setPasswordChangeCount(0);
+                                    l.setIsLocked(1);
 
-                            }
-                            // SET POST ATTRIBUTES FOR TARGET SYS SCRIPT
-                            bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS, null);
-                            if (resource != null) {
-                                String postProcessScript = getResProperty(resource.getResourceProps(),
-                                        "POST_PROCESS");
-                                if (postProcessScript != null && !postProcessScript.isEmpty()) {
-                                    PostProcessor ppScript = createPostProcessScript(postProcessScript, bindingMap);
-                                    if (ppScript != null) {
-                                        executePostProcess(ppScript, bindingMap, pUser, "DELETE", connectorSuccess);
+                                    idmAuditLogChild.succeed();
+                                } else {
+                                    l.setStatus(LoginStatusEnum.INACTIVE);
+                                    l.setProvStatus(ProvLoginStatusEnum.FAIL_DELETE);
+
+                                    idmAuditLogChild.fail();
+                                    idmAuditLogChild.setFailureReason(resp.getErrorMsgAsStr());
+                                }
+                                // SET POST ATTRIBUTES FOR TARGET SYS SCRIPT
+                                bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS, null);
+                                if (resource != null) {
+                                    String postProcessScript = getResProperty(resource.getResourceProps(),
+                                            "POST_PROCESS");
+                                    if (postProcessScript != null && !postProcessScript.isEmpty()) {
+                                        PostProcessor ppScript = createPostProcessScript(postProcessScript, bindingMap);
+                                        if (ppScript != null) {
+                                            executePostProcess(ppScript, bindingMap, pUser, "DELETE", connectorSuccess);
+                                        }
                                     }
                                 }
+                                if (status == UserStatusEnum.REMOVE) {
+                                    loginManager.deleteLogin(login.getLogin());
+                                }
                             }
-                            if (status == UserStatusEnum.REMOVE) {
-                                loginManager.deleteLogin(login.getLogin());
-                            }
-                        }
 
-                    } catch (Throwable tw) {
-                        log.error(l, tw);
+                        } catch (Throwable tw) {
+                            log.error(l, tw);
+                        } finally {
+                            idmAuditLog.addChild(idmAuditLogChild);
+                        }
                     }
                 }
             }
-        }
-        if (status == UserStatusEnum.REMOVE) {
-            // loginManager.deleteLogin(login.getLogin());
-            try {
-                userMgr.removeUser(userId);
-            } catch (Throwable e) {
-                log.error("Can't remove user", e);
-                response.setStatus(ResponseStatus.FAILURE);
-                response.setErrorCode(ResponseCode.FAIL_SQL_ERROR);
-                return response;
+            if (status == UserStatusEnum.REMOVE) {
+                // loginManager.deleteLogin(login.getLogin());
+                try {
+                    userMgr.removeUser(userId);
+                } catch (Throwable e) {
+                    log.error("Can't remove user", e);
+                    response.setStatus(ResponseStatus.FAILURE);
+                    response.setErrorCode(ResponseCode.FAIL_SQL_ERROR);
+                    return response;
+                }
+            } else {
+                UserEntity entity = userMgr.getUser(userId);
+                entity.setStatus(status);
+                entity.setSecondaryStatus(null);
+                entity.setLastUpdatedBy(requestorId);
+                entity.setLastUpdate(new Date(System.currentTimeMillis()));
+                userMgr.updateUser(entity);
             }
-        } else {
-            UserEntity entity = userMgr.getUser(userId);
-            entity.setStatus(status);
-            entity.setSecondaryStatus(null);
-            entity.setLastUpdatedBy(requestorId);
-            entity.setLastUpdate(new Date(System.currentTimeMillis()));
-            userMgr.updateUser(entity);
+            // SET POST ATTRIBUTES FOR DEFAULT SYS SCRIPT
+
+            bindingMap.put(TARGET_SYSTEM_IDENTITY, login.getLogin());
+            bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS, null);
+            bindingMap.put(TARGET_SYS_RES_ID, null);
+
+            if (callPostProcessor("DELETE", pUser, bindingMap) != ProvisioningConstants.SUCCESS) {
+                response.setStatus(ResponseStatus.FAILURE);
+                response.setErrorCode(ResponseCode.FAIL_POSTPROCESSOR);
+                idmAuditLog.fail();
+                idmAuditLog.setFailureReason(response.getErrorText());
+                return response;
+            } else {
+                idmAuditLog.succeed();
+            }
+
+        } finally {
+            auditLogService.enqueue(idmAuditLog);
         }
-        // SET POST ATTRIBUTES FOR DEFAULT SYS SCRIPT
-
-        bindingMap.put(TARGET_SYSTEM_IDENTITY, login.getLogin());
-        bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS, null);
-        bindingMap.put(TARGET_SYS_RES_ID, null);
-
-        if (callPostProcessor("DELETE", pUser, bindingMap) != ProvisioningConstants.SUCCESS) {
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorCode(ResponseCode.FAIL_POSTPROCESSOR);
-            return response;
-        }
-
         response.setStatus(ResponseStatus.SUCCESS);
         return response;
 
