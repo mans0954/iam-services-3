@@ -116,7 +116,7 @@ public class GroovyScriptEngineIntegration implements ScriptIntegration, Applica
             try {
                 InvokerHelper.setAttribute(instance, APP_CONTEXT, ac);
             } catch (Exception e) {
-                log.info("Ignoring field " + APP_CONTEXT + " in script " + scriptName + ", error: " + e.toString());
+                log.warn("Ignoring field " + APP_CONTEXT + " in script " + scriptName + ", error: " + e.toString());
             }
 
             if (bindingMap != null) {
@@ -124,7 +124,7 @@ public class GroovyScriptEngineIntegration implements ScriptIntegration, Applica
                     try {
                         InvokerHelper.setAttribute(instance, key, bindingMap.get(key));
                     } catch (Exception e) {
-                        log.info("Ignoring field " + key + " in script " + scriptName + ", error: " + e.toString());
+                        log.warn("Ignoring field " + key + " in script " + scriptName + ", error: " + e.toString());
                     }
                 }
             }

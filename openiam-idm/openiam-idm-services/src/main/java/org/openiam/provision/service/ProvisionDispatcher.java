@@ -119,6 +119,9 @@ public class ProvisionDispatcher implements Sweepable {
     @Autowired
     protected ProvisionConnectorService connectorService;
 
+    @Value(",${org.openiam.debug.hidden.attributes},")
+    private String hiddenAttributes;
+
     @Autowired
     protected AuditLogService auditLogService;
 
@@ -684,8 +687,12 @@ public class ProvisionDispatcher implements Sweepable {
                             log.error("Error in script = '", mpe);
                             continue;
                         }
-                        log.debug("buildFromRules: OBJECTTYPE=" + objectType + " SCRIPT OUTPUT=" + output
-                                + " attribute name=" + attr.getAttributeName());
+
+                        log.debug("buildFromRules: OBJECTTYPE="+objectType+", ATTRIBUTE=" + attr.getAttributeName() +
+                                ", SCRIPT OUTPUT=" +
+                                (hiddenAttributes.toLowerCase().contains(","+attr.getAttributeName().toLowerCase()+",")
+                                        ? "******" : output));
+
                         if (output != null) {
                             ExtensibleAttribute newAttr;
                             if (output instanceof String) {

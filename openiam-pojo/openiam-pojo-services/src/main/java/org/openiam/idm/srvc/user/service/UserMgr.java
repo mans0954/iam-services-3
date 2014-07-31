@@ -1684,6 +1684,20 @@ public class UserMgr implements UserDataService {
         }
     }
 
+    @Transactional
+    public void resetUser(String userId) {
+        UserEntity user = this.getUser(userId, null);
+        if (user == null) {
+            log.error("UserId " + userId + " not found");
+            throw new NullPointerException("UserId " + userId + " not found");
+        }
+        user.setDateITPolicyApproved(null);
+        user.setClaimDate(null);
+        user.setStatus(UserStatusEnum.PENDING_INITIAL_LOGIN);
+        user.setSecondaryStatus(null);
+        userDao.update(user);
+    }
+
     @Override
     @Transactional(readOnly = true)
     public boolean isRoleInUser(String userId, String roleId) {
@@ -1815,6 +1829,13 @@ public class UserMgr implements UserDataService {
                 origUserEntity.setLastDate(null);
             } else {
                 origUserEntity.setLastDate(newUserEntity.getLastDate());
+            }
+        }
+        if (newUserEntity.getClaimDate() != null) {
+            if (newUserEntity.getClaimDate().equals(BaseConstants.NULL_DATE)) {
+                origUserEntity.setClaimDate(null);
+            } else {
+                origUserEntity.setClaimDate(newUserEntity.getClaimDate());
             }
         }
         if (newUserEntity.getMaidenName() != null) {

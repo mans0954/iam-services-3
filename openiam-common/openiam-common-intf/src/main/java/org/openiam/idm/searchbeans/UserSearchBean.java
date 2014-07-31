@@ -49,6 +49,7 @@ import java.util.*;
         "maxResultSize",
         "startDate",
         "lastDate",
+        "claimDate",
         "dateOfBirth",
         "zipCode",
         "delAdmin",
@@ -191,6 +192,8 @@ public class UserSearchBean extends AbstractSearchBean<User, String> implements 
     protected Date startDate;
     @XmlSchemaType(name = "dateTime")
     protected Date lastDate;
+    @XmlSchemaType(name = "dateTime")
+    protected Date claimDate;
     @XmlSchemaType(name = "dateTime")
     protected Date updatedSince;
 
@@ -547,6 +550,14 @@ public class UserSearchBean extends AbstractSearchBean<User, String> implements 
 
     public void setLastDate(Date lastDate) {
         this.lastDate = lastDate;
+    }
+
+    public Date getClaimDate() {
+        return claimDate;
+    }
+
+    public void setClaimDate(Date claimDate) {
+        this.claimDate = claimDate;
     }
 
     public Date getUpdatedSince() {

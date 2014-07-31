@@ -705,6 +705,16 @@ public interface UserDataWebService {
     public Response activateUser(@WebParam(name = "userId", targetNamespace = "") final String userId);
 
     /**
+     * Resets User's account
+     *
+     * @param userId
+     *            - the User ID
+     * @return a Response Object, containing the result of this operation
+     */
+    @WebMethod
+    public Response resetUser(@WebParam(name = "userId", targetNamespace = "") final String userId);
+
+    /**
      * Gets the number of Emails for this user
      * 
      * @param userId
