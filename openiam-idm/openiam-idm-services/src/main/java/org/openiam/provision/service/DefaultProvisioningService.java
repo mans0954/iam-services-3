@@ -374,6 +374,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         Map<String, Object> bindingMap = new HashMap<String, Object>();
         final IdmAuditLog idmAuditLog = new IdmAuditLog();
         idmAuditLog.setRequestorUserId(requestorId);
+        idmAuditLog.setRequestorPrincipal(principal);
         idmAuditLog.setAction(AuditAction.PROVISIONING_DELETE.value());
 
         try {
@@ -391,6 +392,8 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             if (login == null) {
                 response.setStatus(ResponseStatus.FAILURE);
                 response.setErrorCode(ResponseCode.PRINCIPAL_NOT_FOUND);
+                idmAuditLog.fail();
+                idmAuditLog.setFailureReason(response.getErrorText());
                 return response;
             }
             // check if the user active
@@ -432,6 +435,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             if (!managedSystemId.equals(sysConfiguration.getDefaultManagedSysId())) {
                 final IdmAuditLog idmAuditLogChild = new IdmAuditLog();
                 idmAuditLogChild.setRequestorUserId(requestorId);
+                idmAuditLogChild.setRequestorPrincipal(login.getLogin());
                 idmAuditLogChild.setAction(AuditAction.PROVISIONING_DELETE_IDENTITY.value());
                 idmAuditLogChild.setTargetUser(login.getUserId(), login.getLogin());
                 // managedSysId point to one of the seconardary identities- just
@@ -535,6 +539,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     for (LoginEntity l : principalList) {
                         final IdmAuditLog idmAuditLogChild = new IdmAuditLog();
                         idmAuditLogChild.setRequestorUserId(requestorId);
+                        idmAuditLogChild.setRequestorPrincipal(l.getLogin());
                         idmAuditLogChild.setAction(AuditAction.PROVISIONING_DELETE_IDENTITY.value());
                         idmAuditLogChild.setTargetUser(l.getUserId(), l.getLogin());
 
@@ -1309,6 +1314,9 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
     public PasswordResponse resetPassword(PasswordSync passwordSync) {
         log.debug("----resetPassword called.------");
         final IdmAuditLog idmAuditLog = new IdmAuditLog();
+        List<LoginEntity> loginEntityList = loginManager.getLoginByUser(passwordSync.getRequestorId());
+        LoginEntity primaryIdentity = UserUtils.getUserManagedSysIdentityEntity(this.sysConfiguration.getDefaultManagedSysId(), loginEntityList);
+        idmAuditLog.setRequestorPrincipal(primaryIdentity.getLogin());
         idmAuditLog.setRequestorUserId(passwordSync.getRequestorId());
         idmAuditLog.setAction(AuditAction.PROVISIONING_RESETPASSWORD.value());
 
