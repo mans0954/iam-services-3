@@ -23,21 +23,19 @@ package org.openiam.idm.srvc.synch.srcadapter;
 
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.SftpException;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.csv.CSVStrategy;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.mule.util.StringUtils;
-import org.openiam.base.id.UUIDGen;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 
 import org.openiam.idm.parser.csv.CSVHelper;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
-import org.openiam.idm.srvc.synch.dto.Attribute;
-import org.openiam.idm.srvc.synch.dto.LineObject;
-import org.openiam.idm.srvc.synch.dto.SyncResponse;
-import org.openiam.idm.srvc.synch.dto.SynchConfig;
+import org.openiam.idm.srvc.synch.domain.SynchReviewEntity;
+import org.openiam.idm.srvc.synch.dto.*;
 import org.openiam.idm.srvc.synch.service.MatchObjectRule;
 import org.openiam.idm.srvc.synch.service.TransformScript;
 import org.openiam.idm.srvc.synch.service.ValidationScript;
@@ -67,9 +65,6 @@ public class CSVAdapter extends AbstractSrcAdapter {
     private static final Log log = LogFactory.getLog(CSVAdapter.class);
     public static final String SYNC_DIR = "sync";
 
-    // synchronization monitor
-    private final Object mutex = new Object();
-
     @Value("${org.openiam.upload.root}")
     private String uploadRoot;
     
@@ -87,17 +82,28 @@ public class CSVAdapter extends AbstractSrcAdapter {
     @Autowired
     private RemoteFileStorageManager remoteFileStorageManager;
 
+    @Override
     public SyncResponse startSynch(final SynchConfig config) {
+        return startSynch(config, null, null);
+    }
+
+    @Override
+    public SyncResponse startSynch(final SynchConfig config, SynchReviewEntity sourceReview, SynchReviewEntity resultReview) {
+
         log.debug("CSV startSynch CALLED.^^^^^^^^");
         System.out.println("CSV startSynch CALLED.^^^^^^^^");
 
- //       auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "CSV startSynch CALLED.^^^^^^^^");
+        SyncResponse res = initializeScripts(config, sourceReview);
+        if (ResponseStatus.FAILURE.equals(res.getStatus())) {
+            return res;
+        }
 
-        final ProvisionService provService = (ProvisionService) SpringContextProvider.getBean("defaultProvision");
+        if (sourceReview != null && !sourceReview.isSourceRejected()) {
+            return startSynchReview(config, sourceReview, resultReview);
+        }
 
-        String requestId = UUIDGen.getUUID();
+        LineObject rowHeader = null;
         InputStream input = null;
-
         try {
             CSVHelper parser;
             String csvFileName = config.getFileName();
@@ -112,20 +118,16 @@ public class CSVAdapter extends AbstractSrcAdapter {
 
             String[][] rows = parser.getAllValues();
 
-            //initialization if validation script config exists
-            final ValidationScript validationScript = StringUtils.isNotEmpty(config.getValidationRule()) ? SynchScriptFactory.createValidationScript(config.getValidationRule()) : null;
-            //initialization if transformation script config exists
-            final List<TransformScript> transformScripts = SynchScriptFactory.createTransformationScript(config);
-            //init match rules
-            final MatchObjectRule matchRule = matchRuleFactory.create(config.getCustomMatchRule());
             //Get Header
-            final LineObject rowHeader = populateTemplate(rows[0]);
-
-//            auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "Rows for processing: "+rows.length);
+            rowHeader = populateTemplate(rows[0]);
 
             if (rows.length > 1) {
                 rows = Arrays.copyOfRange(rows, 1, rows.length);
-                proccess(config, provService, rows, validationScript, transformScripts, matchRule, rowHeader,0);
+                for (String[] row : rows) {
+                    LineObject rowObj = rowHeader.copy();
+                    populateRowObject(rowObj, row);
+                    processLineObject(rowObj, config, resultReview);
+                }
             }
 
         } catch (FileNotFoundException fe) {
@@ -138,13 +140,6 @@ public class CSVAdapter extends AbstractSrcAdapter {
             resp.setErrorCode(ResponseCode.FILE_EXCEPTION);
             return resp;
 
-        } catch (ClassNotFoundException cnfe) {
-
-            log.error(cnfe);
-
-            SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
-            resp.setErrorCode(ResponseCode.CLASS_NOT_FOUND);
-            return resp;
         } catch (IOException io) {
             io.printStackTrace();
             /*
@@ -172,7 +167,13 @@ public class CSVAdapter extends AbstractSrcAdapter {
             SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
             resp.setErrorCode(ResponseCode.FILE_EXCEPTION);
             jsche.printStackTrace();
+
         } finally {
+            if (resultReview != null) {
+                if (CollectionUtils.isNotEmpty(resultReview.getReviewRecords())) { // add header row
+                    resultReview.addRecord(generateSynchReviewRecord(rowHeader, true));
+                }
+            }
             if (input != null) {
                 try {
                     input.close();
@@ -186,134 +187,6 @@ public class CSVAdapter extends AbstractSrcAdapter {
 
 //        auditBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "CSV SYNCHRONIZATION COMPLETE^^^^^^^^");
         return new SyncResponse(ResponseStatus.SUCCESS);
-    }
-
-    private void proccess(SynchConfig config, ProvisionService provService, String[][] rows, final ValidationScript validationScript, final List<TransformScript> transformScripts, MatchObjectRule matchRule, LineObject rowHeader, int ctr) {
-        for (String[] row : rows) {
-            log.info("*** Record counter: " + ctr++);
-            //populate the data object
-
-            LineObject rowObj = rowHeader.copy();
-
-            populateRowObject(rowObj, row);
-            log.info(" - Validation being called");
-
-            // validate
-            if (validationScript != null) {
-                synchronized (mutex) {
-                    int retval = validationScript.isValid(rowObj);
-                    if (retval == ValidationScript.NOT_VALID) {
-                        log.info(" - Validation failed...transformation will not be called.");
-                        continue;
-                    }
-                    if (retval == ValidationScript.SKIP) {
-                        continue;
-                    }
-                }
-            }
-
-            log.info(" - Getting column map...");
-
-            // check if the user exists or not
-            Map<String, Attribute> rowAttr = rowObj.getColumnMap();
-
-            log.info(" - Row Attr..." + rowAttr);
-            //
-            StringBuilder rowAsStr = new StringBuilder();
-            for(String col : row) {
-               rowAsStr.append(col).append(",");
-            }
-            //auditLogBuilder.addAttribute(AuditAttributeName.DESCRIPTION, " - Row Attrs:" + rowAsStr.toString());
-
-            User usr = matchRule.lookup(config, rowAttr);
-           // auditLogBuilder.addAttribute(AuditAttributeName.DESCRIPTION, " Lookup User in repository: " + usr != null ? "FOUND" : "NOT FOUND");
-            //@todo - Update lookup so that an exception is thrown
-            // when lookup fails due to bad matching.
-
-            log.info(" - Preparing transform script");
-
-            // transform
-            int retval = -1;
-            ProvisionUser pUser = new ProvisionUser();
-
-            if (transformScripts != null && transformScripts.size() > 0) {
-                for (TransformScript transformScript : transformScripts) {
-                    synchronized (mutex) {
-                        transformScript.init();
-                        // initialize the transform script
-                        if (usr != null) {
-                            transformScript.setNewUser(false);
-                            User u = userManager.getUserDto(usr.getId());
-                            pUser = new ProvisionUser(u);
-                            setCurrentSuperiors(pUser);
-                            transformScript.setUser(u);
-                            transformScript.setPrincipalList(loginDozerConverter.convertToDTOList(loginManager.getLoginByUser(usr.getId()), false));
-                            transformScript.setUserRoleList(roleDataService.getUserRolesAsFlatList(usr.getId()));
-
-                        } else {
-                            transformScript.setNewUser(true);
-                            transformScript.setUser(null);
-                            transformScript.setPrincipalList(null);
-                            transformScript.setUserRoleList(null);
-                        }
-
-                        log.info(" - Execute transform script");
-
-                        //Disable PRE and POST processors/performance optimizations
-                        pUser.setSkipPreprocessor(true);
-                        pUser.setSkipPostProcessor(true);
-                        retval = transformScript.execute(rowObj, pUser);
-                        log.debug("Transform result=" + retval);
-                    }
-                    log.info(" - Execute complete transform script");
-                }
-//                pUser.setParentAuditLogId(auditLogBuilder.getEntity().getId()); //TODO: causes transient object exception
-                if (retval != -1) {
-                    if (retval == TransformScript.DELETE && pUser.getUser() != null) {
-                        //auditLogBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "User login: "+(pUser.getFirstName()+" "+pUser.getLastName())+" [REMOVED]");
-                        //auditLogProvider.persist(auditLogBuilder);
-                        provService.deleteByUserId(pUser.getId(), UserStatusEnum.REMOVE, systemAccount);
-                    } else {
-                        // call synch
-                        if (retval != TransformScript.DELETE) {
-                            if (usr != null) {
-                                log.info(" - Updating existing user");
-                                pUser.setId(usr.getId());
-                                try {
-                                    //pUser.setParentAuditLogId(auditLogBuilder.getEntity().getId());
-                                    provService.modifyUser(pUser);
-                                } catch (Exception e) {
-                                    //auditLogBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "Error: User login: " +(pUser.getFirstName()+" "+pUser.getLastName())+" [MODIFY] " + e.getMessage());
-                                    //auditLogProvider.persist(auditLogBuilder);
-                                    log.error(e);
-                                }
-                                //auditLogBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "User login: " +(pUser.getFirstName()+" "+pUser.getLastName())+" [MODIFY] ");
-                            } else {
-                                log.info(" - New user being provisioned");
-                                pUser.setId(null);
-                                try {
-                                    provService.addUser(pUser);
-                                } catch (Exception e) {
-                                    //auditLogBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "Error: User login: " +(pUser.getFirstName()+" "+pUser.getLastName())+" [ADD] " + e.getMessage());
-                                    log.error(e);
-                                }
-                                //auditLogBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "User: " +(pUser.getFirstName() + " " + pUser.getLastName())+" [ADD] ");
-                            }
-                        }
-                    }
-                } else {
-                    //auditLogBuilder.addAttribute(AuditAttributeName.DESCRIPTION, "Fail: User login: " +pUser.getLogin());
-                }
-            }
-            // show the user object
-            ctr++;
-            //ADD the sleep pause to give other threads possibility to be alive
-            try {
-                Thread.sleep(50);
-            } catch (InterruptedException e) {
-                log.error("The thread was interrupted when sleep paused after row [" + row + "] execution.", e);
-            }
-        }
     }
 
     public Response testConnection(SynchConfig config) {

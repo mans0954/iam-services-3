@@ -4,6 +4,7 @@ import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.AttributeMapSearchBean;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.synch.domain.SynchConfigEntity;
+import org.openiam.idm.srvc.synch.domain.SynchReviewEntity;
 import org.openiam.idm.srvc.synch.dto.BulkMigrationConfig;
 import org.openiam.idm.srvc.synch.dto.SyncResponse;
 
@@ -33,6 +34,13 @@ public interface IdentitySynchService {
 	SyncResponse startSynchronization(SynchConfigEntity config);
 
     /**
+     * Starts the synchronization process from a synch review object.
+     * @param synchReview
+     * @return
+     */
+    SyncResponse startSynchReview(SynchReviewEntity synchReview);
+
+    /**
      * Tests if the connectivity information for our source system is correct.
      * @param config
      * @return
@@ -57,6 +65,10 @@ public interface IdentitySynchService {
     Integer getSynchConfigCountByExample(SynchConfigEntity example);
 
     List<SynchConfigEntity> getSynchConfigsByExample(SynchConfigEntity example, Integer from, Integer size);
+
+    void deleteSynchReviewList(List<SynchReviewEntity> reviewList);
+
+    List<SynchReviewEntity> getAllSynchReviewsBySynchConfigId(String synchConfigId);
 
     List<AttributeMapEntity> getSynchConfigAttributeMaps(String synchConfigId);
 

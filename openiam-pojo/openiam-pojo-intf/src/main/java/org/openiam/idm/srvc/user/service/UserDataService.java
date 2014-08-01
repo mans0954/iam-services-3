@@ -244,6 +244,8 @@ public interface UserDataService {
 
     public void activateUser(String userId);
 
+    public void resetUser(String userId);
+
     public int getNumOfEmailsForUser(String userId);
 
     public int getNumOfAddressesForUser(String userId);

@@ -21,6 +21,7 @@
  */
 package org.openiam.idm.srvc.synch.srcadapter;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -28,10 +29,8 @@ import org.openiam.base.id.UUIDGen;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.idm.srvc.synch.dto.Attribute;
-import org.openiam.idm.srvc.synch.dto.LineObject;
-import org.openiam.idm.srvc.synch.dto.SyncResponse;
-import org.openiam.idm.srvc.synch.dto.SynchConfig;
+import org.openiam.idm.srvc.synch.domain.SynchReviewEntity;
+import org.openiam.idm.srvc.synch.dto.*;
 import org.openiam.idm.srvc.synch.service.MatchObjectRule;
 import org.openiam.idm.srvc.synch.service.TransformScript;
 import org.openiam.idm.srvc.synch.service.ValidationScript;
@@ -65,27 +64,32 @@ public class RDBMSAdapter extends AbstractSrcAdapter {
 
     private Connection con = null;
 
-    // synchronization monitor
-    private final Object mutex = new Object();
-    
     @Value("${rdbmsvadapter.thread.count}")
     private int THREAD_COUNT;
     
     @Value("${rdbmsvadapter.thread.delay.beforestart}")
     private int THREAD_DELAY_BEFORE_START;
 
+    @Override
     public SyncResponse startSynch(final SynchConfig config) {
+        return startSynch(config, null, null);
+    }
+
+    @Override
+    public SyncResponse startSynch(final SynchConfig config, SynchReviewEntity sourceReview, final SynchReviewEntity resultReview) {
 
         log.debug("RDBMS SYNCH STARTED ^^^^^^^^");
 
-        String requestId = UUIDGen.getUUID();
-        /*
-        IdmAuditLog synchStartLog_ = new IdmAuditLog();
-        synchStartLog_.setSynchAttributes("SYNCH_USER", config.getSynchConfigId(), "START", "SYSTEM", requestId);
-        final IdmAuditLog synchStartLog = auditHelper.logEvent(synchStartLog_);
-		*/
-        if (!connect(config)) {
+        SyncResponse res = initializeScripts(config, sourceReview);
+        if (ResponseStatus.FAILURE.equals(res.getStatus())) {
+            return res;
+        }
 
+        if (sourceReview != null && !sourceReview.isSourceRejected()) {
+            return startSynchReview(config, sourceReview, resultReview);
+        }
+
+        if (!connect(config)) {
             SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
             resp.setErrorCode(ResponseCode.FAIL_SQL_ERROR);
             return resp;
@@ -142,9 +146,6 @@ public class RDBMSAdapter extends AbstractSrcAdapter {
             // test
             log.debug("Result set contains following number of columns : " + rowHeader.getColumnMap().size());
 
-            final ValidationScript validationScript = StringUtils.isNotEmpty(config.getValidationRule()) ? SynchScriptFactory.createValidationScript(config.getValidationRule()) : null;
-            final List<TransformScript> transformScripts = SynchScriptFactory.createTransformationScript(config);
-
             // Multithreading
             int allRowsCount = results.size();
             if (allRowsCount > 0) {
@@ -171,7 +172,7 @@ public class RDBMSAdapter extends AbstractSrcAdapter {
                         @Override
                         public void run() {
                             try {
-                                Timestamp mostRecentRecord = proccess(config, provService, part, validationScript, transformScripts, startIndex);
+                                Timestamp mostRecentRecord = proccess(config, resultReview, provService, part, validationScript, transformScripts, matchRule, resultReview, startIndex);
                                 recentRecordByThreadInx.put("Thread_" + threadIndx, mostRecentRecord);
                             } catch (ClassNotFoundException e) {
                                 log.error(e);
@@ -208,29 +209,6 @@ public class RDBMSAdapter extends AbstractSrcAdapter {
                 waitUntilWorkDone(threadResults);
 
             }
-        } catch (ClassNotFoundException cnfe) {
-
-            log.error(cnfe);
-            /*
-            synchStartLog.updateSynchAttributes("FAIL", ResponseCode.CLASS_NOT_FOUND.toString(), cnfe.toString());
-            auditHelper.logEvent(synchStartLog);
-			*/
-            SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
-            resp.setErrorCode(ResponseCode.CLASS_NOT_FOUND);
-            resp.setErrorText(cnfe.toString());
-
-            return resp;
-        } catch (IOException fe) {
-
-            log.error(fe);
-            /*
-            synchStartLog.updateSynchAttributes("FAIL", ResponseCode.FILE_EXCEPTION.toString(), fe.toString());
-            auditHelper.logEvent(synchStartLog);
-			*/
-            SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
-            resp.setErrorCode(ResponseCode.FILE_EXCEPTION);
-            resp.setErrorText(fe.toString());
-            return resp;
 
         } catch (SQLException se) {
 
@@ -244,147 +222,46 @@ public class RDBMSAdapter extends AbstractSrcAdapter {
             resp.setErrorCode(ResponseCode.SQL_EXCEPTION);
             resp.setErrorText(se.toString());
             return resp;
+
         } catch (InterruptedException e) {
             log.error(e);
-            /*
-            synchStartLog.updateSynchAttributes("FAIL", ResponseCode.INTERRUPTED_EXCEPTION.toString(), e.toString());
-            auditHelper.logEvent(synchStartLog);
-			*/
             SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
             resp.setErrorCode(ResponseCode.INTERRUPTED_EXCEPTION);
+
         } finally {
-            // mark the end of the synch
-        	/*
-            IdmAuditLog synchEndLog = new IdmAuditLog();
-            synchEndLog.setSynchAttributes("SYNCH_USER", config.getSynchConfigId(), "END", "SYSTEM", synchStartLog.getSessionId());
-            auditHelper.logEvent(synchEndLog);
-            */
+            if (resultReview != null) {
+                if (CollectionUtils.isNotEmpty(resultReview.getReviewRecords())) { // add header row
+                    resultReview.addRecord(generateSynchReviewRecord(rowHeader, true));
+                }
+            }
+
+            closeConnection();
         }
 
         log.debug("RDBMS SYNCH COMPLETE.^^^^^^^^");
-
-        closeConnection();
-
         return new SyncResponse(ResponseStatus.SUCCESS);
+
     }
 
-    private Timestamp proccess(SynchConfig config, ProvisionService provService, List<LineObject> part, final ValidationScript validationScript, final List<TransformScript> transformScripts, int ctr) throws ClassNotFoundException {
+    private Timestamp proccess(SynchConfig config, SynchReviewEntity review, ProvisionService provService, List<LineObject> part, final ValidationScript validationScript, final List<TransformScript> transformScripts, MatchObjectRule matchRule, SynchReviewEntity resultReview, int ctr) throws ClassNotFoundException {
         Timestamp mostRecentRecord = null;
         for (LineObject rowObj : part) {
             log.debug("-RDBMS ADAPTER: SYNCHRONIZING  RECORD # ---" + ctr++);
-
             log.debug(" - Record update time=" + rowObj.getLastUpdate());
 
             if (mostRecentRecord == null) {
                 mostRecentRecord = rowObj.getLastUpdate();
+
             } else {
                 // if current record is newer than what we saved, then update the most recent record value
-
                 if (mostRecentRecord.before(rowObj.getLastUpdate())) {
                     log.debug("- MostRecentRecord value updated to=" + rowObj.getLastUpdate());
                     mostRecentRecord.setTime(rowObj.getLastUpdate().getTime());
                 }
             }
 
-            // start the synch process
-            // 1) Validate the data
-            // 2) Transform it
-            // 3) if not delete - then match the object and determine if its a new object or its an udpate
-            // validate
-            if (validationScript != null) {
-                synchronized (mutex) {
-                    int retval = validationScript.isValid(rowObj);
-                    if (retval == ValidationScript.NOT_VALID) {
-                        log.debug(" - Validation failed...transformation will not be called.");
+            processLineObject(rowObj, config, resultReview);
 
-                        continue;
-                    }
-                    if (retval == ValidationScript.SKIP) {
-                        continue;
-                    }
-                }
-            }
-
-            // check if the user exists or not
-            Map<String, Attribute> rowAttr = rowObj.getColumnMap();
-            //
-            // rule used to match object from source system to data in IDM
-            MatchObjectRule matchRule = matchRuleFactory.create(config.getCustomMatchRule());
-            User usr = matchRule.lookup(config, rowAttr);
-
-            // transform
-            int retval = -1;
-            ProvisionUser pUser = new ProvisionUser();
-            if (transformScripts != null && transformScripts.size() > 0) {
-
-                for (TransformScript transformScript : transformScripts) {
-                    synchronized (mutex) {
-                        // initialize the transform script
-                        transformScript.init();
-
-                        // initialize the transform script
-                        if (usr != null) {
-                            transformScript.setNewUser(false);
-                            User u = userManager.getUserDto(usr.getId());
-                            pUser = new ProvisionUser(u);
-                            setCurrentSuperiors(pUser);
-                            transformScript.setUser(u);
-                            transformScript.setPrincipalList(loginDozerConverter.convertToDTOList(loginManager.getLoginByUser(usr.getId()), false));
-                            transformScript.setUserRoleList(roleDataService.getUserRolesAsFlatList(usr.getId()));
-
-                        } else {
-                            transformScript.setNewUser(true);
-                            transformScript.setUser(null);
-                            transformScript.setPrincipalList(null);
-                            transformScript.setUserRoleList(null);
-                        }
-
-                        log.info(" - Execute transform script");
-
-                        //Disable PRE and POST processors/performance optimizations
-                        pUser.setSkipPreprocessor(true);
-                        pUser.setSkipPostProcessor(true);
-                        retval = transformScript.execute(rowObj, pUser);
-                        log.debug("Transform result=" + retval);
-                    }
-                }
-                /*
-                pUser.setSessionId(synchStartLog.getSessionId());
-				*/
-                if (retval != -1) {
-                    if (retval == TransformScript.DELETE && usr != null) {
-                        log.debug("deleting record - " + usr.getId());
-                        provService.deleteByUserId(usr.getId(), UserStatusEnum.DELETED, systemAccount);
-
-                    } else {
-                        // call synch
-                        if (retval != TransformScript.DELETE) {
-
-                            log.debug("-Provisioning user=" + pUser.getLastName());
-
-                            if (usr != null) {
-                                log.debug("-updating existing user...systemId=" + pUser.getId());
-                                pUser.setId(usr.getId());
-
-                                modifyUser(pUser);
-
-                            } else {
-                                log.debug("-adding new user...");
-
-                                pUser.setId(null);
-                                addUser(pUser);
-                            }
-                        }
-                    }
-                }
-            }
-            ctr++;
-            //ADD the sleep pause to give other threads possibility to be alive
-            try {
-                Thread.sleep(50);
-            } catch (InterruptedException e) {
-                log.error("The thread was interrupted when sleep paused after row [" + ctr + "] execution.", e);
-            }
         }
         return mostRecentRecord;
     }

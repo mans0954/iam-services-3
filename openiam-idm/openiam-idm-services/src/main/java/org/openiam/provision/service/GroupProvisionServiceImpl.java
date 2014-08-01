@@ -94,6 +94,9 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Gr
     @Value("${org.openiam.idm.system.user.id}")
     protected String systemUserId;
 
+    @Value(",${org.openiam.debug.hidden.attributes},")
+    private String hiddenAttributes;
+
     @Autowired
     protected String preProcessorGroup;
 
@@ -655,8 +658,12 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Gr
                             log.error("Error in script = '", mpe);
                             continue;
                         }
-                        log.debug("buildFromRules: OBJECTTYPE=" + objectType + " SCRIPT OUTPUT=" + output
-                                + " attribute name=" + attr.getAttributeName());
+
+                        log.debug("buildFromRules: OBJECTTYPE="+objectType+", ATTRIBUTE=" + attr.getAttributeName() +
+                                ", SCRIPT OUTPUT=" +
+                                (hiddenAttributes.toLowerCase().contains(","+attr.getAttributeName().toLowerCase()+",")
+                                        ? "******" : output));
+
                         if (output != null) {
                             ExtensibleAttribute newAttr;
                             if (output instanceof String) {

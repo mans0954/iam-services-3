@@ -112,7 +112,11 @@ public abstract class AbstractUserDisplayMapper extends AbstractActivitiJob {
 				metadataMap.put("End Date", new SimpleDateFormat("MMMM dd yyyy").format(user.getLastDate()));
 			}
 
-			if(user.getJobCodeId()!=null) {
+            if(user.getClaimDate() != null) {
+                metadataMap.put("Claim Date", new SimpleDateFormat("MMMM dd yyyy").format(user.getClaimDate()));
+            }
+
+            if(user.getJobCodeId()!=null) {
 				metadataMap.put("Job Code", user.getJobCodeId());
 			}
 

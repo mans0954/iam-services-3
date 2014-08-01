@@ -41,7 +41,19 @@
 		</service>
 	</model>
 
-
+    <model name="SynchReviewServiceModel">
+        <service name="SynchReviewWebService">
+            <inbound>
+                <inbound-endpoint address="${webservice.path}SynchReviewWebService"
+                                  exchange-pattern="request-response">
+                    <cxf:jaxws-service />
+                </inbound-endpoint>
+            </inbound>
+            <component>
+                <spring-object bean="synchReviewWebService" />
+            </component>
+        </service>
+    </model>
 
 	<model name="ProvisionServiceModel">
 		<service name="ProvisionService">
