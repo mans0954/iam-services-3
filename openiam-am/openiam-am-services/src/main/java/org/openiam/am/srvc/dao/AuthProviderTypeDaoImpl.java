@@ -8,6 +8,6 @@ import org.springframework.stereotype.Repository;
 public class AuthProviderTypeDaoImpl extends BaseDaoImpl<AuthProviderTypeEntity, String> implements AuthProviderTypeDao {
     @Override
     protected String getPKfieldName() {
-        return "providerType";
+        return "id";
     }
 }

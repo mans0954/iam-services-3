@@ -1,8 +1,10 @@
 package org.openiam.am.srvc.ws;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.openiam.am.srvc.domain.AuthAttributeEntity;
 import org.openiam.am.srvc.domain.AuthProviderEntity;
+import org.openiam.am.srvc.domain.AuthProviderTypeEntity;
 import org.openiam.am.srvc.dozer.converter.AuthAttributeDozerConverter;
 import org.openiam.am.srvc.dozer.converter.AuthProviderAttributeDozerConverter;
 import org.openiam.am.srvc.dozer.converter.AuthProviderDozerConverter;
@@ -69,7 +71,7 @@ public class AuthProviderWebServiceImpl implements AuthProviderWebService {
     public Response addProviderType(AuthProviderType providerType) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
-            if(providerType == null || providerType.getProviderType() == null || providerType.getProviderType().trim().isEmpty()) {
+            if(providerType == null || StringUtils.isBlank(providerType.getId())) {
                 throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_TYPE_NOT_SET);
             }
             authProviderService.addProviderType(authProviderTypeDozerConverter.convertToEntity(providerType, false));
@@ -238,9 +240,20 @@ public class AuthProviderWebServiceImpl implements AuthProviderWebService {
                 throw new BasicDataServiceException(ResponseCode.RESOURCE_PROP_MISSING);
             if(provider.getName()==null  || provider.getName().trim().isEmpty())
                 throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NAME_NOT_SET);
-            if(provider.isSignRequest() && (provider.getPrivateKey()==null || provider.getPrivateKey().length==0
-                                            || provider.getPublicKey()==null || provider.getPublicKey().length==0))
-                throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_SECUTITY_KEYS_NOT_SET);
+            if(provider.isSignRequest()) {
+            	final AuthProviderTypeEntity type = authProviderService.getAuthProviderType(provider.getProviderType());
+            	if((provider.getPrivateKey()==null || provider.getPrivateKey().length==0)) {
+            		if(type.isHasPrivateKey()) {
+            			throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_SECUTITY_KEYS_NOT_SET);
+            		}
+            	}
+            	
+            	if(provider.getPublicKey()==null || provider.getPublicKey().length==0) {
+            		if(type.isHasPublicKey()) {
+            			throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_SECUTITY_KEYS_NOT_SET);
+            		}
+            	}
+            }
 
             validateAndSyncProviderAttributes(provider);
 
@@ -301,9 +314,20 @@ public class AuthProviderWebServiceImpl implements AuthProviderWebService {
                 throw new BasicDataServiceException(ResponseCode.MANAGED_SYS_NOT_SET);
             if(provider.getName()==null  || provider.getName().trim().isEmpty())
                 throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NAME_NOT_SET);
-            if(provider.isSignRequest() && (provider.getPrivateKey()==null || provider.getPrivateKey().length==0
-                                            || provider.getPublicKey()==null || provider.getPublicKey().length==0))
-                throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_SECUTITY_KEYS_NOT_SET);
+            if(provider.isSignRequest()) {
+            	final AuthProviderTypeEntity type = authProviderService.getAuthProviderType(provider.getProviderType());
+            	if((provider.getPrivateKey()==null || provider.getPrivateKey().length==0)) {
+            		if(type.isHasPrivateKey()) {
+            			throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_SECUTITY_KEYS_NOT_SET);
+            		}
+            	}
+            	
+            	if(provider.getPublicKey()==null || provider.getPublicKey().length==0) {
+            		if(type.isHasPublicKey()) {
+            			throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_SECUTITY_KEYS_NOT_SET);
+            		}
+            	}
+            }
 
             validateAndSyncProviderAttributes(provider);
 
