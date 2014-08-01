@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.user.service;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -84,4 +85,6 @@ public interface UserDAO extends BaseDao<UserEntity, String> {
     public List<UserEntity> getUserByLastDate(Date lastDate);
 
     public List<UserEntity> getByEmail(String email);
+
+    public  List<UserEntity> findByIds(Collection<String> idCollection, UserSearchBean searchBean);
 }

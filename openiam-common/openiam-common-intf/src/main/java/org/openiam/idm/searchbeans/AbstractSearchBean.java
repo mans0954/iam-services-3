@@ -1,24 +1,27 @@
 package org.openiam.idm.searchbeans;
 
-import org.openiam.base.OrderConstants;
+import org.openiam.base.ws.SortParam;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
+import java.util.List;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "AbstractSearchBean", propOrder = {
         "key",
         "deepCopy",
-        "orderBy",
+//        "orderBy",
         "sortBy"
 })
 public class AbstractSearchBean<T, KeyType> {
 
 	private boolean deepCopy = true;
 	private KeyType key;
-    private OrderConstants orderBy = OrderConstants.ASC;
-    private String sortBy;
+//    private OrderConstants orderBy = OrderConstants.ASC;
+//    private String sortBy;
+
+    private List<SortParam> sortBy;
 	
 	public KeyType getKey() {
 		return key;
@@ -36,19 +39,19 @@ public class AbstractSearchBean<T, KeyType> {
 		this.deepCopy = deepCopy;
 	}
 
-    public OrderConstants getOrderBy() {
-        return orderBy;
-    }
+//    public OrderConstants getOrderBy() {
+//        return orderBy;
+//    }
+//
+//    public void setOrderBy(OrderConstants orderBy) {
+//        this.orderBy = orderBy;
+//    }
 
-    public void setOrderBy(OrderConstants orderBy) {
-        this.orderBy = orderBy;
-    }
-
-    public String getSortBy() {
+    public List<SortParam> getSortBy() {
         return sortBy;
     }
 
-    public void setSortBy(String sortBy) {
+    public void setSortBy(List<SortParam> sortBy) {
         this.sortBy = sortBy;
     }
 

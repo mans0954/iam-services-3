@@ -617,7 +617,7 @@ public class UserMgr implements UserDataService {
                 entityList.add(entity);
             }
         } else {
-            List<UserEntity> finalizedIdList = userDao.findByIds(getUserIds(searchBean));
+            List<UserEntity> finalizedIdList = userDao.findByIds(getUserIds(searchBean), searchBean);
             if (from > -1 && size > -1) {
                 if (finalizedIdList != null && finalizedIdList.size() >= from) {
                     int to = from + size;
