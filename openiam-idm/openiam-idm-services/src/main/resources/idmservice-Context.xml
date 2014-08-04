@@ -22,6 +22,9 @@
 
     <bean id="muleContextProvider" class="org.openiam.util.MuleContextProvider" />
 
+    <bean id="eventProcessor" class="java.lang.String">
+        <constructor-arg value="${org.openiam.idm.eventProcessor.groovy.script}"/>
+    </bean>
     <bean id="preProcessor" class="java.lang.String">
         <constructor-arg value="${org.openiam.idm.preProcessor.groovy.script}"/>
     </bean>

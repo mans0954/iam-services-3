@@ -55,6 +55,20 @@
         </service>
     </model>
 
+    <model name="ProvisionActionEventServiceModel">
+        <service name="ProvisionActionEventService">
+            <inbound>
+                <inbound-endpoint address="${webservice.path}ProvisionActionEventService"
+                                  exchange-pattern="request-response">
+                    <cxf:jaxws-service />
+                </inbound-endpoint>
+            </inbound>
+            <component>
+                <spring-object bean="provisionActionEventService" />
+            </component>
+        </service>
+    </model>
+
 	<model name="ProvisionServiceModel">
 		<service name="ProvisionService">
 			<inbound>
