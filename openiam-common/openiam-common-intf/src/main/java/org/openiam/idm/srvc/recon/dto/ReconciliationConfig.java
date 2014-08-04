@@ -7,6 +7,7 @@ import javax.persistence.Column;
 import javax.persistence.Transient;
 import javax.xml.bind.annotation.*;
 
+import org.apache.commons.lang.StringUtils;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.recon.domain.ReconciliationConfigEntity;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -19,7 +20,7 @@ import org.springframework.format.annotation.DateTimeFormat;
         "separator", "endOfLine", "notificationEmailAddress","manualReconciliationFlag",
         "targetSystemMatchScript","targetSystemSearchFilter","matchScript","searchFilter","updatedSince",
         "customIdentityMatchScript","scriptHandler","matchFieldName",
-        "customMatchAttr","matchSrcFieldName","lastExecTime","execStatus","requesterId","customProcessorScript","reconType"})
+        "customMatchAttr","matchSrcFieldName","lastExecTime","execStatus","requesterId","customProcessorScript","reconType","useCustomScript"})
 
 @DozerDTOCorrespondence(ReconciliationConfigEntity.class)
 public class ReconciliationConfig implements MatchConfig, java.io.Serializable {
@@ -63,17 +64,21 @@ public class ReconciliationConfig implements MatchConfig, java.io.Serializable {
     private String requesterId;
 
     @Transient
+    private boolean useCustomScript;
+
+    @Transient
     private String reportPath;
 
     private String customProcessorScript;
 
     private String reconType;
 
-    enum ReconciliationConfigType {
-        USER,
-        ROLE,
-        GROUP,
-        ORG
+    public boolean isUseCustomScript() {
+        return StringUtils.isNotEmpty(customProcessorScript);
+    }
+
+    public void setUseCustomScript(boolean useCustomScript) {
+        this.useCustomScript = useCustomScript;
     }
 
     public String getRequesterId() {
