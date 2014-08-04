@@ -193,8 +193,8 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
             if (StringUtils.isNotEmpty(searchBean.getZipCode())) {
                 criteria.add(Restrictions.eq("postalCd", searchBean.getZipCode()));
             }
-            if (CollectionUtils.isNotEmpty(searchBean.getOrganizationIdList())) {
-                criteria.createAlias("affiliations", "aff").add(Restrictions.in("aff.id", searchBean.getOrganizationIdList()));
+            if (CollectionUtils.isNotEmpty(searchBean.getOrganizationIdSet())) {
+                criteria.createAlias("affiliations", "aff").add(Restrictions.in("aff.id", searchBean.getOrganizationIdSet()));
             }
             if (StringUtils.isNotEmpty(searchBean.getPhoneAreaCd()) || StringUtils.isNotEmpty(searchBean.getPhoneNbr())) {
                 if (StringUtils.isNotEmpty(searchBean.getPhoneAreaCd())) {
@@ -651,10 +651,6 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
             return criteria.list();
         } else
             return null;
-    }
-
-    private Order createOrder(String field, OrderConstants orderDir){
-        return orderDir.equals(OrderConstants.DESC) ? Order.desc(field) : Order.asc(field);
     }
 
     public  List<UserEntity> findByIds(Collection<String> idCollection, UserSearchBean searchBean){

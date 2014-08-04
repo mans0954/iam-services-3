@@ -9,7 +9,9 @@ import org.apache.commons.logging.LogFactory;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.*;
 import org.openiam.base.Tuple;
+import org.openiam.base.ws.SortParam;
 import org.openiam.core.dao.BaseDaoImpl;
+import org.openiam.idm.searchbeans.AbstractSearchBean;
 import org.openiam.idm.searchbeans.RoleSearchBean;
 import org.openiam.idm.searchbeans.SearchBean;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
@@ -73,6 +75,12 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
             if(StringUtils.isNotBlank(roleSearchBean.getType())){
                 criteria.add(Restrictions.eq("type.id", roleSearchBean.getType()));
             }
+
+
+            if(CollectionUtils.isNotEmpty(roleSearchBean.getGroupIdSet())){
+                criteria.createAlias("groups", "gr");
+                criteria.add(Restrictions.in("gr.id", roleSearchBean.getGroupIdSet()));
+            }
         }
         return criteria;
     }
@@ -130,6 +138,17 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
 		}
 		return criteria;
 	}
+    protected void setOderByCriteria(Criteria criteria, AbstractSearchBean sb) {
+        List<SortParam> sortParamList = sb.getSortBy();
+        for (SortParam sort: sortParamList){
+            if("managedSysName".equals(sort.getSortBy())){
+                criteria.createAlias("managedSystem", "ms", Criteria.LEFT_JOIN);
+                criteria.addOrder(createOrder("ms.name", sort.getOrderBy()));
+            } else{
+                criteria.addOrder(createOrder(sort.getSortBy(), sort.getOrderBy()));
+            }
+        }
+    }
 
 	@Override
 	public List<RoleEntity> getRolesForGroup(final String groupId, final Set<String> filter, final int from, final int size) {

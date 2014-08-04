@@ -76,6 +76,15 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
     protected Criteria getExampleCriteria(final SearchBean searchBean) {
         throw new UnsupportedOperationException("Method must be overridden");
     }
+    protected void setOderByCriteria(Criteria criteria, AbstractSearchBean sb) {
+        List<SortParam> sortParamList = sb.getSortBy();
+        for (SortParam sort: sortParamList){
+            criteria.addOrder(createOrder(sort.getSortBy(), sort.getOrderBy()));
+        }
+    }
+    protected Order createOrder(String field, OrderConstants orderDir){
+        return orderDir.equals(OrderConstants.DESC) ? Order.desc(field) : Order.asc(field);
+    }
 
     @Override
     public int count(final SearchBean searchBean) {
@@ -144,20 +153,9 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
 //            }
 
             if(CollectionUtils.isNotEmpty(sb.getSortBy())){
-                List<SortParam> sortParamList = sb.getSortBy();
-                for (SortParam sort: sortParamList){
-                    if(OrderConstants.ASC==sort.getOrderBy()){
-                        criteria.addOrder(Order.asc(sort.getSortBy()));
-                    }else{
-                        criteria.addOrder(Order.desc(sort.getSortBy()));
-                    }
-                }
-
+                this.setOderByCriteria(criteria, sb);
             }
         }
-
-
-
          return (List<T>) criteria.list();
     }
 

@@ -31,7 +31,7 @@ import java.util.Set;
         "attributes",
         "metadataType"
 })
-public class OrganizationSearchBean extends AbstractSearchBean<Organization, String> implements SearchBean<Organization, String>,
+public class OrganizationSearchBean extends EntitlementsSearchBean<Organization, String> implements SearchBean<Organization, String>,
         Serializable {
     private static final long serialVersionUID = 1L;
     private Set<String> keySet;
