@@ -1,5 +1,7 @@
 package org.openiam.idm.searchbeans;
 
+import org.apache.commons.lang.StringUtils;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
@@ -106,41 +108,55 @@ public abstract class EntitlementsSearchBean<T, KeyType> extends AbstractSearchB
     }
 
     public void addParentId(String parentId){
-        if(this.parentIdSet==null)
-            this.parentIdSet = new HashSet<>();
-        this.parentIdSet.add(parentId);
+        if(StringUtils.isNotBlank(parentId)){
+            if(this.parentIdSet==null)
+                this.parentIdSet = new HashSet<>();
+            this.parentIdSet.add(parentId);
+        }
     }
     public void addChildId(String childId){
-        if(this.childIdSet==null)
-            this.childIdSet = new HashSet<>();
-        this.childIdSet.add(childId);
+        if(StringUtils.isNotBlank(childId)){
+            if(this.childIdSet==null)
+                this.childIdSet = new HashSet<>();
+            this.childIdSet.add(childId);
+        }
     }
 
 
     public void addGroupId(String groupId){
-        if(this.groupIdSet==null)
-            this.groupIdSet = new HashSet<>();
-        this.groupIdSet.add(groupId);
+        if(StringUtils.isNotBlank(groupId)){
+            if(this.groupIdSet==null)
+                this.groupIdSet = new HashSet<>();
+            this.groupIdSet.add(groupId);
+        }
     }
     public void addRoleId(String roleId){
-        if(this.roleIdSet==null)
-            this.roleIdSet = new HashSet<>();
-        this.roleIdSet.add(roleId);
+        if(StringUtils.isNotBlank(roleId)){
+            if(this.roleIdSet==null)
+                this.roleIdSet = new HashSet<>();
+            this.roleIdSet.add(roleId);
+        }
     }
     public void addResourceId(String resourceId){
-        if(this.resourceIdSet==null)
-            this.resourceIdSet = new HashSet<>();
-        this.resourceIdSet.add(resourceId);
+        if(StringUtils.isNotBlank(resourceId)){
+            if(this.resourceIdSet==null)
+                this.resourceIdSet = new HashSet<>();
+            this.resourceIdSet.add(resourceId);
+        }
     }
     public void addUserId(String userId){
-        if(this.userIdSet==null)
-            this.userIdSet = new HashSet<>();
-        this.userIdSet.add(userId);
+        if(StringUtils.isNotBlank(userId)){
+            if(this.userIdSet==null)
+                this.userIdSet = new HashSet<>();
+            this.userIdSet.add(userId);
+        }
     }
     public void addOrganizationId(String organizationId){
-        if(this.organizationIdSet==null)
-            this.organizationIdSet = new HashSet<>();
-        this.organizationIdSet.add(organizationId);
+        if(StringUtils.isNotBlank(organizationId)){
+            if(this.organizationIdSet==null)
+                this.organizationIdSet = new HashSet<>();
+            this.organizationIdSet.add(organizationId);
+        }
     }
 
     public void addOrganizationIdList(final Collection<String> organizationIdList) {
