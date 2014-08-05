@@ -22,6 +22,7 @@ package org.openiam.idm.srvc.auth.service;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.jws.WebService;
@@ -32,8 +33,10 @@ import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.exception.AuthenticationException;
+import org.openiam.exception.BasicDataServiceException;
 import org.openiam.exception.LogoutException;
 import org.openiam.exception.ScriptEngineException;
+import org.openiam.idm.searchbeans.AuthStateSearchBean;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
 import org.openiam.idm.srvc.audit.constant.AuditTarget;
@@ -42,6 +45,7 @@ import org.openiam.idm.srvc.auth.context.AuthContextFactory;
 import org.openiam.idm.srvc.auth.context.AuthenticationContext;
 import org.openiam.idm.srvc.auth.context.PasswordCredential;
 import org.openiam.idm.srvc.auth.domain.AuthStateEntity;
+import org.openiam.idm.srvc.auth.domain.AuthStateId;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.AuthenticationRequest;
 import org.openiam.idm.srvc.auth.dto.LoginModuleSelector;
@@ -77,6 +81,7 @@ import org.springframework.jmx.export.annotation.ManagedResource;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 // import edu.emory.mathcs.backport.java.util.Arrays;
 
@@ -144,18 +149,26 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
                 newLogoutEvent.setFailureReason("Target User object not passed");
                 throw new NullPointerException("UserId is null");
             }
+            
+            final AuthStateEntity example = new AuthStateEntity();
+            final AuthStateId id = new AuthStateId();
+            id.setUserId(userId);
+            example.setId(id);
+            
+            final List<AuthStateEntity> authStateList = authStateDao.getByExample(example);
 
-            AuthStateEntity authSt = authStateDao.findById(userId);
-            if (authSt == null) {
+            if (CollectionUtils.isEmpty(authStateList)) {
                 newLogoutEvent.fail();
                 newLogoutEvent.setFailureReason(String.format("Cannot find AuthState object for User: %s", userId));
                 log.error("AuthState not found for userId=" + userId);
                 throw new LogoutException();
             }
-
-            authSt.setAuthState(new BigDecimal(0));
-            authSt.setToken("LOGOUT");
-            authStateDao.saveAuthState(authSt);
+            
+            for(final AuthStateEntity authSt : authStateList) {
+            	authSt.setAuthState(new BigDecimal(0));
+            	authSt.setToken("LOGOUT");
+            	authStateDao.saveAuthState(authSt);
+            }
             newLogoutEvent.succeed();
         } finally {
             auditLogService.enqueue(newLogoutEvent);
@@ -460,8 +473,12 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
             return resp;
 
         }
+        
+        final AuthStateId id = new AuthStateId();
+        id.setUserId(lg.getUserId());
+        id.setTokenType("OPENIAM");
 
-        AuthStateEntity authSt = authStateDao.findById(lg.getUserId());
+        AuthStateEntity authSt = authStateDao.findById(id);
         if (authSt != null) {
 
             if (authSt.getToken() == null
@@ -537,9 +554,10 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
 
     private void updateAuthState(Subject sub) {
 
-    	AuthStateEntity state = new AuthStateEntity(null, new BigDecimal(1),
-                sub.getSsoToken().getExpirationTime().getTime(), sub
-                        .getSsoToken().getToken(), sub.getUserId());
+    	final AuthStateEntity state = new AuthStateEntity(null, new BigDecimal(1), 
+    									sub.getSsoToken().getExpirationTime().getTime(), 
+    									sub.getSsoToken().getToken(), sub.getUserId(), 
+    									"OPENIAM");
 
         authStateDao.saveAuthState(state);
     }
@@ -553,5 +571,25 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
 	@Override
 	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
 		this.beanFactory = beanFactory;
+	}
+
+	@Override
+	public List<AuthStateEntity> findBeans(AuthStateSearchBean searchBean,
+			int from, int size) {
+		return authStateDao.getByExample(searchBean, from, size);
+	}
+
+	@Override
+	@Transactional
+	public Response save(final AuthStateEntity entity) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+            authStateDao.saveAuthState(entity);
+        } catch (Throwable e) {
+            log.error("Can't validate resource", e);
+            response.setErrorText(e.getMessage());
+            response.setStatus(ResponseStatus.FAILURE);
+        }
+        return response;
 	}
 }

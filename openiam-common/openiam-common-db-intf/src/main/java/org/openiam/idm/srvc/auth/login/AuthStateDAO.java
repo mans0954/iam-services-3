@@ -23,13 +23,14 @@ package org.openiam.idm.srvc.auth.login;
 
 import org.openiam.core.dao.BaseDao;
 import org.openiam.idm.srvc.auth.domain.AuthStateEntity;
+import org.openiam.idm.srvc.auth.domain.AuthStateId;
 
 /**
  * DAO interface for AuthState.
  *
  * @author suneet
  */
-public interface AuthStateDAO extends BaseDao<AuthStateEntity, String> {
+public interface AuthStateDAO extends BaseDao<AuthStateEntity, AuthStateId> {
 
 	public void saveAuthState(final AuthStateEntity authState);
     public void deleteByUser(String userId);
