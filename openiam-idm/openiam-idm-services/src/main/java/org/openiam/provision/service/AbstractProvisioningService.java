@@ -77,6 +77,7 @@ import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.dto.PasswordSync;
+import org.openiam.provision.dto.ProvisionActionEvent;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.resp.ProvisionUserResponse;
 import org.openiam.provision.type.ExtensibleAttribute;
@@ -196,6 +197,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
     @Autowired
     @Qualifier("configurableGroovyScriptEngine")
     protected ScriptIntegration scriptRunner;
+    @Autowired
+    private String eventProcessor;
     @Autowired
     protected String preProcessor;
     @Autowired
@@ -1633,6 +1636,26 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
 
         resp.setStatus(ResponseStatus.SUCCESS);
         return resp;
+    }
+
+    @Override
+    public void add(ProvisionActionEvent event) {
+        Map<String, Object> bindingMap = new HashMap<String, Object>();
+        ProvisionServiceEventProcessor eventProcessorScript = getEventProcessor(bindingMap, eventProcessor);
+        if (eventProcessorScript != null) {
+            eventProcessorScript.process(event);
+        }
+    }
+
+    private ProvisionServiceEventProcessor getEventProcessor(Map<String, Object> bindingMap, String scriptName) {
+        if (org.apache.commons.lang.StringUtils.isNotBlank(scriptName)) {
+            try {
+                return (ProvisionServiceEventProcessor) scriptRunner.instantiateClass(bindingMap, scriptName);
+            } catch (Exception ce) {
+                log.error(ce);
+            }
+        }
+        return null;
     }
 
 

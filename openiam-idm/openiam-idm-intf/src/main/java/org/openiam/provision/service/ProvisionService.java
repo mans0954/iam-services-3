@@ -30,6 +30,7 @@ import org.openiam.idm.srvc.pswd.dto.PasswordValidationResponse;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.provision.dto.AccountLockEnum;
 import org.openiam.provision.dto.PasswordSync;
+import org.openiam.provision.dto.ProvisionActionEvent;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.resp.LookupUserResponse;
 import org.openiam.provision.resp.ManagedSystemViewerResponse;
@@ -381,5 +382,8 @@ public interface ProvisionService {
             @WebParam(name = "isAdd", targetNamespace = "") boolean isAdd,
             @WebParam(name = "requestId", targetNamespace = "") String requestId,
             @WebParam(name = "idmAuditLog", targetNamespace = "") final IdmAuditLog idmAuditLog);
+
+    @WebMethod
+    void add(@WebParam(name = "event", targetNamespace = "") ProvisionActionEvent event);
 
 }
