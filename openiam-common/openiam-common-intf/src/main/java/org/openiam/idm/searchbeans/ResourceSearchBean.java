@@ -25,7 +25,7 @@ import java.util.Set;
         "URL",
         "metadataType"
 })
-public class ResourceSearchBean extends AbstractSearchBean<Resource, String> implements SearchBean<Resource, String>, Serializable {
+public class ResourceSearchBean extends EntitlementsSearchBean<Resource, String> implements SearchBean<Resource, String>, Serializable {
 
 	private static final long serialVersionUID = 1L;
 

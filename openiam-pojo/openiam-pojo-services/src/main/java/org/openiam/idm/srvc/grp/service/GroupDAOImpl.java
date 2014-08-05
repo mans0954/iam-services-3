@@ -7,7 +7,9 @@ import org.apache.commons.lang.StringUtils;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.*;
 import org.openiam.base.Tuple;
+import org.openiam.base.ws.SortParam;
 import org.openiam.core.dao.BaseDaoImpl;
+import org.openiam.idm.searchbeans.AbstractSearchBean;
 import org.openiam.idm.searchbeans.GroupSearchBean;
 import org.openiam.idm.searchbeans.SearchBean;
 import org.openiam.idm.srvc.grp.domain.GroupAttributeEntity;
@@ -47,6 +49,27 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
                 criteria.add(Restrictions.in(getPKfieldName(), groupSearchBean.getKeys()));
             }else if(StringUtils.isNotBlank(groupSearchBean.getKey())) {
                 criteria.add(Restrictions.eq(getPKfieldName(), groupSearchBean.getKey()));
+            }
+
+            if(CollectionUtils.isNotEmpty(groupSearchBean.getParentIdSet())){
+                criteria.createAlias("parentGroups", "p");
+                criteria.add(Restrictions.in("p.id", groupSearchBean.getParentIdSet()));
+            }
+            if(CollectionUtils.isNotEmpty(groupSearchBean.getChildIdSet())){
+                criteria.createAlias("childGroups", "ch");
+                criteria.add(Restrictions.in("ch.id", groupSearchBean.getChildIdSet()));
+            }
+            if(CollectionUtils.isNotEmpty(groupSearchBean.getRoleIdSet())){
+                criteria.createAlias("roles", "r");
+                criteria.add(Restrictions.in("r.id", groupSearchBean.getRoleIdSet()));
+            }
+            if(CollectionUtils.isNotEmpty(groupSearchBean.getResourceIdSet())){
+                criteria.createAlias("resources", "res");
+                criteria.add(Restrictions.in("res.id", groupSearchBean.getResourceIdSet()));
+            }
+            if(CollectionUtils.isNotEmpty(groupSearchBean.getUserIdSet())){
+                criteria.createAlias("users", "usr");
+                criteria.add(Restrictions.in("usr.id", groupSearchBean.getUserIdSet()));
             }
 
             if(CollectionUtils.isNotEmpty(groupSearchBean.getAttributes())) {
@@ -126,6 +149,18 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
 		}
 		return criteria;
 	}
+
+    protected void setOderByCriteria(Criteria criteria, AbstractSearchBean sb) {
+        List<SortParam> sortParamList = sb.getSortBy();
+        for (SortParam sort: sortParamList){
+            if("managedSysName".equals(sort.getSortBy())){
+                criteria.createAlias("managedSystem", "ms", Criteria.LEFT_JOIN);
+                criteria.addOrder(createOrder("ms.name", sort.getOrderBy()));
+            } else{
+                criteria.addOrder(createOrder(sort.getSortBy(), sort.getOrderBy()));
+            }
+        }
+    }
 	
 	public List<GroupEntity> findRootGroups(final int from, final int size) {
 		final Criteria criteria = getCriteria();

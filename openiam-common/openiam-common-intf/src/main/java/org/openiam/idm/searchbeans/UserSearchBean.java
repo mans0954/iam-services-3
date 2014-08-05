@@ -1,6 +1,5 @@
 package org.openiam.idm.searchbeans;
 
-import org.apache.commons.lang.StringUtils;
 import org.openiam.base.ws.MatchType;
 import org.openiam.base.ws.SearchMode;
 import org.openiam.base.ws.SearchParam;
@@ -31,9 +30,6 @@ import java.util.*;
         "phoneNbr",
         "employeeId",
         "employeeType",
-        "groupIdSet",
-        "roleIdSet",
-        "resourceIdSet",
         "emailAddress",
         "principal",
         "attributeName",
@@ -53,7 +49,6 @@ import java.util.*;
         "dateOfBirth",
         "zipCode",
         "delAdmin",
-        "organizationIdList",
         "attributeList",
         "requesterId",
         "updatedSince",
@@ -66,7 +61,7 @@ import java.util.*;
         "initDefaulLoginFlag",
         "userType"
 })
-public class UserSearchBean extends AbstractSearchBean<User, String> implements SearchBean<User, String>,
+public class UserSearchBean extends EntitlementsSearchBean<User, String> implements SearchBean<User, String>,
         Serializable {
 
 	/**
@@ -120,26 +115,6 @@ public class UserSearchBean extends AbstractSearchBean<User, String> implements 
     
     @Deprecated
     protected String employeeId = null;
-    
-    /**
-     * Set of Group IDs that this user belongs to.  
-     * The user must belong to at leat one of these groups
-     */
-    protected Set<String> groupIdSet = null;
-    
-
-    /**
-     * Set of Role IDs that this user belongs to.  
-     * The user must belong to at leat one of these roles
-     */
-    protected Set<String> roleIdSet = null;
-    
-
-    /**
-     * Set of Resource IDs that this user is entitled to.  
-     * The user must be entitled to at least one of these
-     */
-    protected Set<String> resourceIdSet = null;
     
     @Deprecated
     protected String emailAddress = null;
@@ -208,12 +183,6 @@ public class UserSearchBean extends AbstractSearchBean<User, String> implements 
     protected String loggedIn = null;
     protected boolean delAdmin = false;
 
-    /**
-     * Set of Organization IDs that this user belongs to.  
-     * The user must belong to at leat one of these organizations
-     */
-    protected Set<String> organizationIdList = new HashSet<String>();
-    
     /**
      * The attributes which belong to this user
      */
@@ -286,30 +255,6 @@ public class UserSearchBean extends AbstractSearchBean<User, String> implements 
 
     public void setRequesterId(String requesterId) {
         this.requesterId = requesterId;
-    }
-
-    public Set<String> getOrganizationIdList() {
-        return organizationIdList;
-    }
-
-    public void setOrganizationIdList(Set<String> organizationIdList) {
-        this.organizationIdList = organizationIdList;
-    }
-
-    public void addOrganizationIdList(final Collection<String> organizationIdList) {
-        if(organizationIdList != null) {
-            if(this.organizationIdList==null) {
-                this.organizationIdList = new HashSet<String>();
-            }
-            this.organizationIdList.addAll(organizationIdList);
-        }
-    }
-
-    public void addOrganizationId(String organizationId){
-        if(organizationIdList==null) {
-            organizationIdList = new HashSet<String>();
-        }
-        organizationIdList.add(organizationId);
     }
 
     public boolean isDelAdmin() {
@@ -390,41 +335,7 @@ public class UserSearchBean extends AbstractSearchBean<User, String> implements 
         employeeIdMatchToken = new SearchParam(employeeId, MatchType.EXACT);
     }
 
-    public Set<String> getGroupIdSet() {
-        return groupIdSet;
-    }
 
-    public void setGroupIdSet(Set<String> groupIdSet) {
-        this.groupIdSet=groupIdSet;
-    }
-
-    public void addGroupId(final String groupId) {
-        if(StringUtils.isNotBlank(groupId)) {
-            if(this.groupIdSet == null) {
-                this.groupIdSet = new HashSet<String>();
-            }
-            this.groupIdSet.add(StringUtils.trimToNull(groupId));
-        }
-
-    }
-
-    public Set<String> getRoleIdSet() {
-        return roleIdSet;
-    }
-
-    public void setRoleIdSet(Set<String> roleIdSet) {
-        this.roleIdSet=roleIdSet;
-    }
-
-
-    public void addRoleId(final String roleId) {
-        if(StringUtils.isNotBlank(roleId)) {
-            if(this.roleIdSet == null) {
-                this.roleIdSet = new HashSet<String>();
-            }
-            this.roleIdSet.add(StringUtils.trimToNull(roleId));
-        }
-    }
 
     @Deprecated
     public String getEmailAddress() {
@@ -613,23 +524,6 @@ public class UserSearchBean extends AbstractSearchBean<User, String> implements 
 
     public void setEmployeeType(String employeeType) {
         this.employeeType = employeeType;
-    }
-
-    public Set<String> getResourceIdSet() {
-        return resourceIdSet;
-    }
-
-    public void setResourceIdSet(Set<String> resourceIdSet) {
-        this.resourceIdSet = resourceIdSet;
-    }
-
-    public void addResourceId(final String resourceId) {
-        if(resourceId != null) {
-            if(this.resourceIdSet == null) {
-                this.resourceIdSet = new HashSet<String>();
-            }
-            this.resourceIdSet.add(resourceId);
-        }
     }
 
     @Deprecated
