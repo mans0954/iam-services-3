@@ -81,6 +81,23 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
                 criteria.createAlias("groups", "gr");
                 criteria.add(Restrictions.in("gr.id", roleSearchBean.getGroupIdSet()));
             }
+
+            if(CollectionUtils.isNotEmpty(roleSearchBean.getParentIdSet())){
+                criteria.createAlias("parentRoles", "pr");
+                criteria.add(Restrictions.in("pr.id", roleSearchBean.getParentIdSet()));
+            }
+            if(CollectionUtils.isNotEmpty(roleSearchBean.getChildIdSet())){
+                criteria.createAlias("childRoles", "ch");
+                criteria.add(Restrictions.in("ch.id", roleSearchBean.getChildIdSet()));
+            }
+            if(CollectionUtils.isNotEmpty(roleSearchBean.getResourceIdSet())){
+                criteria.createAlias("resources", "res");
+                criteria.add(Restrictions.in("res.id", roleSearchBean.getResourceIdSet()));
+            }
+            if(CollectionUtils.isNotEmpty(roleSearchBean.getUserIdSet())){
+                criteria.createAlias("users", "usr");
+                criteria.add(Restrictions.in("usr.id", roleSearchBean.getUserIdSet()));
+            }
         }
         return criteria;
     }
