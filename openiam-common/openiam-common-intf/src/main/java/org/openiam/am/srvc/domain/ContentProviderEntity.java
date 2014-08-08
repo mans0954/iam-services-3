@@ -36,6 +36,10 @@ public class ContentProviderEntity implements Serializable {
 	@Type(type = "yes_no")
 	private boolean isPublic;
 	
+	@Column(name = "SHOW_ON_APP_PAGE", nullable = false)
+	@Type(type = "yes_no")
+	private boolean showOnApplicationPage = true;
+	
 	@Column(name = "DOMAIN_PATTERN", length = 100, nullable = false)
 	private String domainPattern;
 	
@@ -186,6 +190,13 @@ public class ContentProviderEntity implements Serializable {
 			Set<AuthLevelGroupingContentProviderXrefEntity> groupingXrefs) {
 		this.groupingXrefs = groupingXrefs;
 	}
+	
+	public boolean isShowOnApplicationPage() {
+		return showOnApplicationPage;
+	}
+	public void setShowOnApplicationPage(boolean showOnApplicationPage) {
+		this.showOnApplicationPage = showOnApplicationPage;
+	}
 
 	@Override
 	public int hashCode() {
@@ -205,6 +216,7 @@ public class ContentProviderEntity implements Serializable {
 				+ ((resource == null) ? 0 : resource.hashCode());
 		result = prime * result
 				+ ((uiTheme == null) ? 0 : uiTheme.hashCode());
+		result = prime * result + (showOnApplicationPage ? 1231 : 1237);
 		return result;
 	}
 
@@ -256,6 +268,8 @@ public class ContentProviderEntity implements Serializable {
 			if (other.uiTheme != null)
 				return false;
 		} else if (!uiTheme.equals(other.uiTheme))
+			return false;
+		if (showOnApplicationPage != other.showOnApplicationPage)
 			return false;
 		return true;
 	}

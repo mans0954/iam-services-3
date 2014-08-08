@@ -162,6 +162,7 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
         		dbEntity.getResource().setURL(cpURL);
         		dbEntity.setManagedSystem(managedSys);
         		dbEntity.setUiTheme(theme);
+        		dbEntity.setShowOnApplicationPage(provider.isShowOnApplicationPage());
         		if(dbEntity.getGroupingXrefs() == null) {
         			dbEntity.setGroupingXrefs(new HashSet<AuthLevelGroupingContentProviderXrefEntity>());
         		}
