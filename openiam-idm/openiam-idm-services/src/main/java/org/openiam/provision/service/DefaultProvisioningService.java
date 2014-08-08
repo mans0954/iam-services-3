@@ -1427,7 +1427,6 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                     objectMatchDozerConverter.convertToDTO(matchObj, false),
                                     buildMngSysAttributes(login, "RESET_PASSWORD"));
                             log.info("============== Connector Reset Password get : " + new Date());
-                            idmAuditLog.setTargetUser(lg.getUserId(), lg.getLogin());
                             if (resp != null && resp.getStatus() == StatusCodeType.SUCCESS) {
                                 idmAuditLog.succeed();
                                 idmAuditLog.setAuditDescription(
@@ -1725,17 +1724,26 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                     buildMngSysAttributes(login, "SET_PASSWORD"));
 
                             boolean connectorSuccess = false;
-                            if (resp.getStatus() == StatusCodeType.SUCCESS) {
+                            log.info("============== Connector Set Password get : " + new Date());
+                            if (resp != null && resp.getStatus() == StatusCodeType.SUCCESS) {
                                 connectorSuccess = true;
+                                auditLog.succeed();
+                                auditLog.setAuditDescription(
+                                        "Set password for resource: " + res.getName() + " for user: "
+                                                + lg.getLogin());
+                            } else {
                                 auditLog.fail();
                                 String reason = "";
-                                if (resp.getError() != null) {
-                                    reason = resp.getError().value();
-                                } else if (StringUtils.isNotBlank(resp.getErrorMsgAsStr())) {
-                                    reason = resp.getErrorMsgAsStr();
+                                if(resp != null) {
+                                    if (resp.getError() != null) {
+                                        reason = resp.getError().value();
+                                    } else if (StringUtils.isNotBlank(resp.getErrorMsgAsStr())) {
+                                        reason = resp.getErrorMsgAsStr();
+                                    }
                                 }
-                                auditLog.setFailureReason(String.format("Reset password for resource %s user %s failed: %s",
+                                auditLog.setFailureReason(String.format("Set password for resource %s user %s failed: %s",
                                         mSys.getName(), lg.getLogin(), reason));
+
                             }
 
                             // post-process
