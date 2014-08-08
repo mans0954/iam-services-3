@@ -57,6 +57,7 @@ public class GoogleAppsCommandFactory extends AbstractCommandFactory {
             case RESUME:
                 return resumeUserGoogleAppsCommand;
             case SET_PASSWORD:
+            case RESET_PASSWORD:
                 return setPasswordGoogleAppsCommand;
             case SUSPEND:
                 return suspendUserGoogleAppsCommand;
