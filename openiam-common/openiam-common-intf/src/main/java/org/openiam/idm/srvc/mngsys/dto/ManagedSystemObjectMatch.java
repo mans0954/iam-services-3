@@ -34,6 +34,7 @@ import javax.xml.bind.annotation.XmlType;
 public class ManagedSystemObjectMatch implements java.io.Serializable {
 	public static String USER ="USER";
     public static String GROUP = "GROUP";
+    public static String OU = "OU";
 
     private String objectSearchId;
 	private String managedSys;
