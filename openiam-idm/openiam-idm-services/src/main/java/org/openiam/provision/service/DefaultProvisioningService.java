@@ -519,6 +519,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     }
                 }
                 idmAuditLog.addChild(idmAuditLogChild);
+
             } else {
                 // delete user and all its identities.
                 LoginEntity lRequestor = loginManager.getPrimaryIdentity(requestorId);
@@ -642,26 +643,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     }
                 }
             }
-            if (status == UserStatusEnum.REMOVE) {
-                // loginManager.deleteLogin(login.getLogin());
-                try {
-                    userMgr.removeUser(userId);
-                } catch (Throwable e) {
-                    log.error("Can't remove user", e);
-                    response.setStatus(ResponseStatus.FAILURE);
-                    response.setErrorCode(ResponseCode.FAIL_SQL_ERROR);
-                    return response;
-                }
-            } else {
-                UserEntity entity = userMgr.getUser(userId);
-                entity.setStatus(status);
-                entity.setSecondaryStatus(null);
-                entity.setLastUpdatedBy(requestorId);
-                entity.setLastUpdate(new Date(System.currentTimeMillis()));
-                userMgr.updateUser(entity);
-            }
             // SET POST ATTRIBUTES FOR DEFAULT SYS SCRIPT
-
             bindingMap.put(TARGET_SYSTEM_IDENTITY, login.getLogin());
             bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS, null);
             bindingMap.put(TARGET_SYS_RES_ID, null);
@@ -674,6 +656,23 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 return response;
             } else {
                 idmAuditLog.succeed();
+            }
+
+            if (status == UserStatusEnum.REMOVE) {
+                try {
+                    userMgr.removeUser(userId);
+                } catch (Throwable e) {
+                    log.error("Can't remove user", e);
+                    response.setStatus(ResponseStatus.FAILURE);
+                    response.setErrorCode(ResponseCode.FAIL_SQL_ERROR);
+                    return response;
+                }
+            } else {
+                pUser.setStatus(status);
+                pUser.setSecondaryStatus(UserStatusEnum.INACTIVE);
+                pUser.setLastUpdatedBy(requestorId);
+                pUser.setLastUpdate(new Date());
+                modifyUser(pUser);
             }
 
         } finally {
