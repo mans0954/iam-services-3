@@ -432,6 +432,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 return response;
             }
 
+            Set<String> processedResources = new HashSet<String>();
             if (!managedSystemId.equals(sysConfiguration.getDefaultManagedSysId())) {
                 final IdmAuditLog idmAuditLogChild = new IdmAuditLog();
                 idmAuditLogChild.setRequestorUserId(requestorId);
@@ -464,6 +465,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 bindingMap.put(TARGET_SYS_RES_ID, resourceId);
 
                 if (resourceId != null) {
+                    processedResources.add(resourceId);
                     res = resourceDataService.getResource(resourceId, null);
                     if (res != null) {
                         String preProcessScript = getResProperty(res.getResourceProps(), "PRE_PROCESS");
@@ -578,6 +580,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                 bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS, IDENTITY_EXIST);
 
                                 if (resourceId != null) {
+                                    processedResources.add(resourceId);
                                     resource = resourceDataService.getResource(resourceId, null);
                                     if (resource != null) {
                                         bindingMap.put(TARGET_SYS_RES, resource);
@@ -672,6 +675,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 pUser.setSecondaryStatus(UserStatusEnum.INACTIVE);
                 pUser.setLastUpdatedBy(requestorId);
                 pUser.setLastUpdate(new Date());
+                pUser.setNotProvisioninResourcesIds(processedResources);
                 modifyUser(pUser);
             }
 
