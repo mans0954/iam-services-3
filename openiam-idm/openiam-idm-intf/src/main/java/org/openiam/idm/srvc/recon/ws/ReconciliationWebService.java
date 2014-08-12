@@ -46,7 +46,8 @@ public interface ReconciliationWebService {
 
     @WebMethod
     Response removeConfig(
-            @WebParam(name = "configId", targetNamespace = "") String configId);
+            @WebParam(name = "configId", targetNamespace = "") String configId,
+            @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
     @WebMethod
     ReconciliationResponse startReconciliation(

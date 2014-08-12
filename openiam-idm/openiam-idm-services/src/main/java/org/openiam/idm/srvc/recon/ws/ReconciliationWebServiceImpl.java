@@ -107,7 +107,8 @@ public class ReconciliationWebServiceImpl implements ReconciliationWebService {
         return response;
     }
 
-    public Response removeConfig(String configId) {
+    @Override
+    public Response removeConfig(String configId, String requesterId) {
         Response response = new Response(ResponseStatus.SUCCESS);
         reconService.removeConfig(configId);
         return response;
