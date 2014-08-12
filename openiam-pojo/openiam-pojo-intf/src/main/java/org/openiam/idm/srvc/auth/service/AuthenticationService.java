@@ -1,10 +1,14 @@
 package org.openiam.idm.srvc.auth.service;
 
 
+import java.util.List;
+
 import org.openiam.base.ws.BooleanResponse;
 import org.openiam.base.ws.Response;
 import org.openiam.exception.AuthenticationException;
 import org.openiam.exception.LogoutException;
+import org.openiam.idm.searchbeans.AuthStateSearchBean;
+import org.openiam.idm.srvc.auth.domain.AuthStateEntity;
 import org.openiam.idm.srvc.auth.dto.AuthenticationRequest;
 import org.openiam.idm.srvc.auth.dto.Subject;
 import org.openiam.idm.srvc.auth.ws.AuthenticationResponse;
@@ -71,4 +75,12 @@ public interface AuthenticationService {
             String token,
             @WebParam(name = "tokenType", targetNamespace = "")
             String tokenType);
+    
+    @WebMethod
+    List<AuthStateEntity> findBeans(final @WebParam(name = "request", targetNamespace = "") AuthStateSearchBean searchBean,
+    								final @WebParam(name = "from", targetNamespace = "") int from,
+    								final @WebParam(name = "size", targetNamespace = "") int size);
+    
+    @WebMethod
+    public Response save(final @WebParam(name = "entity", targetNamespace = "") AuthStateEntity entity);
 }

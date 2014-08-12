@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.batch.service;
 
+import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
@@ -29,17 +30,7 @@ public class BatchServiceImpl implements BatchService {
 
     @Override
     public void save(BatchTaskEntity entity) {
-        if (entity != null) {
-            if (StringUtils.isBlank(entity.getId())) {
-                batchDao.save(entity);
-            } else {
-            	final BatchTaskEntity dbEntity = batchDao.findById(entity.getId());
-            	if(dbEntity != null) {
-            		entity.setLastExecTime(dbEntity.getLastExecTime());
-            		batchDao.merge(entity);
-            	}
-            }
-        }
+        batchDao.save(entity);
     }
 
     @Override

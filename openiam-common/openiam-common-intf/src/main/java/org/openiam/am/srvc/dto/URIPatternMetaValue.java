@@ -39,7 +39,7 @@ public class URIPatternMetaValue implements Serializable {
 	 */
 	@Transient
 	@XmlTransient
-	private WeakReference<URIFederationGroovyProcessor> groovyProcessor;
+	private URIFederationGroovyProcessor groovyProcessor;
 	
 	public String getId() {
 		return id;
@@ -81,14 +81,10 @@ public class URIPatternMetaValue implements Serializable {
 	}
 	
 	public URIFederationGroovyProcessor getGroovyProcessor() {
-		URIFederationGroovyProcessor retVal = null;
-		if(this.groovyProcessor != null) {
-			retVal = this.groovyProcessor.get();
-		}
-		return retVal;
+		return this.groovyProcessor;
 	}
 	public void setGroovyProcessor(final  URIFederationGroovyProcessor groovyProcessor) {
-		this.groovyProcessor = new WeakReference<URIFederationGroovyProcessor>(groovyProcessor);
+		this.groovyProcessor = groovyProcessor;
 	}
 	@Override
 	public int hashCode() {

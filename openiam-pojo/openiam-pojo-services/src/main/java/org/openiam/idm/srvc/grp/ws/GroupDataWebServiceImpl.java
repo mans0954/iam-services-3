@@ -416,12 +416,12 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
                                          final Language language) {
         final List<GroupEntity> groupEntityList = groupManager.findBeansLocalize(searchBean, requesterId, from, size, languageConverter.convertToEntity(language, false));
         List<Group> groupList = groupDozerConverter.convertToDTOList(groupEntityList, false);
-        Collections.sort(groupList, new Comparator<Group>() {
-            @Override
-            public int compare(Group o1, Group o2) {
-                return o1.getName().compareTo(o2.getName());
-            }
-        });
+//        Collections.sort(groupList, new Comparator<Group>() {
+//            @Override
+//            public int compare(Group o1, Group o2) {
+//                return o1.getName().compareTo(o2.getName());
+//            }
+//        });
         return groupList;
     }
 

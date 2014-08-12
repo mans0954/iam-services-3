@@ -432,6 +432,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 return response;
             }
 
+            Set<String> processedResources = new HashSet<String>();
             if (!managedSystemId.equals(sysConfiguration.getDefaultManagedSysId())) {
                 final IdmAuditLog idmAuditLogChild = new IdmAuditLog();
                 idmAuditLogChild.setRequestorUserId(requestorId);
@@ -464,6 +465,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 bindingMap.put(TARGET_SYS_RES_ID, resourceId);
 
                 if (resourceId != null) {
+                    processedResources.add(resourceId);
                     res = resourceDataService.getResource(resourceId, null);
                     if (res != null) {
                         String preProcessScript = getResProperty(res.getResourceProps(), "PRE_PROCESS");
@@ -519,6 +521,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     }
                 }
                 idmAuditLog.addChild(idmAuditLogChild);
+
             } else {
                 // delete user and all its identities.
                 LoginEntity lRequestor = loginManager.getPrimaryIdentity(requestorId);
@@ -577,6 +580,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                 bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS, IDENTITY_EXIST);
 
                                 if (resourceId != null) {
+                                    processedResources.add(resourceId);
                                     resource = resourceDataService.getResource(resourceId, null);
                                     if (resource != null) {
                                         bindingMap.put(TARGET_SYS_RES, resource);
@@ -642,26 +646,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     }
                 }
             }
-            if (status == UserStatusEnum.REMOVE) {
-                // loginManager.deleteLogin(login.getLogin());
-                try {
-                    userMgr.removeUser(userId);
-                } catch (Throwable e) {
-                    log.error("Can't remove user", e);
-                    response.setStatus(ResponseStatus.FAILURE);
-                    response.setErrorCode(ResponseCode.FAIL_SQL_ERROR);
-                    return response;
-                }
-            } else {
-                UserEntity entity = userMgr.getUser(userId);
-                entity.setStatus(status);
-                entity.setSecondaryStatus(null);
-                entity.setLastUpdatedBy(requestorId);
-                entity.setLastUpdate(new Date(System.currentTimeMillis()));
-                userMgr.updateUser(entity);
-            }
             // SET POST ATTRIBUTES FOR DEFAULT SYS SCRIPT
-
             bindingMap.put(TARGET_SYSTEM_IDENTITY, login.getLogin());
             bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS, null);
             bindingMap.put(TARGET_SYS_RES_ID, null);
@@ -674,6 +659,24 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 return response;
             } else {
                 idmAuditLog.succeed();
+            }
+
+            if (status == UserStatusEnum.REMOVE) {
+                try {
+                    userMgr.removeUser(userId);
+                } catch (Throwable e) {
+                    log.error("Can't remove user", e);
+                    response.setStatus(ResponseStatus.FAILURE);
+                    response.setErrorCode(ResponseCode.FAIL_SQL_ERROR);
+                    return response;
+                }
+            } else {
+                pUser.setStatus(status);
+                pUser.setSecondaryStatus(UserStatusEnum.INACTIVE);
+                pUser.setLastUpdatedBy(requestorId);
+                pUser.setLastUpdate(new Date());
+                pUser.setNotProvisioninResourcesIds(processedResources);
+                modifyUser(pUser);
             }
 
         } finally {
@@ -1427,7 +1430,6 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                     objectMatchDozerConverter.convertToDTO(matchObj, false),
                                     buildMngSysAttributes(login, "RESET_PASSWORD"));
                             log.info("============== Connector Reset Password get : " + new Date());
-                            idmAuditLog.setTargetUser(lg.getUserId(), lg.getLogin());
                             if (resp != null && resp.getStatus() == StatusCodeType.SUCCESS) {
                                 idmAuditLog.succeed();
                                 idmAuditLog.setAuditDescription(
@@ -1725,17 +1727,26 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                     buildMngSysAttributes(login, "SET_PASSWORD"));
 
                             boolean connectorSuccess = false;
-                            if (resp.getStatus() == StatusCodeType.SUCCESS) {
+                            log.info("============== Connector Set Password get : " + new Date());
+                            if (resp != null && resp.getStatus() == StatusCodeType.SUCCESS) {
                                 connectorSuccess = true;
+                                auditLog.succeed();
+                                auditLog.setAuditDescription(
+                                        "Set password for resource: " + res.getName() + " for user: "
+                                                + lg.getLogin());
+                            } else {
                                 auditLog.fail();
                                 String reason = "";
-                                if (resp.getError() != null) {
-                                    reason = resp.getError().value();
-                                } else if (StringUtils.isNotBlank(resp.getErrorMsgAsStr())) {
-                                    reason = resp.getErrorMsgAsStr();
+                                if(resp != null) {
+                                    if (resp.getError() != null) {
+                                        reason = resp.getError().value();
+                                    } else if (StringUtils.isNotBlank(resp.getErrorMsgAsStr())) {
+                                        reason = resp.getErrorMsgAsStr();
+                                    }
                                 }
-                                auditLog.setFailureReason(String.format("Reset password for resource %s user %s failed: %s",
+                                auditLog.setFailureReason(String.format("Set password for resource %s user %s failed: %s",
                                         mSys.getName(), lg.getLogin(), reason));
+
                             }
 
                             // post-process

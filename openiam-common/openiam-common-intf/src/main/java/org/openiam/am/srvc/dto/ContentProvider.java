@@ -32,7 +32,8 @@ import java.util.concurrent.atomic.AtomicInteger;
         "managedSysId",
         "url",
         "themeId",
-        "groupingXrefs"
+        "groupingXrefs",
+        "showOnApplicationPage"
 })
 @DozerDTOCorrespondence(ContentProviderEntity.class)
 public class ContentProvider implements Serializable {
@@ -50,6 +51,7 @@ public class ContentProvider implements Serializable {
 	private String url;
 	private Set<ContentProviderServer> serverSet;
 	private String themeId;
+	private boolean showOnApplicationPage = true;
 	private Set<AuthLevelGroupingContentProviderXref> groupingXrefs;
 	
 	/*
@@ -180,22 +182,29 @@ public class ContentProvider implements Serializable {
 			Set<AuthLevelGroupingContentProviderXref> groupingXrefs) {
 		this.groupingXrefs = groupingXrefs;
 	}
+	public boolean isShowOnApplicationPage() {
+		return showOnApplicationPage;
+	}
+	public void setShowOnApplicationPage(boolean showOnApplicationPage) {
+		this.showOnApplicationPage = showOnApplicationPage;
+	}
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((domainPattern == null) ? 0 : domainPattern.hashCode());
-		/*
-        result = prime * result
-                 + ((contextPath == null) ? 0 : contextPath.hashCode());
-		*/
+		result = prime * result
+				+ ((domainPattern == null) ? 0 : domainPattern.hashCode());
 		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		result = prime * result + (isPublic ? 1231 : 1237);
 		result = prime * result + ((isSSL == null) ? 0 : isSSL.hashCode());
+		result = prime * result
+				+ ((managedSysId == null) ? 0 : managedSysId.hashCode());
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
-		result = prime * result + ((resourceId == null) ? 0 : resourceId.hashCode());
-		result = prime * result + ((url == null) ? 0 : url.hashCode());
+		result = prime * result
+				+ ((resourceId == null) ? 0 : resourceId.hashCode());
+		result = prime * result + (showOnApplicationPage ? 1231 : 1237);
 		result = prime * result + ((themeId == null) ? 0 : themeId.hashCode());
+		result = prime * result + ((url == null) ? 0 : url.hashCode());
 		return result;
 	}
 	@Override
@@ -212,19 +221,6 @@ public class ContentProvider implements Serializable {
 				return false;
 		} else if (!domainPattern.equals(other.domainPattern))
 			return false;
-		
-		if (url == null) {
-			if (other.url != null)
-				return false;
-		} else if (!url.equals(other.url))
-			return false;
-		/*
-        if (contextPath == null) {
-            if (other.contextPath != null)
-                return false;
-        } else if (!contextPath.equals(other.contextPath))
-            return false;
-		*/
 		if (id == null) {
 			if (other.id != null)
 				return false;
@@ -237,6 +233,11 @@ public class ContentProvider implements Serializable {
 				return false;
 		} else if (!isSSL.equals(other.isSSL))
 			return false;
+		if (managedSysId == null) {
+			if (other.managedSysId != null)
+				return false;
+		} else if (!managedSysId.equals(other.managedSysId))
+			return false;
 		if (name == null) {
 			if (other.name != null)
 				return false;
@@ -247,20 +248,21 @@ public class ContentProvider implements Serializable {
 				return false;
 		} else if (!resourceId.equals(other.resourceId))
 			return false;
-		
+		if (showOnApplicationPage != other.showOnApplicationPage)
+			return false;
 		if (themeId == null) {
 			if (other.themeId != null)
 				return false;
 		} else if (!themeId.equals(other.themeId))
 			return false;
+		if (url == null) {
+			if (other.url != null)
+				return false;
+		} else if (!url.equals(other.url))
+			return false;
 		return true;
 	}
-	@Override
-	public String toString() {
-		return String
-				.format("ContentProvider [id=%s, name=%s, isPublic=%s, domainPattern=%s, isSSL=%s, resourceId=%s]",
-						id, name, isPublic, domainPattern, isSSL, resourceId);
-	}
+
 	
 	
 }

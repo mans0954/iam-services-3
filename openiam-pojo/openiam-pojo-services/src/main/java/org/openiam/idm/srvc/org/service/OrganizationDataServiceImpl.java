@@ -187,7 +187,7 @@ public class OrganizationDataServiceImpl extends AbstractBaseService implements 
 	@LocalizedServiceGet
 	public List<Organization> getOrganizationsForUserByTypeLocalized(final String userId, final String requesterId, final String organizationTypeId, final Language language) {
 		final OrganizationSearchBean searchBean = new OrganizationSearchBean();
-		searchBean.setUserId(userId);
+		searchBean.addUserId(userId);
 		searchBean.setOrganizationTypeId(organizationTypeId);
 		searchBean.setDeepCopy(false);
 		return findBeansLocalized(searchBean, requesterId, 0, Integer.MAX_VALUE, language);
