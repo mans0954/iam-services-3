@@ -182,7 +182,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
         return startSynchronization(synchReview.getSynchConfig(), synchReview);
     }
 
-	private SyncResponse startSynchronization(SynchConfigEntity config, SynchReviewEntity review) {
+	private SyncResponse startSynchronization(final SynchConfigEntity config, SynchReviewEntity review) {
 
         SyncResponse syncResponse = new SyncResponse(ResponseStatus.SUCCESS);
 
@@ -202,7 +202,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
         }
 
         SyncResponse processCheckResponse = addTask(config.getSynchConfigId());
-        if ( processCheckResponse.getStatus() == ResponseStatus.FAILURE &&
+        if (processCheckResponse.getStatus() == ResponseStatus.FAILURE &&
                 processCheckResponse.getErrorCode() == ResponseCode.FAIL_PROCESS_ALREADY_RUNNING) {
             idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "WARNING: Previous synchronization run is not finished yet");
             auditLogService.enqueue(idmAuditLog);

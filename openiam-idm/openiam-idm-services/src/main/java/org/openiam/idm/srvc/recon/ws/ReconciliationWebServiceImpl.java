@@ -24,16 +24,18 @@ package org.openiam.idm.srvc.recon.ws;
 import javax.jws.WebParam;
 import javax.jws.WebService;
 
-import org.mule.api.MuleContext;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.idm.searchbeans.ManualReconciliationSearchBean;
+import org.openiam.idm.searchbeans.ReconConfigSearchBean;
+import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
 import org.openiam.idm.srvc.recon.dto.ReconciliationResponse;
-import org.openiam.idm.srvc.recon.result.dto.ReconciliationResultBean;
+import org.openiam.idm.srvc.recon.service.ReconciliationProcessor;
 import org.openiam.idm.srvc.recon.service.ReconciliationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 /**
  * @author suneet
@@ -58,12 +60,6 @@ public class ReconciliationWebServiceImpl implements ReconciliationWebService {
 
     }
 
-    @Override
-    public String manualReconciliation(ReconciliationResultBean reconciledBean,
-            String resourceId) throws Exception {
-        return reconService.manualReconciliation(reconciledBean, resourceId);
-    }
-
     public ReconciliationConfigResponse updateConfig(ReconciliationConfig config) {
         ReconciliationConfigResponse response = new ReconciliationConfigResponse(
                 ResponseStatus.SUCCESS);
@@ -78,27 +74,41 @@ public class ReconciliationWebServiceImpl implements ReconciliationWebService {
 
     }
 
-    public Response removeConfigByResourceId(String resourceId) {
-        Response response = new Response(ResponseStatus.SUCCESS);
-        reconService.removeConfigByResourceId(resourceId);
-        return response;
-
-    }
-
-    public ReconciliationConfigResponse getConfigByResource(String resourceId) {
+    public ReconciliationConfigResponse getConfigByResourceUserType(final String resourceId) {
         ReconciliationConfigResponse response = new ReconciliationConfigResponse(
                 ResponseStatus.SUCCESS);
-        ReconciliationConfig cfg = reconService.getConfigByResource(resourceId);
-        if (cfg == null || cfg.getReconConfigId() == null) {
-            response.setStatus(ResponseStatus.FAILURE);
-        } else {
+        ReconciliationConfig cfg = reconService.getConfigByResourceByType(resourceId, "USER");
+        if (cfg != null) {
             response.setConfig(cfg);
         }
         return response;
 
     }
 
-    public Response removeConfig(String configId) {
+    @Override
+    public ReconciliationConfigResponse findReconConfig(ReconConfigSearchBean searchBean, int from, int size, Language language) {
+        List<ReconciliationConfig> cfgList = reconService.findReconConfig(searchBean, from, size);
+        ReconciliationConfigResponse response = new ReconciliationConfigResponse(ResponseStatus.SUCCESS);
+        response.setConfigList(cfgList);
+        return response;
+    }
+
+    @Override
+    public int countReconConfig(@WebParam(name = "searchBean", targetNamespace = "") ReconConfigSearchBean searchBean) {
+        return reconService.countReconConfig(searchBean);
+    }
+
+    @Override
+    public ReconciliationConfigResponse getConfigsByResourceId(@WebParam(name = "resourceId", targetNamespace = "") String resourceId) {
+        ReconciliationConfigResponse response = new ReconciliationConfigResponse(
+                ResponseStatus.SUCCESS);
+        List<ReconciliationConfig> cfgList = reconService.getConfigsByResource(resourceId);
+        response.setConfigList(cfgList);
+        return response;
+    }
+
+    @Override
+    public Response removeConfig(String configId, String requesterId) {
         Response response = new Response(ResponseStatus.SUCCESS);
         reconService.removeConfig(configId);
         return response;
@@ -114,7 +124,7 @@ public class ReconciliationWebServiceImpl implements ReconciliationWebService {
 
     public ReconciliationResponse startReconciliation(
             ReconciliationConfig config) {
-        return reconService.startReconciliation(config);
+        return ((ReconciliationProcessor)reconService).startReconciliation(config);
 
     }
 
@@ -131,17 +141,4 @@ public class ReconciliationWebServiceImpl implements ReconciliationWebService {
 
     }
 
-    @Override
-    public String getReconciliationReport(
-            @WebParam(name = "config", targetNamespace = "") ReconciliationConfig config,
-            @WebParam(name = "reportType", targetNamespace = "") String reportType) {
-        return reconService.getReconciliationReport(config, reportType);
-    }
-
-    @Override
-    public ReconciliationResultBean getReconciliationResult(
-            @WebParam(name = "config", targetNamespace = "") ReconciliationConfig config,
-            @WebParam(name = "searchBean", targetNamespace = "") ManualReconciliationSearchBean searchBean) {
-        return reconService.getReconciliationResult(config, searchBean);
-    }
 }

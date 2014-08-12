@@ -21,6 +21,7 @@
  */
 package org.openiam.idm.srvc.recon.service;
 
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -53,6 +54,7 @@ import org.openiam.idm.parser.csv.UserCSVParser;
 import org.openiam.idm.parser.csv.UserSearchBeanCSVParser;
 import org.openiam.idm.searchbeans.LoginSearchBean;
 import org.openiam.idm.searchbeans.ManualReconciliationSearchBean;
+import org.openiam.idm.searchbeans.ReconConfigSearchBean;
 import org.openiam.idm.searchbeans.UserSearchBean;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
@@ -70,7 +72,6 @@ import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.idm.srvc.mngsys.dto.PolicyMapObjectTypeOptions;
 import org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorDto;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
@@ -94,8 +95,8 @@ import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.synch.dto.Attribute;
-import org.openiam.idm.srvc.synch.dto.SyncResponse;
 import org.openiam.idm.srvc.synch.service.MatchObjectRule;
+import org.openiam.idm.srvc.synch.service.SourceAdapter;
 import org.openiam.idm.srvc.synch.srcadapter.MatchRuleFactory;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
@@ -124,7 +125,7 @@ import org.springframework.transaction.annotation.Transactional;
  * 
  */
 @Service
-public class ReconciliationServiceImpl implements ReconciliationService {
+public class ReconciliationServiceImpl implements ReconciliationService, ReconciliationProcessor {
     @Autowired
     protected ReconciliationSituationDAO reconSituationDAO;
 
@@ -204,6 +205,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
     */
     private static Set<String> runningTask = Collections.newSetFromMap(new ConcurrentHashMap());
 
+    @Transactional
     public ReconciliationConfig addConfig(ReconciliationConfig config) {
         if (config == null) {
             throw new IllegalArgumentException("config parameter is null");
@@ -255,15 +257,6 @@ public class ReconciliationServiceImpl implements ReconciliationService {
     }
 
     @Transactional
-    public void removeConfigByResourceId(String resourceId) {
-        if (resourceId == null) {
-            throw new IllegalArgumentException("resourceId parameter is null");
-        }
-        reconConfigDao.removeByResourceId(resourceId);
-
-    }
-
-    @Transactional
     public void removeConfig(String configId) {
         if (configId == null) {
             throw new IllegalArgumentException("configId parameter is null");
@@ -274,11 +267,11 @@ public class ReconciliationServiceImpl implements ReconciliationService {
     }
 
     @Transactional(readOnly = true)
-    public ReconciliationConfig getConfigByResource(String resourceId) {
+    public ReconciliationConfig getConfigByResourceByType(String resourceId, String type) {
         if (resourceId == null) {
             throw new IllegalArgumentException("resourceId parameter is null");
         }
-        ReconciliationConfigEntity result = reconConfigDao.findByResourceId(resourceId);
+        ReconciliationConfigEntity result = reconConfigDao.findByResourceIdByType(resourceId, type);
         if (result == null)
             return null;
         else
@@ -286,6 +279,35 @@ public class ReconciliationServiceImpl implements ReconciliationService {
 
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<ReconciliationConfig> findReconConfig(ReconConfigSearchBean searchBean, int from, int size) {
+        List<ReconciliationConfigEntity> reconciliationConfigEntities = reconConfigDao.getByExample(searchBean, from, size);
+        if(reconciliationConfigEntities == null) {
+            return Collections.EMPTY_LIST;
+        }
+        return reconConfigDozerMapper.convertToDTOList(reconciliationConfigEntities, false);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public int countReconConfig(final ReconConfigSearchBean searchBean) {
+        return reconConfigDao.count(searchBean);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ReconciliationConfig> getConfigsByResource(final String resourceId) {
+        if (resourceId == null) {
+            throw new IllegalArgumentException("resourceId parameter is null");
+        }
+        List<ReconciliationConfigEntity> result = reconConfigDao.findByResourceId(resourceId);
+        if (result == null)
+            return new LinkedList<ReconciliationConfig>();
+        else
+            return reconConfigDozerMapper.convertToDTOList(result, false);
+    }
+
+    @Transactional(readOnly = true)
     public ReconciliationConfig getConfigById(String configId) {
         if (configId == null) {
             throw new IllegalArgumentException("configId parameter is null");
@@ -297,6 +319,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
             return reconConfigDozerMapper.convertToDTO(result, true);
     }
 
+    @Transactional
     public ReconciliationResponse startReconciliation(ReconciliationConfig config) {
 
         ReconciliationConfigEntity configEntity = reconConfigDao.findById(config.getReconConfigId());
@@ -327,6 +350,18 @@ public class ReconciliationServiceImpl implements ReconciliationService {
         }
 
         try {
+            // Check custom Processor script and execute if exists
+            if(StringUtils.isNotEmpty(config.getCustomProcessorScript())) {
+                // TODO fill map with attributes if needed
+                final Map<String, Object> objectMap = new HashMap<String, Object>();
+
+                ReconciliationProcessor processor = (ReconciliationProcessor)scriptRunner.instantiateClass(objectMap, config.getCustomProcessorScript());
+                if(processor == null) {
+                    throw new FileNotFoundException("The ReconciliationProcessor script '"+config.getCustomProcessorScript()+"' wasn't found. Please check the configuration.");
+                }
+                return processor.startReconciliation(config);
+            }
+
 
             log.debug("Reconciliation started for configId=" + config.getReconConfigId() + " - resource="
                     + config.getResourceId());
@@ -715,65 +750,6 @@ public class ReconciliationServiceImpl implements ReconciliationService {
             log.error(cnfe);
         }
         return targetUserPrincipal;
-    }
-
-    @Override
-    public String manualReconciliation(ReconciliationResultBean reconciledBean, String resourceId) throws Exception {
-        ReconciliationConfig config = this.getConfigByResource(resourceId);
-        ManagedSysEntity mSys = managedSysService.getManagedSysByResource(resourceId, "ACTIVE");
-        ReconciliationResultBean oldResult = this.getReconciliationResult(config, null);
-        List<ReconciliationResultField> header = oldResult.getHeader().getFields();
-        if (reconciledBean != null && reconciledBean.getRows() != null) {
-            List<ReconciliationResultRow> reconciledRows = reconciledBean.getRows();
-            for (ReconciliationResultRow row : reconciledRows) {
-                switch (row.getCaseReconciliation()) {
-                case NOT_EXIST_IN_IDM_DB:
-                    if (row.getAction() == null) {
-                        continue;
-                    }
-                    User u = this.convertObject(header, row.getFields(), User.class, false);
-                    if (ReconciliationResultAction.ADD_TO_IDM.equals(row.getAction())) {
-                        ProvisionUser puer = new ProvisionUser(u);
-                        provisionService.addUser(puer);
-                    }
-                    if (ReconciliationResultAction.REMOVE_FROM_TARGET.equals(row.getAction())) {
-                        // REMOVETE From Target system
-                        // provisionService.de(managedSysDozerConverter
-                        // .convertToDTO(mSys, false), u);
-                    }
-                    break;
-                case NOT_EXIST_IN_RESOURCE:
-                    if (ReconciliationResultAction.ADD_TO_TARGET.equals(row.getAction())) {
-                        User idmUser = this.getUserFromIDM(header, row);
-                        if (idmUser != null) {
-                            provisionService.addUser(new ProvisionUser(idmUser));
-                        }
-                    }
-                    if (ReconciliationResultAction.REMOVE_FROM_IDM.equals(row.getAction())) {
-                        User idmUser = getUserFromIDM(header, row);
-                        if (idmUser != null) {
-                            provisionService.deleteByUserId(idmUser.getId(), UserStatusEnum.REMOVE, systemUserId);
-                        }
-                    }
-                    break;
-                case MATCH_FOUND_DIFFERENT:
-                    User fromIDM = this.getUserFromIDM(header, row);
-                    if (fromIDM != null) {
-                        // merge idm and reconciled Users
-                        fromIDM = userCSVParser.addObjectByReconResltFields(header, row.getFields(), fromIDM);
-                        // userManager.updateUserWithDependent(userDozerConverter
-                        // .convertToEntity(fromIDM, true),true);
-                        provisionService.modifyUser(new ProvisionUser(fromIDM));
-                    }
-                    break;
-                default:
-                    break;
-                }
-            }
-        } else {
-            return "";
-        }
-        return "";
     }
 
     private boolean reconciliationIDMUserToTargetSys(ReconciliationResultBean resultBean,
