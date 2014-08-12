@@ -68,8 +68,6 @@ public class AsynchReconciliationServiceImpl {
 		
 		try {
 
-
-
             log.debug("MuleContext = " + MuleContextProvider.getCtx());
 			
 

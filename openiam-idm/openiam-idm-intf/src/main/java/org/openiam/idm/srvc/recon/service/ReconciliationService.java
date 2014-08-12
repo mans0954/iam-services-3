@@ -1,9 +1,11 @@
 package org.openiam.idm.srvc.recon.service;
 
 import org.openiam.idm.searchbeans.ManualReconciliationSearchBean;
+import org.openiam.idm.searchbeans.ReconConfigSearchBean;
 import org.openiam.idm.srvc.recon.dto.*;
 import org.openiam.idm.srvc.recon.result.dto.ReconciliationResultBean;
-import org.openiam.idm.srvc.report.dto.ReportTable;
+
+import java.util.List;
 
 /**
  * Interface for <code>ReconciliationService</code>. All reconciliation
@@ -15,24 +17,20 @@ public interface ReconciliationService {
 
     public void updateConfig(ReconciliationConfig config);
 
-    public void removeConfigByResourceId(String resourceId);
-
     public void removeConfig(String configId);
 
-    public ReconciliationConfig getConfigByResource(String resourceId);
+    public ReconciliationConfig getConfigByResourceByType(final String resourceId, final String type);
 
     public ReconciliationConfig getConfigById(String configId);
 
-    ReconciliationResponse startReconciliation(ReconciliationConfig config);
+    public List<ReconciliationConfig> getConfigsByResource(String resourceId);
 
-    public String getReconciliationReport(ReconciliationConfig config,
-            String reportType);
+    List<ReconciliationConfig> findReconConfig(ReconConfigSearchBean searchBean, int from, int size);
 
-    public ReconciliationResultBean getReconciliationResult(
-            ReconciliationConfig config,
-            ManualReconciliationSearchBean searchBean);
+    int countReconConfig(final ReconConfigSearchBean searchBean);
 
-    String manualReconciliation(ReconciliationResultBean reconciledBean,
-            String resourceId) throws Exception;
+    String getReconciliationReport(ReconciliationConfig config, String reportType);
 
+    ReconciliationResultBean getReconciliationResult(ReconciliationConfig config,
+                                                            ManualReconciliationSearchBean searchBean);
 }

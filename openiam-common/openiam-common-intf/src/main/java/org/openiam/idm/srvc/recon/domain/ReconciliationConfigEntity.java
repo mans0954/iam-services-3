@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import javax.persistence.*;
+import javax.validation.constraints.Size;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
@@ -80,6 +81,17 @@ public class ReconciliationConfigEntity implements java.io.Serializable {
 
     @Column(name = "RECON_TYPE", length = 32)
     private String reconType;
+
+    @Column(name = "NAME", length = 150)
+    private String name;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 
     public String getSeparator() {
         return separator;
@@ -296,7 +308,8 @@ public class ReconciliationConfigEntity implements java.io.Serializable {
         if (o == null || getClass() != o.getClass()) return false;
 
         ReconciliationConfigEntity that = (ReconciliationConfigEntity) o;
-
+        if (name != null ? !name.equals(that.name) : that.name != null)
+            return false;
         if (customIdentityMatchScript != null ? !customIdentityMatchScript.equals(that.customIdentityMatchScript) : that.customIdentityMatchScript != null)
             return false;
         if (customMatchAttr != null ? !customMatchAttr.equals(that.customMatchAttr) : that.customMatchAttr != null)
@@ -325,6 +338,7 @@ public class ReconciliationConfigEntity implements java.io.Serializable {
     @Override
     public int hashCode() {
         int result = reconConfigId != null ? reconConfigId.hashCode() : 0;
+        result = 31 * result + (name != null ? name.hashCode() : 0);
         result = 31 * result + (resourceId != null ? resourceId.hashCode() : 0);
         result = 31 * result + (managedSysId != null ? managedSysId.hashCode() : 0);
         result = 31 * result + (targetSystemMatchScript != null ? targetSystemMatchScript.hashCode() : 0);
@@ -345,6 +359,7 @@ public class ReconciliationConfigEntity implements java.io.Serializable {
         final StringBuilder sb = new StringBuilder();
         sb.append("ReconciliationConfigEntity");
         sb.append("{reconType='").append(reconType).append('\'');
+        sb.append(", name='").append(name).append('\'');
         sb.append(", customProcessorScript='").append(customProcessorScript).append('\'');
         sb.append(", reconConfigId='").append(reconConfigId).append('\'');
         sb.append(", resourceId='").append(resourceId).append('\'');

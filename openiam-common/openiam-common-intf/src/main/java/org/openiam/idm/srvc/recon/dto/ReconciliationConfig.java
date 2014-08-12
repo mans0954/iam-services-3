@@ -3,15 +3,12 @@ package org.openiam.idm.srvc.recon.dto;
 import java.util.Date;
 import java.util.Set;
 
-import javax.persistence.Column;
 import javax.persistence.Transient;
 import javax.xml.bind.annotation.*;
 
 import org.apache.commons.lang.StringUtils;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.recon.domain.ReconciliationConfigEntity;
-import org.springframework.format.annotation.DateTimeFormat;
-
 // Generated May 29, 2010 8:20:09 PM by Hibernate Tools 3.2.2.GA
 
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -20,7 +17,7 @@ import org.springframework.format.annotation.DateTimeFormat;
         "separator", "endOfLine", "notificationEmailAddress","manualReconciliationFlag",
         "targetSystemMatchScript","targetSystemSearchFilter","matchScript","searchFilter","updatedSince",
         "customIdentityMatchScript","scriptHandler","matchFieldName",
-        "customMatchAttr","matchSrcFieldName","lastExecTime","execStatus","requesterId","customProcessorScript","reconType","useCustomScript"})
+        "customMatchAttr","matchSrcFieldName","lastExecTime","execStatus","requesterId","customProcessorScript","reconType", "name"})
 
 @DozerDTOCorrespondence(ReconciliationConfigEntity.class)
 public class ReconciliationConfig implements MatchConfig, java.io.Serializable {
@@ -63,7 +60,7 @@ public class ReconciliationConfig implements MatchConfig, java.io.Serializable {
 
     private String requesterId;
 
-    @Transient
+    @XmlTransient
     private boolean useCustomScript;
 
     @Transient
@@ -72,13 +69,22 @@ public class ReconciliationConfig implements MatchConfig, java.io.Serializable {
     private String customProcessorScript;
 
     private String reconType;
+    private String name;
 
-    public boolean isUseCustomScript() {
-        return StringUtils.isNotEmpty(customProcessorScript);
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public boolean getUseCustomScript() {
+        return StringUtils.isNotEmpty(getCustomProcessorScript());
     }
 
     public void setUseCustomScript(boolean useCustomScript) {
-        this.useCustomScript = useCustomScript;
+        useCustomScript = useCustomScript;
     }
 
     public String getRequesterId() {
@@ -112,7 +118,8 @@ public class ReconciliationConfig implements MatchConfig, java.io.Serializable {
         this.reconConfigId = reconConfigId;
     }
 
-    public ReconciliationConfig(String reconConfigId, String resourceId, String managedSysId,
+    public ReconciliationConfig(String name,
+                                String reconConfigId, String resourceId, String managedSysId,
                                 String mode, String frequency, String status,
                                 Integer attributeLevelCheck, Integer updateChangedAttribute,
                                 String reconType) {
@@ -121,7 +128,7 @@ public class ReconciliationConfig implements MatchConfig, java.io.Serializable {
         this.managedSysId = managedSysId;
         this.frequency = frequency;
         this.status = status;
-
+        this.name = name;
     }
 
     public String getReconConfigId() {
@@ -321,7 +328,8 @@ public class ReconciliationConfig implements MatchConfig, java.io.Serializable {
         if (o == null || getClass() != o.getClass()) return false;
 
         ReconciliationConfig that = (ReconciliationConfig) o;
-
+        if (name != null ? !name.equals(that.name) : that.name != null)
+            return false;
         if (customIdentityMatchScript != null ? !customIdentityMatchScript.equals(that.customIdentityMatchScript) : that.customIdentityMatchScript != null)
             return false;
         if (customMatchAttr != null ? !customMatchAttr.equals(that.customMatchAttr) : that.customMatchAttr != null)
@@ -350,6 +358,7 @@ public class ReconciliationConfig implements MatchConfig, java.io.Serializable {
     @Override
     public int hashCode() {
         int result = reconConfigId != null ? reconConfigId.hashCode() : 0;
+        result = 31 * result + (name != null ? name.hashCode() : 0);
         result = 31 * result + (resourceId != null ? resourceId.hashCode() : 0);
         result = 31 * result + (managedSysId != null ? managedSysId.hashCode() : 0);
         result = 31 * result + (targetSystemMatchScript != null ? targetSystemMatchScript.hashCode() : 0);
@@ -368,8 +377,9 @@ public class ReconciliationConfig implements MatchConfig, java.io.Serializable {
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder();
-        sb.append("ReconciliationConfigEntity");
+        sb.append("ReconciliationConfig");
         sb.append("{reconType='").append(reconType).append('\'');
+        sb.append(", name='").append(name).append('\'');
         sb.append(", customProcessorScript='").append(customProcessorScript).append('\'');
         sb.append(", reconConfigId='").append(reconConfigId).append('\'');
         sb.append(", resourceId='").append(resourceId).append('\'');
