@@ -1,8 +1,5 @@
 package org.openiam.connector.ldap.command.base;
 
-import org.openiam.base.AttributeOperationEnum;
-import org.openiam.base.BaseAttribute;
-import org.openiam.base.BaseAttributeContainer;
 import org.openiam.connector.common.data.ConnectorConfiguration;
 import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.connector.type.ObjectValue;
@@ -17,7 +14,6 @@ import org.openiam.provision.type.ExtensibleObject;
 
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
-import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
@@ -49,11 +45,11 @@ public abstract class AbstractSearchLdapCommand<ExtObject extends ExtensibleObje
             SearchControls searchControls = new SearchControls();
             ldapContext.setRequestControls(new Control[] { new PagedResultsControl(PAGE_SIZE, Control.NONCRITICAL) });
             searchControls.setSearchScope(managedSys.getSearchScope().getValue());
-            String identityAttrName = matchObj != null ? matchObj.getKeyField() : "cn";
+
+            // TODO: !!!! Fix identityAttrName initialization
+            String identityAttrName = matchObj != null ? matchObj.getKeyField() : DN_ATTRIBUTE_NAME;
 
             List<ObjectValue> objectValueList = new LinkedList<ObjectValue>();
-            ObjectValue objectValue = new ObjectValue();
-            objectValue.setAttributeList(new LinkedList<ExtensibleAttribute>());
 
             byte[] cookie = null;
             boolean found = false;
@@ -64,13 +60,10 @@ public abstract class AbstractSearchLdapCommand<ExtObject extends ExtensibleObje
                     SearchResult sr = (SearchResult) results.next();
                     Attributes attrs = sr.getAttributes();
                     if (attrs != null) {
-                        found = true;
 
+                        ObjectValue objectValue = attributesToObjectValue(attrs, identityAttrName);
                         try {
-                            ExtensibleAttribute extAttr = new ExtensibleAttribute();
-                            extAttr.setName("dn");
-                            String dnValue = sr.getNameInNamespace();
-                            extAttr.setValue(dnValue);
+                            ExtensibleAttribute extAttr = new ExtensibleAttribute(DN_ATTRIBUTE_NAME, sr.getNameInNamespace());
                             objectValue.getAttributeList().add(extAttr);
                             if(identityAttrName.equalsIgnoreCase(extAttr.getName())) {
                                 objectValue.setObjectIdentity(extAttr.getValue());
@@ -78,45 +71,9 @@ public abstract class AbstractSearchLdapCommand<ExtObject extends ExtensibleObje
                         } catch (UnsupportedOperationException e) {
                             log.error(e.getMessage(), e);
                         }
-
-                        for (NamingEnumeration ae = attrs.getAll(); ae.hasMore();) {
-                            ExtensibleAttribute extAttr = new ExtensibleAttribute();
-                            Attribute attr = (Attribute) ae.next();
-
-                            boolean addToList = false;
-
-                            extAttr.setName(attr.getID());
-
-                            NamingEnumeration e = attr.getAll();
-                            boolean isMultivalued = (attr.size() > 1);
-                            while (e.hasMore()) {
-                                Object o = e.next();
-                                if (o instanceof String) {
-                                    if (isMultivalued) {
-                                        BaseAttributeContainer container = extAttr.getAttributeContainer();
-                                        if (container == null) {
-                                            container = new BaseAttributeContainer();
-                                            extAttr.setAttributeContainer(container);
-                                        }
-                                        container.getAttributeList().add(
-                                                new BaseAttribute(attr.getID(), o.toString(), AttributeOperationEnum.NO_CHANGE));
-                                    } else {
-                                        extAttr.setValue(o.toString());
-                                    }
-                                    addToList = true;
-                                }
-                            }
-                            if(identityAttrName.equalsIgnoreCase(extAttr.getName())) {
-                                objectValue.setObjectIdentity(extAttr.getValue());
-                            }
-                            if (addToList) {
-                                objectValue.getAttributeList().add(extAttr);
-                            }
-                        }
-
                         objectValueList.add(objectValue);
-                        objectValue = new ObjectValue();
-                        objectValue.setAttributeList(new LinkedList<ExtensibleAttribute>());
+
+                        found = true;
                     }
                 }
                 Control[] controls = ldapContext.getResponseControls();

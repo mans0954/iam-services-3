@@ -2,14 +2,16 @@ package org.openiam.connector.ldap.command.base;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
+import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.BaseAttribute;
+import org.openiam.base.BaseAttributeContainer;
 import org.openiam.connector.type.ConnectorDataException;
+import org.openiam.connector.type.ObjectValue;
 import org.openiam.connector.type.constant.ErrorCode;
 import org.openiam.connector.type.request.RequestType;
 import org.openiam.connector.type.response.ResponseType;
 import org.openiam.connector.util.ConnectionManagerConstant;
 import org.openiam.connector.util.ConnectionMgr;
-import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.idm.srvc.res.dto.Resource;
@@ -19,16 +21,19 @@ import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
 import org.openiam.connector.common.command.AbstractCommand;
 import org.openiam.connector.util.connect.ConnectionFactory;
+import org.openiam.provision.type.ExtensibleUser;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.naming.NameNotFoundException;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.*;
 import javax.naming.ldap.LdapContext;
 import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public abstract class AbstractLdapCommand<Request extends RequestType, Response extends ResponseType>  extends AbstractCommand<Request, Response> {
 
@@ -38,6 +43,11 @@ public abstract class AbstractLdapCommand<Request extends RequestType, Response 
     private ResourceDataService resourceDataService;
 
     public static final String DN_IDENTITY_MATCH_REGEXP = "{0}=(.*?)(?:,.*)*$";
+    public static final String DN_MATCH_REGEXP = "(\\w+)=(.*?)(?:,.*)*$";
+
+    public static final String DN_ATTRIBUTE_NAME = "dn";
+    public static final String DEFAULT_IDENTITY_ATTRIBUTE_NAME = "cn";
+    public static final String OU_ATTRIBUTE_NAME = "ou";
 
     public LdapContext connect(ManagedSysEntity managedSys) throws ConnectorDataException {
         ConnectionMgr conMgr = ConnectionFactory.create(ConnectionManagerConstant.LDAP_CONNECTION);
@@ -104,29 +114,16 @@ public abstract class AbstractLdapCommand<Request extends RequestType, Response 
 
     }
 
-    protected String getOU(ExtensibleObject obj) {
+    protected String getAttributeValue(ExtensibleObject obj, String attrName) {
         if (obj != null) {
             List<ExtensibleAttribute> attrList = obj.getAttributes();
             for (ExtensibleAttribute att : attrList) {
-                if (att.getName().equalsIgnoreCase("ou")) {
+                if (att.getName().equalsIgnoreCase(attrName)) {
                     return att.getValue();
                 }
             }
         }
         return null;
-    }
-
-    protected List<String> getAttributeNameList(List<AttributeMapEntity> attrMap) {
-        List<String> strList = new ArrayList<String>();
-
-        if (attrMap == null || attrMap.size() == 0) {
-            return null;
-        }
-        for (AttributeMapEntity a : attrMap) {
-            strList.add(a.getAttributeName());
-        }
-
-        return strList;
     }
 
     protected void closeContext(LdapContext ldapctx) {
@@ -166,7 +163,7 @@ public abstract class AbstractLdapCommand<Request extends RequestType, Response 
         }
     }
 
-    protected BasicAttributes getBasicAttributes(ExtensibleObject obj, String idField,
+    protected BasicAttributes getBasicAttributes(ExtensibleObject obj, String keyField,
                     List<BaseAttribute> targetMembershipList, boolean groupMembershipEnabled,
                     List<BaseAttribute> supervisorMembershipList, boolean supervisorMembershipEnabled) {
 
@@ -177,9 +174,9 @@ public abstract class AbstractLdapCommand<Request extends RequestType, Response 
         oc.add("top");
 
         // add the ou for this record
-        Attribute ouSet = new BasicAttribute("ou");
-        String ou = getOU(obj);
-        log.debug("GetAttributes() - ou=" + ou);
+        Attribute ouSet = new BasicAttribute(OU_ATTRIBUTE_NAME);
+        String ou = getAttributeValue(obj, OU_ATTRIBUTE_NAME);
+        log.debug("getAttribute(ou)=" + ou);
         if (ou != null && ou.length() > 0) {
             ouSet.add(ou);
             attrs.put(ouSet);
@@ -187,8 +184,6 @@ public abstract class AbstractLdapCommand<Request extends RequestType, Response 
 
         // add the structural classes
         attrs.put(oc);
-
-        // add the identifier
 
         // add the attributes
         List<ExtensibleAttribute> attrList = obj.getAttributes();
@@ -200,7 +195,7 @@ public abstract class AbstractLdapCommand<Request extends RequestType, Response 
                 continue;
             }
 
-            if (att.getName().equalsIgnoreCase(idField)) {
+            if (att.getName().equalsIgnoreCase(keyField)) {
                 log.debug("Attr Name=" + att.getName() + " Value=" + att.getValue() + " ignored");
                 continue;
             }
@@ -261,6 +256,12 @@ public abstract class AbstractLdapCommand<Request extends RequestType, Response 
         return attrs;
     }
 
+    public String getDnKeyField(String identityDN) {
+        Pattern pattern = Pattern.compile(DN_MATCH_REGEXP);
+        Matcher matcher = pattern.matcher(identityDN);
+        return matcher.matches() ? matcher.group(1) : null;
+    }
+
     public NamingEnumeration lookupSearch(ManagedSysEntity managedSys, ManagedSystemObjectMatch matchObj, LdapContext ctx,
                                            String searchValue, String[] attrAry, String objectBaseDN) throws NamingException {
 
@@ -289,4 +290,110 @@ public abstract class AbstractLdapCommand<Request extends RequestType, Response 
         return ctx.search(objectBaseDN, searchFilter, searchCtls);
     }
 
+    public Attributes lookupName(LdapContext ctx, String distName, String[] attrAry)
+            throws NamingException {
+
+        if (distName == null || ctx == null) {
+            return null;
+        }
+        String attrIds[] = ArrayUtils.isEmpty(attrAry) ? new String[0] : attrAry;
+        log.debug("Lookup DN=" + distName);
+        return ctx.getAttributes(distName, attrIds);
+    }
+
+    /**
+     * Returns distinguished name for the identity specified by request. If identity is stored in DN format
+     * it is returned unchanged. If identity is an unique attribute value, then DN is searched in LDAP.
+     * The search should return one and only one value, in other case it decided to fail and Null is returned.
+     */
+    protected String getIdentityDN(RequestType<ExtensibleUser> request, ManagedSysEntity managedSys, LdapContext ldapctx)
+            throws NamingException {
+
+        String identity = request.getObjectIdentity();
+        if (identity.matches(DN_MATCH_REGEXP)) {
+            try {
+                log.debug("Looking for user with identity (dn) = " +  identity);
+                lookupName(ldapctx, identity, null);
+            } catch (NameNotFoundException nnfe) {
+                log.debug("results=NULL");
+                return null;
+            }
+            return identity;
+        }
+
+        ManagedSystemObjectMatch matchObj = getMatchObject(request.getTargetID(), ManagedSystemObjectMatch.USER);
+
+        String objectBaseDN = matchObj.getBaseDn();
+        // try to find OU info in attributes
+        String OU = getAttributeValue(request.getExtensibleObject(), OU_ATTRIBUTE_NAME);
+        if(StringUtils.isNotEmpty(OU)) {
+            objectBaseDN = OU + "," + objectBaseDN;
+        }
+
+        NamingEnumeration results = null;
+        try {
+            log.debug("Looking for user with identity=" +  identity + " in " +  objectBaseDN);
+            results = lookupSearch(managedSys, matchObj, ldapctx, identity, null, objectBaseDN);
+
+        } catch (NameNotFoundException nnfe) {
+            log.debug("results=NULL");
+            log.debug(" results has more elements=0");
+            return null;
+
+        }
+
+        if (results != null && results.hasMoreElements()) {
+            SearchResult sr = (SearchResult) results.next();
+            if (!results.hasMoreElements()) {
+                return sr.getNameInNamespace();
+            } else {
+                String err = String.format("More then one user %s was found in %s", identity, objectBaseDN);
+                log.error(err);
+            }
+        } else {
+            String err = String.format("User %s was not found in %s", identity, objectBaseDN);
+            log.error(err);
+        }
+        return null;
+    }
+
+    protected ObjectValue attributesToObjectValue(Attributes attrs, String identityAttrName) throws NamingException {
+        ObjectValue objectValue = new ObjectValue();
+        for (NamingEnumeration ae = attrs.getAll(); ae.hasMore();) {
+
+            ExtensibleAttribute extAttr = new ExtensibleAttribute();
+            Attribute attr = (Attribute) ae.next();
+
+            boolean addToList = false;
+
+            extAttr.setName(attr.getID());
+
+            NamingEnumeration e = attr.getAll();
+            boolean isMultivalued = (attr.size() > 1);
+            while (e.hasMore()) {
+                Object o = e.next();
+                if (o instanceof String) {
+                    if (isMultivalued) {
+                        BaseAttributeContainer container = extAttr.getAttributeContainer();
+                        if (container == null) {
+                            container = new BaseAttributeContainer();
+                            extAttr.setAttributeContainer(container);
+                        }
+                        container.getAttributeList().add(
+                                new BaseAttribute(attr.getID(), o.toString(), AttributeOperationEnum.NO_CHANGE));
+                    } else {
+                        extAttr.setValue(o.toString());
+                    }
+                    addToList = true;
+                }
+            }
+            if(StringUtils.isNotEmpty(identityAttrName) && identityAttrName.equalsIgnoreCase(extAttr.getName())) {
+                objectValue.setObjectIdentity(extAttr.getValue());
+            }
+            if (addToList) {
+                objectValue.getAttributeList().add(extAttr);
+            }
+        }
+        return objectValue;
+    }
 }

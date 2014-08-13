@@ -1506,15 +1506,17 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             String requestId = "R" + UUIDGen.getUUID();
             reqType.setRequestID(requestId);
             reqType.setSearchValue(principalName);
+            reqType.setObjectIdentity(principalName);
 
             ExtensibleUser extensibleUser = new ExtensibleUser();
-            extensibleUser.setPrincipalFieldName(matchObj.getKeyField());
             extensibleUser.setPrincipalFieldDataType("string");
             extensibleUser.setAttributes(extensibleAttributes);
             reqType.setExtensibleObject(extensibleUser);
             reqType.setTargetID(managedSysId);
             reqType.setHostLoginId(mSys.getUserId());
-            if (matchObj != null && StringUtils.isNotEmpty(matchObj.getSearchBaseDn())) {
+            if (matchObj != null) {
+                extensibleUser.setPrincipalFieldName(matchObj.getKeyField());
+                reqType.setSearchQuery(matchObj.getSearchFilter());
                 reqType.setBaseDN(matchObj.getSearchBaseDn());
             }
             String passwordDecoded;

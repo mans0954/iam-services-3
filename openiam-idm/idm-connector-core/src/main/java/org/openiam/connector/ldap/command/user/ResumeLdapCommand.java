@@ -13,19 +13,12 @@ import org.openiam.connector.ldap.command.base.AbstractLdapCommand;
 import org.openiam.connector.ldap.dirtype.Directory;
 import org.openiam.connector.ldap.dirtype.DirectorySpecificImplFactory;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
-import javax.naming.NameNotFoundException;
-import javax.naming.NamingEnumeration;
 import javax.naming.directory.ModificationItem;
-import javax.naming.directory.SearchResult;
 import javax.naming.ldap.LdapContext;
-import java.text.MessageFormat;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @Service("resumeLdapCommand")
 public class ResumeLdapCommand extends AbstractLdapCommand<SuspendResumeRequest, ResponseType> {
@@ -44,64 +37,7 @@ public class ResumeLdapCommand extends AbstractLdapCommand<SuspendResumeRequest,
         LdapContext ldapctx = this.connect(config.getManagedSys());
 
         try {
-            ManagedSystemObjectMatch matchObj = getMatchObject(resumeRequestType.getTargetID(), ManagedSystemObjectMatch.USER);
-
-            String identity = resumeRequestType.getObjectIdentity();
-            //Check identity on CN format or not
-            String identityPatternStr =  MessageFormat.format(DN_IDENTITY_MATCH_REGEXP, matchObj.getKeyField());
-            Pattern pattern = Pattern.compile(identityPatternStr);
-            Matcher matcher = pattern.matcher(identity);
-            String objectBaseDN;
-            if(matcher.matches()) {
-                identity = matcher.group(1);
-                String CN = matchObj.getKeyField()+"="+identity;
-                objectBaseDN =  resumeRequestType.getObjectIdentity().substring(CN.length()+1);
-            } else {
-                // if identity is not in DN format try to find OU info in attributes
-                String OU = getOU(resumeRequestType.getExtensibleObject());
-                if(StringUtils.isNotEmpty(OU)) {
-                    objectBaseDN = OU+","+matchObj.getBaseDn();
-                } else {
-                    objectBaseDN = matchObj.getBaseDn();
-                }
-            }
-            // check if this object exists in the target system
-            // dont try to disable and object that does not exist
-
-            //Important!!! For add new record in LDAP we must to create identity in DN format
-//            String identityDN = matchObj.getKeyField() + "=" + identity+","+objectBaseDN;
-
-            NamingEnumeration results = null;
-            try {
-                log.debug("Looking for user with identity=" +  identity + " in " +  objectBaseDN);
-                results = lookupSearch(managedSys, matchObj, ldapctx, identity, null, objectBaseDN);
-
-            } catch (NameNotFoundException nnfe) {
-                log.debug("results=NULL");
-                log.debug(" results has more elements=0");
-                respType.setStatus(StatusCodeType.FAILURE);
-                return respType;
-            }
-
-            String identityDN = null;
-            int count = 0;
-            while (results != null && results.hasMoreElements()) {
-                SearchResult sr = (SearchResult) results.next();
-                identityDN = sr.getNameInNamespace();
-                count++;
-            }
-
-            if (count == 0) {
-                String err = String.format("User %s was not found in %s", identity, objectBaseDN);
-                log.error(err);
-                respType.setStatus(StatusCodeType.FAILURE);
-                return respType;
-            } else if (count > 1) {
-                String err = String.format("More then one user %s was found in %s", identity, objectBaseDN);
-                log.error(err);
-                respType.setStatus(StatusCodeType.FAILURE);
-                return respType;
-            }
+            String identityDN = getIdentityDN(resumeRequestType, managedSys, ldapctx);
 
             if (StringUtils.isNotEmpty(identityDN)) {
 

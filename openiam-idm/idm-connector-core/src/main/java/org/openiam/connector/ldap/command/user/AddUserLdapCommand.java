@@ -14,23 +14,18 @@ import org.openiam.connector.ldap.dirtype.Directory;
 import org.openiam.connector.ldap.dirtype.DirectorySpecificImplFactory;
 import org.springframework.stereotype.Service;
 
-import javax.naming.Context;
 import javax.naming.NamingException;
 import javax.naming.directory.BasicAttributes;
 import javax.naming.ldap.LdapContext;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @Service("addUserLdapCommand")
 public class AddUserLdapCommand extends AbstractCrudLdapCommand<ExtensibleUser> {
     @Override
     protected void performObjectOperation(ManagedSysEntity managedSys, CrudRequest<ExtensibleUser> addRequestType, LdapContext ldapctx) throws ConnectorDataException {
         try {
-            ManagedSystemObjectMatch matchObj = getMatchObject(addRequestType.getTargetID(), ManagedSystemObjectMatch.USER);
 
             List<BaseAttribute> targetMembershipList = new ArrayList<BaseAttribute>();
             List<BaseAttribute> supervisorMembershipList = new ArrayList<BaseAttribute>();
@@ -39,52 +34,35 @@ public class AddUserLdapCommand extends AbstractCrudLdapCommand<ExtensibleUser> 
             boolean groupMembershipEnabled = isMembershipEnabled(rpSet, "GROUP_MEMBERSHIP_ENABLED");
             boolean supervisorMembershipEnabled = isMembershipEnabled(rpSet, "SUPERVISOR_MEMBERSHIP_ENABLED");
 
-            Directory dirSpecificImp  = DirectorySpecificImplFactory.create(managedSys.getHandler5());
-
-            // get the field that is to be used as the UniqueIdentifier
-            //String ldapName = matchObj.getKeyField() +"=" + psoID.getID() + "," + baseDN;
             String identity = addRequestType.getObjectIdentity();
+            String keyField = (identity.matches(DN_MATCH_REGEXP))
+                    ? getDnKeyField(identity)
+                    : addRequestType.getObjectIdentityAttributeName();
 
-            //Check identity on DN format or not
-            String identityPatternStr =  MessageFormat.format(DN_IDENTITY_MATCH_REGEXP, matchObj.getKeyField());
-            Pattern pattern = Pattern.compile(identityPatternStr);
-            Matcher matcher = pattern.matcher(identity);
-            String objectBaseDN;
-            if (matcher.matches()) {
-                identity = matcher.group(1);
-                String CN = matchObj.getKeyField()+"="+identity;
-                objectBaseDN =  addRequestType.getObjectIdentity().substring(CN.length()+1);
-            } else {
-                // if identity is not in DN format try to find OU info in attributes
-                String OU = getOU(addRequestType.getExtensibleObject());
-                if(StringUtils.isNotEmpty(OU)) {
-                    objectBaseDN = OU+","+matchObj.getBaseDn();
-                } else {
-                    objectBaseDN = matchObj.getBaseDn();
-                }
-            }
+            BasicAttributes basicAttr = getBasicAttributes(addRequestType.getExtensibleObject(),
+                    keyField, targetMembershipList, groupMembershipEnabled,
+                    supervisorMembershipList, supervisorMembershipEnabled);
 
-            log.debug("baseDN=" + objectBaseDN);
-            log.debug("ID field=" + matchObj.getKeyField());
-            log.debug("Group Membership enabled? " + groupMembershipEnabled);
-
-            log.debug("Checking if the identity exists: " + identity);
-
-            BasicAttributes basicAttr = getBasicAttributes(addRequestType.getExtensibleObject(), matchObj.getKeyField(),
-                    targetMembershipList, groupMembershipEnabled, supervisorMembershipList, supervisorMembershipEnabled);
+            String identityDN = buildIdentityDN(addRequestType, managedSys, ldapctx);
 
             //Important!!! For add new record in LDAP we must to create identity in DN format
-            String identityDN = matchObj.getKeyField() + "=" + identity + "," + objectBaseDN;
             log.debug("Creating users in ldap.." + identityDN);
             ldapctx.createSubcontext(identityDN, basicAttr);
 
+            // Add membership
+            log.debug("Group Membership enabled? " + groupMembershipEnabled);
+            Directory dirSpecificImp  = DirectorySpecificImplFactory.create(managedSys.getHandler5());
+            ManagedSystemObjectMatch matchObj = getMatchObject(addRequestType.getTargetID(), ManagedSystemObjectMatch.USER);
+
             if (groupMembershipEnabled) {
-                dirSpecificImp.updateAccountMembership(managedSys, targetMembershipList, identity, identityDN,
+                dirSpecificImp.updateAccountMembership(managedSys, targetMembershipList,
+                        addRequestType.getObjectIdentity(), identityDN,
                         matchObj, ldapctx, addRequestType.getExtensibleObject());
             }
 
             if (supervisorMembershipEnabled) {
-                dirSpecificImp.updateSupervisorMembership(managedSys, supervisorMembershipList, identity, identityDN,
+                dirSpecificImp.updateSupervisorMembership(managedSys, supervisorMembershipList,
+                        addRequestType.getObjectIdentity(), identityDN,
                         matchObj, ldapctx, addRequestType.getExtensibleObject());
             }
 
@@ -94,9 +72,25 @@ public class AddUserLdapCommand extends AbstractCrudLdapCommand<ExtensibleUser> 
         }
     }
 
+    protected String buildIdentityDN(CrudRequest<ExtensibleUser> request, ManagedSysEntity managedSys, LdapContext ldapctx) {
+        String identity = request.getObjectIdentity();
+        if (identity.matches(DN_MATCH_REGEXP)) {
+            return identity;
+        } else {
 
+            String objectBaseDN = request.getBaseDN();
+            // try to find OU info in attributes
+            String OU = getAttributeValue(request.getExtensibleObject(), OU_ATTRIBUTE_NAME);
+            if(StringUtils.isNotEmpty(OU)) {
+                objectBaseDN = OU + "," + objectBaseDN;
+            }
+            String identityField = StringUtils.isNotBlank(request.getObjectIdentityAttributeName())
+                    ? request.getObjectIdentityAttributeName()
+                    : DEFAULT_IDENTITY_ATTRIBUTE_NAME;
 
-
-
+            String identityFieldValue = getAttributeValue(request.getExtensibleObject(), identityField);
+            return identityField + "=" + identityFieldValue + "," + objectBaseDN;
+        }
+    }
 
 }

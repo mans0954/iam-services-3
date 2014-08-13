@@ -618,6 +618,7 @@ public class ProvisionDispatcher implements Sweepable {
         LookupRequest<ExtensibleUser> reqType = new LookupRequest<ExtensibleUser>();
         reqType.setRequestID(requestId);
         reqType.setSearchValue(identity);
+        reqType.setObjectIdentity(identity);
 
         reqType.setTargetID(mLg.getManagedSysId());
         reqType.setHostLoginId(mSys.getUserId());
@@ -629,7 +630,8 @@ public class ProvisionDispatcher implements Sweepable {
         }
         reqType.setHostLoginPassword(passwordDecoded);
         reqType.setHostUrl(mSys.getHostUrl());
-        if (matchObj != null && StringUtils.isNotEmpty(matchObj.getSearchBaseDn())) {
+        if (matchObj != null) {
+            reqType.setSearchQuery(matchObj.getSearchFilter());
             reqType.setBaseDN(matchObj.getSearchBaseDn());
         }
         reqType.setExtensibleObject(extUser);

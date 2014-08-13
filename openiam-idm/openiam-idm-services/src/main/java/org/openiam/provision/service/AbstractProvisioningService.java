@@ -1479,6 +1479,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
 
         if (matchObj != null) {
             userReq.setBaseDN(matchObj.getBaseDn());
+            userReq.setObjectIdentityAttributeName(matchObj.getKeyField());
         }
         userReq.setOperation(isAdd ? "ADD" : "MODIFY");
         userReq.setExtensibleObject(extUser);

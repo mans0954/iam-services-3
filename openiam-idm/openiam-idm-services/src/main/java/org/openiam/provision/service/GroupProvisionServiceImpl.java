@@ -547,6 +547,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Gr
         userReq.setHostUrl(mSys.getHostUrl());
         if (matchObj != null) {
             userReq.setBaseDN(matchObj.getBaseDn());
+            userReq.setObjectIdentityAttributeName(matchObj.getKeyField());
         }
         userReq.setOperation(isAdd ? "ADD" : "MODIFY");
         userReq.setExtensibleObject(extensibleObject);
@@ -588,6 +589,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Gr
         LookupRequest<ExtensibleObject> reqType = new LookupRequest<ExtensibleObject>();
         reqType.setRequestID(requestId);
         reqType.setSearchValue(identity);
+        reqType.setObjectIdentity(identity);
 
         reqType.setTargetID(identityDto.getManagedSysId());
         reqType.setHostLoginId(mSys.getUserId());
@@ -601,6 +603,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Gr
         reqType.setHostUrl(mSys.getHostUrl());
         if (matchObj != null) {
             reqType.setBaseDN(matchObj.getBaseDn());
+            reqType.setSearchQuery(matchObj.getSearchFilter());
         }
         reqType.setExtensibleObject(extensibleObject);
         reqType.setScriptHandler(mSys.getLookupHandler());
