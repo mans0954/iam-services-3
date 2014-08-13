@@ -10,6 +10,7 @@ import org.openiam.idm.srvc.user.domain.UserEntity;
  */
 public interface KeyManagementService {
     public  byte[] getUserKey(String userId, String keyName) throws EncryptionException;
+    public  byte[] getSystemUserKey(String keyName) throws EncryptionException;
 
     public Long generateUserKeys(String userId)throws Exception;
 
