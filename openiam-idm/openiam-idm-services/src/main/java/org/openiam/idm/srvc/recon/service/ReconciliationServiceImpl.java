@@ -79,6 +79,7 @@ import org.openiam.idm.srvc.mngsys.ws.ProvisionConnectorWebService;
 import org.openiam.idm.srvc.msg.service.MailService;
 import org.openiam.idm.srvc.recon.command.ReconciliationCommandFactory;
 import org.openiam.idm.srvc.recon.domain.ReconciliationConfigEntity;
+import org.openiam.idm.srvc.recon.domain.ReconciliationSituationEntity;
 import org.openiam.idm.srvc.recon.dto.ReconExecStatusOptions;
 import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
 import org.openiam.idm.srvc.recon.dto.ReconciliationResponse;
@@ -245,15 +246,29 @@ public class ReconciliationServiceImpl implements ReconciliationService, Reconci
         if (config == null) {
             throw new IllegalArgumentException("config parameter is null");
         }
-        Set<ReconciliationSituation> sitSet = null;
-        if (!CollectionUtils.isEmpty(config.getSituationSet())) {
-            sitSet = new HashSet<ReconciliationSituation>(config.getSituationSet());
+
+        ReconciliationConfigEntity configEntity = reconConfigDozerMapper.convertToEntity(config, false);
+
+        for (ReconciliationSituation s : config.getSituationSet()) {
+            if (StringUtils.isEmpty(s.getReconConfigId())) {
+                s.setReconConfigId(configEntity.getReconConfigId());
+            }
+            ReconciliationSituationEntity situationEntity;
+            if (StringUtils.isEmpty(s.getReconSituationId())) {
+                situationEntity = reconSituationDozerMapper.convertToEntity(s, false);
+                reconSituationDAO.save(situationEntity);
+            } else {
+                situationEntity = reconSituationDAO.findById(s.getReconSituationId());
+                situationEntity.setScript(s.getScript());
+                situationEntity.setSituation(s.getSituation());
+                situationEntity.setSituationResp(s.getSituationResp());
+                reconSituationDAO.save(situationEntity);
+            }
+            configEntity.getSituationSet().add(situationEntity);
         }
-        config.setSituationSet(null);
 
-        reconConfigDao.update(reconConfigDozerMapper.convertToEntity(config, false));
+        reconConfigDao.update(configEntity);
 
-        this.saveSituationSet(sitSet, config.getReconConfigId());
     }
 
     @Transactional
@@ -350,6 +365,13 @@ public class ReconciliationServiceImpl implements ReconciliationService, Reconci
         }
 
         try {
+            log.debug("Reconciliation started for configId=" + config.getReconConfigId() + " - resource="
+                    + config.getResourceId());
+
+            configEntity.setExecStatus(ReconExecStatusOptions.STARTED);
+
+            reconConfigDao.save(configEntity);
+
             // Check custom Processor script and execute if exists
             if(StringUtils.isNotEmpty(config.getCustomProcessorScript())) {
                 // TODO fill map with attributes if needed
@@ -361,14 +383,6 @@ public class ReconciliationServiceImpl implements ReconciliationService, Reconci
                 }
                 return processor.startReconciliation(config);
             }
-
-
-            log.debug("Reconciliation started for configId=" + config.getReconConfigId() + " - resource="
-                    + config.getResourceId());
-
-            configEntity.setExecStatus(ReconExecStatusOptions.STARTED);
-
-            reconConfigDao.save(configEntity);
 
             Resource res = resourceDataService.getResource(config.getResourceId(), null);
 
