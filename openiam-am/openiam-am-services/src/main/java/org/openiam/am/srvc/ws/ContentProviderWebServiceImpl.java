@@ -628,4 +628,24 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
     public List<URIPatternMetaType> getAllMetaType() {
         return uriPatternMetaTypeDozerConverter.convertToDTOList(contentProviderService.getAllMetaType(), false);
     }
+
+	@Override
+	public Response createDefaultURIPatterns(String providerId) {
+		 final Response response = new Response(ResponseStatus.SUCCESS);
+		 try {
+			 if (StringUtils.isBlank(providerId)) {
+				 throw new  BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			 }
+			 contentProviderService.createDefaultURIPatterns(providerId);
+		 } catch(BasicDataServiceException e) {
+            log.error(e.getMessage(), e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(e.getCode());
+        } catch(Throwable e) {
+            log.error(e.getMessage(), e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorText(e.getMessage());
+        }
+        return response;
+	}
 }

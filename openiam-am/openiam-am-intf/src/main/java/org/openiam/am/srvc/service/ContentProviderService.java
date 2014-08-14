@@ -72,4 +72,6 @@ public interface ContentProviderService {
     List<ContentProviderEntity> getProviderByDomainPattern(String domainPattern, Boolean isSSL);
     
     public List<URIPatternEntity> getURIPatternsForContentProviderMatchingPattern(final String contentProviderId, final String pattern);
+    
+    public void createDefaultURIPatterns(String providerId);
 }

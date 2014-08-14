@@ -9,6 +9,7 @@ import org.openiam.am.srvc.domain.*;
 import org.openiam.am.srvc.domain.pk.AuthLevelGroupingContentProviderXrefIdEntity;
 import org.openiam.am.srvc.domain.pk.AuthLevelGroupingURIPatternXrefIdEntity;
 import org.openiam.am.srvc.dto.AuthLevelGrouping;
+import org.openiam.am.srvc.model.URIPatternJSONWrapper;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.exception.BasicDataServiceException;
@@ -23,7 +24,11 @@ import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
 import org.openiam.idm.srvc.ui.theme.UIThemeDAO;
 import org.openiam.idm.srvc.ui.theme.domain.UIThemeEntity;
+import org.openiam.idm.util.CustomJacksonMapper;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,7 +39,7 @@ import java.util.List;
 import java.util.Set;
 
 @Service("contentProviderService")
-public class ContentProviderServiceImpl implements  ContentProviderService{
+public class ContentProviderServiceImpl implements  ContentProviderService, InitializingBean {
     private static final String resourceTypeId="CONTENT_PROVIDER";
     private static final String patternResourceTypeId="URL_PATTERN";
     @Autowired
@@ -75,6 +80,16 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
     
     @Autowired
     private MetadataTypeDAO typeDAO;
+    
+    @Autowired
+    @Qualifier("defaultPatternResoruce")
+    private Resource defaultPatternResoruce;
+    
+    @Autowired
+    @Qualifier("customJacksonMapper")
+    private CustomJacksonMapper mapper;
+    
+    private URIPatternJSONWrapper patternWrapper;
 
     @Override
     public List<AuthLevelEntity> getAuthLevelList() {
@@ -671,5 +686,67 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
 	@Transactional
 	public AuthLevelAttributeEntity getAuthLevelAttribute(String id) {
 		return authLevelAttributeDAO.findById(id);
+	}
+
+	@Override
+	@Transactional
+	public void createDefaultURIPatterns(String providerId) {
+		if(patternWrapper == null) {
+			throw new RuntimeException(String.format("Can't get json metadata.  Check that '%s' is in the classpath", defaultPatternResoruce));
+		}
+		
+		if(CollectionUtils.isNotEmpty(patternWrapper.getPatterns())) {
+			final ContentProviderEntity contentProvider = contentProviderDao.findById(providerId);
+			if(contentProvider != null) {
+				if(contentProvider.getPatternSet() == null) {
+					contentProvider.setPatternSet(new HashSet<URIPatternEntity>());
+				}
+				
+				final Set<String> patternsNotToAdd = new HashSet<>();
+				
+				/* update existing patterns, if they exist */
+				for(final URIPatternEntity pattern : contentProvider.getPatternSet()) {
+					for(final URIPatternEntity defaultPattern : patternWrapper.getPatterns()) {
+						if(StringUtils.equals(pattern.getPattern(), defaultPattern.getPattern())) {
+							pattern.setIsPublic(true);
+							if(CollectionUtils.isNotEmpty(defaultPattern.getGroupingXrefs())) {
+								final Set<AuthLevelGroupingURIPatternXrefEntity> groupingXrefs = new HashSet<>();
+								for(final AuthLevelGroupingURIPatternXrefEntity defaultGrouping : defaultPattern.getGroupingXrefs()) {
+									final AuthLevelGroupingEntity grouping = authLevelGroupingDAO.findById(defaultGrouping.getId().getGroupingId());
+									groupingXrefs.add(new AuthLevelGroupingURIPatternXrefEntity(pattern, grouping));
+								}
+								pattern.setGroupingXrefs(groupingXrefs);
+							}
+							saveURIPattern(pattern);
+						}
+					}
+					patternsNotToAdd.add(pattern.getPattern());
+				}
+				
+				/* add new patterns */
+				for(final URIPatternEntity defaultPattern : patternWrapper.getPatterns()) {
+					if(!patternsNotToAdd.contains(defaultPattern.getPattern())) {
+						final URIPatternEntity pattern = new URIPatternEntity();
+						pattern.setContentProvider(contentProvider);
+						pattern.setIsPublic(defaultPattern.getIsPublic());
+						pattern.setPattern(defaultPattern.getPattern());
+						if(CollectionUtils.isNotEmpty(defaultPattern.getGroupingXrefs())) {
+							final Set<AuthLevelGroupingURIPatternXrefEntity> groupingXrefs = new HashSet<>();
+							for(final AuthLevelGroupingURIPatternXrefEntity defaultGrouping : defaultPattern.getGroupingXrefs()) {
+								final AuthLevelGroupingEntity grouping = authLevelGroupingDAO.findById(defaultGrouping.getId().getGroupingId());
+								groupingXrefs.add(new AuthLevelGroupingURIPatternXrefEntity(pattern, grouping));
+							}
+							pattern.setGroupingXrefs(groupingXrefs);
+						}
+						saveURIPattern(pattern);
+					}
+				}
+			}
+		}
+	}
+
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		patternWrapper = mapper.readValue(defaultPatternResoruce.getFile(), URIPatternJSONWrapper.class);
 	}
 }
