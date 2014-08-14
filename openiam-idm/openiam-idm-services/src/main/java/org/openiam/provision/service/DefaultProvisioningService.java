@@ -209,13 +209,17 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see
      * org.openiam.provision.service.ProvisionService#addUser(org.openiam.provision
      * .dto.ProvisionUser)
      */
     @Override
     public ProvisionUserResponse addUser(final ProvisionUser pUser) {
+        return addUser(pUser, null);
+    }
+
+    private ProvisionUserResponse addUser(final ProvisionUser pUser, final IdmAuditLog auditLog) {
         final List<ProvisionDataContainer> dataList = new LinkedList<ProvisionDataContainer>();
 
         ProvisionUserResponse res = new ProvisionUserResponse();
@@ -228,17 +232,25 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 @Override
                 public ProvisionUserResponse doInTransaction(TransactionStatus status) {
 
-                    final IdmAuditLog idmAuditLog = new IdmAuditLog();
+                    final IdmAuditLog idmAuditLog;
+                    idmAuditLog = new IdmAuditLog();
                     idmAuditLog.setRequestorUserId(pUser.getRequestorUserId());
                     idmAuditLog.setRequestorPrincipal(pUser.getRequestorLogin());
                     idmAuditLog.setAction(AuditAction.CREATE_USER.value());
                     idmAuditLog.setAuditDescription("Provisioning add user: " + pUser.getId()
                             + " with first/last name: " + pUser.getFirstName() + "/" + pUser.getLastName());
+
+                    if (auditLog != null) {
+                        auditLog.addChild(idmAuditLog);
+                    }
+
                     ProvisionUserResponse tmpRes = new ProvisionUserResponse(ResponseStatus.FAILURE);
                     try {
                         tmpRes = addModifyUser(pUser, true, dataList, idmAuditLog);
                     } finally {
-                        auditLogService.enqueue(idmAuditLog);
+                        if (auditLog == null) {
+                            auditLogService.enqueue(idmAuditLog);
+                        }
                     }
 
                     return tmpRes;
@@ -256,13 +268,17 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see
      * org.openiam.provision.service.ProvisionService#modifyUser(org.openiam
      * .provision.dto.ProvisionUser)
      */
     @Override
     public ProvisionUserResponse modifyUser(final ProvisionUser pUser) {
+        return modifyUser(pUser, null);
+    }
+
+    public ProvisionUserResponse modifyUser(final ProvisionUser pUser, final IdmAuditLog auditLog) {
         final List<ProvisionDataContainer> dataList = new LinkedList<ProvisionDataContainer>();
         TransactionTemplate transactionTemplate = new TransactionTemplate(platformTransactionManager);
 
@@ -282,12 +298,17 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     idmAuditLog.setTargetUser(pUser.getId(),loginEntity.getLogin());
                     idmAuditLog.setAuditDescription("Provisioning modify user: " + pUser.getId()
                             + " with primary identity: " + loginEntity);
+                    if (auditLog != null) {
+                        auditLog.addChild(idmAuditLog);
+                    }
 
                     ProvisionUserResponse tmpRes = new ProvisionUserResponse(ResponseStatus.FAILURE);
                     try{
                         tmpRes = addModifyUser(pUser, false, dataList, idmAuditLog);
                     } finally {
-                        auditLogService.enqueue(idmAuditLog);
+                        if (auditLog == null) {
+                            auditLogService.enqueue(idmAuditLog);
+                        }
                     }
                     return tmpRes;
                 }
@@ -332,18 +353,19 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
     }
 
     @Override
-    @Transactional
     public ProvisionUserResponse deleteByUserWithSkipManagedSysList(String userId, UserStatusEnum status, String requestorId, List<String> skipManagedSysList) {
+        return deleteByUserWithSkipManagedSysList(userId, status, requestorId, skipManagedSysList, null);
+    }
+
+    @Transactional
+    public ProvisionUserResponse deleteByUserWithSkipManagedSysList(String userId, UserStatusEnum status, String requestorId, List<String> skipManagedSysList, IdmAuditLog auditLog) {
         log.debug("----deleteByUserId called.------");
 
         List<LoginEntity> loginEntityList = loginManager.getLoginByUser(userId);
-        LoginEntity primaryIdentity = UserUtils.getUserManagedSysIdentityEntity(this.sysConfiguration.getDefaultManagedSysId(), loginEntityList);
+        LoginEntity primaryIdentity = UserUtils.getUserManagedSysIdentityEntity(sysConfiguration.getDefaultManagedSysId(), loginEntityList);
 
-        ProvisionUserResponse response = deleteUserWithSkipManagedSysList(sysConfiguration.getDefaultManagedSysId(),
-        primaryIdentity.getLogin(), status, requestorId, skipManagedSysList);
-
-
-        return response;
+        return deleteUserWithSkipManagedSysList(sysConfiguration.getDefaultManagedSysId(),
+                primaryIdentity.getLogin(), status, requestorId, skipManagedSysList, auditLog);
      }
 
     @Override
@@ -365,17 +387,28 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
      * , java.lang.String, java.lang.String)
      */
     @Override
-    @Transactional
     public ProvisionUserResponse deleteUserWithSkipManagedSysList(String managedSystemId, String principal, UserStatusEnum status,
                                             String requestorId, List<String> skipManagedSysList) {
+        return deleteUserWithSkipManagedSysList(managedSystemId, principal, status, requestorId, skipManagedSysList, null);
+    }
+
+    @Transactional
+    public ProvisionUserResponse deleteUserWithSkipManagedSysList(String managedSystemId, String principal, UserStatusEnum status,
+                String requestorId, List<String> skipManagedSysList, IdmAuditLog auditLog) {
         log.debug("----deleteUser called.------");
 
         ProvisionUserResponse response = new ProvisionUserResponse(ResponseStatus.SUCCESS);
         Map<String, Object> bindingMap = new HashMap<String, Object>();
+
         final IdmAuditLog idmAuditLog = new IdmAuditLog();
         idmAuditLog.setRequestorUserId(requestorId);
-        idmAuditLog.setRequestorPrincipal(principal);
+        LoginEntity lRequestor = loginManager.getPrimaryIdentity(requestorId);
+        idmAuditLog.setRequestorPrincipal(lRequestor.getLogin());
         idmAuditLog.setAction(AuditAction.PROVISIONING_DELETE.value());
+
+        if (auditLog != null) {
+            auditLog.addChild(idmAuditLog);
+        }
 
         try {
             if (status != UserStatusEnum.DELETED && status != UserStatusEnum.REMOVE && status != UserStatusEnum.LEAVE
@@ -436,8 +469,9 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             if (!managedSystemId.equals(sysConfiguration.getDefaultManagedSysId())) {
                 final IdmAuditLog idmAuditLogChild = new IdmAuditLog();
                 idmAuditLogChild.setRequestorUserId(requestorId);
-                idmAuditLogChild.setRequestorPrincipal(login.getLogin());
+                idmAuditLogChild.setRequestorPrincipal(lRequestor.getLogin());
                 idmAuditLogChild.setAction(AuditAction.PROVISIONING_DELETE_IDENTITY.value());
+                idmAuditLogChild.setManagedSysId(managedSystemId);
                 idmAuditLogChild.setTargetUser(login.getUserId(), login.getLogin());
                 // managedSysId point to one of the seconardary identities- just
                 // terminate that identity
@@ -524,7 +558,6 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
             } else {
                 // delete user and all its identities.
-                LoginEntity lRequestor = loginManager.getPrimaryIdentity(requestorId);
                 LoginEntity lTargetUser = loginManager.getPrimaryIdentity(userId);
 
                 if (lRequestor != null && lTargetUser != null) {
@@ -542,9 +575,10 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     for (LoginEntity l : principalList) {
                         final IdmAuditLog idmAuditLogChild = new IdmAuditLog();
                         idmAuditLogChild.setRequestorUserId(requestorId);
-                        idmAuditLogChild.setRequestorPrincipal(l.getLogin());
+                        idmAuditLogChild.setRequestorPrincipal(lRequestor.getLogin());
                         idmAuditLogChild.setAction(AuditAction.PROVISIONING_DELETE_IDENTITY.value());
                         idmAuditLogChild.setTargetUser(l.getUserId(), l.getLogin());
+                        idmAuditLogChild.setManagedSysId(managedSystemId);
 
                         // this try-catch block for protection other operations and
                         // other resources if one resource was fall with error
@@ -680,7 +714,9 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             }
 
         } finally {
-            auditLogService.enqueue(idmAuditLog);
+            if (auditLog == null) {
+                auditLogService.enqueue(idmAuditLog);
+            }
         }
         response.setStatus(ResponseStatus.SUCCESS);
         return response;
@@ -2065,116 +2101,146 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         if (CollectionUtils.isNotEmpty(bulkRequest.getUserIds()) &&
                 CollectionUtils.isNotEmpty(bulkRequest.getOperations())) {
 
-            for (String userId : bulkRequest.getUserIds()) {
-                User user = userMgr.getUserDto(userId);
+            final IdmAuditLog idmAuditLog = new IdmAuditLog();
+            idmAuditLog.setAction(AuditAction.BULK_OPERATION.value());
+            idmAuditLog.setRequestorUserId(bulkRequest.getRequesterId());
 
-                if (user != null) {
-                    user.setRequestorUserId(bulkRequest.getRequesterId());
+            List<String> failedUserIds = new ArrayList<String>();
+            try {
 
-                    boolean isEntitlementModified = false;
+                for (String userId : bulkRequest.getUserIds()) {
+                    User user = userMgr.getUserDto(userId);
 
-                    Set<Group> existingGroups = user.getGroups();
-                    user.setGroups(new HashSet<Group>());
+                    if (user != null) {
+                        user.setRequestorUserId(bulkRequest.getRequesterId());
 
-                    Set<Role> existingRoles = user.getRoles();
-                    user.setRoles(new HashSet<Role>());
+                        boolean isEntitlementModified = false;
 
-                    Set<Resource> existingResources = user.getResources();
-                    user.setResources(new HashSet<Resource>());
+                        Set<Group> existingGroups = user.getGroups();
+                        user.setGroups(new HashSet<Group>());
 
-                    for (OperationBean ob : bulkRequest.getOperations()) {
-                        switch (ob.getObjectType()) {
-                            case USER:
-                                switch(ob.getOperation()) {
-                                    case ACTIVATE_USER:
-                                        user.setStatus(UserStatusEnum.ACTIVE);
-                                        modifyUser(new ProvisionUser(user));
-                                        break;
-                                    case DEACTIVATE_USER:
-                                        deleteByUserId(userId, UserStatusEnum.DELETED, userId);
-                                        break;
-                                    case DELETE_USER:
-                                        deleteByUserId(userId, UserStatusEnum.REMOVE, userId);
-                                        break;
-                                    case ENABLE_USER:
-                                        disableUser(userId, false, bulkRequest.getRequesterId());
-                                        break;
-                                    case DISABLE_USER:
-                                        disableUser(userId, true, bulkRequest.getRequesterId());
-                                        break;
-                                }
-                                break;
-                            case GROUP:
-                                boolean isModifiedGroup = false;
-                                Group group = groupDozerConverter.convertToDTO(
-                                        groupManager.getGroup(ob.getObjectId(), bulkRequest.getRequesterId()), false);
-                                if (existingGroups.contains(group)) {
-                                    if (BulkOperationEnum.DELETE_ENTITLEMENT.equals(ob.getOperation())) {
-                                        existingGroups.remove(group);
-                                        group.setOperation(AttributeOperationEnum.DELETE);
-                                        isModifiedGroup = true;
+                        Set<Role> existingRoles = user.getRoles();
+                        user.setRoles(new HashSet<Role>());
+
+                        Set<Resource> existingResources = user.getResources();
+                        user.setResources(new HashSet<Resource>());
+
+                        Response res = new Response(ResponseStatus.FAILURE);
+                        for (OperationBean ob : bulkRequest.getOperations()) {
+                            switch (ob.getObjectType()) {
+                                case USER:
+                                    switch(ob.getOperation()) {
+                                        case ACTIVATE_USER:
+                                            user.setStatus(UserStatusEnum.ACTIVE);
+                                            res = modifyUser(new ProvisionUser(user), idmAuditLog);
+                                            break;
+                                        case DEACTIVATE_USER:
+                                            res = deleteByUserWithSkipManagedSysList(
+                                                    userId, UserStatusEnum.DELETED, bulkRequest.getRequesterId(), null, idmAuditLog);
+                                            break;
+                                        case DELETE_USER:
+                                            res = deleteByUserWithSkipManagedSysList(
+                                                    userId, UserStatusEnum.REMOVE, bulkRequest.getRequesterId(), null, idmAuditLog);
+                                            break;
+                                        case ENABLE_USER:
+                                            res = disableUser(userId, false, bulkRequest.getRequesterId(), idmAuditLog);
+                                            break;
+                                        case DISABLE_USER:
+                                            res = disableUser(userId, true, bulkRequest.getRequesterId(), idmAuditLog);
+                                            break;
                                     }
-                                } else {
-                                    if (BulkOperationEnum.ADD_ENTITLEMENT.equals(ob.getOperation())) {
-                                        existingGroups.add(group);
-                                        group.setOperation(AttributeOperationEnum.ADD);
-                                        isModifiedGroup = true;
+                                    if (res.isFailure()) {
+                                        failedUserIds.add(userId);
                                     }
-                                }
-                                if (isModifiedGroup) {
-                                    user.getGroups().add(group);
-                                    isEntitlementModified = true;
-                                }
-                                break;
-                            case ROLE:
-                                boolean isModifiedRole = false;
-                                Role role = roleDozerConverter.convertToDTO(
-                                        roleDataService.getRole(ob.getObjectId(), bulkRequest.getRequesterId()), false);
-                                if (existingRoles.contains(role)) {
-                                    if (BulkOperationEnum.DELETE_ENTITLEMENT.equals(ob.getOperation())) {
-                                        existingRoles.remove(role);
-                                        role.setOperation(AttributeOperationEnum.DELETE);
-                                        isModifiedRole = true;
+                                    break;
+                                case GROUP:
+                                    boolean isModifiedGroup = false;
+                                    Group group = groupDozerConverter.convertToDTO(
+                                            groupManager.getGroup(ob.getObjectId(), bulkRequest.getRequesterId()), false);
+                                    if (existingGroups.contains(group)) {
+                                        if (BulkOperationEnum.DELETE_ENTITLEMENT.equals(ob.getOperation())) {
+                                            existingGroups.remove(group);
+                                            group.setOperation(AttributeOperationEnum.DELETE);
+                                            isModifiedGroup = true;
+                                        }
+                                    } else {
+                                        if (BulkOperationEnum.ADD_ENTITLEMENT.equals(ob.getOperation())) {
+                                            existingGroups.add(group);
+                                            group.setOperation(AttributeOperationEnum.ADD);
+                                            isModifiedGroup = true;
+                                        }
                                     }
-                                } else {
-                                    if (BulkOperationEnum.ADD_ENTITLEMENT.equals(ob.getOperation())) {
-                                        existingRoles.add(role);
-                                        role.setOperation(AttributeOperationEnum.ADD);
-                                        isModifiedRole = true;
+                                    if (isModifiedGroup) {
+                                        user.getGroups().add(group);
+                                        isEntitlementModified = true;
                                     }
-                                }
-                                if (isModifiedRole) {
-                                    user.getRoles().add(role);
-                                    isEntitlementModified = true;
-                                }
-                                break;
-                            case RESOURCE:
-                                boolean isModifiedResource = false;
-                                Resource resource = resourceService.getResourceDTO(ob.getObjectId());
-                                if (existingResources.contains(resource)) {
-                                    if (BulkOperationEnum.DELETE_ENTITLEMENT.equals(ob.getOperation())) {
-                                        existingResources.remove(resource);
-                                        resource.setOperation(AttributeOperationEnum.DELETE);
-                                        isModifiedResource = true;
+                                    break;
+                                case ROLE:
+                                    boolean isModifiedRole = false;
+                                    Role role = roleDozerConverter.convertToDTO(
+                                            roleDataService.getRole(ob.getObjectId(), bulkRequest.getRequesterId()), false);
+                                    if (existingRoles.contains(role)) {
+                                        if (BulkOperationEnum.DELETE_ENTITLEMENT.equals(ob.getOperation())) {
+                                            existingRoles.remove(role);
+                                            role.setOperation(AttributeOperationEnum.DELETE);
+                                            isModifiedRole = true;
+                                        }
+                                    } else {
+                                        if (BulkOperationEnum.ADD_ENTITLEMENT.equals(ob.getOperation())) {
+                                            existingRoles.add(role);
+                                            role.setOperation(AttributeOperationEnum.ADD);
+                                            isModifiedRole = true;
+                                        }
                                     }
-                                } else {
-                                    if (BulkOperationEnum.ADD_ENTITLEMENT.equals(ob.getOperation())) {
-                                        existingResources.add(resource);
-                                        resource.setOperation(AttributeOperationEnum.ADD);
-                                        isModifiedResource = true;
+                                    if (isModifiedRole) {
+                                        user.getRoles().add(role);
+                                        isEntitlementModified = true;
                                     }
-                                }
-                                if (isModifiedResource) {
-                                    user.getResources().add(resource);
-                                    isEntitlementModified = true;
-                                }
-                                break;
+                                    break;
+                                case RESOURCE:
+                                    boolean isModifiedResource = false;
+                                    Resource resource = resourceService.getResourceDTO(ob.getObjectId());
+                                    if (existingResources.contains(resource)) {
+                                        if (BulkOperationEnum.DELETE_ENTITLEMENT.equals(ob.getOperation())) {
+                                            existingResources.remove(resource);
+                                            resource.setOperation(AttributeOperationEnum.DELETE);
+                                            isModifiedResource = true;
+                                        }
+                                    } else {
+                                        if (BulkOperationEnum.ADD_ENTITLEMENT.equals(ob.getOperation())) {
+                                            existingResources.add(resource);
+                                            resource.setOperation(AttributeOperationEnum.ADD);
+                                            isModifiedResource = true;
+                                        }
+                                    }
+                                    if (isModifiedResource) {
+                                        user.getResources().add(resource);
+                                        isEntitlementModified = true;
+                                    }
+                                    break;
+                            }
                         }
-                    }
-                    if (isEntitlementModified) {
-                        modifyUser(new ProvisionUser(user));
+                        if (isEntitlementModified) {
+                            res = modifyUser(new ProvisionUser(user), idmAuditLog);
+                            if (res.isFailure()) {
+                                failedUserIds.add(userId);
+                            }
+                        }
+
                     }
                 }
+
+            } finally {
+                if (CollectionUtils.isNotEmpty(failedUserIds)) {
+                    idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "Successfully processed " + (bulkRequest.getUserIds().size() - failedUserIds.size()) + " users");
+                    idmAuditLog.addAttribute(AuditAttributeName.FAILURE_REASON, "Failed to process " + failedUserIds.size() + " users");
+                    for (String id : failedUserIds) {
+                        idmAuditLog.addAttribute(AuditAttributeName.FAILURE_REASON, id);
+                    }
+                } else {
+                    idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "Successfully processed " + bulkRequest.getUserIds().size() + " users");
+                }
+                auditLogService.enqueue(idmAuditLog);
             }
         }
 
@@ -2587,24 +2653,24 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
     }
 
     /*
-     * (non-Javadoc)
-     *
-     * @see
-     * org.openiam.provision.service.ProvisionService#disableUser(java.lang.
-     * String, boolean)
-     */
+ * (non-Javadoc)
+ *
+ * @see
+ * org.openiam.provision.service.ProvisionService#disableUser(java.lang.
+ * String, boolean)
+ */
     @Override
-    @Transactional
     public Response disableUser(String userId, boolean operation, String requestorId) {
+        return disableUser(userId, operation, requestorId, null);
+    }
+
+    @Transactional
+    public Response disableUser(String userId, boolean operation, String requestorId, IdmAuditLog auditLog) {
 
         log.debug("----disableUser called.------");
         log.debug("operation code=" + operation);
 
         Response response = new Response(ResponseStatus.SUCCESS);
-
-        String requestId = "R" + UUIDGen.getUUID();
-        String strOperation = null;
-
         if (userId == null) {
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(ResponseCode.USER_NOT_FOUND);
@@ -2612,162 +2678,189 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         }
         UserEntity usr = this.userMgr.getUser(userId);
 
-        if (usr == null) {
-        	/*
-            auditHelper.addLog((operation) ? "DISABLE" : "ENABLE",
-                    sysConfiguration.getDefaultSecurityDomain(), null,
-                    "IDM SERVICE", requestorId, "IDM", "USER", userId, null,
-                    "FAILURE", null, null, null, requestId, null, null, null);
-			*/
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorCode(ResponseCode.USER_NOT_FOUND);
-            return response;
-        }
-        // disable the user in OpenIAM
-        if (operation) {
-            usr.setSecondaryStatus(UserStatusEnum.DISABLED);
-            strOperation = "DISABLE";
-        } else {
-            // enable an account that was previously disabled.
-            usr.setSecondaryStatus(null);
-            strOperation = "ENABLE";
-        }
-        userMgr.updateUserWithDependent(usr, false);
+        final IdmAuditLog idmAuditLog = new IdmAuditLog();
+        LoginEntity primaryIdentity = UserUtils.getUserManagedSysIdentityEntity(sysConfiguration.getDefaultManagedSysId(), usr.getPrincipalList());
+        idmAuditLog.setTargetUser(userId, primaryIdentity.getLogin());
+        idmAuditLog.setRequestorUserId(requestorId);
+        List<LoginEntity> loginEntityList = loginManager.getLoginByUser(requestorId);
+        LoginEntity requestorIdentity = UserUtils.getUserManagedSysIdentityEntity(sysConfiguration.getDefaultManagedSysId(), loginEntityList);
+        idmAuditLog.setRequestorPrincipal(requestorIdentity.getLogin());
 
-        LoginEntity lRequestor = loginManager.getPrimaryIdentity(requestorId);
-        LoginEntity lTargetUser = loginManager.getPrimaryIdentity(userId);
+        if (auditLog != null) {
+            auditLog.addChild(idmAuditLog);
+        }
 
-        if (lRequestor != null && lTargetUser != null) {
-        	/*
-            auditHelper.addLog(strOperation, lRequestor.getDomainId(),
-                    lRequestor.getLogin(), "IDM SERVICE", requestorId,
-                    "IDM", "USER", usr.getUserId(), null, "SUCCESS", null,
-                    null, null, requestId, null, null, null, null, lTargetUser
-                            .getLogin(), lTargetUser.getDomainId());
-			*/
-        } else {
-            if (log.isDebugEnabled()) {
-                log.debug(String
-                        .format("Unable to log disable operation.  Requestor: %s, Target: %s",
-                                lRequestor, lTargetUser));
+        try {
+
+            String requestId = "R" + UUIDGen.getUUID();
+
+            if (usr == null) {
+                idmAuditLog.fail();
+                idmAuditLog.setFailureReason(ResponseCode.USER_NOT_FOUND);
+
+                response.setStatus(ResponseStatus.FAILURE);
+                response.setErrorCode(ResponseCode.USER_NOT_FOUND);
+                return response;
             }
+            // disable the user in OpenIAM
+            if (operation) {
+                idmAuditLog.setAction(AuditAction.PROVISIONING_DISABLE.value());
+                usr.setSecondaryStatus(UserStatusEnum.DISABLED);
+            } else {
+                // enable an account that was previously disabled.
+                idmAuditLog.setAction(AuditAction.PROVISIONING_ENABLE.value());
+                usr.setSecondaryStatus(null);
+            }
+            userMgr.updateUserWithDependent(usr, false);
 
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorCode(ResponseCode.OBJECT_NOT_FOUND);
-            response.setErrorText(String.format(
-                    "Requestor: '%s' or User: '%s' not found", requestorId,
-                    userId));
-            return response;
-        }
-        // disable the user in the managed systems
+            LoginEntity lRequestor = loginManager.getPrimaryIdentity(requestorId);
+            LoginEntity lTargetUser = loginManager.getPrimaryIdentity(userId);
 
-        // typical sync
-        List<LoginEntity> principalList = loginManager
-                .getLoginByUser(usr.getId());
-        if (principalList != null) {
-            log.debug("PrincipalList size =" + principalList.size());
-            for (LoginEntity lg : principalList) {
-                // get the managed system for the identity - ignore the managed
-                // system id that is linked to openiam's repository
-                log.debug("-diabling managed system=" + lg.getLogin()
-                        + " - " + lg.getManagedSysId());
+            if (lRequestor == null || lTargetUser == null) {
+                if (log.isDebugEnabled()) {
+                    log.debug(String
+                            .format("Unable to log disable operation.  Requestor: %s, Target: %s",
+                                    lRequestor, lTargetUser));
+                }
 
-                if (!StringUtils.equalsIgnoreCase(lg.getManagedSysId(), sysConfiguration.getDefaultManagedSysId())) {
-                    String managedSysId = lg.getManagedSysId();
-                    // update the target system
-                    ManagedSysDto mSys = managedSysService
-                            .getManagedSys(managedSysId);
+                idmAuditLog.fail();
+                idmAuditLog.setFailureReason(ResponseCode.OBJECT_NOT_FOUND);
 
-                    final Login login = loginDozerConverter.convertToDTO(lg, false);
-                    if (operation) {
-                        // suspend
-                        log.debug("preparing suspendRequest object");
-                        lg.setStatus(LoginStatusEnum.INACTIVE);
+                response.setStatus(ResponseStatus.FAILURE);
+                response.setErrorCode(ResponseCode.OBJECT_NOT_FOUND);
+                response.setErrorText(String.format(
+                        "Requestor: '%s' or User: '%s' not found", requestorId,
+                        userId));
 
-                        SuspendResumeRequest suspendReq = new SuspendResumeRequest();
-                        suspendReq.setObjectIdentity(lg.getLogin());
-                        suspendReq.setTargetID(managedSysId);
-                        suspendReq.setRequestID(requestId);
-                        suspendReq.setScriptHandler(mSys
-                                .getSuspendHandler());
+                return response;
+            }
+            // disable the user in the managed systems
 
-                        suspendReq.setHostLoginId(mSys.getUserId());
-                        String passwordDecoded = mSys.getPswd();
-                        try {
-                            passwordDecoded = getDecryptedPassword(mSys);
-                        } catch (ConnectorDataException e) {
-                            e.printStackTrace();
-                        }
-                        suspendReq.setHostLoginPassword(passwordDecoded);
-                        suspendReq.setHostUrl(mSys.getHostUrl());
-                        suspendReq.setExtensibleObject(buildMngSysAttributes(login, "SUSPEND"));
+            // typical sync
+            List<LoginEntity> principalList = loginManager
+                    .getLoginByUser(usr.getId());
+            if (principalList != null) {
+                log.debug("PrincipalList size =" + principalList.size());
+                for (LoginEntity lg : principalList) {
+
+                    final IdmAuditLog idmAuditLogChild = new IdmAuditLog();
+                    idmAuditLogChild.setRequestorUserId(requestorId);
+                    idmAuditLogChild.setRequestorPrincipal(lRequestor.getLogin());
+                    idmAuditLogChild.setAction(operation ? AuditAction.PROVISIONING_DISABLE_IDENTITY.value() :
+                            AuditAction.PROVISIONING_ENABLE_IDENTITY.value());
+                    idmAuditLogChild.setTargetUser(lg.getUserId(), lg.getLogin());
+                    idmAuditLogChild.setManagedSysId(lg.getManagedSysId());
+                    idmAuditLog.addChild(idmAuditLogChild);
+
+                    // get the managed system for the identity - ignore the managed
+                    // system id that is linked to openiam's repository
+                    log.debug("-diabling managed system=" + lg.getLogin()
+                            + " - " + lg.getManagedSysId());
+
+                    if (!StringUtils.equalsIgnoreCase(lg.getManagedSysId(), sysConfiguration.getDefaultManagedSysId())) {
+                        String managedSysId = lg.getManagedSysId();
+                        // update the target system
+                        ManagedSysDto mSys = managedSysService
+                                .getManagedSys(managedSysId);
+
+                        idmAuditLogChild.setTargetManagedSys(mSys.getId(), mSys.getName());
+
+                        final Login login = loginDozerConverter.convertToDTO(lg, false);
+                        if (operation) {
+                            // suspend
+                            log.debug("preparing suspendRequest object");
+                            lg.setStatus(LoginStatusEnum.INACTIVE);
+
+                            SuspendResumeRequest suspendReq = new SuspendResumeRequest();
+                            suspendReq.setObjectIdentity(lg.getLogin());
+                            suspendReq.setTargetID(managedSysId);
+                            suspendReq.setRequestID(requestId);
+                            suspendReq.setScriptHandler(mSys
+                                    .getSuspendHandler());
+
+                            suspendReq.setHostLoginId(mSys.getUserId());
+                            String passwordDecoded = mSys.getPswd();
+                            try {
+                                passwordDecoded = getDecryptedPassword(mSys);
+                            } catch (ConnectorDataException e) {
+                                e.printStackTrace();
+                            }
+                            suspendReq.setHostLoginPassword(passwordDecoded);
+                            suspendReq.setHostUrl(mSys.getHostUrl());
+                            suspendReq.setExtensibleObject(buildMngSysAttributes(login, "SUSPEND"));
 
 
-                        ResponseType resp = connectorAdapter.suspendRequest(mSys, suspendReq,
-                                MuleContextProvider.getCtx());
+                            ResponseType resp = connectorAdapter.suspendRequest(mSys, suspendReq,
+                                    MuleContextProvider.getCtx());
 
-                        if (StatusCodeType.SUCCESS.equals(resp.getStatus())) {
-                            lg.setProvStatus(ProvLoginStatusEnum.DISABLED);
+                            if (StatusCodeType.SUCCESS.equals(resp.getStatus())) {
+                                lg.setProvStatus(ProvLoginStatusEnum.DISABLED);
+                                idmAuditLogChild.succeed();
+                                idmAuditLogChild.setAuditDescription("Login: " + lg.getLogin() + " for Managed system ID: " + managedSysId + " is disabled");
+
+                            } else {
+                                lg.setProvStatus(ProvLoginStatusEnum.FAIL_DISABLE);
+                                idmAuditLogChild.fail();
+                                idmAuditLogChild.setFailureReason("Login: " + lg.getLogin() + " for Managed system ID: " + managedSysId + " failed to disable");
+                            }
+                            loginManager.updateLogin(lg);
+
+
                         } else {
-                            lg.setProvStatus(ProvLoginStatusEnum.FAIL_DISABLE);
+                            // resume - re-enable
+                            log.debug("preparing resumeRequest object");
+
+                            // reset flags that go with this identiy
+                            lg.setAuthFailCount(0);
+                            lg.setIsLocked(0);
+                            lg.setPasswordChangeCount(0);
+                            lg.setStatus(LoginStatusEnum.ACTIVE);
+
+                            SuspendResumeRequest resumeReq = new SuspendResumeRequest();
+                            resumeReq.setObjectIdentity(lg.getLogin());
+                            resumeReq.setTargetID(managedSysId);
+                            resumeReq.setRequestID(requestId);
+                            resumeReq.setScriptHandler(mSys
+                                    .getSuspendHandler());
+                            resumeReq.setHostLoginId(mSys.getUserId());
+                            resumeReq.setExtensibleObject(buildMngSysAttributes(login, "RESUME"));
+
+                            String passwordDecoded = mSys.getPswd();
+                            try {
+                                passwordDecoded = getDecryptedPassword(mSys);
+                            } catch (ConnectorDataException e) {
+                                e.printStackTrace();
+                            }
+                            resumeReq.setHostLoginPassword(passwordDecoded);
+                            resumeReq.setHostUrl(mSys.getHostUrl());
+
+                            ResponseType resp = connectorAdapter.resumeRequest(mSys,
+                                    resumeReq, MuleContextProvider.getCtx());
+
+                            if (StatusCodeType.SUCCESS.equals(resp.getStatus())) {
+                                lg.setProvStatus(ProvLoginStatusEnum.ENABLED);
+                                idmAuditLogChild.succeed();
+                                idmAuditLogChild.setAuditDescription("Login: " + lg.getLogin() + " for Managed system ID: " + managedSysId + " is enabled");
+
+                            } else {
+                                lg.setProvStatus(ProvLoginStatusEnum.FAIL_ENABLE);
+                                idmAuditLogChild.fail();
+                                idmAuditLogChild.setFailureReason("Login: " + lg.getLogin() + " for Managed system ID: " + managedSysId + " failed to enable");
+                            }
+                            loginManager.updateLogin(lg);
                         }
-                        loginManager.updateLogin(lg);
 
                     } else {
-                        // resume - re-enable
-                        log.debug("preparing resumeRequest object");
-
-                        // reset flags that go with this identiy
                         lg.setAuthFailCount(0);
                         lg.setIsLocked(0);
                         lg.setPasswordChangeCount(0);
-                        lg.setStatus(LoginStatusEnum.ACTIVE);
-
-                        SuspendResumeRequest resumeReq = new SuspendResumeRequest();
-                        resumeReq.setObjectIdentity(lg.getLogin());
-                        resumeReq.setTargetID(managedSysId);
-                        resumeReq.setRequestID(requestId);
-                        resumeReq.setScriptHandler(mSys
-                                .getSuspendHandler());
-                        resumeReq.setHostLoginId(mSys.getUserId());
-                        resumeReq.setExtensibleObject(buildMngSysAttributes(login, "RESUME"));
-
-                        String passwordDecoded = mSys.getPswd();
-                        try {
-                            passwordDecoded = getDecryptedPassword(mSys);
-                        } catch (ConnectorDataException e) {
-                            e.printStackTrace();
-                        }
-                        resumeReq.setHostLoginPassword(passwordDecoded);
-                        resumeReq.setHostUrl(mSys.getHostUrl());
-
-                        ResponseType resp = connectorAdapter.resumeRequest(mSys,
-                                resumeReq, MuleContextProvider.getCtx());
-
-                        if (StatusCodeType.SUCCESS.equals(resp.getStatus())) {
-                            lg.setProvStatus(ProvLoginStatusEnum.ENABLED);
-                        } else {
-                            lg.setProvStatus(ProvLoginStatusEnum.FAIL_ENABLE);
-                        }
                         loginManager.updateLogin(lg);
                     }
-
-                    String loginId = null;
-                    if (lRequestor != null) {
-                        loginId = lRequestor.getLogin();
-                    }
-                    /*
-                    auditHelper.addLog(strOperation + " IDENTITY", domainId,
-                            loginId, "IDM SERVICE", requestorId, "IDM", "USER",
-                            null, null, "SUCCESS", requestId, null, null,
-                            requestId, null, null, null, null, lg.getLogin(), lg.getDomainId());
-					*/
-                } else {
-                    lg.setAuthFailCount(0);
-                    lg.setIsLocked(0);
-                    lg.setPasswordChangeCount(0);
-                    loginManager.updateLogin(lg);
                 }
+            }
+        } finally {
+            if (auditLog == null) {
+                auditLogService.enqueue(idmAuditLog);
             }
         }
         response.setStatus(ResponseStatus.SUCCESS);

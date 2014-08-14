@@ -242,6 +242,7 @@ public abstract class AbstractLdapCommand<Request extends RequestType, Response 
                             if (valList != null && valList.size() > 0) {
                                 int ctr = 0;
                                 for (String s : valList) {
+                                    s = StringUtils.isNotEmpty(s) ? s : null;
                                     if (ctr == 0) {
                                         a = new BasicAttribute(att.getName(), s);
                                     } else {
@@ -251,7 +252,7 @@ public abstract class AbstractLdapCommand<Request extends RequestType, Response 
                                 }
                             }
                         } else {
-                            a = new BasicAttribute(att.getName(), att.getValue());
+                            a = new BasicAttribute(att.getName(), StringUtils.isNotEmpty(att.getValue()) ? att.getValue() : null);
                         }
                         attrs.put(a);
                     }

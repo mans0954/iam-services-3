@@ -743,16 +743,15 @@ public class ProvisionDispatcher implements Sweepable {
                                 newAttr.setObjectType(objectType);
                                 extUser.getAttributes().add(newAttr);
 
-                            } else {
+                            } else if (output instanceof List) {
                                 // process a list - multi-valued object
-
-                                newAttr = new ExtensibleAttribute(attr.getAttributeName(), (List) output, 1, attr
-                                        .getDataType().getValue());
-                                newAttr.setObjectType(objectType);
-
-                                extUser.getAttributes().add(newAttr);
-
-                                log.debug("buildFromRules: added attribute to extUser:" + attr.getAttributeName());
+                                if (CollectionUtils.isNotEmpty((List)output)) {
+                                    newAttr = new ExtensibleAttribute(attr.getAttributeName(), (List) output, 1, attr
+                                            .getDataType().getValue());
+                                    newAttr.setObjectType(objectType);
+                                    extUser.getAttributes().add(newAttr);
+                                    log.debug("buildFromRules: added attribute to extUser:" + attr.getAttributeName());
+                                }
                             }
                         }
                     } else if (PolicyMapObjectTypeOptions.PRINCIPAL.name().equalsIgnoreCase(objectType)) {
