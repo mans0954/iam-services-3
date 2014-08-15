@@ -193,6 +193,7 @@ public class ProvisionDispatcher implements Sweepable {
             idmAuditLog.setRequestorUserId(systemUserId);
             idmAuditLog.setAction(AuditAction.PROVISIONING_DISPATCHER.value());
             idmAuditLog.setTargetUser(identity.getUserId(), identity.getLogin());
+            idmAuditLog.setManagedSysId(identity.getManagedSysId());
             idmAuditLog.succeed();
             try {
                 LoginEntity loginEntity = loginManager.getLoginByManagedSys(identity.getLogin(),

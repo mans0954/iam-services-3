@@ -2103,17 +2103,21 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
             final IdmAuditLog idmAuditLog = new IdmAuditLog();
             idmAuditLog.setAction(AuditAction.BULK_OPERATION.value());
-            idmAuditLog.setRequestorUserId(bulkRequest.getRequesterId());
+            String requestorId = bulkRequest.getRequesterId();
+            LoginEntity lRequestor = loginManager.getPrimaryIdentity(requestorId);
+            idmAuditLog.setRequestorUserId(requestorId);
+            idmAuditLog.setRequestorPrincipal(lRequestor.getLogin());
 
             List<String> failedUserIds = new ArrayList<String>();
             try {
 
                 for (String userId : bulkRequest.getUserIds()) {
                     User user = userMgr.getUserDto(userId);
+                    ProvisionUser pUser = new ProvisionUser(user);
+                    pUser.setRequestorUserId(requestorId);
+                    pUser.setRequestorLogin(lRequestor.getLogin());
 
                     if (user != null) {
-                        user.setRequestorUserId(bulkRequest.getRequesterId());
-
                         boolean isEntitlementModified = false;
 
                         Set<Group> existingGroups = user.getGroups();
@@ -2132,21 +2136,21 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                     switch(ob.getOperation()) {
                                         case ACTIVATE_USER:
                                             user.setStatus(UserStatusEnum.ACTIVE);
-                                            res = modifyUser(new ProvisionUser(user), idmAuditLog);
+                                            res = modifyUser(pUser, idmAuditLog);
                                             break;
                                         case DEACTIVATE_USER:
                                             res = deleteByUserWithSkipManagedSysList(
-                                                    userId, UserStatusEnum.DELETED, bulkRequest.getRequesterId(), null, idmAuditLog);
+                                                    userId, UserStatusEnum.DELETED, requestorId, null, idmAuditLog);
                                             break;
                                         case DELETE_USER:
                                             res = deleteByUserWithSkipManagedSysList(
-                                                    userId, UserStatusEnum.REMOVE, bulkRequest.getRequesterId(), null, idmAuditLog);
+                                                    userId, UserStatusEnum.REMOVE, requestorId, null, idmAuditLog);
                                             break;
                                         case ENABLE_USER:
-                                            res = disableUser(userId, false, bulkRequest.getRequesterId(), idmAuditLog);
+                                            res = disableUser(userId, false, requestorId, idmAuditLog);
                                             break;
                                         case DISABLE_USER:
-                                            res = disableUser(userId, true, bulkRequest.getRequesterId(), idmAuditLog);
+                                            res = disableUser(userId, true, requestorId, idmAuditLog);
                                             break;
                                     }
                                     if (res.isFailure()) {
@@ -2156,7 +2160,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                 case GROUP:
                                     boolean isModifiedGroup = false;
                                     Group group = groupDozerConverter.convertToDTO(
-                                            groupManager.getGroup(ob.getObjectId(), bulkRequest.getRequesterId()), false);
+                                            groupManager.getGroup(ob.getObjectId(), requestorId), false);
                                     if (existingGroups.contains(group)) {
                                         if (BulkOperationEnum.DELETE_ENTITLEMENT.equals(ob.getOperation())) {
                                             existingGroups.remove(group);
@@ -2178,7 +2182,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                 case ROLE:
                                     boolean isModifiedRole = false;
                                     Role role = roleDozerConverter.convertToDTO(
-                                            roleDataService.getRole(ob.getObjectId(), bulkRequest.getRequesterId()), false);
+                                            roleDataService.getRole(ob.getObjectId(), requestorId), false);
                                     if (existingRoles.contains(role)) {
                                         if (BulkOperationEnum.DELETE_ENTITLEMENT.equals(ob.getOperation())) {
                                             existingRoles.remove(role);
@@ -2221,7 +2225,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                             }
                         }
                         if (isEntitlementModified) {
-                            res = modifyUser(new ProvisionUser(user), idmAuditLog);
+                            res = modifyUser(pUser, idmAuditLog);
                             if (res.isFailure()) {
                                 failedUserIds.add(userId);
                             }

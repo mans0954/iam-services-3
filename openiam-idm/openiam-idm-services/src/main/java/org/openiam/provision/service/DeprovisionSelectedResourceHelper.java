@@ -134,7 +134,6 @@ public class DeprovisionSelectedResourceHelper extends BaseProvisioningHelper {
         if (mSys == null || mSys.getConnectorId() == null) {
             return null;
         }
-
         ProvisionUser targetSysProvUser = new ProvisionUser(userDozerConverter.convertToDTO(userEntity, true));
         setCurrentSuperiors(targetSysProvUser);
         targetSysProvUser.setStatus(pUser.getStatus());
