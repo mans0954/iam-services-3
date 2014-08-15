@@ -1469,7 +1469,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         }
         userReq.setHostLoginPassword(passwordDecoded);
         userReq.setHostUrl(mSys.getHostUrl());
-
+        userReq.setHostPort(mSys.getPort().toString());
+        
         ManagedSystemObjectMatch matchObj = null;
         List<ManagedSystemObjectMatchEntity> objList = managedSystemService.managedSysObjectParam(managedSysId,
                 ManagedSystemObjectMatch.USER);
@@ -1491,9 +1492,12 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
 
         IdmAuditLog idmAuditLogChild1 = new IdmAuditLog();
         idmAuditLogChild1.setAction(isAdd ? AuditAction.ADD_USER_TO_RESOURCE.value() : AuditAction.UPDATE_USER_TO_RESOURCE.value());
-        idmAuditLogChild1.setRequestorUserId(systemUserId);
+        LoginEntity lRequestor = loginManager.getPrimaryIdentity(systemUserId);
+        idmAuditLogChild1.setRequestorUserId(lRequestor.getUserId());
+        idmAuditLogChild1.setRequestorPrincipal(lRequestor.getLogin());
         idmAuditLogChild1.setTargetUser(mLg.getUserId(),mLg.getLogin());
         idmAuditLogChild1.setTargetResource(mSys.getResourceId(), mSys.getName());
+        idmAuditLogChild1.setManagedSysId(mSys.getId());
         boolean successResult = response.getStatus() != StatusCodeType.FAILURE;
         if(successResult) {
             idmAuditLogChild1.succeed();
