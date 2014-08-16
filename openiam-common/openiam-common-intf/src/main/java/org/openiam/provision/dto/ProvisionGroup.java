@@ -43,7 +43,8 @@ import java.util.Set;
         "sessionId",
         "srcSystemId",
         "skipPreprocessor",
-        "skipPostProcessor"
+        "skipPostProcessor",
+        "parentAuditLogId"
 })
 public class ProvisionGroup extends org.openiam.idm.srvc.grp.dto.Group {
 	private static final long serialVersionUID = -33009889049229700L;
@@ -61,6 +62,9 @@ public class ProvisionGroup extends org.openiam.idm.srvc.grp.dto.Group {
 
     @XmlTransient
     protected Set<String> notProvisioninResourcesIds = new HashSet<String>();
+
+    //AuditLogEntity ID of parent AuditLog
+    private String parentAuditLogId;
 
     public ProvisionGroup() {
         super();
@@ -108,6 +112,14 @@ public class ProvisionGroup extends org.openiam.idm.srvc.grp.dto.Group {
         this.resources = group.getResources();
         this.roles = group.getRoles();
         this.attributes = group.getAttributes();
+    }
+
+    public String getParentAuditLogId() {
+        return parentAuditLogId;
+    }
+
+    public void setParentAuditLogId(String parentAuditLogId) {
+        this.parentAuditLogId = parentAuditLogId;
     }
 
     public boolean isSkipPreprocessor() {
