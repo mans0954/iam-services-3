@@ -25,25 +25,14 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openiam.base.AttributeOperationEnum;
-import org.openiam.base.BaseAttribute;
-import org.openiam.base.BaseAttributeContainer;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.connector.type.ObjectValue;
 import org.openiam.idm.srvc.mngsys.service.AttributeNamesLookupService;
 import org.openiam.idm.srvc.synch.domain.SynchReviewEntity;
 import org.openiam.idm.srvc.synch.dto.*;
 import org.openiam.idm.srvc.synch.dto.Attribute;
-import org.openiam.idm.srvc.synch.service.MatchObjectRule;
-import org.openiam.idm.srvc.synch.service.TransformScript;
-import org.openiam.idm.srvc.synch.service.ValidationScript;
-import org.openiam.idm.srvc.user.dto.User;
-import org.openiam.idm.srvc.user.dto.UserStatusEnum;
-import org.openiam.provision.dto.ProvisionUser;
-import org.openiam.provision.resp.ProvisionUserResponse;
-import org.openiam.provision.type.ExtensibleAttribute;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -77,6 +66,8 @@ public class LdapAdapter extends AbstractSrcAdapter { // implements SourceAdapte
     private String keystore;
 
     private final static int PAGE_SIZE = 1000;
+    private final static int SIZE_LIMIT = 10000;
+    private final static int TIME_LIMIT = 0;    //indefinitely
 
     private LdapContext ctx = null;
 
@@ -162,8 +153,8 @@ public class LdapAdapter extends AbstractSrcAdapter { // implements SourceAdapte
 
                 ctx.setRequestControls(new Control[]{new PagedResultsControl(PAGE_SIZE, Control.NONCRITICAL)});
 
-                searchCtls.setTimeLimit(0);
-                searchCtls.setCountLimit(10000);
+                searchCtls.setTimeLimit(TIME_LIMIT);
+                searchCtls.setCountLimit(SIZE_LIMIT);
                 searchCtls.setSearchScope(config.getSearchScope().ordinal());
                 searchCtls.setReturningAttributes(attrIds);
 
@@ -175,7 +166,7 @@ public class LdapAdapter extends AbstractSrcAdapter { // implements SourceAdapte
                     pageCounter++;
                     pageRowCount = 0;
                     NamingEnumeration results = ctx.search(baseou, config.getQuery(), searchCtls);
-
+                    Thread.sleep(1000);
                     while (results != null && results.hasMoreElements()) {
                         pageRowCount++;
                         totalRecords++;
@@ -255,6 +246,8 @@ public class LdapAdapter extends AbstractSrcAdapter { // implements SourceAdapte
             resp.setErrorText(eioex.toString());
             return resp;
 
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         } finally {
             if (resultReview != null) {
                 if (CollectionUtils.isNotEmpty(resultReview.getReviewRecords())) { // add header row
