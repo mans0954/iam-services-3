@@ -1,6 +1,7 @@
 package org.openiam.idm.srvc.auth.login;
 
 import org.openiam.dozer.converter.IdentityDozerConverter;
+import org.openiam.idm.searchbeans.IdentitySearchBean;
 import org.openiam.idm.srvc.auth.domain.IdentityEntity;
 import org.openiam.idm.srvc.auth.dto.IdentityDto;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,5 +60,18 @@ public class IdentityServiceImpl implements IdentityService {
     @Transactional
     public void updateIdentity(IdentityDto identityDto) {
         identityDAO.update(identityDozerConverter.convertToEntity(identityDto,true));
+    }
+
+    @Override
+    @Transactional
+    public List<IdentityDto> findByExample(IdentitySearchBean searchBean, String requesterId, int from, int size) {
+        List<IdentityEntity> entities = identityDAO.getByExample(searchBean,from,size);
+        return identityDozerConverter.convertToDTOList(entities, false);
+    }
+
+    @Override
+    @Transactional
+    public int countBeans(IdentitySearchBean searchBean, String requesterId) {
+        return identityDAO.count(searchBean);
     }
 }

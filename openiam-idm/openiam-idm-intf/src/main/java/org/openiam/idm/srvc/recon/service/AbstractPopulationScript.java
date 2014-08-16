@@ -4,7 +4,7 @@ import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
-public abstract class AbstractPopulationScript implements PopulationScript, ApplicationContextAware {
+public abstract class AbstractPopulationScript<T> implements PopulationScript<T>, ApplicationContextAware {
     protected String managedSysId;
     protected ApplicationContext context;
     @Override
