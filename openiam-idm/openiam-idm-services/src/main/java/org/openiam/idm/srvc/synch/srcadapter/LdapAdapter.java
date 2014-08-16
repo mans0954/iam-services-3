@@ -25,12 +25,17 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.base.AttributeOperationEnum;
+import org.openiam.base.BaseAttribute;
+import org.openiam.base.BaseAttributeContainer;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
+import org.openiam.connector.type.ObjectValue;
 import org.openiam.idm.srvc.mngsys.service.AttributeNamesLookupService;
 import org.openiam.idm.srvc.synch.domain.SynchReviewEntity;
 import org.openiam.idm.srvc.synch.dto.*;
+import org.openiam.idm.srvc.synch.dto.Attribute;
 import org.openiam.idm.srvc.synch.service.MatchObjectRule;
 import org.openiam.idm.srvc.synch.service.TransformScript;
 import org.openiam.idm.srvc.synch.service.ValidationScript;
@@ -38,19 +43,15 @@ import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.resp.ProvisionUserResponse;
+import org.openiam.provision.type.ExtensibleAttribute;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.naming.Context;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
-import javax.naming.directory.Attributes;
-import javax.naming.directory.SearchControls;
-import javax.naming.directory.SearchResult;
-import javax.naming.ldap.Control;
-import javax.naming.ldap.InitialLdapContext;
-import javax.naming.ldap.LdapContext;
-import javax.naming.ldap.PagedResultsResponseControl;
+import javax.naming.directory.*;
+import javax.naming.ldap.*;
 import java.io.IOException;
 import java.util.*;
 
@@ -74,6 +75,8 @@ public class LdapAdapter extends AbstractSrcAdapter { // implements SourceAdapte
 
     @Value("${KEYSTORE}")
     private String keystore;
+
+    private final static int PAGE_SIZE = 1000;
 
     private LdapContext ctx = null;
 
@@ -120,17 +123,17 @@ public class LdapAdapter extends AbstractSrcAdapter { // implements SourceAdapte
             }
             // get the last execution time
             if (config.getLastRecProcessed() != null) {
-			    lastRecProcessed = config.getLastRecProcessed() ;
-		    }
+                lastRecProcessed = config.getLastRecProcessed();
+            }
 
             // get change log field
             if (config.getSynchType().equalsIgnoreCase("INCREMENTAL")) {
                 if (lastRecProcessed != null) {
                     // update the search filter so that it has the new time
-                    String ldapFilterQuery =  config.getQuery();
+                    String ldapFilterQuery = config.getQuery();
                     // replace wildcards with the last exec time
 
-                    config.setQuery(  ldapFilterQuery.replace("?", lastRecProcessed ) );
+                    config.setQuery(ldapFilterQuery.replace("?", lastRecProcessed));
 
                     log.debug("Updated ldap filter = " + config.getQuery());
                 }
@@ -138,10 +141,10 @@ public class LdapAdapter extends AbstractSrcAdapter { // implements SourceAdapte
 
             int ctr = 0;
             List<String> ouByParent = new LinkedList<String>();
-            if(config.getBaseDn().contains(";")) {
-              for (String basedn : config.getBaseDn().split(";")){
-                  ouByParent.add(basedn.trim());
-              }
+            if (config.getBaseDn().contains(";")) {
+                for (String basedn : config.getBaseDn().split(";")) {
+                    ouByParent.add(basedn.trim());
+                }
             } else {
                 ouByParent.add(config.getBaseDn().trim());
             }
@@ -150,55 +153,91 @@ public class LdapAdapter extends AbstractSrcAdapter { // implements SourceAdapte
                 int recordsInOUCounter = 0;
 
                 log.debug("========== Processed: " + totalRecords + " records");
-                NamingEnumeration results = search(baseou, config);
+                //TimeOut Error String attrIds[] = {"objectClass",""1.1,"+","*"};
+                //  TimeOut Error String attrIds[] = {"objectClass", "*", "accountUnlockTime", "aci", "aclRights", "aclRightsInfo", "altServer", "attributeTypes", "changeHasReplFixupOp", "changeIsReplFixupOp", "copiedFrom", "copyingFrom", "createTimestamp", "creatorsName", "deletedEntryAttrs", "dITContentRules", "dITStructureRules", "dncomp", "ds-pluginDigest", "ds-pluginSignature", "ds6ruv", "dsKeyedPassword", "entrydn", "entryid", "hasSubordinates", "idmpasswd", "isMemberOf", "ldapSchemas", "ldapSyntaxes", "matchingRules", "matchingRuleUse", "modDNEnabledSuffixes", "modifiersName", "modifyTimestamp", "nameForms", "namingContexts", "nsAccountLock", "nsBackendSuffix", "nscpEntryDN", "nsds5ReplConflict", "nsIdleTimeout", "nsLookThroughLimit", "nsRole", "nsRoleDN", "nsSchemaCSN", "nsSizeLimit", "nsTimeLimit", "nsUniqueId", "numSubordinates", "objectClasses", "parentid", "passwordAllowChangeTime", "passwordExpirationTime", "passwordExpWarned", "passwordHistory", "passwordPolicySubentry", "passwordRetryCount", "pwdAccountLockedTime", "pwdChangedTime", "pwdFailureTime", "pwdGraceUseTime", "pwdHistory", "pwdLastAuthTime", "pwdPolicySubentry", "pwdReset", "replicaIdentifier", "replicationCSN", "retryCountResetTime", "subschemaSubentry", "supportedControl", "supportedExtension", "supportedLDAPVersion", "supportedSASLMechanisms", "supportedSSLCiphers", "targetUniqueId", "vendorName", "vendorVersion"};
 
-                while (results != null && results.hasMoreElements()) {
-                    totalRecords++;
-                    SearchResult sr = (SearchResult) results.nextElement();
-                    log.debug("SearchResultElement   : " + sr.getName());
-                    log.debug("Attributes: " + sr.getAttributes());
-                    LineObject rowObj = new LineObject();
+                String[] attrIds = getAttributeIds(config);
 
-                    log.debug("-New Row to Synchronize --" + ctr++);
-                    Attributes attrs = sr.getAttributes();
+                SearchControls searchCtls = new SearchControls();
 
-                    if (attrs != null) {
-                        for (NamingEnumeration ae = attrs.getAll(); ae.hasMore(); ) {
-                            javax.naming.directory.Attribute attr = (javax.naming.directory.Attribute) ae.next();
-                            List<String> valueList = new ArrayList<String>();
-                            String key = attr.getID();
-                            log.debug("attribute id=: " + key);
-                            for (NamingEnumeration e = attr.getAll(); e.hasMore(); ) {
-                                Object o = e.next();
-                                if (o.toString() != null) {
-                                    valueList.add(o.toString());
-                                    log.debug("- value:=" + o.toString());
+                ctx.setRequestControls(new Control[]{new PagedResultsControl(PAGE_SIZE, Control.NONCRITICAL)});
+
+                searchCtls.setTimeLimit(0);
+                searchCtls.setCountLimit(10000);
+                searchCtls.setSearchScope(config.getSearchScope().ordinal());
+                searchCtls.setReturningAttributes(attrIds);
+
+                log.debug("Search: base dn=" + baseou + ", filter= " + config.getQuery() + ", attributes=" + attrIds);
+                byte[] cookie = null;
+                int pageCounter = 0;
+                int pageRowCount = 0;
+                do {
+                    pageCounter++;
+                    pageRowCount = 0;
+                    NamingEnumeration results = ctx.search(baseou, config.getQuery(), searchCtls);
+
+                    while (results != null && results.hasMoreElements()) {
+                        pageRowCount++;
+                        totalRecords++;
+                        SearchResult sr = (SearchResult) results.nextElement();
+                        log.debug("SearchResultElement   : " + sr.getName());
+                        log.debug("Attributes: " + sr.getAttributes());
+                        LineObject rowObj = new LineObject();
+
+                        log.debug("-New Row to Synchronize --" + ctr++);
+                        Attributes attrs = sr.getAttributes();
+
+                        if (attrs != null) {
+                            for (NamingEnumeration ae = attrs.getAll(); ae.hasMore(); ) {
+                                javax.naming.directory.Attribute attr = (javax.naming.directory.Attribute) ae.next();
+                                List<String> valueList = new ArrayList<String>();
+                                String key = attr.getID();
+                                log.debug("attribute id=: " + key);
+                                for (NamingEnumeration e = attr.getAll(); e.hasMore(); ) {
+                                    Object o = e.next();
+                                    if (o.toString() != null) {
+                                        valueList.add(o.toString());
+                                        log.debug("- value:=" + o.toString());
+                                    }
+                                }
+                                if (valueList.size() > 0) {
+                                    org.openiam.idm.srvc.synch.dto.Attribute rowAttr = new org.openiam.idm.srvc.synch.dto.Attribute();
+                                    rowAttr.populateAttribute(key, valueList);
+                                    rowObj.put(key, rowAttr);
+                                } else {
+                                    log.debug("- value is null");
                                 }
                             }
-                            if (valueList.size() > 0) {
-                                org.openiam.idm.srvc.synch.dto.Attribute rowAttr = new org.openiam.idm.srvc.synch.dto.Attribute();
-                                rowAttr.populateAttribute(key, valueList);
-                                rowObj.put(key, rowAttr);
-                            } else {
-                                log.debug("- value is null");
+                        }
+
+                        LastRecordTime lrt = getRowTime(rowObj);
+
+                        if (mostRecentRecord < lrt.mostRecentRecord) {
+                            mostRecentRecord = lrt.mostRecentRecord;
+                            lastRecProcessed = lrt.generalizedTime;
+                        }
+
+                        if (lineHeader == null) {
+                            lineHeader = rowObj; // get first row
+                        }
+
+                        processLineObject(rowObj, config, resultReview);
+
+                    }
+                    log.debug("LDAP Search PAGE RESULT: Page=" + pageCounter + ", rows= " + pageRowCount + " have been processed.");
+                    Control[] controls = ctx.getResponseControls();
+                    if (controls != null) {
+                        for (Control c : controls) {
+                            if (c instanceof PagedResultsResponseControl) {
+                                PagedResultsResponseControl prrc = (PagedResultsResponseControl) c;
+                                cookie = prrc.getCookie();
+                                break;
                             }
                         }
                     }
+                    ctx.setRequestControls(new Control[]{new PagedResultsControl(PAGE_SIZE, cookie, Control.CRITICAL)});
+                } while (cookie != null);
 
-                    LastRecordTime lrt = getRowTime(rowObj);
-
-                    if (mostRecentRecord < lrt.mostRecentRecord) {
-                        mostRecentRecord = lrt.mostRecentRecord;
-                        lastRecProcessed = lrt.generalizedTime;
-                    }
-
-                    if (lineHeader == null) {
-                        lineHeader = rowObj; // get first row
-                    }
-
-                    processLineObject(rowObj, config, resultReview);
-
-                }
                 log.debug("Search ldap result OU=" + baseou + " found = " + recordsInOUCounter + " records.");
             }
 
@@ -234,7 +273,41 @@ public class LdapAdapter extends AbstractSrcAdapter { // implements SourceAdapte
 
     }
 
-   public Response testConnection(SynchConfig config) {
+    private String[] getAttributeIds(SynchConfig config) {
+        String attrIds[] = {"*", "modifyTimestamp", "createTimestamp"};
+        if (StringUtils.isNotEmpty(config.getAttributeNamesLookup())) {
+            Object attrNames = new ArrayList<String>();
+            if (StringUtils.isNotBlank(config.getAttributeNamesLookup())) {
+                try {
+                    Map<String, Object> binding = new HashMap<String, Object>();
+                    binding.put("config", config);
+                    Map<String, Object> bindingMap = new HashMap<String, Object>();
+                    bindingMap.put("binding", binding);
+                    AttributeNamesLookupService lookupScript =
+                            (AttributeNamesLookupService) scriptRunner.instantiateClass(bindingMap,
+                                    config.getAttributeNamesLookup());
+                    attrNames = lookupScript.lookupPolicyMapAttributes(bindingMap);
+                } catch (Exception e) {
+                    log.error("Can't execute script", e);
+                }
+            }
+
+            List<String> attributeNames = new ArrayList<String>();
+            if (attrNames instanceof List) {
+                attributeNames = (List) attrNames;
+            } else if (attrNames instanceof Map) {
+                Map<String, String> attrNamesMap = (Map<String, String>) attrNames;
+                attributeNames = new ArrayList(attrNamesMap.keySet());
+            }
+
+            if (CollectionUtils.isNotEmpty(attributeNames)) {
+                attrIds = attributeNames.toArray(new String[0]);
+            }
+        }
+        return attrIds;
+    }
+
+    public Response testConnection(SynchConfig config) {
         try {
             if (connect(config)) {
                 Response resp = new Response(ResponseStatus.SUCCESS);
@@ -257,7 +330,7 @@ public class LdapAdapter extends AbstractSrcAdapter { // implements SourceAdapte
         } finally {
             closeConnection();
         }
-   }
+    }
 
     private LastRecordTime getRowTime(LineObject rowObj) {
         Attribute atr = rowObj.get("modifyTimestamp");
@@ -294,52 +367,6 @@ public class LdapAdapter extends AbstractSrcAdapter { // implements SourceAdapte
         return lrt;
     }
 
-    private NamingEnumeration search(String baseDn, SynchConfig config) throws NamingException, IOException {
-
-        String attrIds[] = {"*", "modifyTimestamp", "createTimestamp"};
-        if (StringUtils.isNotEmpty(config.getAttributeNamesLookup())) {
-            Object attrNames = new ArrayList<String>();
-            if (StringUtils.isNotBlank(config.getAttributeNamesLookup())) {
-                try {
-                    Map<String, Object> binding = new HashMap<String, Object>();
-                    binding.put("config", config);
-                    Map<String, Object> bindingMap = new HashMap<String, Object>();
-                    bindingMap.put("binding", binding);
-                    AttributeNamesLookupService lookupScript =
-                            (AttributeNamesLookupService) scriptRunner.instantiateClass(bindingMap,
-                                    config.getAttributeNamesLookup());
-                    attrNames = lookupScript.lookupPolicyMapAttributes(bindingMap);
-                } catch (Exception e) {
-                    log.error("Can't execute script", e);
-                }
-            }
-
-            List<String> attributeNames = new ArrayList<String>();
-            if (attrNames instanceof List) {
-                attributeNames = (List)attrNames;
-            } else if (attrNames instanceof Map) {
-                Map<String, String> attrNamesMap = (Map<String,String>)attrNames;
-                attributeNames = new ArrayList(attrNamesMap.keySet());
-            }
-
-            if (CollectionUtils.isNotEmpty(attributeNames)) {
-                attrIds = attributeNames.toArray(new String[0]);
-            }
-        }
-
-        //TimeOut Error String attrIds[] = {"objectClass",""1.1,"+","*"};
-      //  TimeOut Error String attrIds[] = {"objectClass", "*", "accountUnlockTime", "aci", "aclRights", "aclRightsInfo", "altServer", "attributeTypes", "changeHasReplFixupOp", "changeIsReplFixupOp", "copiedFrom", "copyingFrom", "createTimestamp", "creatorsName", "deletedEntryAttrs", "dITContentRules", "dITStructureRules", "dncomp", "ds-pluginDigest", "ds-pluginSignature", "ds6ruv", "dsKeyedPassword", "entrydn", "entryid", "hasSubordinates", "idmpasswd", "isMemberOf", "ldapSchemas", "ldapSyntaxes", "matchingRules", "matchingRuleUse", "modDNEnabledSuffixes", "modifiersName", "modifyTimestamp", "nameForms", "namingContexts", "nsAccountLock", "nsBackendSuffix", "nscpEntryDN", "nsds5ReplConflict", "nsIdleTimeout", "nsLookThroughLimit", "nsRole", "nsRoleDN", "nsSchemaCSN", "nsSizeLimit", "nsTimeLimit", "nsUniqueId", "numSubordinates", "objectClasses", "parentid", "passwordAllowChangeTime", "passwordExpirationTime", "passwordExpWarned", "passwordHistory", "passwordPolicySubentry", "passwordRetryCount", "pwdAccountLockedTime", "pwdChangedTime", "pwdFailureTime", "pwdGraceUseTime", "pwdHistory", "pwdLastAuthTime", "pwdPolicySubentry", "pwdReset", "replicaIdentifier", "replicationCSN", "retryCountResetTime", "subschemaSubentry", "supportedControl", "supportedExtension", "supportedLDAPVersion", "supportedSASLMechanisms", "supportedSSLCiphers", "targetUniqueId", "vendorName", "vendorVersion"};
-
-        SearchControls searchCtls = new SearchControls();
-        searchCtls.setTimeLimit(0);
-        searchCtls.setCountLimit(10000);
-        searchCtls.setSearchScope(config.getSearchScope().ordinal());
-        searchCtls.setReturningAttributes(attrIds);
-
-        log.debug("Search: base dn=" + baseDn + ", filter= " + config.getQuery() + ", attributes="+attrIds);
-        return ctx.search(baseDn, config.getQuery(), searchCtls);
-    }
-
     private boolean connect(SynchConfig config) throws NamingException {
 
         Hashtable<String, String> envDC = new Hashtable();
@@ -353,8 +380,8 @@ public class LdapAdapter extends AbstractSrcAdapter { // implements SourceAdapte
         envDC.put(Context.SECURITY_AUTHENTICATION, "simple"); // simple
         envDC.put(Context.SECURITY_PRINCIPAL, config.getSrcLoginId());  //"administrator@diamelle.local"
         envDC.put(Context.SECURITY_CREDENTIALS, config.getSrcPassword());
-    //    envDC.put(Context.BATCHSIZE, "100");
-     //   envDC.put("com.sun.jndi.ldap.read.timeout", "60000");
+        //    envDC.put(Context.BATCHSIZE, "100");
+        //   envDC.put("com.sun.jndi.ldap.read.timeout", "60000");
 
         if (hostUrl.toLowerCase().contains("ldaps")) {
             envDC.put(Context.SECURITY_PROTOCOL, "SSL");
