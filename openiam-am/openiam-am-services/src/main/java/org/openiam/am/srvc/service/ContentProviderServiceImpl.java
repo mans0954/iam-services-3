@@ -710,12 +710,12 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
 						if(StringUtils.equals(pattern.getPattern(), defaultPattern.getPattern())) {
 							pattern.setIsPublic(true);
 							if(CollectionUtils.isNotEmpty(defaultPattern.getGroupingXrefs())) {
-								final Set<AuthLevelGroupingURIPatternXrefEntity> groupingXrefs = new HashSet<>();
 								for(final AuthLevelGroupingURIPatternXrefEntity defaultGrouping : defaultPattern.getGroupingXrefs()) {
-									final AuthLevelGroupingEntity grouping = authLevelGroupingDAO.findById(defaultGrouping.getId().getGroupingId());
-									groupingXrefs.add(new AuthLevelGroupingURIPatternXrefEntity(pattern, grouping));
+									if(!pattern.hasAuthGrouping(defaultGrouping.getId().getGroupingId())) {
+										final AuthLevelGroupingEntity grouping = authLevelGroupingDAO.findById(defaultGrouping.getId().getGroupingId());
+										pattern.addGroupingXref(new AuthLevelGroupingURIPatternXrefEntity(pattern, grouping));
+									}
 								}
-								pattern.setGroupingXrefs(groupingXrefs);
 							}
 							saveURIPattern(pattern);
 						}

@@ -1,5 +1,6 @@
 package org.openiam.am.srvc.domain;
 
+import org.apache.commons.lang.StringUtils;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.GenericGenerator;
@@ -15,6 +16,7 @@ import org.openiam.idm.srvc.ui.theme.domain.UIThemeEntity;
 import javax.persistence.*;
 
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -152,6 +154,30 @@ public class URIPatternEntity implements Serializable {
 
 	public Set<AuthLevelGroupingURIPatternXrefEntity> getGroupingXrefs() {
 		return groupingXrefs;
+	}
+	
+	public void addGroupingXref(final AuthLevelGroupingURIPatternXrefEntity xref) {
+		if(xref != null) {
+			if(this.groupingXrefs == null) {
+				this.groupingXrefs = new HashSet<>();
+			}
+			this.groupingXrefs.add(xref);
+		}
+	}
+	
+	public boolean hasAuthGrouping(final String groupingId) {
+		boolean retVal = false;
+		if(groupingId != null) {
+			if(this.groupingXrefs != null) {
+				for(final AuthLevelGroupingURIPatternXrefEntity xref : this.groupingXrefs) {
+					if(StringUtils.equals(xref.getId().getGroupingId(), groupingId)) {
+						retVal = true;
+						break;
+					}
+				}
+			}
+		}
+		return retVal;
 	}
 
 	public void setGroupingXrefs(
