@@ -39,6 +39,7 @@ import org.springframework.stereotype.Component;
 import javax.naming.Context;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
+import javax.naming.ServiceUnavailableException;
 import javax.naming.directory.*;
 import javax.naming.ldap.*;
 import java.io.IOException;
@@ -162,11 +163,18 @@ public class LdapAdapter extends AbstractSrcAdapter { // implements SourceAdapte
                 byte[] cookie = null;
                 int pageCounter = 0;
                 int pageRowCount = 0;
+                NamingEnumeration results = null;
                 do {
                     pageCounter++;
                     pageRowCount = 0;
-                    NamingEnumeration results = ctx.search(baseou, config.getQuery(), searchCtls);
-                    Thread.sleep(1000);
+                    try{
+                        results = ctx.search(baseou, config.getQuery(), searchCtls);
+                    } catch(ServiceUnavailableException sux){
+                        log.error(sux);
+                        connect(config);
+                        ctx.setRequestControls(new Control[]{new PagedResultsControl(PAGE_SIZE, cookie, Control.CRITICAL)});
+                        results = ctx.search(baseou, config.getQuery(), searchCtls);
+                    }
                     while (results != null && results.hasMoreElements()) {
                         pageRowCount++;
                         totalRecords++;
@@ -227,6 +235,7 @@ public class LdapAdapter extends AbstractSrcAdapter { // implements SourceAdapte
                         }
                     }
                     ctx.setRequestControls(new Control[]{new PagedResultsControl(PAGE_SIZE, cookie, Control.CRITICAL)});
+                    Thread.sleep(1000);
                 } while (cookie != null);
 
                 log.debug("Search ldap result OU=" + baseou + " found = " + recordsInOUCounter + " records.");
