@@ -2,7 +2,10 @@ package org.openiam.provision.service;
 
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.provision.dto.ProvisionGroup;
+import org.openiam.provision.resp.LookupObjectResponse;
+import org.openiam.provision.resp.LookupUserResponse;
 import org.openiam.provision.resp.ProvisionGroupResponse;
+import org.openiam.provision.type.ExtensibleAttribute;
 
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
@@ -85,4 +88,10 @@ public interface GroupProvisionService {
             @WebParam(name = "groupId", targetNamespace = "") String groupId,
             @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
             @WebParam(name = "resourceList", targetNamespace = "") List<String> resourceList);
+
+    @WebMethod
+    LookupObjectResponse getTargetSystemObject(
+            @WebParam(name = "principalName", targetNamespace = "") String principalName,
+            @WebParam(name = "managedSysId", targetNamespace = "") String managedSysId,
+            @WebParam(name = "attributes", targetNamespace = "") List<ExtensibleAttribute> attributes);
 }

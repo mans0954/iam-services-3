@@ -84,7 +84,6 @@ import org.openiam.idm.srvc.recon.dto.ReconExecStatusOptions;
 import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
 import org.openiam.idm.srvc.recon.dto.ReconciliationResponse;
 import org.openiam.idm.srvc.recon.dto.ReconciliationSituation;
-import org.openiam.idm.srvc.recon.result.dto.ReconciliationResultAction;
 import org.openiam.idm.srvc.recon.result.dto.ReconciliationResultBean;
 import org.openiam.idm.srvc.recon.result.dto.ReconciliationResultCase;
 import org.openiam.idm.srvc.recon.result.dto.ReconciliationResultField;
@@ -97,7 +96,6 @@ import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.synch.dto.Attribute;
 import org.openiam.idm.srvc.synch.service.MatchObjectRule;
-import org.openiam.idm.srvc.synch.service.SourceAdapter;
 import org.openiam.idm.srvc.synch.srcadapter.MatchRuleFactory;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
@@ -119,6 +117,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
@@ -126,7 +125,7 @@ import org.springframework.transaction.annotation.Transactional;
  * 
  */
 @Service
-public class ReconciliationServiceImpl implements ReconciliationService, ReconciliationProcessor {
+public class ReconciliationServiceImpl implements ReconciliationService {
     @Autowired
     protected ReconciliationSituationDAO reconSituationDAO;
 
@@ -334,7 +333,7 @@ public class ReconciliationServiceImpl implements ReconciliationService, Reconci
             return reconConfigDozerMapper.convertToDTO(result, true);
     }
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRED)
     public ReconciliationResponse startReconciliation(ReconciliationConfig config) {
 
         ReconciliationConfigEntity configEntity = reconConfigDao.findById(config.getReconConfigId());
@@ -370,21 +369,22 @@ public class ReconciliationServiceImpl implements ReconciliationService, Reconci
 
             configEntity.setExecStatus(ReconExecStatusOptions.STARTED);
 
-            reconConfigDao.save(configEntity);
+            Resource res = resourceDataService.getResource(config.getResourceId(), null);
 
             // Check custom Processor script and execute if exists
             if(StringUtils.isNotEmpty(config.getCustomProcessorScript())) {
-                // TODO fill map with attributes if needed
+                // fill map with attributes if needed
                 final Map<String, Object> objectMap = new HashMap<String, Object>();
 
                 ReconciliationProcessor processor = (ReconciliationProcessor)scriptRunner.instantiateClass(objectMap, config.getCustomProcessorScript());
                 if(processor == null) {
                     throw new FileNotFoundException("The ReconciliationProcessor script '"+config.getCustomProcessorScript()+"' wasn't found. Please check the configuration.");
                 }
-                return processor.startReconciliation(config);
-            }
+                ReconciliationResponse reconciliationResponse = processor.startReconciliation(config, idmAuditLog);
 
-            Resource res = resourceDataService.getResource(config.getResourceId(), null);
+                this.sendMail(config, res);
+                return reconciliationResponse;
+            }
 
             ManagedSysEntity mSys = managedSysService.getManagedSysByResource(res.getId(), "ACTIVE");
             String managedSysId = (mSys != null) ? mSys.getId() : null;
@@ -412,7 +412,7 @@ public class ReconciliationServiceImpl implements ReconciliationService, Reconci
             Map<String, ReconciliationCommand> situations = new HashMap<String, ReconciliationCommand>();
             for (ReconciliationSituation situation : config.getSituationSet()) {
                 situations.put(situation.getSituation().trim(),
-                        commandFactory.createCommand(situation.getSituationResp(), situation, managedSysId));
+                        commandFactory.createUserCommand(situation.getSituationResp(), situation, managedSysId));
                 log.debug("Created Command for: " + situation.getSituation());
             }
             // have resource connector

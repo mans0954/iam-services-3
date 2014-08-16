@@ -33,4 +33,6 @@ public interface ReconciliationService {
 
     ReconciliationResultBean getReconciliationResult(ReconciliationConfig config,
                                                             ManualReconciliationSearchBean searchBean);
+
+    ReconciliationResponse startReconciliation(ReconciliationConfig config);
 }

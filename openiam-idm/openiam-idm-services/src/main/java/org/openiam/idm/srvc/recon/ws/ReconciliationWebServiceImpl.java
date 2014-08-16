@@ -124,7 +124,7 @@ public class ReconciliationWebServiceImpl implements ReconciliationWebService {
 
     public ReconciliationResponse startReconciliation(
             ReconciliationConfig config) {
-        return ((ReconciliationProcessor)reconService).startReconciliation(config);
+        return reconService.startReconciliation(config);
 
     }
 
