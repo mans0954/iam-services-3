@@ -141,6 +141,11 @@ public class LdapAdapter extends AbstractSrcAdapter { // implements SourceAdapte
                 ouByParent.add(config.getBaseDn().trim());
             }
             int totalRecords = 0;
+            long startTime = System.currentTimeMillis();
+
+            //Cash for records from LDAP
+            // we need it to same LDAP connection
+            List<LineObject> processingData = new LinkedList<LineObject>();
             for (String baseou : ouByParent) {
                 int recordsInOUCounter = 0;
 
@@ -171,13 +176,13 @@ public class LdapAdapter extends AbstractSrcAdapter { // implements SourceAdapte
                         results = ctx.search(baseou, config.getQuery(), searchCtls);
                     } catch(ServiceUnavailableException sux){
                         log.error(sux);
-                        connect(config);
-                        ctx.setRequestControls(new Control[]{new PagedResultsControl(PAGE_SIZE, cookie, Control.CRITICAL)});
-                        results = ctx.search(baseou, config.getQuery(), searchCtls);
+                        break;
                     }
                     while (results != null && results.hasMoreElements()) {
                         pageRowCount++;
                         totalRecords++;
+                        recordsInOUCounter++;
+                        System.out.println("LAST LDAP SYNC COUNTERS: TotalRecords="+totalRecords+"");
                         SearchResult sr = (SearchResult) results.nextElement();
                         log.debug("SearchResultElement   : " + sr.getName());
                         log.debug("Attributes: " + sr.getAttributes());
@@ -219,11 +224,11 @@ public class LdapAdapter extends AbstractSrcAdapter { // implements SourceAdapte
                         if (lineHeader == null) {
                             lineHeader = rowObj; // get first row
                         }
-
-                        processLineObject(rowObj, config, resultReview);
+                        processingData.add(rowObj);
 
                     }
                     log.debug("LDAP Search PAGE RESULT: Page=" + pageCounter + ", rows= " + pageRowCount + " have been processed.");
+
                     Control[] controls = ctx.getResponseControls();
                     if (controls != null) {
                         for (Control c : controls) {
@@ -235,11 +240,15 @@ public class LdapAdapter extends AbstractSrcAdapter { // implements SourceAdapte
                         }
                     }
                     ctx.setRequestControls(new Control[]{new PagedResultsControl(PAGE_SIZE, cookie, Control.CRITICAL)});
-                    Thread.sleep(1000);
                 } while (cookie != null);
 
                 log.debug("Search ldap result OU=" + baseou + " found = " + recordsInOUCounter + " records.");
             }
+            for (LineObject rowObj : processingData) {
+                processLineObject(rowObj, config, resultReview);
+                Thread.sleep(100);
+            }
+            System.out.println("EXECUTION TIME: "+(System.currentTimeMillis()-startTime));
 
         } catch (NamingException ne) {
             log.error(ne);
