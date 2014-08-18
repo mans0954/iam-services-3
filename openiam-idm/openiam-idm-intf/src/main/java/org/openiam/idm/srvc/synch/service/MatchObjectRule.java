@@ -2,7 +2,10 @@ package org.openiam.idm.srvc.synch.service;
 
 import java.util.Map;
 
+import org.openiam.idm.srvc.grp.dto.Group;
+import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.recon.dto.MatchConfig;
+import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.synch.dto.Attribute;
 import org.openiam.idm.srvc.user.dto.User;
 
@@ -20,6 +23,33 @@ public interface MatchObjectRule {
 	 * @return
 	 */
 	User lookup(MatchConfig matchConfig, Map<String, Attribute> rowAttr);
+
+    /**
+     * Look up the group contained in the group object with in the IDM system.
+     * The look up will be based on the match criteria defined in the config object.
+     * @param matchConfig
+     * @param rowAttr
+     * @return
+     */
+    Group lookupGroup(MatchConfig matchConfig, Map<String, Attribute> rowAttr);
+
+    /**
+     * Look up the role contained in the role object with in the IDM system.
+     * The look up will be based on the match criteria defined in the config object.
+     * @param matchConfig
+     * @param rowAttr
+     * @return
+     */
+    Role lookupRole(MatchConfig matchConfig, Map<String, Attribute> rowAttr);
+
+    /**
+     * Look up the Organization contained in the Organization object with in the IDM system.
+     * The look up will be based on the match criteria defined in the config object.
+     * @param matchConfig
+     * @param rowAttr
+     * @return
+     */
+    Organization lookupOrganization(MatchConfig matchConfig, Map<String, Attribute> rowAttr);
 
 	String getMatchAttrName() ;
 

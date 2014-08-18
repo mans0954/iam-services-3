@@ -7,12 +7,10 @@ import org.openiam.idm.srvc.grp.dto.Group;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 import java.io.Serializable;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "GroupSearchBean", propOrder = {
@@ -21,6 +19,7 @@ import java.util.Set;
         "isRootsOnly",
         "managedSysId",
         "attributes",
+        "updatedSince",
         "type"
 })
 public class GroupSearchBean extends EntitlementsSearchBean<Group, String> implements SearchBean<Group, String>, Serializable {
@@ -32,8 +31,19 @@ public class GroupSearchBean extends EntitlementsSearchBean<Group, String> imple
     private String type;
 	private boolean isRootsOnly;
 	private List<Tuple<String, String>> attributes;
-	
-	public String getName() {
+
+    @XmlSchemaType(name = "dateTime")
+    protected Date updatedSince;
+
+    public Date getUpdatedSince() {
+        return updatedSince;
+    }
+
+    public void setUpdatedSince(Date updatedSince) {
+        this.updatedSince = updatedSince;
+    }
+
+    public String getName() {
 		return name;
 	}
 	
