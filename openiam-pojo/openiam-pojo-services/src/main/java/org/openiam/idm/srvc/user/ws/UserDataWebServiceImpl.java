@@ -1085,6 +1085,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
     }
     
 	@Override
+    @Transactional(readOnly = true)
 	public List<UserAttribute> getUserAttributesInternationalized(final String userId, final Language language) {
         final List<UserAttributeEntity> attributes = userManager.getUserAttributeList(userId, languageConverter.convertToEntity(language, false));
         return userAttributeDozerConverter.convertToDTOList(attributes, true);
