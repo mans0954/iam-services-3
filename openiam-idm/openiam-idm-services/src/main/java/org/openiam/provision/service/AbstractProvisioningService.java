@@ -1469,8 +1469,10 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         }
         userReq.setHostLoginPassword(passwordDecoded);
         userReq.setHostUrl(mSys.getHostUrl());
-        userReq.setHostPort(mSys.getPort().toString());
-        
+        if (mSys.getPort() != null) {
+            userReq.setHostPort(mSys.getPort().toString());
+        }
+
         ManagedSystemObjectMatch matchObj = null;
         List<ManagedSystemObjectMatchEntity> objList = managedSystemService.managedSysObjectParam(managedSysId,
                 ManagedSystemObjectMatch.USER);
