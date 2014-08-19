@@ -276,7 +276,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
         GroupEntity groupEntity = groupManager.getGroup(groupId);
         auditLog.setTargetGroup(groupId, groupEntity.getName());
         auditLog.setRequestorUserId(requesterId);
-        auditLog.setAuditDescription(String.format("Add user to group: %s", groupId));
+        auditLog.setAuditDescription(String.format("Add user %s to group: %s", userId, groupId));
         try {
             if (groupId == null) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Group Id is null or empty");
@@ -306,10 +306,12 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
     public Response removeUserFromGroup(final String groupId, final String userId, final String requesterId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         IdmAuditLog auditLog = new IdmAuditLog();
+        GroupEntity groupEntity = groupManager.getGroup(groupId);
         auditLog.setRequestorUserId(requesterId);
         auditLog.setAction(AuditAction.REMOVE_USER_FROM_GROUP.value());
         auditLog.setTargetUser(userId, null);
-        auditLog.setAuditDescription(String.format("Remove user from group: %s", groupId));
+        auditLog.setTargetGroup(groupId, groupEntity.getName());
+        auditLog.setAuditDescription(String.format("Remove user %s from group: %s", userId, groupId));
         try {
             if (groupId == null || userId == null) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Group Id is null or empty");
