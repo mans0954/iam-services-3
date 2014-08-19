@@ -115,7 +115,7 @@ public class DefaultMatchObjectRule implements MatchObjectRule {
 
     @Override
     public Group lookupGroup(MatchConfig matchConfig, Map<String, Attribute> rowAttr) {
-        final GroupSearchBean searchBean = new GroupSearchBean();
+        GroupSearchBean searchBean = null;
         matchAttrName = matchConfig.getMatchFieldName();
         matchAttrValue = (StringUtils.isNotBlank(matchConfig.getCustomMatchAttr())) ? rowAttr.get(matchConfig.getCustomMatchAttr()).getValue() : null;
 
@@ -124,6 +124,7 @@ public class DefaultMatchObjectRule implements MatchObjectRule {
         }
 
         if (matchAttrName.equalsIgnoreCase("NAME")) {
+            searchBean = new GroupSearchBean();
             searchBean.setName(matchAttrValue);
         } else if (matchAttrName.equalsIgnoreCase("ATTRIBUTE")) {
             System.out.println("- cofiguring search by attribute..");
@@ -133,6 +134,7 @@ public class DefaultMatchObjectRule implements MatchObjectRule {
             System.out.println("- src field value=.." + matchAttrValue);
             matchAttrName = matchConfig.getMatchSrcFieldName();
 
+            searchBean = new GroupSearchBean();
             searchBean.addAttribute(matchAttrName, matchAttrValue);
 
         } else  if (matchAttrName.equalsIgnoreCase("IDENTITY")) {
@@ -142,16 +144,18 @@ public class DefaultMatchObjectRule implements MatchObjectRule {
             identitySearchBean.setIdentity(matchAttrValue);
             List<IdentityDto> dtos = identityService.findByExample(identitySearchBean, null, 0, Integer.MAX_VALUE);
             if(dtos != null && !dtos.isEmpty()) {
+                searchBean = new GroupSearchBean();
                 for(IdentityDto dto : dtos) {
                     searchBean.addKey(dto.getReferredObjectId());
                 }
             }
         }
-
-        List<GroupEntity> groupEntities = groupManager.findBeans(searchBean,null,0,Integer.MAX_VALUE);
-        if (groupEntities != null && !groupEntities.isEmpty()) {
-            System.out.println("Group matched with existing group...");
-            return groupDozerConverter.convertToDTO(groupEntities.get(0), true);
+        if(searchBean != null){
+            List<GroupEntity> groupEntities = groupManager.findBeans(searchBean,null,0,Integer.MAX_VALUE);
+            if (groupEntities != null && !groupEntities.isEmpty()) {
+                System.out.println("Group matched with existing group...");
+                return groupDozerConverter.convertToDTO(groupEntities.get(0), true);
+            }
         }
         return null;
     }

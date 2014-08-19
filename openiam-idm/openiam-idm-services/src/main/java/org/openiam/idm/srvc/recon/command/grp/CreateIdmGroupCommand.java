@@ -4,6 +4,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.BaseAttribute;
+import org.openiam.base.ws.Response;
 import org.openiam.idm.srvc.auth.dto.IdentityDto;
 import org.openiam.idm.srvc.auth.login.IdentityService;
 import org.openiam.idm.srvc.grp.dto.Group;
@@ -76,16 +77,17 @@ public class CreateIdmGroupCommand  implements ReconciliationObjectCommand<Group
                 pGroup.setSrcSystemId(identity.getManagedSysId());
                 int retval = script.execute(line, pGroup);
                 if(retval == 0) {
-                    groupDataWebService.saveGroup(group,"3000");
+                    Response responce = groupDataWebService.saveGroup(pGroup,"3000");
+                    identity.setReferredObjectId((String)responce.getResponseValue());
                     identityService.save(identity);
                     provisionService.addGroup(pGroup);
                 }else{
-                    log.debug("Couldn't populate ProvisionUser. User not added");
+                    log.debug("Couldn't populate ProvisionGroup. Group not added");
                     return false;
                 }
                 return true;
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
+      //      } catch (ClassNotFoundException e) {
+      //          e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
             } catch (Exception e) {
