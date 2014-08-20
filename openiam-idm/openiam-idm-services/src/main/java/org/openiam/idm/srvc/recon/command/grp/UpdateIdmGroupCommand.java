@@ -4,12 +4,18 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.BaseAttribute;
+import org.openiam.base.ws.Response;
 import org.openiam.idm.srvc.auth.dto.IdentityDto;
 import org.openiam.idm.srvc.grp.dto.Group;
+import org.openiam.idm.srvc.grp.service.GroupDataService;
+import org.openiam.idm.srvc.grp.ws.GroupDataWebService;
 import org.openiam.idm.srvc.recon.dto.ReconciliationSituation;
 import org.openiam.idm.srvc.recon.service.PopulationScript;
 import org.openiam.idm.srvc.recon.service.ReconciliationObjectCommand;
+import org.openiam.idm.srvc.res.dto.Resource;
+import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.openiam.provision.dto.ProvisionGroup;
 import org.openiam.provision.resp.ProvisionGroupResponse;
 import org.openiam.provision.service.AbstractProvisioningService;
@@ -21,17 +27,22 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class UpdateIdmGroupCommand  implements ReconciliationObjectCommand<Group> {
     private GroupProvisionService provisionService;
+    private GroupDataWebService groupDataService;
+    private ResourceDataService resourceDataService;
     private ReconciliationSituation config;
     private static final Log log = LogFactory.getLog(UpdateIdmGroupCommand.class);
     private final ScriptIntegration scriptRunner;
 
-    public UpdateIdmGroupCommand(GroupProvisionService provisionService, ReconciliationSituation config, ScriptIntegration scriptRunner) {
+    public UpdateIdmGroupCommand(GroupDataWebService groupDataService, GroupProvisionService provisionService, ResourceDataService resourceDataService, ReconciliationSituation config, ScriptIntegration scriptRunner) {
         this.provisionService = provisionService;
         this.config = config;
         this.scriptRunner = scriptRunner;
+        this.groupDataService = groupDataService;
+        this.resourceDataService = resourceDataService;
     }
 
     public boolean execute(IdentityDto identity, Group group, List<ExtensibleAttribute> attributes) {
@@ -69,9 +80,20 @@ public class UpdateIdmGroupCommand  implements ReconciliationObjectCommand<Group
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-            ProvisionGroupResponse response = provisionService.modifyGroup(pGroup);
-            return response.isSuccess();
-        }
+                Set<Resource> resources = pGroup.getResources();
+
+                Response grpResp = groupDataService.saveGroup(pGroup, "3000");
+                String groupId = (String) grpResp.getResponseValue();
+                for (Resource res : resources) {
+                    if (res.getOperation() == AttributeOperationEnum.ADD) {
+                        resourceDataService.addGroupToResource(res.getId(), groupId, "3000");
+                    } else if (res.getOperation() == AttributeOperationEnum.DELETE) {
+                        resourceDataService.removeGroupToResource(res.getId(), groupId, "3000");
+                    }
+                }
+                ProvisionGroupResponse response = provisionService.modifyGroup(pGroup);
+                return response.isSuccess();
+            }
         return false;
     }
 

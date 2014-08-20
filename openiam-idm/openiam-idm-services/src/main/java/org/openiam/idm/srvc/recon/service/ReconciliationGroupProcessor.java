@@ -19,7 +19,6 @@ import org.openiam.idm.searchbeans.GroupSearchBean;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
-import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.IdentityDto;
 import org.openiam.idm.srvc.auth.dto.IdentityTypeEnum;
 import org.openiam.idm.srvc.auth.login.IdentityService;
@@ -575,7 +574,7 @@ public class ReconciliationGroupProcessor implements ReconciliationProcessor {
                 // situation TARGET EXIST, IDM EXIST do modify
                 // if user exists but don;t have principal for current target
                 // sys
-                ReconciliationObjectCommand command = situations.get(ReconciliationCommand.IDM_EXISTS__SYS_EXISTS);
+                ReconciliationObjectCommand<Group> command = situations.get(ReconciliationCommand.IDM_EXISTS__SYS_EXISTS);
                 if (command != null) {
                     ProvisionGroup newGroup = new ProvisionGroup(gr);
                     newGroup.setSrcSystemId(mSys.getId());
