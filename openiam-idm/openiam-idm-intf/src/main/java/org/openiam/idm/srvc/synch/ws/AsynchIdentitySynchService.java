@@ -1,9 +1,7 @@
 package org.openiam.idm.srvc.synch.ws;
 
 import org.openiam.base.ws.Response;
-import org.openiam.idm.srvc.synch.dto.BulkMigrationConfig;
-import org.openiam.idm.srvc.synch.dto.SyncResponse;
-import org.openiam.idm.srvc.synch.dto.SynchConfig;
+import org.openiam.idm.srvc.synch.dto.*;
 
 import java.util.*;
 
@@ -22,6 +20,10 @@ public interface AsynchIdentitySynchService {
 			@WebParam(name = "config", targetNamespace = "")
 			SynchConfig config);
 
+    @WebMethod
+    void executeSynchReview(
+            @WebParam(name = "synchReviewRequest", targetNamespace = "")
+            SynchReviewRequest synchReviewRequest);
 
     /**
      * Moves a set of users from resource or role. Users are selected based on some search criteria defined in the

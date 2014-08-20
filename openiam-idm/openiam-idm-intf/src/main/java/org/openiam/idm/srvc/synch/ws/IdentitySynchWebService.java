@@ -7,10 +7,7 @@ import javax.jws.WebService;
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.AttributeMapSearchBean;
 import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
-import org.openiam.idm.srvc.synch.dto.BulkMigrationConfig;
-import org.openiam.idm.srvc.synch.dto.SyncResponse;
-import org.openiam.idm.srvc.synch.dto.SynchConfig;
-import org.openiam.idm.srvc.synch.dto.SynchConfigSearchBean;
+import org.openiam.idm.srvc.synch.dto.*;
 
 import java.util.List;
 
@@ -74,6 +71,11 @@ public interface IdentitySynchWebService {
 	SyncResponse startSynchronization(
 			@WebParam(name = "config", targetNamespace = "")
 			SynchConfig config);
+
+    @WebMethod
+    SynchReviewResponse executeSynchReview(
+            @WebParam(name = "synchReviewRequest", targetNamespace = "")
+            SynchReviewRequest synchReviewRequest);
 
     @WebMethod
     public Integer getSynchConfigCount(

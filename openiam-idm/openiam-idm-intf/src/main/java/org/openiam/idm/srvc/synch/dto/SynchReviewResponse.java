@@ -8,7 +8,7 @@ import java.util.Date;
 
 
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "SyncResponse", propOrder = {
+@XmlType(name = "SyncReviewResponse", propOrder = {
         "status",
         "errorCode",
         "errorText"
