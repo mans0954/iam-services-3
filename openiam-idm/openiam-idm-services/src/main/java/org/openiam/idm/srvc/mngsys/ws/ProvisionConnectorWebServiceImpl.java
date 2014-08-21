@@ -24,8 +24,7 @@ import java.util.List;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
-
-
+import org.springframework.transaction.annotation.Transactional;
 
 
 @Service("provisionConnectorWebService")
@@ -112,6 +111,7 @@ public class ProvisionConnectorWebServiceImpl implements
     }
 
 	@Override
+    @Transactional(readOnly = true)
 	public ProvisionConnectorDto getProvisionConnector(
 			@WebParam(name = "conId", targetNamespace = "") String conId) {
 		ProvisionConnectorEntity connectorEntity = connectorService

@@ -270,6 +270,7 @@ public class OrganizationDataServiceImpl extends AbstractBaseService implements 
     }
 
     @Override
+    @Transactional
     public Response saveOrganization(final Organization organization, final String requestorId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {

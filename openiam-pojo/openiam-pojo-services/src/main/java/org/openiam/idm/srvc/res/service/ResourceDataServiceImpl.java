@@ -346,6 +346,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
     }
 
     @Override
+    @Transactional
     public Response addUserToResource(final String resourceId, final String userId, final String requesterId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         IdmAuditLog idmAuditLog = new IdmAuditLog ();
@@ -736,6 +737,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
 
     @Override
     @LocalizedServiceGet
+    @Transactional(readOnly=true)
     public List<Resource> getResourcesForUserByType(final String userId, final String resourceTypeId, final ResourceSearchBean searchBean, final Language language) {
       final List<ResourceEntity> entityList = resourceService.getResourcesForUserByType(userId, resourceTypeId, searchBean);
       return resourceConverter.convertToDTOList(entityList, true);
@@ -784,6 +786,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
 
     @Override
     @LocalizedServiceGet
+    @Transactional(readOnly=true)
     public List<ResourceType> findResourceTypes(final ResourceTypeSearchBean searchBean, final int from, final int size, final Language language) {
         final List<ResourceTypeEntity> entityList = resourceService.findResourceTypes(searchBean, from, size);
         return resourceTypeConverter.convertToDTOList(entityList, searchBean.isDeepCopy());
