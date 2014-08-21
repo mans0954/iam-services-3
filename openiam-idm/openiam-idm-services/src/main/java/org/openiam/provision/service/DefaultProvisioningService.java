@@ -1849,6 +1849,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         return value;
     }
 
+    @Transactional(readOnly = true)
     private Set<Resource> getResourcesForRoles(Set<Role> roleSet) {
         log.debug("GetResourcesForRole().....");
         final Set<Resource> resourceList = new HashSet<Resource>();

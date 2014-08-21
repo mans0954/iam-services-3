@@ -42,6 +42,7 @@ import org.openiam.idm.srvc.pswd.dto.UserIdentityAnswer;
 import org.openiam.internationalization.LocalizedServiceGet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.jws.WebService;
 import java.util.HashSet;
@@ -82,6 +83,7 @@ public class ChallengeResponseWebServiceImpl implements ChallengeResponseWebServ
 	
 	@Override
 	@LocalizedServiceGet
+    @Transactional(readOnly = true)
 	public IdentityQuestion getQuestion(final String questionId, final Language language) {
 		final IdentityQuestionEntity question = challengeResponseService.getQuestion(questionId);
 		return (question != null) ? questionDozerConverter.convertToDTO(question, false) : null;
@@ -90,12 +92,14 @@ public class ChallengeResponseWebServiceImpl implements ChallengeResponseWebServ
 
 	@Override
 	@LocalizedServiceGet
+    @Transactional(readOnly = true)
 	public List<IdentityQuestion> findQuestionBeans(final IdentityQuestionSearchBean searchBean, final int from, final int size, final Language language) {
 		final List<IdentityQuestionEntity> resultList = challengeResponseService.findQuestionBeans(searchBean, from, size);
 		return (resultList != null) ? questionDozerConverter.convertToDTOList(resultList, searchBean.isDeepCopy()) : null;
 	}
 
 	@Override
+    @Transactional(readOnly = true)
 	public List<UserIdentityAnswer> findAnswerBeans(final IdentityAnswerSearchBean searchBean, final  String requesterId, final int from, final int size)
             throws Exception {
 		final List<UserIdentityAnswerEntity> resultList = challengeResponseService

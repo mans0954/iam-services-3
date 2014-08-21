@@ -11,7 +11,7 @@
 
     <!-- JMS -->
 
-    <jee:jndi-lookup id="connectionFactory" jndi-name="java:/JmsXA" expected-type="javax.jms.ConnectionFactory" />
+    <jee:jndi-lookup id="connectionFactory" jndi-name="${jms.connection.factory.jndi.name}" expected-type="javax.jms.ConnectionFactory" />
 
     <bean id="jmsTemplate" class="org.springframework.jms.core.JmsTemplate">
         <property name="connectionFactory" ref="connectionFactory" />
@@ -25,7 +25,7 @@
         <!--<property name="maxPoolSize" value="5" />-->
     </bean>
 
-	<jee:jndi-lookup id="mailQueue" jndi-name="queue/mail" expected-type="javax.jms.Queue" />
+	<jee:jndi-lookup id="mailQueue" jndi-name="${jms.queue.mail}" expected-type="javax.jms.Queue" />
     <bean id="jmsContainer" class="org.springframework.jms.listener.DefaultMessageListenerContainer">
         <property name="connectionFactory" ref="connectionFactory" />
         <property name="destination" ref="mailQueue" />
@@ -38,13 +38,13 @@
     </bean>
 
 
-	<jee:jndi-lookup id="logQueue" jndi-name="queue/log" expected-type="javax.jms.Queue" />
+	<jee:jndi-lookup id="logQueue" jndi-name="${jms.queue.log}" expected-type="javax.jms.Queue" />
 
-    <jee:jndi-lookup id="provQueue" jndi-name="queue/prov" expected-type="javax.jms.Queue" />
+    <jee:jndi-lookup id="provQueue" jndi-name="${jms.queue.prov}" expected-type="javax.jms.Queue" />
 
-    <jee:jndi-lookup id="subsQueue" jndi-name="queue/subs" expected-type="javax.jms.Queue" />
+    <jee:jndi-lookup id="subsQueue" jndi-name="${jms.queue.subs}" expected-type="javax.jms.Queue" />
 
 
-    <jee:jndi-lookup id="metaElementQueue" jndi-name="queue/metaElem" expected-type="javax.jms.Queue" />
+    <jee:jndi-lookup id="metaElementQueue" jndi-name="${jms.queue.metaelem}" expected-type="javax.jms.Queue" />
 
 </beans>

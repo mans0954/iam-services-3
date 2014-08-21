@@ -157,6 +157,7 @@ public class BatchDataServiceImpl implements BatchDataService, ApplicationContex
 	}
 
 	@Override
+    @Transactional(readOnly = true)
 	public BatchTask getBatchTask(String taskId) {
 		final BatchTaskEntity entity = batchService.findById(taskId);
 		return converter.convertToDTO(entity, true);
@@ -183,6 +184,7 @@ public class BatchDataServiceImpl implements BatchDataService, ApplicationContex
 	}
 
 	@Override
+    @Transactional(readOnly = true)
 	public List<BatchTask> findBeans(final BatchTaskSearchBean searchBean, final int from, final int size) {
 		final BatchTaskEntity entity = searchBeanConverter.convert(searchBean);
 		final List<BatchTaskEntity> entityList = batchService.findBeans(entity, from, size);
