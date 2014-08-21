@@ -404,7 +404,10 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         idmAuditLog.setRequestorUserId(requestorId);
         LoginEntity lRequestor = loginManager.getPrimaryIdentity(requestorId);
         idmAuditLog.setRequestorPrincipal(lRequestor.getLogin());
-        idmAuditLog.setAction(AuditAction.PROVISIONING_DELETE.value());
+        final String action = (status == UserStatusEnum.DELETED)
+                ? AuditAction.USER_DEACTIVATE.value()
+                : AuditAction.PROVISIONING_DELETE.value();
+        idmAuditLog.setAction(action);
 
         if (auditLog != null) {
             auditLog.addChild(idmAuditLog);
