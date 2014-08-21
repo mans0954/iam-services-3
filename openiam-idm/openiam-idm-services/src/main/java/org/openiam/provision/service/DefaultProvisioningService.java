@@ -1272,7 +1272,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                             // => we should skip it from double provisioning
                             // reconciliation case
                             ManagedSysDto managedSys = managedSysService.getManagedSys(pUser.getSrcSystemId());
-                            if (res.getId().equals(managedSys.getResourceId())) {
+                            if (res.getId().equalsIgnoreCase(managedSys.getResourceId())) {
                                 continue;
                             }
                         }

@@ -12,39 +12,49 @@ import org.openiam.idm.srvc.grp.ws.GroupDataWebService;
 import org.openiam.idm.srvc.recon.dto.ReconciliationSituation;
 import org.openiam.idm.srvc.recon.service.PopulationScript;
 import org.openiam.idm.srvc.recon.service.ReconciliationObjectCommand;
+import org.openiam.idm.srvc.user.domain.UserEntity;
+import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.dto.ProvisionGroup;
 import org.openiam.provision.service.AbstractProvisioningService;
 import org.openiam.provision.service.GroupProvisionService;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.script.ScriptIntegration;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Component("createIdmGroupCommand")
 public class CreateIdmGroupCommand  implements ReconciliationObjectCommand<Group> {
-    public static final String OPENIAM_MANAGED_SYS_ID = "0";
-    private GroupProvisionService provisionService;
-    private ReconciliationSituation config;
     private static final Log log = LogFactory.getLog(CreateIdmGroupCommand.class);
-    private GroupDataWebService groupDataWebService;
-    private IdentityService identityService;
-    private final ScriptIntegration scriptRunner;
 
-    public CreateIdmGroupCommand(final GroupDataWebService groupDataWebService,
-                                 final IdentityService identityService,
-                                 final GroupProvisionService provisionService,
-                                 final ReconciliationSituation config,
-                                 final ScriptIntegration scriptRunner) {
-        this.groupDataWebService = groupDataWebService;
-        this.identityService = identityService;
-        this.provisionService = provisionService;
-        this.config = config;
-        this.scriptRunner = scriptRunner;
+    @Autowired
+    @Qualifier("groupProvision")
+    private GroupProvisionService provisionService;
+
+    @Autowired
+    private GroupDataWebService groupDataWebService;
+
+    @Autowired
+    @Qualifier("identityManager")
+    private IdentityService identityService;
+
+    @Autowired
+    @Qualifier("userManager")
+    private UserDataService userManager;
+
+    @Autowired
+    @Qualifier("configurableGroovyScriptEngine")
+    private ScriptIntegration scriptRunner;
+
+    public CreateIdmGroupCommand() {
     }
 
-    public boolean execute(IdentityDto identity, Group group, List<ExtensibleAttribute> attributes) {
+    public boolean execute(ReconciliationSituation config, IdentityDto identity, Group group, List<ExtensibleAttribute> attributes) {
         log.debug("Entering CreateIdmGroupCommand");
         if(attributes == null){
             log.debug("Can't create IDM group without attributes");
@@ -78,16 +88,22 @@ public class CreateIdmGroupCommand  implements ReconciliationObjectCommand<Group
                 int retval = script.execute(line, pGroup);
                 if(retval == 0) {
                     Response responce = groupDataWebService.saveGroup(pGroup,"3000");
-                    identity.setReferredObjectId((String)responce.getResponseValue());
+                    String groupId = (String)responce.getResponseValue();
+                    identity.setReferredObjectId(groupId);
                     identityService.save(identity);
                     provisionService.addGroup(pGroup);
+                    for(String memberPrincipal : pGroup.getMembersIds()) {
+                        UserEntity user = userManager.getUserByPrincipal(memberPrincipal, identity.getManagedSysId(), false);
+                        if(user != null) {
+                            Response response = groupDataWebService.addUserToGroup(groupId, user.getId(), "3000");
+                            log.debug("User Member with principal = "+memberPrincipal+" was added to Group = "+identity.getIdentity() + " Managed Sys = "+identity.getManagedSysId() + ". \nResponse = "+response);
+                        }
+                    }
                 }else{
                     log.debug("Couldn't populate ProvisionGroup. Group not added");
                     return false;
                 }
                 return true;
-      //      } catch (ClassNotFoundException e) {
-      //          e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
             } catch (Exception e) {

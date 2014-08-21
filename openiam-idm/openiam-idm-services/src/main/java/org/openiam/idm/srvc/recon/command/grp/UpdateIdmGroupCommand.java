@@ -9,7 +9,6 @@ import org.openiam.base.BaseAttribute;
 import org.openiam.base.ws.Response;
 import org.openiam.idm.srvc.auth.dto.IdentityDto;
 import org.openiam.idm.srvc.grp.dto.Group;
-import org.openiam.idm.srvc.grp.service.GroupDataService;
 import org.openiam.idm.srvc.grp.ws.GroupDataWebService;
 import org.openiam.idm.srvc.recon.dto.ReconciliationSituation;
 import org.openiam.idm.srvc.recon.service.PopulationScript;
@@ -22,6 +21,9 @@ import org.openiam.provision.service.AbstractProvisioningService;
 import org.openiam.provision.service.GroupProvisionService;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.script.ScriptIntegration;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -29,23 +31,28 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+@Component("updateIdmGroupCommand")
 public class UpdateIdmGroupCommand  implements ReconciliationObjectCommand<Group> {
-    private GroupProvisionService provisionService;
-    private GroupDataWebService groupDataService;
-    private ResourceDataService resourceDataService;
-    private ReconciliationSituation config;
     private static final Log log = LogFactory.getLog(UpdateIdmGroupCommand.class);
-    private final ScriptIntegration scriptRunner;
 
-    public UpdateIdmGroupCommand(GroupDataWebService groupDataService, GroupProvisionService provisionService, ResourceDataService resourceDataService, ReconciliationSituation config, ScriptIntegration scriptRunner) {
-        this.provisionService = provisionService;
-        this.config = config;
-        this.scriptRunner = scriptRunner;
-        this.groupDataService = groupDataService;
-        this.resourceDataService = resourceDataService;
+    @Autowired
+    @Qualifier("groupProvision")
+    private GroupProvisionService provisionService;
+
+    @Autowired
+    private GroupDataWebService groupDataService;
+
+    @Autowired
+    private ResourceDataService resourceDataService;
+
+    @Autowired
+    @Qualifier("configurableGroovyScriptEngine")
+    private ScriptIntegration scriptRunner;
+
+    public UpdateIdmGroupCommand() {
     }
 
-    public boolean execute(IdentityDto identity, Group group, List<ExtensibleAttribute> attributes) {
+    public boolean execute(ReconciliationSituation config, IdentityDto identity, Group group, List<ExtensibleAttribute> attributes) {
         log.debug("Entering UpdateIdmGroupCommand");
             ProvisionGroup pGroup = new ProvisionGroup(group);
             pGroup.setSrcSystemId(identity.getManagedSysId());
