@@ -28,8 +28,12 @@ public class BatchTaskSpringThread extends AbstractBatchTaskThread {
 					final Method method = ReflectionUtils.findMethod(obj.getClass(), entity.getSpringBeanMethod());
 					if(method != null) {
 						method.invoke(obj, null);
-                        entity.setLastExecTime(startDate);
-                        batchService.save(entity);
+                        BatchTaskEntity batchTaskEntity = batchService.findById(entity.getId());
+                        if (batchTaskEntity != null) {
+                            batchTaskEntity.setLastExecTime(startDate);
+                            batchService.save(batchTaskEntity);
+                            entity = batchTaskEntity;
+                        }
 					}
 				}
 			} catch(Throwable e) {

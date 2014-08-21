@@ -46,6 +46,8 @@ import org.springframework.jms.JmsException;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.jms.core.MessageCreator;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * WS for report system
@@ -146,6 +148,7 @@ public class ReportWebServiceImpl implements ReportWebService {
     }
 
 	@Override
+    @Transactional()
 	public GetAllReportsResponse getReports(final int from, final int size) {
 		List<ReportInfoEntity> reports = reportDataService.getAllReports(from,
 				size);
@@ -321,6 +324,7 @@ public class ReportWebServiceImpl implements ReportWebService {
 	}
 
 	@Override
+    @Transactional(readOnly = true)
 	public GetReportParametersResponse getReportParametersByReportId(
 			@WebParam(name = "reportId", targetNamespace = "") String reportId) {
 		GetReportParametersResponse response = new GetReportParametersResponse();
@@ -344,6 +348,7 @@ public class ReportWebServiceImpl implements ReportWebService {
 	}
 
 	@Override
+    @Transactional(readOnly = true)
 	public GetReportParametersResponse getReportParametersByReportName(
 			@WebParam(name = "reportName", targetNamespace = "") String reportName) {
 		GetReportParametersResponse response = new GetReportParametersResponse();
@@ -367,6 +372,7 @@ public class ReportWebServiceImpl implements ReportWebService {
 	}
 
 	@Override
+    @Transactional(readOnly = true)
 	public GetReportInfoResponse getReportByName(
 			@WebParam(name = "reportName", targetNamespace = "") String reportName) {
 		GetReportInfoResponse response = new GetReportInfoResponse();
@@ -387,6 +393,7 @@ public class ReportWebServiceImpl implements ReportWebService {
 	}
 
 	@Override
+    @Transactional(readOnly = true)
 	public GetReportInfoResponse getReport(
 			@WebParam(name = "reportId", targetNamespace = "") String reportId) {
 		GetReportInfoResponse response = new GetReportInfoResponse();
@@ -647,6 +654,7 @@ public class ReportWebServiceImpl implements ReportWebService {
 	}
 
 	@Override
+    @Transactional(readOnly = true)
 	public GetSubscribedReportResponse getSubscribedReportById(
 			@WebParam(name = "reportId", targetNamespace = "") String reportId) {
 

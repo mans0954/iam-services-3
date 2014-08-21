@@ -463,6 +463,7 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
 	}
 	
 	@Override
+    @Transactional(readOnly = true)
 	public Login findById(final String loginId) {
 		final LoginEntity entity = loginDS.getLoginDetails(loginId);
 		return (entity != null) ? loginDozerConverter.convertToDTO(entity, true) : null;
