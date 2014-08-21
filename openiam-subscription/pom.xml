@@ -6,14 +6,14 @@
     <parent>
         <groupId>org.openiam</groupId>
         <artifactId>iam-services</artifactId>
-        <version>3.2.0</version>
+        <version>3.3.0</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.openiam</groupId>
     <artifactId>openiam-subscription</artifactId>
     <name>openiam-subscription</name>
-    <version>3.2.0</version>
+    <version>3.3.0</version>
     <packaging>war</packaging>
     <description>OpenIAM report subcsription service.</description>
 
@@ -22,7 +22,7 @@
         <birt.version>4.2.0</birt.version>
         <log4j.version>1.2.16</log4j.version>
         <aopalliance.version>1.0</aopalliance.version>
-        <openiam.esb.version>3.2.0</openiam.esb.version>
+        <openiam.esb.version>3.3.0</openiam.esb.version>
         <javax.jms.version>1.1</javax.jms.version>
         <cxf.version>2.5.1</cxf.version>
         <quartz.version>1.5.2</quartz.version>

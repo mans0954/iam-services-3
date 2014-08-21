@@ -3,13 +3,13 @@
     <parent>
         <groupId>org.openiam</groupId>
         <artifactId>openiam-common</artifactId>
-        <version>3.2.0</version>
+        <version>3.3.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.openiam</groupId>
     <artifactId>openiam-common-intf</artifactId>
     <name>openiam-common-intf</name>
-    <version>3.2.0</version>
+    <version>3.3.0</version>
     <description>OpenIAM Common Module for Utilities</description>
 
     <build>
