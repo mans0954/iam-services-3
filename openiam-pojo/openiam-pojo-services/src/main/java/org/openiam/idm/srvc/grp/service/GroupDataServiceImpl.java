@@ -346,6 +346,7 @@ public class GroupDataServiceImpl implements GroupDataService {
 					if(group.getAdminResource() == null) {
 						group.setAdminResource(getNewAdminResource(group, requestorId));
 					}
+					group.getAdminResource().setCoorelatedName(group.getName());
 				} else {
 					return;
 				}
@@ -382,6 +383,7 @@ public class GroupDataServiceImpl implements GroupDataService {
 		adminResource.setName(String.format("GRP_ADMIN_%s_%s", entity.getName(), RandomStringUtils.randomAlphanumeric(2)));
 		adminResource.setResourceType(resourceTypeDAO.findById(adminResourceTypeId));
 		adminResource.addUser(userDAO.findById(requestorId));
+		adminResource.setCoorelatedName(entity.getName());
 		return adminResource;
 	}
 	

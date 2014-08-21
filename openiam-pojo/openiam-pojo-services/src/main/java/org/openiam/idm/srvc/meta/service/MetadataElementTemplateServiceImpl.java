@@ -143,12 +143,16 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
 				final MetadataElementPageTemplateEntity dbEntity = pageTemplateDAO.findById(entity.getId());
 				if(dbEntity != null) {
 					entity.setResource(dbEntity.getResource());
+					if(entity.getResource() != null) {
+						entity.getResource().setCoorelatedName(entity.getName());
+					}
 				}
 			} else {
 				final ResourceEntity resource = new ResourceEntity();
 				resource.setName(entity.getName() + "_" + System.currentTimeMillis());
 	            resource.setResourceType(resourceTypeDAO.findById(uiTemplateResourceType));
 	            resource.setIsPublic(true);
+	            resource.setCoorelatedName(entity.getName());
 	            resourceDAO.save(resource);
 	            entity.setResource(resource);
 			}

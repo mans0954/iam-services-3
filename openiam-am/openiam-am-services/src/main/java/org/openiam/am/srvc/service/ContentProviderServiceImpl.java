@@ -145,6 +145,7 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
             resource.setResourceType(resourceType);
             resource.setId(null);
             resource.setIsPublic(false);
+            resource.setCoorelatedName(provider.getName());
             resource.setURL(cpURL);
             resourceDao.save(resource);
             
@@ -175,6 +176,7 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
         		//dbEntity.setManagedSystem(provider.getManagedSystem());
         		dbEntity.setName(provider.getName());
         		dbEntity.getResource().setURL(cpURL);
+        		dbEntity.getResource().setCoorelatedName(provider.getName());
         		dbEntity.setManagedSystem(managedSys);
         		dbEntity.setUiTheme(theme);
         		dbEntity.setShowOnApplicationPage(provider.isShowOnApplicationPage());
@@ -331,6 +333,7 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
             resource.setResourceType(resourceType);
             resource.setId(null);
             resource.setIsPublic(false);
+            resource.setCoorelatedName(String.format("%s - %s", contentProvider.getName(), pattern.getPattern()));
             resourceDao.add(resource);
 
             pattern.setResource(resource);
@@ -404,6 +407,10 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
         				}
     				}
     				dbEntity.getGroupingXrefs().addAll(newXrefs);
+        		}
+        		
+        		if(dbEntity.getResource() != null) {
+        			dbEntity.getResource().setCoorelatedName(String.format("%s - %s", pattern.getContentProvider().getName(), pattern.getPattern()));
         		}
         		
         		uriPatternDao.update(dbEntity);
