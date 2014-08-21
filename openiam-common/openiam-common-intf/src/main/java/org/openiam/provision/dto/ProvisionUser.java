@@ -86,7 +86,7 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
     private String parentAuditLogId;
     /*
      * ID of the system where this request came from. If this value is set, then
-     * in the modify operation, that resource will not be updated.
+     * in the modify operation, that ManagedSys ID will not be updated.
      */
     protected String srcSystemId;
     /*

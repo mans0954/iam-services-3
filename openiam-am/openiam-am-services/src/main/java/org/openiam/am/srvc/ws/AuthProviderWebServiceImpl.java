@@ -24,6 +24,7 @@ import org.openiam.base.ws.ResponseStatus;
 import org.openiam.exception.BasicDataServiceException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.jws.WebService;
 import java.util.*;
@@ -58,11 +59,13 @@ public class AuthProviderWebServiceImpl implements AuthProviderWebService {
     *===================================================
     */
     @Override
+    @Transactional(readOnly = true)
     public AuthProviderType getAuthProviderType(String providerType) {
         return authProviderTypeDozerConverter.convertToDTO(authProviderService.getAuthProviderType(providerType), true);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<AuthProviderType> getAuthProviderTypeList() {
         return authProviderTypeDozerConverter.convertToDTOList(authProviderService.getAuthProviderTypeList(), true);
     }
@@ -113,6 +116,7 @@ public class AuthProviderWebServiceImpl implements AuthProviderWebService {
     *===================================================
     */
     @Override
+    @Transactional(readOnly = true)
     public List<AuthAttribute> findAuthAttributeBeans(AuthAttributeSearchBean searchBean, Integer size, Integer from) {
 
         final AuthAttributeEntity entity = authAttributeSearchBeanConverter.convert(searchBean);
@@ -216,6 +220,7 @@ public class AuthProviderWebServiceImpl implements AuthProviderWebService {
     *===================================================
     */
     @Override
+    @Transactional(readOnly = true)
     public List<AuthProvider> findAuthProviderBeans(AuthProviderSearchBean searchBean,Integer size,Integer from) {
         final AuthProviderEntity entity = authProviderSearchBeanConverter.convert(searchBean);
         final List<AuthProviderEntity> providerList = authProviderService.findAuthProviderBeans(entity, size, from);
@@ -392,11 +397,13 @@ public class AuthProviderWebServiceImpl implements AuthProviderWebService {
     *===================================================
     */
     @Override
+    @Transactional(readOnly = true)
     public AuthProviderAttribute getAuthProviderAttribute(String providerId, String name) {
         return authProviderAttributeDozerConverter.convertToDTO(authProviderService.getAuthProviderAttribute(providerId, name), true);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<AuthProviderAttribute> getAuthProviderAttributeList(String providerId,Integer size,Integer from) {
         return authProviderAttributeDozerConverter.convertToDTOList(authProviderService.getAuthProviderAttributeList(providerId, size, from), true);
     }

@@ -45,6 +45,7 @@ import org.openiam.idm.srvc.synch.service.IdentitySynchService;
 import org.openiam.idm.srvc.synch.service.SynchReviewService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @author suneet
@@ -173,6 +174,7 @@ public class IdentitySynchWebServiceImpl implements IdentitySynchWebService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<AttributeMap> getSynchConfigAttributeMaps(String synchConfigId) {
         if (synchConfigId == null) {
             throw new IllegalArgumentException("synchConfigId is null");
@@ -182,6 +184,7 @@ public class IdentitySynchWebServiceImpl implements IdentitySynchWebService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<AttributeMap> findSynchConfigAttributeMaps(AttributeMapSearchBean searchBean) {
         if (searchBean == null) {
             throw new IllegalArgumentException("searchBean is null");

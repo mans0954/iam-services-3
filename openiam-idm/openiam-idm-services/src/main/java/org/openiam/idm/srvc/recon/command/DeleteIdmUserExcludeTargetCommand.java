@@ -17,26 +17,31 @@ import org.openiam.provision.service.AbstractProvisioningService;
 import org.openiam.provision.service.ProvisionService;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.script.ScriptIntegration;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Component("deleteIdmUserExcludeTargetCommand")
 public class DeleteIdmUserExcludeTargetCommand implements ReconciliationCommand {
-    private ProvisionService provisionService;
     private static final Log log = LogFactory.getLog(DeleteIdmUserExcludeTargetCommand.class);
-    private final ReconciliationSituation config;
 
-    private final ScriptIntegration scriptRunner;
+    @Autowired
+    @Qualifier("defaultProvision")
+    private ProvisionService provisionService;
 
-    public DeleteIdmUserExcludeTargetCommand(ProvisionService provisionService, ReconciliationSituation config, ScriptIntegration scriptRunner) {
-        this.provisionService = provisionService;
-        this.scriptRunner = scriptRunner;
-        this.config = config;
+    @Autowired
+    @Qualifier("configurableGroovyScriptEngine")
+    private ScriptIntegration scriptRunner;
+
+    public DeleteIdmUserExcludeTargetCommand(){
     }
 
-    public boolean execute(Login login, User user, List<ExtensibleAttribute> attributes) {
+    public boolean execute(ReconciliationSituation config, Login login, User user, List<ExtensibleAttribute> attributes) {
         log.debug("Entering DeleteIdmUserExcludeTargetCommand");
         log.debug("Delete  user :" + login.getUserId());
         ProvisionUser pUser = new ProvisionUser(user);

@@ -1,91 +1,145 @@
 package org.openiam.idm.srvc.recon.command;
 
-import org.openiam.idm.srvc.auth.login.IdentityService;
+import org.apache.commons.lang.StringUtils;
 import org.openiam.idm.srvc.grp.dto.Group;
-import org.openiam.idm.srvc.grp.ws.GroupDataWebService;
-import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
-import org.openiam.idm.srvc.recon.command.grp.*;
 import org.openiam.idm.srvc.recon.dto.ReconciliationSituation;
 import org.openiam.idm.srvc.recon.service.ReconciliationCommand;
 import org.openiam.idm.srvc.recon.service.ReconciliationObjectCommand;
 import org.openiam.idm.srvc.recon.service.ReconciliationSituationResponseOptions;
-import org.openiam.provision.service.ConnectorAdapter;
-import org.openiam.provision.service.GroupProvisionService;
+import org.openiam.provision.service.AbstractProvisioningService;
 import org.openiam.provision.service.ProvisionService;
 import org.openiam.script.ScriptIntegration;
-import org.openiam.util.MuleContextProvider;
 import org.openiam.util.SpringContextProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
 @Component("reconciliationFactory")
 public class ReconciliationCommandFactory {
+
     @Autowired
     @Qualifier("configurableGroovyScriptEngine")
     protected ScriptIntegration scriptRunner;
 
-    public ReconciliationCommand createUserCommand(String name, ReconciliationSituation config, String managedSysId) {
+    @Autowired
+    @Qualifier("doNothingGroupCommand")
+    private ReconciliationObjectCommand doNothingGroupCommandDefault;
+
+    @Autowired
+    @Qualifier("deleteResourceGroupCommand")
+    private ReconciliationObjectCommand deleteResourceGroupCommandDefault;
+
+    @Autowired
+    @Qualifier("removeIdmGroupCommand")
+    private ReconciliationObjectCommand removeIdmGroupCommandDefault;
+
+    @Autowired
+    @Qualifier("deleteIdmExcludeTargetGroupCommand")
+    private ReconciliationObjectCommand deleteIdmExcludeTargetGroupCommandDefault;
+
+    @Autowired
+    @Qualifier("createResourceGroupCommand")
+    private ReconciliationObjectCommand createResourceGroupCommandDefault;
+
+    @Autowired
+    @Qualifier("createIdmGroupCommand")
+    private ReconciliationObjectCommand createIdmGroupCommandDefault;
+
+    @Autowired
+    @Qualifier("updateIdmGroupCommand")
+    private ReconciliationObjectCommand updateIdmGroupCommandDefault;
+
+    @Autowired
+    @Qualifier("doNothingUserCommand")
+    private ReconciliationCommand doNothingUserCommand;
+
+    @Autowired
+    @Qualifier("createIdmAccountUserCommand")
+    private ReconciliationCommand createIdmAccountUserCommand;
+
+    @Autowired
+    @Qualifier("deleteResourceAccountUserCommand")
+    private ReconciliationCommand deleteResourceAccountUserCommand;
+
+    @Autowired
+    @Qualifier("disableIdmAccountUserCommand")
+    private ReconciliationCommand disableIdmAccountUserCommand;
+
+    @Autowired
+    @Qualifier("removeIdmUserCommand")
+    private ReconciliationCommand removeIdmUserCommand;
+
+    @Autowired
+    @Qualifier("deleteIdmUserExcludeTargetCommand")
+    private ReconciliationCommand deleteIdmUserExcludeTargetCommand;
+
+    @Autowired
+    @Qualifier("createResourceAccountUserCommand")
+    private ReconciliationCommand createResourceAccountUserCommand;
+
+    @Autowired
+    @Qualifier("updateIdmUserCommand")
+    private ReconciliationCommand updateIdmUserCommand;
+
+    public ReconciliationCommand createUserCommand(String name, ReconciliationSituation config, String managedSysId) throws IOException {
         ReconciliationCommand reconCommand = null;
         ApplicationContext applicationContext = SpringContextProvider.getApplicationContext();
-        if(name.equalsIgnoreCase(ReconciliationSituationResponseOptions.NOTHING.name())){
-            reconCommand = new DoNothingCommand(config, scriptRunner);
-        } else if(name.equalsIgnoreCase(ReconciliationSituationResponseOptions.DELETE_FROM_RES.name())){
-            reconCommand = new DeleteResourceAccountCommand((ProvisionService) applicationContext.getBean("defaultProvision"),
-                    (ManagedSystemWebService)applicationContext.getBean("managedSysService"),
-                     MuleContextProvider.getCtx(),
-                    managedSysId,
-                    (ConnectorAdapter)applicationContext.getBean("connectorAdapter"), config, scriptRunner);
-        } else if(name.equalsIgnoreCase(ReconciliationSituationResponseOptions.DISABLE_IN_IDM.name())){
-            reconCommand = new DisableIdmAccountCommand((ProvisionService) applicationContext.getBean("defaultProvision"), config, scriptRunner);
-        } else if(name.equalsIgnoreCase(ReconciliationSituationResponseOptions.REMOVE_FROM_IDM.name())){
-            reconCommand = new RemoveIdmUserCommand((ProvisionService) applicationContext.getBean("defaultProvision"), config, scriptRunner);
-        } else if(name.equalsIgnoreCase(ReconciliationSituationResponseOptions.DELETE_FROM_IDM.name())){
-            reconCommand = new DeleteIdmUserExcludeTargetCommand((ProvisionService) applicationContext.getBean("defaultProvision"), config, scriptRunner);
-        } else if(name.equalsIgnoreCase(ReconciliationSituationResponseOptions.ADD_TO_RES.name())){
-            reconCommand = new CreateResourceAccountCommand((ProvisionService) applicationContext.getBean("defaultProvision"), config, scriptRunner);
-        } else if(name.equalsIgnoreCase(ReconciliationSituationResponseOptions.ADD_TO_IDM.name())){
-            reconCommand = new CreateIdmAccountCommand((ProvisionService) applicationContext.getBean("defaultProvision"), config, scriptRunner);
-        } else if(name.equalsIgnoreCase(ReconciliationSituationResponseOptions.UPDATE_IDM_FROM_RES.name())){
-            reconCommand = new UpdateIdmUserCommand((ProvisionService) applicationContext.getBean("defaultProvision"), config, scriptRunner);
+
+        if(StringUtils.isNotEmpty(config.getCustomCommandScript())) {
+            Map<String, Object> bindingMap = new HashMap<String, Object>();
+            bindingMap.put(AbstractProvisioningService.TARGET_SYS_MANAGED_SYS_ID, managedSysId);
+            reconCommand = (ReconciliationCommand) scriptRunner.instantiateClass(bindingMap, config.getCustomCommandScript());
+        } else {
+            if(name.equalsIgnoreCase(ReconciliationSituationResponseOptions.NOTHING.name())){
+                reconCommand = doNothingUserCommand;
+            } else if(name.equalsIgnoreCase(ReconciliationSituationResponseOptions.DELETE_FROM_RES.name())){
+                reconCommand = deleteResourceAccountUserCommand;
+            } else if(name.equalsIgnoreCase(ReconciliationSituationResponseOptions.DISABLE_IN_IDM.name())){
+                reconCommand = disableIdmAccountUserCommand;
+            } else if(name.equalsIgnoreCase(ReconciliationSituationResponseOptions.REMOVE_FROM_IDM.name())){
+                reconCommand = removeIdmUserCommand;
+            } else if(name.equalsIgnoreCase(ReconciliationSituationResponseOptions.DELETE_FROM_IDM.name())){
+                reconCommand = deleteIdmUserExcludeTargetCommand;
+            } else if(name.equalsIgnoreCase(ReconciliationSituationResponseOptions.ADD_TO_RES.name())){
+                reconCommand = createResourceAccountUserCommand;
+            } else if(name.equalsIgnoreCase(ReconciliationSituationResponseOptions.ADD_TO_IDM.name())){
+                reconCommand = createIdmAccountUserCommand;
+            } else if(name.equalsIgnoreCase(ReconciliationSituationResponseOptions.UPDATE_IDM_FROM_RES.name())){
+                reconCommand = updateIdmUserCommand;
+            }
         }
         return reconCommand;
     }
 
-    public ReconciliationObjectCommand<Group> createGroupCommand(String name, ReconciliationSituation config, String managedSysId) {
+    public ReconciliationObjectCommand<Group> createGroupCommand(String name, ReconciliationSituation config, String managedSysId) throws IOException {
         ReconciliationObjectCommand<Group> reconCommand = null;
-        ApplicationContext applicationContext = SpringContextProvider.getApplicationContext();
-        if(name.equalsIgnoreCase(ReconciliationSituationResponseOptions.NOTHING.name())){
-            reconCommand = new DoNothingGroupCommand(config, scriptRunner);
-        } else if(name.equalsIgnoreCase(ReconciliationSituationResponseOptions.DELETE_FROM_RES.name())){
-            reconCommand = new DeleteResourceGroupCommand(
-                    (GroupProvisionService) applicationContext.getBean("groupProvision"),
-                    (ManagedSystemWebService)applicationContext.getBean("managedSysService"),
-                    MuleContextProvider.getCtx(),
-                    managedSysId,
-                    (ConnectorAdapter)applicationContext.getBean("connectorAdapter"), config, scriptRunner);
-        } else if(name.equalsIgnoreCase(ReconciliationSituationResponseOptions.DISABLE_IN_IDM.name())){
-            // nothing
-        } else if(name.equalsIgnoreCase(ReconciliationSituationResponseOptions.REMOVE_FROM_IDM.name())){
-            reconCommand = new RemoveIdmGroupCommand((GroupProvisionService) applicationContext.getBean("groupProvision"), config, scriptRunner);
-        } else if(name.equalsIgnoreCase(ReconciliationSituationResponseOptions.DELETE_FROM_IDM.name())){
-            reconCommand = new DeleteIdmExcludeTargetGroupCommand(
-                    (GroupDataWebService) applicationContext.getBean("groupWS"),
-                    (IdentityService) applicationContext.getBean("identityManager"),
-                    config,
-                    scriptRunner);
-        } else if(name.equalsIgnoreCase(ReconciliationSituationResponseOptions.ADD_TO_RES.name())){
-            reconCommand = new CreateResourceGroupCommand((GroupProvisionService) applicationContext.getBean("groupProvision"), config, scriptRunner);
-        } else if(name.equalsIgnoreCase(ReconciliationSituationResponseOptions.ADD_TO_IDM.name())){
-            reconCommand = new CreateIdmGroupCommand(
-                    (GroupDataWebService)applicationContext.getBean("groupWS"),
-                    (IdentityService)applicationContext.getBean("identityManager"),
-                    (GroupProvisionService) applicationContext.getBean("groupProvision"),
-                    config,
-                    scriptRunner);
-        } else if(name.equalsIgnoreCase(ReconciliationSituationResponseOptions.UPDATE_IDM_FROM_RES.name())){
-            reconCommand = new UpdateIdmGroupCommand((GroupProvisionService) applicationContext.getBean("groupProvision"), config, scriptRunner);
+        if(StringUtils.isNotEmpty(config.getCustomCommandScript())) {
+            Map<String, Object> bindingMap = new HashMap<String, Object>();
+            bindingMap.put(AbstractProvisioningService.TARGET_SYS_MANAGED_SYS_ID, managedSysId);
+            reconCommand = (ReconciliationObjectCommand<Group>) scriptRunner.instantiateClass(bindingMap, config.getCustomCommandScript());
+        } else {
+            if(name.equalsIgnoreCase(ReconciliationSituationResponseOptions.NOTHING.name())) {
+                reconCommand = doNothingGroupCommandDefault;
+            } else if(name.equalsIgnoreCase(ReconciliationSituationResponseOptions.DELETE_FROM_RES.name())){
+                reconCommand = deleteResourceGroupCommandDefault;
+            } else if(name.equalsIgnoreCase(ReconciliationSituationResponseOptions.DISABLE_IN_IDM.name())){
+                // nothing
+            } else if(name.equalsIgnoreCase(ReconciliationSituationResponseOptions.REMOVE_FROM_IDM.name())){
+                reconCommand = removeIdmGroupCommandDefault;
+            } else if(name.equalsIgnoreCase(ReconciliationSituationResponseOptions.DELETE_FROM_IDM.name())){
+                reconCommand = deleteIdmExcludeTargetGroupCommandDefault;
+            } else if(name.equalsIgnoreCase(ReconciliationSituationResponseOptions.ADD_TO_RES.name())){
+                reconCommand = createResourceGroupCommandDefault;
+            } else if(name.equalsIgnoreCase(ReconciliationSituationResponseOptions.ADD_TO_IDM.name())){
+                reconCommand = createIdmGroupCommandDefault;
+            } else if(name.equalsIgnoreCase(ReconciliationSituationResponseOptions.UPDATE_IDM_FROM_RES.name())){
+                reconCommand = updateIdmGroupCommandDefault;
+            }
         }
         return reconCommand;
     }

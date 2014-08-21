@@ -23,45 +23,43 @@ import org.openiam.provision.service.GroupProvisionService;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleUser;
 import org.openiam.script.ScriptIntegration;
+import org.openiam.util.MuleContextProvider;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Component("deleteResourceGroupCommand")
 public class DeleteResourceGroupCommand  implements ReconciliationObjectCommand<Group> {
-    private GroupProvisionService provisionService;
     private static final Log log = LogFactory.getLog(DeleteResourceGroupCommand.class);
+
+    @Autowired
+    @Qualifier("groupProvision")
+    private GroupProvisionService provisionService;
+
+    @Autowired
     private ManagedSystemWebService managedSysService;
-    private MuleContext muleContext;
-    private String managedSysId;
+
+    @Autowired
     private ConnectorAdapter connectorAdapter;
-    private final ReconciliationSituation config;
 
-    private final ScriptIntegration scriptRunner;
+    @Autowired
+    @Qualifier("configurableGroovyScriptEngine")
+    private ScriptIntegration scriptRunner;
 
-    public DeleteResourceGroupCommand(GroupProvisionService provisionService,
-                                      ManagedSystemWebService managedSysService,
-                                      MuleContext muleContext,
-                                      String managedSysId,
-                                      ConnectorAdapter connectorAdapter,
-                                      ReconciliationSituation config,
-                                      ScriptIntegration scriptRunner) {
-        this.provisionService = provisionService;
-        this.managedSysService = managedSysService;
-        this.muleContext = muleContext;
-        this.managedSysId = managedSysId;
-        this.connectorAdapter = connectorAdapter;
-        this.scriptRunner = scriptRunner;
-        this.config = config;
+    public DeleteResourceGroupCommand() {
     }
 
     @Override
-    public boolean execute(IdentityDto identity, Group group, List<ExtensibleAttribute> attributes) {
+    public boolean execute(ReconciliationSituation config, IdentityDto identity, Group group, List<ExtensibleAttribute> attributes) {
         log.debug("Entering DeleteResourceGroupCommand");
         log.debug("Do delete for Group :" + identity.getIdentity());
         if(group == null) {
-            ManagedSysDto mSys = managedSysService.getManagedSys(managedSysId);
+            ManagedSysDto mSys = managedSysService.getManagedSys(identity.getManagedSysId());
 
             log.debug("Calling delete with Remote connector");
             CrudRequest<ExtensibleUser> request = new CrudRequest<ExtensibleUser>();
@@ -72,7 +70,7 @@ public class DeleteResourceGroupCommand  implements ReconciliationObjectCommand<
             request.setHostUrl(mSys.getHostUrl());
             request.setScriptHandler(mSys.getDeleteHandler());
             log.debug("Calling delete local connector");
-            connectorAdapter.deleteRequest(mSys, request, muleContext);
+            connectorAdapter.deleteRequest(mSys, request,  MuleContextProvider.getCtx());
 
             return true;
         }

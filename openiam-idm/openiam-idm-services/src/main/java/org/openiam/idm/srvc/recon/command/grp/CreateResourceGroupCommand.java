@@ -16,26 +16,32 @@ import org.openiam.provision.service.AbstractProvisioningService;
 import org.openiam.provision.service.GroupProvisionService;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.script.ScriptIntegration;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Component("createResourceGroupCommand")
 public class CreateResourceGroupCommand  implements ReconciliationObjectCommand<Group> {
-    private GroupProvisionService provisionService;
+
     private static final Log log = LogFactory.getLog(CreateResourceGroupCommand.class);
-    private final ReconciliationSituation config;
 
-    private final ScriptIntegration scriptRunner;
+    @Autowired
+    @Qualifier("groupProvision")
+    private GroupProvisionService provisionService;
 
-    public CreateResourceGroupCommand(GroupProvisionService provisionService, ReconciliationSituation config, ScriptIntegration scriptRunner) {
-        this.provisionService = provisionService;
-        this.scriptRunner = scriptRunner;
-        this.config = config;
+    @Autowired
+    @Qualifier("configurableGroovyScriptEngine")
+    private ScriptIntegration scriptRunner;
+
+    public CreateResourceGroupCommand() {
     }
 
-    public boolean execute(IdentityDto identity, Group group, List<ExtensibleAttribute> attributes) {
+    public boolean execute(ReconciliationSituation config, IdentityDto identity, Group group, List<ExtensibleAttribute> attributes) {
         log.debug("Entering CreateResourceGroupCommand");
         log.debug("Create Resource Account for group: " + group.getId());
         ProvisionGroup pGroup = new ProvisionGroup(group);

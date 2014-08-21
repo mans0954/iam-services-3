@@ -620,6 +620,7 @@ public class LoginDataServiceImpl implements LoginDataService {
     }
 
 	@Override
+    @Transactional(readOnly = true)
 	public Login getLoginDTO(String loginId) {
 		return loginDozerConverter.convertToDTO(loginDao.findById(loginId), true);
 	}

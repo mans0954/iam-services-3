@@ -18,32 +18,33 @@ import org.openiam.provision.dto.ProvisionGroup;
 import org.openiam.provision.service.AbstractProvisioningService;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.script.ScriptIntegration;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Component("deleteIdmExcludeTargetGroupCommand")
 public class DeleteIdmExcludeTargetGroupCommand  implements ReconciliationObjectCommand<Group> {
+    private static final Log log = LogFactory.getLog(DeleteIdmExcludeTargetGroupCommand.class);
+
+    @Autowired
     private GroupDataWebService groupDataWebService;
+
+    @Autowired
     private IdentityService identityService;
 
-    private static final Log log = LogFactory.getLog(DeleteIdmExcludeTargetGroupCommand.class);
-    private final ReconciliationSituation config;
+    @Autowired
+    @Qualifier("configurableGroovyScriptEngine")
+    private ScriptIntegration scriptRunner;
 
-    private final ScriptIntegration scriptRunner;
-
-    public DeleteIdmExcludeTargetGroupCommand(final GroupDataWebService groupDataWebService,
-                                              final IdentityService identityService,
-                                              final ReconciliationSituation config,
-                                              final ScriptIntegration scriptRunner) {
-        this.groupDataWebService = groupDataWebService;
-        this.identityService = identityService;
-        this.scriptRunner = scriptRunner;
-        this.config = config;
+    public DeleteIdmExcludeTargetGroupCommand() {
     }
 
-    public boolean execute(IdentityDto identity, Group group, List<ExtensibleAttribute> attributes) {
+    public boolean execute(ReconciliationSituation config, IdentityDto identity, Group group, List<ExtensibleAttribute> attributes) {
         log.debug("Entering DeleteIdmExcludeTargetGroupCommand");
         log.debug("Delete  group from IDM only :" + identity.getIdentity());
         ProvisionGroup pGroup = new ProvisionGroup(group);

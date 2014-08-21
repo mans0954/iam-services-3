@@ -201,10 +201,17 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Gr
                             if (group.getNotProvisioninResourcesIds().contains(res.getId())) {
                                 continue;
                             }
+                            ManagedSysDto managedSys = managedSystemService.getManagedSysByResource(res.getId());
 
-                        ManagedSysDto managedSys = managedSystemService.getManagedSysByResource(res.getId());
+
                         if (managedSys != null) {
                             String managedSysId = managedSys.getId();
+                            // do check if provisioning user has source resource
+                            // => we should skip it from double provisioning
+                            // reconciliation case
+                            if (group.getSrcSystemId() != null && managedSysId.equals(group.getSrcSystemId())) {
+                                continue;
+                            }
                             IdentityDto groupTargetSysIdentity = identityService.getIdentity(group.getId(), managedSysId);
                             if(groupTargetSysIdentity == null) {
                                 List<AttributeMap> attrMap = managedSysService.getResourceAttributeMaps(res.getId());

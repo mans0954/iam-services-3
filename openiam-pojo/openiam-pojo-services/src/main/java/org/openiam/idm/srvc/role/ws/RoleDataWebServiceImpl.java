@@ -667,6 +667,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 	}
 
     @Override
+    @Transactional(readOnly = true)
     public List<Role> findRolesByAttributeValue(String attrName, String attrValue) {
         return roleDozerConverter.convertToDTOList(
                 roleDataService.findRolesByAttributeValue(attrName, attrValue), true);

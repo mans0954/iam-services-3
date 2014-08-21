@@ -22,7 +22,10 @@ import org.openiam.provision.service.ProvisionService;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.script.ScriptIntegration;
 import org.openiam.util.SpringContextProvider;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -30,19 +33,22 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
+@Component("updateIdmUserCommand")
 public class UpdateIdmUserCommand implements ReconciliationCommand {
-    private ProvisionService provisionService;
-    private ReconciliationSituation config;
     private static final Log log = LogFactory.getLog(UpdateIdmUserCommand.class);
-    private final ScriptIntegration scriptRunner;
 
-    public UpdateIdmUserCommand(ProvisionService provisionService, ReconciliationSituation config, ScriptIntegration scriptRunner) {
-        this.provisionService = provisionService;
-        this.config = config;
-        this.scriptRunner = scriptRunner;
+    @Autowired
+    @Qualifier("defaultProvision")
+    private ProvisionService provisionService;
+
+    @Autowired
+    @Qualifier("configurableGroovyScriptEngine")
+    private ScriptIntegration scriptRunner;
+
+    public UpdateIdmUserCommand(){
     }
 
-    public boolean execute(Login login, User user, List<ExtensibleAttribute> attributes) {
+    public boolean execute(ReconciliationSituation config, Login login, User user, List<ExtensibleAttribute> attributes) {
         log.debug("Entering UpdateIdmUserCommand");
         LookupUserResponse lookupResp =  provisionService.getTargetSystemUser(login.getLogin(), login.getManagedSysId(), attributes);
         if(lookupResp.getStatus() == ResponseStatus.FAILURE){

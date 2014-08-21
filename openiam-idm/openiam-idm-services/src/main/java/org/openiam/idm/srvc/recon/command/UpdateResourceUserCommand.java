@@ -6,7 +6,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.BaseAttribute;
 import org.openiam.idm.srvc.auth.dto.Login;
-import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
 import org.openiam.idm.srvc.recon.dto.ReconciliationSituation;
 import org.openiam.idm.srvc.recon.service.PopulationScript;
 import org.openiam.idm.srvc.recon.service.ReconciliationCommand;
@@ -17,38 +16,32 @@ import org.openiam.provision.service.AbstractProvisioningService;
 import org.openiam.provision.service.ProvisionService;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.script.ScriptIntegration;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class DisableIdmAccountCommand implements ReconciliationCommand {
+@Component("updateResourceUserCommand")
+public class UpdateResourceUserCommand implements ReconciliationCommand {
+
+    private static final Log log = LogFactory.getLog(UpdateResourceUserCommand.class);
+    @Autowired
+    @Qualifier("defaultProvision")
     private ProvisionService provisionService;
-    private static final Log log = LogFactory.getLog(DisableIdmAccountCommand.class);
-    private final ReconciliationSituation config;
 
-    private final ScriptIntegration scriptRunner;
+    @Autowired
+    @Qualifier("configurableGroovyScriptEngine")
+    private ScriptIntegration scriptRunner;
 
-    public DisableIdmAccountCommand(ProvisionService provisionService,
-                                    ReconciliationSituation config,
-                                    ScriptIntegration scriptRunner) {
-        this.provisionService = provisionService;
-        this.scriptRunner = scriptRunner;
-        this.config = config;
+    public UpdateResourceUserCommand() {
     }
 
-    public boolean execute(Login login, User user, List<ExtensibleAttribute> attributes) {
-        List<Login> principleList = user.getPrincipalList();
-        for(Login l : principleList){
-            if(l.getLoginId().equals(login.getLoginId())){
-                l.setStatus(LoginStatusEnum.INACTIVE);
-                break;
-            }
-        }
-
+    public boolean execute(ReconciliationSituation config, Login login, User user, List<ExtensibleAttribute> attributes) {
         ProvisionUser pUser = new ProvisionUser(user);
-        pUser.setPrincipalList(principleList);
         pUser.setSrcSystemId(login.getManagedSysId());
         if(StringUtils.isNotEmpty(config.getScript())){
             try {
@@ -82,6 +75,8 @@ public class DisableIdmAccountCommand implements ReconciliationCommand {
                 e.printStackTrace();
             }
         }
+        //Reset source system flag from User to avoid ignoring Provisioning for this resource
+        pUser.setSrcSystemId(null);
         ProvisionUserResponse response = provisionService.modifyUser(pUser);
         return response.isSuccess();
     }

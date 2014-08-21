@@ -404,7 +404,10 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         idmAuditLog.setRequestorUserId(requestorId);
         LoginEntity lRequestor = loginManager.getPrimaryIdentity(requestorId);
         idmAuditLog.setRequestorPrincipal(lRequestor.getLogin());
-        idmAuditLog.setAction(AuditAction.PROVISIONING_DELETE.value());
+        final String action = (status == UserStatusEnum.DELETED)
+                ? AuditAction.USER_DEACTIVATE.value()
+                : AuditAction.PROVISIONING_DELETE.value();
+        idmAuditLog.setAction(action);
 
         if (auditLog != null) {
             auditLog.addChild(idmAuditLog);
@@ -1272,7 +1275,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                             // => we should skip it from double provisioning
                             // reconciliation case
                             ManagedSysDto managedSys = managedSysService.getManagedSys(pUser.getSrcSystemId());
-                            if (res.getId().equals(managedSys.getResourceId())) {
+                            if (res.getId().equalsIgnoreCase(managedSys.getResourceId())) {
                                 continue;
                             }
                         }
@@ -1851,6 +1854,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         return value;
     }
 
+    @Transactional(readOnly = true)
     private Set<Resource> getResourcesForRoles(Set<Role> roleSet) {
         log.debug("GetResourcesForRole().....");
         final Set<Resource> resourceList = new HashSet<Resource>();

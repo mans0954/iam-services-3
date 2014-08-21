@@ -157,6 +157,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
             groupManager.saveGroup(entity, requesterId);
             response.setResponseValue(entity.getId());
         } catch (BasicDataServiceException e) {
+            log.error("Error save", e);
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(e.getCode());
             response.setErrorTokenList(e.getErrorTokenList());
@@ -481,6 +482,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
 
     @Override
     @LocalizedServiceGet
+    @Transactional(readOnly = true)
     public List<Group> getGroupsForRoleLocalize(final String roleId, final String requesterId, final int from, final int size,
                                         boolean deepFlag, final Language language) {
         final List<GroupEntity> groupEntityList = groupManager.getGroupsForRoleLocalize(roleId, requesterId, from, size, languageConverter.convertToEntity(language, false));
@@ -639,6 +641,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
 
     @Override
     @LocalizedServiceGet
+    @Transactional(readOnly = true)
     public List<Group> findGroupsByAttributeValueLocalize(String attrName, String attrValue, final Language language) {
         return groupDozerConverter.convertToDTOList(
                 groupManager.findGroupsByAttributeValueLocalize(attrName, attrValue, languageConverter.convertToEntity(language, false)), true);

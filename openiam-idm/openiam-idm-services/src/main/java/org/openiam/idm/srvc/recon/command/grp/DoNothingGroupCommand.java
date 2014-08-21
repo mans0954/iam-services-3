@@ -14,24 +14,28 @@ import org.openiam.provision.dto.ProvisionGroup;
 import org.openiam.provision.service.AbstractProvisioningService;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.script.ScriptIntegration;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Component("doNothingGroupCommand")
 public class DoNothingGroupCommand implements ReconciliationObjectCommand<Group> {
     private static final Log log = LogFactory.getLog(DoNothingGroupCommand.class);
-    private final ReconciliationSituation config;
 
-    private final ScriptIntegration scriptRunner;
+    @Autowired
+    @Qualifier("configurableGroovyScriptEngine")
+    private ScriptIntegration scriptRunner;
 
-    public DoNothingGroupCommand(ReconciliationSituation config, ScriptIntegration scriptRunner) {
-        this.config = config;
-        this.scriptRunner = scriptRunner;
+    public DoNothingGroupCommand() {
     }
+
     @Override
-    public boolean execute(IdentityDto identity, Group group, List<ExtensibleAttribute> attributes) {
+    public boolean execute(ReconciliationSituation config, IdentityDto identity, Group group, List<ExtensibleAttribute> attributes) {
         log.debug("Entering DoNothingCommand");
         log.debug("Do nothing for Group :" + identity.getIdentity());
         ProvisionGroup pGroup = new ProvisionGroup(group);
