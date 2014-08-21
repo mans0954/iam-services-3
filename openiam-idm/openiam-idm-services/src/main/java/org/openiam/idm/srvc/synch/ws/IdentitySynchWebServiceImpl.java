@@ -33,17 +33,16 @@ import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.dozer.converter.AttributeMapDozerConverter;
 import org.openiam.dozer.converter.SynchConfigDozerConverter;
+import org.openiam.dozer.converter.SynchReviewDozerConverter;
 import org.openiam.idm.searchbeans.AttributeMapSearchBean;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
 import org.openiam.idm.srvc.msg.ws.SysMessageResponse;
 import org.openiam.idm.srvc.synch.domain.SynchConfigEntity;
-import org.openiam.idm.srvc.synch.dto.BulkMigrationConfig;
-import org.openiam.idm.srvc.synch.dto.SyncResponse;
-import org.openiam.idm.srvc.synch.dto.SynchConfig;
-import org.openiam.idm.srvc.synch.dto.SynchConfigSearchBean;
+import org.openiam.idm.srvc.synch.dto.*;
 import org.openiam.idm.srvc.synch.searchbeans.converter.SynchConfigSearchBeanConverter;
 import org.openiam.idm.srvc.synch.service.IdentitySynchService;
+import org.openiam.idm.srvc.synch.service.SynchReviewService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -64,6 +63,8 @@ public class IdentitySynchWebServiceImpl implements IdentitySynchWebService {
     protected IdentitySynchService synchService;
     @Autowired
     private SynchConfigDozerConverter synchConfigDozerConverter;
+    @Autowired
+    protected SynchReviewService synchReviewService;
     @Autowired
     private SynchConfigSearchBeanConverter synchConfigSearchBeanConverter;
     @Autowired
@@ -145,9 +146,15 @@ public class IdentitySynchWebServiceImpl implements IdentitySynchWebService {
 		return resp;
 	}
 
+    @Override
 	public SyncResponse startSynchronization(SynchConfig config) {
 		return synchService.startSynchronization(synchConfigDozerConverter.convertToEntity(config, false));
 	}
+
+    @Override
+    public SynchReviewResponse executeSynchReview(SynchReviewRequest synchReviewRequest) {
+        return synchReviewService.executeSynchReview(synchReviewRequest);
+    }
 
     @Override
     public Integer getSynchConfigCount(@WebParam(name = "searchBean", targetNamespace = "")SynchConfigSearchBean searchBean) {

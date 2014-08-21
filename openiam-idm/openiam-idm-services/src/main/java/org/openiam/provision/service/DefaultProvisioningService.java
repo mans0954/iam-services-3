@@ -1547,7 +1547,9 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             reqType.setSearchValue(principalName);
 
             ExtensibleUser extensibleUser = new ExtensibleUser();
-            extensibleUser.setPrincipalFieldName(matchObj.getKeyField());
+            if (matchObj != null && StringUtils.isNotEmpty(matchObj.getKeyField())) {
+                extensibleUser.setPrincipalFieldName(matchObj.getKeyField());
+            }
             extensibleUser.setPrincipalFieldDataType("string");
             extensibleUser.setAttributes(extensibleAttributes);
             reqType.setExtensibleObject(extensibleUser);
@@ -2623,7 +2625,9 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         boolean targetSysUserExists = false;
         List<ExtensibleAttribute> mngSysAttrs = new ArrayList<ExtensibleAttribute>();
         if (ResponseStatus.SUCCESS.equals(lookupUserResponse.getStatus())) {
-            mngSysAttrs = lookupUserResponse.getAttrList();
+            if (CollectionUtils.isNotEmpty(hiddenAttrs)) {
+                mngSysAttrs = lookupUserResponse.getAttrList();
+            }
             targetSysUserExists = true;
         }
 

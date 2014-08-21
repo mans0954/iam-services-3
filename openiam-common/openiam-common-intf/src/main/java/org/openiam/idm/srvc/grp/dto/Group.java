@@ -185,7 +185,16 @@ public class Group extends AdminResourceDTO implements Serializable {
 		}
 	}
 
-	public Set<Group> getChildGroups() {
+    public void addResource(final Resource resource) {
+        if(resource != null) {
+            if(resources == null) {
+                resources = new HashSet<Resource>();
+            }
+            resources.add(resource);
+        }
+    }
+
+    public Set<Group> getChildGroups() {
 		return childGroups;
 	}
 	

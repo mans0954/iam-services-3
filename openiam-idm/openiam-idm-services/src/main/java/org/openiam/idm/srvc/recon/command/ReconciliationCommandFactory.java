@@ -9,6 +9,7 @@ import org.openiam.idm.srvc.recon.dto.ReconciliationSituation;
 import org.openiam.idm.srvc.recon.service.ReconciliationCommand;
 import org.openiam.idm.srvc.recon.service.ReconciliationObjectCommand;
 import org.openiam.idm.srvc.recon.service.ReconciliationSituationResponseOptions;
+import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.openiam.provision.service.ConnectorAdapter;
 import org.openiam.provision.service.GroupProvisionService;
 import org.openiam.provision.service.ProvisionService;
@@ -85,7 +86,7 @@ public class ReconciliationCommandFactory {
                     config,
                     scriptRunner);
         } else if(name.equalsIgnoreCase(ReconciliationSituationResponseOptions.UPDATE_IDM_FROM_RES.name())){
-            reconCommand = new UpdateIdmGroupCommand((GroupProvisionService) applicationContext.getBean("groupProvision"), config, scriptRunner);
+            reconCommand = new UpdateIdmGroupCommand((GroupDataWebService)applicationContext.getBean("groupWS"), (GroupProvisionService) applicationContext.getBean("groupProvision"), (ResourceDataService)applicationContext.getBean("resourceDataService"), config, scriptRunner);
         }
         return reconCommand;
     }

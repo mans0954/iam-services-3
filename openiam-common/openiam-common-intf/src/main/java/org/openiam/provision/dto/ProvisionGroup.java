@@ -21,6 +21,7 @@
  */
 package org.openiam.provision.dto;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.dto.GroupAttribute;
 import org.openiam.idm.srvc.res.dto.Resource;
@@ -29,9 +30,7 @@ import org.openiam.idm.srvc.role.dto.RoleSetAdapter;
 
 import javax.xml.bind.annotation.*;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author suneet
@@ -65,6 +64,9 @@ public class ProvisionGroup extends org.openiam.idm.srvc.grp.dto.Group {
 
     //AuditLogEntity ID of parent AuditLog
     private String parentAuditLogId;
+
+    @XmlTransient
+    protected List<String> membersIds;
 
     public ProvisionGroup() {
         super();
@@ -112,6 +114,21 @@ public class ProvisionGroup extends org.openiam.idm.srvc.grp.dto.Group {
         this.resources = group.getResources();
         this.roles = group.getRoles();
         this.attributes = group.getAttributes();
+    }
+
+    public void addMemberId(final String id) {
+        if(CollectionUtils.isEmpty(membersIds)) {
+            membersIds = new LinkedList<String>();
+        }
+        membersIds.add(id);
+    }
+
+    public List<String> getMembersIds() {
+        return membersIds;
+    }
+
+    public void setMembersIds(List<String> membersIds) {
+        this.membersIds = membersIds;
     }
 
     public String getParentAuditLogId() {

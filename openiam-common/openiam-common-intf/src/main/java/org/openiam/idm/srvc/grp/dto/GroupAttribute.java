@@ -6,6 +6,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
 import org.openiam.base.AbstractAttributeDTO;
+import org.openiam.base.AttributeOperationEnum;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.grp.domain.GroupAttributeEntity;
 
@@ -16,7 +17,8 @@ import java.util.List;
 @XmlType(name = "GroupAttribute", propOrder = {
         "values",
         "isMultivalued",
-        "groupId"
+        "groupId",
+        "operation"
 })
 @DozerDTOCorrespondence(GroupAttributeEntity.class)
 public class GroupAttribute extends AbstractAttributeDTO {
@@ -26,6 +28,14 @@ public class GroupAttribute extends AbstractAttributeDTO {
     protected List<String> values = new ArrayList<String>();
     protected Boolean isMultivalued = Boolean.FALSE;
     protected String groupId;
+    protected AttributeOperationEnum operation = AttributeOperationEnum.NO_CHANGE;
+
+
+    public GroupAttribute(String name, String value) {
+        this.name = name;
+        this.value = value;
+        this.id = null;
+    }
 
     public GroupAttribute(String id) {
         this.id = id;
@@ -58,7 +68,15 @@ public class GroupAttribute extends AbstractAttributeDTO {
         this.groupId = groupId;
     }
 
-	@Override
+    public AttributeOperationEnum getOperation() {
+        return operation;
+    }
+
+    public void setOperation(AttributeOperationEnum operation) {
+        this.operation = operation;
+    }
+
+    @Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
@@ -117,8 +135,8 @@ public class GroupAttribute extends AbstractAttributeDTO {
 
 		return true;
 	}
-	
-	
+
+
 
 	@Override
 	public String toString() {
