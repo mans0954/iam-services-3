@@ -269,7 +269,7 @@ public class RoleDataServiceImpl implements RoleDataService {
 					if(role.getAdminResource() == null) {
 						role.setAdminResource(getNewAdminResource(role, requestorId));
 					}
-					
+					role.getAdminResource().setCoorelatedName(role.getName());
 				}
 			}
 			roleDao.merge(role);
@@ -363,6 +363,7 @@ public class RoleDataServiceImpl implements RoleDataService {
 		adminResource.setName(String.format("ROLE_ADMIN_%s_%s", entity.getName(), RandomStringUtils.randomAlphanumeric(2)));
 		adminResource.setResourceType(resourceTypeDAO.findById(adminResourceTypeId));
 		adminResource.addUser(userDAO.findById(requestorId));
+		adminResource.setCoorelatedName(entity.getName());
 		return adminResource;
 	}
 	

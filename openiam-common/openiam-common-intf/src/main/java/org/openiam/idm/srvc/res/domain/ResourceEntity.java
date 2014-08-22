@@ -100,6 +100,9 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
     @Type(type = "yes_no")
     private boolean isPublic = true;
     
+    @Column(name = "COORELATED_NAME", length=250)
+    private String coorelatedName;
+    
 	@ManyToOne(fetch = FetchType.EAGER,cascade={CascadeType.ALL})
     @JoinColumn(name="ADMIN_RESOURCE_ID", referencedColumnName = "RESOURCE_ID", insertable = true, updatable = true, nullable=true)
 	private ResourceEntity adminResource;
@@ -385,40 +388,92 @@ public class ResourceEntity extends AbstractMetdataTypeEntity {
 		this.displayName = displayName;
 	}
 
+	public String getCoorelatedName() {
+		return coorelatedName;
+	}
+
+	public void setCoorelatedName(String coorelatedName) {
+		this.coorelatedName = coorelatedName;
+	}
+
 	@Override
-    public String toString() {
-        return "Resource{" +
-                "resourceId='" + id + '\'' +
-                ", resourceType=" + resourceType +
-                ", name='" + name + '\'' +
-                ", description='" + description + '\'' +
-                ", displayOrder=" + displayOrder +
-                ", URL='" + URL + '\'' +
-                '}';
-    }
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result + ((URL == null) ? 0 : URL.hashCode());
+		result = prime * result
+				+ ((adminResource == null) ? 0 : adminResource.hashCode());
+		result = prime * result
+				+ ((coorelatedName == null) ? 0 : coorelatedName.hashCode());
+		result = prime * result
+				+ ((description == null) ? 0 : description.hashCode());
+		result = prime * result
+				+ ((displayOrder == null) ? 0 : displayOrder.hashCode());
+		result = prime * result + (isPublic ? 1231 : 1237);
+		result = prime * result
+				+ ((minAuthLevel == null) ? 0 : minAuthLevel.hashCode());
+		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		result = prime * result
+				+ ((resourceType == null) ? 0 : resourceType.hashCode());
+		result = prime * result + ((risk == null) ? 0 : risk.hashCode());
+		return result;
+	}
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        ResourceEntity that = (ResourceEntity) o;
-
-        if (isPublic != that.isPublic) return false;
-        //if (isSSL != that.isSSL) return false;
-        if (URL != null ? !URL.equals(that.URL) : that.URL != null) return false;
-        if (name != null ? !name.equals(that.name) : that.name != null) return false;
-        if (id != null ? !id.equals(that.id) : that.id != null) return false;
-
-        return true;
-    }
-
-    @Override
-    public int hashCode() {
-        int result = id != null ? id.hashCode() : 0;
-        result = 31 * result + (name != null ? name.hashCode() : 0);
-        result = 31 * result + (isPublic ? 1 : 0);
-        //result = 31 * result + (isSSL ? 1 : 0)
-        return result;
-    }
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		ResourceEntity other = (ResourceEntity) obj;
+		if (URL == null) {
+			if (other.URL != null)
+				return false;
+		} else if (!URL.equals(other.URL))
+			return false;
+		if (adminResource == null) {
+			if (other.adminResource != null)
+				return false;
+		} else if (!adminResource.equals(other.adminResource))
+			return false;
+		if (coorelatedName == null) {
+			if (other.coorelatedName != null)
+				return false;
+		} else if (!coorelatedName.equals(other.coorelatedName))
+			return false;
+		if (description == null) {
+			if (other.description != null)
+				return false;
+		} else if (!description.equals(other.description))
+			return false;
+		if (displayOrder == null) {
+			if (other.displayOrder != null)
+				return false;
+		} else if (!displayOrder.equals(other.displayOrder))
+			return false;
+		if (isPublic != other.isPublic)
+			return false;
+		if (minAuthLevel == null) {
+			if (other.minAuthLevel != null)
+				return false;
+		} else if (!minAuthLevel.equals(other.minAuthLevel))
+			return false;
+		if (name == null) {
+			if (other.name != null)
+				return false;
+		} else if (!name.equals(other.name))
+			return false;
+		if (resourceType == null) {
+			if (other.resourceType != null)
+				return false;
+		} else if (!resourceType.equals(other.resourceType))
+			return false;
+		if (risk != other.risk)
+			return false;
+		return true;
+	}
+	
+	
 }

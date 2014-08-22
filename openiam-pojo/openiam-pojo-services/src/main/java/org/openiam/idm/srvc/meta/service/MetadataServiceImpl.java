@@ -108,6 +108,7 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 				resource.setName(String.format("%s_%s", entity.getAttributeName(), "" + System.currentTimeMillis()));
 	            resource.setResourceType(resourceTypeDAO.findById(uiWidgetResourceType));
 	            resource.setIsPublic(true); /* make public by default */
+	            resource.setCoorelatedName(entity.getAttributeName());
 	            resourceDAO.save(resource);
 	            entity.setResource(resource);
 				entity.setMetadataType(metadataTypeDao.findById(entity.getMetadataType().getId()));
@@ -130,6 +131,9 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 				entity.setMetadataType(dbEntity.getMetadataType());
 				entity.setTemplateSet(dbEntity.getTemplateSet());
 				entity.setResource(dbEntity.getResource());
+				if(entity.getResource() != null) {
+					entity.getResource().setCoorelatedName(entity.getAttributeName());
+				}
 				entity.setOrganizationAttributes(dbEntity.getOrganizationAttributes());
                 entity.setGroupAttributes(dbEntity.getGroupAttributes());
                 entity.setUserAttributes(dbEntity.getUserAttributes());

@@ -34,6 +34,10 @@
         	<a>adminResource.name</a>
         	<b>adminResourceName</b>
         </field>
+        <field>
+        	<a>adminResource.coorelatedName</a>
+        	<b>adminResourceCoorelatedName</b>
+        </field>
 		<field-exclude>
 			<a>parentResources</a>
 			<b>parentResources</b>
@@ -179,6 +183,10 @@
 			<a>adminResource.name</a>
 			<b>adminResourceName</b>
 		</field>
+		<field>
+        	<a>adminResource.coorelatedName</a>
+        	<b>adminResourceCoorelatedName</b>
+        </field>
 		<field-exclude>
 			<a>parentGroups</a>
 			<b>parentGroups</b>
@@ -236,6 +244,10 @@
 			<a>adminResource.name</a>
 			<b>adminResourceName</b>
 		</field>
+		<field>
+        	<a>adminResource.coorelatedName</a>
+        	<b>adminResourceCoorelatedName</b>
+        </field>
 		<field-exclude>
 			<a>groups</a>
 			<b>groups</b>
@@ -528,6 +540,10 @@
 			<a>adminResource.name</a>
 			<b>adminResourceName</b>
 		</field>
+		<field>
+        	<a>adminResource.coorelatedName</a>
+        	<b>adminResourceCoorelatedName</b>
+        </field>
 		<field-exclude>
 			<a>attributes</a>
 			<b>attributes</b>
@@ -724,6 +740,10 @@
 			<a>resource.name</a>
 			<b>resourceName</b>
 		</field>
+		<field>
+			<a>resource.coorelatedName</a>
+			<b>resourceCoorelatedName</b>
+		</field>
 		<field-exclude>
 			<a>metaEntitySet</a>
 			<b>metaEntitySet</b>
@@ -809,6 +829,12 @@
             <a>resource.id</a>
             <b>resourceId</b>
         </field>
+        <field
+			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentObjectConverter"
+			custom-converter-param="dto2entityShallowDozerMapper">
+			<a>resource</a>
+			<b>resource</b>
+		</field>
     </mapping>
 
     <mapping>
@@ -842,6 +868,10 @@
             <a>resource.name</a>
             <b>resourceName</b>
         </field>
+        <field>
+			<a>resource.coorelatedName</a>
+			<b>resourceCoorelatedName</b>
+		</field>
         <field-exclude>
             <a>groupingXrefs</a>
             <b>groupingXrefs</b>

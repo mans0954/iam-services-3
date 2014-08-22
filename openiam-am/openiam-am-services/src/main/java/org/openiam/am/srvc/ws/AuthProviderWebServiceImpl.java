@@ -241,8 +241,6 @@ public class AuthProviderWebServiceImpl implements AuthProviderWebService {
                 throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_TYPE_NOT_SET);
             if(provider.getManagedSysId()==null  || provider.getManagedSysId().trim().isEmpty())
                 throw new BasicDataServiceException(ResponseCode.MANAGED_SYS_NOT_SET);
-            if(provider.getResource() ==null)
-                throw new BasicDataServiceException(ResponseCode.RESOURCE_PROP_MISSING);
             if(provider.getName()==null  || provider.getName().trim().isEmpty())
                 throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NAME_NOT_SET);
             if(provider.isSignRequest()) {
