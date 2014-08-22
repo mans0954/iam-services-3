@@ -2,15 +2,11 @@ package org.openiam.am.srvc.service;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.cxf.interceptor.URIMappingInterceptor;
-import org.openiam.am.srvc.constants.AmAttributes;
 import org.openiam.am.srvc.dao.*;
 import org.openiam.am.srvc.domain.*;
 import org.openiam.am.srvc.domain.pk.AuthLevelGroupingContentProviderXrefIdEntity;
 import org.openiam.am.srvc.domain.pk.AuthLevelGroupingURIPatternXrefIdEntity;
-import org.openiam.am.srvc.dto.AuthLevelGrouping;
 import org.openiam.am.srvc.model.URIPatternJSONWrapper;
-import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
@@ -20,7 +16,6 @@ import org.openiam.idm.srvc.mngsys.service.ManagedSysDAO;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.domain.ResourceTypeEntity;
 import org.openiam.idm.srvc.res.service.ResourceDAO;
-import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
 import org.openiam.idm.srvc.ui.theme.UIThemeDAO;
 import org.openiam.idm.srvc.ui.theme.domain.UIThemeEntity;
@@ -32,11 +27,9 @@ import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.io.File;
+import java.io.InputStream;
+import java.util.*;
 
 @Service("contentProviderService")
 public class ContentProviderServiceImpl implements  ContentProviderService, InitializingBean {
@@ -754,6 +747,7 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		patternWrapper = mapper.readValue(defaultPatternResoruce.getFile(), URIPatternJSONWrapper.class);
+        InputStream stream = defaultPatternResoruce.getInputStream();
+		patternWrapper = mapper.readValue(stream, URIPatternJSONWrapper.class);
 	}
 }

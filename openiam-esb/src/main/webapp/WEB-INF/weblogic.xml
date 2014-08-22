@@ -7,6 +7,7 @@ http://xmlns.oracle.com/weblogic/weblogic-web-app http://xmlns.oracle.com/weblog
 http://xmlns.oracle.com/weblogic/weblogic-application http://xmlns.oracle.com/weblogic/weblogic-application/1.2/weblogic-application.xsd">
 
     <container-descriptor>
+        <show-archived-real-path-enabled>true</show-archived-real-path-enabled>
         <prefer-web-inf-classes>false</prefer-web-inf-classes>
         <prefer-application-packages>
             <package-name>javax.persistence.*</package-name>
