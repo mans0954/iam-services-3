@@ -52,10 +52,10 @@ public class UpdateIdmGroupCommand  implements ReconciliationObjectCommand<Group
     public UpdateIdmGroupCommand() {
     }
 
-    public boolean execute(ReconciliationSituation config, IdentityDto identity, Group group, List<ExtensibleAttribute> attributes) {
+    public boolean execute(ReconciliationSituation config, String principal, String mSysID, Group group, List<ExtensibleAttribute> attributes) {
         log.debug("Entering UpdateIdmGroupCommand");
             ProvisionGroup pGroup = new ProvisionGroup(group);
-            pGroup.setSrcSystemId(identity.getManagedSysId());
+            pGroup.setSrcSystemId(mSysID);
             if(StringUtils.isNotEmpty(config.getScript())){
                 try {
                     Map<String, String> line = new HashMap<String, String>();
@@ -79,7 +79,7 @@ public class UpdateIdmGroupCommand  implements ReconciliationObjectCommand<Group
                         }
                     }
                     Map<String, Object> bindingMap = new HashMap<String, Object>();
-                    bindingMap.put(AbstractProvisioningService.TARGET_SYS_MANAGED_SYS_ID, identity.getManagedSysId());
+                    bindingMap.put(AbstractProvisioningService.TARGET_SYS_MANAGED_SYS_ID, mSysID);
                     PopulationScript<ProvisionGroup> script = (PopulationScript<ProvisionGroup>) scriptRunner.instantiateClass(bindingMap, config.getScript());
                     int retval = script.execute(line, pGroup);
                 } catch (IOException e) {

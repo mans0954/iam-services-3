@@ -44,11 +44,11 @@ public class DeleteIdmExcludeTargetGroupCommand  implements ReconciliationObject
     public DeleteIdmExcludeTargetGroupCommand() {
     }
 
-    public boolean execute(ReconciliationSituation config, IdentityDto identity, Group group, List<ExtensibleAttribute> attributes) {
+    public boolean execute(ReconciliationSituation config, String principal, String mSysID, Group group, List<ExtensibleAttribute> attributes) {
         log.debug("Entering DeleteIdmExcludeTargetGroupCommand");
-        log.debug("Delete  group from IDM only :" + identity.getIdentity());
+        log.debug("Delete  group from IDM only :" + principal);
         ProvisionGroup pGroup = new ProvisionGroup(group);
-        pGroup.setSrcSystemId(identity.getManagedSysId());
+        pGroup.setSrcSystemId(mSysID);
         if(StringUtils.isNotEmpty(config.getScript())){
             try {
                 Map<String, String> line = new HashMap<String, String>();
@@ -72,7 +72,7 @@ public class DeleteIdmExcludeTargetGroupCommand  implements ReconciliationObject
                     }
                 }
                 Map<String, Object> bindingMap = new HashMap<String, Object>();
-                bindingMap.put(AbstractProvisioningService.TARGET_SYS_MANAGED_SYS_ID, identity.getManagedSysId());
+                bindingMap.put(AbstractProvisioningService.TARGET_SYS_MANAGED_SYS_ID, mSysID);
                 PopulationScript<ProvisionGroup> script = (PopulationScript<ProvisionGroup>) scriptRunner.instantiateClass(bindingMap, config.getScript());
                 int retval = script.execute(line, pGroup);
             } catch (IOException e) {
@@ -81,7 +81,8 @@ public class DeleteIdmExcludeTargetGroupCommand  implements ReconciliationObject
                 e.printStackTrace();
             }
         }
-        identityService.deleteIdentity(identity.getId());
+        IdentityDto identityDto = identityService.getIdentity(group.getId(),mSysID);
+        identityService.deleteIdentity(identityDto.getId());
 
         Response response = groupDataWebService.deleteGroup(group.getId(), "3000");
         return response.isSuccess();

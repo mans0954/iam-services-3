@@ -5,7 +5,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.BaseAttribute;
-import org.openiam.idm.srvc.auth.dto.IdentityDto;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.recon.dto.ReconciliationSituation;
 import org.openiam.idm.srvc.recon.service.PopulationScript;
@@ -41,11 +40,11 @@ public class RemoveIdmGroupCommand implements ReconciliationObjectCommand<Group>
     public RemoveIdmGroupCommand() {
     }
 
-    public boolean execute(ReconciliationSituation config, IdentityDto identity, Group group, List<ExtensibleAttribute> attributes) {
+    public boolean execute(ReconciliationSituation config, String principal, String mSysID, Group group, List<ExtensibleAttribute> attributes) {
         log.debug("Entering RemoveIdmGroupCommand");
-        log.debug("Remove  group :" + identity.getIdentity());
+        log.debug("Remove  group :" + principal);
         ProvisionGroup pGroup = new ProvisionGroup(group);
-        pGroup.setSrcSystemId(identity.getManagedSysId());
+        pGroup.setSrcSystemId(mSysID);
         if(StringUtils.isNotEmpty(config.getScript())){
             try {
                 Map<String, String> line = new HashMap<String, String>();
@@ -69,7 +68,7 @@ public class RemoveIdmGroupCommand implements ReconciliationObjectCommand<Group>
                     }
                 }
                 Map<String, Object> bindingMap = new HashMap<String, Object>();
-                bindingMap.put(AbstractProvisioningService.TARGET_SYS_MANAGED_SYS_ID, identity.getManagedSysId());
+                bindingMap.put(AbstractProvisioningService.TARGET_SYS_MANAGED_SYS_ID, mSysID);
                 PopulationScript<ProvisionGroup> script = (PopulationScript<ProvisionGroup>) scriptRunner.instantiateClass(bindingMap, config.getScript());
                 int retval = script.execute(line, pGroup);
             } catch (IOException e) {
@@ -78,7 +77,7 @@ public class RemoveIdmGroupCommand implements ReconciliationObjectCommand<Group>
                 e.printStackTrace();
             }
         }
-        ProvisionGroupResponse response =  provisionService.deleteGroup(identity.getManagedSysId(), group.getId(), UserStatusEnum.REMOVE, "3000");
+        ProvisionGroupResponse response =  provisionService.deleteGroup(mSysID, group.getId(), UserStatusEnum.REMOVE, "3000");
         return response.isSuccess();
     }
 }

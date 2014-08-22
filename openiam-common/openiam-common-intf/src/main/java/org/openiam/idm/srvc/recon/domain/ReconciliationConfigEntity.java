@@ -85,12 +85,34 @@ public class ReconciliationConfigEntity implements java.io.Serializable {
     @Column(name = "NAME", length = 150)
     private String name;
 
+    @Column(name = "POST_PROCESSOR", length = 150)
+    private String postProcessor;
+
+    @Column(name = "PRE_PROCESSOR", length = 150)
+    private String preProcessor;
+
     public String getName() {
         return name;
     }
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getPostProcessor() {
+        return postProcessor;
+    }
+
+    public void setPostProcessor(String postProcessor) {
+        this.postProcessor = postProcessor;
+    }
+
+    public String getPreProcessor() {
+        return preProcessor;
+    }
+
+    public void setPreProcessor(String preProcessor) {
+        this.preProcessor = preProcessor;
     }
 
     public String getSeparator() {

@@ -18,7 +18,7 @@ public abstract class ReconciliationObjectAbstractCommand<T> implements Reconcil
     }
 
     @Override
-    public abstract boolean execute(ReconciliationSituation config, IdentityDto identity, T object, List<ExtensibleAttribute> attributes);
+    public abstract boolean execute(ReconciliationSituation config, String principal, String managedSysId, T object, List<ExtensibleAttribute> attributes);
 
 
 }

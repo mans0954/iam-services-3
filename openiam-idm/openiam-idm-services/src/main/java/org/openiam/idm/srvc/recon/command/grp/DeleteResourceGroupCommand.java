@@ -4,10 +4,8 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.mule.api.MuleContext;
 import org.openiam.base.BaseAttribute;
 import org.openiam.connector.type.request.CrudRequest;
-import org.openiam.idm.srvc.auth.dto.IdentityDto;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
@@ -55,16 +53,16 @@ public class DeleteResourceGroupCommand  implements ReconciliationObjectCommand<
     }
 
     @Override
-    public boolean execute(ReconciliationSituation config, IdentityDto identity, Group group, List<ExtensibleAttribute> attributes) {
+    public boolean execute(ReconciliationSituation config, String principal, String mSysID, Group group, List<ExtensibleAttribute> attributes) {
         log.debug("Entering DeleteResourceGroupCommand");
-        log.debug("Do delete for Group :" + identity.getIdentity());
+        log.debug("Do delete for Group :" + principal);
         if(group == null) {
-            ManagedSysDto mSys = managedSysService.getManagedSys(identity.getManagedSysId());
+            ManagedSysDto mSys = managedSysService.getManagedSys(mSysID);
 
             log.debug("Calling delete with Remote connector");
             CrudRequest<ExtensibleUser> request = new CrudRequest<ExtensibleUser>();
-            request.setObjectIdentity(identity.getIdentity());
-            request.setTargetID(identity.getManagedSysId());
+            request.setObjectIdentity(principal);
+            request.setTargetID(mSysID);
             request.setHostLoginId(mSys.getUserId());
             request.setHostLoginPassword(mSys.getDecryptPassword());
             request.setHostUrl(mSys.getHostUrl());
@@ -77,7 +75,7 @@ public class DeleteResourceGroupCommand  implements ReconciliationObjectCommand<
 
 
         ProvisionGroup pGroup = new ProvisionGroup(group);
-        pGroup.setSrcSystemId(identity.getManagedSysId());
+        pGroup.setSrcSystemId(mSysID);
         if(StringUtils.isNotEmpty(config.getScript())){
             try {
                 Map<String, String> line = new HashMap<String, String>();
@@ -101,7 +99,7 @@ public class DeleteResourceGroupCommand  implements ReconciliationObjectCommand<
                     }
                 }
                 Map<String, Object> bindingMap = new HashMap<String, Object>();
-                bindingMap.put(AbstractProvisioningService.TARGET_SYS_MANAGED_SYS_ID, identity.getManagedSysId());
+                bindingMap.put(AbstractProvisioningService.TARGET_SYS_MANAGED_SYS_ID, mSysID);
                 PopulationScript<ProvisionGroup> script = (PopulationScript<ProvisionGroup>) scriptRunner.instantiateClass(bindingMap, config.getScript());
                 int retval = script.execute(line, pGroup);
                 //Reset source system flag from User to avoid ignoring Provisioning for this resource
@@ -112,7 +110,7 @@ public class DeleteResourceGroupCommand  implements ReconciliationObjectCommand<
                 e.printStackTrace();
             }
         }
-        ProvisionGroupResponse response = provisionService.deleteGroup(identity.getManagedSysId(), pGroup.getId(), UserStatusEnum.DELETED,  "3000");
+        ProvisionGroupResponse response = provisionService.deleteGroup(mSysID, pGroup.getId(), UserStatusEnum.DELETED,  "3000");
         return response.isSuccess();
     }
 
