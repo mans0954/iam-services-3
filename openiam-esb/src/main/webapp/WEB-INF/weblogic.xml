@@ -1,12 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
-        <weblogic-web-app xmlns="http://xmlns.oracle.com/weblogic/weblogic-web-app" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd http://xmlns.oracle.com/weblogic/weblogic-web-app http://xmlns.oracle.com/weblogic/weblogic-web-app/1.0/weblogic-web-app.xsd">
-        <container-descriptor>
-            <prefer-web-inf-classes>false</prefer-web-inf-classes>
-            <prefer-application-packages>
-                <package-name>javax.persistence.*</package-name>
-                <package-name>org.apache.commons.lang.*</package-name>
-                <package-name>antlr.*</package-name>
-                <package-name>org.apache.commons.codec.*</package-name>
-            </prefer-application-packages>
-        </container-descriptor>
-    </weblogic-web-app>
+<weblogic-web-app xmlns="http://xmlns.oracle.com/weblogic/weblogic-web-app"
+                  xmlns:wls="http://xmlns.oracle.com/weblogic/weblogic-application"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd
+http://xmlns.oracle.com/weblogic/weblogic-web-app http://xmlns.oracle.com/weblogic/weblogic-web-app/1.0/weblogic-web-app.xsd
+http://xmlns.oracle.com/weblogic/weblogic-application http://xmlns.oracle.com/weblogic/weblogic-application/1.2/weblogic-application.xsd">
+
+    <container-descriptor>
+        <prefer-web-inf-classes>false</prefer-web-inf-classes>
+        <prefer-application-packages>
+            <package-name>javax.persistence.*</package-name>
+            <package-name>org.apache.commons.lang.*</package-name>
+            <package-name>antlr.*</package-name>
+            <package-name>org.apache.commons.codec.*</package-name>
+        </prefer-application-packages>
+    </container-descriptor>
+
+</weblogic-web-app>
+
+
+        <!--<?xml version="1.0" encoding="UTF-8"?>-->
+<!--<wls:weblogic-application xmlns:wls="http://xmlns.oracle.com/weblogic/weblogic-application"-->
+                          <!--xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"-->
+                          <!--xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/ejb-jar_3_0.xsd-->
+                          <!--http://xmlns.oracle.com/weblogic/weblogic-application http://xmlns.oracle.com/weblogic/weblogic-application/1.2/weblogic-application.xsd">-->
+<!--<wls:prefer-application-packages>-->
+    <!--<wls:package-name>antlr.*</wls:package-name>-->
+<!--</wls:prefer-application-packages>-->
+<!--</wls:weblogic-application>-->

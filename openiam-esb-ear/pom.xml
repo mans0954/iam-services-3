@@ -16,6 +16,9 @@
 	<properties>
     	<skipTests>true</skipTests>
         <openiam.esb.version>3.2.RELEASE</openiam.esb.version>
+        <hibernate.version>3.6.6.Final</hibernate.version>
+        <hibernatesearch.version>3.4.0.Final</hibernatesearch.version>
+        <hibernate.entity.manager.version>3.6.7.Final</hibernate.entity.manager.version>
   	</properties>
 
     <dependencies>
@@ -217,6 +220,44 @@
             <!--<artifactId>hsqldb</artifactId>-->
 			<!--<scope>test</scope>-->
         <!--</dependency>-->
+
+        <!--<dependency>-->
+            <!--<groupId>org.hibernate</groupId>-->
+            <!--<artifactId>hibernate-core</artifactId>-->
+            <!--&lt;!&ndash;<scope>provided</scope>&ndash;&gt;-->
+        <!--</dependency>-->
+
+        <!--<dependency>-->
+            <!--<groupId>org.hibernate</groupId>-->
+            <!--<artifactId>hibernate-search</artifactId>-->
+            <!--<version>${hibernatesearch.version}</version>-->
+            <!--&lt;!&ndash;<scope>provided</scope>&ndash;&gt;-->
+        <!--</dependency>-->
+
+        <!--<dependency>-->
+            <!--<groupId>org.hibernate</groupId>-->
+            <!--<artifactId>hibernate-entitymanager</artifactId>-->
+            <!--<version>${hibernate.entity.manager.version}</version>-->
+            <!--&lt;!&ndash;<scope>provided</scope>&ndash;&gt;-->
+        <!--</dependency>-->
+        <!--<dependency>-->
+            <!--<groupId>javassist</groupId>-->
+            <!--<artifactId>javassist</artifactId>-->
+        <!--</dependency>-->
+        <!--<dependency>-->
+            <!--<groupId>antlr</groupId>-->
+            <!--<artifactId>antlr</artifactId>-->
+        <!--</dependency>-->
+        <!--<dependency>-->
+            <!--<groupId>javax.validation</groupId>-->
+            <!--<artifactId>validation-api</artifactId>-->
+            <!--<version>${validation-api.version}</version>-->
+        <!--</dependency>-->
+        <!--<dependency>-->
+            <!--<groupId>org.hibernate</groupId>-->
+            <!--<artifactId>hibernate-validator</artifactId>-->
+            <!--<version>${hibernate-validator.version}</version>-->
+        <!--</dependency>-->
     </dependencies>
 
 
@@ -236,6 +277,34 @@
                             <contextRoot>/openiam-esb</contextRoot>
                             <unpack>true</unpack>
                         </webModule>
+                        <!--<jarModule>-->
+                            <!--<groupId>org.hibernate</groupId>-->
+                            <!--<artifactId>hibernate-entitymanager</artifactId>-->
+                        <!--</jarModule>-->
+                        <!--<jarModule>-->
+                            <!--<groupId>org.hibernate</groupId>-->
+                            <!--<artifactId>hibernate-search</artifactId>-->
+                        <!--</jarModule>-->
+                        <!--<jarModule>-->
+                            <!--<groupId>org.hibernate</groupId>-->
+                            <!--<artifactId>hibernate-core</artifactId>-->
+                        <!--</jarModule>-->
+                        <!--<jarModule>-->
+                            <!--<groupId>javassist</groupId>-->
+                            <!--<artifactId>javassist</artifactId>-->
+                        <!--</jarModule>-->
+                        <!--<jarModule>-->
+                            <!--<groupId>antlr</groupId>-->
+                            <!--<artifactId>antlr</artifactId>-->
+                        <!--</jarModule>-->
+                        <!--<jarModule>-->
+                            <!--<groupId>javax.validation</groupId>-->
+                            <!--<artifactId>validation-api</artifactId>-->
+                        <!--</jarModule>-->
+                        <!--<jarModule>-->
+                            <!--<groupId>org.hibernate</groupId>-->
+                            <!--<artifactId>hibernate-validator</artifactId>-->
+                        <!--</jarModule>-->
                     </modules>
                 </configuration>
             </plugin>
