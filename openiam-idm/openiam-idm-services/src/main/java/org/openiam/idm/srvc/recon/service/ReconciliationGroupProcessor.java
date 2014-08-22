@@ -1,6 +1,5 @@
 package org.openiam.idm.srvc.recon.service;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -11,9 +10,6 @@ import org.openiam.connector.type.constant.StatusCodeType;
 import org.openiam.connector.type.request.SearchRequest;
 import org.openiam.connector.type.response.SearchResponse;
 import org.openiam.dozer.converter.GroupDozerConverter;
-import org.openiam.dozer.converter.ManagedSysDozerConverter;
-import org.openiam.dozer.converter.ManagedSystemObjectMatchDozerConverter;
-import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.exception.ScriptEngineException;
 import org.openiam.idm.searchbeans.GroupSearchBean;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
@@ -42,12 +38,10 @@ import org.openiam.idm.srvc.synch.dto.Attribute;
 import org.openiam.idm.srvc.synch.service.MatchObjectRule;
 import org.openiam.idm.srvc.synch.srcadapter.MatchRuleFactory;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
-import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.dto.ProvisionGroup;
 import org.openiam.provision.service.AbstractProvisioningService;
 import org.openiam.provision.service.ConnectorAdapter;
 import org.openiam.provision.service.GroupProvisionService;
-import org.openiam.provision.service.ProvisionServiceUtil;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleGroup;
 import org.openiam.script.ScriptIntegration;
@@ -414,7 +408,7 @@ public class ReconciliationGroupProcessor implements ReconciliationProcessor {
                         idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION,
                                 "SYS_EXISTS__IDM_NOT_EXISTS for group= " + identitySys.getIdentity());
 
-                        command.execute(situation, identitySys, provisionGroup, extensibleAttributes);
+                        command.execute(situation, identitySys.getIdentity(), mSys.getId(), provisionGroup, extensibleAttributes);
                     }
             } else {
                 // IDM_EXISTS__SYS_EXISTS
@@ -429,7 +423,7 @@ public class ReconciliationGroupProcessor implements ReconciliationProcessor {
                         idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "IDM_EXISTS__SYS_EXISTS for group= "
                                 + identitySys.getIdentity());
 
-                        command.execute(situation, identitySys, provisionGroup, extensibleAttributes);
+                        command.execute(situation, identitySys.getIdentity(), mSys.getId(), provisionGroup, extensibleAttributes);
                     }
             }
 
@@ -448,7 +442,7 @@ public class ReconciliationGroupProcessor implements ReconciliationProcessor {
                         idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION,
                                 "IDM_EXISTS__SYS_NOT_EXISTS for group= " + primaryIdentity.getIdentity());
 
-                        command.execute(situation, primaryIdentity, provisionGroup, extensibleAttributes);
+                        command.execute(situation, primaryIdentity.getIdentity(), mSys.getId(), provisionGroup, extensibleAttributes);
                     }
             }
         }
@@ -510,7 +504,7 @@ public class ReconciliationGroupProcessor implements ReconciliationProcessor {
 
                     // AUDIT LOG Y user processing IDM_EXISTS__SYS_EXISTS
                     // situation
-                    command.execute(situation, identityDto, newGroup, extensibleAttributes);
+                    command.execute(situation, identityDto.getIdentity(), mSys.getId(), newGroup, extensibleAttributes);
 
                 }
             } else {
@@ -529,7 +523,7 @@ public class ReconciliationGroupProcessor implements ReconciliationProcessor {
 
                     // AUDIT LOG Y user processing SYS_EXISTS__IDM_NOT_EXISTS
                     // situation
-                    command.execute(situation, identityDto, newGroup, extensibleAttributes);
+                    command.execute(situation, identityDto.getIdentity(), mSys.getId(), newGroup, extensibleAttributes);
                 }
             }
 

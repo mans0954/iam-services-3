@@ -3,9 +3,12 @@ package org.openiam.idm.srvc.recon.command.grp;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.BaseAttribute;
 import org.openiam.base.ws.Response;
 import org.openiam.idm.srvc.auth.dto.IdentityDto;
+import org.openiam.idm.srvc.auth.dto.IdentityTypeEnum;
+import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
 import org.openiam.idm.srvc.auth.login.IdentityService;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.ws.GroupDataWebService;
@@ -54,7 +57,7 @@ public class CreateIdmGroupCommand  implements ReconciliationObjectCommand<Group
     public CreateIdmGroupCommand() {
     }
 
-    public boolean execute(ReconciliationSituation config, IdentityDto identity, Group group, List<ExtensibleAttribute> attributes) {
+    public boolean execute(ReconciliationSituation config, String principal, String mSysID, Group group, List<ExtensibleAttribute> attributes) {
         log.debug("Entering CreateIdmGroupCommand");
         if(attributes == null){
             log.debug("Can't create IDM group without attributes");
@@ -81,19 +84,25 @@ public class CreateIdmGroupCommand  implements ReconciliationObjectCommand<Group
             }
             try {
                 Map<String, Object> bindingMap = new HashMap<String, Object>();
-                bindingMap.put(AbstractProvisioningService.TARGET_SYS_MANAGED_SYS_ID, identity.getManagedSysId());
+                bindingMap.put(AbstractProvisioningService.TARGET_SYS_MANAGED_SYS_ID, mSysID);
                 PopulationScript<ProvisionGroup> script = (PopulationScript<ProvisionGroup>)scriptRunner.instantiateClass(bindingMap, config.getScript());
                 ProvisionGroup pGroup = new ProvisionGroup(group);
-                pGroup.setSrcSystemId(identity.getManagedSysId());
+                pGroup.setSrcSystemId(mSysID);
                 int retval = script.execute(line, pGroup);
                 if(retval == 0) {
                     Response responce = groupDataWebService.saveGroup(pGroup,"3000");
                     String groupId = (String)responce.getResponseValue();
+                    IdentityDto identity = new IdentityDto();
+                    identity.setIdentity(principal);
+                    identity.setType(IdentityTypeEnum.GROUP);
+                    identity.setManagedSysId(mSysID);
+                    identity.setOperation(AttributeOperationEnum.ADD);
+                    identity.setStatus(LoginStatusEnum.ACTIVE);
                     identity.setReferredObjectId(groupId);
                     identityService.save(identity);
                     provisionService.addGroup(pGroup);
                     for(String memberPrincipal : pGroup.getMembersIds()) {
-                        UserEntity user = userManager.getUserByPrincipal(memberPrincipal, identity.getManagedSysId(), false);
+                        UserEntity user = userManager.getUserByPrincipal(memberPrincipal, mSysID, false);
                         if(user != null) {
                             Response response = groupDataWebService.addUserToGroup(groupId, user.getId(), "3000");
                             log.debug("User Member with principal = "+memberPrincipal+" was added to Group = "+identity.getIdentity() + " Managed Sys = "+identity.getManagedSysId() + ". \nResponse = "+response);

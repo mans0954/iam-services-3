@@ -5,10 +5,9 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.BaseAttribute;
-import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.recon.dto.ReconciliationSituation;
 import org.openiam.idm.srvc.recon.service.PopulationScript;
-import org.openiam.idm.srvc.recon.service.ReconciliationCommand;
+import org.openiam.idm.srvc.recon.service.ReconciliationObjectCommand;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.service.AbstractProvisioningService;
@@ -24,7 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 @Component("doNothingUserCommand")
-public class DoNothingUserCommand implements ReconciliationCommand {
+public class DoNothingUserCommand implements ReconciliationObjectCommand<User> {
     private static final Log log = LogFactory.getLog(DoNothingUserCommand.class);
 
     @Autowired
@@ -35,11 +34,11 @@ public class DoNothingUserCommand implements ReconciliationCommand {
     }
 
     @Override
-    public boolean execute(ReconciliationSituation config, Login login, User user, List<ExtensibleAttribute> attributes) {
+    public boolean execute(ReconciliationSituation config, String principal, String mSysID, User user, List<ExtensibleAttribute> attributes) {
         log.debug("Entering DoNothingCommand");
-        log.debug("Do nothing for user :" + login.getUserId());
+        log.debug("Do nothing for user :" + user.getId());
         ProvisionUser pUser = new ProvisionUser(user);
-        pUser.setSrcSystemId(login.getManagedSysId());
+        pUser.setSrcSystemId(mSysID);
         if(StringUtils.isNotEmpty(config.getScript())){
             try {
                 Map<String, String> line = new HashMap<String, String>();
@@ -63,7 +62,7 @@ public class DoNothingUserCommand implements ReconciliationCommand {
                     }
                 }
                 Map<String, Object> bindingMap = new HashMap<String, Object>();
-                bindingMap.put(AbstractProvisioningService.TARGET_SYS_MANAGED_SYS_ID, login.getManagedSysId());
+                bindingMap.put(AbstractProvisioningService.TARGET_SYS_MANAGED_SYS_ID, mSysID);
                 PopulationScript script = (PopulationScript) scriptRunner.instantiateClass(bindingMap, config.getScript());
                 int retval = script.execute(line, pUser);
             } catch (IOException e) {

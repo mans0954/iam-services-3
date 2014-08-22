@@ -22,6 +22,7 @@
 package org.openiam.idm.srvc.recon.service;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -67,6 +68,8 @@ import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.synch.srcadapter.MatchRuleFactory;
 import org.openiam.provision.service.ConnectorAdapter;
+import org.openiam.provision.service.PostProcessor;
+import org.openiam.provision.service.PrePostExecutor;
 import org.openiam.script.ScriptIntegration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -81,6 +84,7 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Service
 public class ReconciliationServiceImpl implements ReconciliationService {
+    public static final String RECONCILIATION_CONFIG = "RECONCILIATION_CONFIG";
     @Autowired
     protected ReconciliationSituationDAO reconSituationDAO;
 
@@ -304,6 +308,22 @@ public class ReconciliationServiceImpl implements ReconciliationService {
 
             configEntity.setExecStatus(ReconExecStatusOptions.STARTED);
 
+
+            Map<String, Object> bindingMap = new HashMap<String, Object>();
+            bindingMap.put("RECONCILIATION_CONFIG", config);
+            String preProcessScript = config.getPreProcessor();
+            if (StringUtils.isNotEmpty(preProcessScript)) {
+                PrePostExecutor ppScript = null;
+                try {
+                    ppScript = (PrePostExecutor) scriptRunner.instantiateClass(bindingMap, preProcessScript);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                if (ppScript != null) {
+                    ppScript.execute(bindingMap);
+                }
+            }
+
             // Check custom Processor script and execute if exists
             if(StringUtils.isNotEmpty(config.getCustomProcessorScript())) {
                 // fill map with attributes if needed
@@ -338,6 +358,21 @@ public class ReconciliationServiceImpl implements ReconciliationService {
                 configEntity.setExecStatus(ReconExecStatusOptions.FINISHED);
             }
             reconConfigDao.save(configEntity);
+
+            Map<String, Object> bindingMap = new HashMap<String, Object>();
+            bindingMap.put(RECONCILIATION_CONFIG, config);
+            String postProcessScript = config.getPostProcessor();
+            if (StringUtils.isNotEmpty(postProcessScript)) {
+                PrePostExecutor ppScript = null;
+                try {
+                    ppScript = (PrePostExecutor) scriptRunner.instantiateClass(bindingMap, postProcessScript);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                if (ppScript != null) {
+                    ppScript.execute(bindingMap);
+                }
+            }
         }
 
         return new ReconciliationResponse(ResponseStatus.SUCCESS);

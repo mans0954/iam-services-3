@@ -311,9 +311,6 @@ public class ReconciliationUserProcessor implements ReconciliationProcessor {
         idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION,
                 "Reconciliation for target system: " + mSys.getName() + " is complete.");
 
-        this.sendMail(config, res);
-
-
         return new ReconciliationResponse(ResponseStatus.SUCCESS);
     }
 
@@ -324,16 +321,6 @@ public class ReconciliationUserProcessor implements ReconciliationProcessor {
             row.setRowId(i++);
         }
         Serializer.serialize(resultBean, absolutePath + fileName + ".rcndat");
-    }
-
-    private void sendMail(ReconciliationConfig config, Resource res) {
-        StringBuilder message = new StringBuilder();
-        if (!StringUtils.isEmpty(config.getNotificationEmailAddress())) {
-            message.append("Resource: " + res.getName() + ".\n");
-            message.append("Uploaded CSV file: " + res.getId() + ".csv was successfully reconciled.\n");
-            mailService.sendEmails(null, new String[] { config.getNotificationEmailAddress() }, null, null,
-                    "CSVConnector", message.toString(), false, new String[] {});
-        }
     }
 
     private ReconciliationResponse processingTargetToIDM(ReconciliationConfig config, String managedSysId,
@@ -468,7 +455,7 @@ public class ReconciliationUserProcessor implements ReconciliationProcessor {
                 // if user exists but don;t have principal for current target
                 // sys
                 ReconciliationSituation situation = situations.get(ReconciliationCommand.IDM_EXISTS__SYS_EXISTS);
-                ReconciliationCommand command = commandFactory.createUserCommand(situation.getSituationResp(), situation, mSys.getId());
+                ReconciliationObjectCommand<User> command = commandFactory.createUserCommand(situation.getSituationResp(), situation, mSys.getId());
 
                 if (command != null) {
                     ProvisionUser newUser = new ProvisionUser(u);
@@ -489,13 +476,13 @@ public class ReconciliationUserProcessor implements ReconciliationProcessor {
                             + targetUserPrincipal);
                     // AUDIT LOG Y user processing IDM_EXISTS__SYS_EXISTS
                     // situation
-                    command.execute(situation, principal, newUser, extensibleAttributes);
+                    command.execute(situation, principal.getLogin(), managedSysId, newUser, extensibleAttributes);
 
                 }
             } else {
                 // create new user in IDM
                 ReconciliationSituation situation = situations.get(ReconciliationCommand.SYS_EXISTS__IDM_NOT_EXISTS);
-                ReconciliationCommand command = commandFactory.createUserCommand(situation.getSituationResp(), situation, mSys.getId());
+                ReconciliationObjectCommand<User>  command = commandFactory.createUserCommand(situation.getSituationResp(), situation, mSys.getId());
 
                 if (command != null) {
                     Login l = new Login();
@@ -518,7 +505,7 @@ public class ReconciliationUserProcessor implements ReconciliationProcessor {
 
                     // AUDIT LOG Y user processing SYS_EXISTS__IDM_NOT_EXISTS
                     // situation
-                    command.execute(situation, l, newUser, extensibleAttributes);
+                    command.execute(situation, l.getLogin(), managedSysId, newUser, extensibleAttributes);
                 }
             }
 
@@ -576,7 +563,7 @@ public class ReconciliationUserProcessor implements ReconciliationProcessor {
 
                 if (!isManualRecon) {
                     ReconciliationSituation situation = situations.get(ReconciliationCommand.IDM_DELETED__SYS_EXISTS);
-                    ReconciliationCommand command = commandFactory.createUserCommand(situation.getSituationResp(), situation, mSys.getId());
+                    ReconciliationObjectCommand<User> command = commandFactory.createUserCommand(situation.getSituationResp(), situation, mSys.getId());
 
                     if (command != null) {
                         log.debug("Call command for: Record in resource but deleted in IDM");
@@ -586,7 +573,7 @@ public class ReconciliationUserProcessor implements ReconciliationProcessor {
                         idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION,
                                 "SYS_EXISTS__IDM_NOT_EXISTS for user= " + principal);
 
-                        command.execute(situation, idDto, provisionUser, extensibleAttributes);
+                        command.execute(situation, idDto.getLogin(), mSys.getId(), provisionUser, extensibleAttributes);
                     }
                 }
             } else {
@@ -595,7 +582,7 @@ public class ReconciliationUserProcessor implements ReconciliationProcessor {
                         this.setRowInReconciliationResult(resultBean.getHeader(), attrMap, fromIDM, fromTS,
                                 ReconciliationResultCase.MATCH_FOUND));
                 ReconciliationSituation situation = situations.get(ReconciliationCommand.IDM_EXISTS__SYS_EXISTS);
-                ReconciliationCommand command = commandFactory.createUserCommand(situation.getSituationResp(), situation, mSys.getId());
+                ReconciliationObjectCommand<User> command = commandFactory.createUserCommand(situation.getSituationResp(), situation, mSys.getId());
 
                     if (command != null) {
                         log.debug("Call command for: Record in resource and in IDM");
@@ -606,7 +593,7 @@ public class ReconciliationUserProcessor implements ReconciliationProcessor {
                         idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "IDM_EXISTS__SYS_EXISTS for user= "
                                 + principal);
 
-                        command.execute(situation, idDto, provisionUser, extensibleAttributes);
+                        command.execute(situation, idDto.getLogin(), mSys.getId(), provisionUser, extensibleAttributes);
                 }
             }
 
@@ -618,7 +605,7 @@ public class ReconciliationUserProcessor implements ReconciliationProcessor {
                         this.setRowInReconciliationResult(resultBean.getHeader(), attrMap, fromIDM, fromTS,
                                 ReconciliationResultCase.NOT_EXIST_IN_RESOURCE));
                 ReconciliationSituation situation = situations.get(ReconciliationCommand.IDM_EXISTS__SYS_NOT_EXISTS);
-                ReconciliationCommand command = commandFactory.createUserCommand(situation.getSituationResp(), situation, mSys.getId());
+                ReconciliationObjectCommand<User>  command = commandFactory.createUserCommand(situation.getSituationResp(), situation, mSys.getId());
 
                 if (command != null) {
                     log.debug("Call command for: Record in resource and in IDM");
@@ -629,7 +616,7 @@ public class ReconciliationUserProcessor implements ReconciliationProcessor {
                         idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION,
                                 "IDM_EXISTS__SYS_NOT_EXISTS for user= " + principal);
 
-                        command.execute(situation, idDto, provisionUser, extensibleAttributes);
+                        command.execute(situation, idDto.getLogin(), mSys.getId(), provisionUser, extensibleAttributes);
                 }
             }
         }

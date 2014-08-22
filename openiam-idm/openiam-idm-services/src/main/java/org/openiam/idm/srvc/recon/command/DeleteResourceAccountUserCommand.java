@@ -12,7 +12,7 @@ import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.idm.srvc.recon.dto.ReconciliationSituation;
 import org.openiam.idm.srvc.recon.service.PopulationScript;
-import org.openiam.idm.srvc.recon.service.ReconciliationCommand;
+import org.openiam.idm.srvc.recon.service.ReconciliationObjectCommand;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.resp.ProvisionUserResponse;
@@ -33,7 +33,7 @@ import java.util.List;
 import java.util.Map;
 
 @Component("deleteResourceAccountUserCommand")
-public class DeleteResourceAccountUserCommand implements ReconciliationCommand {
+public class DeleteResourceAccountUserCommand implements ReconciliationObjectCommand<User> {
 
     private static final Log log = LogFactory.getLog(DeleteResourceAccountUserCommand.class);
 
@@ -55,15 +55,15 @@ public class DeleteResourceAccountUserCommand implements ReconciliationCommand {
     }
 
     @Override
-    public boolean execute(ReconciliationSituation config, Login login, User user, List<ExtensibleAttribute> attributes) {
+    public boolean execute(ReconciliationSituation config, String principal, String mSysID, User user, List<ExtensibleAttribute> attributes) {
         log.debug("Entering DeleteResourceAccountCommand");
         if(user == null) {
-            ManagedSysDto mSys = managedSysService.getManagedSys(login.getManagedSysId());
+            ManagedSysDto mSys = managedSysService.getManagedSys(mSysID);
 
             log.debug("Calling delete with Remote connector");
             CrudRequest<ExtensibleUser> request = new CrudRequest<ExtensibleUser>();
-            request.setObjectIdentity(login.getLogin());
-            request.setTargetID(login.getManagedSysId());
+            request.setObjectIdentity(principal);
+            request.setTargetID(mSysID);
             request.setHostLoginId(mSys.getUserId());
             request.setHostLoginPassword(mSys.getDecryptPassword());
             request.setHostUrl(mSys.getHostUrl());
@@ -75,7 +75,7 @@ public class DeleteResourceAccountUserCommand implements ReconciliationCommand {
         }
         List<Login> principleList = user.getPrincipalList();
         for(Login l : principleList){
-            if(l.getLoginId().equals(login.getLoginId())){
+            if(l.getManagedSysId().equals(mSysID)){
                 l.setOperation(AttributeOperationEnum.DELETE);
                 break;
             }
@@ -83,7 +83,7 @@ public class DeleteResourceAccountUserCommand implements ReconciliationCommand {
 
         ProvisionUser pUser = new ProvisionUser(user);
         pUser.setPrincipalList(principleList);
-        pUser.setSrcSystemId(login.getManagedSysId());
+        pUser.setSrcSystemId(mSysID);
         if(StringUtils.isNotEmpty(config.getScript())){
             try {
                 Map<String, String> line = new HashMap<String, String>();
@@ -107,7 +107,7 @@ public class DeleteResourceAccountUserCommand implements ReconciliationCommand {
                     }
                 }
                 Map<String, Object> bindingMap = new HashMap<String, Object>();
-                bindingMap.put(AbstractProvisioningService.TARGET_SYS_MANAGED_SYS_ID, login.getManagedSysId());
+                bindingMap.put(AbstractProvisioningService.TARGET_SYS_MANAGED_SYS_ID, mSysID);
                 PopulationScript script = (PopulationScript) scriptRunner.instantiateClass(bindingMap, config.getScript());
                 int retval = script.execute(line, pUser);
                 //Reset source system flag from User to avoid ignoring Provisioning for this resource

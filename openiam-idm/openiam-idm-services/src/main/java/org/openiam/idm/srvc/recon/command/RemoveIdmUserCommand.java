@@ -9,6 +9,7 @@ import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.recon.dto.ReconciliationSituation;
 import org.openiam.idm.srvc.recon.service.PopulationScript;
 import org.openiam.idm.srvc.recon.service.ReconciliationCommand;
+import org.openiam.idm.srvc.recon.service.ReconciliationObjectCommand;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.provision.dto.ProvisionUser;
@@ -27,7 +28,7 @@ import java.util.List;
 import java.util.Map;
 
 @Component("removeIdmUserCommand")
-public class RemoveIdmUserCommand implements ReconciliationCommand {
+public class RemoveIdmUserCommand implements ReconciliationObjectCommand<User> {
     private static final Log log = LogFactory.getLog(RemoveIdmUserCommand.class);
 
     @Autowired
@@ -41,11 +42,11 @@ public class RemoveIdmUserCommand implements ReconciliationCommand {
     public RemoveIdmUserCommand() {
     }
 
-    public boolean execute(ReconciliationSituation config, Login login, User user, List<ExtensibleAttribute> attributes) {
+    public boolean execute(ReconciliationSituation config, String principal, String mSysID, User user, List<ExtensibleAttribute> attributes) {
         log.debug("Entering RemoveIdmUserCommand");
-        log.debug("Delete  user :" + login.getUserId());
+        log.debug("Delete  user :" + user.getId());
         ProvisionUser pUser = new ProvisionUser(user);
-        pUser.setSrcSystemId(login.getManagedSysId());
+        pUser.setSrcSystemId(mSysID);
         if(StringUtils.isNotEmpty(config.getScript())){
             try {
                 Map<String, String> line = new HashMap<String, String>();
@@ -69,7 +70,7 @@ public class RemoveIdmUserCommand implements ReconciliationCommand {
                     }
                 }
                 Map<String, Object> bindingMap = new HashMap<String, Object>();
-                bindingMap.put(AbstractProvisioningService.TARGET_SYS_MANAGED_SYS_ID, login.getManagedSysId());
+                bindingMap.put(AbstractProvisioningService.TARGET_SYS_MANAGED_SYS_ID, mSysID);
                 PopulationScript script = (PopulationScript) scriptRunner.instantiateClass(bindingMap, config.getScript());
                 int retval = script.execute(line, pUser);
             } catch (IOException e) {
@@ -78,7 +79,7 @@ public class RemoveIdmUserCommand implements ReconciliationCommand {
                 e.printStackTrace();
             }
         }
-        ProvisionUserResponse response =  provisionService.deleteByUserId(login.getUserId(), UserStatusEnum.REMOVE, "3000");
+        ProvisionUserResponse response =  provisionService.deleteByUserId(user.getId(), UserStatusEnum.REMOVE, "3000");
         return response.isSuccess();
     }
 }

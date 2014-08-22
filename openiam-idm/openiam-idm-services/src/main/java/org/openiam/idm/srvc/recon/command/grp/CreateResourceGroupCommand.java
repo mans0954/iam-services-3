@@ -41,11 +41,11 @@ public class CreateResourceGroupCommand  implements ReconciliationObjectCommand<
     public CreateResourceGroupCommand() {
     }
 
-    public boolean execute(ReconciliationSituation config, IdentityDto identity, Group group, List<ExtensibleAttribute> attributes) {
+    public boolean execute(ReconciliationSituation config, String principal, String mSysId, Group group, List<ExtensibleAttribute> attributes) {
         log.debug("Entering CreateResourceGroupCommand");
         log.debug("Create Resource Account for group: " + group.getId());
         ProvisionGroup pGroup = new ProvisionGroup(group);
-        pGroup.setSrcSystemId(identity.getManagedSysId());
+        pGroup.setSrcSystemId(mSysId);
         if(StringUtils.isNotEmpty(config.getScript())){
             try {
                 Map<String, String> line = new HashMap<String, String>();
@@ -69,7 +69,7 @@ public class CreateResourceGroupCommand  implements ReconciliationObjectCommand<
                     }
                 }
                 Map<String, Object> bindingMap = new HashMap<String, Object>();
-                bindingMap.put(AbstractProvisioningService.TARGET_SYS_MANAGED_SYS_ID, identity.getManagedSysId());
+                bindingMap.put(AbstractProvisioningService.TARGET_SYS_MANAGED_SYS_ID, mSysId);
                 PopulationScript script = (PopulationScript) scriptRunner.instantiateClass(bindingMap, config.getScript());
                 int retval = script.execute(line, pGroup);
                 //Reset source system flag from User to avoid ignoring Provisioning for this resource

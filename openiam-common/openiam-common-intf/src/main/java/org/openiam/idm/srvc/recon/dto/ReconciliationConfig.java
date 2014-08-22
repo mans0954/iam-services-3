@@ -17,7 +17,8 @@ import org.openiam.idm.srvc.recon.domain.ReconciliationConfigEntity;
         "separator", "endOfLine", "notificationEmailAddress","manualReconciliationFlag",
         "targetSystemMatchScript","targetSystemSearchFilter","matchScript","searchFilter","updatedSince",
         "customIdentityMatchScript","scriptHandler","matchFieldName",
-        "customMatchAttr","matchSrcFieldName","lastExecTime","execStatus","requesterId","customProcessorScript","reconType", "name"})
+        "customMatchAttr","matchSrcFieldName","lastExecTime","execStatus","requesterId",
+        "customProcessorScript","reconType", "name","preProcessor","postProcessor"})
 
 @DozerDTOCorrespondence(ReconciliationConfigEntity.class)
 public class ReconciliationConfig implements MatchConfig, java.io.Serializable {
@@ -60,6 +61,9 @@ public class ReconciliationConfig implements MatchConfig, java.io.Serializable {
 
     private String requesterId;
 
+    private String preProcessor;
+    private String postProcessor;
+
     @XmlTransient
     private boolean useCustomScript;
 
@@ -70,6 +74,22 @@ public class ReconciliationConfig implements MatchConfig, java.io.Serializable {
 
     private String reconType;
     private String name;
+
+    public String getPreProcessor() {
+        return preProcessor;
+    }
+
+    public void setPreProcessor(String preProcessor) {
+        this.preProcessor = preProcessor;
+    }
+
+    public String getPostProcessor() {
+        return postProcessor;
+    }
+
+    public void setPostProcessor(String postProcessor) {
+        this.postProcessor = postProcessor;
+    }
 
     public String getName() {
         return name;

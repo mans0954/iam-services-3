@@ -9,6 +9,7 @@ import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.recon.dto.ReconciliationSituation;
 import org.openiam.idm.srvc.recon.service.PopulationScript;
 import org.openiam.idm.srvc.recon.service.ReconciliationCommand;
+import org.openiam.idm.srvc.recon.service.ReconciliationObjectCommand;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.service.AbstractProvisioningService;
@@ -32,7 +33,7 @@ import java.util.Map;
  * To change this template use File | Settings | File Templates.
  */
 @Component("createIdmAccountUserCommand")
-public class CreateIdmAccountUserCommand implements ReconciliationCommand {
+public class CreateIdmAccountUserCommand implements ReconciliationObjectCommand<User> {
     private static final Log log = LogFactory.getLog(CreateIdmAccountUserCommand.class);
 
     public static final String OPENIAM_MANAGED_SYS_ID = "0";
@@ -48,7 +49,7 @@ public class CreateIdmAccountUserCommand implements ReconciliationCommand {
     public CreateIdmAccountUserCommand() {
     }
 
-    public boolean execute(ReconciliationSituation config, Login login, User user, List<ExtensibleAttribute> attributes)  {
+    public boolean execute(ReconciliationSituation config, String principal, String mSysID, User user, List<ExtensibleAttribute> attributes)  {
         log.debug("Entering CreateIdmAccountCommand");
         if(attributes == null){
             log.debug("Can't create IDM user without attributes");
@@ -75,29 +76,27 @@ public class CreateIdmAccountUserCommand implements ReconciliationCommand {
             }
             try {
                 Map<String, Object> bindingMap = new HashMap<String, Object>();
-                bindingMap.put(AbstractProvisioningService.TARGET_SYS_MANAGED_SYS_ID, login.getManagedSysId());
+                bindingMap.put(AbstractProvisioningService.TARGET_SYS_MANAGED_SYS_ID, mSysID);
                 PopulationScript script = (PopulationScript)scriptRunner.instantiateClass(bindingMap, config.getScript());
                 ProvisionUser pUser = new ProvisionUser(user);
-                pUser.setSrcSystemId(login.getManagedSysId());
+                pUser.setSrcSystemId(mSysID);
                 int retval = script.execute(line, pUser);
-                if(retval == 0){
-                    if(login != null) {
-                        Login idmLogin = null;
-                        for(Login pr : user.getPrincipalList()) {
-                           if(OPENIAM_MANAGED_SYS_ID.equalsIgnoreCase(pr.getManagedSysId())) {
-                               idmLogin = pr;
-                           }
-                        }
-                        if(idmLogin == null){
-                            idmLogin = new Login();
-                            idmLogin.setOperation(AttributeOperationEnum.ADD);
-                            idmLogin.setLogin(login.getLogin());
-                            idmLogin.setManagedSysId("0");
-                            pUser.getPrincipalList().add(idmLogin);
+                if (retval == 0) {
+                    Login idmLogin = null;
+                    for (Login pr : user.getPrincipalList()) {
+                        if (OPENIAM_MANAGED_SYS_ID.equalsIgnoreCase(pr.getManagedSysId())) {
+                            idmLogin = pr;
                         }
                     }
+                    if (idmLogin == null) {
+                        idmLogin = new Login();
+                        idmLogin.setOperation(AttributeOperationEnum.ADD);
+                        idmLogin.setLogin(principal);
+                        idmLogin.setManagedSysId("0");
+                        pUser.getPrincipalList().add(idmLogin);
+                    }
                     provisionService.addUser(pUser);
-                }else{
+                } else {
                     log.debug("Couldn't populate ProvisionUser. User not added");
                     return false;
                 }

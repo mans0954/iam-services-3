@@ -6,6 +6,7 @@ import org.openiam.idm.srvc.recon.dto.ReconciliationSituation;
 import org.openiam.idm.srvc.recon.service.ReconciliationCommand;
 import org.openiam.idm.srvc.recon.service.ReconciliationObjectCommand;
 import org.openiam.idm.srvc.recon.service.ReconciliationSituationResponseOptions;
+import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.provision.service.AbstractProvisioningService;
 import org.openiam.provision.service.ProvisionService;
 import org.openiam.script.ScriptIntegration;
@@ -56,44 +57,43 @@ public class ReconciliationCommandFactory {
 
     @Autowired
     @Qualifier("doNothingUserCommand")
-    private ReconciliationCommand doNothingUserCommand;
+    private ReconciliationObjectCommand doNothingUserCommand;
 
     @Autowired
     @Qualifier("createIdmAccountUserCommand")
-    private ReconciliationCommand createIdmAccountUserCommand;
+    private ReconciliationObjectCommand createIdmAccountUserCommand;
 
     @Autowired
     @Qualifier("deleteResourceAccountUserCommand")
-    private ReconciliationCommand deleteResourceAccountUserCommand;
+    private ReconciliationObjectCommand deleteResourceAccountUserCommand;
 
     @Autowired
     @Qualifier("disableIdmAccountUserCommand")
-    private ReconciliationCommand disableIdmAccountUserCommand;
+    private ReconciliationObjectCommand disableIdmAccountUserCommand;
 
     @Autowired
     @Qualifier("removeIdmUserCommand")
-    private ReconciliationCommand removeIdmUserCommand;
+    private ReconciliationObjectCommand removeIdmUserCommand;
 
     @Autowired
     @Qualifier("deleteIdmUserExcludeTargetCommand")
-    private ReconciliationCommand deleteIdmUserExcludeTargetCommand;
+    private ReconciliationObjectCommand deleteIdmUserExcludeTargetCommand;
 
     @Autowired
     @Qualifier("createResourceAccountUserCommand")
-    private ReconciliationCommand createResourceAccountUserCommand;
+    private ReconciliationObjectCommand createResourceAccountUserCommand;
 
     @Autowired
     @Qualifier("updateIdmUserCommand")
-    private ReconciliationCommand updateIdmUserCommand;
+    private ReconciliationObjectCommand updateIdmUserCommand;
 
-    public ReconciliationCommand createUserCommand(String name, ReconciliationSituation config, String managedSysId) throws IOException {
-        ReconciliationCommand reconCommand = null;
-        ApplicationContext applicationContext = SpringContextProvider.getApplicationContext();
+    public ReconciliationObjectCommand<User> createUserCommand(String name, ReconciliationSituation config, String managedSysId) throws IOException {
+        ReconciliationObjectCommand<User> reconCommand = null;
 
         if(StringUtils.isNotEmpty(config.getCustomCommandScript())) {
             Map<String, Object> bindingMap = new HashMap<String, Object>();
             bindingMap.put(AbstractProvisioningService.TARGET_SYS_MANAGED_SYS_ID, managedSysId);
-            reconCommand = (ReconciliationCommand) scriptRunner.instantiateClass(bindingMap, config.getCustomCommandScript());
+            reconCommand = (ReconciliationObjectCommand<User>) scriptRunner.instantiateClass(bindingMap, config.getCustomCommandScript());
         } else {
             if(name.equalsIgnoreCase(ReconciliationSituationResponseOptions.NOTHING.name())){
                 reconCommand = doNothingUserCommand;

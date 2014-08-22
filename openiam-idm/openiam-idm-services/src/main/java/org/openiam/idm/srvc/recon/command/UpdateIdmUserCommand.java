@@ -10,7 +10,7 @@ import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.recon.dto.ReconciliationSituation;
 import org.openiam.idm.srvc.recon.service.PopulationScript;
-import org.openiam.idm.srvc.recon.service.ReconciliationCommand;
+import org.openiam.idm.srvc.recon.service.ReconciliationObjectCommand;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.service.UserDataService;
@@ -34,7 +34,7 @@ import java.util.List;
 import java.util.Map;
 
 @Component("updateIdmUserCommand")
-public class UpdateIdmUserCommand implements ReconciliationCommand {
+public class UpdateIdmUserCommand implements ReconciliationObjectCommand<User> {
     private static final Log log = LogFactory.getLog(UpdateIdmUserCommand.class);
 
     @Autowired
@@ -48,15 +48,15 @@ public class UpdateIdmUserCommand implements ReconciliationCommand {
     public UpdateIdmUserCommand(){
     }
 
-    public boolean execute(ReconciliationSituation config, Login login, User user, List<ExtensibleAttribute> attributes) {
+    public boolean execute(ReconciliationSituation config, String principal, String msysId, User user, List<ExtensibleAttribute> attributes) {
         log.debug("Entering UpdateIdmUserCommand");
-        LookupUserResponse lookupResp =  provisionService.getTargetSystemUser(login.getLogin(), login.getManagedSysId(), attributes);
+        LookupUserResponse lookupResp =  provisionService.getTargetSystemUser(principal, msysId, attributes);
         if(lookupResp.getStatus() == ResponseStatus.FAILURE){
             log.debug("Can't update IDM user from non-existent resource...");
         } else {
             ProvisionUser pUser = new ProvisionUser(user);
             setCurrentSuperiors(pUser);
-            pUser.setSrcSystemId(login.getManagedSysId());
+            pUser.setSrcSystemId(msysId);
             if(StringUtils.isNotEmpty(config.getScript())){
                 try {
                     Map<String, String> line = new HashMap<String, String>();
@@ -80,7 +80,7 @@ public class UpdateIdmUserCommand implements ReconciliationCommand {
                         }
                     }
                     Map<String, Object> bindingMap = new HashMap<String, Object>();
-                    bindingMap.put(AbstractProvisioningService.TARGET_SYS_MANAGED_SYS_ID, login.getManagedSysId());
+                    bindingMap.put(AbstractProvisioningService.TARGET_SYS_MANAGED_SYS_ID, msysId);
                     PopulationScript script = (PopulationScript) scriptRunner.instantiateClass(bindingMap, config.getScript());
                     int retval = script.execute(line, pUser);
                 } catch (IOException e) {
