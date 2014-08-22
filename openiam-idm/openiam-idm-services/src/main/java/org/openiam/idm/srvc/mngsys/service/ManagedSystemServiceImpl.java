@@ -158,6 +158,7 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
     	resource.setName(String.format("%s_%S", entity.getName(), System.currentTimeMillis()));
     	resource.setResourceType(resourceTypeDAO.findById(resourceTypeId));
     	resource.setIsPublic(false);
+    	resource.setCoorelatedName(sys.getName());
 
     	resourceDAO.save(resource);
     	entity.setResourceId(resource.getId());
@@ -180,9 +181,16 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
     		resource.setName(String.format("%s_%S", entity.getName(), System.currentTimeMillis()));
     		resource.setResourceType(resourceTypeDAO.findById(resourceTypeId));
     		resource.setIsPublic(false);
+    		resource.setCoorelatedName(sys.getName());
     		resourceDAO.save(resource);
     		entity.setResourceId(resource.getId());
             //resource.setManagedSysId(sys.getManagedSysId());
+    	} else {
+    		resource = resourceDAO.findById(entity.getResourceId());
+    		if(resource != null) {
+    			resource.setCoorelatedName(entity.getName());
+    			resourceDAO.update(resource);
+    		}
     	}
         managedSysDAO.save(entity);
 
