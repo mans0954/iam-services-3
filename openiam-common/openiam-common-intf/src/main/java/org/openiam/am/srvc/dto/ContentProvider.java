@@ -27,6 +27,7 @@ import java.util.concurrent.atomic.AtomicInteger;
         /*"contextPath",*/
         "resourceId",
         "resourceName",
+        "resourceCoorelatedName",
         "patternSet",
         "serverSet",
         "managedSysId",
@@ -47,6 +48,7 @@ public class ContentProvider implements Serializable {
     //private String contextPath;
 	private String resourceId;
     private String resourceName;
+    private String resourceCoorelatedName;
 	private Set<URIPattern> patternSet;
 	private String url;
 	private Set<ContentProviderServer> serverSet;
@@ -187,6 +189,13 @@ public class ContentProvider implements Serializable {
 	}
 	public void setShowOnApplicationPage(boolean showOnApplicationPage) {
 		this.showOnApplicationPage = showOnApplicationPage;
+	}
+	
+	public String getResourceCoorelatedName() {
+		return resourceCoorelatedName;
+	}
+	public void setResourceCoorelatedName(String resourceCoorelatedName) {
+		this.resourceCoorelatedName = resourceCoorelatedName;
 	}
 	@Override
 	public int hashCode() {

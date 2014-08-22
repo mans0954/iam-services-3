@@ -226,7 +226,7 @@ public class AuthProviderServiceImpl implements AuthProviderService {
             entity.setSignRequest(provider.isSignRequest());
 
             // get resource for provider
-            if(provider.getResource()!=null){
+            if(entity.getResource()!=null){
                final ResourceEntity resource = entity.getResource();
                resource.setURL(provider.getResource().getURL());
                resource.setCoorelatedName(provider.getName());

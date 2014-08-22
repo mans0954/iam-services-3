@@ -27,7 +27,8 @@ import java.util.Set;
         "metaEntitySet",
         "pageTemplates",
         "themeId",
-        "groupingXrefs"
+        "groupingXrefs",
+        "resourceCoorelatedName"
 })
 @DozerDTOCorrespondence(URIPatternEntity.class)
 public class URIPattern implements Serializable {
@@ -43,6 +44,7 @@ public class URIPattern implements Serializable {
 	private Set<MetadataElementPageTemplate> pageTemplates;
 	private String themeId;
 	private Set<AuthLevelGroupingURIPatternXref> groupingXrefs;
+	private String resourceCoorelatedName;
 	
 	public String getId() {
 		return id;
@@ -123,6 +125,13 @@ public class URIPattern implements Serializable {
 	}
 	public void setGroupingXrefs(Set<AuthLevelGroupingURIPatternXref> groupingXrefs) {
 		this.groupingXrefs = groupingXrefs;
+	}
+	
+	public String getResourceCoorelatedName() {
+		return resourceCoorelatedName;
+	}
+	public void setResourceCoorelatedName(String resourceCoorelatedName) {
+		this.resourceCoorelatedName = resourceCoorelatedName;
 	}
 	@Override
 	public int hashCode() {
