@@ -398,6 +398,21 @@
 		</outbound-endpoint>
 	</flow>
 
+    <flow name="synchronizationReviewClient">
+        <vm:inbound-endpoint path="synchronizationReviewMessage"
+                             exchange-pattern="one-way">
+        </vm:inbound-endpoint>
+
+        <outbound-endpoint responseTimeout="72000000"
+                           address="http://#[header:INBOUND:SERVICE_HOST]/#[header:INBOUND:SERVICE_CONTEXT]IdentitySynchWebService"
+                           exchange-pattern="request-response">
+            <cxf:jaxws-client
+                    serviceClass="org.openiam.idm.srvc.synch.ws.IdentitySynchWebService"
+                    operation="executeSynchReview">
+            </cxf:jaxws-client>
+        </outbound-endpoint>
+    </flow>
+
 	<flow name="bulkUserMigrationClient">
 		<vm:inbound-endpoint path="bulkUserMigrationMessage"
 			exchange-pattern="one-way">

@@ -5,10 +5,8 @@ import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.recon.dto.MatchConfig;
 import org.openiam.idm.srvc.synch.domain.SynchConfigEntity;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlSchemaType;
-import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.*;
+import java.util.List;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "SynchConfig", 
@@ -51,7 +49,8 @@ import javax.xml.bind.annotation.XmlType;
         "searchScope",
         "lastRecProcessed",
         "wsScript",
-        "wsUrl"
+        "wsUrl",
+        "synchReviews"
 })
 /**
  * Object containing the configuration for a synchronization task
@@ -99,9 +98,9 @@ public class SynchConfig implements MatchConfig, java.io.Serializable {
 	private String baseDn;
     private String attributeNamesLookup;
     private SearchScopeType searchScope = SearchScopeType.SUBTREE_SCOPE;
-
     private String wsUrl;
     private String wsScript;
+    private List<SynchReview> synchReviews;
 
 	public SynchConfig() {
 	}
@@ -408,6 +407,38 @@ public class SynchConfig implements MatchConfig, java.io.Serializable {
         this.searchScope = searchScope;
     }
 
+    public String getLastRecProcessed() {
+        return lastRecProcessed;
+    }
+
+    public void setLastRecProcessed(String lastRecProcessed) {
+        this.lastRecProcessed = lastRecProcessed;
+    }
+
+    public String getWsUrl() {
+        return wsUrl;
+    }
+
+    public void setWsUrl(String wsUrl) {
+        this.wsUrl = wsUrl;
+    }
+
+    public String getWsScript() {
+        return wsScript;
+    }
+
+    public void setWsScript(String wsScript) {
+        this.wsScript = wsScript;
+    }
+
+    public List<SynchReview> getSynchReviews() {
+        return synchReviews;
+    }
+
+    public void setSynchReviews(List<SynchReview> synchReviews) {
+        this.synchReviews = synchReviews;
+    }
+
     @Override
     public String toString() {
         return "SynchConfig{" +
@@ -449,29 +480,5 @@ public class SynchConfig implements MatchConfig, java.io.Serializable {
                 ", attributeNamesLookup='" + attributeNamesLookup + '\'' +
                 ", searchScope='" + searchScope + '\'' +
                 '}';
-    }
-
-    public String getLastRecProcessed() {
-        return lastRecProcessed;
-    }
-
-    public void setLastRecProcessed(String lastRecProcessed) {
-        this.lastRecProcessed = lastRecProcessed;
-    }
-
-    public String getWsUrl() {
-        return wsUrl;
-    }
-
-    public void setWsUrl(String wsUrl) {
-        this.wsUrl = wsUrl;
-    }
-
-    public String getWsScript() {
-        return wsScript;
-    }
-
-    public void setWsScript(String wsScript) {
-        this.wsScript = wsScript;
     }
 }

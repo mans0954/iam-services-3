@@ -137,14 +137,12 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
         ManagedSysDto managedSys = managedSysService.getManagedSysByResource(res.getId());
         String managedSysId = (managedSys != null) ? managedSys.getId() : null;
         if (managedSysId != null) {
-            if (pUser.getSrcSystemId() != null) {
-                // we are checking if SrcSystemId is set in ProvisionUser it
-                // means we should ignore this resource from provisioning to
-                // avoid cyclic. Used in Reconciliation of one managed system to
-                // another
-                if (res.getId().equalsIgnoreCase(pUser.getSrcSystemId())) {
-                    return null;
-                }
+            // we are checking if SrcSystemId is set in ProvisionUser it
+            // means we should ignore this resource from provisioning to
+            // avoid cyclic. Used in Reconciliation of one managed system to
+            // another
+            if (pUser.getSrcSystemId() != null && managedSysId.equalsIgnoreCase(pUser.getSrcSystemId())) {
+                return null;
             }
             // what the new object will look like
             // Provision user that goes to the target system. Derived from

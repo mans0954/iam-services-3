@@ -66,10 +66,10 @@
 			<a>element.id</a>
 			<b>metadataId</b>
 		</field>
-		<field>
-			<a>element.displayName</a>
-			<b>metadataName</b>
-		</field>
+        <field>
+            <a>element.displayName</a>
+            <b>metadataName</b>
+        </field>
 	</mapping>
 
 	<mapping>
@@ -537,5 +537,13 @@
     		<a>valueAsString</a>
     		<b>valueAsString</b>
     	</field>
+    </mapping>
+    <mapping>
+        <class-a>org.openiam.idm.srvc.synch.domain.SynchReviewRecordValueEntity</class-a>
+        <class-b>org.openiam.idm.srvc.synch.dto.SynchReviewRecordValue</class-b>
+        <field>
+            <a>synchReviewRecord.synchReviewRecordId</a>
+            <b>synchReviewRecordId</b>
+        </field>
     </mapping>
 </mappings>

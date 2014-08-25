@@ -36,6 +36,9 @@ public interface ContentProviderWebService {
 	
     @WebMethod
     List<AuthLevelGrouping> getAuthLevelGroupingList();
+    
+    @WebMethod
+    public Response createDefaultURIPatterns(@WebParam(name = "providerId", targetNamespace = "") String providerId);
 
     /**
      * Add or update ContentProvider object.

@@ -22,7 +22,7 @@
 package org.openiam.idm.srvc.synch.service;
 
 import org.openiam.base.ws.Response;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
+import org.openiam.idm.srvc.synch.domain.SynchReviewEntity;
 import org.openiam.idm.srvc.synch.dto.SyncResponse;
 import org.openiam.idm.srvc.synch.dto.SynchConfig;
 
@@ -35,5 +35,6 @@ import org.openiam.idm.srvc.synch.dto.SynchConfig;
 public interface SourceAdapter {
 
 	public SyncResponse startSynch(SynchConfig config);
+    public SyncResponse startSynch(SynchConfig config, SynchReviewEntity sourceReview, SynchReviewEntity resultReview);
     public Response testConnection(SynchConfig config);
 }

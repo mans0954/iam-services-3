@@ -1,51 +1,37 @@
 package org.openiam.idm.srvc.meta.service;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.hibernate.Hibernate;
 import org.openiam.base.service.AbstractLanguageService;
-import org.openiam.dozer.converter.MetaDataElementDozerConverter;
-import org.openiam.dozer.converter.MetaDataTypeDozerConverter;
-import org.openiam.hibernate.HibernateUtils;
 import org.openiam.idm.searchbeans.MetadataElementSearchBean;
 import org.openiam.idm.searchbeans.MetadataTypeSearchBean;
 import org.openiam.idm.srvc.lang.domain.LanguageEntity;
-import org.openiam.idm.srvc.lang.domain.LanguageMappingEntity;
 import org.openiam.idm.srvc.lang.service.LanguageMappingDAO;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
-import org.openiam.idm.srvc.meta.domain.MetadataElementPageTemplateXrefEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataValidValueEntity;
-import org.openiam.idm.srvc.meta.domain.WhereClauseConstants;
-import org.openiam.idm.srvc.meta.domain.pk.MetadataElementPageTemplateXrefIdEntity;
-import org.openiam.idm.srvc.meta.dto.MetadataElement;
-import org.openiam.idm.srvc.meta.dto.MetadataType;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
-import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
-import org.openiam.idm.srvc.res.domain.ResourceTypeEntity;
 import org.openiam.idm.srvc.res.service.ResourceDAO;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
 import org.openiam.idm.srvc.searchbean.converter.MetadataTypeSearchBeanConverter;
 import org.openiam.internationalization.LocalizedServiceGet;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.jms.core.JmsTemplate;
+import org.springframework.jms.core.MessageCreator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import javax.jms.JMSException;
+import javax.jms.Queue;
+import javax.jms.Session;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Data service implementation for Metadata.
@@ -78,6 +64,13 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
     
     @Value("${org.openiam.resource.type.ui.widget}")
     private String uiWidgetResourceType;
+
+    @Autowired
+    private JmsTemplate jmsTemplate;
+
+    @Autowired
+    @Qualifier(value = "metaElementQueue")
+    private Queue queue;
 
     private static final Log log = LogFactory.getLog(MetadataServiceImpl.class);
 
@@ -115,6 +108,7 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 				resource.setName(String.format("%s_%s", entity.getAttributeName(), "" + System.currentTimeMillis()));
 	            resource.setResourceType(resourceTypeDAO.findById(uiWidgetResourceType));
 	            resource.setIsPublic(true); /* make public by default */
+	            resource.setCoorelatedName(entity.getAttributeName());
 	            resourceDAO.save(resource);
 	            entity.setResource(resource);
 				entity.setMetadataType(metadataTypeDao.findById(entity.getMetadataType().getId()));
@@ -137,6 +131,9 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 				entity.setMetadataType(dbEntity.getMetadataType());
 				entity.setTemplateSet(dbEntity.getTemplateSet());
 				entity.setResource(dbEntity.getResource());
+				if(entity.getResource() != null) {
+					entity.getResource().setCoorelatedName(entity.getAttributeName());
+				}
 				entity.setOrganizationAttributes(dbEntity.getOrganizationAttributes());
                 entity.setGroupAttributes(dbEntity.getGroupAttributes());
                 entity.setUserAttributes(dbEntity.getUserAttributes());
@@ -150,10 +147,19 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
     				}
     			}
 			}
-			
 			metadataElementDao.merge(entity);
+            this.send(entity);
 		}
 	}
+
+    private void send(final MetadataElementEntity entity) {
+        jmsTemplate.send(queue, new MessageCreator() {
+            public javax.jms.Message createMessage(Session session) throws JMSException {
+                javax.jms.Message message = session.createObjectMessage(entity);
+                return message;
+            }
+        });
+    }
 	
 	private void mergeValidValues(final MetadataElementEntity bean, final MetadataElementEntity dbObject) {
 		 Set<MetadataValidValueEntity> beanProps = (bean.getValidValues() != null) ? bean.getValidValues() : new HashSet<MetadataValidValueEntity>();

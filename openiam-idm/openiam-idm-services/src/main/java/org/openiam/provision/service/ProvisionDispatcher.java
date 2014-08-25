@@ -119,6 +119,9 @@ public class ProvisionDispatcher implements Sweepable {
     @Autowired
     protected ProvisionConnectorService connectorService;
 
+    @Value(",${org.openiam.debug.hidden.attributes},")
+    private String hiddenAttributes;
+
     @Autowired
     protected AuditLogService auditLogService;
 
@@ -190,6 +193,7 @@ public class ProvisionDispatcher implements Sweepable {
             idmAuditLog.setRequestorUserId(systemUserId);
             idmAuditLog.setAction(AuditAction.PROVISIONING_DISPATCHER.value());
             idmAuditLog.setTargetUser(identity.getUserId(), identity.getLogin());
+            idmAuditLog.setManagedSysId(identity.getManagedSysId());
             idmAuditLog.succeed();
             try {
                 LoginEntity loginEntity = loginManager.getLoginByManagedSys(identity.getLogin(),
@@ -684,8 +688,12 @@ public class ProvisionDispatcher implements Sweepable {
                             log.error("Error in script = '", mpe);
                             continue;
                         }
-                        log.debug("buildFromRules: OBJECTTYPE=" + objectType + " SCRIPT OUTPUT=" + output
-                                + " attribute name=" + attr.getAttributeName());
+
+                        log.debug("buildFromRules: OBJECTTYPE="+objectType+", ATTRIBUTE=" + attr.getAttributeName() +
+                                ", SCRIPT OUTPUT=" +
+                                (hiddenAttributes.toLowerCase().contains(","+attr.getAttributeName().toLowerCase()+",")
+                                        ? "******" : output));
+
                         if (output != null) {
                             ExtensibleAttribute newAttr;
                             if (output instanceof String) {
@@ -736,16 +744,15 @@ public class ProvisionDispatcher implements Sweepable {
                                 newAttr.setObjectType(objectType);
                                 extUser.getAttributes().add(newAttr);
 
-                            } else {
+                            } else if (output instanceof List) {
                                 // process a list - multi-valued object
-
-                                newAttr = new ExtensibleAttribute(attr.getAttributeName(), (List) output, 1, attr
-                                        .getDataType().getValue());
-                                newAttr.setObjectType(objectType);
-
-                                extUser.getAttributes().add(newAttr);
-
-                                log.debug("buildFromRules: added attribute to extUser:" + attr.getAttributeName());
+                                if (CollectionUtils.isNotEmpty((List)output)) {
+                                    newAttr = new ExtensibleAttribute(attr.getAttributeName(), (List) output, 1, attr
+                                            .getDataType().getValue());
+                                    newAttr.setObjectType(objectType);
+                                    extUser.getAttributes().add(newAttr);
+                                    log.debug("buildFromRules: added attribute to extUser:" + attr.getAttributeName());
+                                }
                             }
                         }
                     } else if (PolicyMapObjectTypeOptions.PRINCIPAL.name().equalsIgnoreCase(objectType)) {

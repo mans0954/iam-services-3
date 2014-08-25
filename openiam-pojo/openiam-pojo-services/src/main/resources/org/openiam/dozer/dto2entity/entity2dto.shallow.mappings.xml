@@ -34,6 +34,10 @@
         	<a>adminResource.name</a>
         	<b>adminResourceName</b>
         </field>
+        <field>
+        	<a>adminResource.coorelatedName</a>
+        	<b>adminResourceCoorelatedName</b>
+        </field>
 		<field-exclude>
 			<a>parentResources</a>
 			<b>parentResources</b>
@@ -111,10 +115,15 @@
             <a>resources</a>
             <b>resources</b>
         </field-exclude>
-        <field-exclude>
+        <!--<field-exclude>-->
+            <!--<a>affiliations</a>-->
+            <!--<b>affiliations</b>-->
+        <!--</field-exclude>-->
+        <field custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
+               custom-converter-param="dto2entityShallowDozerMapper">
             <a>affiliations</a>
             <b>affiliations</b>
-        </field-exclude>
+        </field>
         <field-exclude>
             <a>supervisors</a>
             <b>supervisors</b>
@@ -174,6 +183,10 @@
 			<a>adminResource.name</a>
 			<b>adminResourceName</b>
 		</field>
+		<field>
+        	<a>adminResource.coorelatedName</a>
+        	<b>adminResourceCoorelatedName</b>
+        </field>
 		<field-exclude>
 			<a>parentGroups</a>
 			<b>parentGroups</b>
@@ -231,6 +244,10 @@
 			<a>adminResource.name</a>
 			<b>adminResourceName</b>
 		</field>
+		<field>
+        	<a>adminResource.coorelatedName</a>
+        	<b>adminResourceCoorelatedName</b>
+        </field>
 		<field-exclude>
 			<a>groups</a>
 			<b>groups</b>
@@ -523,6 +540,10 @@
 			<a>adminResource.name</a>
 			<b>adminResourceName</b>
 		</field>
+		<field>
+        	<a>adminResource.coorelatedName</a>
+        	<b>adminResourceCoorelatedName</b>
+        </field>
 		<field-exclude>
 			<a>attributes</a>
 			<b>attributes</b>
@@ -719,6 +740,10 @@
 			<a>resource.name</a>
 			<b>resourceName</b>
 		</field>
+		<field>
+			<a>resource.coorelatedName</a>
+			<b>resourceCoorelatedName</b>
+		</field>
 		<field-exclude>
 			<a>metaEntitySet</a>
 			<b>metaEntitySet</b>
@@ -804,6 +829,12 @@
             <a>resource.id</a>
             <b>resourceId</b>
         </field>
+        <field
+			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentObjectConverter"
+			custom-converter-param="dto2entityShallowDozerMapper">
+			<a>resource</a>
+			<b>resource</b>
+		</field>
     </mapping>
 
     <mapping>
@@ -837,6 +868,10 @@
             <a>resource.name</a>
             <b>resourceName</b>
         </field>
+        <field>
+			<a>resource.coorelatedName</a>
+			<b>resourceCoorelatedName</b>
+		</field>
         <field-exclude>
             <a>groupingXrefs</a>
             <b>groupingXrefs</b>
@@ -971,5 +1006,37 @@
     		<a>contentProviderXrefs</a>
     		<b>contentProviderXrefs</b>
     	</field-exclude>
+    </mapping>
+    <mapping>
+        <class-a>org.openiam.idm.srvc.synch.domain.SynchConfigEntity</class-a>
+        <class-b>org.openiam.idm.srvc.synch.dto.SynchConfig</class-b>
+        <field-exclude>
+            <a>synchReviews</a>
+            <b>synchReviews</b>
+        </field-exclude>
+    </mapping>
+    <mapping>
+        <class-a>org.openiam.idm.srvc.synch.domain.SynchReviewEntity</class-a>
+        <class-b>org.openiam.idm.srvc.synch.dto.SynchReview</class-b>
+        <field>
+            <a>synchConfig.synchConfigId</a>
+            <b>synchConfigId</b>
+        </field>
+        <field-exclude>
+            <a>reviewRecords</a>
+            <b>reviewRecords</b>
+        </field-exclude>
+    </mapping>
+    <mapping>
+        <class-a>org.openiam.idm.srvc.synch.domain.SynchReviewRecordEntity</class-a>
+        <class-b>org.openiam.idm.srvc.synch.dto.SynchReviewRecord</class-b>
+        <field>
+            <a>synchReview.synchReviewId</a>
+            <b>synchReviewId</b>
+        </field>
+        <field-exclude>
+            <a>reviewValues</a>
+            <b>reviewValues</b>
+        </field-exclude>
     </mapping>
 </mappings>

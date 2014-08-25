@@ -22,9 +22,10 @@ import java.util.Set;
         "attributes",
         "excludeResourceTypes",
         "risk",
-        "URL"
+        "URL",
+        "metadataType"
 })
-public class ResourceSearchBean extends AbstractSearchBean<Resource, String> implements SearchBean<Resource, String>, Serializable {
+public class ResourceSearchBean extends EntitlementsSearchBean<Resource, String> implements SearchBean<Resource, String>, Serializable {
 
 	private static final long serialVersionUID = 1L;
 
@@ -34,6 +35,7 @@ public class ResourceSearchBean extends AbstractSearchBean<Resource, String> imp
 	private List<Tuple<String, String>> attributes;
 	private Set<String> excludeResourceTypes;
     private ResourceRisk risk;
+    private String metadataType;
     private String URL;
 	
 	public String getName() {
@@ -109,5 +111,13 @@ public class ResourceSearchBean extends AbstractSearchBean<Resource, String> imp
 
     public void setURL(String URL) {
         this.URL = URL;
+    }
+
+    public String getMetadataType() {
+        return metadataType;
+    }
+
+    public void setMetadataType(String metadataType) {
+        this.metadataType = metadataType;
     }
 }

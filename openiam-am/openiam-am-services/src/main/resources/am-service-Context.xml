@@ -45,6 +45,10 @@
         	</list>
      	</property>
 	</bean>
+	
+	<bean id="defaultPatternResoruce" class="org.springframework.core.io.ClassPathResource">
+		<constructor-arg index="0" value="${org.openiam.uri.patterns.defaut.object.file}" />
+	</bean>
 
 	<!--
     <aop:config>

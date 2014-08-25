@@ -27,11 +27,13 @@ import org.apache.commons.logging.LogFactory;
 import org.mule.module.client.MuleClient;
 import org.openiam.idm.srvc.synch.dto.BulkMigrationConfig;
 import org.openiam.idm.srvc.synch.dto.SynchConfig;
+import org.openiam.idm.srvc.synch.dto.SynchReviewRequest;
 import org.openiam.util.MuleContextProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
+import javax.jws.WebParam;
 import javax.jws.WebService;
 import java.util.HashMap;
 import java.util.Map;
@@ -78,6 +80,29 @@ public class AsynchIdentitySynchServiceImpl implements AsynchIdentitySynchServic
             //e.printStackTrace();
         }
         log.debug("A-START SYNCH END ---------------------");
+    }
+
+    @Override
+    public void executeSynchReview(
+            SynchReviewRequest synchReviewRequest) {
+        log.debug("START SYNCH REVIEW CALLED...................");
+        try {
+
+            Map<String, String> msgPropMap = new HashMap<String, String>();
+            msgPropMap.put("SERVICE_HOST", serviceHost);
+            msgPropMap.put("SERVICE_CONTEXT", serviceContext);
+
+            //Create the client with the context
+            MuleClient client = new MuleClient(MuleContextProvider.getCtx());
+            client.sendAsync("vm://synchronizationReviewMessage", (SynchReviewRequest) synchReviewRequest, msgPropMap);
+
+        } catch (Exception e) {
+            log.debug("EXCEPTION:AsynchIdentitySynchService:executeSynchReview");
+            log.error(e);
+            //e.printStackTrace();
+        }
+        log.debug("FINISHED SYNCH REVIEW ---------------------");
+
     }
 
     @Override

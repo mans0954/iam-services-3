@@ -77,6 +77,7 @@ import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.dto.PasswordSync;
+import org.openiam.provision.dto.ProvisionActionEvent;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.resp.ProvisionUserResponse;
 import org.openiam.provision.type.ExtensibleAttribute;
@@ -196,6 +197,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
     @Autowired
     @Qualifier("configurableGroovyScriptEngine")
     protected ScriptIntegration scriptRunner;
+    @Autowired
+    private String eventProcessor;
     @Autowired
     protected String preProcessor;
     @Autowired
@@ -1000,18 +1003,19 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                 } else if (operation == AttributeOperationEnum.REPLACE) {
                     UserAttributeEntity entity = userEntity.getUserAttributes().get(entry.getKey());
                     if (entity != null) {
-                        userEntity.getUserAttributes().remove(entry.getKey());
-                        entity.setUser(null);  // Prevent cascade evict
-                        userMgr.evict(entity);
-                        UserAttributeEntity e = userAttributeDozerConverter.convertToEntity(entry.getValue(), true);
-                        e.setUser(userEntity);
-                        userEntity.getUserAttributes().put(entry.getKey(), e);
+                        String oldValue = entity.getValue();
+                        if (entry.getValue().getIsMultivalued()) {
+                            entity.setValues(entry.getValue().getValues());
+                        } else {
+                            entity.setValue(entry.getValue().getValue());
+                        }
                         // Audit Log -----------------------------------------------------------------------------------
                         IdmAuditLog auditLog = new IdmAuditLog();
                         Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
                         auditLog.setTargetUser(userEntity.getId(), login != null ? login.getLogin() : StringUtils.EMPTY);
                         auditLog.setAction(AuditAction.REPLACE_ATTRIBUTE.value());
-                        auditLog.addCustomRecord(entry.getKey(), ("old= '"+e.getValue() + "' new= '"+e.getValue()+"'"));
+                        auditLog.addCustomRecord(entry.getKey(), ("old= '" + oldValue +
+                                "' new= '"+userEntity.getUserAttributes().get(entry.getKey()).getValue()+"'"));
                         parentLog.addChild(auditLog);
                         // ---------------------------------------------------------------------------------------------
                     }
@@ -1465,6 +1469,9 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         }
         userReq.setHostLoginPassword(passwordDecoded);
         userReq.setHostUrl(mSys.getHostUrl());
+        if (mSys.getPort() != null) {
+            userReq.setHostPort(mSys.getPort().toString());
+        }
 
         ManagedSystemObjectMatch matchObj = null;
         List<ManagedSystemObjectMatchEntity> objList = managedSystemService.managedSysObjectParam(managedSysId,
@@ -1487,9 +1494,12 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
 
         IdmAuditLog idmAuditLogChild1 = new IdmAuditLog();
         idmAuditLogChild1.setAction(isAdd ? AuditAction.ADD_USER_TO_RESOURCE.value() : AuditAction.UPDATE_USER_TO_RESOURCE.value());
-        idmAuditLogChild1.setRequestorUserId(systemUserId);
+        LoginEntity lRequestor = loginManager.getPrimaryIdentity(systemUserId);
+        idmAuditLogChild1.setRequestorUserId(lRequestor.getUserId());
+        idmAuditLogChild1.setRequestorPrincipal(lRequestor.getLogin());
         idmAuditLogChild1.setTargetUser(mLg.getUserId(),mLg.getLogin());
         idmAuditLogChild1.setTargetResource(mSys.getResourceId(), mSys.getName());
+        idmAuditLogChild1.setManagedSysId(mSys.getId());
         boolean successResult = response.getStatus() != StatusCodeType.FAILURE;
         if(successResult) {
             idmAuditLogChild1.succeed();
@@ -1632,6 +1642,26 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
 
         resp.setStatus(ResponseStatus.SUCCESS);
         return resp;
+    }
+
+    @Override
+    public void add(ProvisionActionEvent event) {
+        Map<String, Object> bindingMap = new HashMap<String, Object>();
+        ProvisionServiceEventProcessor eventProcessorScript = getEventProcessor(bindingMap, eventProcessor);
+        if (eventProcessorScript != null) {
+            eventProcessorScript.process(event);
+        }
+    }
+
+    private ProvisionServiceEventProcessor getEventProcessor(Map<String, Object> bindingMap, String scriptName) {
+        if (org.apache.commons.lang.StringUtils.isNotBlank(scriptName)) {
+            try {
+                return (ProvisionServiceEventProcessor) scriptRunner.instantiateClass(bindingMap, scriptName);
+            } catch (Exception ce) {
+                log.error(ce);
+            }
+        }
+        return null;
     }
 
 

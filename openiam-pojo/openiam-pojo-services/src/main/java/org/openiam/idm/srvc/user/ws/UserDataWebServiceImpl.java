@@ -1009,6 +1009,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
         return response;
     }
 
+    @Override
     public Response activateUser(final String userId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
@@ -1016,6 +1017,25 @@ public class UserDataWebServiceImpl implements UserDataWebService {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
             }
             userManager.activateUser(userId);
+        } catch (BasicDataServiceException e) {
+            response.setErrorCode(e.getCode());
+            response.setStatus(ResponseStatus.FAILURE);
+        } catch (Throwable e) {
+            log.error("Can't perform operation", e);
+            response.setErrorText(e.getMessage());
+            response.setStatus(ResponseStatus.FAILURE);
+        }
+        return response;
+    }
+
+    @Override
+    public Response resetUser(final String userId) {
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+            if (userId == null) {
+                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+            }
+            userManager.resetUser(userId);
         } catch (BasicDataServiceException e) {
             response.setErrorCode(e.getCode());
             response.setStatus(ResponseStatus.FAILURE);
@@ -1065,6 +1085,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
     }
     
 	@Override
+    @Transactional(readOnly = true)
 	public List<UserAttribute> getUserAttributesInternationalized(final String userId, final Language language) {
         final List<UserAttributeEntity> attributes = userManager.getUserAttributeList(userId, languageConverter.convertToEntity(language, false));
         return userAttributeDozerConverter.convertToDTOList(attributes, true);

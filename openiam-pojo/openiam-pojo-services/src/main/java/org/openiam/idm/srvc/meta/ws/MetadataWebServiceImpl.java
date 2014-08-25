@@ -24,6 +24,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.jms.JMSException;
+import javax.jms.Queue;
+import javax.jms.Session;
 import javax.jws.WebMethod;
 import javax.jws.WebService;
 
@@ -46,9 +49,14 @@ import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.meta.dto.MetadataElement;
 import org.openiam.idm.srvc.meta.dto.MetadataType;
 import org.openiam.idm.srvc.meta.service.MetadataService;
+import org.openiam.idm.srvc.msg.service.Message;
 import org.openiam.internationalization.LocalizedServiceGet;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.jms.core.JmsTemplate;
+import org.springframework.jms.core.MessageCreator;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Implementation class for the MetadataWebServiceImpl
@@ -75,6 +83,7 @@ public class MetadataWebServiceImpl implements MetadataWebService {
 
     @Override
     @LocalizedServiceGet
+    @Transactional(readOnly = true)
     public List<MetadataElement> findElementBeans(final MetadataElementSearchBean searchBean, final int from, final int size, final Language language) {
         final List<MetadataElementEntity> entityList = metadataService.findBeans(searchBean, from, size, languageConverter.convertToEntity(language, false));
         return (entityList != null) ? metaDataElementDozerConverter.convertToDTOList(entityList,searchBean.isDeepCopy()) : null;
@@ -82,6 +91,7 @@ public class MetadataWebServiceImpl implements MetadataWebService {
 
     @Override
     @LocalizedServiceGet
+    @Transactional(readOnly = true)
     public List<MetadataType> findTypeBeans(final MetadataTypeSearchBean searchBean, final int from, final int size, final Language language) {
         final List<MetadataTypeEntity> entityList = metadataService.findBeans(searchBean, from, size);
         return (entityList != null) ? metaDataTypeDozerConverter.convertToDTOList(entityList, true) : null;

@@ -6,6 +6,7 @@ public enum AuditSource {
     SELFSERVICE_EXT("SELFSERVICE_EXT"),
     WORKFLOW("WORKFLOW"),
     IDP("IDP"),
+    SP("SP"),
     ESB("ESB"),
     PROXY("PROXY");
 

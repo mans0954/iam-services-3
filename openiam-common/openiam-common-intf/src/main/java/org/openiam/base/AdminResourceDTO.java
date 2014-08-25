@@ -7,12 +7,14 @@ import javax.xml.bind.annotation.XmlType;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "AdminResourceDTO", propOrder = {
 	"adminResourceId",
-	"adminResourceName"
+	"adminResourceName",
+	"adminResourceCoorelatedName"
 })
 public abstract class AdminResourceDTO extends AbstractMetadataTypeDTO {
 
 	private String adminResourceId;
     private String adminResourceName;
+    private String adminResourceCoorelatedName;
     
     public String getAdminResourceId() {
 		return adminResourceId;
@@ -30,10 +32,22 @@ public abstract class AdminResourceDTO extends AbstractMetadataTypeDTO {
 		this.adminResourceName = adminResourceName;
 	}
 
+	public String getAdminResourceCoorelatedName() {
+		return adminResourceCoorelatedName;
+	}
+
+	public void setAdminResourceCoorelatedName(String adminResourceCoorelatedName) {
+		this.adminResourceCoorelatedName = adminResourceCoorelatedName;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
+		result = prime
+				* result
+				+ ((adminResourceCoorelatedName == null) ? 0
+						: adminResourceCoorelatedName.hashCode());
 		result = prime * result
 				+ ((adminResourceId == null) ? 0 : adminResourceId.hashCode());
 		result = prime
@@ -52,6 +66,12 @@ public abstract class AdminResourceDTO extends AbstractMetadataTypeDTO {
 		if (getClass() != obj.getClass())
 			return false;
 		AdminResourceDTO other = (AdminResourceDTO) obj;
+		if (adminResourceCoorelatedName == null) {
+			if (other.adminResourceCoorelatedName != null)
+				return false;
+		} else if (!adminResourceCoorelatedName
+				.equals(other.adminResourceCoorelatedName))
+			return false;
 		if (adminResourceId == null) {
 			if (other.adminResourceId != null)
 				return false;
@@ -67,10 +87,11 @@ public abstract class AdminResourceDTO extends AbstractMetadataTypeDTO {
 
 	@Override
 	public String toString() {
-		return String.format(
-				"AdminResourceDTO [adminResourceId=%s, adminResourceName=%s]",
-				adminResourceId, adminResourceName);
+		return String
+				.format("AdminResourceDTO [adminResourceId=%s, adminResourceName=%s, adminResourceCoorelatedName=%s]",
+						adminResourceId, adminResourceName,
+						adminResourceCoorelatedName);
 	}
-	
+
 	
 }

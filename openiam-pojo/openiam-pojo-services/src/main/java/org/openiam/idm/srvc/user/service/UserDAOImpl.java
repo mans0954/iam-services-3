@@ -4,9 +4,10 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.Criteria;
 import org.hibernate.FetchMode;
-import org.hibernate.HibernateException;
 import org.hibernate.criterion.*;
+import org.openiam.base.OrderConstants;
 import org.openiam.base.ws.SearchParam;
+import org.openiam.base.ws.SortParam;
 import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.idm.searchbeans.DelegationFilterSearchBean;
 import org.openiam.idm.searchbeans.UserSearchBean;
@@ -174,6 +175,9 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
             if (searchBean.getLastDate() != null) {
                 criteria.add(Restrictions.eq("lastDate", searchBean.getLastDate()));
             }
+            if (searchBean.getClaimDate() != null) {
+                criteria.add(Restrictions.eq("claimDate", searchBean.getClaimDate()));
+            }
             if (searchBean.getDateOfBirth() != null) {
                 criteria.add(Restrictions.eq("birthdate", searchBean.getDateOfBirth()));
             }
@@ -189,8 +193,8 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
             if (StringUtils.isNotEmpty(searchBean.getZipCode())) {
                 criteria.add(Restrictions.eq("postalCd", searchBean.getZipCode()));
             }
-            if (CollectionUtils.isNotEmpty(searchBean.getOrganizationIdList())) {
-                criteria.createAlias("affiliations", "aff").add(Restrictions.in("aff.id", searchBean.getOrganizationIdList()));
+            if (CollectionUtils.isNotEmpty(searchBean.getOrganizationIdSet())) {
+                criteria.createAlias("affiliations", "aff").add(Restrictions.in("aff.id", searchBean.getOrganizationIdSet()));
             }
             if (StringUtils.isNotEmpty(searchBean.getPhoneAreaCd()) || StringUtils.isNotEmpty(searchBean.getPhoneNbr())) {
                 if (StringUtils.isNotEmpty(searchBean.getPhoneAreaCd())) {
@@ -647,5 +651,49 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
             return criteria.list();
         } else
             return null;
+    }
+
+    public  List<UserEntity> findByIds(Collection<String> idCollection, UserSearchBean searchBean){
+        if(CollectionUtils.isNotEmpty(idCollection)){
+            final Criteria criteria = super.getCriteria();
+            criteria.add(Restrictions.in(getPKfieldName(), idCollection));
+
+            if(CollectionUtils.isNotEmpty(searchBean.getSortBy())){
+                for (SortParam sort: searchBean.getSortBy()){
+                    OrderConstants orderDir = (sort.getOrderBy()==null)?OrderConstants.ASC:sort.getOrderBy();
+
+                    if("name".equals(sort.getSortBy())){
+                        criteria.addOrder(createOrder("firstName",orderDir));
+                        criteria.addOrder(createOrder("lastName", orderDir));
+                    } else if("phone".equals(sort.getSortBy())){
+                        criteria.createAlias("phones", "p", Criteria.LEFT_JOIN);
+                        criteria.addOrder(createOrder("p.countryCd", orderDir));
+                        criteria.addOrder(createOrder("p.areaCd", orderDir));
+                        criteria.addOrder(createOrder("p.phoneNbr", orderDir));
+                        criteria.addOrder(createOrder("p.phoneExt", orderDir));
+                    } else if("email".equals(sort.getSortBy())){
+                        criteria.createAlias("emailAddresses", "ea", Criteria.LEFT_JOIN);
+                        criteria.addOrder(createOrder("ea.emailAddress", orderDir));
+                    }else if("userStatus".equals(sort.getSortBy())){
+                        criteria.addOrder(createOrder("status",orderDir));
+                    }else if("accountStatus".equals(sort.getSortBy())){
+                        criteria.addOrder(createOrder("secondaryStatus",orderDir));
+                    }else if("principal".equals(sort.getSortBy())){
+                        criteria.createAlias("principalList", "l", Criteria.LEFT_JOIN);
+                        criteria.addOrder(createOrder("l.login", orderDir));
+                    }else if("organization".equals(sort.getSortBy())
+                             || "department".equals(sort.getSortBy())){
+                        criteria.createAlias("affiliations", "org", Criteria.LEFT_JOIN);
+                        criteria.addOrder(createOrder("org.organizationType.name", orderDir));
+                        criteria.addOrder(createOrder("org.name", orderDir));
+                    } else {
+                        criteria.addOrder(createOrder(sort.getSortBy(),orderDir));
+                    }
+                }
+
+            }
+            return criteria.list();
+        }
+        return Collections.EMPTY_LIST;
     }
 }

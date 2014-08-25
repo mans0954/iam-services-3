@@ -2,6 +2,7 @@ package org.openiam.provision.service;
 
 
 import groovy.lang.MissingPropertyException;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -24,6 +25,8 @@ import org.openiam.dozer.converter.AttributeMapDozerConverter;
 import org.openiam.dozer.converter.ManagedSystemObjectMatchDozerConverter;
 import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.exception.ScriptEngineException;
+import org.openiam.idm.srvc.audit.constant.AuditAction;
+import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.auth.dto.IdentityDto;
 import org.openiam.idm.srvc.auth.dto.IdentityTypeEnum;
 import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
@@ -34,6 +37,9 @@ import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.ws.GroupDataWebService;
 import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
+import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
+import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
+import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
 import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
@@ -51,6 +57,7 @@ import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.dto.PasswordSync;
 import org.openiam.provision.dto.ProvisionGroup;
 import org.openiam.provision.dto.ProvisionUser;
+import org.openiam.provision.resp.LookupObjectResponse;
 import org.openiam.provision.resp.ProvisionGroupResponse;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleGroup;
@@ -93,6 +100,9 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Gr
 
     @Value("${org.openiam.idm.system.user.id}")
     protected String systemUserId;
+
+    @Value(",${org.openiam.debug.hidden.attributes},")
+    private String hiddenAttributes;
 
     @Autowired
     protected String preProcessorGroup;
@@ -191,10 +201,17 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Gr
                             if (group.getNotProvisioninResourcesIds().contains(res.getId())) {
                                 continue;
                             }
+                            ManagedSysDto managedSys = managedSystemService.getManagedSysByResource(res.getId());
 
-                        ManagedSysDto managedSys = managedSystemService.getManagedSysByResource(res.getId());
+
                         if (managedSys != null) {
                             String managedSysId = managedSys.getId();
+                            // do check if provisioning user has source resource
+                            // => we should skip it from double provisioning
+                            // reconciliation case
+                            if (group.getSrcSystemId() != null && managedSysId.equals(group.getSrcSystemId())) {
+                                continue;
+                            }
                             IdentityDto groupTargetSysIdentity = identityService.getIdentity(group.getId(), managedSysId);
                             if(groupTargetSysIdentity == null) {
                                 List<AttributeMap> attrMap = managedSysService.getResourceAttributeMaps(res.getId());
@@ -655,8 +672,12 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Gr
                             log.error("Error in script = '", mpe);
                             continue;
                         }
-                        log.debug("buildFromRules: OBJECTTYPE=" + objectType + " SCRIPT OUTPUT=" + output
-                                + " attribute name=" + attr.getAttributeName());
+
+                        log.debug("buildFromRules: OBJECTTYPE="+objectType+", ATTRIBUTE=" + attr.getAttributeName() +
+                                ", SCRIPT OUTPUT=" +
+                                (hiddenAttributes.toLowerCase().contains(","+attr.getAttributeName().toLowerCase()+",")
+                                        ? "******" : output));
+
                         if (output != null) {
                             ExtensibleAttribute newAttr;
                             if (output instanceof String) {
@@ -1008,6 +1029,109 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Gr
         ObjectResponse resp = connectorAdapter.deleteRequest(mSys, request, MuleContextProvider.getCtx());
 
         return resp;
+    }
+
+    public LookupObjectResponse getTargetSystemObject(final String principalName,
+                                                      final String managedSysId,
+                                                  final List<ExtensibleAttribute> extensibleAttributes) {
+        final IdmAuditLog idmAuditLog = new IdmAuditLog();
+        idmAuditLog.setRequestorUserId(systemUserId);
+        idmAuditLog.setAction(AuditAction.PROVISIONING_LOOKUP.value());
+
+        log.debug("getTargetSystemUser called. for = " + principalName);
+
+        LookupObjectResponse response = new LookupObjectResponse(ResponseStatus.SUCCESS);
+        try {
+            response.setManagedSysId(managedSysId);
+            response.setPrincipalName(principalName);
+            // get the connector for the managedSystem
+
+            ManagedSysDto mSys = managedSysService.getManagedSys(managedSysId);
+            ManagedSystemObjectMatch matchObj = null;
+            ManagedSystemObjectMatch[] objList = managedSystemService.managedSysObjectParam(managedSysId,
+                    ManagedSystemObjectMatch.GROUP);
+            if (objList.length > 0) {
+                matchObj = objList[0];
+            }
+
+            // do the lookup
+
+            log.debug("Calling lookupRequest ");
+
+            LookupRequest<ExtensibleUser> reqType = new LookupRequest<>();
+            String requestId = "R" + UUIDGen.getUUID();
+            reqType.setRequestID(requestId);
+            reqType.setSearchValue(principalName);
+
+            ExtensibleUser extensibleUser = new ExtensibleUser();
+            extensibleUser.setPrincipalFieldName(matchObj.getKeyField());
+            extensibleUser.setPrincipalFieldDataType("string");
+            extensibleUser.setAttributes(extensibleAttributes);
+            reqType.setExtensibleObject(extensibleUser);
+            reqType.setTargetID(managedSysId);
+            reqType.setHostLoginId(mSys.getUserId());
+            if (matchObj != null && StringUtils.isNotEmpty(matchObj.getSearchBaseDn())) {
+                reqType.setBaseDN(matchObj.getSearchBaseDn());
+            }
+            String passwordDecoded;
+            try {
+                passwordDecoded = getDecryptedPassword(mSys);
+            } catch (ConnectorDataException e) {
+                idmAuditLog.fail();
+                idmAuditLog.setFailureReason(ResponseCode.FAIL_ENCRYPTION);
+                response.setStatus(ResponseStatus.FAILURE);
+                response.setErrorCode(ResponseCode.FAIL_ENCRYPTION);
+                return response;
+            }
+            reqType.setHostLoginPassword(passwordDecoded);
+            reqType.setHostUrl(mSys.getHostUrl());
+            reqType.setScriptHandler(mSys.getLookupHandler());
+
+            SearchResponse responseType = connectorAdapter.lookupRequest(mSys, reqType, MuleContextProvider.getCtx());
+            if (responseType.getStatus() == StatusCodeType.FAILURE || responseType.getObjectList().size() == 0) {
+                response.setStatus(ResponseStatus.FAILURE);
+                return response;
+            }
+
+            String targetPrincipalName = responseType.getObjectList().get(0).getObjectIdentity() != null
+                    ? responseType.getObjectList().get(0).getObjectIdentity()
+                    : parseGroupPrincipal(responseType.getObjectList().get(0).getAttributeList());
+            response.setPrincipalName(targetPrincipalName);
+            response.setAttrList(responseType.getObjectList().get(0).getAttributeList());
+            response.setResponseValue(responseType.getObjectList().get(0));
+
+            idmAuditLog.succeed();
+
+        } finally {
+            auditLogService.enqueue(idmAuditLog);
+        }
+
+        return response;
+    }
+
+    protected String parseGroupPrincipal(List<ExtensibleAttribute> extensibleAttributes) {
+        ManagedSysDto defaultManagedSys = managedSystemService.getManagedSys(sysConfiguration.getDefaultManagedSysId());
+        List<AttributeMap> policyAttrMap = managedSystemService.getResourceAttributeMaps(defaultManagedSys.getResourceId());
+        String principalAttributeName = null;
+        for (AttributeMap attr : policyAttrMap) {
+            String objectType = attr.getMapForObjectType();
+            if (objectType != null) {
+                if (PolicyMapObjectTypeOptions.GROUP_PRINCIPAL.name().equalsIgnoreCase(objectType)) {
+                    if (attr.getAttributeName().equalsIgnoreCase("GROUP_PRINCIPAL")) {
+                        principalAttributeName = attr.getAttributeName();
+                        break;
+                    }
+                }
+            }
+        }
+        if (org.mule.util.StringUtils.isNotEmpty(principalAttributeName)) {
+            for (ExtensibleAttribute extAttr : extensibleAttributes) {
+                if (extAttr.getName().equalsIgnoreCase(principalAttributeName)) {
+                    return extAttr.getValue();
+                }
+            }
+        }
+        return null;
     }
 
     @Override

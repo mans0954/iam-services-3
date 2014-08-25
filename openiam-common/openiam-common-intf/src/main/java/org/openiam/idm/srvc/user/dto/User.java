@@ -64,11 +64,15 @@ import java.util.*;
         "costCenter",
         "startDate",
         "lastDate",
+        "claimDate",
         "mailCode",
         "nickname",
         "maidenName",
         "passwordTheme",
         "email",
+        "defaultPhone",
+        "defaultAddress",
+        "defaultLogin",
         "showInSearch",
         "principalList",
         "alternateContactId",
@@ -167,6 +171,9 @@ public class User extends AbstractMetadataTypeDTO {
     @XmlSchemaType(name = "dateTime")
     protected Date lastDate;
 
+    @XmlSchemaType(name = "dateTime")
+    protected Date claimDate;
+
     protected String nickname;
 
     protected String maidenName;
@@ -174,6 +181,12 @@ public class User extends AbstractMetadataTypeDTO {
     protected String passwordTheme;
 
     protected String email;
+
+    protected Phone defaultPhone;
+
+    protected Address defaultAddress;
+
+    protected String defaultLogin;
 
     protected Integer showInSearch = new Integer(0);
 
@@ -462,6 +475,14 @@ public class User extends AbstractMetadataTypeDTO {
 
     public void setLastDate(Date lastDate) {
         this.lastDate = lastDate;
+    }
+
+    public Date getClaimDate() {
+        return claimDate;
+    }
+
+    public void setClaimDate(Date claimDate) {
+        this.claimDate = claimDate;
     }
 
     public Set<UserNote> getUserNotes() {
@@ -777,18 +798,40 @@ public class User extends AbstractMetadataTypeDTO {
     public void setEmail(String email) {
         this.email = email;
     }
-
-    @Deprecated
     public Phone getDefaultPhone() {
-        if(this.phones!=null && !this.phones.isEmpty()){
-            for (Phone p: this.phones){
-                if(p.getIsDefault()){
-                    return p;
-                }
-            }
-        }
-        return null;
+        return defaultPhone;
     }
+
+    public void setDefaultPhone(Phone defaultPhone) {
+        this.defaultPhone = defaultPhone;
+    }
+    public Address getDefaultAddress() {
+        return defaultAddress;
+    }
+
+    public void setDefaultAddress(Address defaultAddress) {
+        this.defaultAddress = defaultAddress;
+    }
+
+    public String getDefaultLogin() {
+        return defaultLogin;
+    }
+
+    public void setDefaultLogin(String defaultLogin) {
+        this.defaultLogin = defaultLogin;
+    }
+
+    //    @Deprecated
+//    public Phone getDefaultPhone() {
+//        if(this.phones!=null && !this.phones.isEmpty()){
+//            for (Phone p: this.phones){
+//                if(p.getIsDefault()){
+//                    return p;
+//                }
+//            }
+//        }
+//        return null;
+//    }
 
     public UserStatusEnum getStatus() {
         return status;
@@ -951,6 +994,13 @@ public class User extends AbstractMetadataTypeDTO {
                 this.lastDate = null;
             } else {
                 this.lastDate = newUser.getLastDate();
+            }
+        }
+        if (newUser.getClaimDate() != null) {
+            if (newUser.getClaimDate().equals(BaseConstants.NULL_DATE)) {
+                this.claimDate = null;
+            } else {
+                this.claimDate = newUser.getClaimDate();
             }
         }
         if (newUser.getLocationCd() != null) {
@@ -1247,6 +1297,7 @@ public class User extends AbstractMetadataTypeDTO {
         if (employeeId != null ? !employeeId.equals(user.employeeId) : user.employeeId != null) return false;
         if (employeeTypeId != null ? !employeeTypeId.equals(user.employeeTypeId) : user.employeeTypeId != null) return false;
         if (lastDate != null ? !lastDate.equals(user.lastDate) : user.lastDate != null) return false;
+        if (claimDate != null ? !claimDate.equals(user.claimDate) : user.claimDate != null) return false;
         if (login != null ? !login.equals(user.login) : user.login != null) return false;
         if (maidenName != null ? !maidenName.equals(user.maidenName) : user.maidenName != null) return false;
         if (nickname != null ? !nickname.equals(user.nickname) : user.nickname != null) return false;
@@ -1270,6 +1321,7 @@ public class User extends AbstractMetadataTypeDTO {
         result = 31 * result + (costCenter != null ? costCenter.hashCode() : 0);
         result = 31 * result + (startDate != null ? startDate.hashCode() : 0);
         result = 31 * result + (lastDate != null ? lastDate.hashCode() : 0);
+        result = 31 * result + (claimDate != null ? claimDate.hashCode() : 0);
         result = 31 * result + (nickname != null ? nickname.hashCode() : 0);
         result = 31 * result + (maidenName != null ? maidenName.hashCode() : 0);
         result = 31 * result + (email != null ? email.hashCode() : 0);

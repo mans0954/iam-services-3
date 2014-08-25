@@ -37,6 +37,12 @@ public class AuthLevelGroupingURIPatternXrefEntity implements Serializable {
 	public AuthLevelGroupingURIPatternXrefEntity() {
 		
 	}
+	
+	public AuthLevelGroupingURIPatternXrefEntity(final URIPatternEntity pattern, final AuthLevelGroupingEntity grouping) {
+		this.pattern = pattern;
+		this.grouping = grouping;
+		this.id = new AuthLevelGroupingURIPatternXrefIdEntity(grouping.getId(), pattern.getId());
+	}
 
 	public AuthLevelGroupingURIPatternXrefIdEntity getId() {
 		return id;

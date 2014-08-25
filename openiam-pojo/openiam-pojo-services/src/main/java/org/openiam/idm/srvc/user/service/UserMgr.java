@@ -32,7 +32,6 @@ import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.service.GroupDAO;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.lang.domain.LanguageEntity;
-import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.meta.service.MetadataElementDAO;
@@ -396,7 +395,7 @@ public class UserMgr implements UserDataService {
                 existingEntity.setElement(incomingEntity.getElement());
                 existingEntity.setName(incomingEntity.getName());
                 existingEntity.setValue(incomingEntity.getValue());
-                existingEntity.setMultivalued(incomingEntity.isMultivalued());
+                existingEntity.setIsMultivalued(incomingEntity.getIsMultivalued());
                 existingEntity.setValues(incomingEntity.getValues());
                 editList.add(existingEntity);
             }
@@ -494,7 +493,7 @@ public class UserMgr implements UserDataService {
             isMngReportFilterSet = DelegationFilterHelper.isMngRptFilterSet(requesterAttributes);
 
 //            if (isOrgFilterSet) {
-            if (CollectionUtils.isEmpty(searchBean.getOrganizationIdList())) {
+            if (CollectionUtils.isEmpty(searchBean.getOrganizationIdSet())) {
                 searchBean.addOrganizationIdList(organizationService.getDelegationFilter(requesterAttributes, null));
             }
 //            }
@@ -522,8 +521,8 @@ public class UserMgr implements UserDataService {
             nonEmptyListOfLists.add(userDao.getUserIdsForRoles(searchBean.getRoleIdSet(), 0, MAX_USER_SEARCH_RESULTS));
         }
 
-        if (CollectionUtils.isNotEmpty(searchBean.getOrganizationIdList())) {
-            nonEmptyListOfLists.add(userDao.getUserIdsForOrganizations(searchBean.getOrganizationIdList(), 0, MAX_USER_SEARCH_RESULTS));
+        if (CollectionUtils.isNotEmpty(searchBean.getOrganizationIdSet())) {
+            nonEmptyListOfLists.add(userDao.getUserIdsForOrganizations(searchBean.getOrganizationIdSet(), 0, MAX_USER_SEARCH_RESULTS));
         }
 
         if (CollectionUtils.isNotEmpty(searchBean.getGroupIdSet())) {
@@ -618,7 +617,7 @@ public class UserMgr implements UserDataService {
                 entityList.add(entity);
             }
         } else {
-            List<UserEntity> finalizedIdList = userDao.findByIds(getUserIds(searchBean));
+            List<UserEntity> finalizedIdList = userDao.findByIds(getUserIds(searchBean), searchBean);
             if (from > -1 && size > -1) {
                 if (finalizedIdList != null && finalizedIdList.size() >= from) {
                     int to = from + size;
@@ -630,6 +629,13 @@ public class UserMgr implements UserDataService {
             }
             entityList = finalizedIdList;
         }
+
+        if(searchBean.getInitDefaulLoginFlag()){
+            for(UserEntity usr: entityList){
+                usr.setDefaultLogin(sysConfiguration.getDefaultManagedSysId());
+            }
+        }
+
         return entityList;
     }
 
@@ -1678,6 +1684,20 @@ public class UserMgr implements UserDataService {
         }
     }
 
+    @Transactional
+    public void resetUser(String userId) {
+        UserEntity user = this.getUser(userId, null);
+        if (user == null) {
+            log.error("UserId " + userId + " not found");
+            throw new NullPointerException("UserId " + userId + " not found");
+        }
+        user.setDateITPolicyApproved(null);
+        user.setClaimDate(null);
+        user.setStatus(UserStatusEnum.PENDING_INITIAL_LOGIN);
+        user.setSecondaryStatus(null);
+        userDao.update(user);
+    }
+
     @Override
     @Transactional(readOnly = true)
     public boolean isRoleInUser(String userId, String roleId) {
@@ -1809,6 +1829,13 @@ public class UserMgr implements UserDataService {
                 origUserEntity.setLastDate(null);
             } else {
                 origUserEntity.setLastDate(newUserEntity.getLastDate());
+            }
+        }
+        if (newUserEntity.getClaimDate() != null) {
+            if (newUserEntity.getClaimDate().equals(BaseConstants.NULL_DATE)) {
+                origUserEntity.setClaimDate(null);
+            } else {
+                origUserEntity.setClaimDate(newUserEntity.getClaimDate());
             }
         }
         if (newUserEntity.getMaidenName() != null) {
@@ -2210,9 +2237,9 @@ public class UserMgr implements UserDataService {
             Set<String> filterData = null;
 
             if (isOrgFilterSet) {
-                if (CollectionUtils.isNotEmpty(searchBean.getOrganizationIdList())) {
+                if (CollectionUtils.isNotEmpty(searchBean.getOrganizationIdSet())) {
                    filterData = new HashSet<String>(DelegationFilterHelper.getOrgIdFilterFromString(requesterAttributes));
-                   for(String pk : searchBean.getOrganizationIdList()) {
+                   for(String pk : searchBean.getOrganizationIdSet()) {
                        if(!DelegationFilterHelper.isAllowed(pk, filterData)){
                            throw new BasicDataServiceException(ResponseCode.NOT_ALLOWED_ORGANIZATION_IN_SEARCH);
                        }
@@ -2246,4 +2273,5 @@ public class UserMgr implements UserDataService {
     public List<UserEntity> getUserByLastDate(Date lastDate) {
         return userDao.getUserByLastDate(lastDate);
     }
+
 }

@@ -33,6 +33,10 @@
         	<a>adminResource.name</a>
         	<b>adminResourceName</b>
         </field>
+        <field>
+        	<a>adminResource.coorelatedName</a>
+        	<b>adminResourceCoorelatedName</b>
+        </field>
 		<field
 			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
 			custom-converter-param="dto2entityShallowDozerMapper">
@@ -223,6 +227,10 @@
 			<b>adminResourceName</b>
 		</field>
 		<field>
+        	<a>adminResource.coorelatedName</a>
+        	<b>adminResourceCoorelatedName</b>
+        </field>
+		<field>
 			<a>company.id</a>
 			<b>companyId</b>
 		</field>
@@ -297,6 +305,10 @@
 			<a>adminResource.name</a>
 			<b>adminResourceName</b>
 		</field>
+		<field>
+        	<a>adminResource.coorelatedName</a>
+        	<b>adminResourceCoorelatedName</b>
+        </field>
 		<field
 			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
 			custom-converter-param="dto2entityShallowDozerMapper">
@@ -631,6 +643,10 @@
 			<a>adminResource.name</a>
 			<b>adminResourceName</b>
 		</field>
+		<field>
+        	<a>adminResource.coorelatedName</a>
+        	<b>adminResourceCoorelatedName</b>
+        </field>
 		<field
 			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
 			custom-converter-param="dto2entityShallowDozerMapper">
@@ -845,6 +861,10 @@
 			<a>resource.name</a>
 			<b>resourceName</b>
 		</field>
+		<field>
+			<a>resource.coorelatedName</a>
+			<b>resourceCoorelatedName</b>
+		</field>
 		<field
 			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
 			custom-converter-param="dto2entityShallowDozerMapper">
@@ -935,6 +955,12 @@
 			<b>resourceId</b>
 		</field>
 		<field
+			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentObjectConverter"
+			custom-converter-param="dto2entityShallowDozerMapper">
+			<a>resource</a>
+			<b>resource</b>
+		</field>
+		<field
 			custom-converter="org.openiam.dozer.crossentity.CrossEntityMapConverterWithKeyString"
 			custom-converter-param="dto2entityShallowDozerMapper">
 			<a>resourceAttributeMap</a>
@@ -972,6 +998,10 @@
 		<field>
 			<a>resource.name</a>
 			<b>resourceName</b>
+		</field>
+		<field>
+			<a>resource.coorelatedName</a>
+			<b>resourceCoorelatedName</b>
 		</field>
 		<field
 			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
@@ -1130,5 +1160,25 @@
     		<a>contentProviderXrefs</a>
     		<b>contentProviderXrefs</b>
     	</field>
+    </mapping>
+    <mapping>
+        <class-a>org.openiam.idm.srvc.synch.domain.SynchConfigEntity</class-a>
+        <class-b>org.openiam.idm.srvc.synch.dto.SynchConfig</class-b>
+    </mapping>
+    <mapping>
+        <class-a>org.openiam.idm.srvc.synch.domain.SynchReviewEntity</class-a>
+        <class-b>org.openiam.idm.srvc.synch.dto.SynchReview</class-b>
+        <field>
+            <a>synchConfig.synchConfigId</a>
+            <b>synchConfigId</b>
+        </field>
+    </mapping>
+    <mapping>
+        <class-a>org.openiam.idm.srvc.synch.domain.SynchReviewRecordEntity</class-a>
+        <class-b>org.openiam.idm.srvc.synch.dto.SynchReviewRecord</class-b>
+        <field>
+            <a>synchReview.synchReviewId</a>
+            <b>synchReviewId</b>
+        </field>
     </mapping>
 </mappings>

@@ -283,6 +283,7 @@ public class GroupDataServiceImpl implements GroupDataService {
 
     @Override
     @LocalizedServiceGet
+    @Transactional(readOnly = true)
     public List<Group> getCompiledGroupsForUserLocalize(final String userId, final LanguageEntity language) {
         final List<GroupEntity> groupList = this.getGroupsForUser(userId, null, 0, Integer.MAX_VALUE);
         final Set<GroupEntity> visitedSet = new HashSet<GroupEntity>();
@@ -346,6 +347,7 @@ public class GroupDataServiceImpl implements GroupDataService {
 					if(group.getAdminResource() == null) {
 						group.setAdminResource(getNewAdminResource(group, requestorId));
 					}
+					group.getAdminResource().setCoorelatedName(group.getName());
 				} else {
 					return;
 				}
@@ -382,6 +384,7 @@ public class GroupDataServiceImpl implements GroupDataService {
 		adminResource.setName(String.format("GRP_ADMIN_%s_%s", entity.getName(), RandomStringUtils.randomAlphanumeric(2)));
 		adminResource.setResourceType(resourceTypeDAO.findById(adminResourceTypeId));
 		adminResource.addUser(userDAO.findById(requestorId));
+		adminResource.setCoorelatedName(entity.getName());
 		return adminResource;
 	}
 	
@@ -594,6 +597,7 @@ public class GroupDataServiceImpl implements GroupDataService {
 
     @Override
     @LocalizedServiceGet
+    @Transactional(readOnly = true)
     public Group getGroupDTOLocalize(String groupId, LanguageEntity language) {
         return groupDozerConverter.convertToDTO(groupDao.findById(groupId), true);
     }

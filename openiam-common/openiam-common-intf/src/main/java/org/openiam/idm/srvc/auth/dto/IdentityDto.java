@@ -41,6 +41,13 @@ public class IdentityDto implements java.io.Serializable {
     public IdentityDto() {
     }
 
+    public IdentityDto(IdentityTypeEnum type, String managedSysId, String identity, String referredObjectId) {
+        this.type = type;
+        this.managedSysId = managedSysId;
+        this.identity = identity;
+        this.referredObjectId = referredObjectId;
+    }
+
     public IdentityDto(IdentityTypeEnum type) {
         this.type = type;
     }

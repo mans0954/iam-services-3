@@ -12,7 +12,6 @@ import org.openiam.idm.searchbeans.RoleSearchBean;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
-import org.openiam.idm.srvc.grp.domain.GroupAttributeEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.service.GroupDAO;
 import org.openiam.idm.srvc.lang.domain.LanguageEntity;
@@ -47,6 +46,8 @@ public class RoleDataServiceImpl implements RoleDataService {
 
 	@Autowired
 	private RoleDAO roleDao;
+    @Autowired
+    private RoleAttributeDAO roleAttributeDAO;
 	
 	@Autowired
 	private ResourceTypeDAO resourceTypeDAO;
@@ -268,7 +269,7 @@ public class RoleDataServiceImpl implements RoleDataService {
 					if(role.getAdminResource() == null) {
 						role.setAdminResource(getNewAdminResource(role, requestorId));
 					}
-					
+					role.getAdminResource().setCoorelatedName(role.getName());
 				}
 			}
 			roleDao.merge(role);
@@ -362,6 +363,7 @@ public class RoleDataServiceImpl implements RoleDataService {
 		adminResource.setName(String.format("ROLE_ADMIN_%s_%s", entity.getName(), RandomStringUtils.randomAlphanumeric(2)));
 		adminResource.setResourceType(resourceTypeDAO.findById(adminResourceTypeId));
 		adminResource.addUser(userDAO.findById(requestorId));
+		adminResource.setCoorelatedName(entity.getName());
 		return adminResource;
 	}
 	
@@ -649,4 +651,47 @@ public class RoleDataServiceImpl implements RoleDataService {
 			throw new BasicDataServiceException(ResponseCode.RELATIONSHIP_EXISTS, String.format("Group %s has already been added to role: %s", groupId, roleId));
 		}
 	}
+
+
+    @Override
+    @Transactional
+    public void addAttribute(RoleAttributeEntity attribute) {
+        if (attribute == null)
+            throw new NullPointerException("Attribute can not be null");
+
+        if (attribute.getRole() == null || StringUtils.isBlank(attribute.getRole().getId())) {
+            throw new NullPointerException("Role has not been associated with this attribute.");
+        }
+
+        RoleEntity roleEntity = roleDao.findById(attribute.getRole().getId());
+        attribute.setRole(roleEntity);
+
+        MetadataElementEntity element = null;
+        if (attribute.getElement() != null && StringUtils.isNotEmpty(attribute.getElement().getId())) {
+            element = metadataElementDAO.findById(attribute.getElement().getId());
+        }
+        attribute.setElement(element);
+
+        roleAttributeDAO.save(attribute);
+    }
+
+    @Override
+    @Transactional
+    public void updateAttribute(RoleAttributeEntity attribute) {
+        if (attribute == null)
+            throw new NullPointerException("Attribute can not be null");
+
+        if (attribute.getRole() == null || StringUtils.isBlank(attribute.getRole().getId())) {
+            throw new NullPointerException("Role has not been associated with this attribute.");
+        }
+
+        final RoleAttributeEntity roleAttribute = roleAttributeDAO.findById(attribute.getId());
+        if (roleAttribute != null) {
+            RoleEntity roleEntity = roleDao.findById(attribute.getRole().getId());
+            attribute.setRole(roleEntity);
+            attribute.setElement(roleAttribute.getElement());
+
+            roleAttributeDAO.merge(attribute);
+        }
+    }
 }

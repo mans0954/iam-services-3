@@ -1,6 +1,7 @@
 package org.openiam.idm.srvc.recon.service;
 
 import org.openiam.idm.srvc.auth.dto.Login;
+import org.openiam.idm.srvc.recon.dto.ReconciliationSituation;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.provision.type.ExtensibleAttribute;
 
@@ -26,5 +27,5 @@ public interface ReconciliationCommand {
     //    SYS_EXISTS__IDM_NOTEXISTS   (Record not exists in IDM and exists in Resource)
     final String SYS_EXISTS__IDM_NOT_EXISTS = "IDM[not exists] and Resource[exists]";
 
-    boolean execute(Login login, User user, List<ExtensibleAttribute> attributes);
+    boolean execute(ReconciliationSituation config, Login login, User user, List<ExtensibleAttribute> attributes);
 }

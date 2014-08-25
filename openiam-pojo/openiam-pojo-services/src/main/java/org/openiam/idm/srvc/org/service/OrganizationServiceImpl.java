@@ -86,11 +86,11 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
 
 
 
-    @Value("${org.openiam.delegation.filter.organization}")
+    @Value("${org.openiam.organization.type.id}")
     private String organizationTypeId;
-    @Value("${org.openiam.delegation.filter.division}")
+    @Value("${org.openiam.division.type.id}")
     private String divisionTypeId;
-    @Value("${org.openiam.delegation.filter.department}")
+    @Value("${org.openiam.department.type.id}")
     private String departmentTypeId;
 
     @Override
@@ -225,6 +225,7 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
                 if(entity.getAdminResource() == null) {
                 	entity.setAdminResource(getNewAdminResource(entity, requestorId));
                 }
+                entity.getAdminResource().setCoorelatedName(entity.getName());
                 entity.setApproverAssociations(dbOrg.getApproverAssociations());
             }
         } else {
@@ -242,6 +243,7 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
 		adminResource.setName(String.format("ORG_ADMIN_%s_%s", entity.getName(), RandomStringUtils.randomAlphanumeric(2)));
 		adminResource.setResourceType(resourceTypeDao.findById(adminResourceTypeId));
 		adminResource.addUser(userDAO.findById(requestorId));
+		adminResource.setCoorelatedName(entity.getName());
 		return adminResource;
 	}
     

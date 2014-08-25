@@ -32,6 +32,7 @@ import org.openiam.idm.srvc.searchbean.converter.MetadataElementTemplateSearchBe
 import org.openiam.idm.srvc.searchbean.converter.MetadataTemplateTypeSearchBeanConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service("metadataElementTemplateWebService")
 @WebService(endpointInterface = "org.openiam.idm.srvc.meta.ws.MetadataElementTemplateWebService", 
@@ -61,6 +62,7 @@ public class MetadataElementTemplateWebServiceImpl implements MetadataElementTem
 	private static Logger LOG = Logger.getLogger(MetadataElementTemplateWebServiceImpl.class);
 
 	@Override
+    @Transactional(readOnly = true)
 	public List<MetadataElementPageTemplate> findBeans(final MetadataElementPageTemplateSearchBean searchBean, final int from, final int size) {
 		final List<MetadataElementPageTemplateEntity> entityList = templateService.findBeans(searchBean, from, size);
 		return (entityList != null) ? templateDozerConverter.convertToDTOList(entityList, searchBean.isDeepCopy()) : null;
@@ -123,12 +125,14 @@ public class MetadataElementTemplateWebServiceImpl implements MetadataElementTem
 	}
 
 	@Override
+    @Transactional(readOnly = true)
 	public MetadataTemplateType getTemplateType(final String templateId) {
 		final MetadataTemplateTypeEntity entity = templateService.getTemplateType(templateId);
 		return (entity != null) ? templateTypeDozerConverter.convertToDTO(entity, true) : null;
 	}
 
 	@Override
+    @Transactional(readOnly = true)
 	public List<MetadataTemplateType> findTemplateTypes(final MetadataTemplateTypeSearchBean searchBean, final int from, final int size) {
 		final MetadataTemplateTypeEntity entity = templateTypeSearchBeanConverter.convert(searchBean);
 		final List<MetadataTemplateTypeEntity> entityList = templateService.findTemplateTypes(entity, from, size);
@@ -136,6 +140,7 @@ public class MetadataElementTemplateWebServiceImpl implements MetadataElementTem
 	}
 
 	@Override
+    @Transactional(readOnly = true)
 	public List<MetadataTemplateTypeField> findUIFIelds(final MetadataTemplateTypeFieldSearchBean searchBean, final int from, final int size) {
 		final List<MetadataTemplateTypeFieldEntity> entityList = templateService.findUIFields(searchBean, from, size);
 		return (entityList != null) ? uiFieldDozerConverter.convertToDTOList(entityList, searchBean.isDeepCopy()) : null;

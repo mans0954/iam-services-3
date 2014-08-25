@@ -124,6 +124,7 @@ public class UserEntity {
     @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch= FetchType.LAZY)
     @JoinColumn(name = "TYPE_ID", insertable = true, updatable = true, nullable=true)
     @Internationalized
+    @IndexedEmbedded
     protected MetadataTypeEntity type;
 
     @Column(name = "CLASSIFICATION", length = 20)
@@ -164,8 +165,8 @@ public class UserEntity {
     @Size(max = 20, message = "validator.user.type.identifier.toolong")
     private String userTypeInd;
 
-    @Column(name = "MAIL_CODE", length = 10)
-    @Size(max = 10, message = "validator.user.mailcode.toolong")
+    @Column(name = "MAIL_CODE", length = 100)
+    @Size(max = 100, message = "validator.user.mailcode.toolong")
     private String mailCode;
 
     @Column(name = "COST_CENTER", length = 20)
@@ -177,6 +178,9 @@ public class UserEntity {
 
     @Column(name = "LAST_DATE", length = 10)
     private Date lastDate;
+
+    @Column(name = "CLAIM_DATE", length = 10)
+    private Date claimDate;
 
     @Column(name = "NICKNAME", length = 40)
     @Size(max = 40, message = "validator.user.nick.name.toolong")
@@ -268,6 +272,9 @@ public class UserEntity {
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "supervisor", fetch = FetchType.LAZY)
     // @Fetch(FetchMode.SUBSELECT)
     private Set<SupervisorEntity> subordinates;
+
+    @Transient
+    private String defaultLogin;
 
     public UserEntity() {
     }
@@ -552,6 +559,44 @@ public class UserEntity {
         	}
         }
         return defaultEmail;
+    }
+
+    public PhoneEntity getDefaultPhone() {
+        PhoneEntity defaultPhone = null;
+        if(this.phones!=null && !this.phones.isEmpty()){
+            for (PhoneEntity phoneEntity: this.phones){
+                if(phoneEntity.getIsDefault()){
+                    defaultPhone = phoneEntity;
+                    break;
+                }
+            }
+        }
+        return defaultPhone;
+    }
+    public AddressEntity getDefaultAddress() {
+        AddressEntity defaultAddress = null;
+        if(this.addresses!=null && !this.addresses.isEmpty()){
+            for (AddressEntity addressEntity: this.addresses){
+                if(addressEntity.getIsDefault()){
+                    defaultAddress = addressEntity;
+                    break;
+                }
+            }
+        }
+        return defaultAddress;
+    }
+    public String getDefaultLogin() {
+        return defaultLogin;
+    }
+    public void setDefaultLogin(String managedSys) {
+        if(this.principalList!=null && !this.principalList.isEmpty()){
+            for (LoginEntity principal: this.principalList){
+                if(StringUtils.equals(principal.getManagedSysId(), managedSys)){
+                    defaultLogin = principal.getLogin();
+                    break;
+                }
+            }
+        }
     }
 
     public Integer getShowInSearch() {
@@ -839,6 +884,13 @@ public class UserEntity {
 	            this.lastDate = newUser.getLastDate();
 	        }
 	    }
+        if (newUser.getClaimDate() != null) {
+            if (newUser.getClaimDate().equals(BaseConstants.NULL_DATE)) {
+                this.claimDate = null;
+            } else {
+                this.claimDate = newUser.getClaimDate();
+            }
+        }
 	    if (newUser.getLocationCd() != null) {
 	        if (newUser.getLocationCd().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
 	            this.locationCd = null;
@@ -1001,6 +1053,15 @@ public class UserEntity {
     public void setSubordinates(Set<SupervisorEntity> subordinatesSet) {
         this.subordinates = subordinatesSet;
     }
+
+    public Date getClaimDate() {
+        return claimDate;
+    }
+
+    public void setClaimDate(Date claimDate) {
+        this.claimDate = claimDate;
+    }
+
 
     @Override
     public boolean equals(Object o) {

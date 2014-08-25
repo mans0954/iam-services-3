@@ -38,7 +38,18 @@ public class ReconciliationSituationEntity implements java.io.Serializable {
     @Column(name = "SCRIPT", length = 80)
     private String script;
 
+    @Column(name = "CUSTOM_COMMAND_SCRIPT", length = 80)
+    private String customCommandScript;
+
     public ReconciliationSituationEntity() {
+    }
+
+    public String getCustomCommandScript() {
+        return customCommandScript;
+    }
+
+    public void setCustomCommandScript(String customCommandScript) {
+        this.customCommandScript = customCommandScript;
     }
 
     public String getReconSituationId() {
