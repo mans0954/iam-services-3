@@ -201,4 +201,17 @@ public class BatchDataServiceImpl implements BatchDataService, ApplicationContex
 		final BatchTaskEntity entity = searchBeanConverter.convert(searchBean);
 		return batchService.count(entity);
 	}
+
+	@Override
+	public Response run(String id, boolean synchronous) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+        	batchService.run(id, synchronous);
+        } catch (Throwable e) {
+        	LOG.error("Can't validate resource", e);
+            response.setErrorText(e.getMessage());
+            response.setStatus(ResponseStatus.FAILURE);
+        }
+        return response;
+	}
 }
