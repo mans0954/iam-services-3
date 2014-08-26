@@ -1,10 +1,9 @@
 package org.openiam.provision.service;
 
+import org.openiam.base.ws.Response;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.provision.dto.ProvisionGroup;
 import org.openiam.provision.resp.LookupObjectResponse;
-import org.openiam.provision.resp.LookupUserResponse;
-import org.openiam.provision.resp.ProvisionGroupResponse;
 import org.openiam.provision.type.ExtensibleAttribute;
 
 import javax.jws.WebMethod;
@@ -19,73 +18,73 @@ import java.util.List;
  * @author suneet
  *
  */
-@WebService(targetNamespace = "http://www.openiam.org/service/provision", name = "GroupProvisionControllerServicePort")
-public interface GroupProvisionService {
+@WebService(targetNamespace = "http://www.openiam.org/service/provision")
+public interface ObjectProvisionService<T> {
     /**
-     *  The addGroup operation enables a requester to create a new group on the
+     *  The add operation enables a requester to create a new object on the
      *  target systems.
-     *  Also this operation can do modify if this group has existed in one of the target systems.
+     *  Also this operation can do modify if this object has existed in one of the target systems.
      *
-     * @param group - new provisioning group
-     * @return ProvisionGroupResponse
+     * @param object - new provisioning object
+     * @return Response
      * @throws Exception
      */
     @WebMethod
-    public ProvisionGroupResponse addGroup(
-            @WebParam(name = "group", targetNamespace = "") ProvisionGroup group)
+    public Response add(
+            @WebParam(name = "object", targetNamespace = "") T object)
             throws Exception;
 
     /**
-     * The modifyGroup operation enables the requester to modify an existing group
+     * The modify operation enables the requester to modify an existing group
      * in appropriate target systems
      *
-     * @param group - provision group for modify
-     * @return ProvisionGroupResponse
+     * @param object - provision object for modify
+     * @return Response
      */
     @WebMethod
-    public ProvisionGroupResponse modifyGroup (
-            @WebParam(name = "group", targetNamespace = "") ProvisionGroup group);
+    public Response modify (
+            @WebParam(name = "object", targetNamespace = "") T object);
 
     /**
-     * The deleteGroup operation enables the requester to delete an existing group
+     * The delete operation enables the requester to delete an existing object
      * from the appropriate target systems
      *
      * @param managedSystemId - target system
-     * @param groupId - group ID
+     * @param objectId - object ID
      * @param status - status od delete operation
      * @param requesterId - requester
      * @return
      */
     @WebMethod
-    public ProvisionGroupResponse deleteGroup(
+    public Response delete(
             @WebParam(name = "managedSystemId", targetNamespace = "") String managedSystemId,
-            @WebParam(name = "groupId", targetNamespace = "") String groupId,
+            @WebParam(name = "objectId", targetNamespace = "") String objectId,
             @WebParam(name = "status", targetNamespace = "") UserStatusEnum status,
             @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
     /**
-     * The removeGroup operation enables the requester to delete an existing group
+     * The remove operation enables the requester to delete an existing object
      * from all target systems
      *
-     * @param groupId - group ID
+     * @param objectId - object ID
      * @param requesterId - requester
      * @return
      */
     @WebMethod
-    public ProvisionGroupResponse removeGroup(
-            @WebParam(name = "groupId", targetNamespace = "") String groupId,
+    public Response remove(
+            @WebParam(name = "objectId", targetNamespace = "") String objectId,
             @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
     /**
-     * De-provisioning Group only from selected resources
+     * De-provisioning Object only from selected resources
      *
-     * @param groupId - goup id
+     * @param objectId - object id
      * @param requesterId - requestor
      * @param resourceList - selected resources
      * @return
      */
     @WebMethod
-    public ProvisionGroupResponse deprovisionSelectedResources(
-            @WebParam(name = "groupId", targetNamespace = "") String groupId,
+    public Response deprovisionSelectedResources(
+            @WebParam(name = "objectId", targetNamespace = "") String objectId,
             @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
             @WebParam(name = "resourceList", targetNamespace = "") List<String> resourceList);
 

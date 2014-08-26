@@ -19,7 +19,7 @@ import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.dto.ProvisionGroup;
 import org.openiam.provision.service.AbstractProvisioningService;
-import org.openiam.provision.service.GroupProvisionService;
+import org.openiam.provision.service.ObjectProvisionService;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.script.ScriptIntegration;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,7 +37,7 @@ public class CreateIdmGroupCommand  implements ReconciliationObjectCommand<Group
 
     @Autowired
     @Qualifier("groupProvision")
-    private GroupProvisionService provisionService;
+    private ObjectProvisionService<ProvisionGroup> provisionService;
 
     @Autowired
     private GroupDataWebService groupDataWebService;
@@ -100,7 +100,7 @@ public class CreateIdmGroupCommand  implements ReconciliationObjectCommand<Group
                     identity.setStatus(LoginStatusEnum.ACTIVE);
                     identity.setReferredObjectId(groupId);
                     identityService.save(identity);
-                    provisionService.addGroup(pGroup);
+                    provisionService.add(pGroup);
                     for(String memberPrincipal : pGroup.getMembersIds()) {
                         UserEntity user = userManager.getUserByPrincipal(memberPrincipal, mSysID, false);
                         if(user != null) {

@@ -7,7 +7,6 @@ import org.apache.commons.logging.LogFactory;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.BaseAttribute;
 import org.openiam.base.ws.Response;
-import org.openiam.idm.srvc.auth.dto.IdentityDto;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.ws.GroupDataWebService;
 import org.openiam.idm.srvc.recon.dto.ReconciliationSituation;
@@ -16,9 +15,8 @@ import org.openiam.idm.srvc.recon.service.ReconciliationObjectCommand;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.openiam.provision.dto.ProvisionGroup;
-import org.openiam.provision.resp.ProvisionGroupResponse;
 import org.openiam.provision.service.AbstractProvisioningService;
-import org.openiam.provision.service.GroupProvisionService;
+import org.openiam.provision.service.ObjectProvisionService;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.script.ScriptIntegration;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,7 +35,7 @@ public class UpdateIdmGroupCommand  implements ReconciliationObjectCommand<Group
 
     @Autowired
     @Qualifier("groupProvision")
-    private GroupProvisionService provisionService;
+    private ObjectProvisionService<ProvisionGroup> provisionService;
 
     @Autowired
     private GroupDataWebService groupDataService;
@@ -98,7 +96,7 @@ public class UpdateIdmGroupCommand  implements ReconciliationObjectCommand<Group
                         resourceDataService.removeGroupToResource(res.getId(), groupId, "3000");
                     }
                 }
-                ProvisionGroupResponse response = provisionService.modifyGroup(pGroup);
+                Response response = provisionService.modify(pGroup);
                 return response.isSuccess();
             }
         return false;
