@@ -5,6 +5,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.BaseAttribute;
+import org.openiam.base.ws.Response;
 import org.openiam.connector.type.request.CrudRequest;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
@@ -14,10 +15,9 @@ import org.openiam.idm.srvc.recon.service.PopulationScript;
 import org.openiam.idm.srvc.recon.service.ReconciliationObjectCommand;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.provision.dto.ProvisionGroup;
-import org.openiam.provision.resp.ProvisionGroupResponse;
 import org.openiam.provision.service.AbstractProvisioningService;
 import org.openiam.provision.service.ConnectorAdapter;
-import org.openiam.provision.service.GroupProvisionService;
+import org.openiam.provision.service.ObjectProvisionService;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleUser;
 import org.openiam.script.ScriptIntegration;
@@ -37,7 +37,7 @@ public class DeleteResourceGroupCommand  implements ReconciliationObjectCommand<
 
     @Autowired
     @Qualifier("groupProvision")
-    private GroupProvisionService provisionService;
+    private ObjectProvisionService<ProvisionGroup> provisionService;
 
     @Autowired
     private ManagedSystemWebService managedSysService;
@@ -110,7 +110,7 @@ public class DeleteResourceGroupCommand  implements ReconciliationObjectCommand<
                 e.printStackTrace();
             }
         }
-        ProvisionGroupResponse response = provisionService.deleteGroup(mSysID, pGroup.getId(), UserStatusEnum.DELETED,  "3000");
+        Response response = provisionService.delete(mSysID, pGroup.getId(), UserStatusEnum.DELETED, "3000");
         return response.isSuccess();
     }
 

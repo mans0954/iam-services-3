@@ -278,7 +278,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         return modifyUser(pUser, null);
     }
 
-    public ProvisionUserResponse modifyUser(final ProvisionUser pUser, final IdmAuditLog auditLog) {
+    private ProvisionUserResponse modifyUser(final ProvisionUser pUser, final IdmAuditLog auditLog) {
         final List<ProvisionDataContainer> dataList = new LinkedList<ProvisionDataContainer>();
         TransactionTemplate transactionTemplate = new TransactionTemplate(platformTransactionManager);
 
@@ -353,12 +353,12 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
     }
 
     @Override
+    @Transactional
     public ProvisionUserResponse deleteByUserWithSkipManagedSysList(String userId, UserStatusEnum status, String requestorId, List<String> skipManagedSysList) {
         return deleteByUserWithSkipManagedSysList(userId, status, requestorId, skipManagedSysList, null);
     }
 
-    @Transactional
-    public ProvisionUserResponse deleteByUserWithSkipManagedSysList(String userId, UserStatusEnum status, String requestorId, List<String> skipManagedSysList, IdmAuditLog auditLog) {
+    private ProvisionUserResponse deleteByUserWithSkipManagedSysList(String userId, UserStatusEnum status, String requestorId, List<String> skipManagedSysList, IdmAuditLog auditLog) {
         log.debug("----deleteByUserId called.------");
 
         List<LoginEntity> loginEntityList = loginManager.getLoginByUser(userId);
@@ -374,6 +374,8 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         return deleteByUserWithSkipManagedSysList(userId, status, requestorId, null);
     }
 
+    @Override
+    @Transactional
     public ProvisionUserResponse deleteUser(String managedSystemId, String principal, UserStatusEnum status,
                                             String requestorId) {
         return deleteUserWithSkipManagedSysList(managedSystemId, principal, status, requestorId, null);
@@ -387,13 +389,13 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
      * , java.lang.String, java.lang.String)
      */
     @Override
+    @Transactional
     public ProvisionUserResponse deleteUserWithSkipManagedSysList(String managedSystemId, String principal, UserStatusEnum status,
                                             String requestorId, List<String> skipManagedSysList) {
         return deleteUserWithSkipManagedSysList(managedSystemId, principal, status, requestorId, skipManagedSysList, null);
     }
 
-    @Transactional
-    public ProvisionUserResponse deleteUserWithSkipManagedSysList(String managedSystemId, String principal, UserStatusEnum status,
+    private ProvisionUserResponse deleteUserWithSkipManagedSysList(String managedSystemId, String principal, UserStatusEnum status,
                 String requestorId, List<String> skipManagedSysList, IdmAuditLog auditLog) {
         log.debug("----deleteUser called.------");
 
@@ -893,6 +895,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
     }
 
     @Override
+    @Transactional
     public void updateResources(UserEntity userEntity, ProvisionUser pUser, Set<Resource> resourceSet, Set<Resource> deleteResourceSet, IdmAuditLog parentLog) {
         super.updateResources(userEntity, pUser, resourceSet, deleteResourceSet, parentLog);    //To change body of overridden methods use File | Settings | File Templates.
     }
@@ -1854,7 +1857,6 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         return value;
     }
 
-    @Transactional(readOnly = true)
     private Set<Resource> getResourcesForRoles(Set<Role> roleSet) {
         log.debug("GetResourcesForRole().....");
         final Set<Resource> resourceList = new HashSet<Resource>();
@@ -2103,6 +2105,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
     }
 
     @Override
+    @Transactional
     public Response startBulkOperation(final BulkOperationRequest bulkRequest) {
         if (CollectionUtils.isNotEmpty(bulkRequest.getUserIds()) &&
                 CollectionUtils.isNotEmpty(bulkRequest.getOperations())) {

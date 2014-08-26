@@ -2,7 +2,6 @@ package org.openiam.provision.service;
 
 
 import groovy.lang.MissingPropertyException;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -11,6 +10,7 @@ import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.BaseAttributeContainer;
 import org.openiam.base.SysConfiguration;
 import org.openiam.base.id.UUIDGen;
+import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.connector.type.ConnectorDataException;
@@ -37,9 +37,6 @@ import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.ws.GroupDataWebService;
 import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
-import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
-import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
-import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
 import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
@@ -58,7 +55,6 @@ import org.openiam.provision.dto.PasswordSync;
 import org.openiam.provision.dto.ProvisionGroup;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.resp.LookupObjectResponse;
-import org.openiam.provision.resp.ProvisionGroupResponse;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleGroup;
 import org.openiam.provision.type.ExtensibleObject;
@@ -71,6 +67,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
@@ -81,12 +78,12 @@ import javax.jws.WebService;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-@WebService(endpointInterface = "org.openiam.provision.service.GroupProvisionService",
+@Service("groupProvision")
+@WebService(endpointInterface = "org.openiam.provision.service.ObjectProvisionService",
         targetNamespace = "http://www.openiam.org/service/provision",
         portName = "GroupProvisionControllerServicePort",
         serviceName = "GroupProvisionService")
-@Component("groupProvision")
-public class GroupProvisionServiceImpl extends AbstractBaseService implements GroupProvisionService {
+public class GroupProvisionServiceImpl extends AbstractBaseService implements ObjectProvisionService<ProvisionGroup> {
     @Autowired
     protected ManagedSystemWebService managedSysService;
 
@@ -161,25 +158,25 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Gr
     protected ProvisionService provisionService;
 
     @Override
-    public ProvisionGroupResponse addGroup(@WebParam(name = "group", targetNamespace = "") final ProvisionGroup group) throws Exception {
+    public Response add(@WebParam(name = "group", targetNamespace = "") final ProvisionGroup group) throws Exception {
         return provisioning(group, true);
     }
 
     @Override
-    public ProvisionGroupResponse modifyGroup(@WebParam(name = "group", targetNamespace = "") ProvisionGroup group) {
+    public Response modify(@WebParam(name = "group", targetNamespace = "") ProvisionGroup group) {
         return provisioning(group, false);
     }
 
-    private ProvisionGroupResponse provisioning(final ProvisionGroup group, final boolean isAdd) {
-        ProvisionGroupResponse response = new ProvisionGroupResponse();
+    private Response provisioning(final ProvisionGroup group, final boolean isAdd) {
+        Response response = new Response();
         response.setStatus(ResponseStatus.FAILURE);
         try {
 
             final TransactionTemplate transactionTemplate = new TransactionTemplate(platformTransactionManager);
             transactionTemplate.setPropagationBehavior(TransactionTemplate.PROPAGATION_REQUIRED);
-            response = transactionTemplate.execute(new TransactionCallback<ProvisionGroupResponse>() {
+            response = transactionTemplate.execute(new TransactionCallback<Response>() {
                 @Override
-                public ProvisionGroupResponse doInTransaction(TransactionStatus status) {
+                public Response doInTransaction(TransactionStatus status) {
                     // bind the objects to the scripting engine
                     Map<String, Object> bindingMap = new HashMap<String, Object>();
                     bindingMap.put("sysId", sysConfiguration.getDefaultManagedSysId());
@@ -189,7 +186,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Gr
                     bindingMap.put(AbstractProvisioningService.TARGET_SYSTEM_IDENTITY_STATUS, null);
                     bindingMap.put(AbstractProvisioningService.TARGET_SYSTEM_IDENTITY, null);
 
-                    ProvisionGroupResponse tmpRes = new ProvisionGroupResponse();
+                    Response tmpRes = new Response();
                     if (callPreProcessor(isAdd ? "ADD" : "MODIFY", group, bindingMap) != ProvisioningConstants.SUCCESS) {
                         tmpRes.setStatus(ResponseStatus.FAILURE);
                         tmpRes.setErrorCode(ResponseCode.FAIL_PREPROCESSOR);
@@ -755,11 +752,11 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Gr
 
 
     @Override
-    public ProvisionGroupResponse deleteGroup(@WebParam(name = "managedSystemId", targetNamespace = "") String managedSystemId, @WebParam(name = "groupId", targetNamespace = "") String groupId, @WebParam(name = "status", targetNamespace = "") UserStatusEnum status, @WebParam(name = "requesterId", targetNamespace = "") String requesterId) {
+    public Response delete(@WebParam(name = "managedSystemId", targetNamespace = "") String managedSystemId, @WebParam(name = "groupId", targetNamespace = "") String groupId, @WebParam(name = "status", targetNamespace = "") UserStatusEnum status, @WebParam(name = "requesterId", targetNamespace = "") String requesterId) {
 
         log.debug("----deleteGroup called.------");
 
-        ProvisionGroupResponse response = new ProvisionGroupResponse(ResponseStatus.SUCCESS);
+        Response response = new Response(ResponseStatus.SUCCESS);
         Map<String, Object> bindingMap = new HashMap<String, Object>();
 
         if (status != UserStatusEnum.DELETED && status != UserStatusEnum.REMOVE && status != UserStatusEnum.LEAVE
@@ -1135,12 +1132,12 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Gr
     }
 
     @Override
-    public ProvisionGroupResponse removeGroup(@WebParam(name = "groupId", targetNamespace = "") String groupId, @WebParam(name = "requesterId", targetNamespace = "") String requesterId) {
-        return deleteGroup(sysConfiguration.getDefaultManagedSysId(), groupId, UserStatusEnum.REMOVE, requesterId);
+    public Response remove(@WebParam(name = "groupId", targetNamespace = "") String groupId, @WebParam(name = "requesterId", targetNamespace = "") String requesterId) {
+        return delete(sysConfiguration.getDefaultManagedSysId(), groupId, UserStatusEnum.REMOVE, requesterId);
     }
 
     @Override
-    public ProvisionGroupResponse deprovisionSelectedResources(@WebParam(name = "groupId", targetNamespace = "") String groupId, @WebParam(name = "requesterId", targetNamespace = "") String requesterId, @WebParam(name = "resourceList", targetNamespace = "") List<String> resourceList) {
+    public Response deprovisionSelectedResources(@WebParam(name = "groupId", targetNamespace = "") String groupId, @WebParam(name = "requesterId", targetNamespace = "") String requesterId, @WebParam(name = "resourceList", targetNamespace = "") List<String> resourceList) {
         throw new UnsupportedOperationException("Not implemented yet");
     }
 }

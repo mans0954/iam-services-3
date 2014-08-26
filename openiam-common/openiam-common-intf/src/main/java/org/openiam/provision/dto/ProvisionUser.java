@@ -47,7 +47,7 @@ import java.util.Set;
                                               "superiors", "srcSystemId", "provisionModel", "notifyTargetSystems",
                                               "emailCredentialsToNewUsers", "emailCredentialsToSupervisor", "provisionOnStartDate",
                                               "addInitialPasswordToHistory", "passwordPolicy", "skipPreprocessor",
-                                              "skipPostProcessor","parentAuditLogId"})
+                                              "skipPostProcessor","parentAuditLogId","notProvisioninResourcesIds"})
 public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
     /**
      *
@@ -59,9 +59,7 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
 //    protected List<Organization> userAffiliations;
 //    protected List<UserResourceAssociation> userResourceList;
     protected Set<User> superiors = new HashSet<User>(0);
-    @XmlTransient
     protected Set<String> notProvisioninResourcesIds = new HashSet<String>();
-
 
     public ProvisionModelEnum provisionModel;
 

@@ -1358,6 +1358,7 @@ public class UserMgr implements UserDataService {
     // }
 
     @Override
+    @Transactional
     public void evict(Object object) {
         if (object instanceof EmailAddressEntity) {
             emailAddressDao.evict((EmailAddressEntity) object);
@@ -2221,6 +2222,8 @@ public class UserMgr implements UserDataService {
     }
 
 
+    @Override
+    @Transactional(readOnly = true)
     public boolean validateSearchBean(UserSearchBean searchBean) throws BasicDataServiceException {
         if (StringUtils.isNotBlank(searchBean.getRequesterId())) {
             Map<String, UserAttribute> requesterAttributes = this.getUserAttributesDto(searchBean.getRequesterId());
@@ -2228,6 +2231,9 @@ public class UserMgr implements UserDataService {
         }
         return true;
     }
+
+    @Override
+    @Transactional(readOnly = true)
     public boolean validateSearchBean(UserSearchBean searchBean, Map<String, UserAttribute> requesterAttributes) throws BasicDataServiceException {
         if (requesterAttributes!=null && CollectionUtils.isNotEmpty(requesterAttributes.keySet())) {
 
