@@ -1,4 +1,4 @@
-package org.openiam.idm.srvc.batch;
+package org.openiam.idm.srvc.batch.thread;
 
 import java.util.Date;
 import java.util.HashMap;

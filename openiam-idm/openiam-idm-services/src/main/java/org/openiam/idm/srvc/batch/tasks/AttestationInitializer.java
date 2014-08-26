@@ -80,8 +80,9 @@ public class AttestationInitializer {
 					request.setName(taskName);
 					request.setCustomApproverIds(supervisorIds);
 					request.addParameter(ActivitiConstants.EMPLOYEE_ID.getName(), employeeId);
-					request.addParameter(ActivitiConstants.CUSTOM_TASK_UI_URL.getName(), attestationURL);
+					request.addParameter(ActivitiConstants.ATTESTATION_URL.getName(), attestationURL);
 					request.setRequestorUserId(systemUserId);
+					request.setDeletable(false);
 					final Response response = activitiService.initiateWorkflow(request);
 					if(!ResponseStatus.SUCCESS.equals(response.getStatus())) {
 						LOG.info(String.format("Could not initialize attestation task for user %s.  Reason: %s", employeeId, response.getErrorCode()));
