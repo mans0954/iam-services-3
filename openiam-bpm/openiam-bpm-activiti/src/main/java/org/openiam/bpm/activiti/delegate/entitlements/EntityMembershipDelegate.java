@@ -91,6 +91,7 @@ public class EntityMembershipDelegate extends AbstractEntitlementsDelegate {
 						response = resourceDataService.addUserToResource(associationId, memberAssociationId, systemUserId);
 					}
 					break;
+				case RESOURCE_CERTIFICATION:
 				case DISENTITLE_USR_FROM_RESOURCE:
 					if(provisioningEnabled) {
 						resource = getResource(associationId);
