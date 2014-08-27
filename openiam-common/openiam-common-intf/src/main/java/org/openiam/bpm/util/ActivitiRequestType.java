@@ -57,7 +57,9 @@ public enum ActivitiRequestType {
 	DISENTITLE_RESOURCE_FROM_ROLE("removeResourceFromRole", "Remove Resource from Role", false),
 	
 	ADD_RESOURCE_TO_RESOURCE("addResource2Resource", "Add Resource to Resource", false),
-	REMOVE_RESOURCE_FROM_RESOURCE("removeResourceFromResource", "Remove Resource from Resource", false);
+	REMOVE_RESOURCE_FROM_RESOURCE("removeResourceFromResource", "Remove Resource from Resource", false),
+
+    RESOURCE_CERTIFICATION("resourceCertificationForUser", "Certify access to resource for user", true);
 	
 	private boolean userCentric;
 	private String description;
