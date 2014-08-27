@@ -139,8 +139,12 @@ public class GoogleAgent {
 			MalformedURLException, IOException, ServiceException {
 		GenericEntry entry = new GenericEntry();
 		entry.addProperties(googleUserProps);
-		entry.addProperty("isAdmin", "false");
-		entry.addProperty("isSuspended", "false");
+        if (entry.getProperty("isAdmin") == null) {
+            entry.addProperty("isAdmin", "false");
+        }
+        if (entry.getProperty("isSuspended") == null) {
+            entry.addProperty("isSuspended", "false");
+        }
 		AppsPropertyService service = this.getService(adminEmail, password,
 				domain);
 		GenericEntry newE = service.insert(new URL(APP_URL_USER + domain),
