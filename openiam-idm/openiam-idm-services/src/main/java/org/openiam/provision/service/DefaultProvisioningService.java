@@ -185,6 +185,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         for(String roleId : roleList) {
             ResourceSearchBean rsb = new ResourceSearchBean();
             rsb.setDeepCopy(false);
+            rsb.setResourceTypeId(ResourceSearchBean.TYPE_MANAGED_SYS);
             List<org.openiam.idm.srvc.res.dto.Resource> resources = resourceDataService.getResourcesForRole(roleId, -1, -1, rsb, null);
             for(Resource res : resources) {
                 resourceIds.add(res.getId());
@@ -1863,7 +1864,10 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         if (CollectionUtils.isNotEmpty(roleSet)) {
             for (Role rl : roleSet) {
                 if (rl.getId() != null) {
-                    List<ResourceEntity> resources = resourceService.getResourcesForRole(rl.getId(), 0, Integer.MAX_VALUE, null);
+                    ResourceSearchBean resourceSearchBean = new ResourceSearchBean();
+                    resourceSearchBean.setDeepCopy(false);
+                    resourceSearchBean.setResourceTypeId(ResourceSearchBean.TYPE_MANAGED_SYS);
+                    List<ResourceEntity> resources = resourceService.getResourcesForRole(rl.getId(), 0, Integer.MAX_VALUE, resourceSearchBean);
                     if (CollectionUtils.isNotEmpty(resources)) {
                         List<Resource> list = resourceDozerConverter.convertToDTOList(resources, true);
                         for (Resource r : list) {
