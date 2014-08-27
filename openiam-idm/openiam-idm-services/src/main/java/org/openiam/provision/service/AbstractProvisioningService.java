@@ -1,5 +1,8 @@
 package org.openiam.provision.service;
 
+import org.apache.commons.beanutils.BeanUtils;
+import org.apache.commons.beanutils.ConvertUtils;
+import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -92,6 +95,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 /**
@@ -1350,17 +1355,16 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                                     e.setOrigPrincipalName(en.getLogin());
                                 }
                                 it.remove();
-                                userEntity.getPrincipalList().remove(en);
-                                loginManager.evict(en);
+                                String logOld = en.toString();
                                 LoginEntity entity = loginDozerConverter.convertToEntity(e, false);
-                                userEntity.getPrincipalList().add(entity);
+                                copyLogin(en, entity);
                                 // Audit Log ---------------------------------------------------
                                 IdmAuditLog auditLog = new IdmAuditLog();
                                 auditLog.setAction(AuditAction.REPLACE_PRINCIPAL.value());
                                 Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
                                 String loginStr = login != null ? login.getLogin() : StringUtils.EMPTY;
                                 auditLog.setTargetUser(pUser.getId(), loginStr);
-                                auditLog.addCustomRecord(PolicyMapObjectTypeOptions.PRINCIPAL.name(), "old= '"+en.toString()+"' new='"+e.toString()+"'");
+                                auditLog.addCustomRecord(PolicyMapObjectTypeOptions.PRINCIPAL.name(), "old= '"+logOld+"' new='"+e.toString()+"'");
                                 parentLog.addChild(auditLog);
                                 // --------------------------------------------------------------
                                 break;
@@ -1369,6 +1373,14 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     }
                 }
             }
+        }
+    }
+
+    private void copyLogin(LoginEntity en, LoginEntity entity) {
+        try {
+            PropertyUtils.copyProperties(en, entity);
+        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+            log.error("Login copying failed", e);
         }
     }
 
