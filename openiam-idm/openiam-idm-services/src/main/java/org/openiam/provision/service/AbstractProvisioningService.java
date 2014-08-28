@@ -6,6 +6,7 @@ import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.jackson.map.util.BeanUtil;
 import org.mule.api.MuleException;
 import org.mule.module.client.MuleClient;
 import org.mule.util.StringUtils;
@@ -1009,10 +1010,11 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     UserAttributeEntity entity = userEntity.getUserAttributes().get(entry.getKey());
                     if (entity != null) {
                         String oldValue = entity.getValue();
-                        if (entry.getValue().getIsMultivalued()) {
-                            entity.setValues(entry.getValue().getValues());
-                        } else {
-                            entity.setValue(entry.getValue().getValue());
+                        UserAttributeEntity e = userAttributeDozerConverter.convertToEntity(entry.getValue(), true);
+                        try {
+                            PropertyUtils.copyProperties(entity, e);
+                        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException ex) {
+                            log.error("Attribute copying failed", ex);
                         }
                         // Audit Log -----------------------------------------------------------------------------------
                         IdmAuditLog auditLog = new IdmAuditLog();
@@ -1357,7 +1359,11 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                                 it.remove();
                                 String logOld = en.toString();
                                 LoginEntity entity = loginDozerConverter.convertToEntity(e, false);
-                                copyLogin(en, entity);
+                                try {
+                                    PropertyUtils.copyProperties(en, entity);
+                                } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException ex) {
+                                    log.error("Login copying failed", ex);
+                                }
                                 // Audit Log ---------------------------------------------------
                                 IdmAuditLog auditLog = new IdmAuditLog();
                                 auditLog.setAction(AuditAction.REPLACE_PRINCIPAL.value());
@@ -1373,14 +1379,6 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     }
                 }
             }
-        }
-    }
-
-    private void copyLogin(LoginEntity en, LoginEntity entity) {
-        try {
-            PropertyUtils.copyProperties(en, entity);
-        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-            log.error("Login copying failed", e);
         }
     }
 
