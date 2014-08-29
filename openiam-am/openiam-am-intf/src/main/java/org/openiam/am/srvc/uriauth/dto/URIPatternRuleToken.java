@@ -32,12 +32,12 @@ public class URIPatternRuleToken implements Serializable {
 		this.metaType = metaType;
 	}
 	
-	public void addValue(final String key, final String value) {
+	public void addValue(final String key, final String value, final boolean propagate) {
 		if(key != null && value != null) {
 			if(valueList == null) {
 				valueList = new LinkedList<URIPatternRuleValue>();
 			}
-			valueList.add(new URIPatternRuleValue(key, value));
+			valueList.add(new URIPatternRuleValue(key, value, propagate));
 		}
 	}
 

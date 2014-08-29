@@ -502,6 +502,7 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
         				existingValue.setGroovyScript(incomingValue.getGroovyScript());
         				existingValue.setStaticValue(incomingValue.getStaticValue());
         				existingValue.setName(incomingValue.getName());
+        				existingValue.setPropagateThroughProxy(incomingValue.isPropagateThroughProxy());
         			}
         		}
         		if(!exists) {
