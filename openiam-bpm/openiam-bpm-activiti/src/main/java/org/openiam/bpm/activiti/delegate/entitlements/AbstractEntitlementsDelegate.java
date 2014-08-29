@@ -74,6 +74,8 @@ public abstract class AbstractEntitlementsDelegate extends AbstractNotificationD
 		NOTIFICATION_MAP.put(ActivitiRequestType.REMOVE_ROLE_FROM_ROLE, "REMOVE_ROLE_FROM_ROLE_NOTIFY");
 		NOTIFICATION_MAP.put(ActivitiRequestType.DISENTITLE_RESOURCE_FROM_ROLE, "DISENTITLE_RESOURCE_FROM_ROLE_NOTIFY");
 		NOTIFICATION_MAP.put(ActivitiRequestType.REMOVE_RESOURCE_FROM_RESOURCE, "REMOVE_RESOURCE_FROM_RESOURCE_NOTIFY");
+		
+		NOTIFICATION_MAP.put(ActivitiRequestType.RESOURCE_CERTIFICATION, "RESOURCE_CERTIFICATION_NOTIFY");
 	}
 
 	protected AbstractEntitlementsDelegate() {

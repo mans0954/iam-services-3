@@ -28,6 +28,7 @@ import java.util.Set;
 public class ResourceSearchBean extends EntitlementsSearchBean<Resource, String> implements SearchBean<Resource, String>, Serializable {
 
 	private static final long serialVersionUID = 1L;
+    public static final String TYPE_MANAGED_SYS = "MANAGED_SYS";
 
 	private String name;
 	private String resourceTypeId;

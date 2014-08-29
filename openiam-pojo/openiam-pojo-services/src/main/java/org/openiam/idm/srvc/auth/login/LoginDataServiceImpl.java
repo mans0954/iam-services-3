@@ -614,11 +614,6 @@ public class LoginDataServiceImpl implements LoginDataService {
         }
     }
 
-    @Override
-    public void evict(LoginEntity entity) {
-        loginDao.evict(entity);
-    }
-
 	@Override
     @Transactional(readOnly = true)
 	public Login getLoginDTO(String loginId) {
@@ -626,6 +621,7 @@ public class LoginDataServiceImpl implements LoginDataService {
 	}
 
     @Override
+    @Transactional
     public void forgotUsername(String email) throws BasicDataServiceException {
         List<UserEntity> userList = userDao.getByEmail(email);
 

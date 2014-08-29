@@ -671,6 +671,21 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 	private Task getTaskAssignee(final ActivitiRequestDecision newHireRequest) throws ActivitiException {
 		return getTaskAssignee(newHireRequest.getTaskId(), newHireRequest.getRequestorUserId());
 	}
+	
+
+	@Override
+	@WebMethod
+	@Transactional
+	public int getNumOfAssignedTasks(String userId) {
+		return (int)taskService.createTaskQuery().taskAssignee(userId).count();
+	}
+
+	@Override
+	@WebMethod
+	@Transactional
+	public int getNumOfCandidateTasks(String userId) {
+		return (int)taskService.createTaskQuery().taskCandidateUser(userId).count();
+	}
 
 	@Override
 	@WebMethod

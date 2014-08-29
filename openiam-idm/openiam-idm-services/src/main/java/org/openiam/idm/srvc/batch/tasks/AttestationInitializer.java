@@ -72,7 +72,7 @@ public class AttestationInitializer {
 				}
 				
 				if(CollectionUtils.isNotEmpty(supervisorIds)) {
-					final String taskName = String.format("Attestation Request for %s", user.getDisplayName());
+					final String taskName = String.format("Re-Certification Request for %s", user.getDisplayName());
 					
 					final GenericWorkflowRequest request = new GenericWorkflowRequest();
 					request.setActivitiRequestType(ActivitiRequestType.ATTESTATION.getKey());
@@ -85,12 +85,12 @@ public class AttestationInitializer {
 					request.setDeletable(false);
 					final Response response = activitiService.initiateWorkflow(request);
 					if(!ResponseStatus.SUCCESS.equals(response.getStatus())) {
-						LOG.info(String.format("Could not initialize attestation task for user %s.  Reason: %s", employeeId, response.getErrorCode()));
+						LOG.info(String.format("Could not initialize re-certification task for user %s.  Reason: %s", employeeId, response.getErrorCode()));
 					}
 				}
 			}
 		}
 		sw.stop();
-		LOG.info(String.format("Took %s ms to start attestation requests", sw.getTime()));
+		LOG.info(String.format("Took %s ms to start re-certification requests", sw.getTime()));
 	}
 }
