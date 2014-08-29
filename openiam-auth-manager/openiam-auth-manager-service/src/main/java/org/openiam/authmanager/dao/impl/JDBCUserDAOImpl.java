@@ -15,8 +15,7 @@ import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Repository("jdbcUserDao")
 public class JDBCUserDAOImpl extends AbstractJDBCDao implements UserDAO {
@@ -41,6 +40,11 @@ public class JDBCUserDAOImpl extends AbstractJDBCDao implements UserDAO {
 												    			   "		ON l.USER_ID=rm.USER_ID " +
 												    			   "	LEFT JOIN %s.RESOURCE_USER resm " +
 												    			   "		ON l.USER_ID=resm.USER_ID ";
+
+
+    private String GET_ALL_USERS_IDS_FOR_ROLE = "SELECT USER_ID AS USER_ID FROM %s.USER_ROLE WHERE ROLE_ID IN (:ids)";
+    private String GET_ALL_USERS_IDS_FOR_GROUP = "SELECT USER_ID AS USER_ID FROM %s.USER_GRP WHERE GRP_ID IN (:ids)";
+    private String GET_ALL_USERS_IDS_FOR_RESOURCE = "SELECT USER_ID AS USER_ID FROM %s.RESOURCE_USER WHERE RESOURCE_ID IN (:ids)";
 	
 	private String GET_FULLY_POPULATED_USER_BY_ID = GET_FULLY_POPULATED_USER_RS_LIST + "WHERE l.USER_ID=?";
 	private String GET_FULLY_POPULATED_USER_BY_LOGIN_ID = GET_FULLY_POPULATED_USER_RS_LIST + "WHERE l.USER_ID IN (" +
@@ -59,6 +63,10 @@ public class JDBCUserDAOImpl extends AbstractJDBCDao implements UserDAO {
 		GET_ALL_LOGINS_WITH_LAST_LOGIN_AFTER = String.format(GET_ALL_LOGINS_WITH_LAST_LOGIN_AFTER, schemaName, schemaName);
 		GET_FULLY_POPULATED_USER_BY_ID = String.format(GET_FULLY_POPULATED_USER_BY_ID, schemaName, schemaName, schemaName, schemaName);
 		GET_FULLY_POPULATED_USER_BY_LOGIN_ID = String.format(GET_FULLY_POPULATED_USER_BY_LOGIN_ID,  schemaName, schemaName, schemaName, schemaName, schemaName);
+
+        GET_ALL_USERS_IDS_FOR_ROLE = String.format(GET_ALL_USERS_IDS_FOR_ROLE, schemaName);
+        GET_ALL_USERS_IDS_FOR_GROUP = String.format(GET_ALL_USERS_IDS_FOR_GROUP, schemaName);
+        GET_ALL_USERS_IDS_FOR_RESOURCE = String.format(GET_ALL_USERS_IDS_FOR_RESOURCE, schemaName);
 	}
 	
 	@Override
@@ -108,6 +116,31 @@ public class JDBCUserDAOImpl extends AbstractJDBCDao implements UserDAO {
             log.debug(String.format("Query: %s", GET_ALL_USERS_IDS));
         }
         return getJdbcTemplate().query(GET_ALL_USERS_IDS, userIdMapper);
+    }
+
+    @Override
+    public List<String> getUserIdsForRoles(Set<String> roleIds){
+        if(log.isDebugEnabled()) {
+            log.debug(String.format("Query: %s", GET_ALL_USERS_IDS_FOR_ROLE));
+        }
+        return getJdbcTemplate().query(GET_ALL_USERS_IDS_FOR_ROLE, userIdMapper, Collections
+                .singletonMap("ids", roleIds));
+    }
+    @Override
+    public List<String> getUserIdsForGroups(Set<String> groupIds){
+        if(log.isDebugEnabled()) {
+            log.debug(String.format("Query: %s", GET_ALL_USERS_IDS_FOR_GROUP));
+        }
+        return getJdbcTemplate().query(GET_ALL_USERS_IDS_FOR_GROUP, userIdMapper, Collections
+                .singletonMap("ids", groupIds));
+    }
+    @Override
+    public List<String> getUserIdsForResources(Set<String> resourceIds){
+        if(log.isDebugEnabled()) {
+            log.debug(String.format("Query: %s", GET_ALL_USERS_IDS_FOR_RESOURCE));
+        }
+        return getJdbcTemplate().query(GET_ALL_USERS_IDS_FOR_RESOURCE, userIdMapper, Collections
+                .singletonMap("ids", resourceIds));
     }
 
 	private static class UserMapper implements RowMapper<AuthorizationUser> {
