@@ -181,7 +181,5 @@ public interface LoginDataService {
 
     List<LoginEntity> findBeans(LoginSearchBean searchBean, Integer from, Integer size);
 
-    void evict(LoginEntity entity);
-
     void forgotUsername(String email) throws BasicDataServiceException;
 }

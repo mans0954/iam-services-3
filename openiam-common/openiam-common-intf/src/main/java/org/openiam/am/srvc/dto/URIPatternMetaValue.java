@@ -20,7 +20,8 @@ import java.lang.ref.WeakReference;
         "staticValue",
         "amAttribute",
         "metaEntityId",
-        "groovyScript"
+        "groovyScript",
+        "propagateThroughProxy"
 })
 @DozerDTOCorrespondence(URIPatternMetaValueEntity.class)
 public class URIPatternMetaValue implements Serializable {
@@ -30,6 +31,7 @@ public class URIPatternMetaValue implements Serializable {
 	private AuthResourceAMAttribute amAttribute;
 	private String groovyScript;
 	private String metaEntityId;
+	private boolean propagateThroughProxy = true;
 	
 	/* internal use only!  Is compiled at spring refresh time 
 	 * to avoid run-time groovy class initialization.  
@@ -86,6 +88,12 @@ public class URIPatternMetaValue implements Serializable {
 	public void setGroovyProcessor(final  URIFederationGroovyProcessor groovyProcessor) {
 		this.groovyProcessor = groovyProcessor;
 	}
+	public boolean isPropagateThroughProxy() {
+		return propagateThroughProxy;
+	}
+	public void setPropagateThroughProxy(boolean propagateThroughProxy) {
+		this.propagateThroughProxy = propagateThroughProxy;
+	}
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -98,6 +106,7 @@ public class URIPatternMetaValue implements Serializable {
 		result = prime * result
 				+ ((metaEntityId == null) ? 0 : metaEntityId.hashCode());
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		result = prime * result + (propagateThroughProxy ? 1231 : 1237);
 		result = prime * result
 				+ ((staticValue == null) ? 0 : staticValue.hashCode());
 		return result;
@@ -136,6 +145,8 @@ public class URIPatternMetaValue implements Serializable {
 				return false;
 		} else if (!name.equals(other.name))
 			return false;
+		if (propagateThroughProxy != other.propagateThroughProxy)
+			return false;
 		if (staticValue == null) {
 			if (other.staticValue != null)
 				return false;
@@ -145,12 +156,11 @@ public class URIPatternMetaValue implements Serializable {
 	}
 	@Override
 	public String toString() {
-		return "URIPatternMetaValue [id=" + id + ", name=" + name
-				+ ", staticValue=" + staticValue + ", amAttribute="
-				+ amAttribute + ", groovyScript=" + groovyScript
-				+ ", metaEntityId=" + metaEntityId + "]";
+		return String
+				.format("URIPatternMetaValue [id=%s, name=%s, staticValue=%s, amAttribute=%s, groovyScript=%s, metaEntityId=%s, propagateThroughProxy=%s, groovyProcessor=%s]",
+						id, name, staticValue, amAttribute, groovyScript,
+						metaEntityId, propagateThroughProxy, groovyProcessor);
 	}
-
-    
+	
 	
 }

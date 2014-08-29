@@ -538,6 +538,7 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 			variables.put(ActivitiConstants.TASK_NAME.getName(), request.getName());
 			variables.put(ActivitiConstants.TASK_DESCRIPTION.getName(), request.getDescription());
 			variables.put(ActivitiConstants.REQUESTOR.getName(), request.getRequestorUserId());
+			variables.put(ActivitiConstants.DELETABLE.getName(), Boolean.valueOf(request.isDeletable()));
 			if(request.getAssociationId() != null) {
 				variables.put(ActivitiConstants.ASSOCIATION_ID.getName(), request.getAssociationId());
 			}
@@ -669,6 +670,21 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 	
 	private Task getTaskAssignee(final ActivitiRequestDecision newHireRequest) throws ActivitiException {
 		return getTaskAssignee(newHireRequest.getTaskId(), newHireRequest.getRequestorUserId());
+	}
+	
+
+	@Override
+	@WebMethod
+	@Transactional
+	public int getNumOfAssignedTasks(String userId) {
+		return (int)taskService.createTaskQuery().taskAssignee(userId).count();
+	}
+
+	@Override
+	@WebMethod
+	@Transactional
+	public int getNumOfCandidateTasks(String userId) {
+		return (int)taskService.createTaskQuery().taskCandidateUser(userId).count();
 	}
 
 	@Override

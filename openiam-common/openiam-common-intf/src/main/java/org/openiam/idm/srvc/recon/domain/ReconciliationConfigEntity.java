@@ -60,7 +60,7 @@ public class ReconciliationConfigEntity implements java.io.Serializable {
 
     @Column(name = "MANUAL_RECONCILIATION_FLAG")
     @Type(type = "yes_no")
-    private boolean manualReconciliationFlag;
+    private Boolean manualReconciliationFlag;
 
     @Column(name="MATCH_FIELD_NAME",length=40)
     private String matchFieldName;
@@ -252,11 +252,11 @@ public class ReconciliationConfigEntity implements java.io.Serializable {
         this.situationSet = situationSet;
     }
 
-    public boolean getManualReconciliationFlag() {
+    public Boolean getManualReconciliationFlag() {
         return manualReconciliationFlag;
     }
 
-    public void setManualReconciliationFlag(boolean manualReconciliationFlag) {
+    public void setManualReconciliationFlag(Boolean manualReconciliationFlag) {
         this.manualReconciliationFlag = manualReconciliationFlag;
     }
 

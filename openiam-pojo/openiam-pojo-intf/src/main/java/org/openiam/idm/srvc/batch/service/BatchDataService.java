@@ -41,4 +41,6 @@ public interface BatchDataService {
     public Response removeBatchTask(
             @WebParam(name = "taskID", targetNamespace = "")
             String taskId);
+    
+    public Response run(@WebParam(name = "taskId", targetNamespace = "") String id, @WebParam(name = "synchronous", targetNamespace = "") boolean synchronous);
 }
