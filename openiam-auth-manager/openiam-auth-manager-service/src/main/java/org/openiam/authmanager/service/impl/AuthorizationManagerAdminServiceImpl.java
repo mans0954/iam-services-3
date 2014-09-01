@@ -665,36 +665,40 @@ public class AuthorizationManagerAdminServiceImpl implements AuthorizationManage
 
                 /* compile groups */
                 final Set<AuthorizationGroup> compiledGroups = new HashSet<AuthorizationGroup>();
-                final Set<AuthorizationGroup> visitedGroupSet = new HashSet<AuthorizationGroup>();
-                for(final AuthorizationGroup group : groupSet) {
-                    final Set<AuthorizationGroup> tempCompiledGroups = compileGroups(group, group2GroupMap, visitedGroupSet);
-                    if(CollectionUtils.isNotEmpty(tempCompiledGroups)) {
-                        compiledGroups.addAll(tempCompiledGroups);
+                if(CollectionUtils.isNotEmpty(groupSet)){
+                    final Set<AuthorizationGroup> visitedGroupSet = new HashSet<AuthorizationGroup>();
+                    for(final AuthorizationGroup group : groupSet) {
+                        final Set<AuthorizationGroup> tempCompiledGroups = compileGroups(group, group2GroupMap, visitedGroupSet);
+                        if(CollectionUtils.isNotEmpty(tempCompiledGroups)) {
+                            compiledGroups.addAll(tempCompiledGroups);
+                        }
                     }
+                    compiledGroups.addAll(groupSet);
                 }
-                compiledGroups.addAll(groupSet);
 
                 /* compile roles */
                 final Set<AuthorizationRole> compiledRoles = new HashSet<AuthorizationRole>();
-                final Set<AuthorizationRole> visitedRoleSet = new HashSet<AuthorizationRole>();
-                for(final AuthorizationRole role : roleSet) {
-                    final Set<AuthorizationRole> tempCompiledRoles = compileRoles(role, role2RoleMap, visitedRoleSet);
-                    if(CollectionUtils.isNotEmpty(tempCompiledRoles)) {
-                        compiledRoles.addAll(tempCompiledRoles);
-                    }
-                }
-                compiledRoles.addAll(roleSet);
-                final Set<AuthorizationRole> visitedSet = new HashSet<AuthorizationRole>();
-                for(final AuthorizationGroup group : compiledGroups) {
-                    if(group2RoleMap.containsKey(group.getId())) {
-                        for(final AuthorizationRole role : group2RoleMap.get(group.getId())) {
-                            compiledRoles.add(role);
-                            compiledRoles.addAll(compileRoles(role, role2RoleMap, visitedSet));
+                if(CollectionUtils.isNotEmpty(roleSet)){
+                    final Set<AuthorizationRole> visitedRoleSet = new HashSet<AuthorizationRole>();
+                    for(final AuthorizationRole role : roleSet) {
+                        final Set<AuthorizationRole> tempCompiledRoles = compileRoles(role, role2RoleMap, visitedRoleSet);
+                        if(CollectionUtils.isNotEmpty(tempCompiledRoles)) {
+                            compiledRoles.addAll(tempCompiledRoles);
                         }
                     }
+                    compiledRoles.addAll(roleSet);
+                    final Set<AuthorizationRole> visitedSet = new HashSet<AuthorizationRole>();
+                    for(final AuthorizationGroup group : compiledGroups) {
+                        if(group2RoleMap.containsKey(group.getId())) {
+                            for(final AuthorizationRole role : group2RoleMap.get(group.getId())) {
+                                compiledRoles.add(role);
+                                compiledRoles.addAll(compileRoles(role, role2RoleMap, visitedSet));
+                            }
+                        }
+                    }
+                    /* compiles the roles for compiled groups */
+                    compiledRoles.addAll(getRolesForGroups(compiledGroups, group2RoleMap));
                 }
-				/* compiles the roles for compiled groups */
-                compiledRoles.addAll(getRolesForGroups(compiledGroups, group2RoleMap));
 
                 // get users for compiled groups
                 if(CollectionUtils.isNotEmpty(compiledGroups)) {

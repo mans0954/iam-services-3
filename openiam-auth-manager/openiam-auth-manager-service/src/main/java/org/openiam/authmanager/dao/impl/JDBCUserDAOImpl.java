@@ -11,6 +11,8 @@ import org.openiam.core.dao.AbstractJDBCDao;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
@@ -123,24 +125,40 @@ public class JDBCUserDAOImpl extends AbstractJDBCDao implements UserDAO {
         if(log.isDebugEnabled()) {
             log.debug(String.format("Query: %s", GET_ALL_USERS_IDS_FOR_ROLE));
         }
-        return getJdbcTemplate().query(GET_ALL_USERS_IDS_FOR_ROLE, userIdMapper, Collections
-                .singletonMap("ids", roleIds));
+        Map<String, Set<String>> param = Collections.singletonMap("ids",roleIds);
+        NamedParameterJdbcTemplate namedParameterJdbcTemplate = new
+                NamedParameterJdbcTemplate(getJdbcTemplate().getDataSource());
+
+
+        return namedParameterJdbcTemplate.query(GET_ALL_USERS_IDS_FOR_ROLE, new MapSqlParameterSource(param), userIdMapper);
+//        return getJdbcTemplate().query(GET_ALL_USERS_IDS_FOR_ROLE, userIdMapper, Collections
+//                .singletonMap("ids", roleIds));
     }
     @Override
     public List<String> getUserIdsForGroups(Set<String> groupIds){
         if(log.isDebugEnabled()) {
             log.debug(String.format("Query: %s", GET_ALL_USERS_IDS_FOR_GROUP));
         }
-        return getJdbcTemplate().query(GET_ALL_USERS_IDS_FOR_GROUP, userIdMapper, Collections
-                .singletonMap("ids", groupIds));
+
+        Map<String, Set<String>> param = Collections.singletonMap("ids",groupIds);
+        NamedParameterJdbcTemplate namedParameterJdbcTemplate = new
+                NamedParameterJdbcTemplate(getJdbcTemplate().getDataSource());
+
+
+        return namedParameterJdbcTemplate.query(GET_ALL_USERS_IDS_FOR_GROUP, new MapSqlParameterSource(param), userIdMapper);
     }
     @Override
     public List<String> getUserIdsForResources(Set<String> resourceIds){
         if(log.isDebugEnabled()) {
             log.debug(String.format("Query: %s", GET_ALL_USERS_IDS_FOR_RESOURCE));
         }
-        return getJdbcTemplate().query(GET_ALL_USERS_IDS_FOR_RESOURCE, userIdMapper, Collections
-                .singletonMap("ids", resourceIds));
+
+        Map<String, Set<String>> param = Collections.singletonMap("ids",resourceIds);
+        NamedParameterJdbcTemplate namedParameterJdbcTemplate = new
+                NamedParameterJdbcTemplate(getJdbcTemplate().getDataSource());
+
+
+        return namedParameterJdbcTemplate.query(GET_ALL_USERS_IDS_FOR_RESOURCE, new MapSqlParameterSource(param), userIdMapper);
     }
 
 	private static class UserMapper implements RowMapper<AuthorizationUser> {
