@@ -510,7 +510,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     if (res != null) {
                         String preProcessScript = getResProperty(res.getResourceProps(), "PRE_PROCESS");
                         if (preProcessScript != null && !preProcessScript.isEmpty()) {
-                            PreProcessor ppScript = createPreProcessScript(preProcessScript, bindingMap);
+                            PreProcessor<ProvisionUser> ppScript = createPreProcessScript(preProcessScript, bindingMap);
                             if (ppScript != null) {
                                 executePreProcess(ppScript, bindingMap, pUser, "DELETE");
                             }
@@ -555,7 +555,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS, null);
                 String postProcessScript = getResProperty(res.getResourceProps(), "POST_PROCESS");
                 if (postProcessScript != null && !postProcessScript.isEmpty()) {
-                    PostProcessor ppScript = createPostProcessScript(postProcessScript, bindingMap);
+                    PostProcessor<ProvisionUser> ppScript = createPostProcessScript(postProcessScript, bindingMap);
                     if (ppScript != null) {
                         executePostProcess(ppScript, bindingMap, pUser, "DELETE", connectorSuccess);
                     }
