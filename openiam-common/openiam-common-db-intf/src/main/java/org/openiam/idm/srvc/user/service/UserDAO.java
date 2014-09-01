@@ -1,15 +1,16 @@
 package org.openiam.idm.srvc.user.service;
 
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
-
+import org.openiam.base.ws.SortParam;
 import org.openiam.core.dao.BaseDao;
 import org.openiam.idm.searchbeans.DelegationFilterSearchBean;
 import org.openiam.idm.searchbeans.UserSearchBean;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.DelegationFilterSearch;
+
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Data access interface for domain model class User.
@@ -31,7 +32,7 @@ public interface UserDAO extends BaseDao<UserEntity, String> {
 
     public Long getUserCount(UserSearchBean searchBean);
 
-    public List<UserEntity> getUsersForResource(final String resourceId, DelegationFilterSearchBean delegationFilter, final int from, final int size);
+    public List<UserEntity> getUsersForResource(final String resourceId, DelegationFilterSearchBean delegationFilter, List<SortParam> sortParamList, final int from, final int size);
 
     public int getNumOfUsersForResource(final String resourceId, DelegationFilterSearchBean delegationFilter);
 

@@ -6,11 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.openiam.exception.BasicDataServiceException;
-import org.openiam.idm.searchbeans.AddressSearchBean;
-import org.openiam.idm.searchbeans.EmailSearchBean;
-import org.openiam.idm.searchbeans.PhoneSearchBean;
-import org.openiam.idm.searchbeans.PotentialSupSubSearchBean;
-import org.openiam.idm.searchbeans.UserSearchBean;
+import org.openiam.idm.searchbeans.*;
 import org.openiam.idm.srvc.continfo.domain.AddressEntity;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
 import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
@@ -225,6 +221,7 @@ public interface UserDataService {
     public Map<String, UserAttributeEntity> getAllAttributes(String userId);
 
     public List<UserEntity> getUsersForResource(final String resourceId, String requesterId, final int from, final int size);
+    public List<UserEntity> getUsersForResource(UserSearchBean userSearchBean, int from, int size);
 
     public int getNumOfUsersForResource(final String resourceId, String requesterId);
 
