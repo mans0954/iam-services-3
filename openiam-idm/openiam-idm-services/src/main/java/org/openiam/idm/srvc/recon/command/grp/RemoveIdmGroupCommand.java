@@ -5,15 +5,15 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.BaseAttribute;
+import org.openiam.base.ws.Response;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.recon.dto.ReconciliationSituation;
 import org.openiam.idm.srvc.recon.service.PopulationScript;
 import org.openiam.idm.srvc.recon.service.ReconciliationObjectCommand;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.provision.dto.ProvisionGroup;
-import org.openiam.provision.resp.ProvisionGroupResponse;
 import org.openiam.provision.service.AbstractProvisioningService;
-import org.openiam.provision.service.GroupProvisionService;
+import org.openiam.provision.service.ObjectProvisionService;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.script.ScriptIntegration;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +31,7 @@ public class RemoveIdmGroupCommand implements ReconciliationObjectCommand<Group>
 
     @Autowired
     @Qualifier("groupProvision")
-    private GroupProvisionService provisionService;
+    private ObjectProvisionService<ProvisionGroup> provisionService;
 
     @Autowired
     @Qualifier("configurableGroovyScriptEngine")
@@ -77,7 +77,7 @@ public class RemoveIdmGroupCommand implements ReconciliationObjectCommand<Group>
                 e.printStackTrace();
             }
         }
-        ProvisionGroupResponse response =  provisionService.deleteGroup(mSysID, group.getId(), UserStatusEnum.REMOVE, "3000");
+        Response response =  provisionService.delete(mSysID, group.getId(), UserStatusEnum.REMOVE, "3000");
         return response.isSuccess();
     }
 }

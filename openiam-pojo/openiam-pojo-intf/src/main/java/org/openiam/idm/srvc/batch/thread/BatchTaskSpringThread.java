@@ -1,4 +1,4 @@
-package org.openiam.idm.srvc.batch;
+package org.openiam.idm.srvc.batch.thread;
 
 import java.lang.reflect.Method;
 import java.util.Date;
@@ -6,7 +6,6 @@ import java.util.Date;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.openiam.idm.srvc.batch.domain.BatchTaskEntity;
-import org.openiam.util.SpringContextProvider;
 import org.springframework.context.ApplicationContext;
 import org.springframework.util.ReflectionUtils;
 

@@ -9,19 +9,22 @@ import javax.xml.bind.annotation.XmlType;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "URIPatternRuleValue", propOrder = {
 	"key",
-	"value"
+	"value",
+	"propagate"
 })
 public class URIPatternRuleValue implements Serializable {
 
 	private String key;
 	private String value;
+	private boolean propagate = true;
 	
 	private URIPatternRuleValue() {}
 	
-	public URIPatternRuleValue(final String key, final String value) {
+	public URIPatternRuleValue(final String key, final String value, final boolean propagate) {
 		this();
 		this.key = key;
 		this.value = value;
+		this.propagate = propagate;
 	}
 
 	public String getKey() {
@@ -32,11 +35,16 @@ public class URIPatternRuleValue implements Serializable {
 		return value;
 	}
 
+	public boolean isPropagate() {
+		return propagate;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((key == null) ? 0 : key.hashCode());
+		result = prime * result + (propagate ? 1231 : 1237);
 		result = prime * result + ((value == null) ? 0 : value.hashCode());
 		return result;
 	}
@@ -55,6 +63,8 @@ public class URIPatternRuleValue implements Serializable {
 				return false;
 		} else if (!key.equals(other.key))
 			return false;
+		if (propagate != other.propagate)
+			return false;
 		if (value == null) {
 			if (other.value != null)
 				return false;
@@ -65,9 +75,10 @@ public class URIPatternRuleValue implements Serializable {
 
 	@Override
 	public String toString() {
-		return String.format("URIPatternRuleValue [key=%s, value=%s]", key,
-				value);
+		return String.format(
+				"URIPatternRuleValue [key=%s, value=%s, propagate=%s]", key,
+				value, propagate);
 	}
-	
+
 	
 }

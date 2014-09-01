@@ -185,6 +185,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         for(String roleId : roleList) {
             ResourceSearchBean rsb = new ResourceSearchBean();
             rsb.setDeepCopy(false);
+            rsb.setResourceTypeId(ResourceSearchBean.TYPE_MANAGED_SYS);
             List<org.openiam.idm.srvc.res.dto.Resource> resources = resourceDataService.getResourcesForRole(roleId, -1, -1, rsb, null);
             for(Resource res : resources) {
                 resourceIds.add(res.getId());
@@ -278,7 +279,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         return modifyUser(pUser, null);
     }
 
-    public ProvisionUserResponse modifyUser(final ProvisionUser pUser, final IdmAuditLog auditLog) {
+    private ProvisionUserResponse modifyUser(final ProvisionUser pUser, final IdmAuditLog auditLog) {
         final List<ProvisionDataContainer> dataList = new LinkedList<ProvisionDataContainer>();
         TransactionTemplate transactionTemplate = new TransactionTemplate(platformTransactionManager);
 
@@ -353,12 +354,12 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
     }
 
     @Override
+    @Transactional
     public ProvisionUserResponse deleteByUserWithSkipManagedSysList(String userId, UserStatusEnum status, String requestorId, List<String> skipManagedSysList) {
         return deleteByUserWithSkipManagedSysList(userId, status, requestorId, skipManagedSysList, null);
     }
 
-    @Transactional
-    public ProvisionUserResponse deleteByUserWithSkipManagedSysList(String userId, UserStatusEnum status, String requestorId, List<String> skipManagedSysList, IdmAuditLog auditLog) {
+    private ProvisionUserResponse deleteByUserWithSkipManagedSysList(String userId, UserStatusEnum status, String requestorId, List<String> skipManagedSysList, IdmAuditLog auditLog) {
         log.debug("----deleteByUserId called.------");
 
         List<LoginEntity> loginEntityList = loginManager.getLoginByUser(userId);
@@ -374,6 +375,8 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         return deleteByUserWithSkipManagedSysList(userId, status, requestorId, null);
     }
 
+    @Override
+    @Transactional
     public ProvisionUserResponse deleteUser(String managedSystemId, String principal, UserStatusEnum status,
                                             String requestorId) {
         return deleteUserWithSkipManagedSysList(managedSystemId, principal, status, requestorId, null);
@@ -387,13 +390,13 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
      * , java.lang.String, java.lang.String)
      */
     @Override
+    @Transactional
     public ProvisionUserResponse deleteUserWithSkipManagedSysList(String managedSystemId, String principal, UserStatusEnum status,
                                             String requestorId, List<String> skipManagedSysList) {
         return deleteUserWithSkipManagedSysList(managedSystemId, principal, status, requestorId, skipManagedSysList, null);
     }
 
-    @Transactional
-    public ProvisionUserResponse deleteUserWithSkipManagedSysList(String managedSystemId, String principal, UserStatusEnum status,
+    private ProvisionUserResponse deleteUserWithSkipManagedSysList(String managedSystemId, String principal, UserStatusEnum status,
                 String requestorId, List<String> skipManagedSysList, IdmAuditLog auditLog) {
         log.debug("----deleteUser called.------");
 
@@ -507,7 +510,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     if (res != null) {
                         String preProcessScript = getResProperty(res.getResourceProps(), "PRE_PROCESS");
                         if (preProcessScript != null && !preProcessScript.isEmpty()) {
-                            PreProcessor ppScript = createPreProcessScript(preProcessScript, bindingMap);
+                            PreProcessor<ProvisionUser> ppScript = createPreProcessScript(preProcessScript, bindingMap);
                             if (ppScript != null) {
                                 executePreProcess(ppScript, bindingMap, pUser, "DELETE");
                             }
@@ -552,7 +555,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS, null);
                 String postProcessScript = getResProperty(res.getResourceProps(), "POST_PROCESS");
                 if (postProcessScript != null && !postProcessScript.isEmpty()) {
-                    PostProcessor ppScript = createPostProcessScript(postProcessScript, bindingMap);
+                    PostProcessor<ProvisionUser> ppScript = createPostProcessScript(postProcessScript, bindingMap);
                     if (ppScript != null) {
                         executePostProcess(ppScript, bindingMap, pUser, "DELETE", connectorSuccess);
                     }
@@ -893,6 +896,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
     }
 
     @Override
+    @Transactional
     public void updateResources(UserEntity userEntity, ProvisionUser pUser, Set<Resource> resourceSet, Set<Resource> deleteResourceSet, IdmAuditLog parentLog) {
         super.updateResources(userEntity, pUser, resourceSet, deleteResourceSet, parentLog);    //To change body of overridden methods use File | Settings | File Templates.
     }
@@ -1346,14 +1350,18 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see
      * org.openiam.provision.service.ProvisionService#resetPassword(org.openiam
      * .provision.dto.PasswordSync)
      */
     @Override
-    @Transactional
     public PasswordResponse resetPassword(PasswordSync passwordSync) {
+        return resetPassword(passwordSync, null);
+    }
+
+    @Transactional
+    public PasswordResponse resetPassword(PasswordSync passwordSync, IdmAuditLog auditLog) {
         log.debug("----resetPassword called.------");
         final IdmAuditLog idmAuditLog = new IdmAuditLog();
         List<LoginEntity> loginEntityList = loginManager.getLoginByUser(passwordSync.getRequestorId());
@@ -1361,6 +1369,10 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         idmAuditLog.setRequestorPrincipal(primaryIdentity.getLogin());
         idmAuditLog.setRequestorUserId(passwordSync.getRequestorId());
         idmAuditLog.setAction(AuditAction.PROVISIONING_RESETPASSWORD.value());
+
+        if (auditLog != null) {
+            auditLog.addChild(idmAuditLog);
+        }
 
         final PasswordResponse response = new PasswordResponse(ResponseStatus.SUCCESS);
         try {
@@ -1493,7 +1505,9 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 }
             }
         } finally {
-            auditLogService.enqueue(idmAuditLog);
+            if (auditLog == null) {
+                auditLogService.enqueue(idmAuditLog);
+            }
         }
 
         return response;
@@ -1854,14 +1868,16 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         return value;
     }
 
-    @Transactional(readOnly = true)
     private Set<Resource> getResourcesForRoles(Set<Role> roleSet) {
         log.debug("GetResourcesForRole().....");
         final Set<Resource> resourceList = new HashSet<Resource>();
         if (CollectionUtils.isNotEmpty(roleSet)) {
             for (Role rl : roleSet) {
                 if (rl.getId() != null) {
-                    List<ResourceEntity> resources = resourceService.getResourcesForRole(rl.getId(), 0, Integer.MAX_VALUE, null);
+                    ResourceSearchBean resourceSearchBean = new ResourceSearchBean();
+                    resourceSearchBean.setDeepCopy(false);
+                    resourceSearchBean.setResourceTypeId(ResourceSearchBean.TYPE_MANAGED_SYS);
+                    List<ResourceEntity> resources = resourceService.getResourcesForRole(rl.getId(), 0, Integer.MAX_VALUE, resourceSearchBean);
                     if (CollectionUtils.isNotEmpty(resources)) {
                         List<Resource> list = resourceDozerConverter.convertToDTOList(resources, true);
                         for (Resource r : list) {
@@ -2103,6 +2119,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
     }
 
     @Override
+    @Transactional
     public Response startBulkOperation(final BulkOperationRequest bulkRequest) {
         if (CollectionUtils.isNotEmpty(bulkRequest.getUserIds()) &&
                 CollectionUtils.isNotEmpty(bulkRequest.getOperations())) {
@@ -2157,6 +2174,15 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                             break;
                                         case DISABLE_USER:
                                             res = disableUser(userId, true, requestorId, idmAuditLog);
+                                            break;
+                                        case RESET_USER_PASSWORD:
+                                            final PasswordSync pswdSync = new PasswordSync();
+                                            pswdSync.setManagedSystemId(null);
+                                            pswdSync.setPassword(PasswordGenerator.generatePassword(16));
+                                            pswdSync.setUserId(userId);
+                                            pswdSync.setRequestorLogin(lRequestor.getLogin());
+                                            pswdSync.setRequestorId(requestorId);
+                                            res = resetPassword(pswdSync, idmAuditLog);
                                             break;
                                     }
                                     if (res.isFailure()) {

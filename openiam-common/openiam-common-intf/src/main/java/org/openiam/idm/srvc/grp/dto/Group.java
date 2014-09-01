@@ -38,7 +38,6 @@ import java.util.*;
         "childGroups",
         "resources"
 })
-@XmlRootElement(name = "Group")
 @XmlSeeAlso({
         Role.class,
         GroupAttribute.class,

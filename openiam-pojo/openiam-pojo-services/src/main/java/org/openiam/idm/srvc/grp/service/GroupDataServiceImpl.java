@@ -344,6 +344,8 @@ public class GroupDataServiceImpl implements GroupDataService {
 					group.setRoles(dbGroup.getRoles());
 					group.setUsers(dbGroup.getUsers());
 					group.setAdminResource(dbGroup.getAdminResource());
+                    group.setLastUpdatedBy(requestorId);
+                    group.setLastUpdate(Calendar.getInstance().getTime());
 					if(group.getAdminResource() == null) {
 						group.setAdminResource(getNewAdminResource(group, requestorId));
 					}
@@ -353,6 +355,8 @@ public class GroupDataServiceImpl implements GroupDataService {
 				}
 			} else {
 				group.setAdminResource(getNewAdminResource(group, requestorId));
+                group.setCreatedBy(requestorId);
+                group.setCreateDate(Calendar.getInstance().getTime());
 				groupDao.save(group);
 
                 IdentityEntity groupDefaultEntity = new IdentityEntity(IdentityTypeEnum.GROUP);

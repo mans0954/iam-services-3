@@ -209,7 +209,7 @@ public class AuthResourceAttributeServiceImpl implements AuthResourceAttributeSe
             }
         } catch (Throwable ex) {
             resultList.clear();
-            log.error(ex);
+            log.error("Can't get SSO Attibutes", ex);
         }
         
         return resultList;
