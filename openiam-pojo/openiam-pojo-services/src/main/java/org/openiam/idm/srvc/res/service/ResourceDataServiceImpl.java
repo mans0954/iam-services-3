@@ -673,7 +673,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
         RoleEntity roleEntity = roleService.getRole(roleId);
         idmAuditLog.setTargetRole(roleId, roleEntity.getName());
         ResourceEntity resourceEntity = resourceService.findResourceById(resourceId);
-        idmAuditLog.setTargetRole(resourceId, resourceEntity.getName());
+        idmAuditLog.setTargetResource(resourceId, resourceEntity.getName());
         idmAuditLog.setAuditDescription(String.format("Remove role: %s from resource: %s", roleId, resourceId));
         try {
             if (StringUtils.isBlank(resourceId) || StringUtils.isBlank(roleId)) {

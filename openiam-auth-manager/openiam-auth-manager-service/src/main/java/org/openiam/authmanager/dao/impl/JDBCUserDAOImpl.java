@@ -11,12 +11,13 @@ import org.openiam.core.dao.AbstractJDBCDao;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Repository("jdbcUserDao")
 public class JDBCUserDAOImpl extends AbstractJDBCDao implements UserDAO {
@@ -41,6 +42,11 @@ public class JDBCUserDAOImpl extends AbstractJDBCDao implements UserDAO {
 												    			   "		ON l.USER_ID=rm.USER_ID " +
 												    			   "	LEFT JOIN %s.RESOURCE_USER resm " +
 												    			   "		ON l.USER_ID=resm.USER_ID ";
+
+
+    private String GET_ALL_USERS_IDS_FOR_ROLE = "SELECT USER_ID AS USER_ID FROM %s.USER_ROLE WHERE ROLE_ID IN (:ids)";
+    private String GET_ALL_USERS_IDS_FOR_GROUP = "SELECT USER_ID AS USER_ID FROM %s.USER_GRP WHERE GRP_ID IN (:ids)";
+    private String GET_ALL_USERS_IDS_FOR_RESOURCE = "SELECT USER_ID AS USER_ID FROM %s.RESOURCE_USER WHERE RESOURCE_ID IN (:ids)";
 	
 	private String GET_FULLY_POPULATED_USER_BY_ID = GET_FULLY_POPULATED_USER_RS_LIST + "WHERE l.USER_ID=?";
 	private String GET_FULLY_POPULATED_USER_BY_LOGIN_ID = GET_FULLY_POPULATED_USER_RS_LIST + "WHERE l.USER_ID IN (" +
@@ -59,6 +65,10 @@ public class JDBCUserDAOImpl extends AbstractJDBCDao implements UserDAO {
 		GET_ALL_LOGINS_WITH_LAST_LOGIN_AFTER = String.format(GET_ALL_LOGINS_WITH_LAST_LOGIN_AFTER, schemaName, schemaName);
 		GET_FULLY_POPULATED_USER_BY_ID = String.format(GET_FULLY_POPULATED_USER_BY_ID, schemaName, schemaName, schemaName, schemaName);
 		GET_FULLY_POPULATED_USER_BY_LOGIN_ID = String.format(GET_FULLY_POPULATED_USER_BY_LOGIN_ID,  schemaName, schemaName, schemaName, schemaName, schemaName);
+
+        GET_ALL_USERS_IDS_FOR_ROLE = String.format(GET_ALL_USERS_IDS_FOR_ROLE, schemaName);
+        GET_ALL_USERS_IDS_FOR_GROUP = String.format(GET_ALL_USERS_IDS_FOR_GROUP, schemaName);
+        GET_ALL_USERS_IDS_FOR_RESOURCE = String.format(GET_ALL_USERS_IDS_FOR_RESOURCE, schemaName);
 	}
 	
 	@Override
@@ -108,6 +118,47 @@ public class JDBCUserDAOImpl extends AbstractJDBCDao implements UserDAO {
             log.debug(String.format("Query: %s", GET_ALL_USERS_IDS));
         }
         return getJdbcTemplate().query(GET_ALL_USERS_IDS, userIdMapper);
+    }
+
+    @Override
+    public List<String> getUserIdsForRoles(Set<String> roleIds){
+        if(log.isDebugEnabled()) {
+            log.debug(String.format("Query: %s", GET_ALL_USERS_IDS_FOR_ROLE));
+        }
+        Map<String, Set<String>> param = Collections.singletonMap("ids",roleIds);
+        NamedParameterJdbcTemplate namedParameterJdbcTemplate = new
+                NamedParameterJdbcTemplate(getJdbcTemplate().getDataSource());
+
+
+        return namedParameterJdbcTemplate.query(GET_ALL_USERS_IDS_FOR_ROLE, new MapSqlParameterSource(param), userIdMapper);
+//        return getJdbcTemplate().query(GET_ALL_USERS_IDS_FOR_ROLE, userIdMapper, Collections
+//                .singletonMap("ids", roleIds));
+    }
+    @Override
+    public List<String> getUserIdsForGroups(Set<String> groupIds){
+        if(log.isDebugEnabled()) {
+            log.debug(String.format("Query: %s", GET_ALL_USERS_IDS_FOR_GROUP));
+        }
+
+        Map<String, Set<String>> param = Collections.singletonMap("ids",groupIds);
+        NamedParameterJdbcTemplate namedParameterJdbcTemplate = new
+                NamedParameterJdbcTemplate(getJdbcTemplate().getDataSource());
+
+
+        return namedParameterJdbcTemplate.query(GET_ALL_USERS_IDS_FOR_GROUP, new MapSqlParameterSource(param), userIdMapper);
+    }
+    @Override
+    public List<String> getUserIdsForResources(Set<String> resourceIds){
+        if(log.isDebugEnabled()) {
+            log.debug(String.format("Query: %s", GET_ALL_USERS_IDS_FOR_RESOURCE));
+        }
+
+        Map<String, Set<String>> param = Collections.singletonMap("ids",resourceIds);
+        NamedParameterJdbcTemplate namedParameterJdbcTemplate = new
+                NamedParameterJdbcTemplate(getJdbcTemplate().getDataSource());
+
+
+        return namedParameterJdbcTemplate.query(GET_ALL_USERS_IDS_FOR_RESOURCE, new MapSqlParameterSource(param), userIdMapper);
     }
 
 	private static class UserMapper implements RowMapper<AuthorizationUser> {
