@@ -1,18 +1,23 @@
 package org.openiam.idm.srvc.prov.request.dto;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.openiam.base.AttributeOperationEnum;
+import org.springframework.beans.BeanUtils;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "OperationBean", propOrder = {
         "objectType",
         "objectId",
         "objectName",
-        "operation"
+        "operation",
+        "properties"
 })
 public class OperationBean implements Serializable {
 
@@ -20,14 +25,19 @@ public class OperationBean implements Serializable {
     private String objectId;
     private String objectName;
     private BulkOperationEnum operation;
+    private Map<String, Object> properties = new HashMap<String, Object>();
 
     public OperationBean() {}
 
     public OperationBean(OperationBean operationBean) {
-        this.objectType = operationBean.objectType;
-        this.objectId = operationBean.objectId;
-        this.objectName = operationBean.objectName;
-        this.operation = operationBean.operation;
+        BeanUtils.copyProperties(operationBean, this);
+        if (operationBean.properties != null) {
+            Map<String, Object> attrs = new HashMap<String, Object>();
+            for (String key : operationBean.properties.keySet()) {
+                attrs.put(key, operationBean.properties.get(key));
+            }
+            properties = attrs;
+        }
     }
 
     public BulkOperationObjectType getObjectType() {
@@ -60,6 +70,14 @@ public class OperationBean implements Serializable {
 
     public void setOperation(BulkOperationEnum operation) {
         this.operation = operation;
+    }
+
+    public Map<String, Object> getProperties() {
+        return properties;
+    }
+
+    public void setProperties(Map<String, Object> properties) {
+        this.properties = properties;
     }
 
     @Override

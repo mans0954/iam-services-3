@@ -2178,7 +2178,16 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                         case RESET_USER_PASSWORD:
                                             final PasswordSync pswdSync = new PasswordSync();
                                             pswdSync.setManagedSystemId(null);
-                                            pswdSync.setPassword(PasswordGenerator.generatePassword(16));
+                                            if (ob.getProperties() != null) {
+                                                if (ob.getProperties().containsKey("password")) {
+                                                    pswdSync.setPassword((String)ob.getProperties().get("password"));
+                                                } else {
+                                                    pswdSync.setPassword(PasswordGenerator.generatePassword(16));
+                                                }
+                                                if (ob.getProperties().containsKey("sendPasswordToUser")) {
+                                                    pswdSync.setSendPasswordToUser((Boolean)ob.getProperties().get("sendPasswordToUser"));
+                                                }
+                                            }
                                             pswdSync.setUserId(userId);
                                             pswdSync.setRequestorLogin(lRequestor.getLogin());
                                             pswdSync.setRequestorId(requestorId);
