@@ -582,6 +582,23 @@ public interface UserDataWebService {
                                           @WebParam(name = "size", targetNamespace = "") final int size);
 
     /**
+     * Gets a paged List of Users directly entitled to the Resource specified by
+     * the resourceId. This method allows sorting the resultset.
+     *
+     * @param userSearchBean
+     *            - the Resource ID
+     * @param from
+     *            - where to start in the paged list
+     * @param size
+     *            - how many to return
+     * @return a paged List of Users directly entitled to the Resource specified
+     *         by the resourceId
+     */
+    @WebMethod
+    public List<User> getUsersForResourceWithSorting(@WebParam(name = "userSearchBean", targetNamespace = "") final UserSearchBean userSearchBean,
+                                                     @WebParam(name = "from", targetNamespace = "")  final int from,
+                                                     @WebParam(name = "size", targetNamespace = "") final int size);
+    /**
      * Gets the number of Users directly entitled to this Resource
      * 
      * @param resourceId

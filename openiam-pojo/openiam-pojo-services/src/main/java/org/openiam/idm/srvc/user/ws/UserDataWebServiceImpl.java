@@ -877,6 +877,15 @@ public class UserDataWebServiceImpl implements UserDataWebService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<User> getUsersForResourceWithSorting(final UserSearchBean userSearchBean,  final int from, final int size) {
+        final List<UserEntity> entityList = userManager.getUsersForResource(userSearchBean, from, size);
+        return userDozerConverter.convertToDTOList(entityList, userSearchBean.isDeepCopy());
+    }
+
+
+
+    @Override
     public int getNumOfUsersForResource(final String resourceId, String requesterId) {
         return userManager.getNumOfUsersForResource(resourceId, requesterId);
     }

@@ -384,6 +384,6 @@ public interface ProvisionService {
             @WebParam(name = "idmAuditLog", targetNamespace = "") final IdmAuditLog idmAuditLog);
 
     @WebMethod
-    void add(@WebParam(name = "event", targetNamespace = "") ProvisionActionEvent event);
+    Response add(@WebParam(name = "event", targetNamespace = "") ProvisionActionEvent event);
 
 }
