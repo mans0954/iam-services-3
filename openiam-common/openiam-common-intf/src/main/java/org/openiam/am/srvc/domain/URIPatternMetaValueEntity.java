@@ -1,11 +1,13 @@
 package org.openiam.am.srvc.domain;
 
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Type;
 import org.openiam.am.srvc.dto.URIPatternMetaValue;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.dozer.DozerDTOCorrespondence;
 
 import javax.persistence.*;
+
 import java.io.Serializable;
 
 @Entity
@@ -39,6 +41,10 @@ public class URIPatternMetaValueEntity implements Serializable {
 	private URIPatternMetaEntity metaEntity;
     //@Transient
 	//private AttributeOperationEnum operation = AttributeOperationEnum.NO_CHANGE;
+	
+	@Column(name = "PROPAGETE_THROUGH_PROXY", nullable = false)
+	@Type(type = "yes_no")
+	private boolean propagateThroughProxy = true;
 	
 	public String getId() {
 		return id;
@@ -87,6 +93,13 @@ public class URIPatternMetaValueEntity implements Serializable {
 	public void setGroovyScript(String groovyScript) {
 		this.groovyScript = groovyScript;
 	}
+	
+	public boolean isPropagateThroughProxy() {
+		return propagateThroughProxy;
+	}
+	public void setPropagateThroughProxy(boolean propagateThroughProxy) {
+		this.propagateThroughProxy = propagateThroughProxy;
+	}
 
 	@Override
 	public int hashCode() {
@@ -100,6 +113,7 @@ public class URIPatternMetaValueEntity implements Serializable {
 		result = prime * result
 				+ ((metaEntity == null) ? 0 : metaEntity.hashCode());
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		result = prime * result + (propagateThroughProxy ? 1231 : 1237);
 		result = prime * result
 				+ ((staticValue == null) ? 0 : staticValue.hashCode());
 		return result;
@@ -139,6 +153,8 @@ public class URIPatternMetaValueEntity implements Serializable {
 				return false;
 		} else if (!name.equals(other.name))
 			return false;
+		if (propagateThroughProxy != other.propagateThroughProxy)
+			return false;
 		if (staticValue == null) {
 			if (other.staticValue != null)
 				return false;
@@ -149,13 +165,12 @@ public class URIPatternMetaValueEntity implements Serializable {
 
 	@Override
 	public String toString() {
-		return "URIPatternMetaValueEntity [id=" + id + ", name=" + name
-				+ ", staticValue=" + staticValue + ", groovyScript="
-				+ groovyScript + ", amAttribute=" + amAttribute
-				+ ", metaEntity=" + metaEntity + "]";
+		return String
+				.format("URIPatternMetaValueEntity [id=%s, name=%s, staticValue=%s, groovyScript=%s, amAttribute=%s, metaEntity=%s, propagateThroughProxy=%s]",
+						id, name, staticValue, groovyScript, amAttribute,
+						metaEntity, propagateThroughProxy);
 	}
 
-    
-
+	
 	
 }

@@ -6,6 +6,7 @@ import java.util.List;
 import org.activiti.engine.delegate.DelegateExecution;
 import org.activiti.engine.delegate.DelegateTask;
 import org.activiti.engine.delegate.TaskListener;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.openiam.bpm.activiti.delegate.core.AbstractActivitiJob;
@@ -35,8 +36,14 @@ public abstract class AbstractCandidateTaskListener extends AbstractActivitiJob 
 		
 		final Collection<String> candidateUsersIds = activitiHelper.getCandidateUserIds(execution, targetUserId, supervisorIds);
 		
-		for(final String candidateId : candidateUsersIds) {
-			delegateTask.addCandidateUser(candidateId);
+		if(candidateUsersIds != null) {
+			if(candidateUsersIds.size() == 1) {
+				delegateTask.setAssignee(candidateUsersIds.iterator().next());
+			} else {
+				for(final String candidateId : candidateUsersIds) {
+					delegateTask.addCandidateUser(candidateId);
+				}
+			}
 		}
 		
 		if(StringUtils.isNotBlank(taskName)) {

@@ -458,6 +458,7 @@ public class IdmAuditLog implements Serializable {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
+        result = prime * result + ((id == null) ? 0 : id.hashCode());
 		result = prime * result + ((action == null) ? 0 : action.hashCode());
 		result = prime * result
 				+ ((clientIP == null) ? 0 : clientIP.hashCode());
@@ -486,7 +487,12 @@ public class IdmAuditLog implements Serializable {
 		if (getClass() != obj.getClass())
 			return false;
 		IdmAuditLog other = (IdmAuditLog) obj;
-		if (action == null) {
+        if (id == null) {
+            if (other.id != null)
+                return false;
+        } else if (!id.equals(other.id))
+            return false;
+        if (action == null) {
 			if (other.action != null)
 				return false;
 		} else if (!action.equals(other.action))

@@ -19,6 +19,8 @@ import org.mule.api.context.MuleContextAware;
 import org.mule.module.client.MuleClient;
 import org.openiam.idm.srvc.batch.domain.BatchTaskEntity;
 import org.openiam.idm.srvc.batch.service.BatchService;
+import org.openiam.idm.srvc.batch.thread.BatchTaskGroovyThread;
+import org.openiam.idm.srvc.batch.thread.BatchTaskSpringThread;
 import org.openiam.script.ScriptIntegration;
 import org.openiam.thread.Sweepable;
 import org.springframework.beans.BeansException;
@@ -36,7 +38,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 @Component("batchTaskScheduler")
-public class BatchTaskScheduler implements ApplicationContextAware, InitializingBean, Sweepable {
+public class BatchTaskScheduler implements InitializingBean, Sweepable {
 	
 	private Map<String, ScheduledFuture<Void>> synchronizedBatchScheduleMap = new ConcurrentHashMap<String, ScheduledFuture<Void>>();
 	
@@ -52,15 +54,7 @@ public class BatchTaskScheduler implements ApplicationContextAware, Initializing
     @Value("${IS_PRIMARY}")
     private boolean isPrimary;
     
-    private ApplicationContext ctx;
-    
     private Date lastRun = null;
-
-	@Override
-	public void setApplicationContext(ApplicationContext applicationContext)
-			throws BeansException {
-		this.ctx = applicationContext;
-	}
 
 	@Transactional
 	public void sweep() {
@@ -168,7 +162,7 @@ public class BatchTaskScheduler implements ApplicationContextAware, Initializing
 			}
 			if(unScheduled) {
 				try {
-					final Runnable runnable = getRunnable(entity);
+					final Runnable runnable = batchService.getRunnable(entity.getId());
 					if(runnable != null) {
 						if(entity.getCronExpression() == null && entity.getRunOn() != null) {
 							if(entity.getRunOn().after(new Date())) {
@@ -176,7 +170,7 @@ public class BatchTaskScheduler implements ApplicationContextAware, Initializing
 								synchronizedBatchScheduleMap.put(entity.getId(), future);
 							}
 						} else {
-							final Trigger trigger = getCronTrigger(entity);
+							final Trigger trigger = batchService.getCronTrigger(entity.getId());
 							if(trigger != null) {
 								final ScheduledFuture<Void> future = taskScheduler.schedule(runnable, trigger);
 								synchronizedBatchScheduleMap.put(entity.getId(), future);
@@ -190,28 +184,6 @@ public class BatchTaskScheduler implements ApplicationContextAware, Initializing
 				log.warn(String.format("Could not unschedule previous task - not scheduling %s", entity));
 			}
 		}
-	}
-	
-	private Runnable getRunnable(final BatchTaskEntity entity) {
-		Runnable runnable = null;
-		if(StringUtils.isNotBlank(entity.getSpringBean()) && StringUtils.isNotBlank(entity.getSpringBeanMethod())) {
-			return new BatchTaskSpringThread(entity, ctx);
-		} else if(StringUtils.isNotBlank(entity.getTaskUrl())) {
-			return new BatchTaskGroovyThread(entity, ctx);
-		}
-		return runnable;
-	}
-	
-	private Trigger getCronTrigger(final BatchTaskEntity entity) {
-		Trigger retVal = null;
-		if(StringUtils.isNotBlank(entity.getCronExpression())) {
-			try {
-				return new CronTrigger(entity.getCronExpression());
-			} catch(Throwable e) {
-				log.error(String.format("Can't create CRON trigger from %s", entity), e);
-			}
-		}
-		return retVal;
 	}
 	
 	public void schedule(final String id) {

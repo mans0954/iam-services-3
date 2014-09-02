@@ -296,7 +296,8 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
     // }
 
     @Override
-    public List<UserEntity> getUsersForResource(final String resourceId, DelegationFilterSearchBean delegationFilter, final int from, final int size) {
+    public List<UserEntity> getUsersForResource(final String resourceId, DelegationFilterSearchBean delegationFilter,
+                                                List<SortParam> sortParamList, final int from, final int size) {
         final Criteria criteria = getUsersEntitlementCriteria(null, null, resourceId, delegationFilter);
 
         if (from > -1) {
@@ -305,6 +306,10 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
 
         if (size > -1) {
             criteria.setMaxResults(size);
+        }
+
+        if(CollectionUtils.isNotEmpty(sortParamList)){
+            addSorting(criteria, sortParamList);
         }
 
         return criteria.list();
@@ -659,41 +664,47 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
             criteria.add(Restrictions.in(getPKfieldName(), idCollection));
 
             if(CollectionUtils.isNotEmpty(searchBean.getSortBy())){
-                for (SortParam sort: searchBean.getSortBy()){
-                    OrderConstants orderDir = (sort.getOrderBy()==null)?OrderConstants.ASC:sort.getOrderBy();
 
-                    if("name".equals(sort.getSortBy())){
-                        criteria.addOrder(createOrder("firstName",orderDir));
-                        criteria.addOrder(createOrder("lastName", orderDir));
-                    } else if("phone".equals(sort.getSortBy())){
-                        criteria.createAlias("phones", "p", Criteria.LEFT_JOIN);
-                        criteria.addOrder(createOrder("p.countryCd", orderDir));
-                        criteria.addOrder(createOrder("p.areaCd", orderDir));
-                        criteria.addOrder(createOrder("p.phoneNbr", orderDir));
-                        criteria.addOrder(createOrder("p.phoneExt", orderDir));
-                    } else if("email".equals(sort.getSortBy())){
-                        criteria.createAlias("emailAddresses", "ea", Criteria.LEFT_JOIN);
-                        criteria.addOrder(createOrder("ea.emailAddress", orderDir));
-                    }else if("userStatus".equals(sort.getSortBy())){
-                        criteria.addOrder(createOrder("status",orderDir));
-                    }else if("accountStatus".equals(sort.getSortBy())){
-                        criteria.addOrder(createOrder("secondaryStatus",orderDir));
-                    }else if("principal".equals(sort.getSortBy())){
-                        criteria.createAlias("principalList", "l", Criteria.LEFT_JOIN);
-                        criteria.addOrder(createOrder("l.login", orderDir));
-                    }else if("organization".equals(sort.getSortBy())
-                             || "department".equals(sort.getSortBy())){
-                        criteria.createAlias("affiliations", "org", Criteria.LEFT_JOIN);
-                        criteria.addOrder(createOrder("org.organizationType.name", orderDir));
-                        criteria.addOrder(createOrder("org.name", orderDir));
-                    } else {
-                        criteria.addOrder(createOrder(sort.getSortBy(),orderDir));
-                    }
-                }
+                addSorting(criteria, searchBean.getSortBy());
+
 
             }
             return criteria.list();
         }
         return Collections.EMPTY_LIST;
+    }
+
+    private void addSorting(Criteria criteria, List<SortParam> sortParams) {
+        for (SortParam sort: sortParams){
+            OrderConstants orderDir = (sort.getOrderBy()==null)?OrderConstants.ASC:sort.getOrderBy();
+
+            if("name".equals(sort.getSortBy())){
+                criteria.addOrder(createOrder("firstName",orderDir));
+                criteria.addOrder(createOrder("lastName", orderDir));
+            } else if("phone".equals(sort.getSortBy())){
+                criteria.createAlias("phones", "p", Criteria.LEFT_JOIN);
+                criteria.addOrder(createOrder("p.countryCd", orderDir));
+                criteria.addOrder(createOrder("p.areaCd", orderDir));
+                criteria.addOrder(createOrder("p.phoneNbr", orderDir));
+                criteria.addOrder(createOrder("p.phoneExt", orderDir));
+            } else if("email".equals(sort.getSortBy())){
+                criteria.createAlias("emailAddresses", "ea", Criteria.LEFT_JOIN);
+                criteria.addOrder(createOrder("ea.emailAddress", orderDir));
+            }else if("userStatus".equals(sort.getSortBy())){
+                criteria.addOrder(createOrder("status",orderDir));
+            }else if("accountStatus".equals(sort.getSortBy())){
+                criteria.addOrder(createOrder("secondaryStatus",orderDir));
+            }else if("principal".equals(sort.getSortBy())){
+                criteria.createAlias("principalList", "l", Criteria.LEFT_JOIN);
+                criteria.addOrder(createOrder("l.login", orderDir));
+            }else if("organization".equals(sort.getSortBy())
+                     || "department".equals(sort.getSortBy())){
+                criteria.createAlias("affiliations", "org", Criteria.LEFT_JOIN);
+                criteria.addOrder(createOrder("org.organizationType.name", orderDir));
+                criteria.addOrder(createOrder("org.name", orderDir));
+            } else {
+                criteria.addOrder(createOrder(sort.getSortBy(),orderDir));
+            }
+        }
     }
 }

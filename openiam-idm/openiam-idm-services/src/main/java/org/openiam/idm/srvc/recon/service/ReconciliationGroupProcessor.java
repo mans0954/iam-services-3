@@ -41,7 +41,7 @@ import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.provision.dto.ProvisionGroup;
 import org.openiam.provision.service.AbstractProvisioningService;
 import org.openiam.provision.service.ConnectorAdapter;
-import org.openiam.provision.service.GroupProvisionService;
+import org.openiam.provision.service.ObjectProvisionService;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleGroup;
 import org.openiam.script.ScriptIntegration;
@@ -108,7 +108,7 @@ public class ReconciliationGroupProcessor implements ReconciliationProcessor {
 
     @Autowired
     @Qualifier("groupProvision")
-    private GroupProvisionService provisionService;
+    private ObjectProvisionService provisionService;
 
     @Autowired
     @Qualifier("groupDozerConverter")

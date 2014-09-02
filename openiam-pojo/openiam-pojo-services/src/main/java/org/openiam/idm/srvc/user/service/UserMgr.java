@@ -8,9 +8,11 @@ import org.apache.commons.logging.LogFactory;
 import org.openiam.authmanager.service.AuthorizationManagerService;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.BaseConstants;
+import org.openiam.base.OrderConstants;
 import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.SearchMode;
+import org.openiam.base.ws.SortParam;
 import org.openiam.core.dao.UserKeyDao;
 import org.openiam.dozer.converter.*;
 import org.openiam.exception.BasicDataServiceException;
@@ -1358,6 +1360,7 @@ public class UserMgr implements UserDataService {
     // }
 
     @Override
+    @Transactional
     public void evict(Object object) {
         if (object instanceof EmailAddressEntity) {
             emailAddressDao.evict((EmailAddressEntity) object);
@@ -1492,8 +1495,27 @@ public class UserMgr implements UserDataService {
     @Override
     @Transactional(readOnly = true)
     public List<UserEntity> getUsersForResource(String resourceId, String requesterId, int from, int size) {
-        DelegationFilterSearchBean delegationFilter = this.getDelegationFilterForUserSearch(requesterId);
-        return userDao.getUsersForResource(resourceId, delegationFilter, from, size);
+//        DelegationFilterSearchBean delegationFilter = this.getDelegationFilterForUserSearch(requesterId);
+//        return userDao.getUsersForResource(resourceId, delegationFilter, from, size);
+        UserSearchBean userSearchBean = new UserSearchBean();
+        userSearchBean.setRequesterId(requesterId);
+        userSearchBean.addResourceId(resourceId);
+
+        List<SortParam> sortParamList = new ArrayList<>();
+        sortParamList.add( new SortParam(OrderConstants.ASC, "name"));
+        userSearchBean.setSortBy(sortParamList);
+
+
+        return getUsersForResource(userSearchBean, from,size);
+    }
+    @Override
+    @Transactional(readOnly = true)
+    public List<UserEntity> getUsersForResource(UserSearchBean userSearchBean, int from, int size){
+        DelegationFilterSearchBean delegationFilter = this.getDelegationFilterForUserSearch(userSearchBean.getRequesterId());
+
+        String resourceId = userSearchBean.getResourceIdSet().iterator().next();
+
+        return userDao.getUsersForResource(resourceId, delegationFilter, userSearchBean.getSortBy(), from, size);
     }
 
     @Override
@@ -2221,6 +2243,8 @@ public class UserMgr implements UserDataService {
     }
 
 
+    @Override
+    @Transactional(readOnly = true)
     public boolean validateSearchBean(UserSearchBean searchBean) throws BasicDataServiceException {
         if (StringUtils.isNotBlank(searchBean.getRequesterId())) {
             Map<String, UserAttribute> requesterAttributes = this.getUserAttributesDto(searchBean.getRequesterId());
@@ -2228,6 +2252,9 @@ public class UserMgr implements UserDataService {
         }
         return true;
     }
+
+    @Override
+    @Transactional(readOnly = true)
     public boolean validateSearchBean(UserSearchBean searchBean, Map<String, UserAttribute> requesterAttributes) throws BasicDataServiceException {
         if (requesterAttributes!=null && CollectionUtils.isNotEmpty(requesterAttributes.keySet())) {
 

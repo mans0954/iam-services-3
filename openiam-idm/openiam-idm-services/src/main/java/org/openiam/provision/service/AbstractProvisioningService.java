@@ -1,13 +1,18 @@
 package org.openiam.provision.service;
 
+import org.apache.commons.beanutils.BeanUtils;
+import org.apache.commons.beanutils.ConvertUtils;
+import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.jackson.map.util.BeanUtil;
 import org.mule.api.MuleException;
 import org.mule.module.client.MuleClient;
 import org.mule.util.StringUtils;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.SysConfiguration;
+import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.connector.type.ConnectorDataException;
@@ -92,6 +97,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 /**
@@ -471,7 +478,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
 
     protected int callPreProcessor(String operation, ProvisionUser pUser, Map<String, Object> bindingMap ) {
 
-        ProvisionServicePreProcessor addPreProcessScript = null;
+        ProvisionServicePreProcessor<ProvisionUser> addPreProcessScript = null;
         if ( pUser != null) {
             log.info("======= callPreProcessor: isSkipPreprocessor="+pUser.isSkipPreprocessor()+", ");
             if (!pUser.isSkipPreprocessor() &&
@@ -490,7 +497,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
 
     protected int callPostProcessor(String operation, ProvisionUser pUser, Map<String, Object> bindingMap ) {
 
-        ProvisionServicePostProcessor addPostProcessScript;
+        ProvisionServicePostProcessor<ProvisionUser> addPostProcessScript;
 
         if ( pUser != null) {
             if (!pUser.isSkipPostProcessor() &&
@@ -505,36 +512,36 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         return ProvisioningConstants.SUCCESS;
     }
 
-    protected PreProcessor createPreProcessScript(String scriptName, Map<String, Object> bindingMap) {
+    protected PreProcessor<ProvisionUser> createPreProcessScript(String scriptName, Map<String, Object> bindingMap) {
         try {
-            return (PreProcessor) scriptRunner.instantiateClass(bindingMap, scriptName);
+            return (PreProcessor<ProvisionUser>) scriptRunner.instantiateClass(bindingMap, scriptName);
         } catch (Exception ce) {
             log.error(ce);
             return null;
         }
     }
 
-    protected PostProcessor createPostProcessScript(String scriptName, Map<String, Object> bindingMap) {
+    protected PostProcessor<ProvisionUser> createPostProcessScript(String scriptName, Map<String, Object> bindingMap) {
         try {
-            return (PostProcessor) scriptRunner.instantiateClass(bindingMap, scriptName);
+            return (PostProcessor<ProvisionUser>) scriptRunner.instantiateClass(bindingMap, scriptName);
         } catch (Exception ce) {
             log.error(ce);
             return null;
         }
     }
 
-    protected ProvisionServicePreProcessor createProvPreProcessScript(String scriptName, Map<String, Object> bindingMap) {
+    protected ProvisionServicePreProcessor<ProvisionUser> createProvPreProcessScript(String scriptName, Map<String, Object> bindingMap) {
         try {
-            return (ProvisionServicePreProcessor) scriptRunner.instantiateClass(bindingMap, scriptName);
+            return (ProvisionServicePreProcessor<ProvisionUser>) scriptRunner.instantiateClass(bindingMap, scriptName);
         } catch (Exception ce) {
             log.error(ce);
             return null;
         }
     }
 
-    protected ProvisionServicePostProcessor createProvPostProcessScript(String scriptName, Map<String, Object> bindingMap) {
+    protected ProvisionServicePostProcessor<ProvisionUser> createProvPostProcessScript(String scriptName, Map<String, Object> bindingMap) {
         try {
-            return (ProvisionServicePostProcessor) scriptRunner.instantiateClass(bindingMap, scriptName);
+            return (ProvisionServicePostProcessor<ProvisionUser>) scriptRunner.instantiateClass(bindingMap, scriptName);
         } catch (Exception ce) {
             log.error(ce);
             return null;
@@ -1004,10 +1011,11 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     UserAttributeEntity entity = userEntity.getUserAttributes().get(entry.getKey());
                     if (entity != null) {
                         String oldValue = entity.getValue();
-                        if (entry.getValue().getIsMultivalued()) {
-                            entity.setValues(entry.getValue().getValues());
-                        } else {
-                            entity.setValue(entry.getValue().getValue());
+                        UserAttributeEntity e = userAttributeDozerConverter.convertToEntity(entry.getValue(), true);
+                        try {
+                            PropertyUtils.copyProperties(entity, e);
+                        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException ex) {
+                            log.error("Attribute copying failed", ex);
                         }
                         // Audit Log -----------------------------------------------------------------------------------
                         IdmAuditLog auditLog = new IdmAuditLog();
@@ -1350,17 +1358,20 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                                     e.setOrigPrincipalName(en.getLogin());
                                 }
                                 it.remove();
-                                userEntity.getPrincipalList().remove(en);
-                                loginManager.evict(en);
+                                String logOld = en.toString();
                                 LoginEntity entity = loginDozerConverter.convertToEntity(e, false);
-                                userEntity.getPrincipalList().add(entity);
+                                try {
+                                    PropertyUtils.copyProperties(en, entity);
+                                } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException ex) {
+                                    log.error("Login copying failed", ex);
+                                }
                                 // Audit Log ---------------------------------------------------
                                 IdmAuditLog auditLog = new IdmAuditLog();
                                 auditLog.setAction(AuditAction.REPLACE_PRINCIPAL.value());
                                 Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
                                 String loginStr = login != null ? login.getLogin() : StringUtils.EMPTY;
                                 auditLog.setTargetUser(pUser.getId(), loginStr);
-                                auditLog.addCustomRecord(PolicyMapObjectTypeOptions.PRINCIPAL.name(), "old= '"+en.toString()+"' new='"+e.toString()+"'");
+                                auditLog.addCustomRecord(PolicyMapObjectTypeOptions.PRINCIPAL.name(), "old= '"+logOld+"' new='"+e.toString()+"'");
                                 parentLog.addChild(auditLog);
                                 // --------------------------------------------------------------
                                 break;
@@ -1645,12 +1656,15 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
     }
 
     @Override
-    public void add(ProvisionActionEvent event) {
+    public Response add(ProvisionActionEvent event) {
         Map<String, Object> bindingMap = new HashMap<String, Object>();
+        Response response = new Response(ResponseStatus.SUCCESS);
+        response.setResponseValue(ProvisionServiceEventProcessor.CONTINUE);
         ProvisionServiceEventProcessor eventProcessorScript = getEventProcessor(bindingMap, eventProcessor);
         if (eventProcessorScript != null) {
-            eventProcessorScript.process(event);
+            response = eventProcessorScript.process(event);
         }
+        return response;
     }
 
     private ProvisionServiceEventProcessor getEventProcessor(Map<String, Object> bindingMap, String scriptName) {

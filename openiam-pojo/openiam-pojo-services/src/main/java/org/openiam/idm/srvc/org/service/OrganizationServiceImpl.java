@@ -227,10 +227,14 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
                 }
                 entity.getAdminResource().setCoorelatedName(entity.getName());
                 entity.setApproverAssociations(dbOrg.getApproverAssociations());
+                entity.setLstUpdate(Calendar.getInstance().getTime());
+                entity.setLstUpdatedBy(requestorId);
             }
         } else {
         	entity.setAdminResource(getNewAdminResource(entity, requestorId));
             mergeParents(entity, null);
+            entity.setCreateDate(Calendar.getInstance().getTime());
+            entity.setCreatedBy(requestorId);
             orgDao.save(entity);
             entity.addApproverAssociation(createDefaultApproverAssociations(entity, requestorId));
         }

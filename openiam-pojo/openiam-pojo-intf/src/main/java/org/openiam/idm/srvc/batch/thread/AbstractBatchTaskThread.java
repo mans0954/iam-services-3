@@ -1,4 +1,4 @@
-package org.openiam.idm.srvc.batch;
+package org.openiam.idm.srvc.batch.thread;
 
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;

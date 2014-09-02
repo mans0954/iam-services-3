@@ -66,6 +66,8 @@ public class RejectEntitlementsNotifierDelegate extends AbstractNotificationDele
 		NOTIFICATION_MAP.put(ActivitiRequestType.REMOVE_ROLE_FROM_ROLE, "REMOVE_ROLE_FROM_ROLE_REJECT");
 		NOTIFICATION_MAP.put(ActivitiRequestType.DISENTITLE_RESOURCE_FROM_ROLE, "DISENTITLE_RESOURCE_FROM_ROLE_REJECT");
 		NOTIFICATION_MAP.put(ActivitiRequestType.REMOVE_RESOURCE_FROM_RESOURCE, "REMOVE_RESOURCE_FROM_RESOURCE_REJECT");
+		
+		NOTIFICATION_MAP.put(ActivitiRequestType.RESOURCE_CERTIFICATION, "RESOURCE_CERTIFICATION_REJECT");
 	}
 	
 	public RejectEntitlementsNotifierDelegate() {
