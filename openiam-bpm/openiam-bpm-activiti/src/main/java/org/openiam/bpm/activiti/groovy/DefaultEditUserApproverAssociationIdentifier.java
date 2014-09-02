@@ -17,6 +17,7 @@ public class DefaultEditUserApproverAssociationIdentifier extends AbstractApprov
 		request = (UserProfileRequestModel)bindingMap.get("REQUEST");
         idmAuditLog = (IdmAuditLog)bindingMap.get("BUILDER");
 		super.init(bindingMap);
+		postInit();
 		calculateApprovers();
 	}
 	
