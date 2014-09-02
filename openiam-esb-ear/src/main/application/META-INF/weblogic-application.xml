@@ -10,5 +10,6 @@
         <wls:package-name>antlr.*</wls:package-name>
         <wls:package-name>org.apache.commons.codec.*</wls:package-name>
         <wls:package-name>org.apache.commons.lang.*</wls:package-name>
+        <wls:package-name>org.opensaml.*</wls:package-name>
     </wls:prefer-application-packages>
 </wls:weblogic-application>

@@ -30,12 +30,46 @@
 		<version>2.9.1</version>
 		<configuration>
 		    <version>5</version>
+            <initializeInOrder>true</initializeInOrder>
 		    <defaultLibBundleDir>lib</defaultLibBundleDir>
                     <modules>
                         <webModule>
                             <groupId>org.openiam</groupId>
                             <artifactId>openiam-esb</artifactId>
-                            <contextRoot>/openiam-esb</contextRoot>
+                            <contextRoot>/idmsrvc</contextRoot>
+                        </webModule>
+
+
+                        <webModule>
+                            <groupId>org.openiam</groupId>
+                            <artifactId>openiam-idp</artifactId>
+                            <contextRoot>/idp</contextRoot>
+                        </webModule>
+                        <webModule>
+                            <groupId>org.openiam</groupId>
+                            <artifactId>openiam-selfservice</artifactId>
+                            <contextRoot>/selfservice</contextRoot>
+                        </webModule>
+                        <webModule>
+                            <groupId>org.openiam</groupId>
+                            <artifactId>openiam-ui-static</artifactId>
+                            <contextRoot>/openiam-ui-static</contextRoot>
+                        </webModule>
+
+                        <webModule>
+                            <groupId>org.openiam</groupId>
+                            <artifactId>openiam-webconsole-am</artifactId>
+                            <contextRoot>/webconsole-am</contextRoot>
+                        </webModule>
+                        <webModule>
+                            <groupId>org.openiam</groupId>
+                            <artifactId>openiam-webconsole-idm</artifactId>
+                            <contextRoot>/webconsole-idm</contextRoot>
+                        </webModule>
+                        <webModule>
+                            <groupId>org.openiam</groupId>
+                            <artifactId>openiam-webconsole-web</artifactId>
+                            <contextRoot>/webconsole</contextRoot>
                         </webModule>
                     </modules>
                 </configuration>
@@ -45,10 +79,59 @@
 
     <dependencies>
         <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.openiam</groupId>
             <artifactId>openiam-esb</artifactId>
             <version>${openiam.esb.version}</version>
             <type>war</type>
+        </dependency>
+
+
+        <dependency>
+            <groupId>org.openiam</groupId>
+            <artifactId>openiam-idp</artifactId>
+            <version>${openiam.esb.version}</version>
+            <type>war</type>
+
+        </dependency>
+        <dependency>
+            <groupId>org.openiam</groupId>
+            <artifactId>openiam-selfservice</artifactId>
+            <version>${openiam.esb.version}</version>
+            <type>war</type>
+
+        </dependency>
+        <dependency>
+            <groupId>org.openiam</groupId>
+            <artifactId>openiam-ui-static</artifactId>
+            <version>${openiam.esb.version}</version>
+            <type>war</type>
+
+        </dependency>
+        <dependency>
+            <groupId>org.openiam</groupId>
+            <artifactId>openiam-webconsole-web</artifactId>
+            <version>${openiam.esb.version}</version>
+            <type>war</type>
+
+        </dependency>
+        <dependency>
+            <groupId>org.openiam</groupId>
+            <artifactId>openiam-webconsole-am</artifactId>
+            <version>${openiam.esb.version}</version>
+            <type>war</type>
+
+        </dependency>
+        <dependency>
+            <groupId>org.openiam</groupId>
+            <artifactId>openiam-webconsole-idm</artifactId>
+            <version>${openiam.esb.version}</version>
+            <type>war</type>
+
         </dependency>
 
     </dependencies>
