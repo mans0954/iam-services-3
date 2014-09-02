@@ -9,6 +9,7 @@ import org.openiam.provision.type.ExtensibleAttribute;
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebService;
+import javax.xml.bind.annotation.XmlSeeAlso;
 import java.util.List;
 
 /**
@@ -19,6 +20,7 @@ import java.util.List;
  *
  */
 @WebService(targetNamespace = "http://www.openiam.org/service/provision")
+@XmlSeeAlso(ProvisionGroup.class)
 public interface ObjectProvisionService<T> {
     /**
      *  The add operation enables a requester to create a new object on the

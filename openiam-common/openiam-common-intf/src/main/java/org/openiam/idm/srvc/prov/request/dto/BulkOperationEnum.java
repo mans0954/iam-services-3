@@ -17,6 +17,8 @@ public enum BulkOperationEnum {
     ENABLE_USER("ENABLE_USER", "Enable"),
     @XmlEnumValue("DISABLE_USER")
     DISABLE_USER("DISABLE_USER", "Disable"),
+    @XmlEnumValue("RESET_USER_PASSWORD")
+    RESET_USER_PASSWORD("RESET_USER_PASSWORD", "Reset Password"),
     @XmlEnumValue("ADD_ENTITLEMENT")
     ADD_ENTITLEMENT("ADD_ENTITLEMENT", "Add"),
     @XmlEnumValue("DELETE_ENTITLEMENT")

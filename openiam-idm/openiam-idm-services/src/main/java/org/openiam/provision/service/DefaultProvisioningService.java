@@ -510,7 +510,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     if (res != null) {
                         String preProcessScript = getResProperty(res.getResourceProps(), "PRE_PROCESS");
                         if (preProcessScript != null && !preProcessScript.isEmpty()) {
-                            PreProcessor ppScript = createPreProcessScript(preProcessScript, bindingMap);
+                            PreProcessor<ProvisionUser> ppScript = createPreProcessScript(preProcessScript, bindingMap);
                             if (ppScript != null) {
                                 executePreProcess(ppScript, bindingMap, pUser, "DELETE");
                             }
@@ -555,7 +555,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS, null);
                 String postProcessScript = getResProperty(res.getResourceProps(), "POST_PROCESS");
                 if (postProcessScript != null && !postProcessScript.isEmpty()) {
-                    PostProcessor ppScript = createPostProcessScript(postProcessScript, bindingMap);
+                    PostProcessor<ProvisionUser> ppScript = createPostProcessScript(postProcessScript, bindingMap);
                     if (ppScript != null) {
                         executePostProcess(ppScript, bindingMap, pUser, "DELETE", connectorSuccess);
                     }
@@ -1350,14 +1350,18 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see
      * org.openiam.provision.service.ProvisionService#resetPassword(org.openiam
      * .provision.dto.PasswordSync)
      */
     @Override
-    @Transactional
     public PasswordResponse resetPassword(PasswordSync passwordSync) {
+        return resetPassword(passwordSync, null);
+    }
+
+    @Transactional
+    public PasswordResponse resetPassword(PasswordSync passwordSync, IdmAuditLog auditLog) {
         log.debug("----resetPassword called.------");
         final IdmAuditLog idmAuditLog = new IdmAuditLog();
         List<LoginEntity> loginEntityList = loginManager.getLoginByUser(passwordSync.getRequestorId());
@@ -1365,6 +1369,10 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         idmAuditLog.setRequestorPrincipal(primaryIdentity.getLogin());
         idmAuditLog.setRequestorUserId(passwordSync.getRequestorId());
         idmAuditLog.setAction(AuditAction.PROVISIONING_RESETPASSWORD.value());
+
+        if (auditLog != null) {
+            auditLog.addChild(idmAuditLog);
+        }
 
         final PasswordResponse response = new PasswordResponse(ResponseStatus.SUCCESS);
         try {
@@ -1497,7 +1505,9 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 }
             }
         } finally {
-            auditLogService.enqueue(idmAuditLog);
+            if (auditLog == null) {
+                auditLogService.enqueue(idmAuditLog);
+            }
         }
 
         return response;
@@ -2164,6 +2174,15 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                             break;
                                         case DISABLE_USER:
                                             res = disableUser(userId, true, requestorId, idmAuditLog);
+                                            break;
+                                        case RESET_USER_PASSWORD:
+                                            final PasswordSync pswdSync = new PasswordSync();
+                                            pswdSync.setManagedSystemId(null);
+                                            pswdSync.setPassword(PasswordGenerator.generatePassword(16));
+                                            pswdSync.setUserId(userId);
+                                            pswdSync.setRequestorLogin(lRequestor.getLogin());
+                                            pswdSync.setRequestorId(requestorId);
+                                            res = resetPassword(pswdSync, idmAuditLog);
                                             break;
                                     }
                                     if (res.isFailure()) {
