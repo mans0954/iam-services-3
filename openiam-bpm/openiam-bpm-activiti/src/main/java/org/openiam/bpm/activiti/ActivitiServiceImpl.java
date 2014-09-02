@@ -359,17 +359,11 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
         idmAuditLog.setSource(AuditSource.WORKFLOW.value());
 		try {
             idmAuditLog.addAttributeAsJson(AuditAttributeName.REQUEST, request, jacksonMapper);
-			
-			if(request == null) {
-				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
-			}
-			
+		
 			pageTemplateService.validate(request);
 			validateUserRequest(request);
 			
 			final String description = String.format("Edit User %s", request.getUser().getDisplayName());
-			
-			final Date currentDate = new Date();
 			
 			final Map<String, Object> bindingMap = new HashMap<String, Object>();
 			bindingMap.put("REQUEST", request);

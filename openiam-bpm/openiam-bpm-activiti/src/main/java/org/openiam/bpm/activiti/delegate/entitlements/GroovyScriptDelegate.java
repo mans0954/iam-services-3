@@ -7,6 +7,7 @@ import org.activiti.engine.delegate.DelegateExecution;
 import org.activiti.engine.impl.el.FixedValue;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.bpm.activiti.delegate.core.AbstractActivitiJob;
+import org.openiam.bpm.activiti.groovy.AbstractGroovyDelegate;
 import org.openiam.script.ScriptIntegration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -36,6 +37,8 @@ public class GroovyScriptDelegate extends AbstractActivitiJob {
 		final String script = StringUtils.trimToNull(scriptSrc.getExpressionText());
 		
 		final Map<String, Object> bindingMap = new HashMap<>();
-		final Object retVal = scriptRunner.execute(bindingMap, script);
+		final AbstractGroovyDelegate object = (AbstractGroovyDelegate)scriptRunner.instantiateClass(null, script);
+		object.init(bindingMap);
+		object.execute(execution);
 	}
 }
