@@ -261,7 +261,7 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
 			}
 		}
 		
-		final LanguageEntity targetLanguage = getLanguage(request);
+		final LanguageEntity targetLanguage = getLanguage(request.getLanguageId());
 		boolean isAdminRequest = request.isAdminRequest();
 		
 		final String userId = StringUtils.trimToNull(request.getUserId());
@@ -367,28 +367,12 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
 		return (CollectionUtils.isNotEmpty(resultList)) ? resultList.get(0) : null;
 	}
 	
-	private LanguageEntity getLanguage(final TemplateRequest request) {
-		return getLanguage(request.getLanguageId(), request.getLanguageCode(), request.getLocaleName());
-	}
-	
-	private LanguageEntity getLanguage(final UserProfileRequestModel request) {
-		return getLanguage(request.getLanguageId(), request.getLanguageCode(), request.getLocale());
-	}
-	
-	private LanguageEntity getLanguage(final String languageId, final String languageCode, final String localeName) {
+	private LanguageEntity getLanguage(final String languageId) {
 		LanguageEntity entity = null;
 		if(StringUtils.isNotBlank(languageId)) {
 			entity = languageDAO.findById(languageId);
-		} else {
-			if(StringUtils.isNotBlank(languageCode)) {
-				entity = languageDAO.getByCode(languageCode);
-			}
-			
-			if(entity == null && StringUtils.isNotBlank(localeName)) {
-				entity = languageDAO.getByLocale(localeName);
-			}
-				
 		}
+		
 		if(entity == null) {
 			entity = languageDAO.getDefaultLanguage();
 		}
@@ -435,7 +419,7 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
 	public void validate(UserProfileRequestModel request) throws PageTemplateException {
 		final PageTempate pageTemplate = request.getPageTemplate();
 		final String userId = (request.getUser() != null) ? request.getUser().getId() : null;
-		final LanguageEntity targetLanguage = getLanguage(request);
+		final LanguageEntity targetLanguage = getLanguage(request.getLanguageId());
 	
 		if(pageTemplate != null) {
 			if(request.getUser() == null || targetLanguage == null) {
@@ -533,7 +517,7 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
 		
 		final PageTempate pageTemplate = request.getPageTemplate();
 		final String userId = request.getUser().getId();
-		final LanguageEntity targetLanguage = getLanguage(request);
+		final LanguageEntity targetLanguage = getLanguage(request.getLanguageId());
 		
 		if(pageTemplate != null) {
 			if(request.getUser() == null || targetLanguage == null) {
