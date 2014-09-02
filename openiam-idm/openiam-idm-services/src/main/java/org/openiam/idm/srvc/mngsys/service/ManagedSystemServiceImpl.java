@@ -160,7 +160,8 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
     	resource.setIsPublic(false);
     	resource.setCoorelatedName(sys.getName());
 
-    	resourceDAO.save(resource);
+    	resourceService.save(resource, null);
+    	//resourceDAO.save(resource);
     	entity.setResourceId(resource.getId());
 
         managedSysDAO.save(entity);
@@ -176,20 +177,20 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
     public void updateManagedSys(ManagedSysDto sys) {
         final ManagedSysEntity entity = managedSysDozerConverter.convertToEntity(sys, true);
     	ResourceEntity resource = null;
-    	if(org.apache.commons.lang.StringUtils.isEmpty(entity.getResourceId())) {
+    	if(StringUtils.isEmpty(entity.getResourceId())) {
     		resource = new ResourceEntity();
     		resource.setName(String.format("%s_%S", entity.getName(), System.currentTimeMillis()));
     		resource.setResourceType(resourceTypeDAO.findById(resourceTypeId));
     		resource.setIsPublic(false);
     		resource.setCoorelatedName(sys.getName());
-    		resourceDAO.save(resource);
+    		resourceService.save(resource, null);
     		entity.setResourceId(resource.getId());
             //resource.setManagedSysId(sys.getManagedSysId());
     	} else {
-    		resource = resourceDAO.findById(entity.getResourceId());
+    		resource = resourceService.findResourceById(entity.getResourceId());
     		if(resource != null) {
     			resource.setCoorelatedName(entity.getName());
-    			resourceDAO.update(resource);
+    			resourceService.save(resource, null);
     		}
     	}
         managedSysDAO.save(entity);
