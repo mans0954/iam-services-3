@@ -61,7 +61,7 @@ public class IdmAuditLogDAOImpl extends BaseDaoImpl<IdmAuditLogEntity, String> i
         if (size > -1) {
             criteria.setMaxResults(size);
         }
-        criteria.addOrder(Order.desc("timestamp"));
+        //CONFLICT with DISTINCT criteria.addOrder(Order.desc("timestamp"));
         criteria.setProjection(Projections.distinct(Projections.property("id")));
 
         List<String> resultList =  (List<String>)criteria.list();
