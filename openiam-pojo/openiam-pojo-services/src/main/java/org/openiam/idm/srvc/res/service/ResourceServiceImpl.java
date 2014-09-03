@@ -3,6 +3,8 @@ package org.openiam.idm.srvc.res.service;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
+import org.hibernate.collection.PersistentCollection;
+import org.hibernate.collection.PersistentSet;
 import org.openiam.am.srvc.dao.AuthProviderDao;
 import org.openiam.am.srvc.dao.ContentProviderDao;
 import org.openiam.am.srvc.dao.URIPatternDao;
@@ -12,6 +14,7 @@ import org.openiam.am.srvc.domain.URIPatternEntity;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.dozer.converter.ResourceDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
+import org.openiam.hibernate.HibernateUtils;
 import org.openiam.idm.searchbeans.ResourceSearchBean;
 import org.openiam.idm.searchbeans.ResourceTypeSearchBean;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
@@ -197,7 +200,15 @@ public class ResourceServiceImpl implements ResourceService {
     }
 
     private void mergeAttribute(final ResourceEntity bean, final ResourceEntity dbObject) {
-
+    	
+    	/* 
+    	 * if the incoming bean is from the database, there is no reason to do any merging 
+    	 * This was written to avoid merging  of attributes when you call findById on the resourceService,
+    	 * and then save the same object (see ManagedSystemServiceImpl.updateMangagedSys)
+    	 */
+    	if(bean.getResourceProps() != null && bean.getResourceProps() instanceof PersistentCollection) {
+    		return;
+    	}
         Set<ResourcePropEntity> beanProps = (bean.getResourceProps() != null) ? bean.getResourceProps() : new HashSet<ResourcePropEntity>();
         Set<ResourcePropEntity> dbProps = (dbObject.getResourceProps() != null) ? new HashSet<ResourcePropEntity>(dbObject.getResourceProps()) : new HashSet<ResourcePropEntity>();
 

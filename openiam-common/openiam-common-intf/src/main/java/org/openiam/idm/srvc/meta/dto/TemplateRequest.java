@@ -8,22 +8,18 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "TemplateRequest", 
 	propOrder = { 
 		"userId",
-		"localeName",
 		"patternId",
 		"templateId",
 		"languageId",
-		"languageCode",
 		"isAdminRequest",
 		"requestURI"
 })
 public class TemplateRequest {
 
 	private String userId;
-	private String localeName;
 	private String languageId;
 	private String patternId;
 	private String templateId;
-	private String languageCode;
 	private String requestURI;
 	private boolean isAdminRequest;
 	public String getUserId() {
@@ -32,12 +28,7 @@ public class TemplateRequest {
 	public void setUserId(String userId) {
 		this.userId = userId;
 	}
-	public String getLocaleName() {
-		return localeName;
-	}
-	public void setLocaleName(String localeName) {
-		this.localeName = localeName;
-	}
+	
 	public String getPatternId() {
 		return patternId;
 	}
@@ -62,12 +53,6 @@ public class TemplateRequest {
 	}
 	public void setLanguageId(String languageId) {
 		this.languageId = languageId;
-	}
-	public String getLanguageCode() {
-		return languageCode;
-	}
-	public void setLanguageCode(String languageCode) {
-		this.languageCode = languageCode;
 	}
 	public String getRequestURI() {
 		return requestURI;
