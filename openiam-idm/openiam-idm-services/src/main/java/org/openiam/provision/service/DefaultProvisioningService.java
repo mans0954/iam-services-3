@@ -48,6 +48,7 @@ import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
 import org.openiam.idm.srvc.auth.dto.ProvLoginStatusEnum;
+import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
@@ -94,6 +95,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.jws.WebParam;
 import javax.jws.WebService;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -2192,6 +2194,60 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                             pswdSync.setRequestorLogin(lRequestor.getLogin());
                                             pswdSync.setRequestorId(requestorId);
                                             res = resetPassword(pswdSync, idmAuditLog);
+                                            break;
+                                        case NOTIFY_USER:
+                                            Map<String, Object> bindingMap = new HashMap<String, Object>();
+                                            bindingMap.put("firstName", pUser.getFirstName());
+                                            bindingMap.put("lastName", pUser.getLastName());
+                                            Login primaryIdentity = UserUtils.getUserManagedSysIdentity(sysConfiguration.getDefaultManagedSysId(), pUser.getPrincipalList());
+                                            bindingMap.put("login", primaryIdentity.getLogin());
+                                            if (primaryIdentity != null) {
+                                                String decPassword = null;
+                                                String password = primaryIdentity.getPassword();
+                                                if (password != null) {
+                                                    try {
+                                                        decPassword = loginManager.decryptPassword(primaryIdentity.getUserId(), password);
+                                                    } catch (Exception e) {
+                                                    }
+                                                    bindingMap.put("password", decPassword);
+                                                }
+                                            }
+
+                                            String subject = null;
+                                            String text = null;
+                                            if (ob.getProperties().containsKey("subject")) {
+                                                try {
+                                                    subject = scriptRunner.evaluate(bindingMap, (String)ob.getProperties().get("subject"));
+                                                } catch (IOException ioe) {
+                                                    log.error("Error in subject string = '", ioe);
+                                                }
+                                            }
+                                            if (ob.getProperties().containsKey("subject")) {
+                                                try {
+                                                    text = scriptRunner.evaluate(bindingMap, (String)ob.getProperties().get("text"));
+                                                } catch (IOException ioe) {
+                                                    log.error("Error in text string = '", ioe);
+                                                }
+                                            }
+
+                                            final IdmAuditLog childAuditLog = new IdmAuditLog();
+                                            childAuditLog.setRequestorUserId(requestorId);
+                                            childAuditLog.setRequestorPrincipal(lRequestor.getLogin());
+                                            childAuditLog.setAction(AuditAction.USER_NOTIFY.value());
+                                            childAuditLog.setTargetUser(pUser.getId(), primaryIdentity.getLogin());
+
+                                            EmailAddress emailAddress = pUser.getPrimaryEmailAddress();
+                                            if (emailAddress != null && StringUtils.isNotBlank(emailAddress.getEmailAddress())) {
+                                                mailService.sendEmail(null, emailAddress.getEmailAddress(), null, subject, text, null, false);
+                                                res = new Response(ResponseStatus.SUCCESS);
+                                                childAuditLog.setAuditDescription("Notification sent to " + emailAddress.getEmailAddress());
+                                                childAuditLog.succeed();
+                                            } else {
+                                                res = new Response(ResponseStatus.FAILURE);
+                                                childAuditLog.setFailureReason("Email address wasn't found for user " + primaryIdentity.getLogin());
+                                                childAuditLog.fail();
+                                            }
+                                            idmAuditLog.addChild(childAuditLog);
                                             break;
                                     }
                                     if (res.isFailure()) {

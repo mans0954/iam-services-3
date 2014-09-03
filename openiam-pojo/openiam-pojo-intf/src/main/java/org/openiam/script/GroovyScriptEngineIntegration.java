@@ -19,6 +19,8 @@
 package org.openiam.script;
 
 import groovy.lang.*;
+import groovy.text.GStringTemplateEngine;
+import groovy.text.SimpleTemplateEngine;
 import groovy.util.GroovyScriptEngine;
 import groovy.util.ResourceException;
 import groovy.util.ScriptException;
@@ -59,10 +61,23 @@ public class GroovyScriptEngineIntegration implements ScriptIntegration, Applica
     protected static final Log log = LogFactory.getLog(GroovyScriptEngineIntegration.class);
 
     private GroovyScriptEngine gse = null;
+    private SimpleTemplateEngine engine = null;
     
     @PostConstruct
     public void init() throws IOException {
     	gse = new GroovyScriptEngine(new String[]{scriptRoot});
+        engine = new SimpleTemplateEngine();
+    }
+
+    @Override
+    public String evaluate(Map<String, Object> bindingMap, String gstring) throws IOException {
+        try {
+            return engine.createTemplate(gstring).make(bindingMap).toString();
+        } catch (Exception e){
+            String msg = "Could not evaluate string " + gstring;
+            log.error(msg, e);
+            throw new IOException(msg, e);
+        }
     }
     
     @Override

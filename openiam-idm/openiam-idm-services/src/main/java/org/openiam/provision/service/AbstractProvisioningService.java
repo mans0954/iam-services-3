@@ -58,6 +58,7 @@ import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.idm.srvc.mngsys.ws.ProvisionConnectorWebService;
 import org.openiam.idm.srvc.msg.dto.NotificationParam;
 import org.openiam.idm.srvc.msg.dto.NotificationRequest;
+import org.openiam.idm.srvc.msg.service.MailService;
 import org.openiam.idm.srvc.msg.service.MailTemplateParameters;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.dto.Organization;
@@ -189,6 +190,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
     protected UserAttributeDozerConverter userAttributeDozerConverter;
     @Autowired
     protected PhoneDozerConverter phoneDozerConverter;
+    @Autowired
+    protected MailService mailService;
     @Autowired
     protected EmailAddressDozerConverter emailAddressDozerConverter;
     @Autowired
