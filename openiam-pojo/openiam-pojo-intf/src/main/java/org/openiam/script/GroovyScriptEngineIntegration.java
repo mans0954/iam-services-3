@@ -20,12 +20,10 @@ package org.openiam.script;
 
 import groovy.lang.*;
 import groovy.text.GStringTemplateEngine;
-import groovy.text.SimpleTemplateEngine;
 import groovy.util.GroovyScriptEngine;
 import groovy.util.ResourceException;
 import groovy.util.ScriptException;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -61,12 +59,12 @@ public class GroovyScriptEngineIntegration implements ScriptIntegration, Applica
     protected static final Log log = LogFactory.getLog(GroovyScriptEngineIntegration.class);
 
     private GroovyScriptEngine gse = null;
-    private SimpleTemplateEngine engine = null;
+    private GStringTemplateEngine engine = null;
     
     @PostConstruct
     public void init() throws IOException {
     	gse = new GroovyScriptEngine(new String[]{scriptRoot});
-        engine = new SimpleTemplateEngine();
+        engine = new GStringTemplateEngine();
     }
 
     @Override
