@@ -2222,7 +2222,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                                     log.error("Error in subject string = '", ioe);
                                                 }
                                             }
-                                            if (ob.getProperties().containsKey("subject")) {
+                                            if (ob.getProperties().containsKey("text")) {
                                                 try {
                                                     text = scriptRunner.evaluate(bindingMap, (String)ob.getProperties().get("text"));
                                                 } catch (IOException ioe) {
