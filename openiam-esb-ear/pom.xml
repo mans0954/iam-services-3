@@ -39,57 +39,7 @@
                             <contextRoot>/openiam-esb</contextRoot>
                         </webModule>
 
-                        <webModule>
-                            <groupId>org.openiam</groupId>
-                            <artifactId>openiam-subscription</artifactId>
-                            <contextRoot>/openiam-subscription</contextRoot>
-                        </webModule>
-
-
-                        <webModule>
-                            <groupId>org.openiam</groupId>
-                            <artifactId>openiam-idp</artifactId>
-                            <contextRoot>/idp</contextRoot>
-                        </webModule>
-                        <webModule>
-                            <groupId>org.openiam</groupId>
-                            <artifactId>openiam-selfservice</artifactId>
-                            <contextRoot>/selfservice</contextRoot>
-                        </webModule>
-                        <webModule>
-                            <groupId>org.openiam</groupId>
-                            <artifactId>openiam-ui-static</artifactId>
-                            <contextRoot>/openiam-ui-static</contextRoot>
-                        </webModule>
-
-                        <webModule>
-                            <groupId>org.openiam</groupId>
-                            <artifactId>openiam-webconsole-am</artifactId>
-                            <contextRoot>/webconsole-am</contextRoot>
-                        </webModule>
-                        <webModule>
-                            <groupId>org.openiam</groupId>
-                            <artifactId>openiam-webconsole-idm</artifactId>
-                            <contextRoot>/webconsole-idm</contextRoot>
-                        </webModule>
-                        <webModule>
-                            <groupId>org.openiam</groupId>
-                            <artifactId>openiam-webconsole-web</artifactId>
-                            <contextRoot>/webconsole</contextRoot>
-                        </webModule>
-
-                        <webModule>
-                            <groupId>org.openiam</groupId>
-                            <artifactId>openiam-reportviewer</artifactId>
-                            <contextRoot>/reportviewer</contextRoot>
-                        </webModule>
-                        <webModule>
-                            <groupId>org.openiam</groupId>
-                            <artifactId>openiam-selfservice-ext</artifactId>
-                            <contextRoot>/selfservice-ext</contextRoot>
-                        </webModule>
-
-                    </modules>
+                       </modules>
                 </configuration>
             </plugin>
 	    </plugins>
@@ -108,68 +58,7 @@
             <type>war</type>
         </dependency>
 
-        <dependency>
-            <groupId>org.openiam</groupId>
-            <artifactId>openiam-subscription</artifactId>
-            <version>${openiam.esb.version}</version>
-            <type>war</type>
-        </dependency>
 
-
-        <dependency>
-            <groupId>org.openiam</groupId>
-            <artifactId>openiam-idp</artifactId>
-            <version>${openiam.esb.version}</version>
-            <type>war</type>
-
-        </dependency>
-        <dependency>
-            <groupId>org.openiam</groupId>
-            <artifactId>openiam-selfservice</artifactId>
-            <version>${openiam.esb.version}</version>
-            <type>war</type>
-
-        </dependency>
-        <dependency>
-            <groupId>org.openiam</groupId>
-            <artifactId>openiam-ui-static</artifactId>
-            <version>${openiam.esb.version}</version>
-            <type>war</type>
-
-        </dependency>
-        <dependency>
-            <groupId>org.openiam</groupId>
-            <artifactId>openiam-webconsole-web</artifactId>
-            <version>${openiam.esb.version}</version>
-            <type>war</type>
-
-        </dependency>
-        <dependency>
-            <groupId>org.openiam</groupId>
-            <artifactId>openiam-webconsole-am</artifactId>
-            <version>${openiam.esb.version}</version>
-            <type>war</type>
-
-        </dependency>
-        <dependency>
-            <groupId>org.openiam</groupId>
-            <artifactId>openiam-webconsole-idm</artifactId>
-            <version>${openiam.esb.version}</version>
-            <type>war</type>
-        </dependency>
-
-        <dependency>
-            <groupId>org.openiam</groupId>
-            <artifactId>openiam-reportviewer</artifactId>
-            <version>${openiam.esb.version}</version>
-            <type>war</type>
-        </dependency>
-        <dependency>
-            <groupId>org.openiam</groupId>
-            <artifactId>openiam-selfservice-ext</artifactId>
-            <version>${openiam.esb.version}</version>
-            <type>war</type>
-        </dependency>
 
     </dependencies>
 </project>
