@@ -169,6 +169,7 @@ public class ReportWebServiceImpl implements ReportWebService {
 	}
 	
 	@Override
+    @Transactional(readOnly = true)
 	public List<ReportInfoDto> getAllReportsInfo() {
 		List<ReportInfoDto> reportInfo=reportInfoDozerConverter.convertToDTOList(reportDataService.getAllReports(),false);
 		return reportInfo;
