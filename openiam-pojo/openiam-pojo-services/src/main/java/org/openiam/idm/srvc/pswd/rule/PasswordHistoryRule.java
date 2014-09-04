@@ -80,7 +80,11 @@ public class PasswordHistoryRule extends AbstractPasswordRule {
 					decrypt =  cryptor.decrypt(keyManagementService.getUserKey(userId, KeyName.password.name()), pwd);
 				}catch(Throwable e) {
 					log.error("PasswordHistoryRule failed due to decrption error. ", e);
-					throw new PasswordRuleException(ResponseCode.FAIL_HISTORY_RULE);
+					/* 
+					 * this is not an error for the user to see - it's a f*ckup in the database
+					 * just don't return anything
+					 */
+					//throw new PasswordRuleException(ResponseCode.FAIL_HISTORY_RULE);
 				}
 				if (pswd.getPassword().equals(decrypt)) {
 					log.info("matching password found.");

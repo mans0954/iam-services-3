@@ -44,6 +44,9 @@ public class NonAlphaNumericRule extends AbstractPasswordRule {
 		int maxChar = getValue2(attribute);
 		
 		final PasswordRuleException ex = createException();
+		if(ex == null) {
+			return;
+		}
 		
 		// count the number of characters in the password
 		if (password == null) {
@@ -82,6 +85,10 @@ public class NonAlphaNumericRule extends AbstractPasswordRule {
 		PolicyAttribute attribute = getAttribute("NON_ALPHA_CHARS");
 		int minChar = getValue1(attribute);
 		int maxChar = getValue2(attribute);
-		return createRule(ResponseCode.FAIL_NON_APHANUMERIC_RULE, minChar, maxChar);
+		if(minChar <= 0 && maxChar <= 0) {
+			return null;
+		} else {
+			return createRule(ResponseCode.FAIL_NON_APHANUMERIC_RULE, minChar, maxChar);
+		}
 	}	
 }

@@ -43,6 +43,9 @@ public class LowerCaseRule extends AbstractPasswordRule {
 		int minChar = getValue1(attribute);
 		int maxChar = getValue2(attribute);
 		final PasswordRuleException ex = createException();
+		if(ex == null) {
+			return;
+		}
 		
 		// count the number of characters in the password
 		if (password == null) {
