@@ -83,13 +83,28 @@ public class PasswordValidatorImpl implements PasswordValidator {
     private static final Log log = LogFactory.getLog(PasswordValidatorImpl.class);
 
     @Override
-    public void validate(Policy pswdPolicy, Password password)
-            throws ObjectNotFoundException, IOException, PasswordRuleException {
+    public List<PasswordRuleException> getAllViolatingRules(Policy pswdPolicy, Password password)
+            throws ObjectNotFoundException, IOException {
         // get the user object for the principal
         LoginEntity lg = loginDao.getRecord(password.getPrincipal(), password.getManagedSysId());
         UserEntity usr = userDao.findById(lg.getUserId());
 
-        validateForUser(pswdPolicy, password, usr, lg);
+        return getAllPossibleFailures(pswdPolicy, password, usr, lg);
+    }
+    
+    public List<PasswordRuleException> getAllPossibleFailures(Policy pswdPolicy, Password password, UserEntity user, LoginEntity login) throws ObjectNotFoundException, IOException {
+    	final List<PasswordRuleException> retVal = new LinkedList<>();
+    	final List<AbstractPasswordRule> rules = getRules(pswdPolicy, password, user, login);
+        if(CollectionUtils.isNotEmpty(rules)) {
+        	for(final AbstractPasswordRule rule : rules) {
+        		try {
+        			rule.validate();
+        		} catch(PasswordRuleException e) {
+        			retVal.add(e);
+        		}
+        	}
+        }
+        return retVal;
     }
    
     @Override

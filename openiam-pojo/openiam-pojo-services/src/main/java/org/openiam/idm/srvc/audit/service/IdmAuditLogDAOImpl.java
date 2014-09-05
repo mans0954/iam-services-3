@@ -61,8 +61,9 @@ public class IdmAuditLogDAOImpl extends BaseDaoImpl<IdmAuditLogEntity, String> i
         if (size > -1) {
             criteria.setMaxResults(size);
         }
-        //CONFLICT with DISTINCT criteria.addOrder(Order.desc("timestamp"));
-        criteria.setProjection(Projections.distinct(Projections.property("id")));
+
+        criteria.addOrder(Order.desc("timestamp"));
+        criteria.setProjection(Projections.property("id"));
 
         List<String> resultList =  (List<String>)criteria.list();
 
@@ -98,9 +99,9 @@ public class IdmAuditLogDAOImpl extends BaseDaoImpl<IdmAuditLogEntity, String> i
             if(StringUtils.isNotBlank(auditSearch.getUserId()) &&
                     StringUtils.isNotBlank(auditSearch.getTargetId())) {
                 Criterion sourceCriterion = Restrictions.eq("userId", auditSearch.getUserId());
-                criteria.createAlias("targets", "tar", Criteria.INNER_JOIN);
-
-                criteria.add(Restrictions.or(sourceCriterion, Restrictions.and(Restrictions.eq("tar.targetId", auditSearch.getTargetId()),Restrictions.eq("tar.targetType", auditSearch.getTargetType()))));
+                DetachedCriteria subquery = DetachedCriteria.forClass(AuditLogTargetEntity.class);
+                subquery.setProjection(Projections.property("targetId"));
+                criteria.add(Restrictions.or(sourceCriterion, Subqueries.propertyIn("id",subquery)));
             } else {
                 if(StringUtils.isNotBlank(auditSearch.getUserId())) {
                     criteria.add(Restrictions.eq("userId", auditSearch.getUserId()));
@@ -164,6 +165,7 @@ public class IdmAuditLogDAOImpl extends BaseDaoImpl<IdmAuditLogEntity, String> i
                 }
             }
         }
+
         return criteria;
     }
 
