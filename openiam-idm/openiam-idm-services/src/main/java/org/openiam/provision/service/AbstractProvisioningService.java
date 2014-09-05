@@ -854,7 +854,10 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
             employeeType = metadataTypeDAO.findById(pUser.getEmployeeTypeId());
         }
 
-        LoginEntity login = loginManager.getByUserIdManagedSys(pUser.getId(), sysConfiguration.getDefaultManagedSysId());
+        Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
+        if(login == null) {
+           login = loginDozerConverter.convertToDTO(loginManager.getByUserIdManagedSys(pUser.getId(), sysConfiguration.getDefaultManagedSysId()),false);
+        }
         if(StringUtils.isNotEmpty(pUser.getFirstName()) && !pUser.getFirstName().equals(userEntity.getFirstName())) {
             // Audit Log -----------------------------------------------------------------------------------
             IdmAuditLog auditLog = new IdmAuditLog();
