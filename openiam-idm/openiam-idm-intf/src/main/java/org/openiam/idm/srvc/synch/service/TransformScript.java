@@ -37,10 +37,12 @@ import org.springframework.context.ApplicationContextAware;
  *
  */
 public interface TransformScript extends ApplicationContextAware {
+    static int SKIP = -1;
+    static int NO_DELETE = 0;
     static int DELETE = 1;
     static int DISABLE = 2;
     static int ENABLE = 3;
-    static int NO_DELETE = 0;
+    static int SKIP_TO_REVIEW = 4;
 
     int execute(LineObject rowObj, ProvisionUser pUser);
 

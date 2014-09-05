@@ -33,7 +33,8 @@ import org.openiam.idm.srvc.mngsys.domain.AssociationType;
     "customApproverIds",
     "userCentricUserId",
     "jsonSerializedParams",
-    "additionalApproverIds"
+    "additionalApproverIds",
+    "deletable"
 })
 public class GenericWorkflowRequest extends BaseObject {
 
@@ -51,6 +52,7 @@ public class GenericWorkflowRequest extends BaseObject {
 	private List<String> customApproverAssociationIds;
 	private Set<String> customApproverIds;
 	private String userCentricUserId;
+	private boolean deletable = true;
 	
 	private Set<String> additionalApproverIds;
 
@@ -187,4 +189,14 @@ public class GenericWorkflowRequest extends BaseObject {
 	public void setAdditionalApproverIds(Set<String> additionalApproverIds) {
 		this.additionalApproverIds = additionalApproverIds;
 	}
+
+	public boolean isDeletable() {
+		return deletable;
+	}
+
+	public void setDeletable(boolean deletable) {
+		this.deletable = deletable;
+	}
+	
+	
 }

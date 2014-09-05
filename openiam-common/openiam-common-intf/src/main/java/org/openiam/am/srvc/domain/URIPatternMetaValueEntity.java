@@ -3,6 +3,7 @@ package org.openiam.am.srvc.domain;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Type;
 import org.openiam.am.srvc.dto.URIPatternMetaValue;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.domain.AbstractKeyNameEntity;
@@ -40,6 +41,26 @@ public class URIPatternMetaValueEntity extends AbstractKeyNameEntity {
     //@Transient
 	//private AttributeOperationEnum operation = AttributeOperationEnum.NO_CHANGE;
 	
+	@Column(name = "PROPAGETE_THROUGH_PROXY", nullable = false)
+	@Type(type = "yes_no")
+	private boolean propagateThroughProxy = true;
+	
+	public String getId() {
+		return id;
+	}
+	
+	public void setId(String id) {
+		this.id = id;
+	}
+	
+	public String getName() {
+		return name;
+	}
+	
+	public void setName(String name) {
+		this.name = name;
+	}
+	
 	public AuthResourceAMAttributeEntity getAmAttribute() {
 		return amAttribute;
 	}
@@ -71,6 +92,13 @@ public class URIPatternMetaValueEntity extends AbstractKeyNameEntity {
 	public void setGroovyScript(String groovyScript) {
 		this.groovyScript = groovyScript;
 	}
+	
+	public boolean isPropagateThroughProxy() {
+		return propagateThroughProxy;
+	}
+	public void setPropagateThroughProxy(boolean propagateThroughProxy) {
+		this.propagateThroughProxy = propagateThroughProxy;
+	}
 
 	@Override
 	public int hashCode() {
@@ -80,8 +108,10 @@ public class URIPatternMetaValueEntity extends AbstractKeyNameEntity {
 				+ ((amAttribute == null) ? 0 : amAttribute.hashCode());
 		result = prime * result
 				+ ((groovyScript == null) ? 0 : groovyScript.hashCode());
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		result = prime * result
 				+ ((metaEntity == null) ? 0 : metaEntity.hashCode());
+		result = prime * result + (propagateThroughProxy ? 1231 : 1237);
 		result = prime * result
 				+ ((staticValue == null) ? 0 : staticValue.hashCode());
 		return result;
@@ -110,6 +140,8 @@ public class URIPatternMetaValueEntity extends AbstractKeyNameEntity {
 			if (other.metaEntity != null)
 				return false;
 		} else if (!metaEntity.equals(other.metaEntity))
+			return false;
+		if (propagateThroughProxy != other.propagateThroughProxy)
 			return false;
 		if (staticValue == null) {
 			if (other.staticValue != null)

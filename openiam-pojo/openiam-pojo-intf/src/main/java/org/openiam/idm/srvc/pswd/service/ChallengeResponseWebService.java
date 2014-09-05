@@ -46,6 +46,10 @@ public interface ChallengeResponseWebService {
     
 	@WebMethod
 	public Integer getNumOfRequiredQuestions(@WebParam(name = "userId", targetNamespace = "") final String userId);
+
+    @WebMethod
+    public Integer getNumOfCorrectAnswers(@WebParam(name = "userId", targetNamespace = "") final String userId);
+
 	@WebMethod
 	public Integer count(@WebParam(name = "searchBean", targetNamespace = "") final IdentityQuestionSearchBean searchBean);
 
@@ -84,6 +88,8 @@ public interface ChallengeResponseWebService {
 	@WebMethod
 	public Response saveAnswers(@WebParam(name = "answerList", targetNamespace = "") final List<UserIdentityAnswer> answerList);
 
+    @WebMethod
+    public Response validateAnswers(@WebParam(name = "answerList", targetNamespace = "") final List<UserIdentityAnswer> answerList);
 
     /**
      * Determines is the answers that are provided by the user are the same as those stored in

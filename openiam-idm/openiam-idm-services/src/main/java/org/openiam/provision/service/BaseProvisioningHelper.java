@@ -1,8 +1,9 @@
 package org.openiam.provision.service;
 
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.mule.api.MuleContext;
@@ -11,6 +12,8 @@ import org.openiam.connector.type.request.CrudRequest;
 import org.openiam.connector.type.response.ObjectResponse;
 import org.openiam.connector.type.response.ResponseType;
 import org.openiam.dozer.converter.LoginDozerConverter;
+import org.openiam.dozer.converter.UserDozerConverter;
+import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.login.LoginDAO;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
@@ -23,9 +26,12 @@ import org.openiam.idm.srvc.mngsys.ws.ProvisionConnectorWebService;
 import org.openiam.idm.srvc.org.service.OrganizationDataService;
 import org.openiam.idm.srvc.pswd.service.PasswordHistoryDAO;
 import org.openiam.idm.srvc.pswd.service.PasswordService;
+import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.openiam.idm.srvc.role.service.RoleDataService;
+import org.openiam.idm.srvc.user.domain.UserEntity;
+import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.type.ExtensibleUser;
@@ -34,6 +40,7 @@ import org.openiam.util.MuleContextProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.transaction.PlatformTransactionManager;
 
 /**
  * Base class that will be extended by all the helper classes that will be used by the DefaultProvisioningService
@@ -67,16 +74,28 @@ public class BaseProvisioningHelper {
     protected PasswordService passwordDS;
     @Autowired
     protected ConnectorAdapter connectorAdapter;
+    @Autowired
+    protected ProvisionQueueService provQueueService;
+
+    @Autowired
+    protected AuditLogService auditLogService;
+
+    @Autowired
+    @Qualifier("transactionManager")
+    protected PlatformTransactionManager platformTransactionManager;
 
     @Autowired
     @Qualifier("configurableGroovyScriptEngine")
-    private ScriptIntegration scriptRunner;
+    protected ScriptIntegration scriptRunner;
     
     @Autowired
     protected ProvisionConnectorWebService connectorService;
 
     @Autowired
     protected LoginDozerConverter loginDozerConverter;
+
+    @Autowired
+    protected UserDozerConverter userDozerConverter;
 
     @Value("${openiam.service_base}")
     private String serviceHost;
@@ -86,6 +105,31 @@ public class BaseProvisioningHelper {
 
     protected static final Log log = LogFactory
             .getLog(BaseProvisioningHelper.class);
+
+    public void setCurrentSuperiors(ProvisionUser pUser) {
+        if (org.mule.util.StringUtils.isNotEmpty(pUser.getId())) {
+            List<UserEntity> entities = userMgr.getSuperiors(pUser.getId(), -1, -1);
+            List<User> superiors = userDozerConverter.convertToDTOList(entities, true);
+            if (CollectionUtils.isNotEmpty(superiors)) {
+                pUser.setSuperiors(new HashSet<User>(superiors));
+            }
+        }
+    }
+
+    protected String findResourcePropertyByName(final String resId, final String name) {
+        Resource r = resourceDataService.getResource(resId, null);
+        if (r != null) {
+            Set<ResourceProp> rpSet = r.getResourceProps();
+            if (CollectionUtils.isNotEmpty(rpSet)) {
+                for (ResourceProp rp : rpSet) {
+                    if (StringUtils.equalsIgnoreCase(rp.getName(), name))  {
+                        return rp.getValue();
+                    }
+                }
+            }
+        }
+        return null;
+    }
 
     protected String getResProperty(Set<ResourceProp> resPropSet,
             String propertyName) {
@@ -201,5 +245,6 @@ public class BaseProvisioningHelper {
 
 
     }
+
 
 }

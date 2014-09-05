@@ -6,17 +6,15 @@ import java.util.List;
 import java.util.Map;
 
 import org.openiam.exception.BasicDataServiceException;
-import org.openiam.idm.searchbeans.AddressSearchBean;
-import org.openiam.idm.searchbeans.EmailSearchBean;
-import org.openiam.idm.searchbeans.PhoneSearchBean;
-import org.openiam.idm.searchbeans.PotentialSupSubSearchBean;
-import org.openiam.idm.searchbeans.UserSearchBean;
+import org.openiam.idm.searchbeans.*;
 import org.openiam.idm.srvc.continfo.domain.AddressEntity;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
 import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
 import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
+import org.openiam.idm.srvc.lang.domain.LanguageEntity;
+import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 import org.openiam.idm.srvc.user.domain.SupervisorEntity;
 import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
@@ -65,13 +63,7 @@ public interface UserDataService {
      */
     public void removeUser(String id) throws Exception;
 
-    public UserEntity getUserByName(String firstName, String lastName) throws BasicDataServiceException;
-
-    public List<UserEntity> findUsersByLastUpdateRange(Date startDate, Date endDate);
-
     public List<UserEntity> findUserByOrganization(String orgId) throws BasicDataServiceException;
-
-    public List<UserEntity> findUsersByStatus(UserStatusEnum status) throws BasicDataServiceException;
 
     public List<UserEntity> searchByDelegationProperties(DelegationFilterSearch search);
 
@@ -229,6 +221,7 @@ public interface UserDataService {
     public Map<String, UserAttributeEntity> getAllAttributes(String userId);
 
     public List<UserEntity> getUsersForResource(final String resourceId, String requesterId, final int from, final int size);
+    public List<UserEntity> getUsersForResource(UserSearchBean userSearchBean, int from, int size);
 
     public int getNumOfUsersForResource(final String resourceId, String requesterId);
 
@@ -248,6 +241,8 @@ public interface UserDataService {
 
     public void activateUser(String userId);
 
+    public void resetUser(String userId);
+
     public int getNumOfEmailsForUser(String userId);
 
     public int getNumOfAddressesForUser(String userId);
@@ -257,6 +252,8 @@ public interface UserDataService {
     public void mergeUserFields(UserEntity origUserEntity, UserEntity newUserEntity);
 
     public Map<String, UserAttribute> getUserAttributesDto(String userId);
+    
+    public List<UserAttributeEntity> getUserAttributeList(String userId, final LanguageEntity language);
 
     public Map<String, UserAttributeEntity> getUserAttributes(String userId);
 

@@ -54,7 +54,7 @@ public abstract class AbstractURIPatternRule implements URIPatternRule {
 				}
 				
 				if(value != null) {
-					token.addValue(key, value);
+					token.addValue(key, value, metaValue.isPropagateThroughProxy());
 				}
 			}
 		}

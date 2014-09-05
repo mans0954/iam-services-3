@@ -26,6 +26,7 @@ import org.openiam.internationalization.Internationalized;
 import javax.persistence.CascadeType;
 import javax.persistence.*;
 import javax.persistence.Entity;
+import javax.persistence.MapKey;
 import javax.persistence.Table;
 import javax.validation.constraints.Size;
 import java.util.*;
@@ -60,7 +61,11 @@ public class UserEntity {
     private String createdBy;
 
     @Column(name = "EMPLOYEE_ID", length = 32)
-    @Field(analyze = Analyze.NO, name="employeeId", store=Store.YES)
+    @Fields ({
+        @Field(index = Index.TOKENIZED),
+        @Field(name = "employeeId", index = Index.TOKENIZED, store = Store.YES),
+        @Field(name = "employeeIdUntokenized", index = Index.UN_TOKENIZED, store = Store.YES)
+    })
     @Size(max = 32, message = "validator.user.employee.id.toolong")
     private String employeeId;
 
@@ -77,8 +82,9 @@ public class UserEntity {
 
     @Column(name = "FIRST_NAME", length = 50)
     @Fields ({
-        @Field(analyze = Analyze.YES),
-        @Field(name = "firstName", analyze = Analyze.YES, store = Store.YES)
+        @Field(index = Index.TOKENIZED),
+        @Field(name = "firstName", index = Index.TOKENIZED, store = Store.YES),
+        @Field(name = "firstNameUntokenized", index = Index.UN_TOKENIZED, store = Store.YES)
     })
     @Size(max = 50, message = "validator.user.first.name.toolong")
     private String firstName;
@@ -95,8 +101,9 @@ public class UserEntity {
 
     @Column(name = "LAST_NAME", length = 50)
     @Fields ({
-        @Field(analyze = Analyze.YES),
-        @Field(name = "lastName", analyze = Analyze.YES, store = Store.YES)
+        @Field(index = Index.TOKENIZED),
+        @Field(name = "lastName", index = Index.TOKENIZED, store = Store.YES),
+        @Field(name = "lastNameUntokenized", index = Index.UN_TOKENIZED, store = Store.YES)
     })
     @Size(max = 50, message = "validator.user.last.name.toolong")
     private String lastName;
@@ -119,6 +126,7 @@ public class UserEntity {
     @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch= FetchType.LAZY)
     @JoinColumn(name = "TYPE_ID", insertable = true, updatable = true, nullable=true)
     @Internationalized
+    @IndexedEmbedded
     protected MetadataTypeEntity type;
 
     @Column(name = "CLASSIFICATION", length = 20)
@@ -139,12 +147,12 @@ public class UserEntity {
 
     @Column(name = "STATUS", length = 40)
     @Enumerated(EnumType.STRING)
-    @Field(analyze = Analyze.NO, name="userStatus", store=Store.YES)
+    @Field(index=Index.UN_TOKENIZED, name="userStatus", store=Store.YES)
     private UserStatusEnum status;
 
     @Column(name = "SECONDARY_STATUS", length = 40)
     @Enumerated(EnumType.STRING)
-    @Field(analyze = Analyze.NO ,name="accountStatus", store=Store.YES)
+    @Field(index=Index.UN_TOKENIZED ,name="accountStatus", store=Store.YES)
     private UserStatusEnum secondaryStatus;
 
     @Column(name = "SUFFIX", length = 20)
@@ -159,8 +167,8 @@ public class UserEntity {
     @Size(max = 20, message = "validator.user.type.identifier.toolong")
     private String userTypeInd;
 
-    @Column(name = "MAIL_CODE", length = 10)
-    @Size(max = 10, message = "validator.user.mailcode.toolong")
+    @Column(name = "MAIL_CODE", length = 100)
+    @Size(max = 100, message = "validator.user.mailcode.toolong")
     private String mailCode;
 
     @Column(name = "COST_CENTER", length = 20)
@@ -173,6 +181,9 @@ public class UserEntity {
     @Column(name = "LAST_DATE", length = 10)
     private Date lastDate;
 
+    @Column(name = "CLAIM_DATE", length = 10)
+    private Date claimDate;
+
     @Column(name = "NICKNAME", length = 40)
     @Size(max = 40, message = "validator.user.nick.name.toolong")
     private String nickname;
@@ -180,8 +191,9 @@ public class UserEntity {
     @Column(name = "MAIDEN_NAME", length = 40)
     @Size(max = 40, message = "validator.user.maiden.name.toolong")
     @Fields ({
-        @Field(analyze = Analyze.YES),
-        @Field(name = "maidenName", analyze = Analyze.YES, store = Store.YES)
+        @Field(index = Index.TOKENIZED),
+        @Field(name = "maidenName", index = Index.TOKENIZED, store = Store.YES),
+        @Field(name = "maidenNameUntokenized", index = Index.UN_TOKENIZED, store = Store.YES)
     })
     private String maidenName;
 
@@ -227,7 +239,7 @@ public class UserEntity {
     private String systemFlag;
 
     //@IndexedEmbedded(prefix="principal.", depth=1)
-    @OneToMany(cascade=CascadeType.ALL,fetch=FetchType.LAZY)
+    @OneToMany(orphanRemoval = true, cascade=CascadeType.ALL,fetch=FetchType.LAZY)
     @JoinColumn(name="USER_ID", referencedColumnName="USER_ID")
     @Fetch(FetchMode.SUBSELECT)
     private List<LoginEntity> principalList = new LinkedList<LoginEntity>();
@@ -262,6 +274,9 @@ public class UserEntity {
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "supervisor", fetch = FetchType.LAZY)
     // @Fetch(FetchMode.SUBSELECT)
     private Set<SupervisorEntity> subordinates;
+
+    @Transient
+    private String defaultLogin;
 
     public UserEntity() {
     }
@@ -546,6 +561,44 @@ public class UserEntity {
         	}
         }
         return defaultEmail;
+    }
+
+    public PhoneEntity getDefaultPhone() {
+        PhoneEntity defaultPhone = null;
+        if(this.phones!=null && !this.phones.isEmpty()){
+            for (PhoneEntity phoneEntity: this.phones){
+                if(phoneEntity.getIsDefault()){
+                    defaultPhone = phoneEntity;
+                    break;
+                }
+            }
+        }
+        return defaultPhone;
+    }
+    public AddressEntity getDefaultAddress() {
+        AddressEntity defaultAddress = null;
+        if(this.addresses!=null && !this.addresses.isEmpty()){
+            for (AddressEntity addressEntity: this.addresses){
+                if(addressEntity.getIsDefault()){
+                    defaultAddress = addressEntity;
+                    break;
+                }
+            }
+        }
+        return defaultAddress;
+    }
+    public String getDefaultLogin() {
+        return defaultLogin;
+    }
+    public void setDefaultLogin(String managedSys) {
+        if(this.principalList!=null && !this.principalList.isEmpty()){
+            for (LoginEntity principal: this.principalList){
+                if(StringUtils.equals(principal.getManagedSysId(), managedSys)){
+                    defaultLogin = principal.getLogin();
+                    break;
+                }
+            }
+        }
     }
 
     public Integer getShowInSearch() {
@@ -833,6 +886,13 @@ public class UserEntity {
 	            this.lastDate = newUser.getLastDate();
 	        }
 	    }
+        if (newUser.getClaimDate() != null) {
+            if (newUser.getClaimDate().equals(BaseConstants.NULL_DATE)) {
+                this.claimDate = null;
+            } else {
+                this.claimDate = newUser.getClaimDate();
+            }
+        }
 	    if (newUser.getLocationCd() != null) {
 	        if (newUser.getLocationCd().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
 	            this.locationCd = null;
@@ -856,9 +916,9 @@ public class UserEntity {
 	    }
 	    if (newUser.getMailCode() != null) {
 	        if (newUser.getMailCode().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-	            this.mailCode = newUser.getMailCode();
-	        } else {
 	            this.mailCode = null;
+	        } else {
+	            this.mailCode = newUser.getMailCode();
 	        }
 	    }
 	    if (newUser.getType() != null) {
@@ -995,6 +1055,15 @@ public class UserEntity {
     public void setSubordinates(Set<SupervisorEntity> subordinatesSet) {
         this.subordinates = subordinatesSet;
     }
+
+    public Date getClaimDate() {
+        return claimDate;
+    }
+
+    public void setClaimDate(Date claimDate) {
+        this.claimDate = claimDate;
+    }
+
 
     @Override
     public boolean equals(Object o) {

@@ -44,6 +44,10 @@ public abstract class AbstractApproverAssociationIdentifier {
 	protected void init(final Map<String, Object> bindingMap) {
 		
 	}
+	
+	protected void postInit() {
+		
+	}
 
 	protected AbstractApproverAssociationIdentifier() {
 		SpringContextProvider.autowire(this);
@@ -90,5 +94,13 @@ public abstract class AbstractApproverAssociationIdentifier {
 		final Set<String> approvers = new HashSet<String>();
 		approvers.add(defaultApproverUserId);
 		return approvers;
+	}
+	
+	/**
+	 * Returns custom attributes to Activit that will be passed to the workflow 
+	 * @return
+	 */
+	public Map<String, Object> getCustomActivitiAttributes() {
+		return null;
 	}
 }

@@ -3,13 +3,7 @@ package org.openiam.provision.service;
 import groovy.lang.MissingPropertyException;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import javax.jms.JMSException;
 import javax.jms.ObjectMessage;
@@ -49,7 +43,6 @@ import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
-import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
 import org.openiam.idm.srvc.auth.dto.ProvLoginStatusEnum;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.key.constant.KeyName;
@@ -68,7 +61,6 @@ import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.idm.srvc.res.service.ResourceService;
-import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.provision.dto.ProvOperationEnum;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.resp.ProvisionUserResponse;
@@ -126,6 +118,9 @@ public class ProvisionDispatcher implements Sweepable {
     protected LoginDataService loginManager;
     @Autowired
     protected ProvisionConnectorService connectorService;
+
+    @Value(",${org.openiam.debug.hidden.attributes},")
+    private String hiddenAttributes;
 
     @Autowired
     protected AuditLogService auditLogService;
@@ -198,6 +193,7 @@ public class ProvisionDispatcher implements Sweepable {
             idmAuditLog.setRequestorUserId(systemUserId);
             idmAuditLog.setAction(AuditAction.PROVISIONING_DISPATCHER.value());
             idmAuditLog.setTargetUser(identity.getUserId(), identity.getLogin());
+            idmAuditLog.setManagedSysId(identity.getManagedSysId());
             idmAuditLog.succeed();
             try {
                 LoginEntity loginEntity = loginManager.getLoginByManagedSys(identity.getLogin(),
@@ -210,7 +206,7 @@ public class ProvisionDispatcher implements Sweepable {
 
                 if (data.getOperation() == ProvOperationEnum.DELETE) {
                     try {
-                        // udate target sys identity
+                        // update target sys identity
                         // do de-provisioning
                         ObjectResponse response = deprovision(data);
                         StatusCodeType statusCodeType = response.getStatus();
@@ -326,6 +322,10 @@ public class ProvisionDispatcher implements Sweepable {
                     suspendReq.setRequestID(requestId);
                     suspendReq.setScriptHandler(mSys.getSuspendHandler());
                     suspendReq.setHostLoginId(mSys.getUserId());
+
+                    ExtensibleUser extUser = buildFromRules(managedSysId, data.getBindingMap());
+                    suspendReq.setExtensibleObject(extUser);
+
                     String passwordDecoded = mSys.getPswd();
                     try {
                         passwordDecoded = getDecryptedPassword(mSys);
@@ -352,6 +352,55 @@ public class ProvisionDispatcher implements Sweepable {
                                 + " from MANAGED_SYS_ID=" + identity.getManagedSysId() + " status="
                                 + ProvLoginStatusEnum.FAIL_DISABLE + " details=" + th.getMessage());
                         loginEntity.setProvStatus(ProvLoginStatusEnum.FAIL_DISABLE);
+                    }
+
+                } else if (data.getOperation() == ProvOperationEnum.ENABLE) {
+
+                    String requestId = data.getRequestId();
+                    ResourceEntity resEntity = resourceService.findResourceById(data.getResourceId());
+                    Resource res = resourceDozerConverter.convertToDTO(resEntity, true);
+                    ManagedSysDto mSys = managedSysDozerConverter.convertToDTO(
+                            managedSystemService.getManagedSysByResource(res.getId(), "ACTIVE"), true);
+                    String managedSysId = (mSys != null) ? mSys.getId() : null;
+
+                    Login targetSysLogin = data.getIdentity();
+
+                    SuspendResumeRequest suspendReq = new SuspendResumeRequest();
+                    suspendReq.setObjectIdentity(targetSysLogin.getLogin());
+                    suspendReq.setTargetID(managedSysId);
+                    suspendReq.setRequestID(requestId);
+                    suspendReq.setScriptHandler(mSys.getSuspendHandler());
+                    suspendReq.setHostLoginId(mSys.getUserId());
+
+                    ExtensibleUser extUser = buildFromRules(managedSysId, data.getBindingMap());
+                    suspendReq.setExtensibleObject(extUser);
+
+                    String passwordDecoded = mSys.getPswd();
+                    try {
+                        passwordDecoded = getDecryptedPassword(mSys);
+                    } catch (ConnectorDataException e) {
+                        e.printStackTrace();
+                    }
+                    suspendReq.setHostLoginPassword(passwordDecoded);
+                    suspendReq.setHostUrl(mSys.getHostUrl());
+
+                    try {
+                        ResponseType resp = connectorAdapter.resumeRequest(mSys, suspendReq,
+                                MuleContextProvider.getCtx());
+                        if (StatusCodeType.SUCCESS.equals(resp.getStatus())) {
+                            loginEntity.setProvStatus(ProvLoginStatusEnum.ENABLED);
+                        } else {
+                            idmAuditLog.fail();
+                            idmAuditLog.setFailureReason(resp.getErrorMsgAsStr());
+                            loginEntity.setProvStatus(ProvLoginStatusEnum.FAIL_ENABLE);
+                        }
+                    } catch (Throwable th) {
+                        idmAuditLog.fail();
+                        idmAuditLog.setFailureReason(th.getMessage());
+                        idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "ENABLE IDENTITY=" + identity
+                                + " from MANAGED_SYS_ID=" + identity.getManagedSysId() + " status="
+                                + ProvLoginStatusEnum.FAIL_ENABLE + " details=" + th.getMessage());
+                        loginEntity.setProvStatus(ProvLoginStatusEnum.FAIL_ENABLE);
                     }
                 }
 
@@ -411,9 +460,6 @@ public class ProvisionDispatcher implements Sweepable {
         try {
             Login targetSysLogin = data.getIdentity();
             Map<String, Object> bindingMap = data.getBindingMap();
-            List<AttributeMapEntity> attrMapEntities = managedSystemService
-                    .getAttributeMapsByManagedSysId(managedSysId);
-            List<AttributeMap> attrMap = attributeMapDozerConverter.convertToDTOList(attrMapEntities, true);
             ManagedSystemObjectMatch matchObj = null;
             List<ManagedSystemObjectMatchEntity> objList = managedSystemService.managedSysObjectParam(managedSysId,
                     ManagedSystemObjectMatch.USER);
@@ -421,7 +467,7 @@ public class ProvisionDispatcher implements Sweepable {
                 matchObj = managedSystemObjectMatchDozerConverter.convertToDTO(objList.get(0), false);
             }
 
-            ExtensibleUser extUser = buildFromRules(targetSysProvUser, attrMap, bindingMap);
+            ExtensibleUser extUser = buildFromRules(managedSysId, bindingMap);
             try {
                 idmAuditLog.addCustomRecord("ATTRIBUTES", extUser.getAttributesAsJSON());
             } catch (JsonGenerationException jge) {
@@ -430,7 +476,7 @@ public class ProvisionDispatcher implements Sweepable {
             // get the attributes at the target system
             // this lookup only for getting attributes from the
             // system
-            Map<String, String> currentValueMap = new HashMap<String, String>();
+            Map<String, ExtensibleAttribute> currentValueMap = new HashMap<>();
             boolean isExistedInTargetSystem = getCurrentObjectAtTargetSystem(requestId, targetSysLogin, extUser, mSys,
                     matchObj, currentValueMap);
             boolean connectorSuccess = false;
@@ -513,7 +559,7 @@ public class ProvisionDispatcher implements Sweepable {
      * they can be passed to the connector
      */
     private ExtensibleUser updateAttributeList(org.openiam.provision.type.ExtensibleUser extUser,
-            Map<String, String> currentValueMap) {
+            Map<String, ExtensibleAttribute> currentValueMap) {
         if (extUser == null) {
             return null;
         }
@@ -540,23 +586,16 @@ public class ProvisionDispatcher implements Sweepable {
                 if (currentValueMap == null) {
                     attr.setOperation(1);
                 } else {
-                    String curVal = currentValueMap.get(nm);
-                    if (curVal == null) {
-                        // temp hack
-                        if (nm.equalsIgnoreCase("objectclass")) {
-                            attr.setOperation(2);
-                        } else {
-                            log.debug("- Op = 1 - AttrName = " + nm);
-                            attr.setOperation(1);
-                        }
+                    ExtensibleAttribute curAttr = currentValueMap.get(nm);
+                    if (attr.valuesAreEqual(curAttr)) {
+                        log.debug("- Op = 0 - AttrName = " + nm);
+                        attr.setOperation(0);
+                    } else if (curAttr == null || !curAttr.containsAnyValue()) {
+                        log.debug("- Op = 1 - AttrName = " + nm);
+                        attr.setOperation(1);
                     } else {
-                        if (curVal.equalsIgnoreCase(attr.getValue())) {
-                            log.debug("- Op = 0 - AttrName = " + nm);
-                            attr.setOperation(0);
-                        } else {
-                            log.debug("- Op = 2 - AttrName = " + nm);
-                            attr.setOperation(2);
-                        }
+                        log.debug("- Op = 2 - AttrName = " + nm);
+                        attr.setOperation(2);
                     }
                 }
             }
@@ -565,7 +604,7 @@ public class ProvisionDispatcher implements Sweepable {
     }
 
     private boolean getCurrentObjectAtTargetSystem(String requestId, Login mLg, ExtensibleUser extUser,
-            ManagedSysDto mSys, ManagedSystemObjectMatch matchObj, Map<String, String> curValueMap) {
+            ManagedSysDto mSys, ManagedSystemObjectMatch matchObj, Map<String, ExtensibleAttribute> curValueMap) {
 
         String identity = mLg.getLogin();
         MuleContext muleContext = MuleContextProvider.getCtx();
@@ -604,10 +643,8 @@ public class ProvisionDispatcher implements Sweepable {
                     : new LinkedList<ExtensibleAttribute>();
 
             if (extAttrList != null) {
-                for (ExtensibleAttribute obj : extAttrList) {
-                    String name = obj.getName();
-                    String value = obj.getValue();
-                    curValueMap.put(name, value);
+                for (ExtensibleAttribute attr : extAttrList) {
+                    curValueMap.put(attr.getName(), attr);
                 }
             } else {
                 log.debug(" - NO attributes found in target system lookup ");
@@ -618,8 +655,12 @@ public class ProvisionDispatcher implements Sweepable {
         return false;
     }
 
-    private ExtensibleUser buildFromRules(ProvisionUser pUser, List<AttributeMap> attrMap,
-            Map<String, Object> bindingMap) {
+    private ExtensibleUser buildFromRules(String managedSysId, Map<String, Object> bindingMap) {
+
+        List<AttributeMapEntity> attrMapEntities = managedSystemService
+                .getAttributeMapsByManagedSysId(managedSysId);
+        List<AttributeMap> attrMap = attributeMapDozerConverter.convertToDTOList(attrMapEntities, true);
+
 
         ExtensibleUser extUser = new ExtensibleUser();
 
@@ -647,8 +688,12 @@ public class ProvisionDispatcher implements Sweepable {
                             log.error("Error in script = '", mpe);
                             continue;
                         }
-                        log.debug("buildFromRules: OBJECTTYPE=" + objectType + " SCRIPT OUTPUT=" + output
-                                + " attribute name=" + attr.getAttributeName());
+
+                        log.debug("buildFromRules: OBJECTTYPE="+objectType+", ATTRIBUTE=" + attr.getAttributeName() +
+                                ", SCRIPT OUTPUT=" +
+                                (hiddenAttributes.toLowerCase().contains(","+attr.getAttributeName().toLowerCase()+",")
+                                        ? "******" : output));
+
                         if (output != null) {
                             ExtensibleAttribute newAttr;
                             if (output instanceof String) {
@@ -699,16 +744,15 @@ public class ProvisionDispatcher implements Sweepable {
                                 newAttr.setObjectType(objectType);
                                 extUser.getAttributes().add(newAttr);
 
-                            } else {
+                            } else if (output instanceof List) {
                                 // process a list - multi-valued object
-
-                                newAttr = new ExtensibleAttribute(attr.getAttributeName(), (List) output, 1, attr
-                                        .getDataType().getValue());
-                                newAttr.setObjectType(objectType);
-
-                                extUser.getAttributes().add(newAttr);
-
-                                log.debug("buildFromRules: added attribute to extUser:" + attr.getAttributeName());
+                                if (CollectionUtils.isNotEmpty((List)output)) {
+                                    newAttr = new ExtensibleAttribute(attr.getAttributeName(), (List) output, 1, attr
+                                            .getDataType().getValue());
+                                    newAttr.setObjectType(objectType);
+                                    extUser.getAttributes().add(newAttr);
+                                    log.debug("buildFromRules: added attribute to extUser:" + attr.getAttributeName());
+                                }
                             }
                         }
                     } else if (PolicyMapObjectTypeOptions.PRINCIPAL.name().equalsIgnoreCase(objectType)) {

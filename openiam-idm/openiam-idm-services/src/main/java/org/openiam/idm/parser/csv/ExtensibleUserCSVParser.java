@@ -59,6 +59,7 @@ public class ExtensibleUserCSVParser extends AbstractCSVParser<ExtensibleUser, U
             case costCenter:
             case startDate:
             case lastDate:
+            case claimDate:
             case mailCode:
             case nickname:
             case maidenName:

@@ -49,5 +49,6 @@ public interface ChallengeResponseValidator {
     public void saveAnswers(List<UserIdentityAnswerEntity> answerList) throws Exception;
     public boolean isUserAnsweredSecurityQuestions(final String userId) throws Exception;
     public Integer getNumOfRequiredQuestions(final String userId);
+    public Integer getNumOfCorrectAnswers(final String userId);
     public void resetQuestionsForUser(final String userId);
 }

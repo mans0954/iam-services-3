@@ -1,18 +1,26 @@
 package org.openiam.idm.srvc.auth.login;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.SysConfiguration;
+import org.openiam.base.ws.ResponseCode;
 import org.openiam.dozer.converter.LoginDozerConverter;
+import org.openiam.exception.BasicDataServiceException;
 import org.openiam.exception.EncryptionException;
 import org.openiam.idm.searchbeans.LoginSearchBean;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
 import org.openiam.idm.srvc.auth.login.lucene.LoginSearchDAO;
+import org.openiam.idm.srvc.continfo.service.EmailAddressDAO;
 import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
+import org.openiam.idm.srvc.msg.dto.NotificationParam;
+import org.openiam.idm.srvc.msg.dto.NotificationRequest;
+import org.openiam.idm.srvc.msg.service.MailService;
+import org.openiam.idm.srvc.msg.service.MailTemplateParameters;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
 import org.openiam.idm.srvc.policy.service.PolicyDataService;
@@ -64,6 +72,12 @@ public class LoginDataServiceImpl implements LoginDataService {
 
     @Autowired
     protected LoginDozerConverter loginDozerConverter;
+
+    @Autowired
+    private EmailAddressDAO emailAddressDao;
+
+    @Autowired
+    private MailService mailService;
 
     boolean encrypt = true; // default encryption setting
     private static final Log log = LogFactory
@@ -600,13 +614,51 @@ public class LoginDataServiceImpl implements LoginDataService {
         }
     }
 
-    @Override
-    public void evict(LoginEntity entity) {
-        loginDao.evict(entity);
-    }
-
 	@Override
+    @Transactional(readOnly = true)
 	public Login getLoginDTO(String loginId) {
 		return loginDozerConverter.convertToDTO(loginDao.findById(loginId), true);
 	}
+
+    @Override
+    @Transactional
+    public void forgotUsername(String email) throws BasicDataServiceException {
+        List<UserEntity> userList = userDao.getByEmail(email);
+
+        if(CollectionUtils.isEmpty(userList))
+            throw new BasicDataServiceException(ResponseCode.NO_USER_FOUND_FOR_GIVEN_EMAIL);
+
+        List<String> userIds = new ArrayList<>();
+        for (UserEntity user: userList){
+            userIds.add(user.getId());
+        }
+
+        List<LoginEntity> loginEntityList = loginDao.findByUserIds(userIds, sysConfiguration.getDefaultManagedSysId());
+
+        Map<String, LoginEntity> loginMap = new HashMap<>();
+        if(CollectionUtils.isNotEmpty(loginEntityList)){
+            for (LoginEntity login: loginEntityList){
+                if(login!=null)
+                    loginMap.put(login.getUserId(), login);
+            }
+        }
+
+        for (UserEntity user: userList){
+            LoginEntity login = loginMap.get(user.getId());
+            if(login!=null)
+                sendCredentialsToUser(email, login, user);
+        }
+    }
+
+    private void sendCredentialsToUser(String email, LoginEntity loginEntity, UserEntity user) {
+        final NotificationRequest notificationRequest = new NotificationRequest();
+        notificationRequest.setTo(email);
+        notificationRequest.setNotificationType("FORGOT_USER_NAME");
+        notificationRequest.getParamList().add(new NotificationParam(MailTemplateParameters.IDENTITY.value(), loginEntity.getLogin()));
+        notificationRequest.getParamList().add(
+                new NotificationParam(MailTemplateParameters.FIRST_NAME.value(), user.getFirstName()));
+        notificationRequest.getParamList().add(
+                new NotificationParam(MailTemplateParameters.LAST_NAME.value(), user.getLastName()));
+        mailService.sendNotification(notificationRequest);
+    }
 }

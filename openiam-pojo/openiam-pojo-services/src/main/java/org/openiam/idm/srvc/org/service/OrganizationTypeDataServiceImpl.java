@@ -40,6 +40,7 @@ public class OrganizationTypeDataServiceImpl implements OrganizationTypeDataServ
 	
 	@Override
 	@Deprecated
+    @Transactional(readOnly = true)
 	public OrganizationType findById(final String id) {
 		final OrganizationTypeEntity entity = organizationTypeService.findById(id);
 		return (entity != null) ? dozerConverter.convertToDTO(entity, true) : null;
@@ -47,6 +48,7 @@ public class OrganizationTypeDataServiceImpl implements OrganizationTypeDataServ
 	
 	@Override
 	@LocalizedServiceGet
+    @Transactional(readOnly = true)
 	public OrganizationType findByIdLocalized(final String id, final Language language) {
 		final OrganizationTypeEntity entity = organizationTypeService.findById(id);
 		return (entity != null) ? dozerConverter.convertToDTO(entity, true) : null;
@@ -68,6 +70,7 @@ public class OrganizationTypeDataServiceImpl implements OrganizationTypeDataServ
 
 	@Override
 	@LocalizedServiceGet
+    @Transactional(readOnly = true)
 	public List<OrganizationType> findBeans(final OrganizationTypeSearchBean searchBean, final int from, final int size, final Language language) {
 		final List<OrganizationTypeEntity> entityList = organizationTypeService.findBeans(searchBean, from, size);
 		return dozerConverter.convertToDTOList(entityList, searchBean.isDeepCopy());

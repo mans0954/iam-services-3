@@ -34,6 +34,7 @@ import org.openiam.dozer.converter.RolePolicyDozerConverter;
 import org.openiam.idm.searchbeans.RoleSearchBean;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
+import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.base.AbstractBaseService;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
@@ -183,7 +184,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 			response.setErrorText(e.getMessage());
             idmAuditLog.fail();
             idmAuditLog.setException(e);
-		}finally {
+		} finally {
             auditLogService.enqueue(idmAuditLog);
         }
 		return response;
@@ -546,50 +547,26 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 	@Override
 	public Response addChildRole(final String roleId, final String childRoleId, String requesterId) {
 		final RolePolicyResponse response = new RolePolicyResponse(ResponseStatus.SUCCESS);
-        IdmAuditLog idmAuditLog = new IdmAuditLog();
-        idmAuditLog.setRequestorUserId(requesterId);
-        idmAuditLog.setAction(AuditAction.ADD_CHILD_ROLE.value());
-        RoleEntity roleEntity = roleDataService.getRole(roleId);
-        idmAuditLog.setTargetRole(roleId, roleEntity.getName());
-        RoleEntity roleEntityChild = roleDataService.getRole(roleId);
-        idmAuditLog.setTargetRole(childRoleId, roleEntityChild.getName());
-        idmAuditLog.setAuditDescription(String.format("Add child role: %s to role: %s", childRoleId, roleId));
 		try {
 			if(roleId == null || childRoleId == null) {
 				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "RoleId or child roleId is null");
 			}
 			roleDataService.validateRole2RoleAddition(roleId, childRoleId);
 			roleDataService.addChildRole(roleId, childRoleId);
-            idmAuditLog.succeed();
 		} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
-            idmAuditLog.fail();
-            idmAuditLog.setFailureReason(e.getCode());
-            idmAuditLog.setException(e);
 		} catch(Throwable e) {
 			LOG.error("Can't add child role", e);
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorText(e.getMessage());
-            idmAuditLog.fail();
-            idmAuditLog.setException(e);
-		}finally {
-            auditLogService.enqueue(idmAuditLog);
-        }
+		}
 		return response;
 	}
 
 	@Override
 	public Response removeChildRole(final String roleId, final String childRoleId, String requesterId) {
 		final RolePolicyResponse response = new RolePolicyResponse(ResponseStatus.SUCCESS);
-        IdmAuditLog idmAuditLog = new IdmAuditLog();
-        idmAuditLog.setRequestorUserId(requesterId);
-        idmAuditLog.setAction(AuditAction.REMOVE_CHILD_ROLE.value());
-        RoleEntity roleEntity = roleDataService.getRole(roleId);
-        idmAuditLog.setTargetRole(roleId, roleEntity.getName());
-        RoleEntity roleEntityChild = roleDataService.getRole(roleId);
-        idmAuditLog.setTargetRole(childRoleId, roleEntityChild.getName());
-        idmAuditLog.setAuditDescription(String.format("Remove child role: %s from role: %s", childRoleId, roleId));
 		try {
 			if(roleId == null || childRoleId == null) {
 				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "RoleId or child roleId is null");
@@ -599,23 +576,14 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 			if(parent == null || child == null) {
 				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND, "Parent Role or Child Role are not found");
 			}
-			
 			roleDataService.removeChildRole(roleId, childRoleId);
-            idmAuditLog.succeed();
 		} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
-            idmAuditLog.fail();
-            idmAuditLog.setFailureReason(e.getCode());
-            idmAuditLog.setException(e);
 		} catch(Throwable e) {
 			LOG.error("Can't remove child role", e);
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorText(e.getMessage());
-            idmAuditLog.fail();
-            idmAuditLog.setException(e);
-        }finally {
-            auditLogService.enqueue(idmAuditLog);
         }
 		return response;
 	}
@@ -699,6 +667,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 	}
 
     @Override
+    @Transactional(readOnly = true)
     public List<Role> findRolesByAttributeValue(String attrName, String attrValue) {
         return roleDozerConverter.convertToDTOList(
                 roleDataService.findRolesByAttributeValue(attrName, attrValue), true);

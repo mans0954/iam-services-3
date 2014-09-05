@@ -46,7 +46,7 @@ public class SendAttestationRequestDelegate extends AbstractEntitlementsDelegate
 			}
 		}
 		sw.stop();
-		LOG.info(String.format("Took %s ms to send attestation requests for user %s", sw.getTime(), employeeId));
+		LOG.info(String.format("Took %s ms to send re-certification requests for user %s", sw.getTime(), employeeId));
 	}
 
 	private void sendNotificationRequest(final UserEntity supervisor, final UserEntity employee, final DelegateExecution execution) {

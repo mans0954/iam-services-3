@@ -18,6 +18,7 @@ import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.internationalization.LocalizedServiceGet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.jws.WebService;
 import java.util.LinkedList;
@@ -65,6 +66,7 @@ public class OrganizationDataServiceImpl extends AbstractBaseService implements 
 
     @Override
     @LocalizedServiceGet
+    @Transactional(readOnly = true)
     public Organization getOrganizationLocalized(final String orgId, String requesterId, final Language language) {
         final OrganizationEntity entity = organizationService.getOrganizationLocalized(orgId, requesterId, languageConverter.convertToEntity(language, false));
         return organizationDozerConverter.convertToDTO(entity, true);
@@ -171,6 +173,7 @@ public class OrganizationDataServiceImpl extends AbstractBaseService implements 
 
     @Override
     @LocalizedServiceGet
+    @Transactional(readOnly = true)
     public List<Organization> findOrganizationsByAttributeValueLocalized(String attrName, String attrValue, final Language language) {
         return organizationDozerConverter.convertToDTOList(
                 organizationService.findOrganizationsByAttributeValue(attrName, attrValue, languageConverter.convertToEntity(language, false)), true);
@@ -187,7 +190,7 @@ public class OrganizationDataServiceImpl extends AbstractBaseService implements 
 	@LocalizedServiceGet
 	public List<Organization> getOrganizationsForUserByTypeLocalized(final String userId, final String requesterId, final String organizationTypeId, final Language language) {
 		final OrganizationSearchBean searchBean = new OrganizationSearchBean();
-		searchBean.setUserId(userId);
+		searchBean.addUserId(userId);
 		searchBean.setOrganizationTypeId(organizationTypeId);
 		searchBean.setDeepCopy(false);
 		return findBeansLocalized(searchBean, requesterId, 0, Integer.MAX_VALUE, language);
@@ -267,6 +270,7 @@ public class OrganizationDataServiceImpl extends AbstractBaseService implements 
     }
 
     @Override
+    @Transactional
     public Response saveOrganization(final Organization organization, final String requestorId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {

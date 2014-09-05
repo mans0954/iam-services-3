@@ -26,15 +26,19 @@ import java.sql.Timestamp;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.mule.module.client.MuleClient;
 import org.openiam.base.AttributeOperationEnum;
+import org.openiam.base.ws.MatchType;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
+import org.openiam.base.ws.SearchParam;
 import org.openiam.dozer.converter.SynchConfigDozerConverter;
+import org.openiam.dozer.converter.SynchReviewDozerConverter;
 import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.AttributeMapSearchBean;
@@ -47,9 +51,8 @@ import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.service.AttributeMapDAO;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.synch.domain.SynchConfigEntity;
-import org.openiam.idm.srvc.synch.dto.SyncResponse;
-import org.openiam.idm.srvc.synch.dto.BulkMigrationConfig;
-import org.openiam.idm.srvc.synch.dto.SynchConfig;
+import org.openiam.idm.srvc.synch.domain.SynchReviewEntity;
+import org.openiam.idm.srvc.synch.dto.*;
 import org.openiam.idm.srvc.synch.srcadapter.AdapterFactory;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.srvc.user.dto.User;
@@ -75,6 +78,10 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
     private SynchConfigDAO synchConfigDao;
     @Autowired
     protected AttributeMapDAO attributeMapDAO;
+    @Autowired
+    protected SynchReviewDAO synchReviewDAO;
+    @Autowired
+    protected SynchReviewDozerConverter synchReviewDozerConverter;
     @Autowired
     private AdapterFactory adapterFactory;
 
@@ -149,6 +156,9 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
 		if (synchConfig == null) {
 			throw new IllegalArgumentException("synchConfig parameter is null");
 		}
+        if (synchConfig.getSynchReviews() == null) { // Explicitly add synch reviews to the entity
+            synchConfig.setSynchReviews(getAllSynchReviewsBySynchConfigId(synchConfig.getSynchConfigId()));
+        }
 		return synchConfigDao.merge(synchConfig);
 				
 	}
@@ -164,7 +174,15 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
 		
 	}
 
-	public SyncResponse startSynchronization(SynchConfigEntity config) {
+    public SyncResponse startSynchronization(SynchConfigEntity config) {
+        return startSynchronization(config, null);
+    }
+
+    public SyncResponse startSynchReview(SynchReviewEntity synchReview) {
+        return startSynchronization(synchReview.getSynchConfig(), synchReview);
+    }
+
+	private SyncResponse startSynchronization(final SynchConfigEntity config, SynchReviewEntity review) {
 
         SyncResponse syncResponse = new SyncResponse(ResponseStatus.SUCCESS);
 
@@ -184,7 +202,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
         }
 
         SyncResponse processCheckResponse = addTask(config.getSynchConfigId());
-        if ( processCheckResponse.getStatus() == ResponseStatus.FAILURE &&
+        if (processCheckResponse.getStatus() == ResponseStatus.FAILURE &&
                 processCheckResponse.getErrorCode() == ResponseCode.FAIL_PROCESS_ALREADY_RUNNING) {
             idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "WARNING: Previous synchronization run is not finished yet");
             auditLogService.enqueue(idmAuditLog);
@@ -192,46 +210,55 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
 
         }
 
-        String preScriptUrl = config.getPreSyncScript();
-        if (StringUtils.isNotBlank(preScriptUrl)) {
-            log.debug("-PRE synchronization script CALLED.^^^^^^^^");
-            Map<String, Object> bindingMap = new HashMap<String, Object>();
-            bindingMap.put("config", synchConfigDozerConverter.convertToDTO(config, false));
-            try {
-                int ret = (Integer)scriptRunner.execute(bindingMap, preScriptUrl);
-                if (ret == SyncConstants.FAIL) {
-                    syncResponse.setStatus(ResponseStatus.FAILURE);
-                    syncResponse.setErrorCode(ResponseCode.SYNCHRONIZATION_PRE_SRIPT_FAILURE);
-                    return syncResponse;
-                }
-                log.debug("-PRE synchronization script COMPLETE.^^^^^^^^");
-                if (ret == SyncConstants.SKIP) {
-                    return syncResponse;
-                }
-
-            } catch(Exception e) {
-                log.error(e);
-            }
-        }
-
         Date startDate = new Date();
-
-        idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "Synchronization started..." + startDate);
+        SynchReviewEntity resultReview = new SynchReviewEntity(config, startDate);
 
         try {
-            SynchConfig configDTO = synchConfigDozerConverter.convertToDTO(config, false);
 
-			SourceAdapter adapt = adapterFactory.create(configDTO);
+            SynchConfig configDTO = synchConfigDozerConverter.convertToDTO(config, false);
+            SynchReview reviewDTO = synchReviewDozerConverter.convertToDTO(review, false);
+
+            String preScriptUrl = config.getPreSyncScript();
+            if (StringUtils.isNotBlank(preScriptUrl)) {
+                log.debug("-PRE synchronization script CALLED.^^^^^^^^");
+                Map<String, Object> bindingMap = new HashMap<String, Object>();
+                bindingMap.put("config", configDTO);
+                if (reviewDTO != null) {
+                    bindingMap.put("review", reviewDTO);
+                }
+
+                try {
+                    int ret = (Integer)scriptRunner.execute(bindingMap, preScriptUrl);
+                    if (ret == SyncConstants.FAIL) {
+                        syncResponse.setStatus(ResponseStatus.FAILURE);
+                        syncResponse.setErrorCode(ResponseCode.SYNCHRONIZATION_PRE_SRIPT_FAILURE);
+                        return syncResponse;
+                    }
+                    log.debug("-PRE synchronization script COMPLETE.^^^^^^^^");
+                    if (ret == SyncConstants.SKIP) {
+                        return syncResponse;
+
+                    } else if (ret == SyncConstants.SKIP_TO_REVIEW) {
+                        resultReview.setSourceRejected(true);
+                        return syncResponse;
+                    }
+
+                } catch(Exception e) {
+                    log.error(e);
+                }
+            }
+
+            idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "Synchronization started..." + startDate);
 
 			long newLastExecTime = System.currentTimeMillis();
 
-            syncResponse = adapt.startSynch(configDTO);
+            SourceAdapter adapt = adapterFactory.create(configDTO);
+            syncResponse = adapt.startSynch(configDTO, review, resultReview);
 			
  			log.debug("SyncReponse updateTime value=" + newLastExecTime);
             idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "SyncReponse updateTime value=" + newLastExecTime);
 
             if (syncResponse.getLastRecordTime() == null) {
-			
 				synchConfigDao.updateExecTime(config.getSynchConfigId(), new Timestamp( newLastExecTime ));
 			} else {
 				synchConfigDao.updateExecTime(config.getSynchConfigId(), new Timestamp( syncResponse.getLastRecordTime().getTime() ));
@@ -278,8 +305,12 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
             idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "ERROR: "+e.getMessage());
         } finally {
             endTask(config.getSynchConfigId());
+            if (resultReview.isSourceRejected() || CollectionUtils.isNotEmpty(resultReview.getReviewRecords())) {
+                synchReviewDAO.save(resultReview);
+            }
             auditLogService.enqueue(idmAuditLog);
         }
+
         return syncResponse;
 	}
 
@@ -435,7 +466,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
         }
 
         if (config.getLastName() != null && !config.getLastName().isEmpty()) {
-            search.setLastName(config.getLastName());
+            search.setLastNameMatchToken(new SearchParam(config.getLastName(), MatchType.EXACT));
         }
 
         if (config.getDeptId() != null && !config.getDeptId().isEmpty()) {
@@ -447,8 +478,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
         }
 
         if (config.getAttributeName() != null && !config.getAttributeName().isEmpty()) {
-            search.setAttributeName(config.getAttributeName());
-            search.setAttributeValue(config.getAttributeValue());
+        	search.addAttribute(config.getAttributeName(), config.getAttributeValue());
         }
 
         if (config.getUserStatus() != null ) {
@@ -533,11 +563,26 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
         return synchConfigDao.getByExample(example, from, size);
     }
 
-
     @Override
     @Transactional
     public void deleteAttributesMapList(List<AttributeMapEntity> attrMap) {
         attributeMapDAO.deleteAttributesMapList(attrMap);
+    }
+
+    @Override
+    @Transactional
+    public void deleteSynchReviewList(List<SynchReviewEntity> reviewList) {
+        if (CollectionUtils.isNotEmpty(reviewList)) {
+            for (SynchReviewEntity e : reviewList) {
+                synchReviewDAO.delete(e);
+            }
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<SynchReviewEntity> getAllSynchReviewsBySynchConfigId(String synchConfigId) {
+        return synchReviewDAO.findAllBySynchConfigId(synchConfigId);
     }
 
     @Override

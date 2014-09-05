@@ -10,7 +10,12 @@ import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.hibernate.criterion.Restrictions;
 import org.openiam.core.dao.BaseDaoImpl;
+import org.openiam.idm.searchbeans.ReconConfigSearchBean;
+import org.openiam.idm.searchbeans.ResourceSearchBean;
+import org.openiam.idm.searchbeans.SearchBean;
 import org.openiam.idm.srvc.recon.domain.ReconciliationConfigEntity;
+import org.openiam.idm.srvc.searchbean.converter.ReconConfigSearchBeanConverter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -21,14 +26,27 @@ public class ReconciliationConfigDAOImpl extends
         BaseDaoImpl<ReconciliationConfigEntity, String> implements
         ReconciliationConfigDAO {
 
+    @Autowired
+    private ReconConfigSearchBeanConverter reconConfigSearchBeanConverter;
+
     public ReconciliationConfigEntity get(String id) {
         return (ReconciliationConfigEntity)getSession().get(ReconciliationConfigEntity.class,id);
     }
 
-    public ReconciliationConfigEntity findByResourceId(
-            java.lang.String resourceId) throws HibernateException {
+    @Override
+    protected Criteria getExampleCriteria(SearchBean searchBean) {
+        Criteria criteria = getCriteria();
+        if(searchBean != null && searchBean instanceof ReconConfigSearchBean) {
+            final ReconConfigSearchBean reconSearchBean = (ReconConfigSearchBean)searchBean;
+            criteria = getExampleCriteria(reconConfigSearchBeanConverter.convert(reconSearchBean));
+        }
+        return criteria;
+    }
+
+    public ReconciliationConfigEntity findByResourceIdByType(
+            java.lang.String resourceId, String type) throws HibernateException {
         Criteria criteria = this.getCriteria().add(
-                Restrictions.eq("resourceId", resourceId));
+                Restrictions.eq("resourceId", resourceId)).add(Restrictions.eq("reconType",type));
         List<ReconciliationConfigEntity> result = (List<ReconciliationConfigEntity>) criteria
                 .list();
         if (CollectionUtils.isEmpty(result)) {
@@ -36,6 +54,15 @@ public class ReconciliationConfigDAOImpl extends
         } else {
             return result.get(0);
         }
+    }
+
+    public List<ReconciliationConfigEntity> findByResourceId(
+            java.lang.String resourceId) throws HibernateException {
+        Criteria criteria = this.getCriteria().add(
+                Restrictions.eq("resourceId", resourceId));
+        List<ReconciliationConfigEntity> result = (List<ReconciliationConfigEntity>) criteria
+                .list();
+        return result;
     }
 
     public void removeByResourceId(java.lang.String resourceId) {

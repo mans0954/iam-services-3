@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 import javax.persistence.Column;
+import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
@@ -19,9 +20,8 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class AuthStateEntity implements java.io.Serializable {
 
-    @Id
-    @Column(name = "USER_ID",length = 32)
-    private String userId;
+	@EmbeddedId
+	private AuthStateId id;
     
     @Column(name="AUTH_STATE", precision =5, scale = 1)
     private BigDecimal authState;
@@ -45,22 +45,14 @@ public class AuthStateEntity implements java.io.Serializable {
     public AuthStateEntity() {
     }
 
-    public AuthStateEntity(String aa, BigDecimal authState, Long expiration,
-                     String token, String userId) {
+    public AuthStateEntity(final String aa, final BigDecimal authState, final Long expiration,
+                     	   final String token, final String userId, final String tokenType) {
         super();
         this.aa = aa;
         this.authState = authState;
         this.expiration = expiration;
         this.token = token;
-        this.userId = userId;
-    }
-
-    public String getUserId() {
-        return this.userId;
-    }
-
-    public void setUserId(String userId) {
-        this.userId = userId;
+        this.id = new AuthStateId(userId, tokenType);
     }
 
     public BigDecimal getAuthState() {
@@ -111,6 +103,14 @@ public class AuthStateEntity implements java.io.Serializable {
         this.ipAddress = ipAddress;
     }
 
+	public AuthStateId getId() {
+		return id;
+	}
+
+	public void setId(AuthStateId id) {
+		this.id = id;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -120,12 +120,12 @@ public class AuthStateEntity implements java.io.Serializable {
 				+ ((authState == null) ? 0 : authState.hashCode());
 		result = prime * result
 				+ ((expiration == null) ? 0 : expiration.hashCode());
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		result = prime * result
 				+ ((ipAddress == null) ? 0 : ipAddress.hashCode());
 		result = prime * result
 				+ ((lastLogin == null) ? 0 : lastLogin.hashCode());
 		result = prime * result + ((token == null) ? 0 : token.hashCode());
-		result = prime * result + ((userId == null) ? 0 : userId.hashCode());
 		return result;
 	}
 
@@ -153,6 +153,11 @@ public class AuthStateEntity implements java.io.Serializable {
 				return false;
 		} else if (!expiration.equals(other.expiration))
 			return false;
+		if (id == null) {
+			if (other.id != null)
+				return false;
+		} else if (!id.equals(other.id))
+			return false;
 		if (ipAddress == null) {
 			if (other.ipAddress != null)
 				return false;
@@ -168,22 +173,16 @@ public class AuthStateEntity implements java.io.Serializable {
 				return false;
 		} else if (!token.equals(other.token))
 			return false;
-		if (userId == null) {
-			if (other.userId != null)
-				return false;
-		} else if (!userId.equals(other.userId))
-			return false;
 		return true;
 	}
 
 	@Override
 	public String toString() {
 		return String
-				.format("AuthState [userId=%s, authState=%s, token=%s, aa=%s, expiration=%s, lastLogin=%s, ipAddress=%s]",
-						userId, authState, token, aa, expiration, lastLogin,
+				.format("AuthStateEntity [id=%s, authState=%s, token=%s, aa=%s, expiration=%s, lastLogin=%s, ipAddress=%s]",
+						id, authState, token, aa, expiration, lastLogin,
 						ipAddress);
 	}
-    
-    
 
+	
 }

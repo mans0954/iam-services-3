@@ -44,9 +44,9 @@ import java.util.List;
 })
 public class LookupUserResponse extends Response{
 
-	List<ExtensibleAttribute> attrList;
-    String principalName;
-    String managedSysId;
+        List<ExtensibleAttribute> attrList;
+        String principalName;
+        String managedSysId;
 
 	public LookupUserResponse() {
 		super();

@@ -28,6 +28,7 @@ import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.meta.service.MetadataTypeDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.jws.WebParam;
 import javax.jws.WebService;
@@ -71,6 +72,7 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
     private AuthLevelAttributeDozerConverter authLevelAttributeDozerConverter;
 
 	@Override
+    @Transactional(readOnly = true)
 	public AuthLevelAttribute getAuthLevelAttribute(String id) {
 		final AuthLevelAttributeEntity entity = contentProviderService.getAuthLevelAttribute(id);
 		return authLevelAttributeDozerConverter.convertToDTO(entity, true);
@@ -185,6 +187,7 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
 	}
 
 	@Override
+    @Transactional(readOnly = true)
 	public AuthLevelGrouping getAuthLevelGrouping(String id) {
 		final AuthLevelGroupingEntity entity = contentProviderService.getAuthLevelGrouping(id);
 		return authLevelGroupingDozerConverter.convertToDTO(entity, true);
@@ -196,11 +199,13 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
 	}
 	
     @Override
+    @Transactional(readOnly = true)
     public List<AuthLevelGrouping> getAuthLevelGroupingList() {
     	return authLevelGroupingDozerConverter.convertToDTOList(contentProviderService.getAuthLevelGroupingList(), true);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ContentProvider getContentProvider(String providerId) {
     	final ContentProviderEntity entity = contentProviderService.getContentProvider(providerId);
         final ContentProvider dto = (entity != null) ? contentProviderDozerConverter.convertToDTO(entity, true) : null;
@@ -208,6 +213,7 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<ContentProvider> findBeans(ContentProviderSearchBean searchBean,Integer from, Integer size) {
         List<ContentProviderEntity> result = contentProviderService.findBeans(contentProviderSearchBeanConverter.convert(searchBean), from, size);
         return contentProviderDozerConverter.convertToDTOList(result, searchBean.isDeepCopy());
@@ -387,6 +393,7 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
 
     @Override
     @Deprecated
+    @Transactional(readOnly = true)
     public List<URIPattern> getUriPatternsForProvider(String providerId, Integer from, Integer size) {
         URIPatternEntity example = new URIPatternEntity();
         ContentProviderEntity provider = new ContentProviderEntity();
@@ -410,6 +417,7 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<URIPattern> findUriPatterns(URIPatternSearchBean searchBean, Integer from, Integer size) {
         final List<URIPatternEntity> entityList = contentProviderService.getUriPatternsList(uriPatternSearchBeanConverter.convert(searchBean), from, size);
         return uriPatternDozerConverter.convertToDTOList(entityList, searchBean.isDeepCopy());
@@ -421,6 +429,7 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
     }
 
     @Override
+    @Transactional(readOnly = true)
     public URIPattern getURIPattern(String patternId) {
         return uriPatternDozerConverter.convertToDTO(contentProviderService.getURIPattern(patternId), true);
     }
@@ -504,6 +513,7 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<URIPatternMeta> getMetaDataForPattern(String patternId, Integer from, Integer size) {
         URIPatternMetaEntity example = new URIPatternMetaEntity();
         URIPatternEntity pattern = new URIPatternEntity();
@@ -523,6 +533,7 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
         return contentProviderService.getNumOfMetaData(example);
     }
     @Override
+    @Transactional(readOnly = true)
     public URIPatternMeta getURIPatternMeta(String metaId){
         return uriPatternMetaDozerConverter.convertToDTO(contentProviderService.getURIPatternMeta(metaId), true);
     }
@@ -628,4 +639,24 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
     public List<URIPatternMetaType> getAllMetaType() {
         return uriPatternMetaTypeDozerConverter.convertToDTOList(contentProviderService.getAllMetaType(), false);
     }
+
+	@Override
+	public Response createDefaultURIPatterns(String providerId) {
+		 final Response response = new Response(ResponseStatus.SUCCESS);
+		 try {
+			 if (StringUtils.isBlank(providerId)) {
+				 throw new  BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			 }
+			 contentProviderService.createDefaultURIPatterns(providerId);
+		 } catch(BasicDataServiceException e) {
+            log.error(e.getMessage(), e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(e.getCode());
+        } catch(Throwable e) {
+            log.error(e.getMessage(), e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorText(e.getMessage());
+        }
+        return response;
+	}
 }

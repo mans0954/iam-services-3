@@ -47,7 +47,7 @@ import java.util.Set;
                                               "superiors", "srcSystemId", "provisionModel", "notifyTargetSystems",
                                               "emailCredentialsToNewUsers", "emailCredentialsToSupervisor", "provisionOnStartDate",
                                               "addInitialPasswordToHistory", "passwordPolicy", "skipPreprocessor",
-                                              "skipPostProcessor","parentAuditLogId"})
+                                              "skipPostProcessor","parentAuditLogId","notProvisioninResourcesIds"})
 public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
     /**
      *
@@ -59,9 +59,7 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
 //    protected List<Organization> userAffiliations;
 //    protected List<UserResourceAssociation> userResourceList;
     protected Set<User> superiors = new HashSet<User>(0);
-    @XmlTransient
     protected Set<String> notProvisioninResourcesIds = new HashSet<String>();
-
 
     public ProvisionModelEnum provisionModel;
 
@@ -86,7 +84,7 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
     private String parentAuditLogId;
     /*
      * ID of the system where this request came from. If this value is set, then
-     * in the modify operation, that resource will not be updated.
+     * in the modify operation, that ManagedSys ID will not be updated.
      */
     protected String srcSystemId;
     /*
@@ -127,6 +125,7 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         this.costCenter = user.getCostCenter();
         this.startDate = user.getStartDate();
         this.lastDate = user.getLastDate();
+        this.claimDate = user.getClaimDate();
         this.nickname = user.getNickname();
         this.maidenName = user.getMaidenName();
         this.passwordTheme = user.getPasswordTheme();
@@ -134,8 +133,6 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         this.showInSearch = user.getShowInSearch();
         this.alternateContactId = user.getAlternateContactId();
         this.createdBy = user.getCreatedBy();
-        this.startDate = user.getStartDate();
-        this.lastDate = user.getLastDate();
         this.userOwnerId = user.getUserOwnerId();
         this.dateChallengeRespChanged = user.getDateChallengeRespChanged();
         this.datePasswordChanged = user.getDatePasswordChanged();
@@ -188,6 +185,7 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         user.setCostCenter(costCenter);
         user.setStartDate(startDate);
         user.setLastDate(lastDate);
+        user.setClaimDate(claimDate);
         user.setNickname(nickname);
         user.setMaidenName(maidenName);
         user.setPasswordTheme(passwordTheme);

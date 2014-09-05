@@ -20,6 +20,7 @@ package org.openiam.provision.type;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.base.BaseAttribute;
 import org.openiam.base.BaseAttributeContainer;
 import org.openiam.idm.srvc.synch.dto.Attribute;
 import org.openiam.util.StringUtil;
@@ -28,8 +29,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 
 /**
@@ -267,5 +267,59 @@ public class ExtensibleAttribute extends Attribute implements Serializable {
         this.attributeContainer = attributeContainer;
     }
 
+    public boolean containsAnyValue() {
+
+        if (value != null) {
+            return true;
+        }
+        if (valueAsByteArray != null && valueAsByteArray.length > 0) {
+            return true;
+        }
+        if (valueList != null && !valueList.isEmpty()) {
+            return true;
+        }
+        return attributeContainer != null
+                && attributeContainer.getAttributeList() != null
+                && !attributeContainer.getAttributeList().isEmpty();
+    }
+
+    public boolean valuesAreEqual(ExtensibleAttribute o) {
+        if (this == o) return true;
+        if (!containsAnyValue()) {
+            return o == null || !o.containsAnyValue();
+        }
+        if (o == null || !o.containsAnyValue()) {
+            return false;
+        }
+
+        if (value != null && o.value != null && value.equals(o.value)) {
+            return true;
+        }
+
+        boolean thisIsBArray = (valueAsByteArray != null && valueAsByteArray.length > 0);
+        boolean oIsBArray = (o.valueAsByteArray != null && o.valueAsByteArray.length > 0);
+        if (thisIsBArray != oIsBArray) {
+            return false;
+        }
+        if(thisIsBArray) {
+            return Arrays.equals(valueAsByteArray, o.valueAsByteArray);
+        }
+
+        return getStringValues().equals(o.getStringValues());
+    }
+
+    public Set<String> getStringValues() {
+        Set<String> values = new HashSet<>();
+        if (value != null) {
+            values.add(value);
+        } else if (valueList != null) {
+            values.addAll(valueList);
+        } else if (attributeContainer != null) {
+            for(BaseAttribute baseAttr : attributeContainer.getAttributeList()) {
+                values.add(baseAttr.getValue());
+            }
+        }
+        return values;
+    }
 
 }

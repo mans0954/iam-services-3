@@ -27,6 +27,7 @@ import org.openiam.idm.srvc.lang.dto.LanguageMapping;
 import org.openiam.internationalization.LocalizedServiceGet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service("languageWebService")
 @WebService(endpointInterface = "org.openiam.idm.srvc.lang.service.LanguageWebService", targetNamespace = "urn:idm.openiam.org/srvc/lang/service", portName = "LanguageWebServicePort", serviceName = "LanguageWebService")
@@ -42,6 +43,7 @@ public class LanguageWebServiceImpl implements LanguageWebService {
 
     @Override
     @LocalizedServiceGet
+    @Transactional(readOnly = true)
     public List<Language> getUsedLanguages(final Language language) {
         final List<LanguageEntity> entityList = languageService.getUsedLanguages();
         return (entityList != null) ? languageDozerConverter.convertToDTOList(entityList, true) : null;
@@ -49,6 +51,7 @@ public class LanguageWebServiceImpl implements LanguageWebService {
 
     @Override
     @LocalizedServiceGet
+    @Transactional(readOnly = true)
     public List<Language> findBeans(final LanguageSearchBean searchBean, final int from, final int size,
             final Language language) {
         final List<LanguageEntity> entityList = languageService.findBeans(searchBean, from, size,

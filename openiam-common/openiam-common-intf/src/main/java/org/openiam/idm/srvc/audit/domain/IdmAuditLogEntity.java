@@ -84,6 +84,9 @@ public class IdmAuditLogEntity implements Serializable {
     
     public void addChild(final IdmAuditLogEntity entity) {
     	if(entity != null) {
+            if(entity.getResult() == null) {
+                entity.setResult(this.getResult());
+            }
     		this.childLogs.add(entity);
     	}
     }
@@ -269,6 +272,7 @@ public class IdmAuditLogEntity implements Serializable {
 
         IdmAuditLogEntity that = (IdmAuditLogEntity) o;
 
+        if (id != null ? !id.equals(that.id) : that.id != null) return false;
         if (action != null ? !action.equals(that.action) : that.action != null) return false;
         if (clientIP != null ? !clientIP.equals(that.clientIP) : that.clientIP != null) return false;
         if (correlationId != null ? !correlationId.equals(that.correlationId) : that.correlationId != null)
@@ -288,6 +292,7 @@ public class IdmAuditLogEntity implements Serializable {
     @Override
     public int hashCode() {
         int result = userId != null ? userId.hashCode() : 0;
+        result = 31 * result + (id != null ? id.hashCode() : 0);
         result = 31 * result + (principal != null ? principal.hashCode() : 0);
         result = 31 * result + (managedSysId != null ? managedSysId.hashCode() : 0);
         result = 31 * result + (timestamp != null ? timestamp.hashCode() : 0);

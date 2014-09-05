@@ -3,6 +3,7 @@ package org.openiam.idm.srvc.role.service;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.RoleSearchBean;
 import org.openiam.idm.srvc.lang.domain.LanguageEntity;
+import org.openiam.idm.srvc.role.domain.RoleAttributeEntity;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.domain.RolePolicyEntity;
 import org.openiam.idm.srvc.role.dto.Role;
@@ -174,4 +175,8 @@ public interface RoleDataService {
     public void validateRole2RoleAddition(final String parentId, final String memberId) throws BasicDataServiceException;
     
     public Role getRoleDTO(final String roleId);
+
+    public void addAttribute(RoleAttributeEntity attribute);
+    public void updateAttribute(RoleAttributeEntity attribute);
+
 }

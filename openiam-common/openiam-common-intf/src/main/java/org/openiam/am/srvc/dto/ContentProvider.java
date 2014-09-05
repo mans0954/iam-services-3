@@ -26,12 +26,14 @@ import java.util.concurrent.atomic.AtomicInteger;
         /*"contextPath",*/
         "resourceId",
         "resourceName",
+        "resourceCoorelatedName",
         "patternSet",
         "serverSet",
         "managedSysId",
         "url",
         "themeId",
-        "groupingXrefs"
+        "groupingXrefs",
+        "showOnApplicationPage"
 })
 @DozerDTOCorrespondence(ContentProviderEntity.class)
 public class ContentProvider extends KeyNameDTO {
@@ -42,10 +44,12 @@ public class ContentProvider extends KeyNameDTO {
     //private String contextPath;
 	private String resourceId;
     private String resourceName;
+    private String resourceCoorelatedName;
 	private Set<URIPattern> patternSet;
 	private String url;
 	private Set<ContentProviderServer> serverSet;
 	private String themeId;
+	private boolean showOnApplicationPage = true;
 	private Set<AuthLevelGroupingContentProviderXref> groupingXrefs;
 	
 	/*
@@ -164,6 +168,19 @@ public class ContentProvider extends KeyNameDTO {
 			Set<AuthLevelGroupingContentProviderXref> groupingXrefs) {
 		this.groupingXrefs = groupingXrefs;
 	}
+	public boolean isShowOnApplicationPage() {
+		return showOnApplicationPage;
+	}
+	public void setShowOnApplicationPage(boolean showOnApplicationPage) {
+		this.showOnApplicationPage = showOnApplicationPage;
+	}
+	
+	public String getResourceCoorelatedName() {
+		return resourceCoorelatedName;
+	}
+	public void setResourceCoorelatedName(String resourceCoorelatedName) {
+		this.resourceCoorelatedName = resourceCoorelatedName;
+	}
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -176,8 +193,10 @@ public class ContentProvider extends KeyNameDTO {
 				+ ((managedSysId == null) ? 0 : managedSysId.hashCode());
 		result = prime * result
 				+ ((resourceId == null) ? 0 : resourceId.hashCode());
+		result = prime * result + (showOnApplicationPage ? 1231 : 1237);
 		result = prime * result + ((themeId == null) ? 0 : themeId.hashCode());
 		result = prime * result + ((url == null) ? 0 : url.hashCode());
+		result = prime * result + ((themeId == null) ? 0 : themeId.hashCode());
 		return result;
 	}
 	@Override
@@ -210,6 +229,8 @@ public class ContentProvider extends KeyNameDTO {
 			if (other.resourceId != null)
 				return false;
 		} else if (!resourceId.equals(other.resourceId))
+			return false;
+		if (showOnApplicationPage != other.showOnApplicationPage)
 			return false;
 		if (themeId == null) {
 			if (other.themeId != null)

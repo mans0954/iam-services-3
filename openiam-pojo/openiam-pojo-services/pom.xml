@@ -134,15 +134,9 @@
         
         <dependency>
    			<groupId>org.hibernate</groupId>
-   			<artifactId>hibernate-search-orm</artifactId>
-   			<version>${hibernate.search.orm.version}</version>
+   			<artifactId>hibernate-search</artifactId>
+   			<version>${hibernatesearch.version}</version>
    			<scope>provided</scope>
-		</dependency>
-		
-		<dependency>
-   			<groupId>org.hibernate</groupId>
-   			<artifactId>hibernate-search-analyzers</artifactId>
-   			<version>${hibernate.search.analyzers.version}</version>
 		</dependency>
 		
 		<dependency>
@@ -166,12 +160,12 @@
             <groupId>c3p0</groupId>
             <artifactId>c3p0</artifactId>
         </dependency>
-		<!--
+
         <dependency>
             <groupId>javassist</groupId>
             <artifactId>javassist</artifactId>
         </dependency>
-		-->
+
         <dependency>
             <groupId>joda-time</groupId>
             <artifactId>joda-time</artifactId>

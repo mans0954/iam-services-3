@@ -23,24 +23,26 @@ import java.util.Set;
         "keySet",
         "name",
 		"organizationTypeIdSet",
-		"userId",
-		"parentId",
-		"childId",
+//		"userId",
+//		"parentId",
+//		"childId",
 		"validParentTypeId",
         "internalOrgId",
-        "attributes"
+        "attributes",
+        "metadataType"
 })
-public class OrganizationSearchBean extends AbstractSearchBean<Organization, String> implements SearchBean<Organization, String>,
+public class OrganizationSearchBean extends EntitlementsSearchBean<Organization, String> implements SearchBean<Organization, String>,
         Serializable {
     private static final long serialVersionUID = 1L;
     private Set<String> keySet;
     private String name;
     private Set<String> organizationTypeIdSet;
-    private String userId;
-    private String parentId;
-    private String childId;
+//    private String userId;
+//    private String parentId;
+//    private String childId;
     private String validParentTypeId;
     private String internalOrgId;
+    private String metadataType;
     private List<Tuple<String,String>> attributes;
 
     public String getName() {
@@ -96,6 +98,14 @@ public class OrganizationSearchBean extends AbstractSearchBean<Organization, Str
         this.addKey(key);
     }
 
+    public String getMetadataType() {
+        return metadataType;
+    }
+
+    public void setMetadataType(String metadataType) {
+        this.metadataType = metadataType;
+    }
+
     public Set<String> getKeys() {
         return keySet;
     }
@@ -121,29 +131,29 @@ public class OrganizationSearchBean extends AbstractSearchBean<Organization, Str
         this.keySet = keySet;
     }
 
-	public String getUserId() {
-		return userId;
-	}
-
-	public void setUserId(String userId) {
-		this.userId = userId;
-	}
-
-	public String getParentId() {
-		return parentId;
-	}
-
-	public void setParentId(String parentId) {
-		this.parentId = parentId;
-	}
-
-	public String getChildId() {
-		return childId;
-	}
-
-	public void setChildId(String childId) {
-		this.childId = childId;
-	}
+//	public String getUserId() {
+//		return userId;
+//	}
+//
+//	public void setUserId(String userId) {
+//		this.userId = userId;
+//	}
+//
+//	public String getParentId() {
+//		return parentId;
+//	}
+//
+//	public void setParentId(String parentId) {
+//		this.parentId = parentId;
+//	}
+//
+//	public String getChildId() {
+//		return childId;
+//	}
+//
+//	public void setChildId(String childId) {
+//		this.childId = childId;
+//	}
 
 	public String getValidParentTypeId() {
 		return validParentTypeId;
@@ -187,12 +197,12 @@ public class OrganizationSearchBean extends AbstractSearchBean<Organization, Str
 
         OrganizationSearchBean that = (OrganizationSearchBean) o;
 
-        if (childId != null ? !childId.equals(that.childId) : that.childId != null) return false;
+//        if (childId != null ? !childId.equals(that.childId) : that.childId != null) return false;
         if (internalOrgId != null ? !internalOrgId.equals(that.internalOrgId) : that.internalOrgId != null)
             return false;
         if (name != null ? !name.equals(that.name) : that.name != null) return false;
-        if (parentId != null ? !parentId.equals(that.parentId) : that.parentId != null) return false;
-        if (userId != null ? !userId.equals(that.userId) : that.userId != null) return false;
+//        if (parentId != null ? !parentId.equals(that.parentId) : that.parentId != null) return false;
+//        if (userId != null ? !userId.equals(that.userId) : that.userId != null) return false;
         if (validParentTypeId != null ? !validParentTypeId.equals(that.validParentTypeId) : that.validParentTypeId != null)
             return false;
 
@@ -203,9 +213,9 @@ public class OrganizationSearchBean extends AbstractSearchBean<Organization, Str
     public int hashCode() {
         int result = super.hashCode();
         result = 31 * result + (name != null ? name.hashCode() : 0);
-        result = 31 * result + (userId != null ? userId.hashCode() : 0);
-        result = 31 * result + (parentId != null ? parentId.hashCode() : 0);
-        result = 31 * result + (childId != null ? childId.hashCode() : 0);
+//        result = 31 * result + (userId != null ? userId.hashCode() : 0);
+//        result = 31 * result + (parentId != null ? parentId.hashCode() : 0);
+//        result = 31 * result + (childId != null ? childId.hashCode() : 0);
         result = 31 * result + (validParentTypeId != null ? validParentTypeId.hashCode() : 0);
         result = 31 * result + (internalOrgId != null ? internalOrgId.hashCode() : 0);
         return result;

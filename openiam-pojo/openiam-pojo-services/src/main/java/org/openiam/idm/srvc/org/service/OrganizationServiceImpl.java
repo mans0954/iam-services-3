@@ -10,6 +10,8 @@ import org.openiam.base.ws.ResponseCode;
 import org.openiam.dozer.converter.OrganizationDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.OrganizationSearchBean;
+import org.openiam.idm.srvc.grp.domain.GroupEntity;
+import org.openiam.idm.srvc.grp.service.GroupDAO;
 import org.openiam.idm.srvc.lang.domain.LanguageEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 import org.openiam.idm.srvc.meta.service.MetadataElementDAO;
@@ -80,6 +82,9 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
 	
     @Autowired
     private MetadataTypeDAO typeDAO;
+    
+    @Autowired
+    private GroupDAO groupDAO;
 
     private Map<String, Set<String>> organizationTree;
 
@@ -89,11 +94,11 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
     private TransactionTemplate transactionTemplate;
 
 
-    @Value("${org.openiam.delegation.filter.organization}")
+    @Value("${org.openiam.organization.type.id}")
     private String organizationTypeId;
-    @Value("${org.openiam.delegation.filter.division}")
+    @Value("${org.openiam.division.type.id}")
     private String divisionTypeId;
-    @Value("${org.openiam.delegation.filter.department}")
+    @Value("${org.openiam.department.type.id}")
     private String departmentTypeId;
 
     @Override
@@ -222,17 +227,22 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
             	mergeAttributes(entity, dbOrg);
                 mergeParents(entity, dbOrg);
                 entity.setChildOrganizations(dbOrg.getChildOrganizations());
-//                entity.setParentOrganizations(dbOrg.getParentOrganizations());
+                entity.setParentOrganizations(dbOrg.getParentOrganizations());
                 entity.setUsers(dbOrg.getUsers());
                 entity.setAdminResource(dbOrg.getAdminResource());
                 if(entity.getAdminResource() == null) {
                 	entity.setAdminResource(getNewAdminResource(entity, requestorId));
                 }
+                entity.getAdminResource().setCoorelatedName(entity.getName());
                 entity.setApproverAssociations(dbOrg.getApproverAssociations());
+                entity.setLstUpdate(Calendar.getInstance().getTime());
+                entity.setLstUpdatedBy(requestorId);
             }
         } else {
         	entity.setAdminResource(getNewAdminResource(entity, requestorId));
             mergeParents(entity, null);
+            entity.setCreateDate(Calendar.getInstance().getTime());
+            entity.setCreatedBy(requestorId);
             orgDao.save(entity);
             entity.addApproverAssociation(createDefaultApproverAssociations(entity, requestorId));
         }
@@ -245,6 +255,7 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
 		adminResource.setName(String.format("ORG_ADMIN_%s_%s", entity.getName(), RandomStringUtils.randomAlphanumeric(2)));
 		adminResource.setResourceType(resourceTypeDao.findById(adminResourceTypeId));
 		adminResource.addUser(userDAO.findById(requestorId));
+		adminResource.setCoorelatedName(entity.getName());
 		return adminResource;
 	}
     
@@ -389,6 +400,15 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
     public void deleteOrganization(String orgId) {
         final OrganizationEntity entity = orgDao.findById(orgId);
         if (entity != null) {
+        	final GroupEntity example = new GroupEntity();
+        	example.setCompany(entity);
+        	final List<GroupEntity> groups = groupDAO.getByExample(example);
+        	if(groups != null) {
+        		for(final GroupEntity group : groups) {
+        			group.setCompany(null);
+        			groupDAO.update(group);
+        		}
+        	}
             orgDao.delete(entity);
         }
     }

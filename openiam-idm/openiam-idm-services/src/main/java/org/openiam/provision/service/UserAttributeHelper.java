@@ -119,7 +119,7 @@ public class UserAttributeHelper {
             name = "USER_ATTRIBUTE." + attr.getName();
             extUser.getAttributes().add(
                     new ExtensibleAttribute(name, attr.getValue(), attr
-                            .getMetadataElementId()));
+                            .getMetadataId()));
         }
         // primary identity
         List<Login> principalList = pUser.getPrincipalList();
@@ -268,7 +268,7 @@ public class UserAttributeHelper {
             String name = extUser.getName();
             name = "USER_ATTRIBUTE." + attr.getName();
             ExtensibleAttribute extAttr = new ExtensibleAttribute(name,
-                    attr.getValue(), attr.getMetadataElementId());
+                    attr.getValue(), attr.getMetadataId());
             if (attr.getOperation() == (AttributeOperationEnum.DELETE)) {
                 extAttr.setOperation(AttributeOperationEnum.DELETE.getValue());
             } else {
@@ -313,7 +313,7 @@ public class UserAttributeHelper {
                 // not found add to the
                 ExtensibleAttribute extAttr = new ExtensibleAttribute(
                         "USER_ATTRIBUTE." + attr.getName(), attr.getValue(),
-                        attr.getMetadataElementId());
+                        attr.getMetadataId());
                 extAttr.setOperation(0);
                 extUser.getAttributes().add(extAttr);
 
@@ -727,6 +727,7 @@ public class UserAttributeHelper {
         newUser.setCostCenter(user.getCostCenter());
         newUser.setStartDate(user.getStartDate());
         newUser.setLastDate(user.getLastDate());
+        newUser.setClaimDate(user.getClaimDate());
         newUser.setNickname(user.getNickname());
         newUser.setMaidenName(user.getMaidenName());
         newUser.setPasswordTheme(user.getPasswordTheme());

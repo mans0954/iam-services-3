@@ -23,6 +23,7 @@ package org.openiam.provision.type;
 
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.ArrayUtils;
 import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.map.ObjectMapper;
 
@@ -70,6 +71,8 @@ public class ExtensibleObject implements java.io.Serializable {
 	
 	protected List<ExtensibleAttribute> attributes = new ArrayList<ExtensibleAttribute>();
 
+    protected static final String[] PROTECTED_PROPERTIES = {"password", "accountpassword", "unicodepwd", "userpassword"};
+
 	public ExtensibleObject() {
 		operation = 0;
 	}
@@ -110,13 +113,17 @@ public class ExtensibleObject implements java.io.Serializable {
         Properties attrVals = new Properties();
         ObjectMapper mapper = new ObjectMapper();
         for(ExtensibleAttribute attribute : this.getAttributes()) {
-            if (attribute.getValue() != null) {
-                attrVals.put(attribute.getName(), attribute.getValue());
+            Object val = null;
+            if (ArrayUtils.contains(PROTECTED_PROPERTIES, attribute.getName().toLowerCase())) { //TODO: Consider using of 'HIDDEN' mark from lookupAttributes instead of hardcoded array
+                val = "PROTECTED";
+            } else if (attribute.getValue() != null) {
+                val = attribute.getValue();
             } else if (attribute.getAttributeContainer() != null) {
-                attrVals.put(attribute.getName(), attribute.getAttributeContainer());
+                val = attribute.getAttributeContainer();
             } else if (CollectionUtils.isNotEmpty(attribute.getValueList())) {
-                attrVals.put(attribute.getName(), attribute.getValueList());
+                val = attribute.getValueList();
             }
+            attrVals.put(attribute.getName(), val);
         }
         return mapper.writeValueAsString(attrVals);
     }

@@ -134,16 +134,16 @@ public class LdapConnectionMgr implements ConnectionMgr {
 
             }
             // no secondary repository
-            log.debug("Throw communication exception." + ce.toString());
+            log.debug("Throw communication exception.", ce);
             throw ce;
 
 
         } catch(NamingException ne) {
-            log.error(ne.toString());
+            log.error(ne.toString(), ne);
             throw ne;
 
-        } catch (Exception e) {
-            log.error(e.toString());
+        } catch (Throwable e) {
+            log.error(e.toString(), e);
             return null;
         }
 

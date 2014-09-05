@@ -28,6 +28,7 @@ import org.openiam.dozer.converter.AttributeMapDozerConverter;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
 import org.openiam.idm.srvc.synch.dto.SynchConfig;
+import org.openiam.idm.srvc.synch.dto.SynchReview;
 import org.openiam.idm.srvc.synch.service.IdentitySynchService;
 import org.openiam.idm.srvc.synch.service.PolicyMapTransformScript;
 import org.openiam.idm.srvc.synch.service.TransformScript;
@@ -36,9 +37,7 @@ import org.openiam.idm.srvc.synch.ws.IdentitySynchWebService;
 import org.openiam.script.ScriptIntegration;
 import org.openiam.util.SpringContextProvider;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 /**
  * Factory to create the scripts that are used in the synchronziation process.
@@ -49,16 +48,30 @@ public class SynchScriptFactory {
 
 	private static final Log log = LogFactory.getLog(SynchScriptFactory.class);
 	
-	private static Object createScript(String scriptName) throws ClassNotFoundException, IOException {
-		return SpringContextProvider.getBean("configurableGroovyScriptEngine", ScriptIntegration.class).instantiateClass(null, scriptName);
+	private static Object createScript(String scriptName, Map<String, Object> bindingMap) throws ClassNotFoundException, IOException {
+		return SpringContextProvider.getBean("configurableGroovyScriptEngine", ScriptIntegration.class).instantiateClass(bindingMap, scriptName);
 	}
 	
-	public static ValidationScript createValidationScript(String scriptName) throws ClassNotFoundException, IOException {
-		return (ValidationScript)createScript(scriptName);
-		
+	public static ValidationScript createValidationScript(SynchConfig config, SynchReview review) throws ClassNotFoundException, IOException {
+        Map<String, Object> bindingMap = new HashMap<String, Object>();
+        if (config != null) {
+            bindingMap.put("config", config);
+        }
+        if (review != null) {
+            bindingMap.put("review", review);
+        }
+		return (ValidationScript)createScript(config.getValidationRule(), bindingMap);
 	}
 
-	public static List<TransformScript> createTransformationScript(SynchConfig config) throws ClassNotFoundException, IOException {
+	public static List<TransformScript> createTransformationScript(SynchConfig config, SynchReview review) throws ClassNotFoundException, IOException {
+
+        Map<String, Object> bindingMap = new HashMap<String, Object>();
+        bindingMap.put("config", config);
+        bindingMap.put("synchConfigId", config.getSynchConfigId());
+
+        if (review != null) {
+            bindingMap.put("review", review);
+        }
 
         LinkedList<TransformScript> scripts = new LinkedList<TransformScript>();
 
@@ -71,14 +84,11 @@ public class SynchScriptFactory {
             List<AttributeMap> attrMap = attributeMapDozerConverter.convertToDTOList(attrMapEntity, true);
 
             TransformScript transformScript = new PolicyMapTransformScript(attrMap);
-            transformScript.setApplicationContext(SpringContextProvider.getApplicationContext());
-            transformScript.setSynchConfigId(config.getSynchConfigId());
             scripts.add(transformScript);
 
         }
         if (config.getUseTransformationScript() && StringUtils.isNotBlank(config.getTransformationRule())) {
-            TransformScript script = (TransformScript)createScript(config.getTransformationRule());
-            script.setSynchConfigId(config.getSynchConfigId());
+            TransformScript script = (TransformScript)createScript(config.getTransformationRule(), bindingMap);
             if (config.getPolicyMapBeforeTransformation()) {
                 scripts.addLast(script);
             } else {

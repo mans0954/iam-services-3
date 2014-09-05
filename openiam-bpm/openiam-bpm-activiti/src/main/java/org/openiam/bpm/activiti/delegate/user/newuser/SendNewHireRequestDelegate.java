@@ -37,33 +37,34 @@ import com.thoughtworks.xstream.XStream;
 
 public class SendNewHireRequestDelegate extends AbstractEntitlementsDelegate {
 
-	public SendNewHireRequestDelegate() {
-		super();
-	}
+    public SendNewHireRequestDelegate() {
+        super();
+    }
 
-	private NewUserProfileRequestModel profileModel;
-	
-	@Override
-	public void execute(DelegateExecution execution) throws Exception {
-		profileModel = getObjectVariable(execution, ActivitiConstants.REQUEST, NewUserProfileRequestModel.class);
-		
-		final Collection<String> candidateUserIds = activitiHelper.getCandidateUserIds(execution, null, profileModel.getSupervisorIds());
-		for(final String candidateId : candidateUserIds) {
-			final UserEntity entity = getUserEntity(candidateId);
-			if(entity != null) {
-				sendNotificationRequest(entity, execution);
-			}
-		}
-	}
-	
-	private void sendNotificationRequest(final UserEntity user, final DelegateExecution execution) {
-		final NotificationRequest request = new NotificationRequest();
+    private NewUserProfileRequestModel profileModel;
+
+    @Override
+    public void execute(DelegateExecution execution) throws Exception {
+        profileModel = getObjectVariable(execution, ActivitiConstants.REQUEST, NewUserProfileRequestModel.class);
+
+        final Collection<String> candidateUserIds = activitiHelper.getCandidateUserIds(execution, null, profileModel.getSupervisorIds());
+        for (final String candidateId : candidateUserIds) {
+            final UserEntity entity = getUserEntity(candidateId);
+            if (entity != null) {
+                sendNotificationRequest(entity, execution);
+            }
+        }
+    }
+
+    private void sendNotificationRequest(final UserEntity user, final DelegateExecution execution) {
+        final NotificationRequest request = new NotificationRequest();
         request.setUserId(user.getId());
         request.setNotificationType(getNotificationType(execution));
+        request.getParamList().add(new NotificationParam("TARGET_REQUEST", profileModel));
         request.getParamList().add(new NotificationParam("REQUEST_REASON", getTaskDescription(execution)));
-        request.getParamList().add(new NotificationParam("REQUESTOR",  user.getDisplayName()));
+        request.getParamList().add(new NotificationParam("REQUESTOR", user.getDisplayName()));
         request.getParamList().add(new NotificationParam("TARGET_USER", profileModel.getUser().getDisplayName()));
         request.getParamList().add(new NotificationParam("COMMENT", getComment(execution)));
         mailService.sendNotification(request);
-	}
+    }
 }

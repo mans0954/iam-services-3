@@ -5,7 +5,9 @@ import org.apache.commons.lang.StringUtils;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.*;
 import org.openiam.base.Tuple;
+import org.openiam.base.ws.SortParam;
 import org.openiam.core.dao.BaseDaoImpl;
+import org.openiam.idm.searchbeans.AbstractSearchBean;
 import org.openiam.idm.searchbeans.OrganizationSearchBean;
 import org.openiam.idm.searchbeans.SearchBean;
 import org.openiam.idm.srvc.org.domain.Org2OrgXrefEntity;
@@ -17,7 +19,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -98,23 +99,38 @@ public class OrganizationDAOImpl extends
                         organizationSearchBean.getInternalOrgId()));
             }
 
-			if (StringUtils.isNotBlank(organizationSearchBean.getUserId())) {
-				criteria.createAlias("users", "u").add(
-						Restrictions.eq("u.id",
-								organizationSearchBean.getUserId()));
-			}
+//			if (StringUtils.isNotBlank(organizationSearchBean.getUserId())) {
+//				criteria.createAlias("users", "u").add(
+//						Restrictions.eq("u.id",
+//								organizationSearchBean.getUserId()));
+//			}
 
-			if (StringUtils.isNotBlank(organizationSearchBean.getChildId())) {
-				criteria.createAlias("childOrganizations", "child").add(
-						Restrictions.eq("child.id",
-								organizationSearchBean.getChildId()));
-			}
+            if(CollectionUtils.isNotEmpty(organizationSearchBean.getUserIdSet())){
+                criteria.createAlias("users", "usr");
+                criteria.add(Restrictions.in("usr.id", organizationSearchBean.getUserIdSet()));
+            }
 
-			if (StringUtils.isNotBlank(organizationSearchBean.getParentId())) {
-				criteria.createAlias("parentOrganizations", "parent").add(
-						Restrictions.eq("parent.id",
-								organizationSearchBean.getParentId()));
-			}
+            if(CollectionUtils.isNotEmpty(organizationSearchBean.getParentIdSet())){
+                criteria.createAlias("parentOrganizations", "pr");
+                criteria.add(Restrictions.in("pr.id", organizationSearchBean.getParentIdSet()));
+            }
+            if(CollectionUtils.isNotEmpty(organizationSearchBean.getChildIdSet())){
+                criteria.createAlias("childOrganizations", "ch");
+                criteria.add(Restrictions.in("ch.id", organizationSearchBean.getChildIdSet()));
+            }
+
+
+//			if (StringUtils.isNotBlank(organizationSearchBean.getChildId())) {
+//				criteria.createAlias("childOrganizations", "child").add(
+//						Restrictions.eq("child.id",
+//								organizationSearchBean.getChildId()));
+//			}
+//
+//			if (StringUtils.isNotBlank(organizationSearchBean.getParentId())) {
+//				criteria.createAlias("parentOrganizations", "parent").add(
+//						Restrictions.eq("parent.id",
+//								organizationSearchBean.getParentId()));
+//			}
 
 			if (StringUtils.isNotBlank(organizationSearchBean
 					.getValidParentTypeId())) {
@@ -145,9 +161,24 @@ public class OrganizationDAOImpl extends
                 }
             }
 
+            if(StringUtils.isNotBlank(organizationSearchBean.getMetadataType())){
+                criteria.add(Restrictions.eq("type.id", organizationSearchBean.getMetadataType()));
+            }
 		}
 		return criteria;
 	}
+
+    protected void setOderByCriteria(Criteria criteria, AbstractSearchBean sb) {
+        List<SortParam> sortParamList = sb.getSortBy();
+        for (SortParam sort: sortParamList){
+            if("type".equals(sort.getSortBy())){
+                criteria.createAlias("organizationType", "orgTp", Criteria.LEFT_JOIN);
+                criteria.addOrder(createOrder("orgTp.name", sort.getOrderBy()));
+            } else{
+                criteria.addOrder(createOrder(sort.getSortBy(), sort.getOrderBy()));
+            }
+        }
+    }
 
 	@Override
 	protected Criteria getExampleCriteria(final OrganizationEntity organization) {
@@ -188,7 +219,7 @@ public class OrganizationDAOImpl extends
 				criteria.add(Restrictions.eq("adminResource.id", organization.getAdminResource().getId()));
 			}
 		}
-		criteria.addOrder(Order.asc("name"));
+//		criteria.addOrder(Order.asc("name"));
 		return criteria;
 	}
 

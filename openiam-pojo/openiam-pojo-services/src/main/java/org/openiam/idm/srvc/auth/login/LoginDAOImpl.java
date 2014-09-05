@@ -436,4 +436,9 @@ public class LoginDAOImpl extends BaseDaoImpl<LoginEntity, String> implements
         super.save(entities);
     }
 
+    @Override
+    public List<LoginEntity> findByUserIds(List<String> userIds, String managedSysId){
+        return getCriteria().add(Restrictions.in("userId", userIds)).add(Restrictions.eq("managedSysId", managedSysId))
+                            .list();
+    }
 }

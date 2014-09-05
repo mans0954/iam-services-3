@@ -463,6 +463,7 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
 	}
 	
 	@Override
+    @Transactional(readOnly = true)
 	public Login findById(final String loginId) {
 		final LoginEntity entity = loginDS.getLoginDetails(loginId);
 		return (entity != null) ? loginDozerConverter.convertToDTO(entity, true) : null;
@@ -608,4 +609,24 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
 		}
 		return resp;
 	}
+
+    public Response forgotUsername(String email){
+        final Response resp = new Response(ResponseStatus.SUCCESS);
+        try {
+            if(StringUtils.isBlank(email)) {
+                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+            }
+
+            loginDS.forgotUsername(email);
+        } catch(BasicDataServiceException e) {
+            log.warn(String.format("Error while sending user name: %s", e.getMessage()));
+            resp.setErrorCode(e.getCode());
+            resp.setStatus(ResponseStatus.FAILURE);
+        } catch(Throwable e) {
+            resp.setStatus(ResponseStatus.FAILURE);
+            resp.setErrorCode(ResponseCode.INTERNAL_ERROR);
+            log.error("Error while sending user name", e);
+        }
+        return resp;
+    }
 }

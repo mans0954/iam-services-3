@@ -1,11 +1,8 @@
 package org.openiam.am.srvc.domain;
 
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 import org.openiam.am.srvc.dto.ContentProvider;
-import org.openiam.base.domain.AbstractKeyNameEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
@@ -34,6 +31,10 @@ public class ContentProviderEntity extends AbstractKeyNameEntity {
 	@Column(name = "IS_PUBLIC", nullable = false)
 	@Type(type = "yes_no")
 	private boolean isPublic;
+	
+	@Column(name = "SHOW_ON_APP_PAGE", nullable = false)
+	@Type(type = "yes_no")
+	private boolean showOnApplicationPage = true;
 	
 	@Column(name = "DOMAIN_PATTERN", length = 100, nullable = false)
 	private String domainPattern;
@@ -223,6 +224,8 @@ public class ContentProviderEntity extends AbstractKeyNameEntity {
 			if (other.uiTheme != null)
 				return false;
 		} else if (!uiTheme.equals(other.uiTheme))
+			return false;
+		if (showOnApplicationPage != other.showOnApplicationPage)
 			return false;
 		return true;
 	}

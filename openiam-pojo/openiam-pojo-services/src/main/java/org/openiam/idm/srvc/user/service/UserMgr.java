@@ -8,8 +8,11 @@ import org.apache.commons.logging.LogFactory;
 import org.openiam.authmanager.service.AuthorizationManagerService;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.BaseConstants;
+import org.openiam.base.OrderConstants;
 import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.ResponseCode;
+import org.openiam.base.ws.SearchMode;
+import org.openiam.base.ws.SortParam;
 import org.openiam.core.dao.UserKeyDao;
 import org.openiam.dozer.converter.*;
 import org.openiam.exception.BasicDataServiceException;
@@ -30,6 +33,7 @@ import org.openiam.idm.srvc.continfo.service.*;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.service.GroupDAO;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
+import org.openiam.idm.srvc.lang.domain.LanguageEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.meta.service.MetadataElementDAO;
@@ -51,6 +55,7 @@ import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.idm.srvc.user.util.DelegationFilterHelper;
+import org.openiam.internationalization.LocalizedServiceGet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -449,41 +454,11 @@ public class UserMgr implements UserDataService {
         userDao.delete(userDao.findById(id));
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.openiam.idm.srvc.user.service.UserDataService#findUsersByLastUpdateRange
-     * (java.util.Date, java.util.Date)
-     */
-    @Transactional(readOnly = true)
-    public List findUsersByLastUpdateRange(Date startDate, Date endDate) {
-        return userDao.findByLastUpdateRange(startDate, endDate);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public UserEntity getUserByName(String firstName, String lastName) throws BasicDataServiceException {
-        UserSearchBean searchBean = new UserSearchBean();
-        searchBean.setFirstName(firstName);
-        searchBean.setLastName(lastName);
-        List<UserEntity> userList = findBeans(searchBean, 0, 1);
-        return (userList != null && !userList.isEmpty()) ? userList.get(0) : null;
-    }
-
     @Override
     @Transactional(readOnly = true)
     public List<UserEntity> findUserByOrganization(String orgId) throws BasicDataServiceException {
         UserSearchBean searchBean = new UserSearchBean();
         searchBean.addOrganizationId(orgId);
-        return findBeans(searchBean);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List findUsersByStatus(UserStatusEnum status) throws BasicDataServiceException {
-        UserSearchBean searchBean = new UserSearchBean();
-        searchBean.setAccountStatus(status.name());
         return findBeans(searchBean);
     }
 
@@ -520,7 +495,7 @@ public class UserMgr implements UserDataService {
             isMngReportFilterSet = DelegationFilterHelper.isMngRptFilterSet(requesterAttributes);
 
 //            if (isOrgFilterSet) {
-            if (CollectionUtils.isEmpty(searchBean.getOrganizationIdList())) {
+            if (CollectionUtils.isEmpty(searchBean.getOrganizationIdSet())) {
                 searchBean.addOrganizationIdList(organizationService.getDelegationFilter(requesterAttributes, null));
             }
 //            }
@@ -548,8 +523,8 @@ public class UserMgr implements UserDataService {
             nonEmptyListOfLists.add(userDao.getUserIdsForRoles(searchBean.getRoleIdSet(), 0, MAX_USER_SEARCH_RESULTS));
         }
 
-        if (CollectionUtils.isNotEmpty(searchBean.getOrganizationIdList())) {
-            nonEmptyListOfLists.add(userDao.getUserIdsForOrganizations(searchBean.getOrganizationIdList(), 0, MAX_USER_SEARCH_RESULTS));
+        if (CollectionUtils.isNotEmpty(searchBean.getOrganizationIdSet())) {
+            nonEmptyListOfLists.add(userDao.getUserIdsForOrganizations(searchBean.getOrganizationIdSet(), 0, MAX_USER_SEARCH_RESULTS));
         }
 
         if (CollectionUtils.isNotEmpty(searchBean.getGroupIdSet())) {
@@ -575,9 +550,9 @@ public class UserMgr implements UserDataService {
             nonEmptyListOfLists.add(loginSearchDAO.findUserIds(0, MAX_USER_SEARCH_RESULTS, searchBean.getPrincipal()));
         }
 
-        if (StringUtils.isNotBlank(searchBean.getEmailAddress())) {
+        if (searchBean.getEmailAddressMatchToken() != null && searchBean.getEmailAddressMatchToken().isValid()) {
             final EmailSearchBean emailSearchBean = new EmailSearchBean();
-            emailSearchBean.setEmail(searchBean.getEmailAddress());
+            emailSearchBean.setEmailMatchToken(searchBean.getEmailAddressMatchToken());
             nonEmptyListOfLists.add(emailSearchDAO.findUserIds(0, MAX_USER_SEARCH_RESULTS, emailSearchBean));
         }
 
@@ -598,16 +573,36 @@ public class UserMgr implements UserDataService {
         // }
 
         List<String> finalizedIdList = null;
-        for (final Iterator<List<String>> it = nonEmptyListOfLists.iterator(); it.hasNext();) {
-            List<String> nextSubList = it.next();
-            if (CollectionUtils.isEmpty(nextSubList))
-                nextSubList = Collections.EMPTY_LIST;
-
-            if (CollectionUtils.isEmpty(finalizedIdList)) {
-                finalizedIdList = nextSubList;
-            } else {
-                finalizedIdList = ListUtils.intersection(finalizedIdList, nextSubList);
-            }
+        
+        if(SearchMode.AND.equals(searchBean.getSearchMode())) {
+	        for (final Iterator<List<String>> it = nonEmptyListOfLists.iterator(); it.hasNext();) {
+	            List<String> nextSubList = it.next();
+	            if (CollectionUtils.isEmpty(nextSubList))
+	                nextSubList = Collections.EMPTY_LIST;
+	
+	            if (CollectionUtils.isEmpty(finalizedIdList)) {
+	                finalizedIdList = nextSubList;
+	            } else {
+	                finalizedIdList = ListUtils.intersection(finalizedIdList, nextSubList);
+	            }
+	        }
+        } else { //OR
+        	final Set<String> resultSet = new HashSet<>();
+        	for (final Iterator<List<String>> it = nonEmptyListOfLists.iterator(); it.hasNext();) {
+	            List<String> nextSubList = it.next();
+	            if(CollectionUtils.isNotEmpty(nextSubList)) {
+	            	resultSet.addAll(nextSubList);
+	            }
+        	}
+        	
+        	for(final String result : resultSet) {
+        		if(finalizedIdList == null) {
+        			finalizedIdList = new LinkedList<>();
+        		}
+        		if(finalizedIdList.size() < MAX_USER_SEARCH_RESULTS) {
+        			finalizedIdList.add(result);
+        		}
+        	}
         }
 
         return (finalizedIdList != null) ? finalizedIdList : Collections.EMPTY_LIST;
@@ -624,7 +619,7 @@ public class UserMgr implements UserDataService {
                 entityList.add(entity);
             }
         } else {
-            List<UserEntity> finalizedIdList = userDao.findByIds(getUserIds(searchBean));
+            List<UserEntity> finalizedIdList = userDao.findByIds(getUserIds(searchBean), searchBean);
             if (from > -1 && size > -1) {
                 if (finalizedIdList != null && finalizedIdList.size() >= from) {
                     int to = from + size;
@@ -636,6 +631,13 @@ public class UserMgr implements UserDataService {
             }
             entityList = finalizedIdList;
         }
+
+        if(searchBean.getInitDefaulLoginFlag()){
+            for(UserEntity usr: entityList){
+                usr.setDefaultLogin(sysConfiguration.getDefaultManagedSysId());
+            }
+        }
+
         return entityList;
     }
 
@@ -1358,6 +1360,7 @@ public class UserMgr implements UserDataService {
     // }
 
     @Override
+    @Transactional
     public void evict(Object object) {
         if (object instanceof EmailAddressEntity) {
             emailAddressDao.evict((EmailAddressEntity) object);
@@ -1492,8 +1495,27 @@ public class UserMgr implements UserDataService {
     @Override
     @Transactional(readOnly = true)
     public List<UserEntity> getUsersForResource(String resourceId, String requesterId, int from, int size) {
-        DelegationFilterSearchBean delegationFilter = this.getDelegationFilterForUserSearch(requesterId);
-        return userDao.getUsersForResource(resourceId, delegationFilter, from, size);
+//        DelegationFilterSearchBean delegationFilter = this.getDelegationFilterForUserSearch(requesterId);
+//        return userDao.getUsersForResource(resourceId, delegationFilter, from, size);
+        UserSearchBean userSearchBean = new UserSearchBean();
+        userSearchBean.setRequesterId(requesterId);
+        userSearchBean.addResourceId(resourceId);
+
+        List<SortParam> sortParamList = new ArrayList<>();
+        sortParamList.add( new SortParam(OrderConstants.ASC, "name"));
+        userSearchBean.setSortBy(sortParamList);
+
+
+        return getUsersForResource(userSearchBean, from,size);
+    }
+    @Override
+    @Transactional(readOnly = true)
+    public List<UserEntity> getUsersForResource(UserSearchBean userSearchBean, int from, int size){
+        DelegationFilterSearchBean delegationFilter = this.getDelegationFilterForUserSearch(userSearchBean.getRequesterId());
+
+        String resourceId = userSearchBean.getResourceIdSet().iterator().next();
+
+        return userDao.getUsersForResource(resourceId, delegationFilter, userSearchBean.getSortBy(), from, size);
     }
 
     @Override
@@ -1684,6 +1706,20 @@ public class UserMgr implements UserDataService {
         }
     }
 
+    @Transactional
+    public void resetUser(String userId) {
+        UserEntity user = this.getUser(userId, null);
+        if (user == null) {
+            log.error("UserId " + userId + " not found");
+            throw new NullPointerException("UserId " + userId + " not found");
+        }
+        user.setDateITPolicyApproved(null);
+        user.setClaimDate(null);
+        user.setStatus(UserStatusEnum.PENDING_INITIAL_LOGIN);
+        user.setSecondaryStatus(null);
+        userDao.update(user);
+    }
+
     @Override
     @Transactional(readOnly = true)
     public boolean isRoleInUser(String userId, String roleId) {
@@ -1815,6 +1851,13 @@ public class UserMgr implements UserDataService {
                 origUserEntity.setLastDate(null);
             } else {
                 origUserEntity.setLastDate(newUserEntity.getLastDate());
+            }
+        }
+        if (newUserEntity.getClaimDate() != null) {
+            if (newUserEntity.getClaimDate().equals(BaseConstants.NULL_DATE)) {
+                origUserEntity.setClaimDate(null);
+            } else {
+                origUserEntity.setClaimDate(newUserEntity.getClaimDate());
             }
         }
         if (newUserEntity.getMaidenName() != null) {
@@ -2104,6 +2147,13 @@ public class UserMgr implements UserDataService {
         return null;
     }
 
+    @Transactional(readOnly = true)
+    @LocalizedServiceGet
+    public List<UserAttributeEntity> getUserAttributeList(String userId, final LanguageEntity language) {
+    	return userAttributeDao.findUserAttributes(userId);
+    }
+    
+    @Transactional(readOnly = true)
     public Map<String, UserAttributeEntity> getUserAttributes(String userId) {
         Map<String, UserAttributeEntity> result = null;
         List<UserAttributeEntity> userAttributes = userAttributeDao.findUserAttributes(userId);
@@ -2188,6 +2238,8 @@ public class UserMgr implements UserDataService {
     }
 
 
+    @Override
+    @Transactional(readOnly = true)
     public boolean validateSearchBean(UserSearchBean searchBean) throws BasicDataServiceException {
         if (StringUtils.isNotBlank(searchBean.getRequesterId())) {
             Map<String, UserAttribute> requesterAttributes = this.getUserAttributesDto(searchBean.getRequesterId());
@@ -2195,6 +2247,9 @@ public class UserMgr implements UserDataService {
         }
         return true;
     }
+
+    @Override
+    @Transactional(readOnly = true)
     public boolean validateSearchBean(UserSearchBean searchBean, Map<String, UserAttribute> requesterAttributes) throws BasicDataServiceException {
         if (requesterAttributes!=null && CollectionUtils.isNotEmpty(requesterAttributes.keySet())) {
 
@@ -2204,9 +2259,9 @@ public class UserMgr implements UserDataService {
             Set<String> filterData = null;
 
             if (isOrgFilterSet) {
-                if (CollectionUtils.isNotEmpty(searchBean.getOrganizationIdList())) {
+                if (CollectionUtils.isNotEmpty(searchBean.getOrganizationIdSet())) {
                    filterData = new HashSet<String>(DelegationFilterHelper.getOrgIdFilterFromString(requesterAttributes));
-                   for(String pk : searchBean.getOrganizationIdList()) {
+                   for(String pk : searchBean.getOrganizationIdSet()) {
                        if(!DelegationFilterHelper.isAllowed(pk, filterData)){
                            throw new BasicDataServiceException(ResponseCode.NOT_ALLOWED_ORGANIZATION_IN_SEARCH);
                        }
@@ -2224,7 +2279,7 @@ public class UserMgr implements UserDataService {
             }
 
             if (CollectionUtils.isNotEmpty(searchBean.getRoleIdSet()) && isRoleFilterSet) {
-                filterData = new HashSet<String>(DelegationFilterHelper.getGroupFilterFromString(requesterAttributes));
+                filterData = new HashSet<String>(DelegationFilterHelper.getRoleFilterFromString(requesterAttributes));
                 for(String pk : searchBean.getRoleIdSet()) {
                     if(!DelegationFilterHelper.isAllowed(pk, filterData)){
                         throw new BasicDataServiceException(ResponseCode.NOT_ALLOWED_ROLE_IN_SEARCH);
@@ -2240,4 +2295,5 @@ public class UserMgr implements UserDataService {
     public List<UserEntity> getUserByLastDate(Date lastDate) {
         return userDao.getUserByLastDate(lastDate);
     }
+
 }

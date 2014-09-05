@@ -180,6 +180,7 @@ public class AuthProviderServiceImpl implements AuthProviderService {
         resource.setName(System.currentTimeMillis() + "_" + provider.getName());
         resource.setResourceType(resourceType);
         resource.setId(null);
+        resource.setCoorelatedName(provider.getName());
         
         resourceService.save(resource, requestorId);
         provider.setProviderId(null);
@@ -225,9 +226,10 @@ public class AuthProviderServiceImpl implements AuthProviderService {
             entity.setSignRequest(provider.isSignRequest());
 
             // get resource for provider
-            if(provider.getResource()!=null){
-                final ResourceEntity resource = entity.getResource();
+            if(entity.getResource()!=null){
+               final ResourceEntity resource = entity.getResource();
                resource.setURL(provider.getResource().getURL());
+               resource.setCoorelatedName(provider.getName());
                //resourceService.save(resource, null);
             }
         }

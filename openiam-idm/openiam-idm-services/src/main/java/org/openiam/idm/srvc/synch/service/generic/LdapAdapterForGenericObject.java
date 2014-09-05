@@ -31,6 +31,7 @@ import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.role.service.RoleDataService;
+import org.openiam.idm.srvc.synch.domain.SynchReviewEntity;
 import org.openiam.idm.srvc.synch.dto.LineObject;
 import org.openiam.idm.srvc.synch.dto.SyncResponse;
 import org.openiam.idm.srvc.synch.dto.SynchConfig;
@@ -71,7 +72,13 @@ public class LdapAdapterForGenericObject implements SourceAdapter {
     private static final Log log = LogFactory
             .getLog(LdapAdapterForGenericObject.class);
 
+    @Override
     public SyncResponse startSynch(SynchConfig config) {
+        return startSynch(config, null, null);
+    }
+
+    @Override
+    public SyncResponse startSynch(SynchConfig config, SynchReviewEntity sourceReview, SynchReviewEntity resultReview) {
         // rule used to match object from source system to data in IDM
         MatchObjectRule matchRule = null;
         // String changeLog = null;

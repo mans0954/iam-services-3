@@ -110,6 +110,7 @@
 		<module>openiam-idm</module>
 		<module>openiam-am</module>
 		<module>openiam-esb</module>
+        <module>openiam-esb-ear</module>
 		<module>openiam-bpm</module>
 		<module>openiam-km</module>
 		<module>openiam-common</module>
@@ -700,7 +701,92 @@
 				<artifactId>hazelcast-hibernate4</artifactId>
 				<version>${hazelcast.version}</version>
 			</dependency>
-			
+			                        <dependency>
+                                <groupId>org.openiam</groupId>
+                                <artifactId>openiam-common-db-intf</artifactId>
+                                <version>${project.version}</version>
+                                <scope>compile</scope>
+                        </dependency>
+
+                        <dependency>
+	    	                <groupId>org.openiam</groupId>
+	                    	<artifactId>openiam-auth-manager-intf</artifactId>
+                   	    	<version>${project.version}</version>
+                        </dependency>
+
+                        <dependency>
+                                <groupId>org.openiam</groupId>
+                                <artifactId>openiam-common-intf</artifactId>
+                                <version>${project.version}</version>
+                                <scope>compile</scope>
+                        </dependency>
+
+                        <dependency>
+            			<groupId>org.openiam</groupId>
+            			<artifactId>openiam-bpm-activiti</artifactId>
+            			<version>${project.version}</version>
+            			<exclusions>
+                			<exclusion>
+                    			<groupId>org.slf4j</groupId>
+                    			<artifactId>slf4j-api</artifactId>
+                			</exclusion>
+                			<exclusion>
+           			         <groupId>org.slf4j</groupId>
+           			         <artifactId>slf4j-jdk14</artifactId>
+          			      </exclusion>
+         			   </exclusions>
+      			  </dependency>
+
+      			  <dependency>
+          			  <groupId>org.openiam</groupId>
+          			  <artifactId>openiam-auth-manager-service</artifactId>
+         			   <version>${project.version}</version>
+       			     <exclusions>
+       			         <exclusion>
+       			             <groupId>org.slf4j</groupId>
+       			             <artifactId>slf4j-api</artifactId>
+       			         </exclusion>
+        			        <exclusion>
+        			            <groupId>org.slf4j</groupId>
+            			        <artifactId>slf4j-jdk14</artifactId>
+         			       </exclusion>
+          			  </exclusions>
+        		</dependency>
+
+
+
+               		<dependency>
+                    		<groupId>org.openiam</groupId>
+                    		<artifactId>openiam-auth-manager-web</artifactId>
+                    		<version>${project.version}</version>
+                    		<exclusions>
+                        		<exclusion>
+                            		<groupId>org.slf4j</groupId>
+                            		<artifactId>slf4j-api</artifactId>
+                       			</exclusion>
+                        		<exclusion>
+                            		<groupId>org.slf4j</groupId>
+                            		<artifactId>slf4j-jdk14</artifactId>
+                        		</exclusion>
+  	                  	</exclusions>
+                	</dependency>
+        
+               		<dependency>
+                    		<groupId>org.openiam</groupId>
+                    		<artifactId>openiam-auth-manager-client</artifactId>
+                    		<version>${project.version}</version>
+                    		<exclusions>
+                        		<exclusion>
+                            		<groupId>org.slf4j</groupId>
+                            		<artifactId>slf4j-api</artifactId>
+                       			</exclusion>
+                       			<exclusion>
+                            		<groupId>org.slf4j</groupId>
+                            		<artifactId>slf4j-jdk14</artifactId>
+                        		</exclusion>
+                    		</exclusions>
+                   	 <scope>test</scope>
+                	</dependency>
 		</dependencies>
 	</dependencyManagement>
 
