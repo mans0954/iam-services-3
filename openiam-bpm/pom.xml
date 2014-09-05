@@ -3,14 +3,14 @@
 	<parent>
 	    <groupId>org.openiam</groupId>
 	    <artifactId>iam-services</artifactId>
-		<version>3.2.0</version>
+		<version>3.3.0</version>
 	</parent>
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.openiam</groupId>
     <artifactId>openiam-bpm</artifactId>
     <name>openiam-bpm</name>
     <packaging>pom</packaging>
-    <version>3.2.0</version>
+    <version>3.3.0</version>
     <description>OpenIAM BPM Module</description>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
