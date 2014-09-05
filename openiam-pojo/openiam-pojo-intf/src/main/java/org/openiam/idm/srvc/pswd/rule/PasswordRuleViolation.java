@@ -10,29 +10,25 @@ import javax.xml.bind.annotation.XmlType;
 import org.openiam.base.ws.ResponseCode;
 
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "PasswordRuleException", propOrder = { 
+@XmlType(name = "PasswordRuleViolation", propOrder = { 
 	"minBound", 
 	"maxBound", 
 	"code",
 	"responseValues"
-	})
-public class PasswordRuleException extends Exception {
+})
+public class PasswordRuleViolation {
 	private Object minBound;
 	private Object maxBound;
 	private ResponseCode code;
 	private List<Object> responseValues;
+
+	public PasswordRuleViolation() {}
 	
-	public PasswordRuleException() {
-		super();
-	}
-	
-	public PasswordRuleException(final ResponseCode code) {
-		this.code = code;
-	}
-	
-	public PasswordRuleException(final ResponseCode code, final Object[] args) {
-		this.code = code;
-		addResponseValues(args);
+	public PasswordRuleViolation(final PasswordRuleException exception) {
+		this.minBound = exception.getMinBound();
+		this.maxBound = exception.getMaxBound();
+		this.code = exception.getCode();
+		this.responseValues = exception.getResponseValues();
 	}
 	
 	public Object getMinBound() {
@@ -82,5 +78,24 @@ public class PasswordRuleException extends Exception {
 				addResponseValue(obj);
 			}
 		}
+	}
+	
+	public boolean hasMinBound() {
+		return (minBound != null);
+	}
+	
+	public boolean hasMaxBound() {
+		return (maxBound != null);
+	}
+	
+	public Object[] getResponseValueAsArray() {
+		Object[] retVal = null;
+		if(responseValues != null) {
+			retVal = new Object[responseValues.size()];
+			for(int i = 0; i < responseValues.size(); i++) {
+				retVal[i] = responseValues.get(i);
+			}
+		}
+		return retVal;
 	}
 }
