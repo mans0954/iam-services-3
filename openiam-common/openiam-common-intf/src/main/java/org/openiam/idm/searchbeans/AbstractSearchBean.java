@@ -5,9 +5,8 @@ import org.openiam.base.ws.SortParam;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
-import java.util.HashSet;
+import java.io.Serializable;
 import java.util.List;
-import java.util.Set;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "AbstractSearchBean", propOrder = {
@@ -15,7 +14,7 @@ import java.util.Set;
         "deepCopy",
         "sortBy"
 })
-public class AbstractSearchBean<T, KeyType> {
+public class AbstractSearchBean<T, KeyType> implements SearchBean<T, KeyType>, Serializable {
 
 	private boolean deepCopy = true;
 	private KeyType key;

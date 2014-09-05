@@ -7,17 +7,14 @@ import org.openiam.idm.srvc.grp.dto.Group;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 import java.io.Serializable;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "GroupSearchBean", propOrder = {
         "keySet",
-        "name",
         "isRootsOnly",
         "managedSysId",
         "attributes",
@@ -28,7 +25,6 @@ public class GroupSearchBean extends EntitlementsSearchBean<Group, String> imple
 
 	private static final long serialVersionUID = 1L;
     private Set<String> keySet;
-	private String name;
 	private String managedSysId;
     private String type;
 	private boolean isRootsOnly;
@@ -44,14 +40,6 @@ public class GroupSearchBean extends EntitlementsSearchBean<Group, String> imple
     public void setUpdatedSince(Date updatedSince) {
         this.updatedSince = updatedSince;
     }
-
-    public String getName() {
-		return name;
-	}
-	
-	public void setName(String name) {
-		this.name = name;
-	}
 
 	public boolean getIsRootsOnly() {
 		return isRootsOnly;
@@ -93,14 +81,13 @@ public class GroupSearchBean extends EntitlementsSearchBean<Group, String> imple
 
     public void setType(String type) {
         this.type = type;
-    }
+	}
 
-    @Override
+	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
 		result = prime * result + (isRootsOnly ? 1231 : 1237);
-		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		return result;
 	}
 
@@ -115,19 +102,14 @@ public class GroupSearchBean extends EntitlementsSearchBean<Group, String> imple
 		GroupSearchBean other = (GroupSearchBean) obj;
 		if (isRootsOnly != other.isRootsOnly)
 			return false;
-		if (name == null) {
-			if (other.name != null)
-				return false;
-		} else if (!name.equals(other.name))
-			return false;
 		return true;
 	}
 
 	@Override
 	public String toString() {
 		return String.format(
-				"GroupSearchBean [name=%s, isRootsOnly=%s, keySet=%s, toString()=%s]",
-				name, isRootsOnly, keySet, super.toString());
+				"GroupSearchBean [isRootsOnly=%s, keySet=%s, toString()=%s]",
+				isRootsOnly, keySet, super.toString());
 	}
 
     @Override

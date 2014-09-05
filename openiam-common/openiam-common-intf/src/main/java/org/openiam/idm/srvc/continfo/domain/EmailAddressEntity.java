@@ -1,22 +1,12 @@
 package org.openiam.idm.srvc.continfo.domain;
 
-import java.util.Date;
-
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
-import org.hibernate.search.annotations.Analyze;
-import org.hibernate.search.annotations.DocumentId;
-import org.hibernate.search.annotations.Field;
-import org.hibernate.search.annotations.FieldBridge;
-import org.hibernate.search.annotations.Fields;
-import org.hibernate.search.annotations.Index;
-import org.hibernate.search.annotations.Indexed;
-import org.hibernate.search.annotations.Store;
+import org.hibernate.search.annotations.*;
 import org.openiam.core.dao.lucene.LuceneId;
 import org.openiam.core.dao.lucene.LuceneLastUpdate;
-import org.openiam.core.dao.lucene.bridge.OrganizationBridge;
 import org.openiam.core.dao.lucene.bridge.UserBridge;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
@@ -25,6 +15,7 @@ import org.openiam.idm.srvc.user.domain.UserEntity;
 
 import javax.persistence.*;
 import javax.validation.constraints.Size;
+import java.util.Date;
 
 @Entity
 @Table(name = "EMAIL_ADDRESS")
@@ -49,9 +40,8 @@ public class EmailAddressEntity {
     private String description;
 
     @Fields ({
-        @Field(index = Index.TOKENIZED),
-        @Field(name = "emailAddress", index = Index.TOKENIZED, store = Store.YES),
-        @Field(name = "emailAddressUntokenized", index = Index.UN_TOKENIZED, store = Store.YES)
+        @Field(analyze = Analyze.YES),
+        @Field(name = "emailAddress", analyze = Analyze.YES, store = Store.YES)
     })
     @Column(name = "EMAIL_ADDRESS", length = 320)
     @Size(max = 320, message = "validator.email.toolong")

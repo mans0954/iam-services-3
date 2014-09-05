@@ -61,11 +61,7 @@ public class UserEntity {
     private String createdBy;
 
     @Column(name = "EMPLOYEE_ID", length = 32)
-    @Fields ({
-        @Field(index = Index.TOKENIZED),
-        @Field(name = "employeeId", index = Index.TOKENIZED, store = Store.YES),
-        @Field(name = "employeeIdUntokenized", index = Index.UN_TOKENIZED, store = Store.YES)
-    })
+    @Field(analyze = Analyze.NO, name="employeeId", store=Store.YES)
     @Size(max = 32, message = "validator.user.employee.id.toolong")
     private String employeeId;
 
@@ -82,9 +78,8 @@ public class UserEntity {
 
     @Column(name = "FIRST_NAME", length = 50)
     @Fields ({
-        @Field(index = Index.TOKENIZED),
-        @Field(name = "firstName", index = Index.TOKENIZED, store = Store.YES),
-        @Field(name = "firstNameUntokenized", index = Index.UN_TOKENIZED, store = Store.YES)
+        @Field(analyze = Analyze.YES),
+        @Field(name = "firstName", analyze = Analyze.YES, store = Store.YES)
     })
     @Size(max = 50, message = "validator.user.first.name.toolong")
     private String firstName;
@@ -101,9 +96,8 @@ public class UserEntity {
 
     @Column(name = "LAST_NAME", length = 50)
     @Fields ({
-        @Field(index = Index.TOKENIZED),
-        @Field(name = "lastName", index = Index.TOKENIZED, store = Store.YES),
-        @Field(name = "lastNameUntokenized", index = Index.UN_TOKENIZED, store = Store.YES)
+        @Field(analyze = Analyze.YES),
+        @Field(name = "lastName", analyze = Analyze.YES, store = Store.YES)
     })
     @Size(max = 50, message = "validator.user.last.name.toolong")
     private String lastName;
@@ -147,12 +141,12 @@ public class UserEntity {
 
     @Column(name = "STATUS", length = 40)
     @Enumerated(EnumType.STRING)
-    @Field(index=Index.UN_TOKENIZED, name="userStatus", store=Store.YES)
+    @Field(analyze = Analyze.NO, name="userStatus", store=Store.YES)
     private UserStatusEnum status;
 
     @Column(name = "SECONDARY_STATUS", length = 40)
     @Enumerated(EnumType.STRING)
-    @Field(index=Index.UN_TOKENIZED ,name="accountStatus", store=Store.YES)
+    @Field(analyze = Analyze.NO ,name="accountStatus", store=Store.YES)
     private UserStatusEnum secondaryStatus;
 
     @Column(name = "SUFFIX", length = 20)
@@ -191,9 +185,8 @@ public class UserEntity {
     @Column(name = "MAIDEN_NAME", length = 40)
     @Size(max = 40, message = "validator.user.maiden.name.toolong")
     @Fields ({
-        @Field(index = Index.TOKENIZED),
-        @Field(name = "maidenName", index = Index.TOKENIZED, store = Store.YES),
-        @Field(name = "maidenNameUntokenized", index = Index.UN_TOKENIZED, store = Store.YES)
+        @Field(analyze = Analyze.YES),
+        @Field(name = "maidenName", analyze = Analyze.YES, store = Store.YES)
     })
     private String maidenName;
 

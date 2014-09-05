@@ -5,7 +5,6 @@ package org.openiam.idm.srvc.auth.domain;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.*;
 import org.hibernate.search.annotations.*;
-import org.hibernate.search.annotations.Index;
 import org.openiam.core.dao.lucene.LuceneId;
 import org.openiam.core.dao.lucene.LuceneLastUpdate;
 import org.openiam.dozer.DozerDTOCorrespondence;
@@ -13,8 +12,8 @@ import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
 import org.openiam.idm.srvc.auth.dto.ProvLoginStatusEnum;
 
-import javax.persistence.*;
 import javax.persistence.CascadeType;
+import javax.persistence.*;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import java.util.Date;
@@ -37,23 +36,19 @@ public class LoginEntity implements java.io.Serializable {
     @LuceneId
     @DocumentId
     private String loginId;
-        
-    @Fields ({
-        @Field(index = Index.TOKENIZED),
-        @Field(name = "login", index = Index.TOKENIZED, store = Store.YES),
-        @Field(name = "loginUntokenized", index = Index.UN_TOKENIZED, store = Store.YES)
-    })
+
+    @Field(name = "login", analyze = Analyze.YES, store = Store.YES)
     @Column(name="LOGIN",length=320)
     private String login;
     
     @Column(name="LOWERCASE_LOGIN",length=320)
     private String lowerCaseLogin;
     
-    @Field(name = "managedSysId", index = Index.UN_TOKENIZED, store = Store.YES)
+    @Field(name = "managedSysId", analyze = Analyze.NO, store = Store.YES)
     @Column(name="MANAGED_SYS_ID",length=50)
     private String managedSysId;
 
-    @Field(name = "userId", index = Index.UN_TOKENIZED, store = Store.YES)
+    @Field(name = "userId", analyze = Analyze.NO, store = Store.YES)
     @Column(name="USER_ID",length=32)
     protected String userId;
 

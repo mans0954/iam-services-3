@@ -1,10 +1,12 @@
 package org.openiam.idm.searchbeans;
 
 import org.apache.commons.lang.StringUtils;
+import org.openiam.base.KeyNameDTO;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -23,7 +25,7 @@ import java.util.Set;
         "userIdSet",
         "organizationIdSet"
 })
-public abstract class EntitlementsSearchBean<T, KeyType> extends AbstractSearchBean<T, KeyType> {
+public abstract class EntitlementsSearchBean<T extends KeyNameDTO, KeyType extends Serializable> extends AbstractKeyNameSearchBean<T, KeyType> {
     private Set<String> parentIdSet;
     private Set<String> childIdSet;
 

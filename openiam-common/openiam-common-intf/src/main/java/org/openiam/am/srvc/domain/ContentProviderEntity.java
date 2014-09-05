@@ -1,8 +1,10 @@
 package org.openiam.am.srvc.domain;
 
-import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.Type;
 import org.openiam.am.srvc.dto.ContentProvider;
+import org.openiam.base.domain.AbstractKeyNameEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
@@ -10,7 +12,6 @@ import org.openiam.idm.srvc.ui.theme.domain.UIThemeEntity;
 
 import javax.persistence.*;
 
-import java.io.Serializable;
 import java.util.Set;
 
 @Entity
@@ -171,6 +172,13 @@ public class ContentProviderEntity extends AbstractKeyNameEntity {
 	public void setGroupingXrefs(
 			Set<AuthLevelGroupingContentProviderXrefEntity> groupingXrefs) {
 		this.groupingXrefs = groupingXrefs;
+	}
+
+	public boolean isShowOnApplicationPage() {
+		return showOnApplicationPage;
+	}
+	public void setShowOnApplicationPage(boolean showOnApplicationPage) {
+		this.showOnApplicationPage = showOnApplicationPage;
 	}
 
 	@Override
