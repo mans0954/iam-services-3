@@ -16,6 +16,7 @@ import org.openiam.bpm.activiti.model.ActivitiJSONStringWrapper;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.bpm.util.ActivitiRequestType;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
+import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.ws.GroupDataWebService;
 import org.openiam.idm.srvc.mngsys.service.ApproverAssociationDAO;
@@ -78,6 +79,9 @@ public abstract class AbstractActivitiJob implements JavaDelegate, TaskListener 
 	
 	@Autowired
 	protected ApproverAssociationDAO approverAssociationDAO;
+	
+	@Autowired
+	protected LoginDataService loginService;
 
     @Value("${org.openiam.idm.system.user.id}")
     protected String systemUserId;
