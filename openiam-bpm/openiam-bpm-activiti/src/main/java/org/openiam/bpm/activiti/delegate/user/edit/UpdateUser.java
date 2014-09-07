@@ -1,10 +1,13 @@
 package org.openiam.bpm.activiti.delegate.user.edit;
 
+import org.activiti.engine.ActivitiException;
 import org.activiti.engine.delegate.DelegateExecution;
 import org.activiti.engine.delegate.JavaDelegate;
+import org.openiam.base.ws.Response;
 import org.openiam.bpm.activiti.delegate.entitlements.AbstractEntitlementsDelegate;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.dozer.converter.UserDozerConverter;
+import org.openiam.idm.srvc.meta.dto.SaveTemplateProfileResponse;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserProfileRequestModel;
@@ -38,12 +41,17 @@ public class UpdateUser extends AbstractEntitlementsDelegate {
 		User user = profile.getUser();
 		if(user != null) {
 			user.setNotifyUserViaEmail(false); /* edit user - don't send creds */
-			userDataService.saveUserProfile(profile);
-			//userDataService.saveUserInfo(user, null);
-			user = getUser(user.getId());
-			
-			final ProvisionUser pUser = new ProvisionUser(user);
-			provisionService.modifyUser(pUser);
+			Response wsResponse = userDataService.saveUserProfile(profile);
+			if(wsResponse == null || wsResponse.isFailure()) {
+				throw new ActivitiException(String.format("userDataService.saveUserProfile failed for %s.  Response was %s", profile, wsResponse));
+			} else {
+				user = getUser(user.getId());
+				final ProvisionUser pUser = new ProvisionUser(user);
+				wsResponse = provisionService.modifyUser(pUser);
+				if(wsResponse == null || wsResponse.isFailure()) {
+					throw new ActivitiException(String.format("provisionService.modifyUser failed for %s.  Response was %s", user, wsResponse));
+				}
+			}
 		}
 	}
 
