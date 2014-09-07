@@ -855,7 +855,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         }
 
         Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
-        if(login == null) {
+        if(login == null && StringUtils.isNotEmpty(pUser.getId())) {
            login = loginDozerConverter.convertToDTO(loginManager.getByUserIdManagedSys(pUser.getId(), sysConfiguration.getDefaultManagedSysId()),false);
         }
         if(StringUtils.isNotEmpty(pUser.getFirstName()) && !pUser.getFirstName().equals(userEntity.getFirstName())) {
