@@ -1,0 +1,273 @@
+{
+	"patterns" : [
+		{
+			"pattern" : "/selfservice/*",
+			"isPublic" : true
+		},
+		{
+			"pattern" : "/webconsole-am/*",
+			"isPublic" : true
+		},
+		{
+			"pattern" : "/webconsole-idm/*",
+			"isPublic" : true
+		},
+		{
+			"pattern" : "/webconsole/*",
+			"isPublic" : true
+		},
+		{
+			"pattern" : "/selfservice/selfRegistration.html",
+			"isPublic" : true,
+			"groupingXrefs" : [
+				{
+					"id" : {
+						"groupingId" : "NONE"
+					}
+				}
+			]
+		},
+		{
+			"pattern" : "/openiam-ui-static/*",
+			"isPublic" : true,
+			"groupingXrefs" : [
+				{
+					"id" : {
+						"groupingId" : "NONE"
+					}
+				}
+			]
+		},
+		{
+			"pattern" : "/idp/changePassword.html",
+			"isPublic" : true,
+			"groupingXrefs" : [
+				{
+					"id" : {
+						"groupingId" : "NONE"
+					}
+				}
+			]
+		},
+		{
+			"pattern" : "/idp/unlockPassword.html",
+			"isPublic" : true,
+			"groupingXrefs" : [
+				{
+					"id" : {
+						"groupingId" : "NONE"
+					}
+				}
+			]
+		},
+		{
+			"pattern" : "/idp/logout.html",
+			"isPublic" : true,
+			"groupingXrefs" : [
+				{
+					"id" : {
+						"groupingId" : "NONE"
+					}
+				}
+			]
+		},
+		{
+			"pattern" : "/idp/SAMLLogin.html",
+			"isPublic" : true,
+			"groupingXrefs" : [
+				{
+					"id" : {
+						"groupingId" : "NONE"
+					}
+				}
+			]
+		},
+		{
+			"pattern" : "/idp/SAMLMetadata.html",
+			"isPublic" : true,
+			"groupingXrefs" : [
+				{
+					"id" : {
+						"groupingId" : "NONE"
+					}
+				}
+			]
+		},
+		{
+			"pattern" : "/idp/unlockPasswordQuestions.html",
+			"isPublic" : true,
+			"groupingXrefs" : [
+				{
+					"id" : {
+						"groupingId" : "NONE"
+					}
+				}
+			]
+		},
+		{
+			"pattern" : "/idp/unlockUserResetPasswordForm.html",
+			"isPublic" : true,
+			"groupingXrefs" : [
+				{
+					"id" : {
+						"groupingId" : "NONE"
+					}
+				}
+			]
+		},
+		{
+			"pattern" : "/webconsole/clearContext.html",
+			"isPublic" : true,
+			"groupingXrefs" : [
+				{
+					"id" : {
+						"groupingId" : "NONE"
+					}
+				}
+			]
+		},
+		{
+			"pattern" : "/webconsole-am/clearContext.html",
+			"isPublic" : true,
+			"groupingXrefs" : [
+				{
+					"id" : {
+						"groupingId" : "NONE"
+					}
+				}
+			]
+		},
+		{
+			"pattern" : "/webconsole-idm/clearContext.html",
+			"isPublic" : true,
+			"groupingXrefs" : [
+				{
+					"id" : {
+						"groupingId" : "NONE"
+					}
+				}
+			]
+		},
+		{
+			"pattern" : "/selfservice/clearContext.html",
+			"isPublic" : true,
+			"groupingXrefs" : [
+				{
+					"id" : {
+						"groupingId" : "NONE"
+					}
+				}
+			]
+		},
+		{
+			"pattern" : "/selfservice-ext/clearContext.html",
+			"isPublic" : true,
+			"groupingXrefs" : [
+				{
+					"id" : {
+						"groupingId" : "NONE"
+					}
+				}
+			]
+		},
+		{
+			"pattern" : "/selfservice/rest/api/entitlements/searchOrganizations",
+			"isPublic" : true,
+			"groupingXrefs" : [
+				{
+					"id" : {
+						"groupingId" : "NONE"
+					}
+				}
+			]
+		},
+		{
+			"pattern" : "/reportviewer/*",
+			"isPublic" : true,
+			"groupingXrefs" : [
+				{
+					"id" : {
+						"groupingId" : "NONE"
+					}
+				}
+			]
+		},
+		{
+			"pattern" : "/selfservice/language/languageSupport.html",
+			"isPublic" : true,
+			"groupingXrefs" : [
+				{
+					"id" : {
+						"groupingId" : "NONE"
+					}
+				}
+			]
+		},
+		{
+			"pattern" : "/selfservice/rest/api/metadata/roleMetadata",
+			"isPublic" : true,
+			"groupingXrefs" : [
+				{
+					"id" : {
+						"groupingId" : "NONE"
+					}
+				}
+			]
+		},
+		{
+			"pattern" : "/selfservice/rest/api/entitlements/searchRoles",
+			"isPublic" : true,
+			"groupingXrefs" : [
+				{
+					"id" : {
+						"groupingId" : "NONE"
+					}
+				}
+			]
+		},
+		{
+			"pattern" : "/selfservice/rest/api/metadata/groupMetadata",
+			"isPublic" : true,
+			"groupingXrefs" : [
+				{
+					"id" : {
+						"groupingId" : "NONE"
+					}
+				}
+			]
+		},
+		{
+			"pattern" : "/selfservice/rest/api/entitlements/searchGroups",
+			"isPublic" : true,
+			"groupingXrefs" : [
+				{
+					"id" : {
+						"groupingId" : "NONE"
+					}
+				}
+			]
+		},
+		{
+			"pattern" : "/selfservice/rest/api/metadata/organizationMetadata",
+			"isPublic" : true,
+			"groupingXrefs" : [
+				{
+					"id" : {
+						"groupingId" : "NONE"
+					}
+				}
+			]
+		},
+		{
+			"pattern" : "/idp/sp/*",
+			"isPublic" : true,
+			"groupingXrefs" : [
+				{
+					"id" : {
+						"groupingId" : "NONE"
+					}
+				}
+			]
+		}
+	]
+}

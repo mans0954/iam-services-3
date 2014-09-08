@@ -1,13 +1,5 @@
 package org.openiam.idm.srvc.msg.service;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import javax.jws.WebService;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -23,13 +15,15 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import twitter4j.DirectMessage;
-import twitter4j.Status;
-import twitter4j.Twitter;
-import twitter4j.TwitterException;
-import twitter4j.TwitterFactory;
+import twitter4j.*;
 import twitter4j.conf.ConfigurationBuilder;
+
+import javax.jws.WebService;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service("mailService")
 @WebService(endpointInterface = "org.openiam.idm.srvc.msg.service.MailService", targetNamespace = "urn:idm.openiam.org/srvc/msg", portName = "EmailWebServicePort", serviceName = "EmailWebService")
@@ -46,6 +40,9 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
 
     @Value("${mail.optionalBccAddress}")
     private String optionalBccAddress;
+
+    @Value("${org.openiam.email.validation.regexp}")
+    private String MAIL_REGEXP;
 
     @Autowired
     protected UserDataService userManager;

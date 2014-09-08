@@ -277,4 +277,12 @@
             <b>affiliations</b>
         </field>
     </mapping>
+    <mapping>
+        <class-a>org.openiam.idm.srvc.synch.domain.SynchReviewEntity</class-a>
+        <class-b>org.openiam.idm.srvc.synch.domain.SynchReviewEntity</class-b>
+    </mapping>
+    <mapping>
+        <class-a>org.openiam.idm.srvc.synch.domain.SynchReviewRecordEntity</class-a>
+        <class-b>org.openiam.idm.srvc.synch.domain.SynchReviewRecordEntity</class-b>
+    </mapping>
 </mappings>

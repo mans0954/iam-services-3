@@ -29,16 +29,15 @@ import java.io.Reader;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVStrategy;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.idm.srvc.synch.dto.Attribute;
-import org.openiam.idm.srvc.synch.dto.LineObject;
-import org.openiam.idm.srvc.synch.dto.SyncResponse;
-import org.openiam.idm.srvc.synch.dto.SynchConfig;
+import org.openiam.idm.srvc.synch.domain.SynchReviewEntity;
+import org.openiam.idm.srvc.synch.dto.*;
 import org.springframework.stereotype.Component;
 
 /**
@@ -59,74 +58,13 @@ public class ActiveDirectoryAdapter extends AbstractSrcAdapter{
     }
 
     @Override
-    public SyncResponse startSynch(SynchConfig config) {
+    public SyncResponse startSynch(final SynchConfig config) {
+        return startSynch(config, null, null);
+    }
 
-        log.debug("CSV startSynch CALLED.^^^^^^^^");
-        Reader reader = null;
-
-		File file = new File(config.getFileName());
-		try {
-			reader = new FileReader(file);
-		}catch(FileNotFoundException fe) {
-			fe.printStackTrace();
-		}
-		System.out.println("Setting up the file parser...");
-		
-		CSVParser parser = new CSVParser(reader, CSVStrategy.EXCEL_STRATEGY);
-		try {
-			int ctr = 0;
-			String[][] fileContentAry =   parser.getAllValues();
-			int size = fileContentAry.length;
-			
-			System.out.println("file size=..." + size);
-			
-			for (String[] lineAry : fileContentAry) {
-				System.out.println("line= " + lineAry[0]);
-				if (ctr == 0) {
-					populateTemplate(lineAry);
-					ctr++;
-				}else {
-					//populate the data object
-					LineObject rowObj = lineHeader.copy();
-					populateRowObject(rowObj, lineAry);
-					
-					System.out.println("rowObj =" + rowObj);
-					
-					// call the following
-					// validation script - if it fails then put it in the exception table
-					// transformation script
-					// synchronize the call - via jms
-						
-				}
-			}
-			
-		} catch(IOException io) {
-			io.printStackTrace();
-		}
-		
-		//while (parser.)
-        log.debug("Active Directory SYNCHRONIZATION COMPLETE^^^^^^^^");
-
-        return new SyncResponse(ResponseStatus.SUCCESS);
-	}
-	
-	private void populateTemplate(String[] lineAry) {
-		Map<String,Attribute> columnMap = new HashMap<String, Attribute>();
-		
-		int ctr =0;
-		for (String s  :lineAry) {
-			Attribute a = new Attribute(s, null);
-			columnMap.put(Integer.toString(ctr),a);
-			ctr++;
-		}
-		lineHeader.setColumnMap(columnMap);
-	}
-
-	private void populateRowObject(LineObject rowObj ,String[] lineAry) {
-		int ctr = 0;
-		for (String value  :lineAry) {
-			 rowObj.get(Integer.toString(ctr)).setValue(value);
-		}
+    @Override
+    public SyncResponse startSynch(SynchConfig config, SynchReviewEntity sourceReview, SynchReviewEntity resultReview) {
+        throw new UnsupportedOperationException("Not implemented yet..");
 	}
 
 }

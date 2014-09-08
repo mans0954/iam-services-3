@@ -15,6 +15,7 @@ import org.openiam.idm.searchbeans.UserSearchBean;
 import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
+import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.meta.dto.SaveTemplateProfileResponse;
 import org.openiam.idm.srvc.user.dto.Supervisor;
 import org.openiam.idm.srvc.user.dto.User;
@@ -148,7 +149,12 @@ public interface UserDataWebService {
      * @return a List of UserAttributes associated with this user
      */
     @WebMethod
+    @Deprecated
     public List<UserAttribute> getUserAttributes(@WebParam(name = "userId", targetNamespace = "") String userId);
+    
+    @WebMethod
+    public List<UserAttribute> getUserAttributesInternationalized(final @WebParam(name = "userId", targetNamespace = "") String userId,
+    															  final @WebParam(name = "language", targetNamespace = "") Language language);
 
     /*
      * @WebMethod public Response addNote(@WebParam(name = "note",
@@ -576,6 +582,23 @@ public interface UserDataWebService {
                                           @WebParam(name = "size", targetNamespace = "") final int size);
 
     /**
+     * Gets a paged List of Users directly entitled to the Resource specified by
+     * the resourceId. This method allows sorting the resultset.
+     *
+     * @param userSearchBean
+     *            - the Resource ID
+     * @param from
+     *            - where to start in the paged list
+     * @param size
+     *            - how many to return
+     * @return a paged List of Users directly entitled to the Resource specified
+     *         by the resourceId
+     */
+    @WebMethod
+    public List<User> getUsersForResourceWithSorting(@WebParam(name = "userSearchBean", targetNamespace = "") final UserSearchBean userSearchBean,
+                                                     @WebParam(name = "from", targetNamespace = "")  final int from,
+                                                     @WebParam(name = "size", targetNamespace = "") final int size);
+    /**
      * Gets the number of Users directly entitled to this Resource
      * 
      * @param resourceId
@@ -697,6 +720,16 @@ public interface UserDataWebService {
      */
     @WebMethod
     public Response activateUser(@WebParam(name = "userId", targetNamespace = "") final String userId);
+
+    /**
+     * Resets User's account
+     *
+     * @param userId
+     *            - the User ID
+     * @return a Response Object, containing the result of this operation
+     */
+    @WebMethod
+    public Response resetUser(@WebParam(name = "userId", targetNamespace = "") final String userId);
 
     /**
      * Gets the number of Emails for this user

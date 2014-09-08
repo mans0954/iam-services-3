@@ -19,7 +19,8 @@ import java.lang.ref.WeakReference;
         "staticValue",
         "amAttribute",
         "metaEntityId",
-        "groovyScript"
+        "groovyScript",
+        "propagateThroughProxy"
 })
 @DozerDTOCorrespondence(URIPatternMetaValueEntity.class)
 public class URIPatternMetaValue extends KeyNameDTO {
@@ -27,6 +28,7 @@ public class URIPatternMetaValue extends KeyNameDTO {
 	private AuthResourceAMAttribute amAttribute;
 	private String groovyScript;
 	private String metaEntityId;
+	private boolean propagateThroughProxy = true;
 	
 	/* internal use only!  Is compiled at spring refresh time 
 	 * to avoid run-time groovy class initialization.  
@@ -36,7 +38,7 @@ public class URIPatternMetaValue extends KeyNameDTO {
 	 */
 	@Transient
 	@XmlTransient
-	private WeakReference<URIFederationGroovyProcessor> groovyProcessor;
+	private URIFederationGroovyProcessor groovyProcessor;
 	
 	public String getStaticValue() {
 		return staticValue;
@@ -66,14 +68,16 @@ public class URIPatternMetaValue extends KeyNameDTO {
 	}
 	
 	public URIFederationGroovyProcessor getGroovyProcessor() {
-		URIFederationGroovyProcessor retVal = null;
-		if(this.groovyProcessor != null) {
-			retVal = this.groovyProcessor.get();
-		}
-		return retVal;
+		return this.groovyProcessor;
 	}
 	public void setGroovyProcessor(final  URIFederationGroovyProcessor groovyProcessor) {
-		this.groovyProcessor = new WeakReference<URIFederationGroovyProcessor>(groovyProcessor);
+		this.groovyProcessor = groovyProcessor;
+	}
+	public boolean isPropagateThroughProxy() {
+		return propagateThroughProxy;
+	}
+	public void setPropagateThroughProxy(boolean propagateThroughProxy) {
+		this.propagateThroughProxy = propagateThroughProxy;
 	}
 	@Override
 	public int hashCode() {
@@ -85,6 +89,7 @@ public class URIPatternMetaValue extends KeyNameDTO {
 				+ ((groovyScript == null) ? 0 : groovyScript.hashCode());
 		result = prime * result
 				+ ((metaEntityId == null) ? 0 : metaEntityId.hashCode());
+		result = prime * result + (propagateThroughProxy ? 1231 : 1237);
 		result = prime * result
 				+ ((staticValue == null) ? 0 : staticValue.hashCode());
 		return result;

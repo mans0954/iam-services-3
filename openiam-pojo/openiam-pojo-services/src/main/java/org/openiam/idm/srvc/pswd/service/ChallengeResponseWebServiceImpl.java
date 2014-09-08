@@ -42,6 +42,7 @@ import org.openiam.idm.srvc.pswd.dto.UserIdentityAnswer;
 import org.openiam.internationalization.LocalizedServiceGet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.jws.WebService;
 import java.util.HashSet;
@@ -70,6 +71,11 @@ public class ChallengeResponseWebServiceImpl implements ChallengeResponseWebServ
 		return challengeResponseService.getNumOfRequiredQuestions(userId);
 	}
 
+    @Override
+    public Integer getNumOfCorrectAnswers(String userId) {
+        return challengeResponseService.getNumOfCorrectAnswers(userId);
+    }
+
 	@Override
 	public Integer count(final IdentityQuestionSearchBean searchBean) {
 		return challengeResponseService.count(searchBean);
@@ -77,6 +83,7 @@ public class ChallengeResponseWebServiceImpl implements ChallengeResponseWebServ
 	
 	@Override
 	@LocalizedServiceGet
+    @Transactional(readOnly = true)
 	public IdentityQuestion getQuestion(final String questionId, final Language language) {
 		final IdentityQuestionEntity question = challengeResponseService.getQuestion(questionId);
 		return (question != null) ? questionDozerConverter.convertToDTO(question, false) : null;
@@ -85,12 +92,14 @@ public class ChallengeResponseWebServiceImpl implements ChallengeResponseWebServ
 
 	@Override
 	@LocalizedServiceGet
+    @Transactional(readOnly = true)
 	public List<IdentityQuestion> findQuestionBeans(final IdentityQuestionSearchBean searchBean, final int from, final int size, final Language language) {
 		final List<IdentityQuestionEntity> resultList = challengeResponseService.findQuestionBeans(searchBean, from, size);
 		return (resultList != null) ? questionDozerConverter.convertToDTOList(resultList, searchBean.isDeepCopy()) : null;
 	}
 
 	@Override
+    @Transactional(readOnly = true)
 	public List<UserIdentityAnswer> findAnswerBeans(final IdentityAnswerSearchBean searchBean, final  String requesterId, final int from, final int size)
             throws Exception {
 		final List<UserIdentityAnswerEntity> resultList = challengeResponseService
@@ -219,42 +228,59 @@ public class ChallengeResponseWebServiceImpl implements ChallengeResponseWebServ
 		return response;
 	}
     @Override
-	public Response saveAnswers(List<UserIdentityAnswer> answerList) {
-		final Response response = new Response(ResponseStatus.SUCCESS);
-		try {
-			if (CollectionUtils.isEmpty(answerList)) {
-				throw new BasicDataServiceException(
-						ResponseCode.OBJECT_NOT_FOUND);
-			}
-			String requestId = "R" + UUIDGen.getUUID();
+    public Response validateAnswers(List<UserIdentityAnswer> answerList) {
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+            if (CollectionUtils.isEmpty(answerList)) {
+                throw new BasicDataServiceException(
+                        ResponseCode.OBJECT_NOT_FOUND);
+            }
+            String requestId = "R" + UUIDGen.getUUID();
 
 			/* check for duplicates */
-			final Set<String> questionIdSet = new HashSet<String>();
-			for (final UserIdentityAnswer answer : answerList) {
-				if (questionIdSet.contains(answer.getQuestionId())) {
-					throw new BasicDataServiceException(
-							ResponseCode.IDENTICAL_QUESTIONS);
-				}
-				if(StringUtils.isBlank(answer.getQuestionId())){
-					throw new BasicDataServiceException(
-							ResponseCode.QUEST_NOT_SELECTED);
-				}
-				
-				if(StringUtils.isBlank(answer.getQuestionAnswer())){
-					throw new BasicDataServiceException(
-							ResponseCode.ANSWER_NOT_TAKEN);
-				}
-				questionIdSet.add(answer.getQuestionId());
-			}
+            final Set<String> questionIdSet = new HashSet<String>();
+            for (final UserIdentityAnswer answer : answerList) {
+                if (questionIdSet.contains(answer.getQuestionId())) {
+                    throw new BasicDataServiceException(
+                            ResponseCode.IDENTICAL_QUESTIONS);
+                }
+                if(StringUtils.isBlank(answer.getQuestionId())){
+                    throw new BasicDataServiceException(
+                            ResponseCode.QUEST_NOT_SELECTED);
+                }
 
-			final List<UserIdentityAnswerEntity> answerEntityList = new LinkedList<UserIdentityAnswerEntity>();
-			for (final UserIdentityAnswer answer : answerList) {
-				
-				final UserIdentityAnswerEntity entity = answerDozerConverter
-						.convertToEntity(answer, true);
-				answerEntityList.add(entity);
-			}
-			challengeResponseService.saveAnswers(answerEntityList);
+                if(StringUtils.isBlank(answer.getQuestionAnswer())){
+                    throw new BasicDataServiceException(
+                            ResponseCode.ANSWER_NOT_TAKEN);
+                }
+                questionIdSet.add(answer.getQuestionId());
+            }
+
+        } catch (BasicDataServiceException e) {
+            response.setErrorCode(e.getCode());
+            response.setStatus(ResponseStatus.FAILURE);
+        } catch (Throwable e) {
+            log.error("Can't save or update resource", e);
+            response.setErrorText(e.getMessage());
+            response.setStatus(ResponseStatus.FAILURE);
+        }
+        return response;
+
+    }
+    @Override
+	public Response saveAnswers(List<UserIdentityAnswer> answerList) {
+        Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+            response = validateAnswers(answerList);
+            if (response.isSuccess()) {
+                final List<UserIdentityAnswerEntity> answerEntityList = new LinkedList<UserIdentityAnswerEntity>();
+                for (final UserIdentityAnswer answer : answerList) {
+                    final UserIdentityAnswerEntity entity = answerDozerConverter
+                            .convertToEntity(answer, true);
+                    answerEntityList.add(entity);
+                }
+                challengeResponseService.saveAnswers(answerEntityList);
+            }
 		} catch (BasicDataServiceException e) {
 			response.setErrorCode(e.getCode());
 			response.setStatus(ResponseStatus.FAILURE);

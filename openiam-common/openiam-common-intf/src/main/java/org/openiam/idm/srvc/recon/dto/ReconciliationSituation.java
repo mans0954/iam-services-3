@@ -14,7 +14,7 @@ import org.openiam.idm.srvc.recon.domain.ReconciliationSituationEntity;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "ReconciliationSituation", propOrder = { "reconSituationId",
-        "reconConfigId", "situation", "situationResp", "script" })
+        "reconConfigId", "situation", "situationResp", "script", "customCommandScript" })
 @DozerDTOCorrespondence(ReconciliationSituationEntity.class)
 public class ReconciliationSituation implements java.io.Serializable {
 
@@ -24,6 +24,7 @@ public class ReconciliationSituation implements java.io.Serializable {
     private String situation;
     private String situationResp;
     private String script;
+    private String customCommandScript;
 
     public ReconciliationSituation() {
     }
@@ -43,6 +44,14 @@ public class ReconciliationSituation implements java.io.Serializable {
         this.reconConfigId = reconConfigId;
         this.situation = situation;
         this.situationResp = situationResp;
+    }
+
+    public String getCustomCommandScript() {
+        return customCommandScript;
+    }
+
+    public void setCustomCommandScript(String customCommandScript) {
+        this.customCommandScript = customCommandScript;
     }
 
     public String getReconSituationId() {

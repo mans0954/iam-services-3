@@ -52,6 +52,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 
 @Service("managedSysService")
 @WebService(endpointInterface = "org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService", targetNamespace = "urn:idm.openiam.org/srvc/mngsys/service", portName = "ManagedSystemWebServicePort", serviceName = "ManagedSystemWebService")
@@ -145,6 +147,7 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<AttributeMap> getAttributeMapsByManagedSysId(final String managedSysId) {
         List<AttributeMapEntity> attributeMaps = managedSystemService.getAttributeMapsByManagedSysId(managedSysId);
         return attributeMapDozerConverter.convertToDTOList(attributeMaps, true);
@@ -200,6 +203,7 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ManagedSysDto getManagedSys(String sysId) {
     	ManagedSysDto sysDto = null;
         if (sysId != null) {
@@ -219,6 +223,7 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
         return sysDto;
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<ManagedSysDto> getAllManagedSys() {
         final List<ManagedSysEntity> sysList = managedSystemService.getAllManagedSys();
@@ -279,6 +284,7 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ManagedSysDto getManagedSysByResource(String resourceId) {
     	ManagedSysDto sysDto = null;
         if(resourceId != null) {
@@ -303,6 +309,7 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
     // ================================================================
 
     @Override
+    @Transactional(readOnly = true)
     public List<ApproverAssociation> getApproverAssociations(
             ApproverAssocationSearchBean searchBean, int from, int size) {
         final ApproverAssociationEntity entity = approverSearchBeanConverter.convert(searchBean);
@@ -489,6 +496,7 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public AttributeMap getAttributeMap(String attributeMapId) {
         if (attributeMapId == null) {
             throw new IllegalArgumentException("attributeMapId is null");

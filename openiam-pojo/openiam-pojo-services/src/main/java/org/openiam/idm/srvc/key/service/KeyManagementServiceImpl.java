@@ -92,6 +92,11 @@ public class KeyManagementServiceImpl implements KeyManagementService {
     }
 
     @Override
+    public byte[] getSystemUserKey(String keyName) throws EncryptionException {
+        return getUserKey(systemUserId, keyName);
+    }
+
+    @Override
     public byte[] getUserKey(String userId, String keyName) throws EncryptionException {
 
         byte[] masterKey = new byte[0];

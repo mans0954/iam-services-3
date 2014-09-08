@@ -2,7 +2,6 @@ package org.openiam.idm.searchbeans;
 
 import org.apache.commons.lang.StringUtils;
 import org.openiam.base.Tuple;
-import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.dto.ResourceRisk;
 
@@ -22,17 +21,20 @@ import java.util.Set;
         "attributes",
         "excludeResourceTypes",
         "risk",
-        "URL"
+        "URL",
+        "metadataType"
 })
-public class ResourceSearchBean extends AbstractKeyNameSearchBean<Resource, String> {
+public class ResourceSearchBean extends EntitlementsSearchBean<Resource, String> implements SearchBean<Resource, String>, Serializable {
 
 	private static final long serialVersionUID = 1L;
+    public static final String TYPE_MANAGED_SYS = "MANAGED_SYS";
 
 	private String resourceTypeId;
 	private Boolean rootsOnly;
 	private List<Tuple<String, String>> attributes;
 	private Set<String> excludeResourceTypes;
     private ResourceRisk risk;
+    private String metadataType;
     private String URL;
 	
 	public String getResourceTypeId() {
@@ -101,6 +103,13 @@ public class ResourceSearchBean extends AbstractKeyNameSearchBean<Resource, Stri
     public void setURL(String URL) {
         this.URL = URL;
     }
+    public String getMetadataType() {
+        return metadataType;
+    }
+
+    public void setMetadataType(String metadataType) {
+        this.metadataType = metadataType;
+    }
 
 	@Override
 	public int hashCode() {
@@ -159,6 +168,4 @@ public class ResourceSearchBean extends AbstractKeyNameSearchBean<Resource, Stri
 			return false;
 		return true;
 	}
-    
-    
 }

@@ -10,6 +10,7 @@ import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.BaseAttributeContainer;
 import org.openiam.base.SysConfiguration;
 import org.openiam.base.id.UUIDGen;
+import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.connector.type.ConnectorDataException;
@@ -24,6 +25,8 @@ import org.openiam.dozer.converter.AttributeMapDozerConverter;
 import org.openiam.dozer.converter.ManagedSystemObjectMatchDozerConverter;
 import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.exception.ScriptEngineException;
+import org.openiam.idm.srvc.audit.constant.AuditAction;
+import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.auth.dto.IdentityDto;
 import org.openiam.idm.srvc.auth.dto.IdentityTypeEnum;
 import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
@@ -51,7 +54,7 @@ import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.dto.PasswordSync;
 import org.openiam.provision.dto.ProvisionGroup;
 import org.openiam.provision.dto.ProvisionUser;
-import org.openiam.provision.resp.ProvisionGroupResponse;
+import org.openiam.provision.resp.LookupObjectResponse;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleGroup;
 import org.openiam.provision.type.ExtensibleObject;
@@ -64,6 +67,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
@@ -74,12 +78,12 @@ import javax.jws.WebService;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-@WebService(endpointInterface = "org.openiam.provision.service.GroupProvisionService",
+@Service("groupProvision")
+@WebService(endpointInterface = "org.openiam.provision.service.ObjectProvisionService",
         targetNamespace = "http://www.openiam.org/service/provision",
         portName = "GroupProvisionControllerServicePort",
         serviceName = "GroupProvisionService")
-@Component("groupProvision")
-public class GroupProvisionServiceImpl extends AbstractBaseService implements GroupProvisionService {
+public class GroupProvisionServiceImpl extends AbstractBaseService implements ObjectProvisionService<ProvisionGroup> {
     @Autowired
     protected ManagedSystemWebService managedSysService;
 
@@ -93,6 +97,9 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Gr
 
     @Value("${org.openiam.idm.system.user.id}")
     protected String systemUserId;
+
+    @Value(",${org.openiam.debug.hidden.attributes},")
+    private String hiddenAttributes;
 
     @Autowired
     protected String preProcessorGroup;
@@ -151,25 +158,25 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Gr
     protected ProvisionService provisionService;
 
     @Override
-    public ProvisionGroupResponse addGroup(@WebParam(name = "group", targetNamespace = "") final ProvisionGroup group) throws Exception {
+    public Response add(@WebParam(name = "group", targetNamespace = "") final ProvisionGroup group) throws Exception {
         return provisioning(group, true);
     }
 
     @Override
-    public ProvisionGroupResponse modifyGroup(@WebParam(name = "group", targetNamespace = "") ProvisionGroup group) {
+    public Response modify(@WebParam(name = "group", targetNamespace = "") ProvisionGroup group) {
         return provisioning(group, false);
     }
 
-    private ProvisionGroupResponse provisioning(final ProvisionGroup group, final boolean isAdd) {
-        ProvisionGroupResponse response = new ProvisionGroupResponse();
+    private Response provisioning(final ProvisionGroup group, final boolean isAdd) {
+        Response response = new Response();
         response.setStatus(ResponseStatus.FAILURE);
         try {
 
             final TransactionTemplate transactionTemplate = new TransactionTemplate(platformTransactionManager);
             transactionTemplate.setPropagationBehavior(TransactionTemplate.PROPAGATION_REQUIRED);
-            response = transactionTemplate.execute(new TransactionCallback<ProvisionGroupResponse>() {
+            response = transactionTemplate.execute(new TransactionCallback<Response>() {
                 @Override
-                public ProvisionGroupResponse doInTransaction(TransactionStatus status) {
+                public Response doInTransaction(TransactionStatus status) {
                     // bind the objects to the scripting engine
                     Map<String, Object> bindingMap = new HashMap<String, Object>();
                     bindingMap.put("sysId", sysConfiguration.getDefaultManagedSysId());
@@ -179,7 +186,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Gr
                     bindingMap.put(AbstractProvisioningService.TARGET_SYSTEM_IDENTITY_STATUS, null);
                     bindingMap.put(AbstractProvisioningService.TARGET_SYSTEM_IDENTITY, null);
 
-                    ProvisionGroupResponse tmpRes = new ProvisionGroupResponse();
+                    Response tmpRes = new Response();
                     if (callPreProcessor(isAdd ? "ADD" : "MODIFY", group, bindingMap) != ProvisioningConstants.SUCCESS) {
                         tmpRes.setStatus(ResponseStatus.FAILURE);
                         tmpRes.setErrorCode(ResponseCode.FAIL_PREPROCESSOR);
@@ -191,10 +198,17 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Gr
                             if (group.getNotProvisioninResourcesIds().contains(res.getId())) {
                                 continue;
                             }
+                            ManagedSysDto managedSys = managedSystemService.getManagedSysByResource(res.getId());
 
-                        ManagedSysDto managedSys = managedSystemService.getManagedSysByResource(res.getId());
+
                         if (managedSys != null) {
                             String managedSysId = managedSys.getId();
+                            // do check if provisioning user has source resource
+                            // => we should skip it from double provisioning
+                            // reconciliation case
+                            if (group.getSrcSystemId() != null && managedSysId.equals(group.getSrcSystemId())) {
+                                continue;
+                            }
                             IdentityDto groupTargetSysIdentity = identityService.getIdentity(group.getId(), managedSysId);
                             if(groupTargetSysIdentity == null) {
                                 List<AttributeMap> attrMap = managedSysService.getResourceAttributeMaps(res.getId());
@@ -655,8 +669,12 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Gr
                             log.error("Error in script = '", mpe);
                             continue;
                         }
-                        log.debug("buildFromRules: OBJECTTYPE=" + objectType + " SCRIPT OUTPUT=" + output
-                                + " attribute name=" + attr.getAttributeName());
+
+                        log.debug("buildFromRules: OBJECTTYPE="+objectType+", ATTRIBUTE=" + attr.getAttributeName() +
+                                ", SCRIPT OUTPUT=" +
+                                (hiddenAttributes.toLowerCase().contains(","+attr.getAttributeName().toLowerCase()+",")
+                                        ? "******" : output));
+
                         if (output != null) {
                             ExtensibleAttribute newAttr;
                             if (output instanceof String) {
@@ -734,11 +752,11 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Gr
 
 
     @Override
-    public ProvisionGroupResponse deleteGroup(@WebParam(name = "managedSystemId", targetNamespace = "") String managedSystemId, @WebParam(name = "groupId", targetNamespace = "") String groupId, @WebParam(name = "status", targetNamespace = "") UserStatusEnum status, @WebParam(name = "requesterId", targetNamespace = "") String requesterId) {
+    public Response delete(@WebParam(name = "managedSystemId", targetNamespace = "") String managedSystemId, @WebParam(name = "groupId", targetNamespace = "") String groupId, @WebParam(name = "status", targetNamespace = "") UserStatusEnum status, @WebParam(name = "requesterId", targetNamespace = "") String requesterId) {
 
-        log.debug("----deleteUser called.------");
+        log.debug("----deleteGroup called.------");
 
-        ProvisionGroupResponse response = new ProvisionGroupResponse(ResponseStatus.SUCCESS);
+        Response response = new Response(ResponseStatus.SUCCESS);
         Map<String, Object> bindingMap = new HashMap<String, Object>();
 
         if (status != UserStatusEnum.DELETED && status != UserStatusEnum.REMOVE && status != UserStatusEnum.LEAVE
@@ -1010,13 +1028,116 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Gr
         return resp;
     }
 
-    @Override
-    public ProvisionGroupResponse removeGroup(@WebParam(name = "groupId", targetNamespace = "") String groupId, @WebParam(name = "requesterId", targetNamespace = "") String requesterId) {
-        return deleteGroup(sysConfiguration.getDefaultManagedSysId(), groupId, UserStatusEnum.REMOVE, requesterId);
+    public LookupObjectResponse getTargetSystemObject(final String principalName,
+                                                      final String managedSysId,
+                                                  final List<ExtensibleAttribute> extensibleAttributes) {
+        final IdmAuditLog idmAuditLog = new IdmAuditLog();
+        idmAuditLog.setRequestorUserId(systemUserId);
+        idmAuditLog.setAction(AuditAction.PROVISIONING_LOOKUP.value());
+
+        log.debug("getTargetSystemUser called. for = " + principalName);
+
+        LookupObjectResponse response = new LookupObjectResponse(ResponseStatus.SUCCESS);
+        try {
+            response.setManagedSysId(managedSysId);
+            response.setPrincipalName(principalName);
+            // get the connector for the managedSystem
+
+            ManagedSysDto mSys = managedSysService.getManagedSys(managedSysId);
+            ManagedSystemObjectMatch matchObj = null;
+            ManagedSystemObjectMatch[] objList = managedSystemService.managedSysObjectParam(managedSysId,
+                    ManagedSystemObjectMatch.GROUP);
+            if (objList.length > 0) {
+                matchObj = objList[0];
+            }
+
+            // do the lookup
+
+            log.debug("Calling lookupRequest ");
+
+            LookupRequest<ExtensibleUser> reqType = new LookupRequest<>();
+            String requestId = "R" + UUIDGen.getUUID();
+            reqType.setRequestID(requestId);
+            reqType.setSearchValue(principalName);
+
+            ExtensibleUser extensibleUser = new ExtensibleUser();
+            extensibleUser.setPrincipalFieldName(matchObj.getKeyField());
+            extensibleUser.setPrincipalFieldDataType("string");
+            extensibleUser.setAttributes(extensibleAttributes);
+            reqType.setExtensibleObject(extensibleUser);
+            reqType.setTargetID(managedSysId);
+            reqType.setHostLoginId(mSys.getUserId());
+            if (matchObj != null && StringUtils.isNotEmpty(matchObj.getSearchBaseDn())) {
+                reqType.setBaseDN(matchObj.getSearchBaseDn());
+            }
+            String passwordDecoded;
+            try {
+                passwordDecoded = getDecryptedPassword(mSys);
+            } catch (ConnectorDataException e) {
+                idmAuditLog.fail();
+                idmAuditLog.setFailureReason(ResponseCode.FAIL_ENCRYPTION);
+                response.setStatus(ResponseStatus.FAILURE);
+                response.setErrorCode(ResponseCode.FAIL_ENCRYPTION);
+                return response;
+            }
+            reqType.setHostLoginPassword(passwordDecoded);
+            reqType.setHostUrl(mSys.getHostUrl());
+            reqType.setScriptHandler(mSys.getLookupHandler());
+
+            SearchResponse responseType = connectorAdapter.lookupRequest(mSys, reqType, MuleContextProvider.getCtx());
+            if (responseType.getStatus() == StatusCodeType.FAILURE || responseType.getObjectList().size() == 0) {
+                response.setStatus(ResponseStatus.FAILURE);
+                return response;
+            }
+
+            String targetPrincipalName = responseType.getObjectList().get(0).getObjectIdentity() != null
+                    ? responseType.getObjectList().get(0).getObjectIdentity()
+                    : parseGroupPrincipal(responseType.getObjectList().get(0).getAttributeList());
+            response.setPrincipalName(targetPrincipalName);
+            response.setAttrList(responseType.getObjectList().get(0).getAttributeList());
+            response.setResponseValue(responseType.getObjectList().get(0));
+
+            idmAuditLog.succeed();
+
+        } finally {
+            auditLogService.enqueue(idmAuditLog);
+        }
+
+        return response;
+    }
+
+    protected String parseGroupPrincipal(List<ExtensibleAttribute> extensibleAttributes) {
+        ManagedSysDto defaultManagedSys = managedSystemService.getManagedSys(sysConfiguration.getDefaultManagedSysId());
+        List<AttributeMap> policyAttrMap = managedSystemService.getResourceAttributeMaps(defaultManagedSys.getResourceId());
+        String principalAttributeName = null;
+        for (AttributeMap attr : policyAttrMap) {
+            String objectType = attr.getMapForObjectType();
+            if (objectType != null) {
+                if (PolicyMapObjectTypeOptions.GROUP_PRINCIPAL.name().equalsIgnoreCase(objectType)) {
+                    if (attr.getAttributeName().equalsIgnoreCase("GROUP_PRINCIPAL")) {
+                        principalAttributeName = attr.getAttributeName();
+                        break;
+                    }
+                }
+            }
+        }
+        if (org.mule.util.StringUtils.isNotEmpty(principalAttributeName)) {
+            for (ExtensibleAttribute extAttr : extensibleAttributes) {
+                if (extAttr.getName().equalsIgnoreCase(principalAttributeName)) {
+                    return extAttr.getValue();
+                }
+            }
+        }
+        return null;
     }
 
     @Override
-    public ProvisionGroupResponse deprovisionSelectedResources(@WebParam(name = "groupId", targetNamespace = "") String groupId, @WebParam(name = "requesterId", targetNamespace = "") String requesterId, @WebParam(name = "resourceList", targetNamespace = "") List<String> resourceList) {
+    public Response remove(@WebParam(name = "groupId", targetNamespace = "") String groupId, @WebParam(name = "requesterId", targetNamespace = "") String requesterId) {
+        return delete(sysConfiguration.getDefaultManagedSysId(), groupId, UserStatusEnum.REMOVE, requesterId);
+    }
+
+    @Override
+    public Response deprovisionSelectedResources(@WebParam(name = "groupId", targetNamespace = "") String groupId, @WebParam(name = "requesterId", targetNamespace = "") String requesterId, @WebParam(name = "resourceList", targetNamespace = "") List<String> resourceList) {
         throw new UnsupportedOperationException("Not implemented yet");
     }
 }

@@ -6,6 +6,8 @@ import org.openiam.core.dao.BaseDao;
 import org.openiam.idm.srvc.recon.domain.ReconciliationConfigEntity;
 import org.openiam.idm.srvc.recon.dto.*;
 
+import java.util.List;
+
 /**
  * Home object for domain model class ReconiliationConfig.
  * 
@@ -14,10 +16,11 @@ import org.openiam.idm.srvc.recon.dto.*;
 public interface ReconciliationConfigDAO extends
         BaseDao<ReconciliationConfigEntity, String> {
 
-    public ReconciliationConfigEntity findByResourceId(
-            java.lang.String resourceId);
-
-    public void removeByResourceId(java.lang.String resourceId);
+    public ReconciliationConfigEntity findByResourceIdByType(
+            java.lang.String resourceId, String type);
 
     public ReconciliationConfigEntity get(String id);
+
+    public List<ReconciliationConfigEntity> findByResourceId(
+            java.lang.String resourceId);
 }

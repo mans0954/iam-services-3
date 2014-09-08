@@ -21,12 +21,9 @@ public enum ActivitiConstants {
 	REQUEST_METADATA_MAP("RequestMetadataMap"),
 	CUSTOM_APPROVER_IDS("CustomApproverIds"),
 	EMPLOYEE_ID("EmployeeId"),
-	DISASSOCIATED_ROLE_IDS("DisassociatedRoleIds"),
-	DISASSOCIATED_GROUP_IDS("DisassociatedGroupIds"),
-	DISASSOCIATED_RESOURCE_IDS("DisassociatedResourceIds"),
-	CUSTOM_TASK_UI_URL("CustomTaskUIUrl"),
+	ATTESTATION_URL("ATTESTATION_URL"),
 	WORKFLOW_NAME("WorkflowName"),
-	
+	DELETABLE("Deletable"),
 	LOGIN("Login"),
 	
 	LOOP_COUNTER("loopCounter"),

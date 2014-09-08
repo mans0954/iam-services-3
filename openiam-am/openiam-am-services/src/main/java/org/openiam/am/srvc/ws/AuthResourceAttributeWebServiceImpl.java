@@ -17,6 +17,7 @@ import org.openiam.base.ws.ResponseStatus;
 import org.openiam.exception.BasicDataServiceException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.jws.WebParam;
 import javax.jws.WebService;
@@ -40,11 +41,13 @@ public class AuthResourceAttributeWebServiceImpl implements AuthResourceAttribut
     *===================================================
     */
     @Override
+    @Transactional(readOnly = true)
     public AuthResourceAMAttribute getAmAttribute(String attributeId) {
         return authResourceAMAttributeDozerConverter.convertToDTO(authResourceAttributeService.getAmAttribute(attributeId), true);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<AuthResourceAMAttribute> getAmAttributeList() {
         return authResourceAMAttributeDozerConverter.convertToDTOList(authResourceAttributeService.getAmAttributeList(), true);
     }
@@ -100,11 +103,13 @@ public class AuthResourceAttributeWebServiceImpl implements AuthResourceAttribut
     *===================================================
     */
     @Override
+    @Transactional(readOnly = true)
     public AuthResourceAttributeMap getAttributeMap(String attributeMapId) {
         return authResourceAttributeMapDozerConverter.convertToDTO(authResourceAttributeService.getAttributeMap(attributeMapId),true);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<AuthResourceAttributeMap> getAttributeMapList(String providerId) {
         return authResourceAttributeMapDozerConverter.convertToDTOList(authResourceAttributeService.getAttributeMapList(providerId),true);
     }

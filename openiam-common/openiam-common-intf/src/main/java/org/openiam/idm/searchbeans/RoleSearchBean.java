@@ -3,7 +3,6 @@ package org.openiam.idm.searchbeans;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.base.Tuple;
-import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.role.dto.Role;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -20,14 +19,16 @@ import java.util.Set;
         "keySet",
         "isRootsOnly",
         "managedSysId",
-        "attributes"
+        "attributes",
+        "type"
 })
-public class RoleSearchBean extends AbstractKeyNameSearchBean<Role, String> {
+public class RoleSearchBean extends EntitlementsSearchBean<Role, String> implements SearchBean<Role, String>, Serializable {
 
 	private static final long serialVersionUID = 1L;
     private Set<String> keySet;
     private String managedSysId;
 	private Boolean isRootsOnly;
+    private String type;
     private List<Tuple<String,String>> attributes;
 
 	public boolean getIsRootsOnly() {
@@ -44,6 +45,14 @@ public class RoleSearchBean extends AbstractKeyNameSearchBean<Role, String> {
 
     public void setManagedSysId(String managedSysId) {
         this.managedSysId = managedSysId;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 
     public void addAttribute(final String key, final String value) {

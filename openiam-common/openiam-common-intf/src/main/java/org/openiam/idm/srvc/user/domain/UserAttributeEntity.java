@@ -2,15 +2,15 @@ package org.openiam.idm.srvc.user.domain;
 
 import javax.persistence.*;
 
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
+import org.openiam.base.domain.AbstractAttributeEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
+import org.openiam.internationalization.Internationalized;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -19,31 +19,13 @@ import java.util.List;
 @Entity
 @Table(name = "USER_ATTRIBUTES")
 @DozerDTOCorrespondence(UserAttribute.class)
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class UserAttributeEntity implements Serializable {
+@Internationalized
+@AttributeOverrides(value={
+	@AttributeOverride(name = "id", column = @Column(name = "ID")),
+	@AttributeOverride(name = "value", column = @Column(name="VALUE", length=4096))
+})
+public class UserAttributeEntity extends AbstractAttributeEntity {
     private static final long serialVersionUID = 6695609793883291213L;
-
-    @Id
-    @GeneratedValue(generator = "system-uuid")
-    @GenericGenerator(name = "system-uuid", strategy = "uuid")
-    @Column(name = "ID", length = 32, nullable = false)
-    private String id;
-
-    /*
-    @Column(name = "METADATA_ID", length = 20)
-    private String metadataElementId;
-	*/
-
-    @Column(name = "NAME", length = 100)
-    private String name;
-
-    /*
-    @Column(name = "USER_ID", length = 32)
-    private String userId;
-    */
-
-    @Column(name = "VALUE", length = 4096)
-    private String value;
 
     @ElementCollection
     @CollectionTable(name="USER_ATTRIBUTE_VALUES", joinColumns=@JoinColumn(name="USER_ATTRIBUTE_ID", referencedColumnName="ID"))
@@ -58,121 +40,72 @@ public class UserAttributeEntity implements Serializable {
     @JoinColumn(name = "USER_ID", referencedColumnName = "USER_ID", insertable = true, updatable = false)
     private UserEntity user;
     
-    @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
-    @JoinColumn(name = "METADATA_ID", insertable = true, updatable = false, nullable=true)
-    private MetadataElementEntity element;
-
     public UserAttributeEntity() {
     }
 
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    /*
-    public String getMetadataElementId() {
-        return metadataElementId;
-    }
-
-    public void setMetadataElementId(String metadataElementId) {
-        this.metadataElementId = metadataElementId;
-    }
-    */
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    /*
-    public String getUserId() {
-        return userId;
-    }
-
-    public void setUserId(String userId) {
-        this.userId = userId;
-    }
-    */
-
-    public UserEntity getUser() {
-        return user;
-    }
-
-    public void setUser(UserEntity user) {
-        this.user = user;
-    }
-
-    public String getValue() {
-        return value;
-    }
-
-    public void setValue(String value) {
-        this.value = value;
-    }
-
-    public List<String> getValues() {
-        return values;
-    }
-
-    public void setValues(List<String> values) {
-        this.values = values;
-    }
-
-    public boolean getIsMultivalued() {
-        return isMultivalued;
-    }
-
-    public void setIsMultivalued(boolean isMultivalued) {
-        this.isMultivalued = isMultivalued;
-    }
-
-    public MetadataElementEntity getElement() {
-		return element;
+	public List<String> getValues() {
+		return values;
 	}
 
-	public void setElement(MetadataElementEntity element) {
-		this.element = element;
+	public void setValues(List<String> values) {
+		this.values = values;
 	}
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+	public boolean getIsMultivalued() {
+		return isMultivalued;
+	}
 
-        UserAttributeEntity that = (UserAttributeEntity) o;
+	public void setIsMultivalued(boolean isMultivalued) {
+		this.isMultivalued = isMultivalued;
+	}
 
-        if (id != null ? !id.equals(that.id) : that.id != null) return false;
-        if (name != null ? !name.equals(that.name) : that.name != null) return false;
-        if (isMultivalued != that.isMultivalued) return false;
+	public UserEntity getUser() {
+		return user;
+	}
 
-        return true;
-    }
+	public void setUser(UserEntity user) {
+		this.user = user;
+	}
 
-    @Override
-    public int hashCode() {
-        int result = id != null ? id.hashCode() : 0;
-        result = 31 * result + (name != null ? name.hashCode() : 0);
-        result = 31 * result + (value != null ? value.hashCode() : 0);
-        result = 31 * result + (isMultivalued ? 1231 : 1237);
-        return result;
-    }
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result + (isMultivalued ? 1231 : 1237);
+		result = prime * result + ((user == null) ? 0 : user.hashCode());
+		result = prime * result + ((values == null) ? 0 : values.hashCode());
+		return result;
+	}
 
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder();
-        sb.append("UserAttributeEntity");
-        sb.append("{name='").append(name).append('\'');
-        sb.append(", value='").append(value).append('\'');
-        sb.append(", isMultivalued=").append(isMultivalued);
-        sb.append(", element=").append(element);
-        sb.append('}');
-        return sb.toString();
-    }
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		UserAttributeEntity other = (UserAttributeEntity) obj;
+		if (isMultivalued != other.isMultivalued)
+			return false;
+		if (user == null) {
+			if (other.user != null)
+				return false;
+		} else if (!user.equals(other.user))
+			return false;
+		if (values == null) {
+			if (other.values != null)
+				return false;
+		} else if (!values.equals(other.values))
+			return false;
+		return true;
+	}
+
+	@Override
+	public String toString() {
+		return String
+				.format("UserAttributeEntity [values=%s, isMultivalued=%s, user=%s, toString()=%s]",
+						values, isMultivalued, user, super.toString());
+	}
+
 }

@@ -128,6 +128,15 @@
         <property name="target" ref="targetConfigurableGroovyScriptEngine"/>
     </bean>
 
+	<!-- QueryDataService -->
+	<bean id="queryWS" class="org.openiam.idm.srvc.qry.ws.QueryDataWebServiceImpl">
+		<property name="queryService" ref="queryDataService" />
+	</bean>
+
+	<bean id="queryDataService" class="org.openiam.idm.srvc.qry.service.QueryDataServiceImpl">
+		<property name="sessionFactory" ref="sessionFactory"></property>
+	</bean>
+
 	<bean id="luceneReindexService" class="org.openiam.idm.srvc.lucene.LuceneReindexService">
 		<property name="hibernateSearchDAOs">
 			<list>
@@ -203,6 +212,18 @@
                         </bean>
                     </property>
                 </bean>
+
+                <bean class="org.springframework.scheduling.quartz.SimpleTriggerBean">
+                    <property name="startDelay" value="${org.openiam.metadata.threadsweep}" />
+                    <property name="repeatInterval" value="${org.openiam.metadata.threadsweep}" />
+                    <property name="jobDetail">
+                        <bean class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+                            <property name="targetObject" ref="metadataDispatcher" />
+                            <property name="targetMethod" value="sweep" />
+                            <property name="concurrent" value="false" />
+                        </bean>
+                    </property>
+                </bean>
 			</list> 
 		</property> 
 	</bean>
@@ -232,6 +253,15 @@
 	<!-- Utility Beans -->
 	<bean id="cryptor" class="org.openiam.util.encrypt.DESedeCryptor">
 	</bean>
+
+
+
+	<!-- Batch related beans -->
+	<!--
+	<bean id="batchConfigDAO" class="org.openiam.idm.srvc.batch.service.BatchConfigDAOImpl">
+		<property name="sessionFactory" ref="sessionFactory"></property>
+	</bean>
+	-->
 
 	<!-- Hibernate SessionFactory -->
 	<bean id="sessionFactory"

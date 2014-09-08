@@ -18,7 +18,19 @@
 		/> -->
 
 
-
+    <model name="groupProvisionServiceModel">
+        <service name="groupProvisionService">
+            <inbound>
+                <inbound-endpoint address="${webservice.path}GroupProvisionService"
+                                  exchange-pattern="request-response">
+                    <cxf:jaxws-service />
+                </inbound-endpoint>
+            </inbound>
+            <component>
+                <spring-object bean="groupProvision" />
+            </component>
+        </service>
+    </model>
 
 
 

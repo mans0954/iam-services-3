@@ -46,7 +46,7 @@ public class PostAttestationDelegate extends AbstractEntitlementsDelegate {
 		}
 		
 		sw.stop();
-		LOG.info(String.format("Took %s ms to finalize attestation request for user %s", sw.getTime(), employeeId));
+		LOG.info(String.format("Took %s ms to finalize re-certification request for user %s", sw.getTime(), employeeId));
 	}
 
 	private void sendNotificationRequest(final UserEntity supervisor, final UserEntity employee) {

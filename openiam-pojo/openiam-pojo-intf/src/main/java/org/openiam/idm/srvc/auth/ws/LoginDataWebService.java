@@ -248,4 +248,7 @@ public interface LoginDataWebService {
                                        @WebParam(name = "userId", targetNamespace = "") String userId,
                                        @WebParam(name = "managedSysId", targetNamespace = "") String managedSysId);
 
+    @WebMethod
+    public Response forgotUsername(@WebParam(name = "email", targetNamespace = "") String email);
+
 }

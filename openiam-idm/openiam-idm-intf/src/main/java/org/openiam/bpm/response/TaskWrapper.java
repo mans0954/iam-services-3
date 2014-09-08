@@ -20,6 +20,7 @@ import org.apache.log4j.Logger;
 import org.mule.util.concurrent.DaemonThreadFactory;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.provision.dto.ProvisionUser;
+import org.springframework.validation.beanvalidation.CustomValidatorBean;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "TaskWrapper", propOrder = {
@@ -39,7 +40,8 @@ import org.openiam.provision.dto.ProvisionUser;
 	"endDate",
 	"requestMetadataMap",
 	"customObjectURI",
-	"employeeId"
+	"employeeId",
+	"deletable"
 })
 public class TaskWrapper implements Serializable {
 	
@@ -56,6 +58,7 @@ public class TaskWrapper implements Serializable {
 	private String assignee;
 	private String customObjectURI;
 	private String employeeId;
+	private boolean deletable = true;
 	
 	@XmlSchemaType(name = "dateTime")
 	private Date createdTime;
@@ -122,12 +125,17 @@ public class TaskWrapper implements Serializable {
 						requestMetadataMap = (LinkedHashMap<String, String>)customVariables.get(ActivitiConstants.REQUEST_METADATA_MAP.getName());
 					}
 					
-					if(customVariables.containsKey(ActivitiConstants.CUSTOM_TASK_UI_URL.getName())) {
-						customObjectURI = (String)customVariables.get(ActivitiConstants.CUSTOM_TASK_UI_URL.getName());
-					}
-					
 					if(customVariables.containsKey(ActivitiConstants.EMPLOYEE_ID.getName())) {
 						employeeId = (String)customVariables.get(ActivitiConstants.EMPLOYEE_ID.getName());
+					}
+					
+					if(customVariables.containsKey(ActivitiConstants.ATTESTATION_URL.getName())) {
+						customObjectURI = (String)customVariables.get(ActivitiConstants.ATTESTATION_URL.getName());
+						customObjectURI = new StringBuilder(customObjectURI).append(String.format("?id=%s&taskId=%s", employeeId, id)).toString();
+					}
+					
+					if(customVariables.containsKey(ActivitiConstants.DELETABLE.getName())) {
+						deletable = ((Boolean)customVariables.get(ActivitiConstants.DELETABLE.getName())).booleanValue();
 					}
 				}
 			} catch(ActivitiException e) {
@@ -271,6 +279,18 @@ public class TaskWrapper implements Serializable {
 	
 	public String getEmployeeId() {
 		return employeeId;
+	}
+
+	public boolean isDeletable() {
+		return deletable;
+	}
+
+	public void setDeletable(boolean deletable) {
+		this.deletable = deletable;
+	}
+
+	public void setEmployeeId(String employeeId) {
+		this.employeeId = employeeId;
 	}
 
 	@Override

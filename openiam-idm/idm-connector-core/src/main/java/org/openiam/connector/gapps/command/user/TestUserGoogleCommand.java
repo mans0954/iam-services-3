@@ -3,6 +3,7 @@ package org.openiam.connector.gapps.command.user;
 import org.openiam.connector.gapps.GoogleAgent;
 import org.openiam.connector.gapps.command.base.AbstractGoogleAppsCommand;
 import org.openiam.connector.type.ConnectorDataException;
+import org.openiam.connector.type.constant.ErrorCode;
 import org.openiam.connector.type.constant.StatusCodeType;
 import org.openiam.connector.type.request.RequestType;
 import org.openiam.connector.type.response.ResponseType;
@@ -28,7 +29,10 @@ public class TestUserGoogleCommand<ExtObject extends ExtensibleObject> extends
             client.getUser(adminEmail, password, domain, adminEmail);
             response.setStatus(StatusCodeType.SUCCESS);
         } catch (Exception e) {
+            log.error(e);
+            response.setError(ErrorCode.CONNECTOR_ERROR);
             response.setStatus(StatusCodeType.FAILURE);
+            response.addErrorMessage(e.getMessage());
         }
         return response;
     }

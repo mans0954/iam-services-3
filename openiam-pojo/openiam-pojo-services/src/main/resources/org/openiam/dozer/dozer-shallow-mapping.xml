@@ -273,6 +273,22 @@
 			<a>policyAttributes</a>
 			<b>policyAttributes</b>
 		</field-exclude>
-	</mapping>	
+	</mapping>
+    <mapping>
+        <class-a>org.openiam.idm.srvc.synch.domain.SynchReviewEntity</class-a>
+        <class-b>org.openiam.idm.srvc.synch.domain.SynchReviewEntity</class-b>
+        <field-exclude>
+            <a>reviewRecords</a>
+            <b>reviewRecords</b>
+        </field-exclude>
+    </mapping>
+    <mapping>
+        <class-a>org.openiam.idm.srvc.synch.domain.SynchReviewRecordEntity</class-a>
+        <class-b>org.openiam.idm.srvc.synch.domain.SynchReviewRecordEntity</class-b>
+        <field-exclude>
+            <a>reviewValues</a>
+            <b>reviewValues</b>
+        </field-exclude>
+    </mapping>
 </mappings>
         

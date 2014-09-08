@@ -20,6 +20,7 @@ import org.openiam.validator.EntityValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service("uiThemeWS")
 @WebService(endpointInterface = "org.openiam.idm.srvc.ui.theme.UIThemeWebService", targetNamespace = "urn:idm.openiam.org/srvc/ui/theme/service", portName = "UIThemeWebServiceServicePort", serviceName = "UIThemeWebService")
@@ -77,12 +78,14 @@ public class UIThemeWebServiceImpl implements UIThemeWebService {
 	}
 	
 	@WebMethod
+    @Transactional(readOnly = true)
 	public UITheme get(final String id) {
 		final UIThemeEntity entity = uiThemeService.get(id);
 		return dozerConverter.convertToDTO(entity, true);
 	}
 	
 	@WebMethod
+    @Transactional(readOnly = true)
 	public List<UITheme> findBeans(final UIThemeSearchBean searchBean, final int from, final int size) {
 		final List<UIThemeEntity> entityList = uiThemeService.findBeans(searchBean, from, size);
 		return dozerConverter.convertToDTOList(entityList, searchBean.isDeepCopy());

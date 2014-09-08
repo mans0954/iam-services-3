@@ -157,6 +157,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
             groupManager.saveGroup(entity, requesterId);
             response.setResponseValue(entity.getId());
         } catch (BasicDataServiceException e) {
+            log.error("Error save", e);
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(e.getCode());
             response.setErrorTokenList(e.getErrorTokenList());
@@ -276,7 +277,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
         GroupEntity groupEntity = groupManager.getGroup(groupId);
         auditLog.setTargetGroup(groupId, groupEntity.getName());
         auditLog.setRequestorUserId(requesterId);
-        auditLog.setAuditDescription(String.format("Add user to group: %s", groupId));
+        auditLog.setAuditDescription(String.format("Add user %s to group: %s", userId, groupId));
         try {
             if (groupId == null) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Group Id is null or empty");
@@ -306,10 +307,12 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
     public Response removeUserFromGroup(final String groupId, final String userId, final String requesterId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         IdmAuditLog auditLog = new IdmAuditLog();
+        GroupEntity groupEntity = groupManager.getGroup(groupId);
         auditLog.setRequestorUserId(requesterId);
         auditLog.setAction(AuditAction.REMOVE_USER_FROM_GROUP.value());
         auditLog.setTargetUser(userId, null);
-        auditLog.setAuditDescription(String.format("Remove user from group: %s", groupId));
+        auditLog.setTargetGroup(groupId, groupEntity.getName());
+        auditLog.setAuditDescription(String.format("Remove user %s from group: %s", userId, groupId));
         try {
             if (groupId == null || userId == null) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "Group Id is null or empty");
@@ -416,12 +419,12 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
                                          final Language language) {
         final List<GroupEntity> groupEntityList = groupManager.findBeansLocalize(searchBean, requesterId, from, size, languageConverter.convertToEntity(language, false));
         List<Group> groupList = groupDozerConverter.convertToDTOList(groupEntityList, false);
-        Collections.sort(groupList, new Comparator<Group>() {
-            @Override
-            public int compare(Group o1, Group o2) {
-                return o1.getName().compareTo(o2.getName());
-            }
-        });
+//        Collections.sort(groupList, new Comparator<Group>() {
+//            @Override
+//            public int compare(Group o1, Group o2) {
+//                return o1.getName().compareTo(o2.getName());
+//            }
+//        });
         return groupList;
     }
 
@@ -479,6 +482,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
 
     @Override
     @LocalizedServiceGet
+    @Transactional(readOnly = true)
     public List<Group> getGroupsForRoleLocalize(final String roleId, final String requesterId, final int from, final int size,
                                         boolean deepFlag, final Language language) {
         final List<GroupEntity> groupEntityList = groupManager.getGroupsForRoleLocalize(roleId, requesterId, from, size, languageConverter.convertToEntity(language, false));
@@ -637,6 +641,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
 
     @Override
     @LocalizedServiceGet
+    @Transactional(readOnly = true)
     public List<Group> findGroupsByAttributeValueLocalize(String attrName, String attrValue, final Language language) {
         return groupDozerConverter.convertToDTOList(
                 groupManager.findGroupsByAttributeValueLocalize(attrName, attrValue, languageConverter.convertToEntity(language, false)), true);

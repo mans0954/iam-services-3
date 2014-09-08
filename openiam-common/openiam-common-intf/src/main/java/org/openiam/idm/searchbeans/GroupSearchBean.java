@@ -7,27 +7,39 @@ import org.openiam.idm.srvc.grp.dto.Group;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 import java.io.Serializable;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "GroupSearchBean", propOrder = {
         "keySet",
         "isRootsOnly",
         "managedSysId",
-        "attributes"
+        "attributes",
+        "updatedSince",
+        "type"
 })
-public class GroupSearchBean extends AbstractKeyNameSearchBean<Group, String> {
+public class GroupSearchBean extends EntitlementsSearchBean<Group, String> implements SearchBean<Group, String>, Serializable {
 
 	private static final long serialVersionUID = 1L;
     private Set<String> keySet;
 	private String managedSysId;
+    private String type;
 	private boolean isRootsOnly;
 	private List<Tuple<String, String>> attributes;
+
+    @XmlSchemaType(name = "dateTime")
+    protected Date updatedSince;
+
+    public Date getUpdatedSince() {
+        return updatedSince;
+    }
+
+    public void setUpdatedSince(Date updatedSince) {
+        this.updatedSince = updatedSince;
+    }
 
 	public boolean getIsRootsOnly() {
 		return isRootsOnly;
@@ -61,6 +73,14 @@ public class GroupSearchBean extends AbstractKeyNameSearchBean<Group, String> {
 
 	public void setAttributes(List<Tuple<String, String>> attributes) {
 		this.attributes = attributes;
+	}
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
 	}
 
 	@Override

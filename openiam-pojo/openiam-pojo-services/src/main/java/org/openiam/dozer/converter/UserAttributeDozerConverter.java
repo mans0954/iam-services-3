@@ -26,7 +26,7 @@ public class UserAttributeDozerConverter extends AbstractDozerEntityConverter<Us
     @Override
     public UserAttributeEntity convertToEntity(UserAttribute dto, boolean isDeep) {
         UserAttributeEntity attributeEntity = convertToCrossEntity(dto, isDeep, UserAttributeEntity.class);
-        if(dto.getMetadataElementId() == null) {
+        if(dto.getMetadataId() == null) {
             attributeEntity.setElement(null);
         }
         return attributeEntity;

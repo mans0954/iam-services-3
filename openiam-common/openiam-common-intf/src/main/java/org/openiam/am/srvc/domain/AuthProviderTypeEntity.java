@@ -4,37 +4,42 @@ import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.Type;
 import org.openiam.am.srvc.dto.AuthProviderType;
+import org.openiam.base.domain.KeyEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 
 import javax.persistence.*;
+
 import java.io.Serializable;
 import java.util.Set;
 
 @Entity
 @Table(name = "AUTH_PROVIDER_TYPE")
-@DozerDTOCorrespondence(AuthProviderType.class)
+@Cacheable
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class AuthProviderTypeEntity implements Serializable {
-    @Id
-    @Column(name="PROVIDER_TYPE", length = 32, nullable = false)
-    private String providerType;
+@DozerDTOCorrespondence(AuthProviderType.class)
+@AttributeOverride(name = "id", column = @Column(name = "PROVIDER_TYPE"))
+public class AuthProviderTypeEntity extends KeyEntity {
+	
     @Column(name="DESCRIPTION", length = 50, nullable = true)
     private String description;
+    
     @Column(name="ACTIVE")
     @Type(type = "yes_no")
     private boolean isActive = true;
+    
+    @Column(name="HAS_PUBLIC_KEY")
+    @Type(type = "yes_no")
+    private boolean hasPublicKey;
+    
+    @Column(name="HAS_PRIVATE_KEY")
+    @Type(type = "yes_no")
+    private boolean hasPrivateKey;
+    
     @OneToMany(mappedBy = "type", cascade = CascadeType.ALL,fetch = FetchType.LAZY)
     private Set<AuthAttributeEntity> attributeSet;
+    
     @OneToMany(mappedBy = "type", cascade = CascadeType.ALL,fetch = FetchType.LAZY)
     private Set<AuthProviderEntity> providerSet;
-
-    public String getProviderType() {
-        return providerType;
-    }
-
-    public void setProviderType(String providerType) {
-        this.providerType = providerType;
-    }
 
     public String getDescription() {
         return description;
@@ -68,35 +73,64 @@ public class AuthProviderTypeEntity implements Serializable {
         this.providerSet = providerSet;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
+	public boolean isHasPublicKey() {
+		return hasPublicKey;
+	}
 
-        AuthProviderTypeEntity that = (AuthProviderTypeEntity) o;
+	public void setHasPublicKey(boolean hasPublicKey) {
+		this.hasPublicKey = hasPublicKey;
+	}
 
-        if (isActive != that.isActive) {
-            return false;
-        }
-        if (!description.equals(that.description)) {
-            return false;
-        }
-        if (!providerType.equals(that.providerType)) {
-            return false;
-        }
+	public boolean isHasPrivateKey() {
+		return hasPrivateKey;
+	}
 
-        return true;
-    }
+	public void setHasPrivateKey(boolean hasPrivateKey) {
+		this.hasPrivateKey = hasPrivateKey;
+	}
 
-    @Override
-    public int hashCode() {
-        int result = providerType.hashCode();
-        result = 31 * result + description.hashCode();
-        result = 31 * result + (isActive ? 1 : 0);
-        return result;
-    }
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result
+				+ ((description == null) ? 0 : description.hashCode());
+		result = prime * result + (hasPrivateKey ? 1231 : 1237);
+		result = prime * result + (hasPublicKey ? 1231 : 1237);
+		result = prime * result + (isActive ? 1231 : 1237);
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		AuthProviderTypeEntity other = (AuthProviderTypeEntity) obj;
+		if (description == null) {
+			if (other.description != null)
+				return false;
+		} else if (!description.equals(other.description))
+			return false;
+		if (hasPrivateKey != other.hasPrivateKey)
+			return false;
+		if (hasPublicKey != other.hasPublicKey)
+			return false;
+		if (isActive != other.isActive)
+			return false;
+		return true;
+	}
+
+	@Override
+	public String toString() {
+		return String
+				.format("AuthProviderTypeEntity [description=%s, isActive=%s, hasPublicKey=%s, hasPrivateKey=%s, toString()=%s]",
+						description, isActive, hasPublicKey, hasPrivateKey,
+						super.toString());
+	}
+
+	
 }

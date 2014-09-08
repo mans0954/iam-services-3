@@ -6,38 +6,41 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
        					   http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task-3.0.xsd">
 
+    <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="locations">
+            <list>
+                <value>classpath:datasource.properties</value>
+                <value>classpath:securityconf.properties</value>
+                <value>classpath:openiam.esb.properties</value>
+                <value>file:/data/openiam/conf/datasource.properties</value>
+                <value>file:/data/openiam/conf/securityconf.properties</value>
+                <value>file:/data/openiam/conf/openiam.esb.properties</value>
+            </list>
+        </property>
+        <property name="ignoreResourceNotFound" value="true" />
+    </bean>
+
     <bean id="muleContextProvider" class="org.openiam.util.MuleContextProvider" />
 
+    <bean id="eventProcessor" class="java.lang.String">
+        <constructor-arg value="${org.openiam.idm.eventProcessor.groovy.script}"/>
+    </bean>
     <bean id="preProcessor" class="java.lang.String">
-        <constructor-arg value="/prov-helper/ProvisionServicePreProcessor.groovy"/>
+        <constructor-arg value="${org.openiam.idm.preProcessor.groovy.script}"/>
     </bean>
     <bean id="postProcessor" class="java.lang.String">
-        <constructor-arg value="/prov-helper/ProvisionServicePostProcessor.groovy"/>
+        <constructor-arg value="${org.openiam.idm.postProcessor.groovy.script}"/>
+    </bean>
+    <bean id="resourceOrderProcessor" class="java.lang.String">
+        <constructor-arg value="${org.openiam.idm.resourceOrderProcessor.groovy.script}"/>
     </bean>
 
     <bean id="preProcessorGroup" class="java.lang.String">
-        <constructor-arg value="/prov-helper/ProvisionServiceGroupPreProcessor.groovy"/>
+        <constructor-arg value="${org.openiam.idm.preProcessorGroup.groovy.script}"/>
     </bean>
     <bean id="postProcessorGroup" class="java.lang.String">
-        <constructor-arg value="/prov-helper/ProvisionServiceGroupPostProcessor.groovy"/>
+        <constructor-arg value="${org.openiam.idm.postProcessorGroup.groovy.script}"/>
     </bean>
-
-    <bean id="resourceOrderProcessor" class="java.lang.String">
-        <constructor-arg value="/prov-helper/ProvisionServiceResourceOrderProcessor.groovy"/>
-    </bean>
-
-	<bean
-		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
-		<property name="locations">
-			<list>
-				<value>classpath:datasource.properties</value>
-				<value>classpath:securityconf.properties</value>
-				<value>file:/data/openiam/conf/datasource.properties</value>
-				<value>file:/data/openiam/conf/securityconf.properties</value>
-			</list>
-		</property>
-		<property name="ignoreResourceNotFound" value="true" />
-	</bean>
 
 	<bean id="provisionDeepDozerMapper" class="org.dozer.DozerBeanMapper">
 		<property name="mappingFiles">

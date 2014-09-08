@@ -138,6 +138,13 @@ public class ProvisionUserCSVParser extends
                 user.setLastDate(null);
             }
             break;
+        case claimDate:
+            try {
+                user.setClaimDate(sdf.parse(objValue));
+            } catch (Exception e) {
+                user.setClaimDate(null);
+            }
+            break;
         case mailCode:
             user.setMailCode(objValue);
             break;
@@ -292,6 +299,10 @@ public class ProvisionUserCSVParser extends
         case lastDate:
             objValue = user.getLastDate() == null ? "" : toString(sdf
                     .format(user.getLastDate()));
+            break;
+        case claimDate:
+            objValue = user.getClaimDate() == null ? "" : toString(sdf
+                    .format(user.getClaimDate()));
             break;
         case mailCode:
             objValue = toString(user.getMailCode());

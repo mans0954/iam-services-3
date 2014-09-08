@@ -34,6 +34,7 @@ import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.dozer.converter.AddressDozerConverter;
 import org.openiam.dozer.converter.EmailAddressDozerConverter;
+import org.openiam.dozer.converter.LanguageDozerConverter;
 import org.openiam.dozer.converter.PhoneDozerConverter;
 import org.openiam.dozer.converter.SupervisorDozerConverter;
 import org.openiam.dozer.converter.UserAttributeDozerConverter;
@@ -52,6 +53,7 @@ import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
 import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
+import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.meta.dto.SaveTemplateProfileResponse;
 import org.openiam.idm.srvc.meta.exception.PageTemplateException;
 import org.openiam.idm.srvc.msg.dto.NotificationParam;
@@ -68,6 +70,7 @@ import org.openiam.idm.srvc.user.dto.UserProfileRequestModel;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.srvc.user.service.UserProfileService;
+import org.openiam.internationalization.LocalizedServiceGet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -101,6 +104,10 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 
     @Autowired
     private UserNoteDozerConverter userNoteDozerConverter;
+    
+
+    @Autowired
+    private LanguageDozerConverter languageConverter;
 
     @Autowired
     private AddressDozerConverter addressDozerConverter;
@@ -870,6 +877,15 @@ public class UserDataWebServiceImpl implements UserDataWebService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<User> getUsersForResourceWithSorting(final UserSearchBean userSearchBean,  final int from, final int size) {
+        final List<UserEntity> entityList = userManager.getUsersForResource(userSearchBean, from, size);
+        return userDozerConverter.convertToDTOList(entityList, userSearchBean.isDeepCopy());
+    }
+
+
+
+    @Override
     public int getNumOfUsersForResource(final String resourceId, String requesterId) {
         return userManager.getNumOfUsersForResource(resourceId, requesterId);
     }
@@ -1002,6 +1018,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
         return response;
     }
 
+    @Override
     public Response activateUser(final String userId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
@@ -1009,6 +1026,25 @@ public class UserDataWebServiceImpl implements UserDataWebService {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
             }
             userManager.activateUser(userId);
+        } catch (BasicDataServiceException e) {
+            response.setErrorCode(e.getCode());
+            response.setStatus(ResponseStatus.FAILURE);
+        } catch (Throwable e) {
+            log.error("Can't perform operation", e);
+            response.setErrorText(e.getMessage());
+            response.setStatus(ResponseStatus.FAILURE);
+        }
+        return response;
+    }
+
+    @Override
+    public Response resetUser(final String userId) {
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+            if (userId == null) {
+                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+            }
+            userManager.resetUser(userId);
         } catch (BasicDataServiceException e) {
             response.setErrorCode(e.getCode());
             response.setStatus(ResponseStatus.FAILURE);
@@ -1052,12 +1088,17 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 
     @Override
     @Transactional(readOnly = true)
+    @Deprecated
     public List<UserAttribute> getUserAttributes(final String userId) {
-        final UserEntity user = userManager.getUser(userId, null);
-        final List<UserAttributeEntity> attributes = (user != null && user.getUserAttributes() != null) ? new ArrayList<UserAttributeEntity>(user
-                        .getUserAttributes().values()) : null;
-        return userAttributeDozerConverter.convertToDTOList(attributes, true);
+        return getUserAttributesInternationalized(userId, null);
     }
+    
+	@Override
+    @Transactional(readOnly = true)
+	public List<UserAttribute> getUserAttributesInternationalized(final String userId, final Language language) {
+        final List<UserAttributeEntity> attributes = userManager.getUserAttributeList(userId, languageConverter.convertToEntity(language, false));
+        return userAttributeDozerConverter.convertToDTOList(attributes, true);
+	}
 
     @Override
     public SaveTemplateProfileResponse saveUserProfile(final UserProfileRequestModel request) {

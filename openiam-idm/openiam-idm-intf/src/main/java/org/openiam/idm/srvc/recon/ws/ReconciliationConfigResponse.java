@@ -29,6 +29,8 @@ import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
 
+import java.util.List;
+
 
 /**
  * Response object for a web service operation that returns a role.
@@ -37,11 +39,13 @@ import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "ReconciliationConfigResponse", propOrder = {
-    "config"
+    "config",
+    "configList"
 })
 public class ReconciliationConfigResponse extends Response{
 
 	ReconciliationConfig config;
+    List<ReconciliationConfig> configList;
 
 	public ReconciliationConfigResponse() {
 		super();
@@ -59,7 +63,11 @@ public class ReconciliationConfigResponse extends Response{
 		this.config = config;
 	}
 
+    public List<ReconciliationConfig> getConfigList() {
+        return configList;
+    }
 
-	
-	
+    public void setConfigList(List<ReconciliationConfig> configList) {
+        this.configList = configList;
+    }
 }

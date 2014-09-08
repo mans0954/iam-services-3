@@ -72,6 +72,9 @@ public abstract class AbstractSearchLdapCommand<ExtObject extends ExtensibleObje
                             String dnValue = sr.getNameInNamespace();
                             extAttr.setValue(dnValue);
                             objectValue.getAttributeList().add(extAttr);
+                            if(identityAttrName.equalsIgnoreCase(extAttr.getName())) {
+                                objectValue.setObjectIdentity(extAttr.getValue());
+                            }
                         } catch (UnsupportedOperationException e) {
                             log.error(e.getMessage(), e);
                         }
@@ -103,12 +106,17 @@ public abstract class AbstractSearchLdapCommand<ExtObject extends ExtensibleObje
                                     addToList = true;
                                 }
                             }
+                            if(identityAttrName.equalsIgnoreCase(extAttr.getName())) {
+                                objectValue.setObjectIdentity(extAttr.getValue());
+                            }
                             if (addToList) {
                                 objectValue.getAttributeList().add(extAttr);
                             }
                         }
 
                         objectValueList.add(objectValue);
+                        objectValue = new ObjectValue();
+                        objectValue.setAttributeList(new LinkedList<ExtensibleAttribute>());
                     }
                 }
                 Control[] controls = ldapContext.getResponseControls();

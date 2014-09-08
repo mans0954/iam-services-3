@@ -14,9 +14,7 @@ import javax.jws.WebService;
 @WebService
 public interface MailService {
 
-    public static String MAIL_REGEXP = "^\\w+[\\w-\\.]*\\@\\w+((-\\w+)|(\\w*))\\.[a-z]{2,3}$";
 
-  
     /**
      * Sends an email all users with OpenIAM
      */
