@@ -22,7 +22,7 @@
   	</properties>
 
     <build>
-        <finalName>openiam-ear</finalName>
+        <finalName>openiam-esb-ear</finalName>
         <plugins>
             <plugin>
 		<groupId>org.apache.maven.plugins</groupId>
