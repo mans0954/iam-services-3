@@ -123,7 +123,7 @@ public class UserEntity {
     @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch= FetchType.LAZY)
     @JoinColumn(name = "TYPE_ID", insertable = true, updatable = true, nullable=true)
     @Internationalized
-    @IndexedEmbedded
+//    @IndexedEmbedded
     protected MetadataTypeEntity type;
 
     @Column(name = "CLASSIFICATION", length = 20)
