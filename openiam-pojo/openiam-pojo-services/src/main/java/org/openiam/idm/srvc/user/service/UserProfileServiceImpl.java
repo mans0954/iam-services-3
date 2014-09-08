@@ -97,7 +97,10 @@ public class UserProfileServiceImpl implements UserProfileService {
         	throw new BasicDataServiceException(ResponseCode.LAST_NAME_REQUIRED);
         }
         if(CollectionUtils.isEmpty(request.getEmails())) {
-        	throw new BasicDataServiceException(ResponseCode.EMAIL_REQUIRED);
+        	/*
+        	 * IDMAPPS-2102
+        	 */
+        	//throw new BasicDataServiceException(ResponseCode.EMAIL_REQUIRED);
         }
         
         //figure out the emails to delete
