@@ -12,5 +12,6 @@
         <wls:package-name>org.apache.commons.lang.*</wls:package-name>
         <wls:package-name>org.opensaml.*</wls:package-name>
         <wls:package-name>org.apache.log4j.*</wls:package-name>
+        <wls:package-name>xerces.*</wls:package-name>
     </wls:prefer-application-packages>
 </wls:weblogic-application>
