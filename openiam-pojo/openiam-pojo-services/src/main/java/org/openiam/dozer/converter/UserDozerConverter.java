@@ -61,9 +61,6 @@ public class UserDozerConverter extends AbstractDozerEntityConverter<User, UserE
     public User convertToDTO(UserEntity userEntity, boolean isDeep) {
         if (userEntity == null)
             return null;
-        if (!isDeep) {
-            userEntity.setEmailAddresses(null);
-        }
         return convertToCrossEntity(userEntity, isDeep, User.class);
     }
 
