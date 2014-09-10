@@ -204,6 +204,9 @@ public enum AuditAction {
     ACTIVITI_GROOVY_SCRIPT("ActivitiGroovyScript"),
     SAVE_LOGIN("SaveLogin");
 
+    RECERTIFICATION("RECERTIFICATION TASK"),
+    RECERTIFICATION_CERTIFY("CERTIFY"),
+    RECERTIFICATION_DONT_CERTIFY("DO NOT CERTIFY"),
     //-----------------------------------------
     ;
 
