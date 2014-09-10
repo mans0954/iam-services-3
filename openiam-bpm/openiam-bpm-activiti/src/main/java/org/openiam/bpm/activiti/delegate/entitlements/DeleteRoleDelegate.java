@@ -24,16 +24,11 @@ public class DeleteRoleDelegate extends AbstractActivitiJob {
 	public void execute(DelegateExecution execution) throws Exception {
 		Response wsResponse = null;
 		final Role role = getObjectVariable(execution, ActivitiConstants.ROLE, Role.class);
-
-        if(role != null) {
-            IdmAuditLog idmAuditLog = new IdmAuditLog();
-            idmAuditLog.setRequestorUserId(getRequestorId(execution));
-            idmAuditLog.setAction(AuditAction.DELETE_ROLE.value());
-            idmAuditLog.setAuditDescription("Delete role");
-            idmAuditLog.setTargetRole(role.getId(), role.getName());
-            idmAuditLog.setTargetTask(execution.getId(),execution.getCurrentActivityName());
-            idmAuditLog.setSource(AuditSource.WORKFLOW.value());
-            try {
+		final IdmAuditLog idmAuditLog = createNewAuditLog(execution);
+		idmAuditLog.setAction(AuditAction.DELETE_ROLE.value());
+		try {
+	        if(role != null) {
+	        	idmAuditLog.setTargetRole(role.getId(), role.getName());
                 wsResponse = roleService.removeRole(role.getId(), systemUserId);
                 if (wsResponse.isSuccess()) {
                     idmAuditLog.succeed();
@@ -42,9 +37,15 @@ public class DeleteRoleDelegate extends AbstractActivitiJob {
                     idmAuditLog.setFailureReason(wsResponse.getErrorCode());
                     idmAuditLog.setFailureReason(wsResponse.getErrorText());
                 }
-            } finally {
-                auditLogService.enqueue(idmAuditLog);
-            }
-        }
+	        } else {
+	        	throw new RuntimeException("Role was null");
+	        }
+		} catch(Throwable e) {
+ 			idmAuditLog.setException(e);
+ 			idmAuditLog.fail();
+ 			throw new RuntimeException(e);
+ 		} finally {
+ 			addAuditLogChild(execution, idmAuditLog);
+ 		}
 	}
 }

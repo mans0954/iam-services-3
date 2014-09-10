@@ -23,10 +23,7 @@ public class SaveResourceDelegate extends AbstractActivitiJob {
     @Override
     public void execute(DelegateExecution execution) throws Exception {
         final Resource resource = getObjectVariable(execution, ActivitiConstants.RESOURCE, Resource.class);
-        IdmAuditLog idmAuditLog = new IdmAuditLog();
-        idmAuditLog.setRequestorUserId(getRequestorId(execution));
-        idmAuditLog.setSource(AuditSource.WORKFLOW.value());
-        idmAuditLog.setTargetTask(execution.getId(),execution.getCurrentActivityName());
+        final IdmAuditLog idmAuditLog = createNewAuditLog(execution);
         if (resource.getId() == null) {
             idmAuditLog.setAction(AuditAction.ADD_RESOURCE.value());
             idmAuditLog.setAuditDescription("Create new resource");
@@ -45,10 +42,15 @@ public class SaveResourceDelegate extends AbstractActivitiJob {
                 idmAuditLog.setFailureReason(response.getErrorCode());
                 idmAuditLog.setFailureReason(response.getErrorText());
                 idmAuditLog.setTargetResource(resource.getId(), resource.getName());
+                throw new RuntimeException(String.format("Can't save resource: %s", response));
             }
-        } finally {
-           auditLogService.enqueue(idmAuditLog);
-        }
+        } catch(Throwable e) {
+ 			idmAuditLog.setException(e);
+ 			idmAuditLog.fail();
+ 			throw new RuntimeException(e);
+ 		} finally {
+ 			addAuditLogChild(execution, idmAuditLog);
+ 		}
     }
 
 }

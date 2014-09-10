@@ -23,10 +23,7 @@ public class SaveRoleDeletage extends AbstractActivitiJob {
     @Override
     public void execute(DelegateExecution execution) throws Exception {
         final Role role = getObjectVariable(execution, ActivitiConstants.ROLE, Role.class);
-        IdmAuditLog idmAuditLog = new IdmAuditLog();
-        idmAuditLog.setRequestorUserId(getRequestorId(execution));
-        idmAuditLog.setSource(AuditSource.WORKFLOW.value());
-        idmAuditLog.setTargetTask(execution.getId(),execution.getCurrentActivityName());
+        final IdmAuditLog idmAuditLog = createNewAuditLog(execution);
         if (role.getId() == null) {
             idmAuditLog.setAction(AuditAction.ADD_ROLE.value());
             idmAuditLog.setAuditDescription("Create new role");
@@ -45,9 +42,14 @@ public class SaveRoleDeletage extends AbstractActivitiJob {
                 idmAuditLog.setFailureReason(wsResponse.getErrorCode());
                 idmAuditLog.setFailureReason(wsResponse.getErrorText());
                 idmAuditLog.setTargetRole(role.getId(), role.getName());
+                throw new RuntimeException(String.format("Can't save role", wsResponse));
             }
-        } finally {
-            auditLogService.enqueue(idmAuditLog);
-        }
+        } catch(Throwable e) {
+ 			idmAuditLog.setException(e);
+ 			idmAuditLog.fail();
+ 			throw new RuntimeException(e);
+ 		} finally {
+ 			addAuditLogChild(execution, idmAuditLog);
+ 		}
     }
 }
