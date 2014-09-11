@@ -47,7 +47,7 @@ public interface PasswordValidator {
      * @param password
      * @return
      */
-	public void validate(Policy policy, Password password) throws ObjectNotFoundException, IOException, PasswordRuleException;
+	public List<PasswordRuleException> getAllViolatingRules(Policy policy, Password password) throws ObjectNotFoundException, IOException;
 
     /**
      * Validates the password against the password policy that is passed in for the given user and login

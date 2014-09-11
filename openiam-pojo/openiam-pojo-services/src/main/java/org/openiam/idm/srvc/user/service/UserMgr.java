@@ -171,6 +171,7 @@ public class UserMgr implements UserDataService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public User getUserDto(String id) {
         return userDozerConverter.convertToDTO(this.getUser(id, null), true);
     }

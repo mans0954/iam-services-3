@@ -227,20 +227,10 @@ public class AuditLogServiceImpl implements AuditLogService {
                 logDAO.persist(auditLogEntity);
             }
         } catch(Exception ex) {
-          ex.printStackTrace();
+        	LOG.error("Can't save audit log", ex);
         }
-        return auditLogEntity.getId();
+        final String id = auditLogEntity.getId();
+        auditLog.setId(id);
+        return id;
     }
-/*
-    @Override
-    @Transactional(readOnly = true)
-    public IdmAuditLog getAuditLogByRequesterId(String requesterId) {
-        IdmAuditLog auditLog = null;
-        if(correlationIdByUserId.containsKey(requesterId)) {
-            IdmAuditLogEntity auditLogEntity = logDAO.findByRequesterId(requesterId,correlationIdByUserId.get(requesterId));
-            auditLog = auditLogDozerConverter.convertToDTO(auditLogEntity, true);
-        }
-
-        return auditLog;
-    }*/
 }

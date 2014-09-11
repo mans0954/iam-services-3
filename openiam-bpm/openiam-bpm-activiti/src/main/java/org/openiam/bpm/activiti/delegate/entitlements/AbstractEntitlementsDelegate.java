@@ -98,14 +98,27 @@ public abstract class AbstractEntitlementsDelegate extends AbstractNotificationD
 	public void execute(DelegateExecution execution) throws Exception {
 		final String targetUserId = getTargetUserId(execution);
 		final UserEntity targetUser = getUserEntity(targetUserId);
+		final String requestorId = getRequestorId(execution);
 
 		final Collection<String> candidateUsersIds = activitiHelper.getCandidateUserIds(execution, targetUserId, null);
 
+		boolean isRequestorOnlyApprover = false;
+		boolean isRequestorCandidate = false;
 		for(final String userId : candidateUsersIds) {
 			final UserEntity user = getUserEntity(userId);
 			if(user != null) {
 				sendNotification(user, targetUser, execution);
 			}
+			if(StringUtils.equals(userId, requestorId)) {
+				isRequestorCandidate = true;
+			}
 		}
+		
+		if(isRequestorCandidate) {
+			isRequestorOnlyApprover = (candidateUsersIds.size() == 1);
+		}
+		
+		execution.setVariable(ActivitiConstants.IS_REQUESTOR_ONLY_APROVER.getName(), isRequestorOnlyApprover);
+		execution.setVariable(ActivitiConstants.IS_REQUESTOR_CANDIDATE.getName(), isRequestorCandidate);
 	}
 }

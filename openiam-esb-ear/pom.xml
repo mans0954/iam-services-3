@@ -4,18 +4,18 @@
 
         <groupId>org.openiam</groupId>
         <artifactId>iam-services</artifactId>
-        <version>3.2.1.RELEASE</version>
+        <version>3.2.2.RELEASE</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.openiam</groupId>
     <artifactId>openiam-esb-ear</artifactId>
     <name>openiam-esb-ear</name>
     <packaging>ear</packaging>
-    <version>3.2.1.RELEASE</version>
+    <version>3.2.2.RELEASE</version>
     <description>OpenIAM ESB Module based on Mule</description>
 	<properties>
     	<skipTests>true</skipTests>
-        <openiam.esb.version>3.2.1.RELEASE</openiam.esb.version>
+        <openiam.esb.version>3.2.2.RELEASE</openiam.esb.version>
         <hibernate.version>3.6.6.Final</hibernate.version>
         <hibernatesearch.version>3.4.0.Final</hibernatesearch.version>
         <hibernate.entity.manager.version>3.6.7.Final</hibernate.entity.manager.version>

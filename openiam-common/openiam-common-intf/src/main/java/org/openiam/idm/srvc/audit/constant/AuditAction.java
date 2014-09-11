@@ -163,6 +163,7 @@ public enum AuditAction {
     USER_DISABLE("USER DISABLE"),
     USER_DEACTIVATE("USER DEACTIVATE"),
     USER_RESETPASSWORD("USER RESET PASSWORD"),
+    USER_NOTIFY("USER NOTIFY"),
     ADD_USER_TO_ORG("ADD USER TO ORG"),
     REMOVE_USER_FROM_ORG ("REMOVE USER FROM ORG"),
 
@@ -196,7 +197,16 @@ public enum AuditAction {
 
     REPLACE_PROP("REPLACE PROP"),
     BULK_OPERATION("BULK OPERATION"),
+    
+    SERVICE_TASK("ServiceTask"),
+    NOTIFICATION("Notification"),
+    
+    ACTIVITI_GROOVY_SCRIPT("ActivitiGroovyScript"),
+    SAVE_LOGIN("SaveLogin"),
 
+    RECERTIFICATION("RECERTIFICATION TASK"),
+    RECERTIFICATION_CERTIFY("CERTIFY"),
+    RECERTIFICATION_DONT_CERTIFY("DO NOT CERTIFY"),
     //-----------------------------------------
     ;
 

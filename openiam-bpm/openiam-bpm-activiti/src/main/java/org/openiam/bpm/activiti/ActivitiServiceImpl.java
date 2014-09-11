@@ -233,15 +233,17 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 				variables.putAll(identifier.getCustomActivitiAttributes());
 			}
 			
-			ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(requestType.getKey(), variables);
-
             for(Map.Entry<String,Object> varEntry : variables.entrySet()) {
                 idmAuditLog.addCustomRecord(varEntry.getKey(), (varEntry.getValue() != null) ? varEntry.getValue().toString() : null);
             }
+            
+            auditLogService.save(idmAuditLog);
+            variables.put(ActivitiConstants.AUDIT_LOG_ID.getName(), idmAuditLog.getId());
+            
+			final ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(requestType.getKey(), variables);
             idmAuditLog.setTargetTask(processInstance.getId(), taskName);
-
-			response.setStatus(ResponseStatus.SUCCESS);
-            idmAuditLog.succeed();
+			response.succeed();
+			idmAuditLog.succeed();
 		} catch (PageTemplateException e) {
             idmAuditLog.fail();
             idmAuditLog.setFailureReason(e.getCode());
@@ -275,7 +277,7 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 			response.setErrorText(e.getMessage());
 		} finally {
 			log.info("Persisting activiti log..");
-			auditLogService.enqueue(idmAuditLog);
+			auditLogService.save(idmAuditLog);
 		}
 		return response;
 	}
@@ -289,9 +291,9 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
         idmAuditLog.setBaseObject(request);
         idmAuditLog.setRequestorUserId(request.getRequestorUserId());
         idmAuditLog.setSource(AuditSource.WORKFLOW.value());
-
+        
 		final Response response = new Response();
-
+		String parentAuditLogId = null;
 		try {
             idmAuditLog.addAttributeAsJson(AuditAttributeName.REQUEST, request, jacksonMapper);
 			
@@ -321,8 +323,12 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 			taskService.claim(potentialTaskToClaim.getId(), request.getRequestorUserId());
 			taskService.setAssignee(potentialTaskToClaim.getId(), request.getRequestorUserId());
 			
+			final Object auditLogId = taskService.getVariable(potentialTaskToClaim.getId(), ActivitiConstants.AUDIT_LOG_ID.getName());
+			if(auditLogId != null && auditLogId instanceof String) {
+				parentAuditLogId = (String)auditLogId;
+			}
 
-			response.setStatus(ResponseStatus.SUCCESS);
+			response.succeed();
             idmAuditLog.succeed();
 		} catch(ActivitiException e) {
             idmAuditLog.fail();
@@ -341,7 +347,11 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 			response.setErrorCode(ResponseCode.USER_STATUS);
 			response.setErrorText(e.getMessage());
 		} finally {
-			auditLogService.enqueue(idmAuditLog);
+			if(parentAuditLogId != null) {
+				final IdmAuditLog log = auditLogService.findById(parentAuditLogId);
+				log.addChild(idmAuditLog);
+				auditLogService.save(idmAuditLog);
+			}
 		}
 
 		return response;
@@ -359,17 +369,11 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
         idmAuditLog.setSource(AuditSource.WORKFLOW.value());
 		try {
             idmAuditLog.addAttributeAsJson(AuditAttributeName.REQUEST, request, jacksonMapper);
-			
-			if(request == null) {
-				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
-			}
-			
+		
 			pageTemplateService.validate(request);
 			validateUserRequest(request);
 			
 			final String description = String.format("Edit User %s", request.getUser().getDisplayName());
-			
-			final Date currentDate = new Date();
 			
 			final Map<String, Object> bindingMap = new HashMap<String, Object>();
 			bindingMap.put("REQUEST", request);
@@ -413,6 +417,9 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 			if(identifier.getCustomActivitiAttributes() != null) {
 				variables.putAll(identifier.getCustomActivitiAttributes());
 			}
+			
+			auditLogService.save(idmAuditLog);
+            variables.put(ActivitiConstants.AUDIT_LOG_ID.getName(), idmAuditLog.getId());
 
             ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(ActivitiRequestType.EDIT_USER.getKey(), variables);
             for(Map.Entry<String,Object> varEntry : variables.entrySet()) {
@@ -423,9 +430,7 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 			/* throws exception if invalid - caught in try/catch */
 			//userProfileService.validate(request);
 			
-			response.setStatus(ResponseStatus.SUCCESS);
-
-
+			response.succeed();
             idmAuditLog.succeed();
 		} catch(CustomActivitiException e) {
 			log.warn("Can't perform task", e);
@@ -464,7 +469,7 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 			response.setErrorCode(ResponseCode.USER_STATUS);
 			response.setErrorText(e.getMessage());
 		} finally {
-			auditLogService.enqueue(idmAuditLog);
+			auditLogService.save(idmAuditLog);
 		}
 		return response;
 	}
@@ -572,14 +577,16 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 				variables.putAll(identifier.getCustomActivitiAttributes());
 			}
 			
+			auditLogService.save(idmAuditLog);
+            variables.put(ActivitiConstants.AUDIT_LOG_ID.getName(), idmAuditLog.getId());
+			
 			final ProcessInstance instance = runtimeService.startProcessInstanceByKey(request.getActivitiRequestType(), variables);
             idmAuditLog.setTargetTask(instance.getId(), request.getName());
             for(Map.Entry<String,Object> varEntry : variables.entrySet()) {
                 idmAuditLog.addCustomRecord(varEntry.getKey(), (varEntry.getValue() != null) ? varEntry.getValue().toString() : null);
             }
 
-			response.setStatus(ResponseStatus.SUCCESS);
-
+			response.succeed();
             idmAuditLog.succeed();
 		} catch(CustomActivitiException e) {
 			log.warn("Can't perform task", e);
@@ -607,7 +614,7 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 			response.setErrorCode(ResponseCode.USER_STATUS);
 			response.setErrorText(e.getMessage());
 		} finally {
-			auditLogService.enqueue(idmAuditLog);
+			auditLogService.save(idmAuditLog);
 		}
 		return response;
 	}
@@ -621,6 +628,7 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
         idmAuditLog.setAction(AuditAction.COMPLETE_WORKFLOW.value());
         idmAuditLog.setBaseObject(request);
         idmAuditLog.setSource(AuditSource.WORKFLOW.value());
+        String parentAuditLogId = null;
 		try {
             idmAuditLog.addAttributeAsJson(AuditAttributeName.REQUEST, request, jacksonMapper);
 			final Task assignedTask = getTaskAssignee(request);
@@ -636,11 +644,19 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 
             idmAuditLog.setTargetTask(assignedTask.getId(), assignedTask.getName());
             for(Map.Entry<String,Object> varEntry : variables.entrySet()) {
-                idmAuditLog.addCustomRecord(varEntry.getKey(), (varEntry.getValue() != null) ? varEntry.getValue().toString() : null);            }
+                idmAuditLog.addCustomRecord(varEntry.getKey(), (varEntry.getValue() != null) ? varEntry.getValue().toString() : null);
+            }
+            
+            
+            final Object auditLogId = taskService.getVariable(assignedTask.getId(), ActivitiConstants.AUDIT_LOG_ID.getName());
+			if(auditLogId != null && auditLogId instanceof String) {
+				parentAuditLogId = (String)auditLogId;
+			}
+            
         	taskService.complete(assignedTask.getId(), variables);
-        	response.setStatus(ResponseStatus.SUCCESS);
-
+        	response.succeed();
             idmAuditLog.succeed();
+            
 		} catch(CustomActivitiException e) {
             idmAuditLog.setFailureReason(e.getCode());
             idmAuditLog.setException(e);
@@ -666,7 +682,11 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 			response.setErrorCode(ResponseCode.INTERNAL_ERROR);
 			response.setErrorText(e.getMessage());
 		} finally {
-            auditLogService.enqueue(idmAuditLog);
+			if(parentAuditLogId != null) {
+				final IdmAuditLog log = auditLogService.findById(parentAuditLogId);
+				log.addChild(idmAuditLog);
+				auditLogService.save(log);
+			}
         }
 		return response;
 	}
@@ -911,9 +931,15 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
         idmAuditLog.setRequestorUserId(userId);
         idmAuditLog.setAction(AuditAction.TERMINATED_WORKFLOW.value());
         idmAuditLog.setSource(AuditSource.WORKFLOW.value());
+        String parentAuditLogId = null;
 		try {
 			final Task task = getTaskAssignee(taskId, userId);
             idmAuditLog.setTargetTask(task.getId(), task.getName());
+            final Object auditLogId = taskService.getVariable(task.getId(), ActivitiConstants.AUDIT_LOG_ID.getName());
+			if(auditLogId != null && auditLogId instanceof String) {
+				parentAuditLogId = (String)auditLogId;
+			}
+            
 			taskService.deleteTask(task.getId(), true);
             idmAuditLog.succeed();
 		} catch(ActivitiException e) {
@@ -933,7 +959,11 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
             idmAuditLog.setException(e);
             idmAuditLog.fail();
 		} finally {
-            auditLogService.enqueue(idmAuditLog);
+			if(parentAuditLogId != null) {
+				final IdmAuditLog log = auditLogService.findById(parentAuditLogId);
+				log.addChild(idmAuditLog);
+				auditLogService.save(log);
+			}
         }
 		return response;
 	}

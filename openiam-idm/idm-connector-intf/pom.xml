@@ -4,14 +4,14 @@
     <parent>
         <artifactId>idm-core</artifactId>
         <groupId>org.openiam</groupId>
-        <version>3.2.1.RELEASE</version>
+        <version>3.2.2.RELEASE</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.openiam</groupId>
     <artifactId>idm-connector-intf</artifactId>
     <packaging>jar</packaging>
     <name>idm-connector-intf</name>
-    <version>3.2.1.RELEASE</version>
+    <version>3.2.2.RELEASE</version>
     <description>Interfaces and DTO for the OpenIAM connectors</description>
     <ciManagement>
         <system>idm</system>

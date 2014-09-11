@@ -6,8 +6,12 @@ import java.util.List;
 import org.activiti.engine.delegate.DelegateExecution;
 import org.activiti.engine.delegate.JavaDelegate;
 import org.openiam.base.AttributeOperationEnum;
+import org.openiam.base.ws.Response;
 import org.openiam.bpm.activiti.delegate.core.AbstractActivitiJob;
 import org.openiam.bpm.util.ActivitiConstants;
+import org.openiam.idm.srvc.audit.constant.AuditAction;
+import org.openiam.idm.srvc.audit.constant.AuditSource;
+import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.user.dto.User;
@@ -35,14 +39,34 @@ public class AddSupervisor extends AbstractActivitiJob {
 		final User superior = getUser(superiorId);
 		final User subordinate = getUser(subordinateId);
 		
-		if(superior != null && subordinate != null) {
-			final ProvisionUser pUser = new ProvisionUser(subordinate);
-			List<User> superiors = userDataWebService.getSuperiors(subordinateId, -1, -1);
-			superiors = (superiors != null) ? superiors : new LinkedList<User>();
-			superior.setOperation(AttributeOperationEnum.ADD);
-			superiors.add(superior);
-			pUser.addSuperiors(superiors);
-			provisionService.modifyUser(pUser);
+		final IdmAuditLog idmAuditLog = createNewAuditLog(execution);
+        idmAuditLog.setAction(AuditAction.ADD_SUPERVISOR.value());
+		try {
+			if(superior != null && subordinate != null) {
+				idmAuditLog.setTargetUser(subordinate.getId(), null);
+				final ProvisionUser pUser = new ProvisionUser(subordinate);
+				List<User> superiors = userDataWebService.getSuperiors(subordinateId, -1, -1);
+				superiors = (superiors != null) ? superiors : new LinkedList<User>();
+				superior.setOperation(AttributeOperationEnum.ADD);
+				superiors.add(superior);
+				pUser.addSuperiors(superiors);
+				final Response wsResponse = provisionService.modifyUser(pUser);
+				if(wsResponse.isFailure()) {
+                    idmAuditLog.setFailureReason(wsResponse.getErrorCode());
+                    idmAuditLog.setFailureReason(wsResponse.getErrorText());
+                    throw new RuntimeException(String.format("Modify User failed; %s", wsResponse));
+				} else {
+					idmAuditLog.succeed();
+				}
+			} else {
+				throw new RuntimeException("SUpervisor or Subordinate were null");
+			}
+		} catch(Throwable e) {
+			idmAuditLog.setException(e);
+			idmAuditLog.fail();
+			throw new RuntimeException(e);
+		} finally {
+			addAuditLogChild(execution, idmAuditLog);
 		}
 	}
 }

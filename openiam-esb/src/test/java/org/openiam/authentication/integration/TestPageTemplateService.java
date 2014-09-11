@@ -90,7 +90,7 @@ public class TestPageTemplateService extends AbstractTestNGSpringContextTests {
 	private Map<String, List<UserAttribute>> attributeMap = new HashMap<String, List<UserAttribute>>();
 	
 	private static final String userId = "3000";
-	private static final String locale = "en_EN";
+	private static final String languageId = "0";
 	
 	private MetadataTemplateType getFirstPageTemplateType() {
 		final MetadataTemplateTypeSearchBean searchBean = new MetadataTemplateTypeSearchBean();
@@ -220,7 +220,7 @@ public class TestPageTemplateService extends AbstractTestNGSpringContextTests {
 	public void testEquality() {
 		final TemplateRequest request = new TemplateRequest();
 		request.setUserId(userId);
-		request.setLocaleName(locale);
+		request.setLanguageId(languageId);
 		request.setPatternId(pattern.getId());
 		final PageTempate tempalteByPattern = templateWebService.getTemplate(request);
 		Assert.assertNotNull(tempalteByPattern);
@@ -235,10 +235,9 @@ public class TestPageTemplateService extends AbstractTestNGSpringContextTests {
 	
 	@Test
 	public void testTextCorrectness() {
-		final String languageId = getLanguageByLocale(locale).getId();
 		final TemplateRequest request = new TemplateRequest();
 		request.setUserId(userId);
-		request.setLocaleName(locale);
+		request.setLanguageId(languageId);
 		request.setPatternId(pattern.getId());
 		final PageTempate template = templateWebService.getTemplate(request);
 		Assert.assertNotNull(template);

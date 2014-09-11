@@ -41,6 +41,9 @@ public class PasswordLengthRule extends AbstractPasswordRule {
 		int minlen = getValue1(attribute);
 		int maxlen = getValue2(attribute);
 		final PasswordRuleException ex = createException();
+		if(ex == null) {
+			return;
+		}
 		
 		if (password == null) {
 			throw ex;
@@ -72,6 +75,10 @@ public class PasswordLengthRule extends AbstractPasswordRule {
 		PolicyAttribute attribute = getAttribute("PWD_LEN");
 		int minlen = getValue1(attribute);
 		int maxlen = getValue2(attribute);
-		return createRule(ResponseCode.FAIL_LENGTH_RULE, minlen, maxlen);
+		if(minlen <= 0 && maxlen <= 0) {
+			return null;
+		} else {
+			return createRule(ResponseCode.FAIL_LENGTH_RULE, minlen, maxlen);
+		}
 	}
 }

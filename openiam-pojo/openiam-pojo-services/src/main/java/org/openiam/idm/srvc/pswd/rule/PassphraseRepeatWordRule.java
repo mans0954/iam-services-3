@@ -61,7 +61,7 @@ public class PassphraseRepeatWordRule extends AbstractPasswordRule {
 			for (int i=0; i< words.size() -1; i++){
 				//only one comparison needed, as list is sorted
 				if (words.get(i).equalsIgnoreCase(words.get(i+1))){
-					throw new PasswordRuleException(ResponseCode.FAIL_MIN_WORDS_PASSPHRASE_RULE);
+					throw new PasswordRuleException(ResponseCode.PASSPHRASE_WORD_REPEAT_RULE);
 				}
 			}
 		}
@@ -77,7 +77,7 @@ public class PassphraseRepeatWordRule extends AbstractPasswordRule {
 
 		}
 		if (!enabled){
-			return new PasswordRuleException(ResponseCode.FAIL_MIN_WORDS_PASSPHRASE_RULE);
+			return new PasswordRuleException(ResponseCode.PASSPHRASE_WORD_REPEAT_RULE);
 		} else {
 			return null;
 		}
@@ -93,7 +93,7 @@ public class PassphraseRepeatWordRule extends AbstractPasswordRule {
 
 		}
 		if (!enabled){
-			return new PasswordRule(ResponseCode.FAIL_MIN_WORDS_PASSPHRASE_RULE);
+			return new PasswordRule(ResponseCode.PASSPHRASE_WORD_REPEAT_RULE);
 		} else {
 			return null;
 		}

@@ -273,6 +273,21 @@ public class IdmAuditLog implements Serializable {
         addCustomRecord(key.name(), value);
     }
 
+    public void setTaskOwner(final String value) {
+    	addAttribute(AuditAttributeName.TASK_OWNER, value);
+    }
+    
+    public void setTaskClass(final Class<?> clazz) {
+    	addAttribute(AuditAttributeName.TASK_CLASS, clazz.getCanonicalName());
+    }
+    
+    public void setTaskDescription(final String value) {
+    	addAttribute(AuditAttributeName.TASK_DESCSRIPTION, value);
+    }
+    
+    public void setTaskName(final String value) {
+    	addAttribute(AuditAttributeName.TASK_NAME, value);
+    }
 
     /**
      * Sets the description of this event
@@ -281,6 +296,14 @@ public class IdmAuditLog implements Serializable {
      */
     public void setAuditDescription(final String value) {
         addAttribute(AuditAttributeName.DESCRIPTION, value);
+    }
+    
+    public void setActivitiTaskName(final String value) {
+    	addAttribute(AuditAttributeName.ACTIVITI_TASK_NAME, value);
+    }
+    
+    public void setEventName(final String value) {
+    	addAttribute(AuditAttributeName.EVENT_NAME, value);
     }
 
     public void addWarning(final String warning) {
@@ -313,6 +336,10 @@ public class IdmAuditLog implements Serializable {
 
     public void setURL(final String url) {
         addAttribute(AuditAttributeName.URL, url);
+    }
+    
+    public void setGroovyScript(final String value) {
+    	addAttribute(AuditAttributeName.GROOVY_SCRIPT, value);
     }
 
     /**

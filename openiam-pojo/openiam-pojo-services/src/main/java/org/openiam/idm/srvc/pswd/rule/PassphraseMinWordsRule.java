@@ -44,14 +44,14 @@ public class PassphraseMinWordsRule extends AbstractPasswordRule {
 		PolicyAttribute attribute = getAttribute("MIN_WORDS_PASSPHRASE");
 		int minWords = getValue1(attribute);
 		if (password == null) {
-			throw new PasswordRuleException(ResponseCode.FAIL_MIN_WORDS_PASSPHRASE_RULE);
+			throw new PasswordRuleException(ResponseCode.FAIL_MIN_WORDS_PASSPHRASE_RULE, new Object[] {minWords});
 		}
 		
 		if (minWords > 0 ) {
 			StringTokenizer tokenizer = new StringTokenizer(password);
 			
 			if (tokenizer.countTokens() < minWords) {
-				throw new PasswordRuleException(ResponseCode.FAIL_MIN_WORDS_PASSPHRASE_RULE);
+				throw new PasswordRuleException(ResponseCode.FAIL_MIN_WORDS_PASSPHRASE_RULE, new Object[] {minWords});
 			}
 		}
 	}

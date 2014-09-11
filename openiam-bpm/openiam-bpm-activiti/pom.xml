@@ -4,14 +4,14 @@
 	<parent>
 	    <groupId>org.openiam</groupId>
 	    <artifactId>openiam-bpm</artifactId>
-		<version>3.2.1.RELEASE</version>
+		<version>3.2.2.RELEASE</version>
 	</parent>
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.openiam</groupId>
     <artifactId>openiam-bpm-activiti</artifactId>
     <name>openiam-bpm-activiti</name>
     <packaging>jar</packaging>
-    <version>3.2.1.RELEASE</version>
+    <version>3.2.2.RELEASE</version>
     <description>OpenIAM Activiti BPM Module</description>
 
     <dependencies>

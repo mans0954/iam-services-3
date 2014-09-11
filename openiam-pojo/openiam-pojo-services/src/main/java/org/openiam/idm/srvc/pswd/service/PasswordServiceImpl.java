@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.ws.ResponseCode;
@@ -50,6 +51,7 @@ import org.openiam.idm.srvc.pswd.dto.PasswordRule;
 import org.openiam.idm.srvc.pswd.dto.PasswordValidationResponse;
 import org.openiam.idm.srvc.pswd.dto.ValidatePasswordResetTokenResponse;
 import org.openiam.idm.srvc.pswd.rule.PasswordRuleException;
+import org.openiam.idm.srvc.pswd.rule.PasswordRuleViolation;
 import org.openiam.idm.srvc.pswd.rule.PasswordValidator;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.service.UserDataService;
@@ -136,13 +138,14 @@ public class PasswordServiceImpl implements PasswordService {
 		try {
 			final List<PasswordRule> rules = passwordValidator.getPasswordRules(pswdPolicy, pswd);
 			retVal.setRules(rules);
-			passwordValidator.validate(pswdPolicy, pswd);
-		} catch(PasswordRuleException e) {
-			retVal.setErrorCode(e.getCode());
-			retVal.setResponseValues(e.getResponseValues());
-			retVal.setMinBound(e.getMinBound());
-			retVal.setMaxBound(e.getMaxBound());
-			retVal.fail();
+			final List<PasswordRuleException> violatingRules = passwordValidator.getAllViolatingRules(pswdPolicy, pswd);
+			/* for backwards compatability - the old code just threw the first violation that came back */
+			if(CollectionUtils.isNotEmpty(violatingRules)) {
+				retVal.fail();
+				for(final PasswordRuleException exception : violatingRules) {
+					retVal.addViolation(new PasswordRuleViolation(exception));
+				}
+			}
 		} catch (Throwable io) {
 			log.error("Can't validate password", io);
 			retVal.setErrorCode(ResponseCode.FAIL_OTHER);
@@ -172,9 +175,6 @@ public class PasswordServiceImpl implements PasswordService {
 			passwordValidator.validateForUser(pswdPolicy, pswd, user, lg);
 		} catch(PasswordRuleException e) {
 			retVal.setErrorCode(e.getCode());
-			retVal.setMinBound(e.getMinBound());
-			retVal.setMaxBound(e.getMaxBound());
-			retVal.setResponseValues(e.getResponseValues());
 			retVal.fail();
 		} catch (Throwable io) {
 			log.error("Can't validate password", io);
@@ -208,9 +208,6 @@ public class PasswordServiceImpl implements PasswordService {
 			passwordValidator.validateForUser(pswdPolicy, pswd, user, lg);
 		} catch(PasswordRuleException e) {
 			retVal.setErrorCode(e.getCode());
-			retVal.setResponseValues(e.getResponseValues());
-			retVal.setMinBound(e.getMinBound());
-			retVal.setMaxBound(e.getMaxBound());
 			retVal.fail();
 		} catch (final Throwable io) {
 			log.error("Unknown exception", io);
@@ -335,7 +332,7 @@ public class PasswordServiceImpl implements PasswordService {
 		log.info(String.format("login=%s", lg));
 //		final UserEntity user = userManager.getUser(lg.getUserId());
 
-		return passwordPolicyProvider.getPasswordPolicyByUser(lg.getUserId());
+		return (lg != null) ? passwordPolicyProvider.getPasswordPolicyByUser(lg.getUserId()) : null;
 	}
 
 	@Override
