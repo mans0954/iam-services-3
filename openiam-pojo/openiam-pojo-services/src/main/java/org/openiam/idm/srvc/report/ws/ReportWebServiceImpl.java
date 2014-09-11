@@ -40,8 +40,12 @@ import org.openiam.idm.srvc.report.dto.ReportSubscriptionDto;
 import org.openiam.idm.srvc.report.dto.ReportInfoDto;
 import org.openiam.idm.srvc.report.dto.ReportParamTypeDto;
 import org.openiam.idm.srvc.report.service.ReportDataService;
+import org.openiam.idm.srvc.res.domain.ResourceEntity;
+import org.openiam.idm.srvc.res.service.ResourceService;
+import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jms.JmsException;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.jms.core.MessageCreator;
@@ -83,6 +87,13 @@ public class ReportWebServiceImpl implements ReportWebService {
 	private ReportParamMetaTypeDozerConverter paramMetaTypeDozerConverter;
 	@Autowired
 	private ReportDataService reportDataService;
+	@Autowired
+	private ResourceService resourceService;
+	@Autowired
+	private ResourceTypeDAO resourceTypeDAO;
+
+	@Value("${org.openiam.resource.type.report}")
+	protected String resourceTypeId;
 
     @Autowired
     private JmsTemplate jmsTemplate;
@@ -186,6 +197,24 @@ public class ReportWebServiceImpl implements ReportWebService {
                     return response;
                 }
                 entity = reportInfoDozerConverter.convertToEntity(report, true);
+
+				ResourceEntity resource = null;
+				if(StringUtils.isEmpty(entity.getResourceId())) {
+					resource = new ResourceEntity();
+					resource.setName(String.format("%s_%S", entity.getReportName(), System.currentTimeMillis()));
+					resource.setResourceType(resourceTypeDAO.findById(resourceTypeId));
+					resource.setIsPublic(false);
+					resource.setCoorelatedName(entity.getReportName());
+					resourceService.save(resource, null);
+					entity.setResourceId(resource.getId());
+				} else {
+					resource = resourceService.findResourceById(entity.getResourceId());
+					if(resource != null) {
+						resource.setCoorelatedName(entity.getReportName());
+						resourceService.save(resource, null);
+					}
+				}
+
 				entity = reportDataService.createOrUpdateReportInfo(entity);
 
 			} catch (Throwable t) {
