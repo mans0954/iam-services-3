@@ -9,6 +9,8 @@ import org.activiti.engine.delegate.DelegateExecution;
 import org.apache.commons.collections.CollectionUtils;
 import org.openiam.bpm.activiti.delegate.entitlements.AbstractEntitlementsDelegate;
 import org.openiam.bpm.util.ActivitiConstants;
+import org.openiam.idm.srvc.audit.constant.AuditAction;
+import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.service.UserDAO;
@@ -25,32 +27,35 @@ public class RejectEditUserNotifierDelegate extends AbstractEntitlementsDelegate
 
 	@Override
 	public void execute(DelegateExecution execution) throws Exception {
-		final Set<String> userIds = new HashSet<String>();
-		
-		final String targetUserId = getTargetUserId(execution);
-		final UserEntity targetUser = userDAO.findById(targetUserId);
-		
-		final String taskOwner = getRequestorId(execution);
-		
-		userIds.add(taskOwner);
-		userIds.add(targetUserId);
-		final Collection<String> candidateUsersIds = activitiHelper.getOnRejectUserIds(execution, targetUserId, getSupervisorsForUser(targetUser));
-		if(CollectionUtils.isNotEmpty(candidateUsersIds)) {
-			userIds.addAll(candidateUsersIds);
-		}
-		/*
-		final List<ApproverAssociationEntity> approverAssociationEntities = getApproverAssociations(execution);
-		if(CollectionUtils.isNotEmpty(approverAssociationEntities)) {
-			for(final ApproverAssociationEntity association : approverAssociationEntities) {
-				userIds.addAll(getNotifyUserIds(association.getOnRejectEntityType(), association.getOnRejectEntityId(), targetUserId));
+		final IdmAuditLog idmAuditLog = createNewAuditLog(execution);
+        idmAuditLog.setAction(AuditAction.NOTIFICATION.value());
+		try {
+			final Set<String> userIds = new HashSet<String>();
+			
+			final String targetUserId = getTargetUserId(execution);
+			final UserEntity targetUser = userDAO.findById(targetUserId);
+			
+			final String taskOwner = getRequestorId(execution);
+			
+			userIds.add(taskOwner);
+			userIds.add(targetUserId);
+			final Collection<String> candidateUsersIds = activitiHelper.getOnRejectUserIds(execution, targetUserId, getSupervisorsForUser(targetUser));
+			if(CollectionUtils.isNotEmpty(candidateUsersIds)) {
+				userIds.addAll(candidateUsersIds);
 			}
-		}
-		*/
-		for(final String toNotifyUserId : userIds) {
-			final UserEntity toNotify = userDAO.findById(toNotifyUserId);
-			if(toNotify != null) {
-				sendNotification(toNotify, targetUser, execution);
+			for(final String toNotifyUserId : userIds) {
+				final UserEntity toNotify = userDAO.findById(toNotifyUserId);
+				if(toNotify != null) {
+					sendNotification(toNotify, targetUser, execution);
+				}
 			}
+			idmAuditLog.succeed();
+		} catch(Throwable e) {
+			idmAuditLog.setException(e);
+			idmAuditLog.fail();
+			throw new RuntimeException(e);
+		} finally {
+			addAuditLogChild(execution, idmAuditLog);
 		}
 	}
 	

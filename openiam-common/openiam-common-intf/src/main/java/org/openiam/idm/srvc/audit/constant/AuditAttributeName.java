@@ -39,5 +39,6 @@ public enum AuditAttributeName {
     TASK_CLASS,
     ACTIVITI_TASK_NAME,
     EVENT_NAME,
-    GROOVY_SCRIPT;
+    GROOVY_SCRIPT,
+    PROFILE;
 }
