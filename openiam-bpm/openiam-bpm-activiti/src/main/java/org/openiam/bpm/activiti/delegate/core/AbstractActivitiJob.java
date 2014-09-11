@@ -12,6 +12,7 @@ import org.activiti.engine.impl.el.FixedValue;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.openiam.bpm.activiti.ActivitiService;
 import org.openiam.bpm.activiti.model.ActivitiJSONStringWrapper;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.bpm.util.ActivitiRequestType;
@@ -53,6 +54,10 @@ public abstract class AbstractActivitiJob implements JavaDelegate, TaskListener 
 	private FixedValue notificationType;
 	private FixedValue targetVariable;
 	private FixedValue provisioningEnabled;
+	
+
+	@Autowired
+	protected ActivitiService activitiService;
 	
 	@Autowired
 	@Qualifier("transactionManager")
