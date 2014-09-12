@@ -12,22 +12,13 @@ import org.springframework.transaction.PlatformTransactionManager;
 
 public abstract class AbstractGroovyDelegate extends AbstractActivitiJob {
 	
-	@Autowired
-	protected ActivitiService activitiService;
-	
-    @Autowired
-    @Qualifier("transactionManager")
-    protected PlatformTransactionManager transactionManager;
-	
 	protected AbstractGroovyDelegate() {
-		SpringContextProvider.autowire(this);
-		SpringContextProvider.resolveProperties(this);
+		super();
 	}
 	
 	public final void init(final Map<String, Object> bindingMap) {
 		postInit(bindingMap);
 	}
 	
-	public abstract void execute(DelegateExecution execution) throws Exception;
 	protected abstract void postInit(final Map<String, Object> bindingMap);
 }

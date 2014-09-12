@@ -274,10 +274,8 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
                     // initialize the transform script
                     if (usr != null) {
                         transformScript.setNewUser(false);
-                        User u = userManager.getUserDto(usr.getId());
-                        pUser = new ProvisionUser(u);
                         setCurrentSuperiors(pUser);
-                        transformScript.setUser(u);
+                        transformScript.setUser(usr);
                         transformScript.setPrincipalList(loginDozerConverter.convertToDTOList(loginManager.getLoginByUser(usr.getId()), false));
                         transformScript.setUserRoleList(roleDataService.getUserRolesAsFlatList(usr.getId()));
 
@@ -316,7 +314,7 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
                             pUser.setId(usr.getId());
                             try {
                                 provService.modifyUser(pUser);
-                            } catch (Exception e) {
+                            } catch (Throwable e) {
                                 log.error(e);
                             }
                         } else {

@@ -197,7 +197,19 @@ public enum AuditAction {
 
     REPLACE_PROP("REPLACE PROP"),
     BULK_OPERATION("BULK OPERATION"),
+    
+    SERVICE_TASK("ServiceTask"),
+    TASK_LISTENER("TaskListener"),
+    NOTIFICATION("Notification"),
+    
+    ACTIVITI_GROOVY_SCRIPT("ActivitiGroovyScript"),
+    SAVE_LOGIN("SaveLogin"),
+    
+    ENTITLEMENTS_DELEGATE("EntitlementsDelegate"),
 
+    RECERTIFICATION("RECERTIFICATION TASK"),
+    RECERTIFICATION_CERTIFY("CERTIFY"),
+    RECERTIFICATION_DONT_CERTIFY("DO NOT CERTIFY"),
     //-----------------------------------------
     ;
 
