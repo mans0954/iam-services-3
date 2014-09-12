@@ -1,5 +1,8 @@
 package org.openiam.base;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
 /**
  * Obtains configuration information for password change and reset from spring
  * configuration files.
@@ -7,11 +10,22 @@ package org.openiam.base;
  * @author suneet
  * @version 2
  */
+@Component("sysConfiguration")
 public class SysConfiguration {
-    protected String defaultManagedSysId = null;
-    protected String defaultAuthPolicyId = null;
-    protected String defaultPswdPolicyId = null;
-    protected Boolean developmentMode = false;
+	
+	@Value("${openiam.default_managed_sys}")
+    protected String defaultManagedSysId;
+	
+	@Value("${org.openiam.default.auth.policy}")
+    protected String defaultAuthPolicyId;
+	
+	@Value("${org.openiam.default.password.policy}")
+    protected String defaultPswdPolicyId;
+	
+	@Value("${openiam.development_mode}")
+    protected Boolean developmentMode;
+	
+	@Value("${org.openiam.provision.service.flag}")
     protected boolean provisionServiceFlag = true;
 
     public String getDefaultManagedSysId() {

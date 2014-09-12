@@ -15,6 +15,7 @@ import org.bouncycastle.crypto.paddings.PaddedBufferedBlockCipher;
 import org.bouncycastle.crypto.params.KeyParameter;
 import org.bouncycastle.util.encoders.Hex;
 import org.openiam.exception.EncryptionException;
+import org.springframework.stereotype.Component;
 
 
 /**
@@ -22,6 +23,7 @@ import org.openiam.exception.EncryptionException;
  * @author Suneet Shah
  * 
  */
+@Component("cryptor")
 public class DESedeCryptor implements Cryptor {
 
 	//private BufferedBlockCipher cipher = null;

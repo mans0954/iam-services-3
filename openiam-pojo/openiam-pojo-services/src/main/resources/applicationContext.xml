@@ -19,6 +19,7 @@
 	<context:annotation-config />
 	<context:component-scan
 		base-package="org.openiam.idm.srvc.org.service,
+										  org.openiam.base,
 		                                  org.openiam.util,
     								      org.openiam.core,
     								      org.openiam.idm.*,
@@ -27,7 +28,9 @@
     								      org.openiam.validator,
     								      org.openiam.internationalization" />
 
+	<!--
 	<bean id="springContextProvider" class="org.openiam.util.SpringContextProvider" />
+	-->
 
 	<bean id="customJacksonMapper" class="org.openiam.idm.util.CustomJacksonMapper" />
 
@@ -95,22 +98,6 @@
 		<property name="properties" ref="pojoProperties" />
 	</bean>
 
-	<bean id="sysConfiguration" class="org.openiam.base.SysConfiguration">
-		<property name="defaultManagedSysId" value="${openiam.default_managed_sys}" />
-        <property name="defaultAuthPolicyId" value="${org.openiam.default.auth.policy}" />
-        <property name="defaultPswdPolicyId" value="${org.openiam.default.password.policy}" />
-        <property name="developmentMode" value="${openiam.development_mode}" />
-        <property name="provisionServiceFlag" value="${org.openiam.provision.service.flag}" />
-	</bean>
-
-	<!-- HEARTBEAT Beans -->
-
-	<bean id="heartBeat" class="org.openiam.idm.srvc.health.HeartBeatWebServiceImpl">
-	</bean>
-
-	<bean id="defaultLoginModuleManager" class="org.openiam.idm.srvc.auth.spi.DefaultLoginModule">
-	</bean>
-
 	<bean id="targetConfigurableGroovyScriptEngine" class="${org.openiam.groovy.script.engine}" />
 
     <bean id="baseTransactionProxy" class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean"
@@ -126,15 +113,6 @@
     <bean id="configurableGroovyScriptEngine" parent="baseTransactionProxy">
         <property name="target" ref="targetConfigurableGroovyScriptEngine"/>
     </bean>
-
-	<!-- QueryDataService -->
-	<bean id="queryWS" class="org.openiam.idm.srvc.qry.ws.QueryDataWebServiceImpl">
-		<property name="queryService" ref="queryDataService" />
-	</bean>
-
-	<bean id="queryDataService" class="org.openiam.idm.srvc.qry.service.QueryDataServiceImpl">
-		<property name="sessionFactory" ref="sessionFactory"></property>
-	</bean>
 
 	<bean id="luceneReindexService" class="org.openiam.idm.srvc.lucene.LuceneReindexService">
 		<property name="hibernateSearchDAOs">
@@ -238,19 +216,6 @@
 				<prop key="mail.smtp.starttls.enable">false</prop>
 			</props>
 		</property>
-	</bean>
-
-	<bean id="mailSenderClient" class=" org.openiam.idm.srvc.msg.service.MailSenderClient">
-		<property name="host" value="${mail.host}" />
-		<property name="port" value="${mail.port}" />
-		<property name="username" value="${mail.username}" />
-		<property name="password" value="${mail.password}" />
-		<property name="auth" value="false" />
-		<property name="starttls" value="false" />
-	</bean>
-
-	<!-- Utility Beans -->
-	<bean id="cryptor" class="org.openiam.util.encrypt.DESedeCryptor">
 	</bean>
 
 
