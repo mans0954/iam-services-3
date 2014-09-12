@@ -162,7 +162,7 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 	public SaveTemplateProfileResponse initiateNewHireRequest(final NewUserProfileRequestModel request) {
 		log.info("Initializing workflow");
 		final SaveTemplateProfileResponse response = new SaveTemplateProfileResponse();
-		final IdmAuditLog idmAuditLog = new IdmAuditLog();
+		IdmAuditLog idmAuditLog = new IdmAuditLog();
         idmAuditLog.setAction(AuditAction.NEW_USER_WORKFLOW.value());
         idmAuditLog.setBaseObject(request);
         idmAuditLog.setRequestorUserId(request.getRequestorUserId());
@@ -241,6 +241,7 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
             variables.put(ActivitiConstants.AUDIT_LOG_ID.getName(), idmAuditLog.getId());
             
 			final ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(requestType.getKey(), variables);
+			idmAuditLog = auditLogService.findById(idmAuditLog.getId());
             idmAuditLog.setTargetTask(processInstance.getId(), taskName);
 			response.succeed();
 			idmAuditLog.succeed();
@@ -348,9 +349,10 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 			response.setErrorText(e.getMessage());
 		} finally {
 			if(parentAuditLogId != null) {
-				final IdmAuditLog log = auditLogService.findById(parentAuditLogId);
-				log.addChild(idmAuditLog);
-				auditLogService.save(idmAuditLog);
+				final IdmAuditLog parent = auditLogService.findById(parentAuditLogId);
+				parent.addChild(idmAuditLog);
+				idmAuditLog.addParent(parent);
+				auditLogService.save(parent);
 			}
 		}
 
@@ -362,7 +364,7 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 	public SaveTemplateProfileResponse initiateEditUserWorkflow(final UserProfileRequestModel request) {
 		final SaveTemplateProfileResponse response = new SaveTemplateProfileResponse();
 		
-		final IdmAuditLog idmAuditLog = new IdmAuditLog();
+		IdmAuditLog idmAuditLog = new IdmAuditLog();
         idmAuditLog.setAction(AuditAction.EDIT_USER_WORKFLOW.value());
         idmAuditLog.setBaseObject(request);
         idmAuditLog.setRequestorUserId(request.getRequestorUserId());
@@ -422,6 +424,7 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
             variables.put(ActivitiConstants.AUDIT_LOG_ID.getName(), idmAuditLog.getId());
 
             ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(ActivitiRequestType.EDIT_USER.getKey(), variables);
+            idmAuditLog = auditLogService.findById(idmAuditLog.getId());
             for(Map.Entry<String,Object> varEntry : variables.entrySet()) {
                 idmAuditLog.addCustomRecord(varEntry.getKey(), (varEntry.getValue() != null) ? varEntry.getValue().toString() : null);
             }
@@ -500,7 +503,7 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 	@Override
 	@Transactional
 	public Response initiateWorkflow(final GenericWorkflowRequest request) {
-		final IdmAuditLog idmAuditLog = new IdmAuditLog();
+		IdmAuditLog idmAuditLog = new IdmAuditLog();
         idmAuditLog.setRequestorUserId(request.getRequestorUserId());
         idmAuditLog.setAction(AuditAction.INITIATE_WORKFLOW.value());
         idmAuditLog.setBaseObject(request);
@@ -581,6 +584,7 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
             variables.put(ActivitiConstants.AUDIT_LOG_ID.getName(), idmAuditLog.getId());
 			
 			final ProcessInstance instance = runtimeService.startProcessInstanceByKey(request.getActivitiRequestType(), variables);
+			idmAuditLog = auditLogService.findById(idmAuditLog.getId());
             idmAuditLog.setTargetTask(instance.getId(), request.getName());
             for(Map.Entry<String,Object> varEntry : variables.entrySet()) {
                 idmAuditLog.addCustomRecord(varEntry.getKey(), (varEntry.getValue() != null) ? varEntry.getValue().toString() : null);
@@ -683,9 +687,10 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 			response.setErrorText(e.getMessage());
 		} finally {
 			if(parentAuditLogId != null) {
-				final IdmAuditLog log = auditLogService.findById(parentAuditLogId);
-				log.addChild(idmAuditLog);
-				auditLogService.save(log);
+				final IdmAuditLog parent = auditLogService.findById(parentAuditLogId);
+				parent.addChild(idmAuditLog);
+				idmAuditLog.addParent(parent);
+				auditLogService.save(parent);
 			}
         }
 		return response;
@@ -960,9 +965,10 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
             idmAuditLog.fail();
 		} finally {
 			if(parentAuditLogId != null) {
-				final IdmAuditLog log = auditLogService.findById(parentAuditLogId);
-				log.addChild(idmAuditLog);
-				auditLogService.save(log);
+				final IdmAuditLog parent = auditLogService.findById(parentAuditLogId);
+				parent.addChild(idmAuditLog);
+				idmAuditLog.addParent(parent);
+				auditLogService.save(parent);
 			}
         }
 		return response;
