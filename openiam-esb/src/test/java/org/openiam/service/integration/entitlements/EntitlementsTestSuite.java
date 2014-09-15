@@ -8,7 +8,8 @@ import org.junit.runners.Suite.SuiteClasses;
 @Suite.SuiteClasses({
 	GroupServiceTest.class,
 	ResourceServiceTest.class,
-	RoleServiceTest.class
+	RoleServiceTest.class,
+	OrganizationServiceTest.class
 })
 public class EntitlementsTestSuite {
 

@@ -56,7 +56,7 @@ public class LanguageWebServiceImpl implements LanguageWebService {
             final Language language) {
         final List<LanguageEntity> entityList = languageService.findBeans(searchBean, from, size,
                 languageDozerConverter.convertToEntity(language, false));
-        return languageDozerConverter.convertToDTOList(entityList, searchBean.isDeepCopy());
+        return languageDozerConverter.convertToDTOList(entityList, (searchBean != null) ? searchBean.isDeepCopy() : false);
     }
 
     @Override

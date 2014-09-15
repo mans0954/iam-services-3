@@ -231,4 +231,21 @@
 		<property name="address"
 			value="${openiam.service_host}${openiam.idm.ws.path}PolicyWebService" />
 	</bean>
+	
+	<!-- Organization Service -->
+	<bean id="organizationServiceClient" class="org.openiam.idm.srvc.org.service.OrganizationDataService"
+                factory-bean="organizatinoServiceClientFactory" factory-method="create" />
+
+	<bean id="organizatinoServiceClientFactory" class="org.apache.cxf.jaxws.JaxWsProxyFactoryBean">
+		<property name="serviceClass" value="org.openiam.idm.srvc.org.service.OrganizationDataService" />
+		<property name="address" value="${openiam.service_host}${openiam.idm.ws.path}OrganizationDataService" />
+	</bean>
+	
+	<bean id="organizationTypeClient" class="org.openiam.idm.srvc.org.service.OrganizationTypeDataService"
+                factory-bean="organizationTypeClientFactory" factory-method="create" />
+
+ 	<bean id="organizationTypeClientFactory" class="org.apache.cxf.jaxws.JaxWsProxyFactoryBean">
+		<property name="serviceClass" value="org.openiam.idm.srvc.org.service.OrganizationTypeDataService" />
+		<property name="address" value="${openiam.service_host}${openiam.idm.ws.path}OrganizationTypeDataService" />
+	</bean>
 </beans>

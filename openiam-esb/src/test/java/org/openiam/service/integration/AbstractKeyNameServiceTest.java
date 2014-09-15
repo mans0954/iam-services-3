@@ -1,6 +1,8 @@
 package org.openiam.service.integration;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.RandomStringUtils;
@@ -9,6 +11,12 @@ import org.openiam.base.KeyNameDTO;
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.AbstractKeyNameSearchBean;
 import org.openiam.idm.searchbeans.AbstractSearchBean;
+import org.openiam.idm.searchbeans.LanguageSearchBean;
+import org.openiam.idm.srvc.lang.dto.Language;
+import org.openiam.idm.srvc.lang.dto.LanguageMapping;
+import org.openiam.idm.srvc.lang.service.LanguageWebService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
@@ -25,6 +33,31 @@ public abstract class AbstractKeyNameServiceTest<T extends KeyNameDTO, S extends
 	protected abstract Response delete(T t);
 	protected abstract T get(final String key);
 	public abstract List<T> find(final S searchBean, final int from, final int size);
+	
+	@Autowired
+	@Qualifier("languageServiceClient")
+	protected LanguageWebService languageServiceClient;
+	
+	protected Language getDefaultLanguage() {
+		final LanguageSearchBean searchBean = new LanguageSearchBean();
+		searchBean.setKey("1");
+		return languageServiceClient.findBeans(searchBean, 0, 1, null).get(0);
+	}
+	
+	protected final Map<String, LanguageMapping> generateRandomLanguageMapping() {
+		Map<String, LanguageMapping> retVal = new HashMap<>();
+		for(final Language language : getAllLanguages()) {
+			final LanguageMapping mapping = new LanguageMapping();
+			mapping.setLanguageId(language.getId());
+			mapping.setValue(getRandomName());
+			retVal.put(language.getId(), mapping);
+		}
+		return retVal;
+	}
+	
+	protected final List<Language> getAllLanguages() {
+		return languageServiceClient.findBeans(null, 0, Integer.MAX_VALUE, null);
+	}
 	
 	protected T createBean() {
 		final T bean = newInstance();

@@ -40,8 +40,8 @@ public class MetadataTypeDAOImpl extends BaseDaoImpl<MetadataTypeEntity, String>
 		    	criteria.add(Restrictions.eq("grouping", entity.getGrouping()));
 		    }
 		    
-		    if (StringUtils.isNotEmpty(entity.getDescription())) {
-				String name = entity.getDescription();
+		    if (StringUtils.isNotEmpty(entity.getName())) {
+				String name = entity.getName();
 				MatchMode matchMode = null;
 				if (StringUtils.indexOf(name, "*") == 0) {
 					matchMode = MatchMode.END;
@@ -54,9 +54,9 @@ public class MetadataTypeDAOImpl extends BaseDaoImpl<MetadataTypeEntity, String>
 
 				if (StringUtils.isNotEmpty(name)) {
 					if (matchMode != null) {
-						criteria.add(Restrictions.ilike("description", name, matchMode));
+						criteria.add(Restrictions.ilike("name", name, matchMode));
 					} else {
-						criteria.add(Restrictions.eq("description", name));
+						criteria.add(Restrictions.eq("name", name));
 					}
 				}
 			}

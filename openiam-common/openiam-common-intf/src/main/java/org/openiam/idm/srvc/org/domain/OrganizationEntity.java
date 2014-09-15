@@ -51,6 +51,7 @@ public class OrganizationEntity extends AbstractMetdataTypeEntity {
     @OrderBy("name asc")
     @Fetch(FetchMode.SUBSELECT)
     @Internationalized
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     private Set<OrganizationAttributeEntity> attributes;
 
     @Column(name="CREATE_DATE", length=19)

@@ -102,7 +102,7 @@
             <b>metadataTypeId</b>
         </field>
         <field>
-            <a>metadataType.description</a>
+            <a>metadataType.name</a>
             <b>typeDescription</b>
         </field>
 	</mapping>
@@ -115,7 +115,7 @@
             <b>metadataTypeId</b>
         </field>
         <field>
-            <a>metadataType.description</a>
+            <a>metadataType.name</a>
             <b>typeDescription</b>
         </field>
         <field>
@@ -131,7 +131,7 @@
             <b>metadataTypeId</b>
         </field>
         <field>
-            <a>metadataType.description</a>
+            <a>metadataType.name</a>
             <b>typeDescription</b>
         </field>
 	</mapping>

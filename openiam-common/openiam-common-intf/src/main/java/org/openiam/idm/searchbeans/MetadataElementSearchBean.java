@@ -24,7 +24,7 @@ import org.openiam.idm.srvc.meta.dto.MetadataElement;
 	"excludedGroupings",
 	"categoryTypes"
 })
-public class MetadataElementSearchBean extends AbstractSearchBean<MetadataElement, String> implements SearchBean<MetadataElement, String> {
+public class MetadataElementSearchBean extends AbstractKeyNameSearchBean<MetadataElement, String> {
 
 	private Set<String> keySet;
 	private Set<String> typeIdSet;

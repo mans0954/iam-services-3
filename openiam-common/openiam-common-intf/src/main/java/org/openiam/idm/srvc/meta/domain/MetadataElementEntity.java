@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.persistence.AttributeOverride;
+import javax.persistence.AttributeOverrides;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -32,6 +33,7 @@ import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.Where;
+import org.openiam.base.domain.AbstractKeyNameEntity;
 import org.openiam.base.domain.KeyEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.grp.domain.GroupAttributeEntity;
@@ -50,12 +52,13 @@ import org.openiam.internationalization.InternationalizedCollection;
 @DozerDTOCorrespondence(MetadataElement.class)
 @AttributeOverride(name = "id", column = @Column(name = "METADATA_ID"))
 @Internationalized
-public class MetadataElementEntity extends KeyEntity {
+@AttributeOverrides({
+	@AttributeOverride(name = "id", column = @Column(name = "METADATA_ID")),
+	@AttributeOverride(name = "name", column = @Column(name = "NAME", length = 100, nullable = true))
+})
+public class MetadataElementEntity extends AbstractKeyNameEntity {
 
     private static final long serialVersionUID = 1L;
-
-    @Column(name = "DESCRIPTION", length = 40)
-    private String description;
     
     @Column(name = "ATTRIBUTE_NAME", length = 100)
     private String attributeName;
@@ -151,14 +154,6 @@ public class MetadataElementEntity extends KeyEntity {
 
 	public void setDefaultValue(String defaultValue) {
 		this.defaultValue = defaultValue;
-	}
-
-	public String getDescription() {
-		return description;
-	}
-
-	public void setDescription(String description) {
-		this.description = description;
 	}
 
 	public String getAttributeName() {
@@ -320,29 +315,84 @@ public class MetadataElementEntity extends KeyEntity {
 		this.isPublic = isPublic;
 	}
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result
+				+ ((attributeName == null) ? 0 : attributeName.hashCode());
+		result = prime * result + (auditable ? 1231 : 1237);
+		result = prime * result
+				+ ((dataType == null) ? 0 : dataType.hashCode());
+		result = prime * result + (isPublic ? 1231 : 1237);
+		result = prime * result
+				+ ((metadataType == null) ? 0 : metadataType.hashCode());
+		result = prime * result + (required ? 1231 : 1237);
+		result = prime * result
+				+ ((resource == null) ? 0 : resource.hashCode());
+		result = prime * result + (selfEditable ? 1231 : 1237);
+		result = prime
+				* result
+				+ ((staticDefaultValue == null) ? 0 : staticDefaultValue
+						.hashCode());
+		return result;
+	}
 
-        MetadataElementEntity that = (MetadataElementEntity) o;
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		MetadataElementEntity other = (MetadataElementEntity) obj;
+		if (attributeName == null) {
+			if (other.attributeName != null)
+				return false;
+		} else if (!attributeName.equals(other.attributeName))
+			return false;
+		if (auditable != other.auditable)
+			return false;
+		if (dataType == null) {
+			if (other.dataType != null)
+				return false;
+		} else if (!dataType.equals(other.dataType))
+			return false;
+		if (isPublic != other.isPublic)
+			return false;
+		if (metadataType == null) {
+			if (other.metadataType != null)
+				return false;
+		} else if (!metadataType.equals(other.metadataType))
+			return false;
+		if (required != other.required)
+			return false;
+		if (resource == null) {
+			if (other.resource != null)
+				return false;
+		} else if (!resource.equals(other.resource))
+			return false;
+		if (selfEditable != other.selfEditable)
+			return false;
+		if (staticDefaultValue == null) {
+			if (other.staticDefaultValue != null)
+				return false;
+		} else if (!staticDefaultValue.equals(other.staticDefaultValue))
+			return false;
+		return true;
+	}
 
-        if (attributeName != null ? !attributeName.equals(that.attributeName) : that.attributeName != null)
-            return false;
-        if (dataType != null ? !dataType.equals(that.dataType) : that.dataType != null) return false;
-        if (id != null ? !id.equals(that.id) : that.id != null) return false;
-        if (staticDefaultValue != null ? !staticDefaultValue.equals(that.staticDefaultValue) : that.staticDefaultValue != null)
-            return false;
+	@Override
+	public String toString() {
+		return "MetadataElementEntity [attributeName=" + attributeName
+				+ ", dataType=" + dataType + ", auditable=" + auditable
+				+ ", required=" + required + ", selfEditable=" + selfEditable
+				+ ", metadataType=" + metadataType + ", isPublic=" + isPublic
+				+ ", resource=" + resource + ", displayName=" + displayName
+				+ ", staticDefaultValue=" + staticDefaultValue
+				+ ", defaultValue=" + defaultValue + "]";
+	}
 
-        return true;
-    }
-
-    @Override
-    public int hashCode() {
-        int result = id != null ? id.hashCode() : 0;
-        result = 31 * result + (attributeName != null ? attributeName.hashCode() : 0);
-        result = 31 * result + (dataType != null ? dataType.hashCode() : 0);
-        result = 31 * result + (staticDefaultValue != null ? staticDefaultValue.hashCode() : 0);
-        return result;
-    }
+	
 }
