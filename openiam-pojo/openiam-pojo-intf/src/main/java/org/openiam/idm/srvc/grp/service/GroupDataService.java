@@ -60,7 +60,7 @@ public interface GroupDataService {
 
 
 	public void saveGroup(final GroupEntity group, final String requestorId) throws BasicDataServiceException;
-	
+    public void addRequiredAttributes(GroupEntity group);
 	public void deleteGroup(final String groupId);
 
     /**

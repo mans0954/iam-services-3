@@ -53,6 +53,7 @@ public interface OrganizationService {
 	public void removeUserFromOrg(String orgId, String userId);
 	public void removeAttribute(final String attributeId);
 	public void save(final OrganizationEntity organization, final String requestorId);
+    public void addRequiredAttributes(OrganizationEntity organization);
 	public void save(final OrganizationAttributeEntity attribute);
 	public void removeChildOrganization(final String organizationId, final String childOrganizationId);
 	public void addChildOrganization(final String organizationId, final String childOrganizationId);
