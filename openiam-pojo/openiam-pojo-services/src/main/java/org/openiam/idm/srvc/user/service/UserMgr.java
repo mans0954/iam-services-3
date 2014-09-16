@@ -530,6 +530,7 @@ public class UserMgr implements UserDataService {
         List<String> idList = null;
         if(isMngReportFilterSet){
             idList = userDao.getSubordinatesIds(searchBean.getRequesterId());
+            idList.add(searchBean.getRequesterId());
         } else {
             idList = userSearchDAO.findIds(0, MAX_USER_SEARCH_RESULTS, null, searchBean);
         }
