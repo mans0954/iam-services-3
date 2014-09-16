@@ -13,24 +13,14 @@ import org.openiam.idm.srvc.meta.dto.MetadataElementPageTemplate;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "MetadataElementPageTemplateSearchBean", propOrder = {
-		"name",
 		"keySet",
 		"patternIds"
 })
-public class MetadataElementPageTemplateSearchBean extends AbstractSearchBean<MetadataElementPageTemplate, String> implements SearchBean<MetadataElementPageTemplate, String> {
+public class MetadataElementPageTemplateSearchBean extends AbstractKeyNameSearchBean<MetadataElementPageTemplate, String> {
 
 	private Set<String> patternIds;
 	private Set<String> keySet;
-	private String name;
 
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
-	
 	@Override
 	public void setKey(final String key) {
 		if(keySet == null) {

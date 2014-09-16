@@ -75,16 +75,14 @@ public class MetadataFieldTemplateXref extends KeyDTO {
 	public void setLanguageMap(Map<String, LanguageMapping> languageMap) {
 		this.languageMap = languageMap;
 	}
-	
 	@Override
 	public int hashCode() {
 		final int prime = 31;
-		int result = 1;
+		int result = super.hashCode();
 		result = prime * result
 				+ ((displayOrder == null) ? 0 : displayOrder.hashCode());
 		result = prime * result + (editable ? 1231 : 1237);
 		result = prime * result + ((field == null) ? 0 : field.hashCode());
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		result = prime * result + (required ? 1231 : 1237);
 		result = prime * result
 				+ ((template == null) ? 0 : template.hashCode());
@@ -94,7 +92,7 @@ public class MetadataFieldTemplateXref extends KeyDTO {
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
-		if (obj == null)
+		if (!super.equals(obj))
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
@@ -111,11 +109,6 @@ public class MetadataFieldTemplateXref extends KeyDTO {
 				return false;
 		} else if (!field.equals(other.field))
 			return false;
-		if (id == null) {
-			if (other.id != null)
-				return false;
-		} else if (!id.equals(other.id))
-			return false;
 		if (required != other.required)
 			return false;
 		if (template == null) {
@@ -127,13 +120,11 @@ public class MetadataFieldTemplateXref extends KeyDTO {
 	}
 	@Override
 	public String toString() {
-		return "MetadataFieldTemplateXref [id=" + id + ", field=" + field
-				+ ", template=" + template + ", required=" + required
-				+ ", editable=" + editable + ", displayOrder=" + displayOrder
-				+ "]";
+		return "MetadataFieldTemplateXref [field=" + field + ", template="
+				+ template + ", required=" + required + ", editable="
+				+ editable + ", displayOrder=" + displayOrder + ", toString()="
+				+ super.toString() + "]";
 	}
-
-
 	
 	
 }

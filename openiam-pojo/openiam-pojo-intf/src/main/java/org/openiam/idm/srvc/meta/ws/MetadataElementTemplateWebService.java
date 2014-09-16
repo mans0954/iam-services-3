@@ -42,7 +42,7 @@ public interface MetadataElementTemplateWebService {
 	 public PageTempate getTemplate(final @WebParam(name = "template", targetNamespace = "") TemplateRequest request);
 	 
 	 @WebMethod
-	 public MetadataTemplateType getTemplateType(final @WebParam(name = "templateId", targetNamespace = "") String templateId);
+	 public MetadataTemplateType getTemplateType(final @WebParam(name = "id", targetNamespace = "") String id);
 	 
 	 @WebMethod
 	 public List<MetadataTemplateType> findTemplateTypes(final @WebParam(name = "searchBean", targetNamespace = "") MetadataTemplateTypeSearchBean searchBean,

@@ -89,8 +89,14 @@ public abstract class AbstractKeyNameServiceTest<T extends KeyNameDTO, S extends
 		ClusterKey<T, S> key = doClusterTest();
 		T instance = key.getDto();
 		if(instance != null && instance.getId() != null) {
-    		delete(instance);
+			deleteAndAssert(instance);
     	}
+	}
+	
+	protected Response deleteAndAssert(final T instance) {
+		Response response = delete(instance);
+		Assert.assertTrue(response.isSuccess(), String.format("Could not save element '%s' with ID '%s", instance, instance.getId()));
+		return response;
 	}
 	
 	public ClusterKey<T, S> doClusterTest() throws Exception {

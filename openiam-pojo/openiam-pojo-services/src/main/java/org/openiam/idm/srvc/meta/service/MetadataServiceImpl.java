@@ -79,7 +79,7 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 	@Transactional
 	public List<MetadataElementEntity> findBeans(final MetadataElementSearchBean searchBean, final int from, final int size, final LanguageEntity language) {
 		List<MetadataElementEntity> retVal = null;
-		if(searchBean.hasMultipleKeys()) {
+		if(searchBean != null  && searchBean.hasMultipleKeys()) {
 			retVal = metadataElementDao.findByIds(searchBean.getKeys());
 		} else {
 			retVal = metadataElementDao.getByExample(searchBean, from, size);
