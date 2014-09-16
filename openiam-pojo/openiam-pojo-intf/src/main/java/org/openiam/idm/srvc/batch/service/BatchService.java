@@ -1,10 +1,10 @@
 package org.openiam.idm.srvc.batch.service;
 
-import java.util.List;
-
-import org.openiam.base.ws.Response;
+import org.openiam.idm.searchbeans.BatchTaskSearchBean;
 import org.openiam.idm.srvc.batch.domain.BatchTaskEntity;
 import org.springframework.scheduling.Trigger;
+
+import java.util.List;
 
 public interface BatchService {
 
@@ -12,6 +12,8 @@ public interface BatchService {
 
     public List<BatchTaskEntity> findBeans(final BatchTaskEntity entity,
             final int from, final int size);
+    public List<BatchTaskEntity> findBeans(final BatchTaskSearchBean searchBean,
+                                           final int from, final int size);
 
     public void save(final BatchTaskEntity entity);
 
