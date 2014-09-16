@@ -144,7 +144,10 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
         		roleDAO.update(role);
         	}
         }
-        
+        List<AttributeMapEntity> attributeMapEntities = attributeMapDAO.findByManagedSysId(id);
+        for(AttributeMapEntity mapEntity : attributeMapEntities) {
+            attributeMapDAO.delete(mapEntity);
+        }
         managedSysDAO.delete(sysEntity);
         resourceService.deleteResource(sysEntity.getResourceId());
     }
