@@ -35,7 +35,7 @@ public abstract class AbstractCandidateTaskListener extends AbstractActivitiJob 
 		final DelegateExecution execution = delegateTask.getExecution();
 		
 		final IdmAuditLog idmAuditLog = createNewAuditLog(delegateTask);
-        idmAuditLog.setAction(AuditAction.SERVICE_TASK.value());
+        idmAuditLog.setAction(AuditAction.TASK_LISTENER.value());
 		try {
 			final String targetUserId = getTargetUserId(execution);
 			final String taskOwner = getRequestorId(delegateTask.getExecution());

@@ -19,36 +19,24 @@ public abstract class AbstractNotificationDelegate extends AbstractActivitiJob {
 	protected ActivitiHelper activitiHelper;
 
 	protected void sendNotification(final UserEntity toNotify,
-		  	final UserEntity targetUser,
-		  	final DelegateExecution execution) {
+		  							final UserEntity targetUser,
+		  							final DelegateExecution execution) {
 		
-		final IdmAuditLog idmAuditLog = createNewAuditLog(execution);
-        idmAuditLog.setAction(AuditAction.NOTIFICATION.value());
-		try {
-			final String taskName = getStringVariable(execution, ActivitiConstants.TASK_NAME);
-			final String taskDescription = getStringVariable(execution, ActivitiConstants.TASK_DESCRIPTION);
-			
-			final String taskOwner = getRequestorId(execution);
-			final UserEntity owner = getUserEntity(taskOwner);
-			
-			final NotificationRequest request = new NotificationRequest();
-			request.setUserId(toNotify.getId());
-			request.setNotificationType(getNotificationType(execution));
-			request.getParamList().add(new NotificationParam("TO_NOTIFY", toNotify));
-			request.getParamList().add(new NotificationParam("TARGET_USER", targetUser));
-			request.getParamList().add(new NotificationParam("REQUESTOR", owner));
-			request.getParamList().add(new NotificationParam("COMMENT", getComment(execution)));
-			request.getParamList().add(new NotificationParam("REQUEST_REASON", taskName));
-			request.getParamList().add(new NotificationParam("REQUEST_DESCRIPTION", taskDescription));
-			mailService.sendNotification(request);
-			
-			idmAuditLog.succeed();
-		} catch(Throwable e) {
-			idmAuditLog.setException(e);
-			idmAuditLog.fail();
-			throw new RuntimeException(e);
-		} finally {
-			addAuditLogChild(execution, idmAuditLog);
-		}
+		final String taskName = getStringVariable(execution, ActivitiConstants.TASK_NAME);
+		final String taskDescription = getStringVariable(execution, ActivitiConstants.TASK_DESCRIPTION);
+		
+		final String taskOwner = getRequestorId(execution);
+		final UserEntity owner = getUserEntity(taskOwner);
+		
+		final NotificationRequest request = new NotificationRequest();
+		request.setUserId(toNotify.getId());
+		request.setNotificationType(getNotificationType(execution));
+		request.getParamList().add(new NotificationParam("TO_NOTIFY", toNotify));
+		request.getParamList().add(new NotificationParam("TARGET_USER", targetUser));
+		request.getParamList().add(new NotificationParam("REQUESTOR", owner));
+		request.getParamList().add(new NotificationParam("COMMENT", getComment(execution)));
+		request.getParamList().add(new NotificationParam("REQUEST_REASON", taskName));
+		request.getParamList().add(new NotificationParam("REQUEST_DESCRIPTION", taskDescription));
+		mailService.sendNotification(request);
 	}
 }

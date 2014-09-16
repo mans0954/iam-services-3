@@ -17,6 +17,8 @@ import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.bpm.activiti.delegate.core.AbstractNotificationDelegate;
 import org.openiam.bpm.activiti.delegate.core.ActivitiHelper;
 import org.openiam.bpm.activiti.delegate.entitlements.AcceptEntitlementsNotifierDelegate;
+import org.openiam.idm.srvc.audit.constant.AuditAction;
+import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
@@ -56,30 +58,41 @@ public class AcceptProfileProvisionDelegate extends AcceptEntitlementsNotifierDe
 	
 	@Override
     public void execute(final DelegateExecution execution) throws Exception {
-		final String reqeustorId = getRequestorId(execution);
-		final String newUserId = getStringVariable(execution, ActivitiConstants.NEW_USER_ID);
-            
-		final UserEntity newUser = getUserEntity(newUserId);
-		final UserEntity requestor = getUserEntity(reqeustorId);    
-		
-		/* notify the approvers */
-		final Set<String> userIds = new HashSet<String>();
-		final Set<String> emails = new HashSet<String>();
-        
-		userIds.addAll(activitiHelper.getOnAcceptUserIds(execution, newUserId, getSupervisorsForUser(newUser)));
-		userIds.remove(newUserId); /* don't send to target user just quite yet */
-		
-		sendEmails(execution, requestor, newUser, userIds, emails, null, null);
-		
-		String identity = null;
-		String password = null;
-
-		final LoginEntity login = loginDS.getPrimaryIdentity(newUserId);
-		if (login != null) {
-            identity = login.getLogin();
-            password = loginDS.decryptPassword(login.getUserId(),login.getPassword());
+		final IdmAuditLog idmAuditLog = createNewAuditLog(execution);
+        idmAuditLog.setAction(AuditAction.NOTIFICATION.value());
+		try {
+			final String reqeustorId = getRequestorId(execution);
+			final String newUserId = getStringVariable(execution, ActivitiConstants.NEW_USER_ID);
+	            
+			final UserEntity newUser = getUserEntity(newUserId);
+			final UserEntity requestor = getUserEntity(reqeustorId);    
+			
+			/* notify the approvers */
+			final Set<String> userIds = new HashSet<String>();
+			final Set<String> emails = new HashSet<String>();
+	        
+			userIds.addAll(activitiHelper.getOnAcceptUserIds(execution, newUserId, getSupervisorsForUser(newUser)));
+			userIds.remove(newUserId); /* don't send to target user just quite yet */
+			
+			sendEmails(execution, requestor, newUser, userIds, emails, null, null);
+			
+			String identity = null;
+			String password = null;
+	
+			final LoginEntity login = loginDS.getPrimaryIdentity(newUserId);
+			if (login != null) {
+	            identity = login.getLogin();
+	            password = loginDS.decryptPassword(login.getUserId(),login.getPassword());
+			}
+			sendEmail(execution, requestor, newUser, newUser.getId(), null, identity, password);
+			idmAuditLog.succeed();
+		} catch(Throwable e) {
+			idmAuditLog.setException(e);
+			idmAuditLog.fail();
+			throw new RuntimeException(e);
+		} finally {
+			addAuditLogChild(execution, idmAuditLog);
 		}
-		sendEmail(execution, requestor, newUser, newUser.getId(), null, identity, password);
     }
     
     private void sendEmails(final DelegateExecution execution,
