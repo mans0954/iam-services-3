@@ -12,9 +12,13 @@ import org.activiti.engine.impl.el.FixedValue;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.openiam.bpm.activiti.ActivitiService;
 import org.openiam.bpm.activiti.model.ActivitiJSONStringWrapper;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.bpm.util.ActivitiRequestType;
+import org.openiam.idm.srvc.audit.constant.AuditAction;
+import org.openiam.idm.srvc.audit.constant.AuditSource;
+import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.grp.dto.Group;
@@ -32,11 +36,16 @@ import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.srvc.user.ws.UserDataWebService;
 import org.openiam.idm.util.CustomJacksonMapper;
+import org.openiam.provision.resp.ProvisionUserResponse;
 import org.openiam.provision.service.ProvisionService;
 import org.openiam.util.SpringContextProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.transaction.support.TransactionTemplate;
 
 public abstract class AbstractActivitiJob implements JavaDelegate, TaskListener {
 	
@@ -45,6 +54,14 @@ public abstract class AbstractActivitiJob implements JavaDelegate, TaskListener 
 	private FixedValue notificationType;
 	private FixedValue targetVariable;
 	private FixedValue provisioningEnabled;
+	
+
+	@Autowired
+	protected ActivitiService activitiService;
+	
+	@Autowired
+	@Qualifier("transactionManager")
+	protected PlatformTransactionManager transactionManager;
 
     @Autowired
     protected AuditLogService auditLogService;
@@ -75,7 +92,7 @@ public abstract class AbstractActivitiJob implements JavaDelegate, TaskListener 
 	protected OrganizationDataService organizationDataService;
 
 	@Autowired
-	private CustomJacksonMapper customJacksonMapper;
+	protected CustomJacksonMapper customJacksonMapper;
 	
 	@Autowired
 	protected ApproverAssociationDAO approverAssociationDAO;
@@ -179,6 +196,32 @@ public abstract class AbstractActivitiJob implements JavaDelegate, TaskListener 
 		return getStringVariable(execution, ActivitiConstants.MEMBER_ASSOCIATION_ID);
 	}
 	
+	protected void addAuditLogChild(final DelegateExecution execution, final IdmAuditLog log) {
+		final String auditLogId = getStringVariable(execution, ActivitiConstants.AUDIT_LOG_ID);
+		
+		final TransactionTemplate transactionTemplate = new TransactionTemplate(transactionManager);
+        transactionTemplate.setPropagationBehavior(TransactionTemplate.PROPAGATION_REQUIRED);
+        transactionTemplate.execute(new TransactionCallback<Void>() {
+
+			@Override
+			public Void doInTransaction(TransactionStatus status) {
+				if(log != null) {
+	        		final IdmAuditLog parent = auditLogService.findById(auditLogId);
+	        		if(parent == null) {
+	        			auditLogService.save(log);
+	        			execution.setVariable(ActivitiConstants.AUDIT_LOG_ID.getName(), log.getId());
+	        		} else {
+	        			log.addParent(parent);
+	        			parent.addChild(log);
+	        			auditLogService.save(parent);
+	        		}
+	        	}
+				return null;
+			}
+        	
+		});
+	}
+	
 	protected ActivitiRequestType getRequestType(final DelegateExecution execution) {
 		return ActivitiRequestType.getByName(getStringVariable(execution, ActivitiConstants.WORKFLOW_NAME));
 	}
@@ -228,5 +271,25 @@ public abstract class AbstractActivitiJob implements JavaDelegate, TaskListener 
 	protected ActivitiConstants getTargetVariable() {
 		final ActivitiConstants retVal =  (targetVariable != null) ? ActivitiConstants.getByDeclarationName(StringUtils.trimToNull(targetVariable.getExpressionText())) : null;
 		return retVal;
+	}
+	
+	protected IdmAuditLog createNewAuditLog(final DelegateExecution execution) {
+		IdmAuditLog idmAuditLog = new IdmAuditLog();
+        idmAuditLog.setRequestorUserId(getRequestorId(execution));
+        idmAuditLog.setAuditDescription(getTaskName(execution));
+        idmAuditLog.setTaskDescription(getTaskDescription(execution));
+        idmAuditLog.setTaskName(getTaskName(execution));
+        idmAuditLog.setTargetTask(execution.getId(),execution.getCurrentActivityName());
+        idmAuditLog.setEventName(execution.getEventName());
+		idmAuditLog.setTaskClass(this.getClass());
+        idmAuditLog.setSource(AuditSource.WORKFLOW.value());
+        return idmAuditLog;
+	}
+	
+	protected IdmAuditLog createNewAuditLog(final DelegateTask delegateTask) {
+		final DelegateExecution execution = delegateTask.getExecution();
+		final IdmAuditLog log = createNewAuditLog(execution);
+		log.setActivitiTaskName(delegateTask.getName());
+		return log;
 	}
 }

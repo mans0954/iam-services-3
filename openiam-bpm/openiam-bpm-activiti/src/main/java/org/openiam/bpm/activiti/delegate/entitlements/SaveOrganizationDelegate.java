@@ -25,10 +25,7 @@ public class SaveOrganizationDelegate extends AbstractActivitiJob {
 	public void execute(DelegateExecution execution) throws Exception {
 		final Organization organization = getObjectVariable(execution, ActivitiConstants.ORGANIZATION, Organization.class);
 
-        IdmAuditLog idmAuditLog = new IdmAuditLog();
-        idmAuditLog.setRequestorUserId(getRequestorId(execution));
-        idmAuditLog.setSource(AuditSource.WORKFLOW.value());
-        idmAuditLog.setTargetTask(execution.getId(),execution.getCurrentActivityName());
+        final IdmAuditLog idmAuditLog = createNewAuditLog(execution);
         if (organization.getId() == null) {
             idmAuditLog.setAction(AuditAction.ADD_ORG.value());
             idmAuditLog.setAuditDescription("Create new organization");
@@ -47,9 +44,14 @@ public class SaveOrganizationDelegate extends AbstractActivitiJob {
                 idmAuditLog.setFailureReason(response.getErrorCode());
                 idmAuditLog.setFailureReason(response.getErrorText());
                 idmAuditLog.setTargetOrg(organization.getId(), organization.getName());
+                throw new RuntimeException(String.format("Can't save organization: %s", response));
             }
-        } finally {
-            auditLogService.enqueue(idmAuditLog);
-        }
+        } catch(Throwable e) {
+ 			idmAuditLog.setException(e);
+ 			idmAuditLog.fail();
+ 			throw new RuntimeException(e);
+ 		} finally {
+ 			addAuditLogChild(execution, idmAuditLog);
+ 		}
 	}
 }

@@ -10,6 +10,7 @@ import org.openiam.base.ws.ResponseCode;
 import org.openiam.dozer.converter.GroupDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.GroupSearchBean;
+import org.openiam.idm.searchbeans.MetadataElementSearchBean;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
@@ -31,17 +32,17 @@ import org.openiam.idm.srvc.mngsys.service.ManagedSysDAO;
 import org.openiam.idm.srvc.org.service.OrganizationDAO;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
-import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.srvc.user.util.DelegationFilterHelper;
+import org.openiam.internationalization.LocalizedServiceGet;
+import org.openiam.util.AttributeUtil;
 import org.openiam.validator.EntityValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.openiam.internationalization.LocalizedServiceGet;
 
 import java.util.*;
 
@@ -368,12 +369,29 @@ public class GroupDataServiceImpl implements GroupDataService {
                 groupDefaultEntity.setIdentity(group.getName());
                 identityDAO.save(groupDefaultEntity);
 				group.addApproverAssociation(createDefaultApproverAssociations(group, requestorId));
+
+                addRequiredAttributes(group);
 			}
 			groupDao.merge(group);
 		}
 	}
-	
-	private ApproverAssociationEntity createDefaultApproverAssociations(final GroupEntity entity, final String requestorId) {
+    @Override
+    public void addRequiredAttributes(GroupEntity group) {
+        if(group!=null && group.getType()!=null && StringUtils.isNotBlank(group.getType().getId())){
+            MetadataElementSearchBean sb = new MetadataElementSearchBean();
+            sb.addTypeId(group.getType().getId());
+            List<MetadataElementEntity> elementList = metadataElementDAO.getByExample(sb, -1, -1);
+            if(CollectionUtils.isNotEmpty(elementList)){
+                for(MetadataElementEntity element: elementList){
+                    if(element.isRequired()){
+                        groupAttrDao.save(AttributeUtil.buildGroupAttribute(group, element));
+                    }
+                }
+            }
+        }
+    }
+
+    private ApproverAssociationEntity createDefaultApproverAssociations(final GroupEntity entity, final String requestorId) {
 		final ApproverAssociationEntity association = new ApproverAssociationEntity();
 		association.setAssociationEntityId(entity.getId());
 		association.setAssociationType(AssociationType.GROUP);

@@ -24,27 +24,28 @@ public class DeleteOrganizationDelegate extends AbstractActivitiJob {
     public void execute(DelegateExecution execution) throws Exception {
         Response wsResponse = null;
         final Organization organization = getObjectVariable(execution, ActivitiConstants.ORGANIZATION, Organization.class);
-        if (organization != null) {
-            IdmAuditLog idmAuditLog = new IdmAuditLog();
-            idmAuditLog.setRequestorUserId(getRequestorId(execution));
-            idmAuditLog.setAction(AuditAction.DELETE_ORG.value());
-            idmAuditLog.setAuditDescription("Delete organization");
-            idmAuditLog.setTargetOrg(organization.getId(), organization.getName());
-            idmAuditLog.setTargetTask(execution.getId(),execution.getCurrentActivityName());
-            idmAuditLog.setSource(AuditSource.WORKFLOW.value());
-            try {
+        final IdmAuditLog idmAuditLog = createNewAuditLog(execution);
+        idmAuditLog.setAction(AuditAction.DELETE_ORG.value());
+        try {
+        	if (organization != null) {
+        		idmAuditLog.setTargetOrg(organization.getId(), organization.getName());
                 wsResponse = organizationService.deleteOrganization(organization.getId());
                 if (wsResponse.isSuccess()) {
                     idmAuditLog.succeed();
                 } else {
-                    idmAuditLog.fail();
                     idmAuditLog.setFailureReason(wsResponse.getErrorCode());
                     idmAuditLog.setFailureReason(wsResponse.getErrorText());
+                    throw new RuntimeException(String.format("Delete Organization failed; %s", wsResponse));
                 }
-            } finally {
-                auditLogService.enqueue(idmAuditLog);
-            }
-        }
-
+	        } else {
+	        	throw new RuntimeException("Organization was null");
+	        }
+        } catch(Throwable e) {
+ 			idmAuditLog.setException(e);
+ 			idmAuditLog.fail();
+ 			throw new RuntimeException(e);
+ 		} finally {
+ 			addAuditLogChild(execution, idmAuditLog);
+ 		}
     }
 }
