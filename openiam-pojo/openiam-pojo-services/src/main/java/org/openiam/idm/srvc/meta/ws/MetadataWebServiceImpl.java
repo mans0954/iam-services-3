@@ -86,7 +86,7 @@ public class MetadataWebServiceImpl implements MetadataWebService {
     @Transactional(readOnly = true)
     public List<MetadataElement> findElementBeans(final MetadataElementSearchBean searchBean, final int from, final int size, final Language language) {
         final List<MetadataElementEntity> entityList = metadataService.findBeans(searchBean, from, size, languageConverter.convertToEntity(language, false));
-        return (entityList != null) ? metaDataElementDozerConverter.convertToDTOList(entityList,searchBean.isDeepCopy()) : null;
+        return (entityList != null) ? metaDataElementDozerConverter.convertToDTOList(entityList, (searchBean != null) ? searchBean.isDeepCopy() : false) : null;
     }
 
     @Override
@@ -94,7 +94,7 @@ public class MetadataWebServiceImpl implements MetadataWebService {
     @Transactional(readOnly = true)
     public List<MetadataType> findTypeBeans(final MetadataTypeSearchBean searchBean, final int from, final int size, final Language language) {
         final List<MetadataTypeEntity> entityList = metadataService.findBeans(searchBean, from, size);
-        return (entityList != null) ? metaDataTypeDozerConverter.convertToDTOList(entityList, true) : null;
+        return (entityList != null) ? metaDataTypeDozerConverter.convertToDTOList(entityList, (searchBean != null) ? searchBean.isDeepCopy() : false) : null;
     }
 
     @Override
@@ -104,7 +104,7 @@ public class MetadataWebServiceImpl implements MetadataWebService {
             if (dto == null) {
                 throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
             }
-            if (StringUtils.isBlank(dto.getDescription())) {
+            if (StringUtils.isBlank(dto.getName())) {
                 throw new BasicDataServiceException(ResponseCode.NO_NAME);
             }
             

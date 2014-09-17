@@ -20,39 +20,9 @@ import org.springframework.stereotype.Repository;
 public class PolicyDefDAOImpl extends BaseDaoImpl<PolicyDefEntity, String>
         implements PolicyDefDAO {
 
-    public List<String> findAllPolicyTypes() {
-        try {
-
-            Criteria cr = this.getCriteria()
-                    .setProjection(Projections.projectionList()
-
-                    .add(Projections.property("name")))
-                    .addOrder(Order.asc("name"));
-            return (List<String>) cr.list();
-        } catch (HibernateException re) {
-            log.error("findAllPolicyTypes failed", re);
-            throw re;
-        }
-    }
-
-    public List<PolicyDefEntity> findAllPolicyDef() {
-        try {
-            Criteria cr = this.getCriteria().addOrder(Order.asc("policyDefId"));
-            List<PolicyDefEntity> result = (List<PolicyDefEntity>) cr.list();
-            for (PolicyDefEntity p : result) {
-                Hibernate.initialize(p.getPolicies());
-                Hibernate.initialize(p.getPolicyDefParams());
-            }
-            return result;
-        } catch (HibernateException re) {
-            log.error("findAllPolicyDef failed", re);
-            throw re;
-        }
-    }
-
     @Override
     protected String getPKfieldName() {
-        return "policyDefId";
+        return "id";
     }
 
 }

@@ -159,7 +159,7 @@ public class PasswordValidatorImpl implements PasswordValidator {
              for (PolicyDefParamEntity param : defParam) {
                  // check if this is parameter that is the policy that we need to
                  // check
-                 if (policyToCheck(param.getDefParamId(), pswdPolicy)) {
+                 if (policyToCheck(param.getId(), pswdPolicy)) {
                 	 AbstractPasswordRule rule = null;
                      String strRule = param.getPolicyParamHandler();
                      if (strRule != null && strRule.length() > 0) {

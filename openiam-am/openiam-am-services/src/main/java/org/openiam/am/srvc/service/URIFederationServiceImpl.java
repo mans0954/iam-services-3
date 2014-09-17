@@ -372,7 +372,7 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 							attributeToken.setValueAsString(attribute.getValueAsString());
 							attributeToken.setValueAsByteArray(attribute.getValueAsByteArray());
 							attributeToken.setTypeId(attribute.getType().getId());
-							attributeToken.setTypeName(attribute.getType().getDescription());
+							attributeToken.setTypeName(attribute.getType().getName());
 							token.addAttribute(attributeToken);
 						}
 					}
@@ -516,7 +516,7 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 							attributeToken.setValueAsString(attribute.getValueAsString());
 							attributeToken.setValueAsByteArray(attribute.getValueAsByteArray());
 							attributeToken.setTypeId(attribute.getType().getId());
-							attributeToken.setTypeName(attribute.getType().getDescription());
+							attributeToken.setTypeName(attribute.getType().getName());
 							token.addAttribute(attributeToken);
 						}
 					}

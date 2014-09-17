@@ -34,6 +34,8 @@ import javax.mail.internet.MimeMultipart;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 import static javax.mail.Message.RecipientType.BCC;
 import static javax.mail.Message.RecipientType.CC;
@@ -44,13 +46,22 @@ import static javax.mail.Message.RecipientType.TO;
  *
  * @author suneet
  */
+@Service("mailSenderClient")
 public class MailSenderClient {
-    String host;
-    String port;
-    String username;
-    String password;
-    boolean auth;
-    boolean starttls;
+	
+	@Value("${mail.host}")
+    private String host;
+	
+	@Value("${mail.port}")
+	private String port;
+	
+	@Value("${mail.username}")
+	private String username;
+	
+	@Value("${mail.password}")
+	private String password;
+	private boolean auth;
+	private boolean starttls;
 
     private static final Log log = LogFactory.getLog(Message.class);
 

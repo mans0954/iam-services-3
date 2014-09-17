@@ -90,11 +90,12 @@ public class MetadataElementTemplateWebServiceImpl implements MetadataElementTem
 			response.setStatus(ResponseStatus.SUCCESS);
 			response.setResponseValue(entity.getId());
 		} catch(BasicDataServiceException e) {
+			response.fail();
 			response.setErrorCode(e.getCode());
-			response.setStatus(ResponseStatus.FAILURE);
 		} catch(Throwable e) {
 			LOG.error("Unkonwn Exception", e);
-			response.setStatus(ResponseStatus.FAILURE);
+			response.fail();
+			response.setErrorText(e.getMessage());
 		}
 		return response;
 	}
@@ -126,8 +127,8 @@ public class MetadataElementTemplateWebServiceImpl implements MetadataElementTem
 
 	@Override
     @Transactional(readOnly = true)
-	public MetadataTemplateType getTemplateType(final String templateId) {
-		final MetadataTemplateTypeEntity entity = templateService.getTemplateType(templateId);
+	public MetadataTemplateType getTemplateType(final String id) {
+		final MetadataTemplateTypeEntity entity = templateService.getTemplateType(id);
 		return (entity != null) ? templateTypeDozerConverter.convertToDTO(entity, true) : null;
 	}
 
@@ -136,14 +137,14 @@ public class MetadataElementTemplateWebServiceImpl implements MetadataElementTem
 	public List<MetadataTemplateType> findTemplateTypes(final MetadataTemplateTypeSearchBean searchBean, final int from, final int size) {
 		final MetadataTemplateTypeEntity entity = templateTypeSearchBeanConverter.convert(searchBean);
 		final List<MetadataTemplateTypeEntity> entityList = templateService.findTemplateTypes(entity, from, size);
-		return (entityList != null) ? templateTypeDozerConverter.convertToDTOList(entityList, searchBean.isDeepCopy()) : null;
+		return (entityList != null) ? templateTypeDozerConverter.convertToDTOList(entityList, (searchBean != null) ? searchBean.isDeepCopy() : false) : null;
 	}
 
 	@Override
     @Transactional(readOnly = true)
 	public List<MetadataTemplateTypeField> findUIFIelds(final MetadataTemplateTypeFieldSearchBean searchBean, final int from, final int size) {
 		final List<MetadataTemplateTypeFieldEntity> entityList = templateService.findUIFields(searchBean, from, size);
-		return (entityList != null) ? uiFieldDozerConverter.convertToDTOList(entityList, searchBean.isDeepCopy()) : null;
+		return (entityList != null) ? uiFieldDozerConverter.convertToDTOList(entityList, (searchBean != null) ? searchBean.isDeepCopy() : false) : null;
 	}
 
     @Override

@@ -5,6 +5,7 @@ import org.hibernate.annotations.*;
 //import org.hibernate.search.annotations.*;
 //import org.hibernate.search.annotations.Index;
 import org.openiam.base.domain.KeyEntity;
+import org.openiam.base.domain.AbstractKeyNameEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.cat.domain.CategoryEntity;
 import org.openiam.idm.srvc.lang.domain.LanguageMappingEntity;
@@ -26,14 +27,14 @@ import java.util.Set;
 @Table(name = "METADATA_TYPE")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @DozerDTOCorrespondence(MetadataType.class)
-@AttributeOverride(name = "id", column = @Column(name = "TYPE_ID"))
 @Internationalized
-public class MetadataTypeEntity extends KeyEntity {
+@AttributeOverrides({
+	@AttributeOverride(name = "id", column = @Column(name = "TYPE_ID")),
+	@AttributeOverride(name = "name", column = @Column(name = "NAME", length = 100, nullable = true))
+})
+public class MetadataTypeEntity extends AbstractKeyNameEntity {
 
     private static final long serialVersionUID = 1L;
-
-    @Column(name = "DESCRIPTION", length = 40)
-    private String description;
 
     @Column(name = "ACTIVE")
     @Type(type = "yes_no")
@@ -111,14 +112,6 @@ public class MetadataTypeEntity extends KeyEntity {
     	this.categories.add(entity);
     }
 
-    public String getDescription() {
-    	return description;
-    }
-
-    public void setDescription(String description) {
-    	this.description = description;
-    }
-
     public boolean isActive() {
     	return active;
     }
@@ -183,18 +176,15 @@ public class MetadataTypeEntity extends KeyEntity {
         this.userEntitySet = userEntitySet;
     }
 
-    @Override
+	@Override
 	public int hashCode() {
 		final int prime = 31;
-		int result = 1;
+		int result = super.hashCode();
 		result = prime * result + (active ? 1231 : 1237);
-		result = prime * result
-				+ ((description == null) ? 0 : description.hashCode());
-		result = prime * result
-				+ ((grouping == null) ? 0 : grouping.hashCode());
 		result = prime * result + (binary ? 1231 : 1237);
 		result = prime * result
-				+ ((id == null) ? 0 : id.hashCode());
+				+ ((grouping == null) ? 0 : grouping.hashCode());
+		result = prime * result + (sensitive ? 1231 : 1237);
 		result = prime * result + (syncManagedSys ? 1231 : 1237);
 		return result;
 	}
@@ -203,46 +193,30 @@ public class MetadataTypeEntity extends KeyEntity {
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
-		if (obj == null)
+		if (!super.equals(obj))
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
 		MetadataTypeEntity other = (MetadataTypeEntity) obj;
 		if (active != other.active)
 			return false;
-		if (description == null) {
-			if (other.description != null)
-				return false;
-		} else if (!description.equals(other.description))
-			return false;
-		if (grouping == null) {
-			if (other.grouping != null)
-				return false;
-		} else if (!grouping.equals(other.grouping))
-			return false;
 		if (binary != other.binary)
 			return false;
-		if (id == null) {
-			if (other.id != null)
-				return false;
-		} else if (!id.equals(other.id))
+		if (grouping != other.grouping)
+			return false;
+		if (sensitive != other.sensitive)
 			return false;
 		if (syncManagedSys != other.syncManagedSys)
 			return false;
 		return true;
 	}
 
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder();
-        sb.append("MetadataTypeEntity");
-        sb.append("{description='").append(description).append('\'');
-        sb.append(", active=").append(active);
-        sb.append(", syncManagedSys=").append(syncManagedSys);
-        sb.append(", binary=").append(binary);
-        sb.append(", sensitive=").append(sensitive);
-        sb.append(", displayName='").append(displayName).append('\'');
-        sb.append('}');
-        return sb.toString();
-    }
+	@Override
+	public String toString() {
+		return "MetadataTypeEntity [active=" + active + ", syncManagedSys="
+				+ syncManagedSys + ", binary=" + binary + ", sensitive="
+				+ sensitive + ", grouping=" + grouping + "]";
+	}
+
+    
 }

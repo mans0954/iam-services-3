@@ -73,7 +73,7 @@ public class OrganizationTypeDataServiceImpl implements OrganizationTypeDataServ
     @Transactional(readOnly = true)
 	public List<OrganizationType> findBeans(final OrganizationTypeSearchBean searchBean, final int from, final int size, final Language language) {
 		final List<OrganizationTypeEntity> entityList = organizationTypeService.findBeans(searchBean, from, size);
-		return dozerConverter.convertToDTOList(entityList, searchBean.isDeepCopy());
+		return dozerConverter.convertToDTOList(entityList, (searchBean != null) ? searchBean.isDeepCopy() : false);
 	}
 
 	@Override

@@ -27,7 +27,7 @@ public class PolicyDAOImpl extends BaseDaoImpl<PolicyEntity, String> implements 
 		try {
 
 			Criteria cr = this.getCriteria()
-					.add(Restrictions.eq("policyDefId", policyDefId))
+					.add(Restrictions.eq("policyDef.id", policyDefId))
 					.addOrder(Order.asc(getPKfieldName()));
 			if (startAt > -1) {
 	            cr.setFirstResult(startAt);
@@ -48,7 +48,7 @@ public class PolicyDAOImpl extends BaseDaoImpl<PolicyEntity, String> implements 
 	public List<PolicyEntity> findPolicyByName(String policyDefId, String policyName) {
 			Criteria cr = this.getCriteria().add(
 					Restrictions.and(
-							Restrictions.eq("policyDefId", policyDefId),
+							Restrictions.eq("policyDef.id", policyDefId),
 							Restrictions.eq("name", policyName)));
 
 			return (List<PolicyEntity>) cr.list();
@@ -60,7 +60,7 @@ public class PolicyDAOImpl extends BaseDaoImpl<PolicyEntity, String> implements 
         if (searchBean instanceof PolicySearchBean) {
             PolicySearchBean sb = (PolicySearchBean)searchBean;
             if(StringUtils.isNotBlank(sb.getPolicyDefId())) {
-                criteria.add(Restrictions.eq("policyDefId", sb.getPolicyDefId()));
+                criteria.add(Restrictions.eq("policyDef.id", sb.getPolicyDefId()));
             }
             if(StringUtils.isNotBlank(sb.getName())) {
                 String name = sb.getName();

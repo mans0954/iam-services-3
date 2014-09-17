@@ -420,7 +420,7 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
     @Transactional(readOnly = true)
     public List<URIPattern> findUriPatterns(URIPatternSearchBean searchBean, Integer from, Integer size) {
         final List<URIPatternEntity> entityList = contentProviderService.getUriPatternsList(uriPatternSearchBeanConverter.convert(searchBean), from, size);
-        return uriPatternDozerConverter.convertToDTOList(entityList, searchBean.isDeepCopy());
+        return uriPatternDozerConverter.convertToDTOList(entityList, (searchBean != null) ? searchBean.isDeepCopy() : false);
     }
 
     @Override

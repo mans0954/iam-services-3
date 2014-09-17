@@ -181,15 +181,16 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
 						final MetadataElementPageTemplateXrefIdEntity id = xref.getId();
 						if(id != null && StringUtils.isNotBlank(id.getMetadataElementId())) {
 							final String metaElementId = id.getMetadataElementId();
-							final MetadataElementPageTemplateXrefEntity dbXref = xrefDAO.findById(id);
-							if(dbXref != null) {
-								dbXref.setDisplayOrder(xref.getDisplayOrder());
-								renewedXrefs.add(dbXref);
-							} else {
+							//final MetadataElementPageTemplateXrefEntity dbXref = xrefDAO.findById(id);
+							//if(dbXref != null) {
+							//	dbXref.setDisplayOrder(xref.getDisplayOrder());
+							//	renewedXrefs.add(dbXref);
+							//} else {
 								xref.setTemplate(entity);
 								xref.setMetadataElement(elementDAO.findById(metaElementId));
+								xref.setId(new MetadataElementPageTemplateXrefIdEntity(entity.getId(), xref.getMetadataElement().getId()));
 								renewedXrefs.add(xref);
-							}
+							//}
 						}
 					}
 				}
@@ -201,23 +202,23 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
 					if(xref != null) {
 						final String fieldId = xref.getField().getId();
 						if(StringUtils.isNotBlank(fieldId) && templateType.getField(fieldId) != null) {
-							final MetadataFieldTemplateXrefEntity dbXref = uiFieldXrefDAO.findById(xref.getId());
+							//final MetadataFieldTemplateXrefEntity dbXref = uiFieldXrefDAO.findById(xref.getId());
 							boolean isRequired = templateType.getField(fieldId).isRequired() ? true : xref.isRequired();
-							if(dbXref != null) {
-								dbXref.setRequired(isRequired);
-								dbXref.setEditable(xref.isEditable());
-								dbXref.setDisplayOrder(xref.getDisplayOrder());
-								dbXref.setLanguageMap(xref.getLanguageMap());
-								fieldXrefs.add(dbXref);
-							} else {
-								xref.setId(null);
+							//if(dbXref != null) {
+							//	dbXref.setRequired(isRequired);
+							//	dbXref.setEditable(xref.isEditable());
+							//	dbXref.setDisplayOrder(xref.getDisplayOrder());
+							//	dbXref.setLanguageMap(xref.getLanguageMap());
+							//	fieldXrefs.add(dbXref);
+							//} else {
+								//xref.setId(null);
 								xref.setRequired(isRequired);
 								xref.setTemplate(entity);
 								xref.setField(uiFieldDAO.findById(fieldId));
 								//xref.setLanguageMap(null);
-								uiFieldXrefDAO.save(xref);
+								//uiFieldXrefDAO.save(xref);
 								fieldXrefs.add(xref);
-							}
+							//}
 						}
 					}
 				}

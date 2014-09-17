@@ -695,13 +695,20 @@
 		</field>
 	</mapping>
 	<mapping>
-		<class-a>org.openiam.idm.srvc.policy.domain.PolicyDefParamEntity
-		</class-a>
+		<class-a>org.openiam.idm.srvc.policy.domain.PolicyDefParamEntity</class-a>
 		<class-b>org.openiam.idm.srvc.policy.dto.PolicyDefParam</class-b>
+		<field>
+			<a>policyDef.id</a>
+			<b>policyDefId</b>
+		</field>
 	</mapping>
 	<mapping>
 		<class-a>org.openiam.idm.srvc.policy.domain.PolicyEntity</class-a>
 		<class-b>org.openiam.idm.srvc.policy.dto.Policy</class-b>
+		<field>
+			<a>policyDef.id</a>
+			<b>policyDefId</b>
+		</field>
 		<field
 			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
 			custom-converter-param="dto2entityShallowDozerMapper">

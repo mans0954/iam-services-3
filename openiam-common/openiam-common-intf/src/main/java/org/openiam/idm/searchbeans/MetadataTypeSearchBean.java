@@ -18,16 +18,14 @@ import org.openiam.idm.srvc.meta.dto.MetadataType;
 	"syncManagedSys", 
 	"grouping", 
 	"keySet",
-	"name",
 	"categoryIds"
 })
-public class MetadataTypeSearchBean extends AbstractSearchBean<MetadataType, String> implements SearchBean<MetadataType, String> {
+public class MetadataTypeSearchBean extends AbstractKeyNameSearchBean<MetadataType, String> implements SearchBean<MetadataType, String> {
 
     private Set<String> keySet;
     private Boolean active;
     private Boolean syncManagedSys;
     private MetadataTypeGrouping grouping;
-    private String name;
     private Set<String> categoryIds;
 
     public Boolean isActive() {
@@ -80,16 +78,6 @@ public class MetadataTypeSearchBean extends AbstractSearchBean<MetadataType, Str
     public void setKeys(final Set<String> keySet) {
         this.keySet = keySet;
     }
-    
-    
-
-    public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
 	
 	public void addCategoryId(final String id) {
 		if(StringUtils.isNotBlank(id)) {

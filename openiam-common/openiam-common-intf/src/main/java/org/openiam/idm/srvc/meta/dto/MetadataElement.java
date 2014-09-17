@@ -1,6 +1,7 @@
 package org.openiam.idm.srvc.meta.dto;
 
 import org.openiam.base.KeyDTO;
+import org.openiam.base.KeyNameDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.lang.dto.LanguageMapping;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
@@ -29,7 +30,6 @@ import java.util.Set;
 	propOrder = {
 		"metadataTypeName",
         "metadataTypeId",
-        "description",
         "auditable",
         "required", 
         "selfEditable",
@@ -48,12 +48,11 @@ import java.util.Set;
 })
 @DozerDTOCorrespondence(MetadataElementEntity.class)
 @Internationalized
-public class MetadataElement extends KeyDTO implements Serializable {
+public class MetadataElement extends KeyNameDTO {
 
     private static final long serialVersionUID = 1L;
     private String metadataTypeName;
     private String metadataTypeId;
-    private String description;
     private String dataType;
     private boolean auditable = true;
     private boolean required;
@@ -81,14 +80,6 @@ public class MetadataElement extends KeyDTO implements Serializable {
 
 	public void setMetadataTypeId(String metadataTypeId) {
 		this.metadataTypeId = metadataTypeId;
-	}
-
-	public String getDescription() {
-		return description;
-	}
-
-	public void setDescription(String description) {
-		this.description = description;
 	}
 
 	public String getDataType() {
@@ -260,24 +251,26 @@ public class MetadataElement extends KeyDTO implements Serializable {
 	@Override
 	public int hashCode() {
 		final int prime = 31;
-		int result = 1;
+		int result = super.hashCode();
 		result = prime * result
 				+ ((attributeName == null) ? 0 : attributeName.hashCode());
 		result = prime * result + (auditable ? 1231 : 1237);
 		result = prime * result
 				+ ((dataType == null) ? 0 : dataType.hashCode());
-		result = prime * result
-				+ ((staticDefaultValue == null) ? 0 : staticDefaultValue.hashCode());
-		result = prime * result
-				+ ((description == null) ? 0 : description.hashCode());
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		result = prime * result + (isPublic ? 1231 : 1237);
 		result = prime * result
 				+ ((metadataTypeId == null) ? 0 : metadataTypeId.hashCode());
+		result = prime
+				* result
+				+ ((metadataTypeName == null) ? 0 : metadataTypeName.hashCode());
+		result = prime * result + (required ? 1231 : 1237);
 		result = prime * result
 				+ ((resourceId == null) ? 0 : resourceId.hashCode());
-		result = prime * result + (required ? 1231 : 1237);
 		result = prime * result + (selfEditable ? 1231 : 1237);
-		result = prime * result + (isPublic ? 1231 : 1237);
+		result = prime
+				* result
+				+ ((staticDefaultValue == null) ? 0 : staticDefaultValue
+						.hashCode());
 		return result;
 	}
 
@@ -285,7 +278,7 @@ public class MetadataElement extends KeyDTO implements Serializable {
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
-		if (obj == null)
+		if (!super.equals(obj))
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
@@ -302,37 +295,46 @@ public class MetadataElement extends KeyDTO implements Serializable {
 				return false;
 		} else if (!dataType.equals(other.dataType))
 			return false;
-		if (staticDefaultValue == null) {
-			if (other.staticDefaultValue != null)
-				return false;
-		} else if (!staticDefaultValue.equals(other.staticDefaultValue))
-			return false;
-		if (description == null) {
-			if (other.description != null)
-				return false;
-		} else if (!description.equals(other.description))
-			return false;
-		if (id == null) {
-			if (other.id != null)
-				return false;
-		} else if (!id.equals(other.id))
+		if (isPublic != other.isPublic)
 			return false;
 		if (metadataTypeId == null) {
 			if (other.metadataTypeId != null)
 				return false;
 		} else if (!metadataTypeId.equals(other.metadataTypeId))
 			return false;
+		if (metadataTypeName == null) {
+			if (other.metadataTypeName != null)
+				return false;
+		} else if (!metadataTypeName.equals(other.metadataTypeName))
+			return false;
+		if (required != other.required)
+			return false;
 		if (resourceId == null) {
 			if (other.resourceId != null)
 				return false;
 		} else if (!resourceId.equals(other.resourceId))
 			return false;
-		if (required != other.required)
-			return false;
 		if (selfEditable != other.selfEditable)
 			return false;
-		if (isPublic != other.isPublic)
+		if (staticDefaultValue == null) {
+			if (other.staticDefaultValue != null)
+				return false;
+		} else if (!staticDefaultValue.equals(other.staticDefaultValue))
 			return false;
 		return true;
 	}
+
+	@Override
+	public String toString() {
+		return "MetadataElement [metadataTypeName=" + metadataTypeName
+				+ ", metadataTypeId=" + metadataTypeId + ", dataType="
+				+ dataType + ", auditable=" + auditable + ", required="
+				+ required + ", attributeName=" + attributeName
+				+ ", selfEditable=" + selfEditable + ", staticDefaultValue="
+				+ staticDefaultValue + ", resourceId=" + resourceId
+				+ ", isPublic=" + isPublic + ", displayName=" + displayName
+				+ "]";
+	}
+
+	
 }

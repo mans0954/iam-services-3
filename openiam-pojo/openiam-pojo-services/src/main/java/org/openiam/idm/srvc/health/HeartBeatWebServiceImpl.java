@@ -26,6 +26,8 @@ package org.openiam.idm.srvc.health;
 import javax.jws.WebMethod;
 import javax.jws.WebService;
 
+import org.springframework.stereotype.Service;
+
 /**
  * @author suneet
  *
@@ -34,6 +36,7 @@ import javax.jws.WebService;
 		targetNamespace = "urn:idm.openiam.org/srvc/health/service",
 		serviceName = "HeartBeatService",
 		portName = "HeartBeatServicePort")
+@Service("heartBeat")
 public class HeartBeatWebServiceImpl implements HeartBeatWebService {
 
     public String isAlive() {

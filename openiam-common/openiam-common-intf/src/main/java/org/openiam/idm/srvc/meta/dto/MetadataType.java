@@ -12,6 +12,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
 import org.openiam.base.KeyDTO;
+import org.openiam.base.KeyNameDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.cat.dto.Category;
 import org.openiam.idm.srvc.lang.domain.LanguageMappingEntity;
@@ -26,7 +27,6 @@ import org.openiam.internationalization.InternationalizedCollection;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "MetadataType", propOrder = {
-	"description", 
 	"active", 
 	"syncManagedSys",
 	"elementAttributes", 
@@ -39,10 +39,7 @@ import org.openiam.internationalization.InternationalizedCollection;
 })
 @DozerDTOCorrespondence(MetadataTypeEntity.class)
 @Internationalized
-public class MetadataType extends KeyDTO {
-
-    private String description;
-
+public class MetadataType extends KeyNameDTO {
     private boolean active;
     private boolean syncManagedSys;
 
@@ -62,14 +59,6 @@ public class MetadataType extends KeyDTO {
     
     public MetadataType() {
     	super();
-    }
-
-	public String getDescription() {
-    	return this.description;
-    }
-
-    public void setDescription(String description) {
-    	this.description = description;
     }
 
     public Map<String, MetadataElement> getElementAttributes() {
@@ -149,15 +138,12 @@ public class MetadataType extends KeyDTO {
 	@Override
 	public int hashCode() {
 		final int prime = 31;
-		int result = 1;
+		int result = super.hashCode();
 		result = prime * result + (active ? 1231 : 1237);
-		result = prime * result
-				+ ((description == null) ? 0 : description.hashCode());
-		result = prime * result
-				+ ((grouping == null) ? 0 : grouping.hashCode());
 		result = prime * result + (binary ? 1231 : 1237);
 		result = prime * result
-				+ ((id == null) ? 0 : id.hashCode());
+				+ ((grouping == null) ? 0 : grouping.hashCode());
+		result = prime * result + (sensitive ? 1231 : 1237);
 		result = prime * result + (syncManagedSys ? 1231 : 1237);
 		return result;
 	}
@@ -166,33 +152,30 @@ public class MetadataType extends KeyDTO {
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
-		if (obj == null)
+		if (!super.equals(obj))
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
 		MetadataType other = (MetadataType) obj;
 		if (active != other.active)
 			return false;
-		if (description == null) {
-			if (other.description != null)
-				return false;
-		} else if (!description.equals(other.description))
-			return false;
-		if (grouping == null) {
-			if (other.grouping != null)
-				return false;
-		} else if (!grouping.equals(other.grouping))
-			return false;
 		if (binary != other.binary)
 			return false;
-		if (id == null) {
-			if (other.id != null)
-				return false;
-		} else if (!id.equals(other.id))
+		if (grouping != other.grouping)
+			return false;
+		if (sensitive != other.sensitive)
 			return false;
 		if (syncManagedSys != other.syncManagedSys)
 			return false;
 		return true;
 	}
-    
+
+	@Override
+	public String toString() {
+		return "MetadataType [active=" + active + ", syncManagedSys="
+				+ syncManagedSys + ", grouping=" + grouping + ", binary="
+				+ binary + ", sensitive=" + sensitive + "]";
+	}
+
+	
 }

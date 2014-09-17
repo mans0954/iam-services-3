@@ -12,13 +12,15 @@ public class URIPatternSearchBeanConverter implements
     @Override
     public URIPatternEntity convert(URIPatternSearchBean searchBean) {
         URIPatternEntity entity = new URIPatternEntity();
-        entity.setPattern(searchBean.getPattern());
-        entity.setId(searchBean.getKey());
-
-        if(searchBean.getContentProviderId()!=null && !searchBean.getContentProviderId().trim().isEmpty()){
-            ContentProviderEntity cp = new ContentProviderEntity();
-            cp.setId(searchBean.getContentProviderId());
-            entity.setContentProvider(cp);
+        if(searchBean != null) {
+	        entity.setPattern(searchBean.getPattern());
+	        entity.setId(searchBean.getKey());
+	
+	        if(searchBean.getContentProviderId()!=null && !searchBean.getContentProviderId().trim().isEmpty()){
+	            ContentProviderEntity cp = new ContentProviderEntity();
+	            cp.setId(searchBean.getContentProviderId());
+	            entity.setContentProvider(cp);
+	        }
         }
         return entity;
     }

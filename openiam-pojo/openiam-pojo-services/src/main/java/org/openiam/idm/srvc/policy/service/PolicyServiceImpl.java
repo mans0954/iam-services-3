@@ -26,6 +26,9 @@ public class PolicyServiceImpl implements PolicyService {
 	
 	@Autowired
 	private PolicyDefParamDAO policyDefParamDao;
+	
+	@Autowired
+	private PolicyDefDAO policyDefDAO;
 
 	@Override
 	@Transactional(readOnly=true)
@@ -36,22 +39,26 @@ public class PolicyServiceImpl implements PolicyService {
 	@Override
 	@Transactional
 	public void save(final PolicyEntity pe) {
-		if (StringUtils.isNotBlank(pe.getId())) {
-			
-			if(CollectionUtils.isNotEmpty(pe.getPolicyAttributes())) {
-				for(final PolicyAttributeEntity attribute : pe.getPolicyAttributes()) {
-					attribute.setPolicy(pe);
+		if(CollectionUtils.isNotEmpty(pe.getPolicyAttributes())) {
+			for(final PolicyAttributeEntity attribute : pe.getPolicyAttributes()) {
+				attribute.setPolicy(pe);
+				if(attribute.getDefParam() != null && StringUtils.isNotBlank(attribute.getDefParam().getId())) {
+					attribute.setDefParam(policyDefParamDao.findById(attribute.getDefParam().getId()));
+				} else {
+					attribute.setDefParam(null);
 				}
 			}
+		}
+		
+		if(pe.getPolicyDef() != null && pe.getPolicyDef().getId() != null) {
+			pe.setPolicyDef(policyDefDAO.findById(pe.getPolicyDef().getId()));
+		} else {
+			pe.setPolicyDef(null);
+		}
+		
+		if (StringUtils.isNotBlank(pe.getId())) {
 			policyDao.merge(pe);
 		} else {
-			if(CollectionUtils.isNotEmpty(pe.getPolicyAttributes())) {
-				for(final PolicyAttributeEntity attribute : pe.getPolicyAttributes()) {
-					attribute.setPolicy(pe);
-				}
-			}
-			
-			// creating new Policy
 			policyDao.save(pe);
 		}
 	}
@@ -69,7 +76,11 @@ public class PolicyServiceImpl implements PolicyService {
         	boolean contains = false;
             for (final PolicyAttributeEntity beanProp : beanProps) {
                 if (StringUtils.equals(dbProp.getId(), beanProp.getId())) {
-                	dbProp.setDefParamId(beanProp.getDefParamId());
+                	if(beanProp.getDefParam() != null) {
+                		dbProp.setDefParam(policyDefParamDao.findById(beanProp.getDefParam().getId()));
+                	} else {
+                		dbProp.setDefParam(null);
+                	}
                 	dbProp.setName(beanProp.getName());
                 	dbProp.setOperation(beanProp.getOperation());
                 	dbProp.setRequired(beanProp.isRequired());
