@@ -13,15 +13,8 @@ import java.util.List;
 @WebService(targetNamespace = "urn:idm.openiam.org/srvc/org/service", name = "OrganizationTypeDataService")
 public interface OrganizationTypeDataService {
 
-	@WebMethod
-	@Deprecated
-	public OrganizationType findById(final @WebParam(name = "id", targetNamespace = "") String id);
-	
 	public OrganizationType findByIdLocalized(final @WebParam(name = "id", targetNamespace = "") String id,
 											  final @WebParam(name = "language", targetNamespace = "") Language language);
-	
-	@Deprecated
-    public List<OrganizationType> findAllowedChildrenByDelegationFilter(final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 	
 	public List<OrganizationType> findAllowedChildrenByDelegationFilterLocalized(final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
 																				 final @WebParam(name = "language", targetNamespace = "") Language language);

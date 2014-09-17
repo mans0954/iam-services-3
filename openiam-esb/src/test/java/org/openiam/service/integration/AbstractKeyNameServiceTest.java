@@ -95,7 +95,7 @@ public abstract class AbstractKeyNameServiceTest<T extends KeyNameDTO, S extends
 	
 	protected Response deleteAndAssert(final T instance) {
 		Response response = delete(instance);
-		Assert.assertTrue(response.isSuccess(), String.format("Could not save element '%s' with ID '%s", instance, instance.getId()));
+		Assert.assertTrue(response.isSuccess(), String.format("Could not delete element '%s' with ID '%s.  Response: %s", instance, instance.getId(), response));
 		return response;
 	}
 	
