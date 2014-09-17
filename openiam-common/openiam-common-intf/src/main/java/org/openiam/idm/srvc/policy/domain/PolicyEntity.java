@@ -14,6 +14,7 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
@@ -28,6 +29,7 @@ import org.hibernate.annotations.GenericGenerator;
 import org.openiam.base.domain.AbstractKeyNameEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.policy.dto.Policy;
+import org.openiam.idm.srvc.res.domain.ResourceEntity;
 
 @Entity
 @Table(name = "POLICY")
@@ -43,9 +45,10 @@ public class PolicyEntity extends AbstractKeyNameEntity {
      *
      */
     private static final long serialVersionUID = 1L;
-
-	@Column(name = "POLICY_DEF_ID", length = 32)
-	private String policyDefId;
+	
+	@ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+    @JoinColumn(name="POLICY_DEF_ID", referencedColumnName = "POLICY_DEF_ID", insertable = true, updatable = true, nullable=true)
+	private PolicyDefEntity policyDef;
 
 	@Column(name = "DESCRIPTION", length = 255)
 	private String description;
@@ -151,16 +154,15 @@ public class PolicyEntity extends AbstractKeyNameEntity {
         return null;
     }
 
+    public PolicyDefEntity getPolicyDef() {
+		return policyDef;
+	}
 
-    public String getPolicyDefId() {
-        return policyDefId;
-    }
+	public void setPolicyDef(PolicyDefEntity policyDef) {
+		this.policyDef = policyDef;
+	}
 
-    public void setPolicyDefId(String policyDefId) {
-        this.policyDefId = policyDefId;
-    }
-
-    public String getRule() {
+	public String getRule() {
         return rule;
     }
 
@@ -208,7 +210,7 @@ public class PolicyEntity extends AbstractKeyNameEntity {
 		result = prime * result
 				+ ((lastUpdatedBy == null) ? 0 : lastUpdatedBy.hashCode());
 		result = prime * result
-				+ ((policyDefId == null) ? 0 : policyDefId.hashCode());
+				+ ((policyDef == null) ? 0 : policyDef.hashCode());
 		result = prime * result + ((rule == null) ? 0 : rule.hashCode());
 		result = prime * result
 				+ ((ruleSrcUrl == null) ? 0 : ruleSrcUrl.hashCode());
@@ -255,10 +257,10 @@ public class PolicyEntity extends AbstractKeyNameEntity {
 				return false;
 		} else if (!lastUpdatedBy.equals(other.lastUpdatedBy))
 			return false;
-		if (policyDefId == null) {
-			if (other.policyDefId != null)
+		if (policyDef == null) {
+			if (other.policyDef != null)
 				return false;
-		} else if (!policyDefId.equals(other.policyDefId))
+		} else if (!policyDef.equals(other.policyDef))
 			return false;
 		if (rule == null) {
 			if (other.rule != null)
@@ -281,8 +283,8 @@ public class PolicyEntity extends AbstractKeyNameEntity {
 	@Override
 	public String toString() {
 		return String
-				.format("PolicyEntity [policyDefId=%s, description=%s, status=%s, createDate=%s, createdBy=%s, lastUpdate=%s, lastUpdatedBy=%s, rule=%s, ruleSrcUrl=%s, enablement=%s, toString()=%s]",
-						policyDefId, description, status, createDate,
+				.format("PolicyEntity [policyDef=%s, description=%s, status=%s, createDate=%s, createdBy=%s, lastUpdate=%s, lastUpdatedBy=%s, rule=%s, ruleSrcUrl=%s, enablement=%s, toString()=%s]",
+						policyDef, description, status, createDate,
 						createdBy, lastUpdate, lastUpdatedBy, rule, ruleSrcUrl,
 						enablement, super.toString());
 	}

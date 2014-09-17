@@ -586,9 +586,12 @@
 		</field-exclude>
 	</mapping>
 	<mapping>
-		<class-a>org.openiam.idm.srvc.policy.domain.PolicyDefParamEntity
-		</class-a>
+		<class-a>org.openiam.idm.srvc.policy.domain.PolicyDefParamEntity</class-a>
 		<class-b>org.openiam.idm.srvc.policy.dto.PolicyDefParam</class-b>
+		<field>
+			<a>policyDef.id</a>
+			<b>policyDefId</b>
+		</field>
 		<field-exclude>
 			<a>policyAttributes</a>
 			<b>policyAttributes</b>
@@ -597,6 +600,10 @@
 	<mapping>
 		<class-a>org.openiam.idm.srvc.policy.domain.PolicyEntity</class-a>
 		<class-b>org.openiam.idm.srvc.policy.dto.Policy</class-b>
+		<field>
+			<a>policyDef.id</a>
+			<b>policyDefId</b>
+		</field>
 		<field-exclude>
 			<a>policyAttributes</a>
 			<b>policyAttributes</b>

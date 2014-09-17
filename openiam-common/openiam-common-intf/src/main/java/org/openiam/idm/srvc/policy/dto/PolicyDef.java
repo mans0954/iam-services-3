@@ -9,6 +9,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
+import org.openiam.base.KeyNameDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.policy.domain.PolicyDefEntity;
 
@@ -17,8 +18,6 @@ import org.openiam.idm.srvc.policy.domain.PolicyDefEntity;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "PolicyDef", propOrder = {
-        "policyDefId",
-        "name",
         "description",
         "policyType",
         "locationType",
@@ -29,14 +28,12 @@ import org.openiam.idm.srvc.policy.domain.PolicyDefEntity;
         "policies"
 })
 @DozerDTOCorrespondence(PolicyDefEntity.class)
-public class PolicyDef implements java.io.Serializable {
+public class PolicyDef extends KeyNameDTO {
 
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	private String policyDefId;
-    private String name;
     private String description;
     private String policyType;
     private String locationType;
@@ -47,26 +44,6 @@ public class PolicyDef implements java.io.Serializable {
     private Set<Policy> policies = new HashSet<Policy>(0);
 
     public PolicyDef() {
-    }
-
-    public PolicyDef(String policyDefId) {
-        this.policyDefId = policyDefId;
-    }
-
-    public String getPolicyDefId() {
-        return this.policyDefId;
-    }
-
-    public void setPolicyDefId(String policyDefId) {
-        this.policyDefId = policyDefId;
-    }
-
-    public String getName() {
-        return this.name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public String getDescription() {
@@ -133,19 +110,78 @@ public class PolicyDef implements java.io.Serializable {
         this.policies = policies;
     }
 
-    @Override
-    public String toString() {
-        return "PolicyDef{" +
-                "policyDefId='" + policyDefId + '\'' +
-                ", name='" + name + '\'' +
-                ", description='" + description + '\'' +
-                ", policyType='" + policyType + '\'' +
-                ", locationType='" + locationType + '\'' +
-                ", policyRule='" + policyRule + '\'' +
-                ", policyHandler='" + policyHandler + '\'' +
-                ", policyAdviseHandler='" + policyAdviseHandler + '\'' +
-                ", policyDefParams=" + policyDefParams +
-                ", policies=" + policies +
-                '}';
-    }
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result
+				+ ((description == null) ? 0 : description.hashCode());
+		result = prime * result
+				+ ((locationType == null) ? 0 : locationType.hashCode());
+		result = prime
+				* result
+				+ ((policyAdviseHandler == null) ? 0 : policyAdviseHandler
+						.hashCode());
+		result = prime * result
+				+ ((policyHandler == null) ? 0 : policyHandler.hashCode());
+		result = prime * result
+				+ ((policyRule == null) ? 0 : policyRule.hashCode());
+		result = prime * result
+				+ ((policyType == null) ? 0 : policyType.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		PolicyDef other = (PolicyDef) obj;
+		if (description == null) {
+			if (other.description != null)
+				return false;
+		} else if (!description.equals(other.description))
+			return false;
+		if (locationType == null) {
+			if (other.locationType != null)
+				return false;
+		} else if (!locationType.equals(other.locationType))
+			return false;
+		if (policyAdviseHandler == null) {
+			if (other.policyAdviseHandler != null)
+				return false;
+		} else if (!policyAdviseHandler.equals(other.policyAdviseHandler))
+			return false;
+		if (policyHandler == null) {
+			if (other.policyHandler != null)
+				return false;
+		} else if (!policyHandler.equals(other.policyHandler))
+			return false;
+		if (policyRule == null) {
+			if (other.policyRule != null)
+				return false;
+		} else if (!policyRule.equals(other.policyRule))
+			return false;
+		if (policyType == null) {
+			if (other.policyType != null)
+				return false;
+		} else if (!policyType.equals(other.policyType))
+			return false;
+		return true;
+	}
+
+	@Override
+	public String toString() {
+		return "PolicyDef [description=" + description + ", policyType="
+				+ policyType + ", locationType=" + locationType
+				+ ", policyRule=" + policyRule + ", policyHandler="
+				+ policyHandler + ", policyAdviseHandler="
+				+ policyAdviseHandler + ", toString()=" + super.toString()
+				+ "]";
+	}
+
+    
 }

@@ -191,6 +191,10 @@
 			<a>policy.id</a>
 			<b>policyId</b>
 		</field>
+		<field>
+			<a>defParam.id</a>
+			<b>defParamId</b>
+		</field>
 	</mapping>
 	<mapping>
 		<class-a>org.openiam.idm.srvc.policy.domain.PolicyObjectAssocEntity

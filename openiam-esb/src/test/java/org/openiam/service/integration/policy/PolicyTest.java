@@ -59,7 +59,7 @@ public class PolicyTest extends AbstractKeyNameServiceTest<Policy, PolicySearchB
 	@Override
 	protected Policy newInstance() {
 		final Policy policy = new Policy();
-		policy.setPolicyDefId(policyAttrList.get(0).getDefParamId());
+		policy.setPolicyDefId(policyAttrList.get(0).getId());
 		return policy;
 	}
 
@@ -94,44 +94,58 @@ public class PolicyTest extends AbstractKeyNameServiceTest<Policy, PolicySearchB
 		Policy instance = key.getDto();
 		PolicySearchBean searchBean = key.getSearchBean();
 		
-		for(final PolicyDefParam param : policyAttrList) {
-			final PolicyAttribute attribute = new PolicyAttribute();
-			attribute.setDefParamId(param.getDefParamId());
-			attribute.setPolicyId(instance.getId());
-			attribute.setName(getRandomName());
-			attribute.setValue1(getRandomName());
-			attribute.setValue2(getRandomName());
-			attribute.setRule(getRandomName());
-			instance.addPolicyAttribute(attribute);
+		for(int i = 0; i < policyAttrList.size(); i++) {
+			addAttribute(policyAttrList.get(i), instance);
 		}
-		saveAndAssert(instance);
-		instance = get(instance.getId());
-		Policy instance2 = get(instance.getId());
-		Assert.assertTrue(CollectionUtils.isNotEmpty(instance.getPolicyAttributes()), String.format("Empty attributes for %s", instance));
-		Assert.assertEquals(instance.getPolicyAttributes(), instance2.getPolicyAttributes());
+		instance = assertSave(instance);
 		
-		final Set<PolicyAttribute> newAttributeList = new HashSet<>();
-		final Iterator<PolicyAttribute> it = instance.getPolicyAttributes().iterator();
-		int i = 0;
-		while(it.hasNext()) {
-			final PolicyAttribute attribute = it.next();
-			if(i++ < instance.getPolicyAttributes().size() / 2) {
-				newAttributeList.add(attribute);
+		/* remove half */
+		Set<PolicyAttribute> policyAttributes = new HashSet<>();
+		int idx = 0;
+		for(final PolicyAttribute attribute : instance.getPolicyAttributes()) {
+			policyAttributes.add(attribute);
+			if(idx++ > instance.getPolicyAttributes().size()) {
+				break;
 			}
 		}
-		instance.setPolicyAttributes(newAttributeList);
-		saveAndAssert(instance);
-		instance = get(instance.getId());
-		instance2 = get(instance.getId());
-		Assert.assertTrue(CollectionUtils.isNotEmpty(instance.getPolicyAttributes()), String.format("Empty attributes for %s", instance));
-		Assert.assertEquals(instance.getPolicyAttributes(), instance2.getPolicyAttributes());
+		instance.setPolicyAttributes(policyAttributes);
+		instance = assertSave(instance);
 		
 		instance.setPolicyAttributes(null);
-		saveAndAssert(instance);
-		instance = get(instance.getId());
-		instance2 = get(instance.getId());
-		Assert.assertTrue(CollectionUtils.isNotEmpty(instance.getPolicyAttributes()), String.format("Empty attributes for %s", instance));
-		Assert.assertEquals(instance.getPolicyAttributes(), instance2.getPolicyAttributes());
+		for(int i = 0; i < policyAttrList.size(); i++) {
+			addAttribute(policyAttrList.get(i), instance);
+		}
+		instance = assertSave(instance);
+		
+		instance.setPolicyAttributes(null);
+		instance = assertSave(instance);
 		return new ClusterKey<Policy, PolicySearchBean>(instance, searchBean);
+	}
+	
+	public Policy assertSave(final Policy instance) {
+		final Response wsResponse = super.saveAndAssert(instance);
+		final String id = (String)wsResponse.getResponseValue();
+		Policy instance1 = get(id);
+		Policy instance2 = get(id);
+		if(CollectionUtils.isEmpty(instance.getPolicyAttributes())) {
+			Assert.assertTrue(CollectionUtils.isEmpty(instance1.getPolicyAttributes()));
+			Assert.assertTrue(CollectionUtils.isEmpty(instance2.getPolicyAttributes()));
+		} else {
+			Assert.assertTrue(CollectionUtils.isNotEmpty(instance1.getPolicyAttributes()), String.format("Empty attributes for %s", instance1));
+			Assert.assertTrue(CollectionUtils.isNotEmpty(instance2.getPolicyAttributes()), String.format("Empty attributes for %s", instance2));
+			Assert.assertEquals(CollectionUtils.size(instance.getPolicyAttributes()), CollectionUtils.size(instance2.getPolicyAttributes()));
+		}
+		return instance2;
+	}
+	
+	private void addAttribute(final PolicyDefParam param, final Policy instance) {
+		final PolicyAttribute attribute = new PolicyAttribute();
+		attribute.setDefParamId(param.getId());
+		attribute.setPolicyId(instance.getId());
+		attribute.setName(getRandomName());
+		attribute.setValue1(getRandomName());
+		attribute.setValue2(getRandomName());
+		attribute.setRule(getRandomName());
+		instance.addPolicyAttribute(attribute);
 	}
 }

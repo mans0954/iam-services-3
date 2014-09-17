@@ -5,6 +5,7 @@ import javax.persistence.AttributeOverrides;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
@@ -43,8 +44,10 @@ public class PolicyAttributeEntity extends AbstractKeyNameEntity {
     @JoinColumn(name = "POLICY_ID", referencedColumnName = "POLICY_ID", insertable = true, updatable = false)
     private PolicyEntity policy;
 	
-	@Column(name = "DEF_PARAM_ID")
-	private String defParamId;
+	@ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+    @JoinColumn(name="DEF_PARAM_ID", referencedColumnName = "DEF_PARAM_ID", insertable = true, updatable = true, nullable=true)
+	private PolicyDefParamEntity defParam;
+	
 	@Column(name = "OPERATION", length = 20)
 	private String operation;
 	@Column(name = "VALUE1", length = 4096)
@@ -102,15 +105,15 @@ public class PolicyAttributeEntity extends AbstractKeyNameEntity {
         this.value2 = value2;
     }
 
-    public String getDefParamId() {
-        return defParamId;
-    }
+    public PolicyDefParamEntity getDefParam() {
+		return defParam;
+	}
 
-    public void setDefParamId(String defParamId) {
-        this.defParamId = defParamId;
-    }
+	public void setDefParam(PolicyDefParamEntity defParam) {
+		this.defParam = defParam;
+	}
 
-    public String getRule() {
+	public String getRule() {
         return rule;
     }
 
@@ -123,7 +126,7 @@ public class PolicyAttributeEntity extends AbstractKeyNameEntity {
 		final int prime = 31;
 		int result = super.hashCode();
 		result = prime * result
-				+ ((defParamId == null) ? 0 : defParamId.hashCode());
+				+ ((defParam == null) ? 0 : defParam.hashCode());
 		result = prime * result
 				+ ((operation == null) ? 0 : operation.hashCode());
 		result = prime * result + ((policy == null) ? 0 : policy.hashCode());
@@ -143,10 +146,10 @@ public class PolicyAttributeEntity extends AbstractKeyNameEntity {
 		if (getClass() != obj.getClass())
 			return false;
 		PolicyAttributeEntity other = (PolicyAttributeEntity) obj;
-		if (defParamId == null) {
-			if (other.defParamId != null)
+		if (defParam == null) {
+			if (other.defParam != null)
 				return false;
-		} else if (!defParamId.equals(other.defParamId))
+		} else if (!defParam.equals(other.defParam))
 			return false;
 		if (operation == null) {
 			if (other.operation != null)
@@ -181,8 +184,8 @@ public class PolicyAttributeEntity extends AbstractKeyNameEntity {
 	@Override
 	public String toString() {
 		return String
-				.format("PolicyAttributeEntity [policy=%s, defParamId=%s, operation=%s, value1=%s, value2=%s, required=%s, rule=%s]",
-						policy, defParamId, operation, value1, value2,
+				.format("PolicyAttributeEntity [policy=%s, defParam=%s, operation=%s, value1=%s, value2=%s, required=%s, rule=%s]",
+						policy, defParam, operation, value1, value2,
 						required, rule);
 	}
 

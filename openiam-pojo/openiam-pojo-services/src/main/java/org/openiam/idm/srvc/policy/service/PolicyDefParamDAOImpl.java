@@ -27,30 +27,21 @@ public class PolicyDefParamDAOImpl extends
 	@SuppressWarnings("unchecked")
 	public List<PolicyDefParamEntity> findPolicyDefParamByGroup(String defId,
 			String group) {
-		try {
-			Criteria cr = this.getCriteria();
-			if (group != null) {
-				cr.add(Restrictions.and(Restrictions.eq("paramGroup", group),
-						Restrictions.eq("policyDefId", defId)));
-			} else {
-				cr.add(
-
-				Restrictions.eq("policyDefId", defId));
-			}
-			List<PolicyDefParamEntity> result = (List<PolicyDefParamEntity>) cr
-					.list();
-			if (result == null || result.size() == 0)
-				return null;
-			return result;
-		} catch (HibernateException re) {
-			log.error("findPolicyDefParamByGroup failed", re);
-			throw re;
+		Criteria cr = this.getCriteria();
+		if (group != null) {
+			cr.add(Restrictions.and(Restrictions.eq("paramGroup", group), Restrictions.eq("policyDef.id", defId)));
+		} else {
+			cr.add(Restrictions.eq("policyDef.id", defId));
 		}
+		List<PolicyDefParamEntity> result = (List<PolicyDefParamEntity>) cr.list();
+		if (result == null || result.size() == 0)
+			return null;
+		return result;
 	}
 
 	@Override
 	protected String getPKfieldName() {
-		return "defParamId";
+		return "id";
 	}
 
 }

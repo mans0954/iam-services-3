@@ -8,6 +8,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
+import org.openiam.base.KeyNameDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.policy.domain.PolicyDefParamEntity;
 
@@ -16,9 +17,7 @@ import org.openiam.idm.srvc.policy.domain.PolicyDefParamEntity;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "PolicyDefParam", propOrder = {
-        "defParamId",
         "policyDefId",
-        "name",
         "description",
         "operation",
         "value1",
@@ -29,15 +28,13 @@ import org.openiam.idm.srvc.policy.domain.PolicyDefParamEntity;
         "paramGroup"
 })
 @DozerDTOCorrespondence(PolicyDefParamEntity.class)
-public class PolicyDefParam implements java.io.Serializable {
+public class PolicyDefParam extends KeyNameDTO {
 
     /**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	private String defParamId;
     private String policyDefId;
-    private String name;
     private String description;
     private String operation;
     private String value1;
@@ -49,27 +46,6 @@ public class PolicyDefParam implements java.io.Serializable {
 
 
     public PolicyDefParam() {
-    }
-
-    public PolicyDefParam(String defParamId) {
-        this.defParamId = defParamId;
-    }
-
-    public String getDefParamId() {
-        return this.defParamId;
-    }
-
-    public void setDefParamId(String defParamId) {
-        this.defParamId = defParamId;
-    }
-
-
-    public String getName() {
-        return this.name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public String getDescription() {
@@ -145,20 +121,96 @@ public class PolicyDefParam implements java.io.Serializable {
         this.handlerLanguage = handlerLanguage;
     }
 
-    @Override
-    public String toString() {
-        return "PolicyDefParam{" +
-                "defParamId='" + defParamId + '\'' +
-                ", policyDefId='" + policyDefId + '\'' +
-                ", name='" + name + '\'' +
-                ", description='" + description + '\'' +
-                ", operation='" + operation + '\'' +
-                ", value1='" + value1 + '\'' +
-                ", value2='" + value2 + '\'' +
-                ", repeats=" + repeats +
-                ", policyParamHandler='" + policyParamHandler + '\'' +
-                ", handlerLanguage='" + handlerLanguage + '\'' +
-                ", paramGroup='" + paramGroup + 
-                '}';
-    }
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result
+				+ ((description == null) ? 0 : description.hashCode());
+		result = prime * result
+				+ ((handlerLanguage == null) ? 0 : handlerLanguage.hashCode());
+		result = prime * result
+				+ ((operation == null) ? 0 : operation.hashCode());
+		result = prime * result
+				+ ((paramGroup == null) ? 0 : paramGroup.hashCode());
+		result = prime * result
+				+ ((policyDefId == null) ? 0 : policyDefId.hashCode());
+		result = prime
+				* result
+				+ ((policyParamHandler == null) ? 0 : policyParamHandler
+						.hashCode());
+		result = prime * result + ((repeats == null) ? 0 : repeats.hashCode());
+		result = prime * result + ((value1 == null) ? 0 : value1.hashCode());
+		result = prime * result + ((value2 == null) ? 0 : value2.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		PolicyDefParam other = (PolicyDefParam) obj;
+		if (description == null) {
+			if (other.description != null)
+				return false;
+		} else if (!description.equals(other.description))
+			return false;
+		if (handlerLanguage == null) {
+			if (other.handlerLanguage != null)
+				return false;
+		} else if (!handlerLanguage.equals(other.handlerLanguage))
+			return false;
+		if (operation == null) {
+			if (other.operation != null)
+				return false;
+		} else if (!operation.equals(other.operation))
+			return false;
+		if (paramGroup == null) {
+			if (other.paramGroup != null)
+				return false;
+		} else if (!paramGroup.equals(other.paramGroup))
+			return false;
+		if (policyDefId == null) {
+			if (other.policyDefId != null)
+				return false;
+		} else if (!policyDefId.equals(other.policyDefId))
+			return false;
+		if (policyParamHandler == null) {
+			if (other.policyParamHandler != null)
+				return false;
+		} else if (!policyParamHandler.equals(other.policyParamHandler))
+			return false;
+		if (repeats == null) {
+			if (other.repeats != null)
+				return false;
+		} else if (!repeats.equals(other.repeats))
+			return false;
+		if (value1 == null) {
+			if (other.value1 != null)
+				return false;
+		} else if (!value1.equals(other.value1))
+			return false;
+		if (value2 == null) {
+			if (other.value2 != null)
+				return false;
+		} else if (!value2.equals(other.value2))
+			return false;
+		return true;
+	}
+
+	@Override
+	public String toString() {
+		return "PolicyDefParam [policyDefId=" + policyDefId + ", description="
+				+ description + ", operation=" + operation + ", value1="
+				+ value1 + ", value2=" + value2 + ", repeats=" + repeats
+				+ ", policyParamHandler=" + policyParamHandler
+				+ ", handlerLanguage=" + handlerLanguage + ", paramGroup="
+				+ paramGroup + ", toString()=" + super.toString() + "]";
+	}
+
+    
 }

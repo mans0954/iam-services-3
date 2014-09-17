@@ -3,6 +3,9 @@ package org.openiam.idm.srvc.policy.domain;
 
 import java.util.HashSet;
 import java.util.Set;
+
+import javax.persistence.AttributeOverrides;
+import javax.persistence.AttributeOverride;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -10,12 +13,14 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
+import org.openiam.base.domain.AbstractKeyNameEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.policy.dto.PolicyDefParam;
 
@@ -26,21 +31,17 @@ import org.openiam.idm.srvc.policy.dto.PolicyDefParam;
 @Table(name = "POLICY_DEF_PARAM")
 @DozerDTOCorrespondence(PolicyDefParam.class)
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class PolicyDefParamEntity implements java.io.Serializable {
+@AttributeOverrides(value={
+	@AttributeOverride(name = "id", column = @Column(name = "DEF_PARAM_ID", length = 32)),
+	@AttributeOverride(name = "name", column = @Column(name = "NAME", length = 60))
+})
+public class PolicyDefParamEntity extends AbstractKeyNameEntity {
 
 	private static final long serialVersionUID = 1L;
 
-	@Id
-	@GeneratedValue(generator = "system-uuid")
-	@GenericGenerator(name = "system-uuid", strategy = "uuid")
-	@Column(name = "DEF_PARAM_ID", length = 32)
-	private String defParamId;
-
-    @Column(name = "POLICY_DEF_ID", length = 32)
-    private String policyDefId;
-
-	@Column(name = "NAME", length = 60)
-	private String name;
+	@ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+    @JoinColumn(name="POLICY_DEF_ID", referencedColumnName = "POLICY_DEF_ID", insertable = true, updatable = true, nullable=true)
+	private PolicyDefEntity policyDef;
 
 	@Column(name = "DESCRIPTION", length = 255)
     private String description;
@@ -65,31 +66,14 @@ public class PolicyDefParamEntity implements java.io.Serializable {
 
 	@Column(name = "PARAM_GROUP", length = 20)
     private String paramGroup;
+	
+	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy="defParam", orphanRemoval=true)
+	//@JoinColumn(name = "POLICY_DEF_ID", insertable = false, updatable = false)
+    private Set<PolicyAttributeEntity> attributes;
 
 
 	public PolicyDefParamEntity() {
 	}
-
-    public PolicyDefParamEntity(String defParamId) {
-        this.defParamId = defParamId;
-    }
-
-    public String getDefParamId() {
-        return this.defParamId;
-    }
-
-    public void setDefParamId(String defParamId) {
-        this.defParamId = defParamId;
-    }
-
-
-    public String getName() {
-        return this.name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
 
     public String getDescription() {
         return this.description;
@@ -149,15 +133,15 @@ public class PolicyDefParamEntity implements java.io.Serializable {
         this.paramGroup = paramGroup;
     }
 
-    public String getPolicyDefId() {
-        return policyDefId;
-    }
+    public PolicyDefEntity getPolicyDef() {
+		return policyDef;
+	}
 
-    public void setPolicyDefId(String policyDefId) {
-        this.policyDefId = policyDefId;
-    }
+	public void setPolicyDef(PolicyDefEntity policyDef) {
+		this.policyDef = policyDef;
+	}
 
-    public String getHandlerLanguage() {
+	public String getHandlerLanguage() {
         return handlerLanguage;
     }
 
@@ -165,20 +149,104 @@ public class PolicyDefParamEntity implements java.io.Serializable {
         this.handlerLanguage = handlerLanguage;
     }
 
-    @Override
-    public String toString() {
-        return "PolicyDefParam{" +
-                "defParamId='" + defParamId + '\'' +
-                ", policyDefId='" + policyDefId + '\'' +
-                ", name='" + name + '\'' +
-                ", description='" + description + '\'' +
-                ", operation='" + operation + '\'' +
-                ", value1='" + value1 + '\'' +
-                ", value2='" + value2 + '\'' +
-                ", repeats=" + repeats +
-                ", policyParamHandler='" + policyParamHandler + '\'' +
-                ", handlerLanguage='" + handlerLanguage + '\'' +
-                ", paramGroup='" + paramGroup + 
-                '}';
-    }
+	public Set<PolicyAttributeEntity> getAttributes() {
+		return attributes;
+	}
+
+	public void setAttributes(Set<PolicyAttributeEntity> attributes) {
+		this.attributes = attributes;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result
+				+ ((description == null) ? 0 : description.hashCode());
+		result = prime * result
+				+ ((handlerLanguage == null) ? 0 : handlerLanguage.hashCode());
+		result = prime * result
+				+ ((operation == null) ? 0 : operation.hashCode());
+		result = prime * result
+				+ ((paramGroup == null) ? 0 : paramGroup.hashCode());
+		result = prime * result
+				+ ((policyDef == null) ? 0 : policyDef.hashCode());
+		result = prime
+				* result
+				+ ((policyParamHandler == null) ? 0 : policyParamHandler
+						.hashCode());
+		result = prime * result + ((repeats == null) ? 0 : repeats.hashCode());
+		result = prime * result + ((value1 == null) ? 0 : value1.hashCode());
+		result = prime * result + ((value2 == null) ? 0 : value2.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		PolicyDefParamEntity other = (PolicyDefParamEntity) obj;
+		if (description == null) {
+			if (other.description != null)
+				return false;
+		} else if (!description.equals(other.description))
+			return false;
+		if (handlerLanguage == null) {
+			if (other.handlerLanguage != null)
+				return false;
+		} else if (!handlerLanguage.equals(other.handlerLanguage))
+			return false;
+		if (operation == null) {
+			if (other.operation != null)
+				return false;
+		} else if (!operation.equals(other.operation))
+			return false;
+		if (paramGroup == null) {
+			if (other.paramGroup != null)
+				return false;
+		} else if (!paramGroup.equals(other.paramGroup))
+			return false;
+		if (policyDef == null) {
+			if (other.policyDef != null)
+				return false;
+		} else if (!policyDef.equals(other.policyDef))
+			return false;
+		if (policyParamHandler == null) {
+			if (other.policyParamHandler != null)
+				return false;
+		} else if (!policyParamHandler.equals(other.policyParamHandler))
+			return false;
+		if (repeats == null) {
+			if (other.repeats != null)
+				return false;
+		} else if (!repeats.equals(other.repeats))
+			return false;
+		if (value1 == null) {
+			if (other.value1 != null)
+				return false;
+		} else if (!value1.equals(other.value1))
+			return false;
+		if (value2 == null) {
+			if (other.value2 != null)
+				return false;
+		} else if (!value2.equals(other.value2))
+			return false;
+		return true;
+	}
+
+	@Override
+	public String toString() {
+		return "PolicyDefParamEntity [policyDef=" + policyDef
+				+ ", description=" + description + ", operation=" + operation
+				+ ", value1=" + value1 + ", value2=" + value2 + ", repeats="
+				+ repeats + ", policyParamHandler=" + policyParamHandler
+				+ ", handlerLanguage=" + handlerLanguage + ", paramGroup="
+				+ paramGroup + ", toString()=" + super.toString() + "]";
+	}
+
+	
 }

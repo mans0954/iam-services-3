@@ -32,8 +32,4 @@ import org.openiam.idm.srvc.policy.domain.PolicyDefEntity;
  */
 public interface PolicyDefDAO extends BaseDao<PolicyDefEntity, String> {
 
-
-    public List<String> findAllPolicyTypes();
-
-    public List<PolicyDefEntity> findAllPolicyDef();
 }
