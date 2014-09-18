@@ -59,7 +59,7 @@ public class LoginEntity implements java.io.Serializable {
     private String managedSysId;
 
 //    @Field(name = "userId", analyze = Analyze.NO, store = Store.YES)
-    @ElasticsearchField(name = "userId", store = ElasticsearchStore.Yes, index = Index.Not_Analyzed)
+    @ElasticsearchField(name = "userId", store = ElasticsearchStore.Yes, index = Index.Not_Analyzed, mapToParent=true)
     @Column(name="USER_ID",length=32)
     protected String userId;
 

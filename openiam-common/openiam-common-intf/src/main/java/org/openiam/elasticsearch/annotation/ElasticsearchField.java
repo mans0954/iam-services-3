@@ -42,6 +42,7 @@ public @interface ElasticsearchField {
      */
     String searchAnalyzerName() default "";
 
+    ElasticsearchFieldBridge bridge() default @ElasticsearchFieldBridge;
 
-
+    boolean mapToParent() default false;
 }

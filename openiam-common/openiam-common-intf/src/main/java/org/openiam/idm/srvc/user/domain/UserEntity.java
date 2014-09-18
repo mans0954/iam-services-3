@@ -48,7 +48,7 @@ import java.util.Map.Entry;
 @Internationalized
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @ElasticsearchIndex(indexName = ESIndexName.USERS)
-@ElasticsearchMapping(typeName = ESIndexType.USER, source = ElasticsearchStore.No)
+@ElasticsearchMapping(typeName = ESIndexType.USER)
 public class UserEntity {
     @Id
     @GeneratedValue(generator = "system-uuid")

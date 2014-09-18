@@ -1,6 +1,7 @@
 package org.openiam.elasticsearch.model;
 
 import org.apache.commons.lang.StringUtils;
+import org.openiam.elasticsearch.bridge.ElasticsearchBrigde;
 import org.openiam.elasticsearch.constants.ElasticsearchStore;
 import org.openiam.elasticsearch.constants.ElasticsearchType;
 import org.openiam.elasticsearch.constants.Index;
@@ -21,14 +22,16 @@ public class ElasticsearchFieldMetadata {
     private String indexAnalyzerName;
     private String searchAnalyzerName;
     private Field field;
+    private ElasticsearchBrigde bridge;
+    private boolean mapToParent;
 
     public ElasticsearchFieldMetadata(boolean isId, Field field, String name, ElasticsearchType type,
                                       ElasticsearchStore store, Index index){
-        this(isId, field, name, type, store, index, null, null, null);
+        this(isId, field, name, type, store, index, null, null, null, null, false);
     }
     public ElasticsearchFieldMetadata(boolean isId, Field field, String name, ElasticsearchType type,
                                       ElasticsearchStore store, Index index, String analyzerName,
-                                      String indexAnalyzerName, String searchAnalyzerName) {
+                                      String indexAnalyzerName, String searchAnalyzerName, ElasticsearchBrigde bridge, boolean mapToParent) {
         this.isId = isId;
         this.field = field;
         this.name = name;
@@ -41,6 +44,9 @@ public class ElasticsearchFieldMetadata {
             this.indexAnalyzerName = indexAnalyzerName;
         if(StringUtils.isNotBlank(searchAnalyzerName))
             this.searchAnalyzerName = searchAnalyzerName;
+
+        this.bridge = bridge;
+        this.mapToParent=mapToParent;
     }
 
     public boolean isId() {
@@ -113,5 +119,21 @@ public class ElasticsearchFieldMetadata {
 
     public void setField(Field field) {
         this.field = field;
+    }
+
+    public ElasticsearchBrigde getBridge() {
+        return bridge;
+    }
+
+    public void setBridge(ElasticsearchBrigde bridge) {
+        this.bridge = bridge;
+    }
+
+    public boolean isMapToParent() {
+        return mapToParent;
+    }
+
+    public void setMapToParent(boolean mapToParent) {
+        this.mapToParent = mapToParent;
     }
 }

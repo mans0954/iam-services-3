@@ -22,6 +22,7 @@ import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.openiam.elasticsearch.annotation.*;
+import org.openiam.elasticsearch.bridge.ElasticsearchBrigde;
 import org.openiam.elasticsearch.constants.ElasticsearchStore;
 import org.openiam.elasticsearch.constants.ElasticsearchType;
 import org.openiam.elasticsearch.constants.Index;
@@ -55,12 +56,18 @@ public class ElasticsearchHelper {
         if(CollectionUtils.isNotEmpty(entityList)){
             BulkRequestBuilder bulkRequest = getClient().prepareBulk();
 
+            StringBuilder sb = new StringBuilder();
+            sb.append(String.format("\n=== Bulk Index Request for %s entity:\n", clazz.getSimpleName()));
             for(T entity: entityList){
                 IndexRequestBuilder request = prepareIndexRequest(entity, clazz);
                 if(request!=null){
+                    sb.append("\t").append(request).append("\n");
                     bulkRequest.add(request);
                 }
             }
+
+            logger.warn(sb.toString());
+
             BulkResponse bulkResponse = bulkRequest.execute().actionGet();
             if (bulkResponse.hasFailures()) {
                 throw new Exception("Can't index");
@@ -72,11 +79,12 @@ public class ElasticsearchHelper {
     private <T> IndexRequestBuilder prepareIndexRequest(T entity, Class<T> clazz) throws Exception{
         ElasticsearchMetadata metadata = indexeMetadataMap.get(clazz.getSimpleName());
         String entityId=null;
+        String parentId=null;
         XContentBuilder builder = XContentFactory.jsonBuilder().startObject();
         for(ElasticsearchFieldMetadata fieldMetadata :metadata.getIndexedFields()){
             Field f = fieldMetadata.getField();
             f.setAccessible(true);
-            Object value =f.get(entity);
+            Object value = (fieldMetadata.getBridge()!=null) ? fieldMetadata.getBridge().objectToString(f.get(entity)) : f.get(entity);
 
             if(fieldMetadata.isId()){
                 entityId = (String)value;
@@ -87,10 +95,21 @@ public class ElasticsearchHelper {
 
             }
             builder.field(fieldMetadata.getName(), value);
+
+            if(fieldMetadata.isMapToParent()){
+                parentId = (String)value;
+//                builder.field("_parentId", value);
+            }
+
         }
         builder.endObject();
         IndexRequestBuilder request = getClient().prepareIndex(metadata.getIndex().indexName(), metadata.getTypeMapping().typeName(), entityId)
                                                     .setSource(builder);
+
+        if(StringUtils.isNotBlank(parentId)){
+            request.setParent(parentId);
+        }
+
         return request;
     }
 
@@ -158,8 +177,19 @@ public class ElasticsearchHelper {
                     annotation =  getFieldAnnotation(field, ElasticsearchField.class);
                     if(annotation!=null){
                         ElasticsearchField esAnnotation = (ElasticsearchField)annotation;
+                        Class bridgeClazz = esAnnotation.bridge().impl();
+                        ElasticsearchBrigde bridge = null;
+                        if(void.class.isAssignableFrom(bridgeClazz)){
+                            bridge = null;
+                        } else if(!ElasticsearchBrigde.class.isAssignableFrom(bridgeClazz)){
+                            logger.warn(String.format("Elasticsearch Bridge for fiels %s should implement %s interface", field.getName(), ElasticsearchBrigde.class.getName()));
+                        }else{
+                            bridge = (ElasticsearchBrigde)bridgeClazz.newInstance();
+                        }
+
                         result.addField(new ElasticsearchFieldMetadata(false, field, esAnnotation.name(), esAnnotation.type(), esAnnotation.store(), esAnnotation.index(),
-                                                                       esAnnotation.analyzerName(),esAnnotation.indexAnalyzerName(),esAnnotation.searchAnalyzerName()));
+                                                                       esAnnotation.analyzerName(),esAnnotation.indexAnalyzerName(),esAnnotation.searchAnalyzerName(),
+                                                                       bridge,esAnnotation.mapToParent()));
                     }
                 }
             }
