@@ -1200,8 +1200,8 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             //If identity for resource exists and it's status is 'INACTIVE' user should be deprovisioned from target system
             Set<Resource> inactiveResources = new HashSet<Resource>();
             for (Resource res : resourceSet) {
-                ManagedSysDto mSys = managedSysService.getManagedSysByResource(res.getId());
-                String managedSysId = mSys != null ? mSys.getId() : null;
+                String managedSysId = managedSysDaoService.getManagedSysIdByResource(res.getId(),"ACTIVE");
+
                 if (AttributeOperationEnum.NO_CHANGE.equals(res.getOperation())) { // if not adding resource
                     for (LoginEntity l : userEntity.getPrincipalList()) {
                         if (managedSysId != null && managedSysId.equals(l.getManagedSysId())) {
