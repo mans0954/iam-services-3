@@ -871,6 +871,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 
     @Override
     @Transactional(readOnly = true)
+    @Deprecated
     public List<User> getUsersForResource(final String resourceId, String requesterId, final int from, final int size) {
         final List<UserEntity> entityList = userManager.getUsersForResource(resourceId, requesterId, from, size);
         return userDozerConverter.convertToDTOList(entityList, false);
@@ -904,12 +905,14 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 
     @Override
     @Transactional(readOnly = true)
+    @Deprecated
     public List<User> getUsersForRole(final String roleId, String requesterId, final int from, final int size) {
         final List<UserEntity> entityList = userManager.getUsersForRole(roleId, requesterId, from, size);
         return userDozerConverter.convertToDTOList(entityList, false);
     }
 
     @Override
+    @Deprecated
     public int getNumOfUsersForRole(final String roleId, String requesterId) {
         return userManager.getNumOfUsersForRole(roleId, requesterId);
     }

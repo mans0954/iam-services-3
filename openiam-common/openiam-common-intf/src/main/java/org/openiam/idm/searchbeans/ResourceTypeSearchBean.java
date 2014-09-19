@@ -9,7 +9,16 @@ import javax.xml.bind.annotation.XmlType;
 import org.openiam.idm.srvc.res.dto.ResourceType;
 
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "ResourceTypeSearchBean", propOrder = { "searchable", "description", "provisionResource", "processName" })
+@XmlType(
+		name = "ResourceTypeSearchBean", 
+		propOrder = { 
+				"searchable", 
+				"description", 
+				"provisionResource", 
+				"processName",
+				"supportsHierarchy"
+		}
+)
 public class ResourceTypeSearchBean extends AbstractSearchBean<ResourceType, String> implements
         SearchBean<ResourceType, String>, Serializable {
 
@@ -17,6 +26,7 @@ public class ResourceTypeSearchBean extends AbstractSearchBean<ResourceType, Str
     private String description;
     private Integer provisionResource;
     private String processName;
+    private Boolean supportsHierarchy;
 
     public ResourceTypeSearchBean() {
     }
@@ -52,4 +62,14 @@ public class ResourceTypeSearchBean extends AbstractSearchBean<ResourceType, Str
     public void setProcessName(String processName) {
         this.processName = processName;
     }
+
+	public Boolean getSupportsHierarchy() {
+		return supportsHierarchy;
+	}
+
+	public void setSupportsHierarchy(Boolean supportsHierarchy) {
+		this.supportsHierarchy = supportsHierarchy;
+	}
+    
+    
 }

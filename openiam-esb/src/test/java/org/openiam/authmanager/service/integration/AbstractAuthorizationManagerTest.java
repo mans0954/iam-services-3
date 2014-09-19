@@ -345,7 +345,7 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractTestNGSpr
 	
 	private void checkRoleMembership(final String userId, final String roleId) {
 		final User user = userDataWebService.getUserWithDependent(userId,null, true);
-        final Role role = roleDataWebService.getRole(roleId, null);
+        final Role role = roleDataWebService.getRoleLocalized(roleId, null, null);
 		
 		final List<AuthorizationManagerLoginId> loginIdList = getLoginIdList(user);
 		

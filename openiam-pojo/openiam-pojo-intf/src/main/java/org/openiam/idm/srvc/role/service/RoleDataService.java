@@ -100,6 +100,7 @@ public interface RoleDataService {
     public void removeGroupFromRole(String roleId, String groupId);
 
 
+    @Deprecated
     public List<RoleEntity> getRolesForUser(final String userId, String requesterId, final int from, final int size);
     public int getNumOfRolesForUser(final String userId, String requesterId);
 
@@ -161,10 +162,15 @@ public interface RoleDataService {
 
     public List<RoleEntity> findRolesByAttributeValue(String attrName, String attrValue);
     
+    @Deprecated
     public List<RoleEntity> getRolesForResource(final String resourceId, final String requesterId, final int from, final int size);
+    
+    @Deprecated
     public int getNumOfRolesForResource(final String resourceId, final String requesterId);
     
+    @Deprecated
     public List<RoleEntity> getChildRoles(final String roleId, final String requesterId, final int from, final int size);
+    @Deprecated
     public int getNumOfChildRoles(final String roleId, final String requesterId);
     public void addChildRole(final String roleId, final String childRoleId);
     public void removeChildRole(final String roleId, final String childRoleId);

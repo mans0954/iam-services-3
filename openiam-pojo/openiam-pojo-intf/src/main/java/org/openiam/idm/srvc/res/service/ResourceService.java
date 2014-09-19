@@ -23,13 +23,20 @@ public interface ResourceService {
 	public int count(final ResourceSearchBean searchBean);
 	public List<ResourceEntity> findBeans(final ResourceSearchBean searchBean, final int from, final int size, final LanguageEntity language);
 	public int getNumOfChildResources(final String resourceId);
+	@Deprecated
 	public List<ResourceEntity> getParentResources(final  String resourceId, final int from, final int size);
 	public int getNumOfParentResources(final String resourceId);
 	public List<ResourceEntity> getResourcesForRole(final String roleId, final int from, final int size, final ResourceSearchBean searchBean);
 	public int getNumOfResourceForGroup(final String groupId, final ResourceSearchBean searchBean);
 	public List<ResourceEntity> getResourcesForGroup(final String groupId, final int from, final int size, final ResourceSearchBean searchBean);
+	
+	@Deprecated
 	public int getNumOfResourceForUser(final String userId, final ResourceSearchBean searchBean);
+	
+	@Deprecated
 	public List<ResourceEntity> getResourcesForUser(final String userId, final int from, final int size, final ResourceSearchBean searchBean);
+	
+	@Deprecated
     public List<ResourceEntity> getResourcesForUserByType(String userId, String resourceTypeId, final ResourceSearchBean searchBean);
 
 	public void save(final ResourceTypeEntity entity);
@@ -40,6 +47,7 @@ public interface ResourceService {
     public ResourcePropEntity findResourcePropById(final String id);
 	public void deleteResourceProp(final String id);
 
+	@Deprecated
 	public List<ResourceEntity> getChildResources(final String resourceId, final int from, final int size);
 	
 	public void addChildResource(final String parentResourceId, final String childResourceId);

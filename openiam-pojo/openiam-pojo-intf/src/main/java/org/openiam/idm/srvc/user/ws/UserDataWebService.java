@@ -576,6 +576,7 @@ public interface UserDataWebService {
      *         by the resourceId
      */
     @WebMethod
+    @Deprecated
     public List<User> getUsersForResource(@WebParam(name = "resourceId", targetNamespace = "") final String resourceId,
                                           @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
                                           @WebParam(name = "from", targetNamespace = "") final int from,
@@ -657,6 +658,7 @@ public interface UserDataWebService {
      * @return a Paged List of Users that are direct members of this Role
      */
     @WebMethod
+    @Deprecated
     public List<User> getUsersForRole(@WebParam(name = "roleId", targetNamespace = "") final String roleId,
                                       @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
                                       @WebParam(name = "from", targetNamespace = "") final int from,
@@ -672,6 +674,7 @@ public interface UserDataWebService {
      * @return the number of Users that are direct members of this Role
      */
     @WebMethod
+    @Deprecated
     public int getNumOfUsersForRole(@WebParam(name = "roleId", targetNamespace = "") final String roleId,
                                     @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 

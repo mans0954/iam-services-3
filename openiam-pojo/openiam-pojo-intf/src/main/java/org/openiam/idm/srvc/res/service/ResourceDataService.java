@@ -208,6 +208,7 @@ public interface ResourceDataService {
      * @return
      */
     @WebMethod
+    @Deprecated
     List<Resource> getChildResources(final @WebParam(name = "resourceId", targetNamespace = "") String resourceId,
     								 final @WebParam(name = "deepFlag", targetNamespace = "") Boolean deepFlag,
     								 final @WebParam(name = "from", targetNamespace = "") int from,
@@ -236,6 +237,7 @@ public interface ResourceDataService {
      * @return
      */
     @WebMethod
+    @Deprecated
     List<Resource> getParentResources(final @WebParam(name = "resourceId", targetNamespace = "") String resourceId,
     								  final @WebParam(name = "from", targetNamespace = "") int from,
     								  final @WebParam(name = "size", targetNamespace = "") int size,
@@ -376,6 +378,7 @@ public interface ResourceDataService {
      * @return
      */
     @WebMethod
+    @Deprecated
     int getNumOfResourceForUser(@WebParam(name = "userId", targetNamespace = "") String userId,
 	    @WebParam(name = "searchBean", targetNamespace = "") ResourceSearchBean searchBean);
 
@@ -391,6 +394,7 @@ public interface ResourceDataService {
      * @return
      */
     @WebMethod
+    @Deprecated
     List<Resource> getResourcesForUser(
     		final @WebParam(name = "userId", targetNamespace = "") String userId,
     		final @WebParam(name = "from", targetNamespace = "") int from,
@@ -408,6 +412,7 @@ public interface ResourceDataService {
      * @return
      */
     @WebMethod
+    @Deprecated
     public List<Resource> getResourcesForUserByType(
 	    final @WebParam(name = "userId", targetNamespace = "") String userId,
 	    final @WebParam(name = "resourceTypeId", targetNamespace = "") String resourceTypeId,

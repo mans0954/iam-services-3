@@ -492,24 +492,28 @@ public class RoleDataServiceImpl implements RoleDataService {
 
 	@Override
     @Transactional(readOnly = true)
+	@Deprecated
 	public List<RoleEntity> getRolesForResource(final String resourceId, final String requesterId, final int from, final int size) {
 		return roleDao.getRolesForResource(resourceId, getDelegationFilter(requesterId), from, size);
 	}
 
 	@Override
     @Transactional(readOnly = true)
+	@Deprecated
 	public int getNumOfRolesForResource(final String resourceId, final String requesterId) {
 		return roleDao.getNumOfRolesForResource(resourceId, getDelegationFilter(requesterId));
 	}
 
 	@Override
     @Transactional(readOnly = true)
+	@Deprecated
 	public List<RoleEntity> getChildRoles(final String id, final String requesterId, int from, int size) {
 		return roleDao.getChildRoles(id, getDelegationFilter(requesterId), from, size);
 	}
 
 	@Override
     @Transactional(readOnly = true)
+	@Deprecated
 	public int getNumOfChildRoles(final String id, final String requesterId) {
 		return roleDao.getNumOfChildRoles(id, getDelegationFilter(requesterId));
 	}
@@ -560,6 +564,7 @@ public class RoleDataServiceImpl implements RoleDataService {
 
 	@Override
     @Transactional(readOnly = true)
+	@Deprecated
 	public List<RoleEntity> getRolesForUser(final String userId, final String requesterId, final int from, final int size) {
 		return roleDao.getRolesForUser(userId, getDelegationFilter(requesterId), from, size);
 	}

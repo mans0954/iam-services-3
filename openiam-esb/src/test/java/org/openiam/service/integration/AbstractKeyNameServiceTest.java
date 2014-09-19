@@ -23,9 +23,7 @@ import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations={"classpath:test-integration-environment.xml","classpath:test-esb-integration.xml"})
-public abstract class AbstractKeyNameServiceTest<T extends KeyNameDTO, S extends AbstractKeyNameSearchBean<T, String>> extends AbstractTestNGSpringContextTests {
+public abstract class AbstractKeyNameServiceTest<T extends KeyNameDTO, S extends AbstractKeyNameSearchBean<T, String>> extends AbstractServiceTest {
 
 	protected abstract T newInstance();
 	protected abstract S newSearchBean();
@@ -34,39 +32,10 @@ public abstract class AbstractKeyNameServiceTest<T extends KeyNameDTO, S extends
 	protected abstract T get(final String key);
 	public abstract List<T> find(final S searchBean, final int from, final int size);
 	
-	@Autowired
-	@Qualifier("languageServiceClient")
-	protected LanguageWebService languageServiceClient;
-	
-	protected Language getDefaultLanguage() {
-		final LanguageSearchBean searchBean = new LanguageSearchBean();
-		searchBean.setKey("1");
-		return languageServiceClient.findBeans(searchBean, 0, 1, null).get(0);
-	}
-	
-	protected final Map<String, LanguageMapping> generateRandomLanguageMapping() {
-		Map<String, LanguageMapping> retVal = new HashMap<>();
-		for(final Language language : getAllLanguages()) {
-			final LanguageMapping mapping = new LanguageMapping();
-			mapping.setLanguageId(language.getId());
-			mapping.setValue(getRandomName());
-			retVal.put(language.getId(), mapping);
-		}
-		return retVal;
-	}
-	
-	protected final List<Language> getAllLanguages() {
-		return languageServiceClient.findBeans(null, 0, Integer.MAX_VALUE, null);
-	}
-	
 	protected T createBean() {
 		final T bean = newInstance();
 		bean.setName(getRandomName());
 		return bean;
-	}
-	
-	protected String getRandomName() {
-		return RandomStringUtils.randomAlphanumeric(5);
 	}
 	
 	protected T assertClusteredSave(final S searchBean) throws InterruptedException {

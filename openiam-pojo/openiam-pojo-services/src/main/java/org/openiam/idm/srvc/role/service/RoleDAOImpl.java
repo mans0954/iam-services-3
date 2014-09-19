@@ -35,6 +35,13 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
 
     @Autowired
     private RoleSearchBeanConverter roleSearchBeanConverter;
+    
+    /*
+    @Override
+    protected boolean isCachable() {
+    	return false;
+    }
+    */
 
     @Override
     protected String getPKfieldName() {
@@ -83,10 +90,12 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
             }
 
             if(CollectionUtils.isNotEmpty(roleSearchBean.getParentIdSet())){
+            	//criteria.setCacheable(false); /* buggy with collections */
                 criteria.createAlias("parentRoles", "pr");
                 criteria.add(Restrictions.in("pr.id", roleSearchBean.getParentIdSet()));
             }
             if(CollectionUtils.isNotEmpty(roleSearchBean.getChildIdSet())){
+            	//criteria.setCacheable(false); /* buggy with collections */
                 criteria.createAlias("childRoles", "ch");
                 criteria.add(Restrictions.in("ch.id", roleSearchBean.getChildIdSet()));
             }
@@ -180,12 +189,14 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
 	}
 
 	@Override
+	@Deprecated
 	public int getNumOfRolesForResource(final String resourceId, final Set<String> filter) {
         final Criteria criteria = getEntitlementRolesCriteria(null, null, resourceId, filter).setProjection(rowCount());
         return ((Number)criteria.uniqueResult()).intValue();
 	}
 
 	@Override
+	@Deprecated
 	public List<RoleEntity> getRolesForResource(final String resourceId, final Set<String> filter, final int from, final int size) {
         final Criteria criteria = getEntitlementRolesCriteria(null, null, resourceId, filter);
         return getList(criteria, from, size);
@@ -228,6 +239,7 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
     }
 
 	@Override
+	@Deprecated
 	public List<RoleEntity> getChildRoles(final String roleId, final Set<String> filter, int from, int size) {
 		final Criteria criteria = getChildRolesCriteria(roleId, filter);
 		return  getList(criteria, from, size);
@@ -240,6 +252,7 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
 	}
 
 	@Override
+	@Deprecated
 	public int getNumOfChildRoles(final String roleId, final Set<String> filter) {
         final Criteria criteria =  getChildRolesCriteria(roleId, filter);
                        criteria.setProjection(rowCount());

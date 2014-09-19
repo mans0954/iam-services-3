@@ -377,6 +377,7 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
     }
 
     @Override
+    @Deprecated
     public int getNumOfUsersForRole(final String roleId, DelegationFilterSearchBean delegationFilter) {
         final Criteria criteria = getUsersEntitlementCriteria(null, roleId, null, delegationFilter).setProjection(rowCount());
         return ((Number) criteria.uniqueResult()).intValue();

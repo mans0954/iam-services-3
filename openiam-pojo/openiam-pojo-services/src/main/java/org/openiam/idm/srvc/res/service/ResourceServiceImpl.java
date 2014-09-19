@@ -341,6 +341,7 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     @Transactional(readOnly = true)
+    @Deprecated
     public List<ResourceEntity> getChildResources(String resourceId, int from, int size) {
         final ResourceEntity example = new ResourceEntity();
         final ResourceEntity parent = new ResourceEntity();
@@ -362,6 +363,7 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     @Transactional(readOnly = true)
+    @Deprecated
     public List<ResourceEntity> getParentResources(String resourceId, int from, int size) {
         final ResourceEntity example = new ResourceEntity();
         final ResourceEntity child = new ResourceEntity();
@@ -462,12 +464,14 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     @Transactional(readOnly = true)
+    @Deprecated
     public int getNumOfResourceForUser(String userId, final ResourceSearchBean searchBean) {
         return resourceDao.getNumOfResourcesForUser(userId, searchBean);
     }
 
     @Override
     @Transactional(readOnly = true)
+    @Deprecated
     public List<ResourceEntity> getResourcesForUser(String userId, int from, int size,
                                                     final ResourceSearchBean searchBean) {
         return resourceDao.getResourcesForUser(userId, from, size, searchBean);
@@ -475,6 +479,7 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     @Transactional(readOnly = true)
+    @Deprecated
     public List<ResourceEntity> getResourcesForUserByType(String userId, String resourceTypeId,
                                                           final ResourceSearchBean searchBean) {
         return resourceDao.getResourcesForUserByType(userId, resourceTypeId, searchBean);
