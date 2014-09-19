@@ -8,6 +8,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.dozer.converter.RoleDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
+import org.openiam.idm.searchbeans.MetadataElementSearchBean;
 import org.openiam.idm.searchbeans.RoleSearchBean;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
@@ -32,6 +33,7 @@ import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.srvc.user.util.DelegationFilterHelper;
 import org.openiam.internationalization.LocalizedServiceGet;
+import org.openiam.util.AttributeUtil;
 import org.openiam.validator.EntityValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -254,6 +256,8 @@ public class RoleDataServiceImpl implements RoleDataService {
 				role.setAdminResource(getNewAdminResource(role, requestorId));
 				roleDao.save(role);
 				role.addApproverAssociation(createDefaultApproverAssociations(role, requestorId));
+
+                addRequiredAttributes(role);
 			} else {
 				final RoleEntity dbRole = roleDao.findById(role.getId());
 				if(dbRole != null) {
@@ -275,8 +279,24 @@ public class RoleDataServiceImpl implements RoleDataService {
 			roleDao.merge(role);
 		}
 	}
-	
-	private void mergeAttributes(final RoleEntity bean, final RoleEntity dbObject, final String requestorId) {
+    @Override
+    @Transactional
+    public void addRequiredAttributes(RoleEntity role) {
+        if(role!=null && role.getType()!=null && StringUtils.isNotBlank(role.getType().getId())){
+            MetadataElementSearchBean sb = new MetadataElementSearchBean();
+            sb.addTypeId(role.getType().getId());
+            List<MetadataElementEntity> elementList = metadataElementDAO.getByExample(sb, -1, -1);
+            if(CollectionUtils.isNotEmpty(elementList)){
+                for(MetadataElementEntity element: elementList){
+                    if(element.isRequired()){
+                        roleAttributeDAO.save(AttributeUtil.buildRoleAttribute(role, element));
+                    }
+                }
+            }
+        }
+    }
+
+    private void mergeAttributes(final RoleEntity bean, final RoleEntity dbObject, final String requestorId) {
 		Set<RoleAttributeEntity> beanProps = (bean.getRoleAttributes() != null) ? bean.getRoleAttributes() : new HashSet<RoleAttributeEntity>();
         Set<RoleAttributeEntity> dbProps = (dbObject.getRoleAttributes() != null) ? new HashSet<RoleAttributeEntity>(dbObject.getRoleAttributes()) : new HashSet<RoleAttributeEntity>();
 

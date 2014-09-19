@@ -23,7 +23,8 @@ import java.util.Set;
         "excludeResourceTypes",
         "risk",
         "URL",
-        "metadataType"
+        "metadataType",
+        "coorelatedName"
 })
 public class ResourceSearchBean extends EntitlementsSearchBean<Resource, String> implements SearchBean<Resource, String>, Serializable {
 
@@ -38,8 +39,17 @@ public class ResourceSearchBean extends EntitlementsSearchBean<Resource, String>
     private ResourceRisk risk;
     private String metadataType;
     private String URL;
-	
-	public String getName() {
+	private String coorelatedName;
+
+    public String getCoorelatedName() {
+        return coorelatedName;
+    }
+
+    public void setCoorelatedName(String coorelatedName) {
+        this.coorelatedName = coorelatedName;
+    }
+
+    public String getName() {
 		return name;
 	}
 	

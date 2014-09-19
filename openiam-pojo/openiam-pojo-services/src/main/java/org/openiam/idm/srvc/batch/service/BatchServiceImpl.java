@@ -1,15 +1,9 @@
 package org.openiam.idm.srvc.batch.service;
 
-import java.util.Date;
-import java.util.List;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openiam.base.ws.Response;
-import org.openiam.base.ws.ResponseCode;
-import org.openiam.base.ws.ResponseStatus;
-import org.openiam.exception.BasicDataServiceException;
+import org.openiam.idm.searchbeans.BatchTaskSearchBean;
 import org.openiam.idm.srvc.batch.dao.BatchConfigDAO;
 import org.openiam.idm.srvc.batch.domain.BatchTaskEntity;
 import org.openiam.idm.srvc.batch.thread.BatchTaskGroovyThread;
@@ -27,6 +21,8 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
+
+import java.util.List;
 
 @Service
 public class BatchServiceImpl implements BatchService, ApplicationContextAware {
@@ -54,6 +50,13 @@ public class BatchServiceImpl implements BatchService, ApplicationContextAware {
             int size) {
         return batchDao.getByExample(entity, from, size);
     }
+    @Override
+    @Transactional(readOnly=true)
+    public List<BatchTaskEntity> findBeans(BatchTaskSearchBean searchBean, int from,
+                                           int size) {
+        return batchDao.getByExample(searchBean, from, size);
+    }
+
 
     @Override
     @Transactional(readOnly=true)
