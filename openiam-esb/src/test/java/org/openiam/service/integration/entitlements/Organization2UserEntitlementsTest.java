@@ -1,6 +1,10 @@
 package org.openiam.service.integration.entitlements;
 
+import java.util.List;
+
+import org.apache.commons.collections.CollectionUtils;
 import org.openiam.base.ws.Response;
+import org.openiam.idm.searchbeans.UserSearchBean;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.service.integration.AbstractEntitlementsTest;
@@ -39,14 +43,16 @@ public class Organization2UserEntitlementsTest extends AbstractEntitlementsTest<
 
 	@Override
 	protected boolean isChildInParent(Organization parent, User child) {
-		// TODO Auto-generated method stub
-		return false;
+		final List<Organization> organizations = organizationServiceClient.getOrganizationsForUserLocalized(child.getId(), null, 0, 100, getDefaultLanguage());
+		return (CollectionUtils.isNotEmpty(organizations)) ? organizations.contains(parent) : false;
 	}
 
 	@Override
 	protected boolean parentHasChild(Organization parent, User child) {
-		// TODO Auto-generated method stub
-		return false;
+		final UserSearchBean searchBean = new UserSearchBean();
+		searchBean.addOrganizationId(parent.getId());
+		final List<User> users = userServiceClient.findBeans(searchBean, 0, 100);
+		return (CollectionUtils.isNotEmpty(users)) ? users.contains(child) : false;
 	}
 
 }
