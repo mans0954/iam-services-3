@@ -1540,6 +1540,7 @@ public class UserMgr implements UserDataService {
 
     @Override
     @Transactional(readOnly = true)
+    @Deprecated
     public int getNumOfUsersForGroup(String groupId, String requesterId) {
         DelegationFilterSearchBean delegationFilter = this.getDelegationFilterForUserSearch(requesterId);
         if (DelegationFilterHelper.isAllowed(groupId, delegationFilter.getGroupIdSet())) {

@@ -20,10 +20,13 @@ public interface ResourceDAO extends BaseDao<ResourceEntity, String> {
 
     public List<ResourceEntity> getResourcesForRole(final String roleId, final int from, final int size, final ResourceSearchBean searchBean);
 
+    @Deprecated
     public int getNumOfResourcesForRole(final String roleId, final ResourceSearchBean searchBean);
     
+    @Deprecated
     public List<ResourceEntity> getResourcesForGroup(final String groupId, final int from, final int size, final ResourceSearchBean searchBean);
     
+    @Deprecated
     public int getNumOfResourcesForGroup(final String groupId, final ResourceSearchBean searchBean);
     
     @Deprecated

@@ -228,6 +228,7 @@ public interface UserDataService {
 
     public List<UserEntity> getUsersForGroup(final String groupId, String requesterId, final int from, final int size);
 
+    @Deprecated
     public int getNumOfUsersForGroup(final String groupId, String requesterId);
 
     @Deprecated

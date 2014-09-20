@@ -38,6 +38,7 @@ public interface UserDAO extends BaseDao<UserEntity, String> {
 
     public List<UserEntity> getUsersForGroup(final String groupId, DelegationFilterSearchBean delegationFilter, final int from, final int size);
 
+    @Deprecated
     public int getNumOfUsersForGroup(final String groupId, DelegationFilterSearchBean delegationFilter);
 
     public List<UserEntity> getUsersForRole(final String roleId, DelegationFilterSearchBean delegationFilter, final int from, final int size);

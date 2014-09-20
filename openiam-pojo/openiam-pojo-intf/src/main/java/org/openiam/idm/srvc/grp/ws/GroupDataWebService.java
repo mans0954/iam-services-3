@@ -82,6 +82,7 @@ public interface GroupDataWebService {
      * @return Integer, total number of groups that are direct members of this Group
      */
     @WebMethod
+    @Deprecated
     public int getNumOfChildGroups(final @WebParam(name = "groupId", targetNamespace = "") String groupId,
                                    final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
@@ -96,6 +97,7 @@ public interface GroupDataWebService {
      * @return a paged List of Group objects. Returns null if no groups are found.
      */
     @WebMethod
+    @Deprecated
     public List<Group> getChildGroups(final @WebParam(name = "groupId", targetNamespace = "") String groupId,
                                       final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
                                       final @WebParam(name = "deepFlag", targetNamespace = "") Boolean deepFlag,
@@ -103,6 +105,7 @@ public interface GroupDataWebService {
     								  final @WebParam(name = "size", targetNamespace = "") int size);
 
     @WebMethod
+    @Deprecated
     public List<Group> getChildGroupsLocalize(final @WebParam(name = "groupId", targetNamespace = "") String groupId,
                                       final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
                                       final @WebParam(name = "deepFlag", targetNamespace = "") Boolean deepFlag,
@@ -116,6 +119,7 @@ public interface GroupDataWebService {
      * @return - Integer, total number of groups that are direct parents of this Group
      */
     @WebMethod
+    @Deprecated
     public int getNumOfParentGroups(final @WebParam(name = "groupId", targetNamespace = "") String groupId,
                                     final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
@@ -129,12 +133,14 @@ public interface GroupDataWebService {
      * @return a paged List of of Group objects. Returns null if no groups are found.
      */
     @WebMethod
+    @Deprecated
     public List<Group> getParentGroups(final @WebParam(name = "groupId", targetNamespace = "") String groupId,
                                        final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
     								   final @WebParam(name = "from", targetNamespace = "") int from,
     								   final @WebParam(name = "size", targetNamespace = "") int size);
 
     @WebMethod
+    @Deprecated
     public List<Group> getParentGroupsLocalize(final @WebParam(name = "groupId", targetNamespace = "") String groupId,
                                        final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
                                        final @WebParam(name = "from", targetNamespace = "") int from,
@@ -208,6 +214,7 @@ public interface GroupDataWebService {
      * @return List of Group objects. Returns null if no groups are found.
      */
     @WebMethod
+    @Deprecated
     public List<Group> findBeans(final @WebParam(name = "searchBean") GroupSearchBean searchBean,
                                  final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
     							 final @WebParam(name = "from", targetNamespace = "") int from,
@@ -239,12 +246,14 @@ public interface GroupDataWebService {
      * @return a paged List of Groups directly entitled to the User specified by the userId
      */
     @WebMethod
+    @Deprecated
     public List<Group> getGroupsForUser(@WebParam(name = "userId", targetNamespace = "") String userId,
                                         @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
                                         @WebParam(name="deepFlag", targetNamespace="") Boolean deepFlag,
                                         @WebParam(name = "from") int from,
                                         @WebParam(name = "size") int size);
     @WebMethod
+    @Deprecated
     public List<Group> getGroupsForUserLocalize(@WebParam(name = "userId", targetNamespace = "") String userId,
                                         @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
                                         @WebParam(name="deepFlag", targetNamespace="") Boolean deepFlag,
@@ -257,6 +266,7 @@ public interface GroupDataWebService {
      * @param requesterId - the User ID who request this operation.  This param is required if delegation filter is set
      * @return the number of Groups directly entitled to this User specified by the userId
      */
+    @Deprecated
     public int getNumOfGroupsForUser(final @WebParam(name = "userId", targetNamespace = "") String userId,
                                      final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
@@ -275,6 +285,7 @@ public interface GroupDataWebService {
     										final @WebParam(name = "from", targetNamespace = "") int from,
     										final @WebParam(name = "size", targetNamespace = "") int size);
     @WebMethod
+    @Deprecated
     public List<Group> getGroupsForResourceLocalize(final @WebParam(name = "resourceId") String resourceId,
                                             final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
                                             final @WebParam(name = "deepFlag", targetNamespace = "") boolean deepFlag,
@@ -289,6 +300,7 @@ public interface GroupDataWebService {
      * @return the number of Groups directly entitled to this Resource specified by the resourceId
      */
     @WebMethod
+    @Deprecated
     public int getNumOfGroupsforResource(final @WebParam(name = "resourceId") String resourceId,
                                          final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
@@ -302,6 +314,7 @@ public interface GroupDataWebService {
      * @return a paged List of Groups directly entitled to the Role specified by the roleId
      */
     @WebMethod
+    @Deprecated
     public List<Group> getGroupsForRole(final @WebParam(name = "roleId") String roleId,
                                         final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
     									final @WebParam(name = "from", targetNamespace = "") int from,
@@ -309,6 +322,7 @@ public interface GroupDataWebService {
                                         final @WebParam(name = "deepFlag", targetNamespace = "") boolean deepFlag);
 
     @WebMethod
+    @Deprecated
     public List<Group> getGroupsForRoleLocalize(final @WebParam(name = "roleId") String roleId,
                                         final @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
                                         final @WebParam(name = "from", targetNamespace = "") int from,
@@ -323,6 +337,7 @@ public interface GroupDataWebService {
      * @return the number of Groups directly entitled to this Role specified by the roleId
      */
     @WebMethod
+    @Deprecated
     public int getNumOfGroupsForRole(final @WebParam(name = "roleId") String roleId,
                                      final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 

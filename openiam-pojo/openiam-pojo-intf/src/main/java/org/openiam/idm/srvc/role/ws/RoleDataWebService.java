@@ -72,6 +72,7 @@ public interface RoleDataWebService {
      * @return  a paged List of Role objects that are linked to a Group. if no roles are found returns null
      */
     @WebMethod
+    @Deprecated
     List<Role> getRolesInGroup(final @WebParam(name = "groupId", targetNamespace = "") String groupId,
                                final @WebParam(name="requesterId", targetNamespace="") String requesterId,
                                final @WebParam(name = "deepFlag", targetNamespace = "") boolean deepFlag,
@@ -155,6 +156,7 @@ public interface RoleDataWebService {
      * @return the number of Roles directly entitled to the User specified by the userId
      */
     @WebMethod
+    @Deprecated
     int getNumOfRolesForUser(final @WebParam(name = "userId", targetNamespace = "") String userId,
                              final @WebParam(name="requesterId", targetNamespace="") String requesterId);
 
@@ -296,6 +298,7 @@ public interface RoleDataWebService {
      * @return - Integer, total number of roles that are direct parents of this Role
      */
     @WebMethod
+    @Deprecated
     public int getNumOfParentRoles(final @WebParam(name="roleId", targetNamespace="") String roleId,
                                    final @WebParam(name="requesterId", targetNamespace="") String requesterId);
 
@@ -332,6 +335,7 @@ public interface RoleDataWebService {
      * @return the number of Roles directly entitled to this Group specified by the groupId
      */
     @WebMethod
+    @Deprecated
     public int getNumOfRolesForGroup(final @WebParam(name="groupId", targetNamespace="") String groupId,
                                      final @WebParam(name="requesterId", targetNamespace="") String requesterId);
 

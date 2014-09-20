@@ -177,12 +177,14 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
     }
 
 	@Override
+	@Deprecated
 	public List<RoleEntity> getRolesForGroup(final String groupId, final Set<String> filter, final int from, final int size) {
 		final Criteria criteria = getEntitlementRolesCriteria(null, groupId, null, filter);
         return getList(criteria, from, size);
 	}
 
 	@Override
+	@Deprecated
 	public int getNumOfRolesForGroup(String groupId, final Set<String> filter) {
 		final Criteria criteria = getEntitlementRolesCriteria(null, groupId, null, filter).setProjection(rowCount());
 		return ((Number)criteria.uniqueResult()).intValue();
@@ -209,6 +211,7 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
     }
 
     @Override
+    @Deprecated
     public int getNumOfRolesForUser(String userId, final Set<String> filter) {
         final Criteria criteria = getEntitlementRolesCriteria(userId, null, null, filter).setProjection(rowCount());
         return ((Number)criteria.uniqueResult()).intValue();

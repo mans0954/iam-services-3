@@ -142,6 +142,7 @@ public interface ResourceDataService {
      * @return
      */
     @WebMethod
+    @Deprecated
     int getNumOfResourcesForRole(@WebParam(name = "roleId", targetNamespace = "") String roleId,
 	    @WebParam(name = "searchBean", targetNamespace = "") ResourceSearchBean searchBean);
 
@@ -223,6 +224,7 @@ public interface ResourceDataService {
      * @return
      */
     @WebMethod
+    @Deprecated
     int getNumOfChildResources(@WebParam(name = "resourceId", targetNamespace = "") final String resourceId);
 
     /**
@@ -348,6 +350,7 @@ public interface ResourceDataService {
      * @return
      */
     @WebMethod
+    @Deprecated
     int getNumOfResourceForGroup(@WebParam(name = "groupId", targetNamespace = "") String groupId,
 	    @WebParam(name = "searchBean", targetNamespace = "") ResourceSearchBean searchBean);
 
@@ -363,6 +366,7 @@ public interface ResourceDataService {
      * @return
      */
     @WebMethod
+    @Deprecated
     List<Resource> getResourcesForGroup(
     		final @WebParam(name = "groupId", targetNamespace = "") String groupId,
     		final @WebParam(name = "from", targetNamespace = "") int from,

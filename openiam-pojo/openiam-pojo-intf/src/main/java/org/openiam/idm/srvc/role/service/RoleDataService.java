@@ -72,7 +72,10 @@ public interface RoleDataService {
      * @param groupId
      * @return
      */
+    @Deprecated
      public List<RoleEntity> getRolesInGroup(String groupId, String requesterId, final int from, final int size);
+    
+    @Deprecated
      public int getNumOfRolesForGroup(final String groupId, String requesterId);
 
 
@@ -102,6 +105,8 @@ public interface RoleDataService {
 
     @Deprecated
     public List<RoleEntity> getRolesForUser(final String userId, String requesterId, final int from, final int size);
+    
+    @Deprecated
     public int getNumOfRolesForUser(final String userId, String requesterId);
 
     /**

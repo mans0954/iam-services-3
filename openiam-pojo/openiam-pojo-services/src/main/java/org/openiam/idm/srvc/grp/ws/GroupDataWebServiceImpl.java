@@ -209,6 +209,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
     }
 
     @Override
+    @Deprecated
     public int getNumOfChildGroups(final String groupId, final String requesterId) {
         return  groupManager.getNumOfChildGroups(groupId, requesterId);
     }
@@ -222,6 +223,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
 
     @Override
     @LocalizedServiceGet
+    @Deprecated
     public List<Group> getChildGroupsLocalize(final String groupId, final String requesterId, final Boolean deepFlag,
                                       final int from, final int size, final Language language) {
         final List<GroupEntity> groupEntityList = groupManager.getChildGroupsLocalize(groupId, requesterId, from, size, languageConverter.convertToEntity(language, false));
@@ -229,6 +231,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
     }
 
     @Override
+    @Deprecated
     public int getNumOfParentGroups(final String groupId, final String requesterId) {
         return groupManager.getNumOfParentGroups(groupId, requesterId);
     }
@@ -241,6 +244,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
 
     @Override
     @LocalizedServiceGet
+    @Deprecated
     public List<Group> getParentGroupsLocalize(final String groupId, final String requesterId, final int from, final int size, final Language language) {
         final List<GroupEntity> groupEntityList = groupManager.getParentGroupsLocalize(groupId, requesterId, from, size, languageConverter.convertToEntity(language, false));
         return groupDozerConverter.convertToDTOList(groupEntityList, false);
@@ -442,6 +446,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
 
     @Override
     @LocalizedServiceGet
+    @Deprecated
     public List<Group> getGroupsForUserLocalize(final String userId, final String requesterId, Boolean deepFlag,
                                         final int from, final int size, final Language language) {
         final List<GroupEntity> groupEntityList = groupManager.getGroupsForUserLocalize(userId, requesterId, from, size, languageConverter.convertToEntity(language, false));
@@ -449,6 +454,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
     }
 
     @Override
+    @Deprecated
     public int getNumOfGroupsForUser(final String userId, final String requesterId) {
         return groupManager.getNumOfGroupsForUser(userId, requesterId);
     }
@@ -462,6 +468,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
 
     @Override
     @LocalizedServiceGet
+    @Deprecated
     public List<Group> getGroupsForResourceLocalize(final String resourceId, final String requesterId, final boolean deepFlag,
                                             final int from, final int size, final Language language) {
         final List<GroupEntity> groupEntityList = groupManager.getGroupsForResourceLocalize(resourceId, requesterId, from, size, languageConverter.convertToEntity(language, false));
@@ -469,6 +476,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
     }
 
     @Override
+    @Deprecated
     public int getNumOfGroupsforResource(final String resourceId, final String requesterId) {
         return groupManager.getNumOfGroupsForResource(resourceId, requesterId);
     }
@@ -483,6 +491,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
     @Override
     @LocalizedServiceGet
     @Transactional(readOnly = true)
+    @Deprecated
     public List<Group> getGroupsForRoleLocalize(final String roleId, final String requesterId, final int from, final int size,
                                         boolean deepFlag, final Language language) {
         final List<GroupEntity> groupEntityList = groupManager.getGroupsForRoleLocalize(roleId, requesterId, from, size, languageConverter.convertToEntity(language, false));
@@ -490,6 +499,7 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
     }
 
     @Override
+    @Deprecated
     public int getNumOfGroupsForRole(final String roleId, final String requesterId) {
         return groupManager.getNumOfGroupsForRole(roleId, requesterId);
     }
@@ -499,14 +509,19 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
         final Response response = new Response(ResponseStatus.SUCCESS);
         IdmAuditLog auditLog = new IdmAuditLog();
         auditLog.setAction(AuditAction.ADD_CHILD_GROUP.value());
-        GroupEntity groupEntity = groupManager.getGroup(groupId);
-        auditLog.setTargetGroup(groupId, groupEntity.getName());
-        GroupEntity groupEntityChild = groupManager.getGroup(childGroupId);
-        auditLog.setTargetGroup(childGroupId, groupEntityChild.getName());
         auditLog.setRequestorUserId(requesterId);
         auditLog.setAuditDescription(String.format("Add child group: %s to group: %s", childGroupId, groupId));
 
         try {
+        	GroupEntity groupEntity = groupManager.getGroup(groupId);
+        	GroupEntity groupEntityChild = groupManager.getGroup(childGroupId);
+        	if(groupEntity == null || groupEntityChild == null) {
+        		throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+        	}
+        	
+        	auditLog.setTargetGroup(groupId, groupEntity.getName());
+            auditLog.setTargetGroup(childGroupId, groupEntityChild.getName());
+        	
             if (groupId == null || childGroupId == null) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "GroupId or child groupId is null");
             }

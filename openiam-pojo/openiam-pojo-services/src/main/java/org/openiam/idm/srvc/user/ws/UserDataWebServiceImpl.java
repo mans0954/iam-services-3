@@ -893,12 +893,14 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 
     @Override
     @Transactional(readOnly = true)
+    @Deprecated
     public List<User> getUsersForGroup(final String groupId, String requesterId, final int from, final int size) {
         final List<UserEntity> entityList = userManager.getUsersForGroup(groupId, requesterId, from, size);
         return userDozerConverter.convertToDTOList(entityList, false);
     }
 
     @Override
+    @Deprecated
     public int getNumOfUsersForGroup(final String groupId, String requesterId) {
         return userManager.getNumOfUsersForGroup(groupId, requesterId);
     }

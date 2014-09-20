@@ -462,6 +462,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
     }
 
     @Override
+    @Deprecated
     public int getNumOfChildResources(final String resourceId) {
         return resourceService.getNumOfChildResources(resourceId);
     }
@@ -598,13 +599,18 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
         IdmAuditLog idmAuditLog = new IdmAuditLog ();
         idmAuditLog.setRequestorUserId(requesterId);
         idmAuditLog.setAction(AuditAction.REMOVE_GROUP_FROM_RESOURCE.value());
-        GroupEntity groupEntity = groupDataService.getGroup(groupId);
-        idmAuditLog.setTargetGroup(groupId, groupEntity.getName());
-        ResourceEntity resourceEntity = resourceService.findResourceById(resourceId);
-        idmAuditLog.setTargetResource(resourceId, resourceEntity.getName());
         idmAuditLog.setAuditDescription(String.format("Remove group: %s from resource: %s", groupId, resourceId));
 
         try {
+            final GroupEntity groupEntity = groupDataService.getGroup(groupId);
+            final ResourceEntity resourceEntity = resourceService.findResourceById(resourceId);
+            if(groupEntity == null || resourceEntity == null) {
+            	throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+            }
+            
+            idmAuditLog.setTargetGroup(groupId, groupEntity.getName());
+            idmAuditLog.setTargetResource(resourceId, resourceEntity.getName());
+        	
             if (StringUtils.isBlank(resourceId) || StringUtils.isBlank(groupId)) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "GroupId or ResourceId is null");
             }
@@ -710,6 +716,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
     }
 
     @Override
+    @Deprecated
     public int getNumOfResourcesForRole(final String roleId, final ResourceSearchBean searchBean) {
        return resourceService.getNumOfResourcesForRole(roleId, searchBean);
     }
@@ -722,12 +729,14 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
     }
 
     @Override
+    @Deprecated
     public int getNumOfResourceForGroup(final String groupId, final ResourceSearchBean searchBean) {
        return resourceService.getNumOfResourceForGroup(groupId, searchBean);
     }
 
     @Override
     @LocalizedServiceGet
+    @Deprecated
     public List<Resource> getResourcesForGroup(final String groupId, final int from, final int size, final ResourceSearchBean searchBean, final Language language) {
         final List<ResourceEntity> entityList = resourceService.getResourcesForGroup(groupId, from, size, searchBean);
         return resourceConverter.convertToDTOList(entityList, false);

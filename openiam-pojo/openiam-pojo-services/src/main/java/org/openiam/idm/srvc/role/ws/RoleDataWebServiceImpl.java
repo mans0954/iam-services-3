@@ -240,6 +240,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 	}
 
 	@Override
+	@Deprecated
 	public List<Role> getRolesInGroup(final String groupId, String requesterId, boolean deepFlag, final int from, final int size) {
         final List<RoleEntity> entityList = roleDataService.getRolesInGroup(groupId, requesterId, from, size);
         return roleDozerConverter.convertToDTOList(entityList, false);
@@ -253,6 +254,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 	}
 
 	@Override
+	@Deprecated
 	public int getNumOfRolesForUser(final String userId, String requesterId) {
         return roleDataService.getNumOfRolesForUser(userId, requesterId);
 	}
@@ -538,6 +540,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 
 	@Override
 	@WebMethod
+	@Deprecated
 	public int getNumOfParentRoles(final String roleId, String requesterId) {
         return roleDataService.getNumOfParentRoles(roleId, requesterId);
 	}
@@ -588,6 +591,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 
 
 	@Override
+	@Deprecated
 	public int getNumOfRolesForGroup(final String groupId, String requesterId) {
         return roleDataService.getNumOfRolesForGroup(groupId, requesterId);
 	}
