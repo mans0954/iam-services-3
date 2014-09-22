@@ -1,0 +1,37 @@
+<suite name="TestAll">
+ 
+	<test name="integration.entitlements">
+		<classes>
+			<class name="org.openiam.service.integration.entitlements.Group2GroupEntitlementsTest" />
+			<class name="org.openiam.service.integration.entitlements.Group2ResourceEntitlementsTest" />
+			<class name="org.openiam.service.integration.entitlements.Group2RoleEntitlementsTest" />
+			<class name="org.openiam.service.integration.entitlements.Group2UserEntitlementsTest" />
+			<class name="org.openiam.service.integration.entitlements.GroupServiceTest" />
+			<class name="org.openiam.service.integration.entitlements.Organization2OrganizationEntitlementsTest" />
+			<class name="org.openiam.service.integration.entitlements.Organization2UserEntitlementsTest" />
+			<class name="org.openiam.service.integration.entitlements.OrganizationServiceTest" />
+			<class name="org.openiam.service.integration.entitlements.OrganizationTypeServiceTest" />
+			<class name="org.openiam.service.integration.entitlements.Resource2ResourceEntitlementsTest" />
+			<class name="org.openiam.service.integration.entitlements.Resource2UserEntitlementsTest" />
+			<class name="org.openiam.service.integration.entitlements.ResourceServiceTest" />
+			<class name="org.openiam.service.integration.entitlements.Role2ResourceEntitlementsTest" />
+			<class name="org.openiam.service.integration.entitlements.Role2RoleEntitlementsTest" />
+			<class name="org.openiam.service.integration.entitlements.Role2UserEntitlementsTest" />
+			<class name="org.openiam.service.integration.entitlements.RoleServiceTest" />
+		</classes>
+	</test>
+	
+	<test name="integration.meta">
+		<classes>
+			<class name="org.openiam.service.integration.meta.MetadataElementTemplateServiceTest" />
+			<class name="org.openiam.service.integration.meta.MetadataElementTest" />
+			<class name="org.openiam.service.integration.meta.MetadataTypeTest" />
+		</classes>
+	</test>
+	
+	<test name="integration.policy">
+		<classes>
+			<class name="org.openiam.service.integration.policy.PolicyTest" />
+		</classes>
+	</test>
+</suite>
