@@ -100,8 +100,9 @@ public class AuditLogServiceImpl implements AuditLogService {
     }
     
     private IdmAuditLogEntity prepare(final IdmAuditLog log) {
+        IdmAuditLogEntity auditLogEntity = log.getId() == null ? auditLogDozerConverter.convertToEntity(log, false) : logDAO.findById(log.getId());
+
         if(log != null) {
-            IdmAuditLogEntity auditLogEntity = auditLogDozerConverter.convertToEntity(log, false);
     		if(auditLogEntity.getId() == null || auditLogEntity.getHash() == null) {
                 auditLogEntity.setHash(DigestUtils.sha256Hex(log.concat()));
             }

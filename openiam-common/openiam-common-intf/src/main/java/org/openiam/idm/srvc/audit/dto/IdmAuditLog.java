@@ -229,14 +229,14 @@ public class IdmAuditLog implements Serializable {
 			if(this.targets == null) {
 				this.targets = new HashSet<>();
 			}
-			final AuditLogTarget target = new AuditLogTarget();
-			target.setTargetId(targetId);
-			target.setTargetType(targetType);
+            final AuditLogTarget target = new AuditLogTarget();
+            target.setTargetId(targetId);
+            target.setTargetType(targetType);
             target.setObjectPrincipal(principal);
-			target.setLogId(id);
-			this.targets.add(target);
-		}
-	}
+            target.setLogId(id);
+            this.targets.add(target);
+        }
+    }
 
 	public void addChild(final IdmAuditLog entity) {
     	if(entity != null) {
