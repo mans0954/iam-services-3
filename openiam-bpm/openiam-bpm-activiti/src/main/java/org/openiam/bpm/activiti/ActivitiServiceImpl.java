@@ -505,7 +505,8 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 	public Response initiateWorkflow(final GenericWorkflowRequest request) {
 		IdmAuditLog idmAuditLog = new IdmAuditLog();
         idmAuditLog.setRequestorUserId(request.getRequestorUserId());
-        idmAuditLog.setAction(AuditAction.INITIATE_WORKFLOW.value());
+        //idmAuditLog.setAction(AuditAction.INITIATE_WORKFLOW.value());
+        idmAuditLog.setAction(request.getActivitiRequestType());
         idmAuditLog.setBaseObject(request);
         idmAuditLog.setSource(AuditSource.WORKFLOW.value());
 		final Response response = new Response();
