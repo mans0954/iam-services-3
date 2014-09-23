@@ -26,6 +26,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.testng.annotations.Test;
 
+@Test(enabled=false)
 public abstract class AbstractAuthorizationManagerTest extends AbstractTestNGSpringContextTests {
 
 	protected static final Log log = LogFactory.getLog(AbstractAuthorizationManagerTest.class);
@@ -79,7 +80,7 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractTestNGSpr
 		"https://www.google.com/openiam/selfservice.html"
 	};
 	
-	@Test
+	@Test(enabled=false)
 	public void isUserEntitledToUrlsTest() {
 		final List<String> userIds = jdbcTemplate.queryForList("SELECT USER_ID FROM USERS LIMIT " + MAX_ITERS, String.class);
 		for(final String userId : userIds) {
@@ -96,7 +97,7 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractTestNGSpr
 		}
 	}
 	
-	@Test
+	@Test(enabled=false)
 	public void isUserEntitledToResourceTest() {
 		final List<Map<String, Object>> resourceUserMap = jdbcTemplate.queryForList("SELECT RESOURCE_ID AS RESOURCE_ID, USER_ID AS USER_ID FROM RESOURCE_USER LIMIT " + MAX_ITERS);
 		final List<Map<String, Object>> resourceUserMapThroughGroupMembership = jdbcTemplate.queryForList("SELECT ug.USER_ID AS USER_ID, rg.RESOURCE_ID AS RESOURCE_ID FROM USER_GRP ug, RESOURCE_GROUP rg WHERE ug.GRP_ID=rg.GRP_ID LIMIT " + MAX_ITERS);
@@ -139,7 +140,7 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractTestNGSpr
 		}
 	}
 	
-	@Test
+	@Test(enabled=false)
 	public void isUserMemberOfGroupsTest() {
 		final Map<String, Set<String>> userId2GroupMap = new HashMap<String, Set<String>>();
 		final List<Map<String, Object>> groupUserMap = jdbcTemplate.queryForList("SELECT GRP_ID AS GROUP_ID, USER_ID AS USER_ID FROM USER_GRP LIMIT " + MAX_ITERS);
@@ -161,7 +162,7 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractTestNGSpr
 		}
 	}
 	
-	@Test
+	@Test(enabled=false)
 	public void isUserMemberOfRolesTest() {
 		final Map<String, Set<String>> userId2RoleMap = new HashMap<String, Set<String>>();
 		final List<Map<String, Object>> roleUserMap = jdbcTemplate.queryForList("SELECT USER_ID AS USER_ID, ROLE_ID AS ROLE_ID FROM USER_ROLE LIMIT " + MAX_ITERS);
@@ -193,68 +194,6 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractTestNGSpr
 			}
 		}
 	}
-	
-	/*
-	@Test
-	public void testGetResourcesForUser() {
-		final List<String> userIds = jdbcTemplate.queryForList("SELECT USER_ID FROM USERS LIMIT " + MAX_ITERS, String.class);
-		int i = 0;
-		for(final String userId : userIds) {
-			final Set<String> resourceIdSet = getAllDirectResorucesForUser(userId);
-			final User user = userDataWebService.getUserWithDependent(userId, true).getUser();
-			final List<AuthorizationManagerLoginId> loginIdList = getLoginIdList(user);
-			
-			confirmUserResources(user.getUserId(), null, resourceIdSet);
-			for(final AuthorizationManagerLoginId loginId : loginIdList) {
-				confirmUserResources(null, loginId, resourceIdSet);
-			}
-			if(i++ > MAX_ITERS) {
-				break;
-			}
-		}
-	}
-	
-	@Test
-	public void testGetGroupsFor() {
-		int i = 0;
-		final List<String> userIds = jdbcTemplate.queryForList("SELECT USER_ID FROM USERS LIMIT " + MAX_ITERS, String.class);
-		for(final String userId : userIds) {
-			final Set<String> groupIdSet = getAllDirectGroupsForUser(userId);
-			
-			final User user = userDataWebService.getUserWithDependent(userId, true).getUser();
-			final List<AuthorizationManagerLoginId> loginIdList = getLoginIdList(user);
-			
-			confirmUserGroups(user.getUserId(), null, groupIdSet);
-			for(final AuthorizationManagerLoginId loginId : loginIdList) {
-				confirmUserGroups(null, loginId, groupIdSet);
-			}
-			if(i++ > MAX_ITERS) {
-				break;
-			}
-		}
-	}
-	
-	@Test
-	public void testGetRolesFor() {
-		int i = 0;
-		final List<String> userIds = jdbcTemplate.queryForList("SELECT USER_ID FROM USERS LIMIT " + MAX_ITERS, String.class);
-		for(final String userId : userIds) {
-			
-			final Set<String> roleIdSet = getAllDirectRolesForUser(userId);
-			
-			final User user = userDataWebService.getUserWithDependent(userId, true).getUser();
-			final List<AuthorizationManagerLoginId> loginIdList = getLoginIdList(user);
-			
-			confirmUserRoles(user.getUserId(), null, roleIdSet);
-			for(final AuthorizationManagerLoginId loginId : loginIdList) {
-				confirmUserRoles(null, loginId, roleIdSet);
-			}
-			if(i++ > MAX_ITERS) {
-				break;
-			}
-		}
-	}
-	*/
 	
 	private List<AuthorizationManagerLoginId> getLoginIdList(final User user) {
 		final List<AuthorizationManagerLoginId> loginIdList = new LinkedList<AuthorizationManagerLoginId>();
