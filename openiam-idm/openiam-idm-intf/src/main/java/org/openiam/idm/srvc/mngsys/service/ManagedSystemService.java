@@ -31,6 +31,8 @@ public interface ManagedSystemService {
 
     ManagedSysEntity getManagedSysByResource(String id, String status);
 
+    String getManagedSysIdByResource(String id, String status);
+
     ManagedSysEntity getManagedSysByName(String name);
 
     AttributeMapEntity getAttributeMap(String attributeMapId);

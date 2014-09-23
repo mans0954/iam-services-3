@@ -3,9 +3,7 @@ package org.openiam.idm.srvc.audit.dto;
 // Generated Nov 30, 2007 3:01:45 AM by Hibernate Tools 3.2.0.b11
 
 import java.io.Serializable;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -189,6 +187,23 @@ public class IdmAuditLog implements Serializable {
 		return childLogs;
 	}
 
+    /**
+     * Sorting by timestamp - DESC
+     * @return
+     */
+    public Collection<IdmAuditLog> getChildLogsSorted() {
+        if(childLogs != null) {
+            List<IdmAuditLog> sortedItems = new ArrayList<IdmAuditLog>(childLogs);
+            Collections.sort(sortedItems, new Comparator<IdmAuditLog>(){
+                @Override
+                public int compare(IdmAuditLog o1, IdmAuditLog o2) {
+                    return o2.getTimestamp().compareTo(o1.getTimestamp());
+                }
+            } );
+            return sortedItems;
+        }
+        return childLogs;
+    }
 	public void setChildLogs(Set<IdmAuditLog> childLogs) {
 		this.childLogs = childLogs;
 	}
@@ -214,14 +229,14 @@ public class IdmAuditLog implements Serializable {
 			if(this.targets == null) {
 				this.targets = new HashSet<>();
 			}
-			final AuditLogTarget target = new AuditLogTarget();
-			target.setTargetId(targetId);
-			target.setTargetType(targetType);
+            final AuditLogTarget target = new AuditLogTarget();
+            target.setTargetId(targetId);
+            target.setTargetType(targetType);
             target.setObjectPrincipal(principal);
-			target.setLogId(id);
-			this.targets.add(target);
-		}
-	}
+            target.setLogId(id);
+            this.targets.add(target);
+        }
+    }
 
 	public void addChild(final IdmAuditLog entity) {
     	if(entity != null) {
