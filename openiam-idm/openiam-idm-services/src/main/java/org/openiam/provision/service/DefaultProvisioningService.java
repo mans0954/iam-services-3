@@ -234,9 +234,8 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             res = transactionTemplate.execute(new TransactionCallback<ProvisionUserResponse>() {
                 @Override
                 public ProvisionUserResponse doInTransaction(TransactionStatus status) {
+                    final IdmAuditLog idmAuditLog = new IdmAuditLog();
 
-                    final IdmAuditLog idmAuditLog;
-                    idmAuditLog = new IdmAuditLog();
                     idmAuditLog.setRequestorUserId(pUser.getRequestorUserId());
                     idmAuditLog.setRequestorPrincipal(pUser.getRequestorLogin());
                     idmAuditLog.setAction(AuditAction.CREATE_USER.value());
@@ -245,16 +244,13 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
                     if (auditLog != null) {
                         auditLog.addChild(idmAuditLog);
+                        idmAuditLog.addParent(auditLog);
+                        auditLogService.save(auditLog);
                     }
+                    auditLogService.save(idmAuditLog);
 
-                    ProvisionUserResponse tmpRes = new ProvisionUserResponse(ResponseStatus.FAILURE);
-                    try {
-                        tmpRes = addModifyUser(pUser, true, dataList, idmAuditLog);
-                    } finally {
-                        if (auditLog == null) {
-                            auditLogService.enqueue(idmAuditLog);
-                        }
-                    }
+
+                    ProvisionUserResponse tmpRes = addModifyUser(pUser, true, dataList, idmAuditLog);
 
                     return tmpRes;
                 }
@@ -289,11 +285,11 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         res.setStatus(ResponseStatus.SUCCESS);
 
         try {
-
+            final IdmAuditLog idmAuditLog = new IdmAuditLog();
             res = transactionTemplate.execute(new TransactionCallback<ProvisionUserResponse>() {
                 @Override
                 public ProvisionUserResponse doInTransaction(TransactionStatus status) {
-                    final IdmAuditLog idmAuditLog = new IdmAuditLog();
+
                     idmAuditLog.setRequestorUserId(pUser.getRequestorUserId());
                     idmAuditLog.setRequestorPrincipal(pUser.getRequestorLogin());
                     idmAuditLog.setAction(AuditAction.MODIFY_USER.value());
@@ -303,16 +299,13 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                             + " with primary identity: " + loginEntity);
                     if (auditLog != null) {
                         auditLog.addChild(idmAuditLog);
+                        idmAuditLog.addParent(auditLog);
+                        auditLogService.save(auditLog);
                     }
+                    auditLogService.save(idmAuditLog);
 
-                    ProvisionUserResponse tmpRes = new ProvisionUserResponse(ResponseStatus.FAILURE);
-                    try{
-                        tmpRes = addModifyUser(pUser, false, dataList, idmAuditLog);
-                    } finally {
-                        if (auditLog == null) {
-                            auditLogService.enqueue(idmAuditLog);
-                        }
-                    }
+                    ProvisionUserResponse tmpRes = addModifyUser(pUser, false, dataList, idmAuditLog);
+
                     return tmpRes;
                 }
             });
