@@ -1,5 +1,6 @@
 package org.openiam.core.dao.lucene;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.StopWatch;
 import org.apache.log4j.Logger;
@@ -15,7 +16,7 @@ import org.hibernate.criterion.DetachedCriteria;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
-import org.openiam.elasticsearch.ElasticsearchHelper;
+import org.openiam.elasticsearch.service.ElasticsearchProvider;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -55,7 +56,7 @@ public abstract class AbstractHibernateSearchDao<T, Q, KeyType extends Serializa
 	private SessionFactory sessionFactory;
 
     @Autowired
-    protected ElasticsearchHelper esHelper;
+    protected ElasticsearchProvider esHelper;
 	
 	@Autowired
 	public void setTemplate(final @Qualifier("sessionFactory") SessionFactory sessionFactory) {
@@ -186,9 +187,14 @@ public abstract class AbstractHibernateSearchDao<T, Q, KeyType extends Serializa
 
     protected abstract Query parse(Q query);
     protected abstract Class<T> getEntityClass();
-    
+
+
+    private DetachedCriteria getCriteria() throws Exception{
+        return DetachedCriteria.forClass(getEntityClass()).addOrder(Order.asc(esHelper.getIdFieldName(getEntityClass())));
+    }
+
     private void buidIndexes(Session session) throws Exception {
-    	final DetachedCriteria criteria = DetachedCriteria.forClass(getEntityClass()).addOrder(Order.asc(esHelper.getIdFieldName(getEntityClass())));
+    	final DetachedCriteria criteria = getCriteria();
         try {
         	doIndex(criteria, true, session);
     	} catch (Exception e) {
@@ -274,6 +280,19 @@ public abstract class AbstractHibernateSearchDao<T, Q, KeyType extends Serializa
         }
     }
 
+    public void updateIndecies(List<String> idsList) throws Exception {
+        if(CollectionUtils.isNotEmpty(idsList)){
+            final DetachedCriteria criteria = getCriteria();
+            criteria.add(Restrictions.in(esHelper.getIdFieldName(getEntityClass()), idsList));
+            doIndex(criteria, false, sessionFactory.openSession());
+        }
+    }
+
+    public void deleteIndecies(List<String> idsList) throws Exception{
+        if(CollectionUtils.isNotEmpty(idsList)){
+            esHelper.deleteData(idsList, getEntityClass());
+        }
+    }
 
     @Override public void destroy() throws Exception {
     	hibernateProperties.clear();

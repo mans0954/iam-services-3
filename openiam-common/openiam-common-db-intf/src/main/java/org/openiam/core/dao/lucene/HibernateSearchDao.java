@@ -62,6 +62,12 @@ public interface HibernateSearchDao<T, Q, KeyType> {
      * @return date time of the last search index synchronization
      */
     Date getLastDbUpdateDate();
-    
 
+    /**
+     * Start indexing the provided entities
+     * @param idList
+     */
+    public void updateIndecies(List<String> idList) throws Exception;
+
+    public void deleteIndecies(List<String> idList) throws Exception;
 }

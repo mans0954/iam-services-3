@@ -1,5 +1,6 @@
-package org.openiam.elasticsearch;
+package org.openiam.elasticsearch.service;
 
+import com.sun.javaws.exceptions.InvalidArgumentException;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -12,6 +13,7 @@ import org.elasticsearch.action.admin.indices.mapping.delete.DeleteMappingRespon
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingResponse;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.bulk.BulkResponse;
+import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.index.IndexRequestBuilder;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.cluster.metadata.MappingMetaData;
@@ -26,11 +28,13 @@ import org.openiam.elasticsearch.bridge.ElasticsearchBrigde;
 import org.openiam.elasticsearch.constants.ElasticsearchStore;
 import org.openiam.elasticsearch.constants.ElasticsearchType;
 import org.openiam.elasticsearch.constants.Index;
+import org.openiam.elasticsearch.factory.ESClientFactoryBean;
 import org.openiam.elasticsearch.model.ElasticsearchFieldMetadata;
 import org.openiam.elasticsearch.model.ElasticsearchMetadata;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.io.InvalidObjectException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.*;
@@ -40,8 +44,8 @@ import java.util.*;
  * Date: 7/1/14.
  */
 @Component
-public class ElasticsearchHelper {
-    protected static Logger logger = Logger.getLogger(ElasticsearchHelper.class);
+public class ElasticsearchProvider {
+    protected static Logger logger = Logger.getLogger(ElasticsearchProvider.class);
 
     @Autowired
     private ESClientFactoryBean clientFactory;
@@ -200,6 +204,32 @@ public class ElasticsearchHelper {
             indexeMetadataMap.put(entityClass.getSimpleName(), result);
         }
         return result;
+    }
+
+
+    public void deleteData(String id, Class<?> entityClass) throws Exception {
+        if(StringUtils.isNotBlank(id)){
+            ElasticsearchMetadata result = indexeMetadataMap.get(entityClass.getSimpleName());
+
+            DeleteResponse response = getClient().prepareDelete(result.getIndex().indexName(), result.getTypeMapping().typeName(), id)
+                                            .execute()
+                                            .actionGet();
+
+            if(!response.isFound()){
+                throw new Exception(String.format("%s with %s cannot be found for deletion. Skipping", entityClass.getSimpleName(), id));
+            }
+        }
+    }
+    public void deleteData(List<String> idList, Class<?> entityClass) throws Exception {
+        if(CollectionUtils.isNotEmpty(idList)){
+            for (String id: idList){
+                try{
+                    this.deleteData(id, entityClass);
+                } catch (Exception ex){
+                    logger.warn(String.format("%s with %s cannot be found for deletion. Skipping", entityClass.getSimpleName(), id));
+                }
+            }
+        }
     }
 
     private XContentBuilder buildMapping(ElasticsearchMetadata indexMetadata) {

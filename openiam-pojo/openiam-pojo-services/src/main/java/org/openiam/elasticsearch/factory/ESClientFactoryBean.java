@@ -1,4 +1,4 @@
-package org.openiam.elasticsearch;
+package org.openiam.elasticsearch.factory;
 
 import org.elasticsearch.client.Client;
 import org.elasticsearch.node.Node;

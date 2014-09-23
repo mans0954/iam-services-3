@@ -1,4 +1,4 @@
-package org.openiam.elasticsearch;
+package org.openiam.elasticsearch.factory;
 
 import org.elasticsearch.common.settings.ImmutableSettings;
 import org.elasticsearch.common.settings.Settings;

@@ -47,4 +47,6 @@
 
     <jee:jndi-lookup id="metaElementQueue" jndi-name="${jms.queue.metaelem}" expected-type="javax.jms.Queue" />
 
+    <jee:jndi-lookup id="esReindexQueue" jndi-name="${jms.queue.esReindex}" expected-type="javax.jms.Queue" />
+
 </beans>

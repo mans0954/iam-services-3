@@ -1,4 +1,4 @@
-package org.openiam.elasticsearch;
+package org.openiam.elasticsearch.factory;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
