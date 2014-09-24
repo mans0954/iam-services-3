@@ -3,6 +3,7 @@ package org.openiam.idm.srvc.audit.domain;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 import javax.persistence.*;
@@ -63,10 +64,10 @@ public class IdmAuditLogEntity implements Serializable {
     private String correlationId;
     
     @OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL, mappedBy = "log")
-    private Set<IdmAuditLogCustomEntity> customRecords = new HashSet<IdmAuditLogCustomEntity>();
+    private Set<IdmAuditLogCustomEntity> customRecords = new LinkedHashSet<IdmAuditLogCustomEntity>();
     
     @OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL, mappedBy = "log")
-    private Set<AuditLogTargetEntity> targets;
+    private Set<AuditLogTargetEntity> targets = new LinkedHashSet<AuditLogTargetEntity>();
     
     @ManyToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
     @JoinTable(name = "OPENIAM_LOG_LOG_MEMBERSHIP",
@@ -96,17 +97,13 @@ public class IdmAuditLogEntity implements Serializable {
             this.parentLogs.add(entity);
         }
     }
-    public void addCustomRecord(final String key, final String value) {
-    	if(key != null && value != null) {
+    public void addCustomRecord(IdmAuditLogCustomEntity logCustomEntity) {
+    	if(logCustomEntity != null) {
     		if(customRecords == null) {
-    			customRecords = new HashSet<>();
+    			customRecords = new LinkedHashSet<>();
     		}
-    		final IdmAuditLogCustomEntity entity = new IdmAuditLogCustomEntity();
-    		entity.setKey(key);
-    		entity.setValue(value);
-    		entity.setLog(this);
-            entity.setTimestamp(new Date().getTime());
-    		customRecords.add(entity);
+            logCustomEntity.setLog(this);
+  		    customRecords.add(logCustomEntity);
     	}
     }
 

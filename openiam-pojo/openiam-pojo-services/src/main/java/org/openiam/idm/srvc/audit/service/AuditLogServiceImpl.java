@@ -14,9 +14,11 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.SysConfiguration;
+import org.openiam.dozer.converter.IdmAuditLogCustomDozerConverter;
 import org.openiam.dozer.converter.IdmAuditLogDozerConverter;
 import org.openiam.idm.searchbeans.AuditLogSearchBean;
 import org.openiam.idm.srvc.audit.constant.AuditTarget;
+import org.openiam.idm.srvc.audit.domain.IdmAuditLogCustomEntity;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.audit.dto.AuditLogTarget;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
@@ -81,6 +83,8 @@ public class AuditLogServiceImpl implements AuditLogService {
     @Autowired
     private IdmAuditLogDozerConverter auditLogDozerConverter;
 
+    @Autowired
+    private IdmAuditLogCustomDozerConverter idmAuditLogCustomDozerConverter;
     /**
      * Cache for UserId and CorrelationId
      *
@@ -127,10 +131,10 @@ public class AuditLogServiceImpl implements AuditLogService {
 
     		//required - the UI sends a transient instance to the service, so fix it here
     		if(CollectionUtils.isNotEmpty(log.getCustomRecords())) {
-    			for(final IdmAuditLogCustom custom : log.getCustomRecords()) {
-                    auditLogEntity.addCustomRecord(custom.getKey(), custom.getValue());
+                List<IdmAuditLogCustomEntity> auditLogCustomEntities = idmAuditLogCustomDozerConverter.convertToEntityList(new ArrayList<IdmAuditLogCustom>(log.getCustomRecords()), false);
+                for(final IdmAuditLogCustomEntity custom : auditLogCustomEntities) {
+                    auditLogEntity.addCustomRecord(custom);
     			}
-
     		}
 
     		if(CollectionUtils.isNotEmpty(log.getTargets())) {

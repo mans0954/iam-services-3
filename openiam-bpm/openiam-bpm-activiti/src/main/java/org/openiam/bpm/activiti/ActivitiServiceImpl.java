@@ -80,8 +80,8 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.transaction.annotation.Transactional;
 
 @WebService(endpointInterface = "org.openiam.bpm.activiti.ActivitiService", 
-targetNamespace = "urn:idm.openiam.org/bpm/request/service", 
-serviceName = "ActivitiService")
+            targetNamespace = "urn:idm.openiam.org/bpm/request/service",
+            serviceName = "ActivitiService")
 public class ActivitiServiceImpl extends AbstractBaseService implements ActivitiService, ApplicationContextAware {
 
 	private ApplicationContext ctx;
