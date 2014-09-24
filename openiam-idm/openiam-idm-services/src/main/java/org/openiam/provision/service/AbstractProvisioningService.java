@@ -189,6 +189,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
     @Autowired
     protected GroupDozerConverter groupDozerConverter;
     @Autowired
+    protected OrganizationDozerConverter organizationDozerConverter;
+    @Autowired
     protected UserAttributeDozerConverter userAttributeDozerConverter;
     @Autowired
     protected PhoneDozerConverter phoneDozerConverter;

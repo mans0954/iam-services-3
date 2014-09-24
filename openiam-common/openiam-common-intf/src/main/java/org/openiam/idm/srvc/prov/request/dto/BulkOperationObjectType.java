@@ -18,7 +18,10 @@ public enum BulkOperationObjectType {
     ROLE("ROLE", "Role"),
 
     @XmlEnumValue("RESOURCE")
-    RESOURCE("RESOURCE", "Resource");
+    RESOURCE("RESOURCE", "Resource"),
+
+    @XmlEnumValue("ORGANIZATION")
+    ORGANIZATION("ORGANIZATION", "Organization");
 
     private String value;
     private String label;
