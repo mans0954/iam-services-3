@@ -210,9 +210,8 @@ public class DefaultLoginModule extends AbstractLoginModule {
 
             if(lg.getResetPassword()>0){
                 String chngPwdAttr = getPolicyAttribute(pwdPlcy.getPolicyAttributes(),"CHNG_PSWD_ON_RESET");
-                if (StringUtils.isNotBlank(chngPwdAttr) && Integer.parseInt(chngPwdAttr) > 0) {
-                    throw new AuthenticationException(
-                            AuthenticationConstants.RESULT_PASSWORD_CHANGE_AFTER_RESET);
+                if (StringUtils.isNotBlank(chngPwdAttr) && StringUtils.equalsIgnoreCase(Boolean.TRUE.toString(), chngPwdAttr)) {
+                    throw new AuthenticationException(AuthenticationConstants.RESULT_PASSWORD_CHANGE_AFTER_RESET);
                 }
             }
 
@@ -314,10 +313,12 @@ public class DefaultLoginModule extends AbstractLoginModule {
             return null;
         }
 
+        /*
         String pswdExpValue = getPolicyAttribute(plcy.getPolicyAttributes(),
                 "PWD_EXPIRATION");
         String changePswdOnReset = getPolicyAttribute(
                 plcy.getPolicyAttributes(), "CHNG_PSWD_ON_RESET");
+		*/
         String gracePeriod = getPolicyAttribute(plcy.getPolicyAttributes(),
                 "PWD_EXP_GRACE");
 
