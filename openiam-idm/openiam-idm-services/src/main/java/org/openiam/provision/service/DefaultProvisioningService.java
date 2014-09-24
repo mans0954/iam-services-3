@@ -56,6 +56,7 @@ import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
 import org.openiam.idm.srvc.mngsys.domain.ProvisionConnectorEntity;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
+import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.prov.request.dto.BulkOperationEnum;
 import org.openiam.idm.srvc.prov.request.dto.BulkOperationRequest;
 import org.openiam.idm.srvc.prov.request.dto.OperationBean;
@@ -2131,21 +2132,26 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
                 for (String userId : bulkRequest.getUserIds()) {
                     User user = userMgr.getUserDto(userId);
-                    ProvisionUser pUser = new ProvisionUser(user);
-                    pUser.setRequestorUserId(requestorId);
-                    pUser.setRequestorLogin(lRequestor.getLogin());
 
                     if (user != null) {
+
+                        ProvisionUser pUser = new ProvisionUser(user);
+                        pUser.setRequestorUserId(requestorId);
+                        pUser.setRequestorLogin(lRequestor.getLogin());
+
                         boolean isEntitlementModified = false;
 
-                        Set<Group> existingGroups = user.getGroups();
-                        user.setGroups(new HashSet<Group>());
+                        Set<Group> existingGroups = pUser.getGroups();
+                        pUser.setGroups(new HashSet<Group>());
 
-                        Set<Role> existingRoles = user.getRoles();
-                        user.setRoles(new HashSet<Role>());
+                        Set<Role> existingRoles = pUser.getRoles();
+                        pUser.setRoles(new HashSet<Role>());
 
-                        Set<Resource> existingResources = user.getResources();
-                        user.setResources(new HashSet<Resource>());
+                        Set<Organization> existingOrganizations = pUser.getAffiliations();
+                        pUser.setAffiliations(new HashSet<Organization>());
+
+                        Set<Resource> existingResources = pUser.getResources();
+                        pUser.setResources(new HashSet<Resource>());
 
                         Response res = new Response(ResponseStatus.FAILURE);
                         for (OperationBean ob : bulkRequest.getOperations()) {
@@ -2153,7 +2159,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                 case USER:
                                     switch(ob.getOperation()) {
                                         case ACTIVATE_USER:
-                                            user.setStatus(UserStatusEnum.ACTIVE);
+                                            pUser.setStatus(UserStatusEnum.ACTIVE);
                                             res = modifyUser(pUser, idmAuditLog);
                                             break;
                                         case DEACTIVATE_USER:
@@ -2265,7 +2271,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                         }
                                     }
                                     if (isModifiedGroup) {
-                                        user.getGroups().add(group);
+                                        pUser.getGroups().add(group);
                                         isEntitlementModified = true;
                                     }
                                     break;
@@ -2287,7 +2293,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                         }
                                     }
                                     if (isModifiedRole) {
-                                        user.getRoles().add(role);
+                                        pUser.getRoles().add(role);
                                         isEntitlementModified = true;
                                     }
                                     break;
@@ -2308,7 +2314,28 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                         }
                                     }
                                     if (isModifiedResource) {
-                                        user.getResources().add(resource);
+                                        pUser.getResources().add(resource);
+                                        isEntitlementModified = true;
+                                    }
+                                    break;
+                                case ORGANIZATION:
+                                    boolean isModifiedOrg = false;
+                                    Organization organization = organizationService.getOrganizationDTO(ob.getObjectId(), null);
+                                    if (existingOrganizations.contains(organization)) {
+                                        if (BulkOperationEnum.DELETE_ENTITLEMENT.equals(ob.getOperation())) {
+                                            existingOrganizations.remove(organization);
+                                            organization.setOperation(AttributeOperationEnum.DELETE);
+                                            isModifiedOrg = true;
+                                        }
+                                    } else {
+                                        if (BulkOperationEnum.ADD_ENTITLEMENT.equals(ob.getOperation())) {
+                                            existingOrganizations.add(organization);
+                                            organization.setOperation(AttributeOperationEnum.ADD);
+                                            isModifiedOrg = true;
+                                        }
+                                    }
+                                    if (isModifiedOrg) {
+                                        pUser.getAffiliations().add(organization);
                                         isEntitlementModified = true;
                                     }
                                     break;

@@ -2,20 +2,22 @@ package org.openiam.idm.srvc.audit.dto;
 
 // Generated Nov 30, 2007 3:01:45 AM by Hibernate Tools 3.2.0.b11
 
-import java.io.Serializable;
-import java.util.*;
-
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlType;
-
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.openiam.base.BaseObject;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.dozer.DozerDTOCorrespondence;
-import org.openiam.idm.srvc.audit.constant.*;
+import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
+import org.openiam.idm.srvc.audit.constant.AuditResult;
+import org.openiam.idm.srvc.audit.constant.AuditTarget;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.util.CustomJacksonMapper;
+
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlType;
+import java.io.Serializable;
+import java.util.*;
 
 /**
  * DTO object that is used log and retrieve audit information
@@ -517,7 +519,9 @@ public class IdmAuditLog implements Serializable {
 		result = prime * result + ((managedSysId == null) ? 0 : managedSysId.hashCode());
 		result = prime * result + ((sessionID == null) ? 0 : sessionID.hashCode());
 		result = prime * result + ((correlationId == null) ? 0 : correlationId.hashCode());
-		return result;
+        result = prime * result + ((CollectionUtils.isEmpty(this.targets)) ? 0 : targets.hashCode());
+
+        return result;
 	}
 
 	@Override
