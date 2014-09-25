@@ -177,7 +177,7 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
 		return (List<GroupEntity>)criteria.list();
 	}
 	
-
+	@Deprecated
 	public List<GroupEntity> getGroupsForUser(final String userId, Set<String> filter, final int from, final int size) {
 		final Criteria criteria = getEntitlementGroupsCriteria(userId, null, null, filter);
         return getList(criteria, from, size);
@@ -185,6 +185,7 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
 
 
 	@Override
+	@Deprecated
 	public List<GroupEntity> getGroupsForRole(final String roleId, Set<String> filter, int from, int size) {
 		final Criteria criteria = getEntitlementGroupsCriteria(null, roleId, null, filter);
         return getList(criteria, from, size);
@@ -192,6 +193,7 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
 
 
     @Override
+    @Deprecated
     public List<GroupEntity> getGroupsForResource(final String resourceId, Set<String> filter, int from, int size){
         final Criteria criteria = getEntitlementGroupsCriteria(null, null, resourceId, filter);
         return getList(criteria, from, size);
@@ -199,24 +201,28 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
 
 
     @Override
+    @Deprecated
     public List<GroupEntity> getChildGroups(final String groupId, Set<String> filter, int from, int size) {
         final Criteria criteria = getChildGroupsCriteria(groupId, filter);
         return getList(criteria, from, size);
     }
 
     @Override
+    @Deprecated
     public List<GroupEntity> getParentGroups(final String groupId, Set<String> filter, int from, int size) {
         final Criteria criteria = getParentGroupsCriteria(groupId, filter);
         return getList(criteria, from, size);
     }
 
     @Override
+    @Deprecated
     public int getNumOfGroupsForUser(final String userId, Set<String> filter) {
         final Criteria criteria = getEntitlementGroupsCriteria(userId, null, null, filter).setProjection(rowCount());
         return ((Number)criteria.uniqueResult()).intValue();
     }
 
     @Override
+    @Deprecated
     public int getNumOfGroupsForRole(final String roleId, Set<String> filter) {
         final Criteria criteria = getEntitlementGroupsCriteria(null, roleId, null, filter);
         criteria.setProjection(rowCount());
@@ -224,6 +230,7 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
     }
 
     @Override
+    @Deprecated
     public int getNumOfGroupsForResource(final String resourceId, Set<String> filter){
         final Criteria criteria = getEntitlementGroupsCriteria(null, null, resourceId, filter);
         criteria.setProjection(rowCount());
@@ -231,6 +238,7 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
     }
 
     @Override
+    @Deprecated
 	public int getNumOfChildGroups(final String groupId, Set<String> filter) {
 		final Criteria criteria = getChildGroupsCriteria(groupId, filter);
                        criteria.setProjection(rowCount());
@@ -238,6 +246,7 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
 	}
 
 	@Override
+	@Deprecated
 	public int getNumOfParentGroups(final String groupId, Set<String> filter) {
         final Criteria criteria = getParentGroupsCriteria(groupId, filter);
                        criteria.setProjection(rowCount());

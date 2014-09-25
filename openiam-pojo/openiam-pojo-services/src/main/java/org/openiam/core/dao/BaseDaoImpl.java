@@ -39,10 +39,13 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable>
     protected final Logger log = Logger.getLogger(this.getClass());
     protected final Class<T> domainClass;
     private SessionFactory sessionFactory;
-    private boolean cacheable = true;
     
+    /* 
+     * by default we set isCachable to false to prevent problems with invalidation of results. 
+     * a caller should explicitly set cacheable to true if he wants to cache query results
+     */
     protected boolean isCachable() {
-    	return cacheable;
+    	return false;
     }
 
 	@Autowired
@@ -193,21 +196,7 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable>
         if (id == null) {
             return null;
         }
-        return (T) getCriteria().add(eq(getPKfieldName(), id)).uniqueResult(); //this.getSession().get(domainClass, id);
-    }
-    
-    /**
-     * So... the reason for this method, is that findById was returning a non-intialized object.  WHen setting attributes on Resources,
-     * Groups, Roles, etc, this casued a TransientObjectException.  The only thing that fixed that, was by calling this method,
-     * which calles Session.get.  According to the Hibernate docs, 'get' never returns a non-initialized object.
-     * Consider removing this in 3.2
-     * @param id
-     * @return
-     */
-    @LocalizedDatabaseGet
-    public T findInitializedObjectById(PrimaryKey id) {
-    	final Object o = this.getSession().get(domainClass, id);
-    	return (o != null) ? (T)o : null;
+        return (T) getCriteria().add(eq(getPKfieldName(), id)).setCacheable(true).uniqueResult(); //this.getSession().get(domainClass, id);
     }
 
     @SuppressWarnings("unchecked")
@@ -223,7 +212,7 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable>
             return (List<T>) Collections.EMPTY_LIST;
         }
 
-        final Criteria criteria = getCriteria().add( Restrictions.in(getPKfieldName(), idCollection));
+        final Criteria criteria = getCriteria().add( Restrictions.in(getPKfieldName(), idCollection)).setCacheable(true);
 
         if (from > -1) {
             criteria.setFirstResult(from);
@@ -242,7 +231,7 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable>
             return null;
         }
         Criteria criteria = getCriteria().add(eq(getPKfieldName(), id))
-                .setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY);
+                .setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY).setCacheable(true);
         if (fetchFields != null) {
             for (String field : fetchFields) {
                 criteria.setFetchMode(field, FetchMode.JOIN);

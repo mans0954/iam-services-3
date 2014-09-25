@@ -12,20 +12,16 @@ import java.util.Set;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "OrganizationTypeSearchBean", propOrder = {
 	"keySet",
-	"name",
 	"parentIds",
 	"childIds",
     "excludeIds"
 })
-public class OrganizationTypeSearchBean extends AbstractSearchBean<OrganizationType, String> implements SearchBean<OrganizationType, String> {
+public class OrganizationTypeSearchBean extends AbstractKeyNameSearchBean<OrganizationType, String> {
 
 	private Set<String> keySet;
 	private Set<String> parentIds;
 	private Set<String> childIds;
     private Set<String> excludeIds;
-	private String name;
-	
-	
 
 	public Set<String> getKeySet() {
 		return keySet;
@@ -33,14 +29,6 @@ public class OrganizationTypeSearchBean extends AbstractSearchBean<OrganizationT
 
 	public void setKeySet(Set<String> keySet) {
 		this.keySet = keySet;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
 	}
 
 	public Set<String> getParentIds() {

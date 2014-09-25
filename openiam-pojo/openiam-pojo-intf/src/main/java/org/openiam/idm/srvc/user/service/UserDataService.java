@@ -220,6 +220,7 @@ public interface UserDataService {
 
     public Map<String, UserAttributeEntity> getAllAttributes(String userId);
 
+    @Deprecated
     public List<UserEntity> getUsersForResource(final String resourceId, String requesterId, final int from, final int size);
     public List<UserEntity> getUsersForResource(UserSearchBean userSearchBean, int from, int size);
 
@@ -227,10 +228,13 @@ public interface UserDataService {
 
     public List<UserEntity> getUsersForGroup(final String groupId, String requesterId, final int from, final int size);
 
+    @Deprecated
     public int getNumOfUsersForGroup(final String groupId, String requesterId);
 
+    @Deprecated
     public List<UserEntity> getUsersForRole(final String roleId, String requesterId, final int from, final int size);
 
+    @Deprecated
     public int getNumOfUsersForRole(final String roleId, String requesterId);
 
     public String saveUserInfo(UserEntity userEntity, String supervisorId) throws Exception;

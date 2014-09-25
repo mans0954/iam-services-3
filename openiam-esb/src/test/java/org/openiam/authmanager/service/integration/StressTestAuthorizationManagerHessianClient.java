@@ -16,6 +16,7 @@ import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+@Test(enabled=false)
 @ContextConfiguration(locations={"classpath:test-integration-environment.xml","classpath:test-esb-integration.xml"})
 public class StressTestAuthorizationManagerHessianClient extends AbstractTestNGSpringContextTests {
 

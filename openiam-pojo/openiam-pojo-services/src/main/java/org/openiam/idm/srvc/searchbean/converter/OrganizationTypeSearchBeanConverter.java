@@ -14,7 +14,7 @@ public class OrganizationTypeSearchBeanConverter implements SearchBeanConverter<
 	public OrganizationTypeEntity convert(final OrganizationTypeSearchBean searchBean) {
 		final OrganizationTypeEntity entity = new OrganizationTypeEntity();
 		entity.setId(StringUtils.trimToNull(searchBean.getKey()));
-		entity.setName(StringUtils.trimToNull(entity.getName()));
+		entity.setName(StringUtils.trimToNull(searchBean.getName()));
 		return entity;
 	}
 

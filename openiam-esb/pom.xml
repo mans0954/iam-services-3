@@ -283,6 +283,9 @@
 	          	<additionalClasspathElement>${basedir}/src/test/resources</additionalClasspathElement>
 	          </additionalClasspathElements>
 	          <skipTests>${skipTests}</skipTests>
+	          <suiteXmlFiles>
+	            <suiteXmlFile>src/test/resources/testng.xml</suiteXmlFile>
+	          </suiteXmlFiles>
 	        </configuration>
 	      </plugin>
 	    </plugins>

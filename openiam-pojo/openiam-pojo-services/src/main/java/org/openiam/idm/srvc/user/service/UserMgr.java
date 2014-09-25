@@ -206,6 +206,7 @@ public class UserMgr implements UserDataService {
         }
 
         validateEmailAddress(user, user.getEmailAddresses());
+        setMetadataTypes(user);
         userDao.save(user);
 
         keyManagementService.generateUserKeys(user);
@@ -237,7 +238,7 @@ public class UserMgr implements UserDataService {
             throw new NullPointerException("user id is null");
 
         user.setLastUpdate(new Date(System.currentTimeMillis()));
-
+        setMetadataTypes(user);
         userDao.update(user);
 
     }
@@ -256,7 +257,7 @@ public class UserMgr implements UserDataService {
         updateUserAttributes(user, userEntity);
 
         userEntity.updateUser(user);
-
+        setMetadataTypes(user);
         userDao.update(userEntity);
         validateEmailAddress(userEntity, user.getEmailAddresses());
 
@@ -370,7 +371,8 @@ public class UserMgr implements UserDataService {
         updateUserAttributes(userDozerConverter.convertToEntity(user, true), userEntity);
 
         // TODO: Check userRoles and affiliations
-
+        
+        setMetadataTypes(userEntity);
         userDao.update(userEntity);
 
     }
@@ -1494,6 +1496,7 @@ public class UserMgr implements UserDataService {
 
     @Override
     @Transactional(readOnly = true)
+    @Deprecated
     public List<UserEntity> getUsersForResource(String resourceId, String requesterId, int from, int size) {
 //        DelegationFilterSearchBean delegationFilter = this.getDelegationFilterForUserSearch(requesterId);
 //        return userDao.getUsersForResource(resourceId, delegationFilter, from, size);
@@ -1537,6 +1540,7 @@ public class UserMgr implements UserDataService {
 
     @Override
     @Transactional(readOnly = true)
+    @Deprecated
     public int getNumOfUsersForGroup(String groupId, String requesterId) {
         DelegationFilterSearchBean delegationFilter = this.getDelegationFilterForUserSearch(requesterId);
         if (DelegationFilterHelper.isAllowed(groupId, delegationFilter.getGroupIdSet())) {
@@ -1547,6 +1551,7 @@ public class UserMgr implements UserDataService {
 
     @Override
     @Transactional(readOnly = true)
+    @Deprecated
     public List<UserEntity> getUsersForRole(String roleId, String requesterId, int from, int size) {
         DelegationFilterSearchBean delegationFilter = this.getDelegationFilterForUserSearch(requesterId);
         if (DelegationFilterHelper.isAllowed(roleId, delegationFilter.getRoleIdSet())) {
@@ -1557,6 +1562,7 @@ public class UserMgr implements UserDataService {
 
     @Override
     @Transactional(readOnly = true)
+    @Deprecated
     public int getNumOfUsersForRole(String roleId, String requesterId) {
         DelegationFilterSearchBean delegationFilter = this.getDelegationFilterForUserSearch(requesterId);
         if (DelegationFilterHelper.isAllowed(roleId, delegationFilter.getRoleIdSet())) {
@@ -1573,6 +1579,7 @@ public class UserMgr implements UserDataService {
             // update, need to merge user objects
             UserEntity origUser = this.getUser(newUserEntity.getId(), null);
             this.mergeUserFields(origUser, newUserEntity);
+            setMetadataTypes(origUser);
             userDao.update(origUser);
         } else {
             userId = createNewUser(newUserEntity);
@@ -1593,7 +1600,24 @@ public class UserMgr implements UserDataService {
         return userId;
     }
 
-    @Transactional
+    private void setMetadataTypes(final UserEntity userEntity) {
+    	if(userEntity.getEmployeeType() != null && StringUtils.isNotBlank(userEntity.getEmployeeType().getId())) {
+    		userEntity.setEmployeeType(metadataTypeDAO.findById(userEntity.getEmployeeType().getId()));
+        } else {
+        	userEntity.setEmployeeType(null);
+        }
+        if(userEntity.getJobCode() != null && StringUtils.isNotBlank(userEntity.getJobCode().getId())) {
+        	userEntity.setJobCode(metadataTypeDAO.findById(userEntity.getJobCode().getId()));
+        } else {
+        	userEntity.setJobCode(null);
+        }
+        if(userEntity.getType() != null && StringUtils.isNotBlank(userEntity.getType().getId())) {
+        	userEntity.setType(metadataTypeDAO.findById(userEntity.getType().getId()));
+        } else {
+        	userEntity.setType(null);
+        }
+    }
+    
     private String createNewUser(UserEntity newUserEntity) throws Exception {
         List<LoginEntity> principalList = newUserEntity.getPrincipalList();
         Set<EmailAddressEntity> emailAddressList = newUserEntity.getEmailAddresses();
@@ -1821,7 +1845,7 @@ public class UserMgr implements UserDataService {
             }
         }
         if (newUserEntity.getEmployeeType() != null && StringUtils.isNotBlank(newUserEntity.getEmployeeType().getId())) {
-           origUserEntity.setEmployeeType(metadataTypeDAO.findById(newUserEntity.getEmployeeType().getId()));
+           origUserEntity.setEmployeeType(newUserEntity.getEmployeeType());
         } else {
             origUserEntity.setEmployeeType(null);
         }
@@ -1834,7 +1858,7 @@ public class UserMgr implements UserDataService {
             }
         }
         if (newUserEntity.getJobCode() != null && StringUtils.isNotBlank(newUserEntity.getJobCode().getId())) {
-            origUserEntity.setJobCode(metadataTypeDAO.findById(newUserEntity.getJobCode().getId()));
+            origUserEntity.setJobCode(newUserEntity.getJobCode());
         } else {
             origUserEntity.setJobCode(null);
         }
@@ -1868,7 +1892,7 @@ public class UserMgr implements UserDataService {
             }
         }
         if (newUserEntity.getType() != null && StringUtils.isNotBlank(newUserEntity.getType().getId())) {
-                origUserEntity.setType(metadataTypeDAO.findById(newUserEntity.getType().getId()));
+                origUserEntity.setType(newUserEntity.getType());
         }
         if (newUserEntity.getMiddleInit() != null) {
             if (newUserEntity.getMiddleInit().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
@@ -1940,6 +1964,7 @@ public class UserMgr implements UserDataService {
                 origUserEntity.setAlternateContactId(newUserEntity.getAlternateContactId());
             }
         }
+        setMetadataTypes(origUserEntity);
     }
 
     @Transactional

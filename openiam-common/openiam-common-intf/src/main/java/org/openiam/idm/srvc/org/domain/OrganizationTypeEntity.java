@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.persistence.AttributeOverride;
+import javax.persistence.AttributeOverrides;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -25,6 +26,7 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.GenericGenerator;
+import org.openiam.base.domain.AbstractKeyNameEntity;
 import org.openiam.base.domain.KeyEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.lang.domain.LanguageMappingEntity;
@@ -35,13 +37,13 @@ import org.openiam.internationalization.InternationalizedCollection;
 @Entity
 @Table(name="ORGANIZATION_TYPE")
 @DozerDTOCorrespondence(OrganizationType.class)
-@AttributeOverride(name = "id", column = @Column(name = "ORG_TYPE_ID"))
+@AttributeOverrides({
+	@AttributeOverride(name = "id", column = @Column(name = "ORG_TYPE_ID")),
+	@AttributeOverride(name = "name", column = @Column(name="NAME", length=100, nullable = false))
+})
 @Internationalized
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class OrganizationTypeEntity extends KeyEntity {
-	
-	@Column(name="NAME", length=100, nullable = false)
-	private String name;
+public class OrganizationTypeEntity extends AbstractKeyNameEntity {
 	
 	@Column(name="DESCRIPTION", length=100, nullable = true)
 	private String description;
@@ -84,14 +86,6 @@ public class OrganizationTypeEntity extends KeyEntity {
 
 	public void setDisplayName(String displayName) {
 		this.displayName = displayName;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
 	}
 
 	public String getDescription() {
@@ -194,11 +188,9 @@ public class OrganizationTypeEntity extends KeyEntity {
 	@Override
 	public int hashCode() {
 		final int prime = 31;
-		int result = 1;
+		int result = super.hashCode();
 		result = prime * result
 				+ ((description == null) ? 0 : description.hashCode());
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
-		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		return result;
 	}
 
@@ -206,7 +198,7 @@ public class OrganizationTypeEntity extends KeyEntity {
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
-		if (obj == null)
+		if (!super.equals(obj))
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
@@ -216,24 +208,15 @@ public class OrganizationTypeEntity extends KeyEntity {
 				return false;
 		} else if (!description.equals(other.description))
 			return false;
-		if (id == null) {
-			if (other.id != null)
-				return false;
-		} else if (!id.equals(other.id))
-			return false;
-		if (name == null) {
-			if (other.name != null)
-				return false;
-		} else if (!name.equals(other.name))
-			return false;
 		return true;
 	}
 
 	@Override
 	public String toString() {
-		return "OrganizationTypeEntity [id=" + id + ", name=" + name
-				+ ", description=" + description + "]";
+		return "OrganizationTypeEntity [description=" + description
+				+ ", displayNameMap=" + displayNameMap + ", displayName="
+				+ displayName + "]";
 	}
-	
+
 	
 }

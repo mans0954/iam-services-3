@@ -13,19 +13,29 @@ public interface RoleDAO extends BaseDao<RoleEntity, String> {
      *
      * @return
      */
+	@Deprecated
     public List<RoleEntity> getRolesForGroup(final String groupId, final Set<String> filter, final int from, final int size);
+	
+	@Deprecated
     public int getNumOfRolesForGroup(final String groupId, final Set<String> filter);
 
+    @Deprecated
     public int getNumOfRolesForResource(final String resourceId, final Set<String> filter);
+    @Deprecated
     public List<RoleEntity> getRolesForResource(final String resourceId, final Set<String> filter, final int from, final int size);
     
+    @Deprecated
     public List<RoleEntity> getChildRoles(final  String roleId, final Set<String> filter, final int from, final int size);
+    
+    @Deprecated
     public int getNumOfChildRoles(final  String roleId, final Set<String> filter);
     
     public List<RoleEntity> getParentRoles(final  String roleId, final Set<String> filter, final int from, final int size);
     public int getNumOfParentRoles(final String roleId, final Set<String> filter);
 
     public List<RoleEntity> getRolesForUser(final String userId, final Set<String> filter, final int from, final int size);
+    
+    @Deprecated
     public int getNumOfRolesForUser(final String userId, final Set<String> filter);
 
 

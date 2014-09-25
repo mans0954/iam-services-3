@@ -455,18 +455,21 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
 
     @Override
     @LocalizedServiceGet
+    @Deprecated
     public List<Resource> getChildResources(final String resourceId, Boolean deepFlag, final int from, final int size, final Language language) {
         final List<ResourceEntity> resultList = resourceService.getChildResources(resourceId, from, size);
         return resourceConverter.convertToDTOList(resultList, false);
     }
 
     @Override
+    @Deprecated
     public int getNumOfChildResources(final String resourceId) {
         return resourceService.getNumOfChildResources(resourceId);
     }
 
     @Override
     @LocalizedServiceGet
+    @Deprecated
     public List<Resource> getParentResources(final String resourceId, final int from, final int size, final Language language) {
         final List<ResourceEntity> resultList = resourceService.getParentResources(resourceId, from, size);
         return resourceConverter.convertToDTOList(resultList, false);
@@ -596,13 +599,18 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
         IdmAuditLog idmAuditLog = new IdmAuditLog ();
         idmAuditLog.setRequestorUserId(requesterId);
         idmAuditLog.setAction(AuditAction.REMOVE_GROUP_FROM_RESOURCE.value());
-        GroupEntity groupEntity = groupDataService.getGroup(groupId);
-        idmAuditLog.setTargetGroup(groupId, groupEntity.getName());
-        ResourceEntity resourceEntity = resourceService.findResourceById(resourceId);
-        idmAuditLog.setTargetResource(resourceId, resourceEntity.getName());
         idmAuditLog.setAuditDescription(String.format("Remove group: %s from resource: %s", groupId, resourceId));
 
         try {
+            final GroupEntity groupEntity = groupDataService.getGroup(groupId);
+            final ResourceEntity resourceEntity = resourceService.findResourceById(resourceId);
+            if(groupEntity == null || resourceEntity == null) {
+            	throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+            }
+            
+            idmAuditLog.setTargetGroup(groupId, groupEntity.getName());
+            idmAuditLog.setTargetResource(resourceId, resourceEntity.getName());
+        	
             if (StringUtils.isBlank(resourceId) || StringUtils.isBlank(groupId)) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "GroupId or ResourceId is null");
             }
@@ -633,16 +641,24 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
         IdmAuditLog idmAuditLog = new IdmAuditLog ();
         idmAuditLog.setRequestorUserId(requesterId);
         idmAuditLog.setAction(AuditAction.ADD_ROLE_TO_RESOURCE.value());
-        RoleEntity roleEntity = roleService.getRole(roleId);
-        idmAuditLog.setTargetRole(roleId, roleEntity.getName());
-        ResourceEntity resourceEntity  = resourceService.findResourceById(resourceId);
-        idmAuditLog.setTargetResource(resourceId, resourceEntity.getName());
-
+        
         idmAuditLog.setAuditDescription(String.format("Add role: %s to resource: %s", roleId, resourceId));
         try {
             if (StringUtils.isBlank(resourceId) || StringUtils.isBlank(roleId)) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS, "RoleId or ResourceId is null");
             }
+            
+            final RoleEntity roleEntity = roleService.getRole(roleId);
+            if(roleEntity == null) {
+            	throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+            }
+            
+            idmAuditLog.setTargetRole(roleId, roleEntity.getName());
+            final ResourceEntity resourceEntity  = resourceService.findResourceById(resourceId);
+            if(resourceEntity == null) {
+            	throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+            }
+            idmAuditLog.setTargetResource(resourceId, resourceEntity.getName());
 
             resourceService.addResourceToRole(resourceId, roleId);
             idmAuditLog.succeed();
@@ -700,6 +716,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
     }
 
     @Override
+    @Deprecated
     public int getNumOfResourcesForRole(final String roleId, final ResourceSearchBean searchBean) {
        return resourceService.getNumOfResourcesForRole(roleId, searchBean);
     }
@@ -712,24 +729,28 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
     }
 
     @Override
+    @Deprecated
     public int getNumOfResourceForGroup(final String groupId, final ResourceSearchBean searchBean) {
        return resourceService.getNumOfResourceForGroup(groupId, searchBean);
     }
 
     @Override
     @LocalizedServiceGet
+    @Deprecated
     public List<Resource> getResourcesForGroup(final String groupId, final int from, final int size, final ResourceSearchBean searchBean, final Language language) {
         final List<ResourceEntity> entityList = resourceService.getResourcesForGroup(groupId, from, size, searchBean);
         return resourceConverter.convertToDTOList(entityList, false);
     }
 
     @Override
+    @Deprecated
     public int getNumOfResourceForUser(final String userId, final ResourceSearchBean searchBean) {
         return resourceService.getNumOfResourceForUser(userId, searchBean);
     }
 
     @Override
     @LocalizedServiceGet
+    @Deprecated
     public List<Resource> getResourcesForUser(final String userId, final int from, final int size, final ResourceSearchBean searchBean, final Language language) {
         final List<ResourceEntity> entityList = resourceService.getResourcesForUser(userId, from, size, searchBean);
         return resourceConverter.convertToDTOList(entityList, false);
@@ -738,6 +759,7 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
     @Override
     @LocalizedServiceGet
     @Transactional(readOnly=true)
+    @Deprecated
     public List<Resource> getResourcesForUserByType(final String userId, final String resourceTypeId, final ResourceSearchBean searchBean, final Language language) {
       final List<ResourceEntity> entityList = resourceService.getResourcesForUserByType(userId, resourceTypeId, searchBean);
       return resourceConverter.convertToDTOList(entityList, true);

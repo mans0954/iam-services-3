@@ -208,6 +208,7 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
 	}
 
 	@Override
+	@Deprecated
 	public int getNumOfResourcesForRole(String roleId, final ResourceSearchBean searchBean) {
 		final Criteria criteria = getCriteria()
 				.createAlias("roles", "rr")
@@ -225,6 +226,7 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
 
 	@Override
 	@LocalizedDatabaseGet
+	@Deprecated
 	public List<ResourceEntity> getResourcesForGroup(final String groupId,
 			final int from, final int size, final ResourceSearchBean searchBean) {
 		final Criteria criteria = getCriteria()
@@ -247,6 +249,7 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
 	}
 
 	@Override
+	@Deprecated
 	public int getNumOfResourcesForGroup(final String groupId, final ResourceSearchBean searchBean) {
 		final Criteria criteria = getCriteria()
 				.createAlias("groups", "rg")
@@ -264,6 +267,7 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
 
 	@Override
 	@LocalizedDatabaseGet
+	@Deprecated
 	public List<ResourceEntity> getResourcesForUser(final String userId,
 			final int from, final int size, final ResourceSearchBean searchBean) {
 		final Criteria criteria = getResourceForUserCriteria(userId);
@@ -282,6 +286,7 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
 	
     @Override
     @LocalizedDatabaseGet
+    @Deprecated
     public List<ResourceEntity> getResourcesForUserByType(final String userId, String resourceTypeId, final ResourceSearchBean searchBean){
         final Criteria criteria = getResourceForUserCriteria(userId);
         addSearchBeanCriteria(criteria, searchBean);
@@ -290,6 +295,7 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
     }
     
 	@Override
+	@Deprecated
 	public int getNumOfResourcesForUser(String userId, final ResourceSearchBean searchBean) {
 		final Criteria criteria = getResourceForUserCriteria(userId).setProjection(rowCount());
 		addSearchBeanCriteria(criteria, searchBean);

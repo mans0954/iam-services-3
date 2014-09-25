@@ -241,23 +241,20 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 
 	@Override
 	@Deprecated
-	public Role getRole(String roleId, String requesterId) {
-		return getRoleLocalized(roleId, requesterId, null);
-	}
-
-	@Override
 	public List<Role> getRolesInGroup(final String groupId, String requesterId, boolean deepFlag, final int from, final int size) {
         final List<RoleEntity> entityList = roleDataService.getRolesInGroup(groupId, requesterId, from, size);
         return roleDozerConverter.convertToDTOList(entityList, false);
 	}
 
 	@Override
+	@Deprecated
 	public List<Role> getRolesForUser(final String userId, final String requesterId, Boolean deepFlag, final int from, final int size) {
         final List<RoleEntity> entityList = roleDataService.getRolesForUser(userId, requesterId, from, size);
         return roleDozerConverter.convertToDTOList(entityList, false);
 	}
 
 	@Override
+	@Deprecated
 	public int getNumOfRolesForUser(final String userId, String requesterId) {
         return roleDataService.getNumOfRolesForUser(userId, requesterId);
 	}
@@ -509,24 +506,27 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 	}
 
 	@Override
+	@Deprecated
 	public List<Role> getRolesForResource(final String resourceId, String requesterId, boolean deepFlag,  final int from, final int size) {
         final List<RoleEntity> entityList = roleDataService.getRolesForResource(resourceId, requesterId, from, size);
         return roleDozerConverter.convertToDTOList(entityList, false);
 	}
 
 	@Override
+	@Deprecated
 	public int getNumOfRolesForResource(final String resourceId, String requesterId) {
         return roleDataService.getNumOfRolesForResource(resourceId, requesterId);
 	}
 
 	@Override
+	@Deprecated
 	public List<Role> getChildRoles(final String roleId, String requesterId, Boolean deepFlag, final  int from, final int size) {
         final List<RoleEntity> entityList = roleDataService.getChildRoles(roleId, requesterId, from, size);
         return roleDozerConverter.convertToDTOList(entityList, false);
 	}
 
 	@Override
-	@WebMethod
+	@Deprecated
 	public int getNumOfChildRoles(final String roleId, String requesterId) {
         return roleDataService.getNumOfChildRoles(roleId, requesterId);
 	}
@@ -540,6 +540,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 
 	@Override
 	@WebMethod
+	@Deprecated
 	public int getNumOfParentRoles(final String roleId, String requesterId) {
         return roleDataService.getNumOfParentRoles(roleId, requesterId);
 	}
@@ -590,6 +591,7 @@ public class RoleDataWebServiceImpl extends AbstractBaseService implements RoleD
 
 
 	@Override
+	@Deprecated
 	public int getNumOfRolesForGroup(final String groupId, String requesterId) {
         return roleDataService.getNumOfRolesForGroup(groupId, requesterId);
 	}
