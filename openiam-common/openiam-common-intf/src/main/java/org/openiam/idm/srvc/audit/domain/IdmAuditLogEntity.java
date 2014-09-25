@@ -1,20 +1,20 @@
 package org.openiam.idm.srvc.audit.domain;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.*;
+import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
+
+import javax.persistence.CascadeType;
+import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
-
-import javax.persistence.*;
-
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
-import org.hibernate.annotations.GenericGenerator;
-import org.openiam.dozer.DozerDTOCorrespondence;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 
 @Entity
 @Table(name = "OPENIAM_LOG")
@@ -283,6 +283,7 @@ public class IdmAuditLogEntity implements Serializable {
         if (timestamp != null ? !timestamp.equals(that.timestamp) : that.timestamp != null) return false;
         if (userId != null ? !userId.equals(that.userId) : that.userId != null) return false;
 
+        if(CollectionUtils.isNotEmpty(targets) ? !targets.equals(that.targets) : CollectionUtils.isNotEmpty(that.targets)) return false;
         return true;
     }
 

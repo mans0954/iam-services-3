@@ -1,13 +1,5 @@
 package org.openiam.idm.srvc.audit.service;
 
-import java.net.InetAddress;
-import java.util.*;
-
-import javax.annotation.PostConstruct;
-import javax.jms.JMSException;
-import javax.jms.Queue;
-import javax.jms.Session;
-
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -40,6 +32,13 @@ import org.springframework.jms.core.JmsTemplate;
 import org.springframework.jms.core.MessageCreator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import javax.annotation.PostConstruct;
+import javax.jms.JMSException;
+import javax.jms.Queue;
+import javax.jms.Session;
+import java.net.InetAddress;
+import java.util.*;
 
 /**
  * Implementation class for <code>IdmAuditLogDataService</code>. All audit logging activities 
@@ -122,7 +121,10 @@ public class AuditLogServiceImpl implements AuditLogService {
                        // log.setCorrelationId(log.getCorrelationId());
                     }
                     IdmAuditLogEntity chEntity = prepare(ch);
-                    if(!auditLogEntity.getChildLogs().contains(chEntity)) {
+                    if(!logExists(auditLogEntity.getChildLogs(), chEntity)) {
+
+                      //  auditLogEntity.getChildLogs().contains(chEntity)
+
                         auditLogEntity.addChild(chEntity);
                         chEntity.addParent(auditLogEntity);
                     }
@@ -174,7 +176,17 @@ public class AuditLogServiceImpl implements AuditLogService {
         return null;
     }
 
-	@Override
+    private boolean logExists(Set<IdmAuditLogEntity> logEntitySet, IdmAuditLogEntity logEntity) {
+        if(CollectionUtils.isNotEmpty(logEntitySet)){
+            for(IdmAuditLogEntity log : logEntitySet){
+                if(log!=null && log.equals(logEntity))
+                    return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
 	public void enqueue(final IdmAuditLog event) {
         if(event != null){
 		    send(event);
