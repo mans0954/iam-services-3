@@ -65,9 +65,9 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
 			
 			final LoginEntity currentEntity = loginDS.getLoginByManagedSys(principal.getLogin(), principal.getManagedSysId());
 			if(currentEntity != null) {
-				if(StringUtils.isBlank(principal.getLoginId())) {
+				if(StringUtils.isBlank(principal.getId())) {
 					throw new BasicDataServiceException(ResponseCode.LOGIN_EXISTS);
-				} else if(!principal.getLoginId().equals(currentEntity.getLoginId())) {
+				} else if(!principal.getId().equals(currentEntity.getId())) {
 					throw new BasicDataServiceException(ResponseCode.LOGIN_EXISTS);
 				}
 			}
@@ -99,20 +99,20 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
 			
 			final LoginEntity currentEntity = loginDS.getLoginByManagedSys(principal.getLogin(), principal.getManagedSysId());
 			if(currentEntity != null) {
-				if(StringUtils.isBlank(principal.getLoginId())) {
+				if(StringUtils.isBlank(principal.getId())) {
 					throw new BasicDataServiceException(ResponseCode.LOGIN_EXISTS);
-				} else if(!principal.getLoginId().equals(currentEntity.getLoginId())) {
+				} else if(!principal.getId().equals(currentEntity.getId())) {
 					throw new BasicDataServiceException(ResponseCode.LOGIN_EXISTS);
 				}
 			}
 			
 			final LoginEntity entity = loginDozerConverter.convertToEntity(principal, true);
-			if(StringUtils.isNotBlank(entity.getLoginId())) {
+			if(StringUtils.isNotBlank(entity.getId())) {
 				loginDS.updateLogin(entity);
 			} else {
 				loginDS.addLogin(entity);
 			}
-			resp.setResponseValue(entity.getLoginId());
+			resp.setResponseValue(entity.getId());
 		} catch(BasicDataServiceException e) {
 			log.warn(String.format("Error while saving login: %s", e.getMessage()));
 			resp.setErrorCode(e.getCode());
@@ -578,6 +578,7 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
 	}
 
     @Override
+    @Deprecated
     public LoginListResponse getAllLoginByManagedSys(String managedSysId) {
         LoginListResponse resp = new LoginListResponse(ResponseStatus.SUCCESS);
 		List<LoginEntity> lgList = loginDS.getAllLoginByManagedSys(managedSysId);

@@ -195,7 +195,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
 
         List<PasswordHistoryEntity> pwdList = new ArrayList<PasswordHistoryEntity>();
         for (LoginEntity lg : lgList) {
-            pwdList.addAll(passwordHistoryDao.getPasswordHistoryByLoginId(lg.getLoginId(), 0, Integer.MAX_VALUE));
+            pwdList.addAll(passwordHistoryDao.getPasswordHistoryByLoginId(lg.getId(), 0, Integer.MAX_VALUE));
         }
         HashMap<String, List<ManagedSysEntity>> managedSysMap = getManagedSysMap();
         List<UserKey> newUserKeyList = new ArrayList<UserKey>();
@@ -721,11 +721,11 @@ public class KeyManagementServiceImpl implements KeyManagementService {
                 // map to userId
                 for (String userId : loginMap.keySet()) {
                     for (LoginEntity lg : loginMap.get(userId)) {
-                        if (pwdMap.containsKey(lg.getLoginId())) {
+                        if (pwdMap.containsKey(lg.getId())) {
                             if (!pwdHistoryMap.containsKey(userId)) {
                                 pwdHistoryMap.put(userId, new ArrayList<PasswordHistoryEntity>());
                             }
-                            pwdHistoryMap.get(userId).addAll(pwdMap.get(lg.getLoginId()));
+                            pwdHistoryMap.get(userId).addAll(pwdMap.get(lg.getId()));
                         }
                     }
                 }

@@ -898,7 +898,7 @@ public class User extends AbstractMetadataTypeDTO {
     	boolean retVal = false;
         if(principalList != null) {
             for(final Login login : principalList) {
-                if(StringUtils.equals(loginId, login.getLoginId())) {
+                if(StringUtils.equals(loginId, login.getId())) {
                     retVal = true;
                 }
             }

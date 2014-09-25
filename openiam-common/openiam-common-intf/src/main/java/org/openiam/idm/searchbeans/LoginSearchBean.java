@@ -16,15 +16,11 @@ import java.io.Serializable;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "GroupSearchBean", propOrder = {
-	"login",
 	"managedSysId",
 	"userId",
 	"loginMatchToken"
 })
 public class LoginSearchBean extends AbstractSearchBean<Login, String> implements SearchBean<Login, String>, Serializable {
-
-	@Deprecated
-	private String login;
 	
 	/**
 	 * The managed system ID of the login 
@@ -40,16 +36,6 @@ public class LoginSearchBean extends AbstractSearchBean<Login, String> implement
 	 * The login token to search by
 	 */
 	private SearchParam loginMatchToken;
-	
-	@Deprecated
-	public String getLogin() {
-		return (loginMatchToken != null) ? loginMatchToken.getValue() : null;
-	}
-	
-	@Deprecated
-	public void setLogin(String login) {
-		loginMatchToken = new SearchParam(login, MatchType.STARTS_WITH);
-	}
 	
 	public SearchParam getLoginMatchToken() {
 		return loginMatchToken;

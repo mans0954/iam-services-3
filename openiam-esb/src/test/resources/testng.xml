@@ -34,4 +34,10 @@
 			<class name="org.openiam.service.integration.policy.PolicyTest" />
 		</classes>
 	</test>
+	
+	<test name="integration.user">
+		<classes>
+			<class name="org.openiam.service.integration.login.LoginServiceTest" />
+		</classes>
+	</test>
 </suite>

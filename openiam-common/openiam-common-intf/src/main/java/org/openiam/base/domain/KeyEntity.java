@@ -1,7 +1,9 @@
 package org.openiam.base.domain;
 
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.search.annotations.DocumentId;
 import org.openiam.base.BaseIdentity;
+import org.openiam.core.dao.lucene.LuceneId;
 
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -14,6 +16,8 @@ public abstract class KeyEntity implements Serializable, BaseIdentity {
     @Id
     @GeneratedValue(generator="system-uuid")
     @GenericGenerator(name="system-uuid", strategy = "uuid")
+    @LuceneId
+    @DocumentId
     protected String id;
 
 	public String getId() {

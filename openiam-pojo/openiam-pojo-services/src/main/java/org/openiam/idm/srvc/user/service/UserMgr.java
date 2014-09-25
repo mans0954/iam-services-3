@@ -448,7 +448,7 @@ public class UserMgr implements UserDataService {
         List<LoginEntity> userLogin = loginDao.findUser(id);
         if(CollectionUtils.isNotEmpty(userLogin)){
             for(LoginEntity login : userLogin) {
-                passwordHistoryDAO.deleteByLogin(login.getLoginId());
+                passwordHistoryDAO.deleteByLogin(login.getId());
             }
         }
         authStateDAO.deleteByUser(id);

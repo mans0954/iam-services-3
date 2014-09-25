@@ -378,10 +378,11 @@ public abstract class AbstractHibernateSearchDao<T, Q, KeyType extends Serializa
     }
     
     private void initMetadata() throws Exception {
-    	final Class<T> clazz = getEntityClass();    	
-    	if(clazz != null) {
-    		if(clazz.getDeclaredFields() != null) {
-    			for(Field field : clazz.getDeclaredFields()) {
+    	final Class<T> clazz = getEntityClass();
+    	Class currentClazz = clazz;
+    	while(currentClazz != null) {
+    		if(currentClazz.getDeclaredFields() != null) {
+    			for(Field field : currentClazz.getDeclaredFields()) {
     				if(field.getAnnotation(LuceneLastUpdate.class) != null) {
     					lastModifiedFieldName = field.getName();
     				} else if(field.getAnnotation(LuceneId.class) != null) {
@@ -389,6 +390,7 @@ public abstract class AbstractHibernateSearchDao<T, Q, KeyType extends Serializa
     				}
     			}
     		}
+    		currentClazz = currentClazz.getSuperclass();
     	}
     	
     	if(clazz == null) {

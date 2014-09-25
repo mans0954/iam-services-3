@@ -261,7 +261,7 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
             Login targetSysLogin = loginDozerConverter.convertToDTO(mLg, false);
             for (Login l : pUser.getPrincipalList()) { // saving Login
                 // properties from pUser
-                if (l.getLoginId() != null && l.getLoginId().equals(targetSysLogin.getLoginId())) {
+                if (l.getId() != null && l.getId().equals(targetSysLogin.getId())) {
                     targetSysLogin.setOperation(l.getOperation());
                     targetSysLogin.setOrigPrincipalName(l.getOrigPrincipalName());
                     targetSysLogin.setInitialStatus(l.getStatus());

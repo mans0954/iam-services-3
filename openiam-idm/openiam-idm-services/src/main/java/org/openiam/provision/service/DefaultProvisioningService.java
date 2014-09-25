@@ -532,7 +532,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     // if DELETE status: we don't delete identity from database only
                     // set status to INACTIVE
                     if (status == UserStatusEnum.REMOVE) {
-                        loginManager.deleteLogin(login.getLoginId());
+                        loginManager.deleteLogin(login.getId());
                     } else {
                         login.setStatus(LoginStatusEnum.INACTIVE);
                         login.setProvStatus(ProvLoginStatusEnum.DELETED);

@@ -263,7 +263,7 @@ public class LoginDataServiceImpl implements LoginDataService {
         if (lg != null) {
         	final PasswordHistoryEntity hist = new PasswordHistoryEntity();
         	hist.setPassword(password);
-        	hist.setLoginId(lg.getLoginId());
+        	hist.setLoginId(lg.getId());
             passwordHistoryDao.save(hist);
             return true;
         }
@@ -538,13 +538,6 @@ public class LoginDataServiceImpl implements LoginDataService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<LoginEntity> usersWithPasswordExpYesterday() {
-        List<LoginEntity> loginList = loginDao.findUserPswdExpYesterday();
-        return loginList;
-    }
-
-    @Override
-    @Transactional(readOnly = true)
     public LoginEntity getPrimaryIdentity(String userId) {
        
         return getByUserIdManagedSys(userId,
@@ -575,6 +568,7 @@ public class LoginDataServiceImpl implements LoginDataService {
 
     @Override
     @Transactional(readOnly = true)
+    @Deprecated
     public List<LoginEntity> getAllLoginByManagedSys(String managedSysId) {
         if (managedSysId == null) {
             throw new NullPointerException("managedSysId is null");
