@@ -1,6 +1,7 @@
 package org.openiam.elasticsearch.model;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -10,13 +11,13 @@ import java.util.List;
 public class ElasticsearchReindexRequest implements Serializable {
     private boolean saveOrUpdate = false;
     private boolean delete = false;
-    private List<String> entityList;
+    private List<String> entityIdList;
     private Class<?> entityClass;
 
-    private ElasticsearchReindexRequest(boolean saveOrUpdate, boolean delete, List<String> entityList, Class<?> entityClass){
+    private ElasticsearchReindexRequest(boolean saveOrUpdate, boolean delete, List<String> entityIdList, Class<?> entityClass){
         this.saveOrUpdate=saveOrUpdate;
         this.delete=delete;
-        this.entityList=entityList;
+        this.entityIdList=entityIdList;
         this.entityClass = entityClass;
     }
 
@@ -28,19 +29,30 @@ public class ElasticsearchReindexRequest implements Serializable {
         return this.saveOrUpdate;
     }
 
-    public List<String> getEntityList(){
-        return this.entityList;
+    public List<String> getEntityIdList(){
+        return this.entityIdList;
     }
 
     public Class<?> getEntityClass() {
         return entityClass;
     }
 
+    public static ElasticsearchReindexRequest getDeleteReindexRequest(Class<?> entityClass){
+        return getDeleteReindexRequest(null, entityClass);
+    }
     public static ElasticsearchReindexRequest getDeleteReindexRequest(List<String> entityList, Class<?> entityClass){
         return new ElasticsearchReindexRequest(false, true, entityList, entityClass);
     }
-
+    public static ElasticsearchReindexRequest getUpdateReindexRequest(Class<?> entityClass){
+        return getUpdateReindexRequest(null, entityClass);
+    }
     public static ElasticsearchReindexRequest getUpdateReindexRequest(List<String> entityList, Class<?> entityClass){
         return new ElasticsearchReindexRequest(true, false, entityList, entityClass);
+    }
+
+    public void addEntityId(String entityId){
+        if(entityIdList==null)
+            this.entityIdList = new ArrayList<>();
+        this.entityIdList.add(entityId);
     }
 }

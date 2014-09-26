@@ -21,8 +21,8 @@ public class OpeniamHibernateEventRegister {
     @Autowired
     private SessionFactory sessionFactory;
 
-//    @Autowired
-//    private SomeHibernateListener listener;
+    @Autowired
+    private OpeniamHibernateEventListener listener;
 
     @PostConstruct
     public void registerListeners() {
@@ -32,12 +32,9 @@ public class OpeniamHibernateEventRegister {
         log.info("Registering event listeners");
 
 
-        eventRegistry.prependListeners(EventType.POST_COMMIT_DELETE, new OpeniamHibernateEventListener(EventType.POST_COMMIT_DELETE));
-        eventRegistry.prependListeners(EventType.POST_COMMIT_INSERT, new OpeniamHibernateEventListener(EventType.POST_COMMIT_INSERT));
-        eventRegistry.prependListeners(EventType.POST_COMMIT_UPDATE, new OpeniamHibernateEventListener(EventType.POST_COMMIT_UPDATE));
-//        eventRegistry.prependListeners(EventType.POST_DELETE, new OpeniamHibernateEventListener(EventType.POST_DELETE));
-//        eventRegistry.prependListeners(EventType.POST_UPDATE, new OpeniamHibernateEventListener(EventType.POST_UPDATE));
-//        eventRegistry.prependListeners(EventType.POST_INSERT, new OpeniamHibernateEventListener(EventType.POST_INSERT));
+        eventRegistry.prependListeners(EventType.POST_COMMIT_DELETE, listener);
+        eventRegistry.prependListeners(EventType.POST_COMMIT_INSERT, listener);
+        eventRegistry.prependListeners(EventType.POST_COMMIT_UPDATE, listener);
     }
 
 }
