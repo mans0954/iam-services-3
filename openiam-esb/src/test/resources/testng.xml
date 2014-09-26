@@ -40,4 +40,11 @@
 			<class name="org.openiam.service.integration.login.LoginServiceTest" />
 		</classes>
 	</test>
+	
+	<test name="integration.challenge.response">
+		<classes>
+			<class name="org.openiam.service.integration.challengeresponse.UserIdentityAnswerServiceTest" />
+			<class name="org.openiam.service.integration.challengeresponse.IdentityQuestionServiceTest" />
+		</classes>
+	</test>
 </suite>

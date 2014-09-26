@@ -206,7 +206,7 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
 	@Override
 	public List<IdentityQuestionEntity> findQuestionBeans(final IdentityQuestionSearchBean searchBean, final int from, final int size) {
 		List<IdentityQuestionEntity> resultList = null;
-		if(searchBean.getKey() != null) {
+		if(searchBean != null && searchBean.getKey() != null) {
 			final IdentityQuestionEntity entity = questionDAO.findById(searchBean.getKey());
 			if(entity != null) {
 				resultList = new LinkedList<IdentityQuestionEntity>();

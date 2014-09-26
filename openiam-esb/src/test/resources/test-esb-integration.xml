@@ -249,4 +249,16 @@
 		<property name="serviceClass" value="org.openiam.idm.srvc.org.service.OrganizationTypeDataService" />
 		<property name="address" value="${openiam.service_host}${openiam.idm.ws.path}OrganizationTypeDataService" />
 	</bean>
+	
+	<bean id="challengeResponseServiceClient"
+		class="org.openiam.idm.srvc.pswd.service.ChallengeResponseWebService"
+		factory-bean="challengeResponseServiceFactory" factory-method="create" />
+
+
+	<bean id="challengeResponseServiceFactory" class="org.apache.cxf.jaxws.JaxWsProxyFactoryBean">
+		<property name="serviceClass"
+			value="org.openiam.idm.srvc.pswd.service.ChallengeResponseWebService" />
+		<property name="address"
+			value="${openiam.service_host}${openiam.idm.ws.path}ChallengeResponseWebService" />
+	</bean>
 </beans>
