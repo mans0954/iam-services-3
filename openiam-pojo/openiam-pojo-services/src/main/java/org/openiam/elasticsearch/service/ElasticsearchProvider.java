@@ -1,6 +1,5 @@
 package org.openiam.elasticsearch.service;
 
-import com.sun.javaws.exceptions.InvalidArgumentException;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -34,7 +33,6 @@ import org.openiam.elasticsearch.model.ElasticsearchMetadata;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.io.InvalidObjectException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.*;

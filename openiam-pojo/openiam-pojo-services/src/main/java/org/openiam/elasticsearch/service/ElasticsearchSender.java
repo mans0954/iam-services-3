@@ -2,14 +2,10 @@ package org.openiam.elasticsearch.service;
 
 import org.openiam.elasticsearch.model.ElasticsearchReindexRequest;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jms.core.JmsTemplate;
-import org.springframework.jms.core.MessageCreator;
 import org.springframework.stereotype.Component;
 
-import javax.jms.JMSException;
 import javax.jms.Queue;
-import javax.jms.Session;
 
 /**
  * Created by: Alexander Duckardt
@@ -21,16 +17,16 @@ public class ElasticsearchSender {
     @Autowired
     private JmsTemplate jmsTemplate;
 
-    @Autowired
-    @Qualifier(value = "esReindexQueue")
+//    @Autowired
+//    @Qualifier(value = "esReindexQueue")
     private Queue queue;
 
     public void send(final ElasticsearchReindexRequest request) {
-        jmsTemplate.send(queue, new MessageCreator() {
-            public javax.jms.Message createMessage(Session session) throws JMSException {
-                javax.jms.Message message = session.createObjectMessage(request);
-                return message;
-            }
-        });
+//        jmsTemplate.send(queue, new MessageCreator() {
+//            public javax.jms.Message createMessage(Session session) throws JMSException {
+//                javax.jms.Message message = session.createObjectMessage(request);
+//                return message;
+//            }
+//        });
     }
 }
