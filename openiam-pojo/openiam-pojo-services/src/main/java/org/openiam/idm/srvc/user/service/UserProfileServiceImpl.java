@@ -145,7 +145,7 @@ public class UserProfileServiceImpl implements UserProfileService {
         		boolean contains = false;
         		if(CollectionUtils.isNotEmpty(phoneList)) {
         			for(final PhoneEntity phone : phoneList) {
-        				if(StringUtils.equals(phone.getPhoneId(), dbPhone.getPhoneId())) {
+        				if(StringUtils.equals(phone.getId(), dbPhone.getId())) {
         					contains = true;
         				}
         			}
@@ -219,7 +219,7 @@ public class UserProfileServiceImpl implements UserProfileService {
         if(CollectionUtils.isNotEmpty(phoneList)) {
         	for(final PhoneEntity phone : phoneList) {
         		phone.setParent(userEntity);
-        		if(StringUtils.isBlank(phone.getPhoneId())) {
+        		if(StringUtils.isBlank(phone.getId())) {
         			userManager.addPhone(phone);
         		} else {
         			userManager.updatePhone(phone);

@@ -90,6 +90,6 @@ public class EmailAddressDAOImpl extends BaseDaoImpl<EmailAddressEntity, String>
 
 	@Override
 	protected String getPKfieldName() {
-		return "emailId";
+		return "id";
 	}
 }

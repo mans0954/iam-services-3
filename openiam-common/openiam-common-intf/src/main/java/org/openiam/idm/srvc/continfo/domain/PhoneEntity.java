@@ -2,11 +2,14 @@ package org.openiam.idm.srvc.continfo.domain;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
-import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
+import org.openiam.base.domain.KeyEntity;
 import org.openiam.core.dao.lucene.LuceneLastUpdate;
 import org.openiam.dozer.DozerDTOCorrespondence;
-import org.openiam.elasticsearch.annotation.*;
+import org.openiam.elasticsearch.annotation.ElasticsearchField;
+import org.openiam.elasticsearch.annotation.ElasticsearchFieldBridge;
+import org.openiam.elasticsearch.annotation.ElasticsearchIndex;
+import org.openiam.elasticsearch.annotation.ElasticsearchMapping;
 import org.openiam.elasticsearch.bridge.UserBrigde;
 import org.openiam.elasticsearch.constants.ESIndexName;
 import org.openiam.elasticsearch.constants.ESIndexType;
@@ -28,14 +31,8 @@ import java.util.Date;
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @ElasticsearchIndex(indexName = ESIndexName.USERS)
 @ElasticsearchMapping(typeName = ESIndexType.PHONE, parent = ESIndexType.USER)
-public class PhoneEntity {
-    @Id
-    @GeneratedValue(generator = "system-uuid")
-    @GenericGenerator(name = "system-uuid", strategy = "uuid")
-    @Column(name = "PHONE_ID", length = 32, nullable = false)
-    @ElasticsearchId
-    private String phoneId;
-
+@AttributeOverride(name = "id", column = @Column(name = "PHONE_ID"))
+public class PhoneEntity extends KeyEntity {
     @Column(name="ACTIVE")
     @Type(type = "yes_no")
     private boolean isActive = true;
@@ -104,14 +101,6 @@ public class PhoneEntity {
     private MetadataTypeEntity metadataType;
 
     public PhoneEntity() {
-    }
-
-    public String getPhoneId() {
-        return phoneId;
-    }
-
-    public void setPhoneId(String phoneId) {
-        this.phoneId = phoneId;
     }
 
     public Boolean getIsActive() {
@@ -223,7 +212,7 @@ public class PhoneEntity {
 	@Override
 	public int hashCode() {
 		final int prime = 31;
-		int result = 1;
+		int result = super.hashCode();
 		result = prime * result + ((areaCd == null) ? 0 : areaCd.hashCode());
 		result = prime * result
 				+ ((countryCd == null) ? 0 : countryCd.hashCode());
@@ -238,7 +227,6 @@ public class PhoneEntity {
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result
 				+ ((phoneExt == null) ? 0 : phoneExt.hashCode());
-		result = prime * result + ((phoneId == null) ? 0 : phoneId.hashCode());
 		result = prime * result
 				+ ((phoneNbr == null) ? 0 : phoneNbr.hashCode());
 		/*
@@ -255,6 +243,8 @@ public class PhoneEntity {
 			return true;
 		if (obj == null)
 			return false;
+        if (!super.equals(obj))
+            return false;
 		if (getClass() != obj.getClass())
 			return false;
 		PhoneEntity other = (PhoneEntity) obj;
@@ -297,11 +287,6 @@ public class PhoneEntity {
 				return false;
 		} else if (!phoneExt.equals(other.phoneExt))
 			return false;
-		if (phoneId == null) {
-			if (other.phoneId != null)
-				return false;
-		} else if (!phoneId.equals(other.phoneId))
-			return false;
 		if (phoneNbr == null) {
 			if (other.phoneNbr != null)
 				return false;
@@ -324,17 +309,19 @@ public class PhoneEntity {
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder();
-        sb.append("PhoneEntity");
-        sb.append("{areaCd='").append(areaCd).append('\'');
-        sb.append(", countryCd='").append(countryCd).append('\'');
-        sb.append(", description='").append(description).append('\'');
-        sb.append(", isDefault=").append(isDefault);
-        sb.append(", phoneExt='").append(phoneExt).append('\'');
-        sb.append(", phoneNbr='").append(phoneNbr).append('\'');
-        sb.append(", name='").append(name).append('\'');
-        sb.append(", lastUpdate=").append(lastUpdate);
-        sb.append('}');
-        return sb.toString();
+        return "PhoneEntity{" +
+               "isActive=" + isActive +
+               ", areaCd='" + areaCd + '\'' +
+               ", countryCd='" + countryCd + '\'' +
+               ", description='" + description + '\'' +
+               ", isDefault=" + isDefault +
+               ", parent=" + parent +
+               ", phoneExt='" + phoneExt + '\'' +
+               ", phoneNbr='" + phoneNbr + '\'' +
+               ", name='" + name + '\'' +
+               ", lastUpdate=" + lastUpdate +
+               ", createDate=" + createDate +
+               ", metadataType=" + metadataType +
+               ", " + super.toString()+"}";
     }
 }

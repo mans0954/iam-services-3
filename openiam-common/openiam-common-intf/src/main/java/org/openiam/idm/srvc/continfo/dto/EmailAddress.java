@@ -216,6 +216,8 @@ public class EmailAddress extends KeyDTO {
 			return true;
 		if (obj == null)
 			return false;
+        if (!super.equals(obj))
+            return false;
 		if (getClass() != obj.getClass())
 			return false;
 		EmailAddress other = (EmailAddress) obj;

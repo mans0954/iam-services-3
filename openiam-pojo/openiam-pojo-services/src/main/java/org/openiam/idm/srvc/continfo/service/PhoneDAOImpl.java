@@ -32,8 +32,8 @@ public class PhoneDAOImpl extends BaseDaoImpl<PhoneEntity, String> implements Ph
     @Override
     protected Criteria getExampleCriteria(PhoneEntity phone){
         final Criteria criteria = getCriteria();
-        if (StringUtils.isNotBlank(phone.getPhoneId())) {
-            criteria.add(Restrictions.eq(getPKfieldName(), phone.getPhoneId()));
+        if (StringUtils.isNotBlank(phone.getId())) {
+            criteria.add(Restrictions.eq(getPKfieldName(), phone.getId()));
         } else {
 
             if (phone.getParent() != null) {
@@ -61,7 +61,7 @@ public class PhoneDAOImpl extends BaseDaoImpl<PhoneEntity, String> implements Ph
 
 	@Override
 	protected String getPKfieldName() {
-		return "phoneId";
+		return "id";
 	}
 	
 }

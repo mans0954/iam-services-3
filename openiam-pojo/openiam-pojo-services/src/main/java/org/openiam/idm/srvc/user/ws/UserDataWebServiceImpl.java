@@ -828,7 +828,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
             searchBean.setMetadataTypeId(val.getMetadataTypeId());
             // searchBean.setParentType(ContactConstants.PARENT_TYPE_USER);
             List<PhoneEntity> entityList = userManager.getPhoneList(searchBean, Integer.MAX_VALUE, 0);
-            if (CollectionUtils.isNotEmpty(entityList) && !entityList.get(0).getPhoneId().equals(val.getPhoneId()))
+            if (CollectionUtils.isNotEmpty(entityList) && !entityList.get(0).getId().equals(val.getId()))
                 throw new BasicDataServiceException(ResponseCode.PHONE_TYPE_DUPLICATED);
 
             final PhoneEntity entity = phoneDozerConverter.convertToEntity(val, true);

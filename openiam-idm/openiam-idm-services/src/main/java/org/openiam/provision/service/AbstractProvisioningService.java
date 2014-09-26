@@ -710,7 +710,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     Set<PhoneEntity> entities = userEntity.getPhones();
                     if (CollectionUtils.isNotEmpty(entities))  {
                         for (PhoneEntity en : entities) {
-                            if (en.getPhoneId().equals(e.getPhoneId())) {
+                            if (en.getId().equals(e.getId())) {
                                 userEntity.getPhones().remove(en);
                                 //Audit log
                                 IdmAuditLog auditLog = new IdmAuditLog();
@@ -743,7 +743,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     Set<PhoneEntity> entities = userEntity.getPhones();
                     if (CollectionUtils.isNotEmpty(entities))  {
                         for (PhoneEntity en : entities) {
-                            if (en.getPhoneId().equals(e.getPhoneId())) {
+                            if (en.getId().equals(e.getId())) {
                                 // Audit Log
                                 IdmAuditLog auditLog = new IdmAuditLog();
                                 Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());

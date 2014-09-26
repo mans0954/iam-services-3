@@ -1,8 +1,7 @@
 package org.openiam.idm.srvc.continfo.dto;
 
-import java.util.Date;
-
 import org.openiam.base.AttributeOperationEnum;
+import org.openiam.base.KeyDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
 
@@ -10,6 +9,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
+import java.util.Date;
 
 // Generated Jun 12, 2007 10:46:13 PM by Hibernate Tools 3.2.0.beta8
 
@@ -27,7 +27,6 @@ import javax.xml.bind.annotation.XmlType;
         "parentId",
         "parentType",
         "phoneExt",
-        "phoneId",
         "phoneNbr",
         //"phoneType",
         "name",
@@ -38,12 +37,10 @@ import javax.xml.bind.annotation.XmlType;
         "typeDescription"
 })
 @DozerDTOCorrespondence(PhoneEntity.class)
-public class Phone implements java.io.Serializable {
+public class Phone extends KeyDTO {
 
     // Fields
 	private AttributeOperationEnum operation = AttributeOperationEnum.NO_CHANGE;
-
-    private String phoneId;
 
     private boolean isActive = true;
 
@@ -87,7 +84,7 @@ public class Phone implements java.io.Serializable {
      * minimal constructor
      */
     public Phone(String phoneId) {
-        this.phoneId = phoneId;
+        setId(phoneId);
     }
 
 
@@ -111,7 +108,7 @@ public class Phone implements java.io.Serializable {
     public Phone(String phoneId, String areaCd, String countryCd,
                  String description, String phoneNbr, String phoneExt,
                  boolean isDefault, String addressId) {
-        this.phoneId = phoneId;
+        setId(phoneId);
         this.areaCd = areaCd;
         this.countryCd = countryCd;
         this.description = description;
@@ -134,14 +131,6 @@ public class Phone implements java.io.Serializable {
     }
 
     // Property accessors
-    public String getPhoneId() {
-        return this.phoneId;
-    }
-
-    public void setPhoneId(String phoneId) {
-        this.phoneId = phoneId;
-    }
-
     public String getAreaCd() {
         return this.areaCd;
     }
@@ -306,7 +295,7 @@ public class Phone implements java.io.Serializable {
     @Override
 	public int hashCode() {
 		final int prime = 31;
-		int result = 1;
+		int result = super.hashCode();
 		result = prime * result + ((areaCd == null) ? 0 : areaCd.hashCode());
 		result = prime * result
 				+ ((countryCd == null) ? 0 : countryCd.hashCode());
@@ -327,7 +316,6 @@ public class Phone implements java.io.Serializable {
 				+ ((parentType == null) ? 0 : parentType.hashCode());
 		result = prime * result
 				+ ((phoneExt == null) ? 0 : phoneExt.hashCode());
-		result = prime * result + ((phoneId == null) ? 0 : phoneId.hashCode());
 		result = prime * result
 				+ ((phoneNbr == null) ? 0 : phoneNbr.hashCode());
 		/*
@@ -345,6 +333,8 @@ public class Phone implements java.io.Serializable {
 			return true;
 		if (obj == null)
 			return false;
+        if (!super.equals(obj))
+            return false;
 		if (getClass() != obj.getClass())
 			return false;
 		Phone other = (Phone) obj;
@@ -399,11 +389,6 @@ public class Phone implements java.io.Serializable {
 				return false;
 		} else if (!phoneExt.equals(other.phoneExt))
 			return false;
-		if (phoneId == null) {
-			if (other.phoneId != null)
-				return false;
-		} else if (!phoneId.equals(other.phoneId))
-			return false;
 		if (phoneNbr == null) {
 			if (other.phoneNbr != null)
 				return false;
@@ -426,17 +411,22 @@ public class Phone implements java.io.Serializable {
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder();
-        sb.append("Phone");
-        sb.append("{areaCd='").append(areaCd).append('\'');
-        sb.append(", countryCd='").append(countryCd).append('\'');
-        sb.append(", description='").append(description).append('\'');
-        sb.append(", phoneExt='").append(phoneExt).append('\'');
-        sb.append(", phoneNbr='").append(phoneNbr).append('\'');
-        sb.append(", name='").append(name).append('\'');
-        sb.append(", lastUpdate=").append(lastUpdate);
-        sb.append(", typeDescription='").append(typeDescription).append('\'');
-        sb.append('}');
-        return sb.toString();
+        return "Phone{" +
+               "operation=" + operation +
+               ", isActive=" + isActive +
+               ", areaCd='" + areaCd + '\'' +
+               ", countryCd='" + countryCd + '\'' +
+               ", description='" + description + '\'' +
+               ", isDefault=" + isDefault +
+               ", parentType='" + parentType + '\'' +
+               ", phoneExt='" + phoneExt + '\'' +
+               ", phoneNbr='" + phoneNbr + '\'' +
+               ", name='" + name + '\'' +
+               ", parentId='" + parentId + '\'' +
+               ", lastUpdate=" + lastUpdate +
+               ", createDate=" + createDate +
+               ", metadataTypeId='" + metadataTypeId + '\'' +
+               ", typeDescription='" + typeDescription + '\'' +
+               ", " + super.toString()+"}";
     }
 }
