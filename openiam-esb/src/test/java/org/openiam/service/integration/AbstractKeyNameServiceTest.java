@@ -23,7 +23,7 @@ import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-public abstract class AbstractKeyNameServiceTest<T extends KeyNameDTO, S extends AbstractKeyNameSearchBean<T, String>> extends AbstractServiceTest {
+public abstract class AbstractKeyNameServiceTest<T extends KeyNameDTO, S extends AbstractKeyNameSearchBean<T, String>> extends AbstractKeyServiceTest<T, S> {
 
 	protected abstract T newInstance();
 	protected abstract S newSearchBean();
@@ -32,40 +32,11 @@ public abstract class AbstractKeyNameServiceTest<T extends KeyNameDTO, S extends
 	protected abstract T get(final String key);
 	public abstract List<T> find(final S searchBean, final int from, final int size);
 	
+	@Override
 	protected T createBean() {
-		final T bean = newInstance();
+		final T bean = super.createBean();
 		bean.setName(getRandomName());
 		return bean;
-	}
-	
-	protected T assertClusteredSave(final S searchBean) throws InterruptedException {
-		Thread.sleep(2000L);
-		final List<T> list1 = find(searchBean, 0, 5);
-    	final List<T> list2 = find(searchBean, 0, 5);
-    	Assert.assertTrue(CollectionUtils.isNotEmpty(list1));
-    	Assert.assertEquals(list1, list2, String.format("Multiclustered hit failed"));
-    	return list1.get(0);
-	}
-	
-	protected Response saveAndAssert(T t) {
-		final Response response = save(t);
-		Assert.assertTrue(response.isSuccess(), String.format("Could not save entity.  %s", response));
-		return response;
-	}
-	
-	@Test
-	public void clusterTest() throws Exception {
-		ClusterKey<T, S> key = doClusterTest();
-		T instance = key.getDto();
-		if(instance != null && instance.getId() != null) {
-			deleteAndAssert(instance);
-    	}
-	}
-	
-	protected Response deleteAndAssert(final T instance) {
-		Response response = delete(instance);
-		Assert.assertTrue(response.isSuccess(), String.format("Could not delete element '%s' with ID '%s.  Response: %s", instance, instance.getId(), response));
-		return response;
 	}
 	
 	public ClusterKey<T, S> doClusterTest() throws Exception {
@@ -90,34 +61,5 @@ public abstract class AbstractKeyNameServiceTest<T extends KeyNameDTO, S extends
     	searchBean.setName(instance.getName());
     	instance = assertClusteredSave(searchBean);
     	return new ClusterKey<T, S>(instance, searchBean);
-	}
-	
-	protected class ClusterKey<T, S> {
-		
-		private T dto;
-		private S searchBean;
-		
-		public ClusterKey(T dto, S searchBean) {
-			this.dto = dto;
-			this.searchBean = searchBean;
-		}
-
-		public T getDto() {
-			return dto;
-		}
-
-		public void setDto(T dto) {
-			this.dto = dto;
-		}
-
-		public S getSearchBean() {
-			return searchBean;
-		}
-
-		public void setSearchBean(S searchBean) {
-			this.searchBean = searchBean;
-		}
-		
-		
 	}
 }

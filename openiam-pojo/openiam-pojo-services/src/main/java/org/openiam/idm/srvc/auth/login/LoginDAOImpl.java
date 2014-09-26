@@ -54,7 +54,9 @@ public class LoginDAOImpl extends BaseDaoImpl<LoginEntity, String> implements
     protected String getPKfieldName() {
         return "id";
     }
+    
     @Override
+    @Deprecated
     public List<LoginEntity> findAllLoginByManagedSys(String managedSysId) {
         return getCriteria().add(Restrictions.eq("managedSysId", managedSysId))
                 .list();
@@ -83,32 +85,7 @@ public class LoginDAOImpl extends BaseDaoImpl<LoginEntity, String> implements
         return (List<LoginEntity>) qry.list();
 
     }
-//    @Override
-//    public List<LoginEntity> findLoginByDomain(String domain) {
-//        Session session = getSession();
-//        Query qry = session
-//                .createQuery("from org.openiam.idm.srvc.auth.domain.LoginEntity l "
-//                        + " where l.domainId = :domain ");
-//        qry.setString("domain", domain);
-//        return (List<LoginEntity>) qry.list();
-//
-//    }
-//    @Override
-//    public LoginEntity findLoginByManagedSys(String managedSys, String userId) {
-//        Session session = getSession();
-//        Query qry = session
-//                .createQuery("from org.openiam.idm.srvc.auth.domain.LoginEntity l "
-//                        + " where  l.managedSysId = :managedSys and "
-//                        + "  l.userId = :userId ");
-//        log.debug("managedSys=" + managedSys + " userId=" + userId);
-//        qry.setString("managedSys", managedSys);
-//        qry.setString("userId", userId);
-//        List<LoginEntity> results = (List<LoginEntity>) qry.list();
-//        if (results != null && results.size() > 0) {
-//            return results.get(0);
-//        }
-//        return null;
-//    }
+
     @Override
     public List<LoginEntity> findLoginByManagedSys(String principalName, String managedSysId) {
         Session session = getSession();

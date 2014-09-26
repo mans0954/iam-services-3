@@ -1294,7 +1294,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
 
     private Login getPrincipal(String logingId, List<Login> loginList) {
         for (Login lg : loginList ) {
-            if (lg.getLoginId().equals(logingId)) {
+            if (lg.getId().equals(logingId)) {
                 return lg;
             }
         }
@@ -1315,7 +1315,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     if (CollectionUtils.isNotEmpty(entities)) {
                         for (final Iterator<LoginEntity> it = entities.iterator(); it.hasNext(); ) {
                             final LoginEntity en = it.next();
-                            if (en.getLoginId().equals(e.getLoginId())) {
+                            if (en.getId().equals(e.getId())) {
                                 it.remove();
                                 // Audit Log ---------------------------------------------------
                                 IdmAuditLog auditLog = new IdmAuditLog();
@@ -1353,7 +1353,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     if (CollectionUtils.isNotEmpty(entities)) {
                         for (final Iterator<LoginEntity> it = entities.iterator(); it.hasNext(); ) {
                             final LoginEntity en = it.next();
-                            if (en.getLoginId().equals(e.getLoginId())) {
+                            if (en.getId().equals(e.getId())) {
                                 if(!en.getLogin().equals(e.getLogin())) {
                                     e.setOrigPrincipalName(en.getLogin());
                                 }

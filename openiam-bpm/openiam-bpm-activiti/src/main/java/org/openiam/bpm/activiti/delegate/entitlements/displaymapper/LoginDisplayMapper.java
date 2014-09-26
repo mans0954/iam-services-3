@@ -40,7 +40,7 @@ public class LoginDisplayMapper extends AbstractActivitiJob {
 		final String login = loginObj.getLogin();
 		final String managedSysId = loginObj.getManagedSysId();
 		//final String domainId = (String)execution.getVariable(ActivitiConstants.SECURITY_DOMAIN_ID);
-		String loginId = loginObj.getLoginId();
+		String loginId = loginObj.getId();
 		LoginEntity previousLogin = null;
 		if(loginId != null) {
 			previousLogin = loginDataService.getLoginDetails(loginId);

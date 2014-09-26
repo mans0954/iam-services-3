@@ -25,7 +25,7 @@ public class DeleteLogin extends AbstractActivitiJob {
 	@Override
 	public void execute(DelegateExecution execution) throws Exception {
 		final Login loginObj = getObjectVariable(execution, ActivitiConstants.LOGIN, Login.class);
-		final String loginId = loginObj.getLoginId();
+		final String loginId = loginObj.getId();
 		if(loginId != null) {
 			final Login login = loginDataService.getLoginDTO(loginId);
 			if(login != null) {
@@ -33,7 +33,7 @@ public class DeleteLogin extends AbstractActivitiJob {
 				final ProvisionUser pUser = new ProvisionUser(user);
 				if (CollectionUtils.isNotEmpty(pUser.getPrincipalList())) {
                     for (final Login l : pUser.getPrincipalList()) {
-                        if (l.getLoginId().equals(login.getLoginId())) {
+                        if (l.getId().equals(login.getId())) {
                             l.setStatus(LoginStatusEnum.INACTIVE);
                             l.setOperation(AttributeOperationEnum.REPLACE);
                             break;

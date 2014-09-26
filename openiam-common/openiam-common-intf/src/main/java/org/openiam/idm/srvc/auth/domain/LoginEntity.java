@@ -6,6 +6,7 @@ import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.*;
 //import org.hibernate.search.annotations.*;
 //import org.hibernate.search.annotations.Index;
+import org.openiam.base.domain.KeyEntity;
 import org.openiam.core.dao.lucene.LuceneId;
 import org.openiam.core.dao.lucene.LuceneLastUpdate;
 import org.openiam.dozer.DozerDTOCorrespondence;
@@ -35,17 +36,10 @@ import java.util.Set;
 @Embeddable
 @ElasticsearchIndex(indexName = ESIndexName.USERS)
 @ElasticsearchMapping(typeName = ESIndexType.LOGIN, parent = ESIndexType.USER)
-public class LoginEntity implements java.io.Serializable {
-    private static final long serialVersionUID = -1972779170001619759L;
-    
-    @Id
-    @GeneratedValue(generator = "system-uuid")
-    @GenericGenerator(name = "system-uuid", strategy = "uuid")
-	@Column(name = "LOGIN_ID", length = 32, nullable = false)
-    @ElasticsearchId
-    private String loginId;
-    
-//    @Field(name = "login", analyze = Analyze.YES, store = Store.YES)
+@AttributeOverride(name = "id", column = @Column(name = "LOGIN_ID"))
+public class LoginEntity extends KeyEntity {
+
+    @Field(name = "login", analyze = Analyze.YES, store = Store.YES)
     @ElasticsearchField(name = "login", store = ElasticsearchStore.Yes, index = Index.Analyzed)
     @Column(name="LOGIN",length=320)
     private String login;
@@ -375,14 +369,6 @@ public class LoginEntity implements java.io.Serializable {
         this.loginAttributes = loginAttributes;
     }
 
-	public String getLoginId() {
-		return loginId;
-	}
-
-	public void setLoginId(String loginId) {
-		this.loginId = loginId;
-	}
-
 	public String getLogin() {
 		return login;
 	}
@@ -425,7 +411,7 @@ public class LoginEntity implements java.io.Serializable {
 	@Override
 	public int hashCode() {
 		final int prime = 31;
-		int result = 1;
+		int result = super.hashCode();
 		result = prime * result
 				+ ((authFailCount == null) ? 0 : authFailCount.hashCode());
 		result = prime * result
@@ -452,7 +438,8 @@ public class LoginEntity implements java.io.Serializable {
 		result = prime * result
 				+ ((lastUpdate == null) ? 0 : lastUpdate.hashCode());
 		result = prime * result + ((login == null) ? 0 : login.hashCode());
-		result = prime * result + ((loginId == null) ? 0 : loginId.hashCode());
+		result = prime * result
+				+ ((lowerCaseLogin == null) ? 0 : lowerCaseLogin.hashCode());
 		result = prime * result
 				+ ((managedSysId == null) ? 0 : managedSysId.hashCode());
 		result = prime * result
@@ -465,6 +452,8 @@ public class LoginEntity implements java.io.Serializable {
 				+ ((prevLogin == null) ? 0 : prevLogin.hashCode());
 		result = prime * result
 				+ ((prevLoginIP == null) ? 0 : prevLoginIP.hashCode());
+		result = prime * result
+				+ ((provStatus == null) ? 0 : provStatus.hashCode());
 		result = prime * result
 				+ ((pswdResetToken == null) ? 0 : pswdResetToken.hashCode());
 		result = prime
@@ -480,7 +469,6 @@ public class LoginEntity implements java.io.Serializable {
 		result = prime * result + ((pwdExp == null) ? 0 : pwdExp.hashCode());
 		result = prime * result + resetPassword;
 		result = prime * result + ((status == null) ? 0 : status.hashCode());
-        result = prime * result + ((provStatus == null) ? 0 : provStatus.hashCode());
 		result = prime * result + ((userId == null) ? 0 : userId.hashCode());
 		return result;
 	}
@@ -489,7 +477,7 @@ public class LoginEntity implements java.io.Serializable {
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
-		if (obj == null)
+		if (!super.equals(obj))
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
@@ -588,6 +576,8 @@ public class LoginEntity implements java.io.Serializable {
 				return false;
 		} else if (!prevLoginIP.equals(other.prevLoginIP))
 			return false;
+		if (provStatus != other.provStatus)
+			return false;
 		if (pswdResetToken == null) {
 			if (other.pswdResetToken != null)
 				return false;
@@ -615,16 +605,8 @@ public class LoginEntity implements java.io.Serializable {
 			return false;
 		if (resetPassword != other.resetPassword)
 			return false;
-		if (status == null) {
-			if (other.status != null)
-				return false;
-		} else if (!status.equals(other.status))
+		if (status != other.status)
 			return false;
-        if (provStatus == null) {
-            if (other.provStatus != null)
-                return false;
-        } else if (!provStatus.equals(other.provStatus))
-            return false;
 		if (userId == null) {
 			if (other.userId != null)
 				return false;
@@ -633,19 +615,28 @@ public class LoginEntity implements java.io.Serializable {
 		return true;
 	}
 
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder();
-        sb.append("LoginEntity");
-        sb.append("{login='").append(login).append('\'');
-        sb.append(", managedSysId='").append(managedSysId).append('\'');
-        sb.append(", pwdChanged=").append(pwdChanged);
-        sb.append(", pwdExp=").append(pwdExp);
-        sb.append(", status=").append(status);
-        sb.append(", provStatus=").append(provStatus);
-        sb.append(", lastUpdate=").append(lastUpdate);
-        sb.append('}');
-        return sb.toString();
-    }
+	@Override
+	public String toString() {
+		return "LoginEntity [login=" + login + ", lowerCaseLogin="
+				+ lowerCaseLogin + ", managedSysId=" + managedSysId
+				+ ", userId=" + userId + ", password=" + password
+				+ ", pwdEquivalentToken=" + pwdEquivalentToken
+				+ ", pwdChanged=" + pwdChanged + ", pwdExp=" + pwdExp
+				+ ", firstTimeLogin=" + firstTimeLogin + ", resetPassword="
+				+ resetPassword + ", isLocked=" + isLocked + ", status="
+				+ status + ", provStatus=" + provStatus + ", gracePeriod="
+				+ gracePeriod + ", createDate=" + createDate + ", createdBy="
+				+ createdBy + ", currentLoginHost=" + currentLoginHost
+				+ ", authFailCount=" + authFailCount + ", lastAuthAttempt="
+				+ lastAuthAttempt + ", canonicalName=" + canonicalName
+				+ ", lastLogin=" + lastLogin + ", isDefault=" + isDefault
+				+ ", passwordChangeCount=" + passwordChangeCount
+				+ ", lastLoginIP=" + lastLoginIP + ", prevLogin=" + prevLogin
+				+ ", prevLoginIP=" + prevLoginIP + ", pswdResetToken="
+				+ pswdResetToken + ", pswdResetTokenExp=" + pswdResetTokenExp
+				+ ", lastUpdate=" + lastUpdate + "]";
+	}
+
+	
 }
 

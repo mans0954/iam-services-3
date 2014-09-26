@@ -14,7 +14,6 @@ import org.openiam.idm.searchbeans.AbstractKeyNameSearchBean;
 import org.openiam.idm.searchbeans.AbstractSearchBean;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.meta.ws.MetadataWebService;
-import org.openiam.service.integration.AbstractKeyNameServiceTest.ClusterKey;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.test.context.ContextConfiguration;

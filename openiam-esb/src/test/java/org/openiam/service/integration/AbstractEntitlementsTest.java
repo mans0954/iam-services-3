@@ -38,10 +38,6 @@ public abstract class AbstractEntitlementsTest<Parent extends KeyDTO, Child exte
     protected ResourceDataService resourceDataService;
 	
 	@Autowired
-	@Qualifier("userServiceClient")
-	protected UserDataWebService userServiceClient;
-	
-	@Autowired
 	@Qualifier("organizationServiceClient")
 	protected OrganizationDataService organizationServiceClient;
 	
@@ -102,18 +98,6 @@ public abstract class AbstractEntitlementsTest<Parent extends KeyDTO, Child exte
 		Assert.assertTrue(wsResponse.isSuccess(), String.format("Could not save %s.  Reason: %s", organization, wsResponse));
 		organization = organizationServiceClient.getOrganizationLocalized((String)wsResponse.getResponseValue(), null, getDefaultLanguage());
 		return organization;
-	}
-	
-	protected User createUser() {
-		User user = new User();
-		user.setFirstName(getRandomName());
-		user.setLastName(getRandomName());
-		user.setLogin(getRandomName());
-		user.setPassword(getRandomName());
-		user.setNotifyUserViaEmail(false);
-		final UserResponse userResponse = userServiceClient.saveUserInfo(user, null);
-		Assert.assertTrue(userResponse.isSuccess(), String.format("Could not save %s.  Reason: %s", user, userResponse));
-		return userServiceClient.getUserWithDependent(userResponse.getUser().getId(), null, true);
 	}
 	
 	protected Resource createResource() {

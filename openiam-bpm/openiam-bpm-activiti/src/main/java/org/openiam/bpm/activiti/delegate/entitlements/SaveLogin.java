@@ -22,10 +22,10 @@ public class SaveLogin extends AbstractActivitiJob {
 		final User user = getUser(loginObj.getUserId());
 		ProvisionUser pUser = new ProvisionUser(user);
 		
-		if(loginObj.getLoginId() != null) {
+		if(loginObj.getId() != null) {
 			if(CollectionUtils.isNotEmpty(pUser.getPrincipalList())) {
 				for(final Login l : pUser.getPrincipalList()) {
-					if(StringUtils.equals(l.getLoginId(), loginObj.getLoginId())) {
+					if(StringUtils.equals(l.getId(), loginObj.getId())) {
 						l.setLogin(loginObj.getLogin());
 						l.setManagedSysId(loginObj.getManagedSysId());
 						l.setOperation(AttributeOperationEnum.REPLACE);

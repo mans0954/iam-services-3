@@ -229,6 +229,7 @@ public interface LoginDataWebService {
      * @return
      */
     @WebMethod
+    @Deprecated
     LoginListResponse getAllLoginByManagedSys(
             @WebParam(name = "managedSysId", targetNamespace = "")
             String managedSysId);
