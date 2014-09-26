@@ -73,11 +73,6 @@ public class RoleEntity extends AbstractMetdataTypeEntity {
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	private Set<RoleAttributeEntity> roleAttributes;
 	
-	@OneToMany(fetch=FetchType.LAZY,orphanRemoval=true,cascade=CascadeType.ALL)
-	@JoinColumn(name="ROLE_ID")
-	@Fetch(FetchMode.SUBSELECT)
-	private Set<RolePolicyEntity> rolePolicy;
-	
 	@ManyToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
     @JoinTable(name="role_to_role_membership",
         joinColumns={@JoinColumn(name="MEMBER_ROLE_ID")},
@@ -188,14 +183,6 @@ public class RoleEntity extends AbstractMetdataTypeEntity {
 
 	public void setRoleAttributes(Set<RoleAttributeEntity> roleAttributes) {
 		this.roleAttributes = roleAttributes;
-	}
-
-	public Set<RolePolicyEntity> getRolePolicy() {
-		return rolePolicy;
-	}
-
-	public void setRolePolicy(Set<RolePolicyEntity> rolePolicy) {
-		this.rolePolicy = rolePolicy;
 	}
 
 	public Set<RoleEntity> getParentRoles() {

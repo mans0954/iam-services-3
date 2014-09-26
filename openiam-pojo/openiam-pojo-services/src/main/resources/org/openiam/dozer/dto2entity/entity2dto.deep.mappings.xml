@@ -172,12 +172,6 @@
 	<mapping>
 		<class-a>org.openiam.idm.srvc.auth.domain.LoginEntity</class-a>
 		<class-b>org.openiam.idm.srvc.auth.dto.Login</class-b>
-		<field
-			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
-			custom-converter-param="dto2entityShallowDozerMapper">
-			<a>loginAttributes</a>
-			<b>loginAttributes</b>
-		</field>
 	</mapping>
 	<mapping>
 		<class-a>org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity
@@ -320,12 +314,6 @@
 			custom-converter-param="dto2entityShallowDozerMapper">
 			<a>roleAttributes</a>
 			<b>roleAttributes</b>
-		</field>
-		<field
-			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
-			custom-converter-param="dto2entityShallowDozerMapper">
-			<a>rolePolicy</a>
-			<b>rolePolicy</b>
 		</field>
 		<field
 			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"

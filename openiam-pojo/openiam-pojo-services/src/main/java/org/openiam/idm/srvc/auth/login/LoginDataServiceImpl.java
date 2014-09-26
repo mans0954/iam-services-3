@@ -47,9 +47,6 @@ public class LoginDataServiceImpl implements LoginDataService {
     private LoginSearchDAO loginSearchDAO;
     
 	@Autowired
-	protected LoginAttributeDAO loginAttrDao;
-    
-	@Autowired
 	protected UserDAO userDao;
     
 	@Autowired
@@ -591,7 +588,6 @@ public class LoginDataServiceImpl implements LoginDataService {
 	@Override
     @Transactional
 	public void deleteLogin(String loginId) {
-		loginAttrDao.deleteByLoginId(loginId);
 		final LoginEntity entity = loginDao.findById(loginId);
 		if(entity != null) {
 			loginDao.delete(entity);

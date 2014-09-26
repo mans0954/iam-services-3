@@ -39,11 +39,6 @@
 	</mapping>
 
 	<mapping>
-		<class-a>org.openiam.idm.srvc.role.dto.RolePolicy</class-a>
-		<class-b>org.openiam.idm.srvc.role.dto.RolePolicy</class-b>
-	</mapping>
-
-	<mapping>
 		<class-a>org.openiam.idm.srvc.grp.domain.GroupAttributeEntity
 		</class-a>
 		<class-b>org.openiam.idm.srvc.grp.domain.GroupAttributeEntity

@@ -102,10 +102,6 @@
 	<mapping>
 		<class-a>org.openiam.idm.srvc.auth.dto.Login</class-a>
 		<class-b>org.openiam.idm.srvc.auth.dto.Login</class-b>
-		<field-exclude>
-			<a>loginAttributes</a>
-			<b>loginAttributes</b>
-		</field-exclude>
 	</mapping>
 	
 	<mapping>
@@ -168,10 +164,6 @@
 		<field-exclude>
 			<a>roleAttributes</a>
 			<b>roleAttributes</b>
-		</field-exclude>
-		<field-exclude>
-			<a>rolePolicy</a>
-			<b>rolePolicy</b>
 		</field-exclude>
 		<field-exclude>
 			<a>childRoles</a>

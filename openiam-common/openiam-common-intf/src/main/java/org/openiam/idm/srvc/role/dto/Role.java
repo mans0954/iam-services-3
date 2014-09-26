@@ -54,7 +54,6 @@ import java.util.*;
         "operation",
         "startDate",
         "endDate",
-        "rolePolicy",
         "parentRoles",
         "resources",
         "managedSysId",
@@ -64,7 +63,6 @@ import java.util.*;
 @XmlSeeAlso({
         Group.class,
         RoleAttribute.class,
-        RolePolicy.class,
         Resource.class
 })
 @DozerDTOCorrespondence(RoleEntity.class)
@@ -85,8 +83,6 @@ public class Role extends AdminResourceDTO implements Comparable<Role> {
     protected Set<Group> groups = new HashSet<Group>(0);
     @XmlJavaTypeAdapter(RoleAttributeSetAdapter.class)
     protected Set<RoleAttribute> roleAttributes = new HashSet<RoleAttribute>(0);
-
-    protected Set<RolePolicy> rolePolicy = new HashSet<RolePolicy>();
 
     protected int userAssociationMethod = RoleConstant.UN_ASSIGNED;
 
@@ -223,15 +219,7 @@ public class Role extends AdminResourceDTO implements Comparable<Role> {
     public void setOperation(AttributeOperationEnum operation) {
         this.operation = operation;
     }
-
-    public Set<RolePolicy> getRolePolicy() {
-        return rolePolicy;
-    }
-
-    public void setRolePolicy(Set<RolePolicy> rolePolicy) {
-        this.rolePolicy = rolePolicy;
-    }
-
+    
     public Date getStartDate() {
         return startDate;
     }

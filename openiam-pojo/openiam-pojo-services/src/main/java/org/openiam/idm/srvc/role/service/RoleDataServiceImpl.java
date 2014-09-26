@@ -25,7 +25,6 @@ import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
 import org.openiam.idm.srvc.role.domain.RoleAttributeEntity;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
-import org.openiam.idm.srvc.role.domain.RolePolicyEntity;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.service.UserDAO;
@@ -52,10 +51,6 @@ public class RoleDataServiceImpl implements RoleDataService {
 	@Autowired
 	private ResourceTypeDAO resourceTypeDAO;
 	
-	@Autowired
-	private RolePolicyDAO rolePolicyDao;
-	
-
     @Autowired
     private MetadataElementDAO metadataElementDAO;
 	
@@ -229,12 +224,6 @@ public class RoleDataServiceImpl implements RoleDataService {
 	}
 	
 	@Override
-    @Transactional(readOnly = true)
-	public RolePolicyEntity getRolePolicy(String rolePolicyId) {
-		return rolePolicyDao.findById(rolePolicyId);
-	}	
-
-	@Override
     @Transactional
 	public void saveRole(final RoleEntity role, final String requestorId) throws BasicDataServiceException {
 		if(role != null && entityValidator.isValid(role)) {
@@ -263,7 +252,6 @@ public class RoleDataServiceImpl implements RoleDataService {
 					role.setGroups(dbRole.getGroups());
 					role.setParentRoles(dbRole.getParentRoles());
 					role.setResources(dbRole.getResources());
-					role.setRolePolicy(dbRole.getRolePolicy());
 					role.setUsers(dbRole.getUsers());
 					role.setAdminResource(dbRole.getAdminResource());
 					if(role.getAdminResource() == null) {
@@ -377,30 +365,6 @@ public class RoleDataServiceImpl implements RoleDataService {
 		return association;
 	}
 	
-
-	@Override
-    @Transactional
-	public void savePolicy(final RolePolicyEntity policy) {
-		if(policy != null) {
-			if(StringUtils.isBlank(policy.getRolePolicyId())) {
-				rolePolicyDao.save(policy);
-			} else {
-				rolePolicyDao.update(policy);
-			}
-		}
-	}
-
-	@Override
-    @Transactional
-	public void removeRolePolicy(String rolePolicyId) {
-		if(rolePolicyId != null) {
-			final RolePolicyEntity entity = rolePolicyDao.findById(rolePolicyId);
-			if(entity != null) {
-				rolePolicyDao.delete(entity);
-			}
-		}
-	}
-
 	/*
 	@Override
     @Transactional
