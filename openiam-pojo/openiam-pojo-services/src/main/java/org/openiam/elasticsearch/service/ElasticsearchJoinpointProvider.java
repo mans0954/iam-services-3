@@ -61,9 +61,9 @@ public class ElasticsearchJoinpointProvider implements InitializingBean, Applica
             throw new IllegalStateException(String.format("Method has %s annotation, but no flag is set", ElasticsearchReindexOperation.class.getCanonicalName()));
         }
 
-        if(reindexRequest!=null && CollectionUtils.isNotEmpty(reindexRequest.getEntityList())){
-            elasticsearchSender.send(reindexRequest);
-        }
+//        if(reindexRequest!=null && CollectionUtils.isNotEmpty(reindexRequest.getEntityList())){
+//            elasticsearchSender.send(reindexRequest);
+//        }
     }
 
     private void checkArguments(final JoinPoint joinpoint) throws Throwable {

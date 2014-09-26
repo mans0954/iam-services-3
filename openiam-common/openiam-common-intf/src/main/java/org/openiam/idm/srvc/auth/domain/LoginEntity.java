@@ -4,14 +4,10 @@ package org.openiam.idm.srvc.auth.domain;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.*;
-//import org.hibernate.search.annotations.*;
-//import org.hibernate.search.annotations.Index;
 import org.openiam.base.domain.KeyEntity;
-import org.openiam.core.dao.lucene.LuceneId;
 import org.openiam.core.dao.lucene.LuceneLastUpdate;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.elasticsearch.annotation.ElasticsearchField;
-import org.openiam.elasticsearch.annotation.ElasticsearchId;
 import org.openiam.elasticsearch.annotation.ElasticsearchIndex;
 import org.openiam.elasticsearch.annotation.ElasticsearchMapping;
 import org.openiam.elasticsearch.constants.*;
@@ -39,7 +35,7 @@ import java.util.Set;
 @AttributeOverride(name = "id", column = @Column(name = "LOGIN_ID"))
 public class LoginEntity extends KeyEntity {
 
-    @Field(name = "login", analyze = Analyze.YES, store = Store.YES)
+    //@Field(name = "login", analyze = Analyze.YES, store = Store.YES)
     @ElasticsearchField(name = "login", store = ElasticsearchStore.Yes, index = Index.Analyzed)
     @Column(name="LOGIN",length=320)
     private String login;
@@ -546,11 +542,6 @@ public class LoginEntity extends KeyEntity {
 				return false;
 		} else if (!login.equals(other.login))
 			return false;
-		if (loginId == null) {
-			if (other.loginId != null)
-				return false;
-		} else if (!loginId.equals(other.loginId))
-			return false;
 		if (managedSysId == null) {
 			if (other.managedSysId != null)
 				return false;
@@ -636,7 +627,5 @@ public class LoginEntity extends KeyEntity {
 				+ pswdResetToken + ", pswdResetTokenExp=" + pswdResetTokenExp
 				+ ", lastUpdate=" + lastUpdate + "]";
 	}
-
-	
 }
 

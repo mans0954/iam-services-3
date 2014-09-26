@@ -255,7 +255,7 @@ public class ModifyUser {
                 if (em.getOperation() == AttributeOperationEnum.DELETE) {
                     // get the email object from the original set of emails so
                     // that we can remove it
-                    EmailAddress e = getEmailAddress(em.getEmailId(),
+                    EmailAddress e = getEmailAddress(em.getId(),
                             origEmailSet);
                     if (e != null) {
                         origEmailSet.remove(e);
@@ -265,7 +265,7 @@ public class ModifyUser {
                     // check if this address is in the current list
                     // if it is - see if it has changed
                     // if it is not - add it.
-                    EmailAddress origEmail = getEmailAddress(em.getEmailId(),
+                    EmailAddress origEmail = getEmailAddress(em.getId(),
                             origEmailSet);
                     if (origEmail == null) {
                         em.setOperation(AttributeOperationEnum.ADD);
@@ -299,7 +299,7 @@ public class ModifyUser {
         // if a value is in original list and not in the new list - then add it
         // on
         for (EmailAddress e : origEmailSet) {
-            EmailAddress newEmail = getEmailAddress(e.getEmailId(), newEmailSet);
+            EmailAddress newEmail = getEmailAddress(e.getId(), newEmailSet);
             if (newEmail == null) {
                 e.setOperation(AttributeOperationEnum.NO_CHANGE);
                 emailSet.add(e);
@@ -312,8 +312,8 @@ public class ModifyUser {
         Iterator<EmailAddress> emailIt = emailSet.iterator();
         while (emailIt.hasNext()) {
             EmailAddress email = emailIt.next();
-            if (email.getEmailId() != null) {
-                if (email.getEmailId().equals(id)
+            if (email.getId() != null) {
+                if (email.getId().equals(id)
                         && (id != null && id.length() > 0)) {
                     return email;
                 }

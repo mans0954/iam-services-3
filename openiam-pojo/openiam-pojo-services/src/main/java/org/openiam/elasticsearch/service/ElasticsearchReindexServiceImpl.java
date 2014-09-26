@@ -21,7 +21,7 @@ public class ElasticsearchReindexServiceImpl implements ElasticsearchReindexServ
         HibernateSearchDao searchDao = searchDAOFactory.getSearchDAO(reindexRequest.getEntityClass().getName());
 
         if(reindexRequest.isSaveOrUpdate()){
-            searchDao.updateIndecies(reindexRequest.getEntityList());
+//            searchDao.updateIndecies(reindexRequest.getEntityList());
         } else if(reindexRequest.isDeleteRequest()){
 
         }

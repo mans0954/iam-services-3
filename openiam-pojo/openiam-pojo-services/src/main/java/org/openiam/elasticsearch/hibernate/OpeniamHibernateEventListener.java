@@ -92,11 +92,11 @@ public class OpeniamHibernateEventListener implements InitializingBean,
                 for(final Object o : (Collection)obj) {
                     if(clazz==null)
                         clazz=o.getClass();
-                    addEntityId(entityList, o);
+//                    addEntityId(entityList, o);
                 }
             } else {
                 clazz=obj.getClass();
-                addEntityId(entityList, obj);
+//                addEntityId(entityList, obj);
             }
         }
         return ElasticsearchReindexRequest.getUpdateReindexRequest(entityList,clazz);
@@ -107,7 +107,7 @@ public class OpeniamHibernateEventListener implements InitializingBean,
         Class<?> clazz = null;
         for(final Object obj : joinpoint.getArgs()) {
             clazz=obj.getClass();
-            addEntityId(entityList, obj);
+//            addEntityId(entityList, obj);
         }
         return ElasticsearchReindexRequest.getDeleteReindexRequest(entityList, clazz);
     }

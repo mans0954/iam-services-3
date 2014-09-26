@@ -37,8 +37,8 @@ public class EmailAddressDAOImpl extends BaseDaoImpl<EmailAddressEntity, String>
     @Override
     protected Criteria getExampleCriteria(final EmailAddressEntity email) {
         final Criteria criteria = getCriteria();
-        if (StringUtils.isNotBlank(email.getEmailId())) {
-            criteria.add(Restrictions.eq(getPKfieldName(), email.getEmailId()));
+        if (StringUtils.isNotBlank(email.getId())) {
+            criteria.add(Restrictions.eq(getPKfieldName(), email.getId()));
         } else {
             if (StringUtils.isNotEmpty(email.getName())) {
                 String emailName = email.getName();

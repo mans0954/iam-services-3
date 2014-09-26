@@ -284,12 +284,12 @@ public class UserMgr implements UserDataService {
                     continue;
                 }
                 if (e.getOperation().equals(AttributeOperationEnum.DELETE)) {
-                    EmailAddressEntity entity = emailAddressDao.findById(e.getEmailId());
+                    EmailAddressEntity entity = emailAddressDao.findById(e.getId());
                     if (entity != null) {
                         userEntity.getEmailAddresses().remove(entity);
                     }
                 } else if (e.getOperation().equals(AttributeOperationEnum.ADD)) {
-                    EmailAddressEntity entity = emailAddressDao.findById(e.getEmailId());
+                    EmailAddressEntity entity = emailAddressDao.findById(e.getId());
                     if (entity != null) {
                         emailAddressDao.evict(entity);
                     }
@@ -297,7 +297,7 @@ public class UserMgr implements UserDataService {
                     entity.setParent(userEntity);
                     userEntity.getEmailAddresses().add(entity);
                 } else if (e.getOperation().equals(AttributeOperationEnum.REPLACE)) {
-                    EmailAddressEntity entity = emailAddressDao.findById(e.getEmailId());
+                    EmailAddressEntity entity = emailAddressDao.findById(e.getId());
                     if (entity != null) {
                         userEntity.getEmailAddresses().remove(entity);
                         emailAddressDao.evict(entity);
@@ -1168,7 +1168,7 @@ public class UserMgr implements UserDataService {
         List<EmailAddressEntity> entityList = emailAddressDao.getByExample(example);
         if (CollectionUtils.isNotEmpty(entityList))
             for (EmailAddressEntity ea : entityList) {
-                if ((ea.getEmailId() != null && !ea.getEmailId().equals(val.getEmailId()))
+                if ((ea.getId() != null && !ea.getId().equals(val.getId()))
                     && ea.getMetadataType().getId().equals(val.getMetadataType().getId())) {
                     throw new NullPointerException("Email Address with provided type exists");
                 }
@@ -1214,12 +1214,12 @@ public class UserMgr implements UserDataService {
     public void updateEmailAddress(EmailAddressEntity val) {
         if (val == null)
             throw new NullPointerException("val is null");
-        if (val.getEmailId() == null)
+        if (val.getId() == null)
             throw new NullPointerException("EmailAddressId is null");
         if (val.getParent() == null)
             throw new NullPointerException("parentId for the address is not defined.");
 
-        EmailAddressEntity entity = emailAddressDao.findById(val.getEmailId());
+        EmailAddressEntity entity = emailAddressDao.findById(val.getId());
         UserEntity parent = userDao.findById(val.getParent().getId());
         final MetadataTypeEntity metadataType = (val.getMetadataType() != null && StringUtils.isNotBlank(val.getMetadataType().getId())) ? metadataTypeDAO
                         .findById(val.getMetadataType().getId()) : null;
@@ -2082,7 +2082,7 @@ public class UserMgr implements UserDataService {
         if (defaultEmail == null) {
             targetEntity.setIsDefault(true);
         } else {
-            if (defaultEmail.getEmailId().equals(targetEntity.getEmailId())) {
+            if (defaultEmail.getId().equals(targetEntity.getId())) {
                 // the same entity
                 // check if default flag is unset
                 if (!newDefaultValue) {
