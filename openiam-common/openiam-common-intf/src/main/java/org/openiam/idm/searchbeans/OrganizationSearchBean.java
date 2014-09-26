@@ -29,7 +29,8 @@ import java.util.Set;
 		"validParentTypeId",
         "internalOrgId",
         "attributes",
-        "metadataType"
+        "metadataType",
+        "isSelectable"
 })
 public class OrganizationSearchBean extends EntitlementsSearchBean<Organization, String> implements SearchBean<Organization, String>,
         Serializable {
@@ -44,6 +45,8 @@ public class OrganizationSearchBean extends EntitlementsSearchBean<Organization,
     private String internalOrgId;
     private String metadataType;
     private List<Tuple<String,String>> attributes;
+    private Boolean isSelectable = null;
+
 
     public String getName() {
 		return name;
@@ -131,31 +134,15 @@ public class OrganizationSearchBean extends EntitlementsSearchBean<Organization,
         this.keySet = keySet;
     }
 
-//	public String getUserId() {
-//		return userId;
-//	}
-//
-//	public void setUserId(String userId) {
-//		this.userId = userId;
-//	}
-//
-//	public String getParentId() {
-//		return parentId;
-//	}
-//
-//	public void setParentId(String parentId) {
-//		this.parentId = parentId;
-//	}
-//
-//	public String getChildId() {
-//		return childId;
-//	}
-//
-//	public void setChildId(String childId) {
-//		this.childId = childId;
-//	}
+    public Boolean getIsSelectable() {
+        return isSelectable;
+    }
 
-	public String getValidParentTypeId() {
+    public void setIsSelectable(Boolean isSelectable) {
+        this.isSelectable = isSelectable;
+    }
+
+    public String getValidParentTypeId() {
 		return validParentTypeId;
 	}
 
