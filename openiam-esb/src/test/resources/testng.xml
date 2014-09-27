@@ -26,6 +26,7 @@
 			<class name="org.openiam.service.integration.meta.MetadataElementTemplateServiceTest" />
 			<class name="org.openiam.service.integration.meta.MetadataElementTest" />
 			<class name="org.openiam.service.integration.meta.MetadataTypeTest" />
+			<class name="org.openiam.service.integration.meta.MetadataTemplateTypeServiceTest" />
 		</classes>
 	</test>
 	
