@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.lang.dto;
 
+import org.openiam.base.KeyDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.lang.domain.LanguageLocaleEntity;
 
@@ -10,22 +11,14 @@ import java.io.Serializable;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "LanguageLocale", propOrder = {
-        "id",
         "languageId",
         "locale"
 })
 @DozerDTOCorrespondence(LanguageLocaleEntity.class)
-public class LanguageLocale implements Serializable, Cloneable {
+public class LanguageLocale extends KeyDTO implements Cloneable {
 
-	private String id;
 	private String languageId;
 	private String locale;
-	public String getId() {
-		return id;
-	}
-	public void setId(String id) {
-		this.id = id;
-	}
 	
 	public String getLocale() {
 		return locale;
@@ -39,11 +32,16 @@ public class LanguageLocale implements Serializable, Cloneable {
 	public void setLanguageId(String languageId) {
 		this.languageId = languageId;
 	}
+
+	//WHY IS THERE HERE?!?  clone() is evil.
+    @Override
+    public LanguageLocale clone() throws CloneNotSupportedException {
+        return (LanguageLocale)super.clone();
+    }
 	@Override
 	public int hashCode() {
 		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		int result = super.hashCode();
 		result = prime * result
 				+ ((languageId == null) ? 0 : languageId.hashCode());
 		result = prime * result + ((locale == null) ? 0 : locale.hashCode());
@@ -53,16 +51,11 @@ public class LanguageLocale implements Serializable, Cloneable {
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
-		if (obj == null)
+		if (!super.equals(obj))
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
 		LanguageLocale other = (LanguageLocale) obj;
-		if (id == null) {
-			if (other.id != null)
-				return false;
-		} else if (!id.equals(other.id))
-			return false;
 		if (languageId == null) {
 			if (other.languageId != null)
 				return false;
@@ -77,13 +70,9 @@ public class LanguageLocale implements Serializable, Cloneable {
 	}
 	@Override
 	public String toString() {
-		return "LanguageLocale [id=" + id + ", languageId=" + languageId
-				+ ", locale=" + locale + "]";
+		return "LanguageLocale [languageId=" + languageId + ", locale="
+				+ locale + "]";
 	}
-    @Override
-    public LanguageLocale clone() throws CloneNotSupportedException {
-        return (LanguageLocale)super.clone();
-    }
 
 	
 }
