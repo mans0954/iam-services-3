@@ -10,19 +10,10 @@ import org.openiam.idm.srvc.batch.dto.BatchTask;
 @XmlType(name = "BatchTaskSearchBean", propOrder = {
 
 })
-public class BatchTaskSearchBean extends AbstractSearchBean<BatchTask, String>
-        implements SearchBean<BatchTask, String> {
+public class BatchTaskSearchBean extends AbstractKeyNameSearchBean<BatchTask, String> {
     /**
      * 
      */
     private static final long serialVersionUID = 1L;
-    private String name;
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
+   
 }

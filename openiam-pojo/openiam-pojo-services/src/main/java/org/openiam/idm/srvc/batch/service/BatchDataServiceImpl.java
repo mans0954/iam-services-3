@@ -188,7 +188,7 @@ public class BatchDataServiceImpl implements BatchDataService, ApplicationContex
 	public List<BatchTask> findBeans(final BatchTaskSearchBean searchBean, final int from, final int size) {
 		final BatchTaskEntity entity = searchBeanConverter.convert(searchBean);
 		final List<BatchTaskEntity> entityList = batchService.findBeans(entity, from, size);
-		return converter.convertToDTOList(entityList, searchBean.isDeepCopy());
+		return converter.convertToDTOList(entityList, (searchBean != null) ? searchBean.isDeepCopy() : false);
 	}
 
 	@Override

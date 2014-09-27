@@ -3,6 +3,8 @@ package org.openiam.idm.srvc.batch.domain;
 import java.io.Serializable;
 import java.util.Date;
 
+import javax.persistence.AttributeOverride;
+import javax.persistence.AttributeOverrides;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -13,6 +15,7 @@ import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
+import org.openiam.base.domain.AbstractKeyNameEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.batch.dto.BatchTask;
 
@@ -20,16 +23,11 @@ import org.openiam.idm.srvc.batch.dto.BatchTask;
 @Table(name = "BATCH_CONFIG")
 @DozerDTOCorrespondence(BatchTask.class)
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class BatchTaskEntity implements Serializable {
-
-	@Id
-    @GeneratedValue(generator = "system-uuid")
-    @GenericGenerator(name = "system-uuid", strategy = "uuid")
-    @Column(name = "TASK_ID", length = 32)
-	private String id;
-	
-	@Column(name = "TASK_NAME", length = 50)
-    private String name;
+@AttributeOverrides({
+	@AttributeOverride(name = "id", column = @Column(name = "TASK_ID", length = 32)),
+	@AttributeOverride(name = "name", column = @Column(name = "TASK_NAME", length = 50))
+})
+public class BatchTaskEntity extends AbstractKeyNameEntity {
 	
 	@Column(name = "ENABLED")
 	@Type(type = "yes_no")
@@ -74,18 +72,6 @@ public class BatchTaskEntity implements Serializable {
 	@Column(name = "SPRING_BEAN_METHOD", length=100)
 	private String springBeanMethod;
 	
-	public String getId() {
-		return id;
-	}
-	public void setId(String id) {
-		this.id = id;
-	}
-	public String getName() {
-		return name;
-	}
-	public void setName(String name) {
-		this.name = name;
-	}
 	public boolean isEnabled() {
 		return enabled;
 	}
@@ -173,45 +159,4 @@ public class BatchTaskEntity implements Serializable {
 		this.cronExpression = cronExpression;
 	}
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        BatchTaskEntity that = (BatchTaskEntity) o;
-
-        if (id != null ? !id.equals(that.id) : that.id != null) return false;
-        if (name != null ? !name.equals(that.name) : that.name != null) return false;
-
-        return true;
-    }
-
-    @Override
-    public int hashCode() {
-        int result = id != null ? id.hashCode() : 0;
-        result = 31 * result + (name != null ? name.hashCode() : 0);
-        return result;
-    }
-
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder();
-        sb.append("BatchTaskEntity");
-        sb.append("{id='").append(id).append('\'');
-        sb.append(", name='").append(name).append('\'');
-        sb.append(", enabled=").append(enabled);
-        sb.append(", runOn=").append(runOn);
-        sb.append(", lastExecTime=").append(lastExecTime);
-        sb.append(", lastModifiedDate=").append(lastModifiedDate);
-        sb.append(", taskUrl='").append(taskUrl).append('\'');
-        sb.append(", cronExpression='").append(cronExpression).append('\'');
-        sb.append(", status='").append(status).append('\'');
-        sb.append(", param1='").append(param1).append('\'');
-        sb.append(", param2='").append(param2).append('\'');
-        sb.append(", param3='").append(param3).append('\'');
-        sb.append(", param4='").append(param4).append('\'');
-        sb.append(", executionOrder=").append(executionOrder);
-        sb.append('}');
-        return sb.toString();
-    }
 }
