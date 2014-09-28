@@ -18,6 +18,7 @@
 			<class name="org.openiam.service.integration.entitlements.Role2RoleEntitlementsTest" />
 			<class name="org.openiam.service.integration.entitlements.Role2UserEntitlementsTest" />
 			<class name="org.openiam.service.integration.entitlements.RoleServiceTest" />
+			<class name="org.openiam.service.integration.entitlements.ApproverAssociationServiceTest" />
 		</classes>
 	</test>
 	

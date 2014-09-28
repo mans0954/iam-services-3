@@ -2,6 +2,7 @@ package org.openiam.idm.srvc.lang.domain;
 
 import java.io.Serializable;
 
+import javax.persistence.AttributeOverride;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -18,6 +19,8 @@ import javax.persistence.Table;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
+import org.openiam.base.KeyDTO;
+import org.openiam.base.domain.KeyEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.lang.dto.LanguageMapping;
@@ -26,13 +29,8 @@ import org.openiam.idm.srvc.lang.dto.LanguageMapping;
 @Table(name = "LANGUAGE_MAPPING")
 @DozerDTOCorrespondence(LanguageMapping.class)
 @Cache(usage=CacheConcurrencyStrategy.READ_WRITE)
-public class LanguageMappingEntity implements Serializable {
-	
-	@Id
-    @GeneratedValue(generator = "system-uuid")
-    @GenericGenerator(name = "system-uuid", strategy = "uuid")
-    @Column(name = "ID", length = 32)
-	private String id;
+@AttributeOverride(name = "id", column = @Column(name = "ID", length = 32))
+public class LanguageMappingEntity extends KeyEntity {
 	
 	@Column(name="LANGUAGE_ID", nullable=false, length=32)
 	private String languageId;
@@ -63,14 +61,6 @@ public class LanguageMappingEntity implements Serializable {
 		this.referenceId = referenceId;
 	}
 
-	public String getId() {
-		return id;
-	}
-
-	public void setId(String id) {
-		this.id = id;
-	}
-
 	public String getValue() {
 		return value;
 	}
@@ -90,8 +80,7 @@ public class LanguageMappingEntity implements Serializable {
 	@Override
 	public int hashCode() {
 		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		int result = super.hashCode();
 		result = prime * result
 				+ ((languageId == null) ? 0 : languageId.hashCode());
 		result = prime * result
@@ -106,16 +95,11 @@ public class LanguageMappingEntity implements Serializable {
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
-		if (obj == null)
+		if (!super.equals(obj))
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
 		LanguageMappingEntity other = (LanguageMappingEntity) obj;
-		if (id == null) {
-			if (other.id != null)
-				return false;
-		} else if (!id.equals(other.id))
-			return false;
 		if (languageId == null) {
 			if (other.languageId != null)
 				return false;
@@ -141,10 +125,11 @@ public class LanguageMappingEntity implements Serializable {
 
 	@Override
 	public String toString() {
-		return "LanguageMappingEntity [id=" + id + ", languageId=" + languageId
+		return "LanguageMappingEntity [languageId=" + languageId
 				+ ", referenceType=" + referenceType + ", referenceId="
-				+ referenceId + ", value=" + value + "]";
+				+ referenceId + ", value=" + value + ", getId()=" + getId()
+				+ "]";
 	}
-	
+
 	
 }

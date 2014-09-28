@@ -14,9 +14,11 @@ public class ApproverAssocationSearchBeanConverter implements SearchBeanConverte
 	@Override
 	public ApproverAssociationEntity convert(final ApproverAssocationSearchBean searchBean) {
 		final ApproverAssociationEntity entity = new ApproverAssociationEntity();
-		entity.setId(StringUtils.trimToNull(searchBean.getId()));
-		entity.setAssociationType(searchBean.getAssociationType());
-		entity.setAssociationEntityId(StringUtils.trimToNull(searchBean.getAssociationEntityId()));
+		if(searchBean != null) {
+			entity.setId(StringUtils.trimToNull(searchBean.getKey()));
+			entity.setAssociationType(searchBean.getAssociationType());
+			entity.setAssociationEntityId(StringUtils.trimToNull(searchBean.getAssociationEntityId()));
+		}
 		return entity;
 	}
 

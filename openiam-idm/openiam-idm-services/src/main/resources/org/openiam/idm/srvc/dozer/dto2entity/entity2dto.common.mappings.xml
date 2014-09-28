@@ -10,11 +10,6 @@
     </mapping>
 	
 	<mapping>
-		<class-a>org.openiam.idm.srvc.prov.request.domain.RequestAttributeEntity</class-a>
-		<class-b>org.openiam.idm.srvc.prov.request.dto.RequestAttribute</class-b>
-	</mapping>
-	
-	<mapping>
 		<class-a>org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity</class-a>
 		<class-b>org.openiam.idm.srvc.mngsys.dto.ApproverAssociation</class-b>
 	</mapping>

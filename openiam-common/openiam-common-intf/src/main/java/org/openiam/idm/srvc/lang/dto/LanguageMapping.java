@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.lang.dto;
 
+import org.openiam.base.KeyDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.lang.domain.LanguageMappingEntity;
 
@@ -10,25 +11,18 @@ import java.io.Serializable;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "LanguageMapping", propOrder = {
-        "id",
         "languageId",
         "referenceId",
         "referenceType",
         "value"
 })
 @DozerDTOCorrespondence(LanguageMappingEntity.class)
-public class LanguageMapping implements Serializable, Cloneable {
-	private String id;
+public class LanguageMapping extends KeyDTO implements Cloneable {
 	private String languageId;
 	private String referenceId;
 	private String referenceType;
 	private String value;
-	public String getId() {
-		return id;
-	}
-	public void setId(String id) {
-		this.id = id;
-	}
+	
 	public String getLanguageId() {
 		return languageId;
 	}
@@ -53,11 +47,15 @@ public class LanguageMapping implements Serializable, Cloneable {
 	public void setValue(String value) {
 		this.value = value;
 	}
+	
+    @Override
+    public LanguageMapping clone() throws CloneNotSupportedException {
+        return (LanguageMapping)super.clone();
+    }
 	@Override
 	public int hashCode() {
 		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		int result = super.hashCode();
 		result = prime * result
 				+ ((languageId == null) ? 0 : languageId.hashCode());
 		result = prime * result
@@ -71,16 +69,11 @@ public class LanguageMapping implements Serializable, Cloneable {
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
-		if (obj == null)
+		if (!super.equals(obj))
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
 		LanguageMapping other = (LanguageMapping) obj;
-		if (id == null) {
-			if (other.id != null)
-				return false;
-		} else if (!id.equals(other.id))
-			return false;
 		if (languageId == null) {
 			if (other.languageId != null)
 				return false;
@@ -105,13 +98,10 @@ public class LanguageMapping implements Serializable, Cloneable {
 	}
 	@Override
 	public String toString() {
-		return "LanguageMapping [id=" + id + ", languageId=" + languageId
-				+ ", referenceId=" + referenceId + ", referenceType="
-				+ referenceType + ", value=" + value + "]";
+		return "LanguageMapping [languageId=" + languageId + ", referenceId="
+				+ referenceId + ", referenceType=" + referenceType + ", value="
+				+ value + ", getId()=" + getId() + "]";
 	}
-    @Override
-    public LanguageMapping clone() throws CloneNotSupportedException {
-        return (LanguageMapping)super.clone();
-    }
 	
+    
 }
