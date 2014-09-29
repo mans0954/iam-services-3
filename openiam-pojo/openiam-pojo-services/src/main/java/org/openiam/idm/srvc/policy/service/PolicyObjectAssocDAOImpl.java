@@ -69,7 +69,7 @@ public class PolicyObjectAssocDAOImpl extends
 
     @Override
     protected String getPKfieldName() {
-        return "policyObjectId";
+        return "id";
     }
 
 }

@@ -19,6 +19,7 @@
 			<class name="org.openiam.service.integration.entitlements.Role2UserEntitlementsTest" />
 			<class name="org.openiam.service.integration.entitlements.RoleServiceTest" />
 			<class name="org.openiam.service.integration.entitlements.ApproverAssociationServiceTest" />
+			<class name="org.openiam.service.integration.entitlements.ResourceTypeServiceTest" />
 		</classes>
 	</test>
 	
@@ -55,6 +56,12 @@
 			<!--
 			<class name="org.openiam.service.integration.mail.MailTemplateServiceTest" />
 			-->
+		</classes>
+	</test>
+	
+	<test name="content.provider">
+		<classes>
+			<class name="org.openiam.service.integration.contentprovider.UIThemeServiceTest" />
 		</classes>
 	</test>
 </suite>

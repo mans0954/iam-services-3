@@ -281,4 +281,12 @@
 		<property name="address"
 			value="${openiam.service_host}${openiam.idm.ws.path}BatchDataWebService" />
 	</bean>
+	
+	<bean id="uiThemeClient" class="org.openiam.idm.srvc.ui.theme.UIThemeWebService"
+		factory-bean="uiThemeClientFactory" factory-method="create" />
+
+	<bean id="uiThemeClientFactory" class="org.apache.cxf.jaxws.JaxWsProxyFactoryBean">
+		<property name="serviceClass" value="org.openiam.idm.srvc.ui.theme.UIThemeWebService" />
+		<property name="address" value="${openiam.service_host}${openiam.idm.ws.path}UIThemeWebService" />
+	</bean>
 </beans>

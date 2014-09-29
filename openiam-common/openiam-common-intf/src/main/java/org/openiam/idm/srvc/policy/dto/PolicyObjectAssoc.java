@@ -5,6 +5,8 @@ import java.io.Serializable;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
+
+import org.openiam.base.KeyDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.policy.domain.PolicyObjectAssocEntity;
 
@@ -17,7 +19,6 @@ import org.openiam.idm.srvc.policy.domain.PolicyObjectAssocEntity;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "PolicyObjectAssoc", propOrder = {
-        "policyObjectId",
         "policyId",
         "associationLevel",
         "associationValue",
@@ -26,13 +27,12 @@ import org.openiam.idm.srvc.policy.domain.PolicyObjectAssocEntity;
         "parentAssocId"
 })
 @DozerDTOCorrespondence(PolicyObjectAssocEntity.class)
-public class PolicyObjectAssoc implements Serializable {
+public class PolicyObjectAssoc extends KeyDTO {
 
     /**
      * 
      */
     private static final long serialVersionUID = 1L;
-    private String policyObjectId;
     private String policyId;
     private String associationLevel;
     private String associationValue;
@@ -41,14 +41,6 @@ public class PolicyObjectAssoc implements Serializable {
     private String parentAssocId;
 
     public PolicyObjectAssoc() {
-    }
-
-    public String getPolicyObjectId() {
-        return policyObjectId;
-    }
-
-    public void setPolicyObjectId(String policyObjectId) {
-        this.policyObjectId = policyObjectId;
     }
 
     public String getPolicyId() {
@@ -102,7 +94,7 @@ public class PolicyObjectAssoc implements Serializable {
 	@Override
 	public int hashCode() {
 		final int prime = 31;
-		int result = 1;
+		int result = super.hashCode();
 		result = prime
 				* result
 				+ ((associationLevel == null) ? 0 : associationLevel.hashCode());
@@ -117,8 +109,6 @@ public class PolicyObjectAssoc implements Serializable {
 				+ ((parentAssocId == null) ? 0 : parentAssocId.hashCode());
 		result = prime * result
 				+ ((policyId == null) ? 0 : policyId.hashCode());
-		result = prime * result
-				+ ((policyObjectId == null) ? 0 : policyObjectId.hashCode());
 		return result;
 	}
 
@@ -126,7 +116,7 @@ public class PolicyObjectAssoc implements Serializable {
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
-		if (obj == null)
+		if (!super.equals(obj))
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
@@ -161,21 +151,17 @@ public class PolicyObjectAssoc implements Serializable {
 				return false;
 		} else if (!policyId.equals(other.policyId))
 			return false;
-		if (policyObjectId == null) {
-			if (other.policyObjectId != null)
-				return false;
-		} else if (!policyObjectId.equals(other.policyObjectId))
-			return false;
 		return true;
 	}
 
 	@Override
 	public String toString() {
-		return String
-				.format("PolicyObjectAssoc [policyObjectId=%s, policyId=%s, associationLevel=%s, associationValue=%s, objectType=%s, objectId=%s, parentAssocId=%s]",
-						policyObjectId, policyId, associationLevel,
-						associationValue, objectType, objectId, parentAssocId);
+		return "PolicyObjectAssoc [policyId=" + policyId
+				+ ", associationLevel=" + associationLevel
+				+ ", associationValue=" + associationValue + ", objectType="
+				+ objectType + ", objectId=" + objectId + ", parentAssocId="
+				+ parentAssocId + ", getId()=" + getId() + "]";
 	}
 
-
+	
 }
