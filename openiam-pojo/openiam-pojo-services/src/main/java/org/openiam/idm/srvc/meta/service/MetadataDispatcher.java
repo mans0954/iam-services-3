@@ -5,6 +5,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.StopWatch;
 import org.apache.log4j.Logger;
 import org.openiam.exception.BasicDataServiceException;
+import org.openiam.hibernate.HibernateUtils;
 import org.openiam.idm.searchbeans.*;
 import org.openiam.idm.srvc.grp.domain.GroupAttributeEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
@@ -39,8 +40,10 @@ import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.jms.*;
-import javax.jms.Queue;
-import java.util.*;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by: Alexander Duckardt
@@ -164,7 +167,7 @@ public class MetadataDispatcher implements Sweepable {
                         for(String key: userAttributes.keySet()){
                             UserAttributeEntity attr = userAttributes.get(key);
                             if(attr!=null
-                                    && metadataElementEntity.equals(attr.getElement())){
+                                    && metadataElementEntity.equals(HibernateUtils.unproxy(attr.getElement()))){
                                 isFound=true;
                                 if(StringUtils.isBlank(attr.getValue())
                                    && CollectionUtils.isEmpty(attr.getValues())){
@@ -198,7 +201,7 @@ public class MetadataDispatcher implements Sweepable {
                     } else {
                         boolean isFound = false;
                         for(RoleAttributeEntity attr: roleAttributes){
-                            if(metadataElementEntity.equals(attr.getElement())){
+                            if(metadataElementEntity.equals(HibernateUtils.unproxy(attr.getElement()))){
                                 isFound=true;
                                 if(StringUtils.isBlank(attr.getValue())
                                    && CollectionUtils.isEmpty(attr.getValues())){
@@ -232,7 +235,7 @@ public class MetadataDispatcher implements Sweepable {
                     } else {
                         boolean isFound = false;
                         for(GroupAttributeEntity attr: groupAttributes){
-                            if(metadataElementEntity.equals(attr.getElement())){
+                            if(metadataElementEntity.equals(HibernateUtils.unproxy(attr.getElement()))){
                                 isFound=true;
                                 if(StringUtils.isBlank(attr.getValue())
                                    && CollectionUtils.isEmpty(attr.getValues())){
@@ -262,7 +265,7 @@ public class MetadataDispatcher implements Sweepable {
                 } else {
                     boolean isFound = false;
                     for(OrganizationAttributeEntity attr: orgAttributes){
-                        if(metadataElementEntity.equals(attr.getElement())){
+                        if(metadataElementEntity.equals(HibernateUtils.unproxy(attr.getElement()))){
                             isFound=true;
                             if(StringUtils.isBlank(attr.getValue())
                                && CollectionUtils.isEmpty(attr.getValues())){
@@ -293,7 +296,7 @@ public class MetadataDispatcher implements Sweepable {
                 } else {
                     boolean isFound = false;
                     for(ResourcePropEntity attr: resAttributes){
-                        if(metadataElementEntity.equals(attr.getElement())){
+                        if(metadataElementEntity.equals(HibernateUtils.unproxy(attr.getElement()))){
                             isFound=true;
                             if(StringUtils.isBlank(attr.getValue())){
                                 attr.setValue(metadataElementEntity.getStaticDefaultValue());
