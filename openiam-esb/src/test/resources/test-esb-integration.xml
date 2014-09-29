@@ -112,6 +112,16 @@
 		<property name="address"
 			value="${openiam.service_host}${openiam.idm.ws.path}ResourceDataWebService" />
 	</bean>
+	
+	
+	<bean id="mailTemplateServiceClient" class="org.openiam.idm.srvc.msg.ws.MailTemplateWebService"
+		factory-bean="mailTemplateServiceFactory" factory-method="create" />
+	<bean id="mailTemplateServiceFactory" class="org.apache.cxf.jaxws.JaxWsProxyFactoryBean">
+		<property name="serviceClass"
+			value="org.openiam.idm.srvc.msg.ws.MailTemplateWebService" />
+		<property name="address"
+			value="${openiam.service_host}${openiam.idm.ws.path}MailTemplateWebService" />
+	</bean>
 
 	<bean id="managedSysServiceClient" class="org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService"
 		factory-bean="managedSysServiceFactory" factory-method="create" />

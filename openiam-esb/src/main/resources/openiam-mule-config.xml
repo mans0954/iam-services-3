@@ -242,6 +242,19 @@
 			</service>
 		</model>
 		
+		<model name="mailTemplateServiceModel">
+			<service name="mailTemplateService">
+				<inbound>
+						<inbound-endpoint address="${webservice.path}MailTemplateWebService" 		exchange-pattern="request-response">
+						<cxf:jaxws-service />
+					</inbound-endpoint>
+				</inbound>
+				<component>
+					<spring-object bean="mailTemplateWebService" />
+				</component>
+			</service>
+		</model>
+		
 		<model name="uiThemeServiceModel">
 			<service name="uiThemeService">
 				<inbound>

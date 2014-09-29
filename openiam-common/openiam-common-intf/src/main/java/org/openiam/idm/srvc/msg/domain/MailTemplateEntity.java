@@ -3,27 +3,24 @@ package org.openiam.idm.srvc.msg.domain;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
+import org.openiam.base.domain.AbstractKeyNameEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.msg.dto.MailTemplateDto;
 import org.openiam.idm.srvc.msg.dto.MessageBodyType;
 
 import javax.persistence.*;
+
 import java.io.Serializable;
 
 @Entity
 @Table(name = "MAIL_TEMPLATE")
 @DozerDTOCorrespondence(MailTemplateDto.class)
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class MailTemplateEntity implements Serializable {
-
-    @Id
-    @GeneratedValue(generator = "system-uuid")
-    @GenericGenerator(name = "system-uuid", strategy = "uuid")
-    @Column(name = "TMPL_ID")
-    private String tmplId;
-
-    @Column(name = "TMPL_NAME")
-    private String name;
+@AttributeOverrides({
+	@AttributeOverride(name = "id", column = @Column(name = "TMPL_ID")),
+	@AttributeOverride(name = "name", column = @Column(name = "TMPL_NAME"))
+})
+public class MailTemplateEntity extends AbstractKeyNameEntity {
 
     @Column(name = "TMPL_SUBJECT")
     private String subject;
@@ -39,14 +36,6 @@ public class MailTemplateEntity implements Serializable {
     private String attachmentFilePath;
 
     public MailTemplateEntity() {
-    }
-
-    public String getTmplId() {
-        return tmplId;
-    }
-
-    public void setTmplId(String tmplId) {
-        this.tmplId = tmplId;
     }
 
     public String getSubject() {
@@ -81,40 +70,55 @@ public class MailTemplateEntity implements Serializable {
         this.attachmentFilePath = attachmentFilePath;
     }
 
-    public String getName() {
-        return name;
-    }
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime
+				* result
+				+ ((attachmentFilePath == null) ? 0 : attachmentFilePath
+						.hashCode());
+		result = prime * result + ((body == null) ? 0 : body.hashCode());
+		result = prime * result + ((subject == null) ? 0 : subject.hashCode());
+		result = prime * result + ((type == null) ? 0 : type.hashCode());
+		return result;
+	}
 
-    public void setName(String name) {
-        this.name = name;
-    }
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		MailTemplateEntity other = (MailTemplateEntity) obj;
+		if (attachmentFilePath == null) {
+			if (other.attachmentFilePath != null)
+				return false;
+		} else if (!attachmentFilePath.equals(other.attachmentFilePath))
+			return false;
+		if (body == null) {
+			if (other.body != null)
+				return false;
+		} else if (!body.equals(other.body))
+			return false;
+		if (subject == null) {
+			if (other.subject != null)
+				return false;
+		} else if (!subject.equals(other.subject))
+			return false;
+		if (type != other.type)
+			return false;
+		return true;
+	}
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+	@Override
+	public String toString() {
+		return "MailTemplateEntity [subject=" + subject + ", type=" + type
+				+ ", body=" + body + ", attachmentFilePath="
+				+ attachmentFilePath + "]";
+	}
 
-        MailTemplateEntity that = (MailTemplateEntity) o;
-
-        if (attachmentFilePath != null ? !attachmentFilePath.equals(that.attachmentFilePath) : that.attachmentFilePath != null)
-            return false;
-        if (body != null ? !body.equals(that.body) : that.body != null) return false;
-        if (name != null ? !name.equals(that.name) : that.name != null) return false;
-        if (subject != null ? !subject.equals(that.subject) : that.subject != null) return false;
-        if (tmplId != null ? !tmplId.equals(that.tmplId) : that.tmplId != null) return false;
-        if (type != that.type) return false;
-
-        return true;
-    }
-
-    @Override
-    public int hashCode() {
-        int result = tmplId != null ? tmplId.hashCode() : 0;
-        result = 31 * result + (name != null ? name.hashCode() : 0);
-        result = 31 * result + (subject != null ? subject.hashCode() : 0);
-        result = 31 * result + (type != null ? type.hashCode() : 0);
-        result = 31 * result + (body != null ? body.hashCode() : 0);
-        result = 31 * result + (attachmentFilePath != null ? attachmentFilePath.hashCode() : 0);
-        return result;
-    }
+    
 }

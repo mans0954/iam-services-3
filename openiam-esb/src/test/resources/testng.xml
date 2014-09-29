@@ -49,4 +49,12 @@
 			<class name="org.openiam.service.integration.challengeresponse.IdentityQuestionServiceTest" />
 		</classes>
 	</test>
+	
+	<test name="integration.mail">
+		<classes>
+			<!--
+			<class name="org.openiam.service.integration.mail.MailTemplateServiceTest" />
+			-->
+		</classes>
+	</test>
 </suite>

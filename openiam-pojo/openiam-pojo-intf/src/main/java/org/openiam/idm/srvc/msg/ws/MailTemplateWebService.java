@@ -1,7 +1,10 @@
 package org.openiam.idm.srvc.msg.ws;
 
+import java.util.List;
+
 import org.openiam.base.ws.Response;
 import org.openiam.idm.srvc.msg.dto.MailTemplateDto;
+import org.openiam.idm.srvc.msg.dto.MailTemplateSearchBean;
 
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
@@ -9,28 +12,27 @@ import javax.jws.WebService;
 
 @WebService(targetNamespace = "urn:idm.openiam.org/srvc/msg/service", name = "MailTemplateWebService")
 public interface MailTemplateWebService {
-    @WebMethod
-    public MailTemplateResponse addTemplate(
-            @WebParam(name = "template", targetNamespace = "")
-            MailTemplateDto template);
+	
+	/**
+     * method for adding template.
+     * @param transientInstance
+     * @return
+     */
+    public Response save(MailTemplateDto transientInstance);
 
-    @WebMethod
-    public Response removeTemplate(
-            @WebParam(name = "tmplId", targetNamespace = "")
-            String tmplId);
+    /**
+     * method for deleting template.
+     * @param id
+     */
+    public Response removeTemplate(String id);
 
-    @WebMethod
-    public MailTemplateResponse updateTemplate(
-            @WebParam(name = "template", targetNamespace = "")
-            MailTemplateDto template);
-
-    @WebMethod
-    public MailTemplateResponse getTemplateById(
-            @WebParam(name = "id", targetNamespace = "")
-            java.lang.String id);
-
-
-    @WebMethod
-    public MailTemplateListResponse getAllTemplates();
+    /**
+     * method for retriving template by id .
+     * @param id
+     * @return
+     */
+    public MailTemplateDto getTemplateById(String id);
+    
+    public List<MailTemplateDto> findBeans(final MailTemplateSearchBean searchBean, final int from, final int size);
 
 }
