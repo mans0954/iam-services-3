@@ -89,7 +89,7 @@ public class IdmAuditLogCustomEntity implements Serializable {
 
         if (timestamp != that.timestamp) return false;
         if (key != null ? !key.equals(that.key) : that.key != null) return false;
-        if (log != null ? !log.equals(that.log) : that.log != null) return false;
+        if ((log != null && log.getId() != null) ? !log.getId().equals(that.log.getId()) : (that.log != null && that.log.getId() != null)) return false;
         if (value != null ? !value.equals(that.value) : that.value != null) return false;
 
         return true;
@@ -97,7 +97,7 @@ public class IdmAuditLogCustomEntity implements Serializable {
 
     @Override
     public int hashCode() {
-        int result = log != null ? log.hashCode() : 0;
+        int result = (log != null && log.getId() != null) ? log.getId().hashCode() : 0;
         result = 31 * result + (key != null ? key.hashCode() : 0);
         result = 31 * result + (value != null ? value.hashCode() : 0);
         result = 31 * result + (int) (timestamp ^ (timestamp >>> 32));

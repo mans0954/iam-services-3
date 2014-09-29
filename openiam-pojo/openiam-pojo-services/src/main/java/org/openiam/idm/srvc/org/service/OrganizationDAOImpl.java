@@ -164,6 +164,10 @@ public class OrganizationDAOImpl extends
             if(StringUtils.isNotBlank(organizationSearchBean.getMetadataType())){
                 criteria.add(Restrictions.eq("type.id", organizationSearchBean.getMetadataType()));
             }
+
+            if(organizationSearchBean.getIsSelectable()!=null){
+                criteria.add(Restrictions.eq("selectable", organizationSearchBean.getIsSelectable()));
+            }
 		}
 		return criteria;
 	}

@@ -42,12 +42,13 @@ public class PassphraseRepeatWordRule extends AbstractPasswordRule {
 
 	@Override
 	public void validate() throws PasswordRuleException {
-		boolean enabled = false;
+		boolean enabled = true;
 
 		PolicyAttribute attribute = getAttribute("REPEAT_SAME_WORD_PASSPHRASE");
-		if (attribute != null && StringUtils.isNotBlank(attribute.getValue1())) {
-			enabled = Boolean.parseBoolean(attribute.getValue1());
-
+		if(attribute != null) {
+			if (StringUtils.equalsIgnoreCase(Boolean.FALSE.toString(), attribute.getValue1())) {
+				enabled = false;
+			}
 		}
 		if (!enabled){
 			// should not allow repetition of words in passphrase
@@ -69,12 +70,13 @@ public class PassphraseRepeatWordRule extends AbstractPasswordRule {
 
 	@Override
 	public PasswordRuleException createException() {
-		boolean enabled = false;
+		boolean enabled = true;
 
 		PolicyAttribute attribute = getAttribute("REPEAT_SAME_WORD_PASSPHRASE");
-		if (attribute != null && StringUtils.isNotBlank(attribute.getValue1())) {
-			enabled = Boolean.parseBoolean(attribute.getValue1());
-
+		if(attribute != null) {
+			if (StringUtils.equalsIgnoreCase(Boolean.FALSE.toString(), attribute.getValue1())) {
+				enabled = false;
+			}
 		}
 		if (!enabled){
 			return new PasswordRuleException(ResponseCode.PASSPHRASE_WORD_REPEAT_RULE);
@@ -85,12 +87,13 @@ public class PassphraseRepeatWordRule extends AbstractPasswordRule {
 
 	@Override
 	public PasswordRule createRule() {
-		boolean enabled = false;
+		boolean enabled = true;
 
 		PolicyAttribute attribute = getAttribute("REPEAT_SAME_WORD_PASSPHRASE");
-		if (attribute != null && StringUtils.isNotBlank(attribute.getValue1())) {
-			enabled = Boolean.parseBoolean(attribute.getValue1());
-
+		if(attribute != null) {
+			if (StringUtils.equalsIgnoreCase(Boolean.FALSE.toString(), attribute.getValue1())) {
+				enabled = false;
+			}
 		}
 		if (!enabled){
 			return new PasswordRule(ResponseCode.PASSPHRASE_WORD_REPEAT_RULE);
