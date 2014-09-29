@@ -4,6 +4,7 @@ import org.apache.commons.lang.StringUtils;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.*;
 import org.openiam.base.BaseConstants;
+import org.openiam.base.domain.KeyEntity;
 import org.openiam.core.dao.lucene.LuceneLastUpdate;
 import org.openiam.core.domain.UserKey;
 import org.openiam.dozer.DozerDTOCorrespondence;
@@ -49,13 +50,8 @@ import java.util.Map.Entry;
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @ElasticsearchIndex(indexName = ESIndexName.USERS)
 @ElasticsearchMapping(typeName = ESIndexType.USER)
-public class UserEntity {
-    @Id
-    @GeneratedValue(generator = "system-uuid")
-    @GenericGenerator(name = "system-uuid", strategy = "uuid")
-    @Column(name = "USER_ID", length = 32, nullable = false)
-    @ElasticsearchId
-    private String id;
+@AttributeOverride(name = "id", column = @Column(name = "USER_ID"))
+public class UserEntity extends KeyEntity {
 
     @Column(name = "BIRTHDATE", length = 19)
     private Date birthdate;
@@ -272,14 +268,6 @@ public class UserEntity {
     private String defaultLogin;
 
     public UserEntity() {
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
     }
 
     public Date getBirthdate() {
