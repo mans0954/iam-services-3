@@ -24,7 +24,8 @@ import javax.xml.bind.annotation.XmlType;
         "metaTypeName",
         "metaTypeId",
         "isMultiple",
-        "isRequired"
+        "isRequired",
+		"displayOrder"
 })
 @DozerDTOCorrespondence(ReportCriteriaParamEntity.class)
 public class ReportCriteriaParamDto {
@@ -40,6 +41,7 @@ public class ReportCriteriaParamDto {
     private String metaTypeId;
     private boolean isMultiple;
     private boolean isRequired;
+	private Integer displayOrder;
 
     public ReportCriteriaParamDto(String id, boolean isMultiple, boolean isRequired,
                                   String name, String caption, String reportId, String typeId,
@@ -157,7 +159,15 @@ public class ReportCriteriaParamDto {
         this.metaTypeName = metaTypeName;
     }
 
-    @Override
+	public Integer getDisplayOrder() {
+		return displayOrder;
+	}
+
+	public void setDisplayOrder(Integer displayOrder) {
+		this.displayOrder = displayOrder;
+	}
+
+	@Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
@@ -174,7 +184,8 @@ public class ReportCriteriaParamDto {
         if (value != null ? !value.equals(that.value) : that.value != null) return false;
         if (typeName != null ? !typeName.equals(that.typeName) : that.typeName != null) return false;
         if (metaTypeId != null ? !metaTypeId.equals(that.metaTypeId) : that.metaTypeId != null) return false;
-        if (metaTypeName != null ? !metaTypeName.equals(that.metaTypeName) : that.metaTypeName != null) return false;
+		if (metaTypeName != null ? !metaTypeName.equals(that.metaTypeName) : that.metaTypeName != null) return false;
+		if (displayOrder != null ? !displayOrder.equals(that.displayOrder) : that.displayOrder != null) return false;
 
         return true;
     }
@@ -192,6 +203,7 @@ public class ReportCriteriaParamDto {
         result = 31 * result + (metaTypeName != null ? metaTypeName.hashCode() : 0);
         result = 31 * result + (isMultiple ? 1231 : 1237);
         result = 31 * result + (isRequired ? 1231 : 1237);
+		result = 31 * result + (displayOrder != null ? displayOrder.hashCode() : 0);
         return result;
     }
 
@@ -206,6 +218,7 @@ public class ReportCriteriaParamDto {
                 + ", metaTypeId=" + metaTypeId
                 + ", metaTypeName=" + metaTypeName
                 + ", isMultiple=" + isMultiple
-                + ", isRequired=" + isRequired + "]";
+                + ", isRequired=" + isRequired
+				+ ", displayOrder=" + displayOrder + "]";
 	}
 }
