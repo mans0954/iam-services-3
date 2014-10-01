@@ -25,7 +25,8 @@ import javax.xml.bind.annotation.XmlType;
         "metaTypeId",
         "isMultiple",
         "isRequired",
-		"displayOrder"
+		"displayOrder",
+		"requestParameters"
 })
 @DozerDTOCorrespondence(ReportCriteriaParamEntity.class)
 public class ReportCriteriaParamDto {
@@ -42,33 +43,9 @@ public class ReportCriteriaParamDto {
     private boolean isMultiple;
     private boolean isRequired;
 	private Integer displayOrder;
-
-    public ReportCriteriaParamDto(String id, boolean isMultiple, boolean isRequired,
-                                  String name, String caption, String reportId, String typeId,
-                                  String typeName, String metaTypeId, String metaTypeName,
-                                  String value) {
-        this.id = id;
-        this.isMultiple = isMultiple;
-        this.isRequired = isRequired;
-        this.name = name;
-        this.caption = caption;
-        this.reportId = reportId;
-        this.typeId = typeId;
-        this.typeName = typeName;
-        this.metaTypeId = metaTypeId;
-        this.metaTypeName = metaTypeName;
-        this.value = value;
-    }
+    private String requestParameters;
 
     public ReportCriteriaParamDto() {
-    }
-
-    public ReportCriteriaParamDto(String reportId, String name, String value, String typeId, String typeName) {
-        this.reportId = reportId;
-        this.name = name;
-        this.value = value;
-        this.typeId = typeId;
-        this.typeName=typeName;
     }
 
     public String getId() {
@@ -167,6 +144,14 @@ public class ReportCriteriaParamDto {
 		this.displayOrder = displayOrder;
 	}
 
+	public String getRequestParameters() {
+		return requestParameters;
+	}
+
+	public void setRequestParameters(String requestParameters) {
+		this.requestParameters = requestParameters;
+	}
+
 	@Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -186,6 +171,7 @@ public class ReportCriteriaParamDto {
         if (metaTypeId != null ? !metaTypeId.equals(that.metaTypeId) : that.metaTypeId != null) return false;
 		if (metaTypeName != null ? !metaTypeName.equals(that.metaTypeName) : that.metaTypeName != null) return false;
 		if (displayOrder != null ? !displayOrder.equals(that.displayOrder) : that.displayOrder != null) return false;
+		if (requestParameters != null ? !requestParameters.equals(that.requestParameters) : that.requestParameters != null) return false;
 
         return true;
     }
@@ -204,6 +190,7 @@ public class ReportCriteriaParamDto {
         result = 31 * result + (isMultiple ? 1231 : 1237);
         result = 31 * result + (isRequired ? 1231 : 1237);
 		result = 31 * result + (displayOrder != null ? displayOrder.hashCode() : 0);
+		result = 31 * result + (requestParameters != null ? requestParameters.hashCode() : 0);
         return result;
     }
 
@@ -219,6 +206,7 @@ public class ReportCriteriaParamDto {
                 + ", metaTypeName=" + metaTypeName
                 + ", isMultiple=" + isMultiple
                 + ", isRequired=" + isRequired
-				+ ", displayOrder=" + displayOrder + "]";
+				+ ", displayOrder=" + displayOrder
+				+ ", displayOrder=" + requestParameters + "]";
 	}
 }

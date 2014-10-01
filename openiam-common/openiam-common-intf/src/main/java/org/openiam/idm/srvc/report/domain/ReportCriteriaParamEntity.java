@@ -56,7 +56,10 @@ public class ReportCriteriaParamEntity {
 	@Column(name="DISPLAY_ORDER", nullable = false)
 	private Integer displayOrder;
 
-    public ReportCriteriaParamEntity() {
+	@Column(name="REQUEST_PARAMS")
+	private String requestParameters;
+
+	public ReportCriteriaParamEntity() {
     }
 
     public String getId() {
@@ -139,6 +142,14 @@ public class ReportCriteriaParamEntity {
 		this.displayOrder = displayOrder;
 	}
 
+	public String getRequestParameters() {
+		return requestParameters;
+	}
+
+	public void setRequestParameters(String requestParameters) {
+		this.requestParameters = requestParameters;
+	}
+
 	@Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -156,6 +167,7 @@ public class ReportCriteriaParamEntity {
         if (value != null ? !value.equals(that.value) : that.value != null) return false;
         if (metaType != null ? !metaType.equals(that.metaType) : that.metaType != null) return false;
 		if (displayOrder != null ? !displayOrder.equals(that.displayOrder) : that.displayOrder != null) return false;
+		if (requestParameters != null ? !requestParameters.equals(that.requestParameters) : that.requestParameters != null) return false;
 
         return true;
     }
@@ -172,6 +184,7 @@ public class ReportCriteriaParamEntity {
         result = 31 * result + (isMultiple ? 1231 : 1237);
         result = 31 * result + (isRequired ? 1231 : 1237);
 		result = 31 * result + (displayOrder != null ? displayOrder.hashCode() : 0);
+		result = 31 * result + (requestParameters != null ? requestParameters.hashCode() : 0);
         return result;
     }
 
@@ -188,6 +201,7 @@ public class ReportCriteriaParamEntity {
                 ", isMultiple=" + isMultiple +
 				", isRequired=" + isRequired +
 				", displayOrder=" + displayOrder +
+				", requestParameters='" + requestParameters + '\'' +
                 '}';
     }
 }
