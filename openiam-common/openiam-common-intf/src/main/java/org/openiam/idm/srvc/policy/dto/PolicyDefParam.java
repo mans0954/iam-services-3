@@ -21,8 +21,6 @@ import org.openiam.idm.srvc.policy.domain.PolicyDefParamEntity;
         "name",
         "description",
         "operation",
-        "value1",
-        "value2",
         "repeats",
         "policyParamHandler",
         "handlerLanguage",
@@ -40,8 +38,6 @@ public class PolicyDefParam implements java.io.Serializable {
     private String name;
     private String description;
     private String operation;
-    private String value1;
-    private String value2;
     private Integer repeats;
     private String policyParamHandler;
     private String handlerLanguage;
@@ -86,22 +82,6 @@ public class PolicyDefParam implements java.io.Serializable {
 
     public void setOperation(String operation) {
         this.operation = operation;
-    }
-
-    public String getValue1() {
-        return this.value1;
-    }
-
-    public void setValue1(String value1) {
-        this.value1 = value1;
-    }
-
-    public String getValue2() {
-        return this.value2;
-    }
-
-    public void setValue2(String value2) {
-        this.value2 = value2;
     }
 
     public Integer getRepeats() {
@@ -153,8 +133,6 @@ public class PolicyDefParam implements java.io.Serializable {
                 ", name='" + name + '\'' +
                 ", description='" + description + '\'' +
                 ", operation='" + operation + '\'' +
-                ", value1='" + value1 + '\'' +
-                ", value2='" + value2 + '\'' +
                 ", repeats=" + repeats +
                 ", policyParamHandler='" + policyParamHandler + '\'' +
                 ", handlerLanguage='" + handlerLanguage + '\'' +

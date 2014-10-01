@@ -1,35 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mappings xmlns="http://dozer.sourceforge.net" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://dozer.sourceforge.net
+          xsi:schemaLocation="http://dozer.sourceforge.net
           http://dozer.sourceforge.net/schema/beanmapping.xsd">
 
-   	<mapping>
-		<class-a>org.openiam.idm.srvc.res.domain.ResourceTypeEntity</class-a>
-		<class-b>org.openiam.idm.srvc.res.dto.ResourceType</class-b>
-		<field
-			custom-converter="org.openiam.dozer.crossentity.CrossEntityMapConverterWithKeyString"
-			custom-converter-param="dto2entityShallowDozerMapper">
-			<a>displayNameMap</a>
-			<b>displayNameMap</b>
-		</field>
-	</mapping>
+    <mapping>
+        <class-a>org.openiam.idm.srvc.res.domain.ResourceTypeEntity</class-a>
+        <class-b>org.openiam.idm.srvc.res.dto.ResourceType</class-b>
+        <field
+                custom-converter="org.openiam.dozer.crossentity.CrossEntityMapConverterWithKeyString"
+                custom-converter-param="dto2entityShallowDozerMapper">
+            <a>displayNameMap</a>
+            <b>displayNameMap</b>
+        </field>
+    </mapping>
 
-	<mapping>
-		<class-a>org.openiam.idm.srvc.res.domain.ResourcePropEntity</class-a>
-		<class-b>org.openiam.idm.srvc.res.dto.ResourceProp</class-b>
-		<field>
-			<a>resource.id</a>
-			<b>resourceId</b>
-		</field>
-		<field>
-			<a>element.id</a>
-			<b>metadataId</b>
-		</field>
-		<field>
-			<a>element.displayName</a>
-			<b>metadataName</b>
-		</field>
-	</mapping>
+    <mapping>
+        <class-a>org.openiam.idm.srvc.res.domain.ResourcePropEntity</class-a>
+        <class-b>org.openiam.idm.srvc.res.dto.ResourceProp</class-b>
+        <field>
+            <a>resource.id</a>
+            <b>resourceId</b>
+        </field>
+        <field>
+            <a>element.id</a>
+            <b>metadataId</b>
+        </field>
+        <field>
+            <a>element.displayName</a>
+            <b>metadataName</b>
+        </field>
+    </mapping>
 
     <mapping>
         <class-a>org.openiam.idm.srvc.org.domain.OrgType2OrgTypeXrefEntity</class-a>
@@ -55,98 +55,13 @@
             <b>memberOrganizationId</b>
         </field>
     </mapping>
-	<mapping>
-		<class-a>org.openiam.idm.srvc.role.domain.RoleAttributeEntity</class-a>
-		<class-b>org.openiam.idm.srvc.role.dto.RoleAttribute</class-b>
-		<field>
-			<a>role.id</a>
-			<b>roleId</b>
-		</field>
-		<field>
-			<a>element.id</a>
-			<b>metadataId</b>
-		</field>
+    <mapping>
+        <class-a>org.openiam.idm.srvc.role.domain.RoleAttributeEntity</class-a>
+        <class-b>org.openiam.idm.srvc.role.dto.RoleAttribute</class-b>
         <field>
-            <a>element.displayName</a>
-            <b>metadataName</b>
+            <a>role.id</a>
+            <b>roleId</b>
         </field>
-	</mapping>
-
-	<mapping>
-		<class-a>org.openiam.idm.srvc.user.domain.UserNoteEntity</class-a>
-		<class-b>org.openiam.idm.srvc.user.dto.UserNote</class-b>
-	</mapping>
-	<mapping>
-		<class-a>org.openiam.idm.srvc.user.domain.UserAttributeEntity
-		</class-a>
-		<class-b>org.openiam.idm.srvc.user.dto.UserAttribute</class-b>
-		<field>
-            <a>element.id</a>
-            <b>metadataId</b>
-        </field>
-        <field>
-            <a>element.displayName</a>
-            <b>metadataName</b>
-        </field>
-		<field>
-			<a>user.id</a>
-			<b>userId</b>
-		</field>
-	</mapping>
-
-	<mapping>
-		<class-a>org.openiam.idm.srvc.continfo.domain.AddressEntity</class-a>
-		<class-b>org.openiam.idm.srvc.continfo.dto.Address</class-b>
-        <field>
-            <a>metadataType.id</a>
-            <b>metadataTypeId</b>
-        </field>
-        <field>
-            <a>metadataType.description</a>
-            <b>typeDescription</b>
-        </field>
-	</mapping>
-	<mapping>
-		<class-a>org.openiam.idm.srvc.continfo.domain.EmailAddressEntity
-		</class-a>
-		<class-b>org.openiam.idm.srvc.continfo.dto.EmailAddress</class-b>
-        <field>
-            <a>metadataType.id</a>
-            <b>metadataTypeId</b>
-        </field>
-        <field>
-            <a>metadataType.description</a>
-            <b>typeDescription</b>
-        </field>
-        <field>
-        	<a>parent.id</a>
-        	<b>parentId</b>
-        </field>
-	</mapping>
-	<mapping>
-		<class-a>org.openiam.idm.srvc.continfo.domain.PhoneEntity</class-a>
-		<class-b>org.openiam.idm.srvc.continfo.dto.Phone</class-b>
-        <field>
-            <a>metadataType.id</a>
-            <b>metadataTypeId</b>
-        </field>
-        <field>
-            <a>metadataType.description</a>
-            <b>typeDescription</b>
-        </field>
-	</mapping>
-
-
-	<mapping>
-		<class-a>org.openiam.idm.srvc.auth.domain.LoginAttributeEntity
-		</class-a>
-		<class-b>org.openiam.idm.srvc.auth.dto.LoginAttribute</class-b>
-	</mapping>
-
-	<mapping>
-		<class-a>org.openiam.idm.srvc.grp.domain.GroupAttributeEntity
-		</class-a>
-		<class-b>org.openiam.idm.srvc.grp.dto.GroupAttribute</class-b>
         <field>
             <a>element.id</a>
             <b>metadataId</b>
@@ -155,183 +70,263 @@
             <a>element.displayName</a>
             <b>metadataName</b>
         </field>
-	</mapping>
+    </mapping>
 
-	<mapping>
-		<class-a>org.openiam.idm.srvc.cat.domain.CategoryTypeEntity</class-a>
-		<class-b>org.openiam.idm.srvc.cat.dto.CategoryType</class-b>
-	</mapping>
+    <mapping>
+        <class-a>org.openiam.idm.srvc.user.domain.UserNoteEntity</class-a>
+        <class-b>org.openiam.idm.srvc.user.dto.UserNote</class-b>
+    </mapping>
+    <mapping>
+        <class-a>org.openiam.idm.srvc.user.domain.UserAttributeEntity
+        </class-a>
+        <class-b>org.openiam.idm.srvc.user.dto.UserAttribute</class-b>
+        <field>
+            <a>element.id</a>
+            <b>metadataId</b>
+        </field>
+        <field>
+            <a>element.displayName</a>
+            <b>metadataName</b>
+        </field>
+        <field>
+            <a>user.id</a>
+            <b>userId</b>
+        </field>
+    </mapping>
 
-	<mapping>
-		<class-a>org.openiam.idm.srvc.cat.domain.CategoryLanguageEntity
-		</class-a>
-		<class-b>org.openiam.idm.srvc.cat.dto.CategoryLanguage</class-b>
-	</mapping>
+    <mapping>
+        <class-a>org.openiam.idm.srvc.continfo.domain.AddressEntity</class-a>
+        <class-b>org.openiam.idm.srvc.continfo.dto.Address</class-b>
+        <field>
+            <a>metadataType.id</a>
+            <b>metadataTypeId</b>
+        </field>
+        <field>
+            <a>metadataType.description</a>
+            <b>typeDescription</b>
+        </field>
+    </mapping>
+    <mapping>
+        <class-a>org.openiam.idm.srvc.continfo.domain.EmailAddressEntity
+        </class-a>
+        <class-b>org.openiam.idm.srvc.continfo.dto.EmailAddress</class-b>
+        <field>
+            <a>metadataType.id</a>
+            <b>metadataTypeId</b>
+        </field>
+        <field>
+            <a>metadataType.description</a>
+            <b>typeDescription</b>
+        </field>
+        <field>
+            <a>parent.id</a>
+            <b>parentId</b>
+        </field>
+    </mapping>
+    <mapping>
+        <class-a>org.openiam.idm.srvc.continfo.domain.PhoneEntity</class-a>
+        <class-b>org.openiam.idm.srvc.continfo.dto.Phone</class-b>
+        <field>
+            <a>metadataType.id</a>
+            <b>metadataTypeId</b>
+        </field>
+        <field>
+            <a>metadataType.description</a>
+            <b>typeDescription</b>
+        </field>
+    </mapping>
 
-	<mapping>
-		<class-a>org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity</class-a>
-		<class-b>org.openiam.idm.srvc.org.dto.OrganizationAttribute</class-b>
-		<field>
-			<a>element.id</a>
-			<b>metadataId</b>
-		</field>
-		<field>
-			<a>element.displayName</a>
-			<b>metadataName</b>
-		</field>
-		<field>
-			<a>organization.id</a>
-			<b>organizationId</b>
-		</field>
-	</mapping>
-	<mapping>
-		<class-a>org.openiam.idm.srvc.policy.domain.PolicyAttributeEntity
-		</class-a>
-		<class-b>org.openiam.idm.srvc.policy.dto.PolicyAttribute</class-b>
-	</mapping>
-	<mapping>
-		<class-a>org.openiam.idm.srvc.policy.domain.PolicyObjectAssocEntity
-		</class-a>
-		<class-b>org.openiam.idm.srvc.policy.dto.PolicyObjectAssoc</class-b>
-	</mapping>
-	<mapping>
-		<class-a>org.openiam.idm.srvc.audit.domain.IdmAuditLogCustomEntity
-		</class-a>
-		<class-b>org.openiam.idm.srvc.audit.dto.IdmAuditLogCustom</class-b>
-		<field>
-			<a>log.id</a>
-			<b>logId</b>
-		</field>
-	</mapping>
-	
-	<mapping>
-		<class-a>org.openiam.idm.srvc.audit.domain.AuditLogTargetEntity
-		</class-a>
-		<class-b>org.openiam.idm.srvc.audit.dto.AuditLogTarget</class-b>
-		<field>
-			<a>log.id</a>
-			<b>logId</b>
-		</field>
-	</mapping>
-	
-	<mapping>
-		<class-a>org.openiam.idm.srvc.mngsys.domain.ManagedSysRuleEntity
-		</class-a>
-		<class-b>org.openiam.idm.srvc.mngsys.dto.ManagedSysRuleDto
-		</class-b>
-	</mapping>
-	<mapping>
-		<class-a>org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity
-		</class-a>
-		<class-b>org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch
-		</class-b>
+
+    <mapping>
+        <class-a>org.openiam.idm.srvc.auth.domain.LoginAttributeEntity
+        </class-a>
+        <class-b>org.openiam.idm.srvc.auth.dto.LoginAttribute</class-b>
+    </mapping>
+
+    <mapping>
+        <class-a>org.openiam.idm.srvc.grp.domain.GroupAttributeEntity
+        </class-a>
+        <class-b>org.openiam.idm.srvc.grp.dto.GroupAttribute</class-b>
+        <field>
+            <a>element.id</a>
+            <b>metadataId</b>
+        </field>
+        <field>
+            <a>element.displayName</a>
+            <b>metadataName</b>
+        </field>
+    </mapping>
+
+    <mapping>
+        <class-a>org.openiam.idm.srvc.cat.domain.CategoryTypeEntity</class-a>
+        <class-b>org.openiam.idm.srvc.cat.dto.CategoryType</class-b>
+    </mapping>
+
+    <mapping>
+        <class-a>org.openiam.idm.srvc.cat.domain.CategoryLanguageEntity
+        </class-a>
+        <class-b>org.openiam.idm.srvc.cat.dto.CategoryLanguage</class-b>
+    </mapping>
+
+    <mapping>
+        <class-a>org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity</class-a>
+        <class-b>org.openiam.idm.srvc.org.dto.OrganizationAttribute</class-b>
+        <field>
+            <a>element.id</a>
+            <b>metadataId</b>
+        </field>
+        <field>
+            <a>element.displayName</a>
+            <b>metadataName</b>
+        </field>
+        <field>
+            <a>organization.id</a>
+            <b>organizationId</b>
+        </field>
+    </mapping>
+    <mapping>
+        <class-a>org.openiam.idm.srvc.policy.domain.PolicyObjectAssocEntity
+        </class-a>
+        <class-b>org.openiam.idm.srvc.policy.dto.PolicyObjectAssoc</class-b>
+    </mapping>
+    <mapping>
+        <class-a>org.openiam.idm.srvc.audit.domain.IdmAuditLogCustomEntity
+        </class-a>
+        <class-b>org.openiam.idm.srvc.audit.dto.IdmAuditLogCustom</class-b>
+        <field>
+            <a>log.id</a>
+            <b>logId</b>
+        </field>
+    </mapping>
+
+    <mapping>
+        <class-a>org.openiam.idm.srvc.audit.domain.AuditLogTargetEntity
+        </class-a>
+        <class-b>org.openiam.idm.srvc.audit.dto.AuditLogTarget</class-b>
+        <field>
+            <a>log.id</a>
+            <b>logId</b>
+        </field>
+    </mapping>
+
+    <mapping>
+        <class-a>org.openiam.idm.srvc.mngsys.domain.ManagedSysRuleEntity
+        </class-a>
+        <class-b>org.openiam.idm.srvc.mngsys.dto.ManagedSysRuleDto
+        </class-b>
+    </mapping>
+    <mapping>
+        <class-a>org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity
+        </class-a>
+        <class-b>org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch
+        </class-b>
         <field>
             <a>managedSys.id</a>
             <b>managedSys</b>
         </field>
-	</mapping>
+    </mapping>
 
-	<mapping>
-		<class-a>org.openiam.idm.srvc.lang.domain.LanguageMappingEntity
-		</class-a>
-		<class-b>org.openiam.idm.srvc.lang.dto.LanguageMapping</class-b>
-	</mapping>
+    <mapping>
+        <class-a>org.openiam.idm.srvc.lang.domain.LanguageMappingEntity
+        </class-a>
+        <class-b>org.openiam.idm.srvc.lang.dto.LanguageMapping</class-b>
+    </mapping>
 
-	<mapping>
-		<class-a>org.openiam.idm.srvc.meta.domain.pk.MetadataElementPageTemplateXrefIdEntity
-		</class-a>
-		<class-b>org.openiam.idm.srvc.meta.dto.pk.MetadataElementPageTemplateXrefId
-		</class-b>
-	</mapping>
+    <mapping>
+        <class-a>org.openiam.idm.srvc.meta.domain.pk.MetadataElementPageTemplateXrefIdEntity
+        </class-a>
+        <class-b>org.openiam.idm.srvc.meta.dto.pk.MetadataElementPageTemplateXrefId
+        </class-b>
+    </mapping>
 
-	<mapping>
-		<class-a>org.openiam.idm.srvc.meta.domain.MetadataElementPageTemplateXrefEntity
-		</class-a>
-		<class-b>org.openiam.idm.srvc.meta.dto.MetadataElementPageTemplateXref
-		</class-b>
-		<field
-			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentObjectConverter"
-			custom-converter-param="dto2entityShallowDozerMapper">
-			<a>id</a>
-			<b>id</b>
-		</field>
-	</mapping>
+    <mapping>
+        <class-a>org.openiam.idm.srvc.meta.domain.MetadataElementPageTemplateXrefEntity
+        </class-a>
+        <class-b>org.openiam.idm.srvc.meta.dto.MetadataElementPageTemplateXref
+        </class-b>
+        <field
+                custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentObjectConverter"
+                custom-converter-param="dto2entityShallowDozerMapper">
+            <a>id</a>
+            <b>id</b>
+        </field>
+    </mapping>
 
-	<mapping>
-		<class-a>org.openiam.idm.srvc.lang.domain.LanguageLocaleEntity
-		</class-a>
-		<class-b>org.openiam.idm.srvc.lang.dto.LanguageLocale</class-b>
-		<field>
-			<a>language.id</a>
-			<b>languageId</b>
-		</field>
-	</mapping>
-	<mapping>
-		<class-a>org.openiam.idm.srvc.recon.domain.ReconciliationSituationEntity
-		</class-a>
-		<class-b>
-			org.openiam.idm.srvc.recon.dto.ReconciliationSituation
-		</class-b>
-	</mapping>
-	<mapping>
-		<class-a>org.openiam.idm.srvc.mngsys.domain.DefaultReconciliationAttributeMapEntity
-		</class-a>
-		<class-b>
-			org.openiam.idm.srvc.mngsys.dto.DefaultReconciliationAttributeMap
-		</class-b>
-	</mapping>
-	
-	
-	<mapping>
-		<class-a>org.openiam.idm.srvc.batch.domain.BatchTaskEntity</class-a>
-		<class-b>org.openiam.idm.srvc.batch.dto.BatchTask</class-b>
-	</mapping>
-	
-	<mapping>
-		<class-a>org.openiam.idm.srvc.meta.domain.MetadataFieldTemplateXrefEntity</class-a>
-		<class-b>org.openiam.idm.srvc.meta.dto.MetadataFieldTemplateXref</class-b>
-		<field
-			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentObjectConverter"
-			custom-converter-param="dto2entityShallowDozerMapper">
-			<a>field</a>
-			<b>field</b>
-		</field>
-		<field
-			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentObjectConverter"
-			custom-converter-param="dto2entityShallowDozerMapper">
-			<a>template</a>
-			<b>template</b>
-		</field>
-		<field>
-			<a>id</a>
-			<b>id</b>
-		</field>
-		<field>
-			<a>required</a>
-			<b>required</b>
-		</field>
-		<field
-			custom-converter="org.openiam.dozer.crossentity.CrossEntityMapConverterWithKeyString"
-			custom-converter-param="dto2entityShallowDozerMapper">
-			<a>languageMap</a>
-			<b>languageMap</b>
-		</field>
-	</mapping>
-	
-	<mapping>
+    <mapping>
+        <class-a>org.openiam.idm.srvc.lang.domain.LanguageLocaleEntity
+        </class-a>
+        <class-b>org.openiam.idm.srvc.lang.dto.LanguageLocale</class-b>
+        <field>
+            <a>language.id</a>
+            <b>languageId</b>
+        </field>
+    </mapping>
+    <mapping>
+        <class-a>org.openiam.idm.srvc.recon.domain.ReconciliationSituationEntity
+        </class-a>
+        <class-b>
+            org.openiam.idm.srvc.recon.dto.ReconciliationSituation
+        </class-b>
+    </mapping>
+    <mapping>
+        <class-a>org.openiam.idm.srvc.mngsys.domain.DefaultReconciliationAttributeMapEntity
+        </class-a>
+        <class-b>
+            org.openiam.idm.srvc.mngsys.dto.DefaultReconciliationAttributeMap
+        </class-b>
+    </mapping>
+
+
+    <mapping>
+        <class-a>org.openiam.idm.srvc.batch.domain.BatchTaskEntity</class-a>
+        <class-b>org.openiam.idm.srvc.batch.dto.BatchTask</class-b>
+    </mapping>
+
+    <mapping>
+        <class-a>org.openiam.idm.srvc.meta.domain.MetadataFieldTemplateXrefEntity</class-a>
+        <class-b>org.openiam.idm.srvc.meta.dto.MetadataFieldTemplateXref</class-b>
+        <field
+                custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentObjectConverter"
+                custom-converter-param="dto2entityShallowDozerMapper">
+            <a>field</a>
+            <b>field</b>
+        </field>
+        <field
+                custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentObjectConverter"
+                custom-converter-param="dto2entityShallowDozerMapper">
+            <a>template</a>
+            <b>template</b>
+        </field>
+        <field>
+            <a>id</a>
+            <b>id</b>
+        </field>
+        <field>
+            <a>required</a>
+            <b>required</b>
+        </field>
+        <field
+                custom-converter="org.openiam.dozer.crossentity.CrossEntityMapConverterWithKeyString"
+                custom-converter-param="dto2entityShallowDozerMapper">
+            <a>languageMap</a>
+            <b>languageMap</b>
+        </field>
+    </mapping>
+
+    <mapping>
         <class-a>org.openiam.am.srvc.domain.URIPatternMetaTypeEntity</class-a>
         <class-b>org.openiam.am.srvc.dto.URIPatternMetaType</class-b>
     </mapping>
-    
+
     <mapping>
         <class-a>org.openiam.am.srvc.domain.AuthLevelEntity</class-a>
         <class-b>org.openiam.am.srvc.dto.AuthLevel</class-b>
         <!--<field-exclude>-->
-            <!--<a>contentProviderSet</a>-->
-            <!--<b>contentProviderSet</b>-->
+        <!--<a>contentProviderSet</a>-->
+        <!--<b>contentProviderSet</b>-->
         <!--</field-exclude>-->
     </mapping>
-    
+
     <mapping>
         <class-a>org.openiam.am.srvc.domain.ContentProviderServerEntity</class-a>
         <class-b>org.openiam.am.srvc.dto.ContentProviderServer</class-b>
@@ -348,8 +343,8 @@
             <b>serverURL</b>
         </field>
     </mapping>
-    
-     <mapping>
+
+    <mapping>
         <class-a>org.openiam.am.srvc.domain.AuthProviderAttributeEntity</class-a>
         <class-b>org.openiam.am.srvc.dto.AuthProviderAttribute</class-b>
         <field>
@@ -381,8 +376,8 @@
             <b>defaultValue</b>
         </field>
     </mapping>
-    
-     <mapping>
+
+    <mapping>
         <class-a>org.openiam.am.srvc.domain.AuthResourceAttributeMapEntity</class-a>
         <class-b>org.openiam.am.srvc.dto.AuthResourceAttributeMap</class-b>
         <field>
@@ -422,7 +417,7 @@
             <b>amReflectionKey</b>
         </field>
     </mapping>
-    
+
     <mapping>
         <class-a>org.openiam.am.srvc.domain.AuthProviderTypeEntity</class-a>
         <class-b>org.openiam.am.srvc.dto.AuthProviderType</class-b>
@@ -445,98 +440,98 @@
         <class-a>org.openiam.am.srvc.domain.AuthResourceAMAttributeEntity</class-a>
         <class-b>org.openiam.am.srvc.dto.AuthResourceAMAttribute</class-b>
         <field-exclude>
-        	<a>metaValues</a>
-        	<b>metaValues</b>
+            <a>metaValues</a>
+            <b>metaValues</b>
         </field-exclude>
     </mapping>
-    
+
     <mapping>
-    	<class-a>org.openiam.am.srvc.domain.pk.AuthLevelGroupingContentProviderXrefIdEntity</class-a>
-    	<class-b>org.openiam.am.srvc.dto.AuthLevelGroupingContentProviderXrefId</class-b>
+        <class-a>org.openiam.am.srvc.domain.pk.AuthLevelGroupingContentProviderXrefIdEntity</class-a>
+        <class-b>org.openiam.am.srvc.dto.AuthLevelGroupingContentProviderXrefId</class-b>
     </mapping>
-    
+
     <mapping>
-    	<class-a>org.openiam.am.srvc.domain.pk.AuthLevelGroupingURIPatternXrefIdEntity</class-a>
-    	<class-b>org.openiam.am.srvc.dto.AuthLevelGroupingURIPatternXrefId</class-b>
+        <class-a>org.openiam.am.srvc.domain.pk.AuthLevelGroupingURIPatternXrefIdEntity</class-a>
+        <class-b>org.openiam.am.srvc.dto.AuthLevelGroupingURIPatternXrefId</class-b>
     </mapping>
-    
+
     <mapping>
-    	<class-a>org.openiam.am.srvc.domain.AuthLevelGroupingURIPatternXrefEntity</class-a>
-    	<class-b>org.openiam.am.srvc.dto.AuthLevelGroupingURIPatternXref</class-b>
-    	<field
-			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentObjectConverter"
-			custom-converter-param="dto2entityShallowDozerMapper">
-    		<a>id</a>
-    		<b>id</b>
-    	</field>
-    	<field>
-    		<a>order</a>
-    		<b>order</b>
-    	</field>
-    	<field-exclude>
-    		<a>pattern</a>
-    		<b>pattern</b>
-    	</field-exclude>
-    	<field-exclude>
-    		<a>grouping</a>
-    		<b>grouping</b>
-    	</field-exclude>
+        <class-a>org.openiam.am.srvc.domain.AuthLevelGroupingURIPatternXrefEntity</class-a>
+        <class-b>org.openiam.am.srvc.dto.AuthLevelGroupingURIPatternXref</class-b>
+        <field
+                custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentObjectConverter"
+                custom-converter-param="dto2entityShallowDozerMapper">
+            <a>id</a>
+            <b>id</b>
+        </field>
+        <field>
+            <a>order</a>
+            <b>order</b>
+        </field>
+        <field-exclude>
+            <a>pattern</a>
+            <b>pattern</b>
+        </field-exclude>
+        <field-exclude>
+            <a>grouping</a>
+            <b>grouping</b>
+        </field-exclude>
     </mapping>
-    
+
     <mapping>
-    	<class-a>org.openiam.am.srvc.domain.AuthLevelGroupingContentProviderXrefEntity</class-a>
-    	<class-b>org.openiam.am.srvc.dto.AuthLevelGroupingContentProviderXref</class-b>
-    	<field
-			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentObjectConverter"
-			custom-converter-param="dto2entityShallowDozerMapper">
-    		<a>id</a>
-    		<b>id</b>
-    	</field>
-    	<field>
-    		<a>order</a>
-    		<b>order</b>
-    	</field>
-    	<field-exclude>
-    		<a>contentProvider</a>
-    		<b>contentProvider</b>
-    	</field-exclude>
-    	<field-exclude>
-    		<a>grouping</a>
-    		<b>grouping</b>
-    	</field-exclude>
+        <class-a>org.openiam.am.srvc.domain.AuthLevelGroupingContentProviderXrefEntity</class-a>
+        <class-b>org.openiam.am.srvc.dto.AuthLevelGroupingContentProviderXref</class-b>
+        <field
+                custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentObjectConverter"
+                custom-converter-param="dto2entityShallowDozerMapper">
+            <a>id</a>
+            <b>id</b>
+        </field>
+        <field>
+            <a>order</a>
+            <b>order</b>
+        </field>
+        <field-exclude>
+            <a>contentProvider</a>
+            <b>contentProvider</b>
+        </field-exclude>
+        <field-exclude>
+            <a>grouping</a>
+            <b>grouping</b>
+        </field-exclude>
     </mapping>
-    
+
     <mapping>
-    	<class-a>org.openiam.am.srvc.domain.AuthLevelAttributeEntity</class-a>
-    	<class-b>org.openiam.am.srvc.dto.AuthLevelAttribute</class-b>
-    	<field>
-    		<a>id</a>
-    		<b>id</b>
-    	</field>
-    	<field
-			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentObjectConverter"
-			custom-converter-param="dto2entityShallowDozerMapper">
-    		<a>grouping</a>
-    		<b>grouping</b>
-    	</field>
-    	<field
-			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentObjectConverter"
-			custom-converter-param="dto2entityShallowDozerMapper">
-    		<a>type</a>
-    		<b>type</b>
-    	</field>
-    	<field>
-    		<a>name</a>
-    		<b>name</b>
-    	</field>
-    	<field>
-    		<a>valueAsByteArray</a>
-    		<b>valueAsByteArray</b>
-    	</field>
-    	<field>
-    		<a>valueAsString</a>
-    		<b>valueAsString</b>
-    	</field>
+        <class-a>org.openiam.am.srvc.domain.AuthLevelAttributeEntity</class-a>
+        <class-b>org.openiam.am.srvc.dto.AuthLevelAttribute</class-b>
+        <field>
+            <a>id</a>
+            <b>id</b>
+        </field>
+        <field
+                custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentObjectConverter"
+                custom-converter-param="dto2entityShallowDozerMapper">
+            <a>grouping</a>
+            <b>grouping</b>
+        </field>
+        <field
+                custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentObjectConverter"
+                custom-converter-param="dto2entityShallowDozerMapper">
+            <a>type</a>
+            <b>type</b>
+        </field>
+        <field>
+            <a>name</a>
+            <b>name</b>
+        </field>
+        <field>
+            <a>valueAsByteArray</a>
+            <b>valueAsByteArray</b>
+        </field>
+        <field>
+            <a>valueAsString</a>
+            <b>valueAsString</b>
+        </field>
     </mapping>
     <mapping>
         <class-a>org.openiam.idm.srvc.synch.domain.SynchReviewRecordValueEntity</class-a>
@@ -544,6 +539,22 @@
         <field>
             <a>synchReviewRecord.synchReviewRecordId</a>
             <b>synchReviewRecordId</b>
+        </field>
+    </mapping>
+    <mapping>
+        <class-a>org.openiam.idm.srvc.policy.domain.PolicyAttributeEntity</class-a>
+        <class-b>org.openiam.idm.srvc.policy.dto.PolicyAttribute</class-b>
+        <field>
+            <a>defaultParametr.defParamId</a>
+            <b>defParamId</b>
+        </field>
+        <field>
+            <a>defaultParametr.name</a>
+            <b>name</b>
+        </field>
+        <field>
+            <a>defaultParametr.operation</a>
+            <b>operation</b>
         </field>
     </mapping>
 </mappings>
