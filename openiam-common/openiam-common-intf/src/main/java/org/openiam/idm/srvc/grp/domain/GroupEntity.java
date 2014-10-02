@@ -68,7 +68,9 @@ public class GroupEntity extends AbstractMetdataTypeEntity {
     private String lastUpdatedBy;
 
     @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
-    @JoinTable(name = "RESOURCE_GROUP", joinColumns = { @JoinColumn(name = "GRP_ID") }, inverseJoinColumns = { @JoinColumn(name = "RESOURCE_ID") })
+    @JoinTable(name = "RESOURCE_GROUP",
+            joinColumns = { @JoinColumn(name = "GRP_ID") },
+            inverseJoinColumns = { @JoinColumn(name = "RESOURCE_ID") })
     private Set<ResourceEntity> resources;
 
     @ManyToMany(cascade = { CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH }, fetch = FetchType.LAZY)
@@ -205,6 +207,21 @@ public class GroupEntity extends AbstractMetdataTypeEntity {
         return retVal;
     }
 
+    public void removeParentGroup(String parentGroupId) {
+        if (parentGroupId != null) {
+            if (parentGroups != null) {
+                Iterator<GroupEntity> it = parentGroups.iterator();
+                while (it.hasNext()) {
+                    final GroupEntity g = it.next();
+                    if (g.getId().equals(parentGroupId)) {
+                        it.remove();
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
     public void removeChildGroup(final String groupId) {
         if (groupId != null) {
             if (childGroups != null) {
@@ -238,7 +255,14 @@ public class GroupEntity extends AbstractMetdataTypeEntity {
 	public Set<ResourceEntity> getResources() {
         return resources;
     }
-
+    public void addResource(final ResourceEntity entity) {
+        if(entity != null) {
+            if(this.resources == null) {
+                this.resources = new HashSet<ResourceEntity>();
+            }
+            this.resources.add(entity);
+        }
+    }
     public void setResources(Set<ResourceEntity> resources) {
         this.resources = resources;
     }
@@ -293,94 +317,38 @@ public class GroupEntity extends AbstractMetdataTypeEntity {
 		}
 	}
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result
-				+ ((createDate == null) ? 0 : createDate.hashCode());
-		result = prime * result
-				+ ((createdBy == null) ? 0 : createdBy.hashCode());
-		result = prime * result
-				+ ((description == null) ? 0 : description.hashCode());
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
-		result = prime * result + ((name == null) ? 0 : name.hashCode());
-		result = prime * result
-				+ ((lastUpdate == null) ? 0 : lastUpdate.hashCode());
-		result = prime * result
-				+ ((lastUpdatedBy == null) ? 0 : lastUpdatedBy.hashCode());
-		result = prime * result
-				+ ((managedSystem == null) ? 0 : managedSystem.hashCode());
-		result = prime * result + ((status == null) ? 0 : status.hashCode());
-		
-		result = prime * result
-				+ ((company == null) ? 0 : company.hashCode());
-		return result;
-	}
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof GroupEntity)) return false;
+        if (!super.equals(o)) return false;
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		GroupEntity other = (GroupEntity) obj;
-		if (createDate == null) {
-			if (other.createDate != null)
-				return false;
-		} else if (!createDate.equals(other.createDate))
-			return false;
-		if (createdBy == null) {
-			if (other.createdBy != null)
-				return false;
-		} else if (!createdBy.equals(other.createdBy))
-			return false;
-		if (description == null) {
-			if (other.description != null)
-				return false;
-		} else if (!description.equals(other.description))
-			return false;
-		if (id == null) {
-			if (other.id != null)
-				return false;
-		} else if (!id.equals(other.id))
-			return false;
-		if (name == null) {
-			if (other.name != null)
-				return false;
-		} else if (!name.equals(other.name))
-			return false;
-		if (lastUpdate == null) {
-			if (other.lastUpdate != null)
-				return false;
-		} else if (!lastUpdate.equals(other.lastUpdate))
-			return false;
-		if (lastUpdatedBy == null) {
-			if (other.lastUpdatedBy != null)
-				return false;
-		} else if (!lastUpdatedBy.equals(other.lastUpdatedBy))
-			return false;
-		if (managedSystem == null) {
-			if (other.managedSystem != null)
-				return false;
-		} else if (!managedSystem.equals(other.managedSystem))
-			return false;
-		if (status == null) {
-			if (other.status != null)
-				return false;
-		} else if (!status.equals(other.status))
-			return false;
-		if (company == null) {
-			if (other.company != null)
-				return false;
-		} else if (!company.equals(other.company))
-			return false;
-		return true;
-	}
+        GroupEntity that = (GroupEntity) o;
 
-	@Override
+        if (company != null ? !company.equals(that.company) : that.company != null) return false;
+        if (createDate != null ? !createDate.equals(that.createDate) : that.createDate != null) return false;
+        if (createdBy != null ? !createdBy.equals(that.createdBy) : that.createdBy != null) return false;
+        if (managedSystem != null ? !managedSystem.equals(that.managedSystem) : that.managedSystem != null)
+            return false;
+        if (name != null ? !name.equals(that.name) : that.name != null) return false;
+        if (status != null ? !status.equals(that.status) : that.status != null) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = super.hashCode();
+        result = 31 * result + (name != null ? name.hashCode() : 0);
+        result = 31 * result + (createDate != null ? createDate.hashCode() : 0);
+        result = 31 * result + (createdBy != null ? createdBy.hashCode() : 0);
+        result = 31 * result + (managedSystem != null ? managedSystem.hashCode() : 0);
+        result = 31 * result + (company != null ? company.hashCode() : 0);
+        result = 31 * result + (status != null ? status.hashCode() : 0);
+        return result;
+    }
+
+    @Override
 	public String toString() {
 		return String
 				.format("GroupEntity [id=%s, name=%s, createDate=%s, createdBy=%s, managedSystem=%s, description=%s, status=%s, lastUpdate=%s, lastUpdatedBy=%s]",
