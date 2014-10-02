@@ -1,6 +1,5 @@
 package org.openiam.provision.service;
 
-import org.mule.api.MuleContext;
 import org.openiam.provision.dto.PasswordSync;
 import org.springframework.context.ApplicationContext;
 
@@ -44,6 +43,5 @@ public interface ProvisionServicePostProcessor <T> {
     int modify(T object, Map<String, Object> bindingMap);
     int delete(T object, Map<String, Object> bindingMap);
     int setPassword(PasswordSync passwordSync, Map<String, Object> bindingMap);
-    void setMuleContext(MuleContext ctx);
     void setApplicationContext(ApplicationContext ctx);
 }

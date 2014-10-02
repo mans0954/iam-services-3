@@ -30,7 +30,6 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.mule.module.client.MuleClient;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.ws.MatchType;
 import org.openiam.base.ws.Response;
@@ -59,9 +58,9 @@ import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.provision.dto.ProvisionUser;
+import org.openiam.provision.service.AsynchUserProvisionService;
 import org.openiam.provision.service.ProvisionService;
 import org.openiam.script.ScriptIntegration;
-import org.openiam.util.MuleContextProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -91,6 +90,11 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
     @Autowired
     @Qualifier("defaultProvision")
     private ProvisionService provisionService;
+
+    @Autowired
+    @Qualifier("asynchProvisonWS")
+    private AsynchUserProvisionService asyncProvisionService;
+
     @Autowired
     private UserDozerConverter userDozerConverter;
     @Autowired
@@ -434,8 +438,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
                     }
                 }
                 // send message to provisioning service asynchronously
-                //invokeOperation(pUser);
-                provisionService.modifyUser(pUser);
+                asyncProvisionService.modifyUser(pUser);
             }
         } catch (BasicDataServiceException e) {
             log.error(e.getLocalizedMessage(),e);
@@ -443,23 +446,6 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
             resp.setErrorCode(e.getCode());
         }
         return null;
-    }
-
-    private void invokeOperation(ProvisionUser pUser) {
-        try {
-
-            Map<String, String> msgPropMap = new HashMap<String, String>();
-            msgPropMap.put("SERVICE_HOST", serviceHost);
-            msgPropMap.put("SERVICE_CONTEXT", serviceContext);
-
-            //Create the client with the context
-            MuleClient client = new MuleClient(MuleContextProvider.getCtx());
-            client.sendAsync("vm://provisionServiceModifyMessage", pUser, msgPropMap);
-
-        } catch (Exception e) {
-            log.debug("EXCEPTION:bulkUserMigration");
-            log.error(e);
-        }
     }
 
     private UserSearchBean buildSearch(BulkMigrationConfig config){

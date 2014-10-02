@@ -114,24 +114,14 @@
         </dependency>
 
         <dependency>
-            <groupId>org.mule</groupId>
-            <artifactId>mule-core</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.safehaus.jug</groupId>
-                    <artifactId>jug</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.mule.modules</groupId>
-            <artifactId>mule-module-client</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>org.openiam</groupId>
             <artifactId>openiam-common-intf</artifactId>
             <scope>compile</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.thoughtworks.xstream</groupId>
+            <artifactId>xstream</artifactId>
         </dependency>
 
         <dependency>

@@ -77,15 +77,16 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Component("activitiBPMService")
 @WebService(endpointInterface = "org.openiam.bpm.activiti.ActivitiService", 
             targetNamespace = "urn:idm.openiam.org/bpm/request/service",
             serviceName = "ActivitiService")
-public class ActivitiServiceImpl extends AbstractBaseService implements ActivitiService, ApplicationContextAware {
+public class ActivitiServiceImpl extends AbstractBaseService implements ActivitiService {
 
-	private ApplicationContext ctx;
-	
 	private static final Log log = LogFactory.getLog(ActivitiServiceImpl.class);
 	
 	@Autowired
@@ -975,9 +976,4 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 		return response;
 	}
 	
-	@Override
-	public void setApplicationContext(ApplicationContext ctx)
-			throws BeansException {
-		this.ctx = ctx;
-	}
 }

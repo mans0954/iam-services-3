@@ -11,12 +11,12 @@ import java.util.Set;
 
 import javax.annotation.Resource;
 
+import junit.framework.Assert;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.apache.log4j.Logger;
 import org.testng.annotations.BeforeClass;
-import org.junit.Assert;
 import org.openiam.base.ws.MatchType;
 import org.openiam.base.ws.SearchParam;
 import org.openiam.idm.searchbeans.LoginSearchBean;

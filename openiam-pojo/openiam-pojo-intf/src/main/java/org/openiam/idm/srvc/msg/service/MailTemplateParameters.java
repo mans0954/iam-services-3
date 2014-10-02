@@ -20,8 +20,8 @@ public enum MailTemplateParameters {
     IDENTITY("identity"),
     USER_ID("userId"),
     USER_IDS("userIds"),
-    SERVICE_HOST("SERVICE_HOST"),           // must match the values in the mule config files
-    SERVICE_CONTEXT("SERVICE_CONTEXT"),     // must match the values in the mule config files
+    SERVICE_HOST("SERVICE_HOST"),
+    SERVICE_CONTEXT("SERVICE_CONTEXT"),
     REQUEST_ID("requestId"),
     REQUEST_REASON("requestReason"),
     REQUESTER("requester"),

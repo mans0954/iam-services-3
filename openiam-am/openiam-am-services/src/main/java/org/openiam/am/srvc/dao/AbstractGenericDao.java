@@ -20,18 +20,15 @@ import java.util.List;
  */
 
 public abstract class AbstractGenericDao<Entity, PrimaryKey extends Serializable> implements GenericDao<Entity, PrimaryKey> {
-    protected Class<Entity> persistentClass;
+
     protected final Log log = LogFactory.getLog(this.getClass());
     @Autowired
     protected SessionFactory sessionFactory;
 
     public AbstractGenericDao() {
-        this.persistentClass = (Class<Entity>) ((ParameterizedType) getClass()
-                .getGenericSuperclass()).getActualTypeArguments()[0];
     }
-    public Class<Entity> getPersistentClass() {
-        return persistentClass;
-    }
+    public abstract Class<Entity> getPersistentClass();
+
     @Override
     public Entity findById(PrimaryKey id) throws Exception {
         log.debug("getting instance with id: " + String.valueOf(id));

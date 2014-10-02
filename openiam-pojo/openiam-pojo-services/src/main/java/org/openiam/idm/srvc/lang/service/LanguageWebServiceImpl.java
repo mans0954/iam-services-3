@@ -26,11 +26,12 @@ import org.openiam.idm.srvc.lang.dto.LanguageLocale;
 import org.openiam.idm.srvc.lang.dto.LanguageMapping;
 import org.openiam.internationalization.LocalizedServiceGet;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-@Service("languageWebService")
 @WebService(endpointInterface = "org.openiam.idm.srvc.lang.service.LanguageWebService", targetNamespace = "urn:idm.openiam.org/srvc/lang/service", portName = "LanguageWebServicePort", serviceName = "LanguageWebService")
+@Component("languageWebService")
 public class LanguageWebServiceImpl implements LanguageWebService {
 
     @Autowired

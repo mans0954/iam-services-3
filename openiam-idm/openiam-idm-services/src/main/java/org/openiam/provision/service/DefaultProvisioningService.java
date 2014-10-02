@@ -82,7 +82,6 @@ import org.openiam.provision.resp.ProvisionUserResponse;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleUser;
 import org.openiam.provision.type.ManagedSystemViewerBean;
-import org.openiam.util.MuleContextProvider;
 import org.openiam.util.UserUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -130,7 +129,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         idmAuditLog.setRequestorUserId(requesterId);
         idmAuditLog.setAction(AuditAction.PROVISIONING_TEST.value());
         try {
-            Response response = validateConnectionConfig.testConnection(managedSysId, MuleContextProvider.getCtx());
+            Response response = validateConnectionConfig.testConnection(managedSysId);
             if (response != null && response.isSuccess()) {
                 idmAuditLog.succeed();
                 idmAuditLog.setAuditDescription("Managed system ID: " + managedSysId);
@@ -817,14 +816,14 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                         suspendCommand.setTargetID(managedSysId);
                         suspendCommand.setRequestID("R" + System.currentTimeMillis());
                         suspendCommand.setExtensibleObject(buildMngSysAttributes(login, "SUSPEND"));
-                        connectorAdapter.suspendRequest(managedSys, suspendCommand, MuleContextProvider.getCtx());
+                        connectorAdapter.suspendRequest(managedSys, suspendCommand);
                     } else {
                         final SuspendResumeRequest resumeRequest = new SuspendResumeRequest();
                         resumeRequest.setObjectIdentity(userLogin.getLogin());
                         resumeRequest.setTargetID(managedSysId);
                         resumeRequest.setRequestID("R" + System.currentTimeMillis());
                         resumeRequest.setExtensibleObject(buildMngSysAttributes(login, "RESUME"));
-                        connectorAdapter.resumeRequest(managedSys, resumeRequest, MuleContextProvider.getCtx());
+                        connectorAdapter.resumeRequest(managedSys, resumeRequest);
                     }
 
                     if (responsetype == null) {
@@ -863,15 +862,14 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                 suspendCommand.setTargetID(managedSys.getId());
                                 suspendCommand.setRequestID("R" + System.currentTimeMillis());
                                 suspendCommand.setExtensibleObject(buildMngSysAttributes(primLogin, "SUSPEND"));
-                                connectorAdapter.suspendRequest(managedSys, suspendCommand,
-                                        MuleContextProvider.getCtx());
+                                connectorAdapter.suspendRequest(managedSys, suspendCommand);
                             } else {
                                 final SuspendResumeRequest resumeRequest = new SuspendResumeRequest();
                                 resumeRequest.setObjectIdentity(lg.getLogin());
                                 resumeRequest.setTargetID(managedSys.getId());
                                 resumeRequest.setRequestID("R" + System.currentTimeMillis());
                                 resumeRequest.setExtensibleObject(buildMngSysAttributes(primLogin, "RESUME"));
-                                connectorAdapter.resumeRequest(managedSys, resumeRequest, MuleContextProvider.getCtx());
+                                connectorAdapter.resumeRequest(managedSys, resumeRequest);
                             }
 
                             if (responsetype.getStatus() == null) {
@@ -1594,7 +1592,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             reqType.setHostUrl(mSys.getHostUrl());
             reqType.setScriptHandler(mSys.getLookupHandler());
 
-            SearchResponse responseType = connectorAdapter.lookupRequest(mSys, reqType, MuleContextProvider.getCtx());
+            SearchResponse responseType = connectorAdapter.lookupRequest(mSys, reqType);
             if (responseType.getStatus() == StatusCodeType.FAILURE || responseType.getObjectList().size() == 0) {
                 response.setStatus(ResponseStatus.FAILURE);
                 return response;
@@ -1943,8 +1941,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             lookupRequest.setHostLoginId(mSys.getUserId());
             lookupRequest.setHostLoginPassword(mSys.getDecryptPassword());
             lookupRequest.setScriptHandler(mSys.getAttributeNamesHandler());
-            return connectorAdapter.lookupAttributes(mSys.getConnectorId(), lookupRequest,
-                    MuleContextProvider.getCtx());
+            return connectorAdapter.lookupAttributes(mSys.getConnectorId(), lookupRequest);
         }
         return null;
     }
@@ -2922,8 +2919,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                             suspendReq.setExtensibleObject(buildMngSysAttributes(login, "SUSPEND"));
 
 
-                            ResponseType resp = connectorAdapter.suspendRequest(mSys, suspendReq,
-                                    MuleContextProvider.getCtx());
+                            ResponseType resp = connectorAdapter.suspendRequest(mSys, suspendReq);
 
                             if (StatusCodeType.SUCCESS.equals(resp.getStatus())) {
                                 lg.setProvStatus(ProvLoginStatusEnum.DISABLED);
@@ -2967,7 +2963,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                             resumeReq.setHostUrl(mSys.getHostUrl());
 
                             ResponseType resp = connectorAdapter.resumeRequest(mSys,
-                                    resumeReq, MuleContextProvider.getCtx());
+                                    resumeReq);
 
                             if (StatusCodeType.SUCCESS.equals(resp.getStatus())) {
                                 lg.setProvStatus(ProvLoginStatusEnum.ENABLED);

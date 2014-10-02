@@ -16,7 +16,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.jackson.JsonGenerationException;
-import org.mule.api.MuleContext;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.BaseAttributeContainer;
 import org.openiam.base.ws.ResponseCode;
@@ -68,7 +67,6 @@ import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleUser;
 import org.openiam.script.ScriptIntegration;
 import org.openiam.thread.Sweepable;
-import org.openiam.util.MuleContextProvider;
 import org.openiam.util.encrypt.Cryptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -336,8 +334,7 @@ public class ProvisionDispatcher implements Sweepable {
                     suspendReq.setHostUrl(mSys.getHostUrl());
 
                     try {
-                        ResponseType resp = connectorAdapter.suspendRequest(mSys, suspendReq,
-                                MuleContextProvider.getCtx());
+                        ResponseType resp = connectorAdapter.suspendRequest(mSys, suspendReq);
                         if (StatusCodeType.SUCCESS.equals(resp.getStatus())) {
                             loginEntity.setProvStatus(ProvLoginStatusEnum.DISABLED);
                         } else {
@@ -385,8 +382,7 @@ public class ProvisionDispatcher implements Sweepable {
                     suspendReq.setHostUrl(mSys.getHostUrl());
 
                     try {
-                        ResponseType resp = connectorAdapter.resumeRequest(mSys, suspendReq,
-                                MuleContextProvider.getCtx());
+                        ResponseType resp = connectorAdapter.resumeRequest(mSys, suspendReq);
                         if (StatusCodeType.SUCCESS.equals(resp.getStatus())) {
                             loginEntity.setProvStatus(ProvLoginStatusEnum.ENABLED);
                         } else {
@@ -448,7 +444,7 @@ public class ProvisionDispatcher implements Sweepable {
         request.setScriptHandler(mSys.getDeleteHandler());
         request.setExtensibleObject(new ExtensibleUser());
 
-        return connectorAdapter.deleteRequest(mSys, request, MuleContextProvider.getCtx());
+        return connectorAdapter.deleteRequest(mSys, request);
 
     }
 
@@ -614,7 +610,7 @@ public class ProvisionDispatcher implements Sweepable {
             ManagedSysDto mSys, ManagedSystemObjectMatch matchObj, Map<String, ExtensibleAttribute> curValueMap) {
 
         String identity = mLg.getLogin();
-        MuleContext muleContext = MuleContextProvider.getCtx();
+
         log.debug("Getting the current attributes in the target system for =" + identity);
 
         log.debug("- IsRename: " + mLg.getOrigPrincipalName());
@@ -643,7 +639,7 @@ public class ProvisionDispatcher implements Sweepable {
         reqType.setExtensibleObject(extUser);
         reqType.setScriptHandler(mSys.getLookupHandler());
 
-        SearchResponse lookupSearchResponse = connectorAdapter.lookupRequest(mSys, reqType, muleContext);
+        SearchResponse lookupSearchResponse = connectorAdapter.lookupRequest(mSys, reqType);
         if (lookupSearchResponse.getStatus() == StatusCodeType.SUCCESS) {
             List<ExtensibleAttribute> extAttrList = lookupSearchResponse.getObjectList().size() > 0 ? lookupSearchResponse
                     .getObjectList().get(0).getAttributeList()

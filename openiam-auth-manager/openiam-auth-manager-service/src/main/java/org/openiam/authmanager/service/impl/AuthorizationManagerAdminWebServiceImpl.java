@@ -8,6 +8,8 @@ import org.springframework.stereotype.Service;
 
 import javax.jws.WebService;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 @Service("authorizationManagerAdminWebService")
@@ -25,11 +27,11 @@ public class AuthorizationManagerAdminWebServiceImpl implements AuthorizationMan
 		return authManagerAdminService.getUserEntitlementsMatrix(entityId);
 	}
     @Override
-    public Set<String> getOwnerIdsForResource(String resourceId){
-        return authManagerAdminService.getOwnerIdsForResource(resourceId);
+    public HashSet<String> getOwnerIdsForResource(String resourceId){
+        return (HashSet)authManagerAdminService.getOwnerIdsForResource(resourceId);
     }
     @Override
-    public HashMap<String, Set<String>> getOwnerIdsForResourceSet(Set<String> resourceIdSet){
+    public HashMap<String, HashSet<String>> getOwnerIdsForResourceSet(HashSet<String> resourceIdSet){
         return authManagerAdminService.getOwnerIdsForResourceSet(resourceIdSet);
     }
 

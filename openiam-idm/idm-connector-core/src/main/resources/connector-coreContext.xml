@@ -10,9 +10,7 @@
     					http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee-2.5.xsd
     					http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.1.xsd">
 
-	<context:annotation-config />
-	<context:component-scan
-		base-package="org.openiam.connector,  org.openiam.idm.parser.csv" />
+
     <!-- , org.openiam.spml2.spi.csv,org.openiam.spml2.spi.ldap, org.openiam.spml2.spi.orcl, org.openiam.connector.common.jdbc -->
 	<!-- Authentication Beans -->
 	<!--<bean id="exampleConnector" class="org.openiam.spml2.spi.example.ExampleComplete">-->
@@ -210,7 +208,7 @@
 		<!--</property>-->
 	<!--</bean>-->
 	
-	<bean id="userServiceClient" class="org.openiam.idm.srvc.user.ws.UserDataWebService"
+<!--	<bean id="userServiceClient" class="org.openiam.idm.srvc.user.ws.UserDataWebService"
 		factory-bean="userServiceFactory" factory-method="create" lazy-init="false" />
 
 
@@ -219,7 +217,7 @@
 			value="org.openiam.idm.srvc.user.ws.UserDataWebService" />
 		<property name="address"
 			value="${openiam.service_host}${openiam.idm.ws.path}UserDataService" />
-	</bean>
+	</bean>-->
 	<!-- End AppTable Connector -->
 
 

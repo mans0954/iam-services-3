@@ -12,7 +12,7 @@
     <name>openiam-esb</name>
     <packaging>war</packaging>
     <version>3.2.3.RELEASE</version>
-    <description>OpenIAM ESB Module based on Mule</description>
+    <description>OpenIAM ESB Module </description>
 	<properties>
     	<skipTests>true</skipTests>
   	</properties>
@@ -142,52 +142,6 @@
             <scope>test</scope>
         </dependency>
         
-        <!-- Mule Dependencies -->
-        <dependency>
-            <groupId>org.mule</groupId>
-            <artifactId>mule-core</artifactId>
-        </dependency>
-        <!-- Mule Modules -->
-        <dependency>
-            <groupId>org.mule.modules</groupId>
-            <artifactId>mule-module-builders</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.mule.modules</groupId>
-            <artifactId>mule-module-cxf</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.mule.modules</groupId>
-            <artifactId>mule-module-client</artifactId>
-        </dependency>
-
-        <!-- Mule Transports -->
-        <dependency>
-            <groupId>org.mule.transports</groupId>
-            <artifactId>mule-transport-jms</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.mule.transports</groupId>
-            <artifactId>mule-transport-vm</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.mule.transports</groupId>
-            <artifactId>mule-transport-file</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.mule.transports</groupId>
-            <artifactId>mule-transport-servlet</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.mule.transports</groupId>
-            <artifactId>mule-transport-quartz</artifactId>
-        </dependency>
-
         <!-- Other Dependencies -->
         <dependency>
 			<groupId>javax</groupId>
@@ -228,6 +182,13 @@
             <artifactId>hsqldb</artifactId>
 			<scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>quartz</groupId>
+            <artifactId>quartz</artifactId>
+        </dependency>
+
+
     </dependencies>
 
     <developers>

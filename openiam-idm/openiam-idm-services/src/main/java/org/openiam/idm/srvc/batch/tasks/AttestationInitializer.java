@@ -17,6 +17,7 @@ import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.service.SupervisorDAO;
 import org.openiam.idm.srvc.user.ws.UserDataWebService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -31,6 +32,7 @@ public class AttestationInitializer {
 	private static Logger LOG = Logger.getLogger(AttestationInitializer.class);
 	
 	@Autowired
+    @Qualifier("activitiBPMService")
 	private ActivitiService activitiService;
 	
 	@Autowired

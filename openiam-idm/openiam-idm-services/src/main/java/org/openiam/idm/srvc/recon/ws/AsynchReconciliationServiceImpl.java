@@ -24,17 +24,14 @@ package org.openiam.idm.srvc.recon.ws;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.mule.module.client.MuleClient;
 import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
 import org.openiam.idm.srvc.recon.service.ReconciliationService;
-import org.openiam.util.MuleContextProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.jws.WebService;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.concurrent.Executors;
 
 
 /**
@@ -46,7 +43,7 @@ import java.util.Map;
 		portName = "AsynchReconciliationWebServicePort",
 		serviceName = "AsynchReconciliationWebService")
 @Component("asyncReconciliationServiceWS")
-public class AsynchReconciliationServiceImpl {
+public class AsynchReconciliationServiceImpl implements AsynchReconciliationService {
 
 	@Autowired
 	protected ReconciliationService reconService;
@@ -60,28 +57,17 @@ public class AsynchReconciliationServiceImpl {
 	private String serviceContext;
 	
 	public void startReconciliation(
-			ReconciliationConfig config) {
-		
-	//	MuleMessage msg = null;
-		
+			final ReconciliationConfig config) {
+
 		log.debug("A-RECONCILIATION STARTED.............");
 		
 		try {
-
-            log.debug("MuleContext = " + MuleContextProvider.getCtx());
-			
-
-			Map<String,String> msgPropMap =  new HashMap<String,String>(); 
-			msgPropMap.put("SERVICE_HOST", serviceHost);
-			msgPropMap.put("SERVICE_CONTEXT", serviceContext);
-
-			
-			//Create the client with the context
-			MuleClient client = new MuleClient(MuleContextProvider.getCtx());
-			client.sendAsync("vm://reconciliationMessage", (ReconciliationConfig)config, msgPropMap);
-
-
-			
+            Executors.newSingleThreadExecutor().execute(new Runnable() {
+                public void run() {
+                    reconService.startReconciliation(config);
+                    System.out.println("Asynchronous task");
+                }
+            });
 		}catch(Exception e) {
 			log.debug("EXCEPTION:AsynchReconciliationServiceImpl");
 			log.error(e);

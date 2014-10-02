@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<web-app xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	version="2.4"
-	xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee   http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd">
+
+<web-app xmlns="http://java.sun.com/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
+         version="3.0">
 
     <!-- Listener that flushes the JavaBeans Introspector cache on web app shutdown. Register this listener in your web.xml to guarantee proper release of the web app class loader and the classes that it holds.-->
     <listener>
@@ -14,62 +16,43 @@
 
 	<filter-mapping>
 		<filter-name>OpenSessionInViewFilter</filter-name>
-		<url-pattern>/idmsrvc/*</url-pattern>
+		<url-pattern>/*</url-pattern>
 	</filter-mapping>
-    <!--
-    <context-param>
-		<param-name>contextConfigLocation</param-name>
-		<param-value>/WEB-INF/applicationContext.xml</param-value>
-	</context-param>
-   -->
 
     <context-param>
 		<param-name>contextConfigLocation</param-name>
 		<param-value>classpath:applicationContext.xml,
 					 classpath:am-service-Context.xml,
+                     classpath:bpm-context.xml,
 					 classpath:idmservice-Context.xml,
-					 classpath:idmservice-nonmule-Context.xml,
 					 classpath:connector-coreContext.xml,
-					 classpath:bpm-context.xml,
                      classpath:authorizationManagerContext.xml
+
 		</param-value>
 	</context-param>
-
-    <!--
-	<context-param>
-		<param-name>org.mule.config</param-name>
-		<param-value>openiam-mule-config.xml openiam-connector-mule-config.xml openiam-embedded-mule-config.xml openiam-idmservice-mule-config.xml idm-batch-config.xml mule-service-client-config.xml</param-value>
-	</context-param>
-    -->
-
-	<context-param>
-		<param-name>org.mule.config</param-name>
-		<param-value>main-mule-config.xml</param-value>
-	</context-param>
-
-
-
 
 	<listener>
 		<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
 	</listener>
 
+    <!-- Servlet for SOAP -->
+    <servlet>
+        <servlet-name>CXFServlet</servlet-name>
+        <servlet-class>org.apache.cxf.transport.servlet.CXFServlet</servlet-class>
+        <init-param>
+            <param-name>config-location</param-name>
+            <param-value>classpath:ws-beans.xml</param-value>
+        </init-param>
+        <load-on-startup>1</load-on-startup>
+        <async-supported>true</async-supported>
+    </servlet>
 
-	<listener>
-		<listener-class>org.mule.config.builders.MuleXmlBuilderContextListener</listener-class>
-	</listener>
+    <servlet-mapping>
+        <servlet-name>CXFServlet</servlet-name>
+        <url-pattern>/idmsrvc/*</url-pattern>
+    </servlet-mapping>
 
-	<servlet>
-		<servlet-name>muleServlet</servlet-name>
-		<servlet-class>org.mule.transport.servlet.MuleReceiverServlet</servlet-class>
-	</servlet>
-
-	<servlet-mapping>
-		<servlet-name>muleServlet</servlet-name>
-		<url-pattern>/idmsrvc/*</url-pattern>
-	</servlet-mapping>
-
-  	<servlet>
+    <servlet>
    		<servlet-name>AuthorizationManagerHessianServlet</servlet-name>
    		<servlet-class>org.openiam.authmanager.web.AuthorizationManagerHessianServlet</servlet-class>
    		<!--

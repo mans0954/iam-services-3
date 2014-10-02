@@ -75,8 +75,8 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
     private MetadataTypeDAO typeDAO;
     
     @Autowired
-    @Qualifier("defaultPatternResoruce")
-    private Resource defaultPatternResoruce;
+    @Qualifier("defaultPatternResource")
+    private Resource defaultPatternResource;
     
     @Autowired
     @Qualifier("customJacksonMapper")
@@ -693,7 +693,7 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
 	@Transactional
 	public void createDefaultURIPatterns(String providerId) {
 		if(patternWrapper == null) {
-			throw new RuntimeException(String.format("Can't get json metadata.  Check that '%s' is in the classpath", defaultPatternResoruce));
+			throw new RuntimeException(String.format("Can't get json metadata.  Check that '%s' is in the classpath", defaultPatternResource));
 		}
 		
 		if(CollectionUtils.isNotEmpty(patternWrapper.getPatterns())) {
@@ -748,7 +748,7 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-        InputStream stream = defaultPatternResoruce.getInputStream();
+        InputStream stream = defaultPatternResource.getInputStream();
 		patternWrapper = mapper.readValue(stream, URIPatternJSONWrapper.class);
 	}
 }

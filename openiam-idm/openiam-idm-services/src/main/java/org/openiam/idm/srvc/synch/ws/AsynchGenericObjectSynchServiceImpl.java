@@ -23,9 +23,7 @@ package org.openiam.idm.srvc.synch.ws;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.mule.module.client.MuleClient;
 import org.openiam.idm.srvc.synch.dto.SynchConfig;
-import org.openiam.util.MuleContextProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -33,6 +31,7 @@ import org.springframework.stereotype.Component;
 import javax.jws.WebService;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Executors;
 
 
 /**
@@ -57,26 +56,19 @@ public class AsynchGenericObjectSynchServiceImpl implements AsynchGenericObjectS
     private String serviceContext;
 
 
-    public void startSynchronization(SynchConfig config) {
+    public void startSynchronization(final SynchConfig config) {
         log.debug("A-START SYNCH CALLED...................");
+        Executors.newSingleThreadExecutor().execute(new Runnable() {
+            public void run() {
+                try {
+                    synchService.startSynchronization(config);
+                } catch (Exception e) {
+                    log.debug("EXCEPTION:AsynchIdentitySynchService");
+                    log.error(e);
+                }
+            }
+        });
 
-        try {
-
-            Map<String, String> msgPropMap = new HashMap<String, String>();
-            msgPropMap.put("SERVICE_HOST", serviceHost);
-            msgPropMap.put("SERVICE_CONTEXT", serviceContext);
-
-
-            //Create the client with the context
-            MuleClient client = new MuleClient(MuleContextProvider.getCtx());
-            client.sendAsync("vm://genericObjectSynchronizationMessage", (SynchConfig) config, msgPropMap);
-
-
-        } catch (Exception e) {
-            log.debug("EXCEPTION:AsynchIdentitySynchService");
-            log.error(e);
-            //e.printStackTrace();
-        }
         log.debug("A-START SYNCH END ---------------------");
     }
 

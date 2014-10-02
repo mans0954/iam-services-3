@@ -189,15 +189,6 @@
             <artifactId>jstl</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>org.mule</groupId>
-            <artifactId>mule-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.mule.modules</groupId>
-            <artifactId>mule-module-client</artifactId>
-        </dependency>
-        
 		<dependency>
             <groupId>org.openiam</groupId>
             <artifactId>openiam-common-db-intf</artifactId>

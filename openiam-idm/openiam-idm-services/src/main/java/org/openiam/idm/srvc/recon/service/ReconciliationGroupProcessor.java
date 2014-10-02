@@ -45,7 +45,6 @@ import org.openiam.provision.service.ObjectProvisionService;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleGroup;
 import org.openiam.script.ScriptIntegration;
-import org.openiam.util.MuleContextProvider;
 import org.openiam.util.encrypt.Cryptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -306,7 +305,7 @@ public class ReconciliationGroupProcessor implements ReconciliationProcessor {
         SearchResponse searchResponse;
 
         log.debug("Calling reconcileResource with Local connector");
-        searchResponse = connectorAdapter.search(searchRequest, connector, MuleContextProvider.getCtx());
+        searchResponse = connectorAdapter.search(searchRequest, connector);
 
         if (searchResponse != null && searchResponse.getStatus() == StatusCodeType.SUCCESS) {
             List<ObjectValue> groupsFromRemoteSys = searchResponse.getObjectList();

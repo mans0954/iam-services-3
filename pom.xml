@@ -119,7 +119,6 @@
 		<!--<module>openiam-subscription</module>-->
 	</modules>
 	<properties>
-		<mule.version>3.3.0</mule.version>
 		<spring.version>3.1.1.RELEASE</spring.version>
 		<cxf.version>2.5.1</cxf.version>
 		<activemq.version>5.3.2</activemq.version>
@@ -131,7 +130,7 @@
 		<hibernate.entity.manager.version>3.6.7.Final</hibernate.entity.manager.version>
 		<validation-api.version>1.0.0.GA</validation-api.version>
 		<hibernate-validator.version>4.3.0.Final</hibernate-validator.version>
-		<servletapi.version>2.5</servletapi.version>
+		<servletapi.version>3.0</servletapi.version>
 		<ehcache.version>2.6.6</ehcache.version>
 		<log4j.version>1.2.16</log4j.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -145,7 +144,7 @@
 		<commons.io.version>1.3.1</commons.io.version>
 		<commons.codec.version>1.6</commons.codec.version>
 		<cglib.version>2.1_3</cglib.version>
-		<xstream.version>1.3</xstream.version>
+		<xstream.version>1.3.1</xstream.version>
 		<geronimo.metadata.version>1.1.2</geronimo.metadata.version>
 		<geronimo.jms.version>1.1.1</geronimo.jms.version>
 		<apache.commons.csv.version>1.4.1</apache.commons.csv.version>
@@ -176,53 +175,6 @@
 
 	<dependencyManagement>
 		<dependencies>
-			<!-- Mule Dependencies -->
-			<dependency>
-				<groupId>org.mule</groupId>
-				<artifactId>mule-core</artifactId>
-				<version>${mule.version}</version>
-			</dependency>
-			<!-- Mule Modules -->
-			<dependency>
-				<groupId>org.mule.modules</groupId>
-				<artifactId>mule-module-builders</artifactId>
-				<version>${mule.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.mule.modules</groupId>
-				<artifactId>mule-module-client</artifactId>
-				<version>${mule.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.mule.modules</groupId>
-				<artifactId>mule-module-cxf</artifactId>
-				<version>${mule.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.mule.transports</groupId>
-				<artifactId>mule-transport-jms</artifactId>
-				<version>${mule.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.mule.transports</groupId>
-				<artifactId>mule-transport-vm</artifactId>
-				<version>${mule.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.mule.transports</groupId>
-				<artifactId>mule-transport-file</artifactId>
-				<version>${mule.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.mule.transports</groupId>
-				<artifactId>mule-transport-quartz</artifactId>
-				<version>${mule.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.mule.transports</groupId>
-				<artifactId>mule-transport-servlet</artifactId>
-				<version>${mule.version}</version>
-			</dependency>
 			<!-- Spring Dependencies -->
 			<dependency>
 				<groupId>org.springframework</groupId>
@@ -389,37 +341,72 @@
 			</dependency>
 
 
-			<!-- org.apache.cxf dependencies -->
-			<dependency>
-				<groupId>org.apache.cxf</groupId>
-				<artifactId>cxf-rt-core</artifactId>
-				<version>${cxf.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.cxf</groupId>
-				<artifactId>cxf-common-utilities</artifactId>
-				<version>${cxf.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.cxf</groupId>
-				<artifactId>cxf-rt-frontend-jaxws</artifactId>
-				<version>${cxf.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.cxf</groupId>
-				<artifactId>cxf-rt-transports-http</artifactId>
-				<version>${cxf.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.cxf</groupId>
-				<artifactId>cxf-tools-common</artifactId>
-				<version>${cxf.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.cxf</groupId>
-				<artifactId>cxf-rt-frontend-simple</artifactId>
-				<version>${cxf.version}</version>
-			</dependency>
+            <!-- org.apache.cxf dependencies -->
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-rt-core</artifactId>
+                <version>${cxf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-common-utilities</artifactId>
+                <version>${cxf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-rt-frontend-jaxws</artifactId>
+                <version>${cxf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-rt-transports-http</artifactId>
+                <version>${cxf.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <artifactId>spring-web</artifactId>
+                        <groupId>org.springframework</groupId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <!--			<dependency>
+                            <groupId>org.apache.cxf</groupId>
+                            <artifactId>cxf-rt-core</artifactId>
+                            <version>2.7.13</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.apache.cxf</groupId>
+                            <artifactId>cxf-common-utilities</artifactId>
+                            <version>2.5.11</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.apache.cxf</groupId>
+                            <artifactId>cxf-rt-frontend-jaxws</artifactId>
+                            <version>3.0.2</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.apache.cxf</groupId>
+                            <artifactId>cxf-rt-frontend-jaxrs</artifactId>
+                            <version>3.0.2</version>
+                        </dependency>
+
+                        <dependency>
+                            <groupId>org.apache.cxf</groupId>
+                            <artifactId>cxf-rt-transports-http</artifactId>
+                            <version>3.0.2</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.apache.cxf</groupId>
+                            <artifactId>cxf-tools-common</artifactId>
+                            <version>3.0.2</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.apache.cxf</groupId>
+                            <artifactId>cxf-rt-frontend-simple</artifactId>
+                            <version>3.0.2</version>
+                        </dependency>-->
+
+
 			<!-- apache httpclient -->
 			<dependency>
 				<groupId>org.apache.httpcomponents</groupId>
@@ -757,7 +744,16 @@
                     		</exclusions>
                    	 <scope>test</scope>
                 	</dependency>
-		</dependencies>
+
+
+
+        <dependency>
+            <groupId>quartz</groupId>
+            <artifactId>quartz</artifactId>
+            <version>1.5.2</version>
+        </dependency>
+
+        </dependencies>
 	</dependencyManagement>
 
 	<reporting>
@@ -911,14 +907,6 @@
 			<id>jboss</id>
 			<name>JBoss Repository</name>
 			<url>https://repository.jboss.org/nexus/content/groups/public-jboss</url>
-		</repository>
-		<repository>
-			<id>mule-deps</id>
-			<name>Mule Dependencies</name>
-			<url>http://dist.codehaus.org/mule/dependencies/maven2</url>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
 		</repository>
 
 

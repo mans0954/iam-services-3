@@ -619,8 +619,8 @@ public class AuthorizationManagerAdminServiceImpl implements AuthorizationManage
                                       group2GroupMap, role2RoleMap,group2RoleMap);
     }
 
-    public HashMap<String, Set<String>> getOwnerIdsForResourceSet(Set<String> resourceIdSet){
-        HashMap<String, Set<String>> ownerIdsMap = new HashMap<String, Set<String>>();
+    public HashMap<String, HashSet<String>> getOwnerIdsForResourceSet(Set<String> resourceIdSet){
+        HashMap<String, HashSet<String>> ownerIdsMap = new HashMap<String, HashSet<String>>();
 
         final Map<String, AuthorizationResource> resourceMap = getResourceMap();
         final Map<String, AuthorizationGroup> groupMap = getGroupMap();
@@ -642,7 +642,7 @@ public class AuthorizationManagerAdminServiceImpl implements AuthorizationManage
     }
 
 
-    private Set<String> getOwnerIdsForResource(AuthorizationResource resource,
+    private HashSet<String> getOwnerIdsForResource(AuthorizationResource resource,
                                                Map<String, AuthorizationResource> resourceMap,
                                                Map<String, AuthorizationGroup> groupMap,
                                                Map<String, AuthorizationRole> roleMap,
@@ -652,7 +652,7 @@ public class AuthorizationManagerAdminServiceImpl implements AuthorizationManage
                                                Map<String, Set<AuthorizationRole>> role2RoleMap,
                                                Map<String, Set<AuthorizationRole>> group2RoleMap){
 
-        Set<String> ownerIds = new HashSet<>();
+        HashSet<String> ownerIds = new HashSet<>();
 
         AuthorizationResource adminResource = null;
         if(StringUtils.isNotBlank(resource.getAdminResourceId())){

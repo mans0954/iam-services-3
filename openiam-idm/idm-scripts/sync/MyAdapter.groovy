@@ -30,15 +30,13 @@ import org.openiam.provision.service.ProvisionService;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.openiam.idm.srvc.synch.srcadapter.MatchRuleFactory;
-import org.mule.api.MuleContext;
 
 public class MyAdapter implements SourceAdapter {
 
 	protected LineObject rowHeader = new LineObject();
 	protected ProvisionUser pUser = new ProvisionUser();
 	public static ApplicationContext ac;	
-	MatchRuleFactory matchRuleFactory;
-	
+
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
 		ac = applicationContext;
 	}
@@ -67,10 +65,7 @@ public class MyAdapter implements SourceAdapter {
 	public static void setAc(ApplicationContext ac) {
 		MyAdapter.ac = ac;
 	}
-	
-	  public void setMuleContext(MuleContext ctx) {
-        
-    }
+
     
 
 }

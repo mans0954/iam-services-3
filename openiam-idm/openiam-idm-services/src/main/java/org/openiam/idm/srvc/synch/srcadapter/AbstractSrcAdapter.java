@@ -12,8 +12,6 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.mule.api.MuleException;
-import org.mule.module.client.MuleClient;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.dozer.converter.LoginDozerConverter;
@@ -31,9 +29,9 @@ import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.dto.ProvisionUser;
+import org.openiam.provision.service.AsynchUserProvisionService;
 import org.openiam.provision.service.ProvisionService;
 import org.openiam.script.ScriptIntegration;
-import org.openiam.util.MuleContextProvider;
 import org.openiam.util.SpringContextProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -79,6 +77,9 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
     @Qualifier("configurableGroovyScriptEngine")
     protected ScriptIntegration scriptRunner;
 
+    @Autowired
+    @Qualifier("asynchProvisonWS")
+    private AsynchUserProvisionService asyncProvisionService;
     @Value("${org.openiam.idm.system.user.id}")
     protected String systemUserId;
 
@@ -129,18 +130,9 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
     public void addUser(ProvisionUser pUser) {
         long startTime = System.currentTimeMillis();
 
-        Map<String, String> msgPropMap = new HashMap<String, String>();
-        msgPropMap.put("SERVICE_HOST", serviceHost);
-        msgPropMap.put("SERVICE_CONTEXT", serviceContext);
-
         try {
-            // Create the client with the context
-            MuleClient client = new MuleClient(MuleContextProvider.getCtx());
-            client.sendAsync("vm://provisionServiceAddMessage",
-                    (ProvisionUser) pUser, msgPropMap);
-
-        } catch (MuleException me) {
-
+            asyncProvisionService.addUser(pUser);
+        } catch (Exception me) {
             log.error(me.getMessage());
         }
         long endTime = System.currentTimeMillis();
@@ -152,17 +144,11 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
 
         long startTime = System.currentTimeMillis();
 
-        Map<String, String> msgPropMap = new HashMap<String, String>();
-        msgPropMap.put("SERVICE_HOST", serviceHost);
-        msgPropMap.put("SERVICE_CONTEXT", serviceContext);
-
         try {
-            // Create the client with the context
-            MuleClient client = new MuleClient(MuleContextProvider.getCtx());
-            client.sendAsync("vm://provisionServiceModifyMessage",
-                    (ProvisionUser) pUser, msgPropMap);
 
-        } catch (MuleException me) {
+          asyncProvisionService.modifyUser(pUser);
+
+        } catch (Exception me) {
 
             log.error(me.getMessage());
         }

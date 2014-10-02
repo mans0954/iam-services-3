@@ -15,13 +15,16 @@ import org.openiam.idm.srvc.auth.dto.SSOToken;
 import org.openiam.idm.srvc.auth.dto.Subject;
 import org.openiam.idm.srvc.auth.service.AuthenticationService;
 import org.openiam.idm.srvc.auth.ws.AuthenticationResponse;
+import org.openiam.util.SpringContextProvider;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.DependsOn;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
-@Service("uriFederationWS")
 @WebService(endpointInterface = "org.openiam.am.srvc.ws.URIFederationWebService",
             targetNamespace = "urn:idm.openiam.org/srvc/am/service", portName = "URIFederationWebServicePort",
             serviceName = "URIFederationWebService")
+@Service("uriFederationWebServiceComponent")
 public class URIFederationWebServiceImpl implements URIFederationWebService {
 	
 	private static Logger LOG = Logger.getLogger(URIFederationWebServiceImpl.class);
@@ -31,8 +34,9 @@ public class URIFederationWebServiceImpl implements URIFederationWebService {
 	
 	@Autowired
 	private AuthenticationService authenticationService;
-	
-	@Override
+
+
+    @Override
 	public URIFederationResponse federateProxyURI(final String userId, final int authLevel, final String proxyURI) {
 		return uriFederationService.federateProxyURI(userId, authLevel, proxyURI);
 	}
@@ -76,6 +80,6 @@ public class URIFederationWebServiceImpl implements URIFederationWebService {
 	@Override
 	public URIFederationResponse getMetadata(String proxyURI) {
 		return uriFederationService.getMetadata(proxyURI);
-	}
+    }
 
 }

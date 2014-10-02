@@ -24,7 +24,7 @@
         <aopalliance.version>1.0</aopalliance.version>
         <openiam.esb.version>3.2.3.RELEASE</openiam.esb.version>
         <javax.jms.version>1.1</javax.jms.version>
-        <cxf.version>2.5.1</cxf.version>
+        <cxf.version>2.6.16</cxf.version>
         <quartz.version>1.5.2</quartz.version>
         <maven-surefire-plugin.version>2.4.2</maven-surefire-plugin.version>
         <skipTests>true</skipTests>
