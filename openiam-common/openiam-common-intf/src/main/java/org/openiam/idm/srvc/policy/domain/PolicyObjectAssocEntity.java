@@ -2,6 +2,7 @@ package org.openiam.idm.srvc.policy.domain;
 
 import java.io.Serializable;
 
+import javax.persistence.AttributeOverride;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -11,6 +12,7 @@ import javax.persistence.Table;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
+import org.openiam.base.domain.KeyEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.policy.dto.PolicyObjectAssoc;
 
@@ -23,15 +25,11 @@ import org.openiam.idm.srvc.policy.dto.PolicyObjectAssoc;
 @Table(name = "POLICY_OBJECT_ASSOC")
 @DozerDTOCorrespondence(PolicyObjectAssoc.class)
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class PolicyObjectAssocEntity implements Serializable {
+@AttributeOverride(name = "id", column = @Column(name = "POLICY_OBJECT_ID"))
+public class PolicyObjectAssocEntity extends KeyEntity {
 
     private static final long serialVersionUID = 1L;
 
-    @Id
-    @GeneratedValue(generator = "system-uuid")
-    @GenericGenerator(name = "system-uuid", strategy = "uuid")
-    @Column(name = "POLICY_OBJECT_ID", length = 32)
-    private String policyObjectId;
     @Column(name = "POLICY_ID", length = 32)
     private String policyId;
     @Column(name = "ASSOCIATION_LEVEL", length = 20)
@@ -47,14 +45,6 @@ public class PolicyObjectAssocEntity implements Serializable {
 
 
     public PolicyObjectAssocEntity() {
-    }
-
-    public String getPolicyObjectId() {
-        return policyObjectId;
-    }
-
-    public void setPolicyObjectId(String policyObjectId) {
-        this.policyObjectId = policyObjectId;
     }
 
     public String getPolicyId() {
@@ -108,7 +98,7 @@ public class PolicyObjectAssocEntity implements Serializable {
 	@Override
 	public int hashCode() {
 		final int prime = 31;
-		int result = 1;
+		int result = super.hashCode();
 		result = prime
 				* result
 				+ ((associationLevel == null) ? 0 : associationLevel.hashCode());
@@ -123,8 +113,6 @@ public class PolicyObjectAssocEntity implements Serializable {
 				+ ((parentAssocId == null) ? 0 : parentAssocId.hashCode());
 		result = prime * result
 				+ ((policyId == null) ? 0 : policyId.hashCode());
-		result = prime * result
-				+ ((policyObjectId == null) ? 0 : policyObjectId.hashCode());
 		return result;
 	}
 
@@ -132,7 +120,7 @@ public class PolicyObjectAssocEntity implements Serializable {
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
-		if (obj == null)
+		if (!super.equals(obj))
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
@@ -167,21 +155,17 @@ public class PolicyObjectAssocEntity implements Serializable {
 				return false;
 		} else if (!policyId.equals(other.policyId))
 			return false;
-		if (policyObjectId == null) {
-			if (other.policyObjectId != null)
-				return false;
-		} else if (!policyObjectId.equals(other.policyObjectId))
-			return false;
 		return true;
 	}
 
 	@Override
 	public String toString() {
-		return String
-				.format("PolicyObjectAssocEntity [policyObjectId=%s, policyId=%s, associationLevel=%s, associationValue=%s, objectType=%s, objectId=%s, parentAssocId=%s]",
-						policyObjectId, policyId, associationLevel,
-						associationValue, objectType, objectId, parentAssocId);
+		return "PolicyObjectAssocEntity [policyId=" + policyId
+				+ ", associationLevel=" + associationLevel
+				+ ", associationValue=" + associationValue + ", objectType="
+				+ objectType + ", objectId=" + objectId + ", parentAssocId="
+				+ parentAssocId + ", getId()=" + getId() + "]";
 	}
 
-
+	
 }

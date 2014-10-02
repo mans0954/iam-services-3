@@ -9,20 +9,12 @@ import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "ApproverAssocationSearchBean", propOrder = {
-        "id",
         "associationType",
         "associationEntityId"
 })
 public class ApproverAssocationSearchBean extends AbstractSearchBean<ApproverAssociation, String> {
-	private String id;
 	private AssociationType associationType;
 	private String associationEntityId;
-	public String getId() {
-		return id;
-	}
-	public void setId(String id) {
-		this.id = id;
-	}
 	public AssociationType getAssociationType() {
 		return associationType;
 	}

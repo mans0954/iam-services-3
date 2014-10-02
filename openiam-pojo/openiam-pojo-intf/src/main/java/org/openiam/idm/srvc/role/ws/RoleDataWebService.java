@@ -5,7 +5,6 @@ import org.openiam.idm.searchbeans.RoleSearchBean;
 import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.role.dto.RoleAttribute;
-import org.openiam.idm.srvc.role.dto.RolePolicy;
 
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
@@ -160,46 +159,6 @@ public interface RoleDataWebService {
     int getNumOfRolesForUser(final @WebParam(name = "userId", targetNamespace = "") String userId,
                              final @WebParam(name="requesterId", targetNamespace="") String requesterId);
 
-    /**
-     * Create new role policy based on specified  RolePolicy object.
-     *
-     * @param rolePolicy - RolePolicy object which should be created
-     * @return a RolePolicyResponse object which contains created RolePolicy object if operation succeed, otherwise response contains error
-     */
-    @WebMethod
-    public RolePolicyResponse addRolePolicy( @WebParam(name = "rPolicy", targetNamespace = "")RolePolicy rolePolicy,
-                                             final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
-
-
-    /**
-     * Update an role policy based on specified  RolePolicy object.
-     *
-     * @param rolePolicy - RolePolicy object which should be updated
-     * @return a RolePolicyResponse object which contains updated RolePolicy object if operation succeed, otherwise response contains error
-     */
-    @WebMethod
-    public RolePolicyResponse updateRolePolicy(@WebParam(name = "rolePolicy", targetNamespace = "") RolePolicy rolePolicy,
-                                               final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
-
-    /**
-     * Returns a single RolePolicy object based on the rolePolicyId.
-     *
-     * @param rolePolicyId - the RolePolicy ID
-     * @return a RolePolicyResponse object which contains single RolePolicy object if it is found, otherwise response contains error
-     */
-    @WebMethod
-    public RolePolicyResponse getRolePolicy(@WebParam(name = "rolePolicyId", targetNamespace = "") String rolePolicyId,
-                                            final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
-
-    /**
-     * Removes a RolePolicy specified by the rolePolicyId parameter.
-     *
-     * @param rolePolicyId - RolePolicy ID
-     * @return a Response Object, containing the status of this operation.
-     */
-    @WebMethod
-    public Response removeRolePolicy(final @WebParam(name = "rolePolicyId", targetNamespace = "") String rolePolicyId,
-                                     final @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
     /**
      * Return a paged List of Roles based on parameters, which are specified in RoleSearchBean object

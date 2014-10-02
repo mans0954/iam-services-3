@@ -135,11 +135,6 @@ public class LoginEntity extends KeyEntity {
     @Temporal(TemporalType.TIMESTAMP)
     private Date pswdResetTokenExp;
 
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumn(name = "LOGIN_ID")
-    @Fetch(FetchMode.SUBSELECT)
-    protected Set<LoginAttributeEntity> loginAttributes = new HashSet<LoginAttributeEntity>(0);
-
     @Column(name = "LAST_UPDATE", length = 19)
     @LuceneLastUpdate
     private Date lastUpdate;
@@ -355,14 +350,6 @@ public class LoginEntity extends KeyEntity {
 
     public void setIsDefault(Integer isDefault) {
         this.isDefault = isDefault;
-    }
-
-    public Set<LoginAttributeEntity> getLoginAttributes() {
-        return this.loginAttributes;
-    }
-
-    public void setLoginAttributes(Set<LoginAttributeEntity> loginAttributes) {
-        this.loginAttributes = loginAttributes;
     }
 
 	public String getLogin() {

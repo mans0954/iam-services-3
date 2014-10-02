@@ -6,6 +6,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 
+import org.openiam.base.KeyNameDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.batch.domain.BatchTaskEntity;
 
@@ -17,8 +18,6 @@ import java.util.Date;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "BatchConfig", propOrder = {
-        "id",
-        "name",
         "enabled",
         "lastExecTime",
         "taskUrl",
@@ -35,10 +34,8 @@ import java.util.Date;
         "cronExpression"
 })
 @DozerDTOCorrespondence(BatchTaskEntity.class)
-public class BatchTask implements Serializable {
+public class BatchTask extends KeyNameDTO {
 
-    private String id;
-    private String name;
     private boolean enabled;
     @XmlSchemaType(name = "dateTime")
     private Date lastExecTime;
@@ -60,21 +57,6 @@ public class BatchTask implements Serializable {
     public BatchTask() {
     }
 
-	public String getId() {
-		return id;
-	}
-
-	public void setId(String id) {
-		this.id = id;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
 
 	public boolean isEnabled() {
 		return enabled;
@@ -183,45 +165,4 @@ public class BatchTask implements Serializable {
 		this.cronExpression = cronExpression;
 	}
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        BatchTask batchTask = (BatchTask) o;
-
-        if (id != null ? !id.equals(batchTask.id) : batchTask.id != null) return false;
-        if (name != null ? !name.equals(batchTask.name) : batchTask.name != null) return false;
-
-        return true;
-    }
-
-    @Override
-    public int hashCode() {
-        int result = id != null ? id.hashCode() : 0;
-        result = 31 * result + (name != null ? name.hashCode() : 0);
-        return result;
-    }
-
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder();
-        sb.append("BatchTask");
-        sb.append("{id='").append(id).append('\'');
-        sb.append(", name='").append(name).append('\'');
-        sb.append(", enabled=").append(enabled);
-        sb.append(", lastExecTime=").append(lastExecTime);
-        sb.append(", lastModifiedDate=").append(lastModifiedDate);
-        sb.append(", runOn=").append(runOn);
-        sb.append(", taskUrl='").append(taskUrl).append('\'');
-        sb.append(", status='").append(status).append('\'');
-        sb.append(", param1='").append(param1).append('\'');
-        sb.append(", param2='").append(param2).append('\'');
-        sb.append(", param3='").append(param3).append('\'');
-        sb.append(", param4='").append(param4).append('\'');
-        sb.append(", executionOrder=").append(executionOrder);
-        sb.append(", cronExpression='").append(cronExpression).append('\'');
-        sb.append('}');
-        return sb.toString();
-    }
 }

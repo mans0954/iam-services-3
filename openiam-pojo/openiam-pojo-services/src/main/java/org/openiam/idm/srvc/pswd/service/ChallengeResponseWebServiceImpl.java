@@ -95,7 +95,7 @@ public class ChallengeResponseWebServiceImpl implements ChallengeResponseWebServ
     @Transactional(readOnly = true)
 	public List<IdentityQuestion> findQuestionBeans(final IdentityQuestionSearchBean searchBean, final int from, final int size, final Language language) {
 		final List<IdentityQuestionEntity> resultList = challengeResponseService.findQuestionBeans(searchBean, from, size);
-		return (resultList != null) ? questionDozerConverter.convertToDTOList(resultList, searchBean.isDeepCopy()) : null;
+		return (resultList != null) ? questionDozerConverter.convertToDTOList(resultList, (searchBean != null) ? searchBean.isDeepCopy() : false) : null;
 	}
 
 	@Override
@@ -187,7 +187,7 @@ public class ChallengeResponseWebServiceImpl implements ChallengeResponseWebServ
 						ResponseCode.OBJECT_NOT_FOUND);
 			}
 
-			if (StringUtils.isNotBlank(answer.getQuestionId())) {
+			if (StringUtils.isBlank(answer.getQuestionId())) {
 				throw new BasicDataServiceException(
 						ResponseCode.NO_IDENTITY_QUESTION);
 			}

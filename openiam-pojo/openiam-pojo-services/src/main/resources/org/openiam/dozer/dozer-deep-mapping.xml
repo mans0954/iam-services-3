@@ -57,10 +57,6 @@
 	<mapping>
 		<class-a>org.openiam.idm.srvc.auth.dto.Login</class-a>
 		<class-b>org.openiam.idm.srvc.auth.dto.Login</class-b>
-		<field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="shallowDozerMapper">
-			<a>loginAttributes</a>
-			<b>loginAttributes</b>
-		</field>
 	</mapping>
 	
 	<mapping>
@@ -123,10 +119,6 @@
 		<field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="shallowDozerMapper">
 			<a>roleAttributes</a>
 			<b>roleAttributes</b>
-		</field>
-		<field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="shallowDozerMapper">
-			<a>rolePolicy</a>
-			<b>rolePolicy</b>
 		</field>
 		<field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="shallowDozerMapper">
 			<a>childRoles</a>

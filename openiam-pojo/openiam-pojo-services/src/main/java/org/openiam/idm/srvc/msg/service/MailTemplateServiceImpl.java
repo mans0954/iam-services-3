@@ -1,74 +1,61 @@
 package org.openiam.idm.srvc.msg.service;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.openiam.base.ws.Response;
+import org.openiam.base.ws.ResponseCode;
+import org.openiam.base.ws.ResponseStatus;
 import org.openiam.dozer.converter.MailTemplateDozerConverter;
+import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.srvc.msg.domain.MailTemplateEntity;
 import org.openiam.idm.srvc.msg.dto.MailTemplateDto;
+import org.openiam.idm.srvc.msg.dto.MailTemplateSearchBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+@Service
 public class MailTemplateServiceImpl implements MailTemplateService {
+	
+    private static final Log log = LogFactory.getLog(MailTemplateServiceImpl.class);
 
     @Autowired
-    private MailTemplateDozerConverter mailTemplateDozerConverter;
-
     private MailTemplateDAO mailTemplateDAO;
 
-    @Override
-    @Transactional
-    public MailTemplateDto addTemplate(MailTemplateDto transientInstance) {
-        if (transientInstance == null) {
-            throw new NullPointerException("Config object is null");
+	@Override
+	@Transactional
+	public void save(MailTemplateEntity entity) {
+        if(StringUtils.isBlank(entity.getId())) {
+        	mailTemplateDAO.save(entity);
+        } else {
+        	mailTemplateDAO.merge(entity);
         }
+	}
 
-        MailTemplateEntity mailTemplateEntity = mailTemplateDAO.add(mailTemplateDozerConverter.convertToEntity(transientInstance, true));
-        return mailTemplateDozerConverter.convertToDTO(mailTemplateEntity, true);
-    }
+	@Override
+	@Transactional
+	public void delete(String id) {
+    	final MailTemplateEntity entity = mailTemplateDAO.findById(id);
+    	if(entity != null) {
+    		mailTemplateDAO.delete(entity);
+    	}
+	}
 
-    @Override
-    @Transactional
-    public void removeTemplate(String id) {
-        if (id == null) {
-            throw new NullPointerException("id is null");
-        }
-        MailTemplateEntity mailTemplateEntity = new MailTemplateEntity();
-        mailTemplateEntity.setTmplId(id);
-        mailTemplateDAO.remove(mailTemplateEntity);
-    }
+	@Override
+	@Transactional(readOnly=true)
+	public MailTemplateEntity get(String id) {
+		return mailTemplateDAO.findById(id);
+	}
 
-    @Override
-    @Transactional
-    public MailTemplateDto updateTemplate(MailTemplateDto detachedInstance) {
-        if (detachedInstance == null) {
-            throw new NullPointerException("policy is null");
-        }
-        MailTemplateEntity sysMessageEntity = mailTemplateDAO.update(mailTemplateDozerConverter.convertToEntity(detachedInstance, true));
-        return mailTemplateDozerConverter.convertToDTO(sysMessageEntity, true);
-    }
+	@Override
+	@Transactional(readOnly=true)
+	public List<MailTemplateEntity> findBeans(MailTemplateSearchBean searchBean, int from, int size) {
+		final List<MailTemplateEntity> entities = mailTemplateDAO.getByExample(searchBean, from, size);
+		return entities;
+	}
 
-    @Override
-    @Transactional (readOnly = true)
-    public MailTemplateDto getTemplateById(String id) {
-        if (id == null) {
-            throw new NullPointerException("id is null");
-        }
-
-        return mailTemplateDozerConverter.convertToDTO(mailTemplateDAO.findById(id), true);
-    }
-
-    @Override
-    @Transactional (readOnly = true)
-    public List<MailTemplateDto> getAllTemplates() {
-        return mailTemplateDozerConverter.convertToDTOList(mailTemplateDAO.findAll(), true);
-    }
-
-    public MailTemplateDAO getMailTemplateDAO() {
-        return mailTemplateDAO;
-    }
-
-    public void setMailTemplateDAO(MailTemplateDAO mailTemplateDAO) {
-        this.mailTemplateDAO = mailTemplateDAO;
-    }
-
+    
 }

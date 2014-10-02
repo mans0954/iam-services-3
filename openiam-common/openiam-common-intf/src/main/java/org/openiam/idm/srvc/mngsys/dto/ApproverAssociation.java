@@ -8,13 +8,13 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
+import org.openiam.base.KeyDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "ApproverAssociation", propOrder = {
-	"id",
 	"requestType",
 	"applyDelegationFilter",
 	"associationType",
@@ -28,8 +28,7 @@ import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 	"approverEntityType"
 })
 @DozerDTOCorrespondence(ApproverAssociationEntity.class)
-public class ApproverAssociation implements Serializable {
-	private String id;
+public class ApproverAssociation extends KeyDTO {
 	private String requestType;
 	private boolean applyDelegationFilter;
 	
@@ -51,12 +50,6 @@ public class ApproverAssociation implements Serializable {
 	@Enumerated(EnumType.STRING)
 	private AssociationType approverEntityType;
 	
-	public String getId() {
-		return id;
-	}
-	public void setId(String id) {
-		this.id = id;
-	}
 	public String getRequestType() {
 		return requestType;
 	}
@@ -126,7 +119,7 @@ public class ApproverAssociation implements Serializable {
 	@Override
 	public int hashCode() {
 		final int prime = 31;
-		int result = 1;
+		int result = super.hashCode();
 		result = prime * result + (applyDelegationFilter ? 1231 : 1237);
 		result = prime
 				* result
@@ -143,7 +136,6 @@ public class ApproverAssociation implements Serializable {
 						.hashCode());
 		result = prime * result
 				+ ((associationType == null) ? 0 : associationType.hashCode());
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		result = prime
 				* result
 				+ ((onApproveEntityId == null) ? 0 : onApproveEntityId
@@ -167,7 +159,7 @@ public class ApproverAssociation implements Serializable {
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
-		if (obj == null)
+		if (!super.equals(obj))
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
@@ -193,11 +185,6 @@ public class ApproverAssociation implements Serializable {
 			return false;
 		if (associationType != other.associationType)
 			return false;
-		if (id == null) {
-			if (other.id != null)
-				return false;
-		} else if (!id.equals(other.id))
-			return false;
 		if (onApproveEntityId == null) {
 			if (other.onApproveEntityId != null)
 				return false;
@@ -219,20 +206,6 @@ public class ApproverAssociation implements Serializable {
 			return false;
 		return true;
 	}
-	@Override
-	public String toString() {
-		return "ApproverAssociation [id=" + id + ", requestType=" + requestType
-				+ ", applyDelegationFilter=" + applyDelegationFilter
-				+ ", associationType=" + associationType
-				+ ", associationEntityId=" + associationEntityId
-				+ ", approverLevel=" + approverLevel + ", onApproveEntityId="
-				+ onApproveEntityId + ", onRejectEntityId=" + onRejectEntityId
-				+ ", onApproveEntityType=" + onApproveEntityType
-				+ ", onRejectEntityType=" + onRejectEntityType
-				+ ", approverEntityId=" + approverEntityId
-				+ ", approverEntityType=" + approverEntityType + "]";
-	}
-	
 	
 	
 }

@@ -5,7 +5,6 @@ import org.openiam.idm.searchbeans.RoleSearchBean;
 import org.openiam.idm.srvc.lang.domain.LanguageEntity;
 import org.openiam.idm.srvc.role.domain.RoleAttributeEntity;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
-import org.openiam.idm.srvc.role.domain.RolePolicyEntity;
 import org.openiam.idm.srvc.role.dto.Role;
 
 import java.util.List;
@@ -28,23 +27,6 @@ public interface RoleDataService {
     public void saveRole(final RoleEntity role, final String requestorId) throws BasicDataServiceException;
     
     public void removeRole(String roleId);
-
-    public void savePolicy(RolePolicyEntity rPolicy);
-
-    /**
-     * Returns a single RolePolicy object based on the attributeId.
-     *
-     * @param rolePolicyId
-     * @return
-     */
-    public RolePolicyEntity getRolePolicy(String rolePolicyId);
-
-    /**
-     * Removes a RolePolicy specified by the rPolicy parameter.
-     *
-     * @param rolePolicyId
-     */
-    public void removeRolePolicy(final String rolePolicyId);
 
 
     /** * Attribute Methods ****** */

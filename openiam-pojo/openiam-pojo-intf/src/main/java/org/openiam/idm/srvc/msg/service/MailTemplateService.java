@@ -1,6 +1,9 @@
 package org.openiam.idm.srvc.msg.service;
 
+import org.openiam.base.ws.Response;
+import org.openiam.idm.srvc.msg.domain.MailTemplateEntity;
 import org.openiam.idm.srvc.msg.dto.MailTemplateDto;
+import org.openiam.idm.srvc.msg.dto.MailTemplateSearchBean;
 
 import java.util.List;
 
@@ -16,32 +19,20 @@ public interface MailTemplateService {
      * @param transientInstance
      * @return
      */
-    public MailTemplateDto addTemplate(MailTemplateDto transientInstance);
+    public void save(MailTemplateEntity entity);
 
     /**
      * method for deleting template.
      * @param id
      */
-    public void removeTemplate(String id);
-
-    /**
-     * method for updating template.
-     * @param detachedInstance
-     * @return
-     */
-    public MailTemplateDto updateTemplate(MailTemplateDto detachedInstance);
+    public void delete(String id);
 
     /**
      * method for retriving template by id .
      * @param id
      * @return
      */
-    public MailTemplateDto getTemplateById(java.lang.String id);
-
-
-    /**
-     * method for getting the list of all template.
-     * @return
-     */
-    public List<MailTemplateDto> getAllTemplates();
+    public MailTemplateEntity get(String id);
+    
+    public List<MailTemplateEntity> findBeans(final MailTemplateSearchBean searchBean, final int from, final int size);
 }

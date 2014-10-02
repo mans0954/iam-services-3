@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.mngsys.domain;
 
+import javax.persistence.AttributeOverride;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -12,6 +13,7 @@ import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
+import org.openiam.base.domain.KeyEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.mngsys.dto.ApproverAssociation;
 
@@ -19,14 +21,9 @@ import org.openiam.idm.srvc.mngsys.dto.ApproverAssociation;
 @Table(name = "APPROVER_ASSOC")
 @DozerDTOCorrespondence(ApproverAssociation.class)
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class ApproverAssociationEntity {
+@AttributeOverride(name = "id", column = @Column(name = "APPROVER_ASSOC_ID", length = 32))
+public class ApproverAssociationEntity extends KeyEntity {
 
-	@Id
-    @GeneratedValue(generator = "system-uuid")
-    @GenericGenerator(name = "system-uuid", strategy = "uuid")
-    @Column(name = "APPROVER_ASSOC_ID", length = 32)
-	private String id;
-	
 	@Column(name = "REQUEST_TYPE", length = 32)
 	private String requestType;
 	
@@ -64,14 +61,6 @@ public class ApproverAssociationEntity {
 	@Column(name = "APPROVER_ENTITY_TYPE", length = 20)
 	@Enumerated(EnumType.STRING)
 	private AssociationType approverEntityType;
-
-	public String getId() {
-		return id;
-	}
-
-	public void setId(String id) {
-		this.id = id;
-	}
 
 	public String getRequestType() {
 		return requestType;
@@ -145,8 +134,6 @@ public class ApproverAssociationEntity {
 		this.onRejectEntityType = onRejectEntityType;
 	}
 	
-	
-
 	public String getApproverEntityId() {
 		return approverEntityId;
 	}
@@ -166,7 +153,7 @@ public class ApproverAssociationEntity {
 	@Override
 	public int hashCode() {
 		final int prime = 31;
-		int result = 1;
+		int result = super.hashCode();
 		result = prime * result + (applyDelegationFilter ? 1231 : 1237);
 		result = prime
 				* result
@@ -183,7 +170,6 @@ public class ApproverAssociationEntity {
 						.hashCode());
 		result = prime * result
 				+ ((associationType == null) ? 0 : associationType.hashCode());
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		result = prime
 				* result
 				+ ((onApproveEntityId == null) ? 0 : onApproveEntityId
@@ -208,7 +194,7 @@ public class ApproverAssociationEntity {
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
-		if (obj == null)
+		if (!super.equals(obj))
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
@@ -234,11 +220,6 @@ public class ApproverAssociationEntity {
 			return false;
 		if (associationType != other.associationType)
 			return false;
-		if (id == null) {
-			if (other.id != null)
-				return false;
-		} else if (!id.equals(other.id))
-			return false;
 		if (onApproveEntityId == null) {
 			if (other.onApproveEntityId != null)
 				return false;
@@ -263,19 +244,18 @@ public class ApproverAssociationEntity {
 
 	@Override
 	public String toString() {
-		return "ApproverAssociationEntity [id=" + id + ", requestType="
-				+ requestType + ", applyDelegationFilter="
-				+ applyDelegationFilter + ", associationType="
-				+ associationType + ", associationEntityId="
-				+ associationEntityId + ", approverLevel=" + approverLevel
-				+ ", onApproveEntityId=" + onApproveEntityId
-				+ ", onRejectEntityId=" + onRejectEntityId
+		return "ApproverAssociationEntity [requestType=" + requestType
+				+ ", applyDelegationFilter=" + applyDelegationFilter
+				+ ", associationType=" + associationType
+				+ ", associationEntityId=" + associationEntityId
+				+ ", approverLevel=" + approverLevel + ", onApproveEntityId="
+				+ onApproveEntityId + ", onRejectEntityId=" + onRejectEntityId
 				+ ", onApproveEntityType=" + onApproveEntityType
 				+ ", onRejectEntityType=" + onRejectEntityType
 				+ ", approverEntityId=" + approverEntityId
-				+ ", approverEntityType=" + approverEntityType + "]";
+				+ ", approverEntityType=" + approverEntityType + ", getId()="
+				+ getId() + "]";
 	}
 
-	
 	
 }

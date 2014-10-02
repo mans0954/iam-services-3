@@ -2,6 +2,8 @@ package org.openiam.idm.srvc.user.domain;
 
 import javax.persistence.*;
 
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.GenericGenerator;
@@ -24,6 +26,7 @@ import java.util.List;
 	@AttributeOverride(name = "id", column = @Column(name = "ID")),
 	@AttributeOverride(name = "value", column = @Column(name="VALUE", length=4096))
 })
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class UserAttributeEntity extends AbstractAttributeEntity {
     private static final long serialVersionUID = 6695609793883291213L;
 

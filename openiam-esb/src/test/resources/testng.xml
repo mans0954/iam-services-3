@@ -18,6 +18,8 @@
 			<class name="org.openiam.service.integration.entitlements.Role2RoleEntitlementsTest" />
 			<class name="org.openiam.service.integration.entitlements.Role2UserEntitlementsTest" />
 			<class name="org.openiam.service.integration.entitlements.RoleServiceTest" />
+			<class name="org.openiam.service.integration.entitlements.ApproverAssociationServiceTest" />
+			<class name="org.openiam.service.integration.entitlements.ResourceTypeServiceTest" />
 		</classes>
 	</test>
 	
@@ -26,6 +28,7 @@
 			<class name="org.openiam.service.integration.meta.MetadataElementTemplateServiceTest" />
 			<class name="org.openiam.service.integration.meta.MetadataElementTest" />
 			<class name="org.openiam.service.integration.meta.MetadataTypeTest" />
+			<class name="org.openiam.service.integration.meta.MetadataTemplateTypeServiceTest" />
 		</classes>
 	</test>
 	
@@ -38,6 +41,27 @@
 	<test name="integration.user">
 		<classes>
 			<class name="org.openiam.service.integration.login.LoginServiceTest" />
+		</classes>
+	</test>
+	
+	<test name="integration.challenge.response">
+		<classes>
+			<class name="org.openiam.service.integration.challengeresponse.UserIdentityAnswerServiceTest" />
+			<class name="org.openiam.service.integration.challengeresponse.IdentityQuestionServiceTest" />
+		</classes>
+	</test>
+	
+	<test name="integration.mail">
+		<classes>
+			<!--
+			<class name="org.openiam.service.integration.mail.MailTemplateServiceTest" />
+			-->
+		</classes>
+	</test>
+	
+	<test name="content.provider">
+		<classes>
+			<class name="org.openiam.service.integration.contentprovider.UIThemeServiceTest" />
 		</classes>
 	</test>
 </suite>

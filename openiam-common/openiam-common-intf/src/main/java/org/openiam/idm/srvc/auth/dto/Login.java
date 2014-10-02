@@ -40,7 +40,6 @@ import java.util.Set;
         "lastLogin",
         "isDefault",
         "selected",
-        "loginAttributes",
         "passwordChangeCount",
         "operation",
         "origPrincipalName",
@@ -125,8 +124,6 @@ public class Login extends KeyDTO {
 
     @XmlSchemaType(name = "dateTime")
     private Date pswdResetTokenExp;
-
-    protected Set<LoginAttribute> loginAttributes = new HashSet<LoginAttribute>(0);
     
     protected boolean selected;
     
@@ -354,14 +351,6 @@ public class Login extends KeyDTO {
 
     public void setIsDefault(Integer isDefault) {
         this.isDefault = isDefault;
-    }
-
-    public Set<LoginAttribute> getLoginAttributes() {
-        return this.loginAttributes;
-    }
-
-    public void setLoginAttributes(Set<LoginAttribute> loginAttributes) {
-        this.loginAttributes = loginAttributes;
     }
 
     public boolean isSelected() {

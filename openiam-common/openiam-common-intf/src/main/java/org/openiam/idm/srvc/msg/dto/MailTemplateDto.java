@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.msg.dto;
 
+import org.openiam.base.KeyNameDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.msg.domain.MailTemplateEntity;
 
@@ -10,8 +11,6 @@ import java.io.Serializable;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "MailTemplateDto", propOrder = {
-        "tmplId",
-        "name",
         "subject",
         "type",
         "body",
@@ -19,12 +18,10 @@ import java.io.Serializable;
 })
 
 @DozerDTOCorrespondence(MailTemplateEntity.class)
-public class MailTemplateDto implements Serializable {
+public class MailTemplateDto extends KeyNameDTO {
 
     private static final long serialVersionUID = -406594689219258805L;
 
-    private String tmplId;
-    private String name;
     private String subject;
     private MessageBodyType type;
 
@@ -32,22 +29,6 @@ public class MailTemplateDto implements Serializable {
     private String attachmentFilePath;
 
     public MailTemplateDto() {
-    }
-
-    public String getTmplId() {
-        return tmplId;
-    }
-
-    public void setTmplId(String tmplId) {
-        this.tmplId = tmplId;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public String getSubject() {
@@ -82,32 +63,56 @@ public class MailTemplateDto implements Serializable {
         this.attachmentFilePath = attachmentFilePath;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime
+				* result
+				+ ((attachmentFilePath == null) ? 0 : attachmentFilePath
+						.hashCode());
+		result = prime * result + ((body == null) ? 0 : body.hashCode());
+		result = prime * result + ((subject == null) ? 0 : subject.hashCode());
+		result = prime * result + ((type == null) ? 0 : type.hashCode());
+		return result;
+	}
 
-        MailTemplateDto that = (MailTemplateDto) o;
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		MailTemplateDto other = (MailTemplateDto) obj;
+		if (attachmentFilePath == null) {
+			if (other.attachmentFilePath != null)
+				return false;
+		} else if (!attachmentFilePath.equals(other.attachmentFilePath))
+			return false;
+		if (body == null) {
+			if (other.body != null)
+				return false;
+		} else if (!body.equals(other.body))
+			return false;
+		if (subject == null) {
+			if (other.subject != null)
+				return false;
+		} else if (!subject.equals(other.subject))
+			return false;
+		if (type != other.type)
+			return false;
+		return true;
+	}
 
-        if (attachmentFilePath != null ? !attachmentFilePath.equals(that.attachmentFilePath) : that.attachmentFilePath != null)
-            return false;
-        if (body != null ? !body.equals(that.body) : that.body != null) return false;
-        if (name != null ? !name.equals(that.name) : that.name != null) return false;
-        if (subject != null ? !subject.equals(that.subject) : that.subject != null) return false;
-        if (tmplId != null ? !tmplId.equals(that.tmplId) : that.tmplId != null) return false;
-        if (type != that.type) return false;
+	@Override
+	public String toString() {
+		return "MailTemplateDto [subject=" + subject + ", type=" + type
+				+ ", body=" + body + ", attachmentFilePath="
+				+ attachmentFilePath + ", getName()=" + getName()
+				+ ", getId()=" + getId() + "]";
+	}
 
-        return true;
-    }
-
-    @Override
-    public int hashCode() {
-        int result = tmplId != null ? tmplId.hashCode() : 0;
-        result = 31 * result + (name != null ? name.hashCode() : 0);
-        result = 31 * result + (subject != null ? subject.hashCode() : 0);
-        result = 31 * result + (type != null ? type.hashCode() : 0);
-        result = 31 * result + (body != null ? body.hashCode() : 0);
-        result = 31 * result + (attachmentFilePath != null ? attachmentFilePath.hashCode() : 0);
-        return result;
-    }
+    
 }

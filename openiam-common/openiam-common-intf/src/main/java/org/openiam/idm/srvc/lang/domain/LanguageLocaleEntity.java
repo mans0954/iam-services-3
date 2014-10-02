@@ -2,6 +2,7 @@ package org.openiam.idm.srvc.lang.domain;
 
 import java.io.Serializable;
 
+import javax.persistence.AttributeOverride;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -13,6 +14,7 @@ import javax.persistence.Table;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
+import org.openiam.base.domain.KeyEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.lang.dto.LanguageLocale;
 
@@ -20,13 +22,8 @@ import org.openiam.idm.srvc.lang.dto.LanguageLocale;
 @Table(name = "LANGUAGE_LOCALE")
 @DozerDTOCorrespondence(LanguageLocale.class)
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class LanguageLocaleEntity implements Serializable {
-
-    @Id
-    @GeneratedValue(generator = "system-uuid")
-    @GenericGenerator(name = "system-uuid", strategy = "uuid")
-    @Column(name = "ID", length = 32)
-    private String id;
+@AttributeOverride(name = "id", column = @Column(name = "ID", length = 32))
+public class LanguageLocaleEntity extends KeyEntity {
 
     @ManyToOne
     @JoinColumn(name = "LANGUAGE_ID", referencedColumnName = "ID", insertable = true, updatable = false, nullable = false)
@@ -34,14 +31,6 @@ public class LanguageLocaleEntity implements Serializable {
 
     @Column(name = "LOCALE", length = 20, nullable = false)
     private String locale;
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
 
     public LanguageEntity getLanguage() {
         return language;
@@ -59,46 +48,43 @@ public class LanguageLocaleEntity implements Serializable {
         this.locale = locale;
     }
 
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((id == null) ? 0 : id.hashCode());
-        result = prime * result + ((language == null) ? 0 : language.hashCode());
-        result = prime * result + ((locale == null) ? 0 : locale.hashCode());
-        return result;
-    }
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result
+				+ ((language == null) ? 0 : language.hashCode());
+		result = prime * result + ((locale == null) ? 0 : locale.hashCode());
+		return result;
+	}
 
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        LanguageLocaleEntity other = (LanguageLocaleEntity) obj;
-        if (id == null) {
-            if (other.id != null)
-                return false;
-        } else if (!id.equals(other.id))
-            return false;
-        if (language == null) {
-            if (other.language != null)
-                return false;
-        } else if (!language.equals(other.language))
-            return false;
-        if (locale == null) {
-            if (other.locale != null)
-                return false;
-        } else if (!locale.equals(other.locale))
-            return false;
-        return true;
-    }
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		LanguageLocaleEntity other = (LanguageLocaleEntity) obj;
+		if (language == null) {
+			if (other.language != null)
+				return false;
+		} else if (!language.equals(other.language))
+			return false;
+		if (locale == null) {
+			if (other.locale != null)
+				return false;
+		} else if (!locale.equals(other.locale))
+			return false;
+		return true;
+	}
 
-    @Override
-    public String toString() {
-        return "LanguageLocaleEntity [id=" + id + ", language=" + language + ", locale=" + locale + "]";
-    }
+	@Override
+	public String toString() {
+		return "LanguageLocaleEntity [language=" + language + ", locale="
+				+ locale + "]";
+	}
 
+    
 }

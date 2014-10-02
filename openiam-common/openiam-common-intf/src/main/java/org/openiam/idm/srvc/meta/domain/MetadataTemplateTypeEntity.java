@@ -3,6 +3,8 @@ package org.openiam.idm.srvc.meta.domain;
 import java.io.Serializable;
 import java.util.Set;
 
+import javax.persistence.AttributeOverride;
+import javax.persistence.AttributeOverrides;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -16,6 +18,7 @@ import org.apache.commons.lang.StringUtils;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
+import org.openiam.base.domain.AbstractKeyNameEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.meta.dto.MetadataTemplateType;
 
@@ -23,17 +26,12 @@ import org.openiam.idm.srvc.meta.dto.MetadataTemplateType;
 @Table(name = "UI_TEMPLATE_TYPE")
 @DozerDTOCorrespondence(MetadataTemplateType.class)
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class MetadataTemplateTypeEntity implements Serializable {
+@AttributeOverrides({
+	@AttributeOverride(name = "id", column = @Column(name = "TEMPLATE_TYPE_ID", length = 32)),
+	@AttributeOverride(name = "name", column = @Column(name = "NAME", length = 100, nullable=false))
+})
+public class MetadataTemplateTypeEntity extends AbstractKeyNameEntity {
 
-	@Id
-    @GeneratedValue(generator = "system-uuid")
-    @GenericGenerator(name = "system-uuid", strategy = "uuid")
-    @Column(name = "TEMPLATE_TYPE_ID", length = 32)
-	private String id;
-	
-	@Column(name = "NAME", length = 100, nullable=false)
-	private String name;
-	
 	@Column(name = "DESCRIPTION", length = 200, nullable=true)
 	private String description;
 	
@@ -42,22 +40,6 @@ public class MetadataTemplateTypeEntity implements Serializable {
 	
 	@OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "templateType", fetch = FetchType.LAZY)
 	private Set<MetadataTemplateTypeFieldEntity> fields;
-
-	public String getId() {
-		return id;
-	}
-
-	public void setId(String id) {
-		this.id = id;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
 
 	public String getDescription() {
 		return description;
@@ -99,11 +81,9 @@ public class MetadataTemplateTypeEntity implements Serializable {
 	@Override
 	public int hashCode() {
 		final int prime = 31;
-		int result = 1;
+		int result = super.hashCode();
 		result = prime * result
 				+ ((description == null) ? 0 : description.hashCode());
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
-		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		return result;
 	}
 
@@ -111,7 +91,7 @@ public class MetadataTemplateTypeEntity implements Serializable {
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
-		if (obj == null)
+		if (!super.equals(obj))
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
@@ -121,25 +101,13 @@ public class MetadataTemplateTypeEntity implements Serializable {
 				return false;
 		} else if (!description.equals(other.description))
 			return false;
-		if (id == null) {
-			if (other.id != null)
-				return false;
-		} else if (!id.equals(other.id))
-			return false;
-		if (name == null) {
-			if (other.name != null)
-				return false;
-		} else if (!name.equals(other.name))
-			return false;
 		return true;
 	}
 
 	@Override
 	public String toString() {
-		return "MetadataTemplateTypeEntity [id=" + id + ", name=" + name
-				+ ", description=" + description + "]";
+		return "MetadataTemplateTypeEntity [description=" + description + "]";
 	}
 
-	
 	
 }
