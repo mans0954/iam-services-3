@@ -563,7 +563,7 @@ public class UserAttributeHelper {
             boolean found = false;
             while (origIt.hasNext()) {
                 Address origAdr = origIt.next();
-                if (origAdr.getAddressId().equals(addr.getAddressId())) {
+                if (origAdr.getId().equals(addr.getId())) {
                     found = true;
                 }
             }

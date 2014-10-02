@@ -781,7 +781,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     Set<AddressEntity> entities = userEntity.getAddresses();
                     if (CollectionUtils.isNotEmpty(entities))  {
                         for (AddressEntity en : entities) {
-                            if (en.getAddressId().equals(e.getAddressId())) {
+                            if (en.getId().equals(e.getId())) {
                                 userEntity.getAddresses().remove(en);
                                 IdmAuditLog auditLog = new IdmAuditLog();
                                 Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
@@ -797,8 +797,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                 } else if (e.getOperation().equals(AttributeOperationEnum.ADD)) {
                     AddressEntity entity = addressDozerConverter.convertToEntity(e, false);
                     entity.setParent(userEntity);
-                    if(org.apache.commons.lang.StringUtils.isBlank(e.getMetadataTypeId())){
-                        entity.setMetadataType(null);
+                    if(org.apache.commons.lang.StringUtils.isBlank(e.getMdTypeId())){
+                        entity.setType(null);
                     }
                     userEntity.getAddresses().add(entity);
                     IdmAuditLog auditLog = new IdmAuditLog();
@@ -811,7 +811,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     Set<AddressEntity> entities = userEntity.getAddresses();
                     if (CollectionUtils.isNotEmpty(entities))  {
                         for (AddressEntity en : entities) {
-                            if (en.getAddressId().equals(e.getAddressId())) {
+                            if (en.getId().equals(e.getId())) {
                                 // Audit Log -----------------------------------------------------------------------------------
                                 IdmAuditLog auditLog = new IdmAuditLog();
                                 Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
@@ -824,8 +824,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                                 userMgr.evict(en);
                                 AddressEntity entity = addressDozerConverter.convertToEntity(e, false);
                                 entity.setParent(userEntity);
-                                if(org.apache.commons.lang.StringUtils.isBlank(e.getMetadataTypeId())){
-                                    entity.setMetadataType(null);
+                                if(org.apache.commons.lang.StringUtils.isBlank(e.getMdTypeId())){
+                                    entity.setType(null);
                                 }
                                 userEntity.getAddresses().add(entity);
                                 break;

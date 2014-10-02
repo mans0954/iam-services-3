@@ -342,8 +342,8 @@ public class ModifyUser {
         Iterator<Address> addressIt = addressSet.iterator();
         while (addressIt.hasNext()) {
             Address adr = addressIt.next();
-            if (adr.getAddressId() != null) {
-                if (adr.getAddressId().equals(id)
+            if (adr.getId() != null) {
+                if (adr.getId().equals(id)
                         && (id != null && id.length() > 0)) {
                     return adr;
                 }
@@ -515,7 +515,7 @@ public class ModifyUser {
 
                 // get the email object from the original set of emails so that
                 // we can remove it
-                Address e = getAddress(ph.getAddressId(), origAddressSet);
+                Address e = getAddress(ph.getId(), origAddressSet);
                 if (e != null) {
                     origAddressSet.remove(e);
                 }
@@ -525,7 +525,7 @@ public class ModifyUser {
                 // if it is - see if it has changed
                 // if it is not - add it.
                 log.debug("evaluate Address");
-                Address origAddress = getAddress(ph.getAddressId(),
+                Address origAddress = getAddress(ph.getId(),
                         origAddressSet);
                 if (origAddress == null) {
                     ph.setOperation(AttributeOperationEnum.ADD);
@@ -550,7 +550,7 @@ public class ModifyUser {
         // if a value is in original list and not in the new list - then add it
         // on
         for (Address ph : origAddressSet) {
-            Address newAddress = getAddress(ph.getAddressId(), newAddressSet);
+            Address newAddress = getAddress(ph.getId(), newAddressSet);
             if (newAddress == null) {
                 ph.setOperation(AttributeOperationEnum.NO_CHANGE);
                 addressSet.add(ph);

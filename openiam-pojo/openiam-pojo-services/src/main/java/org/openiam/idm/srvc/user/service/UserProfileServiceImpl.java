@@ -126,7 +126,7 @@ public class UserProfileServiceImpl implements UserProfileService {
         		boolean contains = false;
         		if(CollectionUtils.isNotEmpty(addressList)) {
         			for(final AddressEntity address : addressList) {
-        				if(StringUtils.equals(address.getAddressId(), dbAddress.getAddressId())) {
+        				if(StringUtils.equals(address.getId(), dbAddress.getId())) {
         					contains = true;
         				}
         			}
@@ -245,7 +245,7 @@ public class UserProfileServiceImpl implements UserProfileService {
 		if(CollectionUtils.isNotEmpty(addressList)) {
         	for(final AddressEntity address : addressList) {
         		address.setParent(userEntity);
-        		if(StringUtils.isBlank(address.getAddressId())) {
+        		if(StringUtils.isBlank(address.getId())) {
         			userManager.addAddress(address);
         		} else {
         			userManager.updateAddress(address);
