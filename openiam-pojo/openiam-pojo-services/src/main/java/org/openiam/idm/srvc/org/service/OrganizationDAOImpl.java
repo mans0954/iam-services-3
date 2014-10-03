@@ -99,12 +99,6 @@ public class OrganizationDAOImpl extends
                         organizationSearchBean.getInternalOrgId()));
             }
 
-//			if (StringUtils.isNotBlank(organizationSearchBean.getUserId())) {
-//				criteria.createAlias("users", "u").add(
-//						Restrictions.eq("u.id",
-//								organizationSearchBean.getUserId()));
-//			}
-
             if(CollectionUtils.isNotEmpty(organizationSearchBean.getUserIdSet())){
                 criteria.createAlias("users", "usr");
                 criteria.add(Restrictions.in("usr.id", organizationSearchBean.getUserIdSet()));
@@ -118,19 +112,6 @@ public class OrganizationDAOImpl extends
                 criteria.createAlias("childOrganizations", "ch");
                 criteria.add(Restrictions.in("ch.id", organizationSearchBean.getChildIdSet()));
             }
-
-
-//			if (StringUtils.isNotBlank(organizationSearchBean.getChildId())) {
-//				criteria.createAlias("childOrganizations", "child").add(
-//						Restrictions.eq("child.id",
-//								organizationSearchBean.getChildId()));
-//			}
-//
-//			if (StringUtils.isNotBlank(organizationSearchBean.getParentId())) {
-//				criteria.createAlias("parentOrganizations", "parent").add(
-//						Restrictions.eq("parent.id",
-//								organizationSearchBean.getParentId()));
-//			}
 
 			if (StringUtils.isNotBlank(organizationSearchBean
 					.getValidParentTypeId())) {
@@ -168,6 +149,10 @@ public class OrganizationDAOImpl extends
             if(organizationSearchBean.getIsSelectable()!=null){
                 criteria.add(Restrictions.eq("selectable", organizationSearchBean.getIsSelectable()));
             }
+			if(StringUtils.isNotBlank(organizationSearchBean.getAdminResourceId())) {
+				criteria.add(Restrictions.eq("adminResource.id", organizationSearchBean.getAdminResourceId()));
+			}
+
 		}
 		return criteria;
 	}

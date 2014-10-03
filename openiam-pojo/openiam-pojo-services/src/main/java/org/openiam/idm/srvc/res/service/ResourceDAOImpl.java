@@ -16,9 +16,11 @@ import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.domain.ResourceTypeEntity;
 import org.openiam.idm.srvc.searchbean.converter.ResourceSearchBeanConverter;
 import org.openiam.internationalization.LocalizedDatabaseGet;
+import org.openiam.util.StringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import javax.annotation.Resource;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -142,6 +144,12 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
 					criteria.createAlias("childResources", "child").add(
 							Restrictions.in("child.id",
 									childResoruceIds));
+				}
+			}
+			if(resource.getAdminResource() != null) {
+				final ResourceEntity adminResource = resource.getAdminResource();
+				if (StringUtils.isNotBlank(adminResource.getId())) {
+					criteria.add(Restrictions.eq("adminResource.id", adminResource.getId()));
 				}
 			}
 		}
@@ -348,6 +356,9 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
                 criteria.createAlias("users", "usr");
                 criteria.add(Restrictions.in("usr.id", searchBean.getUserIdSet()));
             }
+			if(StringUtils.isNotBlank(searchBean.getAdminResourceId())){
+				criteria.add(Restrictions.eq("adminResource.id", searchBean.getAdminResourceId()));
+			}
 		}
 	}
 }
