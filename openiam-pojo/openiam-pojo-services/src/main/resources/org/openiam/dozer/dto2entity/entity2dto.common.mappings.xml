@@ -556,5 +556,13 @@
             <a>defaultParametr.operation</a>
             <b>operation</b>
         </field>
+        <field>
+            <a>defaultParametr.description</a>
+            <b>description</b>
+        </field>
+        <field>
+            <a>defaultParametr.paramGroup</a>
+            <b>grouping</b>
+        </field>
     </mapping>
 </mappings>

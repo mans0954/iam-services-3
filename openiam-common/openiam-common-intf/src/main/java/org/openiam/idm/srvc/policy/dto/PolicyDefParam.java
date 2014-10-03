@@ -4,6 +4,7 @@ package org.openiam.idm.srvc.policy.dto;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.Column;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
@@ -24,20 +25,22 @@ import org.openiam.idm.srvc.policy.domain.PolicyDefParamEntity;
         "repeats",
         "policyParamHandler",
         "handlerLanguage",
-        "paramGroup"
+        "paramGroup","value1","value2"
 })
 @DozerDTOCorrespondence(PolicyDefParamEntity.class)
 public class PolicyDefParam implements java.io.Serializable {
 
     /**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
-	private String defParamId;
+     *
+     */
+    private static final long serialVersionUID = 1L;
+    private String defParamId;
     private String policyDefId;
     private String name;
     private String description;
     private String operation;
+    private String value1;
+    private String value2;
     private Integer repeats;
     private String policyParamHandler;
     private String handlerLanguage;
@@ -82,6 +85,22 @@ public class PolicyDefParam implements java.io.Serializable {
 
     public void setOperation(String operation) {
         this.operation = operation;
+    }
+
+    public String getValue1() {
+        return value1;
+    }
+
+    public void setValue1(String value1) {
+        this.value1 = value1;
+    }
+
+    public String getValue2() {
+        return value2;
+    }
+
+    public void setValue2(String value2) {
+        this.value2 = value2;
     }
 
     public Integer getRepeats() {
@@ -136,7 +155,7 @@ public class PolicyDefParam implements java.io.Serializable {
                 ", repeats=" + repeats +
                 ", policyParamHandler='" + policyParamHandler + '\'' +
                 ", handlerLanguage='" + handlerLanguage + '\'' +
-                ", paramGroup='" + paramGroup + 
+                ", paramGroup='" + paramGroup +
                 '}';
     }
 }
