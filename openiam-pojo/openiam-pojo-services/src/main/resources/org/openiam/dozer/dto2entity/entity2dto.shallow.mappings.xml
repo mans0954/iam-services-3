@@ -817,8 +817,8 @@
         <class-a>org.openiam.am.srvc.domain.AuthProviderEntity</class-a>
         <class-b>org.openiam.am.srvc.dto.AuthProvider</class-b>
         <field-exclude>
-            <a>providerAttributeSet</a>
-            <b>providerAttributeSet</b>
+            <a>attributes</a>
+            <b>attributes</b>
         </field-exclude>
         <field-exclude>
             <a>resourceAttributeMap</a>
@@ -828,6 +828,14 @@
             <a>resource.id</a>
             <b>resourceId</b>
         </field>
+        <field>
+			<a>type.id</a>
+			<b>providerType</b>
+		</field>
+		<field>
+			<a>managedSystem.id</a>
+			<b>managedSysId</b>
+		</field>
         <field
 			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentObjectConverter"
 			custom-converter-param="dto2entityShallowDozerMapper">

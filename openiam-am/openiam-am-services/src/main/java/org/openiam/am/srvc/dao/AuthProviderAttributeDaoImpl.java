@@ -15,59 +15,19 @@ import java.util.List;
 public class AuthProviderAttributeDaoImpl extends BaseDaoImpl<AuthProviderAttributeEntity, String> implements AuthProviderAttributeDao {
     @Override
     protected String getPKfieldName() {
-        return "providerAttributeId";
+        return "id";
     }
 
     @Override
     protected Criteria getExampleCriteria(final AuthProviderAttributeEntity attribute) {
         final Criteria criteria = getCriteria();
-        if (StringUtils.isNotBlank(attribute.getProviderAttributeId())) {
-            criteria.add(Restrictions.eq(getPKfieldName(), attribute.getProviderAttributeId()));
+        if (StringUtils.isNotBlank(attribute.getId())) {
+            criteria.add(Restrictions.eq(getPKfieldName(), attribute.getId()));
         } else {
-            if (StringUtils.isNotEmpty(attribute.getProviderId())) {
-                criteria.add(Restrictions.eq("providerId", attribute.getProviderId()));
+            if (StringUtils.isNotEmpty(attribute.getId())) {
+                criteria.add(Restrictions.eq("provider.id", attribute.getId()));
             }
         }
         return criteria;
-    }
-
-    @Override
-    @Transactional
-    public void deleteByProviderList(List<String> pkList) {
-        if(pkList!=null && !pkList.isEmpty()) {
-            Query qry = getSession().createQuery("delete "+this.domainClass.getName()+ " p where p.providerId in (:pkList) ");
-            qry.setParameterList("pkList", pkList);
-            qry.executeUpdate();
-        }
-    }
-
-    @Override
-    @Transactional
-    public void deleteByAttributeList(List<String> pkList){
-        if(pkList!=null && !pkList.isEmpty()) {
-            Query qry = getSession().createQuery("delete "+this.domainClass.getName()+ " p where p.attributeId in (:pkList) ");
-            qry.setParameterList("pkList", pkList);
-            qry.executeUpdate();
-        }
-    }
-
-    @Override
-    @Transactional
-    public void deleteByAttribute(String providerId, String attributeId) {
-        Query qry = getSession().createQuery("delete "+this.domainClass.getName()+ " p where p.providerId = :providerId and p.attributeId=:attributeId ");
-        qry.setString("providerId", providerId);
-        qry.setString("attributeId", attributeId);
-        qry.executeUpdate();
-    }
-
-
-    @Override
-    public AuthProviderAttributeEntity getAuthProviderAttribute(String providerId, String attributeId) {
-        Criteria criteria = getCriteria();
-        criteria.add(Restrictions.eq("providerId", providerId)).add(Restrictions.eq("attributeId",attributeId));
-        List<AuthProviderAttributeEntity> result = criteria.list();
-        if(result==null || result.isEmpty())
-            return null;
-        return result.get(0);
     }
 }

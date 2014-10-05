@@ -116,13 +116,13 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
         try {
             validate(resource);
         } catch (BasicDataServiceException e) {
-            response.setStatus(ResponseStatus.FAILURE);
+        	response.fail();
             response.setErrorCode(e.getCode());
             response.setErrorTokenList(e.getErrorTokenList());
         } catch (Throwable e) {
             log.error("Can't validate resource", e);
             response.setErrorText(e.getMessage());
-            response.setStatus(ResponseStatus.FAILURE);
+            response.fail();
         }
         return response;
     }
@@ -163,13 +163,13 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
             resourceService.save(entity, requesterId);
             response.setResponseValue(entity.getId());
         } catch (BasicDataServiceException e) {
-            response.setStatus(ResponseStatus.FAILURE);
+            response.fail();
             response.setErrorCode(e.getCode());
             response.setErrorTokenList(e.getErrorTokenList());
         } catch (Throwable e) {
             log.error("Can't save or update resource", e);
             response.setErrorText(e.getMessage());
-            response.setStatus(ResponseStatus.FAILURE);
+            response.fail();
         }
         return response;
     }

@@ -31,6 +31,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.Response;
+import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.exception.AuthenticationException;
 import org.openiam.exception.BasicDataServiceException;
@@ -41,7 +42,6 @@ import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
 import org.openiam.idm.srvc.audit.constant.AuditTarget;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
-import org.openiam.idm.srvc.auth.context.AuthContextFactory;
 import org.openiam.idm.srvc.auth.context.AuthenticationContext;
 import org.openiam.idm.srvc.auth.context.PasswordCredential;
 import org.openiam.idm.srvc.auth.domain.AuthStateEntity;
@@ -101,9 +101,6 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
     
     @Autowired
     private LoginDataService loginManager;
-    
-    @Value("${org.openiam.core.login.authentication.context.class}")
-    private String authContextClass;
     
     @Autowired
     private UserDataService userManager;
@@ -184,9 +181,11 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
     	final AuthenticationResponse authResp = new AuthenticationResponse(ResponseStatus.FAILURE);
     	try {
 	        if (request == null) {
-                newLoginEvent.fail();
-                newLoginEvent.setFailureReason("Request object is null");
-	            throw new IllegalArgumentException("Request object is null");
+	            throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+	        }
+	        
+	        if(StringUtils.isBlank(request.getLanguageId())) {
+	        	throw new BasicDataServiceException(ResponseCode.LANGUAGE_REQUIRED);
 	        }
 	
 	        final String principal = request.getPrincipal();
@@ -197,10 +196,9 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
             newLoginEvent.setClientIP(clientIP);
             newLoginEvent.setRequestorPrincipal(principal);
 	        
-	        AuthenticationContext ctx = null;
+	        final AuthenticationContext ctx = new AuthenticationContext();
 	        AbstractLoginModule loginModule = null;
 	        String loginModName = null;
-	        LoginModuleSelector modSel = new LoginModuleSelector();
 	
 	        LoginEntity lg = null;
 	        String userId = null;
@@ -215,68 +213,28 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
 	        PolicyAttributeEntity modType = authPolicy.getAttribute("LOGIN_MOD_TYPE");
 	        PolicyAttributeEntity defaultModule = authPolicy.getAttribute("DEFAULT_LOGIN_MOD");
 	        loginModName = defaultModule.getValue1();
-	        if (modType != null) {
-	            // modSel.setModuleType( Integer.parseInt(modType.getValue1()));
-	            modSel.setModuleName(loginModName);
-	        }
 	
 	        // log.debug("loginModule=" + secDomain.getDefaultLoginModule());
 	
 	        if (StringUtils.equals(loginModName, defaultLoginModule)) {
-	            /* Few basic checks must be met before calling the login module. */
-	            /* Simplifies the login module */
 	            if (StringUtils.isBlank(principal)) {
-	            	/*
-	                log("AUTHENTICATION", "AUTHENTICATION", "FAIL",
-	                        "INVALID LOGIN", secDomainId, null, principal, null,
-	                        null, clientIP, nodeIP);
-					*/
-                    newLoginEvent.fail();
                     newLoginEvent.setFailureReason("Invalid Principlal");
-	                // throw new
-	                // AuthenticationException(AuthenticationConstants.RESULT_INVALID_LOGIN);
-	
 	                authResp.setAuthErrorCode(AuthenticationConstants.RESULT_INVALID_LOGIN);
-	                return authResp;
-	
+	                throw new BasicDataServiceException(ResponseCode.INVALID_PRINCIPAL);
 	            }
 	
 	            if (StringUtils.isBlank(password)) {
-	
-	                log.debug("Invalid password");
-	                /*
-	                log("AUTHENTICATION", "AUTHENTICATION", "FAIL",
-	                        "INVALID PASSWORD", secDomainId, null, principal, null,
-	                        null, clientIP, nodeIP);
-					*/
-	                
-	                // throw new
-	                // AuthenticationException(AuthenticationConstants.RESULT_INVALID_PASSWORD);
-                    newLoginEvent.fail();
                     newLoginEvent.setFailureReason("Invalid Password");
 	                authResp.setAuthErrorCode(AuthenticationConstants.RESULT_INVALID_PASSWORD);
-	                return authResp;
-	
+	                throw new BasicDataServiceException(ResponseCode.INVALID_PASSWORD);
 	            }
 	
 	            lg = loginManager.getLoginByManagedSys(principal, sysConfiguration.getDefaultManagedSysId());
 	
 	            if (lg == null) {
-                    newLoginEvent.fail();
-                    newLoginEvent.setFailureReason(
-	            			String.format("Cannot find login for principal '%s' and managedSystem '%s'",
-	            					 principal, sysConfiguration.getDefaultManagedSysId()));
-	            	/*
-	                log("AUTHENTICATION", "AUTHENTICATION", "FAIL",
-	                        "INVALID LOGIN", secDomainId, null, principal, null,
-	                        null, clientIP, nodeIP);
-					*/
-	                // throw new
-	                // AuthenticationException(AuthenticationConstants.RESULT_INVALID_LOGIN);
-	
+                    newLoginEvent.setFailureReason(String.format("Cannot find login for principal '%s' and managedSystem '%s'", principal, sysConfiguration.getDefaultManagedSysId()));
 	                authResp.setAuthErrorCode(AuthenticationConstants.RESULT_INVALID_LOGIN);
-	                return authResp;
-	
+	                throw new BasicDataServiceException(ResponseCode.INVALID_LOGIN);
 	            }
 	
 	            // check the user status - move to the abstract class for reuse
@@ -288,63 +246,43 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
 	            user = userManager.getUser(userId);
 	        }
 	
-	        try {
-	
-	            log.debug("Creating authentication context");
-	
-	            ctx = AuthContextFactory.createContext(authContextClass);
-	
-	            PolicyAttributeEntity selPolicy = authPolicy
-	                    .getAttribute("LOGIN_MODULE_SEL_POLCY");
-	            if (selPolicy != null && StringUtils.isNotBlank(selPolicy.getValue1())) {
-	
-	                log.debug("Calling policy selection rule");
-	
-	                Map<String, Object> bindingMap = new HashMap<String, Object>();
-	                bindingMap.put("principal", principal);
-	                bindingMap.put("sysId", sysConfiguration.getDefaultManagedSysId());
-	                // also bind the user and login objects to avoid
-	                // re-initialization of spring the scripting engine
-	                bindingMap.put("login", lg);
-	                bindingMap.put("user", user);
-	
-	                try {
-	                    loginModName = (String) scriptRunner.execute(bindingMap,
-	                            selPolicy.getValue1());
-	                } catch (ScriptEngineException e) {
-	                    log.error("Can't execute script", e);
-	                }
-	
-	            }
-	
-	            if (modSel.getModuleType() == LoginModuleSelector.MODULE_TYPE_LOGIN_MODULE) {
-	            	/* here for backward compatability. in case a groovy script returned an actual class name, get 
-	            	 * the spring bean name
-	            	 */
-	            	try {
-	            		loginModName = Class.forName(loginModName).getAnnotation(Component.class).value();
-	            	} catch(Throwable e) {
-	            		
-	            	}
-	            	
-	                loginModule = beanFactory.getBean(loginModName, AbstractLoginModule.class); 
-	                //loginModule = (AbstractLoginModule) LoginModuleFactory.createModule(loginModName);
-	                loginModule.setUser(user);
-	                loginModule.setLg(lg);
-                    loginModule.setSysConfiguration(sysConfiguration);
-	                loginModule.setAuthPolicyId(authPolicyId);
-	            }
-	
-	        } catch (Throwable ie) {
-	            log.error(ie.getMessage(), ie);
-	            // throw (new
-	            // AuthenticationException(AuthenticationConstants.INTERNAL_ERROR,ie.getMessage(),ie));
-                newLoginEvent.fail();
-                newLoginEvent.setFailureReason(ie.getMessage());
-                newLoginEvent.setException(ie);
-	            authResp.setAuthErrorCode(AuthenticationConstants.INTERNAL_ERROR);
-	            return authResp;
-	        }
+
+            PolicyAttributeEntity selPolicy = authPolicy
+                    .getAttribute("LOGIN_MODULE_SEL_POLCY");
+            if (selPolicy != null && StringUtils.isNotBlank(selPolicy.getValue1())) {
+
+                log.debug("Calling policy selection rule");
+
+                Map<String, Object> bindingMap = new HashMap<String, Object>();
+                bindingMap.put("principal", principal);
+                bindingMap.put("sysId", sysConfiguration.getDefaultManagedSysId());
+                // also bind the user and login objects to avoid
+                // re-initialization of spring the scripting engine
+                bindingMap.put("login", lg);
+                bindingMap.put("user", user);
+
+                try {
+                    loginModName = (String) scriptRunner.execute(bindingMap,
+                            selPolicy.getValue1());
+                } catch (ScriptEngineException e) {
+                    log.error("Can't execute script", e);
+                }
+
+            }
+
+        	try {
+        		loginModName = Class.forName(loginModName).getAnnotation(Component.class).value();
+        	} catch(Throwable e) {
+        		
+        	}
+        	
+            loginModule = beanFactory.getBean(loginModName, AbstractLoginModule.class); 
+            //loginModule = (AbstractLoginModule) LoginModuleFactory.createModule(loginModName);
+            loginModule.setUser(user);
+            loginModule.setLg(lg);
+            loginModule.setSysConfiguration(sysConfiguration);
+            loginModule.setAuthPolicyId(authPolicyId);
+
 	        PasswordCredential cred = (PasswordCredential) ctx
 	                .createCredentialObject(AuthenticationConstants.AUTHN_TYPE_PASSWORD);
 	        cred.setCredentials(principal, password);
@@ -357,77 +295,72 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
 	        ctx.setNodeIP(nodeIP);
 	        ctx.setClientIP(clientIP);
 	
-	        Subject sub = null;
-	        if (modSel.getModuleType() == LoginModuleSelector.MODULE_TYPE_LOGIN_MODULE) {
-	            try {
-	                sub = loginModule.login(ctx);
-	
-	            } catch (AuthenticationException ae) {
-	            	final String erroCodeAsString = Integer.valueOf(ae.getErrorCode()).toString();
-                    newLoginEvent.fail();
-                    newLoginEvent.setFailureReason(erroCodeAsString);
-                    newLoginEvent.addAttribute(AuditAttributeName.LOGIN_ERROR_CODE, erroCodeAsString);
-	                int errCode = ae.getErrorCode();
-	                switch (errCode) {
-		                case AuthenticationConstants.RESULT_INVALID_DOMAIN:
-		                    authResp.setAuthErrorCode(AuthenticationConstants.RESULT_INVALID_DOMAIN);
-		                    break;
-		                case AuthenticationConstants.RESULT_INVALID_LOGIN:
-		                    authResp.setAuthErrorCode(AuthenticationConstants.RESULT_INVALID_LOGIN);
-		                    break;
-		                case AuthenticationConstants.RESULT_INVALID_PASSWORD:
-		                    authResp.setAuthErrorCode(AuthenticationConstants.RESULT_INVALID_PASSWORD);
-		                    break;
-		                case AuthenticationConstants.RESULT_INVALID_USER_STATUS:
-		                    authResp.setAuthErrorCode(AuthenticationConstants.RESULT_INVALID_USER_STATUS);
-		                    break;
-		                case AuthenticationConstants.RESULT_LOGIN_DISABLED:
-		                    authResp.setAuthErrorCode(AuthenticationConstants.RESULT_LOGIN_DISABLED);
-		                    break;
-		                case AuthenticationConstants.RESULT_LOGIN_LOCKED:
-		                    authResp.setAuthErrorCode(AuthenticationConstants.RESULT_LOGIN_LOCKED);
-		                    break;
-		                case AuthenticationConstants.RESULT_PASSWORD_EXPIRED:
-		                    authResp.setAuthErrorCode(AuthenticationConstants.RESULT_PASSWORD_EXPIRED);
-		                    break;
-		                case AuthenticationConstants.RESULT_SERVICE_NOT_FOUND:
-		                    authResp.setAuthErrorCode(AuthenticationConstants.RESULT_SERVICE_NOT_FOUND);
-		                    break;
-		                case AuthenticationConstants.RESULT_INVALID_CONFIGURATION:
-		                    authResp.setAuthErrorCode(AuthenticationConstants.RESULT_INVALID_CONFIGURATION);
-		                    break;
-		                case AuthenticationConstants.RESULT_SUCCESS_PASSWORD_EXP:
-		                	authResp.setAuthErrorCode(AuthenticationConstants.RESULT_SUCCESS_PASSWORD_EXP);
-		                	break;
-		                case AuthenticationConstants.RESULT_PASSWORD_CHANGE_AFTER_RESET:
-		                    authResp.setAuthErrorCode(AuthenticationConstants.RESULT_PASSWORD_CHANGE_AFTER_RESET);
-		                    break;
-		                default:
-		                    authResp.setAuthErrorCode(AuthenticationConstants.INTERNAL_ERROR);
-		                    break;
-	                }
-	                return authResp;
-	            } catch (Throwable e) {
-	            	log.error("Unknown Exception", e);
-                    newLoginEvent.fail();
-                    newLoginEvent.setFailureReason(e.getMessage());
-                    newLoginEvent.setException(e);
-	                authResp.setStatus(ResponseStatus.FAILURE);
-	                authResp.setAuthErrorCode(AuthenticationConstants.INTERNAL_ERROR);
-	                authResp.setAuthErrorMessage(e.getMessage());
-	                return authResp;
-	            }
-	        }
-	        // add the sso token to the authstate
-	
+	        Subject sub = loginModule.login(ctx);
 	        updateAuthState(sub);
-	        //populateSubject(sub.getUserId(), sub);
-	
-	        log.debug("*** PasswordAuth complete...Returning response object");
-
-            newLoginEvent.succeed();
+	        newLoginEvent.succeed();
 	        authResp.setSubject(sub);
-	        authResp.setStatus(ResponseStatus.SUCCESS);
+	        authResp.succeed();
+        } catch (AuthenticationException ae) {
+        	final String erroCodeAsString = Integer.valueOf(ae.getErrorCode()).toString();
+            newLoginEvent.fail();
+            newLoginEvent.setFailureReason(erroCodeAsString);
+            newLoginEvent.addAttribute(AuditAttributeName.LOGIN_ERROR_CODE, erroCodeAsString);
+            int errCode = ae.getErrorCode();
+            switch (errCode) {
+                case AuthenticationConstants.RESULT_INVALID_DOMAIN:
+                    authResp.setAuthErrorCode(AuthenticationConstants.RESULT_INVALID_DOMAIN);
+                    break;
+                case AuthenticationConstants.RESULT_INVALID_LOGIN:
+                    authResp.setAuthErrorCode(AuthenticationConstants.RESULT_INVALID_LOGIN);
+                    break;
+                case AuthenticationConstants.RESULT_INVALID_PASSWORD:
+                    authResp.setAuthErrorCode(AuthenticationConstants.RESULT_INVALID_PASSWORD);
+                    break;
+                case AuthenticationConstants.RESULT_INVALID_USER_STATUS:
+                    authResp.setAuthErrorCode(AuthenticationConstants.RESULT_INVALID_USER_STATUS);
+                    break;
+                case AuthenticationConstants.RESULT_LOGIN_DISABLED:
+                    authResp.setAuthErrorCode(AuthenticationConstants.RESULT_LOGIN_DISABLED);
+                    break;
+                case AuthenticationConstants.RESULT_LOGIN_LOCKED:
+                    authResp.setAuthErrorCode(AuthenticationConstants.RESULT_LOGIN_LOCKED);
+                    break;
+                case AuthenticationConstants.RESULT_PASSWORD_EXPIRED:
+                    authResp.setAuthErrorCode(AuthenticationConstants.RESULT_PASSWORD_EXPIRED);
+                    break;
+                case AuthenticationConstants.RESULT_SERVICE_NOT_FOUND:
+                    authResp.setAuthErrorCode(AuthenticationConstants.RESULT_SERVICE_NOT_FOUND);
+                    break;
+                case AuthenticationConstants.RESULT_INVALID_CONFIGURATION:
+                    authResp.setAuthErrorCode(AuthenticationConstants.RESULT_INVALID_CONFIGURATION);
+                    break;
+                case AuthenticationConstants.RESULT_SUCCESS_PASSWORD_EXP:
+                	authResp.setAuthErrorCode(AuthenticationConstants.RESULT_SUCCESS_PASSWORD_EXP);
+                	break;
+                case AuthenticationConstants.RESULT_PASSWORD_CHANGE_AFTER_RESET:
+                    authResp.setAuthErrorCode(AuthenticationConstants.RESULT_PASSWORD_CHANGE_AFTER_RESET);
+                    break;
+                default:
+                    authResp.setAuthErrorCode(AuthenticationConstants.INTERNAL_ERROR);
+                    break;
+            }
+    	} catch (BasicDataServiceException e) {
+    		authResp.fail();
+    		authResp.setErrorCode(e.getCode());
+    		authResp.setErrorTokenList(e.getErrorTokenList());
+    		authResp.setAuthErrorCode(AuthenticationConstants.INTERNAL_ERROR);
+    		newLoginEvent.fail();
+            newLoginEvent.setFailureReason(e.getMessage());
+            newLoginEvent.setException(e);
+            newLoginEvent.setFailureReason(e.getCode());
+        } catch (Throwable e) {
+            log.error("Can't save or update resource", e);
+            authResp.fail();
+            authResp.setErrorText(e.getMessage());
+            authResp.setAuthErrorCode(AuthenticationConstants.INTERNAL_ERROR);
+            newLoginEvent.fail();
+            newLoginEvent.setFailureReason(e.getMessage());
+            newLoginEvent.setException(e);
     	} finally {
     		auditLogService.enqueue(newLoginEvent);
     	}

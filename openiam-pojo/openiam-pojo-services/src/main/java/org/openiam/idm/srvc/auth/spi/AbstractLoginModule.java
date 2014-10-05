@@ -26,6 +26,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openiam.base.SysConfiguration;
 import org.openiam.exception.AuthenticationException;
 import org.openiam.exception.EncryptionException;
+import org.openiam.idm.srvc.auth.context.AuthenticationContext;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Subject;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
@@ -50,7 +51,7 @@ import java.util.Date;
  * @author suneet
  *
  */
-public abstract class AbstractLoginModule implements LoginModule {
+public abstract class AbstractLoginModule {
 
 	@Autowired
     @Qualifier("defaultSSOToken")
@@ -81,6 +82,8 @@ public abstract class AbstractLoginModule implements LoginModule {
     protected UserEntity user;
     protected LoginEntity lg;
     protected String authPolicyId;
+    
+    public abstract Subject login(AuthenticationContext authContext) throws Exception;
     
     @Autowired
     protected KeyManagementService keyManagementService;
@@ -184,31 +187,6 @@ public abstract class AbstractLoginModule implements LoginModule {
 
         return (int) diffInDays;
 
-    }
-
-    /**
-     * Logs a message into the audit log.
-     * @param objectTypeId
-     * @param actionId
-     * @param actionStatus
-     * @param reason
-     * @param userId
-     * @param principal
-     * @param linkedLogId
-     * @param clientId
-     */
-    public void log(String objectTypeId, String actionId, String actionStatus,
-            String reason, String userId, String principal,
-            String linkedLogId, String clientId, String clientIP, String nodeIP) {
-    	/*
-        IdmAuditLog log = new IdmAuditLog(objectTypeId, actionId, actionStatus,
-                reason,  userId, principal, linkedLogId, clientId);
-
-        log.setHost(clientIP);
-        log.setNodeIP(nodeIP);
-
-        auditLogUtil.log(log);
-        */
     }
 
     public void setUser(UserEntity user) {

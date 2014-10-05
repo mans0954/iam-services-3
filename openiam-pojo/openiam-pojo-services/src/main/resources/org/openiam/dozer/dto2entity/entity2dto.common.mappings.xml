@@ -353,15 +353,15 @@
         <class-a>org.openiam.am.srvc.domain.AuthProviderAttributeEntity</class-a>
         <class-b>org.openiam.am.srvc.dto.AuthProviderAttribute</class-b>
         <field>
-            <a>providerAttributeId</a>
-            <b>providerAttributeId</b>
+            <a>id</a>
+            <b>id</b>
         </field>
         <field>
-            <a>providerId</a>
+            <a>provider.id</a>
             <b>providerId</b>
         </field>
         <field>
-            <a>attributeId</a>
+            <a>attribute.id</a>
             <b>attributeId</b>
         </field>
         <field>
@@ -373,7 +373,7 @@
             <b>dataType</b>
         </field>
         <field>
-            <a>attribute.attributeName</a>
+            <a>attribute.name</a>
             <b>attributeName</b>
         </field>
         <field>
@@ -386,16 +386,16 @@
         <class-a>org.openiam.am.srvc.domain.AuthResourceAttributeMapEntity</class-a>
         <class-b>org.openiam.am.srvc.dto.AuthResourceAttributeMap</class-b>
         <field>
-            <a>attributeMapId</a>
-            <b>attributeMapId</b>
+            <a>id</a>
+            <b>id</b>
         </field>
         <field>
-            <a>providerId</a>
+            <a>provider.id</a>
             <b>providerId</b>
         </field>
         <field>
-            <a>targetAttributeName</a>
-            <b>targetAttributeName</b>
+            <a>name</a>
+            <b>name</b>
         </field>
         <field>
             <a>attributeValue</a>
@@ -406,7 +406,7 @@
             <b>attributeType</b>
         </field>
         <field>
-            <a>amResAttributeId</a>
+            <a>amAttribute.id</a>
             <b>amResAttributeId</b>
         </field>
         <field>
@@ -414,7 +414,7 @@
             <b>amPolicyUrl</b>
         </field>
         <field>
-            <a>amAttribute.attributeName</a>
+            <a>amAttribute.name</a>
             <b>amResAttributeName</b>
         </field>
         <field>

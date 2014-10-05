@@ -13,6 +13,15 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "ResponseErrorCode")
 @XmlEnum
 public enum ResponseCode {
+	
+	@XmlEnumValue("INVALID_PASSWORD")
+	INVALID_PASSWORD("INVALID_PASSWORD"),
+	
+	@XmlEnumValue("INVALID_PRINCIPAL")
+	INVALID_PRINCIPAL("INVALID_PRINCIPAL"),
+	
+	@XmlEnumValue("LANGUAGE_REQUIRED")
+	LANGUAGE_REQUIRED("LANGUAGE_REQUIRED"),
 
     @XmlEnumValue("resourcePropResourceIdMissing")
     RESOURCE_PROP_RESOURCE_ID_MISSING("resourcePropResourceIdMissing"),
@@ -452,6 +461,9 @@ public enum ResponseCode {
 
     @XmlEnumValue("LOGIN_REQUIRED")
     LOGIN_REQUIRED("LOGIN_REQUIRED"),
+    
+    @XmlEnumValue("INVALID_LOGIN")
+	INVALID_LOGIN("INVALID_LOGIN"),
 
     @XmlEnumValue("SEND_EMAIL_FAILED")
     SEND_EMAIL_FAILED("SEND_EMAIL_FAILED"),

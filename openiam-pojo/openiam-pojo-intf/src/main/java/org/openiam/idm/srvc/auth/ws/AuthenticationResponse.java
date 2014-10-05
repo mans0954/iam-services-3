@@ -21,6 +21,7 @@
  */
 package org.openiam.idm.srvc.auth.ws;
 
+import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.idm.srvc.auth.dto.Subject;
 
@@ -39,13 +40,9 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "AuthenticationResponse", propOrder = {
         "subject",
         "authErrorCode",
-        "authErrorMessage",
-        "status"
+        "authErrorMessage"
 })
-public class AuthenticationResponse {
-
-    @XmlAttribute(required = true)
-    protected ResponseStatus status;
+public class AuthenticationResponse extends Response {
 
     protected Subject subject;
     protected int authErrorCode;
@@ -56,7 +53,7 @@ public class AuthenticationResponse {
     }
 
     public AuthenticationResponse(ResponseStatus s) {
-        status = s;
+    	super(s);
     }
 
     /**
@@ -87,19 +84,11 @@ public class AuthenticationResponse {
         this.authErrorMessage = authErrorMessage;
     }
 
-    public ResponseStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(ResponseStatus status) {
-        this.status = status;
-    }
-
 	@Override
 	public String toString() {
-		return String
-				.format("AuthenticationResponse [status=%s, subject=%s, authErrorCode=%s, authErrorMessage=%s]",
-						status, subject, authErrorCode, authErrorMessage);
+		return "AuthenticationResponse [subject=" + subject
+				+ ", authErrorCode=" + authErrorCode + ", authErrorMessage="
+				+ authErrorMessage + ", toString()=" + super.toString() + "]";
 	}
 
     

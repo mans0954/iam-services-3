@@ -16,26 +16,19 @@ public interface AuthResourceAttributeService {
 
     public List<AuthResourceAMAttributeEntity> getAmAttributeList();
 
-    public AuthResourceAMAttributeEntity saveAmAttribute(AuthResourceAMAttributeEntity attribute);
-
-    public void deleteAmAttribute(String attributeId);
-
     /*
     *==================================================
     * AuthResourceAttributeMap section
     *===================================================
     */
-    public AuthResourceAttributeMapEntity getAttributeMap(String attributeMapId) ;
 
     public List<AuthResourceAttributeMapEntity> getAttributeMapList(String providerId) ;
+    
+    public AuthResourceAttributeMapEntity getAttribute(String id);
 
-    public AuthResourceAttributeMapEntity saveAttributeMap(AuthResourceAttributeMapEntity attribute) throws Exception;
+    public void saveAttributeMap(AuthResourceAttributeMapEntity attribute);
 
-    public void saveAttributeMapCollection(List<AuthResourceAttributeMapEntity> attributeList) throws Exception;
-
-    public void removeAttributeMap(String attributeMapId) throws Exception;
-
-    public void removeAttributeMaps(String providerId) throws Exception;
+    public void removeAttributeMap(String attributeMapId);
 
     public List<SSOAttribute> getSSOAttributes(String providerId, String userId);
 

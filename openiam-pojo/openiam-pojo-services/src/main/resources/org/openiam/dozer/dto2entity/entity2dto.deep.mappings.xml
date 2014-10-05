@@ -935,11 +935,19 @@
 	<mapping>
 		<class-a>org.openiam.am.srvc.domain.AuthProviderEntity</class-a>
 		<class-b>org.openiam.am.srvc.dto.AuthProvider</class-b>
+		<field>
+			<a>type.id</a>
+			<b>providerType</b>
+		</field>
+		<field>
+			<a>managedSystem.id</a>
+			<b>managedSysId</b>
+		</field>
 		<field
 			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
 			custom-converter-param="dto2entityShallowDozerMapper">
-			<a>providerAttributeSet</a>
-			<b>providerAttributeSet</b>
+			<a>attributes</a>
+			<b>attributes</b>
 		</field>
 		<field>
 			<a>resource.id</a>

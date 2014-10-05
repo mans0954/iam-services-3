@@ -21,97 +21,172 @@
  */
 package org.openiam.idm.srvc.auth.context;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.openiam.base.ws.ObjectMapAdapter;
 import org.openiam.idm.srvc.auth.dto.Login;
+import org.openiam.idm.srvc.auth.service.AuthenticationConstants;
 import org.openiam.idm.srvc.user.dto.User;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+
+import java.util.HashMap;
 import java.util.Map;
 
-/**
- * AuthenticationContext enables a higher level of flexibility during the authentication
- * process.
- *
- * @author suneet
- */
-@XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "AuthenticationContext")
-public interface AuthenticationContext {
+public class AuthenticationContext {
 
-    /**
-     * Returns an object to capture the credentials appropriate for a specific type of
-     * authentication. The type of authentication is specified by the authnType parameter.
-     *
-     * @param authnType
-     */
-    public abstract Credential createCredentialObject(String authnType);
+	private String languageId;
+	private String authenticationType;
+	/* Class that will be responsible for authentication  */
+	private String loginModule;
+	private String resourceId;
+	private Credential credential;
+	private String principal;
+	private String password;	
+	@XmlJavaTypeAdapter(ObjectMapAdapter.class)
+	private Map<String,Object> authParam = new HashMap();
+	
+	private User user;
+	private Login login;
+	private String managedSysId;
 
-    public abstract void setCredential(String authnType, Credential cred);
+    protected String clientIP;
+    protected String nodeIP;
 
-    public abstract Credential getCredential();
 
-    public abstract String getResourceId();
+	
+	private static final Log log = LogFactory.getLog(AuthenticationContext.class);
+	
 
-    public abstract void setResourceId(String resourceId);
 
-    public User getUser();
+	public void AuthenticationContext() {
+		
+	}
 
-    public void setUser(User user);
+	public void addParam(String key, Object value) {
+		authParam.put(key, value);
+	}
 
-    public Login getLogin();
+	public Object getParam(String key) {
+		return (authParam.get(key));
+	}
 
-    public void setLogin(Login login);
+	public Credential createCredentialObject(String authnType) {
+		if (authnType.equals(AuthenticationConstants.AUTHN_TYPE_PASSWORD)) {
+			return new PasswordCredential();
+		}
+		return null;
+	}
 
-    public String getManagedSysId();
+	public void setCredential(String authnType, Credential cred) {
+		authenticationType = authnType;
+		credential = cred;
+	}
 
-    public void setManagedSysId(String managedSysId);
+	public Credential getCredential() {
+		return credential;
+	}
 
-    public String getClientIP();
+	public String getResourceId() {
+		return resourceId;
+	}
 
-    public void setClientIP(String clientIP);
+	public void setResourceId(String resourceId) {
+		this.resourceId = resourceId;
+	}
 
-    public String getNodeIP();
+	public Map<String, Object> getAuthParam() {
+		return authParam;
+	}
 
-    public void setNodeIP(String nodeIP);
+	public void setAuthParam(Map<String, Object> authParam) {
+		this.authParam = authParam;
+	}
 
-    /**
-     * Returns a map of a authentication parameters that are needed by the login module.
-     *
-     * @return
-     */
-    public abstract Map<String, Object> getAuthParam();
+	public String getAuthenticationType() {
+		return authenticationType;
+	}
 
-    /**
-     * Sets the parameters that are to be used by the login module.
-     *
-     * @param authParam
-     */
-    public abstract void setAuthParam(Map<String, Object> authParam);
+	public void setAuthenticationType(String authenticationType) {
+		this.authenticationType = authenticationType;
+	}
 
-    /**
-     * Add a parameter to the context
-     *
-     * @param key
-     * @param value
-     */
-    public void addParam(String key, Object value);
+	public String getPrincipal() {
+		return principal;
+	}
 
-    /**
-     * Retrieve a parameter from the context
-     *
-     * @param key
-     * @return
-     */
-    public Object getParam(String key);
+	public void setPrincipal(String principal) {
+		this.principal = principal;
+	}
 
-    /**
-     * Login module that is to be used for this authentication attempt. If a value is defined here, it will override
-     * the login module that is defined at the Security Domain level.
-     *
-     * @return
-     */
-    public String getLoginModule();
+    public String getPassword() {
+		return password;
+	}
 
-    public void setLoginModule(String loginModule);
+	public void setPassword(String password) {
+		this.password = password;
+	}
+
+    public void setCredential(Credential credential) {
+		this.credential = credential;
+	}
+
+	public String getLoginModule() {
+		return loginModule;
+	}
+
+	public void setLoginModule(String loginModule) {
+		this.loginModule = loginModule;
+	}
+
+	public User getUser() {
+		return user;
+	}
+
+	public void setUser(User user) {
+		this.user = user;
+	}
+
+	public Login getLogin() {
+		return login;
+	}
+
+	public void setLogin(Login login) {
+		this.login = login;
+	}
+
+	public String getManagedSysId() {
+		return managedSysId;
+	}
+
+	public void setManagedSysId(String managedSysId) {
+		this.managedSysId = managedSysId;
+	}
+
+    public String getClientIP() {
+        return clientIP;
+    }
+
+    public void setClientIP(String clientIP) {
+        this.clientIP = clientIP;
+    }
+
+    public String getNodeIP() {
+        return nodeIP;
+    }
+
+    public void setNodeIP(String nodeIP) {
+        this.nodeIP = nodeIP;
+    }
+
+	public String getLanguageId() {
+		return languageId;
+	}
+
+	public void setLanguageId(String languageId) {
+		this.languageId = languageId;
+	}
 }

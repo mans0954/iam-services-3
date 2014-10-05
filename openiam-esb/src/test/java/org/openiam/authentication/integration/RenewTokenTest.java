@@ -37,6 +37,7 @@ public class RenewTokenTest extends AbstractTestNGSpringContextTests {
         authenticatedRequest.setClientIP("127.0.0.1");
         authenticatedRequest.setPassword(password);
         authenticatedRequest.setPrincipal(login);
+        authenticatedRequest.setLanguageId("1");
 
         final AuthenticationResponse authenticationResponse = authServiceClient.login(authenticatedRequest);
 

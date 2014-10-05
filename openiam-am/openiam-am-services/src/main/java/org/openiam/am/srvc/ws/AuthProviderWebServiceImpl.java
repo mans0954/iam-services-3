@@ -1,5 +1,6 @@
 package org.openiam.am.srvc.ws;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.openiam.am.srvc.domain.AuthAttributeEntity;
@@ -52,6 +53,15 @@ public class AuthProviderWebServiceImpl implements AuthProviderWebService {
     private AuthProviderDozerConverter authProviderDozerConverter;
     @Autowired
     private AuthProviderAttributeDozerConverter authProviderAttributeDozerConverter;
+    
+    @Override
+    @Transactional(readOnly = true)
+    public List<AuthAttribute> findAuthAttributeBeans(AuthAttributeSearchBean searchBean, int from, int size) {
+
+        final AuthAttributeEntity entity = authAttributeSearchBeanConverter.convert(searchBean);
+        final List<AuthAttributeEntity> attributeList = authProviderService.findAuthAttributeBeans(entity, size, from);
+        return authAttributeDozerConverter.convertToDTOList(attributeList, (searchBean != null) ? searchBean.isDeepCopy() : false);
+    }
 
     /*
     *==================================================
@@ -70,150 +80,6 @@ public class AuthProviderWebServiceImpl implements AuthProviderWebService {
         return authProviderTypeDozerConverter.convertToDTOList(authProviderService.getAuthProviderTypeList(), true);
     }
 
-    @Override
-    public Response addProviderType(AuthProviderType providerType) {
-        final Response response = new Response(ResponseStatus.SUCCESS);
-        try {
-            if(providerType == null || StringUtils.isBlank(providerType.getId())) {
-                throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_TYPE_NOT_SET);
-            }
-            authProviderService.addProviderType(authProviderTypeDozerConverter.convertToEntity(providerType, false));
-        } catch(BasicDataServiceException e) {
-        	log.error(e.getMessage(), e);
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorCode(e.getCode());
-        } catch(Throwable e) {
-        	log.error(e.getMessage(), e);
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorText(e.getMessage());
-        }
-        return response;
-    }
-
-    @Override
-    public Response deleteProviderType(String providerType) {
-        final Response response = new Response(ResponseStatus.SUCCESS);
-        try {
-            if(providerType == null || providerType.trim().isEmpty()) {
-                throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_TYPE_NOT_SET);
-            }
-            authProviderService.deleteProviderType(providerType);
-        } catch(BasicDataServiceException e) {
-        	log.error(e.getMessage(), e);
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorCode(e.getCode());
-        } catch(Throwable e) {
-        	log.error(e.getMessage(), e);
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorText(e.getMessage());
-        }
-        return response;
-    }
-
-    /*
-    *==================================================
-    * AuthAttributeEntity section
-    *===================================================
-    */
-    @Override
-    @Transactional(readOnly = true)
-    public List<AuthAttribute> findAuthAttributeBeans(AuthAttributeSearchBean searchBean, Integer size, Integer from) {
-
-        final AuthAttributeEntity entity = authAttributeSearchBeanConverter.convert(searchBean);
-        final List<AuthAttributeEntity> attributeList = authProviderService.findAuthAttributeBeans(entity, size, from);
-        return authAttributeDozerConverter.convertToDTOList(attributeList, (searchBean.isDeepCopy()));
-    }
-
-    @Override
-    public Integer getNumOfAuthAttributeBeans(AuthAttributeSearchBean searchBean){
-          return authProviderService.getNumOfAuthAttributeBeans(authAttributeSearchBeanConverter.convert(searchBean));
-    }
-
-    @Override
-    public Response addAuthAttribute(AuthAttribute attribute) {
-        final Response response = new Response(ResponseStatus.SUCCESS);
-        try {
-            if(attribute==null)
-                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
-            if(attribute.getAttributeName()==null || attribute.getAttributeName().trim().isEmpty())
-                throw new BasicDataServiceException(ResponseCode.AUTH_ATTRIBUTE_NAME_NOT_SET);
-            if(attribute.getProviderType()==null)
-                throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_TYPE_NOT_SET);
-            authProviderService.addAuthAttribute(authAttributeDozerConverter.convertToEntity(attribute,false));
-        } catch(BasicDataServiceException e) {
-        	log.error(e.getMessage(), e);
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorCode(e.getCode());
-        } catch(Throwable e) {
-        	log.error(e.getMessage(), e);
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorText(e.getMessage());
-        }
-        return response;
-    }
-
-    @Override
-    public Response updateAuthAttribute(AuthAttribute attribute) {
-        final Response response = new Response(ResponseStatus.SUCCESS);
-        try {
-            if(attribute==null)
-                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
-            if(attribute.getAttributeName()==null || attribute.getAttributeName().trim().isEmpty())
-                throw new BasicDataServiceException(ResponseCode.AUTH_ATTRIBUTE_NAME_NOT_SET);
-            if(attribute.getProviderType()==null)
-                throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_TYPE_NOT_SET);
-            authProviderService.updateAuthAttribute(authAttributeDozerConverter.convertToEntity(attribute, false));
-        } catch(BasicDataServiceException e) {
-        	log.error(e.getMessage(), e);
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorCode(e.getCode());
-        } catch(Throwable e) {
-        	log.error(e.getMessage(), e);
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorText(e.getMessage());
-        }
-        return response;
-    }
-
-    @Override
-    public Response deleteAuthAttribute(String authAttributeId) {
-        final Response response = new Response(ResponseStatus.SUCCESS);
-        try {
-            if(authAttributeId==null || authAttributeId.trim().isEmpty())
-                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
-
-            authProviderService.deleteAuthAttribute(authAttributeId);
-        } catch(BasicDataServiceException e) {
-        	log.error(e.getMessage(), e);
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorCode(e.getCode());
-        } catch(Throwable e) {
-        	log.error(e.getMessage(), e);
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorText(e.getMessage());
-        }
-        return response;
-    }
-
-    @Override
-    public Response deleteAuthAttributesByType(String providerType) {
-        final Response response = new Response(ResponseStatus.SUCCESS);
-        try {
-            if(providerType==null || providerType.trim().isEmpty())
-                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
-
-            authProviderService.deleteAuthAttributesByType(providerType);
-        } catch(BasicDataServiceException e) {
-        	log.error(e.getMessage(), e);
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorCode(e.getCode());
-        } catch(Throwable e) {
-        	log.error(e.getMessage(), e);
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorText(e.getMessage());
-        }
-        return response;
-    }
     /*
     *==================================================
     *  AuthProviderEntity section
@@ -224,25 +90,34 @@ public class AuthProviderWebServiceImpl implements AuthProviderWebService {
     public List<AuthProvider> findAuthProviderBeans(AuthProviderSearchBean searchBean,Integer size,Integer from) {
         final AuthProviderEntity entity = authProviderSearchBeanConverter.convert(searchBean);
         final List<AuthProviderEntity> providerList = authProviderService.findAuthProviderBeans(entity, size, from);
-        return authProviderDozerConverter.convertToDTOList(providerList, (searchBean.isDeepCopy()));
+        final List<AuthProvider> results = authProviderDozerConverter.convertToDTOList(providerList, (searchBean != null) ? searchBean.isDeepCopy() : false);
+        return results;
     }
-    @Override
-    public Integer getNumOfAuthProviderBeans(AuthProviderSearchBean searchBean){
-         return authProviderService.getNumOfAuthProviderBeans(authProviderSearchBeanConverter.convert(searchBean));
-    }
+    
 
+	@Override
+	public int countAuthProviderBeans(AuthProviderSearchBean searchBean) {
+		final AuthProviderEntity entity = authProviderSearchBeanConverter.convert(searchBean);
+		return authProviderService.countAuthProviderBeans(entity);
+	}
+
+    
     @Override
-    public Response addAuthProvider(AuthProvider provider, final String requestorId) {
+    public Response saveAuthProvider(AuthProvider provider, final String requestorId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
-            if(provider==null)
+            if(provider==null) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
-            if(provider.getProviderType()==null || provider.getProviderType().trim().isEmpty())
+            }
+            if(StringUtils.isBlank(provider.getProviderType())) {
                 throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_TYPE_NOT_SET);
-            if(provider.getManagedSysId()==null  || provider.getManagedSysId().trim().isEmpty())
+            }
+            if(StringUtils.isBlank(provider.getManagedSysId())) {
                 throw new BasicDataServiceException(ResponseCode.MANAGED_SYS_NOT_SET);
-            if(provider.getName()==null  || provider.getName().trim().isEmpty())
+            }
+            if(StringUtils.isBlank(provider.getName())) {
                 throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NAME_NOT_SET);
+            }
             if(provider.isSignRequest()) {
             	final AuthProviderTypeEntity type = authProviderService.getAuthProviderType(provider.getProviderType());
             	if((provider.getPrivateKey()==null || provider.getPrivateKey().length==0)) {
@@ -261,8 +136,8 @@ public class AuthProviderWebServiceImpl implements AuthProviderWebService {
             validateAndSyncProviderAttributes(provider);
 
             final AuthProviderEntity entity = authProviderDozerConverter.convertToEntity(provider, true);
-            authProviderService.addAuthProvider(entity, requestorId);
-            response.setResponseValue(entity.getProviderId());
+            authProviderService.saveAuthProvider(entity, requestorId);
+            response.setResponseValue(entity.getId());
         } catch(BasicDataServiceException e) {
         	log.error(e.getMessage(), e);
             response.setStatus(ResponseStatus.FAILURE);
@@ -274,87 +149,48 @@ public class AuthProviderWebServiceImpl implements AuthProviderWebService {
         }
         return response;
     }
+    
 
     private void validateAndSyncProviderAttributes(AuthProvider provider) throws BasicDataServiceException{
-        AuthAttributeEntity example = new AuthAttributeEntity();
-        example.setProviderType(provider.getProviderType());
-        List<AuthAttributeEntity> attributeEntityList = authProviderService.findAuthAttributeBeans(example, Integer.MAX_VALUE,0);
+        final AuthAttributeEntity example = new AuthAttributeEntity();
+        if(StringUtils.isNotBlank(provider.getProviderType())) {
+        	example.setType(new AuthProviderTypeEntity());
+        	example.getType().setId(provider.getProviderType());
+        }
+        final List<AuthAttributeEntity> attributeEntityList = authProviderService.findAuthAttributeBeans(example, Integer.MAX_VALUE,0);
 //        Set<String> newAttributesIds = new HashSet<String>();
-        Map<String, AuthProviderAttribute> attributeMap = new HashMap<String, AuthProviderAttribute>();
+        final Map<String, AuthProviderAttribute> attributeMap = new HashMap<String, AuthProviderAttribute>();
 
-        if(provider.getProviderAttributeSet()!=null && !provider.getProviderAttributeSet().isEmpty()){
-            for(AuthProviderAttribute attr: provider.getProviderAttributeSet()){
+        if(CollectionUtils.isNotEmpty(provider.getAttributes())){
+            for(final AuthProviderAttribute attr: provider.getAttributes()){
 //                newAttributesIds.add(attr.getAttributeId());
                 attributeMap.put(attr.getAttributeId(), attr);
             }
         }
-        for(AuthAttributeEntity attr: attributeEntityList){
-            AuthProviderAttribute providerAttribute = attributeMap.get(attr.getAuthAttributeId());
-            boolean isAttributeEmpty= (providerAttribute==null || providerAttribute.getValue()==null || providerAttribute.getValue().trim().isEmpty());
+        for(final AuthAttributeEntity attr: attributeEntityList){
+        	AuthProviderAttribute providerAttribute = attributeMap.get(attr.getId());
+        	final boolean isAttributeEmpty= (providerAttribute==null || StringUtils.isEmpty(providerAttribute.getValue()));
             if(attr.isRequired() && isAttributeEmpty)
                 throw new BasicDataServiceException(ResponseCode.AUTH_REQUIRED_PROVIDER_ATTRIBUTE_NOT_SET);
             if(isAttributeEmpty){
                 // need to delete attribute from provider.
                 providerAttribute = new AuthProviderAttribute();
-                providerAttribute.setProviderId(provider.getProviderId());
-                providerAttribute.setAttributeId(attr.getAuthAttributeId());
+                providerAttribute.setProviderId(provider.getId());
+                providerAttribute.setAttributeId(attr.getId());
                 providerAttribute.setValue(null);
-                providerAttribute.setProviderAttributeId("");
-                provider.getProviderAttributeSet().add(providerAttribute);
+                providerAttribute.setId("");
+                provider.getAttributes().add(providerAttribute);
             }
         }
-    }
-
-    @Override
-    public Response updateAuthProvider(AuthProvider provider, final String requestorId) {
-        final Response response = new Response(ResponseStatus.SUCCESS);
-        try {
-            if(provider==null)
-                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
-            if(provider.getProviderType()==null || provider.getProviderType().trim().isEmpty())
-                throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_TYPE_NOT_SET);
-            if(provider.getManagedSysId()==null  || provider.getManagedSysId().trim().isEmpty())
-                throw new BasicDataServiceException(ResponseCode.MANAGED_SYS_NOT_SET);
-            if(provider.getName()==null  || provider.getName().trim().isEmpty())
-                throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NAME_NOT_SET);
-            if(provider.isSignRequest()) {
-            	final AuthProviderTypeEntity type = authProviderService.getAuthProviderType(provider.getProviderType());
-            	if((provider.getPrivateKey()==null || provider.getPrivateKey().length==0)) {
-            		if(type.isHasPrivateKey()) {
-            			throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_SECUTITY_KEYS_NOT_SET);
-            		}
-            	}
-            	
-            	if(provider.getPublicKey()==null || provider.getPublicKey().length==0) {
-            		if(type.isHasPublicKey()) {
-            			throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_SECUTITY_KEYS_NOT_SET);
-            		}
-            	}
-            }
-
-            validateAndSyncProviderAttributes(provider);
-
-            final AuthProviderEntity entity = authProviderDozerConverter.convertToEntity(provider, true);
-            authProviderService.updateAuthProvider(entity, requestorId);
-            response.setResponseValue(entity.getProviderId());
-        } catch(BasicDataServiceException e) {
-        	log.error(e.getMessage(), e);
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorCode(e.getCode());
-        } catch(Throwable e) {
-        	log.error("Error while updating auth provider", e);
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorText(e.getMessage());
-        }
-        return response;
     }
 
     @Override
     public Response deleteAuthProvider(String providerId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
-            if(providerId==null || providerId.trim().isEmpty())
+            if(StringUtils.isBlank(providerId)) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+            }
 
             authProviderService.deleteAuthProvider(providerId);
         } catch(BasicDataServiceException e) {
@@ -368,139 +204,4 @@ public class AuthProviderWebServiceImpl implements AuthProviderWebService {
         }
         return response;
     }
-
-    @Override
-    public Response deleteAuthProviderByType(String providerType) {
-        final Response response = new Response(ResponseStatus.SUCCESS);
-        try {
-            if(providerType==null || providerType.trim().isEmpty())
-                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
-
-            authProviderService.deleteAuthProviderByType(providerType);
-        } catch(BasicDataServiceException e) {
-        	log.error(e.getMessage(), e);
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorCode(e.getCode());
-        } catch(Throwable e) {
-        	log.error(e.getMessage(), e);
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorText(e.getMessage());
-        }
-        return response;
-    }
-
-    /*
-    *==================================================
-    *  AuthProviderAttribute section
-    *===================================================
-    */
-    @Override
-    @Transactional(readOnly = true)
-    public AuthProviderAttribute getAuthProviderAttribute(String providerId, String name) {
-        return authProviderAttributeDozerConverter.convertToDTO(authProviderService.getAuthProviderAttribute(providerId, name), true);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<AuthProviderAttribute> getAuthProviderAttributeList(String providerId,Integer size,Integer from) {
-        return authProviderAttributeDozerConverter.convertToDTOList(authProviderService.getAuthProviderAttributeList(providerId, size, from), true);
-    }
-
-    public Integer getNumOfAuthProviderAttributes(String providerId){
-        return authProviderService.getNumOfAuthProviderAttributes(providerId);
-    }
-
-    @Override
-    public Response addAuthProviderAttribute(AuthProviderAttribute attribute) {
-        final Response response = new Response(ResponseStatus.SUCCESS);
-        try {
-            if(attribute==null)
-                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
-            if(attribute.getProviderId()==null || attribute.getProviderId().trim().isEmpty())
-                throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_SET);
-            if(attribute.getAttributeId() ==null || attribute.getAttributeId().isEmpty())
-                throw new BasicDataServiceException(ResponseCode.AUTH_ATTRIBUTE_NOT_SET);
-            if(attribute.getValue() ==null || attribute.getValue().trim().isEmpty())
-                throw new BasicDataServiceException(ResponseCode.AUTH_ATTRIBUTE_VALUE_NOT_SET);
-
-
-            authProviderService.addAuthProviderAttribute(authProviderAttributeDozerConverter.convertToEntity(attribute,false));
-        } catch(BasicDataServiceException e) {
-        	log.error(e.getMessage(), e);
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorCode(e.getCode());
-        } catch(Throwable e) {
-        	log.error(e.getMessage(), e);
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorText(e.getMessage());
-        }
-        return response;
-    }
-
-    @Override
-    public Response updateAuthProviderAttribute(AuthProviderAttribute attribute) {
-        final Response response = new Response(ResponseStatus.SUCCESS);
-        try {
-            if(attribute==null)
-                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
-            if(attribute.getProviderId()==null || attribute.getProviderId().trim().isEmpty())
-                throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_SET);
-            if(attribute.getAttributeId() ==null || attribute.getAttributeId().isEmpty())
-                throw new BasicDataServiceException(ResponseCode.AUTH_ATTRIBUTE_NOT_SET);
-            if(attribute.getValue() ==null || attribute.getValue().trim().isEmpty())
-                throw new BasicDataServiceException(ResponseCode.AUTH_ATTRIBUTE_VALUE_NOT_SET);
-
-            authProviderService.updateAuthProviderAttribute(authProviderAttributeDozerConverter.convertToEntity(attribute,false));
-        } catch(BasicDataServiceException e) {
-        	log.error(e.getMessage(), e);
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorCode(e.getCode());
-        } catch(Throwable e) {
-        	log.error(e.getMessage(), e);
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorText(e.getMessage());
-        }
-        return response;
-    }
-
-    @Override
-    public Response deleteAuthProviderAttributeByName(String providerId, String attributeId) {
-        final Response response = new Response(ResponseStatus.SUCCESS);
-        try {
-            if(providerId==null || providerId.trim().isEmpty() || attributeId==null || attributeId.trim().isEmpty() )
-                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
-            authProviderService.deleteAuthProviderAttributeByName(providerId, attributeId);
-        } catch(BasicDataServiceException e) {
-        	log.error(e.getMessage(), e);
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorCode(e.getCode());
-        } catch(Throwable e) {
-        	log.error(e.getMessage(), e);
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorText(e.getMessage());
-        }
-        return response;
-    }
-
-    @Override
-    public Response deleteAuthProviderAttributes(String providerId) {
-        final Response response = new Response(ResponseStatus.SUCCESS);
-        try {
-            if(providerId==null || providerId.trim().isEmpty())
-                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
-
-            authProviderService.deleteAuthProviderAttributes(providerId);
-        } catch(BasicDataServiceException e) {
-        	log.error(e.getMessage(), e);
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorCode(e.getCode());
-        } catch(Throwable e) {
-        	log.error(e.getMessage(), e);
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorText(e.getMessage());
-        }
-        return response;
-    }
-
-
 }

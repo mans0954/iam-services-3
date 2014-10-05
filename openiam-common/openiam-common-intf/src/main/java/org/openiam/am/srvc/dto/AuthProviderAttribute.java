@@ -2,6 +2,7 @@ package org.openiam.am.srvc.dto;
 
 import org.openiam.am.srvc.constants.AuthAttributeDataType;
 import org.openiam.am.srvc.domain.AuthProviderAttributeEntity;
+import org.openiam.base.KeyDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -11,7 +12,6 @@ import java.io.Serializable;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "AuthProviderAttribute", propOrder = {
-        "providerAttributeId",
         "providerId",
         "attributeId",
         "attributeName",
@@ -20,22 +20,13 @@ import java.io.Serializable;
         "dataType"
 })
 @DozerDTOCorrespondence(AuthProviderAttributeEntity.class)
-public class AuthProviderAttribute implements Serializable {
-    private String providerAttributeId;
+public class AuthProviderAttribute extends KeyDTO {
     private String providerId;
     private String attributeId;
     private String attributeName;
     private String value;
     private String defaultValue;
     private AuthAttributeDataType dataType = AuthAttributeDataType.singleValue;
-
-    public String getProviderAttributeId() {
-        return providerAttributeId;
-    }
-
-    public void setProviderAttributeId(String providerAttributeId) {
-        this.providerAttributeId = providerAttributeId;
-    }
 
     public String getProviderId() {
         return providerId;
@@ -85,14 +76,21 @@ public class AuthProviderAttribute implements Serializable {
         this.defaultValue = defaultValue;
     }
 
-    @Override
+	@Override
 	public int hashCode() {
 		final int prime = 31;
-		int result = 1;
+		int result = super.hashCode();
 		result = prime * result
 				+ ((attributeId == null) ? 0 : attributeId.hashCode());
 		result = prime * result
+				+ ((attributeName == null) ? 0 : attributeName.hashCode());
+		result = prime * result
+				+ ((dataType == null) ? 0 : dataType.hashCode());
+		result = prime * result
+				+ ((defaultValue == null) ? 0 : defaultValue.hashCode());
+		result = prime * result
 				+ ((providerId == null) ? 0 : providerId.hashCode());
+		result = prime * result + ((value == null) ? 0 : value.hashCode());
 		return result;
 	}
 
@@ -100,7 +98,7 @@ public class AuthProviderAttribute implements Serializable {
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
-		if (obj == null)
+		if (!super.equals(obj))
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
@@ -110,11 +108,30 @@ public class AuthProviderAttribute implements Serializable {
 				return false;
 		} else if (!attributeId.equals(other.attributeId))
 			return false;
+		if (attributeName == null) {
+			if (other.attributeName != null)
+				return false;
+		} else if (!attributeName.equals(other.attributeName))
+			return false;
+		if (dataType != other.dataType)
+			return false;
+		if (defaultValue == null) {
+			if (other.defaultValue != null)
+				return false;
+		} else if (!defaultValue.equals(other.defaultValue))
+			return false;
 		if (providerId == null) {
 			if (other.providerId != null)
 				return false;
 		} else if (!providerId.equals(other.providerId))
 			return false;
+		if (value == null) {
+			if (other.value != null)
+				return false;
+		} else if (!value.equals(other.value))
+			return false;
 		return true;
 	}
+
+    
 }

@@ -4,6 +4,7 @@ package org.openiam.idm.srvc.mngsys.dto;
 
 import org.apache.commons.lang.StringUtils;
 import org.openiam.am.srvc.constants.SearchScopeType;
+import org.openiam.base.KeyNameDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
@@ -32,7 +33,7 @@ import java.util.Set;
  * can also be forms
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "ManagedSysDto", propOrder = { "id", "name", "description", "status", "connectorId", "hostUrl", "port",
+@XmlType(name = "ManagedSysDto", propOrder = {"description", "status", "connectorId", "hostUrl", "port",
         "commProtocol", "userId", "pswd", "decryptPassword", "endDate", "startDate", "attributeNamesLookup",
         "searchScope", "resourceId", "primaryRepository", "secondaryRepositoryId", "updateSecondary",
         "mngSysObjectMatchs", "driverUrl", "connectionString", "addHandler", "modifyHandler", "deleteHandler",
@@ -40,14 +41,12 @@ import java.util.Set;
         "testConnectionHandler", "reconcileResourceHandler", "attributeNamesHandler", "handler5", "rules", "groups",
         "roles" })
 @DozerDTOCorrespondence(ManagedSysEntity.class)
-public class ManagedSysDto implements java.io.Serializable {
+public class ManagedSysDto extends KeyNameDTO {
 
     /**
 	 * 
 	 */
     private static final long serialVersionUID = -648884785253890053L;
-    private String id;
-    private String name;
     private String description;
     private String status;
     private String connectorId;
@@ -98,15 +97,17 @@ public class ManagedSysDto implements java.io.Serializable {
     public ManagedSysDto() {
     }
 
+    @Deprecated
     public ManagedSysDto(String id, String connectorId) {
-        this.id = id;
+        setId(id);
         this.connectorId = connectorId;
     }
 
+    @Deprecated
     public ManagedSysDto(String id, String name, String description, String status, String connectorId, String hostUrl,
             Integer port, String commProtocol, String userId, String pswd, Date startDate, Date endDate) {
-        this.id = id;
-        this.name = name;
+        setId(id);
+        setName(name);
         this.description = description;
         this.status = status;
         this.connectorId = connectorId;
@@ -118,22 +119,6 @@ public class ManagedSysDto implements java.io.Serializable {
         this.startDate = startDate;
         this.endDate = endDate;
 
-    }
-
-    public String getId() {
-        return this.id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return this.name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public String getDescription() {
@@ -433,25 +418,6 @@ public class ManagedSysDto implements java.io.Serializable {
         this.handler5 = handler5;
     }
 
-    @Override
-    public String toString() {
-        return "ManagedSysDto{" + "managedSysId='" + id + '\'' + ", name='" + name + '\'' + ", description='"
-                + description + '\'' + ", status='" + status + '\'' + ", connectorId='" + connectorId + '\''
-                + ", hostUrl='" + hostUrl + '\'' + ", port=" + port + ", commProtocol='" + commProtocol + '\''
-                + ", userId='" + userId + '\'' + ", pswd='" + pswd + '\'' + ", decryptPassword='" + decryptPassword
-                + '\'' + ", startDate=" + startDate + ", endDate=" + endDate + ", attributeNamesLookup='"
-                + attributeNamesLookup + '\'' + ", searchScope='" + searchScope + '\'' + ", resourceId='" + resourceId
-                + '\'' + ", primaryRepository=" + primaryRepository + ", secondaryRepositoryId='"
-                + secondaryRepositoryId + '\'' + ", updateSecondary=" + updateSecondary + ", driverUrl='" + driverUrl
-                + '\'' + ", connectionString='" + connectionString + '\'' + ", addHandler='" + addHandler + '\''
-                + ", modifyHandler='" + modifyHandler + '\'' + ", deleteHandler='" + deleteHandler + '\''
-                + ", passwordHandler='" + passwordHandler + '\'' + ", suspendHandler='" + suspendHandler + '\''
-                + ", searchHandler='" + searchHandler + '\'' + ", lookupHandler='" + lookupHandler + '\''
-                + ", testConnectionHandler='" + testConnectionHandler + '\'' + ", reconcileResourceHandler='"
-                + reconcileResourceHandler + ", attributeNamesHandler='" + attributeNamesHandler + '\''
-                + ", handler5='" + handler5 + '\'' + ", mngSysObjectMatchs=" + mngSysObjectMatchs + '}';
-    }
-
     public List<ManagedSysRuleDto> getRules() {
         return rules;
     }
@@ -476,4 +442,246 @@ public class ManagedSysDto implements java.io.Serializable {
         this.roles = roles;
     }
 
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result
+				+ ((addHandler == null) ? 0 : addHandler.hashCode());
+		result = prime
+				* result
+				+ ((attributeNamesHandler == null) ? 0 : attributeNamesHandler
+						.hashCode());
+		result = prime
+				* result
+				+ ((attributeNamesLookup == null) ? 0 : attributeNamesLookup
+						.hashCode());
+		result = prime * result
+				+ ((commProtocol == null) ? 0 : commProtocol.hashCode());
+		result = prime
+				* result
+				+ ((connectionString == null) ? 0 : connectionString.hashCode());
+		result = prime * result
+				+ ((connectorId == null) ? 0 : connectorId.hashCode());
+		result = prime * result
+				+ ((decryptPassword == null) ? 0 : decryptPassword.hashCode());
+		result = prime * result
+				+ ((deleteHandler == null) ? 0 : deleteHandler.hashCode());
+		result = prime * result
+				+ ((description == null) ? 0 : description.hashCode());
+		result = prime * result
+				+ ((driverUrl == null) ? 0 : driverUrl.hashCode());
+		result = prime * result + ((endDate == null) ? 0 : endDate.hashCode());
+		result = prime * result
+				+ ((handler5 == null) ? 0 : handler5.hashCode());
+		result = prime * result + ((hostUrl == null) ? 0 : hostUrl.hashCode());
+		result = prime * result
+				+ ((lookupHandler == null) ? 0 : lookupHandler.hashCode());
+		result = prime * result
+				+ ((modifyHandler == null) ? 0 : modifyHandler.hashCode());
+		result = prime * result
+				+ ((passwordHandler == null) ? 0 : passwordHandler.hashCode());
+		result = prime * result + ((port == null) ? 0 : port.hashCode());
+		result = prime
+				* result
+				+ ((primaryRepository == null) ? 0 : primaryRepository
+						.hashCode());
+		result = prime * result + ((pswd == null) ? 0 : pswd.hashCode());
+		result = prime
+				* result
+				+ ((reconcileResourceHandler == null) ? 0
+						: reconcileResourceHandler.hashCode());
+		result = prime * result
+				+ ((resourceId == null) ? 0 : resourceId.hashCode());
+		result = prime * result
+				+ ((resumeHandler == null) ? 0 : resumeHandler.hashCode());
+		result = prime * result
+				+ ((searchHandler == null) ? 0 : searchHandler.hashCode());
+		result = prime * result
+				+ ((searchScope == null) ? 0 : searchScope.hashCode());
+		result = prime
+				* result
+				+ ((secondaryRepositoryId == null) ? 0 : secondaryRepositoryId
+						.hashCode());
+		result = prime * result
+				+ ((startDate == null) ? 0 : startDate.hashCode());
+		result = prime * result + ((status == null) ? 0 : status.hashCode());
+		result = prime * result
+				+ ((suspendHandler == null) ? 0 : suspendHandler.hashCode());
+		result = prime
+				* result
+				+ ((testConnectionHandler == null) ? 0 : testConnectionHandler
+						.hashCode());
+		result = prime * result
+				+ ((updateSecondary == null) ? 0 : updateSecondary.hashCode());
+		result = prime * result + ((userId == null) ? 0 : userId.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		ManagedSysDto other = (ManagedSysDto) obj;
+		if (addHandler == null) {
+			if (other.addHandler != null)
+				return false;
+		} else if (!addHandler.equals(other.addHandler))
+			return false;
+		if (attributeNamesHandler == null) {
+			if (other.attributeNamesHandler != null)
+				return false;
+		} else if (!attributeNamesHandler.equals(other.attributeNamesHandler))
+			return false;
+		if (attributeNamesLookup == null) {
+			if (other.attributeNamesLookup != null)
+				return false;
+		} else if (!attributeNamesLookup.equals(other.attributeNamesLookup))
+			return false;
+		if (commProtocol == null) {
+			if (other.commProtocol != null)
+				return false;
+		} else if (!commProtocol.equals(other.commProtocol))
+			return false;
+		if (connectionString == null) {
+			if (other.connectionString != null)
+				return false;
+		} else if (!connectionString.equals(other.connectionString))
+			return false;
+		if (connectorId == null) {
+			if (other.connectorId != null)
+				return false;
+		} else if (!connectorId.equals(other.connectorId))
+			return false;
+		if (decryptPassword == null) {
+			if (other.decryptPassword != null)
+				return false;
+		} else if (!decryptPassword.equals(other.decryptPassword))
+			return false;
+		if (deleteHandler == null) {
+			if (other.deleteHandler != null)
+				return false;
+		} else if (!deleteHandler.equals(other.deleteHandler))
+			return false;
+		if (description == null) {
+			if (other.description != null)
+				return false;
+		} else if (!description.equals(other.description))
+			return false;
+		if (driverUrl == null) {
+			if (other.driverUrl != null)
+				return false;
+		} else if (!driverUrl.equals(other.driverUrl))
+			return false;
+		if (endDate == null) {
+			if (other.endDate != null)
+				return false;
+		} else if (!endDate.equals(other.endDate))
+			return false;
+		if (handler5 == null) {
+			if (other.handler5 != null)
+				return false;
+		} else if (!handler5.equals(other.handler5))
+			return false;
+		if (hostUrl == null) {
+			if (other.hostUrl != null)
+				return false;
+		} else if (!hostUrl.equals(other.hostUrl))
+			return false;
+		if (lookupHandler == null) {
+			if (other.lookupHandler != null)
+				return false;
+		} else if (!lookupHandler.equals(other.lookupHandler))
+			return false;
+		if (modifyHandler == null) {
+			if (other.modifyHandler != null)
+				return false;
+		} else if (!modifyHandler.equals(other.modifyHandler))
+			return false;
+		if (passwordHandler == null) {
+			if (other.passwordHandler != null)
+				return false;
+		} else if (!passwordHandler.equals(other.passwordHandler))
+			return false;
+		if (port == null) {
+			if (other.port != null)
+				return false;
+		} else if (!port.equals(other.port))
+			return false;
+		if (primaryRepository == null) {
+			if (other.primaryRepository != null)
+				return false;
+		} else if (!primaryRepository.equals(other.primaryRepository))
+			return false;
+		if (pswd == null) {
+			if (other.pswd != null)
+				return false;
+		} else if (!pswd.equals(other.pswd))
+			return false;
+		if (reconcileResourceHandler == null) {
+			if (other.reconcileResourceHandler != null)
+				return false;
+		} else if (!reconcileResourceHandler
+				.equals(other.reconcileResourceHandler))
+			return false;
+		if (resourceId == null) {
+			if (other.resourceId != null)
+				return false;
+		} else if (!resourceId.equals(other.resourceId))
+			return false;
+		if (resumeHandler == null) {
+			if (other.resumeHandler != null)
+				return false;
+		} else if (!resumeHandler.equals(other.resumeHandler))
+			return false;
+		if (searchHandler == null) {
+			if (other.searchHandler != null)
+				return false;
+		} else if (!searchHandler.equals(other.searchHandler))
+			return false;
+		if (searchScope != other.searchScope)
+			return false;
+		if (secondaryRepositoryId == null) {
+			if (other.secondaryRepositoryId != null)
+				return false;
+		} else if (!secondaryRepositoryId.equals(other.secondaryRepositoryId))
+			return false;
+		if (startDate == null) {
+			if (other.startDate != null)
+				return false;
+		} else if (!startDate.equals(other.startDate))
+			return false;
+		if (status == null) {
+			if (other.status != null)
+				return false;
+		} else if (!status.equals(other.status))
+			return false;
+		if (suspendHandler == null) {
+			if (other.suspendHandler != null)
+				return false;
+		} else if (!suspendHandler.equals(other.suspendHandler))
+			return false;
+		if (testConnectionHandler == null) {
+			if (other.testConnectionHandler != null)
+				return false;
+		} else if (!testConnectionHandler.equals(other.testConnectionHandler))
+			return false;
+		if (updateSecondary == null) {
+			if (other.updateSecondary != null)
+				return false;
+		} else if (!updateSecondary.equals(other.updateSecondary))
+			return false;
+		if (userId == null) {
+			if (other.userId != null)
+				return false;
+		} else if (!userId.equals(other.userId))
+			return false;
+		return true;
+	}
+
+	
 }
