@@ -98,6 +98,12 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
 
     @Override
     @Transactional(readOnly = true)
+    public String getManagedSysIdByResource(String id, String status) {
+        return managedSysDAO.findIdByResource(id, status);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public ManagedSysEntity getManagedSysById(String id) {
         return managedSysDAO.findById(id);
     }
@@ -144,7 +150,10 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
         		roleDAO.update(role);
         	}
         }
-        
+        List<AttributeMapEntity> attributeMapEntities = attributeMapDAO.findByManagedSysId(id);
+        for(AttributeMapEntity mapEntity : attributeMapEntities) {
+            attributeMapDAO.delete(mapEntity);
+        }
         managedSysDAO.delete(sysEntity);
         resourceService.deleteResource(sysEntity.getResourceId());
     }

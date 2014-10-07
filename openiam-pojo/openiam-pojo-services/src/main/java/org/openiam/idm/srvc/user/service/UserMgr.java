@@ -56,6 +56,7 @@ import org.openiam.idm.srvc.user.dto.UserAttribute;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.idm.srvc.user.util.DelegationFilterHelper;
 import org.openiam.internationalization.LocalizedServiceGet;
+import org.openiam.util.AttributeUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -208,8 +209,25 @@ public class UserMgr implements UserDataService {
 
         validateEmailAddress(user, user.getEmailAddresses());
         userDao.save(user);
-
         keyManagementService.generateUserKeys(user);
+
+        addRequiredAttributes(user);
+    }
+
+    @Transactional
+    public void addRequiredAttributes(UserEntity user) {
+        if(user!=null && user.getType()!=null && StringUtils.isNotBlank(user.getType().getId())){
+            MetadataElementSearchBean sb = new MetadataElementSearchBean();
+            sb.addTypeId(user.getType().getId());
+            List<MetadataElementEntity> elementList = metadataElementDAO.getByExample(sb, -1, -1);
+            if(CollectionUtils.isNotEmpty(elementList)){
+                for(MetadataElementEntity element: elementList){
+                    if(element.isRequired()){
+                        userAttributeDao.save(AttributeUtil.buildUserAttribute(user, element));
+                    }
+                }
+            }
+        }
     }
 
     @Transactional
@@ -512,12 +530,18 @@ public class UserMgr implements UserDataService {
         List<String> idList = null;
         if(isMngReportFilterSet){
             idList = userDao.getSubordinatesIds(searchBean.getRequesterId());
+            idList.add(searchBean.getRequesterId());
         } else {
             idList = userSearchDAO.findIds(0, MAX_USER_SEARCH_RESULTS, null, searchBean);
         }
 
         if (CollectionUtils.isNotEmpty(idList) || (CollectionUtils.isEmpty(idList) && (isOrgFilterSet))) {
             nonEmptyListOfLists.add(idList);
+        }
+
+        if (CollectionUtils.isNotEmpty(searchBean.getAttributeList())) {
+            nonEmptyListOfLists.add(userDao.getUserIdsForAttributes(searchBean.getAttributeList(), 0,
+                                                            MAX_USER_SEARCH_RESULTS));
         }
 
         if (CollectionUtils.isNotEmpty(searchBean.getRoleIdSet())) {

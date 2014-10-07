@@ -1,19 +1,19 @@
-package org.openiam.connector.ldap.command.user;
+package org.openiam.connector.ldap.command.group;
 
 import org.apache.commons.lang.StringUtils;
 import org.openiam.base.BaseAttribute;
 import org.openiam.connector.ldap.command.base.AbstractCrudLdapCommand;
+import org.openiam.connector.ldap.dirtype.Directory;
+import org.openiam.connector.ldap.dirtype.DirectorySpecificImplFactory;
 import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.connector.type.constant.ErrorCode;
-import org.openiam.connector.type.constant.StatusCodeType;
 import org.openiam.connector.type.request.CrudRequest;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.provision.type.ExtensibleAttribute;
+import org.openiam.provision.type.ExtensibleGroup;
 import org.openiam.provision.type.ExtensibleObject;
-import org.openiam.connector.ldap.dirtype.Directory;
-import org.openiam.connector.ldap.dirtype.DirectorySpecificImplFactory;
 import org.openiam.provision.type.ExtensibleUser;
 import org.springframework.stereotype.Service;
 
@@ -29,13 +29,13 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-@Service("modifyUserLdapCommand")
-public class ModifyUserLdapCommand extends AbstractCrudLdapCommand<ExtensibleUser> {
+@Service("modifyGroupLdapCommand")
+public class ModifyGroupLdapCommand extends AbstractCrudLdapCommand<ExtensibleGroup> {
 
     @Override
-    protected void performObjectOperation(ManagedSysEntity managedSys, CrudRequest<ExtensibleUser> crudRequest,
+    protected void performObjectOperation(ManagedSysEntity managedSys, CrudRequest<ExtensibleGroup> crudRequest,
                                           LdapContext ldapctx) throws ConnectorDataException {
-        ManagedSystemObjectMatch matchObj = getMatchObject(crudRequest.getTargetID(), ManagedSystemObjectMatch.USER);
+        ManagedSystemObjectMatch matchObj = getMatchObject(crudRequest.getTargetID(), ManagedSystemObjectMatch.GROUP);
 
         List<BaseAttribute> targetMembershipList = new ArrayList<BaseAttribute>();
         List<BaseAttribute> supervisorMembershipList = new ArrayList<BaseAttribute>();
@@ -114,7 +114,9 @@ public class ModifyUserLdapCommand extends AbstractCrudLdapCommand<ExtensibleUse
                     } else {
                         // valid value
 
-                        if ("unicodePwd".equalsIgnoreCase(att.getName())) {
+                        if ("ou".equalsIgnoreCase(att.getName())) {
+                            //skip ou for group
+                        } else if ("unicodePwd".equalsIgnoreCase(att.getName())) {
                             Attribute a = generateActiveDirectoryPassword(att.getValue());
                             modItemList.add(new ModificationItem(DirContext.REPLACE_ATTRIBUTE, a));
 

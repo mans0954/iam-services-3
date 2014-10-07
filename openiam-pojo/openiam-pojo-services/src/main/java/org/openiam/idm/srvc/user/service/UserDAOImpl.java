@@ -527,6 +527,49 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
         return criteria.list();
     }
 
+    public List<String> getUserIdsForAttributes(final List<SearchAttribute> searchAttributeSet, final int from, final int size){
+        List<String> retVal = null;
+
+        if (CollectionUtils.isNotEmpty(searchAttributeSet)) {
+            final Criteria criteria = getCriteria().createAlias("userAttributes", "ua").setProjection(Projections.property("id"));
+
+            List<String> nameList = new ArrayList<String>();
+            List<String> valueList = new ArrayList<String>();
+            List<String> elementIdList = new ArrayList<String>();
+
+            for (SearchAttribute atr : searchAttributeSet) {
+                if (StringUtils.isNotBlank(atr.getAttributeName())) {
+                    nameList.add(atr.getAttributeName());
+                }
+                if (StringUtils.isNotBlank(atr.getAttributeValue())) {
+                    valueList.add(atr.getAttributeValue());
+                }
+                if (StringUtils.isNotBlank(atr.getAttributeElementId())) {
+                    elementIdList.add(atr.getAttributeElementId());
+                }
+            }
+
+            if (CollectionUtils.isNotEmpty(nameList)) {
+                criteria.add(Restrictions.in("ua.name", nameList));
+            }
+            if (CollectionUtils.isNotEmpty(valueList)) {
+                criteria.add(Restrictions.in("ua.value", valueList));
+            }
+            if (CollectionUtils.isNotEmpty(elementIdList)) {
+                criteria.createAlias("ua.element", "mt").add(Restrictions.in("mt.id", elementIdList));
+            }
+
+            if (from > -1) {
+                criteria.setFirstResult(from);
+            }
+
+            if (size > -1) {
+                criteria.setMaxResults(size);
+            }
+            retVal = criteria.list();
+        }
+        return (retVal != null) ? retVal : Collections.EMPTY_LIST;
+    }
     @Override
     public List<String> getUserIdsForRoles(final Set<String> roleIds, final int from, final int size) {
         List<String> retVal = null;

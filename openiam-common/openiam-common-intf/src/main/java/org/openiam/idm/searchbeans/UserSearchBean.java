@@ -138,6 +138,7 @@ public class UserSearchBean extends EntitlementsSearchBean<User, String> impleme
     /**
      * If set, the user's attribute will be searched.  A match indicates that the user has an attribute with metadata element ID
      */
+    @Deprecated
     protected String attributeElementId;
     
     /**
@@ -382,11 +383,11 @@ public class UserSearchBean extends EntitlementsSearchBean<User, String> impleme
     public void setAttributeValue(String attributeValue) {
         this.attributeValue = attributeValue;
     }
-
+    @Deprecated
     public String getAttributeElementId() {
         return attributeElementId;
     }
-
+    @Deprecated
     public void setAttributeElementId(String attributeElementId) {
         this.attributeElementId = attributeElementId;
     }
@@ -512,6 +513,12 @@ public class UserSearchBean extends EntitlementsSearchBean<User, String> impleme
     		this.attributeList = new LinkedList<>();
     	}
     	this.attributeList.add(new SearchAttribute(name, value));
+    }
+    public void addAttribute(final String name, final String value, final String elementId) {
+        if(this.attributeList == null) {
+            this.attributeList = new LinkedList<>();
+        }
+        this.attributeList.add(new SearchAttribute(name, value, elementId));
     }
 
     public void setAttributeList(List<SearchAttribute> attributeList) {

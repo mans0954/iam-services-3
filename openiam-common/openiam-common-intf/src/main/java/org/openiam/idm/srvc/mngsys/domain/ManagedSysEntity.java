@@ -7,17 +7,11 @@ import org.openiam.am.srvc.constants.SearchScopeType;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
-import org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 
 import javax.persistence.*;
-
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Entity
 @Table(name = "MANAGED_SYS")
@@ -47,7 +41,7 @@ public class ManagedSysEntity implements Serializable {
     private String commProtocol;
     @Column(name = "USER_ID", length = 150)
     private String userId;
-    @Column(name = "PSWD", length = 255)
+    @Column(name = "PSWD", length = 512)
     private String pswd;
     @Column(name = "START_DATE", length = 10)
     @Temporal(TemporalType.DATE)

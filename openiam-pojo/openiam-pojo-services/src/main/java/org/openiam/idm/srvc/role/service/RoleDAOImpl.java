@@ -18,6 +18,7 @@ import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.role.domain.RoleAttributeEntity;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.searchbean.converter.RoleSearchBeanConverter;
+import org.openiam.util.StringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -98,6 +99,9 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
                 criteria.createAlias("users", "usr");
                 criteria.add(Restrictions.in("usr.id", roleSearchBean.getUserIdSet()));
             }
+			if(StringUtils.isNotBlank(roleSearchBean.getAdminResourceId())) {
+				criteria.add(Restrictions.eq("adminResource.id", roleSearchBean.getAdminResourceId()));
+			}
         }
         return criteria;
     }

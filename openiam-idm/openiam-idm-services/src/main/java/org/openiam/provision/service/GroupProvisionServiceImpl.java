@@ -219,6 +219,12 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
                                 bindingMap.put(AbstractProvisioningService.TARGET_SYS_RES_ID, res.getId());
                                 bindingMap.put(AbstractProvisioningService.TARGET_SYS_MANAGED_SYS_ID, managedSysId);
                                 bindingMap.put(AbstractProvisioningService.GROUP, group);
+                                ManagedSystemObjectMatch matchObj = null;
+                                ManagedSystemObjectMatch[] matchObjAry = managedSystemService.managedSysObjectParam(managedSysId, ManagedSystemObjectMatch.GROUP);
+                                if (matchObjAry != null && matchObjAry.length > 0) {
+                                    matchObj = matchObjAry[0];
+                                    bindingMap.put(AbstractProvisioningService.MATCH_PARAM, matchObj);
+                                }
                                 try {
                                     log.debug(" - Building principal Name for: " + managedSysId);
                                     String newIdentity = ProvisionServiceUtil.buildGroupPrincipalName(attrMap, scriptRunner, bindingMap);

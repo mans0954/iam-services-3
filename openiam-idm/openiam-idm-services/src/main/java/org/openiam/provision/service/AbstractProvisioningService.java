@@ -149,6 +149,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
     @Autowired
     protected LoginDataService loginManager;
     @Autowired
+    protected ManagedSystemService managedSysDaoService;
+    @Autowired
     protected ManagedSystemWebService managedSysService;
     @Autowired
     protected RoleDataService roleDataService;
@@ -186,6 +188,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
     protected RoleDozerConverter roleDozerConverter;
     @Autowired
     protected GroupDozerConverter groupDozerConverter;
+    @Autowired
+    protected OrganizationDozerConverter organizationDozerConverter;
     @Autowired
     protected UserAttributeDozerConverter userAttributeDozerConverter;
     @Autowired

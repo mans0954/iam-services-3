@@ -15,6 +15,7 @@ import org.openiam.base.ws.ResponseCode;
 import org.openiam.dozer.converter.ResourceDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.hibernate.HibernateUtils;
+import org.openiam.idm.searchbeans.MetadataElementSearchBean;
 import org.openiam.idm.searchbeans.ResourceSearchBean;
 import org.openiam.idm.searchbeans.ResourceTypeSearchBean;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
@@ -39,6 +40,7 @@ import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.service.RoleDAO;
 import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.internationalization.LocalizedServiceGet;
+import org.openiam.util.AttributeUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -172,11 +174,29 @@ public class ResourceServiceImpl implements ResourceService {
             if (addApproverAssociation) {
                 entity.addApproverAssociation(createDefaultApproverAssociations(entity, requestorId));
             }
+
+            addRequiredAttributes(entity);
         }
         
         
 
         resourceDao.merge(entity);
+    }
+    @Override
+    @Transactional
+    public void addRequiredAttributes(ResourceEntity resource) {
+        if(resource!=null && resource.getType()!=null && StringUtils.isNotBlank(resource.getType().getId())){
+            MetadataElementSearchBean sb = new MetadataElementSearchBean();
+            sb.addTypeId(resource.getType().getId());
+            List<MetadataElementEntity> elementList = elementDAO.getByExample(sb, -1, -1);
+            if(CollectionUtils.isNotEmpty(elementList)){
+                for(MetadataElementEntity element: elementList){
+                    if(element.isRequired()){
+                        resourcePropDao.save(AttributeUtil.buildResAttribute(resource, element));
+                    }
+                }
+            }
+        }
     }
 
     private ApproverAssociationEntity createDefaultApproverAssociations(final ResourceEntity entity,

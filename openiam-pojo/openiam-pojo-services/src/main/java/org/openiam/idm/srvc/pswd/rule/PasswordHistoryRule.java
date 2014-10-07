@@ -78,17 +78,19 @@ public class PasswordHistoryRule extends AbstractPasswordRule {
 				String decrypt = null;
 				try {
 					decrypt =  cryptor.decrypt(keyManagementService.getUserKey(userId, KeyName.password.name()), pwd);
+					if(StringUtils.equals(pswd.getPassword(), decrypt)) {
+						log.info("matching password found.");
+						throw new PasswordRuleException(ResponseCode.FAIL_HISTORY_RULE);
+					}
+				} catch(PasswordRuleException e) {
+					throw e;
 				}catch(Throwable e) {
-					log.error("PasswordHistoryRule failed due to decrption error. ", e);
+					log.error("PasswordHistoryRule failed due to decryption error. ", e);
 					/* 
 					 * this is not an error for the user to see - it's a f*ckup in the database
 					 * just don't return anything
 					 */
 					//throw new PasswordRuleException(ResponseCode.FAIL_HISTORY_RULE);
-				}
-				if (pswd.getPassword().equals(decrypt)) {
-					log.info("matching password found.");
-					throw new PasswordRuleException(ResponseCode.FAIL_HISTORY_RULE);
 				}
 			}
 		}	

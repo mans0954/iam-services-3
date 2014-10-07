@@ -29,7 +29,9 @@ import java.util.Set;
 		"validParentTypeId",
         "internalOrgId",
         "attributes",
-        "metadataType"
+        "metadataType",
+        "isSelectable",
+		"adminResourceId"
 })
 public class OrganizationSearchBean extends EntitlementsSearchBean<Organization, String> implements SearchBean<Organization, String>,
         Serializable {
@@ -37,15 +39,15 @@ public class OrganizationSearchBean extends EntitlementsSearchBean<Organization,
     private Set<String> keySet;
     private String name;
     private Set<String> organizationTypeIdSet;
-//    private String userId;
-//    private String parentId;
-//    private String childId;
     private String validParentTypeId;
     private String internalOrgId;
     private String metadataType;
     private List<Tuple<String,String>> attributes;
+    private Boolean isSelectable = null;
+	private String adminResourceId;
 
-    public String getName() {
+
+	public String getName() {
 		return name;
 	}
 
@@ -55,11 +57,9 @@ public class OrganizationSearchBean extends EntitlementsSearchBean<Organization,
 
 	public String getOrganizationTypeId() {
         return (CollectionUtils.isNotEmpty(organizationTypeIdSet)) ? organizationTypeIdSet.iterator().next() : null;
-//		return organizationTypeId;
 	}
 
 	public void setOrganizationTypeId(String organizationTypeId) {
-//		this.organizationTypeId = organizationTypeId;
         this.addOrganizationTypeId(organizationTypeId);
 	}
 
@@ -91,10 +91,6 @@ public class OrganizationSearchBean extends EntitlementsSearchBean<Organization,
 
     @Override
     public void setKey(final String key) {
-//        if(keySet == null) {
-//            keySet = new HashSet<String>();
-//        }
-//        keySet.add(key);
         this.addKey(key);
     }
 
@@ -131,31 +127,15 @@ public class OrganizationSearchBean extends EntitlementsSearchBean<Organization,
         this.keySet = keySet;
     }
 
-//	public String getUserId() {
-//		return userId;
-//	}
-//
-//	public void setUserId(String userId) {
-//		this.userId = userId;
-//	}
-//
-//	public String getParentId() {
-//		return parentId;
-//	}
-//
-//	public void setParentId(String parentId) {
-//		this.parentId = parentId;
-//	}
-//
-//	public String getChildId() {
-//		return childId;
-//	}
-//
-//	public void setChildId(String childId) {
-//		this.childId = childId;
-//	}
+    public Boolean getIsSelectable() {
+        return isSelectable;
+    }
 
-	public String getValidParentTypeId() {
+    public void setIsSelectable(Boolean isSelectable) {
+        this.isSelectable = isSelectable;
+    }
+
+    public String getValidParentTypeId() {
 		return validParentTypeId;
 	}
 
@@ -189,7 +169,15 @@ public class OrganizationSearchBean extends EntitlementsSearchBean<Organization,
         this.attributes = attributes;
     }
 
-    @Override
+	public String getAdminResourceId() {
+		return adminResourceId;
+	}
+
+	public void setAdminResourceId(String adminResourceId) {
+		this.adminResourceId = adminResourceId;
+	}
+
+	@Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
@@ -197,12 +185,9 @@ public class OrganizationSearchBean extends EntitlementsSearchBean<Organization,
 
         OrganizationSearchBean that = (OrganizationSearchBean) o;
 
-//        if (childId != null ? !childId.equals(that.childId) : that.childId != null) return false;
         if (internalOrgId != null ? !internalOrgId.equals(that.internalOrgId) : that.internalOrgId != null)
             return false;
         if (name != null ? !name.equals(that.name) : that.name != null) return false;
-//        if (parentId != null ? !parentId.equals(that.parentId) : that.parentId != null) return false;
-//        if (userId != null ? !userId.equals(that.userId) : that.userId != null) return false;
         if (validParentTypeId != null ? !validParentTypeId.equals(that.validParentTypeId) : that.validParentTypeId != null)
             return false;
 
@@ -213,9 +198,6 @@ public class OrganizationSearchBean extends EntitlementsSearchBean<Organization,
     public int hashCode() {
         int result = super.hashCode();
         result = 31 * result + (name != null ? name.hashCode() : 0);
-//        result = 31 * result + (userId != null ? userId.hashCode() : 0);
-//        result = 31 * result + (parentId != null ? parentId.hashCode() : 0);
-//        result = 31 * result + (childId != null ? childId.hashCode() : 0);
         result = 31 * result + (validParentTypeId != null ? validParentTypeId.hashCode() : 0);
         result = 31 * result + (internalOrgId != null ? internalOrgId.hashCode() : 0);
         return result;
