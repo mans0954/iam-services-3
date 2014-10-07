@@ -154,17 +154,16 @@ public class PasswordGenerator {
         PolicyAttribute repeatLimit = policy.getAttribute(LIMIT_NUM_REPEAT_CHAR);
         PolicyAttribute notAllowedChars = policy.getAttribute(REJECT_CHARS_IN_PSWD);
 
-        String[] notAllowedChar = (notAllowedChars.getValue1() == null) ?
-                null : notAllowedChars.getValue1().replace("<", "").replace(">", "").split(",");
-        List<String> notAllow = new ArrayList<>();
-        if (notAllowedChar != null && notAllowedChar.length > 0) {
-            notAllow.addAll(Arrays.asList(notAllowedChar));
-        }
+        String notAllowedChar = notAllowedChars.getValue1();
+//        List<String> notAllow = new ArrayList<>();
+//        if (notAllowedChar != null && notAllowedChar.length > 0) {
+//            notAllow.addAll(Arrays.asList(notAllowedChar));
+//        }
 
-        List<String> listLowerChars = getClearedGroupValues(lowerChars, notAllow);
-        List<String> listUpperChars = getClearedGroupValues(upperChars, notAllow);
-        List<String> listNumericChars = getClearedGroupValues(numericChars, notAllow);
-        List<String> listSpecialChars = getClearedGroupValues(specialChars, notAllow);
+        List<String> listLowerChars = getClearedGroupValues(lowerChars, notAllowedChar);
+        List<String> listUpperChars = getClearedGroupValues(upperChars, notAllowedChar);
+        List<String> listNumericChars = getClearedGroupValues(numericChars, notAllowedChar);
+        List<String> listSpecialChars = getClearedGroupValues(specialChars, notAllowedChar);
 
         int intLengthMin = toInt(paLength.getValue1());
         Integer intLengthMax = toInteger(paLength.getValue2());
@@ -208,10 +207,10 @@ public class PasswordGenerator {
         Integer repeats = toInteger(repeatLimit.getValue1());
         log.debug("Fill initially!");
         List<String> passwordAsList = new ArrayList<>();
-        List<String> specialAsList = getArrayOfGroup(intSpecialMin, toInt(intSpecialMax), notAllow, repeats, listSpecialChars, rand);
-        List<String> upperAsList = getArrayOfGroup(intUpperMin, toInt(intUpperMax), notAllow, repeats, listUpperChars, rand);
-        List<String> numericAsList = getArrayOfGroup(intNumberMin, toInt(intNumberMax), notAllow, repeats, listNumericChars, rand);
-        List<String> lowerAsList = getArrayOfGroup(intLowerMin, toInt(intLowerMax), notAllow, repeats, listLowerChars, rand);
+        List<String> specialAsList = getArrayOfGroup(intSpecialMin, toInt(intSpecialMax), notAllowedChar, repeats, listSpecialChars, rand);
+        List<String> upperAsList = getArrayOfGroup(intUpperMin, toInt(intUpperMax), notAllowedChar, repeats, listUpperChars, rand);
+        List<String> numericAsList = getArrayOfGroup(intNumberMin, toInt(intNumberMax), notAllowedChar, repeats, listNumericChars, rand);
+        List<String> lowerAsList = getArrayOfGroup(intLowerMin, toInt(intLowerMax), notAllowedChar, repeats, listLowerChars, rand);
         log.debug("End Fill initially!");
         int used = specialAsList.size() + upperAsList.size() + numericAsList.size() + lowerAsList.size();
         log.debug("Calculate password length!");
@@ -234,17 +233,17 @@ public class PasswordGenerator {
                     int random = rand.nextInt(4);
                     switch (random) {
                         case 0:
-                            addAtGroup(specialAsList, intSpecialMin, toInt(intSpecialMax), notAllow, repeats, listSpecialChars, rand);
+                            addAtGroup(specialAsList, intSpecialMin, toInt(intSpecialMax), notAllowedChar, repeats, listSpecialChars, rand);
                             break;
                         case 1:
-                            addAtGroup(upperAsList, intUpperMin, toInt(intUpperMax), notAllow, repeats, listUpperChars, rand);
+                            addAtGroup(upperAsList, intUpperMin, toInt(intUpperMax), notAllowedChar, repeats, listUpperChars, rand);
                             break;
                         case 2:
 
-                            addAtGroup(numericAsList, intNumberMin, toInt(intNumberMax), notAllow, repeats, listNumericChars, rand);
+                            addAtGroup(numericAsList, intNumberMin, toInt(intNumberMax), notAllowedChar, repeats, listNumericChars, rand);
                             break;
                         case 3:
-                            addAtGroup(lowerAsList, intLowerMin, toInt(intLowerMax), notAllow, repeats, listLowerChars, rand);
+                            addAtGroup(lowerAsList, intLowerMin, toInt(intLowerMax), notAllowedChar, repeats, listLowerChars, rand);
                             break;
                         default:
                             break;
@@ -312,7 +311,7 @@ public class PasswordGenerator {
         return sb.toString();
     }
 
-    private static List<String> getClearedGroupValues(char[] fullGroup, List<String> notAllow) {
+    private static List<String> getClearedGroupValues(char[] fullGroup, String notAllow) {
         List<String> result = new ArrayList<>();
         for (char c : fullGroup) {
             if (!notAllow.contains(String.valueOf(c))) {
@@ -322,7 +321,7 @@ public class PasswordGenerator {
         return result;
     }
 
-    private static List<String> getArrayOfGroup(int minSimbolsCount, int maxSimbolCount, List<String> notAllow, Integer repeatios, List<String> alphabetis, Random rand) {
+    private static List<String> getArrayOfGroup(int minSimbolsCount, int maxSimbolCount, String notAllow, Integer repeatios, List<String> alphabetis, Random rand) {
         List<String> result = new ArrayList<>();
         int iteration = maxSimbolCount > minSimbolsCount ? rand.nextInt(maxSimbolCount - minSimbolsCount) + minSimbolsCount : minSimbolsCount;
         for (int i = 0; i < iteration; i++) {
@@ -331,7 +330,7 @@ public class PasswordGenerator {
         return result;
     }
 
-    private static void addAtGroup(List<String> result, int minSimbolsCount, int maxSimbolCount, List<String> notAllow, Integer repeatios, List<String> alphabetis, Random rand) {
+    private static void addAtGroup(List<String> result, int minSimbolsCount, int maxSimbolCount, String notAllow, Integer repeatios, List<String> alphabetis, Random rand) {
         if (maxSimbolCount == 0 || result.size() < maxSimbolCount) {
             String s = String.valueOf(alphabetis.get(rand.nextInt(alphabetis.size())));
             while (!isAccessibleForRepeations(repeatios, s, result) || notAllow.contains(s)) {
@@ -418,7 +417,7 @@ public class PasswordGenerator {
         int p = rand.nextInt(charset.length());
         sb.append(charset.charAt(p));
     }
-//TExt generator
+//TEst generator
 //    public static void main(String[] agrs) {
 //        Policy p = new Policy();
 //        p.setPolicyAttributes(new HashSet<PolicyAttribute>());
@@ -448,11 +447,11 @@ public class PasswordGenerator {
 //
 //        PolicyAttribute repeatLimit = new PolicyAttribute();
 //        repeatLimit.setName(LIMIT_NUM_REPEAT_CHAR);
-////        repeatLimit.setValue1("1");
+//        repeatLimit.setValue1("0");
 //
 //        PolicyAttribute notAllowedChars = new PolicyAttribute();
 //        notAllowedChars.setName(REJECT_CHARS_IN_PSWD);
-//        notAllowedChars.setValue1("<A,a,b,c,\\,g,G,X,x,$>");
+//        notAllowedChars.setValue1("<Aabc\\gGXx$@!>");
 //
 //        p.getPolicyAttributes().add(paLength);
 //        p.getPolicyAttributes().add(paSpecialChars);
@@ -461,7 +460,7 @@ public class PasswordGenerator {
 //        p.getPolicyAttributes().add(paNumbers);
 //        p.getPolicyAttributes().add(repeatLimit);
 //        p.getPolicyAttributes().add(notAllowedChars);
-//        for (int i = 0; i < 25; i++) {
+//        for (int i = 0; i < 500; i++) {
 //            String pass = generatePassword(p);
 //            System.out.println(String.format("L=%s, Password=%s", pass.length(), pass));
 //        }
