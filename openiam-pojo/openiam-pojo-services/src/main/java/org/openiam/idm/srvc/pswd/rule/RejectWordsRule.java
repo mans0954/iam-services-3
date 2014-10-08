@@ -52,9 +52,8 @@ public class RejectWordsRule extends AbstractPasswordRule {
     private static final Log log = LogFactory.getLog(RejectWordsRule.class);
 
     @Override
-    public void validate() throws PasswordRuleException {
+    public void validate(PolicyAttribute attribute) throws PasswordRuleException {
         List<String> listExcludedWords = null;
-        PolicyAttribute attribute = getAttribute("REJECT_WORDS_IN_PSWD");
         if (attribute != null && attribute.isRequired() && "true".equalsIgnoreCase(attribute.getValue1())) {
             listExcludedWords = getFromFile();
         }
@@ -71,6 +70,11 @@ public class RejectWordsRule extends AbstractPasswordRule {
                 throw ex;
             }
         }
+    }
+
+    @Override
+    public String getAttributeName() {
+        return "REJECT_WORDS_IN_PSWD";
     }
 
     private List<String> getFromFile() {
@@ -91,9 +95,8 @@ public class RejectWordsRule extends AbstractPasswordRule {
     }
 
     @Override
-    public PasswordRuleException createException() {
+    public PasswordRuleException createException(PolicyAttribute attribute) {
         List<String> excludeWordsList = null;
-        PolicyAttribute attribute = getAttribute("REJECT_WORDS_IN_PSWD");
         if (attribute != null && attribute.isRequired() && "true".equals(attribute.getValue1())) {
             excludeWordsList = this.getFromFile();
         }
@@ -106,9 +109,8 @@ public class RejectWordsRule extends AbstractPasswordRule {
     }
 
     @Override
-    public PasswordRule createRule() {
+    public PasswordRule createRule(PolicyAttribute attribute) {
         List<String> excludeWordsList = null;
-        PolicyAttribute attribute = getAttribute("REJECT_WORDS_IN_PSWD");
         if (attribute != null && attribute.isRequired() && "true".equals(attribute.getValue1())) {
             excludeWordsList = this.getFromFile();
         }
