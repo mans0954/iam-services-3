@@ -48,11 +48,15 @@ public class PasswordNotPrincipalRule extends AbstractPasswordRule {
             enabled = Boolean.parseBoolean(attribute.getValue1());
 
         }
+        PasswordRuleException ex = new PasswordRuleException(ResponseCode.FAIL_NEQ_PRINCIPAL);
+        if (principal == null) {
+            throw ex;
+        }
         if (enabled) {
             String lowerPassword = password.toLowerCase();
             String lowerPrincipal = principal.toLowerCase();
             if (lowerPassword.contains(lowerPrincipal)) {
-                throw new PasswordRuleException(ResponseCode.FAIL_NEQ_PRINCIPAL);
+                throw ex;
             }
         }
     }

@@ -55,6 +55,10 @@ public abstract class AbstractPasswordRule {
     public abstract String getAttributeName();
 
     public void validate() throws PasswordRuleException {
+        PasswordRuleException exp = createException();
+        if (password == null && exp != null) {
+            throw exp;
+        }
         PolicyAttribute pa = this.getAttribute(this.getAttributeName());
         if (pa == null || !pa.isRequired()) {
             return;

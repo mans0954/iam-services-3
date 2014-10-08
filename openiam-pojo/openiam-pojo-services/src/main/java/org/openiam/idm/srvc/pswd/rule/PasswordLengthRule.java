@@ -48,11 +48,6 @@ public class PasswordLengthRule extends AbstractPasswordRule {
         if (ex == null) {
             return;
         }
-
-        if (password == null) {
-            throw ex;
-        }
-
         if (minlen > 0) {
             if (password.length() < minlen) {
                 throw ex;
