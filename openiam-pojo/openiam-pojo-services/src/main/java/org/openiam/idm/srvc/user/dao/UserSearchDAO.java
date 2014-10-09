@@ -3,6 +3,11 @@ package org.openiam.idm.srvc.user.dao;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
+import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.openiam.base.ws.MatchType;
+import org.openiam.base.ws.SearchMode;
 import org.openiam.base.ws.SearchParam;
 import org.openiam.core.dao.lucene.AbstractHibernateSearchDao;
 import org.openiam.idm.searchbeans.UserSearchBean;
@@ -13,115 +18,107 @@ import org.springframework.stereotype.Repository;
 public class UserSearchDAO extends AbstractHibernateSearchDao<UserEntity, UserSearchBean, String> {
 	
 	@Override
-	protected Query parse(UserSearchBean query) {
-		final BooleanQuery luceneQuery = new BooleanQuery();
+	protected QueryBuilder parse(UserSearchBean query) {
+        BoolQueryBuilder luceneQuery = QueryBuilders.boolQuery();
+
 		SearchParam param = null;
 		
 		param = query.getFirstNameMatchToken();
 		if(param != null && param.isValid()) {
-			Query clause = null;
-			switch(param.getMatchType()) {
-				case EXACT:
-					clause = buildExactClause("firstNameUntokenized", param.getValue());
-					break;
-				case STARTS_WITH:
-					clause = buildTokenizedClause("firstName", param.getValue());
-					break;
-				default:
-					break;
-			}
-			
+            QueryBuilder clause = null;
+            if(MatchType.EXACT.equals(param.getMatchType())){
+                clause = buildExactClause("firstName", param.getValue());
+            } else {
+                clause = buildTokenizedClause("firstName", param.getValue(), param.getMatchType());
+            }
+
 			if(clause != null) {
-				luceneQuery.add(clause, BooleanClause.Occur.MUST);
+                addClause(luceneQuery, clause, query.getSearchMode());
 			}
 		}
 
 		param = query.getLastNameMatchToken();
 		if(param != null && param.isValid()) {
-			Query clause = null;
-			switch(param.getMatchType()) {
-				case EXACT:
-					clause = buildExactClause("lastNameUntokenized", param.getValue());
-					break;
-				case STARTS_WITH:
-					clause = buildTokenizedClause("lastName", param.getValue());
-					break;
-				default:
-					break;
-			}
-			
+            QueryBuilder clause = null;
+            if(MatchType.EXACT.equals(param.getMatchType())){
+                clause = buildExactClause("lastName", param.getValue());
+            } else {
+                clause = buildTokenizedClause("lastName", param.getValue(), param.getMatchType());
+            }
+
 			if(clause != null) {
-				luceneQuery.add(clause, BooleanClause.Occur.MUST);
+                addClause(luceneQuery, clause, query.getSearchMode());
+//				luceneQuery.add(clause, BooleanClause.Occur.MUST);
 			}
 		}
 		
 		param = query.getMaidenNameMatchToken();
 		if(param != null && param.isValid()) {
-			Query clause = null;
-			switch(param.getMatchType()) {
-				case EXACT:
-					clause = buildExactClause("maidenNameUntokenized", param.getValue());
-					break;
-				case STARTS_WITH:
-					clause = buildTokenizedClause("maidenName", param.getValue());
-					break;
-				default:
-					break;
-			}
-			
+            QueryBuilder clause = null;
+            if(MatchType.EXACT.equals(param.getMatchType())){
+                clause = buildExactClause("maidenName", param.getValue());
+            } else {
+                clause = buildTokenizedClause("maidenName", param.getValue(), param.getMatchType());
+            }
+
 			if(clause != null) {
-				luceneQuery.add(clause, BooleanClause.Occur.MUST);
+                addClause(luceneQuery, clause, query.getSearchMode());
+//				luceneQuery.add(clause, BooleanClause.Occur.MUST);
 			}
 		}
 		
 		param = query.getEmployeeIdMatchToken();
 		if(param != null && param.isValid()) {
-			Query clause = null;
-			switch(param.getMatchType()) {
-				case EXACT:
-					clause = buildExactClause("employeeIdUntokenized", param.getValue());
-					break;
-				case STARTS_WITH:
-					clause = buildTokenizedClause("employeeId", param.getValue());
-					break;
-				default:
-					break;
-			}
-			
+            QueryBuilder clause = null;
+            if(MatchType.EXACT.equals(param.getMatchType())){
+                clause = buildExactClause("employeeId", param.getValue());
+            } else {
+                clause = buildTokenizedClause("employeeId", param.getValue(), param.getMatchType());
+            }
+
+
 			if(clause != null) {
-				luceneQuery.add(clause, BooleanClause.Occur.MUST);
+                addClause(luceneQuery, clause, query.getSearchMode());
+//				luceneQuery.add(clause, BooleanClause.Occur.MUST);
 			}
 		}
 
-		Query clause = buildExactClause("userStatus", query.getUserStatus());
+        QueryBuilder clause = buildExactClause("userStatus", query.getUserStatus());
 		if(clause != null) {
-			luceneQuery.add(clause, BooleanClause.Occur.MUST);
+            addClause(luceneQuery, clause, query.getSearchMode());
+//			luceneQuery.add(clause, BooleanClause.Occur.MUST);
 		}
 
 		clause = buildExactClause("accountStatus", query.getAccountStatus());
 		if(clause != null) {
-			luceneQuery.add(clause, BooleanClause.Occur.MUST);
+            addClause(luceneQuery, clause, query.getSearchMode());
+//			luceneQuery.add(clause, BooleanClause.Occur.MUST);
 		}
         
         clause = buildExactClause("jobCode.id", query.getJobCode());
         if(clause != null) {
-			luceneQuery.add(clause, BooleanClause.Occur.MUST);
+            addClause(luceneQuery, clause, query.getSearchMode());
+//			luceneQuery.add(clause, BooleanClause.Occur.MUST);
 		}
 
         clause = buildExactClause("employeeType.id", query.getEmployeeType());
         if(clause != null) {
-			luceneQuery.add(clause, BooleanClause.Occur.MUST);
+            addClause(luceneQuery, clause, query.getSearchMode());
+//			luceneQuery.add(clause, BooleanClause.Occur.MUST);
 		}
 
         clause = buildExactClause("type.id", query.getUserType());
         if(clause != null) {
-            luceneQuery.add(clause, BooleanClause.Occur.MUST);
+            addClause(luceneQuery, clause, query.getSearchMode());
+//            luceneQuery.add(clause, BooleanClause.Occur.MUST);
         }
 
 		return luceneQuery;
 	}
 
-	@Override
+
+
+    @Override
 	protected Class<UserEntity> getEntityClass() {
 		return UserEntity.class;
 	}

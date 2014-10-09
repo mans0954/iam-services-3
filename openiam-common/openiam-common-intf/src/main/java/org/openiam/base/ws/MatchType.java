@@ -23,7 +23,13 @@ public enum MatchType {
 	 * Implies a 'starts with' match
 	 */
     @XmlEnumValue("STARTS_WITH")
-	STARTS_WITH("STARTS_WITH");
+	STARTS_WITH("STARTS_WITH"),
+
+    @XmlEnumValue("END_WITH")
+    END_WITH("END_WITH"),
+
+    @XmlEnumValue("CONTAINS")
+    CONTAINS("CONTAINS");
 
     private final String type;
 

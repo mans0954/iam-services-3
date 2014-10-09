@@ -9,6 +9,10 @@ import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
+import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.index.query.*;
+import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.search.SearchHit;
 import org.hibernate.Criteria;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -16,6 +20,8 @@ import org.hibernate.criterion.DetachedCriteria;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
+import org.openiam.base.ws.MatchType;
+import org.openiam.base.ws.SearchMode;
 import org.openiam.elasticsearch.service.ElasticsearchProvider;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -85,7 +91,7 @@ public abstract class AbstractHibernateSearchDao<T, Q, KeyType extends Serializa
     @Override public int count(final Q query) { 
         int count = 0;
     	if (query != null) {
-            final Query luceneQuery = parse(query);
+            final QueryBuilder luceneQuery = parse(query);
             if (luceneQuery == null) {
             	// count all objects
                 final Criteria criteria = getSession().createCriteria(getEntityClass()).setCacheable(true);
@@ -102,7 +108,7 @@ public abstract class AbstractHibernateSearchDao<T, Q, KeyType extends Serializa
     @Override public List<T> find(final int from, final int size, final SortType sort, final Q query) {        
         List<T> result = Collections.emptyList();
     	if ((from >=0) && (size > 0) && (query != null)) {
-            final Query luceneQuery = parse(query);
+            final QueryBuilder luceneQuery = parse(query);
             if (luceneQuery != null) {
 //            	result = find(buildFullTextSessionQuery(getFullTextSession(null), luceneQuery, from, size, sort));
             }
@@ -114,15 +120,16 @@ public abstract class AbstractHibernateSearchDao<T, Q, KeyType extends Serializa
     @Override public List<KeyType> findIds(final SortType sort, final Q query) {
     	final List<KeyType> result = new ArrayList<KeyType>();
     	if ((query != null)) {
-            final Query luceneQuery = parse(query);
-            if (luceneQuery != null) {
-//				final List idList = findIds(buildFullTextSessionQuery(getFullTextSession(null), luceneQuery, sort).setProjection(idFieldName));
-//				for (final Object row : idList) {
-//					final Object[] columns = (Object[]) row;
-//					final KeyType id = (KeyType) columns[0];
-//					result.add(id);
-//				}
-            }
+            return findIds(0, Integer.MAX_VALUE, sort, query);
+//            final QueryBuilder luceneQuery = parse(query);
+//            if (luceneQuery != null) {
+////				final List idList = findIds(buildFullTextSessionQuery(getFullTextSession(null), luceneQuery, sort).setProjection(idFieldName));
+////				for (final Object row : idList) {
+////					final Object[] columns = (Object[]) row;
+////					final KeyType id = (KeyType) columns[0];
+////					result.add(id);
+////				}
+//            }
     	}
         return result;
     }
@@ -131,8 +138,16 @@ public abstract class AbstractHibernateSearchDao<T, Q, KeyType extends Serializa
 	@Override public List<KeyType> findIds(final int from, final int size, final SortType sort, final Q query) {
     	final List<KeyType> result = new ArrayList<KeyType>();
     	if ((from >=0) && (size > 0) && (query != null)) {
-            final Query luceneQuery = parse(query);
+            final QueryBuilder luceneQuery = parse(query);
             if (luceneQuery != null) {
+                SearchResponse searchResponse = esHelper.searchData(luceneQuery, getEntityClass());
+
+                if(searchResponse!=null && searchResponse.getHits().getTotalHits()>0){
+                    for (final SearchHit hit : searchResponse.getHits()) {
+                        final KeyType id = (KeyType) hit.getId();
+                        result.add(id);
+                    }
+                }
 //				final List idList = findIds(buildFullTextSessionQuery(
 //						getFullTextSession(null), luceneQuery, from, size, sort)
 //						.setProjection(idFieldName));
@@ -185,7 +200,7 @@ public abstract class AbstractHibernateSearchDao<T, Q, KeyType extends Serializa
     	return 1000;
     }
 
-    protected abstract Query parse(Q query);
+    protected abstract QueryBuilder parse(Q query);
     protected abstract Class<T> getEntityClass();
 
 
@@ -311,34 +326,51 @@ public abstract class AbstractHibernateSearchDao<T, Q, KeyType extends Serializa
 //			.setProjection(Projections.max(lastModifiedFieldName)).uniqueResult();
 //    }
     
-    protected Query buildTokenizedClause(final String paramName, final String paramValue) {
+    protected QueryBuilder buildTokenizedClause(final String paramName, final String paramValue, MatchType matchType) {
+
     	if (StringUtils.isNotBlank(paramValue) && StringUtils.isNotBlank(paramName)) {
-//            QueryBuilders.boolQuery().should(QueryBuilders.termQuery())
-            final BooleanQuery paramsQuery = new BooleanQuery();
-//            paramsQuery.add(QueryBuilder.buildQuery(paramName, BooleanClause.Occur.SHOULD, paramValue), BooleanClause.Occur.SHOULD);
-            return paramsQuery;
-        }
-    	return null;
-	}
-    
-    protected Query buildExactClause(final String paramName, final String paramValue) {
-    	if (StringUtils.isNotBlank(paramValue) && StringUtils.isNotBlank(paramName)) {
-    		final BooleanQuery query = new BooleanQuery();
-    		query.add(new TermQuery(new Term(paramName, paramValue)), BooleanClause.Occur.SHOULD);
-    		return query;
+            final BoolQueryBuilder query = QueryBuilders.boolQuery();
+            final String trimmedKeyword = StringUtils.trimToEmpty(paramValue.toLowerCase());
+            final Set<String> terms = esHelper.separateTerms(trimmedKeyword, getEntityClass());
+            if(CollectionUtils.isNotEmpty(terms)){
+                for (final Iterator<String> iterator = terms.iterator(); iterator.hasNext();) {
+                    String term = iterator.next();
+                    //allows search by non-empty words
+                    if (StringUtils.isNotEmpty(term)) {
+                        addClause(query, QueryBuilders.wildcardQuery(paramName, wrapTerm(term, matchType)), SearchMode.OR);
+                    }
+                    iterator.remove();
+                }
+                return query;
+            }
         }
     	return null;
 	}
 
-    protected Query buildInClause(final String paramName, final Collection<String> paramValues) {
+    protected QueryBuilder buildExactClause(final String paramName, final String paramValue) {
+    	if (StringUtils.isNotBlank(paramValue) && StringUtils.isNotBlank(paramName)) {
+    		return QueryBuilders.termQuery(paramName, paramValue);
+        }
+    	return null;
+	}
+
+    protected QueryBuilder buildInClause(final String paramName, final Collection<String> paramValues) {
         if (paramValues!=null && !paramValues.isEmpty() && StringUtils.isNotBlank(paramName)) {
-            final BooleanQuery query = new BooleanQuery();
+            final BoolQueryBuilder query = QueryBuilders.boolQuery();
             for( String value : paramValues ){
-                query.add(new TermQuery(new Term(paramName, value)), BooleanClause.Occur.SHOULD);
+                addClause(query, QueryBuilders.termQuery(paramName, value), SearchMode.OR);
             }
             return query;
         }
         return null;
+    }
+
+    protected void addClause(BoolQueryBuilder query, org.elasticsearch.index.query.QueryBuilder clause, SearchMode searchMode) {
+        if(SearchMode.AND.equals(searchMode)) {
+            query.must(clause);
+        }  else {
+            query.should(clause);
+        }
     }
 
     @Override public Date getReindexingCompletedOn() {
@@ -462,6 +494,25 @@ public abstract class AbstractHibernateSearchDao<T, Q, KeyType extends Serializa
 			}
 		}
 	}
-    
-    
+
+    private String wrapTerm(String term, MatchType matchType) {
+        switch (matchType){
+            case END_WITH:
+                if (term.charAt(0) != '*') {
+                    return String.format("*%s", term);
+                }
+            case STARTS_WITH:
+                if (term.charAt(term.length() - 1) != '*') {
+                    return String.format("%s*", term);
+                }
+            case CONTAINS:
+                if (term.charAt(0) != '*') {
+                    term = "*" + term;
+                }
+                if (term.charAt(term.length() - 1) != '*') {
+                    term = term + "*";
+                }
+        }
+        return term;
+    }
 }

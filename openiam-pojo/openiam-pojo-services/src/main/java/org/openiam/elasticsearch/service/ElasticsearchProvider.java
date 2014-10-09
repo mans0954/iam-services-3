@@ -4,6 +4,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.elasticsearch.action.admin.cluster.state.ClusterStateResponse;
+import org.elasticsearch.action.admin.indices.analyze.AnalyzeResponse;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
 import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexResponse;
@@ -14,6 +15,8 @@ import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.index.IndexRequestBuilder;
+import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.cluster.metadata.MappingMetaData;
 import org.elasticsearch.common.settings.ImmutableSettings;
@@ -21,6 +24,7 @@ import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.common.xcontent.XContentType;
+import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.openiam.elasticsearch.annotation.*;
 import org.openiam.elasticsearch.bridge.ElasticsearchBrigde;
@@ -228,6 +232,46 @@ public class ElasticsearchProvider {
                 }
             }
         }
+    }
+
+    public SearchResponse searchData(QueryBuilder query, Class<?> entityClass) {
+        try {
+            if(query!=null) {
+                ElasticsearchMetadata result = indexeMetadataMap.get(entityClass.getSimpleName());
+
+                SearchResponse response = getClient().prepareSearch(result.getIndex().indexName())
+                            .setTypes(result.getTypeMapping().typeName())
+                            .setSearchType(SearchType.DFS_QUERY_THEN_FETCH)
+                            .setQuery(query).setExplain(true)
+                            .execute()
+                            .actionGet();
+                return response;
+            }
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
+        return null;
+    }
+
+    public Set<String> separateTerms(final String keyword, Class<?> entityClass) {
+        final Set<String> result = new HashSet<String>();
+        try {
+            ElasticsearchMetadata metadata = indexeMetadataMap.get(entityClass.getSimpleName());
+
+            AnalyzeResponse analyzeResponse = getClient().admin().indices()
+                    .prepareAnalyze(metadata.getIndex().indexName(), keyword).setAnalyzer("standard").execute().actionGet();
+
+            if(analyzeResponse!=null && CollectionUtils.isNotEmpty(analyzeResponse.getTokens())){
+
+                for(AnalyzeResponse.AnalyzeToken analyzeToken: analyzeResponse.getTokens()){
+                    final String term = analyzeToken.getTerm();
+                    result.add(term);
+                }
+            }
+        } catch (Exception e) {
+            logger.error(String.format("can't parse '%s'", keyword), e);
+        }
+        return result;
     }
 
     private XContentBuilder buildMapping(ElasticsearchMetadata indexMetadata) {
