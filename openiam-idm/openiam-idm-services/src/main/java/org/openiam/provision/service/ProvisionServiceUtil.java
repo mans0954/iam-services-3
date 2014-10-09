@@ -17,7 +17,7 @@ public class ProvisionServiceUtil {
                                               Map<String, Object> tmpMap, ScriptIntegration se)
             throws ScriptEngineException {
         Object output = "";
-        Map<String, Object> bindingMap = new HashMap(tmpMap);
+        Map<String, Object> bindingMap = new HashMap<String, Object>(tmpMap);
         bindingMap.put(AbstractProvisioningService.ATTRIBUTE_MAP, attr);
         bindingMap.put(AbstractProvisioningService.ATTRIBUTE_DEFAULT_VALUE, attr.getDefaultValue());
 
@@ -38,7 +38,7 @@ public class ProvisionServiceUtil {
                                               Map<String, Object> tmpMap, ScriptIntegration se)
             throws ScriptEngineException {
         Object output = "";
-        Map<String, Object> bindingMap = new HashMap(tmpMap);
+        Map<String, Object> bindingMap = new HashMap<String, Object>(tmpMap);
         bindingMap.put(AbstractProvisioningService.ATTRIBUTE_MAP, attr);
         bindingMap.put(AbstractProvisioningService.ATTRIBUTE_DEFAULT_VALUE, attr.getDefaultValue());
 
