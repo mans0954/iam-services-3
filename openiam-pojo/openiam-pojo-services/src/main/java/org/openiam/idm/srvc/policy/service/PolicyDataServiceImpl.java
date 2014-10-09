@@ -37,16 +37,14 @@ import org.openiam.dozer.converter.ITPolicyDozerConverter;
 import org.openiam.dozer.converter.PolicyDefParamDozerConverter;
 import org.openiam.dozer.converter.PolicyDozerConverter;
 import org.openiam.dozer.converter.PolicyObjectAssocDozerConverter;
+import org.openiam.exception.EsbErrorToken;
 import org.openiam.idm.searchbeans.PolicySearchBean;
 import org.openiam.idm.srvc.batch.domain.BatchTaskEntity;
 import org.openiam.idm.srvc.batch.service.BatchService;
 import org.openiam.idm.srvc.policy.domain.*;
-import org.openiam.idm.srvc.policy.dto.ITPolicy;
-import org.openiam.idm.srvc.policy.dto.Policy;
-import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
-import org.openiam.idm.srvc.policy.dto.PolicyDefParam;
-import org.openiam.idm.srvc.policy.dto.PolicyObjectAssoc;
+import org.openiam.idm.srvc.policy.dto.*;
 
+import org.openiam.util.ws.collection.StringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -140,7 +138,6 @@ public class PolicyDataServiceImpl implements PolicyDataService {
 
     public Response savePolicy(final Policy policy) {
         final Response response = new Response(ResponseStatus.SUCCESS);
-
         try {
             if (policy == null) {
                 throw new BasicDataServiceException(
@@ -161,6 +158,34 @@ public class PolicyDataServiceImpl implements PolicyDataService {
                         && !policy.getPolicyId().equals(
                         found.get(0).getPolicyId())) {
                     throw new BasicDataServiceException(ResponseCode.NAME_TAKEN);
+                }
+            }
+
+            if (CollectionUtils.isNotEmpty(policy.getPolicyAttributes())) {
+                for (PolicyAttribute pa : policy.getPolicyAttributes()) {
+                    boolean isPasswordPolicy = PolicyConstants.PSWD_COMPOSITION.equals(pa.getOperation()) ||
+                            PolicyConstants.PSWD_CHANGE_RULE.equals(pa.getOperation()) || PolicyConstants.FORGET_PSWD.equals(pa.getOperation());
+                    String op = pa.getOperation();
+                    if ((isPasswordPolicy && StringUtils.isBlank(op)) || StringUtils.isBlank(pa.getName())) {
+                        throw new BasicDataServiceException(ResponseCode.INVALID_VALUE);
+                    }
+                    if (StringUtils.isNotBlank(op)) {
+                        switch (op) {
+                            case PolicyConstants.SELECT:
+                            case PolicyConstants.STRING:
+                                if (pa.isRequired() && StringUtils.isBlank(pa.getValue1())) {
+                                    throw new BasicDataServiceException(ResponseCode.POLICY_ATTRIBUTES_EMPTY_VALUE);
+                                }
+                                break;
+                            case PolicyConstants.RANGE:
+                                if (isPasswordPolicy && pa.isRequired() && StringUtils.isBlank(pa.getValue1()) && StringUtils.isBlank(pa.getValue2())) {
+                                    throw new BasicDataServiceException(ResponseCode.POLICY_ATTRIBUTES_EMPTY_VALUE);
+                                }
+                                break;
+                            default:
+                                break;
+                        }
+                    }
                 }
             }
             final PolicyEntity pe = policyDozerConverter.convertToEntity(policy, true);
