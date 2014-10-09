@@ -1,5 +1,6 @@
 package org.openiam.provision.service;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -13,9 +14,13 @@ import org.openiam.script.ScriptIntegration;
 
 public class ProvisionServiceUtil {
     public static Object getOutputFromAttrMap(AttributeMap attr,
-                                              Map<String, Object> bindingMap, ScriptIntegration se)
+                                              Map<String, Object> tmpMap, ScriptIntegration se)
             throws ScriptEngineException {
         Object output = "";
+        Map<String, Object> bindingMap = new HashMap(tmpMap);
+        bindingMap.put(AbstractProvisioningService.ATTRIBUTE_MAP, attr);
+        bindingMap.put(AbstractProvisioningService.ATTRIBUTE_DEFAULT_VALUE, attr.getDefaultValue());
+
         if (attr.getReconResAttribute().getAttributePolicy() != null) {
             Policy policy = attr.getReconResAttribute().getAttributePolicy();
             String url = policy.getRuleSrcUrl();
@@ -30,9 +35,13 @@ public class ProvisionServiceUtil {
     }
 
     public static Object getOutputFromAttrMap(AttributeMapEntity attr,
-                                              Map<String, Object> bindingMap, ScriptIntegration se)
+                                              Map<String, Object> tmpMap, ScriptIntegration se)
             throws ScriptEngineException {
         Object output = "";
+        Map<String, Object> bindingMap = new HashMap(tmpMap);
+        bindingMap.put(AbstractProvisioningService.ATTRIBUTE_MAP, attr);
+        bindingMap.put(AbstractProvisioningService.ATTRIBUTE_DEFAULT_VALUE, attr.getDefaultValue());
+
         if (attr.getReconResAttribute().getAttributePolicy() != null) {
             PolicyEntity policy = attr.getReconResAttribute()
                     .getAttributePolicy();
