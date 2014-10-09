@@ -36,10 +36,13 @@ import org.openiam.idm.srvc.pswd.dto.PasswordRule;
 public class NumericCharRule extends AbstractPasswordRule {
 
 
-	@Override
-	public void validate() throws PasswordRuleException {
-		
-		PolicyAttribute attribute = getAttribute("NUMERIC_CHARS");
+    @Override
+    public String getAttributeName() {
+        return "NUMERIC_CHARS";
+    }
+
+    @Override
+	public void validate(PolicyAttribute attribute) throws PasswordRuleException {
 		int minChar = getValue1(attribute);
 		int maxChar = getValue2(attribute);
 
@@ -73,16 +76,14 @@ public class NumericCharRule extends AbstractPasswordRule {
 	}
 
 	@Override
-	public PasswordRuleException createException() {
-		PolicyAttribute attribute = getAttribute("NUMERIC_CHARS");
+	public PasswordRuleException createException(PolicyAttribute attribute) {
 		int minChar = getValue1(attribute);
 		int maxChar = getValue2(attribute);
 		return createException(ResponseCode.FAIL_NUMERIC_CHAR_RULE, minChar, maxChar);
 	}
 
 	@Override
-	public PasswordRule createRule() {
-		PolicyAttribute attribute = getAttribute("NUMERIC_CHARS");
+	public PasswordRule createRule(PolicyAttribute attribute) {
 		int minChar = getValue1(attribute);
 		int maxChar = getValue2(attribute);
 		if(minChar <= 0 && maxChar <= 0) {

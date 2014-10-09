@@ -40,11 +40,15 @@ import org.openiam.idm.srvc.pswd.dto.PasswordRule;
  */
 public class PassphraseRepeatWordRule extends AbstractPasswordRule {
 
-	@Override
-	public void validate() throws PasswordRuleException {
+    @Override
+    public String getAttributeName() {
+        return "REPEAT_SAME_WORD_PASSPHRASE";
+    }
+
+    @Override
+	public void validate(PolicyAttribute attribute) throws PasswordRuleException {
 		boolean enabled = true;
 
-		PolicyAttribute attribute = getAttribute("REPEAT_SAME_WORD_PASSPHRASE");
 		if(attribute != null) {
 			if (StringUtils.equalsIgnoreCase(Boolean.FALSE.toString(), attribute.getValue1())) {
 				enabled = false;
@@ -69,10 +73,9 @@ public class PassphraseRepeatWordRule extends AbstractPasswordRule {
 	}
 
 	@Override
-	public PasswordRuleException createException() {
+	public PasswordRuleException createException(PolicyAttribute attribute) {
 		boolean enabled = true;
 
-		PolicyAttribute attribute = getAttribute("REPEAT_SAME_WORD_PASSPHRASE");
 		if(attribute != null) {
 			if (StringUtils.equalsIgnoreCase(Boolean.FALSE.toString(), attribute.getValue1())) {
 				enabled = false;
@@ -86,10 +89,9 @@ public class PassphraseRepeatWordRule extends AbstractPasswordRule {
 	}
 
 	@Override
-	public PasswordRule createRule() {
+	public PasswordRule createRule(PolicyAttribute attribute) {
 		boolean enabled = true;
 
-		PolicyAttribute attribute = getAttribute("REPEAT_SAME_WORD_PASSPHRASE");
 		if(attribute != null) {
 			if (StringUtils.equalsIgnoreCase(Boolean.FALSE.toString(), attribute.getValue1())) {
 				enabled = false;

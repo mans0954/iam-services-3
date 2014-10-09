@@ -17,7 +17,7 @@
  */
 
 /**
- * 
+ *
  */
 package org.openiam.idm.srvc.pswd.rule;
 
@@ -26,82 +26,83 @@ import org.apache.commons.lang.StringUtils;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
 import org.openiam.idm.srvc.pswd.dto.PasswordRule;
+
 /**
  * Validates a password to ensure that it does not contain the characters defined in the rule
  * the password.
- * @author suneet
  *
+ * @author suneet
  */
 public class RejectCharactersRule extends AbstractPasswordRule {
 
 
-	@Override
-	public void validate() throws PasswordRuleException {
-		String excludeCharList=null;
+    @Override
+    public String getAttributeName() {
+        return "REJECT_CHARS_IN_PSWD";
+    }
 
-				
-		PolicyAttribute attribute = getAttribute("REJECT_CHARS_IN_PSWD");
-		if (attribute != null && StringUtils.isNotBlank(attribute.getValue1())) {
-			excludeCharList = attribute.getValue1();
-		}
-		
-		if ( excludeCharList == null) {
-			return;
-		}
-		
-		final PasswordRuleException ex = new PasswordRuleException(ResponseCode.FAIL_REJECT_CHARS_IN_PSWD, new Object[] {excludeCharList});
+    @Override
+    public void validate(PolicyAttribute attribute) throws PasswordRuleException {
+        String excludeCharList = null;
+        if (attribute != null && StringUtils.isNotBlank(attribute.getValue1())) {
+            excludeCharList = attribute.getValue1();
+        }
 
-		// count the number of characters in the password
-		if (password == null) {
-			throw ex;
-		}
-		
-		// check the password for each of these characters.
-		int size = excludeCharList.length();
-		for ( int i=0; i < size; i ++ ) {
-			int ch = excludeCharList.charAt(i);
-			
-			int pswdSize = password.length();
-			for ( int x=0; x < pswdSize; x++ ) {
-				int pswdCh = password.charAt(x);
-				if ( pswdCh == ch ) {
-					throw ex;
-				}
-			}
-		}
-	}
+        if (excludeCharList == null) {
+            return;
+        }
 
-	@Override
-	public PasswordRuleException createException() {
-		String excludeCharList=null;
+        final PasswordRuleException ex = new PasswordRuleException(ResponseCode.FAIL_REJECT_CHARS_IN_PSWD, new Object[]{excludeCharList});
 
-		
-		PolicyAttribute attribute = getAttribute("REJECT_CHARS_IN_PSWD");
-		if (attribute != null && StringUtils.isNotBlank(attribute.getValue1())) {
-			excludeCharList = attribute.getValue1();
-		}
-		
-		if ( excludeCharList == null) {
-			return null;
-		} else {
-			return new PasswordRuleException(ResponseCode.FAIL_REJECT_CHARS_IN_PSWD, new Object[] {excludeCharList});
-		}
-	}
+        // count the number of characters in the password
+        if (password == null) {
+            throw ex;
+        }
 
-	@Override
-	public PasswordRule createRule() {
-		String excludeCharList=null;
+        // check the password for each of these characters.
+        int size = excludeCharList.length();
+        for (int i = 0; i < size; i++) {
+            int ch = excludeCharList.charAt(i);
 
-		
-		PolicyAttribute attribute = getAttribute("REJECT_CHARS_IN_PSWD");
-		if (attribute != null && StringUtils.isNotBlank(attribute.getValue1())) {
-			excludeCharList = attribute.getValue1();
-		}
-		
-		if ( excludeCharList == null) {
-			return null;
-		} else {
-			return new PasswordRule(ResponseCode.FAIL_REJECT_CHARS_IN_PSWD, new Object[] {excludeCharList});
-		}
-	}	
+            int pswdSize = password.length();
+            for (int x = 0; x < pswdSize; x++) {
+                int pswdCh = password.charAt(x);
+                if (pswdCh == ch) {
+                    throw ex;
+                }
+            }
+        }
+    }
+
+    @Override
+    public PasswordRuleException createException(PolicyAttribute attribute) {
+        String excludeCharList = null;
+
+
+        if (attribute != null && StringUtils.isNotBlank(attribute.getValue1())) {
+            excludeCharList = attribute.getValue1();
+        }
+
+        if (excludeCharList == null) {
+            return null;
+        } else {
+            return new PasswordRuleException(ResponseCode.FAIL_REJECT_CHARS_IN_PSWD, new Object[]{excludeCharList});
+        }
+    }
+
+    @Override
+    public PasswordRule createRule(PolicyAttribute attribute) {
+        String excludeCharList = null;
+
+
+        if (attribute != null && StringUtils.isNotBlank(attribute.getValue1())) {
+            excludeCharList = attribute.getValue1();
+        }
+
+        if (excludeCharList == null) {
+            return null;
+        } else {
+            return new PasswordRule(ResponseCode.FAIL_REJECT_CHARS_IN_PSWD, new Object[]{excludeCharList});
+        }
+    }
 }

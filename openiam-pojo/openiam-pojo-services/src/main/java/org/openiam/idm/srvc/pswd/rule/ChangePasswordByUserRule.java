@@ -17,7 +17,7 @@
  */
 
 /**
- * 
+ *
  */
 package org.openiam.idm.srvc.pswd.rule;
 
@@ -29,45 +29,47 @@ import org.openiam.idm.srvc.pswd.dto.PasswordRule;
 
 /**
  * Validates a password to ensure the password is not equal to the principal
- * @author suneet
  *
+ * @author suneet
  */
 public class ChangePasswordByUserRule extends AbstractPasswordRule {
 
 
-	private static final String PASSWORD = "password";
-	
-	@Override
-	public void validate() throws PasswordRuleException {
-				
-		PolicyAttribute attribute = getAttribute("PWD_EQ_PWD");
-		boolean enabled = getBoolean(attribute);
-		if (enabled) {
-			if(StringUtils.equalsIgnoreCase(password, PASSWORD)) {
-				throw new PasswordRuleException(ResponseCode.FAIL_NEQ_PASSWORD, new Object[] {PASSWORD});
-			}
-		}
-	}
+    private static final String PASSWORD = "password";
 
-	@Override
-	public PasswordRuleException createException() {
-		PolicyAttribute attribute = getAttribute("PWD_EQ_PWD");
-		boolean enabled = getBoolean(attribute);
-		if (enabled) {
-			return new PasswordRuleException(ResponseCode.FAIL_NEQ_PASSWORD, new Object[] {PASSWORD});
-		} else {
-			return null;
-		}
-	}
+    @Override
+    public String getAttributeName() {
+        return "PWD_EQ_PWD";
+    }
 
-	@Override
-	public PasswordRule createRule() {
-		PolicyAttribute attribute = getAttribute("PWD_EQ_PWD");
-		boolean enabled = getBoolean(attribute);
-		if (enabled) {
-			return new PasswordRule(ResponseCode.FAIL_NEQ_PASSWORD, new Object[] {PASSWORD});
-		} else {
-			return null;
-		}
-	}	
+    @Override
+    public void validate(PolicyAttribute attribute) throws PasswordRuleException {
+
+        boolean enabled = getBoolean(attribute);
+        if (enabled) {
+            if (StringUtils.equalsIgnoreCase(password, PASSWORD)) {
+                throw new PasswordRuleException(ResponseCode.FAIL_NEQ_PASSWORD, new Object[]{PASSWORD});
+            }
+        }
+    }
+
+    @Override
+    public PasswordRuleException createException(PolicyAttribute attribute) {
+        boolean enabled = getBoolean(attribute);
+        if (enabled) {
+            return new PasswordRuleException(ResponseCode.FAIL_NEQ_PASSWORD, new Object[]{PASSWORD});
+        } else {
+            return null;
+        }
+    }
+
+    @Override
+    public PasswordRule createRule(PolicyAttribute attribute) {
+        boolean enabled = getBoolean(attribute);
+        if (enabled) {
+            return new PasswordRule(ResponseCode.FAIL_NEQ_PASSWORD, new Object[]{PASSWORD});
+        } else {
+            return null;
+        }
+    }
 }
