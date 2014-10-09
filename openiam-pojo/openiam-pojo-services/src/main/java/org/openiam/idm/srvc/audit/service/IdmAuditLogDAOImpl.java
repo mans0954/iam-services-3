@@ -100,8 +100,10 @@ public class IdmAuditLogDAOImpl extends BaseDaoImpl<IdmAuditLogEntity, String> i
                     StringUtils.isNotBlank(auditSearch.getTargetId())) {
                 Criterion sourceCriterion = Restrictions.eq("userId", auditSearch.getUserId());
                 DetachedCriteria subquery = DetachedCriteria.forClass(AuditLogTargetEntity.class);
-                subquery.setProjection(Projections.property("targetId"));
+                subquery.add(Restrictions.eq("targetId",auditSearch.getTargetId()));
+                subquery.setProjection(Projections.property("log.id"));
                 criteria.add(Restrictions.or(sourceCriterion, Subqueries.propertyIn("id",subquery)));
+
             } else {
                 if(StringUtils.isNotBlank(auditSearch.getUserId())) {
                     criteria.add(Restrictions.eq("userId", auditSearch.getUserId()));

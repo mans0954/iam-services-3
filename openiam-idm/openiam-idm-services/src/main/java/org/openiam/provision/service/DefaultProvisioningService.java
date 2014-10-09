@@ -253,6 +253,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
                     ProvisionUserResponse tmpRes = addModifyUser(pUser, true, dataList, idmAuditLog);
 
+                    auditLogService.save(idmAuditLog);
                     return tmpRes;
                 }
             });
@@ -306,7 +307,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     auditLogService.save(idmAuditLog);
 
                     ProvisionUserResponse tmpRes = addModifyUser(pUser, false, dataList, idmAuditLog);
-
+                    auditLogService.save(idmAuditLog);
                     return tmpRes;
                 }
             });
@@ -1119,6 +1120,16 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         // Set of resources that a person should have based on their active
         // roles
         Set<Resource> resourceSet = getResourcesForRoles(roleSet);
+
+        List<Organization> orgs = orgManager.getOrganizationsForUserLocalized(pUser.getId(), null, 0, 100, null);
+        for(Organization org : orgs) {
+            Resource res = resourceDataService.getResource(org.getAdminResourceId(), null);
+            if(res != null) {
+                resourceSet.add(res);
+            }
+        }
+
+
         // Set of resources that are to be removed based on roles that are to be
         // deleted
         Set<Resource> deleteResourceSet = getResourcesForRoles(deleteRoleSet);
