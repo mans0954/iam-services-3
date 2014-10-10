@@ -30,6 +30,7 @@ import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
+import org.openiam.idm.srvc.auth.dto.ProvLoginStatusEnum;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.base.AbstractBaseService;
 import org.openiam.idm.srvc.continfo.domain.AddressEntity;
@@ -378,7 +379,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
             primaryIdentity.setOperation(AttributeOperationEnum.ADD);
             // init values
             primaryIdentity.setManagedSysId(sysConfiguration.getDefaultManagedSysId());
-
+            primaryIdentity.setProvStatus(ProvLoginStatusEnum.CREATED);
             try {
                 for (AttributeMap attr : policyAttrMap) {
                     if("INACTIVE".equalsIgnoreCase(attr.getStatus())) {
