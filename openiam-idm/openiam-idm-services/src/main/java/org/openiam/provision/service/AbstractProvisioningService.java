@@ -121,6 +121,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
     public static final String TARGET_SYS_RES_ID = "resourceId";
     public static final String TARGET_SYS_RES = "RESOURCE";
     public static final String TARGET_SYS_MANAGED_SYS_ID = "managedSysId";
+    public static final String ATTRIBUTE_MAP = "attributeMap";
+    public static final String ATTRIBUTE_DEFAULT_VALUE = "attributeDefaultValue";
 
     public static final String IDENTITY = "IDENTITY";
     public static final String IDENTITY_NEW = "NEW";
