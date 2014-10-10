@@ -37,18 +37,12 @@ public class SSOTokenFactory {
 	
 	public static SSOTokenModule createModule(String tokenType)  {
 		
-		if (tokenType.equals(AuthenticationConstants.SAML1_TOKEN)) {
+		if (AuthenticationConstants.SAML1_TOKEN.equals(tokenType)) {
 			return new SAML1TokenModule();
-		}
-		if (tokenType.equals(AuthenticationConstants.SAML2_TOKEN)) {
+		}else if (AuthenticationConstants.SAML2_TOKEN.equals(tokenType)) {
 			return new SAML2TokenModule();
-		}else {
+		} else {
 			return new DefaultTokenModule();
 		}
-		
-		
-		
 	}
-
-
 }

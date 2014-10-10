@@ -59,6 +59,13 @@ import java.util.*;
 @Component("ldapLoginModule")
 public class LDAPLoginModule extends AbstractLoginModule {
 
+	@Override
+	public Subject login(AuthenticationContext context) throws Exception {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	/*
     private static final Log log = LogFactory.getLog(LDAPLoginModule.class);
 
     String host = null;
@@ -116,20 +123,7 @@ public class LDAPLoginModule extends AbstractLoginModule {
 
     }
 
-    /*
-    public void globalLogout(String securityDomain, String principal) {
-        // TODO Auto-generated method stub
 
-    }
-    */
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.openiam.idm.srvc.auth.spi.LoginModule#login(org.openiam.idm.srvc.
-     * auth.context.AuthenticationContext)
-     */
     @Override
     public Subject login(AuthenticationContext authContext) throws Exception {
 
@@ -279,47 +273,6 @@ public class LDAPLoginModule extends AbstractLoginModule {
             }
 
         }
-
-        /*
-         * if (user != null && user.getStatus() != null ) {
-         * log.debug("User Status=" + user.getStatus()); if
-         * (user.getStatus().equals(UserStatusEnum.PENDING_START_DATE)) { if
-         * (!pendingInitialStartDateCheck(user, curDate)) {
-         * log("AUTHENTICATION", "AUTHENTICATION", "FAIL",
-         * "INVALID USER STATUS", domainId, null, principal, null, null); throw
-         * new AuthenticationException(AuthenticationConstants.
-         * RESULT_INVALID_USER_STATUS); } } if
-         * (!user.getStatus().equals(UserStatusEnum.ACTIVE) &&
-         * !user.getStatus().equals(UserStatusEnum.PENDING_INITIAL_LOGIN)) { //
-         * invalid status log("AUTHENTICATION", "AUTHENTICATION", "FAIL",
-         * "INVALID USER STATUS", domainId, null, principal, null, null); throw
-         * new AuthenticationException(AuthenticationConstants.
-         * RESULT_INVALID_USER_STATUS); } // check the secondary status
-         * log.debug("Secondary status=" + user.getSecondaryStatus());
-         * checkSecondaryStatus(user);
-         * 
-         * } // get the id of the user from the openiam repository List<Login>
-         * principalList = loginManager.getLoginByUser(user.getUserId()); if
-         * (principalList == null) { log("AUTHENTICATION", "AUTHENTICATION",
-         * "FAIL", "INVALID LOGIN", domainId, null, principal, null, null);
-         * throw new
-         * AuthenticationException(AuthenticationConstants.RESULT_INVALID_LOGIN
-         * ); } Login ldapLogin = null; for ( Login l : principalList) { if
-         * (l.getId().getManagedSysId().equalsIgnoreCase(managedSysId)) {
-         * ldapLogin = l; } } if (ldapLogin == null) { log("AUTHENTICATION",
-         * "AUTHENTICATION", "FAIL", "INVALID LOGIN", domainId, null, principal,
-         * null, null); throw new
-         * AuthenticationException(AuthenticationConstants
-         * .RESULT_INVALID_LOGIN);
-         * 
-         * } if (!ldapLogin.getId().getLogin().contains(principal)) {
-         * log("AUTHENTICATION", "AUTHENTICATION", "FAIL", "INVALID LOGIN",
-         * domainId, null, principal, null, null); throw new
-         * AuthenticationException
-         * (AuthenticationConstants.RESULT_INVALID_LOGIN);
-         * 
-         * }
-         */
 
         if (user.getStatus() != null) {
             if (user.getStatus().equals(UserStatusEnum.PENDING_START_DATE)) {
@@ -480,13 +433,6 @@ public class LDAPLoginModule extends AbstractLoginModule {
         return null;
     }
 
-    /**
-     * If the password has expired, but its before the grace period then its a good login
-     * If the password has expired and after the grace period, then its an exception.
-     * You should also set the days to expiration
-     * @param lg
-     * @return
-     */
     private int passwordExpired(LoginEntity lg, Date curDate) {
         if (lg.getGracePeriod() == null) {
             // set an early date
@@ -519,24 +465,6 @@ public class LDAPLoginModule extends AbstractLoginModule {
 
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.openiam.idm.srvc.auth.spi.LoginModule#logout(java.lang.String,
-     * java.lang.String, java.lang.String)
-     */
-    /*
-    public void logout(String securityDomain, String principal,
-            String managedSysId) {
-
-        log("AUTHENTICATION", "LOGOUT", "SUCCESS", null, securityDomain, null,
-                principal, null, null, null, null);
-
-    }
-    */
-
-    /* supporting methods */
-
     private SSOToken token(String userId, Map tokenParam) throws Exception {
 
         log.debug("Generating Security Token");
@@ -552,5 +480,5 @@ public class LDAPLoginModule extends AbstractLoginModule {
 
         return tkModule.createToken(tokenParam);
     }
-
+	*/
 }

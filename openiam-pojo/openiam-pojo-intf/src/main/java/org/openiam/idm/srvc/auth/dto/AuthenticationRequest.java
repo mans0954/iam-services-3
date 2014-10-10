@@ -13,24 +13,22 @@ import javax.xml.bind.annotation.XmlType;
         "password",
         "clientIP",
         "nodeIP",
-        "requestSource"
+        "requestSource",
+        "languageId",
+        "uriPatternId",
+        "contentProviderId"
 })
 public class AuthenticationRequest {
-    String principal;
-    String password;
-    String clientIP;
-    String nodeIP;
-    String requestSource; // where did this request come from
+	private String languageId;
+    private String principal;
+    private String password;
+    private String clientIP;
+    private String nodeIP;
+    private String requestSource; // where did this request come from
+    private String uriPatternId;
+    private String contentProviderId;
 
     public AuthenticationRequest() {
-    }
-
-    public AuthenticationRequest(String principal, String password, String clientIP, String nodeIP) {
-        this.principal = principal;
-        this.password = password;
-        this.clientIP = clientIP;
-        this.nodeIP = nodeIP;
-
     }
 
     public String getPrincipal() {
@@ -72,4 +70,30 @@ public class AuthenticationRequest {
     public void setRequestSource(String requestSource) {
         this.requestSource = requestSource;
     }
+
+	public String getLanguageId() {
+		return languageId;
+	}
+
+	public void setLanguageId(String languageId) {
+		this.languageId = languageId;
+	}
+
+	public String getUriPatternId() {
+		return uriPatternId;
+	}
+
+	public void setUriPatternId(String uriPatternId) {
+		this.uriPatternId = uriPatternId;
+	}
+
+	public String getContentProviderId() {
+		return contentProviderId;
+	}
+
+	public void setContentProviderId(String contentProviderId) {
+		this.contentProviderId = contentProviderId;
+	}
+
+	
 }

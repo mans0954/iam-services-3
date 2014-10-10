@@ -13,7 +13,7 @@ public interface PolicyService {
 	public PolicyEntity getPolicy(final String policyId);
 	public void save(final PolicyEntity entity);
 	public List<PolicyEntity> findPolicyByName(final String policyDefId, final String policyName);
-	public void delete(final String policyId);
+	public void delete(final String policyId) throws BasicDataServiceException;
 	public int count(PolicySearchBean searchBean);
 	public List<PolicyEntity> findBeans(final PolicySearchBean searchBean, int from, int size);
 	public List<PolicyDefParamEntity> findPolicyDefParamByGroup(final String policyDefId, final String pswdGroup);

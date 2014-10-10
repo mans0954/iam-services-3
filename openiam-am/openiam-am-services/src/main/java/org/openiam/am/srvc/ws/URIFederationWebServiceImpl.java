@@ -42,6 +42,7 @@ public class URIFederationWebServiceImpl implements URIFederationWebService {
 		final SSOLoginResponse wsResponse = new SSOLoginResponse(ResponseStatus.SUCCESS);
 		try {
 			final AuthenticationRequest loginRequest = uriFederationService.createAuthenticationRequest(principal, proxyURI);
+			loginRequest.setLanguageId("1"); //set default
 			final AuthenticationResponse loginResponse = authenticationService.login(loginRequest);
 			if(ResponseStatus.SUCCESS.equals(loginResponse.getStatus())) {
 				final Subject subject = loginResponse.getSubject();

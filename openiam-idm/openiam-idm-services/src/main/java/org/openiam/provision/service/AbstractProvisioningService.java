@@ -121,6 +121,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
     public static final String TARGET_SYS_RES_ID = "resourceId";
     public static final String TARGET_SYS_RES = "RESOURCE";
     public static final String TARGET_SYS_MANAGED_SYS_ID = "managedSysId";
+    public static final String ATTRIBUTE_MAP = "attributeMap";
+    public static final String ATTRIBUTE_DEFAULT_VALUE = "attributeDefaultValue";
 
     public static final String IDENTITY = "IDENTITY";
     public static final String IDENTITY_NEW = "NEW";
@@ -1577,7 +1579,9 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         }
         req.setHostLoginPassword(passwordDecoded);
         req.setHostUrl(mSys.getHostUrl());
-        req.setBaseDN(matchObj.getBaseDn());
+        if(matchObj != null) {
+        	req.setBaseDN(matchObj.getBaseDn());
+        }
         req.setOperation("RESET_PASSWORD");
         req.setPassword(password);
 
@@ -1631,7 +1635,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         Policy passwordPolicy = user.getPasswordPolicy();
         if (passwordPolicy == null) {
             passwordPolicy = passwordPolicyProvider.getPasswordPolicyByUser(
-                    userDozerConverter.convertToEntity(user.getUser(), true));
+                    userDozerConverter.convertToEntity(user.getUser(), true), null);
         }
 
         try {

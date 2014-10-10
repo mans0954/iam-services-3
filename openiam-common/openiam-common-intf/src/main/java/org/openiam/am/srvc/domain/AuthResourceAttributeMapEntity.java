@@ -5,9 +5,11 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.am.srvc.constants.SsoAttributeType;
 import org.openiam.am.srvc.dto.AuthResourceAttributeMap;
+import org.openiam.base.domain.AbstractKeyNameEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 
 import javax.persistence.*;
+
 import java.io.Serializable;
 
 @Entity
@@ -16,19 +18,12 @@ import java.io.Serializable;
 })
 @DozerDTOCorrespondence(AuthResourceAttributeMap.class)
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class AuthResourceAttributeMapEntity implements Serializable {
-
-    @Id
-    @GeneratedValue(generator="system-uuid")
-    @GenericGenerator(name="system-uuid", strategy = "uuid")
-    @Column(name="ATTRIBUTE_MAP_ID", length=32, nullable = false)
-    private String attributeMapId;
-    @Column(name="PROVIDER_ID", length=32, nullable = false)
-    private String providerId;
-    @Column(name="TARGET_ATTRIBUTE_NAME", length=100, nullable = false)
-    private String targetAttributeName;
-    @Column(name="AM_RES_ATTRIBUTE_ID", length=32, nullable = true)
-    private String amResAttributeId;
+@AttributeOverrides({
+	@AttributeOverride(name = "id", column = @Column(name = "ATTRIBUTE_MAP_ID")),
+	@AttributeOverride(name = "name", column = @Column(name="TARGET_ATTRIBUTE_NAME", length=100, nullable = false))
+})
+public class AuthResourceAttributeMapEntity extends AbstractKeyNameEntity {
+    
     @Column(name="AM_POLICY_URL", length=100, nullable = true)
     private String amPolicyUrl;
 
@@ -40,36 +35,12 @@ public class AuthResourceAttributeMapEntity implements Serializable {
     private SsoAttributeType attributeType;
 
     @ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH})
-    @JoinColumn(name="PROVIDER_ID", referencedColumnName = "PROVIDER_ID", insertable = false, updatable = false)
+    @JoinColumn(name="PROVIDER_ID", referencedColumnName = "PROVIDER_ID", insertable = true, updatable = false)
     private AuthProviderEntity provider;
 
     @ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH}, optional = true)
-    @JoinColumn(name="AM_RES_ATTRIBUTE_ID", referencedColumnName = "AM_RES_ATTRIBUTE_ID", insertable = false, updatable = false, nullable=true)
+    @JoinColumn(name="AM_RES_ATTRIBUTE_ID", referencedColumnName = "AM_RES_ATTRIBUTE_ID", insertable = true, updatable = true, nullable=true)
     private AuthResourceAMAttributeEntity amAttribute;
-
-    public String getAttributeMapId() {
-        return attributeMapId;
-    }
-
-    public void setAttributeMapId(String attributeMapId) {
-        this.attributeMapId = attributeMapId;
-    }
-
-    public String getProviderId() {
-        return providerId;
-    }
-
-    public void setProviderId(String providerId) {
-        this.providerId = providerId;
-    }
-
-    public String getTargetAttributeName() {
-        return targetAttributeName;
-    }
-
-    public void setTargetAttributeName(String targetAttributeName) {
-        this.targetAttributeName = targetAttributeName;
-    }
 
     public AuthProviderEntity getProvider() {
         return provider;
@@ -78,15 +49,7 @@ public class AuthResourceAttributeMapEntity implements Serializable {
     public void setProvider(AuthProviderEntity provider) {
         this.provider = provider;
     }
-
-    public String getAmResAttributeId() {
-        return amResAttributeId;
-    }
-
-    public void setAmResAttributeId(String amResAttributeId) {
-        this.amResAttributeId = amResAttributeId;
-    }
-
+    
     public String getAmPolicyUrl() {
         return amPolicyUrl;
     }
@@ -118,4 +81,57 @@ public class AuthResourceAttributeMapEntity implements Serializable {
     public void setAttributeType(SsoAttributeType attributeType) {
         this.attributeType = attributeType;
     }
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result
+				+ ((amAttribute == null) ? 0 : amAttribute.hashCode());
+		result = prime * result
+				+ ((amPolicyUrl == null) ? 0 : amPolicyUrl.hashCode());
+		result = prime * result
+				+ ((attributeType == null) ? 0 : attributeType.hashCode());
+		result = prime * result
+				+ ((attributeValue == null) ? 0 : attributeValue.hashCode());
+		result = prime * result
+				+ ((provider == null) ? 0 : provider.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		AuthResourceAttributeMapEntity other = (AuthResourceAttributeMapEntity) obj;
+		if (amAttribute == null) {
+			if (other.amAttribute != null)
+				return false;
+		} else if (!amAttribute.equals(other.amAttribute))
+			return false;
+		if (amPolicyUrl == null) {
+			if (other.amPolicyUrl != null)
+				return false;
+		} else if (!amPolicyUrl.equals(other.amPolicyUrl))
+			return false;
+		if (attributeType != other.attributeType)
+			return false;
+		if (attributeValue == null) {
+			if (other.attributeValue != null)
+				return false;
+		} else if (!attributeValue.equals(other.attributeValue))
+			return false;
+		if (provider == null) {
+			if (other.provider != null)
+				return false;
+		} else if (!provider.equals(other.provider))
+			return false;
+		return true;
+	}
+    
+    
 }

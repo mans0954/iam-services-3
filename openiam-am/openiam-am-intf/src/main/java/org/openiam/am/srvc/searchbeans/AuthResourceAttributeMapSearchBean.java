@@ -1,6 +1,7 @@
 package org.openiam.am.srvc.searchbeans;
 
 import org.openiam.am.srvc.dto.AuthResourceAttributeMap;
+import org.openiam.idm.searchbeans.AbstractKeyNameSearchBean;
 import org.openiam.idm.searchbeans.AbstractSearchBean;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -10,12 +11,10 @@ import javax.xml.bind.annotation.XmlType;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "AuthResourceAttributeMapSearchBean", propOrder = {
         "providerId",
-        "targetAttributeName",
         "amAttributeId"
 })
-public class AuthResourceAttributeMapSearchBean extends AbstractSearchBean<AuthResourceAttributeMap, String> {
+public class AuthResourceAttributeMapSearchBean extends AbstractKeyNameSearchBean<AuthResourceAttributeMap, String> {
     private String providerId;
-    private String targetAttributeName;
     private String amAttributeId;
 
     public String getProviderId() {
@@ -24,14 +23,6 @@ public class AuthResourceAttributeMapSearchBean extends AbstractSearchBean<AuthR
 
     public void setProviderId(String providerId) {
         this.providerId = providerId;
-    }
-
-    public String getTargetAttributeName() {
-        return targetAttributeName;
-    }
-
-    public void setTargetAttributeName(String targetAttributeName) {
-        this.targetAttributeName = targetAttributeName;
     }
 
     public String getAmAttributeId() {

@@ -35,16 +35,8 @@ public class AuthResourceAttributeWebServiceImpl implements AuthResourceAttribut
     private AuthResourceAttributeMapDozerConverter authResourceAttributeMapDozerConverter;
     @Autowired
     private AuthResourceAttributeService authResourceAttributeService;
-    /*
-    *==================================================
-    * AuthResourceAMAttribute section
-    *===================================================
-    */
-    @Override
-    @Transactional(readOnly = true)
-    public AuthResourceAMAttribute getAmAttribute(String attributeId) {
-        return authResourceAMAttributeDozerConverter.convertToDTO(authResourceAttributeService.getAmAttribute(attributeId), true);
-    }
+
+
 
     @Override
     @Transactional(readOnly = true)
@@ -52,67 +44,11 @@ public class AuthResourceAttributeWebServiceImpl implements AuthResourceAttribut
         return authResourceAMAttributeDozerConverter.convertToDTOList(authResourceAttributeService.getAmAttributeList(), true);
     }
 
-    @Override
-    public Response saveAmAttribute(AuthResourceAMAttribute attribute) {
-        final Response response = new Response(ResponseStatus.SUCCESS);
-        try {
-            if(attribute==null)
-                throw new BasicDataServiceException(ResponseCode.AUTH_RESOURCE_AM_ATTRIBUTE_NOT_SET);
-            if(attribute.getId()==null || attribute.getId().trim().isEmpty())
-                throw new BasicDataServiceException(ResponseCode.AUTH_RESOURCE_AM_ATTRIBUTE_ID_NOT_SET);
-            if(attribute.getReflectionKey()==null || attribute.getReflectionKey().trim().isEmpty())
-                throw new BasicDataServiceException(ResponseCode.AUTH_RESOURCE_AM_ATTRIBUTE_REFLECTION_KEY_NOT_SET);
-            if(attribute.getAttributeName()==null || attribute.getAttributeName().trim().isEmpty())
-                throw new BasicDataServiceException(ResponseCode.AUTH_RESOURCE_AM_ATTRIBUTE_NAME_NOT_SET);
-
-            AuthResourceAMAttributeEntity entity = authResourceAttributeService.saveAmAttribute(authResourceAMAttributeDozerConverter.convertToEntity(attribute, false));
-            response.setResponseValue(authResourceAMAttributeDozerConverter.convertToDTO(entity, true));
-        } catch(BasicDataServiceException e) {
-            log.error(e.getMessage(), e);
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorCode(e.getCode());
-        } catch(Throwable e) {
-            log.error(e.getMessage(), e);
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorText(e.getMessage());
-        }
-        return response;
-    }
-
-    @Override
-    public Response deleteAmAttribute(String attributeId) {
-        final Response response = new Response(ResponseStatus.SUCCESS);
-        try {
-            if(attributeId==null || attributeId.trim().isEmpty())
-                throw new BasicDataServiceException(ResponseCode.AUTH_RESOURCE_AM_ATTRIBUTE_ID_NOT_SET);
-            authResourceAttributeService.deleteAmAttribute(attributeId);
-        } catch(BasicDataServiceException e) {
-            log.error(e.getMessage(), e);
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorCode(e.getCode());
-        } catch(Throwable e) {
-            log.error(e.getMessage(), e);
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorText(e.getMessage());
-        }
-        return response;
-    }
     /*
     *==================================================
     * AuthResourceAttributeMap section
     *===================================================
     */
-    @Override
-    @Transactional(readOnly = true)
-    public AuthResourceAttributeMap getAttributeMap(String attributeMapId) {
-        return authResourceAttributeMapDozerConverter.convertToDTO(authResourceAttributeService.getAttributeMap(attributeMapId),true);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<AuthResourceAttributeMap> getAttributeMapList(String providerId) {
-        return authResourceAttributeMapDozerConverter.convertToDTOList(authResourceAttributeService.getAttributeMapList(providerId),true);
-    }
 
     @Override
     public Response saveAttributeMap(AuthResourceAttributeMap attributeMap) {
@@ -124,7 +60,7 @@ public class AuthResourceAttributeWebServiceImpl implements AuthResourceAttribut
             if (StringUtils.isBlank(attributeMap.getProviderId())) {
                 throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_SET);
             }
-            if (StringUtils.isBlank(attributeMap.getTargetAttributeName())) {
+            if (StringUtils.isBlank(attributeMap.getName())) {
                 throw new BasicDataServiceException(ResponseCode.AUTH_RESOURCE_TARGET_ATTRIBUTE_NOT_SET);
             }
             if (attributeMap.getAttributeType() == null) {
@@ -136,9 +72,9 @@ public class AuthResourceAttributeWebServiceImpl implements AuthResourceAttribut
                 throw new BasicDataServiceException(ResponseCode.AUTH_RESOURCE_AM_ATTRIBUTE_NOT_SET);
             }
 
-            final AuthResourceAttributeMapEntity entity = authResourceAttributeService.saveAttributeMap(
-                    authResourceAttributeMapDozerConverter.convertToEntity(attributeMap, false));
-            response.setResponseValue(authResourceAttributeMapDozerConverter.convertToDTO(entity, true));
+            final AuthResourceAttributeMapEntity entity = authResourceAttributeMapDozerConverter.convertToEntity(attributeMap, false);
+            authResourceAttributeService.saveAttributeMap(entity);
+            response.setResponseValue(entity.getId());
 
         } catch(BasicDataServiceException e) {
             log.error(e.getMessage(), e);
@@ -150,27 +86,6 @@ public class AuthResourceAttributeWebServiceImpl implements AuthResourceAttribut
             response.setErrorText(e.getMessage());
         }
         return response;
-    }
-
-    @Override
-    public Response addAttributeMapCollection(List<AuthResourceAttributeMap> attributeMapList) {
-        final Response response = new Response(ResponseStatus.SUCCESS);
-        try {
-            if (attributeMapList == null || attributeMapList.isEmpty())
-                throw new BasicDataServiceException(ResponseCode.AUTH_RESOURCE_ATTRIBUTE_MAP_COLLECTION_NOT_SET);
-
-            authResourceAttributeService.saveAttributeMapCollection(authResourceAttributeMapDozerConverter.convertToEntityList(attributeMapList, false));
-        } catch(BasicDataServiceException e) {
-            log.error(e.getMessage(), e);
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorCode(e.getCode());
-        } catch(Throwable e) {
-            log.error(e.getMessage(), e);
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorText(e.getMessage());
-        }
-        return response;
-
     }
 
     @Override
@@ -194,28 +109,14 @@ public class AuthResourceAttributeWebServiceImpl implements AuthResourceAttribut
     }
 
     @Override
-    public Response removeAttributeMaps(String providerId) {
-        final Response response = new Response(ResponseStatus.SUCCESS);
-        try {
-            if (providerId == null || providerId.trim().isEmpty())
-                throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_SET);
-
-            authResourceAttributeService.removeAttributeMaps(providerId);
-        } catch(BasicDataServiceException e) {
-            log.error(e.getMessage(), e);
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorCode(e.getCode());
-        } catch(Throwable e) {
-            log.error(e.getMessage(), e);
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorText(e.getMessage());
-        }
-        return response;
-    }
-
-    @Override
     public List<SSOAttribute> getSSOAttributes(@WebParam(name = "providerId", targetNamespace = "") String providerId,
                                                @WebParam(name = "userId", targetNamespace = "") String userId) {
         return authResourceAttributeService.getSSOAttributes(providerId, userId);
     }
+
+	@Override
+	public AuthResourceAttributeMap getAttribute(String attributeMapId) {
+		final AuthResourceAttributeMapEntity entity = authResourceAttributeService.getAttribute(attributeMapId);
+		return authResourceAttributeMapDozerConverter.convertToDTO(entity, true);
+	}
 }

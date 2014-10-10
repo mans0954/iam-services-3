@@ -4,6 +4,8 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.am.srvc.dao.AuthProviderDao;
+import org.openiam.am.srvc.domain.AuthProviderEntity;
 import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.dozer.converter.LoginDozerConverter;
@@ -21,6 +23,7 @@ import org.openiam.idm.srvc.msg.dto.NotificationParam;
 import org.openiam.idm.srvc.msg.dto.NotificationRequest;
 import org.openiam.idm.srvc.msg.service.MailService;
 import org.openiam.idm.srvc.msg.service.MailTemplateParameters;
+import org.openiam.idm.srvc.policy.domain.PolicyEntity;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
 import org.openiam.idm.srvc.policy.service.PolicyDataService;
@@ -40,6 +43,9 @@ import java.util.*;
 @Service("loginManager")
 public class LoginDataServiceImpl implements LoginDataService {
 
+	@Autowired
+	private AuthProviderDao authProviderDAO;
+	
 	@Autowired
     protected LoginDAO loginDao;
 
@@ -69,9 +75,6 @@ public class LoginDataServiceImpl implements LoginDataService {
 
     @Autowired
     protected LoginDozerConverter loginDozerConverter;
-
-    @Autowired
-    private EmailAddressDAO emailAddressDao;
 
     @Autowired
     private MailService mailService;
@@ -197,24 +200,14 @@ public class LoginDataServiceImpl implements LoginDataService {
     	}
     	return retVal;
     }
-
-    /**
-     * Sets the password for a sourceLogin. The password needs to be encrypted externally. this allow for flexiblity in
-     * supporting alternate approaches to encryption.
-     * @param login
-     * @param sysId
-     * @param password
-     * @return
-     */
-    @Override
-    @Transactional
-    public boolean setPassword(String login, String sysId,
-            String password, boolean preventChangeCountIncrement) {
-        Calendar cal = Calendar.getInstance();
+    
+    public boolean setPasswordUsingContentProvider(String login, String sysId,
+            String password, boolean preventChangeCountIncrement, final String contentProviderId) {
+    	Calendar cal = Calendar.getInstance();
         Calendar expCal = Calendar.getInstance();
         LoginEntity lg = getLoginByManagedSys(login, sysId);
 
-        Policy plcy = passwordPolicyProvider.getPasswordPolicyByUser(lg.getUserId());
+        Policy plcy = passwordPolicyProvider.getPasswordPolicyByUser(lg.getUserId(), contentProviderId);
 
         String pswdExpValue = getPolicyAttribute(plcy.getPolicyAttributes(), "PWD_EXPIRATION");
         String changePswdOnReset = getPolicyAttribute( plcy.getPolicyAttributes(), "CHNG_PSWD_ON_RESET");
@@ -265,7 +258,22 @@ public class LoginDataServiceImpl implements LoginDataService {
             return true;
         }
         return false;
+    }
 
+    /**
+     * Sets the password for a sourceLogin. The password needs to be encrypted externally. this allow for flexiblity in
+     * supporting alternate approaches to encryption.
+     * @param login
+     * @param sysId
+     * @param password
+     * @return
+     */
+    @Override
+    @Transactional
+    @Deprecated
+    public boolean setPassword(String login, String sysId,
+            String password, boolean preventChangeCountIncrement) {
+        return setPasswordUsingContentProvider(login, sysId, password, preventChangeCountIncrement, null);
     }
     @Override
     @Transactional
@@ -275,7 +283,7 @@ public class LoginDataServiceImpl implements LoginDataService {
         UserEntity user = userDao.findById(lg.getUserId());
 
 
-        Policy plcy = passwordPolicyProvider.getPasswordPolicyByUser(user);
+        Policy plcy = passwordPolicyProvider.getPasswordPolicyByUser(user, null);
 
         String pswdExpValue = getPolicyAttribute(plcy.getPolicyAttributes(),
                 "NUM_DAYS_FORGOT_PASSWORD_TOKEN_VALID");
@@ -474,13 +482,14 @@ public class LoginDataServiceImpl implements LoginDataService {
 //        final List<SecurityDomain> securityDomainList = secDomainService
 //                .getAllDomainsWithExclude("IDM");
 //        for (SecurityDomain secDom : securityDomainList) {
-            String authnPolicy = sysConfiguration.getDefaultAuthPolicyId();
-            if (authnPolicy != null) {
-                Policy plcy = policyDataService.getPolicy(authnPolicy);
-                String autoUnlockTime = getPolicyAttribute(
-                        plcy.getPolicyAttributes(), "AUTO_UNLOCK_TIME");
-                if (autoUnlockTime != null) {
-                    loginDao.bulkUnlock(status, Integer.parseInt(autoUnlockTime));
+        	final AuthProviderEntity authProvider = authProviderDAO.findById(sysConfiguration.getDefaultAuthProviderId());
+            if (authProvider != null) {
+                final PolicyEntity policy = authProvider.getPolicy();
+                if(policy != null && policy.getAttribute("AUTO_UNLOCK_TIME") != null) {
+	                final String autoUnlockTime = policy.getAttribute("AUTO_UNLOCK_TIME").getValue1();
+	                if (autoUnlockTime != null) {
+	                    loginDao.bulkUnlock(status, Integer.parseInt(autoUnlockTime));
+	                }
                 }
             }
 

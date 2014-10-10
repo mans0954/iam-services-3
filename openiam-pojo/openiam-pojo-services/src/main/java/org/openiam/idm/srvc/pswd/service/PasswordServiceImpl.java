@@ -37,12 +37,10 @@ import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.service.OrganizationDAO;
 import org.openiam.idm.srvc.policy.domain.PolicyEntity;
-import org.openiam.idm.srvc.policy.domain.PolicyObjectAssocEntity;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
 import org.openiam.idm.srvc.policy.service.PolicyDAO;
 import org.openiam.idm.srvc.policy.service.PolicyDataService;
-import org.openiam.idm.srvc.policy.service.PolicyObjectAssocDAO;
 import org.openiam.idm.srvc.pswd.dto.Password;
 import org.openiam.idm.srvc.pswd.dto.PasswordResetTokenRequest;
 import org.openiam.idm.srvc.pswd.dto.PasswordResetTokenResponse;
@@ -84,9 +82,6 @@ public class PasswordServiceImpl implements PasswordService {
 	private PolicyDataService policyDataService;
 
 	@Autowired
-	private PolicyObjectAssocDAO policyObjectAssocDao;
-
-	@Autowired
 	private PolicyDAO policyDAO;
 
 	@Autowired
@@ -123,8 +118,8 @@ public class PasswordServiceImpl implements PasswordService {
 			throws ObjectNotFoundException {
 		PasswordValidationResponse retVal = new PasswordValidationResponse(ResponseStatus.SUCCESS);
 		
-		Policy pswdPolicy = getPasswordPolicy(
-				pswd.getPrincipal(), pswd.getManagedSysId());
+		Policy pswdPolicy = getPasswordPolicyUsingContentProvider(
+				pswd.getPrincipal(), pswd.getManagedSysId(), null);
 
 		if (pswdPolicy == null) {
 			retVal.setErrorCode(ResponseCode.PASSWORD_POLICY_NOT_FOUND);
@@ -157,7 +152,7 @@ public class PasswordServiceImpl implements PasswordService {
 			UserEntity user, LoginEntity lg) throws ObjectNotFoundException {
 		PasswordValidationResponse retVal = new PasswordValidationResponse(ResponseStatus.SUCCESS);
 		
-		Policy pswdPolicy = passwordPolicyProvider.getPasswordPolicyByUser(user);
+		Policy pswdPolicy = passwordPolicyProvider.getPasswordPolicyByUser(user, null);
 
 		if (pswdPolicy == null) {
 			retVal.setErrorCode(ResponseCode.PASSWORD_POLICY_NOT_FOUND);
@@ -192,7 +187,7 @@ public class PasswordServiceImpl implements PasswordService {
 		final PasswordValidationResponse retVal = new PasswordValidationResponse(ResponseStatus.SUCCESS);
 		Policy pswdPolicy = policy;
 		if (pswdPolicy == null) {
-			pswdPolicy = passwordPolicyProvider.getPasswordPolicyByUser(user);
+			pswdPolicy = passwordPolicyProvider.getPasswordPolicyByUser(user, null);
 		}
 
 		if (pswdPolicy == null) {
@@ -269,7 +264,7 @@ public class PasswordServiceImpl implements PasswordService {
 
 		boolean enabled = false;
 		// get the policy
-		Policy policy = getPasswordPolicy(principal, managedSysId);
+		Policy policy = getPasswordPolicyUsingContentProvider(principal, managedSysId, null);
 
 		log.info("Password policy=" + policy);
 
@@ -326,21 +321,14 @@ public class PasswordServiceImpl implements PasswordService {
 	 * .openiam.idm.srvc.user.dto.User)
 	 */
     @Override
+    @Deprecated
 	public Policy getPasswordPolicy(String principal, String managedSysId) {
-		// Find a password policy for this user
-		// order of search, type, classification, domain, global
-
-		// get the user for this principal
-		final LoginEntity lg = loginManager.getLoginByManagedSys(principal, managedSysId);
-		log.info(String.format("login=%s", lg));
-//		final UserEntity user = userManager.getUser(lg.getUserId());
-
-		return passwordPolicyProvider.getPasswordPolicyByUser(lg.getUserId());
+		return getPasswordPolicyUsingContentProvider(principal, managedSysId, null);
 	}
 
 	@Override
 	public Policy getPasswordPolicyForUser(final UserEntity user) {
-        return passwordPolicyProvider.getPasswordPolicyByUser(user);
+        return passwordPolicyProvider.getPasswordPolicyByUser(user, null);
 	}
 
 	/**
@@ -409,8 +397,7 @@ public class PasswordServiceImpl implements PasswordService {
 			return resp;
 		}
 
-		Policy pl = getPasswordPolicy(
-				request.getPrincipal(), request.getManagedSysId());
+		Policy pl = getPasswordPolicyUsingContentProvider(request.getPrincipal(), request.getManagedSysId(), request.getContentProviderId());
 		if (pl == null) {
 			log.warn("can't generate password reset token - can't get password policy");
 			resp.setStatus(ResponseStatus.FAILURE);
@@ -487,5 +474,11 @@ public class PasswordServiceImpl implements PasswordService {
 
 		return (curTime + tokenLife);
 
+	}
+
+	@Override
+	public Policy getPasswordPolicyUsingContentProvider(String principal, String managedSysId, String contentProviderId) {
+		final LoginEntity lg = loginManager.getLoginByManagedSys(principal, managedSysId);
+		return passwordPolicyProvider.getPasswordPolicyByUser(lg.getUserId(), contentProviderId);
 	}
 }

@@ -21,20 +21,20 @@ import java.util.List;
 public class AuthProviderDaoImpl extends BaseDaoImpl<AuthProviderEntity, String> implements AuthProviderDao {
     @Override
     protected String getPKfieldName() {
-        return "providerId";
+        return "id";
     }
 
     @Override
     protected Criteria getExampleCriteria(final AuthProviderEntity entity) {
         final Criteria criteria = getCriteria();
-        if (StringUtils.isNotBlank(entity.getProviderId())) {
-            criteria.add(Restrictions.eq(getPKfieldName(), entity.getProviderId()));
+        if (StringUtils.isNotBlank(entity.getId())) {
+            criteria.add(Restrictions.eq(getPKfieldName(), entity.getId()));
         } else {
-            if (StringUtils.isNotEmpty(entity.getProviderType())) {
-                criteria.add(Restrictions.eq("providerType", entity.getProviderType()));
+            if (entity.getType() != null && StringUtils.isNotEmpty(entity.getType().getId())) {
+                criteria.add(Restrictions.eq("type.id", entity.getType().getId()));
             }
-            if (StringUtils.isNotEmpty(entity.getManagedSysId())) {
-                criteria.add(Restrictions.eq("managedSysId", entity.getManagedSysId()));
+            if (entity.getManagedSystem() != null && StringUtils.isNotEmpty(entity.getManagedSystem().getId())) {
+                criteria.add(Restrictions.eq("managedSys.id", entity.getManagedSystem().getId()));
             }
 
             if (StringUtils.isNotEmpty(entity.getName())) {
@@ -65,23 +65,6 @@ public class AuthProviderDaoImpl extends BaseDaoImpl<AuthProviderEntity, String>
         return criteria;
     }
 
-    @Override
-    public List<String> getPkListByType(String providerType) {
-        Criteria criteria = getCriteria();
-        criteria.add(Restrictions.eq("providerType",providerType)).setProjection(Projections.property(getPKfieldName()));
-        return criteria.list();
-    }
-
-    @Override
-    @Transactional
-    public void deleteByPkList(List<String> pkList) {
-        if(pkList!=null && !pkList.isEmpty()) {
-            Query qry = getSession().createQuery("delete "+this.domainClass.getName()+ " p where p.providerId in (:pkList) ");
-            qry.setParameterList("pkList", pkList);
-            qry.executeUpdate();
-        }
-    }
-
 	@Override
 	public List<AuthProviderEntity> getByResourceId(String resourceId) {
 		final AuthProviderEntity entity = new AuthProviderEntity();
@@ -95,8 +78,7 @@ public class AuthProviderDaoImpl extends BaseDaoImpl<AuthProviderEntity, String>
         final AuthProviderEntity entity = new AuthProviderEntity();
         final ManagedSysEntity managedSysEntity = new ManagedSysEntity();
         managedSysEntity.setId(managedSysId);
-        entity.setManagedSys(managedSysEntity);
-        entity.setManagedSysId(managedSysId);
+        entity.setManagedSystem(managedSysEntity);
         return getByExample(entity);
     }
 

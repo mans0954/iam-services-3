@@ -64,4 +64,10 @@
 			<class name="org.openiam.service.integration.contentprovider.UIThemeServiceTest" />
 		</classes>
 	</test>
+	
+	<test name="auth.provider">
+		<classes>
+			<class name="org.openiam.service.integration.authprovider.AuthProviderServiceTest" />
+		</classes>
+	</test>
 </suite>

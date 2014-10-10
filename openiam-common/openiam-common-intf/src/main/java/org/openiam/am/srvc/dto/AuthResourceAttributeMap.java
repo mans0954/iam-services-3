@@ -9,7 +9,6 @@ import javax.xml.bind.annotation.XmlType;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "AuthResourceAttributeMap", propOrder = {
-        "attributeMapId",
         "providerId",
         "amResAttributeId",
         "amReflectionKey",
@@ -18,22 +17,11 @@ import javax.xml.bind.annotation.XmlType;
 })
 @DozerDTOCorrespondence(AuthResourceAttributeMapEntity.class)
 public class AuthResourceAttributeMap extends SSOAttribute {
-    private String attributeMapId;
     private String providerId;
     private String amResAttributeId;
     private String amReflectionKey;
     private String amResAttributeName;
     private String amPolicyUrl;
-
-
-
-    public String getAttributeMapId() {
-        return attributeMapId;
-    }
-
-    public void setAttributeMapId(String attributeMapId) {
-        this.attributeMapId = attributeMapId;
-    }
 
     public String getProviderId() {
         return providerId;
@@ -74,4 +62,63 @@ public class AuthResourceAttributeMap extends SSOAttribute {
     public void setAmPolicyUrl(String amPolicyUrl) {
         this.amPolicyUrl = amPolicyUrl;
     }
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result
+				+ ((amPolicyUrl == null) ? 0 : amPolicyUrl.hashCode());
+		result = prime * result
+				+ ((amReflectionKey == null) ? 0 : amReflectionKey.hashCode());
+		result = prime
+				* result
+				+ ((amResAttributeId == null) ? 0 : amResAttributeId.hashCode());
+		result = prime
+				* result
+				+ ((amResAttributeName == null) ? 0 : amResAttributeName
+						.hashCode());
+		result = prime * result
+				+ ((providerId == null) ? 0 : providerId.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		AuthResourceAttributeMap other = (AuthResourceAttributeMap) obj;
+		if (amPolicyUrl == null) {
+			if (other.amPolicyUrl != null)
+				return false;
+		} else if (!amPolicyUrl.equals(other.amPolicyUrl))
+			return false;
+		if (amReflectionKey == null) {
+			if (other.amReflectionKey != null)
+				return false;
+		} else if (!amReflectionKey.equals(other.amReflectionKey))
+			return false;
+		if (amResAttributeId == null) {
+			if (other.amResAttributeId != null)
+				return false;
+		} else if (!amResAttributeId.equals(other.amResAttributeId))
+			return false;
+		if (amResAttributeName == null) {
+			if (other.amResAttributeName != null)
+				return false;
+		} else if (!amResAttributeName.equals(other.amResAttributeName))
+			return false;
+		if (providerId == null) {
+			if (other.providerId != null)
+				return false;
+		} else if (!providerId.equals(other.providerId))
+			return false;
+		return true;
+	}
+    
+    
 }

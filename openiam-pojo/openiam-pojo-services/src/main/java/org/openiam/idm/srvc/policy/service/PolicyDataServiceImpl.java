@@ -34,14 +34,12 @@ import org.openiam.exception.BasicDataServiceException;
 import org.openiam.dozer.converter.ITPolicyDozerConverter;
 import org.openiam.dozer.converter.PolicyDefParamDozerConverter;
 import org.openiam.dozer.converter.PolicyDozerConverter;
-import org.openiam.dozer.converter.PolicyObjectAssocDozerConverter;
 import org.openiam.idm.searchbeans.PolicySearchBean;
 import org.openiam.idm.srvc.policy.domain.*;
 import org.openiam.idm.srvc.policy.dto.ITPolicy;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
 import org.openiam.idm.srvc.policy.dto.PolicyDefParam;
-import org.openiam.idm.srvc.policy.dto.PolicyObjectAssoc;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -66,18 +64,12 @@ public class PolicyDataServiceImpl implements PolicyDataService {
     @Autowired
     private ITPolicyDAO itPolicyDao;
 
-	@Autowired
-	private PolicyObjectAssocDAO policyObjectAssocDAO;
-
 	/** The policy dozer converter. */
 	@Autowired
     private PolicyDozerConverter policyDozerConverter;
 
     @Autowired
     private ITPolicyDozerConverter itPolicyDozerConverter;
-
-	@Autowired
-	private PolicyObjectAssocDozerConverter policyAssocObjectDozerConverter;
 
 	/** The policy def param dozer converter. */
 	@Autowired
@@ -190,6 +182,8 @@ public class PolicyDataServiceImpl implements PolicyDataService {
 				throw new BasicDataServiceException(
 						ResponseCode.INVALID_ARGUMENTS);
 			}
+			
+			
 
 			policyService.delete(policyId);
 		} catch (BasicDataServiceException e) {
@@ -203,51 +197,6 @@ public class PolicyDataServiceImpl implements PolicyDataService {
 		}
 		return response;
 	}
-
-	@Override
-	@Transactional(readOnly=true)
-	public List<PolicyObjectAssoc> getAssociationsForPolicy(String policyId) {
-
-		List<PolicyObjectAssoc> policyObjectAssoc = policyAssocObjectDozerConverter
-				.convertToDTOList(policyObjectAssocDAO.findByPolicy(policyId),
-						true);
-
-		return policyObjectAssoc;
-	}
-
-	@Override
-	@Transactional
-	public Response savePolicyAssoc(PolicyObjectAssoc poa) {
-		final Response response = new Response(ResponseStatus.SUCCESS);
-		try {
-			if (poa.getPolicyId() == null) {
-				throw new BasicDataServiceException(
-						ResponseCode.INVALID_ARGUMENTS);
-			}
-			
-			
-			PolicyObjectAssocEntity poaEntity = policyAssocObjectDozerConverter
-					.convertToEntity(poa, true);
-       		if (poaEntity==null ||poaEntity.getId()==null 
-					&& poaEntity.getObjectId()==null) {
-				poaEntity.setObjectId(null);
-				poaEntity = policyObjectAssocDAO.add(poaEntity);
-				response.setResponseValue(poaEntity.getId());
-			} else {
-				policyObjectAssocDAO.update(poaEntity);
-			}
-		} catch (BasicDataServiceException e) {
-
-			response.setStatus(ResponseStatus.FAILURE);
-			response.setErrorCode(e.getCode());
-		} catch (Throwable e) {
-			log.error("Can't save associate policy type", e);
-			response.setStatus(ResponseStatus.FAILURE);
-			response.setErrorText(e.getMessage());
-		}
-		return response;
-	}
-
 	@Override
 	@Transactional(readOnly=true)
 	public List<Policy> findBeans(final PolicySearchBean searchBean, int from, int size) {

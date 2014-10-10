@@ -94,14 +94,23 @@ public interface PasswordService {
      */
     int passwordChangeCount(String principal, String managedSysId);
 
+    /**
+     * use getPasswordPolicyUsingContentProvider(final String principal, final String managedSysId, final String contentProviderId);
+     * @param principal
+     * @param managedSysId
+     * @return
+     */
+    @Deprecated
+    Policy getPasswordPolicy(String principal, String managedSysId);
 
     /**
      * Returns the password policy for this user based on their identity
      * @param principal
      * @param managedSysId
+     * @param contentProviderId
      * @return
      */
-    Policy getPasswordPolicy(String principal, String managedSysId);
+    Policy getPasswordPolicyUsingContentProvider(final String principal, final String managedSysId, final String contentProviderId);
 
     /**
      * Returns the global password policy

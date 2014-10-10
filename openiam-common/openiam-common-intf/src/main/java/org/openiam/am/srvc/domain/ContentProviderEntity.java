@@ -57,6 +57,10 @@ public class ContentProviderEntity extends AbstractKeyNameEntity {
     @Column(name = "RESOURCE_ID", length = 32, nullable = false)
     private String resourceId;
     */
+    
+    @ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+    @JoinColumn(name="PROVIDER_ID", referencedColumnName = "PROVIDER_ID", insertable = true, updatable = true, nullable=true)
+    private AuthProviderEntity authProvider;
 	
 	@ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name="MANAGED_SYS_ID", referencedColumnName = "MANAGED_SYS_ID", insertable = true, updatable = true, nullable=false)
@@ -181,10 +185,20 @@ public class ContentProviderEntity extends AbstractKeyNameEntity {
 		this.showOnApplicationPage = showOnApplicationPage;
 	}
 
+	public AuthProviderEntity getAuthProvider() {
+		return authProvider;
+	}
+
+	public void setAuthProvider(AuthProviderEntity authProvider) {
+		this.authProvider = authProvider;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
+		result = prime * result
+				+ ((authProvider == null) ? 0 : authProvider.hashCode());
 		result = prime * result
 				+ ((domainPattern == null) ? 0 : domainPattern.hashCode());
 		result = prime * result + (isPublic ? 1231 : 1237);
@@ -193,6 +207,7 @@ public class ContentProviderEntity extends AbstractKeyNameEntity {
 				+ ((managedSystem == null) ? 0 : managedSystem.hashCode());
 		result = prime * result
 				+ ((resource == null) ? 0 : resource.hashCode());
+		result = prime * result + (showOnApplicationPage ? 1231 : 1237);
 		result = prime * result + ((uiTheme == null) ? 0 : uiTheme.hashCode());
 		return result;
 	}
@@ -206,6 +221,11 @@ public class ContentProviderEntity extends AbstractKeyNameEntity {
 		if (getClass() != obj.getClass())
 			return false;
 		ContentProviderEntity other = (ContentProviderEntity) obj;
+		if (authProvider == null) {
+			if (other.authProvider != null)
+				return false;
+		} else if (!authProvider.equals(other.authProvider))
+			return false;
 		if (domainPattern == null) {
 			if (other.domainPattern != null)
 				return false;
@@ -228,22 +248,14 @@ public class ContentProviderEntity extends AbstractKeyNameEntity {
 				return false;
 		} else if (!resource.equals(other.resource))
 			return false;
+		if (showOnApplicationPage != other.showOnApplicationPage)
+			return false;
 		if (uiTheme == null) {
 			if (other.uiTheme != null)
 				return false;
 		} else if (!uiTheme.equals(other.uiTheme))
 			return false;
-		if (showOnApplicationPage != other.showOnApplicationPage)
-			return false;
 		return true;
-	}
-
-	@Override
-	public String toString() {
-		return String
-				.format("ContentProviderEntity [isPublic=%s, domainPattern=%s, isSSL=%s, uiTheme=%s, managedSystem=%s, resource=%s, toString()=%s]",
-						isPublic, domainPattern, isSSL, uiTheme, managedSystem,
-						resource, super.toString());
 	}
 
 	

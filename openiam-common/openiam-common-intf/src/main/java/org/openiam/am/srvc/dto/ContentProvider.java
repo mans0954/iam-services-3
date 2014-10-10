@@ -33,7 +33,8 @@ import java.util.concurrent.atomic.AtomicInteger;
         "url",
         "themeId",
         "groupingXrefs",
-        "showOnApplicationPage"
+        "showOnApplicationPage",
+        "authProviderId"
 })
 @DozerDTOCorrespondence(ContentProviderEntity.class)
 public class ContentProvider extends KeyNameDTO {
@@ -51,6 +52,7 @@ public class ContentProvider extends KeyNameDTO {
 	private String themeId;
 	private boolean showOnApplicationPage = true;
 	private Set<AuthLevelGroupingContentProviderXref> groupingXrefs;
+	private String authProviderId;
 	
 	/*
 	 * federation variables.  Internal use only
@@ -181,22 +183,35 @@ public class ContentProvider extends KeyNameDTO {
 	public void setResourceCoorelatedName(String resourceCoorelatedName) {
 		this.resourceCoorelatedName = resourceCoorelatedName;
 	}
+	public String getAuthProviderId() {
+		return authProviderId;
+	}
+	public void setAuthProviderId(String authProviderId) {
+		this.authProviderId = authProviderId;
+	}
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
+		result = prime * result
+				+ ((authProviderId == null) ? 0 : authProviderId.hashCode());
 		result = prime * result
 				+ ((domainPattern == null) ? 0 : domainPattern.hashCode());
 		result = prime * result + (isPublic ? 1231 : 1237);
 		result = prime * result + ((isSSL == null) ? 0 : isSSL.hashCode());
 		result = prime * result
 				+ ((managedSysId == null) ? 0 : managedSysId.hashCode());
+		result = prime
+				* result
+				+ ((resourceCoorelatedName == null) ? 0
+						: resourceCoorelatedName.hashCode());
 		result = prime * result
 				+ ((resourceId == null) ? 0 : resourceId.hashCode());
+		result = prime * result
+				+ ((resourceName == null) ? 0 : resourceName.hashCode());
 		result = prime * result + (showOnApplicationPage ? 1231 : 1237);
 		result = prime * result + ((themeId == null) ? 0 : themeId.hashCode());
 		result = prime * result + ((url == null) ? 0 : url.hashCode());
-		result = prime * result + ((themeId == null) ? 0 : themeId.hashCode());
 		return result;
 	}
 	@Override
@@ -208,6 +223,11 @@ public class ContentProvider extends KeyNameDTO {
 		if (getClass() != obj.getClass())
 			return false;
 		ContentProvider other = (ContentProvider) obj;
+		if (authProviderId == null) {
+			if (other.authProviderId != null)
+				return false;
+		} else if (!authProviderId.equals(other.authProviderId))
+			return false;
 		if (domainPattern == null) {
 			if (other.domainPattern != null)
 				return false;
@@ -225,10 +245,20 @@ public class ContentProvider extends KeyNameDTO {
 				return false;
 		} else if (!managedSysId.equals(other.managedSysId))
 			return false;
+		if (resourceCoorelatedName == null) {
+			if (other.resourceCoorelatedName != null)
+				return false;
+		} else if (!resourceCoorelatedName.equals(other.resourceCoorelatedName))
+			return false;
 		if (resourceId == null) {
 			if (other.resourceId != null)
 				return false;
 		} else if (!resourceId.equals(other.resourceId))
+			return false;
+		if (resourceName == null) {
+			if (other.resourceName != null)
+				return false;
+		} else if (!resourceName.equals(other.resourceName))
 			return false;
 		if (showOnApplicationPage != other.showOnApplicationPage)
 			return false;
@@ -243,13 +273,6 @@ public class ContentProvider extends KeyNameDTO {
 		} else if (!url.equals(other.url))
 			return false;
 		return true;
-	}
-	@Override
-	public String toString() {
-		return String
-				.format("ContentProvider [isPublic=%s, domainPattern=%s, isSSL=%s, managedSysId=%s, resourceId=%s, url=%s, themeId=%s]",
-						isPublic, domainPattern, isSSL, managedSysId,
-						resourceId, url, themeId);
 	}
 	
 	

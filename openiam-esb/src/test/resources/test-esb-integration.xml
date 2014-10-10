@@ -289,4 +289,26 @@
 		<property name="serviceClass" value="org.openiam.idm.srvc.ui.theme.UIThemeWebService" />
 		<property name="address" value="${openiam.service_host}${openiam.idm.ws.path}UIThemeWebService" />
 	</bean>
+	
+		<bean id="authAttributeServiceClient" class="org.openiam.am.srvc.ws.AuthResourceAttributeWebService"
+		factory-bean="authAttributeServiceFactory" factory-method="create" />
+
+
+	<bean id="authAttributeServiceFactory" class="org.apache.cxf.jaxws.JaxWsProxyFactoryBean">
+		<property name="serviceClass"
+			value="org.openiam.am.srvc.ws.AuthResourceAttributeWebService" />
+		<property name="address"
+			value="${openiam.service_host}${openiam.idm.ws.path}AuthResourceAttributeWebService" />
+	</bean>
+
+	<bean id="authProviderServiceClient" class="org.openiam.am.srvc.ws.AuthProviderWebService"
+		factory-bean="authProviderServiceFactory" factory-method="create" />
+
+
+	<bean id="authProviderServiceFactory" class="org.apache.cxf.jaxws.JaxWsProxyFactoryBean">
+		<property name="serviceClass"
+			value="org.openiam.am.srvc.ws.AuthProviderWebService" />
+		<property name="address"
+			value="${openiam.service_host}${openiam.idm.ws.path}AuthProviderWebService" />
+	</bean>
 </beans>

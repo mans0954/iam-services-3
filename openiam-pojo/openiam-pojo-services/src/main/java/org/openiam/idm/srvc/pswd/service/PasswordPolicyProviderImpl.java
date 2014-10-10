@@ -1,17 +1,24 @@
 package org.openiam.idm.srvc.pswd.service;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.am.srvc.dao.AuthProviderDao;
+import org.openiam.am.srvc.dao.ContentProviderDao;
+import org.openiam.am.srvc.domain.AuthProviderEntity;
+import org.openiam.am.srvc.domain.ContentProviderEntity;
+import org.openiam.base.SysConfiguration;
+import org.openiam.dozer.converter.PolicyDozerConverter;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.service.OrganizationDAO;
-import org.openiam.idm.srvc.policy.domain.PolicyObjectAssocEntity;
+import org.openiam.idm.srvc.policy.domain.PolicyEntity;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.policy.service.PolicyDataService;
-import org.openiam.idm.srvc.policy.service.PolicyObjectAssocDAO;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -27,99 +34,61 @@ public class PasswordPolicyProviderImpl implements PasswordPolicyProvider {
     private static final Log log = LogFactory.getLog(PasswordServiceImpl.class);
 
     @Autowired
-    private PolicyObjectAssocDAO policyObjectAssocDao;
-    @Autowired
-    private PolicyDataService policyDataService;
+    private ContentProviderDao contentProviderDAO;
     @Autowired
     protected OrganizationDAO organizationDAO;
     @Autowired
     protected UserDataService userManager;
+    
+    @Autowired
+    private AuthProviderDao authProviderDAO;
 
+    @Autowired
+    private SysConfiguration sysConfiguration;
+    
+    @Autowired
+    private PolicyDozerConverter policyDozerConverter;
 
     @Override
-    public Policy getPasswordPolicyByUser(String userId){
-        return getPasswordPolicyByUser(userManager.getUser(userId));
-    }
-    @Override
-    public Policy getPasswordPolicyByUser(UserEntity user){
-        // Find a password policy for this user
-        // order of search, type, classification, domain, global
-
-        PolicyObjectAssocEntity policyAssocEntity = null;
-
-        log.info(String.format("User type and classifcation=%s %s", user.getId(), user.getUserTypeInd()));
-
-        if (user.getClassification() != null) {
-            log.info("Looking for associate by classification.");
-            policyAssocEntity = policyObjectAssocDao.findAssociationByLevel(
-                    "CLASSIFICATION", user.getClassification());
-            log.info(String.format("Association found: %s", policyAssocEntity));
-            if (policyAssocEntity != null) {
-                return getPolicy(policyAssocEntity);
-            }
-        }
-
-        // look to see if a policy exists for the type of user
-        if (user.getUserTypeInd() != null) {
-            log.info("Looking for associate by type.");
-            policyAssocEntity = policyObjectAssocDao.findAssociationByLevel(
-                    "TYPE", user.getUserTypeInd());
-            log.info(String.format("Association found: %s", policyAssocEntity));
-            if (policyAssocEntity != null) {
-                return getPolicy(policyAssocEntity);
-            }
-        }
-
-        //  set by ORGANIZATION
-
-        if (user.getId() != null) {
-
-            List<OrganizationEntity> orgEntity = organizationDAO
-                    .getOrganizationsForUser(user.getId(), null, 0, 10);
-
-            for (OrganizationEntity organization : orgEntity) {
-
-                log.info("Looking for associate by organization.");
-                policyAssocEntity = policyObjectAssocDao
-                        .findAssociationByLevel("ORGANIZATION",
-                                organization.getId());
-                log.info(String.format("Association found: %s", policyAssocEntity));
-                if (policyAssocEntity != null) {
-                    log.info("PolicyAssoc found=" + policyAssocEntity);
-                    break;
-                }
-            }
-
-            if (policyAssocEntity != null) {
-                return getPolicy(policyAssocEntity);
-            }
-        }
-
-        log.info("Using global association password policy.");
-        // did not find anything - get the global policy
-        return getGlobalPasswordPolicy();
-    }
-
-    private Policy getPolicy(PolicyObjectAssocEntity policyAssoc) {
-        log.info("Retreiving policyId=" + policyAssoc.getPolicyId());
-        return policyDataService.getPolicy(policyAssoc.getPolicyId());
-    }
-
-
-    /**
-     * Returns the global password policy
-     *
-     * @return
-     */
-    @Override
+    @Transactional
     public Policy getGlobalPasswordPolicy() {
-        log.info("Fetching global association password policy.");
-        PolicyObjectAssocEntity policyAssocEntity = policyObjectAssocDao
-                .findAssociationByLevel("GLOBAL", "GLOBAL");
-        log.info(String.format("Association found: %s", policyAssocEntity));
-        if (policyAssocEntity == null) {
-            return null;
-        }
-        return getPolicy(policyAssocEntity);
+    	Policy retVal = null;
+    	final AuthProviderEntity authProvider = authProviderDAO.findById(sysConfiguration.getDefaultAuthProviderId());
+    	if(authProvider != null) {
+    		final PolicyEntity policyEntity = authProvider.getPolicy();
+    		if(policyEntity != null) {
+    			retVal = policyDozerConverter.convertToDTO(policyEntity, true);
+    		}
+    	}
+    	return retVal;
     }
+    
+	@Override
+	@Transactional
+	public Policy getPasswordPolicyByUser(String userId,
+			String contentProviderId) {
+		return getPasswordPolicyByUser(userManager.getUser(userId), contentProviderId);
+	}
+	
+	@Override
+	@Transactional
+	public Policy getPasswordPolicyByUser(final UserEntity user, final String contentProviderId) {
+		Policy retVal = null;
+		if(StringUtils.isNotBlank(contentProviderId)) {
+			final ContentProviderEntity contentProvider = contentProviderDAO.findById(contentProviderId);
+			if(contentProvider != null) {
+				final AuthProviderEntity authProvider = contentProvider.getAuthProvider();
+				if(authProvider != null) {
+					final PolicyEntity policyEntity = authProvider.getPolicy();
+					if(policyEntity != null) {
+						retVal = policyDozerConverter.convertToDTO(policyEntity, true);
+					}
+				}
+			}
+		}
+		if(retVal == null) {
+			retVal = getGlobalPasswordPolicy();
+		}
+		return retVal;
+	}
 }

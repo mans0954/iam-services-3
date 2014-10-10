@@ -39,6 +39,9 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
     private ContentProviderDao contentProviderDao;
     @Autowired
     private ContentProviderServerDao contentProviderServerDao;
+    
+    @Autowired
+    private AuthProviderDao authProviderDAO;
 
     @Autowired
     private URIPatternDao uriPatternDao;
@@ -125,6 +128,12 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
         	theme = uiThemeDAO.findById(provider.getUiTheme().getId());
         }
         
+        if(provider.getAuthProvider() != null && StringUtils.isNotBlank(provider.getAuthProvider().getId())) {
+        	provider.setAuthProvider(authProviderDAO.findById(provider.getAuthProvider().getId()));
+        } else {
+        	provider.setAuthProvider(null);
+        }
+        
         final String cpURL = provider.getResource().getURL();
         
         if(StringUtils.isBlank(provider.getId())) {
@@ -172,6 +181,7 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
         		dbEntity.getResource().setCoorelatedName(provider.getName());
         		dbEntity.setManagedSystem(managedSys);
         		dbEntity.setUiTheme(theme);
+        		dbEntity.setAuthProvider(provider.getAuthProvider());
         		dbEntity.setShowOnApplicationPage(provider.isShowOnApplicationPage());
         		if(dbEntity.getGroupingXrefs() == null) {
         			dbEntity.setGroupingXrefs(new HashSet<AuthLevelGroupingContentProviderXrefEntity>());

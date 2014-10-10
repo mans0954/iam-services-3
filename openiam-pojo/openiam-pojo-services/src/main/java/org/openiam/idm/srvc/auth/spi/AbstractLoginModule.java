@@ -23,22 +23,36 @@ package org.openiam.idm.srvc.auth.spi;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.am.srvc.dao.AuthProviderDao;
+import org.openiam.am.srvc.domain.AuthProviderEntity;
+import org.openiam.am.srvc.domain.AuthProviderTypeEntity;
 import org.openiam.base.SysConfiguration;
+import org.openiam.base.ws.ResponseCode;
 import org.openiam.exception.AuthenticationException;
+import org.openiam.exception.BasicDataServiceException;
 import org.openiam.exception.EncryptionException;
+import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
+import org.openiam.idm.srvc.auth.context.AuthenticationContext;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
+import org.openiam.idm.srvc.auth.dto.AuthenticationRequest;
 import org.openiam.idm.srvc.auth.dto.Subject;
+import org.openiam.idm.srvc.auth.login.LoginDAO;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.auth.service.AuthenticationConstants;
 import org.openiam.idm.srvc.auth.sso.SSOTokenModule;
 import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
+import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
+import org.openiam.idm.srvc.mngsys.service.ManagedSysDAO;
+import org.openiam.idm.srvc.policy.domain.PolicyAttributeEntity;
+import org.openiam.idm.srvc.policy.domain.PolicyEntity;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.policy.service.PolicyDataService;
 import org.openiam.idm.srvc.pswd.service.PasswordService;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
+import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.util.encrypt.Cryptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,7 +64,19 @@ import java.util.Date;
  * @author suneet
  *
  */
-public abstract class AbstractLoginModule implements LoginModule {
+public abstract class AbstractLoginModule {
+	
+	@Autowired
+	protected ManagedSysDAO managedSysDAO;
+	
+	@Autowired
+	protected LoginDAO loginDAO;
+	
+	@Autowired
+	protected UserDAO userDAO;
+	
+	@Autowired
+	protected AuthProviderDao authProviderDAO;
 
 	@Autowired
     @Qualifier("defaultSSOToken")
@@ -71,22 +97,55 @@ public abstract class AbstractLoginModule implements LoginModule {
     
     @Autowired
     protected PasswordService passwordManager;
-    
-    @Autowired
-    protected PolicyDataService policyDataService;
 
     @Autowired
     protected SysConfiguration sysConfiguration;
     
-    protected UserEntity user;
-    protected LoginEntity lg;
-    protected String authPolicyId;
+    public abstract Subject login(final AuthenticationContext context) throws Exception;
     
     @Autowired
     protected KeyManagementService keyManagementService;
     private static final Log log = LogFactory.getLog(AbstractLoginModule.class);
+    
+    protected ManagedSysEntity getManagedSystem(final AuthenticationContext context) {
+    	final IdmAuditLog event = context.getEvent();
+    	final AuthProviderEntity authProvider = authProviderDAO.findById(context.getAuthProviderId());
+    	ManagedSysEntity managedSystem = authProvider.getManagedSystem();
+    	if(managedSystem == null) {
+    		final String warning = String.format("Auth provider %s does not have a managed system corresopnding to it.  Using default: %s", context.getAuthProviderId(), sysConfiguration.getDefaultManagedSysId());
+    		log.warn(warning);
+    		event.addWarning(warning);
+    		managedSystem = managedSysDAO.findById(sysConfiguration.getDefaultManagedSysId());
+    	}
+    	return managedSystem;
+    }
+    
+    protected PolicyEntity getPolicy(final AuthenticationContext context) throws BasicDataServiceException {
+    	if(StringUtils.isBlank(context.getAuthProviderId())) {
+    		throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_SET);
+    	}
+    	
+    	final AuthProviderEntity authProvider = authProviderDAO.findById(context.getAuthProviderId());
+    	if(authProvider == null) {
+    		throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_FOUND);
+    	}
+    	
+    	final PolicyEntity policy = authProvider.getPolicy();
+    	final AuthProviderTypeEntity authProviderType = authProvider.getType();
+    	if(authProviderType.isPasswordPolicyRequired()) {
+    		if(policy == null) {
+    			throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_SET);
+    		}
+    	}
+    	return policy;
+    }
+    
+    protected String getPolicyAttribute(final PolicyEntity policy, final String attributeName) {
+    	final PolicyAttributeEntity entity = policy.getAttribute(attributeName);
+    	return (entity != null) ? entity.getValue1() : null;
+    }
 
-    public String decryptPassword(String userId, String encPassword)
+    protected String decryptPassword(String userId, String encPassword)
             throws Exception {
         if (encPassword != null) {
             try {
@@ -105,7 +164,7 @@ public abstract class AbstractLoginModule implements LoginModule {
      * @param curDate
      * @return
      */
-    public boolean pendingInitialStartDateCheck(UserEntity user, Date curDate) {
+    protected boolean pendingInitialStartDateCheck(UserEntity user, Date curDate) {
         if (user.getStatus().equals(UserStatusEnum.PENDING_START_DATE)) {
             if (user.getStartDate() != null
                     && curDate.before(user.getStartDate())) {
@@ -120,7 +179,7 @@ public abstract class AbstractLoginModule implements LoginModule {
         return true;
     }
 
-    public void checkSecondaryStatus(UserEntity user) throws AuthenticationException {
+    protected void checkSecondaryStatus(UserEntity user) throws AuthenticationException {
         if (user.getSecondaryStatus() != null) {
             if (user.getSecondaryStatus().equals(UserStatusEnum.LOCKED)
                     || user.getSecondaryStatus().equals(
@@ -136,7 +195,7 @@ public abstract class AbstractLoginModule implements LoginModule {
         }
 
     }
-    public void setResultCode(LoginEntity lg, Subject sub, Date curDate, Policy pwdPolicy) throws AuthenticationException {
+    protected void setResultCode(LoginEntity lg, Subject sub, Date curDate, PolicyEntity pwdPolicy) throws AuthenticationException {
         if (lg.getFirstTimeLogin() == 1) {
             sub.setResultCode(AuthenticationConstants.RESULT_SUCCESS_FIRST_TIME);
         } else if (lg.getPwdExp() != null) {
@@ -162,10 +221,19 @@ public abstract class AbstractLoginModule implements LoginModule {
 
     }
 
-    public Integer setDaysToPassworExpiration(LoginEntity lg, Date curDate, Subject sub, Policy pwdPolicy) {
-        if(pwdPolicy!=null && StringUtils.isBlank(pwdPolicy.getAttribute("PWD_EXPIRATION").getValue1())){
-            return null;
-        }
+    protected Integer setDaysToPassworExpiration(LoginEntity lg, Date curDate, Subject sub, PolicyEntity pwdPolicy) {
+    	if(pwdPolicy == null) {
+    		return null;
+    	}
+    	
+    	final PolicyAttributeEntity attribute = pwdPolicy.getAttribute("PWD_EXPIRATION");
+    	if(attribute == null) {
+    		return null;
+    	}
+    	
+    	if(StringUtils.isBlank(attribute.getValue1())) {
+    		return null;
+    	}
         if (lg.getPwdExp() == null) {
             return -1;
         }
@@ -184,46 +252,5 @@ public abstract class AbstractLoginModule implements LoginModule {
 
         return (int) diffInDays;
 
-    }
-
-    /**
-     * Logs a message into the audit log.
-     * @param objectTypeId
-     * @param actionId
-     * @param actionStatus
-     * @param reason
-     * @param userId
-     * @param principal
-     * @param linkedLogId
-     * @param clientId
-     */
-    public void log(String objectTypeId, String actionId, String actionStatus,
-            String reason, String userId, String principal,
-            String linkedLogId, String clientId, String clientIP, String nodeIP) {
-    	/*
-        IdmAuditLog log = new IdmAuditLog(objectTypeId, actionId, actionStatus,
-                reason,  userId, principal, linkedLogId, clientId);
-
-        log.setHost(clientIP);
-        log.setNodeIP(nodeIP);
-
-        auditLogUtil.log(log);
-        */
-    }
-
-    public void setUser(UserEntity user) {
-        this.user = user;
-    }
-
-    public void setLg(LoginEntity lg) {
-        this.lg = lg;
-    }
-
-    public void setAuthPolicyId(String authPolicyId) {
-        this.authPolicyId = authPolicyId;
-    }
-
-    public void setSysConfiguration(SysConfiguration sysConfiguration) {
-        this.sysConfiguration = sysConfiguration;
     }
 }

@@ -20,44 +20,15 @@ public interface AuthProviderWebService {
     * AuthProviderType section
     *===================================================
     */
+	
+	@WebMethod
+	public List<AuthAttribute> findAuthAttributeBeans(@WebParam(name = "searchBean", targetNamespace = "")AuthAttributeSearchBean searchBean,
+													  @WebParam(name = "from", targetNamespace = "")int from,
+													  @WebParam(name = "size", targetNamespace = "")int size);
     @WebMethod
     public AuthProviderType getAuthProviderType(@WebParam(name = "providerType", targetNamespace = "")String providerType);
     @WebMethod
     public List<AuthProviderType> getAuthProviderTypeList();
-
-    /**
-     * Add new provider type to AM.
-     */
-    @WebMethod
-    public Response addProviderType(@WebParam(name = "entity", targetNamespace = "")AuthProviderType entity);
-
-    /**
-     * Delete existing provider type from AM
-     * @param providerType
-     */
-    @WebMethod
-    public Response deleteProviderType(@WebParam(name = "providerType", targetNamespace = "")String providerType);
-
-    /*
-    *==================================================
-    * AuthAttributeEntity section
-    *===================================================
-    */
-    @WebMethod
-    public List<AuthAttribute> findAuthAttributeBeans(@WebParam(name = "searchBean", targetNamespace = "")AuthAttributeSearchBean searchBean,
-                                                      @WebParam(name = "size", targetNamespace = "")Integer size,
-                                                      @WebParam(name = "from", targetNamespace = "")Integer from);
-    @WebMethod
-    public Integer getNumOfAuthAttributeBeans(@WebParam(name = "searchBean", targetNamespace = "")AuthAttributeSearchBean searchBean);
-
-    @WebMethod
-    public Response addAuthAttribute(@WebParam(name = "attribute", targetNamespace = "")AuthAttribute attribute);
-    @WebMethod
-    public Response updateAuthAttribute(@WebParam(name = "attribute", targetNamespace = "")AuthAttribute attribute);
-    @WebMethod
-    public Response deleteAuthAttribute(@WebParam(name = "authAttributeId", targetNamespace = "")String authAttributeId);
-    @WebMethod
-    public Response deleteAuthAttributesByType(@WebParam(name = "providerType", targetNamespace = "")String providerType);
 
     /*
     *==================================================
@@ -65,22 +36,18 @@ public interface AuthProviderWebService {
     *===================================================
     */
     @WebMethod
+    public int countAuthProviderBeans(@WebParam(name = "searchBean", targetNamespace = "") AuthProviderSearchBean searchBean);
+    
+    @WebMethod
     public List<AuthProvider> findAuthProviderBeans(@WebParam(name = "searchBean", targetNamespace = "") AuthProviderSearchBean searchBean,
                                                     @WebParam(name = "size", targetNamespace = "")Integer size,
                                                     @WebParam(name = "from", targetNamespace = "")Integer from);
-    @WebMethod
-    public Integer getNumOfAuthProviderBeans(@WebParam(name = "searchBean", targetNamespace = "") AuthProviderSearchBean searchBean);
 
     @WebMethod
-    public Response addAuthProvider(@WebParam(name = "provider", targetNamespace = "")AuthProvider provider,
+    public Response saveAuthProvider(@WebParam(name = "provider", targetNamespace = "")AuthProvider provider,
     							    @WebParam(name = "requestorId", targetNamespace = "")final String requestorId);
     @WebMethod
-    public Response updateAuthProvider(@WebParam(name = "provider", targetNamespace = "")AuthProvider provider,
-    								   @WebParam(name = "requestorId", targetNamespace = "")final String requestorId);
-    @WebMethod
     public Response deleteAuthProvider(@WebParam(name = "providerId", targetNamespace = "")String providerId);
-    @WebMethod
-    public Response deleteAuthProviderByType(@WebParam(name = "providerType", targetNamespace = "")String providerType);
 
 
     /*
@@ -88,24 +55,4 @@ public interface AuthProviderWebService {
     *  AuthProviderAttribute section
     *===================================================
     */
-    @WebMethod
-    public AuthProviderAttribute getAuthProviderAttribute(@WebParam(name = "providerId", targetNamespace = "") String providerId,
-                                                          @WebParam(name = "name", targetNamespace = "") String name);
-    @WebMethod
-    public List<AuthProviderAttribute> getAuthProviderAttributeList(@WebParam(name = "providerId", targetNamespace = "")String providerId,
-                                                                    @WebParam(name = "size", targetNamespace = "")Integer size,
-                                                                    @WebParam(name = "from", targetNamespace = "")Integer from);
-
-    @WebMethod
-    public Integer getNumOfAuthProviderAttributes(@WebParam(name = "providerId", targetNamespace = "")String providerId);
-
-    @WebMethod
-    public Response addAuthProviderAttribute(@WebParam(name = "attribute", targetNamespace = "")AuthProviderAttribute attribute);
-    @WebMethod
-    public Response updateAuthProviderAttribute(@WebParam(name = "attribute", targetNamespace = "")AuthProviderAttribute attribute);
-    @WebMethod
-    public Response deleteAuthProviderAttributeByName(@WebParam(name = "providerId", targetNamespace = "")String providerId,
-                                                  @WebParam(name = "attributeId", targetNamespace = "")String attributeId);
-    @WebMethod
-    public Response deleteAuthProviderAttributes(@WebParam(name = "providerId", targetNamespace = "")String providerId);
 }

@@ -17,21 +17,21 @@ import java.util.List;
 public class AuthAttributeDaoImpl extends BaseDaoImpl<AuthAttributeEntity, String> implements AuthAttributeDao {
     @Override
     protected String getPKfieldName() {
-        return "authAttributeId";
+        return "id";
     }
 
     @Override
     protected Criteria getExampleCriteria(final AuthAttributeEntity attribute) {
         final Criteria criteria = getCriteria();
-        if (StringUtils.isNotBlank(attribute.getAuthAttributeId())) {
-            criteria.add(Restrictions.eq(getPKfieldName(), attribute.getAuthAttributeId()));
+        if (StringUtils.isNotBlank(attribute.getId())) {
+            criteria.add(Restrictions.eq(getPKfieldName(), attribute.getId()));
         } else {
-            if (StringUtils.isNotEmpty(attribute.getProviderType())) {
-                criteria.add(Restrictions.eq("providerType", attribute.getProviderType()));
+            if (attribute.getType() != null && StringUtils.isNotEmpty(attribute.getType().getId())) {
+                criteria.add(Restrictions.eq("type.id", attribute.getType().getId()));
             }
 
-            if (StringUtils.isNotEmpty(attribute.getAttributeName())) {
-                String attributeName = attribute.getAttributeName();
+            if (StringUtils.isNotEmpty(attribute.getName())) {
+                String attributeName = attribute.getName();
                 MatchMode matchMode = null;
                 if (StringUtils.indexOf(attributeName, "*") == 0) {
                     matchMode = MatchMode.END;
@@ -52,30 +52,5 @@ public class AuthAttributeDaoImpl extends BaseDaoImpl<AuthAttributeEntity, Strin
             }
         }
         return criteria;
-    }
-
-    @Override
-    @Transactional
-    public void deleteByType(String providerType) {
-        Query qry = getSession().createQuery("delete "+this.domainClass.getName()+ " a where a.providerType = :providerType ");
-        qry.setString("providerType", providerType);
-        qry.executeUpdate();
-    }
-
-    @Override
-    public List<String> getPkListByType(String providerType) {
-        Criteria criteria = getCriteria();
-        criteria.add(Restrictions.eq("providerType", providerType)).setProjection(Projections.property(getPKfieldName()));
-        return criteria.list();
-    }
-
-    @Override
-    @Transactional
-    public void deleteByPkList(List<String> pkList) {
-        if(pkList!=null && !pkList.isEmpty()) {
-            Query qry = getSession().createQuery("delete "+this.domainClass.getName()+ " p where p.authAttributeId in (:pkList) ");
-            qry.setParameterList("pkList", pkList);
-            qry.executeUpdate();
-        }
     }
 }

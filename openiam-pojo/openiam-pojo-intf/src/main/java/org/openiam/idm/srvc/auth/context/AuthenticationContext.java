@@ -21,97 +21,65 @@
  */
 package org.openiam.idm.srvc.auth.context;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.openiam.base.ws.ObjectMapAdapter;
+import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
+import org.openiam.idm.srvc.auth.dto.AuthenticationRequest;
 import org.openiam.idm.srvc.auth.dto.Login;
+import org.openiam.idm.srvc.auth.service.AuthenticationConstants;
 import org.openiam.idm.srvc.user.dto.User;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+
+import java.util.HashMap;
 import java.util.Map;
 
-/**
- * AuthenticationContext enables a higher level of flexibility during the authentication
- * process.
- *
- * @author suneet
- */
-@XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "AuthenticationContext")
-public interface AuthenticationContext {
+public class AuthenticationContext extends AuthenticationRequest {
 
-    /**
-     * Returns an object to capture the credentials appropriate for a specific type of
-     * authentication. The type of authentication is specified by the authnType parameter.
-     *
-     * @param authnType
-     */
-    public abstract Credential createCredentialObject(String authnType);
+	private IdmAuditLog event;
+	private String authProviderId;
 
-    public abstract void setCredential(String authnType, Credential cred);
+	private static final Log log = LogFactory.getLog(AuthenticationContext.class);
+	
 
-    public abstract Credential getCredential();
 
-    public abstract String getResourceId();
+	public AuthenticationContext(final AuthenticationRequest request) {
+		super.setClientIP(request.getClientIP());
+		super.setContentProviderId(request.getContentProviderId());
+		super.setLanguageId(request.getLanguageId());
+		super.setNodeIP(request.getNodeIP());
+		super.setPassword(request.getPassword());
+		super.setPrincipal(request.getPrincipal());
+		super.setRequestSource(request.getRequestSource());
+		super.setUriPatternId(request.getUriPatternId());
+	}
 
-    public abstract void setResourceId(String resourceId);
+	public Credential createCredentialObject(String authnType) {
+		if (authnType.equals(AuthenticationConstants.AUTHN_TYPE_PASSWORD)) {
+			return new PasswordCredential();
+		}
+		return null;
+	}
 
-    public User getUser();
+	public String getAuthProviderId() {
+		return authProviderId;
+	}
 
-    public void setUser(User user);
+	public void setAuthProviderId(String authProviderId) {
+		this.authProviderId = authProviderId;
+	}
 
-    public Login getLogin();
+	public IdmAuditLog getEvent() {
+		return event;
+	}
 
-    public void setLogin(Login login);
-
-    public String getManagedSysId();
-
-    public void setManagedSysId(String managedSysId);
-
-    public String getClientIP();
-
-    public void setClientIP(String clientIP);
-
-    public String getNodeIP();
-
-    public void setNodeIP(String nodeIP);
-
-    /**
-     * Returns a map of a authentication parameters that are needed by the login module.
-     *
-     * @return
-     */
-    public abstract Map<String, Object> getAuthParam();
-
-    /**
-     * Sets the parameters that are to be used by the login module.
-     *
-     * @param authParam
-     */
-    public abstract void setAuthParam(Map<String, Object> authParam);
-
-    /**
-     * Add a parameter to the context
-     *
-     * @param key
-     * @param value
-     */
-    public void addParam(String key, Object value);
-
-    /**
-     * Retrieve a parameter from the context
-     *
-     * @param key
-     * @return
-     */
-    public Object getParam(String key);
-
-    /**
-     * Login module that is to be used for this authentication attempt. If a value is defined here, it will override
-     * the login module that is defined at the Security Domain level.
-     *
-     * @return
-     */
-    public String getLoginModule();
-
-    public void setLoginModule(String loginModule);
+	public void setEvent(IdmAuditLog event) {
+		this.event = event;
+	}
+	
+	
 }

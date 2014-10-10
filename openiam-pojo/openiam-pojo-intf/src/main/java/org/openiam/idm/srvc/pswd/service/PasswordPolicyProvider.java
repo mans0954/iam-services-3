@@ -11,9 +11,10 @@ import org.openiam.idm.srvc.user.domain.UserEntity;
  * To change this template use File | Settings | File Templates.
  */
 public interface PasswordPolicyProvider {
-
-    public Policy getPasswordPolicyByUser(String userId);
-    public Policy getPasswordPolicyByUser(UserEntity user);
+	
+	public Policy getPasswordPolicyByUser(final String userId, final String contentProviderId);
+	
+	public Policy getPasswordPolicyByUser(final UserEntity user, final String contentProviderId);
 
     public Policy getGlobalPasswordPolicy();
 }
