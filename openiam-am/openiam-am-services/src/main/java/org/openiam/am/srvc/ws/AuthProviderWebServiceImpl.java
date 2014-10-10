@@ -23,7 +23,12 @@ import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.exception.BasicDataServiceException;
+import org.openiam.script.ScriptIntegration;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,9 +39,11 @@ import java.util.*;
 @WebService(endpointInterface = "org.openiam.am.srvc.ws.AuthProviderWebService",
             targetNamespace = "urn:idm.openiam.org/srvc/am/service", portName = "AuthProviderWebServicePort",
             serviceName = "AuthProviderWebService")
-public class AuthProviderWebServiceImpl implements AuthProviderWebService {
+public class AuthProviderWebServiceImpl implements AuthProviderWebService, ApplicationContextAware {
 	
 	private static Logger log = Logger.getLogger(AuthProviderWebServiceImpl.class);
+	
+	private ApplicationContext ctx;
 	
     @Autowired
     private AuthProviderService authProviderService;
@@ -51,8 +58,10 @@ public class AuthProviderWebServiceImpl implements AuthProviderWebService {
     private AuthAttributeDozerConverter authAttributeDozerConverter;
     @Autowired
     private AuthProviderDozerConverter authProviderDozerConverter;
+
     @Autowired
-    private AuthProviderAttributeDozerConverter authProviderAttributeDozerConverter;
+    @Qualifier("configurableGroovyScriptEngine")
+    protected ScriptIntegration scriptRunner;
     
     @Override
     @Transactional(readOnly = true)
@@ -118,8 +127,35 @@ public class AuthProviderWebServiceImpl implements AuthProviderWebService {
             if(StringUtils.isBlank(provider.getName())) {
                 throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NAME_NOT_SET);
             }
+            
+            final AuthProviderTypeEntity type = authProviderService.getAuthProviderType(provider.getProviderType());
+            if(type == null) {
+            	throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_TYPE_NOT_SET);
+            }
+            
+            if(type.isUsesGroovyScript() && StringUtils.isNotBlank(provider.getGroovyScriptURL())) {
+            	if(!scriptRunner.scriptExists(provider.getGroovyScriptURL())) {
+            		throw new BasicDataServiceException(ResponseCode.FILE_DOES_NOT_EXIST);
+            	}
+            } else {
+            	provider.setGroovyScriptURL(null);
+            }
+            
+            if(type.isUsesSpringBean() && StringUtils.isNotBlank(provider.getSpringBeanName())) {
+            	if(!ctx.containsBean(provider.getSpringBeanName())) {
+            		throw new BasicDataServiceException(ResponseCode.INVALID_SPRING_BEAN);
+            	}
+            } else {
+            	provider.setSpringBeanName(null);
+            }
+            
+            if(type.isPasswordPolicyRequired()) {
+            	if(StringUtils.isBlank(provider.getPolicyId())) {
+                	throw new BasicDataServiceException(ResponseCode.POLICY_NOT_SET);
+            	}
+            }
+            
             if(provider.isSignRequest()) {
-            	final AuthProviderTypeEntity type = authProviderService.getAuthProviderType(provider.getProviderType());
             	if((provider.getPrivateKey()==null || provider.getPrivateKey().length==0)) {
             		if(type.isHasPrivateKey()) {
             			throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_SECUTITY_KEYS_NOT_SET);
@@ -191,6 +227,17 @@ public class AuthProviderWebServiceImpl implements AuthProviderWebService {
             if(StringUtils.isBlank(providerId)) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
             }
+            final AuthProviderEntity searchBean = new AuthProviderEntity();
+            searchBean.setId(providerId);
+            final List<AuthProviderEntity> providers = authProviderService.findAuthProviderBeans(searchBean, 1, 0);
+            if(CollectionUtils.isEmpty(providers)) {
+            	throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+            }
+            
+            final AuthProviderEntity entity = providers.get(0);
+            if(entity.isDefaultProvider()) {
+            	throw new BasicDataServiceException(ResponseCode.CANNOT_DELETE_DEFAULT_AUTH_PROVIDER);
+            }
 
             authProviderService.deleteAuthProvider(providerId);
         } catch(BasicDataServiceException e) {
@@ -204,4 +251,10 @@ public class AuthProviderWebServiceImpl implements AuthProviderWebService {
         }
         return response;
     }
+
+	@Override
+	public void setApplicationContext(ApplicationContext ctx)
+			throws BeansException {
+		this.ctx = ctx;
+	}
 }

@@ -277,6 +277,9 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 			final AuthenticationRequest request = new AuthenticationRequest();
 			request.setPrincipal(primaryLogin.getLogin());
 			
+			request.setContentProviderId(cp.getId());
+			
+			
 			final String password = loginDS.decryptPassword(primaryLogin.getUserId(), primaryLogin.getPassword());
 			request.setPassword(password);
 			return request;

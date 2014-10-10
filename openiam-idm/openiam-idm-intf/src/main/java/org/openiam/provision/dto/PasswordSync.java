@@ -45,7 +45,8 @@ import java.util.List;
     "sendPasswordToUser",
     "passThruAttributes",
     "attributeList",
-    "preventChangeCountIncrement"
+    "preventChangeCountIncrement",
+    "contentProviderId"
 })
 public class PasswordSync extends BaseObject  {
 
@@ -63,6 +64,7 @@ public class PasswordSync extends BaseObject  {
 	private boolean passThruAttributes = true;
 	private List<ExtensibleAttribute> attributeList = new ArrayList<ExtensibleAttribute>();
 	private boolean preventChangeCountIncrement;
+	private String contentProviderId;
 	
 	public PasswordSync() {
 		
@@ -130,5 +132,15 @@ public class PasswordSync extends BaseObject  {
 	public void setPreventChangeCountIncrement(boolean preventChangeCountIncrement) {
 		this.preventChangeCountIncrement = preventChangeCountIncrement;
 	}
+
+	public String getContentProviderId() {
+		return contentProviderId;
+	}
+
+	public void setContentProviderId(String contentProviderId) {
+		this.contentProviderId = contentProviderId;
+	}
+	
+	
 }
 

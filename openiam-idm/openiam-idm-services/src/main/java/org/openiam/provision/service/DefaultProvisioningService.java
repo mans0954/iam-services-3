@@ -1712,8 +1712,8 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     log.debug(" - Managed System Id = " + managedSysId);
                     log.debug(" - Resource Id = " + res.getId());
 
-                    final boolean retval = loginManager.setPassword(lg.getLogin(), managedSysId,
-                            encPassword, passwordSync.isPreventChangeCountIncrement());
+                    final boolean retval = loginManager.setPasswordUsingContentProvider(lg.getLogin(), managedSysId,
+                            encPassword, passwordSync.isPreventChangeCountIncrement(), passwordSync.getContentProviderId());
 
                     if (retval) {
                         log.debug(String.format("- Password changed for principal: %s, user: %s, managed sys: %s -",
@@ -1762,8 +1762,8 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
                             String prevDecodedPassword = getDecryptedPassword(lg.getUserId(), lg.getPassword());
                             // update the password in openiam
-                            loginManager.setPassword(lg.getLogin(), lg.getManagedSysId(), encPassword,
-                                    passwordSync.isPreventChangeCountIncrement());
+                            loginManager.setPasswordUsingContentProvider(lg.getLogin(), lg.getManagedSysId(), encPassword,
+                                    passwordSync.isPreventChangeCountIncrement(), passwordSync.getContentProviderId());
 
                             ManagedSystemObjectMatchEntity matchObj = null;
                             final List<ManagedSystemObjectMatchEntity> matchList = managedSystemService
@@ -2025,8 +2025,8 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
                 log.debug("Updating password for " + l.getLogin());
 
-                boolean retval = loginManager.setPassword(l.getLogin(), l.getManagedSysId(), encPassword,
-                        passwordSync.isPreventChangeCountIncrement());
+                boolean retval = loginManager.setPasswordUsingContentProvider(l.getLogin(), l.getManagedSysId(), encPassword,
+                        passwordSync.isPreventChangeCountIncrement(), passwordSync.getContentProviderId());
                 if (retval) {
                     log.debug("-Password changed in openiam repository for user:" + passwordSync.getPrincipal());
                     /*

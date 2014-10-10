@@ -22,7 +22,6 @@ package org.openiam.idm.srvc.policy.service;
 
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.policy.dto.PolicyDef;
-import org.openiam.idm.srvc.policy.dto.PolicyObjectAssoc;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.testng.AbstractTransactionalTestNGSpringContextTests;

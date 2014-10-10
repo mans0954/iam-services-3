@@ -60,6 +60,13 @@ import java.util.*;
 @Component("activeDirectoryLoginModule")
 public class ActiveDirectoryLoginModule extends AbstractLoginModule {
 
+	@Override
+	public Subject login(AuthenticationContext context) throws Exception {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	/*
     private static final Log log = LogFactory
             .getLog(ActiveDirectoryLoginModule.class);
 
@@ -85,26 +92,6 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
     public ActiveDirectoryLoginModule() {
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.openiam.idm.srvc.auth.spi.LoginModule#globalLogout(java.lang.String,
-     * java.lang.String)
-     */
-    /*
-    public void globalLogout(String securityDomain, String principal) {
-
-    }
-    */
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.openiam.idm.srvc.auth.spi.LoginModule#login(org.openiam.idm.srvc.
-     * auth.context.AuthenticationContext)
-     */
     @Override
     public Subject login(AuthenticationContext authContext) throws Exception {
 
@@ -306,13 +293,6 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
         return null;
     }
 
-    /**
-     * If the password has expired, but its before the grace period then its a good login
-     * If the password has expired and after the grace period, then its an exception.
-     * You should also set the days to expiration
-     * @param lg
-     * @return
-     */
     private int passwordExpired(Login lg, Date curDate) {
         if (lg.getGracePeriod() == null) {
             // set an early date
@@ -345,24 +325,6 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
 
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.openiam.idm.srvc.auth.spi.LoginModule#logout(java.lang.String,
-     * java.lang.String, java.lang.String)
-     */
-    /*
-    public void logout(String securityDomain, String principal,
-            String managedSysId) {
-
-        log("AUTHENTICATION", "LOGOUT", "SUCCESS", null, securityDomain, null,
-                principal, null, null, null, null);
-
-    }
-    */
-
-    /* supporting methods */
-
     private SSOToken token(String userId, Map tokenParam) throws Exception {
 
         tokenParam.put("USER_ID", userId);
@@ -371,5 +333,5 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
                 .createModule((String) tokenParam.get("TOKEN_TYPE"));
         return tkModule.createToken(tokenParam);
     }
-
+	*/
 }

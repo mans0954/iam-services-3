@@ -4,6 +4,7 @@ import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.Type;
 import org.openiam.am.srvc.dto.AuthProviderType;
+import org.openiam.base.domain.AbstractKeyNameEntity;
 import org.openiam.base.domain.KeyEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 
@@ -18,10 +19,11 @@ import java.util.Set;
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @DozerDTOCorrespondence(AuthProviderType.class)
 @AttributeOverride(name = "id", column = @Column(name = "PROVIDER_TYPE"))
-public class AuthProviderTypeEntity extends KeyEntity {
-	
-    @Column(name="DESCRIPTION", length = 50, nullable = true)
-    private String description;
+@AttributeOverrides({
+	@AttributeOverride(name = "id", column = @Column(name = "PROVIDER_TYPE")),
+	@AttributeOverride(name = "name", column = @Column(name="NAME", length = 50, nullable = true))
+})
+public class AuthProviderTypeEntity extends AbstractKeyNameEntity {
     
     @Column(name="ACTIVE")
     @Type(type = "yes_no")
@@ -31,23 +33,31 @@ public class AuthProviderTypeEntity extends KeyEntity {
     @Type(type = "yes_no")
     private boolean hasPublicKey;
     
+    @Column(name="IS_PASSWORD_POLICY_REQUIRED")
+    @Type(type = "yes_no")
+    private boolean passwordPolicyRequired;
+    
     @Column(name="HAS_PRIVATE_KEY")
     @Type(type = "yes_no")
     private boolean hasPrivateKey;
+    
+    @Column(name="HAS_PASSWORD_POLICY")
+    @Type(type = "yes_no")
+    private boolean hasPasswordPolicy;
+    
+    @Column(name="HAS_SPRING_BEAN")
+    @Type(type = "yes_no")
+    private boolean usesSpringBean;
+    
+    @Column(name="HAS_GROOVY_SCRIPT")
+    @Type(type = "yes_no")
+    private boolean usesGroovyScript;
     
     @OneToMany(mappedBy = "type", cascade = CascadeType.ALL,fetch = FetchType.LAZY)
     private Set<AuthAttributeEntity> attributeSet;
     
     @OneToMany(mappedBy = "type", cascade = CascadeType.ALL,fetch = FetchType.LAZY)
     private Set<AuthProviderEntity> providerSet;
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
 
     public boolean isActive() {
         return isActive;
@@ -89,15 +99,49 @@ public class AuthProviderTypeEntity extends KeyEntity {
 		this.hasPrivateKey = hasPrivateKey;
 	}
 
+	public boolean isHasPasswordPolicy() {
+		return hasPasswordPolicy;
+	}
+
+	public void setHasPasswordPolicy(boolean hasPasswordPolicy) {
+		this.hasPasswordPolicy = hasPasswordPolicy;
+	}
+
+	public boolean isUsesSpringBean() {
+		return usesSpringBean;
+	}
+
+	public void setUsesSpringBean(boolean usesSpringBean) {
+		this.usesSpringBean = usesSpringBean;
+	}
+
+	public boolean isUsesGroovyScript() {
+		return usesGroovyScript;
+	}
+
+	public void setUsesGroovyScript(boolean usesGroovyScript) {
+		this.usesGroovyScript = usesGroovyScript;
+	}
+
+	public boolean isPasswordPolicyRequired() {
+		return passwordPolicyRequired;
+	}
+
+	public void setPasswordPolicyRequired(boolean passwordPolicyRequired) {
+		this.passwordPolicyRequired = passwordPolicyRequired;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
-		result = prime * result
-				+ ((description == null) ? 0 : description.hashCode());
+		result = prime * result + (hasPasswordPolicy ? 1231 : 1237);
 		result = prime * result + (hasPrivateKey ? 1231 : 1237);
 		result = prime * result + (hasPublicKey ? 1231 : 1237);
 		result = prime * result + (isActive ? 1231 : 1237);
+		result = prime * result + (passwordPolicyRequired ? 1231 : 1237);
+		result = prime * result + (usesGroovyScript ? 1231 : 1237);
+		result = prime * result + (usesSpringBean ? 1231 : 1237);
 		return result;
 	}
 
@@ -110,10 +154,7 @@ public class AuthProviderTypeEntity extends KeyEntity {
 		if (getClass() != obj.getClass())
 			return false;
 		AuthProviderTypeEntity other = (AuthProviderTypeEntity) obj;
-		if (description == null) {
-			if (other.description != null)
-				return false;
-		} else if (!description.equals(other.description))
+		if (hasPasswordPolicy != other.hasPasswordPolicy)
 			return false;
 		if (hasPrivateKey != other.hasPrivateKey)
 			return false;
@@ -121,16 +162,14 @@ public class AuthProviderTypeEntity extends KeyEntity {
 			return false;
 		if (isActive != other.isActive)
 			return false;
+		if (passwordPolicyRequired != other.passwordPolicyRequired)
+			return false;
+		if (usesGroovyScript != other.usesGroovyScript)
+			return false;
+		if (usesSpringBean != other.usesSpringBean)
+			return false;
 		return true;
 	}
-
-	@Override
-	public String toString() {
-		return String
-				.format("AuthProviderTypeEntity [description=%s, isActive=%s, hasPublicKey=%s, hasPrivateKey=%s, toString()=%s]",
-						description, isActive, hasPublicKey, hasPrivateKey,
-						super.toString());
-	}
-
+	
 	
 }

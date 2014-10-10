@@ -16,6 +16,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.OrderBy;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -26,10 +27,13 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.GenericGenerator;
+import org.openiam.am.srvc.domain.AuthProviderEntity;
 import org.openiam.base.domain.AbstractKeyNameEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
+import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
+import org.openiam.internationalization.Internationalized;
 
 @Entity
 @Table(name = "POLICY")
@@ -83,8 +87,11 @@ public class PolicyEntity extends AbstractKeyNameEntity {
 	@Fetch(FetchMode.SUBSELECT)
 	//@JoinColumn(name = "POLICY_ID", insertable = true, updatable = true)
 	@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-	private Set<PolicyAttributeEntity> policyAttributes = new HashSet<PolicyAttributeEntity>(
-			0);
+	private Set<PolicyAttributeEntity> policyAttributes = new HashSet<PolicyAttributeEntity>(0);
+	
+	@OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.DETACH, CascadeType.REFRESH}, mappedBy="policy")
+    @Fetch(FetchMode.SUBSELECT)
+    private Set<AuthProviderEntity> authProviders;
 
     public PolicyEntity() {
     }
@@ -191,6 +198,14 @@ public class PolicyEntity extends AbstractKeyNameEntity {
 	 */
 	public void setEnablemement(Integer enablemement) {
         this.enablement = enablemement;
+	}
+
+	public Set<AuthProviderEntity> getAuthProviders() {
+		return authProviders;
+	}
+
+	public void setAuthProviders(Set<AuthProviderEntity> authProviders) {
+		this.authProviders = authProviders;
 	}
 
 	@Override

@@ -693,6 +693,10 @@
 	<mapping>
 		<class-a>org.openiam.idm.srvc.policy.domain.PolicyEntity</class-a>
 		<class-b>org.openiam.idm.srvc.policy.dto.Policy</class-b>
+		<field-exclude>
+			<a>authProviders</a>
+			<b>authProviders</b>
+		</field-exclude>
 		<field>
 			<a>policyDef.id</a>
 			<b>policyDefId</b>
@@ -936,6 +940,10 @@
 		<class-a>org.openiam.am.srvc.domain.AuthProviderEntity</class-a>
 		<class-b>org.openiam.am.srvc.dto.AuthProvider</class-b>
 		<field>
+			<a>policy.id</a>
+			<b>policyId</b>
+		</field>
+		<field>
 			<a>type.id</a>
 			<b>providerType</b>
 		</field>
@@ -965,6 +973,10 @@
 			<a>resourceAttributeMap</a>
 			<b>resourceAttributeMap</b>
 		</field>
+		<field-exclude>
+			<a>contentProviders</a>
+			<b>contentProviders</b>
+		</field-exclude>
 	</mapping>
 
 	<mapping>
@@ -997,6 +1009,10 @@
 		<field>
 			<a>resource.name</a>
 			<b>resourceName</b>
+		</field>
+		<field>
+			<a>authProvider.id</a>
+			<b>authProviderId</b>
 		</field>
 		<field>
 			<a>resource.coorelatedName</a>

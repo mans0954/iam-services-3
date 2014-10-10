@@ -13,14 +13,15 @@ import org.springframework.stereotype.Component;
 @Component("sysConfiguration")
 public class SysConfiguration {
 	
+	
 	@Value("${openiam.default_managed_sys}")
     protected String defaultManagedSysId;
 	
-	@Value("${org.openiam.default.auth.policy}")
-    protected String defaultAuthPolicyId;
+	@Value("${org.openiam.default.auth.provider.id}")
+	private String defaultAuthProviderId;
 	
-	@Value("${org.openiam.default.password.policy}")
-    protected String defaultPswdPolicyId;
+	@Value("${org.openiam.core.login.login.module.default}")
+	private String defaultLoginModule;
 	
 	@Value("${openiam.development_mode}")
     protected Boolean developmentMode;
@@ -34,22 +35,6 @@ public class SysConfiguration {
 
     public void setDefaultManagedSysId(String defaultManagedSysId) {
         this.defaultManagedSysId = defaultManagedSysId;
-    }
-
-    public String getDefaultAuthPolicyId() {
-        return defaultAuthPolicyId;
-    }
-
-    public void setDefaultAuthPolicyId(String defaultAuthPolicyId) {
-        this.defaultAuthPolicyId = defaultAuthPolicyId;
-    }
-
-    public String getDefaultPswdPolicyId() {
-        return defaultPswdPolicyId;
-    }
-
-    public void setDefaultPswdPolicyId(String defaultPswdPolicyId) {
-        this.defaultPswdPolicyId = defaultPswdPolicyId;
     }
 
     public Boolean isDevelopmentMode() {
@@ -67,4 +52,26 @@ public class SysConfiguration {
     public void setProvisionServiceFlag(boolean provisionServiceFlag) {
         this.provisionServiceFlag = provisionServiceFlag;
     }
+
+	public String getDefaultAuthProviderId() {
+		return defaultAuthProviderId;
+	}
+
+	public void setDefaultAuthProviderId(String defaultAuthProviderId) {
+		this.defaultAuthProviderId = defaultAuthProviderId;
+	}
+
+	public Boolean getDevelopmentMode() {
+		return developmentMode;
+	}
+
+	public String getDefaultLoginModule() {
+		return defaultLoginModule;
+	}
+
+	public void setDefaultLoginModule(String defaultLoginModule) {
+		this.defaultLoginModule = defaultLoginModule;
+	}
+    
+    
 }

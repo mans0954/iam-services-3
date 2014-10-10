@@ -7,6 +7,7 @@ import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.openiam.base.ws.ResponseCode;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.PolicySearchBean;
 import org.openiam.idm.srvc.policy.domain.PolicyAttributeEntity;
@@ -57,68 +58,12 @@ public class PolicyServiceImpl implements PolicyService {
 		}
 		
 		if (StringUtils.isNotBlank(pe.getId())) {
+			pe.setAuthProviders(policyDao.findById(pe.getId()).getAuthProviders());
 			policyDao.merge(pe);
 		} else {
 			policyDao.save(pe);
 		}
 	}
-	
-    private void mergeAttribute(final PolicyEntity bean, final PolicyEntity dbObject) {
-
-        Set<PolicyAttributeEntity> beanProps = (bean.getPolicyAttributes() != null) ? bean.getPolicyAttributes() : new HashSet<PolicyAttributeEntity>();
-        Set<PolicyAttributeEntity> dbProps = (dbObject.getPolicyAttributes() != null) ? new HashSet<PolicyAttributeEntity>(dbObject.getPolicyAttributes()) : new HashSet<PolicyAttributeEntity>();
-
-        /* update */
-        Iterator<PolicyAttributeEntity> dbIteroator = dbProps.iterator();
-        while(dbIteroator.hasNext()) {
-        	final PolicyAttributeEntity dbProp = dbIteroator.next();
-        	
-        	boolean contains = false;
-            for (final PolicyAttributeEntity beanProp : beanProps) {
-                if (StringUtils.equals(dbProp.getId(), beanProp.getId())) {
-                	if(beanProp.getDefParam() != null) {
-                		dbProp.setDefParam(policyDefParamDao.findById(beanProp.getDefParam().getId()));
-                	} else {
-                		dbProp.setDefParam(null);
-                	}
-                	dbProp.setName(beanProp.getName());
-                	dbProp.setOperation(beanProp.getOperation());
-                	dbProp.setRequired(beanProp.isRequired());
-                	dbProp.setRule(beanProp.getRule());
-                	dbProp.setValue1(beanProp.getValue1());
-                	dbProp.setValue2(beanProp.getValue2());
-                    contains = true;
-                    break;
-                }
-            }
-            
-            /* remove */
-            if(!contains) {
-            	dbIteroator.remove();
-            }
-        }
-
-        /* add */
-        final Set<PolicyAttributeEntity> toAdd = new HashSet<>();
-        for (final PolicyAttributeEntity beanProp : beanProps) {
-            boolean contains = false;
-            dbIteroator = dbProps.iterator();
-            while(dbIteroator.hasNext()) {
-            	final PolicyAttributeEntity dbProp = dbIteroator.next();
-                if (StringUtils.equals(dbProp.getId(), beanProp.getId())) {
-                    contains = true;
-                }
-            }
-
-            if (!contains) {
-                beanProp.setPolicy(bean);
-                toAdd.add(beanProp);
-            }
-        }
-        dbProps.addAll(toAdd);
-        
-        bean.setPolicyAttributes(dbProps);
-    }
 
 	@Override
 	@Transactional(readOnly=true)
@@ -128,9 +73,13 @@ public class PolicyServiceImpl implements PolicyService {
 
 	@Override
 	@Transactional
-	public void delete(final String policyId) {
+	public void delete(final String policyId) throws BasicDataServiceException {
 		final PolicyEntity entity = policyDao.findById(policyId);
 		if(entity != null) {
+			if(CollectionUtils.isNotEmpty(entity.getAuthProviders())) {
+				throw new BasicDataServiceException(ResponseCode.POLICY_HAS_AUTH_PROVIDERS);
+			}
+			
 			policyDao.delete(entity);
 		}
 	}

@@ -8,6 +8,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openiam.am.srvc.dao.*;
 import org.openiam.am.srvc.domain.*;
 import org.openiam.idm.srvc.mngsys.service.ManagedSysDAO;
+import org.openiam.idm.srvc.policy.service.PolicyDAO;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.domain.ResourceTypeEntity;
 import org.openiam.idm.srvc.res.service.ResourceDAO;
@@ -38,6 +39,9 @@ public class AuthProviderServiceImpl implements AuthProviderService {
     
     @Autowired
     private ManagedSysDAO managedSystemDAO;
+    
+    @Autowired
+    private PolicyDAO policyDAO;
 
     /*
     *==================================================
@@ -79,10 +83,22 @@ public class AuthProviderServiceImpl implements AuthProviderService {
     @Override
     @Transactional
     public void saveAuthProvider(AuthProviderEntity provider, final String requestorId) throws Exception{
-    	if(provider.getType() != null && StringUtils.isNotBlank(provider.getType().getId())) {
-    		provider.setType(authProviderTypeDao.findById(provider.getType().getId()));
+    	provider.setType(authProviderTypeDao.findById(provider.getType().getId()));
+    	if(provider.getType() == null) {
+    		throw new IllegalArgumentException("Type not set");
+    	}
+    	
+    	if(!provider.getType().isHasPasswordPolicy()) {
+    		provider.setPolicy(null);
     	} else {
-    		provider.setType(null);
+    		if(provider.getPolicy() == null || StringUtils.isBlank(provider.getPolicy().getId())) {
+    			if(provider.getType().isPasswordPolicyRequired()) {
+    				throw new IllegalArgumentException("Policy not set");
+    			}
+    			provider.setPolicy(null);
+    		} else {
+    			provider.setPolicy(policyDAO.findById(provider.getPolicy().getId()));
+    		}
     	}
     	
     	if(provider.getManagedSystem() != null && StringUtils.isNotBlank(provider.getManagedSystem().getId())) {
@@ -95,6 +111,14 @@ public class AuthProviderServiceImpl implements AuthProviderService {
         if(dbEntity!=null){
         	provider.setResource(dbEntity.getResource());
         	provider.setResourceAttributeMap(dbEntity.getResourceAttributeMap());
+        	provider.setDefaultProvider(dbEntity.isDefaultProvider());
+        	provider.setContentProviders(dbEntity.getContentProviders());
+        	if(CollectionUtils.isEmpty(provider.getAttributes())) {
+        		if(dbEntity.getAttributes() != null) {
+        			provider.setAttributes(dbEntity.getAttributes());
+        			provider.getAttributes().clear();
+        		}
+        	}
         	
         	/*
             if(provider.getPrivateKey()!=null && provider.getPrivateKey().length>0){
@@ -108,7 +132,9 @@ public class AuthProviderServiceImpl implements AuthProviderService {
 			*/
 
         } else {
+        	provider.setContentProviders(null);
         	provider.setResourceAttributeMap(null);
+        	provider.setDefaultProvider(false);
         }
         
         if(provider.getResource() == null || StringUtils.isBlank(provider.getResource().getId())) {

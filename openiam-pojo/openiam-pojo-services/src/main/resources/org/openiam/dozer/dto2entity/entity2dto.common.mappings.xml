@@ -190,11 +190,6 @@
 		</field>
 	</mapping>
 	<mapping>
-		<class-a>org.openiam.idm.srvc.policy.domain.PolicyObjectAssocEntity
-		</class-a>
-		<class-b>org.openiam.idm.srvc.policy.dto.PolicyObjectAssoc</class-b>
-	</mapping>
-	<mapping>
 		<class-a>org.openiam.idm.srvc.audit.domain.IdmAuditLogCustomEntity
 		</class-a>
 		<class-b>org.openiam.idm.srvc.audit.dto.IdmAuditLogCustom</class-b>

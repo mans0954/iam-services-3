@@ -4,6 +4,7 @@ import org.openiam.am.srvc.domain.AuthAttributeEntity;
 import org.openiam.am.srvc.domain.AuthProviderEntity;
 import org.openiam.am.srvc.domain.AuthProviderTypeEntity;
 import org.openiam.base.KeyDTO;
+import org.openiam.base.KeyNameDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -15,30 +16,28 @@ import java.util.Set;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "AuthProviderType", propOrder = {
-        "description",
         "isActive",
         "hasPublicKey",
-        "hasPrivateKey"
+        "hasPrivateKey",
+        "hasPasswordPolicy",
+        "usesSpringBean",
+        "usesGroovyScript",
+        "passwordPolicyRequired"
 })
 @DozerDTOCorrespondence(AuthProviderTypeEntity.class)
-public class AuthProviderType extends KeyDTO {
-    private String description;
+public class AuthProviderType extends KeyNameDTO {
     private boolean isActive = true;
     private boolean hasPublicKey;
     private boolean hasPrivateKey;
+    private boolean hasPasswordPolicy;
+    private boolean usesSpringBean;
+    private boolean usesGroovyScript;
+    private boolean passwordPolicyRequired;
     
     @XmlTransient
     private Set<AuthAttributeEntity> attributeSet;
     @XmlTransient
     private Set<AuthProviderEntity> providerSet;
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
 
     public boolean isActive() {
         return isActive;
@@ -80,15 +79,49 @@ public class AuthProviderType extends KeyDTO {
 		this.hasPrivateKey = hasPrivateKey;
 	}
 
+	public boolean isHasPasswordPolicy() {
+		return hasPasswordPolicy;
+	}
+
+	public void setHasPasswordPolicy(boolean hasPasswordPolicy) {
+		this.hasPasswordPolicy = hasPasswordPolicy;
+	}
+
+	public boolean isUsesSpringBean() {
+		return usesSpringBean;
+	}
+
+	public void setUsesSpringBean(boolean usesSpringBean) {
+		this.usesSpringBean = usesSpringBean;
+	}
+
+	public boolean isUsesGroovyScript() {
+		return usesGroovyScript;
+	}
+
+	public void setUsesGroovyScript(boolean usesGroovyScript) {
+		this.usesGroovyScript = usesGroovyScript;
+	}
+
+	public boolean isPasswordPolicyRequired() {
+		return passwordPolicyRequired;
+	}
+
+	public void setPasswordPolicyRequired(boolean passwordPolicyRequired) {
+		this.passwordPolicyRequired = passwordPolicyRequired;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
-		result = prime * result
-				+ ((description == null) ? 0 : description.hashCode());
+		result = prime * result + (hasPasswordPolicy ? 1231 : 1237);
 		result = prime * result + (hasPrivateKey ? 1231 : 1237);
 		result = prime * result + (hasPublicKey ? 1231 : 1237);
 		result = prime * result + (isActive ? 1231 : 1237);
+		result = prime * result + (passwordPolicyRequired ? 1231 : 1237);
+		result = prime * result + (usesGroovyScript ? 1231 : 1237);
+		result = prime * result + (usesSpringBean ? 1231 : 1237);
 		return result;
 	}
 
@@ -101,10 +134,7 @@ public class AuthProviderType extends KeyDTO {
 		if (getClass() != obj.getClass())
 			return false;
 		AuthProviderType other = (AuthProviderType) obj;
-		if (description == null) {
-			if (other.description != null)
-				return false;
-		} else if (!description.equals(other.description))
+		if (hasPasswordPolicy != other.hasPasswordPolicy)
 			return false;
 		if (hasPrivateKey != other.hasPrivateKey)
 			return false;
@@ -112,15 +142,13 @@ public class AuthProviderType extends KeyDTO {
 			return false;
 		if (isActive != other.isActive)
 			return false;
+		if (passwordPolicyRequired != other.passwordPolicyRequired)
+			return false;
+		if (usesGroovyScript != other.usesGroovyScript)
+			return false;
+		if (usesSpringBean != other.usesSpringBean)
+			return false;
 		return true;
-	}
-
-	@Override
-	public String toString() {
-		return String
-				.format("AuthProviderType [description=%s, isActive=%s, hasPublicKey=%s, hasPrivateKey=%s, toString()=%s]",
-						description, isActive, hasPublicKey, hasPrivateKey,
-						super.toString());
 	}
 
 	
