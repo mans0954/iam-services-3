@@ -23,22 +23,33 @@ package org.openiam.idm.srvc.auth.spi;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.http.entity.ContentProducer;
 import org.openiam.am.srvc.dao.AuthProviderDao;
+import org.openiam.am.srvc.dao.ContentProviderDao;
 import org.openiam.am.srvc.domain.AuthProviderEntity;
 import org.openiam.am.srvc.domain.AuthProviderTypeEntity;
+import org.openiam.am.srvc.domain.ContentProviderEntity;
+import org.openiam.am.srvc.dto.ContentProvider;
 import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.exception.AuthenticationException;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.exception.EncryptionException;
+import org.openiam.exception.LogoutException;
+import org.openiam.idm.srvc.audit.constant.AuditTarget;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.auth.context.AuthenticationContext;
+import org.openiam.idm.srvc.auth.domain.AuthStateEntity;
+import org.openiam.idm.srvc.auth.domain.AuthStateId;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.AuthenticationRequest;
+import org.openiam.idm.srvc.auth.dto.LogoutRequest;
 import org.openiam.idm.srvc.auth.dto.Subject;
+import org.openiam.idm.srvc.auth.login.AuthStateDAO;
 import org.openiam.idm.srvc.auth.login.LoginDAO;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.auth.service.AuthenticationConstants;
+import org.openiam.idm.srvc.auth.service.AuthenticationModule;
 import org.openiam.idm.srvc.auth.sso.SSOTokenModule;
 import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
@@ -54,17 +65,24 @@ import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.idm.srvc.user.service.UserDataService;
+import org.openiam.util.UserUtils;
 import org.openiam.util.encrypt.Cryptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
+import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
+
+import javax.resource.spi.IllegalStateException;
 
 /**
  * @author suneet
  *
  */
-public abstract class AbstractLoginModule {
+public abstract class AbstractLoginModule implements AuthenticationModule {
 	
 	@Autowired
 	protected ManagedSysDAO managedSysDAO;
@@ -101,15 +119,95 @@ public abstract class AbstractLoginModule {
     @Autowired
     protected SysConfiguration sysConfiguration;
     
-    public abstract Subject login(final AuthenticationContext context) throws Exception;
+    @Autowired
+    private AuthStateDAO authStateDAO;
+    
+    
+    @Autowired
+    private ContentProviderDao contentProviderDAO;
+    
+    @Transactional
+    public void logout(final LogoutRequest request, final IdmAuditLog auditLog) throws Exception {
+    	final UserEntity userEntity = userDAO.findById(request.getUserId());
+    	final ManagedSysEntity managedSystem = getManagedSystem(request);
+        final LoginEntity primaryIdentity = UserUtils.getUserManagedSysIdentityEntity(managedSystem.getId(), userEntity.getPrincipalList());
+        auditLog.addTarget(request.getUserId(), AuditTarget.USER.value(), primaryIdentity.getLogin());
+    	            
+        final AuthStateEntity example = new AuthStateEntity();
+        final AuthStateId id = new AuthStateId();
+        id.setUserId(request.getUserId());
+        example.setId(id);
+        
+        final List<AuthStateEntity> authStateList = authStateDAO.getByExample(example);
+
+        if (CollectionUtils.isEmpty(authStateList)) {
+        	final String errorMessage = String.format("Cannot find AuthState object for User: %s", request.getUserId());
+        	auditLog.fail();
+        	auditLog.setFailureReason(errorMessage);
+            log.error(errorMessage);
+            throw new LogoutException(errorMessage);
+        }
+        
+        for(final AuthStateEntity authSt : authStateList) {
+        	authSt.setAuthState(new BigDecimal(0));
+        	authSt.setToken("LOGOUT");
+        	authStateDAO.saveAuthState(authSt);
+        }
+    	
+    	doLogout(request, auditLog);
+    }
+    
+    @Transactional
+    public final Subject login(final AuthenticationContext context) throws Exception {
+    	validate(context);
+    	LoginEntity login = getLogin(context);
+    	UserEntity user = getUser(context, login);
+    	if(user == null) {
+    		final AuthProviderEntity authProvider = getAuthProvider(context);
+    		/* check if the authentication provider supports just-in-time authentication */
+    		if(authProvider.getType().isSupportsJustInTimeAuthentication() && authProvider.isSupportsJustInTimeAuthentication()) {
+    			user = createUserForJustInTimeAuthentication(context);
+    			if(user == null) {
+    				
+    			}
+    			login = getLogin(context);
+    		}
+    	}
+    	return doLogin(context, user, login);
+    }
+    
+    protected abstract void validate(final AuthenticationContext context) throws Exception;
+    protected abstract LoginEntity getLogin(final AuthenticationContext context) throws Exception;
+    protected abstract UserEntity getUser(final AuthenticationContext context, final LoginEntity login) throws Exception;
+    protected abstract Subject doLogin(final AuthenticationContext context, final UserEntity user, final LoginEntity login) throws Exception;
+    
+    protected void doLogout(final LogoutRequest request, final IdmAuditLog auditLog) throws Exception {
+    	
+    }
+    
+    protected UserEntity createUserForJustInTimeAuthentication(final AuthenticationContext context) throws Exception {
+    	throw new IllegalStateException("createUserForJustInTimeAuthentication() should be overridden by the login module");
+    }
     
     @Autowired
     protected KeyManagementService keyManagementService;
     private static final Log log = LogFactory.getLog(AbstractLoginModule.class);
     
+    protected ManagedSysEntity getManagedSystem(final LogoutRequest request) {
+    	final String contentProviderId = request.getContentProviderId();
+    	final ContentProviderEntity contentProvider = contentProviderDAO.findById(contentProviderId);
+    	final AuthProviderEntity authProvider = contentProvider.getAuthProvider();
+    	final ManagedSysEntity managedSystem = authProvider.getManagedSystem();
+    	return managedSystem;
+    }
+    
+    protected AuthProviderEntity getAuthProvider(final AuthenticationContext context) {
+    	return authProviderDAO.findById(context.getAuthProviderId());
+    }
+    
     protected ManagedSysEntity getManagedSystem(final AuthenticationContext context) {
     	final IdmAuditLog event = context.getEvent();
-    	final AuthProviderEntity authProvider = authProviderDAO.findById(context.getAuthProviderId());
+    	final AuthProviderEntity authProvider = getAuthProvider(context);
     	ManagedSysEntity managedSystem = authProvider.getManagedSystem();
     	if(managedSystem == null) {
     		final String warning = String.format("Auth provider %s does not have a managed system corresopnding to it.  Using default: %s", context.getAuthProviderId(), sysConfiguration.getDefaultManagedSysId());
@@ -125,7 +223,7 @@ public abstract class AbstractLoginModule {
     		throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_SET);
     	}
     	
-    	final AuthProviderEntity authProvider = authProviderDAO.findById(context.getAuthProviderId());
+    	final AuthProviderEntity authProvider = getAuthProvider(context);
     	if(authProvider == null) {
     		throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_FOUND);
     	}

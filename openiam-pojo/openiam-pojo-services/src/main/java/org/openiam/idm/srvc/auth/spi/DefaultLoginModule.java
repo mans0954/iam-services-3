@@ -33,6 +33,7 @@ import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.auth.context.AuthenticationContext;
 import org.openiam.idm.srvc.auth.context.PasswordCredential;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
+import org.openiam.idm.srvc.auth.dto.LogoutRequest;
 import org.openiam.idm.srvc.auth.dto.SSOToken;
 import org.openiam.idm.srvc.auth.dto.Subject;
 import org.openiam.idm.srvc.auth.service.AuthenticationConstants;
@@ -64,10 +65,16 @@ public class DefaultLoginModule extends AbstractLoginModule {
 
     public DefaultLoginModule() {
     }
-
+    
+    /*
     @Override
-    @Transactional
-    public Subject login(final AuthenticationContext context) throws Exception {
+    public void logout(final LogoutRequest request, final IdmAuditLog auditLog) throws Exception {
+    	super.logout(request, auditLog);
+    }
+    */
+    
+    @Override
+	protected void validate(final AuthenticationContext context) throws Exception {
     	final String principal = context.getPrincipal();
     	final String password = context.getPassword();
     	final IdmAuditLog newLoginEvent = context.getEvent();
@@ -81,22 +88,37 @@ public class DefaultLoginModule extends AbstractLoginModule {
             newLoginEvent.setFailureReason("Invalid Password");
             throw new BasicDataServiceException(ResponseCode.INVALID_PASSWORD);
         }
+	}
 
+	@Override
+	protected LoginEntity getLogin(final AuthenticationContext context) throws Exception {
+		final IdmAuditLog newLoginEvent = context.getEvent();
+		final String principal = context.getPrincipal();
         final ManagedSysEntity managedSystem = getManagedSystem(context);
         final LoginEntity lg = loginManager.getLoginByManagedSys(principal, managedSystem.getId());
-
         if (lg == null) {
             newLoginEvent.setFailureReason(String.format("Cannot find login for principal '%s' and managedSystem '%s'", principal, managedSystem.getId()));
             throw new BasicDataServiceException(ResponseCode.INVALID_LOGIN);
         }
+        return lg;
+	}
 
-        // check the user status - move to the abstract class for reuse
-        final String userId = lg.getUserId();
+	@Override
+	protected UserEntity getUser(final AuthenticationContext context, final LoginEntity login) throws Exception {
+		final IdmAuditLog newLoginEvent = context.getEvent();
+		final String userId = login.getUserId();
         newLoginEvent.setRequestorUserId(userId);
+        newLoginEvent.setTargetUser(userId, login.getLogin());
+        final UserEntity user = userDAO.findById(userId);
+        return user;
+	}
 
-        newLoginEvent.setTargetUser(userId, lg.getLogin());
-        
-        final UserEntity user = userManager.getUser(userId);
+    @Override
+    @Transactional
+    protected Subject doLogin(final AuthenticationContext context, final UserEntity user, final LoginEntity login) throws Exception {
+    	final String principal = context.getPrincipal();
+    	final String password = context.getPassword();
+    	final IdmAuditLog newLoginEvent = context.getEvent();
 
         final Subject sub = new Subject();
 
@@ -148,7 +170,7 @@ public class DefaultLoginModule extends AbstractLoginModule {
         tokenParam.put("PRINCIPAL", principal);
 
         // check the password
-        final String decryptPswd = this.decryptPassword(lg.getUserId(), lg.getPassword());
+        final String decryptPswd = this.decryptPassword(login.getUserId(), login.getPassword());
         if (decryptPswd != null && !decryptPswd.equals(password)) {
 
             // if failed auth count is part of the polices, then do the
@@ -158,16 +180,16 @@ public class DefaultLoginModule extends AbstractLoginModule {
                 int authFailCount = Integer.parseInt(attrValue);
                 // increment the auth fail counter
                 int failCount = 0;
-                if (lg.getAuthFailCount() != null) {
-                    failCount = lg.getAuthFailCount().intValue();
+                if (login.getAuthFailCount() != null) {
+                    failCount = login.getAuthFailCount().intValue();
                 }
                 failCount++;
-                lg.setAuthFailCount(failCount);
-                lg.setLastAuthAttempt(new Date(System.currentTimeMillis()));
+                login.setAuthFailCount(failCount);
+                login.setLastAuthAttempt(new Date(System.currentTimeMillis()));
                 if (failCount >= authFailCount) {
                     // lock the record and save the record.
-                    lg.setIsLocked(1);
-                    loginManager.updateLogin(lg);
+                	login.setIsLocked(1);
+                    loginManager.updateLogin(login);
 
                     // set the flag on the primary user record
                     user.setSecondaryStatus(UserStatusEnum.LOCKED);
@@ -178,7 +200,7 @@ public class DefaultLoginModule extends AbstractLoginModule {
                             AuthenticationConstants.RESULT_LOGIN_LOCKED);
                 } else {
                     // update the counter save the record
-                    loginManager.updateLogin(lg);
+                    loginManager.updateLogin(login);
                     newLoginEvent.addAttribute(AuditAttributeName.FAIL_COUNT, Integer.valueOf(authFailCount).toString());
                     newLoginEvent.addWarning(String.format("User %s has fail count %s", user.getId(), failCount));
                     throw new AuthenticationException(
@@ -195,13 +217,13 @@ public class DefaultLoginModule extends AbstractLoginModule {
         } else {
             // validate the password expiration rules
             log.debug("Validating the state of the password - expired or not");
-            int pswdResult = passwordExpired(lg, curDate, policy);
+            int pswdResult = passwordExpired(login, curDate, policy);
             if (pswdResult == AuthenticationConstants.RESULT_PASSWORD_EXPIRED) {
             	newLoginEvent.addWarning(String.format("Password Expired"));
                 throw new AuthenticationException(
                         AuthenticationConstants.RESULT_PASSWORD_EXPIRED);
             }
-            Integer daysToExp = setDaysToPassworExpiration(lg, curDate, sub, policy);
+            Integer daysToExp = setDaysToPassworExpiration(login, curDate, sub, policy);
             if (daysToExp!=null) {
                 sub.setDaysToPwdExp(0);
                 if(daysToExp > -1)
@@ -209,7 +231,7 @@ public class DefaultLoginModule extends AbstractLoginModule {
             }
             // check password policy if it is necessary to change it after reset
 
-            if(lg.getResetPassword()>0){
+            if(login.getResetPassword()>0){
                 String chngPwdAttr = getPolicyAttribute(policy, "CHNG_PSWD_ON_RESET");
                 if (StringUtils.isNotBlank(chngPwdAttr) && Integer.parseInt(chngPwdAttr) > 0) {
                     throw new AuthenticationException(
@@ -221,20 +243,20 @@ public class DefaultLoginModule extends AbstractLoginModule {
             // good login - reset the counters
             Date curTime = new Date(System.currentTimeMillis());
 
-            lg.setLastAuthAttempt(curDate);
+            login.setLastAuthAttempt(curDate);
 
             // move the current login to prev login fields
-            lg.setPrevLogin(lg.getLastLogin());
-            lg.setPrevLoginIP(lg.getLastLoginIP());
+            login.setPrevLogin(login.getLastLogin());
+            login.setPrevLoginIP(login.getLastLoginIP());
 
             // assign values to the current login
-            lg.setLastLogin(curDate);
-            lg.setLastLoginIP(clientIP);
+            login.setLastLogin(curDate);
+            login.setLastLoginIP(clientIP);
 
-            lg.setAuthFailCount(0);
-            lg.setFirstTimeLogin(0);
+            login.setAuthFailCount(0);
+            login.setFirstTimeLogin(0);
             log.debug("-Good Authn: Login object updated.");
-            loginManager.updateLogin(lg);
+            loginManager.updateLogin(login);
 
             // check the user status
             if (UserStatusEnum.PENDING_INITIAL_LOGIN.equals(user.getStatus()) ||
@@ -248,10 +270,10 @@ public class DefaultLoginModule extends AbstractLoginModule {
         // Successful login
         log.debug("-Populating subject after authentication");
 
-        sub.setUserId(lg.getUserId());
+        sub.setUserId(login.getUserId());
         sub.setPrincipal(principal);
-        sub.setSsoToken(token(lg.getUserId(), tokenType, tokenLife, tokenParam));
-        setResultCode(lg, sub, curDate, policy);
+        sub.setSsoToken(token(login.getUserId(), tokenType, tokenLife, tokenParam));
+        setResultCode(login, sub, curDate, policy);
 
         newLoginEvent.setSuccessReason("Succssfull authentication into Default Login Module");
         return sub;
@@ -329,5 +351,4 @@ public class DefaultLoginModule extends AbstractLoginModule {
 
         return tkModule.createToken(tokenParam);
     }
-
 }

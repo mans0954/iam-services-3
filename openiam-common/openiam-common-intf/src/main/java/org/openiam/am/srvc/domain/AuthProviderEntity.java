@@ -40,6 +40,10 @@ public class AuthProviderEntity extends AbstractKeyNameEntity {
     @Column(name = "GROOVY_SCRIPT_URL", length = 100, nullable = true)
     private String groovyScriptURL;
     
+    @Column(name="SUPPORTS_JUST_IN_TIME_AUTH")
+    @Type(type = "yes_no")
+    private boolean supportsJustInTimeAuthentication;
+    
     @Column(name="SIGN_REQUEST")
     @Type(type = "yes_no")
     private boolean isSignRequest=false;
@@ -195,11 +199,21 @@ public class AuthProviderEntity extends AbstractKeyNameEntity {
 	public void setContentProviders(Set<ContentProviderEntity> contentProviders) {
 		this.contentProviders = contentProviders;
 	}
+	
+	public boolean isSupportsJustInTimeAuthentication() {
+		return supportsJustInTimeAuthentication;
+	}
+
+	public void setSupportsJustInTimeAuthentication(
+			boolean supportsJustInTimeAuthentication) {
+		this.supportsJustInTimeAuthentication = supportsJustInTimeAuthentication;
+	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
+		result = prime * result + (supportsJustInTimeAuthentication ? 1231 : 1237);
 		result = prime * result + (defaultProvider ? 1231 : 1237);
 		result = prime * result
 				+ ((description == null) ? 0 : description.hashCode());
@@ -270,6 +284,8 @@ public class AuthProviderEntity extends AbstractKeyNameEntity {
 			if (other.type != null)
 				return false;
 		} else if (!type.equals(other.type))
+			return false;
+		if (supportsJustInTimeAuthentication != other.supportsJustInTimeAuthentication)
 			return false;
 		return true;
 	}

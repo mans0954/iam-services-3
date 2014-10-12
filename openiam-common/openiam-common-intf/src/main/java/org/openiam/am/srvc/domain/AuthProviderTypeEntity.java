@@ -45,6 +45,10 @@ public class AuthProviderTypeEntity extends AbstractKeyNameEntity {
     @Type(type = "yes_no")
     private boolean hasPasswordPolicy;
     
+    @Column(name="SUPPORTS_JUST_IN_TIME_AUTH")
+    @Type(type = "yes_no")
+    private boolean supportsJustInTimeAuthentication;
+    
     @Column(name="HAS_SPRING_BEAN")
     @Type(type = "yes_no")
     private boolean usesSpringBean;
@@ -130,6 +134,15 @@ public class AuthProviderTypeEntity extends AbstractKeyNameEntity {
 	public void setPasswordPolicyRequired(boolean passwordPolicyRequired) {
 		this.passwordPolicyRequired = passwordPolicyRequired;
 	}
+	
+	public boolean isSupportsJustInTimeAuthentication() {
+		return supportsJustInTimeAuthentication;
+	}
+
+	public void setSupportsJustInTimeAuthentication(
+			boolean supportsJustInTimeAuthentication) {
+		this.supportsJustInTimeAuthentication = supportsJustInTimeAuthentication;
+	}
 
 	@Override
 	public int hashCode() {
@@ -142,6 +155,7 @@ public class AuthProviderTypeEntity extends AbstractKeyNameEntity {
 		result = prime * result + (passwordPolicyRequired ? 1231 : 1237);
 		result = prime * result + (usesGroovyScript ? 1231 : 1237);
 		result = prime * result + (usesSpringBean ? 1231 : 1237);
+		result = prime * result + (supportsJustInTimeAuthentication ? 1231 : 1237);
 		return result;
 	}
 
@@ -167,6 +181,8 @@ public class AuthProviderTypeEntity extends AbstractKeyNameEntity {
 		if (usesGroovyScript != other.usesGroovyScript)
 			return false;
 		if (usesSpringBean != other.usesSpringBean)
+			return false;
+		if (supportsJustInTimeAuthentication != other.supportsJustInTimeAuthentication)
 			return false;
 		return true;
 	}

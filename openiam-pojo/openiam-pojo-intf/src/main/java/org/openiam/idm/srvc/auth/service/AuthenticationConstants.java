@@ -9,9 +9,7 @@ public class AuthenticationConstants {
 
     /**
      * Constants indicating which type of authentication to use.
-     */
-    public static final String AUTHN_TYPE_PASSWORD = "PASSWORD";
-    public static final String AUTHN_TYPE_TOKEN = "TOKEN";
+     *
     public static final String AUTHN_TYPE_SAML2 = "SAML2";
     public static final String AUTHN_TYPE_CERT = "CERT";
 

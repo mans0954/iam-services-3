@@ -58,13 +58,6 @@ public class AuthenticationContext extends AuthenticationRequest {
 		super.setUriPatternId(request.getUriPatternId());
 	}
 
-	public Credential createCredentialObject(String authnType) {
-		if (authnType.equals(AuthenticationConstants.AUTHN_TYPE_PASSWORD)) {
-			return new PasswordCredential();
-		}
-		return null;
-	}
-
 	public String getAuthProviderId() {
 		return authProviderId;
 	}
