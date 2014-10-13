@@ -11,14 +11,14 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "ContentProviderSearchBean", propOrder = {
         "providerName",
         "domainPattern",
-        /*"contextPath",*/
+        "authProviderId",
         "isSSL"
 })
 public class ContentProviderSearchBean extends AbstractSearchBean<ContentProvider, String> {
     private String providerName;
 
     private String domainPattern;
-    /*private String contextPath;*/
+    private String authProviderId;
     private Boolean isSSL;
 
     public String getProviderName() {
@@ -37,17 +37,17 @@ public class ContentProviderSearchBean extends AbstractSearchBean<ContentProvide
         this.domainPattern = domainPattern;
     }
 
-    /*
-    public String getContextPath() {
-        return contextPath;
-    }
+    
 
-    public void setContextPath(String contextPath) {
-        this.contextPath = contextPath;
-    }
-    */
+    public String getAuthProviderId() {
+		return authProviderId;
+	}
 
-    public Boolean isSSL() {
+	public void setAuthProviderId(String authProviderId) {
+		this.authProviderId = authProviderId;
+	}
+
+	public Boolean isSSL() {
         return isSSL;
     }
 

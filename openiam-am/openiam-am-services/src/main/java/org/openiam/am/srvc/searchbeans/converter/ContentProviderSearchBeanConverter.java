@@ -1,5 +1,7 @@
 package org.openiam.am.srvc.searchbeans.converter;
 
+import org.apache.commons.lang.StringUtils;
+import org.openiam.am.srvc.domain.AuthProviderEntity;
 import org.openiam.am.srvc.domain.ContentProviderEntity;
 import org.openiam.am.srvc.searchbeans.ContentProviderSearchBean;
 import org.openiam.idm.srvc.searchbean.converter.SearchBeanConverter;
@@ -11,12 +13,17 @@ public class ContentProviderSearchBeanConverter implements
     @Override
     public ContentProviderEntity convert(ContentProviderSearchBean searchBean) {
         final ContentProviderEntity entity = new ContentProviderEntity();
-        entity.setId(searchBean.getKey());
-        entity.setName(searchBean.getProviderName());
-        /*entity.setContextPath(searchBean.getContextPath());*/
-        entity.setDomainPattern(searchBean.getDomainPattern());
-        entity.setIsSSL(searchBean.isSSL());
-
+        if(searchBean != null) {
+        	entity.setId(searchBean.getKey());
+        	entity.setName(searchBean.getProviderName());
+        	entity.setDomainPattern(searchBean.getDomainPattern());
+        	entity.setIsSSL(searchBean.isSSL());
+        	if(StringUtils.isNotBlank(searchBean.getAuthProviderId())) {
+        		final AuthProviderEntity authProvider = new AuthProviderEntity();
+        		authProvider.setId(searchBean.getAuthProviderId());
+        		entity.setAuthProvider(authProvider);
+        	}
+        }
         return entity;
     }
 }

@@ -7,6 +7,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.am.srvc.dao.*;
 import org.openiam.am.srvc.domain.*;
+import org.openiam.base.ws.ResponseCode;
+import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.srvc.mngsys.service.ManagedSysDAO;
 import org.openiam.idm.srvc.policy.service.PolicyDAO;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
@@ -82,10 +84,10 @@ public class AuthProviderServiceImpl implements AuthProviderService {
     
     @Override
     @Transactional
-    public void saveAuthProvider(AuthProviderEntity provider, final String requestorId) throws Exception{
+    public void saveAuthProvider(AuthProviderEntity provider, final String requestorId) throws BasicDataServiceException{
     	provider.setType(authProviderTypeDao.findById(provider.getType().getId()));
     	if(provider.getType() == null) {
-    		throw new IllegalArgumentException("Type not set");
+    		throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_TYPE_NOT_SET);
     	}
     	
     	if(!provider.getType().isHasPasswordPolicy()) {
@@ -189,9 +191,12 @@ public class AuthProviderServiceImpl implements AuthProviderService {
 
     @Override
     @Transactional
-    public void deleteAuthProvider(String providerId) {
+    public void deleteAuthProvider(String providerId) throws BasicDataServiceException {
         AuthProviderEntity entity = authProviderDao.findById(providerId);
         if(entity!=null){
+        	if(CollectionUtils.isNotEmpty(entity.getContentProviders())) {
+        		throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_LINKED_TO_ONE_OR_MORE_CONTENT_PROVIDERS);
+        	}
         	authProviderDao.delete(entity);
             resourceService.deleteResource(entity.getResource().getId());
         }

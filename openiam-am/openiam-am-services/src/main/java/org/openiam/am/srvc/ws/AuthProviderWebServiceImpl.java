@@ -241,7 +241,7 @@ public class AuthProviderWebServiceImpl implements AuthProviderWebService, Appli
 
             authProviderService.deleteAuthProvider(providerId);
         } catch(BasicDataServiceException e) {
-        	log.error(e.getMessage(), e);
+        	log.warn(e.getMessage(), e);
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(e.getCode());
         } catch(Throwable e) {

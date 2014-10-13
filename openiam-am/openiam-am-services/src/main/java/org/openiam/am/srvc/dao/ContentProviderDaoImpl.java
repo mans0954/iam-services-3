@@ -56,6 +56,10 @@ public class ContentProviderDaoImpl extends BaseDaoImpl<ContentProviderEntity, S
             if(entity.getResource() != null && StringUtils.isNotEmpty(entity.getResource().getId())) {
             	criteria.add(Restrictions.eq("resource.id", entity.getResource().getId()));
             }
+            
+            if(entity.getAuthProvider() != null && StringUtils.isNotBlank(entity.getAuthProvider().getId())) {
+            	criteria.add(Restrictions.eq("authProvider.id", entity.getAuthProvider().getId()));
+            }
         }
         return criteria;
     }
