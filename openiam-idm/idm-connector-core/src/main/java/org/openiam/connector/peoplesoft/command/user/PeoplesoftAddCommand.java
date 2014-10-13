@@ -44,13 +44,8 @@ public class PeoplesoftAddCommand extends AbstractPeoplesoftCommand<CrudRequest<
             throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR);
         }
         String schemaName = managedSys.getHostUrl();
-        if (StringUtils.isBlank(managedSys.getResourceId())) {
+        if (managedSys.getResource() == null || StringUtils.isBlank(managedSys.getResource().getId())) {
             throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR, "managed system not linked with resource");
-        }
-
-        final Resource res = resourceDataService.getResource(managedSys.getResourceId(), null);
-        if (res == null) {
-            throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR, "resource is null");
         }
 
         String principalName = request.getObjectIdentity();
@@ -65,7 +60,7 @@ public class PeoplesoftAddCommand extends AbstractPeoplesoftCommand<CrudRequest<
             log.debug(String.format("ExtensibleObject in Add Request=%s", objectList));
         }
 
-        final List<AttributeMapEntity> attributeMap = this.attributeMaps(res.getId());
+        final List<AttributeMapEntity> attributeMap = this.attributeMaps(managedSys.getResource().getId());
 
         // get the attributes that are needed for this operation
 

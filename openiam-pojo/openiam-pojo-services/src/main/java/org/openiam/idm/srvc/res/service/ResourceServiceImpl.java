@@ -28,6 +28,7 @@ import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.service.ManagedSysDAO;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.service.OrganizationDAO;
+import org.openiam.idm.srvc.policy.domain.PolicyAttributeEntity;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
 import org.openiam.idm.srvc.res.domain.ResourceTypeEntity;
@@ -154,7 +155,7 @@ public class ResourceServiceImpl implements ResourceService {
             entity.setRoles(dbObject.getRoles());
 
             //elementDAO.flush();
-            mergeAttribute(entity, dbObject);
+            mergeAttributes(entity, dbObject);
 
         } else {
             boolean addApproverAssociation = false;
@@ -196,56 +197,21 @@ public class ResourceServiceImpl implements ResourceService {
         return adminResource;
     }
 
-    private void mergeAttribute(final ResourceEntity bean, final ResourceEntity dbObject) {
-
-        Set<ResourcePropEntity> beanProps = (bean.getResourceProps() != null) ? bean.getResourceProps() : new HashSet<ResourcePropEntity>();
-        Set<ResourcePropEntity> dbProps = (dbObject.getResourceProps() != null) ? new HashSet<ResourcePropEntity>(dbObject.getResourceProps()) : new HashSet<ResourcePropEntity>();
-
-        /* update */
-        Iterator<ResourcePropEntity> dbIteroator = dbProps.iterator();
-        while(dbIteroator.hasNext()) {
-        	final ResourcePropEntity dbProp = dbIteroator.next();
-        	
-        	boolean contains = false;
-            for (final ResourcePropEntity beanProp : beanProps) {
-                if (StringUtils.equals(dbProp.getId(), beanProp.getId())) {
-                    dbProp.setValue(beanProp.getValue());
-                    dbProp.setElement(getEntity(beanProp.getElement()));
-                    dbProp.setName(beanProp.getName());
-                    dbProp.setIsMultivalued(beanProp.getIsMultivalued());
-                    //renewedProperties.add(dbProp);
-                    contains = true;
-                    break;
-                }
-            }
-            
-            /* remove */
-            if(!contains) {
-            	dbIteroator.remove();
-            }
-        }
-
-        /* add */
-        final Set<ResourcePropEntity> toAdd = new HashSet<>();
-        for (final ResourcePropEntity beanProp : beanProps) {
-            boolean contains = false;
-            dbIteroator = dbProps.iterator();
-            while(dbIteroator.hasNext()) {
-            	final ResourcePropEntity dbProp = dbIteroator.next();
-                if (StringUtils.equals(dbProp.getId(), beanProp.getId())) {
-                    contains = true;
-                }
-            }
-
-            if (!contains) {
-                beanProp.setResource(bean);
-                beanProp.setElement(getEntity(beanProp.getElement()));
-                toAdd.add(beanProp);
-            }
-        }
-        dbProps.addAll(toAdd);
-        
-        bean.setResourceProps(dbProps);
+    public void mergeAttributes(final ResourceEntity bean, final ResourceEntity dbObject) {
+    	/* hibernat bug with empty list */
+    	if(dbObject != null) {
+    		if(CollectionUtils.isEmpty(bean.getResourceProps())) {
+    			dbObject.getResourceProps().clear();
+    			bean.setResourceProps(dbObject.getResourceProps());
+    		}
+    	} else {
+    		if(CollectionUtils.isNotEmpty(bean.getResourceProps())) {
+    			for(final ResourcePropEntity attribute : bean.getResourceProps()) {
+    				attribute.setResource(bean);
+    				attribute.setElement(getEntity(attribute.getElement()));
+    			}
+    		}
+    	}
     }
     
     private MetadataElementEntity getEntity(final MetadataElementEntity bean) {

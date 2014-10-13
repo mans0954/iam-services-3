@@ -1433,7 +1433,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 final String managedSysId = lg.getManagedSysId();
                 final ManagedSysEntity mSys = managedSystemService.getManagedSysById(managedSysId);
                 if (mSys != null) {
-                    final ResourceEntity res = resourceService.findResourceById(mSys.getResourceId());
+                    final ResourceEntity res = mSys.getResource();
                     log.debug(" - Managed System Id = " + managedSysId);
                     log.debug(" - Resource Id = " + res.getId());
 
@@ -1708,7 +1708,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 final ManagedSysEntity mSys = managedSystemService.getManagedSysById(managedSysId);
 
                 if (mSys != null) {
-                    final ResourceEntity res = resourceService.findResourceById(mSys.getResourceId());
+                    final ResourceEntity res = mSys.getResource();
                     log.debug(" - Managed System Id = " + managedSysId);
                     log.debug(" - Resource Id = " + res.getId());
 
@@ -2068,7 +2068,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 // determine if you should sync the password or not
                 String managedSysId = l.getManagedSysId();
                 final ManagedSysEntity mSys = managedSystemService.getManagedSysById(managedSysId);
-                final ResourceEntity res = resourceService.findResourceById(mSys.getResourceId());
+                final ResourceEntity res = mSys.getResource();
 
                 // check the sync flag
 

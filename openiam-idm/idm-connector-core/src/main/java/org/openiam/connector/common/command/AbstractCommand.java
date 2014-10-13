@@ -131,11 +131,11 @@ public abstract class AbstractCommand<Request extends RequestType, Response exte
                         "No Managed System with target id: %s", targetID));
             configuration.setManagedSys(managedSys);
 
-            if (StringUtils.isBlank(managedSys.getResourceId()))
+            if (managedSys.getResource() == null || StringUtils.isBlank(managedSys.getResource().getId()))
                 throw new ConnectorDataException(ErrorCode.INVALID_CONFIGURATION,
                         "ResourceID is not defined in the ManagedSys Object");
 
-            final Resource res = resourceDataService.getResource(managedSys.getResourceId(), null);
+            final Resource res = resourceDataService.getResource(managedSys.getResource().getId(), null);
             if (res == null)
                 throw new ConnectorDataException(ErrorCode.INVALID_CONFIGURATION,
                         "No resource for managed resource found");

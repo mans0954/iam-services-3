@@ -19,6 +19,7 @@ import javax.naming.NamingException;
 import javax.naming.directory.SearchResult;
 import javax.naming.ldap.LdapContext;
 import java.text.MessageFormat;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -31,7 +32,7 @@ public class DeleteUserLdapCommand extends AbstractCrudLdapCommand<ExtensibleUse
         String delete = "DELETE";
         ManagedSystemObjectMatch matchObj = getMatchObject(deleteRequestType.getTargetID(), ManagedSystemObjectMatch.USER);
         try {
-            Set<ResourceProp> rpSet = getResourceAttributes(managedSys.getResourceId());
+            Set<ResourceProp> rpSet = (managedSys.getResource() != null) ? getResourceAttributes(managedSys.getResource().getId()) : Collections.EMPTY_SET;
             ResourceProp rpOnDelete = getResourceAttr(rpSet,"ON_DELETE");
 
             if (rpOnDelete == null || rpOnDelete.getValue() == null || "DELETE".equalsIgnoreCase(rpOnDelete.getValue())) {

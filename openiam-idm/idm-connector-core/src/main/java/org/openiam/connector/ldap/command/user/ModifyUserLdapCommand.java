@@ -24,6 +24,7 @@ import javax.naming.directory.*;
 import javax.naming.ldap.LdapContext;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -66,7 +67,7 @@ public class ModifyUserLdapCommand extends AbstractCrudLdapCommand<ExtensibleUse
                 }
             }
 
-            Set<ResourceProp> rpSet = getResourceAttributes(managedSys.getResourceId());
+            Set<ResourceProp> rpSet = (managedSys.getResource() != null) ? getResourceAttributes(managedSys.getResource().getId()) : Collections.EMPTY_SET;
             boolean groupMembershipEnabled = isMembershipEnabled(rpSet, "GROUP_MEMBERSHIP_ENABLED");
             boolean supervisorMembershipEnabled = isMembershipEnabled(rpSet, "SUPERVISOR_MEMBERSHIP_ENABLED");
 

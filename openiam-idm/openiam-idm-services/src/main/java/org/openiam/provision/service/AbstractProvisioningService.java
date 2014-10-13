@@ -358,7 +358,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
 
     protected Login buildPrimaryPrincipal(Map<String, Object> bindingMap, ScriptIntegration se) {
         ManagedSysEntity defaultManagedSys = managedSystemService.getManagedSysById(sysConfiguration.getDefaultManagedSysId());
-        List<AttributeMapEntity> amEList = managedSystemService.getResourceAttributeMaps(defaultManagedSys.getResourceId());
+        List<AttributeMapEntity> amEList = (defaultManagedSys.getResource() != null) ? managedSystemService.getResourceAttributeMaps(defaultManagedSys.getResource().getId()) : null;
         List<AttributeMap> policyAttrMap = (amEList == null) ? null : attributeMapDozerConverter.convertToDTOList(amEList, true);
 
         log.debug("Building primary identity. ");
@@ -408,7 +408,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
 
     protected String parseUserPrincipal(List<ExtensibleAttribute> extensibleAttributes) {
         ManagedSysEntity defaultManagedSys = managedSystemService.getManagedSysById(sysConfiguration.getDefaultManagedSysId());
-        List<AttributeMapEntity> amEList = managedSystemService.getResourceAttributeMaps(defaultManagedSys.getResourceId());
+        List<AttributeMapEntity> amEList = (defaultManagedSys.getResource() != null) ? managedSystemService.getResourceAttributeMaps(defaultManagedSys.getResource().getId()) : Collections.EMPTY_LIST;
         List<AttributeMap> policyAttrMap = (amEList == null) ? null : attributeMapDozerConverter.convertToDTOList(amEList, true);
         String principalAttributeName = null;
         for (AttributeMap attr : policyAttrMap) {
@@ -436,7 +436,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                                                  ScriptIntegration se) {
         log.debug("setPrimaryIDPassword() ");
         ManagedSysEntity defaultManagedSys = managedSystemService.getManagedSysById(sysConfiguration.getDefaultManagedSysId());
-        List<AttributeMapEntity> amEList = managedSystemService.getResourceAttributeMaps(defaultManagedSys.getResourceId());
+        List<AttributeMapEntity> amEList = (defaultManagedSys != null) ? managedSystemService.getResourceAttributeMaps(defaultManagedSys.getResource().getId()) : Collections.EMPTY_LIST;
         List<AttributeMap> policyAttrMap = (amEList == null) ? null : attributeMapDozerConverter.convertToDTOList(amEList, true);
         if (policyAttrMap != null) {
             log.debug("- policyAttrMap IS NOT null");

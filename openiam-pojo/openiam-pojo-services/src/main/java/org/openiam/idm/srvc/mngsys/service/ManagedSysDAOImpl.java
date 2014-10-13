@@ -97,7 +97,7 @@ public class ManagedSysDAOImpl extends BaseDaoImpl<ManagedSysEntity, String> imp
     @SuppressWarnings(value = "unchecked")
     public ManagedSysEntity findByResource(String resourceId, String status) {
         Criteria criteria = getCriteria()
-                .add(Restrictions.eq("resourceId",resourceId))
+                .add(Restrictions.eq("resource.id",resourceId))
                 .add(Restrictions.eq("status",status))
                 .addOrder(Order.asc("name"));
 
@@ -121,7 +121,7 @@ public class ManagedSysDAOImpl extends BaseDaoImpl<ManagedSysEntity, String> imp
 	@Override
 	public List<ManagedSysEntity> findByResource(String resourceId) {
 		 return getCriteria()
-	                .add(Restrictions.eq("resourceId",resourceId))
+	                .add(Restrictions.eq("resource.id",resourceId))
 	                .addOrder(Order.asc("name")).list();
 	}
 }

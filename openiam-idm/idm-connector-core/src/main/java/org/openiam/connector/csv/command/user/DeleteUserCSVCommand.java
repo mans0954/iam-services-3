@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
 
 @Service("deleteUserCSVCommand")
@@ -24,7 +25,7 @@ public class DeleteUserCSVCommand extends AbstractCrudCSVCommand<ExtensibleUser>
     @Override
     protected void performObjectOperation(String objectIdentity, ExtensibleUser extensibleObject, ManagedSysEntity managedSys) throws ConnectorDataException {
         try {
-            List<AttributeMapEntity> attrMapList = managedSysService.getResourceAttributeMaps(managedSys.getResourceId());
+            List<AttributeMapEntity> attrMapList = (managedSys.getResource() != null) ? managedSysService.getResourceAttributeMaps(managedSys.getResource().getId()) : Collections.EMPTY_LIST;
             userCSVParser.delete(objectIdentity, managedSys, attrMapList, CSVSource.IDM);
         } catch (Exception e) {
             log.error(e.getMessage(), e);

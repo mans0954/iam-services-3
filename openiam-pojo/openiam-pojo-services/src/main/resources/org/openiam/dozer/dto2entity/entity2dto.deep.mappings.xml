@@ -740,6 +740,12 @@
 		<class-a>org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity</class-a>
 		<class-b>org.openiam.idm.srvc.mngsys.dto.ManagedSysDto</class-b>
 		<field
+			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentObjectConverter"
+			custom-converter-param="dto2entityShallowDozerMapper">
+			<a>resource</a>
+			<b>resource</b>
+		</field>
+		<field
 			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
 			custom-converter-param="dto2entityShallowDozerMapper">
 			<a>mngSysObjectMatchs</a>
@@ -754,6 +760,10 @@
 		<field-exclude>
 			<a>groups</a>
 			<b>groups</b>
+		</field-exclude>
+		<field-exclude>
+			<a>contentProviders</a>
+			<b>contentProviders</b>
 		</field-exclude>
 	</mapping>
 

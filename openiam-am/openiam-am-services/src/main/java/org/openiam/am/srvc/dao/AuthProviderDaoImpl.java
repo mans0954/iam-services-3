@@ -34,7 +34,7 @@ public class AuthProviderDaoImpl extends BaseDaoImpl<AuthProviderEntity, String>
                 criteria.add(Restrictions.eq("type.id", entity.getType().getId()));
             }
             if (entity.getManagedSystem() != null && StringUtils.isNotEmpty(entity.getManagedSystem().getId())) {
-                criteria.add(Restrictions.eq("managedSys.id", entity.getManagedSystem().getId()));
+                criteria.add(Restrictions.eq("managedSystem.id", entity.getManagedSystem().getId()));
             }
 
             if (StringUtils.isNotEmpty(entity.getName())) {

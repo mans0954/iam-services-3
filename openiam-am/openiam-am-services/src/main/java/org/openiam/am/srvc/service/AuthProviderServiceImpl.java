@@ -195,7 +195,7 @@ public class AuthProviderServiceImpl implements AuthProviderService {
         AuthProviderEntity entity = authProviderDao.findById(providerId);
         if(entity!=null){
         	if(CollectionUtils.isNotEmpty(entity.getContentProviders())) {
-        		throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_LINKED_TO_ONE_OR_MORE_CONTENT_PROVIDERS);
+        		throw new BasicDataServiceException(ResponseCode.LINKED_TO_ONE_OR_MORE_CONTENT_PROVIDERS);
         	}
         	authProviderDao.delete(entity);
             resourceService.deleteResource(entity.getResource().getId());

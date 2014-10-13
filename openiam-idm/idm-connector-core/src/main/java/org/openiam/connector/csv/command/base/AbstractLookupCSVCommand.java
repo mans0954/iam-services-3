@@ -15,6 +15,7 @@ import org.openiam.provision.type.ExtensibleObject;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -40,7 +41,7 @@ public abstract class AbstractLookupCSVCommand<T, ExtObject extends ExtensibleOb
     }
 
     private ObjectValue lookupObjectInCSV(String principal, ManagedSysEntity managedSys) throws ConnectorDataException{
-        List<AttributeMapEntity> attrMapList = managedSysService.getResourceAttributeMaps(managedSys.getResourceId());
+        List<AttributeMapEntity> attrMapList = (managedSys.getResource() != null) ? managedSysService.getResourceAttributeMaps(managedSys.getResource().getId()) : Collections.EMPTY_LIST;
         List<ReconciliationObject<T>> objectList = this.getObjectList(managedSys, attrMapList);
         List<ExtensibleAttribute> eAttr = new ArrayList<ExtensibleAttribute>(0);
 

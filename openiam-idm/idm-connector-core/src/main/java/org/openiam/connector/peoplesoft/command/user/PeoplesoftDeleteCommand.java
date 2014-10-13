@@ -39,16 +39,10 @@ public class PeoplesoftDeleteCommand extends AbstractPeoplesoftCommand<CrudReque
                     "No Managed System with target id: %s", targetID));
         }
 
-        if (StringUtils.isBlank(managedSys.getResourceId())) {
+        if (managedSys.getResource() == null || StringUtils.isBlank(managedSys.getResource().getId())) {
             throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR,
                     "ResourceID is not defined in the ManagedSys Object");
         }
-
-        final Resource res = resourceDataService.getResource(managedSys.getResourceId(), null);
-        if (res == null) {
-            throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR, "No resource for managed resource found");
-        }
-
         Connection con = null;
         try {
             final String sql = String.format(DROP_USER, principalName);

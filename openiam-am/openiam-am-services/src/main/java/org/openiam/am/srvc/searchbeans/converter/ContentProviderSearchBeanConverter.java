@@ -4,6 +4,7 @@ import org.apache.commons.lang.StringUtils;
 import org.openiam.am.srvc.domain.AuthProviderEntity;
 import org.openiam.am.srvc.domain.ContentProviderEntity;
 import org.openiam.am.srvc.searchbeans.ContentProviderSearchBean;
+import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.searchbean.converter.SearchBeanConverter;
 import org.springframework.stereotype.Component;
 
@@ -22,6 +23,11 @@ public class ContentProviderSearchBeanConverter implements
         		final AuthProviderEntity authProvider = new AuthProviderEntity();
         		authProvider.setId(searchBean.getAuthProviderId());
         		entity.setAuthProvider(authProvider);
+        	}
+        	if(StringUtils.isNotBlank(searchBean.getManagedSysId())) {
+        		final ManagedSysEntity managedSystem = new ManagedSysEntity();
+        		managedSystem.setId(searchBean.getManagedSysId());
+        		entity.setManagedSystem(managedSystem);
         	}
         }
         return entity;

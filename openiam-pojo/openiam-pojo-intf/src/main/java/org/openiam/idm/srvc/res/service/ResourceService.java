@@ -78,4 +78,6 @@ public interface ResourceService {
 
     int countResourceTypes(ResourceTypeSearchBean searchBean);
     void deleteResourceType(String resourceTypeId);
+    
+    public void mergeAttributes(final ResourceEntity bean, final ResourceEntity dbObject);
 }
