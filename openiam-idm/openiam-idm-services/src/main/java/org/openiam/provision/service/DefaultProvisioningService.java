@@ -415,7 +415,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
         try {
             if (status != UserStatusEnum.DELETED && status != UserStatusEnum.REMOVE && status != UserStatusEnum.LEAVE
-                    && status != UserStatusEnum.TERMINATE && status != UserStatusEnum.RETIRED) {
+                    && status != UserStatusEnum.TERMINATED && status != UserStatusEnum.RETIRED) {
                 response.setStatus(ResponseStatus.FAILURE);
                 response.setErrorCode(ResponseCode.USER_STATUS);
                 return response;
@@ -463,7 +463,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             }
 
             if (status != UserStatusEnum.REMOVE
-                    && (usr.getStatus() == UserStatusEnum.DELETED || usr.getStatus() == UserStatusEnum.TERMINATE)) {
+                    && (usr.getStatus() == UserStatusEnum.DELETED || usr.getStatus() == UserStatusEnum.TERMINATED)) {
                 log.debug("User was already deleted. Nothing more to do.");
                 return response;
             }

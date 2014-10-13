@@ -766,7 +766,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
         Map<String, Object> bindingMap = new HashMap<String, Object>();
 
         if (status != UserStatusEnum.DELETED && status != UserStatusEnum.REMOVE && status != UserStatusEnum.LEAVE
-                && status != UserStatusEnum.TERMINATE && status != UserStatusEnum.RETIRED) {
+                && status != UserStatusEnum.TERMINATED && status != UserStatusEnum.RETIRED) {
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(ResponseCode.USER_STATUS);
             return response;
@@ -804,7 +804,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
         }
 
         if (status != UserStatusEnum.REMOVE
-                && (UserStatusEnum.DELETED.getValue().equalsIgnoreCase(pGroup.getStatus()) || UserStatusEnum.TERMINATE.getValue().equalsIgnoreCase(pGroup.getStatus()))) {
+                && (UserStatusEnum.DELETED.getValue().equalsIgnoreCase(pGroup.getStatus()) || UserStatusEnum.TERMINATED.getValue().equalsIgnoreCase(pGroup.getStatus()))) {
             log.debug("User was already deleted. Nothing more to do.");
             return response;
         }
