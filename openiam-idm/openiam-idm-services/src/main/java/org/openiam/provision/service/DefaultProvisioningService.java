@@ -246,9 +246,11 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     if (auditLog != null) {
                         auditLog.addChild(idmAuditLog);
                         idmAuditLog.addParent(auditLog);
-                        auditLogService.save(auditLog);
+                        String logId = auditLogService.save(idmAuditLog);
+                        idmAuditLog.setId(logId);
                     }
-                    auditLogService.save(idmAuditLog);
+                    String logId = auditLogService.save(idmAuditLog);
+                    idmAuditLog.setId(logId);
 
 
                     ProvisionUserResponse tmpRes = addModifyUser(pUser, true, dataList, idmAuditLog);
@@ -287,11 +289,10 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         res.setStatus(ResponseStatus.SUCCESS);
 
         try {
-            final IdmAuditLog idmAuditLog = new IdmAuditLog();
             res = transactionTemplate.execute(new TransactionCallback<ProvisionUserResponse>() {
                 @Override
                 public ProvisionUserResponse doInTransaction(TransactionStatus status) {
-
+                    final IdmAuditLog idmAuditLog = new IdmAuditLog();
                     idmAuditLog.setRequestorUserId(pUser.getRequestorUserId());
                     idmAuditLog.setRequestorPrincipal(pUser.getRequestorLogin());
                     idmAuditLog.setAction(AuditAction.MODIFY_USER.value());
@@ -302,10 +303,11 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     if (auditLog != null) {
                         auditLog.addChild(idmAuditLog);
                         idmAuditLog.addParent(auditLog);
-                        auditLogService.save(auditLog);
+                        String logId = auditLogService.save(auditLog);
+                        auditLog.setId(logId);
                     }
-                    auditLogService.save(idmAuditLog);
-
+                    String logId = auditLogService.save(idmAuditLog);
+                    idmAuditLog.setId(logId);
                     ProvisionUserResponse tmpRes = addModifyUser(pUser, false, dataList, idmAuditLog);
                     auditLogService.save(idmAuditLog);
                     return tmpRes;
