@@ -545,10 +545,10 @@ public class GroupDataWebServiceImpl extends AbstractBaseService implements Grou
         final Response response = new Response(ResponseStatus.SUCCESS);
         IdmAuditLog auditLog = new IdmAuditLog();
         auditLog.setAction(AuditAction.REMOVE_CHILD_GROUP.value());
-        GroupEntity groupEntity = groupManager.getGroup(groupId);
-        auditLog.setTargetGroup(groupId, groupEntity.getName());
-        GroupEntity groupEntityChild = groupManager.getGroup(childGroupId);
-        auditLog.setTargetGroup(childGroupId, groupEntityChild.getName());
+        Group groupDto = groupManager.getGroupDTO(groupId);
+        auditLog.setTargetGroup(groupId, groupDto.getName());
+        Group groupChild = groupManager.getGroupDTO(childGroupId);
+        auditLog.setTargetGroup(childGroupId, groupChild.getName());
         auditLog.setRequestorUserId(requesterId);
         auditLog.setAuditDescription(String.format("Remove child group: %s from group: %s", childGroupId, groupId));
 

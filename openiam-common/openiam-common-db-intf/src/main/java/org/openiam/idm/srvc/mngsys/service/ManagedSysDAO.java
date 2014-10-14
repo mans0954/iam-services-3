@@ -34,6 +34,14 @@ public interface ManagedSysDAO extends BaseDao<ManagedSysEntity, String> {
 	 * @return
 	 */
     ManagedSysEntity findByResource(String resourceId, String status);
-    
+
+    /**
+     * Returns the ID of managed system that is associated with the specified resource id.
+     * @param resourceId
+     * @param status
+     * @return
+     */
+    String findIdByResource(String resourceId, String status);
+
     List<ManagedSysEntity> findByResource(String resourceId);
 }

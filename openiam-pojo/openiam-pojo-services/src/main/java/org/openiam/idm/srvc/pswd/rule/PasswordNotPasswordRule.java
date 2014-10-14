@@ -17,7 +17,7 @@
  */
 
 /**
- * 
+ *
  */
 package org.openiam.idm.srvc.pswd.rule;
 
@@ -29,56 +29,58 @@ import org.openiam.idm.srvc.pswd.dto.PasswordRule;
 
 /**
  * Validates a password to ensure the password is not equal to the principal
- * @author suneet
  *
+ * @author suneet
  */
 public class PasswordNotPasswordRule extends AbstractPasswordRule {
 
-	private static final String PASSWORD = "password";
+    private static final String PASSWORD = "password";
 
-	@Override
-	public void validate() throws PasswordRuleException {
-		boolean enabled = false;
-				
-		PolicyAttribute attribute = getAttribute("PWD_EQ_PWD");
-		if (attribute != null && StringUtils.isNotBlank(attribute.getValue1())) {
-			enabled =  Boolean.parseBoolean(attribute.getValue1());
-		}
-		if (enabled) {
-			String pswd = password.toLowerCase();
-			if (pswd.contains(PASSWORD)) {
-				throw new PasswordRuleException(ResponseCode.FAIL_NEQ_PASSWORD, new Object[] {PASSWORD});
-			}
-		}
-	}
+    @Override
+    public String getAttributeName() {
+        return "PWD_EQ_PWD";
+    }
 
-	@Override
-	public PasswordRuleException createException() {
-		boolean enabled = false;
-		
-		PolicyAttribute attribute = getAttribute("PWD_EQ_PWD");
-		if (attribute != null && StringUtils.isNotBlank(attribute.getValue1())) {
-			enabled =  Boolean.parseBoolean(attribute.getValue1());
-		}
-		if (enabled) {
-			return new PasswordRuleException(ResponseCode.FAIL_NEQ_PASSWORD, new Object[] {PASSWORD});
-		} else {
-			return null;
-		}
-	}
+    @Override
+    public void validate(PolicyAttribute attribute) throws PasswordRuleException {
+        boolean enabled = false;
 
-	@Override
-	public PasswordRule createRule() {
-		boolean enabled = false;
-		
-		PolicyAttribute attribute = getAttribute("PWD_EQ_PWD");
-		if (attribute != null && StringUtils.isNotBlank(attribute.getValue1())) {
-			enabled =  Boolean.parseBoolean(attribute.getValue1());
-		}
-		if (enabled) {
-			return new PasswordRule(ResponseCode.FAIL_NEQ_PASSWORD, new Object[] {PASSWORD});
-		} else {
-			return null;
-		}
-	}
+        if (attribute != null && StringUtils.isNotBlank(attribute.getValue1())) {
+            enabled = Boolean.parseBoolean(attribute.getValue1());
+        }
+        if (enabled) {
+            String pswd = password.toLowerCase();
+            if (pswd.contains(PASSWORD)) {
+                throw new PasswordRuleException(ResponseCode.FAIL_NEQ_PASSWORD, new Object[]{PASSWORD});
+            }
+        }
+    }
+
+    @Override
+    public PasswordRuleException createException(PolicyAttribute attribute) {
+        boolean enabled = false;
+
+        if (attribute != null && StringUtils.isNotBlank(attribute.getValue1())) {
+            enabled = Boolean.parseBoolean(attribute.getValue1());
+        }
+        if (enabled) {
+            return new PasswordRuleException(ResponseCode.FAIL_NEQ_PASSWORD, new Object[]{PASSWORD});
+        } else {
+            return null;
+        }
+    }
+
+    @Override
+    public PasswordRule createRule(PolicyAttribute attribute) {
+        boolean enabled = false;
+
+        if (attribute != null && StringUtils.isNotBlank(attribute.getValue1())) {
+            enabled = Boolean.parseBoolean(attribute.getValue1());
+        }
+        if (enabled) {
+            return new PasswordRule(ResponseCode.FAIL_NEQ_PASSWORD, new Object[]{PASSWORD});
+        } else {
+            return null;
+        }
+    }
 }

@@ -7,7 +7,7 @@ import javax.xml.bind.annotation.XmlType;
 /**
  * ResponseStatus provides valid values that an operation in a service can
  * return.
- * 
+ *
  * @author suneet
  */
 @XmlType(name = "ResponseErrorCode")
@@ -192,6 +192,9 @@ public enum ResponseCode {
 
     @XmlEnumValue("FAIL_MIN_WORDS_PASSPHRASE_RULE")
     FAIL_MIN_WORDS_PASSPHRASE_RULE("FAIL_MIN_WORDS_PASSPHRASE_RULE"),
+
+    @XmlEnumValue("PASSPHRASE_WORD_REPEAT_RULE")
+    PASSPHRASE_WORD_REPEAT_RULE("PASSPHRASE_WORD_REPEAT_RULE"),
 
     @XmlEnumValue("FAIL_REPEAT_SAME_WORD_PASSPHRASE_RULE")
     FAIL_REPEAT_SAME_WORD_PASSPHRASE_RULE("FAIL_REPEAT_SAME_WORD_PASSPHRASE_RULE"),
@@ -665,7 +668,13 @@ public enum ResponseCode {
     LANGUAGE_CODE_MISSING("LANGUAGE_CODE_MISSING"),
 
     @XmlEnumValue("NO_USER_FOUND_FOR_GIVEN_EMAIL")
-    NO_USER_FOUND_FOR_GIVEN_EMAIL("NO_USER_FOUND_FOR_GIVEN_EMAIL");
+    NO_USER_FOUND_FOR_GIVEN_EMAIL("NO_USER_FOUND_FOR_GIVEN_EMAIL"),
+
+    @XmlEnumValue("POLICY_ATTRIBUTES_EMPTY_VALUE")
+    POLICY_ATTRIBUTES_EMPTY_VALUE("POLICY_ATTRIBUTES_EMPTY_VALUE"),
+
+    @XmlEnumValue("FAIL_REJECT_WORDS_IN_PSWD")
+    FAIL_REJECT_WORDS_IN_PSWD("FAIL_REJECT_WORDS_IN_PSWD");
 
     private final String value;
 

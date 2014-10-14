@@ -24,27 +24,29 @@ public class DeleteResourceDelegate extends AbstractActivitiJob {
 	public void execute(DelegateExecution execution) throws Exception {
 		Response wsResponse = null;
 		final Resource resource = getObjectVariable(execution, ActivitiConstants.RESOURCE, Resource.class);
-		if(resource != null) {
-            IdmAuditLog idmAuditLog = new IdmAuditLog();
-            idmAuditLog.setRequestorUserId(getRequestorId(execution));
-            idmAuditLog.setAction(AuditAction.DELETE_RESOURCE.value());
-            idmAuditLog.setAuditDescription("Delete resource");
-            idmAuditLog.setTargetResource(resource.getId(), resource.getName());
-            idmAuditLog.setTargetTask(execution.getId(),execution.getCurrentActivityName());
-            idmAuditLog.setSource(AuditSource.WORKFLOW.value());
-            try {
+		final IdmAuditLog idmAuditLog = createNewAuditLog(execution);
+		idmAuditLog.setAction(AuditAction.DELETE_RESOURCE.value());
+		try {
+			if(resource != null) {
+				idmAuditLog.setTargetResource(resource.getId(), resource.getName());
                 wsResponse = resourceService.deleteResource(resource.getId(), systemUserId);
                 if (wsResponse.isSuccess()) {
                     idmAuditLog.succeed();
                 } else {
-                    idmAuditLog.fail();
                     idmAuditLog.setFailureReason(wsResponse.getErrorCode());
                     idmAuditLog.setFailureReason(wsResponse.getErrorText());
+                    throw new RuntimeException(String.format("Delete Resource failed: %s", wsResponse));
                 }
-            } finally {
-                auditLogService.enqueue(idmAuditLog);
-            }
-		}
+			} else {
+				throw new RuntimeException("Resource was null");
+			}
+		} catch(Throwable e) {
+ 			idmAuditLog.setException(e);
+ 			idmAuditLog.fail();
+ 			throw new RuntimeException(e);
+ 		} finally {
+ 			addAuditLogChild(execution, idmAuditLog);
+ 		}
 	}
 
 }

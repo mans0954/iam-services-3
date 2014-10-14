@@ -17,7 +17,7 @@
  */
 
 /**
- * 
+ *
  */
 package org.openiam.idm.srvc.pswd.rule;
 
@@ -30,63 +30,63 @@ import org.openiam.idm.srvc.pswd.dto.PasswordRule;
 /**
  * Validates a password to ensure that a character in password does not repeat
  * more times than what is defined in the password policy
- * 
+ *
  * @author Ekta
- * 
  */
 public class LimitNumberRepeatCharRule extends AbstractPasswordRule {
 
-	@Override
-	public void validate() throws PasswordRuleException {
+    @Override
+    public String getAttributeName() {
+        return "LIMIT_NUM_REPEAT_CHAR";
+    }
 
-		PolicyAttribute attribute = getAttribute("LIMIT_NUM_REPEAT_CHAR");
-		int numberOfRepeatingChar = getValue1(attribute);
+    @Override
+    public void validate(PolicyAttribute attribute) throws PasswordRuleException {
+        int numberOfRepeatingChar = getValue1(attribute);
 
-		// check for every char
-		if (password == null) {
-			throw new PasswordRuleException(ResponseCode.FAIL_LIMIT_NUM_REPEAT_CHAR);
-		}
+        // check for every char
+        if (password == null) {
+            throw new PasswordRuleException(ResponseCode.FAIL_LIMIT_NUM_REPEAT_CHAR);
+        }
 
-		char charAtPosition;
+        char charAtPosition;
 
-		if(numberOfRepeatingChar > 0) {
-			for (int counter = 0; counter < password.length(); counter++) {
-				charAtPosition = password.charAt(counter);
-				int count = 0;
-				for (int i = counter; i < password.length(); i++) {
-					if (charAtPosition == password.charAt(i)) {
-						count++;
-						if (count > numberOfRepeatingChar) {
-							throw createException();
-						}
-					} else {
-						count = 0;
-					}
-				}
-			}
-		}
-	}
+        if (numberOfRepeatingChar > 0) {
+            for (int counter = 0; counter < password.length(); counter++) {
+                charAtPosition = password.charAt(counter);
+                int count = 0;
+                for (int i = counter; i < password.length(); i++) {
+                    if (charAtPosition == password.charAt(i)) {
+                        count++;
+                        if (count > numberOfRepeatingChar) {
+                            throw createException();
+                        }
+                    } else {
+                        count = 0;
+                    }
+                }
+            }
+        }
+    }
 
-	@Override
-	public PasswordRuleException createException() {
-		PolicyAttribute attribute = getAttribute("LIMIT_NUM_REPEAT_CHAR");
-		int numberOfRepeatingChar = getValue1(attribute);
-		if(numberOfRepeatingChar > 0) {
-			return new PasswordRuleException(ResponseCode.FAIL_LIMIT_NUM_REPEAT_CHAR, new Object[] {numberOfRepeatingChar});
-		} else {
-			return null;
-		}
-	}
+    @Override
+    public PasswordRuleException createException(PolicyAttribute attribute) {
+        int numberOfRepeatingChar = getValue1(attribute);
+        if (numberOfRepeatingChar > 0) {
+            return new PasswordRuleException(ResponseCode.FAIL_LIMIT_NUM_REPEAT_CHAR, new Object[]{numberOfRepeatingChar});
+        } else {
+            return null;
+        }
+    }
 
-	@Override
-	public PasswordRule createRule() {
-		PolicyAttribute attribute = getAttribute("LIMIT_NUM_REPEAT_CHAR");
-		int numberOfRepeatingChar = getValue1(attribute);
-		if(numberOfRepeatingChar > 0) {
-			return new PasswordRule(ResponseCode.FAIL_LIMIT_NUM_REPEAT_CHAR, new Object[] {numberOfRepeatingChar});
-		} else {
-			return null;
-		}
-	}
+    @Override
+    public PasswordRule createRule(PolicyAttribute attribute) {
+        int numberOfRepeatingChar = getValue1(attribute);
+        if (numberOfRepeatingChar > 0) {
+            return new PasswordRule(ResponseCode.FAIL_LIMIT_NUM_REPEAT_CHAR, new Object[]{numberOfRepeatingChar});
+        } else {
+            return null;
+        }
+    }
 
 }

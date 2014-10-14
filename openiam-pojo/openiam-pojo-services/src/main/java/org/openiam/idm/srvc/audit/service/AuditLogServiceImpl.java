@@ -1,22 +1,16 @@
 package org.openiam.idm.srvc.audit.service;
 
-import java.net.InetAddress;
-import java.util.*;
-
-import javax.annotation.PostConstruct;
-import javax.jms.JMSException;
-import javax.jms.Queue;
-import javax.jms.Session;
-
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.SysConfiguration;
+import org.openiam.dozer.converter.IdmAuditLogCustomDozerConverter;
 import org.openiam.dozer.converter.IdmAuditLogDozerConverter;
 import org.openiam.idm.searchbeans.AuditLogSearchBean;
 import org.openiam.idm.srvc.audit.constant.AuditTarget;
+import org.openiam.idm.srvc.audit.domain.IdmAuditLogCustomEntity;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.audit.dto.AuditLogTarget;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
@@ -38,6 +32,13 @@ import org.springframework.jms.core.JmsTemplate;
 import org.springframework.jms.core.MessageCreator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import javax.annotation.PostConstruct;
+import javax.jms.JMSException;
+import javax.jms.Queue;
+import javax.jms.Session;
+import java.net.InetAddress;
+import java.util.*;
 
 /**
  * Implementation class for <code>IdmAuditLogDataService</code>. All audit logging activities 
@@ -81,14 +82,8 @@ public class AuditLogServiceImpl implements AuditLogService {
     @Autowired
     private IdmAuditLogDozerConverter auditLogDozerConverter;
 
-    /**
-     * Cache for UserId and CorrelationId
-     *
-     * When new User login: new AuditLog with Correlation Id will be generated and store in cache Map
-     * Every login we replace CorrelationId by UserId
-     *
-     */
-    private final Map<String, String> correlationIdByRequesterId = new HashMap<>();
+    @Autowired
+    private IdmAuditLogCustomDozerConverter idmAuditLogCustomDozerConverter;
 
     @PostConstruct
     public void init() {
@@ -100,22 +95,17 @@ public class AuditLogServiceImpl implements AuditLogService {
     }
     
     private IdmAuditLogEntity prepare(final IdmAuditLog log) {
+//        IdmAuditLogEntity auditLogEntity = log.getId() == null ? auditLogDozerConverter.convertToEntity(log, false) : logDAO.findById(log.getId());
+        IdmAuditLogEntity auditLogEntity = auditLogDozerConverter.convertToEntity(log, false);// : logDAO.findById(log.getId());
         if(log != null) {
-            IdmAuditLogEntity auditLogEntity = auditLogDozerConverter.convertToEntity(log, false);
     		if(auditLogEntity.getId() == null || auditLogEntity.getHash() == null) {
                 auditLogEntity.setHash(DigestUtils.sha256Hex(log.concat()));
             }
 
-            if(StringUtils.isEmpty(auditLogEntity.getCorrelationId())) {
-               // log.setCorrelationId(String.valueOf(new Random().nextLong()));
-            }
             auditLogEntity.setNodeIP(nodeIP);
 
     		if(CollectionUtils.isNotEmpty(log.getChildLogs())) {
     			for(final IdmAuditLog ch : log.getChildLogs()) {
-                    if(StringUtils.isEmpty(ch.getCorrelationId())) {
-                       // log.setCorrelationId(log.getCorrelationId());
-                    }
                     IdmAuditLogEntity chEntity = prepare(ch);
                     if(!auditLogEntity.getChildLogs().contains(chEntity)) {
                         auditLogEntity.addChild(chEntity);
@@ -126,10 +116,10 @@ public class AuditLogServiceImpl implements AuditLogService {
 
     		//required - the UI sends a transient instance to the service, so fix it here
     		if(CollectionUtils.isNotEmpty(log.getCustomRecords())) {
-    			for(final IdmAuditLogCustom custom : log.getCustomRecords()) {
-                    auditLogEntity.addCustomRecord(custom.getKey(), custom.getValue());
+                List<IdmAuditLogCustomEntity> auditLogCustomEntities = idmAuditLogCustomDozerConverter.convertToEntityList(new ArrayList<IdmAuditLogCustom>(log.getCustomRecords()), false);
+                for(final IdmAuditLogCustomEntity custom : auditLogCustomEntities) {
+                    auditLogEntity.addCustomRecord(custom);
     			}
-
     		}
 
     		if(CollectionUtils.isNotEmpty(log.getTargets())) {
@@ -169,7 +159,7 @@ public class AuditLogServiceImpl implements AuditLogService {
         return null;
     }
 
-	@Override
+    @Override
 	public void enqueue(final IdmAuditLog event) {
         if(event != null){
 		    send(event);
@@ -227,20 +217,10 @@ public class AuditLogServiceImpl implements AuditLogService {
                 logDAO.persist(auditLogEntity);
             }
         } catch(Exception ex) {
-          ex.printStackTrace();
+        	LOG.error("Can't save audit log", ex);
         }
-        return auditLogEntity.getId();
+        final String id = auditLogEntity.getId();
+        auditLog.setId(id);
+        return id;
     }
-/*
-    @Override
-    @Transactional(readOnly = true)
-    public IdmAuditLog getAuditLogByRequesterId(String requesterId) {
-        IdmAuditLog auditLog = null;
-        if(correlationIdByUserId.containsKey(requesterId)) {
-            IdmAuditLogEntity auditLogEntity = logDAO.findByRequesterId(requesterId,correlationIdByUserId.get(requesterId));
-            auditLog = auditLogDozerConverter.convertToDTO(auditLogEntity, true);
-        }
-
-        return auditLog;
-    }*/
 }

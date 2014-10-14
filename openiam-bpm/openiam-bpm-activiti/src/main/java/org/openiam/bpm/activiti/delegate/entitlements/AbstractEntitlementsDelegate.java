@@ -12,6 +12,8 @@ import org.openiam.bpm.activiti.delegate.core.AbstractNotificationDelegate;
 import org.openiam.bpm.activiti.delegate.core.ActivitiHelper;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.bpm.util.ActivitiRequestType;
+import org.openiam.idm.srvc.audit.constant.AuditAction;
+import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.msg.dto.NotificationParam;
 import org.openiam.idm.srvc.msg.dto.NotificationRequest;
 import org.openiam.idm.srvc.user.domain.UserEntity;
@@ -96,16 +98,40 @@ public abstract class AbstractEntitlementsDelegate extends AbstractNotificationD
 
 	@Override
 	public void execute(DelegateExecution execution) throws Exception {
-		final String targetUserId = getTargetUserId(execution);
-		final UserEntity targetUser = getUserEntity(targetUserId);
-
-		final Collection<String> candidateUsersIds = activitiHelper.getCandidateUserIds(execution, targetUserId, null);
-
-		for(final String userId : candidateUsersIds) {
-			final UserEntity user = getUserEntity(userId);
-			if(user != null) {
-				sendNotification(user, targetUser, execution);
+		final IdmAuditLog idmAuditLog = createNewAuditLog(execution);
+        idmAuditLog.setAction(AuditAction.ENTITLEMENTS_DELEGATE.value());
+		try {
+			final String targetUserId = getTargetUserId(execution);
+			final UserEntity targetUser = getUserEntity(targetUserId);
+			final String requestorId = getRequestorId(execution);
+	
+			final Collection<String> candidateUsersIds = activitiHelper.getCandidateUserIds(execution, targetUserId, null);
+	
+			boolean isRequestorOnlyApprover = false;
+			boolean isRequestorCandidate = false;
+			for(final String userId : candidateUsersIds) {
+				final UserEntity user = getUserEntity(userId);
+				if(user != null) {
+					sendNotification(user, targetUser, execution);
+				}
+				if(StringUtils.equals(userId, requestorId)) {
+					isRequestorCandidate = true;
+				}
 			}
+			
+			if(isRequestorCandidate) {
+				isRequestorOnlyApprover = (candidateUsersIds.size() == 1);
+			}
+			
+			execution.setVariable(ActivitiConstants.IS_REQUESTOR_ONLY_APROVER.getName(), isRequestorOnlyApprover);
+			execution.setVariable(ActivitiConstants.IS_REQUESTOR_CANDIDATE.getName(), isRequestorCandidate);
+			idmAuditLog.succeed();
+		} catch(Throwable e) {
+			idmAuditLog.setException(e);
+			idmAuditLog.fail();
+			throw new RuntimeException(e);
+		} finally {
+			addAuditLogChild(execution, idmAuditLog);
 		}
 	}
 }

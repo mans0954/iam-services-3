@@ -25,9 +25,8 @@ import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.synch.dto.Attribute;
 import org.openiam.idm.srvc.synch.service.MatchObjectRule;
-import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
-import org.openiam.idm.srvc.user.service.UserDataService;
+import org.openiam.idm.srvc.user.ws.UserDataWebService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -36,7 +35,7 @@ public class DefaultMatchObjectRule implements MatchObjectRule {
     private static final Log log = LogFactory.getLog(DefaultMatchObjectRule.class);
 
     @Autowired
-	private UserDataService userManager;
+    private UserDataWebService userDataWebService;
 
     @Autowired
     private GroupDataService groupManager;
@@ -101,14 +100,12 @@ public class DefaultMatchObjectRule implements MatchObjectRule {
 
 		}
 
-        List<UserEntity> userList = null;
-
-        userList = userManager.getByExample(searchBean, 0, Integer.MAX_VALUE);
+        List<User> userList = userDataWebService.findBeans(searchBean, 0, Integer.MAX_VALUE);
 
 
         if (userList != null && !userList.isEmpty()) {
 			System.out.println("User matched with existing user...");
-			return new User(userList.get(0).getId());
+            return userDataWebService.getUserWithDependent(userList.get(0).getId(),null,true);
 		}
 		return null;
 	}
@@ -265,7 +262,6 @@ public class DefaultMatchObjectRule implements MatchObjectRule {
     @Override
     public String toString() {
         return "DefaultMatchObjectRule{" +
-                "userManager=" + userManager +
                 ", matchAttrName='" + matchAttrName + '\'' +
                 ", matchAttrValue='" + matchAttrValue + '\'' +
                 '}';

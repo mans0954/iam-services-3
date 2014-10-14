@@ -21,6 +21,7 @@ import org.openiam.idm.srvc.grp.service.GroupDataService;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorDto;
+import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
 import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.idm.srvc.mngsys.ws.ProvisionConnectorWebService;
 import org.openiam.idm.srvc.org.service.OrganizationDataService;
@@ -54,6 +55,8 @@ public class BaseProvisioningHelper {
     protected LoginDAO loginDao;
     @Autowired
     protected ManagedSystemWebService managedSysService;
+    @Autowired
+    protected ManagedSystemService managedSysDaoService;
     @Autowired
     protected RoleDataService roleDataService;
     @Autowired
@@ -109,7 +112,7 @@ public class BaseProvisioningHelper {
     public void setCurrentSuperiors(ProvisionUser pUser) {
         if (org.mule.util.StringUtils.isNotEmpty(pUser.getId())) {
             List<UserEntity> entities = userMgr.getSuperiors(pUser.getId(), -1, -1);
-            List<User> superiors = userDozerConverter.convertToDTOList(entities, true);
+            List<User> superiors = userDozerConverter.convertToDTOList(entities, false);
             if (CollectionUtils.isNotEmpty(superiors)) {
                 pUser.setSuperiors(new HashSet<User>(superiors));
             }

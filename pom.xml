@@ -6,7 +6,7 @@
 	<groupId>org.openiam</groupId>
 	<artifactId>iam-services</artifactId>
 	<packaging>pom</packaging>
-	<version>3.2.1.RELEASE</version>
+	<version>3.2.2.RELEASE</version>
 
 	<name>OpenIAM Identity Manager</name>
 	<description>openiam is open source Identity and access Management Project</description>
@@ -116,7 +116,7 @@
 		<module>openiam-common</module>
 		<module>openiam-security</module>
 		<module>openiam-auth-manager</module>
-		<module>openiam-subscription</module>
+		<!--<module>openiam-subscription</module>-->
 	</modules>
 	<properties>
 		<mule.version>3.3.0</mule.version>
@@ -170,6 +170,7 @@
 		<git.commit.id.plugin.version>2.0.3</git.commit.id.plugin.version>
 		<maven.build.timestamp.format>yyyy/MM/dd HH:mm Z</maven.build.timestamp.format>
 		<maven.war.plugin.version>2.2</maven.war.plugin.version>
+		<javaee.web.api.version>6.0</javaee.web.api.version>
 		<skipTests>true</skipTests>
 	</properties>
 
@@ -348,9 +349,9 @@
 				<version>${jstl.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>javax.servlet</groupId>
-				<artifactId>servlet-api</artifactId>
-				<version>${servletapi.version}</version>
+				<groupId>javax</groupId>
+				<artifactId>javaee-web-api</artifactId>
+				<version>${javaee.web.api.version}</version>
 				<scope>provided</scope>
 			</dependency>
 			<!-- commons dependencies -->

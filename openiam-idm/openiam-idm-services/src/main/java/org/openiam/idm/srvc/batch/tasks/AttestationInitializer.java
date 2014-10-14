@@ -8,22 +8,17 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.time.StopWatch;
 import org.apache.log4j.Logger;
 import org.openiam.base.ws.Response;
-import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.bpm.activiti.ActivitiService;
 import org.openiam.bpm.request.GenericWorkflowRequest;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.bpm.util.ActivitiRequestType;
-import org.openiam.idm.srvc.batch.domain.BatchTaskEntity;
-import org.openiam.idm.srvc.user.domain.SupervisorEntity;
-import org.openiam.idm.srvc.user.domain.UserEntity;
+import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.service.SupervisorDAO;
-import org.openiam.idm.srvc.user.service.UserDataService;
-import org.opensaml.saml1.core.validator.ResponseSchemaValidator;
+import org.openiam.idm.srvc.user.ws.UserDataWebService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @author lbornov2
@@ -48,24 +43,23 @@ public class AttestationInitializer {
 	private String systemUserId;
 	
 	@Autowired
-	private UserDataService userService;
+	private UserDataWebService userService;
 
-	@Transactional
 	public void initializeAttestation() {
 		final StopWatch sw = new StopWatch();
 		sw.start();
 		final Set<String> employeeIds = supervisorDAO.getUniqueEmployeeIds();
 		if(CollectionUtils.isNotEmpty(employeeIds)) {
 			for(final String employeeId : employeeIds) {
-				final UserEntity user = userService.getUser(employeeId);
-				final List<UserEntity> supervisords = userService.getSuperiors(employeeId, 0, Integer.MAX_VALUE);
+				final User user = userService.getUserWithDependent(employeeId,systemUserId,false);
+				final List<User> supervisords = userService.getSuperiors(employeeId, 0, Integer.MAX_VALUE);
 				final Set<String> supervisorIds = new HashSet<String>();
 				if(CollectionUtils.isEmpty(supervisords)) {
 					LOG.info(String.format("Employee %s has no supervisor", employeeId));
 					continue;
 				}
 				
-				for(final UserEntity supevisor : supervisords) {
+				for(final User supevisor : supervisords) {
 					if(supevisor != null && supevisor.getId() != null) {
 						supervisorIds.add(supevisor.getId());
 					}

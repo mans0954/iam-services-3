@@ -23,10 +23,7 @@ public class SaveGroupDelegate extends AbstractActivitiJob {
 	@Override
 	public void execute(DelegateExecution execution) throws Exception {
 		final Group group = getObjectVariable(execution, ActivitiConstants.GROUP, Group.class);
-        IdmAuditLog idmAuditLog = new IdmAuditLog();
-        idmAuditLog.setRequestorUserId(getRequestorId(execution));
-        idmAuditLog.setSource(AuditSource.WORKFLOW.value());
-        idmAuditLog.setTargetTask(execution.getId(),execution.getCurrentActivityName());
+		final IdmAuditLog idmAuditLog = createNewAuditLog(execution);
         if (group.getId() == null) {
             idmAuditLog.setAction(AuditAction.ADD_GROUP.value());
             idmAuditLog.setAuditDescription("Create new group");
@@ -35,19 +32,24 @@ public class SaveGroupDelegate extends AbstractActivitiJob {
             idmAuditLog.setAuditDescription("Edit group");
         }
         try {
-            final Response response =  groupDataService.saveGroup(group, getRequestorId(execution));
-            if (response.isSuccess()) {
-                String groupId = (String) response.getResponseValue();
+        	idmAuditLog.setTargetGroup(group.getId(), group.getName());
+            final Response wsResponse =  groupDataService.saveGroup(group, getRequestorId(execution));
+            if (wsResponse.isSuccess()) {
+                String groupId = (String) wsResponse.getResponseValue();
                 idmAuditLog.setTargetGroup(groupId, group.getName());
                 idmAuditLog.succeed();
             } else {
                 idmAuditLog.fail();
-                idmAuditLog.setFailureReason(response.getErrorCode());
-                idmAuditLog.setFailureReason(response.getErrorText());
-                idmAuditLog.setTargetGroup(group.getId(), group.getName());
+                idmAuditLog.setFailureReason(wsResponse.getErrorCode());
+                idmAuditLog.setFailureReason(wsResponse.getErrorText());
+                throw new RuntimeException(String.format("Save Group Failed failed; %s", wsResponse));
             }
-        } finally {
-            auditLogService.enqueue(idmAuditLog);
-        }
+        } catch(Throwable e) {
+ 			idmAuditLog.setException(e);
+ 			idmAuditLog.fail();
+ 			throw new RuntimeException(e);
+ 		} finally {
+ 			addAuditLogChild(execution, idmAuditLog);
+ 		}
 	}
 }

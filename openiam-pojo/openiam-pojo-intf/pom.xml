@@ -3,13 +3,13 @@
     <parent>
         <groupId>org.openiam</groupId>
         <artifactId>openiam-pojo</artifactId>
-        <version>3.2.1.RELEASE</version>
+        <version>3.2.2.RELEASE</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.openiam</groupId>
     <artifactId>openiam-pojo-intf</artifactId>
     <name>openiam-pojo-intf</name>
-    <version>3.2.1.RELEASE</version>
+    <version>3.2.2.RELEASE</version>
     <description>OpenIAM IDM Services Interfaces and DTOs</description>
 
     <build>
@@ -228,11 +228,10 @@
             <version>${jstl.version}</version>
         </dependency>
         <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>servlet-api</artifactId>
-            <version>${servletapi.version}</version>
-            <scope>provided</scope>
-        </dependency>
+			<groupId>javax</groupId>
+			<artifactId>javaee-web-api</artifactId>
+			<scope>provided</scope>
+		</dependency>
     </dependencies>
 
 </project>

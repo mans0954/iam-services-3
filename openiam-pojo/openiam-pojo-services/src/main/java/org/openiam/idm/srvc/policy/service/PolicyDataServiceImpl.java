@@ -16,7 +16,7 @@
  */
 
 /**
- * 
+ *
  */
 package org.openiam.idm.srvc.policy.service;
 
@@ -24,7 +24,9 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import javax.jws.WebService;
+
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.base.ws.Response;
@@ -35,26 +37,27 @@ import org.openiam.dozer.converter.ITPolicyDozerConverter;
 import org.openiam.dozer.converter.PolicyDefParamDozerConverter;
 import org.openiam.dozer.converter.PolicyDozerConverter;
 import org.openiam.dozer.converter.PolicyObjectAssocDozerConverter;
+import org.openiam.exception.EsbErrorToken;
 import org.openiam.idm.searchbeans.PolicySearchBean;
+import org.openiam.idm.srvc.batch.domain.BatchTaskEntity;
+import org.openiam.idm.srvc.batch.service.BatchService;
 import org.openiam.idm.srvc.policy.domain.*;
-import org.openiam.idm.srvc.policy.dto.ITPolicy;
-import org.openiam.idm.srvc.policy.dto.Policy;
-import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
-import org.openiam.idm.srvc.policy.dto.PolicyDefParam;
-import org.openiam.idm.srvc.policy.dto.PolicyObjectAssoc;
+import org.openiam.idm.srvc.policy.dto.*;
 
+import org.openiam.util.ws.collection.StringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 // TODO: Auto-generated Javadoc
+
 /**
  * PolicyDataService is used create and manage policies. Enforcement of these
  * policies is handled through policy specific services and policy enforcement
  * points.
- * 
+ *
  * @author suneet
- * 
  */
 
 @WebService(endpointInterface = "org.openiam.idm.srvc.policy.service.PolicyDataService", targetNamespace = "urn:idm.openiam.org/srvc/policy/service", portName = "PolicyWebServicePort", serviceName = "PolicyWebService")
@@ -62,196 +65,250 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class PolicyDataServiceImpl implements PolicyDataService {
 
-	private static final Log log = LogFactory.getLog(PolicyDataServiceImpl.class);
+    private static final Log log = LogFactory.getLog(PolicyDataServiceImpl.class);
 
     @Autowired
     private ITPolicyDAO itPolicyDao;
 
-	@Autowired
-	private PolicyObjectAssocDAO policyObjectAssocDAO;
+    @Autowired
+    private PolicyObjectAssocDAO policyObjectAssocDAO;
 
-	/** The policy dozer converter. */
-	@Autowired
+    /**
+     * The policy dozer converter.
+     */
+    @Autowired
     private PolicyDozerConverter policyDozerConverter;
 
     @Autowired
     private ITPolicyDozerConverter itPolicyDozerConverter;
 
-	@Autowired
-	private PolicyObjectAssocDozerConverter policyAssocObjectDozerConverter;
+    @Autowired
+    private PolicyObjectAssocDozerConverter policyAssocObjectDozerConverter;
 
-	/** The policy def param dozer converter. */
-	@Autowired
-	private PolicyDefParamDozerConverter policyDefParamDozerConverter;
-	
-	@Autowired
-	private PolicyService policyService;
+    /**
+     * The policy def param dozer converter.
+     */
+    @Autowired
+    private PolicyDefParamDozerConverter policyDefParamDozerConverter;
 
-	@Override
-	public Policy getPolicy(String policyId) {
-		if (policyId == null) {
-			throw new NullPointerException("PolicyId is null");
-		}
-		final PolicyEntity p = policyService.getPolicy(policyId);
-		return policyDozerConverter.convertToDTO(p, true);
-	}
+    @Autowired
+    private PolicyService policyService;
 
-	@Override
-	@Deprecated
-	public List<Policy> getAllPolicies(String policyDefId, final int from, final int size) {
-		final PolicySearchBean searchBean = new PolicySearchBean();
-		searchBean.setPolicyDefId(policyDefId);
-		searchBean.setDeepCopy(true);
-		return findBeans(searchBean, from, size);
-	}
+    @Autowired
+    private BatchService batchService;
 
-	@Override
-	public List<PolicyDefParam> getAllPolicyAttributes(String policyDefId,
-			String pswdGroup) {
-		if (policyDefId == null) {
-			throw new NullPointerException("policyDefId is null");
-		}
+    @Value("${batch.task.password.exp.id}")
+    private String passwordExpirationBatchTaskId;
 
-		final List<PolicyDefParam> policyList = policyDefParamDozerConverter
-				.convertToDTOList(policyService.findPolicyDefParamByGroup(
-						policyDefId, pswdGroup), true);
+    @Override
+    public Policy getPolicy(String policyId) {
+        if (policyId == null) {
+            throw new NullPointerException("PolicyId is null");
+        }
+        final PolicyEntity p = policyService.getPolicy(policyId);
+        return policyDozerConverter.convertToDTO(p, true);
+    }
 
-		if (CollectionUtils.isEmpty(policyList)) {
-			return null;
-		}
-		return policyList;
+    @Override
+    @Deprecated
+    public List<Policy> getAllPolicies(String policyDefId, final int from, final int size) {
+        final PolicySearchBean searchBean = new PolicySearchBean();
+        searchBean.setPolicyDefId(policyDefId);
+        searchBean.setDeepCopy(true);
+        return findBeans(searchBean, from, size);
+    }
 
-	}
+    @Override
+    public List<PolicyDefParam> getAllPolicyAttributes(String policyDefId,
+                                                       String pswdGroup) {
+        if (policyDefId == null) {
+            throw new NullPointerException("policyDefId is null");
+        }
 
-	public Response savePolicy(final Policy policy) {
-		final Response response = new Response(ResponseStatus.SUCCESS);
+        final List<PolicyDefParam> policyList = policyDefParamDozerConverter
+                .convertToDTOList(policyService.findPolicyDefParamByGroup(
+                        policyDefId, pswdGroup), true);
 
-		try {
-			if (policy == null) {
-				throw new BasicDataServiceException(
-						ResponseCode.INVALID_ARGUMENTS);
-			}
-			if (StringUtils.isBlank(policy.getName())) {
-				throw new BasicDataServiceException(
-						ResponseCode.POLICY_NAME_NOT_SET);
-			}
+        if (CollectionUtils.isEmpty(policyList)) {
+            return null;
+        }
+        return policyList;
 
-			final List<PolicyEntity> found = policyService.findPolicyByName(policy.getPolicyDefId(), policy.getName());
-			if (found != null && found.size() > 0) {
-				if (StringUtils.isBlank(policy.getPolicyId()) && found != null) {
-					throw new BasicDataServiceException(ResponseCode.NAME_TAKEN);
-				}
+    }
 
-				if (StringUtils.isNotBlank(policy.getPolicyId())
-						&& !policy.getPolicyId().equals(
-								found.get(0).getPolicyId())) {
-					throw new BasicDataServiceException(ResponseCode.NAME_TAKEN);
-				}
-			}
-			final PolicyEntity pe = policyDozerConverter.convertToEntity(policy, true);
+    public Response savePolicy(final Policy policy) {
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+            if (policy == null) {
+                throw new BasicDataServiceException(
+                        ResponseCode.INVALID_ARGUMENTS);
+            }
+            if (StringUtils.isBlank(policy.getName())) {
+                throw new BasicDataServiceException(
+                        ResponseCode.POLICY_NAME_NOT_SET);
+            }
 
-			policyService.save(pe);
-			response.setResponseValue(pe.getPolicyId());
-		} catch (BasicDataServiceException e) {
-			log.warn("Can't save policty", e);
-			response.setErrorCode(e.getCode());
-			response.setStatus(ResponseStatus.FAILURE);
-		} catch (Throwable e) {
-			log.error("Can't perform operation", e);
-			response.setErrorText(e.getMessage());
-			response.setStatus(ResponseStatus.FAILURE);
-		}
+            final List<PolicyEntity> found = policyService.findPolicyByName(policy.getPolicyDefId(), policy.getName());
+            if (found != null && found.size() > 0) {
+                if (StringUtils.isBlank(policy.getPolicyId()) && found != null) {
+                    throw new BasicDataServiceException(ResponseCode.NAME_TAKEN);
+                }
 
-		return response;
-	}
-	
-	@Override
-	@Deprecated
-	public Response addPolicy(Policy policy) {
-		return savePolicy(policy);
-	}
+                if (StringUtils.isNotBlank(policy.getPolicyId())
+                        && !policy.getPolicyId().equals(
+                        found.get(0).getPolicyId())) {
+                    throw new BasicDataServiceException(ResponseCode.NAME_TAKEN);
+                }
+            }
 
-	@Override
-	@Deprecated
-	public Response updatePolicy(Policy policy) {
-		return savePolicy(policy);
-	}
+            if (CollectionUtils.isNotEmpty(policy.getPolicyAttributes())) {
+                for (PolicyAttribute pa : policy.getPolicyAttributes()) {
+                    boolean isPasswordPolicy = PolicyConstants.PSWD_COMPOSITION.equals(pa.getOperation()) ||
+                            PolicyConstants.PSWD_CHANGE_RULE.equals(pa.getOperation()) || PolicyConstants.FORGET_PSWD.equals(pa.getOperation());
+                    String op = pa.getOperation();
+                    if ((isPasswordPolicy && StringUtils.isBlank(op)) || StringUtils.isBlank(pa.getName())) {
+                        throw new BasicDataServiceException(ResponseCode.INVALID_VALUE);
+                    }
+                    if (StringUtils.isNotBlank(op)) {
+                        switch (op) {
+                            case PolicyConstants.SELECT:
+                            case PolicyConstants.STRING:
+                                if (pa.isRequired() && StringUtils.isBlank(pa.getValue1())) {
+                                    throw new BasicDataServiceException(ResponseCode.POLICY_ATTRIBUTES_EMPTY_VALUE);
+                                }
+                                break;
+                            case PolicyConstants.RANGE:
+                                if (isPasswordPolicy && pa.isRequired() && StringUtils.isBlank(pa.getValue1()) && StringUtils.isBlank(pa.getValue2())) {
+                                    throw new BasicDataServiceException(ResponseCode.POLICY_ATTRIBUTES_EMPTY_VALUE);
+                                }
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                }
+            }
+            final PolicyEntity pe = policyDozerConverter.convertToEntity(policy, true);
+            policyService.save(pe);
+            try {
+                this.policyPostProcessor(pe);
+            } catch (Exception e) {
+                log.error("can't run policy post processor");
+                log.error(e);
+            }
 
-	
-	@Override
-	public Response deletePolicy(String policyId) {
+            response.setResponseValue(pe.getPolicyId());
+        } catch (BasicDataServiceException e) {
+            log.warn("Can't save policty", e);
+            response.setErrorCode(e.getCode());
+            response.setStatus(ResponseStatus.FAILURE);
+        } catch (Throwable e) {
+            log.error("Can't perform operation", e);
+            response.setErrorText(e.getMessage());
+            response.setStatus(ResponseStatus.FAILURE);
+        }
 
-		final Response response = new Response(ResponseStatus.SUCCESS);
-		try {
-			if (policyId == null) {
-				throw new BasicDataServiceException(
-						ResponseCode.INVALID_ARGUMENTS);
-			}
+        return response;
+    }
 
-			policyService.delete(policyId);
-		} catch (BasicDataServiceException e) {
+    private void policyPostProcessor(PolicyEntity pe) {
+        // turn on Task Password near expiration
+        PolicyAttributeEntity pae = pe.getAttribute("PWD_EXP_WARN");
+        boolean state = (pae == null) ? false : pae.isRequired();
+        BatchTaskEntity bte = batchService.findById(passwordExpirationBatchTaskId);
+        if (bte.isEnabled() != state) {
+            bte.setEnabled(state);
+            batchService.save(bte);
+        }
+    }
 
-			response.setStatus(ResponseStatus.FAILURE);
-			response.setErrorCode(e.getCode());
-		} catch (Throwable e) {
-			log.error("Can't save policy type", e);
-			response.setStatus(ResponseStatus.FAILURE);
-			response.setErrorText(e.getMessage());
-		}
-		return response;
-	}
+    @Override
+    @Deprecated
+    public Response addPolicy(Policy policy) {
+        return savePolicy(policy);
+    }
 
-	@Override
-	public List<PolicyObjectAssoc> getAssociationsForPolicy(String policyId) {
+    @Override
+    @Deprecated
+    public Response updatePolicy(Policy policy) {
+        return savePolicy(policy);
+    }
 
-		List<PolicyObjectAssoc> policyObjectAssoc = policyAssocObjectDozerConverter
-				.convertToDTOList(policyObjectAssocDAO.findByPolicy(policyId),
-						true);
 
-		return policyObjectAssoc;
-	}
+    @Override
+    public Response deletePolicy(String policyId) {
 
-	@Override
-	public Response savePolicyAssoc(PolicyObjectAssoc poa) {
-		final Response response = new Response(ResponseStatus.SUCCESS);
-		try {
-			if (poa.getPolicyId() == null) {
-				throw new BasicDataServiceException(
-						ResponseCode.INVALID_ARGUMENTS);
-			}
-			
-			
-			PolicyObjectAssocEntity poaEntity = policyAssocObjectDozerConverter
-					.convertToEntity(poa, true);
-       		if (poaEntity==null ||poaEntity.getPolicyObjectId()==null 
-					&& poaEntity.getObjectId()==null) {
-				poaEntity.setObjectId(null);
-				poaEntity = policyObjectAssocDAO.add(poaEntity);
-				response.setResponseValue(poaEntity.getPolicyObjectId());
-			} else {
-				policyObjectAssocDAO.update(poaEntity);
-			}
-		} catch (BasicDataServiceException e) {
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+            if (policyId == null) {
+                throw new BasicDataServiceException(
+                        ResponseCode.INVALID_ARGUMENTS);
+            }
 
-			response.setStatus(ResponseStatus.FAILURE);
-			response.setErrorCode(e.getCode());
-		} catch (Throwable e) {
-			log.error("Can't save associate policy type", e);
-			response.setStatus(ResponseStatus.FAILURE);
-			response.setErrorText(e.getMessage());
-		}
-		return response;
-	}
+            policyService.delete(policyId);
+        } catch (BasicDataServiceException e) {
 
-	@Override
-	public List<Policy> findBeans(final PolicySearchBean searchBean, int from, int size) {
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(e.getCode());
+        } catch (Throwable e) {
+            log.error("Can't save policy type", e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorText(e.getMessage());
+        }
+        return response;
+    }
+
+    @Override
+    public List<PolicyObjectAssoc> getAssociationsForPolicy(String policyId) {
+
+        List<PolicyObjectAssoc> policyObjectAssoc = policyAssocObjectDozerConverter
+                .convertToDTOList(policyObjectAssocDAO.findByPolicy(policyId),
+                        true);
+
+        return policyObjectAssoc;
+    }
+
+    @Override
+    public Response savePolicyAssoc(PolicyObjectAssoc poa) {
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+            if (poa.getPolicyId() == null) {
+                throw new BasicDataServiceException(
+                        ResponseCode.INVALID_ARGUMENTS);
+            }
+
+
+            PolicyObjectAssocEntity poaEntity = policyAssocObjectDozerConverter
+                    .convertToEntity(poa, true);
+            if (poaEntity == null || poaEntity.getPolicyObjectId() == null
+                    && poaEntity.getObjectId() == null) {
+                poaEntity.setObjectId(null);
+                poaEntity = policyObjectAssocDAO.add(poaEntity);
+                response.setResponseValue(poaEntity.getPolicyObjectId());
+            } else {
+                policyObjectAssocDAO.update(poaEntity);
+            }
+        } catch (BasicDataServiceException e) {
+
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(e.getCode());
+        } catch (Throwable e) {
+            log.error("Can't save associate policy type", e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorText(e.getMessage());
+        }
+        return response;
+    }
+
+    @Override
+    public List<Policy> findBeans(final PolicySearchBean searchBean, int from, int size) {
         return policyDozerConverter.convertToDTOList(policyService.findBeans(searchBean, from, size), true);
-	}
+    }
 
-	@Override
-	public int count(PolicySearchBean searchBean) {
-		return policyService.count(searchBean);
-	}
+    @Override
+    public int count(PolicySearchBean searchBean) {
+        return policyService.count(searchBean);
+    }
 
     @Override
     public ITPolicy findITPolicy() {

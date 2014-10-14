@@ -103,11 +103,13 @@ public class ModifyUserLdapCommand extends AbstractCrudLdapCommand<ExtensibleUse
 
                 } else if (att.getOperation() != 0 && att.getName() != null) {
 
-                    // set an attribute to null
                     if ((att.getValue() == null || att.getValue().equals("null")) &&
                             (att.getValueList() == null || att.getValueList().size() == 0)) {
 
-                        modItemList.add(new ModificationItem(att.getOperation(), new BasicAttribute(att.getName(), null)));
+						if (att.getOperation() != 1) {
+							// remove attribute
+							modItemList.add(new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute(att.getName(), null)));
+						}
 
                     } else {
                         // valid value

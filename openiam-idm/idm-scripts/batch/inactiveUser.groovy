@@ -84,7 +84,7 @@ if (loginList != null ) {
 			
 	
 			if (user.status == null || (user.status != UserStatusEnum.INACTIVE &&
-				 user.status != UserStatusEnum.TERMINATE && user.status != UserStatusEnum.LEAVE )) {
+				 user.status != UserStatusEnum.TERMINATED && user.status != UserStatusEnum.LEAVE )) {
 				
 			 
 				 ProvisionUser pUser = new ProvisionUser(user);

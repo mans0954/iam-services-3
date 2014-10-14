@@ -17,7 +17,7 @@
  */
 
 /**
- * 
+ *
  */
 package org.openiam.idm.srvc.pswd.rule;
 
@@ -29,59 +29,65 @@ import org.openiam.idm.srvc.pswd.dto.PasswordRule;
 
 /**
  * Validates a password to ensure the password is not equal to the principal
- * @author suneet
  *
+ * @author suneet
  */
 public class PasswordNotPrincipalRule extends AbstractPasswordRule {
 
 
-	@Override
-	public void validate() throws PasswordRuleException {
-		boolean enabled = false;
-				
-		PolicyAttribute attribute = getAttribute("PWD_LOGIN");
-		if (attribute != null && StringUtils.isNotBlank(attribute.getValue1())) {
-			enabled = Boolean.parseBoolean(attribute.getValue1());
+    @Override
+    public String getAttributeName() {
+        return "PWD_LOGIN";
+    }
 
-		}
-		if (enabled) {
-			String lowerPassword = password.toLowerCase();
-			String lowerPrincipal = principal.toLowerCase();
-			if (lowerPassword.contains(lowerPrincipal)) {
-				throw new PasswordRuleException(ResponseCode.FAIL_NEQ_PRINCIPAL);
-			}
-		}
-	}
+    @Override
+    public void validate(PolicyAttribute attribute) throws PasswordRuleException {
+        boolean enabled = false;
 
-	@Override
-	public PasswordRuleException createException() {
-		boolean enabled = false;
-		
-		PolicyAttribute attribute = getAttribute("PWD_LOGIN");
-		if (attribute != null && StringUtils.isNotBlank(attribute.getValue1())) {
-			enabled = Boolean.parseBoolean(attribute.getValue1());
+        if (attribute != null && StringUtils.isNotBlank(attribute.getValue1())) {
+            enabled = Boolean.parseBoolean(attribute.getValue1());
 
-		}
-		if (enabled) {
-			return new PasswordRuleException(ResponseCode.FAIL_NEQ_PRINCIPAL);
-		} else {
-			return null;
-		}
-	}
+        }
+        PasswordRuleException ex = new PasswordRuleException(ResponseCode.FAIL_NEQ_PRINCIPAL);
+        if (principal == null) {
+            throw ex;
+        }
+        if (enabled) {
+            String lowerPassword = password.toLowerCase();
+            String lowerPrincipal = principal.toLowerCase();
+            if (lowerPassword.contains(lowerPrincipal)) {
+                throw ex;
+            }
+        }
+    }
 
-	@Override
-	public PasswordRule createRule() {
-		boolean enabled = false;
-		
-		PolicyAttribute attribute = getAttribute("PWD_LOGIN");
-		if (attribute != null && StringUtils.isNotBlank(attribute.getValue1())) {
-			enabled = Boolean.parseBoolean(attribute.getValue1());
+    @Override
+    public PasswordRuleException createException(PolicyAttribute attribute) {
+        boolean enabled = false;
 
-		}
-		if (enabled) {
-			return new PasswordRule(ResponseCode.FAIL_NEQ_PRINCIPAL);
-		} else {
-			return null;
-		}
-	}
+        if (attribute != null && StringUtils.isNotBlank(attribute.getValue1())) {
+            enabled = Boolean.parseBoolean(attribute.getValue1());
+
+        }
+        if (enabled) {
+            return new PasswordRuleException(ResponseCode.FAIL_NEQ_PRINCIPAL);
+        } else {
+            return null;
+        }
+    }
+
+    @Override
+    public PasswordRule createRule(PolicyAttribute attribute) {
+        boolean enabled = false;
+
+        if (attribute != null && StringUtils.isNotBlank(attribute.getValue1())) {
+            enabled = Boolean.parseBoolean(attribute.getValue1());
+
+        }
+        if (enabled) {
+            return new PasswordRule(ResponseCode.FAIL_NEQ_PRINCIPAL);
+        } else {
+            return null;
+        }
+    }
 }
