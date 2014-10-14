@@ -207,7 +207,7 @@ public class AuditLogServiceImpl implements AuditLogService {
 
     @Override
     @Transactional
-    public String save(IdmAuditLog auditLog) {
+    public IdmAuditLog save(IdmAuditLog auditLog) {
 
         IdmAuditLogEntity auditLogEntity = prepare(auditLog);
         try {
@@ -220,7 +220,6 @@ public class AuditLogServiceImpl implements AuditLogService {
         	LOG.error("Can't save audit log", ex);
         }
         final String id = auditLogEntity.getId();
-        auditLog.setId(id);
-        return id;
+        return auditLogDozerConverter.convertToDTO(auditLogEntity,true);
     }
 }

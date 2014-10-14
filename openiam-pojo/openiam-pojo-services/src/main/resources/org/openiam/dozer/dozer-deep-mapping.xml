@@ -61,6 +61,10 @@
 			<a>loginAttributes</a>
 			<b>loginAttributes</b>
 		</field>
+        <field custom-converter="org.openiam.dozer.PersistentListConverter" custom-converter-param="shallowDozerMapper">
+            <a>passwordHistory</a>
+            <b>passwordHistory</b>
+        </field>
 	</mapping>
 	
 	<mapping>
@@ -232,6 +236,19 @@
 			<b>policyAttributes</b> 
 		</field>
 	</mapping>
+
+    <mapping>
+        <class-a>org.openiam.idm.srvc.auth.domain.LoginEntity</class-a>
+        <class-b>org.openiam.idm.srvc.auth.domain.LoginEntity</class-b>
+         <field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="shallowDozerMapper">
+            <a>loginAttributes</a>
+            <b>loginAttributes</b>
+        </field>
+        <field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="shallowDozerMapper">
+            <a>passwordHistory</a>
+            <b>passwordHistory</b>
+        </field>
+    </mapping>
 
     <mapping>
         <class-a>org.openiam.idm.srvc.user.domain.UserEntity</class-a>

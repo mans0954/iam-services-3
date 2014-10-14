@@ -12,14 +12,13 @@ import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.dto.LoginStatusEnum;
 import org.openiam.idm.srvc.auth.dto.ProvLoginStatusEnum;
+import org.openiam.idm.srvc.pswd.domain.PasswordHistoryEntity;
 
 import javax.persistence.*;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.Table;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 @Entity
 @Table(name="LOGIN")
@@ -148,6 +147,10 @@ public class LoginEntity implements java.io.Serializable {
     @Column(name = "LAST_UPDATE", length = 19)
     @LuceneLastUpdate
     private Date lastUpdate;
+
+    @OneToMany(orphanRemoval = true, mappedBy = "login", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @Fetch(FetchMode.SUBSELECT)
+    private Set<PasswordHistoryEntity> passwordHistory = new HashSet<PasswordHistoryEntity>(0);
 
     public LoginEntity() {
     }
@@ -417,7 +420,15 @@ public class LoginEntity implements java.io.Serializable {
 		}
 	}
 
-	@Override
+    public Set<PasswordHistoryEntity> getPasswordHistory() {
+        return passwordHistory;
+    }
+
+    public void setPasswordHistory(Set<PasswordHistoryEntity> passwordHistory) {
+        this.passwordHistory = passwordHistory;
+    }
+
+    @Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
