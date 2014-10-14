@@ -50,7 +50,8 @@ import java.util.List;
         "lastRecProcessed",
         "wsScript",
         "wsUrl",
-        "synchReviews"
+        "synchReviews",
+        "parentAuditLogId"
 })
 /**
  * Object containing the configuration for a synchronization task
@@ -101,6 +102,7 @@ public class SynchConfig implements MatchConfig, java.io.Serializable {
     private String wsUrl;
     private String wsScript;
     private List<SynchReview> synchReviews;
+    private String parentAuditLogId;
 
 	public SynchConfig() {
 	}
@@ -132,6 +134,14 @@ public class SynchConfig implements MatchConfig, java.io.Serializable {
 	public void setStatus(String status) {
 		this.status = status;
 	}
+
+    public String getParentAuditLogId() {
+        return parentAuditLogId;
+    }
+
+    public void setParentAuditLogId(String parentAuditLogId) {
+        this.parentAuditLogId = parentAuditLogId;
+    }
 
     public Boolean getUseSystemPath() {
         return useSystemPath;
