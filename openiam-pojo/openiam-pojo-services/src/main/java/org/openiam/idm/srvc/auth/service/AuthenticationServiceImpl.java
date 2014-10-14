@@ -59,6 +59,7 @@ import org.openiam.idm.srvc.auth.dto.SSOToken;
 import org.openiam.idm.srvc.auth.dto.Subject;
 import org.openiam.idm.srvc.auth.login.AuthStateDAO;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
+import org.openiam.idm.srvc.auth.spi.AbstractScriptableLoginModule;
 import org.openiam.idm.srvc.auth.sso.SSOTokenFactory;
 import org.openiam.idm.srvc.auth.sso.SSOTokenModule;
 import org.openiam.idm.srvc.auth.ws.AuthenticationResponse;
@@ -196,8 +197,9 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
 	        	} catch(Throwable e) {
 	        		log.error(String.format("Error while getting spring bean: %s", springBeanName), e);
 	        	}
-	        } else {
-	        	//TODO:  groovy script logic
+	        	
+	        } else if(StringUtils.isNotBlank(groovyScript)) {
+	        	loginModule = (AbstractScriptableLoginModule)scriptRunner.instantiateClass(null, groovyScript);
 	        }
 	        
 	        if(loginModule == null) {
@@ -299,8 +301,8 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
 	        	} catch(Throwable e) {
 	        		log.error(String.format("Error while getting spring bean: %s", springBeanName), e);
 	        	}
-	        } else {
-	        	//TODO:  groovy script logic
+	        } else if(StringUtils.isNotBlank(groovyScript)) {
+	        	loginModule = (AbstractScriptableLoginModule)scriptRunner.instantiateClass(null, groovyScript);
 	        }
 	        
 	        if(loginModule == null) {

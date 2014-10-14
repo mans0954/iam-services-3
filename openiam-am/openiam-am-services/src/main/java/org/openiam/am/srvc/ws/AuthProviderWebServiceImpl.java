@@ -23,6 +23,8 @@ import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.exception.BasicDataServiceException;
+import org.openiam.exception.EsbErrorToken;
+import org.openiam.idm.srvc.auth.spi.AbstractScriptableLoginModule;
 import org.openiam.script.ScriptIntegration;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -137,6 +139,12 @@ public class AuthProviderWebServiceImpl implements AuthProviderWebService, Appli
             	if(!scriptRunner.scriptExists(provider.getGroovyScriptURL())) {
             		throw new BasicDataServiceException(ResponseCode.FILE_DOES_NOT_EXIST);
             	}
+            	
+            	if(!(scriptRunner.instantiateClass(null, provider.getGroovyScriptURL()) instanceof AbstractScriptableLoginModule)) {
+            		final EsbErrorToken errorToken = new EsbErrorToken();
+            		errorToken.setClassName(AbstractScriptableLoginModule.class.getCanonicalName());
+            		throw new BasicDataServiceException(ResponseCode.GROOVY_CLASS_MUST_EXTEND_LOGIN_MODULE, errorToken);
+            	}
             } else {
             	provider.setGroovyScriptURL(null);
             }
@@ -178,6 +186,7 @@ public class AuthProviderWebServiceImpl implements AuthProviderWebService, Appli
         	log.error(e.getMessage(), e);
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(e.getCode());
+            response.setErrorTokenList(e.getErrorTokenList());
         } catch(Throwable e) {
         	log.error("Error while saving auth provider", e);
             response.setStatus(ResponseStatus.FAILURE);
