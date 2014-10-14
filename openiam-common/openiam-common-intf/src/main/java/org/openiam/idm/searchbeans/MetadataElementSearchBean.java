@@ -1,16 +1,15 @@
 package org.openiam.idm.searchbeans;
 
-import java.util.HashSet;
-import java.util.Set;
-
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlType;
-
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeGrouping;
 import org.openiam.idm.srvc.meta.dto.MetadataElement;
+
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlType;
+import java.util.HashSet;
+import java.util.Set;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "MetadataElementSearchBean", propOrder = {
@@ -22,7 +21,7 @@ import org.openiam.idm.srvc.meta.dto.MetadataElement;
 	"templateId",
 	"keySet",
 	"excludedGroupings",
-	"categoryTypes"
+	"groupings"
 })
 public class MetadataElementSearchBean extends AbstractSearchBean<MetadataElement, String> implements SearchBean<MetadataElement, String> {
 
@@ -34,7 +33,7 @@ public class MetadataElementSearchBean extends AbstractSearchBean<MetadataElemen
 	private boolean selfEditable;
 	private String templateId;
 	private Set<MetadataTypeGrouping> excludedGroupings;
-	private Set<String> categoryTypes;
+    private Set<MetadataTypeGrouping> groupings;
 	
 	public Set<String> getTypeIdSet() {
 		return typeIdSet;
@@ -124,22 +123,23 @@ public class MetadataElementSearchBean extends AbstractSearchBean<MetadataElemen
 		this.excludedGroupings = excludedGroupings;
 	}
 	
-	public void addCategoryType(final String category) {
-		if(StringUtils.isNotBlank(category)) {
-			if(this.categoryTypes == null) {
-				this.categoryTypes = new HashSet<>();
+	public void addGrouping(final MetadataTypeGrouping grouping) {
+		if(grouping!=null) {
+			if(this.groupings == null) {
+				this.groupings = new HashSet<>();
 			}
-			this.categoryTypes.add(category);
+			this.groupings.add(grouping);
 		}
 	}
-	
-	public Set<String> getCategoryTypes() {
-		return categoryTypes;
-	}
-	public void setCategoryTypes(Set<String> categoryTypes) {
-		this.categoryTypes = categoryTypes;
-	}
-	@Override
+
+    public Set<MetadataTypeGrouping> getGroupings() {
+        return groupings;
+    }
+    public void setGroupings(Set<MetadataTypeGrouping> groupings) {
+        this.groupings = groupings;
+    }
+
+    @Override
 	public String getKey() {
 		return (CollectionUtils.isNotEmpty(keySet)) ? keySet.iterator().next() : null;
 	}

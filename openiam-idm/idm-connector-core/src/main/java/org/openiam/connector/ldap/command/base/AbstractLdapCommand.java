@@ -19,6 +19,7 @@ import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
 import org.openiam.connector.common.command.AbstractCommand;
 import org.openiam.connector.util.connect.ConnectionFactory;
+import org.openiam.provision.type.ExtensibleObjectType;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.naming.NamingEnumeration;
@@ -177,12 +178,14 @@ public abstract class AbstractLdapCommand<Request extends RequestType, Response 
         oc.add("top");
 
         // add the ou for this record
-        Attribute ouSet = new BasicAttribute("ou");
-        String ou = getOU(obj);
-        log.debug("GetAttributes() - ou=" + ou);
-        if (ou != null && ou.length() > 0) {
-            ouSet.add(ou);
-            attrs.put(ouSet);
+        if (obj.getExtensibleObjectType() == ExtensibleObjectType.USER) {
+            Attribute ouSet = new BasicAttribute("ou");
+            String ou = getOU(obj);
+            log.debug("GetAttributes() - ou=" + ou);
+            if (ou != null && ou.length() > 0) {
+                ouSet.add(ou);
+                attrs.put(ouSet);
+            }
         }
 
         // add the structural classes
@@ -228,7 +231,9 @@ public abstract class AbstractLdapCommand<Request extends RequestType, Response 
                 } else {
                     // valid value
 
-                    if ("unicodePwd".equalsIgnoreCase(att.getName())) {
+                    if ("ou".equalsIgnoreCase(att.getName()) && obj.getExtensibleObjectType() != ExtensibleObjectType.USER) {
+                        // skip ou for non user objects
+                    } else if ("unicodePwd".equalsIgnoreCase(att.getName())) {
                         Attribute a = generateActiveDirectoryPassword(att.getValue());
                         attrs.put(a);
 

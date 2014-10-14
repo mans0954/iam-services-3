@@ -47,6 +47,7 @@ import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.constant.AuditAttributeName;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
+import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.service.AttributeMapDAO;
 import org.openiam.idm.srvc.res.dto.Resource;
@@ -190,12 +191,13 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
 
         IdmAuditLog idmAuditLog = new IdmAuditLog();
         idmAuditLog.setRequestorUserId(systemUserId);
+        idmAuditLog.setRequestorPrincipal("sysadmin");
         idmAuditLog.setAction(AuditAction.SYNCHRONIZATION.value());
         idmAuditLog.setSource(config.getSynchConfigId());
 
         if ("INACTIVE".equalsIgnoreCase(config.getStatus())) {
             idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "WARNING: Synchronization config is in 'INACTIVE' status");
-            auditLogService.enqueue(idmAuditLog);
+            String logId = auditLogService.save(idmAuditLog);
             SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
             resp.setErrorCode(ResponseCode.FAIL_PROCESS_INACTIVE);
             return resp;
@@ -205,7 +207,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
         if (processCheckResponse.getStatus() == ResponseStatus.FAILURE &&
                 processCheckResponse.getErrorCode() == ResponseCode.FAIL_PROCESS_ALREADY_RUNNING) {
             idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "WARNING: Previous synchronization run is not finished yet");
-            auditLogService.enqueue(idmAuditLog);
+            auditLogService.save(idmAuditLog);
             return processCheckResponse;
 
         }
@@ -251,7 +253,8 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
             idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "Synchronization started..." + startDate);
 
 			long newLastExecTime = System.currentTimeMillis();
-
+            String logId = auditLogService.save(idmAuditLog);
+            configDTO.setParentAuditLogId(logId);
             SourceAdapter adapt = adapterFactory.create(configDTO);
             syncResponse = adapt.startSynch(configDTO, review, resultReview);
 			
@@ -308,7 +311,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
             if (resultReview.isSourceRejected() || CollectionUtils.isNotEmpty(resultReview.getReviewRecords())) {
                 synchReviewDAO.save(resultReview);
             }
-            auditLogService.enqueue(idmAuditLog);
+            auditLogService.save(idmAuditLog);
         }
 
         return syncResponse;

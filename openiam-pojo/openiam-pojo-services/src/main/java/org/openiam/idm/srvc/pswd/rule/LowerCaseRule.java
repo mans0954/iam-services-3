@@ -17,7 +17,7 @@
  */
 
 /**
- * 
+ *
  */
 package org.openiam.idm.srvc.pswd.rule;
 
@@ -28,70 +28,71 @@ import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
 import org.openiam.idm.srvc.pswd.dto.PasswordRule;
 
 /**
- * Validates a password to ensure that it contains the appropriate number of numeric characters in 
+ * Validates a password to ensure that it contains the appropriate number of numeric characters in
  * the password.
- * @author suneet
  *
+ * @author suneet
  */
 public class LowerCaseRule extends AbstractPasswordRule {
 
 
-	@Override
-	public void validate() throws PasswordRuleException {
-	
-		PolicyAttribute attribute = getAttribute("LOWERCASE_CHARS");
-		int minChar = getValue1(attribute);
-		int maxChar = getValue2(attribute);
-		final PasswordRuleException ex = createException();
-		if(ex == null) {
-			return;
-		}
-		
-		// count the number of characters in the password
-		if (password == null) {
-			throw ex;
-		}
-		int charCtr = 0;
-		for (int i=0; i < password.length(); i++) {
-			int ch = password.charAt(i);
-			if (ch >= 97 && ch <= 122) {
-				charCtr++;
-			}
-		}
-		
-		if (minChar > 0 ) {
-			if (charCtr  < minChar) {
-				throw ex;
-			}
-		}
-		if (maxChar > 0 ) {
-			if (charCtr > maxChar ) {
-				throw ex;
-			}
-		}
-	}
+    @Override
+    public String getAttributeName() {
+        return "LOWERCASE_CHARS";
+    }
 
-	@Override
-	public PasswordRuleException createException() {
-		PolicyAttribute attribute = getAttribute("LOWERCASE_CHARS");
-		int minChar = getValue1(attribute);
-		int maxChar = getValue2(attribute);
-		if (minChar > 0 || maxChar > 0) {
-			return createException(ResponseCode.FAIL_LOWER_CASE_RULE, minChar, maxChar);
-		} else {
-			return null;
-		}
-	}
+    @Override
+    public void validate(PolicyAttribute attribute) throws PasswordRuleException {
+        int minChar = getValue1(attribute);
+        int maxChar = getValue2(attribute);
+        final PasswordRuleException ex = createException();
+        if (ex == null) {
+            return;
+        }
 
-	@Override
-	public PasswordRule createRule() {
-		PolicyAttribute attribute = getAttribute("LOWERCASE_CHARS");
-		int minChar = getValue1(attribute);
-		int maxChar = getValue2(attribute);
-		if (minChar > 0 || maxChar > 0) {
-			return createRule(ResponseCode.FAIL_LOWER_CASE_RULE, minChar, maxChar);
-		} else {
-			return null;
-		}
-	}	
+        // count the number of characters in the password
+        if (password == null) {
+            throw ex;
+        }
+        int charCtr = 0;
+        for (int i = 0; i < password.length(); i++) {
+            int ch = password.charAt(i);
+            if (ch >= 97 && ch <= 122) {
+                charCtr++;
+            }
+        }
+
+        if (minChar > 0) {
+            if (charCtr < minChar) {
+                throw ex;
+            }
+        }
+        if (maxChar > 0) {
+            if (charCtr > maxChar) {
+                throw ex;
+            }
+        }
+    }
+
+    @Override
+    public PasswordRuleException createException(PolicyAttribute attribute) {
+        int minChar = getValue1(attribute);
+        int maxChar = getValue2(attribute);
+        if (minChar > 0 || maxChar > 0) {
+            return createException(ResponseCode.FAIL_LOWER_CASE_RULE, minChar, maxChar);
+        } else {
+            return null;
+        }
+    }
+
+    @Override
+    public PasswordRule createRule(PolicyAttribute attribute) {
+        int minChar = getValue1(attribute);
+        int maxChar = getValue2(attribute);
+        if (minChar > 0 || maxChar > 0) {
+            return createRule(ResponseCode.FAIL_LOWER_CASE_RULE, minChar, maxChar);
+        } else {
+            return null;
+        }
+    }
 }

@@ -269,39 +269,37 @@ public class IdmAuditLogEntity implements Serializable {
 
         IdmAuditLogEntity that = (IdmAuditLogEntity) o;
 
-        if (id != null ? !id.equals(that.id) : that.id != null) return false;
         if (action != null ? !action.equals(that.action) : that.action != null) return false;
         if (clientIP != null ? !clientIP.equals(that.clientIP) : that.clientIP != null) return false;
-        if (correlationId != null ? !correlationId.equals(that.correlationId) : that.correlationId != null)
-            return false;
         if (hash != null ? !hash.equals(that.hash) : that.hash != null) return false;
+        if (id != null ? !id.equals(that.id) : that.id != null) return false;
         if (managedSysId != null ? !managedSysId.equals(that.managedSysId) : that.managedSysId != null) return false;
         if (nodeIP != null ? !nodeIP.equals(that.nodeIP) : that.nodeIP != null) return false;
         if (principal != null ? !principal.equals(that.principal) : that.principal != null) return false;
+        if (result != null ? !result.equals(that.result) : that.result != null) return false;
         if (sessionID != null ? !sessionID.equals(that.sessionID) : that.sessionID != null) return false;
         if (source != null ? !source.equals(that.source) : that.source != null) return false;
         if (timestamp != null ? !timestamp.equals(that.timestamp) : that.timestamp != null) return false;
         if (userId != null ? !userId.equals(that.userId) : that.userId != null) return false;
 
-        if(CollectionUtils.isNotEmpty(targets) ? !targets.equals(that.targets) : CollectionUtils.isNotEmpty(that.targets)) return false;
         return true;
     }
 
     @Override
     public int hashCode() {
-        int result = userId != null ? userId.hashCode() : 0;
-        result = 31 * result + (id != null ? id.hashCode() : 0);
-        result = 31 * result + (principal != null ? principal.hashCode() : 0);
-        result = 31 * result + (managedSysId != null ? managedSysId.hashCode() : 0);
-        result = 31 * result + (timestamp != null ? timestamp.hashCode() : 0);
-        result = 31 * result + (source != null ? source.hashCode() : 0);
-        result = 31 * result + (clientIP != null ? clientIP.hashCode() : 0);
-        result = 31 * result + (nodeIP != null ? nodeIP.hashCode() : 0);
-        result = 31 * result + (action != null ? action.hashCode() : 0);
-        result = 31 * result + (hash != null ? hash.hashCode() : 0);
-        result = 31 * result + (sessionID != null ? sessionID.hashCode() : 0);
-        result = 31 * result + (correlationId != null ? correlationId.hashCode() : 0);
-        return result;
+        int result1 = id != null ? id.hashCode() : 0;
+        result1 = 31 * result1 + (userId != null ? userId.hashCode() : 0);
+        result1 = 31 * result1 + (principal != null ? principal.hashCode() : 0);
+        result1 = 31 * result1 + (managedSysId != null ? managedSysId.hashCode() : 0);
+        result1 = 31 * result1 + (timestamp != null ? timestamp.hashCode() : 0);
+        result1 = 31 * result1 + (source != null ? source.hashCode() : 0);
+        result1 = 31 * result1 + (clientIP != null ? clientIP.hashCode() : 0);
+        result1 = 31 * result1 + (nodeIP != null ? nodeIP.hashCode() : 0);
+        result1 = 31 * result1 + (action != null ? action.hashCode() : 0);
+        result1 = 31 * result1 + (result != null ? result.hashCode() : 0);
+        result1 = 31 * result1 + (hash != null ? hash.hashCode() : 0);
+        result1 = 31 * result1 + (sessionID != null ? sessionID.hashCode() : 0);
+        return result1;
     }
 
     @Override

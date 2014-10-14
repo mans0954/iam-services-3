@@ -4,6 +4,7 @@ package org.openiam.idm.srvc.policy.dto;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.Column;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
@@ -21,21 +22,19 @@ import org.openiam.idm.srvc.policy.domain.PolicyDefParamEntity;
         "name",
         "description",
         "operation",
-        "value1",
-        "value2",
         "repeats",
         "policyParamHandler",
         "handlerLanguage",
-        "paramGroup"
+        "paramGroup","value1","value2"
 })
 @DozerDTOCorrespondence(PolicyDefParamEntity.class)
 public class PolicyDefParam implements java.io.Serializable {
 
     /**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
-	private String defParamId;
+     *
+     */
+    private static final long serialVersionUID = 1L;
+    private String defParamId;
     private String policyDefId;
     private String name;
     private String description;
@@ -89,7 +88,7 @@ public class PolicyDefParam implements java.io.Serializable {
     }
 
     public String getValue1() {
-        return this.value1;
+        return value1;
     }
 
     public void setValue1(String value1) {
@@ -97,7 +96,7 @@ public class PolicyDefParam implements java.io.Serializable {
     }
 
     public String getValue2() {
-        return this.value2;
+        return value2;
     }
 
     public void setValue2(String value2) {
@@ -153,12 +152,10 @@ public class PolicyDefParam implements java.io.Serializable {
                 ", name='" + name + '\'' +
                 ", description='" + description + '\'' +
                 ", operation='" + operation + '\'' +
-                ", value1='" + value1 + '\'' +
-                ", value2='" + value2 + '\'' +
                 ", repeats=" + repeats +
                 ", policyParamHandler='" + policyParamHandler + '\'' +
                 ", handlerLanguage='" + handlerLanguage + '\'' +
-                ", paramGroup='" + paramGroup + 
+                ", paramGroup='" + paramGroup +
                 '}';
     }
 }

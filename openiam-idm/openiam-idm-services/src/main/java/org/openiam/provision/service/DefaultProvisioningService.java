@@ -246,13 +246,16 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     if (auditLog != null) {
                         auditLog.addChild(idmAuditLog);
                         idmAuditLog.addParent(auditLog);
-                        auditLogService.save(auditLog);
+                        String logId = auditLogService.save(idmAuditLog);
+                        idmAuditLog.setId(logId);
                     }
-                    auditLogService.save(idmAuditLog);
+                    String logId = auditLogService.save(idmAuditLog);
+                    idmAuditLog.setId(logId);
 
 
                     ProvisionUserResponse tmpRes = addModifyUser(pUser, true, dataList, idmAuditLog);
 
+                    auditLogService.save(idmAuditLog);
                     return tmpRes;
                 }
             });
@@ -286,11 +289,10 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         res.setStatus(ResponseStatus.SUCCESS);
 
         try {
-            final IdmAuditLog idmAuditLog = new IdmAuditLog();
             res = transactionTemplate.execute(new TransactionCallback<ProvisionUserResponse>() {
                 @Override
                 public ProvisionUserResponse doInTransaction(TransactionStatus status) {
-
+                    final IdmAuditLog idmAuditLog = new IdmAuditLog();
                     idmAuditLog.setRequestorUserId(pUser.getRequestorUserId());
                     idmAuditLog.setRequestorPrincipal(pUser.getRequestorLogin());
                     idmAuditLog.setAction(AuditAction.MODIFY_USER.value());
@@ -301,12 +303,13 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     if (auditLog != null) {
                         auditLog.addChild(idmAuditLog);
                         idmAuditLog.addParent(auditLog);
-                        auditLogService.save(auditLog);
+                        String logId = auditLogService.save(auditLog);
+                        auditLog.setId(logId);
                     }
-                    auditLogService.save(idmAuditLog);
-
+                    String logId = auditLogService.save(idmAuditLog);
+                    idmAuditLog.setId(logId);
                     ProvisionUserResponse tmpRes = addModifyUser(pUser, false, dataList, idmAuditLog);
-
+                    auditLogService.save(idmAuditLog);
                     return tmpRes;
                 }
             });
@@ -414,7 +417,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
         try {
             if (status != UserStatusEnum.DELETED && status != UserStatusEnum.REMOVE && status != UserStatusEnum.LEAVE
-                    && status != UserStatusEnum.TERMINATE && status != UserStatusEnum.RETIRED) {
+                    && status != UserStatusEnum.TERMINATED && status != UserStatusEnum.RETIRED) {
                 response.setStatus(ResponseStatus.FAILURE);
                 response.setErrorCode(ResponseCode.USER_STATUS);
                 return response;
@@ -462,7 +465,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             }
 
             if (status != UserStatusEnum.REMOVE
-                    && (usr.getStatus() == UserStatusEnum.DELETED || usr.getStatus() == UserStatusEnum.TERMINATE)) {
+                    && (usr.getStatus() == UserStatusEnum.DELETED || usr.getStatus() == UserStatusEnum.TERMINATED)) {
                 log.debug("User was already deleted. Nothing more to do.");
                 return response;
             }
@@ -1119,6 +1122,16 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         // Set of resources that a person should have based on their active
         // roles
         Set<Resource> resourceSet = getResourcesForRoles(roleSet);
+
+        List<Organization> orgs = orgManager.getOrganizationsForUserLocalized(pUser.getId(), null, 0, 100, null);
+        for(Organization org : orgs) {
+            Resource res = resourceDataService.getResource(org.getAdminResourceId(), null);
+            if(res != null) {
+                resourceSet.add(res);
+            }
+        }
+
+
         // Set of resources that are to be removed based on roles that are to be
         // deleted
         Set<Resource> deleteResourceSet = getResourcesForRoles(deleteRoleSet);

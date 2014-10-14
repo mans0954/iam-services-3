@@ -157,6 +157,19 @@ public class ReportDataServiceImpl implements ReportDataService {
 		ReportCriteriaParamEntity entity = criteriaParamDozerConverter.convertToEntity(reportParam, true);
 		log.debug("In createOrUpdateReportParamInfo, converted entity:" + entity);
 
+		// put new param to the end of the parameters list
+		if (entity.getDisplayOrder() == null) {
+			final String reportId = entity.getReport().getReportId();
+			List<ReportCriteriaParamEntity> params = criteriaParamDao.findByReportInfoId(reportId);
+			int order = 1;
+			for(ReportCriteriaParamEntity param : params) {
+				if (param.getDisplayOrder() >= order) {
+					order = param.getDisplayOrder() + 1;
+				}
+			}
+			entity.setDisplayOrder(order);
+		}
+
 		final String paramTypeId = entity.getType() != null ? entity.getType().getId() : null;
 		entity.setType(paramTypeId != null ? reportParamTypeDao.findById(paramTypeId) : null);
 

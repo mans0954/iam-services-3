@@ -1,18 +1,10 @@
 package org.openiam.idm.srvc.meta.service;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.Criteria;
-import org.hibernate.HibernateException;
-import org.hibernate.Query;
-import org.hibernate.Session;
 import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Restrictions;
-import org.openiam.am.srvc.domain.ContentProviderEntity;
 import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.idm.searchbeans.MetadataElementSearchBean;
 import org.openiam.idm.searchbeans.SearchBean;
@@ -20,6 +12,10 @@ import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataElementPageTemplateXrefEntity;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.springframework.stereotype.Repository;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * DAO Implementation for MetadataElement
@@ -48,10 +44,9 @@ public class MetadataElementDAOImpl extends BaseDaoImpl<MetadataElementEntity, S
 					//criteria.add(Restrictions.not(Restrictions.in("metadataType.grouping", metaSearchBean.getExcludedGroupings())));
 				}
 				
-				if(CollectionUtils.isNotEmpty(metaSearchBean.getCategoryTypes())) {
+				if(CollectionUtils.isNotEmpty(metaSearchBean.getGroupings())) {
 					criteria.createAlias("metadataType", "mt")
-							.createAlias("mt.categories", "ct")
-							.add(Restrictions.in("ct.id", metaSearchBean.getCategoryTypes()));
+							.add(Restrictions.in("mt.grouping", metaSearchBean.getGroupings()));
 				}
 				
 				if(StringUtils.isNotBlank(metaSearchBean.getTemplateId())) {

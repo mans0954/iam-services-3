@@ -30,51 +30,51 @@ public class PolicyEntity implements java.io.Serializable {
      *
      */
     private static final long serialVersionUID = 1L;
-	@Id
-	@GeneratedValue(generator = "system-uuid")
-	@GenericGenerator(name = "system-uuid", strategy = "uuid")
-	@Column(name = "POLICY_ID", length = 32)
-	private String policyId;
+    @Id
+    @GeneratedValue(generator = "system-uuid")
+    @GenericGenerator(name = "system-uuid", strategy = "uuid")
+    @Column(name = "POLICY_ID", length = 32)
+    private String policyId;
 
-	@Column(name = "POLICY_DEF_ID", length = 32)
-	private String policyDefId;
+    @Column(name = "POLICY_DEF_ID", length = 32)
+    private String policyDefId;
 
-	@Column(name = "NAME", length = 60)
-	private String name;
+    @Column(name = "NAME", length = 60)
+    private String name;
 
-	@Column(name = "DESCRIPTION", length = 255)
-	private String description;
+    @Column(name = "DESCRIPTION", length = 255)
+    private String description;
 
     @Column(name = "STATUS")
-	private Integer status;
+    private Integer status;
 
-	@Column(name = "CREATE_DATE")
-	@Temporal(TemporalType.TIMESTAMP)
-	private Date createDate;
+    @Column(name = "CREATE_DATE")
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date createDate;
 
-	@Column(name = "CREATED_BY", length = 20)
-	private String createdBy;
+    @Column(name = "CREATED_BY", length = 20)
+    private String createdBy;
 
-	@Column(name = "LAST_UPDATE")
-	@Temporal(TemporalType.TIMESTAMP)
-	private Date lastUpdate;
+    @Column(name = "LAST_UPDATE")
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date lastUpdate;
 
     @Column(name = "LAST_UPDATED_BY", length = 20)
-	private String lastUpdatedBy;
+    private String lastUpdatedBy;
 
     @Column(name = "RULE_TEXT")
-	private String rule;
+    private String rule;
 
     @Column(name = "RULE_SRC_URL", length = 80)
-	private String ruleSrcUrl;
+    private String ruleSrcUrl;
 
-	@Column(name = "ENABLEMENT")
+    @Column(name = "ENABLEMENT")
     private Integer enablement;
 
-	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-	@JoinColumn(name = "POLICY_ID", insertable = true, updatable = true)
-	private Set<PolicyAttributeEntity> policyAttributes = new HashSet<PolicyAttributeEntity>(
-			0);
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinColumn(name = "POLICY_ID", insertable = true, updatable = true)
+    private Set<PolicyAttributeEntity> policyAttributes = new HashSet<PolicyAttributeEntity>(
+            0);
 
     public PolicyEntity() {
     }
@@ -157,7 +157,7 @@ public class PolicyEntity implements java.io.Serializable {
 
     public PolicyAttributeEntity getAttribute(String name) {
         for (PolicyAttributeEntity attr : policyAttributes) {
-        	if(attr != null && StringUtils.equalsIgnoreCase(attr.getName(), name)) {
+            if (attr != null && attr.getDefaultParametr() != null && StringUtils.equalsIgnoreCase(attr.getDefaultParametr().getName(), name)) {
                 return attr;
             }
         }
@@ -189,34 +189,33 @@ public class PolicyEntity implements java.io.Serializable {
         this.ruleSrcUrl = ruleSrcUrl;
     }
 
-	/**
-	 * @return the enablemement
-	 */
-	public Integer getEnablemement() {
+    /**
+     * @return the enablemement
+     */
+    public Integer getEnablemement() {
         return enablement;
-	}
+    }
 
-	/**
-	 * @param enablemement
-	 *            the enablemement to set
-	 */
-	public void setEnablemement(Integer enablemement) {
+    /**
+     * @param enablemement the enablemement to set
+     */
+    public void setEnablemement(Integer enablemement) {
         this.enablement = enablemement;
-	}
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Object#toString()
-	 */
-	@Override
-	public String toString() {
-		return "PolicyEntity [policyId=" + policyId + ", policyDefId="
-				+ policyDefId + ", name=" + name + ", description="
-				+ description + ", status=" + status + ", createDate="
-				+ createDate + ", createdBy=" + createdBy + ", lastUpdate="
-				+ lastUpdate + ", lastUpdatedBy=" + lastUpdatedBy + ", rule="
+    /*
+     * (non-Javadoc)
+     *
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString() {
+        return "PolicyEntity [policyId=" + policyId + ", policyDefId="
+                + policyDefId + ", name=" + name + ", description="
+                + description + ", status=" + status + ", createDate="
+                + createDate + ", createdBy=" + createdBy + ", lastUpdate="
+                + lastUpdate + ", lastUpdatedBy=" + lastUpdatedBy + ", rule="
                 + rule + ", ruleSrcUrl=" + ruleSrcUrl + ", enablement="
                 + enablement + ", policyAttributes=" + policyAttributes + "]";
-	}
+    }
 }

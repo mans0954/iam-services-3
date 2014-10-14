@@ -37,13 +37,13 @@ if (userList != null ) {
 
 	System.out.println("User id=" + user.userId)
 			
-		if (user.status == UserStatusEnum.TERMINATE ) {
+		if (user.status == UserStatusEnum.TERMINATED ) {
 			System.out.println("user status is already set to terminate")
 		}else {
 			u = userService.getUserWithDependent(user.userId, true).user
 			
 			ProvisionUser pUser = new ProvisionUser(u);
-			pUser.status = UserStatusEnum.TERMINATE
+			pUser.status = UserStatusEnum.TERMINATED
 			pUser.secondaryStatus = null
 			pUser.lastUpdatedBy = "3000"
 			pUser.lastDate = search.lastDate
@@ -53,7 +53,7 @@ if (userList != null ) {
 			//provision.modifyUser(pUser)
 			provision.deleteByUserId(
             pUser,
-            UserStatusEnum.TERMINATE, "IDM_SERVER");
+            UserStatusEnum.TERMINATED, "IDM_SERVER");
 			
 			
 		}

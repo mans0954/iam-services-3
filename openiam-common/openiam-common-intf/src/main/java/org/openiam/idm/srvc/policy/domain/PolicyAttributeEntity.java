@@ -1,10 +1,6 @@
 package org.openiam.idm.srvc.policy.domain;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
@@ -25,38 +21,49 @@ public class PolicyAttributeEntity implements java.io.Serializable, Comparable<P
 
     private static final long serialVersionUID = -291717117636794761L;
 
-	@Id
-	@GeneratedValue(generator = "system-uuid")
-	@GenericGenerator(name = "system-uuid", strategy = "uuid")
-	@Column(name = "POLICY_ATTR_ID", length = 32, nullable=false, updatable=false)
-	private String policyAttrId;
-	@Column(name = "POLICY_ID", nullable=false, updatable=false)
-	private String policyId;
-	@Column(name = "DEF_PARAM_ID")
-	private String defParamId;
-	@Column(name = "NAME", length = 100)
-	private String name;
-	@Column(name = "OPERATION", length = 20)
-	private String operation;
-	@Column(name = "VALUE1", length = 4096)
-	private String value1;
-	@Column(name = "VALUE2", length = 4096)
-	private String value2;
-	
-	@Column(name = "REQUIRED")
+    @Id
+    @GeneratedValue(generator = "system-uuid")
+    @GenericGenerator(name = "system-uuid", strategy = "uuid")
+    @Column(name = "POLICY_ATTR_ID", length = 32, nullable = false, updatable = false)
+    private String policyAttrId;
+    @Column(name = "POLICY_ID", nullable = false, updatable = false)
+    private String policyId;
+
+    @ManyToOne(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY)
+    @JoinColumn(name = "DEF_PARAM_ID", insertable = true, updatable = true, nullable = true)
+    private PolicyDefParamEntity defaultParametr;
+
+    /**
+     * Deprecated for Password Policy, got from PolicyDefParamEntity
+     */
+//    @Column(name = "NAME", length = 100)
+//    private String name;
+
+    /**
+     * Deprecated for Password Policy, got from PolicyDefParamEntity
+     */
+//    @Column(name = "OPERATION", length = 20)
+//    private String operation;
+
+    @Column(name = "VALUE1", length = 2048)
+    private String value1;
+    @Column(name = "VALUE2", length = 2048)
+    private String value2;
+
+    @Column(name = "REQUIRED")
     @Type(type = "yes_no")
     private boolean required = true;
 
-	public boolean isRequired() {
-		return required;
-	}
+    public boolean isRequired() {
+        return required;
+    }
 
-	public void setRequired(boolean required) {
-		this.required = required;
-	}
+    public void setRequired(boolean required) {
+        this.required = required;
+    }
 
-	@Column(name = "RULE_TEXT")
-	private String rule;
+    @Column(name = "RULE_TEXT")
+    private String rule;
 
     public PolicyAttributeEntity() {
     }
@@ -64,8 +71,7 @@ public class PolicyAttributeEntity implements java.io.Serializable, Comparable<P
     public PolicyAttributeEntity(String policyAttrId) {
         this.policyAttrId = policyAttrId;
     }
-    
-    
+
 
     public String getPolicyAttrId() {
         return this.policyAttrId;
@@ -74,22 +80,22 @@ public class PolicyAttributeEntity implements java.io.Serializable, Comparable<P
     public void setPolicyAttrId(String policyAttrId) {
         this.policyAttrId = policyAttrId;
     }
-
-    public String getName() {
-        return this.name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getOperation() {
-        return this.operation;
-    }
-
-    public void setOperation(String operation) {
-        this.operation = operation;
-    }
+//
+//    public String getName() {
+//        return this.name;
+//    }
+//
+//    public void setName(String name) {
+//        this.name = name;
+//    }
+//
+//    public String getOperation() {
+//        return this.operation;
+//    }
+//
+//    public void setOperation(String operation) {
+//        this.operation = operation;
+//    }
 
     public String getValue1() {
         return this.value1;
@@ -115,14 +121,6 @@ public class PolicyAttributeEntity implements java.io.Serializable, Comparable<P
         this.policyId = policyId;
     }
 
-    public String getDefParamId() {
-        return defParamId;
-    }
-
-    public void setDefParamId(String defParamId) {
-        this.defParamId = defParamId;
-    }
-
     public String getRule() {
         return rule;
     }
@@ -131,96 +129,53 @@ public class PolicyAttributeEntity implements java.io.Serializable, Comparable<P
         this.rule = rule;
     }
 
-    @Override
-	public String toString() {
-		return "PolicyAttributeEntity [policyAttrId=" + policyAttrId
-				+ ", policyId=" + policyId + ", defParamId=" + defParamId
-				+ ", name=" + name + ", operation=" + operation + ", value1="
-				+ value1 + ", value2=" + value2 + ", required="
-				+ required + ", rule=" + rule + "]";
-	}
-
-    public int compareTo(PolicyAttributeEntity o) {
-        if (getName() == null || o == null) {
-            // Not recommended, but compareTo() is only used for display purposes in this case
-            return Integer.MIN_VALUE;
-        }
-        return getName().compareTo(o.getName());
+    public PolicyDefParamEntity getDefaultParametr() {
+        return defaultParametr;
     }
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result
-				+ ((defParamId == null) ? 0 : defParamId.hashCode());
-		result = prime * result + ((name == null) ? 0 : name.hashCode());
-		result = prime * result
-				+ ((operation == null) ? 0 : operation.hashCode());
-		result = prime * result
-				+ ((policyAttrId == null) ? 0 : policyAttrId.hashCode());
-		result = prime * result
-				+ ((policyId == null) ? 0 : policyId.hashCode());
-		result = prime * result + (required ? 1231 : 1237);
-		result = prime * result + ((rule == null) ? 0 : rule.hashCode());
-		result = prime * result + ((value1 == null) ? 0 : value1.hashCode());
-		result = prime * result + ((value2 == null) ? 0 : value2.hashCode());
-		return result;
-	}
+    public void setDefaultParametr(PolicyDefParamEntity defaultParametr) {
+        this.defaultParametr = defaultParametr;
+    }
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		PolicyAttributeEntity other = (PolicyAttributeEntity) obj;
-		if (defParamId == null) {
-			if (other.defParamId != null)
-				return false;
-		} else if (!defParamId.equals(other.defParamId))
-			return false;
-		if (name == null) {
-			if (other.name != null)
-				return false;
-		} else if (!name.equals(other.name))
-			return false;
-		if (operation == null) {
-			if (other.operation != null)
-				return false;
-		} else if (!operation.equals(other.operation))
-			return false;
-		if (policyAttrId == null) {
-			if (other.policyAttrId != null)
-				return false;
-		} else if (!policyAttrId.equals(other.policyAttrId))
-			return false;
-		if (policyId == null) {
-			if (other.policyId != null)
-				return false;
-		} else if (!policyId.equals(other.policyId))
-			return false;
-		if (required != other.required)
-			return false;
-		if (rule == null) {
-			if (other.rule != null)
-				return false;
-		} else if (!rule.equals(other.rule))
-			return false;
-		if (value1 == null) {
-			if (other.value1 != null)
-				return false;
-		} else if (!value1.equals(other.value1))
-			return false;
-		if (value2 == null) {
-			if (other.value2 != null)
-				return false;
-		} else if (!value2.equals(other.value2))
-			return false;
-		return true;
-	}
 
-	
+    public int compareTo(PolicyAttributeEntity o) {
+        if (this.getDefaultParametr() == null && o.getDefaultParametr() == null)
+            return 0;
+
+        if (o == null || o.getDefaultParametr() == null || o.getDefaultParametr().getName() == null) {
+            return Integer.MIN_VALUE;
+        }
+        return defaultParametr.getName().compareTo(o.getDefaultParametr().getName());
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        PolicyAttributeEntity that = (PolicyAttributeEntity) o;
+
+        if (required != that.required) return false;
+        if (defaultParametr != null ? !defaultParametr.equals(that.defaultParametr) : that.defaultParametr != null)
+            return false;
+        if (policyAttrId != null ? !policyAttrId.equals(that.policyAttrId) : that.policyAttrId != null) return false;
+        if (policyId != null ? !policyId.equals(that.policyId) : that.policyId != null) return false;
+        if (rule != null ? !rule.equals(that.rule) : that.rule != null) return false;
+        if (value1 != null ? !value1.equals(that.value1) : that.value1 != null) return false;
+        if (value2 != null ? !value2.equals(that.value2) : that.value2 != null) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = policyAttrId != null ? policyAttrId.hashCode() : 0;
+        result = 31 * result + (policyId != null ? policyId.hashCode() : 0);
+        result = 31 * result + (defaultParametr != null ? defaultParametr.hashCode() : 0);
+        result = 31 * result + (value1 != null ? value1.hashCode() : 0);
+        result = 31 * result + (value2 != null ? value2.hashCode() : 0);
+        result = 31 * result + (required ? 1 : 0);
+        result = 31 * result + (rule != null ? rule.hashCode() : 0);
+        return result;
+    }
 }

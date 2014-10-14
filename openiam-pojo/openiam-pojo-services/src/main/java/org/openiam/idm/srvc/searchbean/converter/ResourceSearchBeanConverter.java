@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.searchbean.converter;
 
+import org.apache.commons.lang.StringUtils;
 import org.openiam.idm.searchbeans.ResourceSearchBean;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.domain.ResourceTypeEntity;
@@ -16,10 +17,15 @@ public class ResourceSearchBeanConverter implements SearchBeanConverter<Resource
         resource.setRisk(searchBean.getRisk());
         resource.setURL(searchBean.getURL());
 		resource.setCoorelatedName(searchBean.getCoorelatedName());
-		if(searchBean.getResourceTypeId() != null && searchBean.getResourceTypeId().trim().length() > 0) {
+		if(StringUtils.isNotBlank(searchBean.getResourceTypeId())) {
 			final ResourceTypeEntity type = new ResourceTypeEntity();
 			type.setId(searchBean.getResourceTypeId());
 			resource.setResourceType(type);
+		}
+		if(StringUtils.isNotBlank(searchBean.getAdminResourceId())) {
+			final ResourceEntity adminResource = new ResourceEntity();
+			adminResource.setId(searchBean.getAdminResourceId());
+			resource.setAdminResource(adminResource);
 		}
 		return resource;
 	}

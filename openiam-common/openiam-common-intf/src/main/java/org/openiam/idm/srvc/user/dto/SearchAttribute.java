@@ -15,17 +15,24 @@ import javax.xml.bind.annotation.XmlType;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "SearchAttribute", propOrder = {
         "attributeName",
-        "attributeValue"
+        "attributeValue",
+        "attributeElementId"
 })
 public class SearchAttribute {
     String attributeName;
     String attributeValue;
+    String attributeElementId;
     
     public SearchAttribute() {}
     
     public SearchAttribute(final String name, final String value) {
-    	this.attributeName = name;
-    	this.attributeValue = value;
+    	this(name, value, null);
+    }
+
+    public SearchAttribute(final String name, final String value, final String attributeElementId) {
+        this.attributeName = name;
+        this.attributeValue = value;
+        this.attributeElementId=attributeElementId;
     }
 
     public String getAttributeName() {
@@ -44,11 +51,20 @@ public class SearchAttribute {
         this.attributeValue = attributeValue;
     }
 
+    public String getAttributeElementId() {
+        return attributeElementId;
+    }
+
+    public void setAttributeElementId(String attributeElementId) {
+        this.attributeElementId = attributeElementId;
+    }
+
     @Override
     public String toString() {
         return "SearchAttribute{" +
                 "attributeName='" + attributeName + '\'' +
                 ", attributeValue='" + attributeValue + '\'' +
+                ", attributeElementId='" + attributeElementId + '\'' +
                 '}';
     }
 }

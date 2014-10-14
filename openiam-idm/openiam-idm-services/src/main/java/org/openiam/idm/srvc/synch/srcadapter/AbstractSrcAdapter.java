@@ -267,6 +267,9 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
 
         int retval = -1;
         ProvisionUser pUser = (usr != null)? new ProvisionUser(usr) : new ProvisionUser();
+        pUser.setRequestorUserId(systemUserId);
+        pUser.setRequestorLogin("sysadmin");
+        pUser.setParentAuditLogId(config.getParentAuditLogId());
         if (transformScripts != null && transformScripts.size() > 0) {
             for (TransformScript transformScript : transformScripts) {
                 synchronized (mutex) {

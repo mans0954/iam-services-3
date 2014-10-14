@@ -91,7 +91,10 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
             if(StringUtils.isNotBlank(groupSearchBean.getType())){
                 criteria.add(Restrictions.eq("type.id", groupSearchBean.getType()));
             }
-        }
+			if(StringUtils.isNotBlank(groupSearchBean.getAdminResourceId())) {
+				criteria.add(Restrictions.eq("adminResource.id", groupSearchBean.getAdminResourceId()));
+			}
+		}
         return criteria;
     }
 

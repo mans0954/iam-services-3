@@ -539,6 +539,11 @@ public class UserMgr implements UserDataService {
             nonEmptyListOfLists.add(idList);
         }
 
+        if (CollectionUtils.isNotEmpty(searchBean.getAttributeList())) {
+            nonEmptyListOfLists.add(userDao.getUserIdsForAttributes(searchBean.getAttributeList(), 0,
+                                                            MAX_USER_SEARCH_RESULTS));
+        }
+
         if (CollectionUtils.isNotEmpty(searchBean.getRoleIdSet())) {
             nonEmptyListOfLists.add(userDao.getUserIdsForRoles(searchBean.getRoleIdSet(), 0, MAX_USER_SEARCH_RESULTS));
         }

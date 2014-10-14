@@ -30,8 +30,8 @@ public enum UserStatusEnum {
     PENDING_USER_VALIDATION("PENDING_USER_VALIDATION"),
     @XmlEnumValue("pending_initial_login")
     PENDING_INITIAL_LOGIN("PENDING_INITIAL_LOGIN"),
-    @XmlEnumValue("terminate")
-    TERMINATE("TERMINATE"),
+    @XmlEnumValue("terminated")
+    TERMINATED("TERMINATED"),
     @XmlEnumValue("deleted")
     DELETED("DELETED"),
     @XmlEnumValue("remove")

@@ -84,14 +84,6 @@ public class AuditLogServiceImpl implements AuditLogService {
 
     @Autowired
     private IdmAuditLogCustomDozerConverter idmAuditLogCustomDozerConverter;
-    /**
-     * Cache for UserId and CorrelationId
-     *
-     * When new User login: new AuditLog with Correlation Id will be generated and store in cache Map
-     * Every login we replace CorrelationId by UserId
-     *
-     */
-    private final Map<String, String> correlationIdByRequesterId = new HashMap<>();
 
     @PostConstruct
     public void init() {
@@ -103,28 +95,19 @@ public class AuditLogServiceImpl implements AuditLogService {
     }
     
     private IdmAuditLogEntity prepare(final IdmAuditLog log) {
-        IdmAuditLogEntity auditLogEntity = log.getId() == null ? auditLogDozerConverter.convertToEntity(log, false) : logDAO.findById(log.getId());
-
+//        IdmAuditLogEntity auditLogEntity = log.getId() == null ? auditLogDozerConverter.convertToEntity(log, false) : logDAO.findById(log.getId());
+        IdmAuditLogEntity auditLogEntity = auditLogDozerConverter.convertToEntity(log, false);// : logDAO.findById(log.getId());
         if(log != null) {
     		if(auditLogEntity.getId() == null || auditLogEntity.getHash() == null) {
                 auditLogEntity.setHash(DigestUtils.sha256Hex(log.concat()));
             }
 
-            if(StringUtils.isEmpty(auditLogEntity.getCorrelationId())) {
-               // log.setCorrelationId(String.valueOf(new Random().nextLong()));
-            }
             auditLogEntity.setNodeIP(nodeIP);
 
     		if(CollectionUtils.isNotEmpty(log.getChildLogs())) {
     			for(final IdmAuditLog ch : log.getChildLogs()) {
-                    if(StringUtils.isEmpty(ch.getCorrelationId())) {
-                       // log.setCorrelationId(log.getCorrelationId());
-                    }
                     IdmAuditLogEntity chEntity = prepare(ch);
-                    if(!logExists(auditLogEntity.getChildLogs(), chEntity)) {
-
-                      //  auditLogEntity.getChildLogs().contains(chEntity)
-
+                    if(!auditLogEntity.getChildLogs().contains(chEntity)) {
                         auditLogEntity.addChild(chEntity);
                         chEntity.addParent(auditLogEntity);
                     }
@@ -174,16 +157,6 @@ public class AuditLogServiceImpl implements AuditLogService {
             return auditLogEntity;
         }
         return null;
-    }
-
-    private boolean logExists(Set<IdmAuditLogEntity> logEntitySet, IdmAuditLogEntity logEntity) {
-        if(CollectionUtils.isNotEmpty(logEntitySet)){
-            for(IdmAuditLogEntity log : logEntitySet){
-                if(log!=null && log.equals(logEntity))
-                    return true;
-            }
-        }
-        return false;
     }
 
     @Override

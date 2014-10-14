@@ -16,8 +16,14 @@ public class LdapCommandFactory extends AbstractCommandFactory {
     @Qualifier("addUserLdapCommand")
     private ConnectorCommand addUserLdapCommand;
     @Autowired
+    @Qualifier("addGroupLdapCommand")
+    private ConnectorCommand addGroupLdapCommand;
+    @Autowired
     @Qualifier("deleteUserLdapCommand")
     private ConnectorCommand deleteUserLdapCommand;
+    @Autowired
+    @Qualifier("deleteGroupLdapCommand")
+    private ConnectorCommand deleteGroupLdapCommand;
     @Autowired
     @Qualifier("lookupAttributeNamesCommand")
     private ConnectorCommand lookupAttributeNamesCommand;
@@ -25,8 +31,14 @@ public class LdapCommandFactory extends AbstractCommandFactory {
     @Qualifier("lookupUserLdapCommand")
     private ConnectorCommand lookupUserLdapCommand;
     @Autowired
+    @Qualifier("lookupGroupLdapCommand")
+    private ConnectorCommand lookupGroupLdapCommand;
+    @Autowired
     @Qualifier("modifyUserLdapCommand")
     private ConnectorCommand modifyUserLdapCommand;
+    @Autowired
+    @Qualifier("modifyGroupLdapCommand")
+    private ConnectorCommand modifyGroupLdapCommand;
     @Autowired
     @Qualifier("resumeLdapCommand")
     private ConnectorCommand resumeLdapCommand;
@@ -39,6 +51,9 @@ public class LdapCommandFactory extends AbstractCommandFactory {
     @Autowired
     @Qualifier("searchUserLdapCommand")
     private ConnectorCommand searchUserLdapCommand;
+    @Autowired
+    @Qualifier("searchGroupLdapCommand")
+    private ConnectorCommand searchGroupLdapCommand;
     @Autowired
     @Qualifier("testUserLdapCommand")
     private ConnectorCommand testUserLdapCommand;
@@ -75,27 +90,17 @@ public class LdapCommandFactory extends AbstractCommandFactory {
         } else if(ExtensibleObjectType.GROUP==extensibleObjectType){
             switch (commandType){
                 case ADD:
-                    return addUserLdapCommand;
+                    return addGroupLdapCommand;
                 case DELETE:
-                    return deleteUserLdapCommand;
+                    return deleteGroupLdapCommand;
                 case LOOKUP_ATTRIBUTE_NAME:
                     return lookupAttributeNamesCommand;
                 case LOOKUP:
-                    return lookupUserLdapCommand;
+                    return lookupGroupLdapCommand;
                 case SEARCH:
-                    return  searchUserLdapCommand;
+                    return  searchGroupLdapCommand;
                 case MODIFY:
-                    return modifyUserLdapCommand;
-                case RESUME:
-                    return resumeLdapCommand;
-                case SET_PASSWORD:
-                    return setPasswordLdapCommand;
-                case RESET_PASSWORD:
-                    return setPasswordLdapCommand;
-                case SUSPEND:
-                    return suspendLdapCommand;
-                case TEST:
-                    return testUserLdapCommand;
+                    return modifyGroupLdapCommand;
                 default:
                     throw new ConnectorDataException(ErrorCode.OPERATION_NOT_SUPPORTED_EXCEPTION, error);
             }

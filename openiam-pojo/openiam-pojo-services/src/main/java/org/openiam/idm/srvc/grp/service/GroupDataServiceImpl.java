@@ -31,6 +31,7 @@ import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 import org.openiam.idm.srvc.mngsys.service.ManagedSysDAO;
 import org.openiam.idm.srvc.org.service.OrganizationDAO;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
+import org.openiam.idm.srvc.res.service.ResourceDAO;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
 import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.idm.srvc.user.service.UserDataService;
@@ -64,6 +65,9 @@ public class GroupDataServiceImpl implements GroupDataService {
 
 	@Autowired
 	private GroupDAO groupDao;
+
+    @Autowired
+    private ResourceDAO resourceDao;
 	
 	@Autowired
 	private GroupAttributeDAO groupAttrDao;
@@ -553,13 +557,12 @@ public class GroupDataServiceImpl implements GroupDataService {
 	@Override
 	public void removeChildGroup(String groupId, String childGroupId) {
 		if(groupId != null && childGroupId != null) {
-			final GroupEntity group = groupDao.findById(groupId);
-			if(group != null) {
-				group.removeChildGroup(childGroupId);
+			final GroupEntity childGroup = groupDao.findById(childGroupId);
+			if(childGroup != null) {
+                childGroup.removeParentGroup(groupId);
 			}
 		}
 	}
-
 
     private Set<String> getDelegationFilter(String requesterId){
         Set<String> filterData = null;

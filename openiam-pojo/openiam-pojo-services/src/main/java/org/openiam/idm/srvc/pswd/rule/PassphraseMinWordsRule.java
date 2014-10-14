@@ -17,7 +17,7 @@
  */
 
 /**
- * 
+ *
  */
 package org.openiam.idm.srvc.pswd.rule;
 
@@ -32,49 +32,50 @@ import org.openiam.idm.srvc.pswd.dto.PasswordRule;
 /**
  * Validates a password to ensure that there are minimum words in passphrase as
  * defined in the password policy
- * @author Ekta
  *
+ * @author Ekta
  */
 public class PassphraseMinWordsRule extends AbstractPasswordRule {
 
 
-	@Override
-	public void validate() throws PasswordRuleException {
-		
-		PolicyAttribute attribute = getAttribute("MIN_WORDS_PASSPHRASE");
-		int minWords = getValue1(attribute);
-		if (password == null) {
-			throw new PasswordRuleException(ResponseCode.FAIL_MIN_WORDS_PASSPHRASE_RULE, new Object[] {minWords});
-		}
-		
-		if (minWords > 0 ) {
-			StringTokenizer tokenizer = new StringTokenizer(password);
-			
-			if (tokenizer.countTokens() < minWords) {
-				throw new PasswordRuleException(ResponseCode.FAIL_MIN_WORDS_PASSPHRASE_RULE, new Object[] {minWords});
-			}
-		}
-	}
+    @Override
+    public String getAttributeName() {
+        return "MIN_WORDS_PASSPHRASE";
+    }
 
-	@Override
-	public PasswordRuleException createException() {
-		PolicyAttribute attribute = getAttribute("MIN_WORDS_PASSPHRASE");
-		int minWords = getValue1(attribute);
-		if (minWords > 0 ) {
-			return new PasswordRuleException(ResponseCode.FAIL_MIN_WORDS_PASSPHRASE_RULE, new Object[] {minWords});
-		} else {
-			return null;
-		}
-	}
+    @Override
+    public void validate(PolicyAttribute attribute) throws PasswordRuleException {
+        int minWords = getValue1(attribute);
+        if (password == null) {
+            throw new PasswordRuleException(ResponseCode.FAIL_MIN_WORDS_PASSPHRASE_RULE, new Object[]{minWords});
+        }
 
-	@Override
-	public PasswordRule createRule() {
-		PolicyAttribute attribute = getAttribute("MIN_WORDS_PASSPHRASE");
-		int minWords = getValue1(attribute);
-		if (minWords > 0 ) {
-			return new PasswordRule(ResponseCode.FAIL_MIN_WORDS_PASSPHRASE_RULE, new Object[] {minWords});
-		} else {
-			return null;
-		}
-	}	
+        if (minWords > 0) {
+            StringTokenizer tokenizer = new StringTokenizer(password);
+
+            if (tokenizer.countTokens() < minWords) {
+                throw new PasswordRuleException(ResponseCode.FAIL_MIN_WORDS_PASSPHRASE_RULE, new Object[]{minWords});
+            }
+        }
+    }
+
+    @Override
+    public PasswordRuleException createException(PolicyAttribute attribute) {
+        int minWords = getValue1(attribute);
+        if (minWords > 0) {
+            return new PasswordRuleException(ResponseCode.FAIL_MIN_WORDS_PASSPHRASE_RULE, new Object[]{minWords});
+        } else {
+            return null;
+        }
+    }
+
+    @Override
+    public PasswordRule createRule(PolicyAttribute attribute) {
+        int minWords = getValue1(attribute);
+        if (minWords > 0) {
+            return new PasswordRule(ResponseCode.FAIL_MIN_WORDS_PASSPHRASE_RULE, new Object[]{minWords});
+        } else {
+            return null;
+        }
+    }
 }

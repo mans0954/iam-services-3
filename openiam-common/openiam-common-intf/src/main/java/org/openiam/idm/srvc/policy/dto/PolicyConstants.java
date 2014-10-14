@@ -49,4 +49,9 @@ public class PolicyConstants {
     static final public String FORGET_PSWD = "FORGET_PSWD";
     static final public String PSWD_CHANGE_RULE = "PSWD_CHANGE_RULE";
 
+    //Password Policy Attributes types
+    static final public String STRING = "String";
+    static final public String RANGE = "RANGE";
+    static final public String BOOLEAN = "boolean";
+    static final public String SELECT = "select";
 }

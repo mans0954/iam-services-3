@@ -14,6 +14,7 @@ import org.openiam.idm.srvc.synch.dto.Attribute;
 import org.openiam.idm.srvc.synch.dto.LineObject;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.provision.dto.ProvisionUser;
+import org.openiam.provision.service.AbstractProvisioningService;
 import org.openiam.script.ScriptIntegration;
 
 import java.util.*;
@@ -96,6 +97,8 @@ public class PolicyMapTransformScript extends AbstractTransformScript {
                         bindingMap.put("principalList", principalList);
                         bindingMap.put("userRoleList", userRoleList);
                         bindingMap.put("isNewUser", isNewUser);
+                        bindingMap.put(AbstractProvisioningService.ATTRIBUTE_MAP, am);
+                        bindingMap.put(AbstractProvisioningService.ATTRIBUTE_DEFAULT_VALUE, am.getDefaultValue());
 
                         SynchServiceUtil.setUserDataFromPolicy(policy, bindingMap, scriptRunner);
 
