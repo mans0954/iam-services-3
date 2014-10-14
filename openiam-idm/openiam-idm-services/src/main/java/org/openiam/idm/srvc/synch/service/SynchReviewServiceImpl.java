@@ -19,7 +19,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Date;
 import java.util.List;
 
-@Transactional
 @Service("synchReviewService")
 public class SynchReviewServiceImpl implements SynchReviewService {
 
@@ -52,6 +51,7 @@ public class SynchReviewServiceImpl implements SynchReviewService {
     }
 
     @Override
+    @Transactional
     public Response deleteByIds(List<String> deleteIds) {
         Response resp = new Response(ResponseStatus.SUCCESS);
         if (CollectionUtils.isNotEmpty(deleteIds)) {
@@ -64,6 +64,7 @@ public class SynchReviewServiceImpl implements SynchReviewService {
     }
 
     @Override
+    @Transactional
     public Response delete(String synchReviewId) {
         Response resp = new Response(ResponseStatus.SUCCESS);
         if (StringUtils.isNotEmpty(synchReviewId)) {
@@ -94,6 +95,7 @@ public class SynchReviewServiceImpl implements SynchReviewService {
     }
 
     @Override
+    @Transactional
     public SynchReviewResponse updateSynchReview(SynchReviewRequest synchReviewRequest) {
         Date modifyTime = new Date();
         SynchReviewResponse response = new SynchReviewResponse();
