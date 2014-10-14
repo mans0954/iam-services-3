@@ -17,7 +17,7 @@
  */
 
 /**
- * 
+ *
  */
 package org.openiam.idm.srvc.pswd.rule;
 
@@ -36,91 +36,98 @@ import java.util.List;
 
 /**
  * Validates a password to ensure that is conforms to the history rules.
- * 
- * @author suneet
  *
+ * @author suneet
  */
 public class PasswordHistoryRule extends AbstractPasswordRule {
 
-	private static final Log log = LogFactory.getLog(PasswordHistoryRule.class);
+    private static final Log log = LogFactory.getLog(PasswordHistoryRule.class);
 
-	@Override
-	public void validate() throws PasswordRuleException {
-		
-		log.info("PasswordHistoryRule called.");
-		
-		boolean enabled = false;
-						
-		PolicyAttribute attribute = getAttribute("PWD_HIST_VER");
-		if (attribute != null && StringUtils.isNotBlank(attribute.getValue1())) {
-			enabled = true;
-		}
-		
-		if (enabled) {
-			log.info("password history rule is enabled.");
-			Password pswd = new Password();
-			pswd.setManagedSysId(lg.getManagedSysId());
-			pswd.setPrincipal(lg.getLogin());
-			pswd.setPassword(password);
-			
-			int version =  Integer.parseInt( attribute.getValue1() );
-			List<PasswordHistoryEntity> historyList = passwordHistoryDao.getPasswordHistoryByLoginId(lg.getId(), 0, version);
-			if (historyList == null || historyList.isEmpty()) {
-				// no history
-				return;
-			}
-			// check the list.
-            String userId = (user==null)?lg.getUserId():user.getId();
+    @Override
+    public String getAttributeName() {
+        return "PWD_HIST_VER";
+    }
+
+    @Override
+    public void validate(PolicyAttribute attribute) throws PasswordRuleException {
+
+        log.info("PasswordHistoryRule called.");
+
+        boolean enabled = false;
+
+        if (attribute != null && StringUtils.isNotBlank(attribute.getValue1())) {
+            enabled = true;
+        }
+
+        if (enabled) {
+            log.info("password history rule is enabled.");
+            Password pswd = new Password();
+            pswd.setManagedSysId(lg.getManagedSysId());
+            pswd.setPrincipal(lg.getLogin());
+            pswd.setPassword(password);
+
+            int version = Integer.parseInt(attribute.getValue1());
+            List<PasswordHistoryEntity> historyList = passwordHistoryDao.getPasswordHistoryByLoginId(lg.getLoginId(), 0, version);
+            if (historyList == null || historyList.isEmpty()) {
+                // no history
+                return;
+            }
+            // check the list.
+            String userId = (user == null) ? lg.getUserId() : user.getId();
 
             log.info("Found " + historyList.size() + " passwords in the history");
-			for ( PasswordHistoryEntity hist  : historyList) {
-				String pwd = hist.getPassword();
-				String decrypt = null;
-				try {
-					decrypt =  cryptor.decrypt(keyManagementService.getUserKey(userId, KeyName.password.name()), pwd);
-				}catch(Throwable e) {
-					log.error("PasswordHistoryRule failed due to decrption error. ", e);
-					throw new PasswordRuleException(ResponseCode.FAIL_HISTORY_RULE);
-				}
-				if (pswd.getPassword().equals(decrypt)) {
-					log.info("matching password found.");
-					throw new PasswordRuleException(ResponseCode.FAIL_HISTORY_RULE);
-				}
-			}
-		}	
-	}
+            for (PasswordHistoryEntity hist : historyList) {
+                String pwd = hist.getPassword();
+                String decrypt = null;
+                try {
+                    decrypt = cryptor.decrypt(keyManagementService.getUserKey(userId, KeyName.password.name()), pwd);
+                    if (StringUtils.equals(pswd.getPassword(), decrypt)) {
+                        log.info("matching password found.");
+                        throw new PasswordRuleException(ResponseCode.FAIL_HISTORY_RULE);
+                    }
+                } catch (PasswordRuleException e) {
+                    throw e;
+                } catch (Throwable e) {
+                    log.error("PasswordHistoryRule failed due to decryption error. ", e);
+                    /*
+					 * this is not an error for the user to see - it's a f*ckup in the database
+					 * just don't return anything
+					 */
+                    //throw new PasswordRuleException(ResponseCode.FAIL_HISTORY_RULE);
+                }
+            }
+        }
+    }
 
-	@Override
-	public PasswordRuleException createException() {
-		boolean enabled = false;
-		
-		PolicyAttribute attribute = getAttribute("PWD_HIST_VER");
-		if (attribute != null && StringUtils.isNotBlank(attribute.getValue1())) {
-			enabled = true;
-		}
-		
-		if (enabled) {
-			int version =  Integer.parseInt( attribute.getValue1() );
-			return new PasswordRuleException(ResponseCode.FAIL_HISTORY_RULE, new Object[] {version});
-		} else {
-			return null;
-		}
-	}
+    @Override
+    public PasswordRuleException createException(PolicyAttribute attribute) {
+        boolean enabled = false;
 
-	@Override
-	public PasswordRule createRule() {
-		boolean enabled = false;
-		
-		PolicyAttribute attribute = getAttribute("PWD_HIST_VER");
-		if (attribute != null && StringUtils.isNotBlank(attribute.getValue1())) {
-			enabled = true;
-		}
-		
-		if (enabled) {
-			int version =  Integer.parseInt( attribute.getValue1() );
-			return new PasswordRule(ResponseCode.FAIL_HISTORY_RULE, new Object[] {version});
-		} else {
-			return null;
-		}
-	}
+        if (attribute != null && StringUtils.isNotBlank(attribute.getValue1())) {
+            enabled = true;
+        }
+
+        if (enabled) {
+            int version = Integer.parseInt(attribute.getValue1());
+            return new PasswordRuleException(ResponseCode.FAIL_HISTORY_RULE, new Object[]{version});
+        } else {
+            return null;
+        }
+    }
+
+    @Override
+    public PasswordRule createRule(PolicyAttribute attribute) {
+        boolean enabled = false;
+
+        if (attribute != null && StringUtils.isNotBlank(attribute.getValue1())) {
+            enabled = true;
+        }
+
+        if (enabled) {
+            int version = Integer.parseInt(attribute.getValue1());
+            return new PasswordRule(ResponseCode.FAIL_HISTORY_RULE, new Object[]{version});
+        } else {
+            return null;
+        }
+    }
 }

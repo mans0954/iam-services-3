@@ -1,25 +1,15 @@
 package org.openiam.idm.srvc.policy.domain;
 
-import javax.persistence.AttributeOverride;
-import javax.persistence.AttributeOverrides;
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
-import org.openiam.base.domain.AbstractKeyNameEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
-import org.openiam.idm.srvc.res.domain.ResourceEntity;
 
 /**
  * @author zaporozhec
@@ -43,32 +33,23 @@ public class PolicyAttributeEntity extends AbstractKeyNameEntity {
     @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name = "POLICY_ID", referencedColumnName = "POLICY_ID", insertable = true, updatable = false)
     private PolicyEntity policy;
-	
-	@ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
-    @JoinColumn(name="DEF_PARAM_ID", referencedColumnName = "DEF_PARAM_ID", insertable = true, updatable = true, nullable=true)
-	private PolicyDefParamEntity defParam;
-	
-	@Column(name = "OPERATION", length = 20)
-	private String operation;
-	@Column(name = "VALUE1", length = 4096)
-	private String value1;
-	@Column(name = "VALUE2", length = 4096)
-	private String value2;
-	
-	@Column(name = "REQUIRED")
+
+    @ManyToOne(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY)
+    @JoinColumn(name = "DEF_PARAM_ID", insertable = true, updatable = true, nullable = true)
+    private PolicyDefParamEntity defaultParametr;
+
+
+    @Column(name = "VALUE1", length = 2048)
+    private String value1;
+    @Column(name = "VALUE2", length = 2048)
+    private String value2;
+
+    @Column(name = "REQUIRED")
     @Type(type = "yes_no")
     private boolean required = true;
-	
+
 	@Column(name = "RULE_TEXT")
 	private String rule;
-	
-	public PolicyEntity getPolicy() {
-		return policy;
-	}
-
-	public void setPolicy(PolicyEntity policy) {
-		this.policy = policy;
-	}
 
 	public boolean isRequired() {
 		return required;
@@ -78,16 +59,31 @@ public class PolicyAttributeEntity extends AbstractKeyNameEntity {
 		this.required = required;
 	}
 
+
+
+	public PolicyEntity getPolicy() {
+		return policy;
+	}
+
+	public void setPolicy(PolicyEntity policy) {
+		this.policy = policy;
+	}
+
     public PolicyAttributeEntity() {
     }
 
-    public String getOperation() {
-        return this.operation;
+    public PolicyAttributeEntity(String policyAttrId) {
+        this.policyAttrId = policyAttrId;
+    }  
+
+    public String getPolicyAttrId() {
+        return this.policyAttrId;
     }
 
-    public void setOperation(String operation) {
-        this.operation = operation;
+    public void setPolicyAttrId(String policyAttrId) {
+        this.policyAttrId = policyAttrId;
     }
+
 
     public String getValue1() {
         return this.value1;
@@ -121,7 +117,24 @@ public class PolicyAttributeEntity extends AbstractKeyNameEntity {
         this.rule = rule;
     }
 
-	@Override
+    @Override
+	public String toString() {
+		return "PolicyAttributeEntity [policyAttrId=" + policyAttrId
+				+ ", policyId=" + policyId + ", defParamId=" + defParamId
+				+ ", name=" + name + ", operation=" + operation + ", value1="
+				+ value1 + ", value2=" + value2 + ", required="
+				+ required + ", rule=" + rule + "]";
+	}
+
+    public int compareTo(PolicyAttributeEntity o) {
+        if (getName() == null || o == null) {
+            // Not recommended, but compareTo() is only used for display purposes in this case
+            return Integer.MIN_VALUE;
+        }
+        return getName().compareTo(o.getName());
+    }
+
+@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();

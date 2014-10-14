@@ -28,7 +28,6 @@ import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.service.ManagedSysDAO;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.service.OrganizationDAO;
-import org.openiam.idm.srvc.policy.domain.PolicyAttributeEntity;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
 import org.openiam.idm.srvc.res.domain.ResourceTypeEntity;
@@ -155,7 +154,7 @@ public class ResourceServiceImpl implements ResourceService {
             entity.setRoles(dbObject.getRoles());
 
             //elementDAO.flush();
-            mergeAttributes(entity, dbObject);
+            mergeAttribute(entity, dbObject);
 
         } else {
             boolean addApproverAssociation = false;
@@ -170,11 +169,29 @@ public class ResourceServiceImpl implements ResourceService {
             if (addApproverAssociation) {
                 entity.addApproverAssociation(createDefaultApproverAssociations(entity, requestorId));
             }
+
+            addRequiredAttributes(entity);
         }
         
         
 
         resourceDao.merge(entity);
+    }
+    @Override
+    @Transactional
+    public void addRequiredAttributes(ResourceEntity resource) {
+        if(resource!=null && resource.getType()!=null && StringUtils.isNotBlank(resource.getType().getId())){
+            MetadataElementSearchBean sb = new MetadataElementSearchBean();
+            sb.addTypeId(resource.getType().getId());
+            List<MetadataElementEntity> elementList = elementDAO.getByExample(sb, -1, -1);
+            if(CollectionUtils.isNotEmpty(elementList)){
+                for(MetadataElementEntity element: elementList){
+                    if(element.isRequired()){
+                        resourcePropDao.save(AttributeUtil.buildResAttribute(resource, element));
+                    }
+                }
+            }
+        }
     }
 
     private ApproverAssociationEntity createDefaultApproverAssociations(final ResourceEntity entity,
@@ -197,21 +214,64 @@ public class ResourceServiceImpl implements ResourceService {
         return adminResource;
     }
 
-    public void mergeAttributes(final ResourceEntity bean, final ResourceEntity dbObject) {
-    	/* hibernat bug with empty list */
-    	if(dbObject != null) {
-    		if(CollectionUtils.isEmpty(bean.getResourceProps())) {
-    			dbObject.getResourceProps().clear();
-    			bean.setResourceProps(dbObject.getResourceProps());
-    		}
-    	} else {
-    		if(CollectionUtils.isNotEmpty(bean.getResourceProps())) {
-    			for(final ResourcePropEntity attribute : bean.getResourceProps()) {
-    				attribute.setResource(bean);
-    				attribute.setElement(getEntity(attribute.getElement()));
-    			}
-    		}
+    private void mergeAttribute(final ResourceEntity bean, final ResourceEntity dbObject) {
+    	
+    	/* 
+    	 * if the incoming bean is from the database, there is no reason to do any merging 
+    	 * This was written to avoid merging  of attributes when you call findById on the resourceService,
+    	 * and then save the same object (see ManagedSystemServiceImpl.updateMangagedSys)
+    	 */
+    	if(bean.getResourceProps() != null && bean.getResourceProps() instanceof PersistentCollection) {
+    		return;
     	}
+        Set<ResourcePropEntity> beanProps = (bean.getResourceProps() != null) ? bean.getResourceProps() : new HashSet<ResourcePropEntity>();
+        Set<ResourcePropEntity> dbProps = (dbObject.getResourceProps() != null) ? new HashSet<ResourcePropEntity>(dbObject.getResourceProps()) : new HashSet<ResourcePropEntity>();
+
+        /* update */
+        Iterator<ResourcePropEntity> dbIteroator = dbProps.iterator();
+        while(dbIteroator.hasNext()) {
+        	final ResourcePropEntity dbProp = dbIteroator.next();
+        	
+        	boolean contains = false;
+            for (final ResourcePropEntity beanProp : beanProps) {
+                if (StringUtils.equals(dbProp.getId(), beanProp.getId())) {
+                    dbProp.setValue(beanProp.getValue());
+                    dbProp.setElement(getEntity(beanProp.getElement()));
+                    dbProp.setName(beanProp.getName());
+                    dbProp.setIsMultivalued(beanProp.getIsMultivalued());
+                    //renewedProperties.add(dbProp);
+                    contains = true;
+                    break;
+                }
+            }
+            
+            /* remove */
+            if(!contains) {
+            	dbIteroator.remove();
+            }
+        }
+
+        /* add */
+        final Set<ResourcePropEntity> toAdd = new HashSet<>();
+        for (final ResourcePropEntity beanProp : beanProps) {
+            boolean contains = false;
+            dbIteroator = dbProps.iterator();
+            while(dbIteroator.hasNext()) {
+            	final ResourcePropEntity dbProp = dbIteroator.next();
+                if (StringUtils.equals(dbProp.getId(), beanProp.getId())) {
+                    contains = true;
+                }
+            }
+
+            if (!contains) {
+                beanProp.setResource(bean);
+                beanProp.setElement(getEntity(beanProp.getElement()));
+                toAdd.add(beanProp);
+            }
+        }
+        dbProps.addAll(toAdd);
+        
+        bean.setResourceProps(dbProps);
     }
     
     private MetadataElementEntity getEntity(final MetadataElementEntity bean) {
@@ -307,7 +367,6 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     @Transactional(readOnly = true)
-    @Deprecated
     public List<ResourceEntity> getChildResources(String resourceId, int from, int size) {
         final ResourceEntity example = new ResourceEntity();
         final ResourceEntity parent = new ResourceEntity();
@@ -319,7 +378,6 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     @Transactional(readOnly = true)
-    @Deprecated
     public int getNumOfChildResources(String resourceId) {
         final ResourceEntity example = new ResourceEntity();
         final ResourceEntity parent = new ResourceEntity();
@@ -330,7 +388,6 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     @Transactional(readOnly = true)
-    @Deprecated
     public List<ResourceEntity> getParentResources(String resourceId, int from, int size) {
         final ResourceEntity example = new ResourceEntity();
         final ResourceEntity child = new ResourceEntity();
@@ -405,7 +462,6 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     @Transactional(readOnly = true)
-    @Deprecated
     public int getNumOfResourcesForRole(String roleId, final ResourceSearchBean searchBean) {
         return resourceDao.getNumOfResourcesForRole(roleId, searchBean);
     }
@@ -425,7 +481,6 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     @Transactional(readOnly = true)
-    @Deprecated
     public List<ResourceEntity> getResourcesForGroup(String groupId, int from, int size,
                                                      final ResourceSearchBean searchBean) {
         return resourceDao.getResourcesForGroup(groupId, from, size, searchBean);
@@ -433,14 +488,12 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     @Transactional(readOnly = true)
-    @Deprecated
     public int getNumOfResourceForUser(String userId, final ResourceSearchBean searchBean) {
         return resourceDao.getNumOfResourcesForUser(userId, searchBean);
     }
 
     @Override
     @Transactional(readOnly = true)
-    @Deprecated
     public List<ResourceEntity> getResourcesForUser(String userId, int from, int size,
                                                     final ResourceSearchBean searchBean) {
         return resourceDao.getResourcesForUser(userId, from, size, searchBean);
@@ -448,7 +501,6 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     @Transactional(readOnly = true)
-    @Deprecated
     public List<ResourceEntity> getResourcesForUserByType(String userId, String resourceTypeId,
                                                           final ResourceSearchBean searchBean) {
         return resourceDao.getResourcesForUserByType(userId, resourceTypeId, searchBean);

@@ -5,6 +5,9 @@ import org.activiti.engine.impl.el.FixedValue;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.bpm.util.ActivitiRequestType;
+import org.openiam.idm.srvc.audit.constant.AuditAction;
+import org.openiam.idm.srvc.audit.constant.AuditSource;
+import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.msg.dto.NotificationParam;
 import org.openiam.idm.srvc.msg.dto.NotificationRequest;
 import org.openiam.idm.srvc.user.domain.UserEntity;
@@ -16,8 +19,8 @@ public abstract class AbstractNotificationDelegate extends AbstractActivitiJob {
 	protected ActivitiHelper activitiHelper;
 
 	protected void sendNotification(final UserEntity toNotify,
-		  	final UserEntity targetUser,
-		  	final DelegateExecution execution) {
+		  							final UserEntity targetUser,
+		  							final DelegateExecution execution) {
 		
 		final String taskName = getStringVariable(execution, ActivitiConstants.TASK_NAME);
 		final String taskDescription = getStringVariable(execution, ActivitiConstants.TASK_DESCRIPTION);

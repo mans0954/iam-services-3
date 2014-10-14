@@ -4,14 +4,10 @@ import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.am.srvc.constants.SearchScopeType;
-import org.openiam.am.srvc.domain.AuthProviderEntity;
-import org.openiam.am.srvc.domain.ContentProviderEntity;
-import org.openiam.base.domain.AbstractKeyNameEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity;
-import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 
 import javax.persistence.*;
@@ -47,7 +43,7 @@ public class ManagedSysEntity extends AbstractKeyNameEntity {
     private String commProtocol;
     @Column(name = "USER_ID", length = 150)
     private String userId;
-    @Column(name = "PSWD", length = 255)
+    @Column(name = "PSWD", length = 512)
     private String pswd;
     @Column(name = "START_DATE", length = 10)
     @Temporal(TemporalType.DATE)

@@ -31,6 +31,9 @@ import org.openiam.exception.ScriptEngineException;
  * @author suneet
  */
 public interface ScriptIntegration {
+
+    public String evaluate(Map<String, Object> bindingMap, String gstring) throws IOException;
+
     public Object execute(Map<String, Object> bindingMap, String scriptName) throws ScriptEngineException;
 
     public Object instantiateClass(Map<String, Object> bindingMap, String scriptName) throws IOException;

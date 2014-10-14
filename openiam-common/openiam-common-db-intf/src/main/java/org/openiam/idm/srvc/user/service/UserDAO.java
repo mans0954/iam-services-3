@@ -6,6 +6,7 @@ import org.openiam.idm.searchbeans.DelegationFilterSearchBean;
 import org.openiam.idm.searchbeans.UserSearchBean;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.DelegationFilterSearch;
+import org.openiam.idm.srvc.user.dto.SearchAttribute;
 
 import java.util.Collection;
 import java.util.Date;
@@ -72,6 +73,8 @@ public interface UserDAO extends BaseDao<UserEntity, String> {
     public List<String> getUserIdsForOrganizations(final Set<String> organizationIds, final int from, final int size);
 
     public List<String> getUserIdsForResources(final Set<String> resourceIds, final int from, final int size);
+
+    public List<String> getUserIdsForAttributes(final List<SearchAttribute> searchAttributeSet, final int from, final int size);
 
     public boolean isUserInGroup(final String userId, final String groupId);
 

@@ -22,7 +22,9 @@ import java.util.Set;
         "excludeResourceTypes",
         "risk",
         "URL",
-        "metadataType"
+        "metadataType",
+        "coorelatedName",
+		"adminResourceId"
 })
 public class ResourceSearchBean extends EntitlementsSearchBean<Resource, String> implements SearchBean<Resource, String>, Serializable {
 
@@ -36,7 +38,17 @@ public class ResourceSearchBean extends EntitlementsSearchBean<Resource, String>
     private ResourceRisk risk;
     private String metadataType;
     private String URL;
-	
+	private String coorelatedName;
+	private String adminResourceId;
+
+    public String getCoorelatedName() {
+        return coorelatedName;
+    }
+
+    public void setCoorelatedName(String coorelatedName) {
+        this.coorelatedName = coorelatedName;
+    }
+
 	public String getResourceTypeId() {
 		return resourceTypeId;
 	}
@@ -103,6 +115,7 @@ public class ResourceSearchBean extends EntitlementsSearchBean<Resource, String>
     public void setURL(String URL) {
         this.URL = URL;
     }
+
     public String getMetadataType() {
         return metadataType;
     }
@@ -111,6 +124,13 @@ public class ResourceSearchBean extends EntitlementsSearchBean<Resource, String>
         this.metadataType = metadataType;
     }
 
+	public String getAdminResourceId() {
+		return adminResourceId;
+	}
+
+	public void setAdminResourceId(String adminResourceId) {
+		this.adminResourceId = adminResourceId;
+	}
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -129,8 +149,7 @@ public class ResourceSearchBean extends EntitlementsSearchBean<Resource, String>
 				+ ((rootsOnly == null) ? 0 : rootsOnly.hashCode());
 		return result;
 	}
-
-	@Override
+@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;

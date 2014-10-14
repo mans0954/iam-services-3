@@ -17,7 +17,7 @@
  */
 
 /**
- * 
+ *
  */
 package org.openiam.idm.srvc.pswd.rule;
 
@@ -34,136 +34,171 @@ import org.openiam.util.encrypt.Cryptor;
 
 /**
  * All password validation rules must extend AbstractPasswordRule
- * @author suneet
  *
+ * @author suneet
  */
 public abstract class AbstractPasswordRule {
 
-	protected boolean skipPasswordFrequencyCheck;
-	protected Policy policy;
-	protected String password;
-	protected String principal;
-	protected String managedSysId;
-	protected UserEntity user;
-	protected LoginEntity lg;
-	protected PasswordHistoryDAO passwordHistoryDao;
-	protected Cryptor cryptor;
+    protected boolean skipPasswordFrequencyCheck;
+    protected Policy policy;
+    protected String password;
+    protected String principal;
+    protected String managedSysId;
+    protected UserEntity user;
+    protected LoginEntity lg;
+    protected PasswordHistoryDAO passwordHistoryDao;
+    protected Cryptor cryptor;
     protected KeyManagementService keyManagementService;
 
-    
-	public abstract void validate() throws PasswordRuleException; 
-	public abstract PasswordRuleException createException();
-	public abstract PasswordRule createRule();
-	
-	protected PasswordRule createRule(final ResponseCode code, final int minBound, final int maxBound) {
-		final PasswordRule rule = new PasswordRule(code);
-		rule.setMinBound((minBound > 0) ? Integer.valueOf(minBound) : null);
-		rule.setMaxBound((maxBound > 0) ? Integer.valueOf(maxBound) : null);
-		return rule;
-	}
-	
-	protected PasswordRuleException createException(final ResponseCode code, final int minBound, final int maxBound) {
-		final PasswordRuleException ex = new PasswordRuleException(code);
-		ex.setMinBound((minBound > 0) ? Integer.valueOf(minBound) : null);
-		ex.setMaxBound((maxBound > 0) ? Integer.valueOf(maxBound) : null);
-		return ex;
-	}
-	
-	protected PolicyAttribute getAttribute(final String name) {
-		return policy.getAttribute(name);
-	}
-	
-	protected boolean getBoolean(final PolicyAttribute attribute) {
-		boolean enabled = false;
-		if (attribute != null && StringUtils.isNotBlank(attribute.getValue1())) {
-			enabled = Boolean.getBoolean(attribute.getValue1());
-		}
-		return enabled;
-	}
-	
-	protected boolean isValue1Present(final PolicyAttribute attribute) {
-		return (attribute != null && StringUtils.isNotBlank(attribute.getValue1()));
-	}
-	
-	protected int getValue1(final PolicyAttribute attribute) {
-		int minlen = 0;
-		if (attribute != null && StringUtils.isNotBlank(attribute.getValue1())) {
-			minlen = Integer.parseInt(attribute.getValue1());
-		}
-		return minlen;
-	}
-	
-	protected int getValue2(final PolicyAttribute attribute) {
-		int maxlen = 0;
-		if (attribute != null && StringUtils.isNotBlank(attribute.getValue2())) {
-			maxlen = Integer.parseInt(attribute.getValue2());
-		}
-		return maxlen;
-	}
-	
-	public Policy getPolicy() {
-		return policy;
-	}
+    public abstract void validate(PolicyAttribute pe) throws PasswordRuleException;
 
-	public void setPolicy(Policy policy) {
-		this.policy = policy;
-	}
+    public abstract String getAttributeName();
 
-	public String getPassword() {
-		return password;
-	}
+    public void validate() throws PasswordRuleException {
+        PasswordRuleException exp = createException();
+        if (password == null && exp != null) {
+            throw exp;
+        }
+        PolicyAttribute pa = this.getAttribute(this.getAttributeName());
+        if (pa == null || !pa.isRequired()) {
+            return;
+        } else {
+            validate(pa);
+        }
+    }
 
-	public void setPassword(String password) {
-		this.password = password;
-	}
+    public abstract PasswordRuleException createException(PolicyAttribute pe);
 
-	public String getPrincipal() {
-		return principal;
-	}
+    public PasswordRuleException createException() {
+        PolicyAttribute pa = this.getAttribute(this.getAttributeName());
+        if (pa == null || !pa.isRequired()) {
+            return null;
+        } else {
+            return createException(pa);
+        }
+    }
 
-	public void setPrincipal(String principal) {
-		this.principal = principal;
-	}
+    public PasswordRule createRule() {
+        PolicyAttribute pa = this.getAttribute(this.getAttributeName());
+        if (pa == null || !pa.isRequired()) {
+            return null;
+        } else {
+            return createRule(pa);
+        }
+    }
 
-	public String getManagedSysId() {
-		return managedSysId;
-	}
+    public abstract PasswordRule createRule(PolicyAttribute pe);
 
-	public void setManagedSysId(String managedSysId) {
-		this.managedSysId = managedSysId;
-	}
+    protected PasswordRule createRule(final ResponseCode code, final int minBound, final int maxBound) {
+        final PasswordRule rule = new PasswordRule(code);
+        rule.setMinBound((minBound > 0) ? Integer.valueOf(minBound) : null);
+        rule.setMaxBound((maxBound > 0) ? Integer.valueOf(maxBound) : null);
+        return rule;
+    }
 
-	public UserEntity getUser() {
-		return user;
-	}
+    protected PasswordRuleException createException(final ResponseCode code, final int minBound,
+                                                    final int maxBound) {
+        final PasswordRuleException ex = new PasswordRuleException(code);
+        ex.setMinBound((minBound > 0) ? Integer.valueOf(minBound) : null);
+        ex.setMaxBound((maxBound > 0) ? Integer.valueOf(maxBound) : null);
+        return ex;
+    }
 
-	public void setUser(UserEntity user) {
-		this.user = user;
-	}
+    protected PolicyAttribute getAttribute(final String name) {
+        return policy.getAttribute(name);
+    }
 
-	public LoginEntity getLg() {
-		return lg;
-	}
+    protected boolean getBoolean(final PolicyAttribute attribute) {
+        boolean enabled = false;
+        if (attribute != null && StringUtils.isNotBlank(attribute.getValue1())) {
+            enabled = Boolean.getBoolean(attribute.getValue1());
+        }
+        return enabled;
+    }
 
-	public void setLg(LoginEntity lg) {
-		this.lg = lg;
-	}
+    protected boolean isValue1Present(final PolicyAttribute attribute) {
+        return (attribute != null && StringUtils.isNotBlank(attribute.getValue1()));
+    }
 
-	public PasswordHistoryDAO getPasswordHistoryDao() {
-		return passwordHistoryDao;
-	}
+    protected int getValue1(final PolicyAttribute attribute) {
+        int minlen = 0;
+        if (attribute != null && StringUtils.isNotBlank(attribute.getValue1())) {
+            minlen = Integer.parseInt(attribute.getValue1());
+        }
+        return minlen;
+    }
 
-	public void setPasswordHistoryDao(PasswordHistoryDAO passwordHistoryDao) {
-		this.passwordHistoryDao = passwordHistoryDao;
-	}
+    protected int getValue2(final PolicyAttribute attribute) {
+        int maxlen = 0;
+        if (attribute != null && StringUtils.isNotBlank(attribute.getValue2())) {
+            maxlen = Integer.parseInt(attribute.getValue2());
+        }
+        return maxlen;
+    }
 
-	public Cryptor getCryptor() {
-		return cryptor;
-	}
+    public Policy getPolicy() {
+        return policy;
+    }
 
-	public void setCryptor(Cryptor cryptor) {
-		this.cryptor = cryptor;
-	}
+    public void setPolicy(Policy policy) {
+        this.policy = policy;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getPrincipal() {
+        return principal;
+    }
+
+    public void setPrincipal(String principal) {
+        this.principal = principal;
+    }
+
+    public String getManagedSysId() {
+        return managedSysId;
+    }
+
+    public void setManagedSysId(String managedSysId) {
+        this.managedSysId = managedSysId;
+    }
+
+    public UserEntity getUser() {
+        return user;
+    }
+
+    public void setUser(UserEntity user) {
+        this.user = user;
+    }
+
+    public LoginEntity getLg() {
+        return lg;
+    }
+
+    public void setLg(LoginEntity lg) {
+        this.lg = lg;
+    }
+
+    public PasswordHistoryDAO getPasswordHistoryDao() {
+        return passwordHistoryDao;
+    }
+
+    public void setPasswordHistoryDao(PasswordHistoryDAO passwordHistoryDao) {
+        this.passwordHistoryDao = passwordHistoryDao;
+    }
+
+    public Cryptor getCryptor() {
+        return cryptor;
+    }
+
+    public void setCryptor(Cryptor cryptor) {
+        this.cryptor = cryptor;
+    }
 
     public KeyManagementService getKeyManagementService() {
         return keyManagementService;
@@ -173,12 +208,12 @@ public abstract class AbstractPasswordRule {
         this.keyManagementService = keyManagementService;
     }
 
-	public boolean isSkipPasswordFrequencyCheck() {
-		return skipPasswordFrequencyCheck;
-	}
+    public boolean isSkipPasswordFrequencyCheck() {
+        return skipPasswordFrequencyCheck;
+    }
 
-	public void setSkipPasswordFrequencyCheck(boolean skipPasswordFrequencyCheck) {
-		this.skipPasswordFrequencyCheck = skipPasswordFrequencyCheck;
-	}
+    public void setSkipPasswordFrequencyCheck(boolean skipPasswordFrequencyCheck) {
+        this.skipPasswordFrequencyCheck = skipPasswordFrequencyCheck;
+    }
 
 }

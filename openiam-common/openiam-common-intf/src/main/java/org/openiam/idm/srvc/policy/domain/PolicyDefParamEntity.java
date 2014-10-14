@@ -3,9 +3,6 @@ package org.openiam.idm.srvc.policy.domain;
 
 import java.util.HashSet;
 import java.util.Set;
-
-import javax.persistence.AttributeOverrides;
-import javax.persistence.AttributeOverride;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -13,14 +10,9 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
-import org.openiam.base.domain.AbstractKeyNameEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.policy.dto.PolicyDefParam;
 
@@ -30,12 +22,7 @@ import org.openiam.idm.srvc.policy.dto.PolicyDefParam;
 @Entity
 @Table(name = "POLICY_DEF_PARAM")
 @DozerDTOCorrespondence(PolicyDefParam.class)
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-@AttributeOverrides(value={
-	@AttributeOverride(name = "id", column = @Column(name = "DEF_PARAM_ID", length = 32)),
-	@AttributeOverride(name = "name", column = @Column(name = "NAME", length = 60))
-})
-public class PolicyDefParamEntity extends AbstractKeyNameEntity {
+public class PolicyDefParamEntity implements java.io.Serializable {
 
 	private static final long serialVersionUID = 1L;
 
@@ -49,10 +36,10 @@ public class PolicyDefParamEntity extends AbstractKeyNameEntity {
 	@Column(name = "OPERATION", length = 20)
     private String operation;
 
-	@Column(name = "VALUE1", length = 255)
+	@Column(name = "VALUE1", length = 3076)
     private String value1;
 
-	@Column(name = "VALUE2", length = 255)
+	@Column(name = "VALUE2", length = 3076)
     private String value2;
 
 	@Column(name = "REPEATS")
@@ -75,7 +62,11 @@ public class PolicyDefParamEntity extends AbstractKeyNameEntity {
 	public PolicyDefParamEntity() {
 	}
 
-    public String getDescription() {
+    public PolicyDefParamEntity(String defParamId) {
+        this.defParamId = defParamId;
+    }
+
+    ng getDescription() {
         return this.description;
     }
 

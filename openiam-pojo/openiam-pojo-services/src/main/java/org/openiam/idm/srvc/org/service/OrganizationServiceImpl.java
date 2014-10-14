@@ -9,6 +9,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.dozer.converter.OrganizationDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
+import org.openiam.idm.searchbeans.MetadataElementSearchBean;
 import org.openiam.idm.searchbeans.OrganizationSearchBean;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.service.GroupDAO;
@@ -31,6 +32,7 @@ import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.srvc.user.util.DelegationFilterHelper;
 import org.openiam.internationalization.LocalizedServiceGet;
 import org.openiam.thread.Sweepable;
+import org.openiam.util.AttributeUtil;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -245,11 +247,30 @@ public class OrganizationServiceImpl implements OrganizationService, Initializin
             entity.setCreatedBy(requestorId);
             orgDao.save(entity);
             entity.addApproverAssociation(createDefaultApproverAssociations(entity, requestorId));
+
+            addRequiredAttributes(entity);
+
         }
         
         orgDao.merge(entity);
     }
-    
+    @Override
+    @Transactional
+    public void addRequiredAttributes(OrganizationEntity organization) {
+        if(organization!=null && organization.getType()!=null && StringUtils.isNotBlank(organization.getType().getId())){
+            MetadataElementSearchBean sb = new MetadataElementSearchBean();
+            sb.addTypeId(organization.getType().getId());
+            List<MetadataElementEntity> elementList = metadataElementDAO.getByExample(sb, -1, -1);
+            if(CollectionUtils.isNotEmpty(elementList)){
+                for(MetadataElementEntity element: elementList){
+                    if(element.isRequired()){
+                        orgAttrDao.save(AttributeUtil.buildOrgAttribute(organization, element));
+                    }
+                }
+            }
+        }
+    }
+
     private ResourceEntity getNewAdminResource(final OrganizationEntity entity, final String requestorId) {
 		final ResourceEntity adminResource = new ResourceEntity();
 		adminResource.setName(String.format("ORG_ADMIN_%s_%s", entity.getName(), RandomStringUtils.randomAlphanumeric(2)));

@@ -102,7 +102,7 @@ public class LdapConnectionMgr implements ConnectionMgr {
 		envDC.put(Context.PROVIDER_URL,hostUrl);
 		envDC.put(Context.INITIAL_CONTEXT_FACTORY,"com.sun.jndi.ldap.LdapCtxFactory");		
 		envDC.put(Context.SECURITY_AUTHENTICATION, "simple" ); // simple
-		envDC.put(Context.SECURITY_PRINCIPAL,managedSys.getUserId());  //"administrator@diamelle.local"
+		envDC.put(Context.SECURITY_PRINCIPAL,managedSys.getUserId() != null ? managedSys.getUserId() : "");  //"administrator@diamelle.local"
 		envDC.put(Context.SECURITY_CREDENTIALS,decryptedPassword);
 
         /*

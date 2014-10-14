@@ -12,6 +12,8 @@ import org.openiam.bpm.activiti.delegate.core.AbstractActivitiJob;
 import org.openiam.bpm.activiti.delegate.core.AbstractNotificationDelegate;
 import org.openiam.bpm.activiti.delegate.entitlements.AbstractEntitlementsDelegate;
 import org.openiam.bpm.util.ActivitiConstants;
+import org.openiam.idm.srvc.audit.constant.AuditAction;
+import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.msg.dto.NotificationParam;
 import org.openiam.idm.srvc.msg.dto.NotificationRequest;
 import org.openiam.idm.srvc.msg.service.MailService;
@@ -30,23 +32,34 @@ public class SendAttestationRequestDelegate extends AbstractEntitlementsDelegate
 
 	@Override
 	public void execute(DelegateExecution execution) throws Exception {
-		final StopWatch sw = new StopWatch();
-		sw.start();
-		final String employeeId = getTargetUserId(execution);
-		
-		if(employeeId != null) {
-			final UserEntity employee = getUserEntity(employeeId);
-			final Collection<String> candidateUsersIds = activitiHelper.getCandidateUserIds(execution, employeeId, null);
-				
-			for(final String candidateId : candidateUsersIds) {
-				final UserEntity supervisor = getUserEntity(candidateId);
-				if(supervisor != null) {
-					sendNotificationRequest(supervisor, employee, execution);
+		final IdmAuditLog idmAuditLog = createNewAuditLog(execution);
+        idmAuditLog.setAction(AuditAction.NOTIFICATION.value());
+		try {
+			final StopWatch sw = new StopWatch();
+			sw.start();
+			final String employeeId = getTargetUserId(execution);
+			
+			if(employeeId != null) {
+				final UserEntity employee = getUserEntity(employeeId);
+				final Collection<String> candidateUsersIds = activitiHelper.getCandidateUserIds(execution, employeeId, null);
+					
+				for(final String candidateId : candidateUsersIds) {
+					final UserEntity supervisor = getUserEntity(candidateId);
+					if(supervisor != null) {
+						sendNotificationRequest(supervisor, employee, execution);
+					}
 				}
 			}
+			sw.stop();
+			LOG.info(String.format("Took %s ms to send re-certification requests for user %s", sw.getTime(), employeeId));
+			idmAuditLog.succeed();
+		} catch(Throwable e) {
+			idmAuditLog.setException(e);
+			idmAuditLog.fail();
+			throw new RuntimeException(e);
+		} finally {
+			addAuditLogChild(execution, idmAuditLog);
 		}
-		sw.stop();
-		LOG.info(String.format("Took %s ms to send re-certification requests for user %s", sw.getTime(), employeeId));
 	}
 
 	private void sendNotificationRequest(final UserEntity supervisor, final UserEntity employee, final DelegateExecution execution) {

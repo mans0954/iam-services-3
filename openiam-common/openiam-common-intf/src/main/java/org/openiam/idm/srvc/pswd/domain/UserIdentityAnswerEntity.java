@@ -23,7 +23,7 @@ public class UserIdentityAnswerEntity extends KeyEntity {
 	@Column(name = "USER_ID", length = 32)
 	private String userId;
 	
-	@Column(name = "QUESTION_ANSWER")
+	@Column(name = "QUESTION_ANSWER", length = 1024)
 	private String questionAnswer;
 
     @Column(name="IS_ENCRYPTED")

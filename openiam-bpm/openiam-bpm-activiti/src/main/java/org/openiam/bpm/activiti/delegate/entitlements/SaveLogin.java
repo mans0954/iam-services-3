@@ -18,30 +18,48 @@ public class SaveLogin extends AbstractActivitiJob {
 	
 	@Override
 	public void execute(DelegateExecution execution) throws Exception {
-		final Login loginObj = getObjectVariable(execution, ActivitiConstants.LOGIN, Login.class);
-		final User user = getUser(loginObj.getUserId());
-		ProvisionUser pUser = new ProvisionUser(user);
+		final IdmAuditLog idmAuditLog = createNewAuditLog(execution);
+		idmAuditLog.setAction(AuditAction.SAVE_LOGIN.value());
 		
-		if(loginObj.getId() != null) {
-			if(CollectionUtils.isNotEmpty(pUser.getPrincipalList())) {
-				for(final Login l : pUser.getPrincipalList()) {
-					if(StringUtils.equals(l.getId(), loginObj.getId())) {
-						l.setLogin(loginObj.getLogin());
-						l.setManagedSysId(loginObj.getManagedSysId());
-						l.setOperation(AttributeOperationEnum.REPLACE);
-						break;
+		try {
+			final Login loginObj = getObjectVariable(execution, ActivitiConstants.LOGIN, Login.class);
+			final User user = getUser(loginObj.getUserId());
+			ProvisionUser pUser = new ProvisionUser(user);
+			
+			if(loginObj.getLoginId() != null) {
+				if(CollectionUtils.isNotEmpty(pUser.getPrincipalList())) {
+					for(final Login l : pUser.getPrincipalList()) {
+						if(StringUtils.equals(l.getLoginId(), loginObj.getLoginId())) {
+							l.setLogin(loginObj.getLogin());
+							l.setManagedSysId(loginObj.getManagedSysId());
+							l.setOperation(AttributeOperationEnum.REPLACE);
+							break;
+						}
 					}
 				}
+			} else {
+				final Login loginDTO = new Login();
+				loginDTO.setUserId(loginObj.getUserId());
+				loginDTO.setLogin(loginObj.getLogin());
+				loginDTO.setManagedSysId(loginObj.getManagedSysId());
+				loginDTO.setOperation(AttributeOperationEnum.ADD);
+				pUser.addPrincipal(loginDTO);
 			}
-		} else {
-			final Login loginDTO = new Login();
-			loginDTO.setUserId(loginObj.getUserId());
-			loginDTO.setLogin(loginObj.getLogin());
-			loginDTO.setManagedSysId(loginObj.getManagedSysId());
-			loginDTO.setOperation(AttributeOperationEnum.ADD);
-			pUser.addPrincipal(loginDTO);
-		}
-		
-		provisionService.modifyUser(pUser);
+			
+			final Response wsResponse = provisionService.modifyUser(pUser);
+			if(wsResponse.isSuccess()) {
+				idmAuditLog.succeed();
+			} else {
+                idmAuditLog.setFailureReason(wsResponse.getErrorCode());
+                idmAuditLog.setFailureReason(wsResponse.getErrorText());
+                throw new RuntimeException(String.format("Modify User failed; %s", wsResponse));
+			 }
+		} catch(Throwable e) {
+ 			idmAuditLog.setException(e);
+ 			idmAuditLog.fail();
+ 			throw new RuntimeException(e);
+ 		} finally {
+ 			addAuditLogChild(execution, idmAuditLog);
+ 		}
 	}
 }

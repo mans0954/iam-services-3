@@ -1,6 +1,7 @@
 package org.openiam.idm.srvc.user.dto;
 
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -610,20 +611,21 @@ public class User extends AbstractMetadataTypeDTO {
         this.emailAddresses = emailAddresses;
     }
     
-    /*
     public EmailAddress getPrimaryEmailAddress() {
     	EmailAddress defaultEmail = null;
-        if(this.emailAddresses!=null && !this.emailAddresses.isEmpty()){
-            for (EmailAddress email: this.emailAddresses){
+        if (CollectionUtils.isNotEmpty(emailAddresses)) {
+            for (EmailAddress email: emailAddresses){
                    if(email.getIsDefault()){
                        defaultEmail = email;
                        break;
                    }
             }
+            if (defaultEmail == null) {
+                defaultEmail = emailAddresses.iterator().next();
+            }
         }
         return defaultEmail;
     }
-    */
 
     public EmailAddress getEmailByName(String name) {
         Iterator<EmailAddress> emailIt = emailAddresses.iterator();

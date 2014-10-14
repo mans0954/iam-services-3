@@ -14,7 +14,8 @@ import java.util.Set;
         "inheritFromParent",
         "isPublic",
         "risk",
-        "adminResourceId"
+        "adminResourceId",
+        "coorelatedName"
 })
 public class AuthorizationResource extends AbstractAuthorizationEntity implements Serializable  {
 
@@ -32,6 +33,8 @@ public class AuthorizationResource extends AbstractAuthorizationEntity implement
     private String risk;
 
     private String adminResourceId;
+
+    private String coorelatedName;
 	/*
 	private BitSet linearBitSet = new BitSet();
 	*/
@@ -85,6 +88,14 @@ public class AuthorizationResource extends AbstractAuthorizationEntity implement
 
     public void setAdminResourceId(String adminResourceId) {
         this.adminResourceId = adminResourceId;
+    }
+
+    public String getCoorelatedName() {
+        return coorelatedName;
+    }
+
+    public void setCoorelatedName(String coorelatedName) {
+        this.coorelatedName = coorelatedName;
     }
 
     /**

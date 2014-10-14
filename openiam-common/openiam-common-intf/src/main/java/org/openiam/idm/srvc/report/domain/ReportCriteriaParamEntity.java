@@ -55,7 +55,13 @@ public class ReportCriteriaParamEntity {
     @Type(type = "yes_no")
     private boolean isRequired;
 
-    public ReportCriteriaParamEntity() {
+	@Column(name="DISPLAY_ORDER", nullable = false)
+	private Integer displayOrder;
+
+	@Column(name="REQUEST_PARAMS")
+	private String requestParameters;
+
+	public ReportCriteriaParamEntity() {
     }
 
     public String getId() {
@@ -130,7 +136,23 @@ public class ReportCriteriaParamEntity {
         isRequired = required;
     }
 
-    @Override
+	public Integer getDisplayOrder() {
+		return displayOrder;
+	}
+
+	public void setDisplayOrder(Integer displayOrder) {
+		this.displayOrder = displayOrder;
+	}
+
+	public String getRequestParameters() {
+		return requestParameters;
+	}
+
+	public void setRequestParameters(String requestParameters) {
+		this.requestParameters = requestParameters;
+	}
+
+	@Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
@@ -146,6 +168,8 @@ public class ReportCriteriaParamEntity {
         if (type != null ? !type.equals(that.type) : that.type != null) return false;
         if (value != null ? !value.equals(that.value) : that.value != null) return false;
         if (metaType != null ? !metaType.equals(that.metaType) : that.metaType != null) return false;
+		if (displayOrder != null ? !displayOrder.equals(that.displayOrder) : that.displayOrder != null) return false;
+		if (requestParameters != null ? !requestParameters.equals(that.requestParameters) : that.requestParameters != null) return false;
 
         return true;
     }
@@ -161,6 +185,8 @@ public class ReportCriteriaParamEntity {
         result = 31 * result + (metaType != null ? metaType.hashCode() : 0);
         result = 31 * result + (isMultiple ? 1231 : 1237);
         result = 31 * result + (isRequired ? 1231 : 1237);
+		result = 31 * result + (displayOrder != null ? displayOrder.hashCode() : 0);
+		result = 31 * result + (requestParameters != null ? requestParameters.hashCode() : 0);
         return result;
     }
 
@@ -175,7 +201,9 @@ public class ReportCriteriaParamEntity {
                 ", type=" + type +
                 ", metaType=" + (metaType != null ? metaType.getId() : "null") +
                 ", isMultiple=" + isMultiple +
-                ", isRequired=" + isRequired +
+				", isRequired=" + isRequired +
+				", displayOrder=" + displayOrder +
+				", requestParameters='" + requestParameters + '\'' +
                 '}';
     }
 }

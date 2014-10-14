@@ -19,9 +19,7 @@ import org.openiam.idm.srvc.meta.dto.PageTempate;
 		"activitiRequestType",
 		"user",
         "pageTemplate",
-        "languageCode",
         "languageId",
-        "locale",
         "emails",
         "phones",
         "addresses"
@@ -34,8 +32,6 @@ public class UserProfileRequestModel extends BaseObject {
 	private List<Address> addresses;
 	private User user;
 	private PageTempate pageTemplate;
-	private String languageCode;
-	private String locale;
 	private String languageId;
 	
 	public UserProfileRequestModel() {
@@ -53,18 +49,6 @@ public class UserProfileRequestModel extends BaseObject {
 	}
 	public void setPageTemplate(PageTempate pageTemplate) {
 		this.pageTemplate = pageTemplate;
-	}
-	public String getLanguageCode() {
-		return languageCode;
-	}
-	public void setLanguageCode(String languageCode) {
-		this.languageCode = languageCode;
-	}
-	public String getLocale() {
-		return locale;
-	}
-	public void setLocale(String locale) {
-		this.locale = locale;
 	}
 	public String getLanguageId() {
 		return languageId;
@@ -117,10 +101,7 @@ public class UserProfileRequestModel extends BaseObject {
 				+ ((addresses == null) ? 0 : addresses.hashCode());
 		result = prime * result + ((emails == null) ? 0 : emails.hashCode());
 		result = prime * result
-				+ ((languageCode == null) ? 0 : languageCode.hashCode());
-		result = prime * result
 				+ ((languageId == null) ? 0 : languageId.hashCode());
-		result = prime * result + ((locale == null) ? 0 : locale.hashCode());
 		result = prime * result
 				+ ((pageTemplate == null) ? 0 : pageTemplate.hashCode());
 		result = prime * result + ((phones == null) ? 0 : phones.hashCode());
@@ -149,20 +130,10 @@ public class UserProfileRequestModel extends BaseObject {
 				return false;
 		} else if (!emails.equals(other.emails))
 			return false;
-		if (languageCode == null) {
-			if (other.languageCode != null)
-				return false;
-		} else if (!languageCode.equals(other.languageCode))
-			return false;
 		if (languageId == null) {
 			if (other.languageId != null)
 				return false;
 		} else if (!languageId.equals(other.languageId))
-			return false;
-		if (locale == null) {
-			if (other.locale != null)
-				return false;
-		} else if (!locale.equals(other.locale))
 			return false;
 		if (pageTemplate == null) {
 			if (other.pageTemplate != null)
@@ -185,9 +156,9 @@ public class UserProfileRequestModel extends BaseObject {
 	@Override
 	public String toString() {
 		return String
-				.format("UserProfileRequestModel [activitiRequestType=%s, emails=%s, phones=%s, addresses=%s, user=%s, pageTemplate=%s, languageCode=%s, locale=%s, languageId=%s]",
+				.format("UserProfileRequestModel [activitiRequestType=%s, emails=%s, phones=%s, addresses=%s, user=%s, pageTemplate=%s, languageId=%s]",
 						activitiRequestType, emails, phones, addresses, user,
-						pageTemplate, languageCode, locale, languageId);
+						pageTemplate, languageId);
 	}
 
 	

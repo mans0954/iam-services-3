@@ -126,7 +126,8 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
         return res;
     }
 
-    public ProvisionDataContainer provisionResource(final Resource res, final UserEntity userEntity,
+    public ProvisionDataContainer provisionResource(final Resource res,
+                                                    final UserEntity userEntity,
                                                     final ProvisionUser pUser,
                                                     final Map<String, Object> tmpMap,
                                                     final Login primaryIdentity,
@@ -134,8 +135,7 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
 
         Map<String, Object> bindingMap = new HashMap<String, Object>(tmpMap); // prevent data rewriting
 
-        ManagedSysDto managedSys = managedSysService.getManagedSysByResource(res.getId());
-        String managedSysId = (managedSys != null) ? managedSys.getId() : null;
+        String managedSysId = managedSysDaoService.getManagedSysIdByResource(res.getId(), "ACTIVE");
         if (managedSysId != null) {
             // we are checking if SrcSystemId is set in ProvisionUser it
             // means we should ignore this resource from provisioning to
@@ -146,8 +146,8 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
             }
             // what the new object will look like
             // Provision user that goes to the target system. Derived from
-            // userEntity after all changes
-            ProvisionUser targetSysProvUser = new ProvisionUser(userDozerConverter.convertToDTO(userEntity, true));
+            // initial ProvisionUser after all changes
+            ProvisionUser targetSysProvUser = new ProvisionUser(pUser);
             setCurrentSuperiors(targetSysProvUser); // TODO: Consider the
             // possibility to add and
             // update superiors by
@@ -163,10 +163,7 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
             bindingMap.put(AbstractProvisioningService.USER, targetSysProvUser);
 
             List<AttributeMap> attrMap = managedSysService.getResourceAttributeMaps(res.getId());
-            ManagedSysDto mSys = managedSysService.getManagedSys(managedSysId);
-            if (mSys == null || mSys.getConnectorId() == null) {
-                return null;
-            }
+
 
             ManagedSystemObjectMatch matchObj = null;
             ManagedSystemObjectMatch[] matchObjAry = managedSysService.managedSysObjectParam(managedSysId, ManagedSystemObjectMatch.USER);

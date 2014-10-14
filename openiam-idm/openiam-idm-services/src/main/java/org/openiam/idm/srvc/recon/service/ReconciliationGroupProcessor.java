@@ -329,7 +329,7 @@ public class ReconciliationGroupProcessor implements ReconciliationProcessor {
                                     "Reconciliation was manually stopped at " + new Date());
                             return new ReconciliationResponse(ResponseStatus.SUCCESS);
                         }
-                        counter=0;
+                        counter = 0;
                     }
 
                     List<ExtensibleAttribute> extensibleAttributes = groupValue.getAttributeList() != null ? groupValue
@@ -374,7 +374,7 @@ public class ReconciliationGroupProcessor implements ReconciliationProcessor {
             }
         }
 
-        List<ExtensibleAttribute> extensibleAttributes =  new LinkedList<ExtensibleAttribute>();
+        List<ExtensibleAttribute> extensibleAttributes = new LinkedList<ExtensibleAttribute>();
         boolean userFoundInTargetSystem = false;
         if (identitySys != null) {
             String principal = identitySys.getIdentity();
@@ -388,7 +388,7 @@ public class ReconciliationGroupProcessor implements ReconciliationProcessor {
             idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION,
                     "Lookup status for " + principal + " =" + lookupResp.getStatus());
             userFoundInTargetSystem = lookupResp.getStatus() == ResponseStatus.SUCCESS;
-            if(lookupResp.getAttrList() != null) {
+            if (lookupResp.getAttrList() != null) {
                 extensibleAttributes = lookupResp.getAttrList();
             }
 
@@ -398,52 +398,52 @@ public class ReconciliationGroupProcessor implements ReconciliationProcessor {
             // Record exists in resource
             if (UserStatusEnum.DELETED.getValue().equalsIgnoreCase(group.getStatus())) {
                 // IDM_DELETED__SYS_EXISTS
-                    ReconciliationSituation situation = situations.get(ReconciliationCommand.IDM_DELETED__SYS_EXISTS);
-                    ReconciliationObjectCommand<Group> command = commandFactory.createGroupCommand(situation.getSituationResp(), situation, mSys.getId());
-                    if (command != null) {
-                        log.debug("Call command for: Record in resource but deleted in IDM");
-                        ProvisionGroup provisionGroup = new ProvisionGroup(group);
-                        provisionGroup.setParentAuditLogId(idmAuditLog.getId());
-                        provisionGroup.setSrcSystemId(mSys.getId());
-                        idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION,
-                                "SYS_EXISTS__IDM_NOT_EXISTS for group= " + identitySys.getIdentity());
+                ReconciliationSituation situation = situations.get(ReconciliationCommand.IDM_DELETED__SYS_EXISTS);
+                ReconciliationObjectCommand<Group> command = commandFactory.createGroupCommand(situation.getSituationResp(), situation, mSys.getId());
+                if (command != null) {
+                    log.debug("Call command for: Record in resource but deleted in IDM");
+                    ProvisionGroup provisionGroup = new ProvisionGroup(group);
+                    provisionGroup.setParentAuditLogId(idmAuditLog.getId());
+                    provisionGroup.setSrcSystemId(mSys.getId());
+                    idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION,
+                            "SYS_EXISTS__IDM_NOT_EXISTS for group= " + identitySys.getIdentity());
 
-                        command.execute(situation, identitySys.getIdentity(), mSys.getId(), provisionGroup, extensibleAttributes);
-                    }
+                    command.execute(situation, identitySys.getIdentity(), mSys.getId(), provisionGroup, extensibleAttributes);
+                }
             } else {
                 // IDM_EXISTS__SYS_EXISTS
-                    ReconciliationSituation situation = situations.get(ReconciliationCommand.IDM_EXISTS__SYS_EXISTS);
-                    ReconciliationObjectCommand<Group> command = commandFactory.createGroupCommand(situation.getSituationResp(), situation, mSys.getId());
-                    if (command != null) {
-                        log.debug("Call command for: Record in resource and in IDM");
-                        ProvisionGroup provisionGroup = new ProvisionGroup(group);
-                        provisionGroup.setParentAuditLogId(idmAuditLog.getId());
-                        provisionGroup.setSrcSystemId(mSys.getId());
+                ReconciliationSituation situation = situations.get(ReconciliationCommand.IDM_EXISTS__SYS_EXISTS);
+                ReconciliationObjectCommand<Group> command = commandFactory.createGroupCommand(situation.getSituationResp(), situation, mSys.getId());
+                if (command != null) {
+                    log.debug("Call command for: Record in resource and in IDM");
+                    ProvisionGroup provisionGroup = new ProvisionGroup(group);
+                    provisionGroup.setParentAuditLogId(idmAuditLog.getId());
+                    provisionGroup.setSrcSystemId(mSys.getId());
 
-                        idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "IDM_EXISTS__SYS_EXISTS for group= "
-                                + identitySys.getIdentity());
+                    idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "IDM_EXISTS__SYS_EXISTS for group= "
+                            + identitySys.getIdentity());
 
-                        command.execute(situation, identitySys.getIdentity(), mSys.getId(), provisionGroup, extensibleAttributes);
-                    }
+                    command.execute(situation, identitySys.getIdentity(), mSys.getId(), provisionGroup, extensibleAttributes);
+                }
             }
 
         } else {
             // Record not found in resource
             if (!UserStatusEnum.DELETED.getValue().equalsIgnoreCase(group.getStatus())) {
                 // IDM_EXISTS__SYS_NOT_EXISTS
-                    ReconciliationSituation situation = situations.get(ReconciliationCommand.IDM_EXISTS__SYS_NOT_EXISTS);
-                    ReconciliationObjectCommand<Group> command = commandFactory.createGroupCommand(situation.getSituationResp(), situation, mSys.getId());
-                    if (command != null) {
-                        log.debug("Call command for: Record in resource and in IDM");
-                        ProvisionGroup provisionGroup = new ProvisionGroup(group);
-                        provisionGroup.setParentAuditLogId(idmAuditLog.getId());
-                        provisionGroup.setSrcSystemId(mSys.getId());
+                ReconciliationSituation situation = situations.get(ReconciliationCommand.IDM_EXISTS__SYS_NOT_EXISTS);
+                ReconciliationObjectCommand<Group> command = commandFactory.createGroupCommand(situation.getSituationResp(), situation, mSys.getId());
+                if (command != null) {
+                    log.debug("Call command for: Record in resource and in IDM");
+                    ProvisionGroup provisionGroup = new ProvisionGroup(group);
+                    provisionGroup.setParentAuditLogId(idmAuditLog.getId());
+                    provisionGroup.setSrcSystemId(mSys.getId());
 
-                        idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION,
-                                "IDM_EXISTS__SYS_NOT_EXISTS for group= " + primaryIdentity.getIdentity());
+                    idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION,
+                            "IDM_EXISTS__SYS_NOT_EXISTS for group= " + primaryIdentity.getIdentity());
 
-                        command.execute(situation, primaryIdentity.getIdentity(), mSys.getId(), provisionGroup, extensibleAttributes);
-                    }
+                    command.execute(situation, primaryIdentity.getIdentity(), mSys.getId(), provisionGroup, extensibleAttributes);
+                }
             }
         }
 
@@ -485,9 +485,9 @@ public class ReconciliationGroupProcessor implements ReconciliationProcessor {
                 }
                 Group gr = groupManager.getGroupDTO(grp.getId());
 
-                IdentityDto identityDto =  identityService.getIdentity(gr.getId(),mSys.getId());
-                if(identityDto == null) {
-                   return targetGroupPrincipal;
+                IdentityDto identityDto = identityService.getIdentity(gr.getId(), mSys.getId());
+                if (identityDto == null) {
+                    return targetGroupPrincipal;
                 }
                 // situation TARGET EXIST, IDM EXIST do modify
                 // if user exists but don;t have principal for current target
@@ -516,7 +516,7 @@ public class ReconciliationGroupProcessor implements ReconciliationProcessor {
 
                     newGroup.setSrcSystemId(mSys.getId());
 
-                    IdentityDto identityDto =  new IdentityDto(IdentityTypeEnum.GROUP, mSys.getId(), targetGroupPrincipal, newGroup.getId());
+                    IdentityDto identityDto = new IdentityDto(IdentityTypeEnum.GROUP, mSys.getId(), targetGroupPrincipal, newGroup.getId());
                     log.debug("Call command for Match Not Found");
                     idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "SYS_EXISTS__IDM_NOT_EXISTS for group= "
                             + targetGroupPrincipal);

@@ -21,7 +21,9 @@ import org.openiam.idm.srvc.policy.domain.PolicyAttributeEntity;
 	"value1", 
 	"value2", 
 	"rule",
-	"required" 
+	"required" ,
+"description",
+"grouping"
 })
 @DozerDTOCorrespondence(PolicyAttributeEntity.class)
 public class PolicyAttribute extends KeyNameDTO {
@@ -34,6 +36,8 @@ public class PolicyAttribute extends KeyNameDTO {
 	protected String value2;
 	protected String rule;
 	protected boolean required = true;
+    protected String description;
+    protected String grouping;
 
 	public boolean isRequired() {
 		return required;
@@ -154,7 +158,21 @@ public class PolicyAttribute extends KeyNameDTO {
 			return false;
 		return true;
 	}
+    public String getDescription() {
+        return description;
+    }
 
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getGrouping() {
+        return grouping;
+    }
+
+    public void setGrouping(String grouping) {
+        this.grouping = grouping;
+    }
 	@Override
 	public String toString() {
 		return String

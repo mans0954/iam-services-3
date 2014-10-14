@@ -200,14 +200,24 @@ public class LoginDataServiceImpl implements LoginDataService {
     	}
     	return retVal;
     }
-    
-    public boolean setPasswordUsingContentProvider(String login, String sysId,
-            String password, boolean preventChangeCountIncrement, final String contentProviderId) {
-    	Calendar cal = Calendar.getInstance();
+
+    /**
+     * Sets the password for a sourceLogin. The password needs to be encrypted externally. this allow for flexiblity in
+     * supporting alternate approaches to encryption.
+     * @param login
+     * @param sysId
+     * @param password
+     * @return
+     */
+    @Override
+    @Transactional
+    public boolean setPassword(String login, String sysId,
+            String password, boolean preventChangeCountIncrement) {
+        Calendar cal = Calendar.getInstance();
         Calendar expCal = Calendar.getInstance();
         LoginEntity lg = getLoginByManagedSys(login, sysId);
 
-        Policy plcy = passwordPolicyProvider.getPasswordPolicyByUser(lg.getUserId(), contentProviderId);
+        Policy plcy = passwordPolicyProvider.getPasswordPolicyByUser(lg.getUserId());
 
         String pswdExpValue = getPolicyAttribute(plcy.getPolicyAttributes(), "PWD_EXPIRATION");
         String changePswdOnReset = getPolicyAttribute( plcy.getPolicyAttributes(), "CHNG_PSWD_ON_RESET");
@@ -253,27 +263,12 @@ public class LoginDataServiceImpl implements LoginDataService {
         if (lg != null) {
         	final PasswordHistoryEntity hist = new PasswordHistoryEntity();
         	hist.setPassword(password);
-        	hist.setLoginId(lg.getId());
+        	hist.setLoginId(lg.getLoginId());
             passwordHistoryDao.save(hist);
             return true;
         }
         return false;
-    }
 
-    /**
-     * Sets the password for a sourceLogin. The password needs to be encrypted externally. this allow for flexiblity in
-     * supporting alternate approaches to encryption.
-     * @param login
-     * @param sysId
-     * @param password
-     * @return
-     */
-    @Override
-    @Transactional
-    @Deprecated
-    public boolean setPassword(String login, String sysId,
-            String password, boolean preventChangeCountIncrement) {
-        return setPasswordUsingContentProvider(login, sysId, password, preventChangeCountIncrement, null);
     }
     @Override
     @Transactional
@@ -528,17 +523,37 @@ public class LoginDataServiceImpl implements LoginDataService {
      * @param 
      * @return
      */
-    @Override
+ @Override
     @Transactional(readOnly = true)
     public List<LoginEntity> getUsersNearPswdExpiration() {
-        Policy plcy =passwordPolicyProvider.getGlobalPasswordPolicy();
-        int daysToExpiration = 5;
-        String pswdExpValue = getPolicyAttribute(plcy.getPolicyAttributes(),
+        List<LoginEntity> loginList = new ArrayList<>();
+        Policy plcy = passwordPolicyProvider.getGlobalPasswordPolicy();
+        PolicyAttribute pswdExpValue = getPolicyAttributeDto(plcy.getPolicyAttributes(),
                 "PWD_EXP_WARN");
-        if (pswdExpValue != null && pswdExpValue.length() > 0 )  {
-        	daysToExpiration = Integer.parseInt(pswdExpValue);
-		}
-        List<LoginEntity> loginList = loginDao.findUserNearPswdExp(daysToExpiration);
+        String val1 = pswdExpValue.getValue1();
+        String val2 = pswdExpValue.getValue2();
+        try {
+            if (StringUtils.isNotBlank(val1)) {
+                loginList.addAll(loginDao.findUserNearPswdExp(Integer.parseInt(val1)));
+            }
+        } catch (Exception e) {
+            log.warn("Can't get Logins with val1=" + val1);
+        }
+        try {
+            if (StringUtils.isNotBlank(val2)) {
+                loginList.addAll(loginDao.findUserNearPswdExp(Integer.parseInt(val2)));
+            }
+        } catch (Exception e) {
+            log.warn("Can't get Logins with val2=" + val2);
+        }
+
+        return loginList;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<LoginEntity> usersWithPasswordExpYesterday() {
+        List<LoginEntity> loginList = loginDao.findUserPswdExpYesterday();
         return loginList;
     }
 
@@ -596,12 +611,13 @@ public class LoginDataServiceImpl implements LoginDataService {
 
 	@Override
     @Transactional
-	public void deleteLogin(String loginId) {
-		final LoginEntity entity = loginDao.findById(loginId);
-		if(entity != null) {
-			loginDao.delete(entity);
-		}
-	}
+    public void deleteLogin(String loginId) {
+        loginAttrDao.deleteByLoginId(loginId);
+        final LoginEntity entity = loginDao.findById(loginId);
+        if (entity != null) {
+            loginDao.delete(entity);
+        }
+    }
 
     @Override
     @Transactional
