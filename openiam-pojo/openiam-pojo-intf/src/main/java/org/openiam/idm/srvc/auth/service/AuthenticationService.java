@@ -79,12 +79,14 @@ public interface AuthenticationService {
      */
     @WebMethod
     Response renewToken(
-            @WebParam(name = "principal", targetNamespace = "")
+    		final @WebParam(name = "principal", targetNamespace = "")
             String principal,
-            @WebParam(name = "token", targetNamespace = "")
+            final @WebParam(name = "token", targetNamespace = "")
             String token,
-            @WebParam(name = "tokenType", targetNamespace = "")
-            String tokenType);
+            final @WebParam(name = "tokenType", targetNamespace = "")
+            String tokenType,
+            final @WebParam(name = "contentProviderId", targetNamespace = "")
+            String contentProviderId);
     
     @WebMethod
     List<AuthStateEntity> findBeans(final @WebParam(name = "request", targetNamespace = "") AuthStateSearchBean searchBean,
