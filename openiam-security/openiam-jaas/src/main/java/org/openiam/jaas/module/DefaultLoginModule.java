@@ -52,6 +52,7 @@ public class DefaultLoginModule extends AbstractLoginModule {
     }
 
     protected boolean processLogin() throws LoginException{
+    	/*
         try {
 
             int resultCode = AuthenticationConstants.RESULT_SUCCESS;
@@ -70,12 +71,8 @@ public class DefaultLoginModule extends AbstractLoginModule {
     			}
     			AuthenticationResponse resp = ServiceLookupHelper.getAuthenticationService().login(authenticatedRequest);
                 
-                /*
-                AuthenticationResponse resp = ServiceLookupHelper.getAuthenticationService().passwordAuth(jaasConfiguration.getSecurityDomain(),
-                                                                                                          username,
-                                                                                                          password);
-				*/
-                resultCode = resp.getAuthErrorCode();
+                
+                //resultCode = resp.getAuthErrorCode();
                 iamSubject = resp.getSubject();
                 if(iamSubject!=null && iamSubject.getSsoToken()!=null)
                     log.debug("Token from password auth=" + iamSubject.getSsoToken().getToken());
@@ -85,10 +82,7 @@ public class DefaultLoginModule extends AbstractLoginModule {
                 log.debug("LOGIN MOD -> userName=" + username);
                 log.debug("LOGIN MOD -> token=" + token);
                 iamSubject = (org.openiam.idm.srvc.auth.dto.Subject)ServiceLookupHelper.getAuthenticationService().renewToken(username, token, AuthenticationConstants.OPENIAM_TOKEN).getResponseValue();
-                /*
-                iamSubject = ServiceLookupHelper.getAuthenticationService().authenticateByToken(userId, token,
-                                                                                                AuthenticationConstants.OPENIAM_TOKEN);
-				*/
+                
                 resultCode = iamSubject.getResultCode();
             }
 
@@ -122,5 +116,7 @@ public class DefaultLoginModule extends AbstractLoginModule {
             log.error(ex.getMessage(), ex);
             throw new FailedLoginException("INVALID");
         }
+        */
+    	return false;
     }
 }

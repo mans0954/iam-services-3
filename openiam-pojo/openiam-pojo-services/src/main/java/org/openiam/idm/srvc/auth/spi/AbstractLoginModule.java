@@ -277,29 +277,29 @@ public abstract class AbstractLoginModule implements AuthenticationModule {
         return true;
     }
 
-    protected void checkSecondaryStatus(UserEntity user) throws AuthenticationException {
+    protected void checkSecondaryStatus(UserEntity user) throws BasicDataServiceException {
         if (user.getSecondaryStatus() != null) {
             if (user.getSecondaryStatus().equals(UserStatusEnum.LOCKED)
                     || user.getSecondaryStatus().equals(
                             UserStatusEnum.LOCKED_ADMIN)) {
                 log.debug("User is locked. throw exception.");
-                throw new AuthenticationException(
-                        AuthenticationConstants.RESULT_LOGIN_LOCKED);
+                throw new BasicDataServiceException(
+                        ResponseCode.RESULT_LOGIN_LOCKED);
             }
             if (user.getSecondaryStatus().equals(UserStatusEnum.DISABLED)) {
-                throw new AuthenticationException(
-                        AuthenticationConstants.RESULT_LOGIN_DISABLED);
+                throw new BasicDataServiceException(
+                		ResponseCode.RESULT_LOGIN_DISABLED);
             }
         }
 
     }
-    protected void setResultCode(LoginEntity lg, Subject sub, Date curDate, PolicyEntity pwdPolicy) throws AuthenticationException {
+    protected void setResultCode(LoginEntity lg, Subject sub, Date curDate, PolicyEntity pwdPolicy) throws BasicDataServiceException {
         if (lg.getFirstTimeLogin() == 1) {
-            sub.setResultCode(AuthenticationConstants.RESULT_SUCCESS_FIRST_TIME);
+            sub.setResultCode(ResponseCode.RESULT_SUCCESS_FIRST_TIME);
         } else if (lg.getPwdExp() != null) {
             if ((curDate.after(lg.getPwdExp()) && curDate.before(lg.getGracePeriod()))) {
                 // check for password expiration, but successful login
-            	sub.setResultCode(AuthenticationConstants.RESULT_SUCCESS_PASSWORD_EXP);
+            	sub.setResultCode(ResponseCode.RESULT_SUCCESS_PASSWORD_EXP);
             	//throw new AuthenticationException(AuthenticationConstants.RESULT_SUCCESS_PASSWORD_EXP);
             }
         } else {
@@ -311,10 +311,10 @@ public abstract class AbstractLoginModule implements AuthenticationModule {
                     log.warn("Cannot read value of PWD_EXPIRATION attribute. User 0 as default");
                 }
                 if(pwdExp>0){
-                    throw new AuthenticationException(AuthenticationConstants.RESULT_PASSWORD_EXPIRED);
+                    throw new BasicDataServiceException(ResponseCode.RESULT_PASSWORD_EXPIRED);
                 }
             }
-            sub.setResultCode(AuthenticationConstants.RESULT_SUCCESS);
+            sub.setResultCode(ResponseCode.RESULT_SUCCESS);
         }
 
     }

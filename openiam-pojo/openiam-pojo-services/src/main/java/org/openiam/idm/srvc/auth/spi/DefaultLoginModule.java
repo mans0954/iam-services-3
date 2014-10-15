@@ -131,13 +131,13 @@ public class DefaultLoginModule extends AbstractLoginModule {
         if (user != null && user.getStatus() != null) {
             if (user.getStatus().equals(UserStatusEnum.PENDING_START_DATE)) {
                 if (!pendingInitialStartDateCheck(user, curDate)) {
-                    throw new AuthenticationException(AuthenticationConstants.RESULT_INVALID_USER_STATUS);
+                    throw new BasicDataServiceException(ResponseCode.RESULT_INVALID_USER_STATUS);
                 }
             }
             if (!user.getStatus().equals(UserStatusEnum.ACTIVE)
                     && !user.getStatus().equals(UserStatusEnum.PENDING_INITIAL_LOGIN)) {
-                throw new AuthenticationException(
-                        AuthenticationConstants.RESULT_INVALID_USER_STATUS);
+                throw new BasicDataServiceException(
+                        ResponseCode.RESULT_INVALID_USER_STATUS);
             }
             // check the secondary status
             checkSecondaryStatus(user);
@@ -196,32 +196,32 @@ public class DefaultLoginModule extends AbstractLoginModule {
                     userManager.updateUser(user);
                     newLoginEvent.addAttribute(AuditAttributeName.FAIL_COUNT, Integer.valueOf(failCount).toString());
                     newLoginEvent.addWarning(String.format("User %s has fail count %s.  Setting secondary status to locked, and login record to locked", user.getId(), failCount));
-                    throw new AuthenticationException(
-                            AuthenticationConstants.RESULT_LOGIN_LOCKED);
+                    throw new BasicDataServiceException(
+                            ResponseCode.RESULT_LOGIN_LOCKED);
                 } else {
                     // update the counter save the record
                     loginManager.updateLogin(login);
                     newLoginEvent.addAttribute(AuditAttributeName.FAIL_COUNT, Integer.valueOf(authFailCount).toString());
                     newLoginEvent.addWarning(String.format("User %s has fail count %s", user.getId(), failCount));
-                    throw new AuthenticationException(
-                            AuthenticationConstants.RESULT_INVALID_PASSWORD);
+                    throw new BasicDataServiceException(
+                    		ResponseCode.RESULT_INVALID_PASSWORD);
                 }
             } else {
                 final String warning = String.format("No '%s' policy attribute found on policy %s", "FAILED_AUTH_COUNT", policy);
                 newLoginEvent.addWarning(warning);
                 log.warn(warning);
-                throw new AuthenticationException(
-                        AuthenticationConstants.RESULT_INVALID_PASSWORD);
+                throw new BasicDataServiceException(
+                		ResponseCode.RESULT_INVALID_PASSWORD);
 
             }
         } else {
             // validate the password expiration rules
             log.debug("Validating the state of the password - expired or not");
-            int pswdResult = passwordExpired(login, curDate, policy);
-            if (pswdResult == AuthenticationConstants.RESULT_PASSWORD_EXPIRED) {
+            ResponseCode pswdResult = passwordExpired(login, curDate, policy);
+            if (pswdResult == ResponseCode.RESULT_PASSWORD_EXPIRED) {
             	newLoginEvent.addWarning(String.format("Password Expired"));
-                throw new AuthenticationException(
-                        AuthenticationConstants.RESULT_PASSWORD_EXPIRED);
+                throw new BasicDataServiceException(
+                		ResponseCode.RESULT_PASSWORD_EXPIRED);
             }
             Integer daysToExp = setDaysToPassworExpiration(login, curDate, sub, policy);
             if (daysToExp!=null) {
@@ -234,8 +234,8 @@ public class DefaultLoginModule extends AbstractLoginModule {
             if(login.getResetPassword()>0){
                 String chngPwdAttr = getPolicyAttribute(policy, "CHNG_PSWD_ON_RESET");
                 if (StringUtils.isNotBlank(chngPwdAttr) && Integer.parseInt(chngPwdAttr) > 0) {
-                    throw new AuthenticationException(
-                            AuthenticationConstants.RESULT_PASSWORD_CHANGE_AFTER_RESET);
+                    throw new BasicDataServiceException(
+                            ResponseCode.RESULT_PASSWORD_CHANGE_AFTER_RESET);
                 }
             }
 
@@ -286,7 +286,7 @@ public class DefaultLoginModule extends AbstractLoginModule {
      * @param lg
      * @return
      */
-    private int passwordExpired(final LoginEntity lg, final Date curDate, final PolicyEntity policy) {
+    private ResponseCode passwordExpired(final LoginEntity lg, final Date curDate, final PolicyEntity policy) {
         log.debug("passwordExpired Called.");
         log.debug("- Password Exp =" + lg.getPwdExp());
         log.debug("- Password Grace Period =" + lg.getGracePeriod());
@@ -307,15 +307,15 @@ public class DefaultLoginModule extends AbstractLoginModule {
             if (curDate.after(lg.getPwdExp())
                     && curDate.after(lg.getGracePeriod())) {
                 // check for password expiration, but successful login
-                return AuthenticationConstants.RESULT_PASSWORD_EXPIRED;
+                return ResponseCode.RESULT_PASSWORD_EXPIRED;
             }
             if ((curDate.after(lg.getPwdExp()) && curDate.before(lg
                     .getGracePeriod()))) {
                 // check for password expiration, but successful login
-                return AuthenticationConstants.RESULT_SUCCESS_PASSWORD_EXP;
+                return ResponseCode.RESULT_SUCCESS_PASSWORD_EXP;
             }
         }
-        return AuthenticationConstants.RESULT_SUCCESS_PASSWORD_EXP;
+        return ResponseCode.RESULT_SUCCESS_PASSWORD_EXP;
     }
 
     private Date getGracePeriodDate(LoginEntity lg, Date curDate, final PolicyEntity policy) {

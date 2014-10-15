@@ -12,6 +12,7 @@ import javax.xml.ws.WebFault;
 
 
 /**
+ * @deprecated - use BasicDataServiceException
  * AuthenticationException is thrown when ever there is an error in the authentication
  * process.  Check the errorCode and errorMessage properties to determine the
  * cause of the exception.
@@ -19,6 +20,7 @@ import javax.xml.ws.WebFault;
  * @author Suneet Shah
  * @version 1
  */
+@Deprecated
 @WebFault(name = "AuthenticationException")
 @XmlAccessorType(XmlAccessType.FIELD)
 public class AuthenticationException extends Exception {

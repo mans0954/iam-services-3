@@ -45,7 +45,7 @@ import javax.xml.bind.annotation.XmlType;
 public class AuthenticationResponse extends Response {
 
     protected Subject subject;
-    protected int authErrorCode;
+    //protected int authErrorCode;
     protected String authErrorMessage;
 
     public AuthenticationResponse() {
@@ -68,6 +68,7 @@ public class AuthenticationResponse extends Response {
         this.subject = subject;
     }
 
+    /*
     public int getAuthErrorCode() {
         return authErrorCode;
     }
@@ -75,6 +76,7 @@ public class AuthenticationResponse extends Response {
     public void setAuthErrorCode(int authErrorCode) {
         this.authErrorCode = authErrorCode;
     }
+    */
 
     public String getAuthErrorMessage() {
         return authErrorMessage;
@@ -84,12 +86,13 @@ public class AuthenticationResponse extends Response {
         this.authErrorMessage = authErrorMessage;
     }
 
+    /*
 	@Override
 	public String toString() {
 		return "AuthenticationResponse [subject=" + subject
 				+ ", authErrorCode=" + authErrorCode + ", authErrorMessage="
 				+ authErrorMessage + ", toString()=" + super.toString() + "]";
 	}
-
+	*/
     
 }

@@ -314,6 +314,7 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
 	        newLoginEvent.succeed();
 	        authResp.setSubject(sub);
 	        authResp.succeed();
+	    /*
         } catch (AuthenticationException ae) {
         	final String erroCodeAsString = Integer.valueOf(ae.getErrorCode()).toString();
             newLoginEvent.fail();
@@ -358,11 +359,12 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
                     authResp.setAuthErrorCode(AuthenticationConstants.INTERNAL_ERROR);
                     break;
             }
+		*/
     	} catch (BasicDataServiceException e) {
     		authResp.fail();
     		authResp.setErrorCode(e.getCode());
     		authResp.setErrorTokenList(e.getErrorTokenList());
-    		authResp.setAuthErrorCode(AuthenticationConstants.INTERNAL_ERROR);
+    		//authResp.setErrorCode(AuthenticationConstants.INTERNAL_ERROR);
     		newLoginEvent.fail();
             newLoginEvent.setFailureReason(e.getMessage());
             newLoginEvent.setException(e);
@@ -371,7 +373,7 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
             log.error("Can't login", e);
             authResp.fail();
             authResp.setErrorText(e.getMessage());
-            authResp.setAuthErrorCode(AuthenticationConstants.INTERNAL_ERROR);
+            authResp.setErrorCode(ResponseCode.INTERNAL_ERROR);
             newLoginEvent.fail();
             newLoginEvent.setFailureReason(e.getMessage());
             newLoginEvent.setException(e);

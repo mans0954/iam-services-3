@@ -44,7 +44,7 @@ public class RenewTokenTest extends AbstractTestNGSpringContextTests {
         Assert.assertNotNull(authenticationResponse);
         Assert.assertNotNull(authenticationResponse.getStatus());
 
-        int errCode = authenticationResponse.getAuthErrorCode();
+        //int errCode = authenticationResponse.getAuthErrorCode();
 
         Assert.assertEquals(ResponseStatus.SUCCESS.ordinal() == authenticationResponse.getStatus().ordinal(), true,
                             "Authentication Failed");

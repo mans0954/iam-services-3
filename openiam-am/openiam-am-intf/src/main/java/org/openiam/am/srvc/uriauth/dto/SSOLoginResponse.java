@@ -5,6 +5,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
 import org.openiam.base.ws.Response;
+import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.idm.srvc.auth.dto.SSOToken;
 
@@ -17,7 +18,7 @@ import org.openiam.idm.srvc.auth.dto.SSOToken;
 public class SSOLoginResponse extends Response {
 
 	private SSOToken ssoToken;
-	private Integer loginError;
+	private ResponseCode loginError;
 	private String openiamPrincipal;
 	
 	public SSOLoginResponse() {
@@ -36,11 +37,11 @@ public class SSOLoginResponse extends Response {
 		this.ssoToken = ssoToken;
 	}
 
-	public Integer getLoginError() {
+	public ResponseCode getLoginError() {
 		return loginError;
 	}
 
-	public void setLoginError(Integer loginError) {
+	public void setLoginError(ResponseCode loginError) {
 		this.loginError = loginError;
 	}
 
