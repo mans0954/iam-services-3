@@ -16,7 +16,7 @@
  */
 
 /**
- * 
+ *
  */
 package org.openiam.idm.srvc.auth.spi;
 
@@ -58,8 +58,8 @@ import java.util.*;
  */
 @Component("defaultLoginModule")
 public class DefaultLoginModule extends AbstractLoginModule {
-	
-	private static final String DEFAULT_TOKEN_LIFE = "30";
+
+    private static final String DEFAULT_TOKEN_LIFE = "30";
 
     private static final Log log = LogFactory.getLog(DefaultLoginModule.class);
 
@@ -72,14 +72,14 @@ public class DefaultLoginModule extends AbstractLoginModule {
     	super.logout(request, auditLog);
     }
     */
-    
+
     @Override
-	protected void validate(final AuthenticationContext context) throws Exception {
-    	final String principal = context.getPrincipal();
-    	final String password = context.getPassword();
-    	final IdmAuditLog newLoginEvent = context.getEvent();
-    	
-    	if (StringUtils.isBlank(principal)) {
+    protected void validate(final AuthenticationContext context) throws Exception {
+        final String principal = context.getPrincipal();
+        final String password = context.getPassword();
+        final IdmAuditLog newLoginEvent = context.getEvent();
+
+        if (StringUtils.isBlank(principal)) {
             newLoginEvent.setFailureReason("Invalid Principlal");
             throw new BasicDataServiceException(ResponseCode.INVALID_PRINCIPAL);
         }
@@ -88,12 +88,12 @@ public class DefaultLoginModule extends AbstractLoginModule {
             newLoginEvent.setFailureReason("Invalid Password");
             throw new BasicDataServiceException(ResponseCode.INVALID_PASSWORD);
         }
-	}
+    }
 
-	@Override
-	protected LoginEntity getLogin(final AuthenticationContext context) throws Exception {
-		final IdmAuditLog newLoginEvent = context.getEvent();
-		final String principal = context.getPrincipal();
+    @Override
+    protected LoginEntity getLogin(final AuthenticationContext context) throws Exception {
+        final IdmAuditLog newLoginEvent = context.getEvent();
+        final String principal = context.getPrincipal();
         final ManagedSysEntity managedSystem = getManagedSystem(context);
         final LoginEntity lg = loginManager.getLoginByManagedSys(principal, managedSystem.getId());
         if (lg == null) {
@@ -101,24 +101,24 @@ public class DefaultLoginModule extends AbstractLoginModule {
             throw new BasicDataServiceException(ResponseCode.INVALID_LOGIN);
         }
         return lg;
-	}
+    }
 
-	@Override
-	protected UserEntity getUser(final AuthenticationContext context, final LoginEntity login) throws Exception {
-		final IdmAuditLog newLoginEvent = context.getEvent();
-		final String userId = login.getUserId();
+    @Override
+    protected UserEntity getUser(final AuthenticationContext context, final LoginEntity login) throws Exception {
+        final IdmAuditLog newLoginEvent = context.getEvent();
+        final String userId = login.getUserId();
         newLoginEvent.setRequestorUserId(userId);
         newLoginEvent.setTargetUser(userId, login.getLogin());
         final UserEntity user = userDAO.findById(userId);
         return user;
-	}
+    }
 
     @Override
     @Transactional
     protected Subject doLogin(final AuthenticationContext context, final UserEntity user, final LoginEntity login) throws Exception {
-    	final String principal = context.getPrincipal();
-    	final String password = context.getPassword();
-    	final IdmAuditLog newLoginEvent = context.getEvent();
+        final String principal = context.getPrincipal();
+        final String password = context.getPassword();
+        final IdmAuditLog newLoginEvent = context.getEvent();
 
         final Subject sub = new Subject();
 
@@ -143,24 +143,24 @@ public class DefaultLoginModule extends AbstractLoginModule {
             checkSecondaryStatus(user);
 
         }
-        
+
         final PolicyEntity policy = getPolicy(context);
         final String attrValue = getPolicyAttribute(policy, "FAILED_AUTH_COUNT");
         final String tokenType = getPolicyAttribute(policy, "TOKEN_TYPE");
         String tokenLife = getPolicyAttribute(policy, "TOKEN_LIFE");
         final String tokenIssuer = getPolicyAttribute(policy, "TOKEN_ISSUER");
-        
+
         if(StringUtils.isBlank(tokenType)) {
-        	final String warning = String.format("Property %s not valid for policy key %s for policy %s", tokenType, "TOKEN_TYPE", policy);
-        	newLoginEvent.addWarning(warning);
-        	log.warn(warning);
+            final String warning = String.format("Property %s not valid for policy key %s for policy %s", tokenType, "TOKEN_TYPE", policy);
+            newLoginEvent.addWarning(warning);
+            log.warn(warning);
         }
-        
+
         if(StringUtils.isBlank(tokenLife) || !NumberUtils.isNumber(tokenLife)) {
-        	final String warning = String.format("Property %s not valid for policy key %s for policy %s.  Defaulting to %s", tokenLife, "TOKEN_LIFE", policy, DEFAULT_TOKEN_LIFE);
-        	newLoginEvent.addWarning(warning);
-        	log.error(warning);
-        	tokenLife = DEFAULT_TOKEN_LIFE;
+            final String warning = String.format("Property %s not valid for policy key %s for policy %s.  Defaulting to %s", tokenLife, "TOKEN_LIFE", policy, DEFAULT_TOKEN_LIFE);
+            newLoginEvent.addWarning(warning);
+            log.error(warning);
+            tokenLife = DEFAULT_TOKEN_LIFE;
         }
 
         final Map tokenParam = new HashMap();
@@ -188,7 +188,7 @@ public class DefaultLoginModule extends AbstractLoginModule {
                 login.setLastAuthAttempt(new Date(System.currentTimeMillis()));
                 if (failCount >= authFailCount) {
                     // lock the record and save the record.
-                	login.setIsLocked(1);
+                    login.setIsLocked(1);
                     loginManager.updateLogin(login);
 
                     // set the flag on the primary user record
@@ -233,9 +233,16 @@ public class DefaultLoginModule extends AbstractLoginModule {
 
             if(login.getResetPassword()>0){
                 String chngPwdAttr = getPolicyAttribute(policy, "CHNG_PSWD_ON_RESET");
-                if (StringUtils.isNotBlank(chngPwdAttr) && Integer.parseInt(chngPwdAttr) > 0) {
-                    throw new BasicDataServiceException(
-                            ResponseCode.RESULT_PASSWORD_CHANGE_AFTER_RESET);
+                if (StringUtils.isNotBlank(chngPwdAttr)) {
+                	boolean changePasswordAfterResult = (StringUtils.equalsIgnoreCase(Boolean.TRUE.toString(), chngPwdAttr));
+                	if(!changePasswordAfterResult) {
+                		try {
+                			changePasswordAfterResult = (Integer.parseInt(chngPwdAttr) > 0);
+                		} catch(Throwable e) {}
+                	}
+                	if(changePasswordAfterResult) {
+                		throw new BasicDataServiceException(ResponseCode.RESULT_PASSWORD_CHANGE_AFTER_RESET);
+                	}
                 }
             }
 
@@ -260,7 +267,7 @@ public class DefaultLoginModule extends AbstractLoginModule {
 
             // check the user status
             if (UserStatusEnum.PENDING_INITIAL_LOGIN.equals(user.getStatus()) ||
-            // after the start date
+                    // after the start date
                     UserStatusEnum.PENDING_START_DATE.equals(user.getStatus())) {
                 user.setStatus(UserStatusEnum.ACTIVE);
                 userManager.updateUser(user);
@@ -320,7 +327,7 @@ public class DefaultLoginModule extends AbstractLoginModule {
 
     private Date getGracePeriodDate(LoginEntity lg, Date curDate, final PolicyEntity policy) {
 
-    	final Date pwdExpDate = lg.getPwdExp();
+        final Date pwdExpDate = lg.getPwdExp();
 
         if (pwdExpDate == null) {
             return null;

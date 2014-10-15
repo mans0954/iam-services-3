@@ -12,7 +12,7 @@ import java.util.List;
 public interface ManagedSystemService {
 
     List<ManagedSysEntity> getManagedSystemsByExample(ManagedSysEntity example,
-            Integer from, Integer size);
+                                                      Integer from, Integer size);
 
     Integer getManagedSystemsCountByExample(ManagedSysEntity example);
 
@@ -72,8 +72,8 @@ public interface ManagedSystemService {
     void deleteManagedSystemObjectMatch(String objectMatchId);
 
     List<AuthProviderEntity> findAuthProvidersByManagedSysId(String managedSysId);
-    
+
     public void saveApproverAssociations(final List<ApproverAssociationEntity> entityList, final AssociationType type, final String id);
-    
+
     public void save(final ManagedSysEntity entity) throws BasicDataServiceException;
 }

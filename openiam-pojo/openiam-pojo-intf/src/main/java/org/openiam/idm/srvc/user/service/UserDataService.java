@@ -47,6 +47,8 @@ public interface UserDataService {
 
     public void addUser(UserEntity user) throws Exception;
 
+    public void addRequiredAttributes(UserEntity user);
+
     public void updateUser(UserEntity user);
 
     public void updateUserWithDependent(UserEntity user, boolean dependency);

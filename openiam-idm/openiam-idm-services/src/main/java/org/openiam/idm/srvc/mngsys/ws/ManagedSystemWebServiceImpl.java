@@ -299,7 +299,7 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
         if(resourceId != null) {
         	ManagedSysEntity sys = managedSystemService.getManagedSysByResource(resourceId, "ACTIVE");
         	if (sys != null) {
-        		sysDto = managedSysDozerConverter.convertToDTO(sys, true);
+        		sysDto = managedSysDozerConverter.convertToDTO(sys, false);
         		if (sysDto != null && sysDto.getPswd() != null) {
         			try {
         				sysDto.setDecryptPassword(cryptor.decrypt(

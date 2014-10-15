@@ -46,12 +46,6 @@
 	</mapping>
 
 	<mapping>
-		<class-a>org.openiam.idm.srvc.policy.dto.PolicyAttribute</class-a>
-		<class-b>org.openiam.idm.srvc.policy.dto.PolicyAttribute</class-b>
-	</mapping>
-
-
-	<mapping>
 		<class-a>org.openiam.idm.srvc.res.dto.ResourceProp</class-a>
 		<class-b>org.openiam.idm.srvc.res.dto.ResourceProp</class-b>
 	</mapping>

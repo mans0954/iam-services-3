@@ -405,7 +405,14 @@ public class ProvisionDispatcher implements Sweepable {
                 }
 
             } finally {
-                auditLogService.enqueue(idmAuditLog);
+                IdmAuditLog parentAuditLog = StringUtils.isNotEmpty(data.getParentAuditLogId()) ? auditLogService.findById(data.getParentAuditLogId()) : null;
+                if(parentAuditLog != null) {
+                    parentAuditLog.addChild(idmAuditLog);
+                    idmAuditLog.addParent(parentAuditLog);
+                    auditLogService.save(parentAuditLog);
+                } else {
+                    auditLogService.save(idmAuditLog);
+                }
             }
 
         }

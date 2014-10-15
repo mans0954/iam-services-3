@@ -5,6 +5,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.StopWatch;
 import org.apache.log4j.Logger;
 import org.openiam.exception.BasicDataServiceException;
+import org.openiam.hibernate.HibernateUtils;
 import org.openiam.idm.searchbeans.*;
 import org.openiam.idm.srvc.grp.domain.GroupAttributeEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
@@ -27,6 +28,7 @@ import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.thread.Sweepable;
+import org.openiam.util.AttributeUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jms.core.BrowserCallback;
@@ -38,8 +40,10 @@ import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.jms.*;
-import javax.jms.Queue;
-import java.util.*;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by: Alexander Duckardt
@@ -152,18 +156,18 @@ public class MetadataDispatcher implements Sweepable {
         try {
             UserSearchBean searchBean = new UserSearchBean();
             searchBean.setUserType(metadataElementEntity.getMetadataType().getId());
-            List<UserEntity> userList = userManager.findBeans(searchBean);
+            List<UserEntity> userList = userManager.findBeans(searchBean,-1,-1);
             if(CollectionUtils.isNotEmpty(userList)){
                 for(UserEntity user: userList){
                     Map<String, UserAttributeEntity> userAttributes = user.getUserAttributes();
                     if(userAttributes==null){
-                        userManager.addAttribute(buildUserAttribute(user, metadataElementEntity));
+                        userManager.addAttribute(AttributeUtil.buildUserAttribute(user, metadataElementEntity));
                     } else {
                         boolean isFound = false;
                         for(String key: userAttributes.keySet()){
                             UserAttributeEntity attr = userAttributes.get(key);
                             if(attr!=null
-                                    && metadataElementEntity.equals(attr.getElement())){
+                                    && metadataElementEntity.equals(HibernateUtils.unproxy(attr.getElement()))){
                                 isFound=true;
                                 if(StringUtils.isBlank(attr.getValue())
                                    && CollectionUtils.isEmpty(attr.getValues())){
@@ -175,7 +179,7 @@ public class MetadataDispatcher implements Sweepable {
                             }
                         }
                         if(!isFound){
-                            userManager.addAttribute(buildUserAttribute(user, metadataElementEntity));
+                            userManager.addAttribute(AttributeUtil.buildUserAttribute(user, metadataElementEntity));
                         }
                     }
                 }
@@ -188,17 +192,16 @@ public class MetadataDispatcher implements Sweepable {
     private void updateRoleAttributes(MetadataElementEntity metadataElementEntity) {
             RoleSearchBean searchBean = new RoleSearchBean();
             searchBean.setType(metadataElementEntity.getMetadataType().getId());
-
-            List<RoleEntity> roleList = roleDAO.getByExample(searchBean);
+            List<RoleEntity> roleList = roleDAO.getByExample(searchBean,-1,-1);
             if(CollectionUtils.isNotEmpty(roleList)){
                 for(RoleEntity role: roleList){
                     Set<RoleAttributeEntity> roleAttributes = role.getRoleAttributes();
                     if(CollectionUtils.isEmpty(roleAttributes)){
-                        roleAttributeDAO.save(buildRoleAttribute(role, metadataElementEntity));
+                        roleAttributeDAO.save(AttributeUtil.buildRoleAttribute(role, metadataElementEntity));
                     } else {
                         boolean isFound = false;
                         for(RoleAttributeEntity attr: roleAttributes){
-                            if(metadataElementEntity.equals(attr.getElement())){
+                            if(metadataElementEntity.equals(HibernateUtils.unproxy(attr.getElement()))){
                                 isFound=true;
                                 if(StringUtils.isBlank(attr.getValue())
                                    && CollectionUtils.isEmpty(attr.getValues())){
@@ -210,7 +213,7 @@ public class MetadataDispatcher implements Sweepable {
                             }
                         }
                         if(!isFound){
-                            roleAttributeDAO.save(buildRoleAttribute(role, metadataElementEntity));
+                            roleAttributeDAO.save(AttributeUtil.buildRoleAttribute(role, metadataElementEntity));
                         }
                     }
                 }
@@ -223,16 +226,16 @@ public class MetadataDispatcher implements Sweepable {
             GroupSearchBean searchBean = new GroupSearchBean();
             searchBean.setType(metadataElementEntity.getMetadataType().getId());
 
-            List<GroupEntity> groupList = groupDAO.getByExample(searchBean);
+            List<GroupEntity> groupList = groupDAO.getByExample(searchBean,-1,-1);
             if(CollectionUtils.isNotEmpty(groupList)){
                 for(GroupEntity group: groupList){
                     Set<GroupAttributeEntity> groupAttributes = group.getAttributes();
                     if(CollectionUtils.isEmpty(groupAttributes)){
-                        groupAttributeDAO.save(buildGroupAttribute(group, metadataElementEntity));
+                        groupAttributeDAO.save(AttributeUtil.buildGroupAttribute(group, metadataElementEntity));
                     } else {
                         boolean isFound = false;
                         for(GroupAttributeEntity attr: groupAttributes){
-                            if(metadataElementEntity.equals(attr.getElement())){
+                            if(metadataElementEntity.equals(HibernateUtils.unproxy(attr.getElement()))){
                                 isFound=true;
                                 if(StringUtils.isBlank(attr.getValue())
                                    && CollectionUtils.isEmpty(attr.getValues())){
@@ -243,7 +246,7 @@ public class MetadataDispatcher implements Sweepable {
                             }
                         }
                         if(!isFound){
-                            groupAttributeDAO.save(buildGroupAttribute(group, metadataElementEntity));
+                            groupAttributeDAO.save(AttributeUtil.buildGroupAttribute(group, metadataElementEntity));
                         }
                     }
                 }
@@ -253,16 +256,16 @@ public class MetadataDispatcher implements Sweepable {
         OrganizationSearchBean searchBean = new OrganizationSearchBean();
         searchBean.setMetadataType(metadataElementEntity.getMetadataType().getId());
 
-        List<OrganizationEntity> orgList = organizationDAO.getByExample(searchBean);
+        List<OrganizationEntity> orgList = organizationDAO.getByExample(searchBean,-1,-1);
         if(CollectionUtils.isNotEmpty(orgList)){
             for(OrganizationEntity org: orgList){
                 Set<OrganizationAttributeEntity> orgAttributes = org.getAttributes();
                 if(CollectionUtils.isEmpty(orgAttributes)){
-                    organizationAttributeDAO.save(buildOrgAttribute(org, metadataElementEntity));
+                    organizationAttributeDAO.save(AttributeUtil.buildOrgAttribute(org, metadataElementEntity));
                 } else {
                     boolean isFound = false;
                     for(OrganizationAttributeEntity attr: orgAttributes){
-                        if(metadataElementEntity.equals(attr.getElement())){
+                        if(metadataElementEntity.equals(HibernateUtils.unproxy(attr.getElement()))){
                             isFound=true;
                             if(StringUtils.isBlank(attr.getValue())
                                && CollectionUtils.isEmpty(attr.getValues())){
@@ -273,7 +276,7 @@ public class MetadataDispatcher implements Sweepable {
                         }
                     }
                     if(!isFound){
-                        organizationAttributeDAO.save(buildOrgAttribute(org, metadataElementEntity));
+                        organizationAttributeDAO.save(AttributeUtil.buildOrgAttribute(org, metadataElementEntity));
                     }
                 }
             }
@@ -284,16 +287,16 @@ public class MetadataDispatcher implements Sweepable {
         ResourceSearchBean searchBean = new ResourceSearchBean();
         searchBean.setMetadataType(metadataElementEntity.getMetadataType().getId());
 
-        List<ResourceEntity> resList = resourceDAO.getByExample(searchBean);
+        List<ResourceEntity> resList = resourceDAO.getByExample(searchBean,-1,-1);
         if(CollectionUtils.isNotEmpty(resList)){
             for(ResourceEntity res: resList){
                 Set<ResourcePropEntity> resAttributes = res.getResourceProps();
                 if(CollectionUtils.isEmpty(resAttributes)){
-                    resourcePropDAO.save(buildResAttribute(res, metadataElementEntity));
+                    resourcePropDAO.save(AttributeUtil.buildResAttribute(res, metadataElementEntity));
                 } else {
                     boolean isFound = false;
                     for(ResourcePropEntity attr: resAttributes){
-                        if(metadataElementEntity.equals(attr.getElement())){
+                        if(metadataElementEntity.equals(HibernateUtils.unproxy(attr.getElement()))){
                             isFound=true;
                             if(StringUtils.isBlank(attr.getValue())){
                                 attr.setValue(metadataElementEntity.getStaticDefaultValue());
@@ -303,56 +306,13 @@ public class MetadataDispatcher implements Sweepable {
                         }
                     }
                     if(!isFound){
-                        resourcePropDAO.save(buildResAttribute(res, metadataElementEntity));
+                        resourcePropDAO.save(AttributeUtil.buildResAttribute(res, metadataElementEntity));
                     }
                 }
             }
         }
     }
 
-    private UserAttributeEntity buildUserAttribute(UserEntity user, MetadataElementEntity metadataElementEntity){
-        UserAttributeEntity attribute = new UserAttributeEntity();
-        attribute.setUser(user);
-        attribute.setElement(metadataElementEntity);
-        attribute.setName(metadataElementEntity.getAttributeName());
-        attribute.setValue(metadataElementEntity.getStaticDefaultValue());
 
-        return attribute;
-    }
-
-    private RoleAttributeEntity buildRoleAttribute(RoleEntity role, MetadataElementEntity metadataElementEntity){
-        RoleAttributeEntity attribute = new RoleAttributeEntity();
-        attribute.setRole(role);
-        attribute.setElement(metadataElementEntity);
-        attribute.setName(metadataElementEntity.getAttributeName());
-        attribute.setValue(metadataElementEntity.getStaticDefaultValue());
-        return attribute;
-    }
-
-    private GroupAttributeEntity buildGroupAttribute(GroupEntity group, MetadataElementEntity metadataElementEntity) {
-        GroupAttributeEntity attribute = new GroupAttributeEntity();
-        attribute.setGroup(group);
-        attribute.setElement(metadataElementEntity);
-        attribute.setName(metadataElementEntity.getAttributeName());
-        attribute.setValue(metadataElementEntity.getStaticDefaultValue());
-        return attribute;
-    }
-    private OrganizationAttributeEntity buildOrgAttribute(OrganizationEntity org,
-                                                          MetadataElementEntity metadataElementEntity) {
-        OrganizationAttributeEntity attribute = new OrganizationAttributeEntity();
-        attribute.setOrganization(org);
-        attribute.setElement(metadataElementEntity);
-        attribute.setName(metadataElementEntity.getAttributeName());
-        attribute.setValue(metadataElementEntity.getStaticDefaultValue());
-        return attribute;
-    }
-    private ResourcePropEntity buildResAttribute(ResourceEntity res, MetadataElementEntity metadataElementEntity) {
-        ResourcePropEntity attribute = new ResourcePropEntity();
-        attribute.setResource(res);
-        attribute.setElement(metadataElementEntity);
-        attribute.setName(metadataElementEntity.getAttributeName());
-        attribute.setValue(metadataElementEntity.getStaticDefaultValue());
-        return attribute;
-    }
 
 }

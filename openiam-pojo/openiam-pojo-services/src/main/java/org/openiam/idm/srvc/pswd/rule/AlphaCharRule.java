@@ -17,7 +17,7 @@
  */
 
 /**
- * 
+ *
  */
 package org.openiam.idm.srvc.pswd.rule;
 
@@ -28,58 +28,67 @@ import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
 import org.openiam.idm.srvc.pswd.dto.PasswordRule;
 
 /**
- * Validates a password to ensure that it contains the appropriate number of numeric characters in 
+ * Validates a password to ensure that it contains the appropriate number of numeric characters in
  * the password.
- * @author suneet
  *
+ * @author suneet
  */
 public class AlphaCharRule extends AbstractPasswordRule {
 
-	@Override
-	public void validate() throws PasswordRuleException {
+    @Override
+    public String getAttributeName() {
+        return "ALPHA_CHARS";
+    }
 
-		PolicyAttribute attribute = getAttribute("ALPHA_CHARS");
-		int minChar = getValue1(attribute);
-		int maxChar = getValue2(attribute);
-		final PasswordRuleException ex = createException();
-		
-		// count the number of characters in the password
-		if (password == null) {
-			throw ex;
-		}
-		int charCtr = 0;
-		for (int i=0; i < password.length(); i++) {
-			int ch = password.charAt(i);
-			if ((ch >= 65 && ch <= 90) || (ch >= 97 && ch <= 122)) {
-				charCtr++;
-			}
-		}
-		
-		if (minChar > 0 ) {
-			if (charCtr  < minChar) {
-				throw ex;
-			}
-		}
-		if (maxChar > 0 ) {
-			if (charCtr > maxChar ) {
-				throw ex;
-			}
-		}
-	}
+    @Override
+    public void validate(PolicyAttribute attribute) throws PasswordRuleException {
 
-	@Override
-	public PasswordRuleException createException() {
-		PolicyAttribute attribute = getAttribute("ALPHA_CHARS");
-		int minChar = getValue1(attribute);
-		int maxChar = getValue2(attribute);
-		return createException(ResponseCode.FAIL_ALPHA_CHAR_RULE, minChar, maxChar);
-	}
+        int minChar = getValue1(attribute);
+        int maxChar = getValue2(attribute);
+        final PasswordRuleException ex = createException();
+        if (ex == null) {
+            return;
+        }
 
-	@Override
-	public PasswordRule createRule() {
-		PolicyAttribute attribute = getAttribute("ALPHA_CHARS");
-		int minChar = getValue1(attribute);
-		int maxChar = getValue2(attribute);
-		return createRule(ResponseCode.FAIL_ALPHA_CHAR_RULE, minChar, maxChar);
-	}
+        // count the number of characters in the password
+        if (password == null) {
+            throw ex;
+        }
+        int charCtr = 0;
+        for (int i = 0; i < password.length(); i++) {
+            int ch = password.charAt(i);
+            if ((ch >= 65 && ch <= 90) || (ch >= 97 && ch <= 122)) {
+                charCtr++;
+            }
+        }
+
+        if (minChar > 0) {
+            if (charCtr < minChar) {
+                throw ex;
+            }
+        }
+        if (maxChar > 0) {
+            if (charCtr > maxChar) {
+                throw ex;
+            }
+        }
+    }
+
+    @Override
+    public PasswordRuleException createException(PolicyAttribute attribute) {
+        int minChar = getValue1(attribute);
+        int maxChar = getValue2(attribute);
+        return createException(ResponseCode.FAIL_ALPHA_CHAR_RULE, minChar, maxChar);
+    }
+
+    @Override
+    public PasswordRule createRule(PolicyAttribute attribute) {
+        int minChar = getValue1(attribute);
+        int maxChar = getValue2(attribute);
+        if (minChar <= 0 && maxChar <= 0) {
+            return null;
+        } else {
+            return createRule(ResponseCode.FAIL_ALPHA_CHAR_RULE, minChar, maxChar);
+        }
+    }
 }

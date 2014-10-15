@@ -39,7 +39,7 @@ import javax.xml.bind.annotation.XmlType;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "AuthenticationResponse", propOrder = {
         "subject",
-        "authErrorCode",
+        //"authErrorCode",
         "authErrorMessage"
 })
 public class AuthenticationResponse extends Response {

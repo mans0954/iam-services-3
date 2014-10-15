@@ -126,7 +126,8 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
         return res;
     }
 
-    public ProvisionDataContainer provisionResource(final Resource res, final UserEntity userEntity,
+    public ProvisionDataContainer provisionResource(final Resource res,
+                                                    final UserEntity userEntity,
                                                     final ProvisionUser pUser,
                                                     final Map<String, Object> tmpMap,
                                                     final Login primaryIdentity,
@@ -146,8 +147,8 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
             }
             // what the new object will look like
             // Provision user that goes to the target system. Derived from
-            // userEntity after all changes
-            ProvisionUser targetSysProvUser = new ProvisionUser(userDozerConverter.convertToDTO(userEntity, true));
+            // initial ProvisionUser after all changes
+            ProvisionUser targetSysProvUser = new ProvisionUser(pUser);
             setCurrentSuperiors(targetSysProvUser); // TODO: Consider the
             // possibility to add and
             // update superiors by
@@ -163,10 +164,7 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
             bindingMap.put(AbstractProvisioningService.USER, targetSysProvUser);
 
             List<AttributeMap> attrMap = managedSysService.getResourceAttributeMaps(res.getId());
-            ManagedSysDto mSys = managedSysService.getManagedSys(managedSysId);
-            if (mSys == null || mSys.getConnectorId() == null) {
-                return null;
-            }
+
 
             ManagedSystemObjectMatch matchObj = null;
             ManagedSystemObjectMatch[] matchObjAry = managedSysService.managedSysObjectParam(managedSysId, ManagedSystemObjectMatch.USER);
@@ -176,7 +174,7 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
             }
 
             String onDeleteProp = findResourcePropertyByName(res.getId(), "ON_DELETE");
-            if(StringUtils.isEmpty(onDeleteProp)) {
+            if (StringUtils.isEmpty(onDeleteProp)) {
                 onDeleteProp = "DELETE";
             }
             ProvLoginStatusEnum provLoginStatus;

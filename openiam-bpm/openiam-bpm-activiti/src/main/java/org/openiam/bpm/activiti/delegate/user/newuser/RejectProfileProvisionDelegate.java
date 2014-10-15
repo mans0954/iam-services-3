@@ -15,6 +15,8 @@ import org.openiam.bpm.activiti.delegate.core.AbstractNotificationDelegate;
 import org.openiam.bpm.activiti.delegate.core.ActivitiHelper;
 import org.openiam.bpm.activiti.delegate.entitlements.RejectEntitlementsNotifierDelegate;
 import org.openiam.bpm.util.ActivitiConstants;
+import org.openiam.idm.srvc.audit.constant.AuditAction;
+import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.mngsys.service.ApproverAssociationDAO;
@@ -43,23 +45,34 @@ public class RejectProfileProvisionDelegate extends RejectEntitlementsNotifierDe
      
      @Override
      public void execute(DelegateExecution execution) throws Exception {
-    	 final String reqeustorId = getRequestorId(execution);
-             
-    	 final Set<String> emails = new HashSet<String>();
-             
-    	 final NewUserProfileRequestModel profileModel = getObjectVariable(execution, ActivitiConstants.REQUEST, NewUserProfileRequestModel.class);
-         if(CollectionUtils.isNotEmpty(profileModel.getEmails())) {
-        	 for(final EmailAddress address : profileModel.getEmails()) {
-            	 if(StringUtils.isNotBlank(address.getEmailAddress())) {
-            		 emails.add(address.getEmailAddress());
-            	 }
-             }
-         }
-             
-         final Collection<String> userIds = activitiHelper.getOnRejectUserIds(execution, null, profileModel.getSupervisorIds());
-         
-         final UserEntity requestor = getUserEntity(reqeustorId);
-         sendEmails(requestor, execution, profileModel.getUser(), userIds, emails);
+    	final IdmAuditLog idmAuditLog = createNewAuditLog(execution);
+        idmAuditLog.setAction(AuditAction.NOTIFICATION.value());
+ 		try {
+	    	 final String reqeustorId = getRequestorId(execution);
+	             
+	    	 final Set<String> emails = new HashSet<String>();
+	             
+	    	 final NewUserProfileRequestModel profileModel = getObjectVariable(execution, ActivitiConstants.REQUEST, NewUserProfileRequestModel.class);
+	         if(CollectionUtils.isNotEmpty(profileModel.getEmails())) {
+	        	 for(final EmailAddress address : profileModel.getEmails()) {
+	            	 if(StringUtils.isNotBlank(address.getEmailAddress())) {
+	            		 emails.add(address.getEmailAddress());
+	            	 }
+	             }
+	         }
+	             
+	         final Collection<String> userIds = activitiHelper.getOnRejectUserIds(execution, null, profileModel.getSupervisorIds());
+	         
+	         final UserEntity requestor = getUserEntity(reqeustorId);
+	         sendEmails(requestor, execution, profileModel.getUser(), userIds, emails);
+	         idmAuditLog.succeed();
+		} catch(Throwable e) {
+			idmAuditLog.setException(e);
+			idmAuditLog.fail();
+			throw new RuntimeException(e);
+		} finally {
+			addAuditLogChild(execution, idmAuditLog);
+		}
      }
      
      private void sendEmails(final UserEntity requestor, final DelegateExecution execution, final User user, final Collection<String> userIds, final Collection<String> emailAddresses) {

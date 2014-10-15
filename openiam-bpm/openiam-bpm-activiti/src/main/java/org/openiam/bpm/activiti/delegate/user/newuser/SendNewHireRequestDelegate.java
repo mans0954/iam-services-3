@@ -19,6 +19,8 @@ import org.apache.log4j.Logger;
 import org.openiam.bpm.activiti.delegate.core.AbstractNotificationDelegate;
 import org.openiam.bpm.activiti.delegate.entitlements.AbstractEntitlementsDelegate;
 import org.openiam.bpm.util.ActivitiConstants;
+import org.openiam.idm.srvc.audit.constant.AuditAction;
+import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.msg.dto.NotificationParam;
 import org.openiam.idm.srvc.msg.dto.NotificationRequest;
 import org.openiam.idm.srvc.msg.service.MailService;
@@ -47,13 +49,24 @@ public class SendNewHireRequestDelegate extends AbstractEntitlementsDelegate {
     public void execute(DelegateExecution execution) throws Exception {
         profileModel = getObjectVariable(execution, ActivitiConstants.REQUEST, NewUserProfileRequestModel.class);
 
-        final Collection<String> candidateUserIds = activitiHelper.getCandidateUserIds(execution, null, profileModel.getSupervisorIds());
-        for (final String candidateId : candidateUserIds) {
-            final UserEntity entity = getUserEntity(candidateId);
-            if (entity != null) {
-                sendNotificationRequest(entity, execution);
-            }
-        }
+        final IdmAuditLog idmAuditLog = createNewAuditLog(execution);
+        idmAuditLog.setAction(AuditAction.NOTIFICATION.value());
+		try {
+	        final Collection<String> candidateUserIds = activitiHelper.getCandidateUserIds(execution, null, profileModel.getSupervisorIds());
+	        for (final String candidateId : candidateUserIds) {
+	            final UserEntity entity = getUserEntity(candidateId);
+	            if (entity != null) {
+	                sendNotificationRequest(entity, execution);
+	            }
+	        }
+	        idmAuditLog.succeed();
+		} catch(Throwable e) {
+			idmAuditLog.setException(e);
+			idmAuditLog.fail();
+			throw new RuntimeException(e);
+		} finally {
+			addAuditLogChild(execution, idmAuditLog);
+		}
     }
 
     private void sendNotificationRequest(final UserEntity user, final DelegateExecution execution) {

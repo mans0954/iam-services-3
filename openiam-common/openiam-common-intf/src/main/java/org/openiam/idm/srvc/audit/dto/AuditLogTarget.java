@@ -59,27 +59,27 @@ public class AuditLogTarget implements Serializable {
         this.objectPrincipal = objectPrincipal;
     }
 
+    // WARNING!  We can't match this object by ID. This object can be equals with different IDs !!!
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        AuditLogTarget that = (AuditLogTarget) o;
+        AuditLogTarget logTarget = (AuditLogTarget) o;
 
-        if (id != null ? !id.equals(that.id) : that.id != null) return false;
-        if (logId != null ? !logId.equals(that.logId) : that.logId != null) return false;
-        if (objectPrincipal != null ? !objectPrincipal.equals(that.objectPrincipal) : that.objectPrincipal != null)
+        if (logId != null ? !logId.equals(logTarget.logId) : logTarget.logId != null) return false;
+        if (objectPrincipal != null ? !objectPrincipal.equals(logTarget.objectPrincipal) : logTarget.objectPrincipal != null)
             return false;
-        if (targetId != null ? !targetId.equals(that.targetId) : that.targetId != null) return false;
-        if (targetType != null ? !targetType.equals(that.targetType) : that.targetType != null) return false;
+        if (targetId != null ? !targetId.equals(logTarget.targetId) : logTarget.targetId != null) return false;
+        if (targetType != null ? !targetType.equals(logTarget.targetType) : logTarget.targetType != null) return false;
 
         return true;
     }
 
+    // WARNING!  We can't match this object by ID. This object can be equals with different IDs !!!
     @Override
     public int hashCode() {
-        int result = id != null ? id.hashCode() : 0;
-        result = 31 * result + (logId != null ? logId.hashCode() : 0);
+        int result = logId != null ? logId.hashCode() : 0;
         result = 31 * result + (targetId != null ? targetId.hashCode() : 0);
         result = 31 * result + (objectPrincipal != null ? objectPrincipal.hashCode() : 0);
         result = 31 * result + (targetType != null ? targetType.hashCode() : 0);

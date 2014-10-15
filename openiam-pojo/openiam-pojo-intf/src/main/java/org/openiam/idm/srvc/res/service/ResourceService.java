@@ -17,6 +17,7 @@ public interface ResourceService {
 
 	public void deleteResource(final String resourceId);
 	public void save(final ResourceEntity resource, final String requestorId);
+    public void addRequiredAttributes(ResourceEntity resource);
 	public ResourceEntity findResourceById(final String resourceId);
 	public List<ResourceEntity> findResourcesByIds(final Collection<String> resourceIdCollection);
 	public ResourceEntity findResourceByName(final String name);

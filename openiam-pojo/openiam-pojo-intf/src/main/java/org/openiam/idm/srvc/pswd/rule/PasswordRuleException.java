@@ -14,14 +14,17 @@ import org.openiam.base.ws.ResponseCode;
 	"minBound", 
 	"maxBound", 
 	"code",
-	"responseValues" })
+	"responseValues"
+	})
 public class PasswordRuleException extends Exception {
 	private Object minBound;
 	private Object maxBound;
 	private ResponseCode code;
 	private List<Object> responseValues;
 	
-	public PasswordRuleException() {}
+	public PasswordRuleException() {
+		super();
+	}
 	
 	public PasswordRuleException(final ResponseCode code) {
 		this.code = code;

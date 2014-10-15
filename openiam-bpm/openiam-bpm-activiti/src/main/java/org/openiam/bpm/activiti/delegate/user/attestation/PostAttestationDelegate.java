@@ -10,6 +10,8 @@ import org.apache.commons.lang.time.StopWatch;
 import org.apache.log4j.Logger;
 import org.openiam.bpm.activiti.delegate.entitlements.AbstractEntitlementsDelegate;
 import org.openiam.bpm.util.ActivitiConstants;
+import org.openiam.idm.srvc.audit.constant.AuditAction;
+import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.msg.dto.NotificationParam;
 import org.openiam.idm.srvc.msg.dto.NotificationRequest;
 import org.openiam.idm.srvc.msg.service.MailService;
@@ -31,22 +33,32 @@ public class PostAttestationDelegate extends AbstractEntitlementsDelegate {
 		final StopWatch sw = new StopWatch();
 		sw.start();
 		
-		final String employeeId = getTargetUserId(execution);
-		if(employeeId != null) {
-			final UserEntity employee = getUserEntity(employeeId);
-			if(employee != null) {
-				final Collection<String> candidateUsersIds = activitiHelper.getCandidateUserIds(execution, employeeId, null);
-				for(final String candidateId : candidateUsersIds) {
-					final UserEntity supervisor = getUserEntity(candidateId);
-					if(supervisor != null) {
-						sendNotificationRequest(supervisor, employee);
+		final IdmAuditLog idmAuditLog = createNewAuditLog(execution);
+        idmAuditLog.setAction(AuditAction.NOTIFICATION.value());
+		try {
+			final String employeeId = getTargetUserId(execution);
+			if(employeeId != null) {
+				final UserEntity employee = getUserEntity(employeeId);
+				if(employee != null) {
+					final Collection<String> candidateUsersIds = activitiHelper.getCandidateUserIds(execution, employeeId, null);
+					for(final String candidateId : candidateUsersIds) {
+						final UserEntity supervisor = getUserEntity(candidateId);
+						if(supervisor != null) {
+							sendNotificationRequest(supervisor, employee);
+						}
 					}
 				}
 			}
+			sw.stop();
+			LOG.info(String.format("Took %s ms to finalize re-certification request for user %s", sw.getTime(), employeeId));
+			idmAuditLog.succeed();
+		} catch(Throwable e) {
+			idmAuditLog.setException(e);
+			idmAuditLog.fail();
+			throw new RuntimeException(e);
+		} finally {
+			addAuditLogChild(execution, idmAuditLog);
 		}
-		
-		sw.stop();
-		LOG.info(String.format("Took %s ms to finalize re-certification request for user %s", sw.getTime(), employeeId));
 	}
 
 	private void sendNotificationRequest(final UserEntity supervisor, final UserEntity employee) {

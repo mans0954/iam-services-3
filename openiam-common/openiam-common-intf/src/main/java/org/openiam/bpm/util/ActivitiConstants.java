@@ -25,6 +25,7 @@ public enum ActivitiConstants {
 	WORKFLOW_NAME("WorkflowName"),
 	DELETABLE("Deletable"),
 	LOGIN("Login"),
+	AUDIT_LOG_ID("AuditLogId"),
 	
 	LOOP_COUNTER("loopCounter"),
 	
@@ -33,7 +34,11 @@ public enum ActivitiConstants {
 	RESOURCE("Resource"),
 	GROUP("Group"),
 	ROLE("Role"),
-	ORGANIZATION("Organization");
+	ORGANIZATION("Organization"),
+	
+	IS_REQUESTOR_ONLY_APROVER("IsRequestorOnlyApprover"),
+	IS_REQUESTOR_CANDIDATE("IsRequestorCandidate"),
+	CANDIDATE_USER_IDS("CandidateUserIds");
 	
 	private String name;
 	

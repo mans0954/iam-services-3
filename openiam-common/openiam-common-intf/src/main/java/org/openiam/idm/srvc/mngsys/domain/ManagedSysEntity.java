@@ -47,7 +47,7 @@ public class ManagedSysEntity extends AbstractKeyNameEntity {
     private String commProtocol;
     @Column(name = "USER_ID", length = 150)
     private String userId;
-    @Column(name = "PSWD", length = 255)
+    @Column(name = "PSWD", length = 512)
     private String pswd;
     @Column(name = "START_DATE", length = 10)
     @Temporal(TemporalType.DATE)

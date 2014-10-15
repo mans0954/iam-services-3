@@ -20,7 +20,8 @@ import java.util.Set;
         "isRootsOnly",
         "managedSysId",
         "attributes",
-        "type"
+        "type",
+		"adminResourceId"
 })
 public class RoleSearchBean extends EntitlementsSearchBean<Role, String> implements SearchBean<Role, String>, Serializable {
 
@@ -30,6 +31,7 @@ public class RoleSearchBean extends EntitlementsSearchBean<Role, String> impleme
 	private Boolean isRootsOnly;
     private String type;
     private List<Tuple<String,String>> attributes;
+	private String adminResourceId;
 
 	public boolean getIsRootsOnly() {
 		return isRootsOnly;
@@ -73,7 +75,15 @@ public class RoleSearchBean extends EntitlementsSearchBean<Role, String> impleme
         this.attributes = attributes;
     }
 
-    @Override
+	public String getAdminResourceId() {
+		return adminResourceId;
+	}
+
+	public void setAdminResourceId(String adminResourceId) {
+		this.adminResourceId = adminResourceId;
+	}
+
+	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
