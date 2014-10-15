@@ -135,7 +135,8 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
 
         Map<String, Object> bindingMap = new HashMap<String, Object>(tmpMap); // prevent data rewriting
 
-        String managedSysId = managedSysDaoService.getManagedSysIdByResource(res.getId(), "ACTIVE");
+        ManagedSysDto managedSys = managedSysService.getManagedSysByResource(res.getId());
+        String managedSysId = (managedSys != null) ? managedSys.getId() : null;
         if (managedSysId != null) {
             // we are checking if SrcSystemId is set in ProvisionUser it
             // means we should ignore this resource from provisioning to
@@ -173,7 +174,7 @@ public class ProvisionSelectedResourceHelper extends BaseProvisioningHelper {
             }
 
             String onDeleteProp = findResourcePropertyByName(res.getId(), "ON_DELETE");
-            if(StringUtils.isEmpty(onDeleteProp)) {
+            if (StringUtils.isEmpty(onDeleteProp)) {
                 onDeleteProp = "DELETE";
             }
             ProvLoginStatusEnum provLoginStatus;

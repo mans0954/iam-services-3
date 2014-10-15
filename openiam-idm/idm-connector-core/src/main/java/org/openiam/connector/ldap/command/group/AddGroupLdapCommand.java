@@ -35,7 +35,7 @@ public class AddGroupLdapCommand extends AbstractCrudLdapCommand<ExtensibleGroup
             List<BaseAttribute> targetMembershipList = new ArrayList<BaseAttribute>();
             List<BaseAttribute> supervisorMembershipList = new ArrayList<BaseAttribute>();
 
-            Set<ResourceProp> rpSet = getResourceAttributes(managedSys.getResourceId());
+            Set<ResourceProp> rpSet = getResourceAttributes(managedSys.getResource().getId());
             boolean groupMembershipEnabled = isMembershipEnabled(rpSet, "GROUP_MEMBERSHIP_ENABLED");
             boolean supervisorMembershipEnabled = isMembershipEnabled(rpSet, "SUPERVISOR_MEMBERSHIP_ENABLED");
 

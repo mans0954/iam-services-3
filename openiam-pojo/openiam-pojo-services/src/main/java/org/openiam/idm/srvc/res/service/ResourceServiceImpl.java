@@ -3,6 +3,7 @@ package org.openiam.idm.srvc.res.service;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
+import org.hibernate.collection.spi.PersistentCollection;
 import org.openiam.am.srvc.dao.AuthProviderDao;
 import org.openiam.am.srvc.dao.ContentProviderDao;
 import org.openiam.am.srvc.dao.URIPatternDao;
@@ -12,6 +13,7 @@ import org.openiam.am.srvc.domain.URIPatternEntity;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.dozer.converter.ResourceDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
+import org.openiam.idm.searchbeans.MetadataElementSearchBean;
 import org.openiam.idm.searchbeans.ResourceSearchBean;
 import org.openiam.idm.searchbeans.ResourceTypeSearchBean;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
@@ -36,6 +38,7 @@ import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.service.RoleDAO;
 import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.internationalization.LocalizedServiceGet;
+import org.openiam.util.AttributeUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -117,6 +120,7 @@ public class ResourceServiceImpl implements ResourceService {
         }
     }
 
+
     @Override
     @Transactional
     public void save(ResourceEntity entity, final String requestorId) {
@@ -154,7 +158,7 @@ public class ResourceServiceImpl implements ResourceService {
             entity.setRoles(dbObject.getRoles());
 
             //elementDAO.flush();
-            mergeAttribute(entity, dbObject);
+            mergeAttributes(entity, dbObject);
 
         } else {
             boolean addApproverAssociation = false;
@@ -214,7 +218,7 @@ public class ResourceServiceImpl implements ResourceService {
         return adminResource;
     }
 
-    private void mergeAttribute(final ResourceEntity bean, final ResourceEntity dbObject) {
+    public void mergeAttributes(final ResourceEntity bean, final ResourceEntity dbObject) {
     	
     	/* 
     	 * if the incoming bean is from the database, there is no reason to do any merging 

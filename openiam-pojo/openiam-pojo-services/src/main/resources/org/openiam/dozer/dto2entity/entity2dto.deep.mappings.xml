@@ -703,7 +703,7 @@
 		</field>
 		<field
 			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
-			custom-converter-param="dto2entityShallowDozerMapper">
+			custom-converter-param="dto2entityDeepDozerMapper">
 			<a>policyAttributes</a>
 			<b>policyAttributes</b>
 		</field>

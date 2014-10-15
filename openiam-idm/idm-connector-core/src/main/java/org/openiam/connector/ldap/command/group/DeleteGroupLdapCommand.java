@@ -31,7 +31,7 @@ public class DeleteGroupLdapCommand extends AbstractCrudLdapCommand<ExtensibleGr
         String delete = "DELETE";
         ManagedSystemObjectMatch matchObj = getMatchObject(deleteRequestType.getTargetID(), ManagedSystemObjectMatch.GROUP);
         try {
-            Set<ResourceProp> rpSet = getResourceAttributes(managedSys.getResourceId());
+            Set<ResourceProp> rpSet = getResourceAttributes(managedSys.getResource().getId());
 
             // BY DEFAULT - we want to enable group membership
             boolean groupMembershipEnabled = isMembershipEnabled(rpSet, "GROUP_MEMBERSHIP_ENABLED");
