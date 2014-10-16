@@ -236,8 +236,8 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
             for(Map.Entry<String,Object> varEntry : variables.entrySet()) {
                 idmAuditLog.addCustomRecord(varEntry.getKey(), (varEntry.getValue() != null) ? varEntry.getValue().toString() : null);
             }
-            
-            auditLogService.save(idmAuditLog);
+
+            idmAuditLog = auditLogService.save(idmAuditLog);
             variables.put(ActivitiConstants.AUDIT_LOG_ID.getName(), idmAuditLog.getId());
             
 			final ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(requestType.getKey(), variables);
@@ -278,7 +278,7 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 			response.setErrorText(e.getMessage());
 		} finally {
 			log.info("Persisting activiti log..");
-			auditLogService.save(idmAuditLog);
+            idmAuditLog = auditLogService.save(idmAuditLog);
 		}
 		return response;
 	}
@@ -349,10 +349,10 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 			response.setErrorText(e.getMessage());
 		} finally {
 			if(parentAuditLogId != null) {
-				final IdmAuditLog parent = auditLogService.findById(parentAuditLogId);
+				IdmAuditLog parent = auditLogService.findById(parentAuditLogId);
 				parent.addChild(idmAuditLog);
 				idmAuditLog.addParent(parent);
-				auditLogService.save(parent);
+                parent = auditLogService.save(parent);
 			}
 		}
 
@@ -419,8 +419,8 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 			if(identifier.getCustomActivitiAttributes() != null) {
 				variables.putAll(identifier.getCustomActivitiAttributes());
 			}
-			
-			auditLogService.save(idmAuditLog);
+
+            idmAuditLog = auditLogService.save(idmAuditLog);
             variables.put(ActivitiConstants.AUDIT_LOG_ID.getName(), idmAuditLog.getId());
 
             ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(ActivitiRequestType.EDIT_USER.getKey(), variables);
@@ -472,7 +472,7 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 			response.setErrorCode(ResponseCode.USER_STATUS);
 			response.setErrorText(e.getMessage());
 		} finally {
-			auditLogService.save(idmAuditLog);
+            idmAuditLog = auditLogService.save(idmAuditLog);
 		}
 		return response;
 	}
@@ -580,8 +580,8 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 			if(identifier.getCustomActivitiAttributes() != null) {
 				variables.putAll(identifier.getCustomActivitiAttributes());
 			}
-			
-			auditLogService.save(idmAuditLog);
+
+            idmAuditLog = auditLogService.save(idmAuditLog);
             variables.put(ActivitiConstants.AUDIT_LOG_ID.getName(), idmAuditLog.getId());
 			
 			final ProcessInstance instance = runtimeService.startProcessInstanceByKey(request.getActivitiRequestType(), variables);
@@ -619,7 +619,7 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 			response.setErrorCode(ResponseCode.USER_STATUS);
 			response.setErrorText(e.getMessage());
 		} finally {
-			auditLogService.save(idmAuditLog);
+            idmAuditLog = auditLogService.save(idmAuditLog);
 		}
 		return response;
 	}
@@ -688,10 +688,10 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 			response.setErrorText(e.getMessage());
 		} finally {
 			if(parentAuditLogId != null) {
-				final IdmAuditLog parent = auditLogService.findById(parentAuditLogId);
+				IdmAuditLog parent = auditLogService.findById(parentAuditLogId);
 				parent.addChild(idmAuditLog);
 				idmAuditLog.addParent(parent);
-				auditLogService.save(parent);
+                parent = auditLogService.save(parent);
 			}
         }
 		return response;
@@ -966,10 +966,10 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
             idmAuditLog.fail();
 		} finally {
 			if(parentAuditLogId != null) {
-				final IdmAuditLog parent = auditLogService.findById(parentAuditLogId);
+				IdmAuditLog parent = auditLogService.findById(parentAuditLogId);
 				parent.addChild(idmAuditLog);
 				idmAuditLog.addParent(parent);
-				auditLogService.save(parent);
+                parent = auditLogService.save(parent);
 			}
         }
 		return response;

@@ -712,10 +712,10 @@ public class KeyManagementServiceImpl implements KeyManagementService {
                 } while (fetchedDataCount < pwdCount);
 
                 for (final PasswordHistoryEntity ph : pwdList) {
-                    if (!pwdMap.containsKey(ph.getLoginId())) {
-                        pwdMap.put(ph.getLoginId(), new ArrayList<PasswordHistoryEntity>());
+                    if (!pwdMap.containsKey(ph.getLogin().getLoginId())) {
+                        pwdMap.put(ph.getLogin().getLoginId(), new ArrayList<PasswordHistoryEntity>());
                     }
-                    pwdMap.get(ph.getLoginId()).add(ph);
+                    pwdMap.get(ph.getLogin().getLoginId()).add(ph);
                 }
 
                 // map to userId

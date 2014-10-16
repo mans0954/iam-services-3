@@ -235,7 +235,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             res = transactionTemplate.execute(new TransactionCallback<ProvisionUserResponse>() {
                 @Override
                 public ProvisionUserResponse doInTransaction(TransactionStatus status) {
-                    final IdmAuditLog idmAuditLog = new IdmAuditLog();
+                    IdmAuditLog idmAuditLog = new IdmAuditLog();
 
                     idmAuditLog.setRequestorUserId(pUser.getRequestorUserId());
                     idmAuditLog.setRequestorPrincipal(pUser.getRequestorLogin());
@@ -246,16 +246,14 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     if (auditLog != null) {
                         auditLog.addChild(idmAuditLog);
                         idmAuditLog.addParent(auditLog);
-                        String logId = auditLogService.save(idmAuditLog);
-                        idmAuditLog.setId(logId);
+                        idmAuditLog = auditLogService.save(idmAuditLog);
                     }
-                    String logId = auditLogService.save(idmAuditLog);
-                    idmAuditLog.setId(logId);
+                    idmAuditLog = auditLogService.save(idmAuditLog);
 
 
                     ProvisionUserResponse tmpRes = addModifyUser(pUser, true, dataList, idmAuditLog);
 
-                    auditLogService.save(idmAuditLog);
+                    idmAuditLog = auditLogService.save(idmAuditLog);
                     return tmpRes;
                 }
             });
@@ -292,7 +290,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             res = transactionTemplate.execute(new TransactionCallback<ProvisionUserResponse>() {
                 @Override
                 public ProvisionUserResponse doInTransaction(TransactionStatus status) {
-                    final IdmAuditLog idmAuditLog = new IdmAuditLog();
+                    IdmAuditLog idmAuditLog = new IdmAuditLog();
                     idmAuditLog.setRequestorUserId(pUser.getRequestorUserId());
                     idmAuditLog.setRequestorPrincipal(pUser.getRequestorLogin());
                     idmAuditLog.setAction(AuditAction.MODIFY_USER.value());
@@ -303,13 +301,11 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     if (auditLog != null) {
                         auditLog.addChild(idmAuditLog);
                         idmAuditLog.addParent(auditLog);
-                        String logId = auditLogService.save(auditLog);
-                        auditLog.setId(logId);
+                        auditLogService.save(auditLog);
                     }
-                    String logId = auditLogService.save(idmAuditLog);
-                    idmAuditLog.setId(logId);
+                    idmAuditLog = auditLogService.save(idmAuditLog);
                     ProvisionUserResponse tmpRes = addModifyUser(pUser, false, dataList, idmAuditLog);
-                    auditLogService.save(idmAuditLog);
+                    idmAuditLog = auditLogService.save(idmAuditLog);
                     return tmpRes;
                 }
             });

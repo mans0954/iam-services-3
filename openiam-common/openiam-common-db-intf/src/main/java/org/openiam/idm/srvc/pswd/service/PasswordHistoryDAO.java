@@ -34,5 +34,4 @@ public interface PasswordHistoryDAO extends BaseDao<PasswordHistoryEntity, Strin
 
     Long getCount();
 
-    void deleteByLogin(String loginId);
 }

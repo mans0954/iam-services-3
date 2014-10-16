@@ -5,11 +5,10 @@ package org.openiam.idm.srvc.auth.dto;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
+import org.openiam.idm.srvc.pswd.dto.PasswordHistory;
 
 import javax.xml.bind.annotation.*;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Login domain object
@@ -50,11 +49,13 @@ import java.util.Set;
         "pswdResetToken",
         "pswdResetTokenExp",
         "loginId",
-        "lastUpdate"
+        "lastUpdate",
+        "passwordHistory"
 })
 @XmlSeeAlso({
         Subject.class,
-        SSOToken.class
+        SSOToken.class,
+        PasswordHistory.class
 })
 @DozerDTOCorrespondence(LoginEntity.class)
 public class Login implements java.io.Serializable {
@@ -129,7 +130,9 @@ public class Login implements java.io.Serializable {
     private Date pswdResetTokenExp;
 
     protected Set<LoginAttribute> loginAttributes = new HashSet<LoginAttribute>(0);
-    
+
+    private Set<PasswordHistory> passwordHistory = new HashSet<PasswordHistory>(0);
+
     protected boolean selected;
     
     protected String origPrincipalName;
@@ -457,8 +460,15 @@ public class Login implements java.io.Serializable {
         this.initialStatus = initialStatus;
     }
 
-    @Override
+    public Set<PasswordHistory> getPasswordHistory() {
+        return passwordHistory;
+    }
 
+    public void setPasswordHistory(Set<PasswordHistory> passwordHistory) {
+        this.passwordHistory = passwordHistory;
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
