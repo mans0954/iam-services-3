@@ -23,7 +23,7 @@ public class PasswordHistoryDAOImpl extends BaseDaoImpl<PasswordHistoryEntity, S
 	@Override
 	public List<PasswordHistoryEntity> getPasswordHistoryByLoginId(final String loginId, final int from, final int size) {
 		final Criteria criteria = getCriteria();
-		criteria.add(Restrictions.eq("loginId", loginId));
+		criteria.add(Restrictions.eq("login.loginId", loginId));
 		criteria.addOrder(Order.asc("dateCreated"));
 		if(from > -1) {
 			criteria.setFirstResult(from);
