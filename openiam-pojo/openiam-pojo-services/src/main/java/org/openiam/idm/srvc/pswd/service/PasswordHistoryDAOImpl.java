@@ -44,18 +44,6 @@ public class PasswordHistoryDAOImpl extends BaseDaoImpl<PasswordHistoryEntity, S
     }
 
     @Override
-    @Transactional
-    public void deleteByLogin(String loginId){
-        StringBuilder sql = new StringBuilder();
-        sql.append("delete from ")
-           .append(this.domainClass.getName())
-           .append(" where loginId=:login");
-
-        getSession().createQuery(sql.toString()).setString("login", loginId)
-                .executeUpdate();
-    }
-
-    @Override
     public Long getCount() {
         StringBuilder sql = new StringBuilder();
         sql.append("SELECT count(pwd.pwdHistoryId) from ").append(PasswordHistory.class.getName()).append(" pwd");
