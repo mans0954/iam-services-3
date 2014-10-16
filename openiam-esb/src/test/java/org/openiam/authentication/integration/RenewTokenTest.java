@@ -61,7 +61,7 @@ public class RenewTokenTest extends AbstractTestNGSpringContextTests {
     public void renewTokenTest(){
         int threadId = counter.incrementAndGet();
         System.out.println("TRYING "+threadId);
-        final Response authResponse = authServiceClient.renewToken(login, token, tokenType/*, null*/);
+        final Response authResponse = authServiceClient.renewToken(login, token, tokenType, null);
 
         Assert.assertNotNull(authResponse);
         Assert.assertNotNull(authResponse.getStatus());

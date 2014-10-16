@@ -385,10 +385,10 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
 
     @Override
     @Transactional
-    public Response renewToken(final String principal, final String token, final String tokenType/*, final String contentProviderId*/) {
+    public Response renewToken(final String principal, final String token, final String tokenType, final String contentProviderId) {
         final Response resp = new Response(ResponseStatus.SUCCESS);
 
-        final String contentProviderId = null;
+        //final String contentProviderId = null;
         //TODO:  this is temproary.  Need to pass in content provider ID as argument from UI and proxy
         PolicyEntity policy = null;
         ManagedSysEntity managedSystem = null;

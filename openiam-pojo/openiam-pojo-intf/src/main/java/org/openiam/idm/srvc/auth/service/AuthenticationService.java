@@ -84,9 +84,9 @@ public interface AuthenticationService {
             final @WebParam(name = "token", targetNamespace = "")
             String token,
             final @WebParam(name = "tokenType", targetNamespace = "")
-            String tokenType/*,
+            String tokenType,
             final @WebParam(name = "contentProviderId", targetNamespace = "")
-            String contentProviderId*/);
+            String contentProviderId);
     
     @WebMethod
     List<AuthStateEntity> findBeans(final @WebParam(name = "request", targetNamespace = "") AuthStateSearchBean searchBean,
