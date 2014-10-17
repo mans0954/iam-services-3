@@ -20,7 +20,8 @@ import java.lang.ref.WeakReference;
         "amAttribute",
         "metaEntityId",
         "groovyScript",
-        "propagateThroughProxy"
+        "propagateThroughProxy",
+        "propagateOnError"
 })
 @DozerDTOCorrespondence(URIPatternMetaValueEntity.class)
 public class URIPatternMetaValue extends KeyNameDTO {
@@ -29,6 +30,7 @@ public class URIPatternMetaValue extends KeyNameDTO {
 	private String groovyScript;
 	private String metaEntityId;
 	private boolean propagateThroughProxy = true;
+	private boolean propagateOnError = true;
 	
 	/* internal use only!  Is compiled at spring refresh time 
 	 * to avoid run-time groovy class initialization.  
@@ -79,6 +81,12 @@ public class URIPatternMetaValue extends KeyNameDTO {
 	public void setPropagateThroughProxy(boolean propagateThroughProxy) {
 		this.propagateThroughProxy = propagateThroughProxy;
 	}
+	public boolean isPropagateOnError() {
+		return propagateOnError;
+	}
+	public void setPropagateOnError(boolean propagateOnError) {
+		this.propagateOnError = propagateOnError;
+	}
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -89,6 +97,7 @@ public class URIPatternMetaValue extends KeyNameDTO {
 				+ ((groovyScript == null) ? 0 : groovyScript.hashCode());
 		result = prime * result
 				+ ((metaEntityId == null) ? 0 : metaEntityId.hashCode());
+		result = prime * result + (propagateOnError ? 1231 : 1237);
 		result = prime * result + (propagateThroughProxy ? 1231 : 1237);
 		result = prime * result
 				+ ((staticValue == null) ? 0 : staticValue.hashCode());
@@ -118,6 +127,10 @@ public class URIPatternMetaValue extends KeyNameDTO {
 				return false;
 		} else if (!metaEntityId.equals(other.metaEntityId))
 			return false;
+		if (propagateOnError != other.propagateOnError)
+			return false;
+		if (propagateThroughProxy != other.propagateThroughProxy)
+			return false;
 		if (staticValue == null) {
 			if (other.staticValue != null)
 				return false;
@@ -127,10 +140,11 @@ public class URIPatternMetaValue extends KeyNameDTO {
 	}
 	@Override
 	public String toString() {
-		return String
-				.format("URIPatternMetaValue [staticValue=%s, amAttribute=%s, groovyScript=%s, metaEntityId=%s, toString()=%s]",
-						staticValue, amAttribute, groovyScript, metaEntityId,
-						super.toString());
+		return "URIPatternMetaValue [staticValue=" + staticValue
+				+ ", amAttribute=" + amAttribute + ", groovyScript="
+				+ groovyScript + ", metaEntityId=" + metaEntityId
+				+ ", propagateThroughProxy=" + propagateThroughProxy
+				+ ", propagateOnError=" + propagateOnError + "]";
 	}
 	
 	

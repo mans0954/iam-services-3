@@ -4,6 +4,7 @@ import java.io.Serializable;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -18,13 +19,17 @@ public class URIPatternRuleValue implements Serializable {
 	private String value;
 	private boolean propagate = true;
 	
+	@XmlTransient
+	private boolean propagateOnError = true;
+	
 	private URIPatternRuleValue() {}
 	
-	public URIPatternRuleValue(final String key, final String value, final boolean propagate) {
+	public URIPatternRuleValue(final String key, final String value, final boolean propagate, final boolean propagateOnError) {
 		this();
 		this.key = key;
 		this.value = value;
 		this.propagate = propagate;
+		this.propagateOnError = propagateOnError;
 	}
 
 	public String getKey() {
@@ -39,12 +44,17 @@ public class URIPatternRuleValue implements Serializable {
 		return propagate;
 	}
 
+	public boolean isPropagateOnError() {
+		return propagateOnError;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((key == null) ? 0 : key.hashCode());
 		result = prime * result + (propagate ? 1231 : 1237);
+		result = prime * result + (propagateOnError ? 1231 : 1237);
 		result = prime * result + ((value == null) ? 0 : value.hashCode());
 		return result;
 	}
@@ -65,6 +75,8 @@ public class URIPatternRuleValue implements Serializable {
 			return false;
 		if (propagate != other.propagate)
 			return false;
+		if (propagateOnError != other.propagateOnError)
+			return false;
 		if (value == null) {
 			if (other.value != null)
 				return false;
@@ -75,9 +87,9 @@ public class URIPatternRuleValue implements Serializable {
 
 	@Override
 	public String toString() {
-		return String.format(
-				"URIPatternRuleValue [key=%s, value=%s, propagate=%s]", key,
-				value, propagate);
+		return "URIPatternRuleValue [key=" + key + ", value=" + value
+				+ ", propagate=" + propagate + ", propagateOnError="
+				+ propagateOnError + "]";
 	}
 
 	
