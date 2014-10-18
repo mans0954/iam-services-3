@@ -318,12 +318,15 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
 
     @Override
     public List<ContentProviderServer> getServersForProvider(String providerId, Integer from, Integer size) {
-        ContentProviderServerEntity example = new ContentProviderServerEntity();
-        ContentProviderEntity provider = new ContentProviderEntity();
+        final ContentProviderServerEntity example = new ContentProviderServerEntity();
+        final ContentProviderEntity provider = new ContentProviderEntity();
         provider.setId(providerId);
         example.setContentProvider(provider);
-
-        return contentProviderServerDoserConverter.convertToDTOList(contentProviderService.getProviderServers(example, from, size), false);
+        
+        final List<ContentProviderServerEntity> entities = contentProviderService.getProviderServers(example, from, size);
+        final List<ContentProviderServer> servers = contentProviderServerDoserConverter.convertToDTOList(entities, false);
+        log.info(String.format("Content Provider Server Entities: %s, servers: %s", entities, servers));
+        return servers;
     }
 
     @Override
