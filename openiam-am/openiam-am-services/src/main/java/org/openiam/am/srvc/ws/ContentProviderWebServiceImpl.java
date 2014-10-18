@@ -360,6 +360,8 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
             }
             final ContentProviderServerEntity entity = contentProviderServerDoserConverter.convertToEntity(contentProviderServer, false);
             contentProviderService.saveProviderServer(entity);
+            log.info(String.format("Finalized Server: %s", entity));
+            response.setResponseValue(entity.getId());
         } catch(BasicDataServiceException e) {
             log.error(e.getMessage(), e);
             response.setStatus(ResponseStatus.FAILURE);

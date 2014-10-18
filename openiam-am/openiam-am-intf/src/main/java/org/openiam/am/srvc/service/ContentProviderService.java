@@ -44,7 +44,7 @@ public interface ContentProviderService {
 
     void deleteProviderServer(String contentProviderServerId);
 
-    ContentProviderServerEntity saveProviderServer(ContentProviderServerEntity contentProviderServerEntity);
+    void saveProviderServer(ContentProviderServerEntity contentProviderServerEntity);
 
     Integer getNumOfUriPatterns(URIPatternEntity example);
 

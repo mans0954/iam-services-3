@@ -262,7 +262,7 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
 
     @Override
     @Transactional
-    public ContentProviderServerEntity saveProviderServer(ContentProviderServerEntity contentProviderServer) {
+    public void saveProviderServer(final ContentProviderServerEntity contentProviderServer) {
     	log.info(String.format("Incoming server: %s", contentProviderServer));
         if (contentProviderServer == null) {
             throw new  NullPointerException("Content Provider Server not set");
@@ -274,27 +274,19 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
             throw new  IllegalArgumentException("Content Provider not set");
         }
 
-        ContentProviderEntity provider = contentProviderDao.findById(contentProviderServer.getContentProvider().getId());
+        final ContentProviderEntity provider = contentProviderDao.findById(contentProviderServer.getContentProvider().getId());
 
         if(provider==null){
             throw new NullPointerException("Cannot save content provider server. Content Provider is not found");
         }
+        
+        contentProviderServer.setContentProvider(provider);
 
-        ContentProviderServerEntity entity  = null;
         if(StringUtils.isBlank(contentProviderServer.getId())) {
-            // new server
-
-            contentProviderServer.setId(null);
-            contentProviderServer.setContentProvider(provider);
             contentProviderServerDao.save(contentProviderServer);
-            entity = contentProviderServer;
         } else{
-            // update server
-            entity  = contentProviderServerDao.findById(contentProviderServer.getId());
-            entity.setServerURL(contentProviderServer.getServerURL());
-            contentProviderServerDao.save(entity);
+            contentProviderServerDao.merge(contentProviderServer);
         }
-        return entity;
     }
 
     @Override
