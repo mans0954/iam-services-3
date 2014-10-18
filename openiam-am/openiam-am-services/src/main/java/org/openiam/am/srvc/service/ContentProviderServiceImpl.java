@@ -2,6 +2,8 @@ package org.openiam.am.srvc.service;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openiam.am.srvc.dao.*;
 import org.openiam.am.srvc.domain.*;
 import org.openiam.am.srvc.domain.pk.AuthLevelGroupingContentProviderXrefIdEntity;
@@ -33,6 +35,7 @@ import java.util.*;
 
 @Service("contentProviderService")
 public class ContentProviderServiceImpl implements  ContentProviderService, InitializingBean {
+	private final Log log = LogFactory.getLog(this.getClass());
     private static final String resourceTypeId="CONTENT_PROVIDER";
     private static final String patternResourceTypeId="URL_PATTERN";
     @Autowired
@@ -260,6 +263,7 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
     @Override
     @Transactional
     public ContentProviderServerEntity saveProviderServer(ContentProviderServerEntity contentProviderServer) {
+    	log.info(String.format("Incoming server: %s", contentProviderServer));
         if (contentProviderServer == null) {
             throw new  NullPointerException("Content Provider Server not set");
         }

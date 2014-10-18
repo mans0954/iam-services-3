@@ -337,7 +337,8 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
     }
 
     @Override
-    public Response saveProviderServer(ContentProviderServer contentProviderServer) {
+    public Response saveProviderServer(final ContentProviderServer contentProviderServer) {
+    	log.info(String.format("Incoming server: %s", contentProviderServer));
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
             if (contentProviderServer == null)
@@ -347,17 +348,18 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
             if (StringUtils.isBlank(contentProviderServer.getContentProviderId()))
                 throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_NOT_SET);
 
-            ContentProviderServerEntity example = new ContentProviderServerEntity();
-            ContentProviderEntity provider = new ContentProviderEntity();
+            final ContentProviderServerEntity example = new ContentProviderServerEntity();
+            final ContentProviderEntity provider = new ContentProviderEntity();
             provider.setId(contentProviderServer.getContentProviderId());
             example.setContentProvider(provider);
             example.setServerURL(contentProviderServer.getServerURL());
 
-            Integer count = contentProviderService.getNumOfProviderServers(example);
+            final Integer count = contentProviderService.getNumOfProviderServers(example);
             if(count>0){
                 throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_SERVER_EXISTS);
             }
-            contentProviderService.saveProviderServer(contentProviderServerDoserConverter.convertToEntity(contentProviderServer, false));
+            final ContentProviderServerEntity entity = contentProviderServerDoserConverter.convertToEntity(contentProviderServer, false);
+            contentProviderService.saveProviderServer(entity);
         } catch(BasicDataServiceException e) {
             log.error(e.getMessage(), e);
             response.setStatus(ResponseStatus.FAILURE);
