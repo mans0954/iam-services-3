@@ -263,7 +263,7 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
     @Override
     @Transactional
     public void saveProviderServer(final ContentProviderServerEntity contentProviderServer) {
-    	log.info(String.format("Incoming server: %s", contentProviderServer));
+    	//log.info(String.format("Incoming server: %s", contentProviderServer));
         if (contentProviderServer == null) {
             throw new  NullPointerException("Content Provider Server not set");
         }
@@ -435,33 +435,28 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
 
     @Override
     @Transactional
-    public URIPatternMetaEntity saveMetaDataForPattern(URIPatternMetaEntity uriPatternMetaEntity) {
-        if(uriPatternMetaEntity==null) {
-            throw new NullPointerException("Invalid argument");
-        }
-        if(uriPatternMetaEntity.getPattern()==null || StringUtils.isBlank(uriPatternMetaEntity.getPattern().getId())) {
-            throw new NullPointerException("URI Pattern not set");
-        }
-        if(StringUtils.isBlank(uriPatternMetaEntity.getName())) {
-            throw new  NullPointerException("URI Pattern Meta name not set");
-        }
-        if(uriPatternMetaEntity.getMetaType()==null || StringUtils.isBlank(uriPatternMetaEntity.getMetaType().getId())) {
-            throw new NullPointerException("Meta Type not set");
-        }
+    public void saveMetaDataForPattern(final URIPatternMetaEntity uriPatternMetaEntity) {
         if(CollectionUtils.isNotEmpty(uriPatternMetaEntity.getMetaValueSet())) {
     		for(final URIPatternMetaValueEntity value : uriPatternMetaEntity.getMetaValueSet()) {
     			value.setMetaEntity(uriPatternMetaEntity);
 	
     			/* satisfy data integrity */
-    			if(value.getAmAttribute() != null && StringUtils.isNotBlank(value.getAmAttribute().getId())) {
+    			if(value.isEmptyValue()) {
+    				value.setStaticValue(null);
+    				value.setAmAttribute(null);
+    				value.setGroovyScript(null);
+    			} else if(value.getAmAttribute() != null && StringUtils.isNotBlank(value.getAmAttribute().getId())) {
     				value.setStaticValue(null);
     				value.setGroovyScript(null);
+    				value.setEmptyValue(false);
     			} else if(StringUtils.isNotBlank(value.getStaticValue())) {
     				value.setAmAttribute(null);
     				value.setGroovyScript(null);
+    				value.setEmptyValue(false);
     			} else if(StringUtils.isNotBlank(value.getGroovyScript())) {
     				value.setAmAttribute(null);
     				value.setStaticValue(null);
+    				value.setEmptyValue(false);
     			}
 
     			/* set am attribute entity, if any */
@@ -499,6 +494,7 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
         				existingValue.setStaticValue(incomingValue.getStaticValue());
         				existingValue.setName(incomingValue.getName());
         				existingValue.setPropagateThroughProxy(incomingValue.isPropagateThroughProxy());
+        				existingValue.setEmptyValue(incomingValue.isEmptyValue());
         			}
         		}
         		if(!exists) {
@@ -525,9 +521,7 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
         	existingValues.addAll(newValues);
         	
         	uriPatternMetaDao.update(existing);
-        	uriPatternMetaEntity = existing;
         }
-        return uriPatternMetaEntity;
     }
 
     

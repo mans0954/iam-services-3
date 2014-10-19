@@ -325,7 +325,7 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
         
         final List<ContentProviderServerEntity> entities = contentProviderService.getProviderServers(example, from, size);
         final List<ContentProviderServer> servers = contentProviderServerDoserConverter.convertToDTOList(entities, false);
-        log.info(String.format("Content Provider Server Entities: %s, servers: %s", entities, servers));
+        //log.info(String.format("Content Provider Server Entities: %s, servers: %s", entities, servers));
         return servers;
     }
 
@@ -363,7 +363,7 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
             }
             final ContentProviderServerEntity entity = contentProviderServerDoserConverter.convertToEntity(contentProviderServer, false);
             contentProviderService.saveProviderServer(entity);
-            log.info(String.format("Finalized Server: %s", entity));
+            //log.info(String.format("Finalized Server: %s", entity));
             response.setResponseValue(entity.getId());
         } catch(BasicDataServiceException e) {
             log.error(e.getMessage(), e);
@@ -546,7 +546,7 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
     }
 
     @Override
-    public Response saveMetaDataForPattern(URIPatternMeta uriPatternMeta) {
+    public Response saveMetaDataForPattern(final URIPatternMeta uriPatternMeta) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
             if (uriPatternMeta==null) {
@@ -571,10 +571,12 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
             			 throw new  BasicDataServiceException(ResponseCode.META_NAME_MISSING);
                     }
             		
-            		if(StringUtils.isBlank(value.getGroovyScript()) &&
-            		   StringUtils.isBlank(value.getStaticValue()) &&
-            		   (value.getAmAttribute() == null || StringUtils.isBlank(value.getAmAttribute().getId()))) {
-            			 throw new  BasicDataServiceException(ResponseCode.META_VALUE_MISSING);
+            		if(!value.isEmptyValue()) {
+            			if(StringUtils.isBlank(value.getGroovyScript()) &&
+            			   StringUtils.isBlank(value.getStaticValue()) &&
+            			   (value.getAmAttribute() == null || StringUtils.isBlank(value.getAmAttribute().getId()))) {
+            				throw new  BasicDataServiceException(ResponseCode.META_VALUE_MISSING);
+            			}
             		}
             	}
             }
@@ -589,10 +591,11 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
 
 
             // check metadata values
-            validateMetaDataValues(uriPatternMeta);
+            //validateMetaDataValues(uriPatternMeta);
 
-            URIPatternMetaEntity entity = contentProviderService.saveMetaDataForPattern(uriPatternMetaDozerConverter.convertToEntity(uriPatternMeta,true));
-            response.setResponseValue(uriPatternMetaDozerConverter.convertToDTO(entity, true));
+            final URIPatternMetaEntity entity = uriPatternMetaDozerConverter.convertToEntity(uriPatternMeta,true);
+            contentProviderService.saveMetaDataForPattern(entity);
+            response.setResponseValue(entity.getId());
 
         } catch(BasicDataServiceException e) {
             log.error(e.getMessage(), e);
@@ -606,6 +609,7 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
         return response;
     }
 
+    /*
     private void validateMetaDataValues(URIPatternMeta uriPatternMeta) throws BasicDataServiceException{
         if(CollectionUtils.isNotEmpty(uriPatternMeta.getMetaValueSet())) {
             for (URIPatternMetaValue value: uriPatternMeta.getMetaValueSet()){
@@ -620,6 +624,7 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
             }
         }
     }
+    */
 
     @Override
     public Response deleteMetaDataForPattern(@WebParam(name = "metaId", targetNamespace = "") String metaId) {

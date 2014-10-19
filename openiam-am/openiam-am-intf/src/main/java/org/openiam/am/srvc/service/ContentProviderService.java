@@ -62,7 +62,7 @@ public interface ContentProviderService {
 
     public URIPatternMetaEntity getURIPatternMeta(String metaId);
 
-    URIPatternMetaEntity saveMetaDataForPattern(URIPatternMetaEntity uriPatternMetaEntity);
+    void saveMetaDataForPattern(URIPatternMetaEntity uriPatternMetaEntity);
 
     void deleteMetaDataForPattern(String metaId);
 

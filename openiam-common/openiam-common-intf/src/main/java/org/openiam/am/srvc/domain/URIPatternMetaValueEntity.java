@@ -32,6 +32,10 @@ public class URIPatternMetaValueEntity implements Serializable {
 	@Column(name = "GROOVY_SCRIPT", length = 200, nullable = true)
 	private String groovyScript;
 	
+	@Column(name = "IS_EMPTY_VALUE")
+    @Type(type = "yes_no")
+	private boolean emptyValue;
+	
 	@ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name="AM_RES_ATTRIBUTE_ID", referencedColumnName = "AM_RES_ATTRIBUTE_ID", nullable=true, insertable=true, updatable=true)
 	private AuthResourceAMAttributeEntity amAttribute;
@@ -101,12 +105,21 @@ public class URIPatternMetaValueEntity implements Serializable {
 		this.propagateThroughProxy = propagateThroughProxy;
 	}
 
+	public boolean isEmptyValue() {
+		return emptyValue;
+	}
+
+	public void setEmptyValue(boolean emptyValue) {
+		this.emptyValue = emptyValue;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result
 				+ ((amAttribute == null) ? 0 : amAttribute.hashCode());
+		result = prime * result + (emptyValue ? 1231 : 1237);
 		result = prime * result
 				+ ((groovyScript == null) ? 0 : groovyScript.hashCode());
 		result = prime * result + ((id == null) ? 0 : id.hashCode());
@@ -132,6 +145,8 @@ public class URIPatternMetaValueEntity implements Serializable {
 			if (other.amAttribute != null)
 				return false;
 		} else if (!amAttribute.equals(other.amAttribute))
+			return false;
+		if (emptyValue != other.emptyValue)
 			return false;
 		if (groovyScript == null) {
 			if (other.groovyScript != null)
@@ -166,11 +181,10 @@ public class URIPatternMetaValueEntity implements Serializable {
 	@Override
 	public String toString() {
 		return String
-				.format("URIPatternMetaValueEntity [id=%s, name=%s, staticValue=%s, groovyScript=%s, amAttribute=%s, metaEntity=%s, propagateThroughProxy=%s]",
-						id, name, staticValue, groovyScript, amAttribute,
-						metaEntity, propagateThroughProxy);
+				.format("URIPatternMetaValueEntity [id=%s, name=%s, staticValue=%s, groovyScript=%s, emptyValue=%s, amAttribute=%s, metaEntity=%s, propagateThroughProxy=%s]",
+						id, name, staticValue, groovyScript, emptyValue,
+						amAttribute, metaEntity, propagateThroughProxy);
 	}
 
-	
 	
 }
