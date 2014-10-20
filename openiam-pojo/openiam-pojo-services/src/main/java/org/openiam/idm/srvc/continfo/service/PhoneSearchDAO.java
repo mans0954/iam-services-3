@@ -29,13 +29,11 @@ public class PhoneSearchDAO extends AbstractHibernateSearchDao<PhoneEntity, Phon
         QueryBuilder clause = buildTokenizedClause("areaCd", query.getPhoneAreaCd(), MatchType.STARTS_WITH);
 		if(clause != null) {
             addClause(luceneQuery, clause, SearchMode.AND);
-//			luceneQuery.add(clause, BooleanClause.Occur.MUST);
 		}
 		
 		clause = buildTokenizedClause("phoneNbr", query.getPhoneNbr(), MatchType.STARTS_WITH);
 		if(clause != null) {
             addClause(luceneQuery, clause, SearchMode.AND);
-//			luceneQuery.add(clause, BooleanClause.Occur.MUST);
 		}
 		return luceneQuery;
 	}
