@@ -206,7 +206,7 @@ public abstract class AbstractLoginModule implements AuthenticationModule {
             managedSystem = (authProvider != null) ? authProvider.getManagedSystem() : null;
         }
         if (managedSystem == null) {
-            final String warning = String.format("Content Provider %s -> Auth Provider %s does not have a managed system corresopnding to it.  Using default: %s", contentProviderId, sysConfiguration.getDefaultManagedSysId());
+            final String warning = String.format("Content Provider %s -> Auth Provider does not have a managed system corresopnding to it.  Using default: %s", contentProviderId, sysConfiguration.getDefaultManagedSysId());
             log.warn(warning);
             event.addWarning(warning);
             managedSystem = managedSysDAO.findById(sysConfiguration.getDefaultManagedSysId());
