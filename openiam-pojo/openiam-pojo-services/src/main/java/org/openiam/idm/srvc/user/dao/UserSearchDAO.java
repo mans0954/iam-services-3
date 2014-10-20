@@ -10,6 +10,8 @@ import org.openiam.base.ws.MatchType;
 import org.openiam.base.ws.SearchMode;
 import org.openiam.base.ws.SearchParam;
 import org.openiam.core.dao.lucene.AbstractHibernateSearchDao;
+import org.openiam.elasticsearch.constants.ESIndexType;
+import org.openiam.idm.searchbeans.LoginSearchBean;
 import org.openiam.idm.searchbeans.UserSearchBean;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.springframework.stereotype.Repository;
@@ -112,6 +114,77 @@ public class UserSearchDAO extends AbstractHibernateSearchDao<UserEntity, UserSe
             addClause(luceneQuery, clause, query.getSearchMode());
 //            luceneQuery.add(clause, BooleanClause.Occur.MUST);
         }
+
+//        param = query.getEmailAddressMatchToken();
+//        if(param != null && param.isValid()) {
+//
+//            // TODO: hasChildren
+//            if(MatchType.EXACT.equals(param.getMatchType())){
+//                clause = QueryBuilders.hasChildQuery(ESIndexType.EMAIL, buildExactClause("emailAddress", param.getValue()));
+////                clause = buildExactClause("emailAddress", param.getValue());
+//            } else {
+//                clause = QueryBuilders.hasChildQuery(ESIndexType.EMAIL, buildTokenizedClause("emailAddress", param.getValue(), param.getMatchType()));
+////                clause = buildTokenizedClause("emailAddress", param.getValue(), param.getMatchType());
+//            }
+//
+//            if(clause != null) {
+//                addClause(luceneQuery, clause, query.getSearchMode());
+//            }
+//        }
+
+
+//        LoginSearchBean loginQuery = query.getPrincipal();
+//        if(loginQuery!=null){
+//            BoolQueryBuilder loginQueryClause = QueryBuilders.boolQuery();
+//
+//            param = loginQuery.getLoginMatchToken();
+//            if(param != null && param.isValid()) {
+//                clause = null;
+//                if(MatchType.EXACT.equals(param.getMatchType())){
+////                    clause = QueryBuilders.hasChildQuery(ESIndexType.LOGIN, buildExactClause("login", param.getValue()));
+//                    clause = buildExactClause("login", param.getValue());
+//                } else {
+//                    clause = QueryBuilders.hasChildQuery(ESIndexType.LOGIN, buildTokenizedClause("login", param.getValue(), param.getMatchType()));
+//                    clause = buildTokenizedClause("login", param.getValue(), param.getMatchType());
+//                }
+//
+//                if(clause != null) {
+//                    addClause(loginQueryClause, clause, SearchMode.AND);
+//                }
+//            }
+//
+//            clause = buildExactClause("managedSysId", loginQuery.getManagedSysId());
+//            if(clause != null) {
+//                addClause(loginQueryClause, clause, SearchMode.AND);
+//            }
+//
+//            clause = buildExactClause("userId", query.getUserId());
+//            if(clause != null) {
+//                addClause(loginQueryClause, clause, SearchMode.AND);
+//            }
+//
+//            clause = QueryBuilders.hasChildQuery(ESIndexType.LOGIN, loginQueryClause);
+//
+//            if(clause != null) {
+//                addClause(luceneQuery, clause, query.getSearchMode());
+//            }
+//        }
+
+//        query.getPhoneAreaCd();
+//        query.getPhoneNbr();
+//
+//
+//        QueryBuilder clause = buildTokenizedClause("areaCd", query.getPhoneAreaCd(), MatchType.STARTS_WITH);
+//        if(clause != null) {
+//            addClause(luceneQuery, clause, SearchMode.AND);
+////			luceneQuery.add(clause, BooleanClause.Occur.MUST);
+//        }
+//
+//        clause = buildTokenizedClause("phoneNbr", query.getPhoneNbr(), MatchType.STARTS_WITH);
+//        if(clause != null) {
+//            addClause(luceneQuery, clause, SearchMode.AND);
+////			luceneQuery.add(clause, BooleanClause.Occur.MUST);
+//        }
 
 		return luceneQuery;
 	}

@@ -31,7 +31,7 @@ import java.util.Set;
 //@Indexed
 @Embeddable
 @ElasticsearchIndex(indexName = ESIndexName.USERS)
-@ElasticsearchMapping(typeName = ESIndexType.LOGIN, parent = ESIndexType.USER)
+@ElasticsearchMapping(typeName = ESIndexType.LOGIN/*, parent = ESIndexType.USER*/)
 @AttributeOverride(name = "id", column = @Column(name = "LOGIN_ID"))
 public class LoginEntity extends KeyEntity {
 
@@ -49,7 +49,7 @@ public class LoginEntity extends KeyEntity {
     private String managedSysId;
 
 //    @Field(name = "userId", analyze = Analyze.NO, store = Store.YES)
-    @ElasticsearchField(name = "userId", store = ElasticsearchStore.Yes, index = Index.Not_Analyzed, mapToParent=true)
+    @ElasticsearchField(name = "userId", store = ElasticsearchStore.Yes, index = Index.Not_Analyzed/*, mapToParent=true*/)
     @Column(name="USER_ID",length=32)
     protected String userId;
 

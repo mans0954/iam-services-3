@@ -30,7 +30,7 @@ import java.util.Date;
 //@Indexed
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @ElasticsearchIndex(indexName = ESIndexName.USERS)
-@ElasticsearchMapping(typeName = ESIndexType.PHONE, parent = ESIndexType.USER)
+@ElasticsearchMapping(typeName = ESIndexType.PHONE/*, parent = ESIndexType.USER*/)
 @AttributeOverride(name = "id", column = @Column(name = "PHONE_ID"))
 public class PhoneEntity extends KeyEntity {
     @Column(name="ACTIVE")
@@ -61,7 +61,7 @@ public class PhoneEntity extends KeyEntity {
     @XmlTransient
     @ManyToOne
     @JoinColumn(name="PARENT_ID")
-    @ElasticsearchField(name = "userId", bridge=@ElasticsearchFieldBridge(impl = UserBrigde.class), store = ElasticsearchStore.Yes, index = Index.Not_Analyzed, mapToParent=true)
+    @ElasticsearchField(name = "userId", bridge=@ElasticsearchFieldBridge(impl = UserBrigde.class), store = ElasticsearchStore.Yes, index = Index.Not_Analyzed/*, mapToParent=true*/)
 //    @Field(name="parent", bridge=@FieldBridge(impl=UserBridge.class), store=Store.YES)
     private UserEntity parent;
 
