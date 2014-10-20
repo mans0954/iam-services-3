@@ -128,7 +128,7 @@ public abstract class AbstractLoginModule implements AuthenticationModule {
     @Transactional
     public void logout(final LogoutRequest request, final IdmAuditLog auditLog) throws Exception {
         final UserEntity userEntity = userDAO.findById(request.getUserId());
-        final ManagedSysEntity managedSystem = getManagedSystem(request);
+        final ManagedSysEntity managedSystem = getManagedSystem(request, auditLog);
         final LoginEntity primaryIdentity = UserUtils.getUserManagedSysIdentityEntity(managedSystem.getId(), userEntity.getPrincipalList());
         auditLog.addTarget(request.getUserId(), AuditTarget.USER.value(), primaryIdentity.getLogin());
 
@@ -195,16 +195,23 @@ public abstract class AbstractLoginModule implements AuthenticationModule {
     protected KeyManagementService keyManagementService;
     private static final Log log = LogFactory.getLog(AbstractLoginModule.class);
 
-    protected ManagedSysEntity getManagedSystem(final LogoutRequest request) {
+    protected ManagedSysEntity getManagedSystem(final LogoutRequest request, final IdmAuditLog event) {
         final String contentProviderId = request.getContentProviderId();
         ManagedSysEntity managedSystem = null;
         if (contentProviderId == null) {
             managedSystem = managedSysDAO.findById(sysConfiguration.getDefaultManagedSysId());
         } else {
             final ContentProviderEntity contentProvider = contentProviderDAO.findById(contentProviderId);
-            final AuthProviderEntity authProvider = contentProvider.getAuthProvider();
-            managedSystem = authProvider.getManagedSystem();
+            final AuthProviderEntity authProvider = (contentProvider != null) ? contentProvider.getAuthProvider() : null;
+            managedSystem = (authProvider != null) ? authProvider.getManagedSystem() : null;
         }
+        if (managedSystem == null) {
+            final String warning = String.format("Content Provider %s -> Auth Provider %s does not have a managed system corresopnding to it.  Using default: %s", contentProviderId, sysConfiguration.getDefaultManagedSysId());
+            log.warn(warning);
+            event.addWarning(warning);
+            managedSystem = managedSysDAO.findById(sysConfiguration.getDefaultManagedSysId());
+        }
+        
         return managedSystem;
     }
 
@@ -215,7 +222,7 @@ public abstract class AbstractLoginModule implements AuthenticationModule {
     protected ManagedSysEntity getManagedSystem(final AuthenticationContext context) {
         final IdmAuditLog event = context.getEvent();
         final AuthProviderEntity authProvider = getAuthProvider(context);
-        ManagedSysEntity managedSystem = authProvider.getManagedSystem();
+        ManagedSysEntity managedSystem = (authProvider != null) ? authProvider.getManagedSystem() : null;
         if (managedSystem == null) {
             final String warning = String.format("Auth provider %s does not have a managed system corresopnding to it.  Using default: %s", context.getAuthProviderId(), sysConfiguration.getDefaultManagedSysId());
             log.warn(warning);
