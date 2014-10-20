@@ -1,11 +1,14 @@
 package org.openiam.idm.srvc.auth.login.lucene;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
+import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.SearchHit;
 import org.openiam.base.ws.MatchType;
 import org.openiam.base.ws.SearchMode;
 import org.openiam.base.ws.SearchParam;
@@ -61,12 +64,14 @@ public class LoginSearchDAO extends AbstractHibernateSearchDao<LoginEntity, Logi
     	if ((query != null)) {
             final QueryBuilder luceneQuery = parse(query);
             if (luceneQuery != null) {
-//				final List idList = findIds(buildFullTextSessionQuery(getFullTextSession(null), luceneQuery, from, size, null).setProjection("userId"));
-//				for (final Object row : idList) {
-//					final Object[] columns = (Object[]) row;
-//					final String id = (String) columns[0];
-//					result.add(id);
-//				}
+                SearchResponse searchResponse = esHelper.searchData(luceneQuery, getEntityClass());
+                if(searchResponse!=null && searchResponse.getHits()!=null && searchResponse.getHits().getTotalHits()>0){
+                    for (final SearchHit hit : searchResponse.getHits()) {
+                        final String fieldValue = (String) hit.getSource().get("userId");
+                        if(StringUtils.isNotBlank(fieldValue))
+                            result.add(fieldValue);
+                    }
+                }
             }
     	}
         return result;

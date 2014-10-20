@@ -1,11 +1,14 @@
 package org.openiam.idm.srvc.continfo.service;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
+import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.SearchHit;
 import org.openiam.base.ws.MatchType;
 import org.openiam.base.ws.SearchMode;
 import org.openiam.core.dao.lucene.AbstractHibernateSearchDao;
@@ -47,12 +50,14 @@ public class PhoneSearchDAO extends AbstractHibernateSearchDao<PhoneEntity, Phon
     	if ((query != null)) {
             final QueryBuilder luceneQuery = parse(query);
             if (luceneQuery != null) {
-				/*final List idList = findIds(buildFullTextSessionQuery(getFullTextSession(null), luceneQuery, from, size, null).setProjection("parent"));
-				for (final Object row : idList) {
-					final Object[] columns = (Object[]) row;
-					final UserEntity id = (UserEntity) columns[0];
-					result.add(id.getId());
-				}*/
+                SearchResponse searchResponse = esHelper.searchData(luceneQuery, getEntityClass());
+                if(searchResponse!=null && searchResponse.getHits()!=null && searchResponse.getHits().getTotalHits()>0){
+                    for (final SearchHit hit : searchResponse.getHits()) {
+                        final String fieldValue = (String) hit.getSource().get("userId");
+                        if(StringUtils.isNotBlank(fieldValue))
+                            result.add(fieldValue);
+                    }
+                }
             }
     	}
         return result;
