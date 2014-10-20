@@ -9,6 +9,7 @@ import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysRuleEntity;
+import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.role.dto.Role;
 
 import javax.persistence.CascadeType;
@@ -35,7 +36,7 @@ import java.util.Set;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "ManagedSysDto", propOrder = {"description", "status", "connectorId", "hostUrl", "port",
         "commProtocol", "userId", "pswd", "decryptPassword", "endDate", "startDate", "attributeNamesLookup",
-        "searchScope", "resourceId", "primaryRepository", "secondaryRepositoryId", "updateSecondary",
+        "searchScope", "resource", "primaryRepository", "secondaryRepositoryId", "updateSecondary",
         "mngSysObjectMatchs", "driverUrl", "connectionString", "addHandler", "modifyHandler", "deleteHandler",
         "passwordHandler", "suspendHandler", "resumeHandler", "searchHandler", "lookupHandler",
         "testConnectionHandler", "reconcileResourceHandler", "attributeNamesHandler", "handler5", "rules", "groups",
@@ -61,7 +62,7 @@ public class ManagedSysDto extends KeyNameDTO {
     private Date endDate;
     private String attributeNamesLookup;
     private SearchScopeType searchScope = SearchScopeType.SUBTREE_SCOPE;
-    private String resourceId;
+    private Resource resource;
     private Integer primaryRepository;
     private String secondaryRepositoryId;
     private Integer updateSecondary;
@@ -274,12 +275,18 @@ public class ManagedSysDto extends KeyNameDTO {
         this.searchScope = searchScope;
     }
 
+    /* use getResource/setResource */
+    @Deprecated
     public String getResourceId() {
-        return resourceId;
+        return (resource != null) ? resource.getId() : null;
     }
 
+    /* use getResource/setResource */
+    @Deprecated
     public void setResourceId(String resourceId) {
-        this.resourceId = resourceId;
+        if(resource != null) {
+        	resource.setId(resourceId);
+        }
     }
 
     public Integer getPrimaryRepository() {
@@ -442,6 +449,14 @@ public class ManagedSysDto extends KeyNameDTO {
         this.roles = roles;
     }
 
+	public Resource getResource() {
+		return resource;
+	}
+
+	public void setResource(Resource resource) {
+		this.resource = resource;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -492,7 +507,7 @@ public class ManagedSysDto extends KeyNameDTO {
 				+ ((reconcileResourceHandler == null) ? 0
 						: reconcileResourceHandler.hashCode());
 		result = prime * result
-				+ ((resourceId == null) ? 0 : resourceId.hashCode());
+				+ ((resource == null) ? 0 : resource.hashCode());
 		result = prime * result
 				+ ((resumeHandler == null) ? 0 : resumeHandler.hashCode());
 		result = prime * result
@@ -628,10 +643,10 @@ public class ManagedSysDto extends KeyNameDTO {
 		} else if (!reconcileResourceHandler
 				.equals(other.reconcileResourceHandler))
 			return false;
-		if (resourceId == null) {
-			if (other.resourceId != null)
+		if (resource == null) {
+			if (other.resource != null)
 				return false;
-		} else if (!resourceId.equals(other.resourceId))
+		} else if (!resource.equals(other.resource))
 			return false;
 		if (resumeHandler == null) {
 			if (other.resumeHandler != null)

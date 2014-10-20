@@ -143,16 +143,12 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
 				final MetadataElementPageTemplateEntity dbEntity = pageTemplateDAO.findById(entity.getId());
 				if(dbEntity != null) {
 					entity.setResource(dbEntity.getResource());
-					if(entity.getResource() != null) {
-						entity.getResource().setCoorelatedName(entity.getName());
-					}
 				}
 			} else {
 				final ResourceEntity resource = new ResourceEntity();
 				resource.setName(entity.getName() + "_" + System.currentTimeMillis());
 	            resource.setResourceType(resourceTypeDAO.findById(uiTemplateResourceType));
 	            resource.setIsPublic(true);
-	            resource.setCoorelatedName(entity.getName());
 	            resourceDAO.save(resource);
 	            entity.setResource(resource);
 			}
@@ -369,27 +365,19 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
 	}
 	
 	private LanguageEntity getLanguage(final TemplateRequest request) {
-		return getLanguage(request.getLanguageId(), request.getLanguageCode(), request.getLocaleName());
+		return getLanguage(request.getLanguageId());
 	}
 	
 	private LanguageEntity getLanguage(final UserProfileRequestModel request) {
-		return getLanguage(request.getLanguageId(), request.getLanguageCode(), request.getLocale());
+		return getLanguage(request.getLanguageId());
 	}
 	
-	private LanguageEntity getLanguage(final String languageId, final String languageCode, final String localeName) {
+	private LanguageEntity getLanguage(final String languageId) {
 		LanguageEntity entity = null;
 		if(StringUtils.isNotBlank(languageId)) {
 			entity = languageDAO.findById(languageId);
-		} else {
-			if(StringUtils.isNotBlank(languageCode)) {
-				entity = languageDAO.getByCode(languageCode);
-			}
-			
-			if(entity == null && StringUtils.isNotBlank(localeName)) {
-				entity = languageDAO.getByLocale(localeName);
-			}
-				
 		}
+			
 		if(entity == null) {
 			entity = languageDAO.getDefaultLanguage();
 		}

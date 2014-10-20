@@ -17,7 +17,7 @@
  */
 
 /**
- * 
+ *
  */
 package org.openiam.idm.srvc.pswd.rule;
 
@@ -29,49 +29,53 @@ import org.openiam.idm.srvc.pswd.dto.PasswordRule;
 
 /**
  * Validates a password to ensure the lenght is consistent with the lenght defined in the password policy
- * @author suneet
  *
+ * @author suneet
  */
 public class PasswordLengthRule extends AbstractPasswordRule {
 
 
-	@Override
-	public void validate() throws PasswordRuleException {
-		PolicyAttribute attribute = getAttribute("PWD_LEN");
-		int minlen = getValue1(attribute);
-		int maxlen = getValue2(attribute);
-		final PasswordRuleException ex = createException();
-		
-		if (password == null) {
-			throw ex;
-		}
-		
-		if (minlen > 0 ) {
-			if (password.length() < minlen) {
-				throw ex;
-			}
-		}
-		if (maxlen > 0 ) {
-			if (password.length() > maxlen ) {
-				throw ex;
-			}
-		}
-		
-	}
+    @Override
+    public String getAttributeName() {
+        return "PWD_LEN";
+    }
 
-	@Override
-	public PasswordRuleException createException() {
-		PolicyAttribute attribute = getAttribute("PWD_LEN");
-		int minlen = getValue1(attribute);
-		int maxlen = getValue2(attribute);
-		return createException(ResponseCode.FAIL_LENGTH_RULE, minlen, maxlen);
-	}
+    @Override
+    public void validate(PolicyAttribute attribute) throws PasswordRuleException {
+        int minlen = getValue1(attribute);
+        int maxlen = getValue2(attribute);
+        final PasswordRuleException ex = createException();
+        if (ex == null) {
+            return;
+        }
+        if (minlen > 0) {
+            if (password.length() < minlen) {
+                throw ex;
+            }
+        }
+        if (maxlen > 0) {
+            if (password.length() > maxlen) {
+                throw ex;
+            }
+        }
 
-	@Override
-	public PasswordRule createRule() {
-		PolicyAttribute attribute = getAttribute("PWD_LEN");
-		int minlen = getValue1(attribute);
-		int maxlen = getValue2(attribute);
-		return createRule(ResponseCode.FAIL_LENGTH_RULE, minlen, maxlen);
-	}
+    }
+
+    @Override
+    public PasswordRuleException createException(PolicyAttribute attribute) {
+        int minlen = getValue1(attribute);
+        int maxlen = getValue2(attribute);
+        return createException(ResponseCode.FAIL_LENGTH_RULE, minlen, maxlen);
+    }
+
+    @Override
+    public PasswordRule createRule(PolicyAttribute attribute) {
+        int minlen = getValue1(attribute);
+        int maxlen = getValue2(attribute);
+        if (minlen <= 0 && maxlen <= 0) {
+            return null;
+        } else {
+            return createRule(ResponseCode.FAIL_LENGTH_RULE, minlen, maxlen);
+        }
+    }
 }

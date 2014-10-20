@@ -25,6 +25,8 @@ public interface RoleDataService {
     public RoleEntity getRoleLocalized(final String roleId, final String requestorId, final LanguageEntity language);
     
     public void saveRole(final RoleEntity role, final String requestorId) throws BasicDataServiceException;
+
+    public void addRequiredAttributes(RoleEntity role);
     
     public void removeRole(String roleId);
 

@@ -45,6 +45,10 @@ public class URIPatternMetaValueEntity extends AbstractKeyNameEntity {
 	@Type(type = "yes_no")
 	private boolean propagateThroughProxy = true;
 	
+	@Column(name = "PROPAGETE_ON_ERROR", nullable = false)
+	@Type(type = "yes_no")
+	private boolean propagateOnError = true;
+	
 	public String getId() {
 		return id;
 	}
@@ -100,6 +104,14 @@ public class URIPatternMetaValueEntity extends AbstractKeyNameEntity {
 		this.propagateThroughProxy = propagateThroughProxy;
 	}
 
+	public boolean isPropagateOnError() {
+		return propagateOnError;
+	}
+
+	public void setPropagateOnError(boolean propagateOnError) {
+		this.propagateOnError = propagateOnError;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -108,9 +120,9 @@ public class URIPatternMetaValueEntity extends AbstractKeyNameEntity {
 				+ ((amAttribute == null) ? 0 : amAttribute.hashCode());
 		result = prime * result
 				+ ((groovyScript == null) ? 0 : groovyScript.hashCode());
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		result = prime * result
 				+ ((metaEntity == null) ? 0 : metaEntity.hashCode());
+		result = prime * result + (propagateOnError ? 1231 : 1237);
 		result = prime * result + (propagateThroughProxy ? 1231 : 1237);
 		result = prime * result
 				+ ((staticValue == null) ? 0 : staticValue.hashCode());
@@ -141,6 +153,8 @@ public class URIPatternMetaValueEntity extends AbstractKeyNameEntity {
 				return false;
 		} else if (!metaEntity.equals(other.metaEntity))
 			return false;
+		if (propagateOnError != other.propagateOnError)
+			return false;
 		if (propagateThroughProxy != other.propagateThroughProxy)
 			return false;
 		if (staticValue == null) {
@@ -153,9 +167,11 @@ public class URIPatternMetaValueEntity extends AbstractKeyNameEntity {
 
 	@Override
 	public String toString() {
-		return String
-				.format("URIPatternMetaValueEntity [staticValue=%s, groovyScript=%s, amAttribute=%s, metaEntity=%s]",
-						staticValue, groovyScript, amAttribute, metaEntity);
+		return "URIPatternMetaValueEntity [staticValue=" + staticValue
+				+ ", groovyScript=" + groovyScript + ", amAttribute="
+				+ amAttribute + ", metaEntity=" + metaEntity
+				+ ", propagateThroughProxy=" + propagateThroughProxy
+				+ ", propagateOnError=" + propagateOnError + "]";
 	}
 
 	

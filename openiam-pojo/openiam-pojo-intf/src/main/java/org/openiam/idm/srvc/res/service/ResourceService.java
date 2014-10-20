@@ -17,6 +17,7 @@ public interface ResourceService {
 
 	public void deleteResource(final String resourceId);
 	public void save(final ResourceEntity resource, final String requestorId);
+    public void addRequiredAttributes(ResourceEntity resource);
 	public ResourceEntity findResourceById(final String resourceId);
 	public List<ResourceEntity> findResourcesByIds(final Collection<String> resourceIdCollection);
 	public ResourceEntity findResourceByName(final String name);
@@ -78,4 +79,6 @@ public interface ResourceService {
 
     int countResourceTypes(ResourceTypeSearchBean searchBean);
     void deleteResourceType(String resourceTypeId);
+    
+    public void mergeAttributes(final ResourceEntity bean, final ResourceEntity dbObject);
 }

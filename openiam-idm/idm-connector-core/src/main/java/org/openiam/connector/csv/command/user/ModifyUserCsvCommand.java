@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
 
 @Service("modifyUserCsvCommand")
@@ -25,7 +26,7 @@ public class ModifyUserCsvCommand  extends AbstractCrudCSVCommand<ExtensibleUser
     @Override
     protected void performObjectOperation(String objectIdentity, ExtensibleUser extensibleObject, ManagedSysEntity managedSys) throws ConnectorDataException {
         try {
-            List<AttributeMapEntity> attrMapList = managedSysService.getResourceAttributeMaps(managedSys.getResourceId());
+            List<AttributeMapEntity> attrMapList = (managedSys != null) ? managedSysService.getResourceAttributeMaps(managedSys.getResource().getId()) : Collections.EMPTY_LIST;
             extensibleUserCSVParser.update(new ReconciliationObject<ExtensibleUser>(objectIdentity, extensibleObject), managedSys, attrMapList, CSVSource.IDM);
         } catch (Exception e) {
             log.error(e.getMessage(), e);

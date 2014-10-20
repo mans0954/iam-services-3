@@ -25,7 +25,7 @@ public class AddGroupCSVCommand extends AbstractCrudCSVCommand<ExtensibleGroup> 
     @Override
     protected void performObjectOperation(String id, ExtensibleGroup object, ManagedSysEntity managedSys) throws ConnectorDataException {
         try {
-            List<AttributeMapEntity> attrMapList = managedSysService.getResourceAttributeMaps(managedSys.getResourceId());
+            List<AttributeMapEntity> attrMapList = (managedSys.getResource() != null) ? managedSysService.getResourceAttributeMaps(managedSys.getResource().getId()) : null;
             groupCsvParser.add(new ReconciliationObject<Group>(id, object.getGroup()), managedSys, attrMapList, CSVSource.IDM);
         } catch (Exception e) {
             log.error(e.getMessage(), e);

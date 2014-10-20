@@ -25,26 +25,28 @@ public class DeleteGroupDelegate extends AbstractActivitiJob {
 		Response wsResponse = null;
 		final Group group = getObjectVariable(execution, ActivitiConstants.GROUP, Group.class);
 
-        if(group != null) {
-            IdmAuditLog idmAuditLog = new IdmAuditLog();
-            idmAuditLog.setRequestorUserId(getRequestorId(execution));
-            idmAuditLog.setAction(AuditAction.DELETE_GROUP.value());
-            idmAuditLog.setAuditDescription("Delete group");
-            idmAuditLog.setTargetGroup(group.getId(), group.getName());
-            idmAuditLog.setTargetTask(execution.getId(),execution.getCurrentActivityName());
-            idmAuditLog.setSource(AuditSource.WORKFLOW.value());
-            try {
+		final IdmAuditLog idmAuditLog = createNewAuditLog(execution);
+        idmAuditLog.setAction(AuditAction.DELETE_GROUP.value());
+        try {
+        	if(group != null) {
+        		idmAuditLog.setTargetGroup(group.getId(), group.getName());
                 wsResponse = groupDataService.deleteGroup(group.getId(), systemUserId);
                 if (wsResponse.isSuccess()) {
                     idmAuditLog.succeed();
                 } else {
-                    idmAuditLog.fail();
                     idmAuditLog.setFailureReason(wsResponse.getErrorCode());
                     idmAuditLog.setFailureReason(wsResponse.getErrorText());
+                    throw new RuntimeException(String.format("Delete Group failed; %s", wsResponse));
                 }
-            } finally {
-                auditLogService.enqueue(idmAuditLog);
-            }
-        }
+        	} else {
+        		throw new RuntimeException("Group was null");
+        	}
+        } catch(Throwable e) {
+			idmAuditLog.setException(e);
+			idmAuditLog.fail();
+			throw new RuntimeException(e);
+		} finally {
+			addAuditLogChild(execution, idmAuditLog);
+		}
 	}
 }

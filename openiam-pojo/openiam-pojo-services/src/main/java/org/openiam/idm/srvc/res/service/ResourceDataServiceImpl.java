@@ -24,6 +24,7 @@ import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.base.AbstractBaseService;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
+import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.service.GroupDataService;
 import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
@@ -562,9 +563,9 @@ public class ResourceDataServiceImpl extends AbstractBaseService implements Reso
         IdmAuditLog idmAuditLog = new IdmAuditLog ();
         idmAuditLog.setRequestorUserId(requesterId);
         idmAuditLog.setAction(AuditAction.ADD_GROUP_TO_RESOURCE.value());
-        GroupEntity group = groupDataService.getGroup(groupId);
+        Group group = groupDataService.getGroupDTO(groupId);
         idmAuditLog.setTargetGroup(groupId, group.getName());
-        ResourceEntity resource = resourceService.findResourceById(resourceId);
+        Resource resource = getResource(resourceId, null);
         idmAuditLog.setTargetResource(resourceId, resource.getName());
 
         idmAuditLog.setAuditDescription(String.format("Add group: %s to resource: %s", groupId, resourceId));

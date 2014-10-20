@@ -3,6 +3,7 @@ package org.openiam.am.srvc.service;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -42,6 +43,7 @@ import org.openiam.am.srvc.uriauth.dto.URIAuthLevelAttribute;
 import org.openiam.am.srvc.uriauth.dto.URIAuthLevelToken;
 import org.openiam.am.srvc.uriauth.dto.URIFederationResponse;
 import org.openiam.am.srvc.uriauth.dto.URIPatternRuleToken;
+import org.openiam.am.srvc.uriauth.dto.URIPatternRuleValue;
 import org.openiam.am.srvc.uriauth.model.ContentProviderNode;
 import org.openiam.am.srvc.uriauth.model.ContentProviderTree;
 import org.openiam.am.srvc.uriauth.model.URIPatternSearchResult;
@@ -430,14 +432,26 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 							final URIPatternMetaType type = meta.getMetaType();
 							if(type != null) {
 								final String springBeanName = type.getSpringBeanName();
+								URIPatternRuleToken ruleToken = null;
 								try {
-									final  URIPatternRule rule = ctx.getBean(springBeanName, URIPatternRule.class);
+									final URIPatternRule rule = ctx.getBean(springBeanName, URIPatternRule.class);
 									if(rule != null) {
 										final Set<URIPatternMetaValue> valueSet = meta.getMetaValueSet();
-										final URIPatternRuleToken ruleToken = rule.process(userId, uri, type, valueSet, pattern, cp);
+										ruleToken = rule.process(userId, uri, type, valueSet, pattern, cp);
 										response.addRuleToken(ruleToken);
 									}
 								} catch(Throwable e) {
+									if(ruleToken != null) {
+										if(CollectionUtils.isNotEmpty(ruleToken.getValueList())) {
+											for(final Iterator<URIPatternRuleValue> it = ruleToken.getValueList().iterator(); it.hasNext();) {
+												final URIPatternRuleValue rule = it.next();
+												if(!rule.isPropagateOnError()) {
+													LOG.warn(String.format("Rule %s will not propagate to the proxy due to an error", rule));
+													it.remove();
+												}
+											}
+										}
+									}
 									LOG.error("Error processing rule", e);
 									throw new BasicDataServiceException(ResponseCode.URI_PATTERN_RULE_PROCESS_ERROR, e);
 								}

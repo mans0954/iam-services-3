@@ -1,6 +1,7 @@
 package org.openiam.idm.srvc.mngsys.service;
 
 import org.openiam.am.srvc.domain.AuthProviderEntity;
+import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.AttributeMapSearchBean;
 import org.openiam.idm.srvc.mngsys.domain.*;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
@@ -11,11 +12,9 @@ import java.util.List;
 public interface ManagedSystemService {
 
     List<ManagedSysEntity> getManagedSystemsByExample(ManagedSysEntity example,
-            Integer from, Integer size);
+                                                      Integer from, Integer size);
 
     Integer getManagedSystemsCountByExample(ManagedSysEntity example);
-
-    void addManagedSys(ManagedSysDto entity);
 
     ManagedSysEntity getManagedSysById(String id);
 
@@ -25,9 +24,7 @@ public interface ManagedSystemService {
 
     List<ManagedSysEntity> getAllManagedSys();
 
-    void removeManagedSysById(String id);
-
-    void updateManagedSys(ManagedSysDto entity);
+    void removeManagedSysById(String id) throws BasicDataServiceException;
 
     ManagedSysEntity getManagedSysByResource(String id, String status);
 
@@ -75,6 +72,8 @@ public interface ManagedSystemService {
     void deleteManagedSystemObjectMatch(String objectMatchId);
 
     List<AuthProviderEntity> findAuthProvidersByManagedSysId(String managedSysId);
-    
+
     public void saveApproverAssociations(final List<ApproverAssociationEntity> entityList, final AssociationType type, final String id);
+
+    public void save(final ManagedSysEntity entity) throws BasicDataServiceException;
 }

@@ -44,15 +44,10 @@ public abstract class AbstractScimCommand<Request extends RequestType, Response 
 					String.format("No Managed System with target id: %s",
 							targetID));
 
-		if (StringUtils.isBlank(managedSys.getResourceId()))
+		if (managedSys.getResource() == null || StringUtils.isBlank(managedSys.getResource().getId()))
 			throw new ConnectorDataException(ErrorCode.INVALID_CONFIGURATION,
 					"ResourceID is not defined in the ManagedSys Object");
-		final Resource res = resourceDataService.getResource(managedSys.getResourceId(), null);
-		if (res == null)
-			throw new ConnectorDataException(ErrorCode.INVALID_CONFIGURATION,
-					"No resource for managed resource found");
-
-		return managedSys.getResourceId();
+		return managedSys.getResource().getId();
 	}
 
 	protected HttpURLConnection getConnection(ManagedSysEntity managedSys,

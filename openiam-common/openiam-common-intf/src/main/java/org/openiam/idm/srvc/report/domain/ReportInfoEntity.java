@@ -52,7 +52,10 @@ public class ReportInfoEntity {
     @Type(type = "yes_no")
     private boolean isBuiltIn;
 
-    @OneToMany(cascade=CascadeType.ALL,fetch=FetchType.LAZY)
+	@Column(name = "RESOURCE_ID", length = 32)
+	private String resourceId;
+
+	@OneToMany(cascade=CascadeType.ALL,fetch=FetchType.LAZY)
     @JoinColumn(name="REPORT_INFO_ID", referencedColumnName="REPORT_INFO_ID", insertable = false, updatable = false)
     @Fetch(FetchMode.SUBSELECT)
     private Set<ReportCriteriaParamEntity> reportParams = new HashSet<ReportCriteriaParamEntity>();
@@ -113,5 +116,13 @@ public class ReportInfoEntity {
 
 	public void setReportParams(Set<ReportCriteriaParamEntity> reportParams) {
 		this.reportParams = reportParams;
+	}
+
+	public String getResourceId() {
+		return resourceId;
+	}
+
+	public void setResourceId(String resourceId) {
+		this.resourceId = resourceId;
 	}
 }

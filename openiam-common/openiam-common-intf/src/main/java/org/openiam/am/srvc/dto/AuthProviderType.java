@@ -22,7 +22,8 @@ import java.util.Set;
         "hasPasswordPolicy",
         "usesSpringBean",
         "usesGroovyScript",
-        "passwordPolicyRequired"
+        "passwordPolicyRequired",
+        "supportsJustInTimeAuthentication"
 })
 @DozerDTOCorrespondence(AuthProviderTypeEntity.class)
 public class AuthProviderType extends KeyNameDTO {
@@ -33,6 +34,7 @@ public class AuthProviderType extends KeyNameDTO {
     private boolean usesSpringBean;
     private boolean usesGroovyScript;
     private boolean passwordPolicyRequired;
+    private boolean supportsJustInTimeAuthentication;
     
     @XmlTransient
     private Set<AuthAttributeEntity> attributeSet;
@@ -110,6 +112,15 @@ public class AuthProviderType extends KeyNameDTO {
 	public void setPasswordPolicyRequired(boolean passwordPolicyRequired) {
 		this.passwordPolicyRequired = passwordPolicyRequired;
 	}
+	
+	public boolean isSupportsJustInTimeAuthentication() {
+		return supportsJustInTimeAuthentication;
+	}
+
+	public void setSupportsJustInTimeAuthentication(
+			boolean supportsJustInTimeAuthentication) {
+		this.supportsJustInTimeAuthentication = supportsJustInTimeAuthentication;
+	}
 
 	@Override
 	public int hashCode() {
@@ -122,6 +133,7 @@ public class AuthProviderType extends KeyNameDTO {
 		result = prime * result + (passwordPolicyRequired ? 1231 : 1237);
 		result = prime * result + (usesGroovyScript ? 1231 : 1237);
 		result = prime * result + (usesSpringBean ? 1231 : 1237);
+		result = prime * result + (supportsJustInTimeAuthentication ? 1231 : 1237);
 		return result;
 	}
 
@@ -147,6 +159,8 @@ public class AuthProviderType extends KeyNameDTO {
 		if (usesGroovyScript != other.usesGroovyScript)
 			return false;
 		if (usesSpringBean != other.usesSpringBean)
+			return false;
+		if (supportsJustInTimeAuthentication != other.supportsJustInTimeAuthentication)
 			return false;
 		return true;
 	}

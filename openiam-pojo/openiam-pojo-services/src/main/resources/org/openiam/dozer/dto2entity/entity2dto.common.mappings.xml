@@ -192,6 +192,22 @@
 			<a>defParam.id</a>
 			<b>defParamId</b>
 		</field>
+        <!--<field>-->
+            <!--<a>defParam.description</a>-->
+            <!--<b>description</b>-->
+        <!--</field>-->
+        <field>
+            <a>defParam.operation</a>
+            <b>operation</b>
+        </field>
+        <field>
+            <a>defParam.paramGroup</a>
+            <b>grouping</b>
+        </field>
+        <field>
+            <a>defParam.name</a>
+            <b>name</b>
+        </field>
 	</mapping>
 	<mapping>
 		<class-a>org.openiam.idm.srvc.audit.domain.IdmAuditLogCustomEntity

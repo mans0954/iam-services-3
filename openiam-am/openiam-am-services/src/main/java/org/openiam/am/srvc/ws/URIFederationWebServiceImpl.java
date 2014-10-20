@@ -56,7 +56,7 @@ public class URIFederationWebServiceImpl implements URIFederationWebService {
 				wsResponse.setSsoToken(ssoToken);
 			} else {
 				wsResponse.fail();
-				wsResponse.setLoginError(loginResponse.getAuthErrorCode());
+				wsResponse.setLoginError(loginResponse.getErrorCode());
 				LOG.warn(String.format("Login attempt unsuccessful for principal '%s', proxyURI '%s', loginRequest: '%s', loginResponse: '%s'", 
 										principal, proxyURI, loginRequest, loginResponse));
 			}

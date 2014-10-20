@@ -5,11 +5,13 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.am.srvc.constants.SearchScopeType;
 import org.openiam.am.srvc.domain.AuthProviderEntity;
+import org.openiam.am.srvc.domain.ContentProviderEntity;
 import org.openiam.base.domain.AbstractKeyNameEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity;
+import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 
 import javax.persistence.*;
@@ -45,7 +47,7 @@ public class ManagedSysEntity extends AbstractKeyNameEntity {
     private String commProtocol;
     @Column(name = "USER_ID", length = 150)
     private String userId;
-    @Column(name = "PSWD", length = 255)
+    @Column(name = "PSWD", length = 512)
     private String pswd;
     @Column(name = "START_DATE", length = 10)
     @Temporal(TemporalType.DATE)
@@ -58,8 +60,11 @@ public class ManagedSysEntity extends AbstractKeyNameEntity {
     @Column(name = "SEARCH_SCOPE")
     @Enumerated(EnumType.ORDINAL)
     private SearchScopeType searchScope = SearchScopeType.SUBTREE_SCOPE;
-    @Column(name = "RESOURCE_ID", length = 32)
-    private String resourceId;
+    
+	@ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+    @JoinColumn(name="RESOURCE_ID", referencedColumnName = "RESOURCE_ID", insertable = true, updatable = false, nullable=false)
+	private ResourceEntity resource;
+    
     @Column(name = "PRIMARY_REPOSITORY")
     private Integer primaryRepository;
     @Column(name = "SECONDARY_REPOSITORY_ID", length = 32)
@@ -111,6 +116,9 @@ public class ManagedSysEntity extends AbstractKeyNameEntity {
     @OneToMany(orphanRemoval = false, cascade = { CascadeType.DETACH, CascadeType.REFRESH }, mappedBy = "managedSystem", fetch = FetchType.LAZY)
     private Set<AuthProviderEntity> authProviders;
 
+    @OneToMany(orphanRemoval = false, cascade = { CascadeType.DETACH, CascadeType.REFRESH }, mappedBy = "managedSystem", fetch = FetchType.LAZY)
+    private Set<ContentProviderEntity> contentProviders;
+    
     public List<ManagedSysRuleEntity> getRules() {
         return rules;
     }
@@ -215,15 +223,15 @@ public class ManagedSysEntity extends AbstractKeyNameEntity {
         this.searchScope = searchScope;
     }
 
-    public String getResourceId() {
-        return resourceId;
-    }
+    public ResourceEntity getResource() {
+		return resource;
+	}
 
-    public void setResourceId(String resourceId) {
-        this.resourceId = resourceId;
-    }
+	public void setResource(ResourceEntity resource) {
+		this.resource = resource;
+	}
 
-    public Integer getPrimaryRepository() {
+	public Integer getPrimaryRepository() {
         return primaryRepository;
     }
 
@@ -391,6 +399,14 @@ public class ManagedSysEntity extends AbstractKeyNameEntity {
 		this.authProviders = authProviders;
 	}
 
+	public Set<ContentProviderEntity> getContentProviders() {
+		return contentProviders;
+	}
+
+	public void setContentProviders(Set<ContentProviderEntity> contentProviders) {
+		this.contentProviders = contentProviders;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -439,7 +455,7 @@ public class ManagedSysEntity extends AbstractKeyNameEntity {
 				+ ((reconcileResourceHandler == null) ? 0
 						: reconcileResourceHandler.hashCode());
 		result = prime * result
-				+ ((resourceId == null) ? 0 : resourceId.hashCode());
+				+ ((resource == null) ? 0 : resource.hashCode());
 		result = prime * result
 				+ ((resumeHandler == null) ? 0 : resumeHandler.hashCode());
 		result = prime * result
@@ -570,10 +586,10 @@ public class ManagedSysEntity extends AbstractKeyNameEntity {
 		} else if (!reconcileResourceHandler
 				.equals(other.reconcileResourceHandler))
 			return false;
-		if (resourceId == null) {
-			if (other.resourceId != null)
+		if (resource == null) {
+			if (other.resource != null)
 				return false;
-		} else if (!resourceId.equals(other.resourceId))
+		} else if (!resource.equals(other.resource))
 			return false;
 		if (resumeHandler == null) {
 			if (other.resumeHandler != null)

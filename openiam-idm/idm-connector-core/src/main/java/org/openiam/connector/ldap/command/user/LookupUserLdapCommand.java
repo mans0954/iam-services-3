@@ -13,6 +13,7 @@ import org.openiam.connector.type.response.SearchResponse;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
+import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
 import org.openiam.connector.ldap.command.base.AbstractLookupLdapCommand;
@@ -38,7 +39,7 @@ public class LookupUserLdapCommand extends AbstractLookupLdapCommand<ExtensibleU
     protected boolean lookup(ManagedSysEntity managedSys, LookupRequest<ExtensibleUser> lookupRequest, SearchResponse respType, LdapContext ldapctx) throws ConnectorDataException {
         boolean found=false;
         ManagedSystemObjectMatch matchObj = getMatchObject(lookupRequest.getTargetID(), ManagedSystemObjectMatch.USER);
-        String resourceId = managedSys.getResourceId();
+        ResourceEntity resource = managedSys.getResource();
 
         String identity = lookupRequest.getSearchValue();
         try {
@@ -71,8 +72,7 @@ public class LookupUserLdapCommand extends AbstractLookupLdapCommand<ExtensibleU
                     attrList.add(ea.getName());
                 }
             } else {
-                log.debug("Resource id = " + resourceId);
-                List<AttributeMapEntity> attrMap = managedSysService.getResourceAttributeMaps(resourceId);
+                List<AttributeMapEntity> attrMap = (resource != null) ? managedSysService.getResourceAttributeMaps(resource.getId()) : null;
                 if (attrMap != null) {
                     attrList = getAttributeNameList(attrMap);
                 }

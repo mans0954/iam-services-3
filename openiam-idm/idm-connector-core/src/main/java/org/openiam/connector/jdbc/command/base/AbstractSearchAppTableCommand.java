@@ -1,6 +1,7 @@
 package org.openiam.connector.jdbc.command.base;
 
 import java.sql.Connection;
+import java.util.Collections;
 import java.util.List;
 
 import org.openiam.connector.jdbc.command.data.AppTableConfiguration;
@@ -22,7 +23,7 @@ public abstract class AbstractSearchAppTableCommand<ExtObject extends Extensible
         final String searchQuery = searchRequest.getSearchQuery();
         AppTableConfiguration configuration = this.getConfiguration(searchRequest.getTargetID());
         Connection con = this.getConnection(configuration.getManagedSys());
-        List<AttributeMapEntity> attrMap = this.attributeMaps(configuration.getManagedSys().getResourceId());
+        List<AttributeMapEntity> attrMap = (configuration.getManagedSys().getResource() != null) ? this.attributeMaps(configuration.getManagedSys().getResource().getId()) : Collections.EMPTY_LIST;
         try {
             List<ObjectValue> oVals = this.createUserSelectStatement(con, configuration.getUserTableName(), null,
                     configuration, attrMap, searchQuery);

@@ -40,14 +40,19 @@ import org.openiam.idm.srvc.pswd.dto.PasswordRule;
  */
 public class PassphraseRepeatWordRule extends AbstractPasswordRule {
 
-	@Override
-	public void validate() throws PasswordRuleException {
-		boolean enabled = false;
+    @Override
+    public String getAttributeName() {
+        return "REPEAT_SAME_WORD_PASSPHRASE";
+    }
 
-		PolicyAttribute attribute = getAttribute("REPEAT_SAME_WORD_PASSPHRASE");
-		if (attribute != null && StringUtils.isNotBlank(attribute.getValue1())) {
-			enabled = Boolean.parseBoolean(attribute.getValue1());
+    @Override
+	public void validate(PolicyAttribute attribute) throws PasswordRuleException {
+		boolean enabled = true;
 
+		if(attribute != null) {
+			if (StringUtils.equalsIgnoreCase(Boolean.FALSE.toString(), attribute.getValue1())) {
+				enabled = false;
+			}
 		}
 		if (!enabled){
 			// should not allow repetition of words in passphrase
@@ -61,39 +66,39 @@ public class PassphraseRepeatWordRule extends AbstractPasswordRule {
 			for (int i=0; i< words.size() -1; i++){
 				//only one comparison needed, as list is sorted
 				if (words.get(i).equalsIgnoreCase(words.get(i+1))){
-					throw new PasswordRuleException(ResponseCode.FAIL_MIN_WORDS_PASSPHRASE_RULE);
+					throw new PasswordRuleException(ResponseCode.PASSPHRASE_WORD_REPEAT_RULE);
 				}
 			}
 		}
 	}
 
 	@Override
-	public PasswordRuleException createException() {
-		boolean enabled = false;
+	public PasswordRuleException createException(PolicyAttribute attribute) {
+		boolean enabled = true;
 
-		PolicyAttribute attribute = getAttribute("REPEAT_SAME_WORD_PASSPHRASE");
-		if (attribute != null && StringUtils.isNotBlank(attribute.getValue1())) {
-			enabled = Boolean.parseBoolean(attribute.getValue1());
-
+		if(attribute != null) {
+			if (StringUtils.equalsIgnoreCase(Boolean.FALSE.toString(), attribute.getValue1())) {
+				enabled = false;
+			}
 		}
 		if (!enabled){
-			return new PasswordRuleException(ResponseCode.FAIL_MIN_WORDS_PASSPHRASE_RULE);
+			return new PasswordRuleException(ResponseCode.PASSPHRASE_WORD_REPEAT_RULE);
 		} else {
 			return null;
 		}
 	}
 
 	@Override
-	public PasswordRule createRule() {
-		boolean enabled = false;
+	public PasswordRule createRule(PolicyAttribute attribute) {
+		boolean enabled = true;
 
-		PolicyAttribute attribute = getAttribute("REPEAT_SAME_WORD_PASSPHRASE");
-		if (attribute != null && StringUtils.isNotBlank(attribute.getValue1())) {
-			enabled = Boolean.parseBoolean(attribute.getValue1());
-
+		if(attribute != null) {
+			if (StringUtils.equalsIgnoreCase(Boolean.FALSE.toString(), attribute.getValue1())) {
+				enabled = false;
+			}
 		}
 		if (!enabled){
-			return new PasswordRule(ResponseCode.FAIL_MIN_WORDS_PASSPHRASE_RULE);
+			return new PasswordRule(ResponseCode.PASSPHRASE_WORD_REPEAT_RULE);
 		} else {
 			return null;
 		}

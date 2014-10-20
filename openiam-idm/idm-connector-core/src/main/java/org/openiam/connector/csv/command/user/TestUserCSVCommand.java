@@ -24,7 +24,7 @@ public class TestUserCSVCommand  extends AbstractTestCSVCommand<User, Extensible
     @Override
     protected List<ReconciliationObject<User>> getObjectList(ManagedSysEntity managedSys) throws ConnectorDataException {
         try {
-            List<AttributeMapEntity> attrMapList = managedSysService.getResourceAttributeMaps(managedSys.getResourceId());
+            List<AttributeMapEntity> attrMapList = managedSysService.getResourceAttributeMaps(managedSys.getResource().getId());
             return userCSVParser.getObjects(managedSys, attrMapList, CSVSource.IDM);
         } catch (Exception e) {
             log.error(e.getMessage(), e);

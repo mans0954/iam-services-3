@@ -7,6 +7,7 @@ import org.apache.commons.lang.StringUtils;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Order;
+import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
@@ -97,7 +98,7 @@ public class ManagedSysDAOImpl extends BaseDaoImpl<ManagedSysEntity, String> imp
     @SuppressWarnings(value = "unchecked")
     public ManagedSysEntity findByResource(String resourceId, String status) {
         Criteria criteria = getCriteria()
-                .add(Restrictions.eq("resourceId",resourceId))
+                .add(Restrictions.eq("resource.id",resourceId))
                 .add(Restrictions.eq("status",status))
                 .addOrder(Order.asc("name"));
 
@@ -112,7 +113,27 @@ public class ManagedSysDAOImpl extends BaseDaoImpl<ManagedSysEntity, String> imp
 		return null;
 	
 	}
-	
+
+    @Override
+    @SuppressWarnings(value = "unchecked")
+    public String findIdByResource(String resourceId, String status) {
+        Criteria criteria = getCriteria()
+                .add(Restrictions.eq("resourceId",resourceId))
+                .add(Restrictions.eq("status",status))
+                .setProjection(Projections.id());
+
+        List<String> results = (List<String>)criteria.list();
+
+        if (CollectionUtils.isNotEmpty(results)) {
+            // avoids an exception in the event that there is more than 1 row with the same name
+            log.info("ManagedSys resultSet = " + results.size());
+            return results.get(0);
+        }
+        log.info("No managedSys objects fround.");
+        return null;
+
+    }
+
     @Override
     protected String getPKfieldName() {
         return "id";
@@ -121,7 +142,7 @@ public class ManagedSysDAOImpl extends BaseDaoImpl<ManagedSysEntity, String> imp
 	@Override
 	public List<ManagedSysEntity> findByResource(String resourceId) {
 		 return getCriteria()
-	                .add(Restrictions.eq("resourceId",resourceId))
+	                .add(Restrictions.eq("resource.id",resourceId))
 	                .addOrder(Order.asc("name")).list();
 	}
 }

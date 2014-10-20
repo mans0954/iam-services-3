@@ -1,6 +1,7 @@
 package org.openiam.idm.srvc.mngsys.service;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -8,11 +9,15 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.am.srvc.dao.AuthProviderDao;
 import org.openiam.am.srvc.domain.AuthProviderEntity;
+import org.openiam.base.ws.ResponseCode;
 import org.openiam.dozer.converter.ManagedSysDozerConverter;
 import org.openiam.dozer.converter.ManagedSystemObjectMatchDozerConverter;
+import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.AttributeMapSearchBean;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.service.GroupDAO;
+import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
+import org.openiam.idm.srvc.meta.service.MetadataElementDAO;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
@@ -25,6 +30,7 @@ import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.idm.srvc.policy.service.PolicyDAO;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
+import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
 import org.openiam.idm.srvc.res.service.ResourceDAO;
 import org.openiam.idm.srvc.res.service.ResourceService;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
@@ -80,6 +86,9 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
     
     @Autowired
     private ResourceService resourceService;
+    
+    @Autowired
+    private MetadataElementDAO elementDAO;
 
     private static final String resourceTypeId="MANAGED_SYS";
 
@@ -122,80 +131,44 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
 
     @Override
     @Transactional
-    public void removeManagedSysById(String id) {
-        ManagedSysEntity sysEntity = managedSysDAO.findById(id);
-        for (ManagedSystemObjectMatchEntity matchEntity : sysEntity
-                .getMngSysObjectMatchs()) {
-            matchDAO.delete(matchEntity);
-        }
-        for (ManagedSysRuleEntity ruleEntity : sysEntity.getRules()) {
-            managedSysRuleDAO.delete(ruleEntity);
-        }
-        if(CollectionUtils.isNotEmpty(sysEntity.getGroups())) {
-        	for(final GroupEntity group : sysEntity.getGroups()) {
-        		group.setManagedSystem(null);
-        		groupDAO.update(group);
+    public void removeManagedSysById(String id) throws BasicDataServiceException {
+        final ManagedSysEntity sysEntity = managedSysDAO.findById(id);
+        if(sysEntity != null) {
+        	if(CollectionUtils.isNotEmpty(sysEntity.getAuthProviders())) {
+        		throw new BasicDataServiceException(ResponseCode.LINKED_TO_AUTHENTICATION_PROVIDER, sysEntity.getAuthProviders().iterator().next().getName());
         	}
-        }
-        
-        if(CollectionUtils.isNotEmpty(sysEntity.getRoles())) {
-        	for(final RoleEntity role : sysEntity.getRoles()) {
-        		role.setManagedSystem(null);
-        		roleDAO.update(role);
+        	
+        	if(CollectionUtils.isNotEmpty(sysEntity.getContentProviders())) {
+        		throw new BasicDataServiceException(ResponseCode.LINKED_TO_ONE_OR_MORE_CONTENT_PROVIDERS);
         	}
+        	
+	        for (final ManagedSystemObjectMatchEntity matchEntity : sysEntity.getMngSysObjectMatchs()) {
+	            matchDAO.delete(matchEntity);
+	        }
+	        for (final ManagedSysRuleEntity ruleEntity : sysEntity.getRules()) {
+	            managedSysRuleDAO.delete(ruleEntity);
+	        }
+	        if(CollectionUtils.isNotEmpty(sysEntity.getGroups())) {
+	        	for(final GroupEntity group : sysEntity.getGroups()) {
+	        		group.setManagedSystem(null);
+	        		groupDAO.update(group);
+	        	}
+	        }
+	        
+	        if(CollectionUtils.isNotEmpty(sysEntity.getRoles())) {
+	        	for(final RoleEntity role : sysEntity.getRoles()) {
+	        		role.setManagedSystem(null);
+	        		roleDAO.update(role);
+	        	}
+	        }
+	        
+	        managedSysDAO.delete(sysEntity);
+	        if(sysEntity.getResource() != null) {
+	        	resourceService.deleteResource(sysEntity.getResource().getId());
+	        }
         }
-        
-        managedSysDAO.delete(sysEntity);
-        resourceService.deleteResource(sysEntity.getResourceId());
     }
     
-    @Override
-    @Transactional
-    public void addManagedSys(ManagedSysDto sys) {
-        final ManagedSysEntity entity = managedSysDozerConverter.convertToEntity(sys, true);
-
-    	final ResourceEntity resource = new ResourceEntity();
-    	resource.setName(String.format("%s_%S", entity.getName(), System.currentTimeMillis()));
-    	resource.setResourceType(resourceTypeDAO.findById(resourceTypeId));
-    	resource.setIsPublic(false);
-    	resource.setCoorelatedName(sys.getName());
-
-    	resourceDAO.save(resource);
-    	entity.setResourceId(resource.getId());
-
-        managedSysDAO.save(entity);
-        
-        /*
-        resource.setManagedSysId(entity.getManagedSysId());
-        */
-        sys.setId(entity.getId());
-    }
-
-    @Override
-    @Transactional
-    public void updateManagedSys(ManagedSysDto sys) {
-        final ManagedSysEntity entity = managedSysDozerConverter.convertToEntity(sys, true);
-    	ResourceEntity resource = null;
-    	if(org.apache.commons.lang.StringUtils.isEmpty(entity.getResourceId())) {
-    		resource = new ResourceEntity();
-    		resource.setName(String.format("%s_%S", entity.getName(), System.currentTimeMillis()));
-    		resource.setResourceType(resourceTypeDAO.findById(resourceTypeId));
-    		resource.setIsPublic(false);
-    		resource.setCoorelatedName(sys.getName());
-    		resourceDAO.save(resource);
-    		entity.setResourceId(resource.getId());
-            //resource.setManagedSysId(sys.getManagedSysId());
-    	} else {
-    		resource = resourceDAO.findById(entity.getResourceId());
-    		if(resource != null) {
-    			resource.setCoorelatedName(entity.getName());
-    			resourceDAO.update(resource);
-    		}
-    	}
-        managedSysDAO.save(entity);
-
-    }
-
     @Override
     @Transactional
     public void saveManagedSystemObjectMatch(ManagedSystemObjectMatch objectMatch) {
@@ -434,6 +407,85 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
 			for(final ApproverAssociationEntity entity : deleteList) {
 				approverAssociationDao.delete(entity);
 			}
+		}
+	}
+	
+	private MetadataElementEntity getEntity(final MetadataElementEntity bean) {
+    	if(bean != null && StringUtils.isNotBlank(bean.getId())) {
+    		return elementDAO.findById(bean.getId());
+    	} else {
+    		return null;
+    	}
+    }
+
+	@Override
+	@Transactional
+	public void save(final ManagedSysEntity entity) throws BasicDataServiceException {
+		if(StringUtils.isBlank(entity.getResource().getId())) {
+			final ResourceEntity resource = new ResourceEntity();
+			resource.setName(String.format("%s_%S", entity.getName(), System.currentTimeMillis()));
+			resource.setResourceType(resourceTypeDAO.findById(resourceTypeId));
+			resource.setIsPublic(false);
+			resource.setCoorelatedName(entity.getName());
+			resource.setResourceProps(entity.getResource().getResourceProps());
+			resourceService.save(resource, null);
+			entity.setResource(resource);
+		} else {
+			final ResourceEntity resource = resourceService.findResourceById(entity.getResource().getId());
+			if(CollectionUtils.isEmpty(entity.getResource().getResourceProps())) {
+				resource.getResourceProps().clear();
+			} else {
+				//update existing
+				for(final ResourcePropEntity transientAttribute : entity.getResource().getResourceProps()) {
+					for(final ResourcePropEntity persistentAttribute : resource.getResourceProps()) {
+						if(StringUtils.equals(transientAttribute.getId(), persistentAttribute.getId())) {
+							persistentAttribute.setElement(getEntity(transientAttribute.getElement()));
+							persistentAttribute.setIsMultivalued(transientAttribute.getIsMultivalued());
+							persistentAttribute.setName(transientAttribute.getName());
+							persistentAttribute.setValue(transientAttribute.getValue());
+							break;
+						}
+					}
+				}
+				
+				//add  new
+				for(final ResourcePropEntity transientAttribute : entity.getResource().getResourceProps()) {
+					if(StringUtils.isBlank(transientAttribute.getId())) {
+						transientAttribute.setElement(getEntity(transientAttribute.getElement()));
+						transientAttribute.setResource(resource);
+						resource.getResourceProps().add(transientAttribute);
+					}
+				}
+				
+				//delete
+				for(final Iterator<ResourcePropEntity> persistentIterator = resource.getResourceProps().iterator(); persistentIterator.hasNext();) {
+					boolean contains = false;
+					final ResourcePropEntity persistentAttribute = persistentIterator.next();
+					for(final ResourcePropEntity transientAttribute : entity.getResource().getResourceProps()) {
+						if(StringUtils.equals(transientAttribute.getId(), persistentAttribute.getId())) {
+							contains = true;
+						}
+					}
+					
+					if(!contains) {
+						persistentIterator.remove();
+					}
+				}
+			}
+			//resource.setResourceProps(entity.getResource().getResourceProps());
+			resource.setCoorelatedName(entity.getName());
+			//resourceService.save(resource, null);
+			entity.setResource(resource);
+			/*
+			resourceService.save(resource, null);
+			entity.setResource(resource);
+			*/
+		}
+		
+		if(StringUtils.isBlank(entity.getId())) {
+			managedSysDAO.save(entity);
+		} else {
+			managedSysDAO.merge(entity);
 		}
 	}
 }

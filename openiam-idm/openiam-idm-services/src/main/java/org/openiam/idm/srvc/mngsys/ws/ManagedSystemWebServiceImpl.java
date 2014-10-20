@@ -1,6 +1,8 @@
 package org.openiam.idm.srvc.mngsys.ws;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.jws.WebParam;
 import javax.jws.WebService;
@@ -20,6 +22,7 @@ import org.openiam.dozer.converter.DefaultReconciliationAttributeMapDozerConvert
 import org.openiam.dozer.converter.ManagedSysDozerConverter;
 import org.openiam.dozer.converter.ManagedSysRuleDozerConverter;
 import org.openiam.dozer.converter.ManagedSystemObjectMatchDozerConverter;
+import org.openiam.dozer.converter.ResourcePropDozerConverter;
 import org.openiam.idm.searchbeans.AttributeMapSearchBean;
 import org.openiam.idm.srvc.audit.constant.AuditAction;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
@@ -45,6 +48,8 @@ import org.openiam.idm.srvc.mngsys.searchbeans.converter.ApproverAssocationSearc
 import org.openiam.idm.srvc.mngsys.searchbeans.converter.ManagedSystemSearchBeanConverter;
 import org.openiam.idm.srvc.mngsys.service.ApproverAssociationDAO;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
+import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
+import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.util.SSLCert;
 import org.openiam.util.encrypt.Cryptor;
@@ -98,6 +103,9 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
 
     @Autowired
     private DefaultReconciliationAttributeMapDozerConverter defaultReconciliationAttributeMapDozerConverter;
+    
+    @Autowired
+    private ResourcePropDozerConverter resourcePropConverter;
 
     private static final Log log = LogFactory
             .getLog(ManagedSystemWebServiceImpl.class);
@@ -183,18 +191,23 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
     			sys.setPswd(cryptor.encrypt(keyManagementService.getUserKey(systemUserId, KeyName.password.name()), sys.getPswd()));
     		}
 
-
-    		if(StringUtils.isBlank(sys.getId())) {
-    			managedSystemService.addManagedSys(sys);
-    		}  else {
-    			managedSystemService.updateManagedSys(sys);
+    		final ManagedSysEntity entity = managedSysDozerConverter.convertToEntity(sys, true);
+    		if(sys.getResource() != null) {
+    			if(CollectionUtils.isNotEmpty(sys.getResource().getResourceProps())) {
+    				final Set<ResourcePropEntity> resourcePropSet = new HashSet<>();
+    				for(final ResourceProp prop : sys.getResource().getResourceProps()) {
+    					resourcePropSet.add(resourcePropConverter.convertToEntity(prop, true));
+    				}
+    				entity.getResource().setResourceProps(resourcePropSet);
+    			}
     		}
-    		response.setResponseValue(sys.getId());
+    		managedSystemService.save(entity);
+    		response.setResponseValue(entity.getId());
     	} catch (BasicDataServiceException e) {
 			response.setErrorCode(e.getCode());
 			response.setStatus(ResponseStatus.FAILURE);
 		} catch (Throwable e) {
-			log.error("Can't remove managed system", e);
+			log.error("Can't save managed system", e);
 			response.setErrorText(e.getMessage());
 			response.setStatus(ResponseStatus.FAILURE);
 		}
@@ -237,10 +250,6 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
     		if(StringUtils.isBlank(sysId)) {
     			throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
     		}
-            List<AuthProviderEntity> authProviderEntities = managedSystemService.findAuthProvidersByManagedSysId(sysId);
-            if (CollectionUtils.isNotEmpty(authProviderEntities)) {
-                throw new BasicDataServiceException(ResponseCode.LINKED_TO_AUTHENTICATION_PROVIDER, authProviderEntities.get(0).getName());
-            }
     		managedSystemService.removeManagedSysById(sysId);
     	} catch (BasicDataServiceException e) {
             response.setResponseValue(e.getResponseValue());
@@ -290,7 +299,7 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
         if(resourceId != null) {
         	ManagedSysEntity sys = managedSystemService.getManagedSysByResource(resourceId, "ACTIVE");
         	if (sys != null) {
-        		sysDto = managedSysDozerConverter.convertToDTO(sys, true);
+        		sysDto = managedSysDozerConverter.convertToDTO(sys, false);
         		if (sysDto != null && sysDto.getPswd() != null) {
         			try {
         				sysDto.setDecryptPassword(cryptor.decrypt(

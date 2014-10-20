@@ -33,7 +33,7 @@ public class ProvisioningConstants {
 	public static final String CHANGE_GROUP="CHANGE_GROUP";
 	public static final String CHANGE_ROLE="CHANGE_ROLE";
 	public static final String CHANGE_SUPERVISOR="CHANGE_SUPERVISOR";
-	public static final String TERMINATE="TERMINATE";
+	public static final String TERMINATED="TERMINATED";
 
 	
 }

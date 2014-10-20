@@ -10,6 +10,7 @@ import org.openiam.exception.LogoutException;
 import org.openiam.idm.searchbeans.AuthStateSearchBean;
 import org.openiam.idm.srvc.auth.domain.AuthStateEntity;
 import org.openiam.idm.srvc.auth.dto.AuthenticationRequest;
+import org.openiam.idm.srvc.auth.dto.LogoutRequest;
 import org.openiam.idm.srvc.auth.dto.Subject;
 import org.openiam.idm.srvc.auth.ws.AuthenticationResponse;
 import org.openiam.idm.srvc.grp.dto.Group;
@@ -31,20 +32,29 @@ import javax.xml.bind.annotation.XmlSeeAlso;
 })
 public interface AuthenticationService {
 
+	/**
+	 * Use 
+	 * @param userId
+	 * @throws Throwable
+	 */
+    @WebMethod
+    @Deprecated
+    void globalLogout(
+            @WebParam(name = "userId", targetNamespace = "")
+            String userId) throws Throwable;
+
     /**
      * This method executes a global logout so that the user is logged out all the application they have logged into. <br>
      * For example:
      * <p/>
      * <code>
-     * authenticationService.globalLogout(userId);<br>
+     * authenticationService.globalLogoutWithContentProvider(userId, contentProviderId);<br>
      * </code>
      *
      * @param userId The id of the user.
+     * @param contentProviderId the id of the content provider
      */
-    @WebMethod
-    void globalLogout(
-            @WebParam(name = "userId", targetNamespace = "")
-            String userId) throws Throwable;
+    Response globalLogoutWithContentProvider(final LogoutRequest request);
 
     /**
      * This method logs in a user.  It updates his Login record to reflect this fact.  Unsuccessful logins attempts are counted.  If the user
@@ -69,12 +79,14 @@ public interface AuthenticationService {
      */
     @WebMethod
     Response renewToken(
-            @WebParam(name = "principal", targetNamespace = "")
+    		final @WebParam(name = "principal", targetNamespace = "")
             String principal,
-            @WebParam(name = "token", targetNamespace = "")
+            final @WebParam(name = "token", targetNamespace = "")
             String token,
-            @WebParam(name = "tokenType", targetNamespace = "")
-            String tokenType);
+            final @WebParam(name = "tokenType", targetNamespace = "")
+            String tokenType,
+            final @WebParam(name = "contentProviderId", targetNamespace = "")
+            String contentProviderId);
     
     @WebMethod
     List<AuthStateEntity> findBeans(final @WebParam(name = "request", targetNamespace = "") AuthStateSearchBean searchBean,

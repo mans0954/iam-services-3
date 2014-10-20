@@ -3,6 +3,9 @@ package org.openiam.idm.srvc.auth.dto;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
+
+import org.openiam.base.ws.ResponseCode;
+
 import java.io.Serializable;
 
 
@@ -39,7 +42,7 @@ public class Subject implements Serializable {
 
 
     private long expirationTime;
-    private int resultCode;
+    private ResponseCode resultCode;
     //private  String token;
     private String saml;
     private String samlType;
@@ -160,14 +163,14 @@ public class Subject implements Serializable {
     /**
      * @return Returns the resultCode.
      */
-    public int getResultCode() {
+    public ResponseCode getResultCode() {
         return resultCode;
     }
 
     /**
      * @param resultCode The resultCode to set.
      */
-    public void setResultCode(int resultCode) {
+    public void setResultCode(ResponseCode resultCode) {
         this.resultCode = resultCode;
     }
 

@@ -63,8 +63,7 @@ public abstract class AbstractLinuxCommand<Request extends RequestType, Response
         SSHAgent ssh = null;
         if (managedSys != null) {
             String managedSysId = managedSys.getId();
-            if (!(managedSys.getResourceId() == null || managedSys
-                    .getResourceId().length() == 0)) {
+            if (!(managedSys.getResource() == null || org.apache.commons.lang.StringUtils.isBlank(managedSys.getResource().getId()))) {
                 log.debug("ManagedSys found; Name=" + managedSys.getName());
 
                 if ((ssh = sshConnectionFactory.getSSH(managedSysId)) == null)

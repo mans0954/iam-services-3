@@ -16,6 +16,8 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+
+import java.util.Collections;
 import java.util.List;
 
 @Service("addUserCSVCommand")
@@ -29,7 +31,7 @@ public class AddUserCSVCommand extends AbstractCrudCSVCommand<ExtensibleUser> {
     @Override
     protected void performObjectOperation(String principal, ExtensibleUser object, ManagedSysEntity managedSys) throws ConnectorDataException {
         try {
-            List<AttributeMapEntity> attrMapList = managedSysService.getResourceAttributeMaps(managedSys.getResourceId());
+            List<AttributeMapEntity> attrMapList = (managedSys.getResource() != null) ? managedSysService.getResourceAttributeMaps(managedSys.getResource().getId()) : Collections.EMPTY_LIST;
             //TODO check
             User user = userDataWebService.getUserByPrincipal(principal,managedSys.getId(),true);
             userCSVParser.add(new ReconciliationObject<User>(principal, user), managedSys, attrMapList, CSVSource.IDM);

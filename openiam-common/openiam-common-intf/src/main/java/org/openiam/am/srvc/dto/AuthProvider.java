@@ -31,7 +31,8 @@ import java.util.Set;
         "policyId",
         "defaultProvider",
         "springBeanName",
-        "groovyScriptURL"
+        "groovyScriptURL",
+        "supportsJustInTimeAuthentication"
 })
 @DozerDTOCorrespondence(AuthProviderEntity.class)
 public class AuthProvider extends KeyNameDTO {
@@ -46,6 +47,7 @@ public class AuthProvider extends KeyNameDTO {
     private boolean defaultProvider;
     private String groovyScriptURL;
     private String springBeanName;
+    private boolean supportsJustInTimeAuthentication;
 
     private Set<AuthProviderAttribute> attributes;
     private Map<String, AuthResourceAttributeMap> resourceAttributeMap=new HashMap<String, AuthResourceAttributeMap>(0);
@@ -190,10 +192,20 @@ public class AuthProvider extends KeyNameDTO {
 		this.springBeanName = springBeanName;
 	}
 
+	public boolean isSupportsJustInTimeAuthentication() {
+		return supportsJustInTimeAuthentication;
+	}
+
+	public void setSupportsJustInTimeAuthentication(
+			boolean supportsJustInTimeAuthentication) {
+		this.supportsJustInTimeAuthentication = supportsJustInTimeAuthentication;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
+		result = prime * result + (supportsJustInTimeAuthentication ? 1231 : 1237);
 		result = prime * result + (defaultProvider ? 1231 : 1237);
 		result = prime * result
 				+ ((description == null) ? 0 : description.hashCode());
@@ -273,6 +285,8 @@ public class AuthProvider extends KeyNameDTO {
 			if (other.springBeanName != null)
 				return false;
 		} else if (!springBeanName.equals(other.springBeanName))
+			return false;
+		if (supportsJustInTimeAuthentication != other.supportsJustInTimeAuthentication)
 			return false;
 		return true;
 	}

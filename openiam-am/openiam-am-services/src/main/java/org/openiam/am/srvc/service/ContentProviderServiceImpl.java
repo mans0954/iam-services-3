@@ -513,6 +513,7 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
         				existingValue.setStaticValue(incomingValue.getStaticValue());
         				existingValue.setName(incomingValue.getName());
         				existingValue.setPropagateThroughProxy(incomingValue.isPropagateThroughProxy());
+        				existingValue.setPropagateOnError(incomingValue.isPropagateOnError());
         			}
         		}
         		if(!exists) {

@@ -35,6 +35,7 @@ import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
+import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
@@ -55,15 +56,37 @@ import java.util.*;
  * @author suneet
  *
  */
-@Scope("prototype")
 @Component("ldapLoginModule")
 public class LDAPLoginModule extends AbstractLoginModule {
 
 	@Override
-	public Subject login(AuthenticationContext context) throws Exception {
+	protected void validate(AuthenticationContext context) throws Exception {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	protected LoginEntity getLogin(AuthenticationContext context)
+			throws Exception {
 		// TODO Auto-generated method stub
 		return null;
 	}
+
+	@Override
+	protected UserEntity getUser(AuthenticationContext context,
+			LoginEntity login) throws Exception {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	protected Subject doLogin(AuthenticationContext context, UserEntity user,
+			LoginEntity login) throws Exception {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	
 
 	/*
     private static final Log log = LogFactory.getLog(LDAPLoginModule.class);

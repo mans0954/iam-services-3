@@ -44,18 +44,10 @@ public abstract class AbstractSoapCommand<Request extends RequestType, Response 
 					String.format("No Managed System with target id: %s",
 							targetID));
 
-		if (StringUtils.hasText(managedSys.getResourceId()))
+		if (managedSys.getResource() == null || StringUtils.hasText(managedSys.getResource().getId()))
 			throw new ConnectorDataException(ErrorCode.INVALID_CONFIGURATION,
 					"ResourceID is not defined in the ManagedSys Object");
-		log.info("Inside Get Resource Resource Id="
-				+ managedSys.getResourceId());
-		final Resource res = resourceDataService.getResource(managedSys
-				.getResourceId(), null);
-		if (res == null)
-			throw new ConnectorDataException(ErrorCode.INVALID_CONFIGURATION,
-					"No resource for managed resource found");
-
-		return managedSys.getResourceId();
+		return managedSys.getResource().getId();
 	}
 
 	protected HttpURLConnection getConnection(ManagedSysEntity managedSys,

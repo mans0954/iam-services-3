@@ -30,6 +30,7 @@ import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.service.AuditLogService;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
+import org.openiam.idm.srvc.auth.dto.ProvLoginStatusEnum;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.base.AbstractBaseService;
 import org.openiam.idm.srvc.continfo.domain.AddressEntity;
@@ -58,6 +59,7 @@ import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.idm.srvc.mngsys.ws.ProvisionConnectorWebService;
 import org.openiam.idm.srvc.msg.dto.NotificationParam;
 import org.openiam.idm.srvc.msg.dto.NotificationRequest;
+import org.openiam.idm.srvc.msg.service.MailService;
 import org.openiam.idm.srvc.msg.service.MailTemplateParameters;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.dto.Organization;
@@ -150,6 +152,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
     @Autowired
     protected LoginDataService loginManager;
     @Autowired
+    protected ManagedSystemService managedSysDaoService;
+    @Autowired
     protected ManagedSystemWebService managedSysService;
     @Autowired
     protected RoleDataService roleDataService;
@@ -188,9 +192,13 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
     @Autowired
     protected GroupDozerConverter groupDozerConverter;
     @Autowired
+    protected OrganizationDozerConverter organizationDozerConverter;
+    @Autowired
     protected UserAttributeDozerConverter userAttributeDozerConverter;
     @Autowired
     protected PhoneDozerConverter phoneDozerConverter;
+    @Autowired
+    protected MailService mailService;
     @Autowired
     protected EmailAddressDozerConverter emailAddressDozerConverter;
     @Autowired
@@ -358,7 +366,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
 
     protected Login buildPrimaryPrincipal(Map<String, Object> bindingMap, ScriptIntegration se) {
         ManagedSysEntity defaultManagedSys = managedSystemService.getManagedSysById(sysConfiguration.getDefaultManagedSysId());
-        List<AttributeMapEntity> amEList = managedSystemService.getResourceAttributeMaps(defaultManagedSys.getResourceId());
+        List<AttributeMapEntity> amEList = (defaultManagedSys.getResource() != null) ? managedSystemService.getResourceAttributeMaps(defaultManagedSys.getResource().getId()) : null;
         List<AttributeMap> policyAttrMap = (amEList == null) ? null : attributeMapDozerConverter.convertToDTOList(amEList, true);
 
         log.debug("Building primary identity. ");
@@ -371,7 +379,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
             primaryIdentity.setOperation(AttributeOperationEnum.ADD);
             // init values
             primaryIdentity.setManagedSysId(sysConfiguration.getDefaultManagedSysId());
-
+            primaryIdentity.setProvStatus(ProvLoginStatusEnum.CREATED);
             try {
                 for (AttributeMap attr : policyAttrMap) {
                     if("INACTIVE".equalsIgnoreCase(attr.getStatus())) {
@@ -408,7 +416,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
 
     protected String parseUserPrincipal(List<ExtensibleAttribute> extensibleAttributes) {
         ManagedSysEntity defaultManagedSys = managedSystemService.getManagedSysById(sysConfiguration.getDefaultManagedSysId());
-        List<AttributeMapEntity> amEList = managedSystemService.getResourceAttributeMaps(defaultManagedSys.getResourceId());
+        List<AttributeMapEntity> amEList = (defaultManagedSys.getResource() != null) ? managedSystemService.getResourceAttributeMaps(defaultManagedSys.getResource().getId()) : Collections.EMPTY_LIST;
         List<AttributeMap> policyAttrMap = (amEList == null) ? null : attributeMapDozerConverter.convertToDTOList(amEList, true);
         String principalAttributeName = null;
         for (AttributeMap attr : policyAttrMap) {
@@ -436,7 +444,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                                                  ScriptIntegration se) {
         log.debug("setPrimaryIDPassword() ");
         ManagedSysEntity defaultManagedSys = managedSystemService.getManagedSysById(sysConfiguration.getDefaultManagedSysId());
-        List<AttributeMapEntity> amEList = managedSystemService.getResourceAttributeMaps(defaultManagedSys.getResourceId());
+        List<AttributeMapEntity> amEList = (defaultManagedSys != null) ? managedSystemService.getResourceAttributeMaps(defaultManagedSys.getResource().getId()) : Collections.EMPTY_LIST;
         List<AttributeMap> policyAttrMap = (amEList == null) ? null : attributeMapDozerConverter.convertToDTOList(amEList, true);
         if (policyAttrMap != null) {
             log.debug("- policyAttrMap IS NOT null");
@@ -854,9 +862,14 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         }
 
         Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
+        if(login == null && StringUtils.isNotEmpty(pUser.getId())) {
+           login = loginDozerConverter.convertToDTO(loginManager.getByUserIdManagedSys(pUser.getId(), sysConfiguration.getDefaultManagedSysId()),false);
+        }
         if(StringUtils.isNotEmpty(pUser.getFirstName()) && !pUser.getFirstName().equals(userEntity.getFirstName())) {
             // Audit Log -----------------------------------------------------------------------------------
             IdmAuditLog auditLog = new IdmAuditLog();
+            auditLog.setRequestorUserId(pUser.getRequestorUserId());
+            auditLog.setRequestorPrincipal(pUser.getRequestorLogin());
             auditLog.setTargetUser(userEntity.getId(), login != null ? login.getLogin() : StringUtils.EMPTY);
             auditLog.setAction(AuditAction.REPLACE_PROP.value());
             auditLog.addCustomRecord("FirstName", "old='"+userEntity.getFirstName()+"' new='"+pUser.getFirstName()+"'");
@@ -866,6 +879,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         if(StringUtils.isNotEmpty(pUser.getLastName()) && !pUser.getLastName().equals(userEntity.getLastName())) {
             // Audit Log -----------------------------------------------------------------------------------
             IdmAuditLog auditLog = new IdmAuditLog();
+            auditLog.setRequestorUserId(pUser.getRequestorUserId());
+            auditLog.setRequestorPrincipal(pUser.getRequestorLogin());
             auditLog.setTargetUser(userEntity.getId(), login != null ? login.getLogin() : StringUtils.EMPTY);
             auditLog.setAction(AuditAction.REPLACE_PROP.value());
             auditLog.addCustomRecord("LastName", "old='"+userEntity.getLastName()+"' new='"+pUser.getLastName()+"'");
@@ -875,6 +890,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         if(pUser.getBirthdate() != null && !pUser.getBirthdate().equals(userEntity.getBirthdate())) {
             // Audit Log -----------------------------------------------------------------------------------
             IdmAuditLog auditLog = new IdmAuditLog();
+            auditLog.setRequestorUserId(pUser.getRequestorUserId());
+            auditLog.setRequestorPrincipal(pUser.getRequestorLogin());
             auditLog.setTargetUser(userEntity.getId(), login != null ? login.getLogin() : StringUtils.EMPTY);
             auditLog.setAction(AuditAction.REPLACE_PROP.value());
             auditLog.addCustomRecord("Birthdate", "old='"+userEntity.getBirthdate()+"' new='"+pUser.getBirthdate()+"'");
@@ -884,6 +901,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         if(StringUtils.isNotEmpty(pUser.getCostCenter()) && !pUser.getCostCenter().equals(userEntity.getCostCenter())) {
             // Audit Log -----------------------------------------------------------------------------------
             IdmAuditLog auditLog = new IdmAuditLog();
+            auditLog.setRequestorUserId(pUser.getRequestorUserId());
+            auditLog.setRequestorPrincipal(pUser.getRequestorLogin());
             auditLog.setTargetUser(userEntity.getId(), login != null ? login.getLogin() : StringUtils.EMPTY);
             auditLog.setAction(AuditAction.REPLACE_PROP.value());
             auditLog.addCustomRecord("CostCenter", "old='"+userEntity.getCostCenter()+"' new='"+pUser.getCostCenter()+"'");
@@ -894,6 +913,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         if(StringUtils.isNotEmpty(pUser.getDisplayName()) && !pUser.getDisplayName().equals(userEntity.getDisplayName())) {
             // Audit Log -----------------------------------------------------------------------------------
             IdmAuditLog auditLog = new IdmAuditLog();
+            auditLog.setRequestorUserId(pUser.getRequestorUserId());
+            auditLog.setRequestorPrincipal(pUser.getRequestorLogin());
             auditLog.setTargetUser(userEntity.getId(), login != null ? login.getLogin() : StringUtils.EMPTY);
             auditLog.setAction(AuditAction.REPLACE_PROP.value());
             auditLog.addCustomRecord("DisplayName", "old='"+userEntity.getDisplayName()+"' new='"+pUser.getDisplayName()+"'");
@@ -903,6 +924,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         if(StringUtils.isNotEmpty(pUser.getMaidenName()) && !pUser.getMaidenName().equals(userEntity.getMaidenName())) {
             // Audit Log -----------------------------------------------------------------------------------
             IdmAuditLog auditLog = new IdmAuditLog();
+            auditLog.setRequestorUserId(pUser.getRequestorUserId());
+            auditLog.setRequestorPrincipal(pUser.getRequestorLogin());
             auditLog.setTargetUser(userEntity.getId(), login != null ? login.getLogin() : StringUtils.EMPTY);
             auditLog.setAction(AuditAction.REPLACE_PROP.value());
             auditLog.addCustomRecord("MaidenName", "old='"+userEntity.getMaidenName()+"' new='"+pUser.getMaidenName()+"'");
@@ -912,6 +935,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         if(StringUtils.isNotEmpty(pUser.getNickname()) && !pUser.getNickname().equals(userEntity.getNickname())) {
             // Audit Log -----------------------------------------------------------------------------------
             IdmAuditLog auditLog = new IdmAuditLog();
+            auditLog.setRequestorUserId(pUser.getRequestorUserId());
+            auditLog.setRequestorPrincipal(pUser.getRequestorLogin());
             auditLog.setTargetUser(userEntity.getId(), login != null ? login.getLogin() : StringUtils.EMPTY);
             auditLog.setAction(AuditAction.REPLACE_PROP.value());
             auditLog.addCustomRecord("Nickname", "old='"+userEntity.getNickname()+"' new='"+pUser.getNickname()+"'");
@@ -921,6 +946,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         if(StringUtils.isNotEmpty(pUser.getMiddleInit()) && !pUser.getMiddleInit().equals(userEntity.getMiddleInit())) {
             // Audit Log -----------------------------------------------------------------------------------
             IdmAuditLog auditLog = new IdmAuditLog();
+            auditLog.setRequestorUserId(pUser.getRequestorUserId());
+            auditLog.setRequestorPrincipal(pUser.getRequestorLogin());
             auditLog.setTargetUser(userEntity.getId(), login != null ? login.getLogin() : StringUtils.EMPTY);
             auditLog.setAction(AuditAction.REPLACE_PROP.value());
             auditLog.addCustomRecord("MiddleInit", "old='"+userEntity.getMiddleInit()+"' new='"+pUser.getMiddleInit()+"'");
@@ -930,6 +957,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         if(StringUtils.isNotEmpty(pUser.getEmployeeId()) && !pUser.getEmployeeId().equals(userEntity.getEmployeeId())) {
             // Audit Log -----------------------------------------------------------------------------------
             IdmAuditLog auditLog = new IdmAuditLog();
+            auditLog.setRequestorUserId(pUser.getRequestorUserId());
+            auditLog.setRequestorPrincipal(pUser.getRequestorLogin());
             auditLog.setTargetUser(userEntity.getId(), login != null ? login.getLogin() : StringUtils.EMPTY);
             auditLog.setAction(AuditAction.REPLACE_PROP.value());
             auditLog.addCustomRecord("EmployeeId", "old='"+userEntity.getEmployeeId()+"' new='"+pUser.getEmployeeId()+"'");
@@ -939,6 +968,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         if(StringUtils.isNotEmpty(pUser.getEmployeeTypeId()) && (userEntity.getEmployeeType() == null || !pUser.getEmployeeTypeId().equals(userEntity.getEmployeeType().getId()))) {
             // Audit Log -----------------------------------------------------------------------------------
             IdmAuditLog auditLog = new IdmAuditLog();
+            auditLog.setRequestorUserId(pUser.getRequestorUserId());
+            auditLog.setRequestorPrincipal(pUser.getRequestorLogin());
             auditLog.setTargetUser(userEntity.getId(), login != null ? login.getLogin() : StringUtils.EMPTY);
             auditLog.setAction(AuditAction.REPLACE_PROP.value());
             MetadataTypeEntity metadataType =  metadataTypeDAO.findById(pUser.getEmployeeTypeId());
@@ -949,6 +980,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         if(StringUtils.isNotEmpty(pUser.getUserTypeInd()) && (userEntity.getType() == null || !pUser.getUserTypeInd().equals(userEntity.getType().getId()))) {
             // Audit Log -----------------------------------------------------------------------------------
             IdmAuditLog auditLog = new IdmAuditLog();
+            auditLog.setRequestorUserId(pUser.getRequestorUserId());
+            auditLog.setRequestorPrincipal(pUser.getRequestorLogin());
             auditLog.setTargetUser(userEntity.getId(), login != null ? login.getLogin() : StringUtils.EMPTY);
             auditLog.setAction(AuditAction.REPLACE_PROP.value());
             MetadataTypeEntity metadataType =  metadataTypeDAO.findById(pUser.getUserTypeInd());
@@ -959,6 +992,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         if(StringUtils.isNotEmpty(pUser.getJobCodeId()) && (userEntity.getJobCode() == null || !pUser.getJobCodeId().equals(userEntity.getJobCode().getId()))) {
             // Audit Log -----------------------------------------------------------------------------------
             IdmAuditLog auditLog = new IdmAuditLog();
+            auditLog.setRequestorUserId(pUser.getRequestorUserId());
+            auditLog.setRequestorPrincipal(pUser.getRequestorLogin());
             auditLog.setTargetUser(userEntity.getId(), login != null ? login.getLogin() : StringUtils.EMPTY);
             auditLog.setAction(AuditAction.REPLACE_PROP.value());
             MetadataTypeEntity metadataType =  metadataTypeDAO.findById(pUser.getJobCodeId());

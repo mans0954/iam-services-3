@@ -54,11 +54,12 @@ import org.openiam.idm.srvc.auth.domain.AuthStateId;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.AuthenticationRequest;
 import org.openiam.idm.srvc.auth.dto.LoginModuleSelector;
+import org.openiam.idm.srvc.auth.dto.LogoutRequest;
 import org.openiam.idm.srvc.auth.dto.SSOToken;
 import org.openiam.idm.srvc.auth.dto.Subject;
 import org.openiam.idm.srvc.auth.login.AuthStateDAO;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
-import org.openiam.idm.srvc.auth.spi.AbstractLoginModule;
+import org.openiam.idm.srvc.auth.spi.AbstractScriptableLoginModule;
 import org.openiam.idm.srvc.auth.sso.SSOTokenFactory;
 import org.openiam.idm.srvc.auth.sso.SSOTokenModule;
 import org.openiam.idm.srvc.auth.ws.AuthenticationResponse;
@@ -138,16 +139,46 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
     private BeanFactory beanFactory;
 
     private static final Log log = LogFactory.getLog(AuthenticationServiceImpl.class);
-
+    
+    private AuthProviderEntity getAuthProvider(final String contentProviderId, final IdmAuditLog event) throws BasicDataServiceException {
+    	AuthProviderEntity authProvider = null;
+        if(StringUtils.isNotBlank(contentProviderId)) {
+        	final ContentProviderEntity contentProvider = contentProviderDAO.findById(contentProviderId);
+        	if(contentProvider == null) {
+        		event.addWarning(String.format("Content provider with ID %s not found", contentProviderId));
+        	} else {
+        		authProvider = contentProvider.getAuthProvider();
+        	}
+        }
+        
+        if(authProvider == null) {
+        	final String warning = String.format("No Content Provider of URI Pattern information provided, or could not resolve.  Using default AUth Provider: %s", sysConfiguration.getDefaultAuthProviderId());
+        	event.addWarning(warning);
+        	log.warn(warning);
+        	authProvider = authProviderDAO.findById(sysConfiguration.getDefaultAuthProviderId());
+        }
+        
+        if(authProvider == null) {
+        	final String error = String.format("Could not find Authentication Provider with ID: %s.  Failing...", sysConfiguration.getDefaultAuthProviderId());
+        	event.setFailureReason(error);
+        	event.addWarning(error);
+    		log.error(error);
+    		throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_FOUND);
+    	}
+        return authProvider;
+    }
+    
     @Override
+    @Transactional
     @ManagedAttribute
-    public void globalLogout(String userId) throws Throwable {
-        IdmAuditLog newLogoutEvent = new IdmAuditLog();
+    //@Transactional
+	public Response globalLogoutWithContentProvider(final LogoutRequest request) {
+    	final String userId = request.getUserId();
+    	final String contentProviderId = request.getContentProviderId();
+    	final IdmAuditLog newLogoutEvent = new IdmAuditLog();
         newLogoutEvent.setUserId(userId);
-        UserEntity userEntity = userManager.getUser(userId);
-        LoginEntity primaryIdentity = UserUtils.getUserManagedSysIdentityEntity(sysConfiguration.getDefaultManagedSysId(), userEntity.getPrincipalList());
-        newLogoutEvent.addTarget(userId, AuditTarget.USER.value(), primaryIdentity.getLogin());
         newLogoutEvent.setAction(AuditAction.LOGOUT.value());
+        final Response authResp = new Response(ResponseStatus.SUCCESS);
 
         try{
             if (userId == null) {
@@ -156,6 +187,31 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
                 throw new NullPointerException("UserId is null");
             }
             
+            final AuthProviderEntity authProvider = getAuthProvider(contentProviderId, newLogoutEvent);
+            final String springBeanName = authProvider.getSpringBeanName();
+	        final String groovyScript = authProvider.getGroovyScriptURL();
+	        AuthenticationModule loginModule = null;
+	        if(StringUtils.isNotBlank(springBeanName)) {
+	        	try {
+	        		loginModule = (AuthenticationModule)ctx.getBean(springBeanName, AuthenticationModule.class);
+	        	} catch(Throwable e) {
+	        		log.error(String.format("Error while getting spring bean: %s", springBeanName), e);
+	        	}
+	        	
+	        } else if(StringUtils.isNotBlank(groovyScript)) {
+	        	loginModule = (AbstractScriptableLoginModule)scriptRunner.instantiateClass(null, groovyScript);
+	        }
+	        
+	        if(loginModule == null) {
+	        	loginModule = ctx.getBean(sysConfiguration.getDefaultLoginModule(), AuthenticationModule.class);
+	        }
+	        
+	        loginModule.logout(request, newLogoutEvent);
+        	
+            final UserEntity userEntity = userManager.getUser(userId);
+            final LoginEntity primaryIdentity = UserUtils.getUserManagedSysIdentityEntity(sysConfiguration.getDefaultManagedSysId(), userEntity.getPrincipalList());
+            newLogoutEvent.addTarget(userId, AuditTarget.USER.value(), primaryIdentity.getLogin());
+        	            
             final AuthStateEntity example = new AuthStateEntity();
             final AuthStateId id = new AuthStateId();
             id.setUserId(userId);
@@ -164,10 +220,11 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
             final List<AuthStateEntity> authStateList = authStateDao.getByExample(example);
 
             if (CollectionUtils.isEmpty(authStateList)) {
+            	final String errorMessage = String.format("Cannot find AuthState object for User: %s", userId);
                 newLogoutEvent.fail();
-                newLogoutEvent.setFailureReason(String.format("Cannot find AuthState object for User: %s", userId));
-                log.error("AuthState not found for userId=" + userId);
-                throw new LogoutException();
+                newLogoutEvent.setFailureReason(errorMessage);
+                log.error(errorMessage);
+                throw new LogoutException(errorMessage);
             }
             
             for(final AuthStateEntity authSt : authStateList) {
@@ -176,15 +233,40 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
             	authStateDao.saveAuthState(authSt);
             }
             newLogoutEvent.succeed();
-        } finally {
+        } catch (BasicDataServiceException e) {
+    		authResp.fail();
+    		authResp.setErrorCode(e.getCode());
+    		authResp.setErrorTokenList(e.getErrorTokenList());
+    		newLogoutEvent.fail();
+    		newLogoutEvent.setFailureReason(e.getMessage());
+            newLogoutEvent.setException(e);
+            newLogoutEvent.setFailureReason(e.getCode());
+        } catch (Throwable e) {
+            log.error("Can't Logout", e);
+            authResp.fail();
+            authResp.setErrorText(e.getMessage());
+            newLogoutEvent.fail();
+            newLogoutEvent.setFailureReason(e.getMessage());
+            newLogoutEvent.setException(e);
+    	} finally {
             auditLogService.enqueue(newLogoutEvent);
         }
+        return authResp;
+	}
+
+    @Override
+    @ManagedAttribute
+    @Deprecated
+    public void globalLogout(String userId) throws Throwable {
+    	final LogoutRequest request = new LogoutRequest();
+    	request.setUserId(userId);
+        globalLogoutWithContentProvider(request);
     }
 
     @Override
     @Transactional
     public AuthenticationResponse login(final AuthenticationRequest request) {
-        IdmAuditLog newLoginEvent = new IdmAuditLog();
+        final IdmAuditLog newLoginEvent = new IdmAuditLog();
         newLoginEvent.setUserId(null);
         newLoginEvent.setAction(AuditAction.LOGIN.value());
 
@@ -198,30 +280,7 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
 	        	throw new BasicDataServiceException(ResponseCode.LANGUAGE_REQUIRED);
 	        }
 	        
-	        AuthProviderEntity authProvider = null;
-	        if(StringUtils.isNotBlank(request.getContentProviderId())) {
-	        	final ContentProviderEntity contentProvider = contentProviderDAO.findById(request.getContentProviderId());
-	        	if(contentProvider == null) {
-	        		newLoginEvent.addWarning(String.format("Content provider with ID %s not found", request.getContentProviderId()));
-	        	} else {
-	        		authProvider = contentProvider.getAuthProvider();
-	        	}
-	        }
-	        
-	        if(authProvider == null) {
-	        	final String warning = String.format("No Content Provider of URI Pattern information provided, or could not resolve.  Using default AUth Provider: %s", sysConfiguration.getDefaultAuthProviderId());
-	        	newLoginEvent.addWarning(warning);
-	        	log.warn(warning);
-	        	authProvider = authProviderDAO.findById(sysConfiguration.getDefaultAuthProviderId());
-	        }
-	        
-	        if(authProvider == null) {
-	        	final String error = String.format("Could not find Authentication Provider with ID: %s.  Failing...", sysConfiguration.getDefaultAuthProviderId());
-        		newLoginEvent.setFailureReason(error);
-        		newLoginEvent.addWarning(error);
-        		log.error(error);
-        		throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_FOUND);
-        	}
+	        final AuthProviderEntity authProvider = getAuthProvider(request.getContentProviderId(), newLoginEvent);
 	        
 	        final AuthenticationContext authenticationContext = new AuthenticationContext(request);
 	        authenticationContext.setAuthProviderId(authProvider.getId());
@@ -229,27 +288,25 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
 	        
 	        final String principal = request.getPrincipal();
 	        final String clientIP = request.getClientIP();
-	        final String nodeIP = request.getNodeIP();
 
             newLoginEvent.setClientIP(clientIP);
             newLoginEvent.setRequestorPrincipal(principal);
 	                
-	        final AuthProviderTypeEntity authProviderType = authProvider.getType();
 	        final String springBeanName = authProvider.getSpringBeanName();
 	        final String groovyScript = authProvider.getGroovyScriptURL();
-	        AbstractLoginModule loginModule = null;
+	        AuthenticationModule loginModule = null;
 	        if(StringUtils.isNotBlank(springBeanName)) {
 	        	try {
-	        		loginModule = (AbstractLoginModule)ctx.getBean(springBeanName, AbstractLoginModule.class);
+	        		loginModule = (AuthenticationModule)ctx.getBean(springBeanName, AuthenticationModule.class);
 	        	} catch(Throwable e) {
 	        		log.error(String.format("Error while getting spring bean: %s", springBeanName), e);
 	        	}
-	        } else {
-	        	//TODO:  groovy script logic
+	        } else if(StringUtils.isNotBlank(groovyScript)) {
+	        	loginModule = (AbstractScriptableLoginModule)scriptRunner.instantiateClass(null, groovyScript);
 	        }
 	        
 	        if(loginModule == null) {
-	        	loginModule = ctx.getBean(sysConfiguration.getDefaultLoginModule(), AbstractLoginModule.class);
+	        	loginModule = ctx.getBean(sysConfiguration.getDefaultLoginModule(), AuthenticationModule.class);
 	        }
 
 	        final Subject sub = loginModule.login(authenticationContext);
@@ -257,6 +314,7 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
 	        newLoginEvent.succeed();
 	        authResp.setSubject(sub);
 	        authResp.succeed();
+	    /*
         } catch (AuthenticationException ae) {
         	final String erroCodeAsString = Integer.valueOf(ae.getErrorCode()).toString();
             newLoginEvent.fail();
@@ -301,20 +359,21 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
                     authResp.setAuthErrorCode(AuthenticationConstants.INTERNAL_ERROR);
                     break;
             }
+		*/
     	} catch (BasicDataServiceException e) {
     		authResp.fail();
     		authResp.setErrorCode(e.getCode());
     		authResp.setErrorTokenList(e.getErrorTokenList());
-    		authResp.setAuthErrorCode(AuthenticationConstants.INTERNAL_ERROR);
+    		//authResp.setErrorCode(AuthenticationConstants.INTERNAL_ERROR);
     		newLoginEvent.fail();
             newLoginEvent.setFailureReason(e.getMessage());
             newLoginEvent.setException(e);
             newLoginEvent.setFailureReason(e.getCode());
         } catch (Throwable e) {
-            log.error("Can't save or update resource", e);
+            log.error("Can't login", e);
             authResp.fail();
             authResp.setErrorText(e.getMessage());
-            authResp.setAuthErrorCode(AuthenticationConstants.INTERNAL_ERROR);
+            authResp.setErrorCode(ResponseCode.INTERNAL_ERROR);
             newLoginEvent.fail();
             newLoginEvent.setFailureReason(e.getMessage());
             newLoginEvent.setException(e);
@@ -326,13 +385,11 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
 
     @Override
     @Transactional
-    public Response renewToken(String principal, String token, String tokenType) {
+    public Response renewToken(final String principal, final String token, final String tokenType, final String contentProviderId) {
+    	log.info(String.format("renewToken.contentProviderId=%s", contentProviderId));
         final Response resp = new Response(ResponseStatus.SUCCESS);
-
-        //TODO:  this is temproary.  Need to pass in content provider ID as argument from UI and proxy
         PolicyEntity policy = null;
         ManagedSysEntity managedSystem = null;
-        String contentProviderId = null;
         if(StringUtils.isNotBlank(contentProviderId)) {
         	final ContentProviderEntity contentProvider = contentProviderDAO.findById(contentProviderId);
         	if(contentProvider != null) {
