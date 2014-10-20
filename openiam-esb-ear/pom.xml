@@ -15,7 +15,7 @@
 
     <properties>
     	<skipTests>true</skipTests>
-        <openiam.esb.version>3.2.2.RELEASE</openiam.esb.version>
+        <openiam.esb.version>3.2.3.RELEASE</openiam.esb.version>
         <hibernate.version>3.6.6.Final</hibernate.version>
         <hibernatesearch.version>3.4.0.Final</hibernatesearch.version>
         <hibernate.entity.manager.version>3.6.7.Final</hibernate.entity.manager.version>

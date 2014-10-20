@@ -86,6 +86,13 @@ public class ContentProviderServerEntity {
 			return false;
 		return true;
 	}
+
+	@Override
+	public String toString() {
+		return String
+				.format("ContentProviderServerEntity [id=%s, contentProvider=%s, serverURL=%s]",
+						id, contentProvider, serverURL);
+	}
 	
 	
 }
