@@ -121,15 +121,6 @@ public abstract class AbstractHibernateSearchDao<T, Q, KeyType extends Serializa
     	final List<KeyType> result = new ArrayList<KeyType>();
     	if ((query != null)) {
             return findIds(0, Integer.MAX_VALUE, sort, query);
-//            final QueryBuilder luceneQuery = parse(query);
-//            if (luceneQuery != null) {
-////				final List idList = findIds(buildFullTextSessionQuery(getFullTextSession(null), luceneQuery, sort).setProjection(idFieldName));
-////				for (final Object row : idList) {
-////					final Object[] columns = (Object[]) row;
-////					final KeyType id = (KeyType) columns[0];
-////					result.add(id);
-////				}
-//            }
     	}
         return result;
     }
@@ -148,14 +139,6 @@ public abstract class AbstractHibernateSearchDao<T, Q, KeyType extends Serializa
                         result.add(id);
                     }
                 }
-//				final List idList = findIds(buildFullTextSessionQuery(
-//						getFullTextSession(null), luceneQuery, from, size, sort)
-//						.setProjection(idFieldName));
-//				for (final Object row : idList) {
-//					final Object[] columns = (Object[]) row;
-//					final KeyType id = (KeyType) columns[0];
-//					result.add(id);
-//				}
             }
     	}
         return result;

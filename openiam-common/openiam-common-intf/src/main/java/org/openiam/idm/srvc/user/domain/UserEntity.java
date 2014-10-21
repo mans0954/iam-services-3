@@ -8,10 +8,8 @@ import org.openiam.base.domain.KeyEntity;
 import org.openiam.core.dao.lucene.LuceneLastUpdate;
 import org.openiam.core.domain.UserKey;
 import org.openiam.dozer.DozerDTOCorrespondence;
-import org.openiam.elasticsearch.annotation.ElasticsearchField;
-import org.openiam.elasticsearch.annotation.ElasticsearchId;
-import org.openiam.elasticsearch.annotation.ElasticsearchIndex;
-import org.openiam.elasticsearch.annotation.ElasticsearchMapping;
+import org.openiam.elasticsearch.annotation.*;
+import org.openiam.elasticsearch.bridge.MetadataTypeBridge;
 import org.openiam.elasticsearch.constants.ESIndexName;
 import org.openiam.elasticsearch.constants.ESIndexType;
 import org.openiam.elasticsearch.constants.ElasticsearchStore;
@@ -78,6 +76,7 @@ public class UserEntity extends KeyEntity {
     @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch= FetchType.LAZY)
     @JoinColumn(name = "EMPLOYEE_TYPE", insertable = true, updatable = true, nullable=true)
     @Internationalized
+    @ElasticsearchField(name = "employeeType", bridge=@ElasticsearchFieldBridge(impl = MetadataTypeBridge.class), store = ElasticsearchStore.Yes, index = Index.Not_Analyzed)
 //    @IndexedEmbedded
     private MetadataTypeEntity employeeType;
 
@@ -93,6 +92,7 @@ public class UserEntity extends KeyEntity {
     @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch= FetchType.LAZY)
     @JoinColumn(name = "JOB_CODE", insertable = true, updatable = true, nullable=true)
     @Internationalized
+    @ElasticsearchField(name = "jobCode", bridge=@ElasticsearchFieldBridge(impl = MetadataTypeBridge.class), store = ElasticsearchStore.Yes, index = Index.Not_Analyzed)
 //    @IndexedEmbedded
     private MetadataTypeEntity jobCode;
 
@@ -120,6 +120,7 @@ public class UserEntity extends KeyEntity {
     @JoinColumn(name = "TYPE_ID", insertable = true, updatable = true, nullable=true)
     @Internationalized
 //    @IndexedEmbedded
+    @ElasticsearchField(name = "type", bridge=@ElasticsearchFieldBridge(impl = MetadataTypeBridge.class), store = ElasticsearchStore.Yes, index = Index.Not_Analyzed)
     protected MetadataTypeEntity type;
 
     @Column(name = "CLASSIFICATION", length = 20)
