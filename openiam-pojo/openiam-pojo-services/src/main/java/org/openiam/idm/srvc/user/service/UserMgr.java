@@ -502,14 +502,16 @@ public class UserMgr implements UserDataService {
 
             validateSearchBean(searchBean,  requesterAttributes);
 
-            isOrgFilterSet = DelegationFilterHelper.isOrgFilterSet(requesterAttributes);
+            Set<String> orgDelFilter = organizationService.getDelegationFilter(requesterAttributes, null);
+
+            isOrgFilterSet = CollectionUtils.isNotEmpty(orgDelFilter);//DelegationFilterHelper.isOrgFilterSet(requesterAttributes);
             isGroupFilterSet = DelegationFilterHelper.isGroupFilterSet(requesterAttributes);
             isRoleFilterSet = DelegationFilterHelper.isRoleFilterSet(requesterAttributes);
             isMngReportFilterSet = DelegationFilterHelper.isMngRptFilterSet(requesterAttributes);
 
 //            if (isOrgFilterSet) {
             if (CollectionUtils.isEmpty(searchBean.getOrganizationIdSet())) {
-                searchBean.addOrganizationIdList(organizationService.getDelegationFilter(requesterAttributes, null));
+                searchBean.addOrganizationIdList(orgDelFilter);
             }
 //            }
 
@@ -2277,16 +2279,18 @@ public class UserMgr implements UserDataService {
     public boolean validateSearchBean(UserSearchBean searchBean, Map<String, UserAttribute> requesterAttributes) throws BasicDataServiceException {
         if (requesterAttributes!=null && CollectionUtils.isNotEmpty(requesterAttributes.keySet())) {
 
-            boolean isOrgFilterSet = DelegationFilterHelper.isOrgFilterSet(requesterAttributes);
+            Set<String> orgDelFilter = organizationService.getDelegationFilter(requesterAttributes, null);
+
+            boolean isOrgFilterSet = CollectionUtils.isNotEmpty(orgDelFilter);// DelegationFilterHelper.isOrgFilterSet(requesterAttributes);
             boolean isGroupFilterSet = DelegationFilterHelper.isGroupFilterSet(requesterAttributes);
             boolean isRoleFilterSet = DelegationFilterHelper.isRoleFilterSet(requesterAttributes);
             Set<String> filterData = null;
 
             if (isOrgFilterSet) {
                 if (CollectionUtils.isNotEmpty(searchBean.getOrganizationIdSet())) {
-                   filterData = new HashSet<String>(DelegationFilterHelper.getOrgIdFilterFromString(requesterAttributes));
+//                   filterData = new HashSet<String>(DelegationFilterHelper.getOrgIdFilterFromString(requesterAttributes));
                    for(String pk : searchBean.getOrganizationIdSet()) {
-                       if(!DelegationFilterHelper.isAllowed(pk, filterData)){
+                       if(!DelegationFilterHelper.isAllowed(pk, orgDelFilter)){
                            throw new BasicDataServiceException(ResponseCode.NOT_ALLOWED_ORGANIZATION_IN_SEARCH);
                        }
                    }
