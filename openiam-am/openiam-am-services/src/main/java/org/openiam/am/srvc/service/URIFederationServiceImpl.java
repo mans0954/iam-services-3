@@ -514,10 +514,15 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 		} finally {
 			if(uriPattern != null) {
 				response.setPatternId(uriPattern.getId());
+				response.setServer(uriPattern.getNextServer());
 			}
 			if(cp != null) {
 				response.setCpId(cp.getId());
-				response.setServer(cp.getNextServer());
+				
+				/* fallback, in case URI Pattern not defined */
+				if(response.getServer() == null) {
+					response.setServer(cp.getNextServer());
+				}
 			}
 			if(CollectionUtils.isNotEmpty(groupingList)) {
 				for(final AuthLevelGrouping grouping : groupingList) {

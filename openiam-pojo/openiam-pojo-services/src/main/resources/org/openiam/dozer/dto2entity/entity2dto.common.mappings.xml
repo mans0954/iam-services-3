@@ -348,19 +348,31 @@
     </mapping>
     
     <mapping>
-        <class-a>org.openiam.am.srvc.domain.ContentProviderServerEntity</class-a>
-        <class-b>org.openiam.am.srvc.dto.ContentProviderServer</class-b>
-        <field>
+    	<class-a>org.openiam.am.srvc.domain.AbstractServerEntity</class-a>
+    	<class-b>org.openiam.am.srvc.dto.AbstractServer</class-b>
+    	<field>
             <a>id</a>
             <b>id</b>
         </field>
         <field>
-            <a>contentProvider.id</a>
-            <b>contentProviderId</b>
-        </field>
-        <field>
             <a>serverURL</a>
             <b>serverURL</b>
+        </field>
+    </mapping>
+    <mapping>
+    	<class-a>org.openiam.am.srvc.domain.URIPatternServerEntity</class-a>
+    	<class-b>org.openiam.am.srvc.dto.URIPatternServer</class-b>
+    	<field>
+    		<a>pattern.id</a>
+    		<b>patternId</b>
+    	</field>
+    </mapping>
+    <mapping>
+        <class-a>org.openiam.am.srvc.domain.ContentProviderServerEntity</class-a>
+        <class-b>org.openiam.am.srvc.dto.ContentProviderServer</class-b>
+        <field>
+            <a>contentProvider.id</a>
+            <b>contentProviderId</b>
         </field>
     </mapping>
     

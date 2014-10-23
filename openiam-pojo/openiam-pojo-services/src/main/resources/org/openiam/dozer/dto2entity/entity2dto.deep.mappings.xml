@@ -886,6 +886,12 @@
 			<a>uiTheme.id</a>
 			<b>themeId</b>
 		</field>
+		<field
+			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
+			custom-converter-param="dto2entityShallowDozerMapper">
+			<a>servers</a>
+			<b>servers</b>
+		</field>
 	</mapping>
 	<mapping>
 		<class-a>org.openiam.idm.srvc.recon.domain.ReconciliationConfigEntity

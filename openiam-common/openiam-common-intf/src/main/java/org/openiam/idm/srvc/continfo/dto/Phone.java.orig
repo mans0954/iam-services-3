@@ -2,7 +2,10 @@ package org.openiam.idm.srvc.continfo.dto;
 
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.KeyDTO;
+<<<<<<< HEAD
+=======
 import org.openiam.base.KeyNameDTO;
+>>>>>>> development
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
 
@@ -36,7 +39,11 @@ import java.util.Date;
         "typeDescription"
 })
 @DozerDTOCorrespondence(PhoneEntity.class)
+<<<<<<< HEAD
+public class Phone extends KeyDTO {
+=======
 public class Phone extends KeyNameDTO {
+>>>>>>> development
 
     // Fields
 	private AttributeOperationEnum operation = AttributeOperationEnum.NO_CHANGE;
@@ -77,6 +84,46 @@ public class Phone extends KeyNameDTO {
     public Phone() {
     }
 
+<<<<<<< HEAD
+    /**
+     * minimal constructor
+     */
+    public Phone(String phoneId) {
+        setId(phoneId);
+    }
+
+
+//    public Phone(PhoneEntity phoneEntity) {
+//        this.phoneId = phoneEntity.getPhoneId();
+//        this.isActive = phoneEntity.getActive();
+//        this.areaCd = phoneEntity.getAreaCd();
+//        this.countryCd = phoneEntity.getCountryCd();
+//        this.description = phoneEntity.getDescription();
+//        this.isDefault = phoneEntity.getDefault();
+//        this.parentType = phoneEntity.getParentType();
+//        this.phoneExt = phoneEntity.getPhoneExt();
+//        this.name = phoneEntity.getName();
+//        this.phoneType = phoneEntity.getPhoneType();
+//        this.parentId = phoneEntity.getParent() != null ? phoneEntity.getParent().getUserId() : "";
+//    }
+
+    /**
+     * full constructor
+     */
+    public Phone(String phoneId, String areaCd, String countryCd,
+                 String description, String phoneNbr, String phoneExt,
+                 boolean isDefault, String addressId) {
+        setId(phoneId);
+        this.areaCd = areaCd;
+        this.countryCd = countryCd;
+        this.description = description;
+        this.phoneNbr = phoneNbr;
+        this.phoneExt = phoneExt;
+        this.isDefault = isDefault;
+    }
+
+=======
+>>>>>>> development
     public void updatePhone(Phone ph) {
         this.areaCd = ph.getAreaCd();
         this.countryCd = ph.getCountryCd();
@@ -90,6 +137,10 @@ public class Phone extends KeyNameDTO {
         this.metadataTypeId=ph.getMetadataTypeId();
     }
 
+<<<<<<< HEAD
+    // Property accessors
+=======
+>>>>>>> development
     public String getAreaCd() {
         return this.areaCd;
     }
@@ -189,15 +240,6 @@ public class Phone extends KeyNameDTO {
         this.isActive = isActive;
     }
 
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
     /*
     public String getPhoneType() {
         return phoneType;
@@ -289,6 +331,8 @@ public class Phone extends KeyNameDTO {
 			return true;
 		if (!super.equals(obj))
 			return false;
+        if (!super.equals(obj))
+            return false;
 		if (getClass() != obj.getClass())
 			return false;
 		Phone other = (Phone) obj;
@@ -356,6 +400,28 @@ public class Phone extends KeyNameDTO {
 		return true;
 	}
 
+<<<<<<< HEAD
+    @Override
+    public String toString() {
+        return "Phone{" +
+               "operation=" + operation +
+               ", isActive=" + isActive +
+               ", areaCd='" + areaCd + '\'' +
+               ", countryCd='" + countryCd + '\'' +
+               ", description='" + description + '\'' +
+               ", isDefault=" + isDefault +
+               ", parentType='" + parentType + '\'' +
+               ", phoneExt='" + phoneExt + '\'' +
+               ", phoneNbr='" + phoneNbr + '\'' +
+               ", name='" + name + '\'' +
+               ", parentId='" + parentId + '\'' +
+               ", lastUpdate=" + lastUpdate +
+               ", createDate=" + createDate +
+               ", metadataTypeId='" + metadataTypeId + '\'' +
+               ", typeDescription='" + typeDescription + '\'' +
+               ", " + super.toString()+"}";
+    }
+=======
 	@Override
 	public String toString() {
 		return "Phone [operation=" + operation + ", isActive=" + isActive
@@ -369,4 +435,5 @@ public class Phone extends KeyNameDTO {
 	}
     
     
+>>>>>>> development
 }

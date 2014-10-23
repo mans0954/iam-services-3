@@ -74,6 +74,9 @@ public class URIPatternEntity extends KeyEntity {
 	//@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 	private Set<AuthLevelGroupingURIPatternXrefEntity> groupingXrefs;
 	
+	@OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "pattern", fetch = FetchType.LAZY)
+	private Set<URIPatternServerEntity> servers;
+	
 	public ContentProviderEntity getContentProvider() {
 		return contentProvider;
 	}
@@ -179,6 +182,14 @@ public class URIPatternEntity extends KeyEntity {
 	public void setGroupingXrefs(
 			Set<AuthLevelGroupingURIPatternXrefEntity> groupingXrefs) {
 		this.groupingXrefs = groupingXrefs;
+	}
+
+	public Set<URIPatternServerEntity> getServers() {
+		return servers;
+	}
+
+	public void setServers(Set<URIPatternServerEntity> servers) {
+		this.servers = servers;
 	}
 
 	@Override
