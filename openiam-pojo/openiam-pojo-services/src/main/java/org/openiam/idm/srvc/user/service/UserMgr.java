@@ -365,7 +365,7 @@ public class UserMgr implements UserDataService {
                     continue;
                 }
                 if (e.getOperation().equals(AttributeOperationEnum.DELETE)) {
-                    PhoneEntity entity = phoneDao.findById(e.getPhoneId());
+                    PhoneEntity entity = phoneDao.findById(e.getId());
                     if (entity != null) {
                         userEntity.getPhones().remove(entity);
                     }
@@ -374,7 +374,7 @@ public class UserMgr implements UserDataService {
                     entity.setParent(userEntity);
                     userEntity.getPhones().add(entity);
                 } else if (e.getOperation().equals(AttributeOperationEnum.REPLACE)) {
-                    PhoneEntity entity = phoneDao.findById(e.getPhoneId());
+                    PhoneEntity entity = phoneDao.findById(e.getId());
                     if (entity != null) {
                         userEntity.getPhones().remove(entity);
                         phoneDao.evict(entity);
@@ -1031,7 +1031,7 @@ public class UserMgr implements UserDataService {
         List<PhoneEntity> entityList = phoneDao.getByExample(example);
         if (CollectionUtils.isNotEmpty(entityList)) {
             for (PhoneEntity ph : entityList) {
-                if ((ph.getPhoneId() != null && !ph.getPhoneId().equals(val.getPhoneId()))
+                if ((ph.getId() != null && !ph.getId().equals(val.getId()))
                     && ph.getMetadataType().getId().equals(val.getMetadataType().getId())) {
                     throw new NullPointerException("Phone with provided type exists");
                 }
@@ -1077,12 +1077,12 @@ public class UserMgr implements UserDataService {
     public void updatePhone(PhoneEntity val) {
         if (val == null)
             throw new NullPointerException("val is null");
-        if (val.getPhoneId() == null)
+        if (val.getId() == null)
             throw new NullPointerException("PhoneId is null");
         if (val.getParent() == null)
             throw new NullPointerException("parentId for the address is not defined.");
 
-        final PhoneEntity entity = phoneDao.findById(val.getPhoneId());
+        final PhoneEntity entity = phoneDao.findById(val.getId());
         final UserEntity parent = userDao.findById(val.getParent().getId());
         final MetadataTypeEntity metadataType = (val.getMetadataType() != null && StringUtils.isNotBlank(val.getMetadataType().getId())) ? metadataTypeDAO
                         .findById(val.getMetadataType().getId()) : null;
@@ -2005,7 +2005,7 @@ public class UserMgr implements UserDataService {
         if (defaultPhone == null) {
             targetEntity.setIsDefault(true);
         } else {
-            if (defaultPhone.getPhoneId().equals(targetEntity.getPhoneId())) {
+            if (defaultPhone.getId().equals(targetEntity.getId())) {
                 // the same entity
                 // check if default flag is unset
                 if (!newDefaultValue) {

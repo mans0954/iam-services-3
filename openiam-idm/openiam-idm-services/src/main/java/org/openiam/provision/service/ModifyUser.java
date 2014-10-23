@@ -327,8 +327,8 @@ public class ModifyUser {
         Iterator<Phone> phoneIt = phoneSet.iterator();
         while (phoneIt.hasNext()) {
             Phone phone = phoneIt.next();
-            if (phone.getPhoneId() != null) {
-                if (phone.getPhoneId().equals(id)
+            if (phone.getId() != null) {
+                if (phone.getId().equals(id)
                         && (id != null && id.length() > 0)) {
                     return phone;
                 }
@@ -437,7 +437,7 @@ public class ModifyUser {
 
                     // get the email object from the original set of emails so
                     // that we can remove it
-                    Phone e = getPhone(ph.getPhoneId(), origPhoneSet);
+                    Phone e = getPhone(ph.getId(), origPhoneSet);
                     if (e != null) {
                         origPhoneSet.remove(e);
                     }
@@ -447,7 +447,7 @@ public class ModifyUser {
                     // if it is - see if it has changed
                     // if it is not - add it.
 
-                    Phone origPhone = getPhone(ph.getPhoneId(), origPhoneSet);
+                    Phone origPhone = getPhone(ph.getId(), origPhoneSet);
                     if (origPhone == null) {
                         ph.setOperation(AttributeOperationEnum.ADD);
                         origPhoneSet.add(ph);
@@ -472,7 +472,7 @@ public class ModifyUser {
         // if a value is in original list and not in the new list - then add it
         // on
         for (Phone ph : origPhoneSet) {
-            Phone newPhone = getPhone(ph.getPhoneId(), newPhoneSet);
+            Phone newPhone = getPhone(ph.getId(), newPhoneSet);
             if (newPhone == null) {
                 ph.setOperation(AttributeOperationEnum.NO_CHANGE);
                 phoneSet.add(ph);

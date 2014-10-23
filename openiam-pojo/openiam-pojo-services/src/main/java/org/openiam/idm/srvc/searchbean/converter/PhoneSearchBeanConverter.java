@@ -12,7 +12,7 @@ public class PhoneSearchBeanConverter implements SearchBeanConverter<PhoneEntity
     @Override
     public PhoneEntity convert(PhoneSearchBean searchBean) {
         final PhoneEntity phone = new PhoneEntity();
-        phone.setPhoneId(searchBean.getKey());
+        phone.setId(searchBean.getKey());
 
         if(searchBean.getParentId() != null && searchBean.getParentId().trim().length() > 0) {
             final UserEntity parent = new UserEntity();

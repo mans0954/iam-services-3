@@ -12,6 +12,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlType;
 
 import org.openiam.am.srvc.dto.ContentProviderServer;
+import org.openiam.am.srvc.dto.RoundRobinServer;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
@@ -38,7 +39,7 @@ public class URIFederationResponse extends Response {
 	
 	private List<URIAuthLevelToken> authLevelTokenList;
 	private List<URIPatternRuleToken> ruleTokenList;
-	private ContentProviderServer server;
+	private RoundRobinServer server;
 	private String patternId;
 	private String cpId;
 	
@@ -76,11 +77,11 @@ public class URIFederationResponse extends Response {
 		}
 	}
 
-	public ContentProviderServer getServer() {
+	public RoundRobinServer getServer() {
 		return server;
 	}
 
-	public void setServer(ContentProviderServer server) {
+	public void setServer(final RoundRobinServer server) {
 		this.server = server;
 	}
 

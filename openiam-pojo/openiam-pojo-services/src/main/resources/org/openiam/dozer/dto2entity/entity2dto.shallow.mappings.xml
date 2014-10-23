@@ -769,6 +769,10 @@
 			<a>uiTheme.id</a>
 			<b>themeId</b>
 		</field>
+		<field-exclude>
+			<a>servers</a>
+			<b>servers</b>
+		</field-exclude>
 	</mapping>
 	<mapping>
 		<class-a>org.openiam.idm.srvc.recon.domain.ReconciliationConfigEntity

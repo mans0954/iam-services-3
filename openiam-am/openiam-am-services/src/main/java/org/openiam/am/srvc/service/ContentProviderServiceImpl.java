@@ -322,9 +322,11 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
     @Transactional
     public void saveURIPattern(URIPatternEntity pattern) {
         final UIThemeEntity theme = (pattern.getUiTheme() != null) ? uiThemeDAO.findById(pattern.getUiTheme().getId()) : null;
+        final ContentProviderEntity contentProvider = contentProviderDao.findById(pattern.getContentProvider().getId());
+        pattern.setContentProvider(contentProvider);
+        pattern.setUiTheme(theme);
         
         if(StringUtils.isBlank(pattern.getId())) {
-        	final ContentProviderEntity contentProvider = contentProviderDao.findById(pattern.getContentProvider().getId());
         	
             ResourceTypeEntity resourceType = resourceTypeDAO.findById(patternResourceTypeId);
             if(resourceType==null){
@@ -340,8 +342,10 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
             resourceDao.add(resource);
 
             pattern.setResource(resource);
-            pattern.setUiTheme(theme);
-            pattern.setContentProvider(contentProvider);
+            for(final URIPatternServerEntity server : pattern.getServers()) {
+				server.setPattern(pattern);
+			}
+            
             final Set<AuthLevelGroupingURIPatternXrefEntity> incomingXrefs = pattern.getGroupingXrefs();
             pattern.setGroupingXrefs(null);
             uriPatternDao.save(pattern);
@@ -354,69 +358,39 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
             	}
             }
             pattern.setGroupingXrefs(incomingXrefs);
-            
             uriPatternDao.merge(pattern);
         } else{
         	final URIPatternEntity dbEntity = uriPatternDao.findById(pattern.getId());
+        	
         	if(dbEntity != null) {
-        		dbEntity.setIsPublic(pattern.getIsPublic());
-        		dbEntity.setPattern(pattern.getPattern());
-        		dbEntity.setUiTheme(theme);
-        		if(dbEntity.getGroupingXrefs() == null) {
-        			dbEntity.setGroupingXrefs(new HashSet<AuthLevelGroupingURIPatternXrefEntity>());
+        		pattern.setResource(dbEntity.getResource());
+        		if(pattern.getResource() != null) {
+        			pattern.getResource().setCoorelatedName(String.format("%s - %s", pattern.getContentProvider().getName(), pattern.getPattern()));
         		}
-        		
-        		/* set CP id */
-        		if(CollectionUtils.isNotEmpty(pattern.getGroupingXrefs())) {
-    				for(AuthLevelGroupingURIPatternXrefEntity xref : pattern.getGroupingXrefs()) {
-    					xref.getId().setPatternId(dbEntity.getId());
-    				}
-        		}
-        		
-        		/* update and delete */
-        		for(final Iterator<AuthLevelGroupingURIPatternXrefEntity> dbIterator = dbEntity.getGroupingXrefs().iterator(); dbIterator.hasNext();) {
-        			boolean contains = false;
-        			final AuthLevelGroupingURIPatternXrefEntity dbXref = dbIterator.next();
-        			if(CollectionUtils.isNotEmpty(pattern.getGroupingXrefs())) {
-        				for(AuthLevelGroupingURIPatternXrefEntity xref : pattern.getGroupingXrefs()) {
-        					if(dbXref.getId().equals(xref.getId())) { /* update */
-        						dbXref.setOrder(xref.getOrder());
-        						contains = true;
-        					}
-        				}
-        			}
-        			
-        			if(!contains) {
-        				dbIterator.remove();
+        		if(CollectionUtils.isEmpty(pattern.getGroupingXrefs())) {
+        			dbEntity.getGroupingXrefs().clear();
+        			pattern.setGroupingXrefs(dbEntity.getGroupingXrefs());
+        		} else {
+        			for(final AuthLevelGroupingURIPatternXrefEntity xref : pattern.getGroupingXrefs()) {
+        				final AuthLevelGroupingEntity grouping = authLevelGroupingDAO.findById(xref.getId().getGroupingId());
+        				xref.setGrouping(grouping);
+        				xref.setPattern(pattern);
+        				xref.setId(new AuthLevelGroupingURIPatternXrefIdEntity(grouping.getId(), pattern.getId()));
         			}
         		}
         		
-        		if(CollectionUtils.isNotEmpty(pattern.getGroupingXrefs())) {
-        			final Set<AuthLevelGroupingURIPatternXrefEntity> newXrefs = new HashSet<AuthLevelGroupingURIPatternXrefEntity>();
-    				for(final AuthLevelGroupingURIPatternXrefEntity xref : pattern.getGroupingXrefs()) {
-    					boolean contains = false;
-    					for(final AuthLevelGroupingURIPatternXrefEntity dbXref : dbEntity.getGroupingXrefs()) {
-    						if(xref.getId().equals(dbXref.getId())) {
-    							contains = true;
-    						}
-    					}
-    					
-    					if(!contains) {
-    						final AuthLevelGroupingEntity grouping = authLevelGroupingDAO.findById(xref.getId().getGroupingId());
-    						xref.setPattern(dbEntity);
-    						xref.setGrouping(grouping);
-    						xref.setId(new AuthLevelGroupingURIPatternXrefIdEntity(grouping.getId(), dbEntity.getId()));
-    						newXrefs.add(xref);
-        				}
-    				}
-    				dbEntity.getGroupingXrefs().addAll(newXrefs);
+        		if(CollectionUtils.isEmpty(pattern.getServers())) {
+        			dbEntity.getServers().clear();
+        			pattern.setServers(dbEntity.getServers());
+        		} else {
+        			for(final URIPatternServerEntity server : pattern.getServers()) {
+        				server.setPattern(pattern);
+        			}
         		}
         		
-        		if(dbEntity.getResource() != null) {
-        			dbEntity.getResource().setCoorelatedName(String.format("%s - %s", pattern.getContentProvider().getName(), pattern.getPattern()));
-        		}
-        		
-        		uriPatternDao.update(dbEntity);
+        		pattern.setPageTemplates(dbEntity.getPageTemplates());
+        		pattern.setMetaEntitySet(dbEntity.getMetaEntitySet());
+        		uriPatternDao.merge(pattern);
         	}
         }
     }

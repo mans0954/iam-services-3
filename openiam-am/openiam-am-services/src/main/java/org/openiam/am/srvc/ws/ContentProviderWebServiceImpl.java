@@ -448,12 +448,6 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
                 throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_NOT_SET);
             }
             
-            /*
-            if(CollectionUtils.isEmpty(pattern.getGroupingXrefs())) {
-            	throw new BasicDataServiceException(ResponseCode.URI_PATTERN_AUTH_LEVEL_NOT_SET);
-            }
-            */
-            
             final List<URIPatternEntity> entityList = 
             		contentProviderService.getURIPatternsForContentProviderMatchingPattern(pattern.getContentProviderId(), pattern.getPattern());
             if(CollectionUtils.isNotEmpty(entityList)) {

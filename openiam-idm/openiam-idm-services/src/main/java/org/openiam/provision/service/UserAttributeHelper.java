@@ -614,7 +614,7 @@ public class UserAttributeHelper {
             boolean found = false;
             while (origIt.hasNext()) {
                 Phone origAdr = origIt.next();
-                if (origAdr.getPhoneId().equals(addr.getPhoneId())) {
+                if (origAdr.getId().equals(addr.getId())) {
                     found = true;
                 }
             }

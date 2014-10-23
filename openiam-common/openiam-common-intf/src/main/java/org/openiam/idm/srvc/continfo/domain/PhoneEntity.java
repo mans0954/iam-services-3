@@ -19,6 +19,7 @@ import org.hibernate.search.annotations.Fields;
 import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.Store;
+import org.openiam.base.domain.KeyEntity;
 import org.openiam.core.dao.lucene.LuceneId;
 import org.openiam.core.dao.lucene.LuceneLastUpdate;
 import org.openiam.core.dao.lucene.bridge.UserBridge;
@@ -32,15 +33,9 @@ import org.openiam.idm.srvc.user.domain.UserEntity;
 @DozerDTOCorrespondence(Phone.class)
 @Indexed
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class PhoneEntity {
-    @Id
-    @GeneratedValue(generator = "system-uuid")
-    @GenericGenerator(name = "system-uuid", strategy = "uuid")
-    @Column(name = "PHONE_ID", length = 32, nullable = false)
-    @LuceneId
-    @DocumentId
-    private String phoneId;
-
+@AttributeOverride(name = "id", column = @Column(name = "PHONE_ID", length = 32, nullable = false))
+public class PhoneEntity extends KeyEntity {
+   
     @Column(name="ACTIVE")
     @Type(type = "yes_no")
     private boolean isActive = true;
@@ -105,14 +100,6 @@ public class PhoneEntity {
     private MetadataTypeEntity metadataType;
 
     public PhoneEntity() {
-    }
-
-    public String getPhoneId() {
-        return phoneId;
-    }
-
-    public void setPhoneId(String phoneId) {
-        this.phoneId = phoneId;
     }
 
     public Boolean getIsActive() {
@@ -224,7 +211,7 @@ public class PhoneEntity {
 	@Override
 	public int hashCode() {
 		final int prime = 31;
-		int result = 1;
+		int result = super.hashCode();
 		result = prime * result + ((areaCd == null) ? 0 : areaCd.hashCode());
 		result = prime * result
 				+ ((countryCd == null) ? 0 : countryCd.hashCode());
@@ -236,17 +223,14 @@ public class PhoneEntity {
 		result = prime * result + (isDefault ? 1231 : 1237);
 		result = prime * result
 				+ ((lastUpdate == null) ? 0 : lastUpdate.hashCode());
+		result = prime * result
+				+ ((metadataType == null) ? 0 : metadataType.hashCode());
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		result = prime * result + ((parent == null) ? 0 : parent.hashCode());
 		result = prime * result
 				+ ((phoneExt == null) ? 0 : phoneExt.hashCode());
-		result = prime * result + ((phoneId == null) ? 0 : phoneId.hashCode());
 		result = prime * result
 				+ ((phoneNbr == null) ? 0 : phoneNbr.hashCode());
-		/*
-		result = prime * result
-				+ ((phoneType == null) ? 0 : phoneType.hashCode());
-		*/
-        result = prime * result + ((metadataType == null) ? 0 : metadataType.hashCode());
 		return result;
 	}
 
@@ -254,7 +238,7 @@ public class PhoneEntity {
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
-		if (obj == null)
+		if (!super.equals(obj))
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
@@ -288,54 +272,44 @@ public class PhoneEntity {
 				return false;
 		} else if (!lastUpdate.equals(other.lastUpdate))
 			return false;
+		if (metadataType == null) {
+			if (other.metadataType != null)
+				return false;
+		} else if (!metadataType.equals(other.metadataType))
+			return false;
 		if (name == null) {
 			if (other.name != null)
 				return false;
 		} else if (!name.equals(other.name))
+			return false;
+		if (parent == null) {
+			if (other.parent != null)
+				return false;
+		} else if (!parent.equals(other.parent))
 			return false;
 		if (phoneExt == null) {
 			if (other.phoneExt != null)
 				return false;
 		} else if (!phoneExt.equals(other.phoneExt))
 			return false;
-		if (phoneId == null) {
-			if (other.phoneId != null)
-				return false;
-		} else if (!phoneId.equals(other.phoneId))
-			return false;
 		if (phoneNbr == null) {
 			if (other.phoneNbr != null)
 				return false;
 		} else if (!phoneNbr.equals(other.phoneNbr))
 			return false;
-		/*
-		if (phoneType == null) {
-			if (other.phoneType != null)
-				return false;
-		} else if (!phoneType.equals(other.phoneType))
-			return false;
-		*/
-        if (metadataType == null) {
-            if (other.metadataType != null)
-                return false;
-        } else if (!metadataType.equals(other.metadataType))
-            return false;
 		return true;
 	}
 
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder();
-        sb.append("PhoneEntity");
-        sb.append("{areaCd='").append(areaCd).append('\'');
-        sb.append(", countryCd='").append(countryCd).append('\'');
-        sb.append(", description='").append(description).append('\'');
-        sb.append(", isDefault=").append(isDefault);
-        sb.append(", phoneExt='").append(phoneExt).append('\'');
-        sb.append(", phoneNbr='").append(phoneNbr).append('\'');
-        sb.append(", name='").append(name).append('\'');
-        sb.append(", lastUpdate=").append(lastUpdate);
-        sb.append('}');
-        return sb.toString();
-    }
+	@Override
+	public String toString() {
+		return "PhoneEntity [isActive=" + isActive + ", areaCd=" + areaCd
+				+ ", countryCd=" + countryCd + ", description=" + description
+				+ ", isDefault=" + isDefault + ", parent=" + parent
+				+ ", phoneExt=" + phoneExt + ", phoneNbr=" + phoneNbr
+				+ ", name=" + name + ", lastUpdate=" + lastUpdate
+				+ ", createDate=" + createDate + ", metadataType="
+				+ metadataType + "]";
+	}
+
+	
 }

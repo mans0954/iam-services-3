@@ -14,6 +14,7 @@ import javax.xml.bind.annotation.XmlType;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -61,7 +62,7 @@ public class ContentProvider extends KeyNameDTO {
 	private int serverIdx = 0;
 	
 	@XmlTransient
-	private List<ContentProviderServer> serverList;
+	private List<RoundRobinServer> serverList;
 	
 	public boolean getIsPublic() {
 		return isPublic;
@@ -119,12 +120,15 @@ public class ContentProvider extends KeyNameDTO {
 	public void setServerSet(Set<ContentProviderServer> serverSet) {
 		this.serverSet = serverSet;
 		if(serverSet != null) {
-			this.serverList = new ArrayList<ContentProviderServer>(serverSet);
+			this.serverList = new LinkedList<>();
+			for(final ContentProviderServer server : this.serverSet) {
+				this.serverList.add(new RoundRobinServer(server));
+			}
 		}
 	}
 	
-	public synchronized ContentProviderServer getNextServer() {
-		ContentProviderServer retVal = null;
+	public synchronized RoundRobinServer getNextServer() {
+		RoundRobinServer retVal = null;
 		if(CollectionUtils.isNotEmpty(serverList)) {
 			final int size = serverList.size();
 			retVal = serverList.get(serverIdx % size);

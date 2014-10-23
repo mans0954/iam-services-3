@@ -1,5 +1,6 @@
 package org.openiam.am.srvc.dto;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.openiam.am.srvc.comparator.AuthLevelGroupingXrefComparator;
 import org.openiam.am.srvc.domain.AuthLevelGroupingURIPatternXrefEntity;
 import org.openiam.am.srvc.domain.URIPatternEntity;
@@ -9,10 +10,12 @@ import org.openiam.idm.srvc.meta.dto.MetadataElementPageTemplate;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -28,7 +31,8 @@ import java.util.Set;
         "pageTemplates",
         "themeId",
         "groupingXrefs",
-        "resourceCoorelatedName"
+        "resourceCoorelatedName",
+        "servers"
 })
 @DozerDTOCorrespondence(URIPatternEntity.class)
 public class URIPattern extends KeyDTO {
@@ -44,6 +48,16 @@ public class URIPattern extends KeyDTO {
 	private String themeId;
 	private Set<AuthLevelGroupingURIPatternXref> groupingXrefs;
 	private String resourceCoorelatedName;
+	private Set<URIPatternServer> servers;
+	
+	/*
+	 * federation variables.  Internal use only
+	 */
+	@XmlTransient
+	private int serverIdx = 0;
+	
+	@XmlTransient
+	private List<RoundRobinServer> serverList;
 	
 	public String getContentProviderId() {
 		return contentProviderId;
@@ -126,6 +140,30 @@ public class URIPattern extends KeyDTO {
 	public void setResourceCoorelatedName(String resourceCoorelatedName) {
 		this.resourceCoorelatedName = resourceCoorelatedName;
 	}
+	
+	public Set<URIPatternServer> getServers() {
+		return servers;
+	}
+	public void setServers(Set<URIPatternServer> servers) {
+		this.servers = servers;
+		if(CollectionUtils.isNotEmpty(servers)) {
+			this.serverList = new LinkedList<>();
+			for(final URIPatternServer server : servers) {
+				this.serverList.add(new RoundRobinServer(server));
+			}
+		}
+	}
+	
+	public synchronized RoundRobinServer getNextServer() {
+		RoundRobinServer retVal = null;
+		if(CollectionUtils.isNotEmpty(serverList)) {
+			final int size = serverList.size();
+			retVal = serverList.get(serverIdx % size);
+			serverIdx++;
+		}
+		return retVal;
+	}
+	
 	@Override
 	public int hashCode() {
 		final int prime = 31;

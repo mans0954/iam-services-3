@@ -11,26 +11,18 @@ import javax.xml.bind.annotation.XmlType;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "ContentProviderServer", propOrder = {
-        "contentProviderId",
-        "serverURL"
+        "contentProviderId"
 })
 @DozerDTOCorrespondence(ContentProviderServerEntity.class)
-public class ContentProviderServer extends KeyDTO {
+public class ContentProviderServer extends AbstractServer {
 
 	private String contentProviderId;
-	private String serverURL;
-
+	
 	public String getContentProviderId() {
 		return contentProviderId;
 	}
 	public void setContentProviderId(String contentProviderId) {
 		this.contentProviderId = contentProviderId;
-	}
-	public String getServerURL() {
-		return serverURL;
-	}
-	public void setServerURL(String serverURL) {
-		this.serverURL = serverURL;
 	}
 	@Override
 	public int hashCode() {
@@ -40,8 +32,6 @@ public class ContentProviderServer extends KeyDTO {
 				* result
 				+ ((contentProviderId == null) ? 0 : contentProviderId
 						.hashCode());
-		result = prime * result
-				+ ((serverURL == null) ? 0 : serverURL.hashCode());
 		return result;
 	}
 	@Override
@@ -58,18 +48,13 @@ public class ContentProviderServer extends KeyDTO {
 				return false;
 		} else if (!contentProviderId.equals(other.contentProviderId))
 			return false;
-		if (serverURL == null) {
-			if (other.serverURL != null)
-				return false;
-		} else if (!serverURL.equals(other.serverURL))
-			return false;
 		return true;
 	}
 	@Override
 	public String toString() {
-		return String
-				.format("ContentProviderServer [contentProviderId=%s, serverURL=%s, toString()=%s]",
-						contentProviderId, serverURL, super.toString());
+		return "ContentProviderServer [contentProviderId=" + contentProviderId
+				+ ", getServerURL()=" + getServerURL() + ", getId()=" + getId()
+				+ "]";
 	}
 	
 	
