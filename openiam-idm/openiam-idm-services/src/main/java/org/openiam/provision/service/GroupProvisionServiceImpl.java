@@ -5,7 +5,6 @@ import groovy.lang.MissingPropertyException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.mule.api.MuleContext;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.BaseAttributeContainer;
 import org.openiam.base.SysConfiguration;
@@ -60,7 +59,6 @@ import org.openiam.provision.type.ExtensibleGroup;
 import org.openiam.provision.type.ExtensibleObject;
 import org.openiam.provision.type.ExtensibleUser;
 import org.openiam.script.ScriptIntegration;
-import org.openiam.util.MuleContextProvider;
 import org.openiam.util.SpringContextProvider;
 import org.openiam.util.encrypt.Cryptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -407,7 +405,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
             System.out.println("======= callPreProcessor: isSkipPreprocessor="+pGroup.isSkipPreprocessor()+", ");
             if (!pGroup.isSkipPreprocessor() &&
                     (addPreProcessScript = createProvPreProcessScript(preProcessorGroup, bindingMap)) != null) {
-                addPreProcessScript.setMuleContext(MuleContextProvider.getCtx());
+
                 addPreProcessScript.setApplicationContext(SpringContextProvider.getApplicationContext());
                 return executeProvisionPreProcess(addPreProcessScript, bindingMap, pGroup, null, operation);
 
@@ -426,7 +424,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
         if ( pGroup != null) {
             if (!pGroup.isSkipPostProcessor() &&
                     (addPostProcessScript = createProvPostProcessScript(postProcessorGroup, bindingMap)) != null) {
-                addPostProcessScript.setMuleContext(MuleContextProvider.getCtx());
+
                 addPostProcessScript.setApplicationContext(SpringContextProvider.getApplicationContext());
                 return executeProvisionPostProcess(addPostProcessScript, bindingMap, pGroup, null, operation);
 
@@ -569,8 +567,8 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
         userReq.setExtensibleObject(extensibleObject);
         userReq.setScriptHandler(mSys.getAddHandler());
 
-        ObjectResponse resp = isAdd ? connectorAdapter.addRequest(mSys, userReq, MuleContextProvider.getCtx())
-                : connectorAdapter.modifyRequest(mSys, userReq, MuleContextProvider.getCtx());
+        ObjectResponse resp = isAdd ? connectorAdapter.addRequest(mSys, userReq)
+                : connectorAdapter.modifyRequest(mSys, userReq);
         /*auditBuilderDispatcherChild.addAttribute(AuditAttributeName.DESCRIPTION, (isAdd ? "ADD IDENTITY = "
                 : "MODIFY IDENTITY = ") + resp.getStatus() + " details:" + resp.getErrorMsgAsStr());*/
         return resp.getStatus() != StatusCodeType.FAILURE;
@@ -593,7 +591,6 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
                                                    ManagedSysDto mSys, ManagedSystemObjectMatch matchObj, Map<String, String> curValueMap) {
 
         String identity = identityDto.getIdentity();
-        MuleContext muleContext = MuleContextProvider.getCtx();
         log.debug("Getting the current attributes in the target system for =" + identity);
 
         log.debug("- IsRename: " + identityDto.getOrigPrincipalName());
@@ -622,7 +619,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
         reqType.setExtensibleObject(extensibleObject);
         reqType.setScriptHandler(mSys.getLookupHandler());
 
-        SearchResponse lookupSearchResponse = connectorAdapter.lookupRequest(mSys, reqType, muleContext);
+        SearchResponse lookupSearchResponse = connectorAdapter.lookupRequest(mSys, reqType);
         if (lookupSearchResponse.getStatus() == StatusCodeType.SUCCESS) {
             List<ExtensibleAttribute> extAttrList = lookupSearchResponse.getObjectList().size() > 0 ? lookupSearchResponse
                     .getObjectList().get(0).getAttributeList()
@@ -1029,7 +1026,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
 
         request.setScriptHandler(mSys.getDeleteHandler());
 
-        ObjectResponse resp = connectorAdapter.deleteRequest(mSys, request, MuleContextProvider.getCtx());
+        ObjectResponse resp = connectorAdapter.deleteRequest(mSys, request);
 
         return resp;
     }
@@ -1090,7 +1087,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
             reqType.setHostUrl(mSys.getHostUrl());
             reqType.setScriptHandler(mSys.getLookupHandler());
 
-            SearchResponse responseType = connectorAdapter.lookupRequest(mSys, reqType, MuleContextProvider.getCtx());
+            SearchResponse responseType = connectorAdapter.lookupRequest(mSys, reqType);
             if (responseType.getStatus() == StatusCodeType.FAILURE || responseType.getObjectList().size() == 0) {
                 response.setStatus(ResponseStatus.FAILURE);
                 return response;
@@ -1127,7 +1124,7 @@ public class GroupProvisionServiceImpl extends AbstractBaseService implements Ob
                 }
             }
         }
-        if (org.mule.util.StringUtils.isNotEmpty(principalAttributeName)) {
+        if (StringUtils.isNotEmpty(principalAttributeName)) {
             for (ExtensibleAttribute extAttr : extensibleAttributes) {
                 if (extAttr.getName().equalsIgnoreCase(principalAttributeName)) {
                     return extAttr.getValue();

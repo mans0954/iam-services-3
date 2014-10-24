@@ -96,7 +96,7 @@ public class AddUserOracleCommand extends AbstractAddOracleCommand<ExtensibleUse
         try {
             boolean exists = false;
             if(connection != null) {
-                if(org.mule.util.StringUtils.isNotBlank(principalName)) {
+                if(StringUtils.isNotBlank(principalName)) {
                     statement = connection.prepareStatement(SELECT_SQL);
                     statement.setString(1, principalName);
                     final ResultSet rs = statement.executeQuery();

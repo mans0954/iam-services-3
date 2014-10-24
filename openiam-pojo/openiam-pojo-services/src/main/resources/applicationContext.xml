@@ -7,21 +7,23 @@
        xmlns:util="http://www.springframework.org/schema/util"
        xmlns:context="http://www.springframework.org/schema/context"
        xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:jaxws="http://cxf.apache.org/jaxws"
        xsi:schemaLocation="http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
        http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee.xsd
        http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
-       http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
+       http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
+       http://cxf.apache.org/jaxws http://cxf.apache.org/schemas/jaxws.xsd">
 
     <import resource="jmsContext.xml" />
 
-	<context:annotation-config />
 	<context:component-scan
-		base-package="org.openiam.idm.srvc.org.service,
-										  org.openiam.base,
-		                                  org.openiam.util,
+		base-package="org.openiam.base, org.openiam.util,
     								      org.openiam.core,
+    								      org.openiam.bpm.activiti,
+    								      org.openiam.idm,
+    								      org.openiam.connector,
     								      org.openiam.idm.*,
     								      org.openiam.provision.*,
     								      org.openiam.dozer.converter,
@@ -234,8 +236,30 @@
 		<!-- <property name="jtaTransactionManager"> <bean factory-bean="transactionManager" 
 			factory-method="getTransactionManager" /> </property> -->
 		<property name="hibernateProperties" ref="hibernateProperties" />
-		<property name="packagesToScan" value="org.openiam.*" />
 
+		<property name="packagesToScan"
+			value="org.openiam.core.domain*,
+											   org.openiam.idm.srvc.grp.domain*,
+											   org.openiam.idm.srvc.role.domain*,
+                                               org.openiam.idm.srvc.user.domain*,
+                                               org.openiam.am.srvc.domain*,
+                                               org.openiam.idm.srvc.mngsys.domain*,
+                                               org.openiam.idm.srvc.synch.domain*,
+                                               org.openiam.idm.srvc.org.domain*,
+											   org.openiam.idm.srvc.auth.domain*,
+											   org.openiam.idm.srvc.cat.domain*,
+                                               org.openiam.idm.srvc.continfo.domain*,
+                                               org.openiam.idm.srvc.res.domain*,
+                                               org.openiam.idm.srvc.recon.domain*,
+                                               org.openiam.idm.srvc.meta.domain*,
+                                               org.openiam.idm.srvc.policy.domain*,
+                                               org.openiam.idm.srvc.audit.domain*,
+                                               org.openiam.idm.srvc.pswd.domain*,
+                                               org.openiam.idm.srvc.lang.domain*,
+                                               org.openiam.idm.srvc.report.domain*,
+                                               org.openiam.idm.srvc.prov*,
+                                               org.openiam.idm.srvc.batch.domain*,
+                                               org.openiam.idm.srvc.ui*" />
 	</bean>
 	<util:properties id="hibernateProperties"
 		location="classpath:openiam.hibernate.properties">

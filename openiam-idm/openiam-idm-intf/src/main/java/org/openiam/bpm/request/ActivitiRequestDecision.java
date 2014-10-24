@@ -6,10 +6,11 @@ import java.util.Map;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
+import javax.xml.stream.XMLStreamConstants;
 
 import org.openiam.base.BaseObject;
 
-import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.*;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "ActivitiRequestDecision", propOrder = {

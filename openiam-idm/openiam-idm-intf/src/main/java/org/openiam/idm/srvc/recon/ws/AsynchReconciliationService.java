@@ -1,7 +1,6 @@
 package org.openiam.idm.srvc.recon.ws;
 
 import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
-import org.openiam.idm.srvc.synch.dto.SynchConfig;
 
 import javax.jws.WebMethod;
 import javax.jws.WebParam;

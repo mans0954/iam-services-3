@@ -23,7 +23,7 @@ public class PasswordHistoryDAOImpl extends BaseDaoImpl<PasswordHistoryEntity, S
 	@Override
 	public List<PasswordHistoryEntity> getPasswordHistoryByLoginId(final String loginId, final int from, final int size) {
 		final Criteria criteria = getCriteria();
-		criteria.add(Restrictions.eq("loginId", loginId));
+		criteria.add(Restrictions.eq("login.loginId", loginId));
 		criteria.addOrder(Order.asc("dateCreated"));
 		if(from > -1) {
 			criteria.setFirstResult(from);
@@ -41,18 +41,6 @@ public class PasswordHistoryDAOImpl extends BaseDaoImpl<PasswordHistoryEntity, S
         StringBuilder sql = new StringBuilder();
         sql.append("from ").append(PasswordHistory.class.getName()).append(" pwd");
         return (List<PasswordHistoryEntity>)getSession().createQuery(sql.toString()).setFirstResult(startPos).setMaxResults(size).list();
-    }
-
-    @Override
-    @Transactional
-    public void deleteByLogin(String loginId){
-        StringBuilder sql = new StringBuilder();
-        sql.append("delete from ")
-           .append(this.domainClass.getName())
-           .append(" where loginId=:login");
-
-        getSession().createQuery(sql.toString()).setString("login", loginId)
-                .executeUpdate();
     }
 
     @Override

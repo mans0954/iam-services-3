@@ -2,7 +2,6 @@ package org.openiam.provision.service;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.mule.api.MuleContext;
 import org.openiam.base.ws.Response;
 import org.openiam.connector.type.response.ResponseType;
 import org.openiam.connector.type.constant.StatusCodeType;
@@ -27,14 +26,14 @@ public class ValidateConnectionConfig {
     @Autowired
     protected ManagedSystemWebService managedSysService;
 
-    Response testConnection(String managedSysId, MuleContext muleContext) {
+    Response testConnection(String managedSysId) {
         Response resp = new Response(org.openiam.base.ws.ResponseStatus.SUCCESS);
 
         ManagedSysDto mSys = managedSysService.getManagedSys(managedSysId);
 
         log.debug("Testing connection with localConnector");
 
-        ResponseType localResp = connectorAdapter.testConnection(mSys, muleContext);
+        ResponseType localResp = connectorAdapter.testConnection(mSys);
         if (localResp.getStatus() == StatusCodeType.FAILURE) {
 
             log.debug("Test connection failed.");

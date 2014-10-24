@@ -18,6 +18,6 @@ public interface AuditLogService {
 
     public int count(final AuditLogSearchBean searchBean);
     public IdmAuditLog findById(final String id);
-    public String save(IdmAuditLog auditLogEntity);
+    public IdmAuditLog save(IdmAuditLog auditLogEntity);
 
 }

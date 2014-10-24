@@ -103,10 +103,6 @@
 		<class-a>org.openiam.idm.srvc.user.domain.UserNoteEntity</class-a>
 		<class-b>org.openiam.idm.srvc.user.domain.UserNoteEntity</class-b>
 	</mapping>
-	<mapping>
-		<class-a>org.openiam.idm.srvc.auth.domain.LoginEntity</class-a>
-		<class-b>org.openiam.idm.srvc.auth.domain.LoginEntity</class-b>
-	</mapping>
 
 	<mapping>
 		<class-a>org.openiam.am.srvc.domain.AuthAttributeEntity</class-a>

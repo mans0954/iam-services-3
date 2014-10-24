@@ -10,7 +10,7 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.mule.util.StringUtils;
+import org.apache.commons.lang.StringUtils;
 import org.openiam.connector.common.jdbc.AbstractJDBCCommand;
 import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.connector.type.ObjectValue;

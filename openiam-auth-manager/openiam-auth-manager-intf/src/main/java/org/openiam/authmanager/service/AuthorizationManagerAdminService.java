@@ -4,6 +4,7 @@ import org.openiam.authmanager.model.ResourceEntitlementToken;
 import org.openiam.authmanager.model.UserEntitlementsMatrix;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Set;
 
 public interface AuthorizationManagerAdminService {
@@ -14,5 +15,5 @@ public interface AuthorizationManagerAdminService {
 	public UserEntitlementsMatrix getUserEntitlementsMatrix(final String entityId);
 
     public Set<String> getOwnerIdsForResource(String resourceId);
-    public HashMap<String, Set<String>> getOwnerIdsForResourceSet(Set<String> resourceIdSet);
+    public HashMap<String, HashSet<String>> getOwnerIdsForResourceSet(Set<String> resourceIdSet);
 }
