@@ -178,6 +178,12 @@
             <a>loginAttributes</a>
             <b>loginAttributes</b>
         </field>
+        <field
+                custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
+                custom-converter-param="dto2entityShallowDozerMapper">
+            <a>passwordHistory</a>
+            <b>passwordHistory</b>
+        </field>
     </mapping>
     <mapping>
         <class-a>org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity

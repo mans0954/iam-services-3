@@ -21,7 +21,8 @@ import java.lang.ref.WeakReference;
         "amAttribute",
         "metaEntityId",
         "groovyScript",
-        "propagateThroughProxy"
+        "emptyValue",
+        "propagateThroughProxy",
 })
 @DozerDTOCorrespondence(URIPatternMetaValueEntity.class)
 public class URIPatternMetaValue implements Serializable {
@@ -32,6 +33,7 @@ public class URIPatternMetaValue implements Serializable {
 	private String groovyScript;
 	private String metaEntityId;
 	private boolean propagateThroughProxy = true;
+	private boolean emptyValue = false;
 	
 	/* internal use only!  Is compiled at spring refresh time 
 	 * to avoid run-time groovy class initialization.  
@@ -94,12 +96,23 @@ public class URIPatternMetaValue implements Serializable {
 	public void setPropagateThroughProxy(boolean propagateThroughProxy) {
 		this.propagateThroughProxy = propagateThroughProxy;
 	}
+	
+	public boolean isEmptyValue() {
+		return emptyValue;
+	}
+
+	public void setEmptyValue(boolean emptyValue) {
+		this.emptyValue = emptyValue;
+	}
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result
 				+ ((amAttribute == null) ? 0 : amAttribute.hashCode());
+		result = prime * result + (emptyValue ? 1231 : 1237);
+		result = prime * result
+				+ ((groovyProcessor == null) ? 0 : groovyProcessor.hashCode());
 		result = prime * result
 				+ ((groovyScript == null) ? 0 : groovyScript.hashCode());
 		result = prime * result + ((id == null) ? 0 : id.hashCode());
@@ -124,6 +137,13 @@ public class URIPatternMetaValue implements Serializable {
 			if (other.amAttribute != null)
 				return false;
 		} else if (!amAttribute.equals(other.amAttribute))
+			return false;
+		if (emptyValue != other.emptyValue)
+			return false;
+		if (groovyProcessor == null) {
+			if (other.groovyProcessor != null)
+				return false;
+		} else if (!groovyProcessor.equals(other.groovyProcessor))
 			return false;
 		if (groovyScript == null) {
 			if (other.groovyScript != null)
@@ -157,9 +177,10 @@ public class URIPatternMetaValue implements Serializable {
 	@Override
 	public String toString() {
 		return String
-				.format("URIPatternMetaValue [id=%s, name=%s, staticValue=%s, amAttribute=%s, groovyScript=%s, metaEntityId=%s, propagateThroughProxy=%s, groovyProcessor=%s]",
+				.format("URIPatternMetaValue [id=%s, name=%s, staticValue=%s, amAttribute=%s, groovyScript=%s, metaEntityId=%s, propagateThroughProxy=%s, emptyValue=%s, groovyProcessor=%s]",
 						id, name, staticValue, amAttribute, groovyScript,
-						metaEntityId, propagateThroughProxy, groovyProcessor);
+						metaEntityId, propagateThroughProxy, emptyValue,
+						groovyProcessor);
 	}
 	
 	

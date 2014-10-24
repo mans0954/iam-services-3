@@ -629,6 +629,10 @@
             <a>loginAttributes</a>
             <b>loginAttributes</b>
         </field-exclude>
+        <field-exclude>
+            <a>passwordHistory</a>
+            <b>passwordHistory</b>
+        </field-exclude>
     </mapping>
 	<mapping>
 		<class-a>org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity</class-a>

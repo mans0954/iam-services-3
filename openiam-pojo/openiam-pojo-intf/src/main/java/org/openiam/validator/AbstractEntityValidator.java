@@ -20,7 +20,7 @@ public abstract class AbstractEntityValidator implements EntityValidator {
 
     @PostConstruct
     public void init(){
-        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+        ValidatorFactory factory = Validation.byDefaultProvider().configure().traversableResolver(new IgnoreTraversableResolver()).buildValidatorFactory();
         validator = factory.getValidator();
     }
 }

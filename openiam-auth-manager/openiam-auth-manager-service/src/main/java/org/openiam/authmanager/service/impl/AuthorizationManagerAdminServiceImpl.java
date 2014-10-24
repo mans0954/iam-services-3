@@ -2,6 +2,7 @@ package org.openiam.authmanager.service.impl;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.openiam.authmanager.common.SetStringResponse;
 import org.openiam.authmanager.common.model.AuthorizationGroup;
 import org.openiam.authmanager.common.model.AuthorizationResource;
 import org.openiam.authmanager.common.model.AuthorizationRole;
@@ -619,8 +620,8 @@ public class AuthorizationManagerAdminServiceImpl implements AuthorizationManage
                                       group2GroupMap, role2RoleMap,group2RoleMap);
     }
 
-    public HashMap<String, Set<String>> getOwnerIdsForResourceSet(Set<String> resourceIdSet){
-        HashMap<String, Set<String>> ownerIdsMap = new HashMap<String, Set<String>>();
+    public HashMap<String, SetStringResponse> getOwnerIdsForResourceSet(Set<String> resourceIdSet){
+        HashMap<String, SetStringResponse> ownerIdsMap = new HashMap<String, SetStringResponse>();
 
         final Map<String, AuthorizationResource> resourceMap = getResourceMap();
         final Map<String, AuthorizationGroup> groupMap = getGroupMap();
@@ -631,12 +632,14 @@ public class AuthorizationManagerAdminServiceImpl implements AuthorizationManage
         final Map<String, Set<AuthorizationRole>> role2RoleMap = getRole2RoleMap(roleMap, true);
         final Map<String, Set<AuthorizationRole>> group2RoleMap = getGroup2RoleMap(roleMap);
 
-        if(CollectionUtils.isNotEmpty(resourceIdSet)){
-            for(String resourceId: resourceIdSet ){
-                ownerIdsMap.put(resourceId, getOwnerIdsForResource(resourceMap.get(resourceId), resourceMap, groupMap,
-                                                                   roleMap, resource2RoleMap, resource2GroupMap,
-                                                                   group2GroupMap, role2RoleMap,group2RoleMap));
-            }
+        SetStringResponse setString;
+
+        if(CollectionUtils.isNotEmpty(resourceIdSet)) for (String resourceId : resourceIdSet) {
+            setString = new SetStringResponse();
+            setString.setSetString(getOwnerIdsForResource(resourceMap.get(resourceId), resourceMap, groupMap,
+                    roleMap, resource2RoleMap, resource2GroupMap,
+                    group2GroupMap, role2RoleMap, group2RoleMap));
+            ownerIdsMap.put(resourceId, setString);
         }
         return ownerIdsMap;
     }

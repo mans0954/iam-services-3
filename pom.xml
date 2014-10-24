@@ -6,7 +6,7 @@
 	<groupId>org.openiam</groupId>
 	<artifactId>iam-services</artifactId>
 	<packaging>pom</packaging>
-	<version>3.2.2.RELEASE</version>
+	<version>3.2.3.RELEASE</version>
 
 	<name>OpenIAM Identity Manager</name>
 	<description>openiam is open source Identity and access Management Project</description>
@@ -449,6 +449,11 @@
 				<artifactId>xbean-spring</artifactId>
 				<version>${xbean.version}</version>
 			</dependency>
+            <dependency>
+                <groupId>commons-lang</groupId>
+                <artifactId>commons-lang</artifactId>
+                <version>2.4</version>
+            </dependency>
 			<!-- groovy dependencies -->
 			<dependency>
 				<groupId>org.codehaus.groovy</groupId>

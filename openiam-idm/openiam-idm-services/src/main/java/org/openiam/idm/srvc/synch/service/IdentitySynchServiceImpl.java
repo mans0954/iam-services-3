@@ -197,7 +197,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
 
         if ("INACTIVE".equalsIgnoreCase(config.getStatus())) {
             idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "WARNING: Synchronization config is in 'INACTIVE' status");
-            String logId = auditLogService.save(idmAuditLog);
+            idmAuditLog = auditLogService.save(idmAuditLog);
             SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
             resp.setErrorCode(ResponseCode.FAIL_PROCESS_INACTIVE);
             return resp;
@@ -207,7 +207,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
         if (processCheckResponse.getStatus() == ResponseStatus.FAILURE &&
                 processCheckResponse.getErrorCode() == ResponseCode.FAIL_PROCESS_ALREADY_RUNNING) {
             idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "WARNING: Previous synchronization run is not finished yet");
-            auditLogService.save(idmAuditLog);
+            idmAuditLog = auditLogService.save(idmAuditLog);
             return processCheckResponse;
 
         }
@@ -253,8 +253,8 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
             idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "Synchronization started..." + startDate);
 
 			long newLastExecTime = System.currentTimeMillis();
-            String logId = auditLogService.save(idmAuditLog);
-            configDTO.setParentAuditLogId(logId);
+            idmAuditLog = auditLogService.save(idmAuditLog);
+            configDTO.setParentAuditLogId(idmAuditLog.getId());
             SourceAdapter adapt = adapterFactory.create(configDTO);
             syncResponse = adapt.startSynch(configDTO, review, resultReview);
 			
@@ -311,7 +311,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
             if (resultReview.isSourceRejected() || CollectionUtils.isNotEmpty(resultReview.getReviewRecords())) {
                 synchReviewDAO.save(resultReview);
             }
-            auditLogService.save(idmAuditLog);
+            idmAuditLog = auditLogService.save(idmAuditLog);
         }
 
         return syncResponse;

@@ -2,6 +2,8 @@ package org.openiam.am.srvc.service;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openiam.am.srvc.dao.*;
 import org.openiam.am.srvc.domain.*;
 import org.openiam.am.srvc.domain.pk.AuthLevelGroupingContentProviderXrefIdEntity;
@@ -33,6 +35,7 @@ import java.util.*;
 
 @Service("contentProviderService")
 public class ContentProviderServiceImpl implements  ContentProviderService, InitializingBean {
+	private final Log log = LogFactory.getLog(this.getClass());
     private static final String resourceTypeId="CONTENT_PROVIDER";
     private static final String patternResourceTypeId="URL_PATTERN";
     @Autowired
@@ -259,7 +262,8 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
 
     @Override
     @Transactional
-    public ContentProviderServerEntity saveProviderServer(ContentProviderServerEntity contentProviderServer) {
+    public void saveProviderServer(final ContentProviderServerEntity contentProviderServer) {
+    	//log.info(String.format("Incoming server: %s", contentProviderServer));
         if (contentProviderServer == null) {
             throw new  NullPointerException("Content Provider Server not set");
         }
@@ -270,27 +274,19 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
             throw new  IllegalArgumentException("Content Provider not set");
         }
 
-        ContentProviderEntity provider = contentProviderDao.findById(contentProviderServer.getContentProvider().getId());
+        final ContentProviderEntity provider = contentProviderDao.findById(contentProviderServer.getContentProvider().getId());
 
         if(provider==null){
             throw new NullPointerException("Cannot save content provider server. Content Provider is not found");
         }
+        
+        contentProviderServer.setContentProvider(provider);
 
-        ContentProviderServerEntity entity  = null;
         if(StringUtils.isBlank(contentProviderServer.getId())) {
-            // new server
-
-            contentProviderServer.setId(null);
-            contentProviderServer.setContentProvider(provider);
             contentProviderServerDao.save(contentProviderServer);
-            entity = contentProviderServer;
         } else{
-            // update server
-            entity  = contentProviderServerDao.findById(contentProviderServer.getId());
-            entity.setServerURL(contentProviderServer.getServerURL());
-            contentProviderServerDao.save(entity);
+            contentProviderServerDao.merge(contentProviderServer);
         }
-        return entity;
     }
 
     @Override
@@ -439,33 +435,28 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
 
     @Override
     @Transactional
-    public URIPatternMetaEntity saveMetaDataForPattern(URIPatternMetaEntity uriPatternMetaEntity) {
-        if(uriPatternMetaEntity==null) {
-            throw new NullPointerException("Invalid argument");
-        }
-        if(uriPatternMetaEntity.getPattern()==null || StringUtils.isBlank(uriPatternMetaEntity.getPattern().getId())) {
-            throw new NullPointerException("URI Pattern not set");
-        }
-        if(StringUtils.isBlank(uriPatternMetaEntity.getName())) {
-            throw new  NullPointerException("URI Pattern Meta name not set");
-        }
-        if(uriPatternMetaEntity.getMetaType()==null || StringUtils.isBlank(uriPatternMetaEntity.getMetaType().getId())) {
-            throw new NullPointerException("Meta Type not set");
-        }
+    public void saveMetaDataForPattern(final URIPatternMetaEntity uriPatternMetaEntity) {
         if(CollectionUtils.isNotEmpty(uriPatternMetaEntity.getMetaValueSet())) {
     		for(final URIPatternMetaValueEntity value : uriPatternMetaEntity.getMetaValueSet()) {
     			value.setMetaEntity(uriPatternMetaEntity);
 	
     			/* satisfy data integrity */
-    			if(value.getAmAttribute() != null && StringUtils.isNotBlank(value.getAmAttribute().getId())) {
+    			if(value.isEmptyValue()) {
+    				value.setStaticValue(null);
+    				value.setAmAttribute(null);
+    				value.setGroovyScript(null);
+    			} else if(value.getAmAttribute() != null && StringUtils.isNotBlank(value.getAmAttribute().getId())) {
     				value.setStaticValue(null);
     				value.setGroovyScript(null);
+    				value.setEmptyValue(false);
     			} else if(StringUtils.isNotBlank(value.getStaticValue())) {
     				value.setAmAttribute(null);
     				value.setGroovyScript(null);
+    				value.setEmptyValue(false);
     			} else if(StringUtils.isNotBlank(value.getGroovyScript())) {
     				value.setAmAttribute(null);
     				value.setStaticValue(null);
+    				value.setEmptyValue(false);
     			}
 
     			/* set am attribute entity, if any */
@@ -503,6 +494,7 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
         				existingValue.setStaticValue(incomingValue.getStaticValue());
         				existingValue.setName(incomingValue.getName());
         				existingValue.setPropagateThroughProxy(incomingValue.isPropagateThroughProxy());
+        				existingValue.setEmptyValue(incomingValue.isEmptyValue());
         			}
         		}
         		if(!exists) {
@@ -529,9 +521,7 @@ public class ContentProviderServiceImpl implements  ContentProviderService, Init
         	existingValues.addAll(newValues);
         	
         	uriPatternMetaDao.update(existing);
-        	uriPatternMetaEntity = existing;
         }
-        return uriPatternMetaEntity;
     }
 
     

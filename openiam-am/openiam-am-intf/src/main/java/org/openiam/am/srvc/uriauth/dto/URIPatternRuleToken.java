@@ -33,7 +33,7 @@ public class URIPatternRuleToken implements Serializable {
 	}
 	
 	public void addValue(final String key, final String value, final boolean propagate) {
-		if(key != null && value != null) {
+		if(key != null) {
 			if(valueList == null) {
 				valueList = new LinkedList<URIPatternRuleValue>();
 			}

@@ -44,7 +44,7 @@ public interface ContentProviderService {
 
     void deleteProviderServer(String contentProviderServerId);
 
-    ContentProviderServerEntity saveProviderServer(ContentProviderServerEntity contentProviderServerEntity);
+    void saveProviderServer(ContentProviderServerEntity contentProviderServerEntity);
 
     Integer getNumOfUriPatterns(URIPatternEntity example);
 
@@ -62,7 +62,7 @@ public interface ContentProviderService {
 
     public URIPatternMetaEntity getURIPatternMeta(String metaId);
 
-    URIPatternMetaEntity saveMetaDataForPattern(URIPatternMetaEntity uriPatternMetaEntity);
+    void saveMetaDataForPattern(URIPatternMetaEntity uriPatternMetaEntity);
 
     void deleteMetaDataForPattern(String metaId);
 

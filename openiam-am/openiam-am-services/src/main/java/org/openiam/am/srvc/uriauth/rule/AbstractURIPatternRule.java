@@ -38,23 +38,26 @@ public abstract class AbstractURIPatternRule implements URIPatternRule {
 		if(CollectionUtils.isNotEmpty(valueSet)) {
 			for(final URIPatternMetaValue metaValue : valueSet) {
 				final String key = StringUtils.trimToNull(metaValue.getName());
-				String value = null;
-				final URIFederationGroovyProcessor groovyProcessor = metaValue.getGroovyProcessor();
-				if(groovyProcessor != null) {
-					value = groovyProcessor.getValue(userId, contentProvider, pattern, metaValue, uri);
-				}
-				
-				if(value == null) {
-					value = StringUtils.trimToNull(metaValue.getStaticValue());
-				}
-				if(value == null) {
-					if(metaValue.getAmAttribute() != null) {
-						value = authAttributeProcessor.process(metaValue.getAmAttribute().getReflectionKey(), userId, contentProvider.getManagedSysId());
+				if(metaValue.isEmptyValue()) {
+					token.addValue(key, null, metaValue.isPropagateThroughProxy());
+				} else {
+					String value = null;
+					final URIFederationGroovyProcessor groovyProcessor = metaValue.getGroovyProcessor();
+					if(groovyProcessor != null) {
+						value = groovyProcessor.getValue(userId, contentProvider, pattern, metaValue, uri);
 					}
-				}
-				
-				if(value != null) {
-					token.addValue(key, value, metaValue.isPropagateThroughProxy());
+					
+					if(value == null) {
+						value = StringUtils.trimToNull(metaValue.getStaticValue());
+					}
+					if(value == null) {
+						if(metaValue.getAmAttribute() != null) {
+							value = authAttributeProcessor.process(metaValue.getAmAttribute().getReflectionKey(), userId, contentProvider.getManagedSysId());
+						}
+					}
+					if(value != null) {
+						token.addValue(key, value, metaValue.isPropagateThroughProxy());
+					}
 				}
 			}
 		}

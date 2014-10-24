@@ -211,7 +211,8 @@ public enum AuditAction {
     RECERTIFICATION_CERTIFY("CERTIFY"),
     RECERTIFICATION_DONT_CERTIFY("DO NOT CERTIFY"),
     //-----------------------------------------
-    ;
+	PASSWORD_INTERCEPTOR("PASSWORD INTERCEPTOR"),
+	;
 
     private String value;
 

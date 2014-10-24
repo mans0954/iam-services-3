@@ -17,7 +17,7 @@
  */
 
 /**
- * 
+ *
  */
 package org.openiam.idm.srvc.pswd.ws;
 
@@ -43,31 +43,35 @@ import org.springframework.stereotype.Service;
 
 /**
  * Web service implementation for the PasswordWebService
- * 
+ *
  * @author suneet
- * 
  */
 @Service("passwordWS")
 @WebService(endpointInterface = "org.openiam.idm.srvc.pswd.ws.PasswordWebService", targetNamespace = "urn:idm.openiam.org/srvc/pswd/service", portName = "PasswordWebServicePort", serviceName = "PasswordWebService")
 public class PasswordWebServiceImpl implements PasswordWebService {
 
-	@Autowired
-	private PasswordService passwordDS;
+    @Autowired
+    private PasswordService passwordDS;
 
-	public PasswordValidationResponse isPasswordValid(Password pswd)
-			throws ObjectNotFoundException {
-		return passwordDS.isPasswordValid(pswd);
-	}
+    public PasswordValidationResponse isPasswordValid(Password pswd)
+            throws ObjectNotFoundException {
+        return passwordDS.isPasswordValid(pswd);
+    }
 
-	@Override
-	public PasswordResetTokenResponse generatePasswordResetToken(
-			PasswordResetTokenRequest request) {
-		return passwordDS.generatePasswordResetToken(request);
-	}
+    @Override
+    public PasswordResetTokenResponse generatePasswordResetToken(
+            PasswordResetTokenRequest request) {
+        return passwordDS.generatePasswordResetToken(request);
+    }
 
-	@Override
-	public ValidatePasswordResetTokenResponse validatePasswordResetToken(
-			String token) {
-		return passwordDS.validatePasswordResetToken(token);
-	}
+    @Override
+    public ValidatePasswordResetTokenResponse validatePasswordResetToken(
+            String token) {
+        return passwordDS.validatePasswordResetToken(token);
+    }
+
+    @Override
+    public Policy getPasswordPolicy(String principal, String msysId) {
+        return passwordDS.getPasswordPolicy(principal, msysId);
+    }
 }
