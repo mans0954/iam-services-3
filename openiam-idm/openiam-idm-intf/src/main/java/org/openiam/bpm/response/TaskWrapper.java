@@ -17,7 +17,6 @@ import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.task.Task;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.mule.util.concurrent.DaemonThreadFactory;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.provision.dto.ProvisionUser;
 import org.springframework.validation.beanvalidation.CustomValidatorBean;

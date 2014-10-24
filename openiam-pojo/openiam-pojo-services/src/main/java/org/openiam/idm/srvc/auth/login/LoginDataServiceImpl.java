@@ -249,7 +249,7 @@ public class LoginDataServiceImpl implements LoginDataService {
         if (lg != null) {
             final PasswordHistoryEntity hist = new PasswordHistoryEntity();
             hist.setPassword(password);
-            hist.setLoginId(lg.getId());
+            hist.setLogin(lg);
             passwordHistoryDao.save(hist);
             return true;
         }

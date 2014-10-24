@@ -206,14 +206,14 @@ public abstract class AbstractActivitiJob implements JavaDelegate, TaskListener 
 			@Override
 			public Void doInTransaction(TransactionStatus status) {
 				if(log != null) {
-	        		final IdmAuditLog parent = auditLogService.findById(auditLogId);
+	        		IdmAuditLog parent = auditLogService.findById(auditLogId);
 	        		if(parent == null) {
-	        			auditLogService.save(log);
+                        auditLogService.save(log);
 	        			execution.setVariable(ActivitiConstants.AUDIT_LOG_ID.getName(), log.getId());
 	        		} else {
 	        			log.addParent(parent);
 	        			parent.addChild(log);
-	        			auditLogService.save(parent);
+                        parent = auditLogService.save(parent);
 	        		}
 	        	}
 				return null;

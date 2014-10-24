@@ -105,26 +105,11 @@
             <artifactId>openiam-pojo-intf</artifactId>
         </dependency>
 
-        <dependency>
+  <!--      <dependency>
             <groupId>org.apache.geronimo.specs</groupId>
             <artifactId>geronimo-ws-metadata_2.0_spec</artifactId>
             <optional>true</optional>
-        </dependency>
-
-        <dependency>
-            <groupId>org.mule</groupId>
-            <artifactId>mule-core</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.safehaus.jug</groupId>
-                    <artifactId>jug</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.mule.modules</groupId>
-            <artifactId>mule-module-client</artifactId>
-        </dependency>
+        </dependency>-->
 
         <dependency>
             <groupId>javax.xml.bind</groupId>

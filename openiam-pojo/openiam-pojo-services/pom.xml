@@ -254,16 +254,6 @@
         </dependency>
 
         <dependency>
-            <groupId>org.mule</groupId>
-            <artifactId>mule-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.mule.modules</groupId>
-            <artifactId>mule-module-client</artifactId>
-        </dependency>
-
-
-        <dependency>
             <groupId>org.apache.geronimo.specs</groupId>
             <artifactId>geronimo-ws-metadata_2.0_spec</artifactId>
             <version>1.1.2</version>
@@ -345,6 +335,11 @@
 		</dependency>
 
         <dependency>
+            <groupId>quartz</groupId>
+            <artifactId>quartz</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
         </dependency>
@@ -361,6 +356,8 @@
             <artifactId>openiam-auth-manager-intf</artifactId>
             <version>3.3.0</version>
         </dependency>
+
+
     </dependencies>
 
 </project>

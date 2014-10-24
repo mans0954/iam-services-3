@@ -14,9 +14,6 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.mule.api.MuleContext;
-import org.mule.api.context.MuleContextAware;
-import org.mule.module.client.MuleClient;
 import org.openiam.idm.srvc.batch.domain.BatchTaskEntity;
 import org.openiam.idm.srvc.batch.service.BatchService;
 import org.openiam.idm.srvc.batch.thread.BatchTaskGroovyThread;
@@ -198,33 +195,8 @@ public class BatchTaskScheduler implements InitializingBean, Sweepable {
 	}
 	
 	private boolean shouldRun() {
-		//return (isPrimary || (!isPrimary && !isPrimaryNodeAlive()));
 		return isPrimary;
 	}
-	
-	/*
-	private boolean isPrimaryNodeAlive() {
-        Map<String, String> msgPropMap = new HashMap<String, String>();
-        msgPropMap.put("SERVICE_HOST", serviceHost);
-        msgPropMap.put("SERVICE_CONTEXT", serviceContext);
-
-        // Create the client with the context
-        try {
-
-            MuleClient client = new MuleClient(muleContext);
-            client.send("vm://heartBeatIsAlive", null, msgPropMap);
-
-        } catch (Exception ce) {
-            log.error(ce.toString());
-
-            if (ce instanceof ConnectException) {
-                return false;
-            }
-
-        }
-        return true;
-    }
-    */
 
 	@Override
 	public void afterPropertiesSet() throws Exception {

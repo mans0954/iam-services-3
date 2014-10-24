@@ -6,11 +6,10 @@ import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.KeyDTO;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
+import org.openiam.idm.srvc.pswd.dto.PasswordHistory;
 
 import javax.xml.bind.annotation.*;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Login domain object
@@ -49,11 +48,13 @@ import java.util.Set;
         "prevLogin",
         "pswdResetToken",
         "pswdResetTokenExp",
-        "lastUpdate"
+        "lastUpdate",
+        "passwordHistory"
 })
 @XmlSeeAlso({
         Subject.class,
-        SSOToken.class
+        SSOToken.class,
+        PasswordHistory.class
 })
 @DozerDTOCorrespondence(LoginEntity.class)
 public class Login extends KeyDTO {
@@ -124,7 +125,9 @@ public class Login extends KeyDTO {
 
     @XmlSchemaType(name = "dateTime")
     private Date pswdResetTokenExp;
-    
+
+    private Set<PasswordHistory> passwordHistory = new HashSet<PasswordHistory>(0);
+
     protected boolean selected;
     
     protected String origPrincipalName;
@@ -511,6 +514,14 @@ public class Login extends KeyDTO {
 		result = prime * result + ((userId == null) ? 0 : userId.hashCode());
 		return result;
 	}
+
+    public Set<PasswordHistory> getPasswordHistory() {
+        return passwordHistory;
+    }
+
+    public void setPasswordHistory(Set<PasswordHistory> passwordHistory) {
+        this.passwordHistory = passwordHistory;
+    }
 
 	@Override
 	public boolean equals(Object obj) {

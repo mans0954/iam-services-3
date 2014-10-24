@@ -24,19 +24,17 @@ package org.openiam.idm.srvc.synch.ws;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.mule.module.client.MuleClient;
 import org.openiam.idm.srvc.synch.dto.BulkMigrationConfig;
 import org.openiam.idm.srvc.synch.dto.SynchConfig;
 import org.openiam.idm.srvc.synch.dto.SynchReviewRequest;
-import org.openiam.util.MuleContextProvider;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
-import javax.jws.WebParam;
 import javax.jws.WebService;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.concurrent.Executors;
 
 /**
  * @author suneet
@@ -52,71 +50,62 @@ public class AsynchIdentitySynchServiceImpl implements AsynchIdentitySynchServic
 
     protected static final Log log = LogFactory.getLog(AsynchIdentitySynchServiceImpl.class);
 
+    @Autowired
+    @Qualifier("synchServiceWS")
+    private IdentitySynchWebService identitySynchWebService;
+
     @Value("${openiam.service_base}")
     private String serviceHost;
     
     @Value("${openiam.idm.ws.path}")
     private String serviceContext;
 
-    public void startSynchronization(
-            SynchConfig config) {
 
-        //	MuleMessage msg = null;
+    public void startSynchronization(
+            final SynchConfig config) {
+
 
         log.debug("A-START SYNCH CALLED...................");
         try {
-
-            Map<String, String> msgPropMap = new HashMap<String, String>();
-            msgPropMap.put("SERVICE_HOST", serviceHost);
-            msgPropMap.put("SERVICE_CONTEXT", serviceContext);
-
-            //Create the client with the context
-            MuleClient client = new MuleClient(MuleContextProvider.getCtx());
-            client.sendAsync("vm://synchronizationMessage", (SynchConfig) config, msgPropMap);
-
+            Executors.newSingleThreadExecutor().execute(new Runnable() {
+                public void run() {
+                    identitySynchWebService.startSynchronization(config);
+                }
+            });
         } catch (Exception e) {
             log.debug("EXCEPTION:AsynchIdentitySynchService:startSynchronization");
             log.error(e);
-            //e.printStackTrace();
         }
         log.debug("A-START SYNCH END ---------------------");
     }
 
     @Override
     public void executeSynchReview(
-            SynchReviewRequest synchReviewRequest) {
+            final SynchReviewRequest synchReviewRequest) {
         log.debug("START SYNCH REVIEW CALLED...................");
         try {
-
-            Map<String, String> msgPropMap = new HashMap<String, String>();
-            msgPropMap.put("SERVICE_HOST", serviceHost);
-            msgPropMap.put("SERVICE_CONTEXT", serviceContext);
-
-            //Create the client with the context
-            MuleClient client = new MuleClient(MuleContextProvider.getCtx());
-            client.sendAsync("vm://synchronizationReviewMessage", (SynchReviewRequest) synchReviewRequest, msgPropMap);
-
+            Executors.newSingleThreadExecutor().execute(new Runnable() {
+                public void run() {
+                    identitySynchWebService.executeSynchReview(synchReviewRequest);
+                }
+            });
         } catch (Exception e) {
             log.debug("EXCEPTION:AsynchIdentitySynchService:executeSynchReview");
             log.error(e);
-            //e.printStackTrace();
         }
         log.debug("FINISHED SYNCH REVIEW ---------------------");
 
     }
 
     @Override
-    public void bulkUserMigration(BulkMigrationConfig config) {
+    public void bulkUserMigration(final BulkMigrationConfig config) {
         try {
 
-            Map<String, String> msgPropMap = new HashMap<String, String>();
-            msgPropMap.put("SERVICE_HOST", serviceHost);
-            msgPropMap.put("SERVICE_CONTEXT", serviceContext);
-
-            //Create the client with the context
-            MuleClient client = new MuleClient(MuleContextProvider.getCtx());
-            client.sendAsync("vm://bulkUserMigrationMessage", (BulkMigrationConfig) config, msgPropMap);
-
+            Executors.newSingleThreadExecutor().execute(new Runnable() {
+                public void run() {
+                    identitySynchWebService.bulkUserMigration(config);
+                }
+            });
         } catch (Exception e) {
             log.debug("EXCEPTION:AsynchIdentitySynchService:bulkUserMigration");
             log.error(e);
@@ -127,14 +116,11 @@ public class AsynchIdentitySynchServiceImpl implements AsynchIdentitySynchServic
     public void resynchRole(final String roleId) {
         try {
 
-            Map<String, String> msgPropMap = new HashMap<String, String>();
-            msgPropMap.put("SERVICE_HOST", serviceHost);
-            msgPropMap.put("SERVICE_CONTEXT", serviceContext);
-
-            //Create the client with the context
-            MuleClient client = new MuleClient(MuleContextProvider.getCtx());
-            client.sendAsync("vm://resynchRoleMessage", roleId, msgPropMap);
-
+            Executors.newSingleThreadExecutor().execute(new Runnable() {
+                public void run() {
+                    identitySynchWebService.resynchRole(roleId);
+                }
+            });
         } catch (Exception e) {
             log.debug("EXCEPTION:AsynchIdentitySynchService:resynchRole");
             log.error(e);

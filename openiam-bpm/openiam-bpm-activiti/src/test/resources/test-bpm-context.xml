@@ -12,8 +12,7 @@
     					http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee-2.5.xsd
     					http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd">
 	
-	<context:annotation-config />
-	<context:component-scan base-package="org.openiam.bpm.activiti.*" />
+
 	<tx:annotation-driven/>
 	
 	<bean id="springContextProvider" class="org.openiam.util.SpringContextProvider" />
@@ -64,6 +63,5 @@
 	<bean id="activitiRule" class="org.activiti.engine.test.ActivitiRule">
 	  <property name="processEngine" ref="processEngine" />
 	</bean>
-	
-	<bean id="activitiBPMService" class="org.openiam.bpm.activiti.ActivitiServiceImpl" />
+
 </beans>

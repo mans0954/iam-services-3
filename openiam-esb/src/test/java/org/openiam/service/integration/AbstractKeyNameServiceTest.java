@@ -1,27 +1,10 @@
 package org.openiam.service.integration;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.RandomStringUtils;
-import org.junit.runner.RunWith;
 import org.openiam.base.KeyNameDTO;
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.AbstractKeyNameSearchBean;
-import org.openiam.idm.searchbeans.AbstractSearchBean;
-import org.openiam.idm.searchbeans.LanguageSearchBean;
-import org.openiam.idm.srvc.lang.dto.Language;
-import org.openiam.idm.srvc.lang.dto.LanguageMapping;
-import org.openiam.idm.srvc.lang.service.LanguageWebService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
-import org.testng.Assert;
-import org.testng.annotations.Test;
 
 public abstract class AbstractKeyNameServiceTest<T extends KeyNameDTO, S extends AbstractKeyNameSearchBean<T, String>> extends AbstractKeyServiceTest<T, S> {
 

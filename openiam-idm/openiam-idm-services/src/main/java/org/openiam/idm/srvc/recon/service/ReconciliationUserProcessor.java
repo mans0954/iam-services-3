@@ -64,7 +64,6 @@ import org.openiam.provision.service.ProvisionServiceUtil;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleUser;
 import org.openiam.script.ScriptIntegration;
-import org.openiam.util.MuleContextProvider;
 import org.openiam.util.encrypt.Cryptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -177,7 +176,9 @@ public class ReconciliationUserProcessor implements ReconciliationProcessor {
 
             // reconciliation into TargetSystem directional
             log.debug("Start recon");
-            connectorAdapter.reconcileResource(sysDto, config, MuleContextProvider.getCtx());
+
+            connectorAdapter.reconcileResource(sysDto, config);
+
             log.debug("end recon");
             idmAuditLog.addAttribute(AuditAttributeName.DESCRIPTION, "CSV Processing finished for configId="
                     + config.getReconConfigId() + " - resource=" + config.getResourceId());
@@ -365,7 +366,7 @@ public class ReconciliationUserProcessor implements ReconciliationProcessor {
         SearchResponse searchResponse;
 
         log.debug("Calling reconcileResource with Local connector");
-        searchResponse = connectorAdapter.search(searchRequest, connector, MuleContextProvider.getCtx());
+        searchResponse = connectorAdapter.search(searchRequest, connector);
 
         if (searchResponse != null && searchResponse.getStatus() == StatusCodeType.SUCCESS) {
             List<ObjectValue> usersFromRemoteSys = searchResponse.getObjectList();

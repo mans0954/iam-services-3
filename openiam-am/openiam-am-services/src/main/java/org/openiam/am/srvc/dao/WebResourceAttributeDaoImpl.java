@@ -19,6 +19,11 @@ public class WebResourceAttributeDaoImpl extends AbstractGenericDao<WebResourceA
         implements WebResourceAttributeDao {
 
     @Override
+    public Class<WebResourceAttribute> getPersistentClass() {
+        return WebResourceAttribute.class;
+    }
+
+    @Override
     @Transactional
     public void delete(String id) throws Exception {
         this.sessionFactory.getCurrentSession().createQuery(

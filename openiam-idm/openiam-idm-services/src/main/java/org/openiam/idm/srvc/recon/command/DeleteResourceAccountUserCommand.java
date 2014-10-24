@@ -22,7 +22,6 @@ import org.openiam.provision.service.ProvisionService;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleUser;
 import org.openiam.script.ScriptIntegration;
-import org.openiam.util.MuleContextProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
@@ -69,8 +68,8 @@ public class DeleteResourceAccountUserCommand implements ReconciliationObjectCom
             request.setHostUrl(mSys.getHostUrl());
             request.setScriptHandler(mSys.getDeleteHandler());
             log.debug("Calling delete local connector");
-            connectorAdapter.deleteRequest(mSys, request, MuleContextProvider.getCtx());
 
+            connectorAdapter.deleteRequest(mSys, request);
             return true;
         }
         List<Login> principleList = user.getPrincipalList();

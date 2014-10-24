@@ -25,7 +25,9 @@ public class AddUserCSVCommand extends AbstractCrudCSVCommand<ExtensibleUser> {
     @Autowired
     @Qualifier("userCSVParser")
     protected CSVParser<User> userCSVParser;
-    @Resource(name = "userServiceClient")
+
+    @Autowired
+    @Qualifier("userWS")
     protected UserDataWebService userDataWebService;
 
     @Override

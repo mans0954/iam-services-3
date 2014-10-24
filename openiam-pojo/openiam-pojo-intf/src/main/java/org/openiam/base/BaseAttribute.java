@@ -66,8 +66,7 @@ public class BaseAttribute implements Serializable {
     }
 
     public void setValue(String value) {
-        // Values are base64 encoded internally to keep Mule happy. Mule would
-        // otherwise throw exceptions when
+        // Values are base64 encoded internally to keep
         // values that are not really strings (e.g. binary values from Active
         // Directory) are set here.
         this.value = StringUtil.toBase64(value);

@@ -1,6 +1,5 @@
 package org.openiam.idm.srvc.synch.service.generic;
 
-import org.mule.api.MuleContext;
 import org.openiam.idm.srvc.synch.dto.SyncResponse;
 import org.openiam.idm.srvc.synch.dto.SynchConfig;
 

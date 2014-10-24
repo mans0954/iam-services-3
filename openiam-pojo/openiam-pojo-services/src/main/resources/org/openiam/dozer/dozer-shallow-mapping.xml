@@ -53,7 +53,20 @@
 			<b>userAttributes</b>
 		</field-exclude>
 	</mapping>
-	
+
+    <mapping>
+        <class-a>org.openiam.idm.srvc.auth.domain.LoginEntity</class-a>
+        <class-b>org.openiam.idm.srvc.auth.domain.LoginEntity</class-b>
+        <field-exclude>
+            <a>loginAttributes</a>
+            <b>loginAttributes</b>
+        </field-exclude>
+        <field-exclude>
+            <a>passwordHistory</a>
+            <b>passwordHistory</b>
+        </field-exclude>
+    </mapping>
+
 	<mapping>
 		<class-a>org.openiam.idm.srvc.user.domain.UserEntity</class-a>
 		<class-b>org.openiam.idm.srvc.user.domain.UserEntity</class-b>
@@ -102,6 +115,14 @@
 	<mapping>
 		<class-a>org.openiam.idm.srvc.auth.dto.Login</class-a>
 		<class-b>org.openiam.idm.srvc.auth.dto.Login</class-b>
+		<field-exclude>
+			<a>loginAttributes</a>
+			<b>loginAttributes</b>
+		</field-exclude>
+        <field-exclude>
+            <a>passwordHistory</a>
+            <b>passwordHistory</b>
+        </field-exclude>
 	</mapping>
 	
 	<mapping>

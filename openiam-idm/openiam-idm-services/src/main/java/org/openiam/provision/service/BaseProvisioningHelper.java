@@ -6,7 +6,6 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.mule.api.MuleContext;
 import org.openiam.base.SysConfiguration;
 import org.openiam.connector.type.request.CrudRequest;
 import org.openiam.connector.type.response.ObjectResponse;
@@ -37,7 +36,6 @@ import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.type.ExtensibleUser;
 import org.openiam.script.ScriptIntegration;
-import org.openiam.util.MuleContextProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -110,7 +108,7 @@ public class BaseProvisioningHelper {
             .getLog(BaseProvisioningHelper.class);
 
     public void setCurrentSuperiors(ProvisionUser pUser) {
-        if (org.mule.util.StringUtils.isNotEmpty(pUser.getId())) {
+        if (StringUtils.isNotEmpty(pUser.getId())) {
             List<UserEntity> entities = userMgr.getSuperiors(pUser.getId(), -1, -1);
             List<User> superiors = userDozerConverter.convertToDTOList(entities, false);
             if (CollectionUtils.isNotEmpty(superiors)) {
@@ -234,19 +232,9 @@ public class BaseProvisioningHelper {
 
         request.setScriptHandler(mSys.getDeleteHandler());
 
-        ObjectResponse resp = connectorAdapter.deleteRequest(mSys, request, MuleContextProvider.getCtx());
-        /*
-        auditHelper.addLog("DELETE IDENTITY", auditLog.getDomainId(), auditLog.getPrincipal(),
-                "IDM SERVICE", user.getCreatedBy(), mLg.getManagedSysId(),
-                "IDENTITY", user.getUserId(),
-                auditLog.getLogId(), resp.getStatus().toString(), auditLog.getLogId(), "IDENTITY_STATUS",
-                "DELETED",
-                requestId, resp.getErrorCodeAsStr(), user.getSessionId(), resp.getErrorMsgAsStr(),
-                user.getRequestClientIP(), mLg.getLogin(), mLg.getDomainId());
-		*/
+        ObjectResponse resp = connectorAdapter.deleteRequest(mSys, request);
+
         return resp;
-
-
     }
 
 

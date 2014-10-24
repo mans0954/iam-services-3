@@ -12,7 +12,7 @@
     <name>openiam-esb</name>
     <packaging>war</packaging>
     <version>3.3.0</version>
-    <description>OpenIAM ESB Module based on Mule</description>
+    <description>OpenIAM ESB Module </description>
 	<properties>
     	<skipTests>true</skipTests>
   	</properties>
@@ -146,52 +146,6 @@
             <scope>test</scope>
         </dependency>
         
-        <!-- Mule Dependencies -->
-        <dependency>
-            <groupId>org.mule</groupId>
-            <artifactId>mule-core</artifactId>
-        </dependency>
-        <!-- Mule Modules -->
-        <dependency>
-            <groupId>org.mule.modules</groupId>
-            <artifactId>mule-module-builders</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.mule.modules</groupId>
-            <artifactId>mule-module-cxf</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.mule.modules</groupId>
-            <artifactId>mule-module-client</artifactId>
-        </dependency>
-
-        <!-- Mule Transports -->
-        <dependency>
-            <groupId>org.mule.transports</groupId>
-            <artifactId>mule-transport-jms</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.mule.transports</groupId>
-            <artifactId>mule-transport-vm</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.mule.transports</groupId>
-            <artifactId>mule-transport-file</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.mule.transports</groupId>
-            <artifactId>mule-transport-servlet</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.mule.transports</groupId>
-            <artifactId>mule-transport-quartz</artifactId>
-        </dependency>
-
         <!-- Other Dependencies -->
         <dependency>
 			<groupId>javax</groupId>
@@ -232,7 +186,7 @@
             <artifactId>hsqldb</artifactId>
 			<scope>test</scope>
         </dependency>
-        
+
         <dependency>
 			<groupId>com.hazelcast</groupId>
 			<artifactId>hazelcast</artifactId>
@@ -253,6 +207,17 @@
 			<groupId>com.hazelcast</groupId>
 			<artifactId>hazelcast-hibernate4</artifactId>
 		</dependency>
+
+        <dependency>
+            <groupId>quartz</groupId>
+            <artifactId>quartz</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <developers>

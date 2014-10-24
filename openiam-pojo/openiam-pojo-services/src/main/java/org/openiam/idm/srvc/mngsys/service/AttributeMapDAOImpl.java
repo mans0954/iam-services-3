@@ -5,9 +5,9 @@ package org.openiam.idm.srvc.mngsys.service;
  */
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.*;
-import org.mule.util.StringUtils;
 import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.exception.data.DataException;
 import org.openiam.idm.searchbeans.AttributeMapSearchBean;

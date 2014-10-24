@@ -173,10 +173,6 @@ public abstract class AbstractLdapCommand<Request extends RequestType, Response 
 
         BasicAttributes attrs = new BasicAttributes();
 
-        // add the object class
-        Attribute oc = new BasicAttribute("objectClass");
-        oc.add("top");
-
         // add the ou for this record
         if (obj.getExtensibleObjectType() == ExtensibleObjectType.USER) {
             Attribute ouSet = new BasicAttribute("ou");
@@ -187,11 +183,6 @@ public abstract class AbstractLdapCommand<Request extends RequestType, Response 
                 attrs.put(ouSet);
             }
         }
-
-        // add the structural classes
-        attrs.put(oc);
-
-        // add the identifier
 
         // add the attributes
         List<ExtensibleAttribute> attrList = obj.getAttributes();
