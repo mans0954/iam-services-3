@@ -25,9 +25,13 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.cxf.endpoint.Client;
 import org.apache.cxf.endpoint.ClientImpl;
+import org.apache.cxf.interceptor.LoggingInInterceptor;
+import org.apache.cxf.interceptor.LoggingOutInterceptor;
+import org.apache.cxf.jaxws.JaxWsProxyFactoryBean;
 import org.apache.cxf.jaxws.endpoint.dynamic.JaxWsDynamicClientFactory;
 
 import org.openiam.base.id.UUIDGen;
+import org.openiam.connector.ConnectorService;
 import org.openiam.connector.type.constant.ErrorCode;
 import org.openiam.connector.type.constant.StatusCodeType;
 import org.openiam.connector.type.request.*;
@@ -82,20 +86,21 @@ public class ConnectorAdapter {
             if (connector != null
                     && (connector.getServiceUrl() != null && connector
                             .getServiceUrl().length() > 0)) {
-/*          //TODO IMPLEMENTATION
-                MuleMessage msg = getService(connector, addReqType,
-                        connector.getServiceUrl(), "add", muleContext);
-                log.debug("***ADD Payload=" +msg);
-                if (msg.getPayload() != null
-                        && msg.getPayload() instanceof ObjectResponse) {
-                    return (ObjectResponse) msg.getPayload();
-                }*/
 
+                JaxWsProxyFactoryBean factory = new JaxWsProxyFactoryBean();
+                factory.getInInterceptors().add(new LoggingInInterceptor());
+                factory.getOutInterceptors().add(new LoggingOutInterceptor());
+                factory.setServiceClass(ConnectorService.class);
+                factory.setAddress(connector.getServiceUrl());
+                ConnectorService connectorService = (ConnectorService) factory.create();
+                ObjectResponse objectResponse = connectorService.add(addReqType);
+
+                return objectResponse;
             }
             return resp;
 
         } catch (Exception e) {
-            // log.error(e);
+
             resp.setError(ErrorCode.OTHER_ERROR);
             resp.addErrorMessage(e.toString());
             return resp;
@@ -120,24 +125,16 @@ public class ConnectorAdapter {
             ProvisionConnectorDto connector = connectorService
                     .getProvisionConnector(managedSys.getConnectorId());
             log.info("Connector found for " + connector.getConnectorId());
-            if (connector != null
-                    && (connector.getServiceUrl() != null && connector
-                            .getServiceUrl().length() > 0)) {
+            if ((connector.getServiceUrl() != null && connector
+                    .getServiceUrl().length() > 0)) {
 
-                // ConnectorService port = getService(connector);
-                // port.modify(modReqType);
-                //TODO IMPLEMENTATION
-/*
-                MuleMessage msg = getService(connector, modReqType,
-                        connector.getServiceUrl(), "modify", muleContext);
-
-                log.debug("***MODIFY Payload=" + msg);
-                if (msg.getPayload() != null
-                        && msg.getPayload() instanceof ObjectResponse) {
-                    return (ObjectResponse) msg.getPayload();
-                }
-*/
-
+                JaxWsProxyFactoryBean factory = new JaxWsProxyFactoryBean();
+                factory.getInInterceptors().add(new LoggingInInterceptor());
+                factory.getOutInterceptors().add(new LoggingOutInterceptor());
+                factory.setServiceClass(ConnectorService.class);
+                factory.setAddress(connector.getServiceUrl());
+                ConnectorService connectorService = (ConnectorService) factory.create();
+                resp = connectorService.modify(modReqType);
             }
             return resp;
         } catch (Exception e) {
@@ -168,22 +165,15 @@ public class ConnectorAdapter {
             ProvisionConnectorDto connector = connectorService
                     .getProvisionConnector(managedSys.getConnectorId());
             log.info("Connector found for " + connector.getConnectorId());
-            if (connector != null
-                    && (connector.getServiceUrl() != null && connector
-                            .getServiceUrl().length() > 0)) {
-                //TODO IMPLEMENTATION
-              /*  MuleMessage msg = getService(connector, req,
-                        connector.getServiceUrl(), "lookup", muleContext);
-                log.debug("***LOOKUP Payload=" + msg.getPayload());
-                if (msg.getPayload() != null
-                        && msg.getPayload() instanceof SearchResponse) {
-
-                    return (SearchResponse) msg.getPayload();
-                } else {
-                    log.debug("LOOKUP payload is not an instance of LookupResponseType");
-                    return resp;
-                }*/
-
+            if ((connector.getServiceUrl() != null && connector
+                    .getServiceUrl().length() > 0)) {
+                JaxWsProxyFactoryBean factory = new JaxWsProxyFactoryBean();
+                factory.getInInterceptors().add(new LoggingInInterceptor());
+                factory.getOutInterceptors().add(new LoggingOutInterceptor());
+                factory.setServiceClass(ConnectorService.class);
+                factory.setAddress(connector.getServiceUrl());
+                ConnectorService connectorService = (ConnectorService) factory.create();
+                resp = connectorService.lookup(req);
             }
             return resp;
 
@@ -209,40 +199,36 @@ public class ConnectorAdapter {
         log.debug("ConnectorAdapter:reconcileRequest called. Resource =" + searchRequest.getSearchQuery());
         try {
             if (connector != null && (connector.getServiceUrl() != null && connector.getServiceUrl().length() > 0)) {
-                //Send search to Local Connector to get data (e.g. Active Directory via LDAP)
-                //TODO IMPLEMENTATION
-             /*   MuleMessage msg = getService(connector, searchRequest, connector.getServiceUrl(), "search", muleContext);
-                if (msg != null) {
-                    log.debug("***SEARCH Payload=" + msg);
-                    if (msg.getPayload() != null
-                            && msg.getPayload() instanceof SearchResponse) {
-                        resp = (SearchResponse) msg.getPayload();
-                        if (resp.getStatus() == StatusCodeType.SUCCESS
-                                || resp.getObjectList().size() > 0) {
-                            if (resp.getErrorMessage().size() > 0) {
-                                log.debug("Connector Search: error message = "
-                                        + resp.getErrorMsgAsStr());
-                            }
-                            log.debug("Connector Search:"
-                                    + StatusCodeType.SUCCESS);
-                            resp.setStatus(StatusCodeType.SUCCESS);
-                            return resp;
-                        }
+                JaxWsProxyFactoryBean factory = new JaxWsProxyFactoryBean();
+                factory.getInInterceptors().add(new LoggingInInterceptor());
+                factory.getOutInterceptors().add(new LoggingOutInterceptor());
+                factory.setServiceClass(ConnectorService.class);
+                factory.setAddress(connector.getServiceUrl());
+                ConnectorService connectorService = (ConnectorService) factory.create();
+                resp = connectorService.search(searchRequest);
+                if (resp.getStatus() == StatusCodeType.SUCCESS
+                        || resp.getObjectList().size() > 0) {
+                    if (resp.getErrorMessage().size() > 0) {
+                        log.debug("Connector Search: error message = "
+                                + resp.getErrorMsgAsStr());
                     }
-
-                    resp.setStatus(StatusCodeType.FAILURE);
+                    log.debug("Connector Search:"
+                            + StatusCodeType.SUCCESS);
+                    resp.setStatus(StatusCodeType.SUCCESS);
                     return resp;
-                } else {
-                    log.debug("MuleMessage is null..");
-                }*/
-
+                }
             }
+
+            resp.setStatus(StatusCodeType.FAILURE);
+            return resp;
+
+
         } catch (Exception e) {
             log.error(e);
         }
         resp.setStatus(StatusCodeType.FAILURE);
         return resp;
-	}
+    }
 
     public ResponseType reconcileResource(ManagedSysDto managedSys,
             ReconciliationConfig config) {
@@ -265,17 +251,14 @@ public class ConnectorAdapter {
             if (connector != null
                     && (connector.getServiceUrl() != null && connector
                             .getServiceUrl().length() > 0)) {
-                //TODO IMPLEMENTATION
-               /* MuleMessage msg = getService(connector, config,
-                        connector.getServiceUrl(), "reconcile", muleContext);
-
-                log.debug("***RECONCILE payload=" + msg);
-
-                if (msg.getPayload() != null
-                        && msg.getPayload() instanceof ResponseType) {
-                    return (ResponseType) msg.getPayload();
-                }*/
-
+                JaxWsProxyFactoryBean factory = new JaxWsProxyFactoryBean();
+                factory.getInInterceptors().add(new LoggingInInterceptor());
+                factory.getOutInterceptors().add(new LoggingOutInterceptor());
+                factory.setServiceClass(ConnectorService.class);
+                factory.setAddress(connector.getServiceUrl());
+                ConnectorService connectorService = (ConnectorService) factory.create();
+                ResponseType resp = connectorService.reconcileResource(config);
+                return resp;
             }
             return type;
         } catch (Exception e) {
@@ -306,20 +289,16 @@ public class ConnectorAdapter {
 
             log.debug("Connector found for " + connector.getConnectorId());
 
-            if (connector != null
-                    && (connector.getServiceUrl() != null && connector
-                            .getServiceUrl().length() > 0)) {
-                //TODO IMPLEMENTATION
-            /*    MuleMessage msg = getService(connector, config,
-                        connector.getServiceUrl(), "lookupAttributes",
-                        muleContext);
-
-                log.debug("***Lookup Attributes payload=" + msg);
-                if (msg.getPayload() != null
-                        && msg.getPayload() instanceof LookupAttributeResponse) {
-                    return (LookupAttributeResponse) msg.getPayload();
-                }*/
-
+            if ((connector.getServiceUrl() != null && connector
+                    .getServiceUrl().length() > 0)) {
+                JaxWsProxyFactoryBean factory = new JaxWsProxyFactoryBean();
+                factory.getInInterceptors().add(new LoggingInInterceptor());
+                factory.getOutInterceptors().add(new LoggingOutInterceptor());
+                factory.setServiceClass(ConnectorService.class);
+                factory.setAddress(connector.getServiceUrl());
+                ConnectorService connectorService = (ConnectorService) factory.create();
+                LookupAttributeResponse resp = connectorService.lookupAttributeNames(config);
+                return resp;
             }
             return type;
         } catch (Exception e) {
@@ -350,19 +329,16 @@ public class ConnectorAdapter {
             ProvisionConnectorDto connector = connectorService
                     .getProvisionConnector(managedSys.getConnectorId());
             log.info("Connector found for " + connector.getConnectorId());
-            if (connector != null
-                    && (connector.getServiceUrl() != null && connector
-                            .getServiceUrl().length() > 0)) {
-                //TODO IMPLEMENTATION
-              /*  MuleMessage msg = getService(connector, delReqType,
-                        connector.getServiceUrl(), "delete", muleContext);
-                log.debug("***Delete Request =" + msg.getPayload());
-
-                if (msg.getPayload() != null
-                        && msg.getPayload() instanceof ObjectResponse) {
-                    return (ObjectResponse) msg.getPayload();
-                }*/
-
+            if ((connector.getServiceUrl() != null && connector
+                    .getServiceUrl().length() > 0)) {
+                JaxWsProxyFactoryBean factory = new JaxWsProxyFactoryBean();
+                factory.getInInterceptors().add(new LoggingInInterceptor());
+                factory.getOutInterceptors().add(new LoggingOutInterceptor());
+                factory.setServiceClass(ConnectorService.class);
+                factory.setAddress(connector.getServiceUrl());
+                ConnectorService connectorService = (ConnectorService) factory.create();
+                resp = connectorService.delete(delReqType);
+                return resp;
             }
             return resp;
         } catch (Exception e) {
@@ -393,19 +369,16 @@ public class ConnectorAdapter {
             ProvisionConnectorDto connector = connectorService
                     .getProvisionConnector(managedSys.getConnectorId());
             log.info("Connector found for " + connector.getConnectorId());
-            if (connector != null
-                    && (connector.getServiceUrl() != null && connector
-                            .getServiceUrl().length() > 0)) {
-                //TODO IMPLEMENTATION
-             /*   MuleMessage msg = getService(connector, request,
-                        connector.getServiceUrl(), "setPassword", muleContext);
-
-                log.debug("***Set Password Request payload=" + msg);
-                if (msg.getPayload() != null
-                        && msg.getPayload() instanceof ResponseType) {
-                    return (ResponseType) msg.getPayload();
-                }
-*/
+            if ((connector.getServiceUrl() != null && connector
+                    .getServiceUrl().length() > 0)) {
+                JaxWsProxyFactoryBean factory = new JaxWsProxyFactoryBean();
+                factory.getInInterceptors().add(new LoggingInInterceptor());
+                factory.getOutInterceptors().add(new LoggingOutInterceptor());
+                factory.setServiceClass(ConnectorService.class);
+                factory.setAddress(connector.getServiceUrl());
+                ConnectorService connectorService = (ConnectorService) factory.create();
+                resp = connectorService.setPassword(request);
+                return resp;
             }
             return resp;
         } catch (Exception e) {
@@ -438,21 +411,16 @@ public class ConnectorAdapter {
             ProvisionConnectorDto connector = connectorService
                     .getProvisionConnector(managedSys.getConnectorId());
             log.debug("Connector found for " + connector.getConnectorId());
-            if (connector != null
-                    && (connector.getServiceUrl() != null && connector
-                            .getServiceUrl().length() > 0)) {
-                //TODO IMPLEMENTATION
-             /*   MuleMessage msg = getService(connector, request,
-                        connector.getServiceUrl(), "resetPassword", muleContext);
-
-                if (msg != null) {
-                    log.debug("***Reset Pasword Payload=" + msg.getPayload());
-                    if (msg.getPayload() != null
-                            && msg.getPayload() instanceof ResponseType) {
-                        return (ResponseType) msg.getPayload();
-                    }
-                }
-*/
+            if ((connector.getServiceUrl() != null && connector
+                    .getServiceUrl().length() > 0)) {
+                JaxWsProxyFactoryBean factory = new JaxWsProxyFactoryBean();
+                factory.getInInterceptors().add(new LoggingInInterceptor());
+                factory.getOutInterceptors().add(new LoggingOutInterceptor());
+                factory.setServiceClass(ConnectorService.class);
+                factory.setAddress(connector.getServiceUrl());
+                ConnectorService connectorService = (ConnectorService) factory.create();
+                resp = connectorService.resetPassword(request);
+                return resp;
             }
             return resp;
         } catch (Exception e) {
@@ -485,19 +453,16 @@ public class ConnectorAdapter {
                     .getProvisionConnector(managedSys.getConnectorId());
             log.debug("Connector found for " + connector.getConnectorId());
 
-            if (connector != null
-                    && (connector.getServiceUrl() != null && connector
-                            .getServiceUrl().length() > 0)) {
-                //TODO IMPLEMENTATION
-             /*   MuleMessage msg = getService(connector, request,
-                        connector.getServiceUrl(), "suspend", muleContext);
-                log.debug("***Suspend Payload=" + msg.getPayload());
-                if (msg.getPayload() != null
-                        && msg.getPayload() instanceof ResponseType) {
-                    return (ResponseType) msg.getPayload();
-                }*/
-
-
+            if ((connector.getServiceUrl() != null && connector
+                    .getServiceUrl().length() > 0)) {
+                JaxWsProxyFactoryBean factory = new JaxWsProxyFactoryBean();
+                factory.getInInterceptors().add(new LoggingInInterceptor());
+                factory.getOutInterceptors().add(new LoggingOutInterceptor());
+                factory.setServiceClass(ConnectorService.class);
+                factory.setAddress(connector.getServiceUrl());
+                ConnectorService connectorService = (ConnectorService) factory.create();
+                resp = connectorService.suspend(request);
+                return resp;
             }
             return resp;
 
@@ -528,19 +493,16 @@ public class ConnectorAdapter {
                     .getProvisionConnector(managedSys.getConnectorId());
             log.debug("Connector found for " + connector.getConnectorId());
 
-            if (connector != null
-                    && (connector.getServiceUrl() != null && connector
-                            .getServiceUrl().length() > 0)) {
-                //TODO IMPLEMENTATION
-               /* MuleMessage msg = getService(connector, request,
-                        connector.getServiceUrl(), "resume", muleContext);
-
-                log.debug("***Resume Payload=" + msg.getPayload());
-                if (msg.getPayload() != null
-                        && msg.getPayload() instanceof ResponseType) {
-                    return (ResponseType) msg.getPayload();
-                }*/
-
+            if ((connector.getServiceUrl() != null && connector
+                    .getServiceUrl().length() > 0)) {
+                JaxWsProxyFactoryBean factory = new JaxWsProxyFactoryBean();
+                factory.getInInterceptors().add(new LoggingInInterceptor());
+                factory.getOutInterceptors().add(new LoggingOutInterceptor());
+                factory.setServiceClass(ConnectorService.class);
+                factory.setAddress(connector.getServiceUrl());
+                ConnectorService connectorService = (ConnectorService) factory.create();
+                type = connectorService.resume(request);
+                return type;
             }
             return type;
         } catch (Exception e) {
@@ -572,8 +534,7 @@ public class ConnectorAdapter {
 
             log.debug("Connector found for " + connector.getConnectorId());
 
-            if (connector != null
-                    && (connector.getServiceUrl() != null && connector
+            if ((connector.getServiceUrl() != null && connector
                     .getServiceUrl().length() > 0)) {
                 RequestType<ExtensibleUser> rt = new RequestType<ExtensibleUser>();
                 rt.setTargetID(managedSys.getId());
@@ -582,19 +543,15 @@ public class ConnectorAdapter {
                 rt.setHostUrl(managedSys.getHostUrl());
                 rt.setHostLoginId(managedSys.getUserId());
                 rt.setHostLoginPassword(managedSys.getDecryptPassword());
-                //TODO IMPLEMENTATION
-                /*MuleMessage msg = getService(connector, rt,
-                        connector.getServiceUrl(), "testConnection",
-                        muleContext);
 
-                log.debug("MuleMessage payload=" + msg);
-
-                log.debug("***Resume Payload=" + msg.getPayload());
-                if (msg.getPayload() != null
-                        && msg.getPayload() instanceof ResponseType) {
-                    return (ResponseType) msg.getPayload();
-                }
-*/
+                JaxWsProxyFactoryBean factory = new JaxWsProxyFactoryBean();
+                factory.getInInterceptors().add(new LoggingInInterceptor());
+                factory.getOutInterceptors().add(new LoggingOutInterceptor());
+                factory.setServiceClass(ConnectorService.class);
+                factory.setAddress(connector.getServiceUrl());
+                ConnectorService connectorService = (ConnectorService) factory.create();
+                type = connectorService.testConnection(rt);
+                return type;
             }
             return type;
         } catch (Exception e) {
@@ -607,93 +564,5 @@ public class ConnectorAdapter {
         }
 
     }
-    //TODO IMPLEMENTATION
-   /* private MuleMessage getService(ProvisionConnectorDto connector,
-            Object reqType, String url, String operation,
-            MuleContext muleContext) throws MuleException {
-
-        log.debug("getService: calling DynamicEndpoint...");
-
-
-
-        MuleClient client = new MuleClient(muleContext);
-
-        // Map<?,?> msgPropMap =
-        // Collections.singletonMap("serviceName","LDAPConnectorService");
-        Map<String, String> msgPropMap = new HashMap<String, String>();
-        msgPropMap.put("serviceName", url);
-
-        MuleMessage msg = null;
-
-        log.debug("- Service:: Connector interface- Calling dynamic interface ="
-                + url);
-        log.debug("- Service:: Operation=" + operation);
-
-        if (operation.equalsIgnoreCase("add")) {
-
-            msg = client.send("vm://dispatchConnectorMessageAdd",
-                    (CrudRequest) reqType, msgPropMap);
-        }
-        if (operation.equalsIgnoreCase("modify")) {
-
-            msg = client.send("vm://dispatchConnectorMessageModify",
-                    (CrudRequest) reqType, msgPropMap);
-        }
-        if (operation.equalsIgnoreCase("lookup")) {
-
-            msg = client.send("vm://dispatchConnectorMessageLookup",
-                    (SearchRequest) reqType, msgPropMap);
-        }
-        if (operation.equalsIgnoreCase("reconcile")) {
-
-            client.sendAsync("vm://dispatchConnectorMessageReconcile",
-                    (ReconciliationConfig) reqType, msgPropMap);
-        }
-        if (operation.equalsIgnoreCase("delete")) {
-
-            msg = client.send("vm://dispatchConnectorMessageDelete",
-                    (CrudRequest) reqType, msgPropMap);
-        }
-        if (operation.equalsIgnoreCase("setPassword")) {
-
-            msg = client.send("vm://dispatchConnectorMessageSetPassword",
-                    (PasswordRequest) reqType, msgPropMap);
-        }
-
-        if (operation.equalsIgnoreCase("resetPassword")) {
-
-            msg = client.send("vm://dispatchConnectorMessageResetPassword",
-                    (PasswordRequest) reqType, msgPropMap);
-
-        }
-        if (operation.equalsIgnoreCase("suspend")) {
-
-            msg = client.send("vm://dispatchConnectorMessageSuspend",
-                    (SuspendResumeRequest) reqType, msgPropMap);
-        }
-        if (operation.equalsIgnoreCase("resume")) {
-            msg = client.send("vm://dispatchConnectorMessageResume",
-                    (SuspendResumeRequest) reqType, msgPropMap);
-        }
-
-        if (operation.equalsIgnoreCase("testConnection")) {
-            msg = client.send("vm://dispatchConnectorMsgTestConnection",
-                    (RequestType<ExtensibleUser>) reqType, msgPropMap);
-        }
-
-        if (operation.equalsIgnoreCase("lookupAttributes")) {
-            msg = client.send("vm://dispatchConnectorMsgLookupAttributes",
-                    (SearchRequest) reqType, msgPropMap);
-        }
-
-        if (operation.equalsIgnoreCase("search")) {
-            msg = client.send("vm://dispatchConnectorMessageSearch",
-                    (SearchRequest) reqType, msgPropMap);
-        }
-        log.debug("Service:: Mule Message object: " + msg.toString());
-
-        return msg;
-
-    }*/
 
 }
