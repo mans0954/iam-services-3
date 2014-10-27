@@ -5,12 +5,16 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.service.AbstractLanguageService;
+import org.openiam.base.ws.ResponseCode;
+import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.MetadataElementSearchBean;
 import org.openiam.idm.searchbeans.MetadataTypeSearchBean;
 import org.openiam.idm.srvc.lang.domain.LanguageEntity;
+import org.openiam.idm.srvc.lang.domain.LanguageMappingEntity;
 import org.openiam.idm.srvc.lang.service.LanguageMappingDAO;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
+import org.openiam.idm.srvc.meta.domain.MetadataTypeGrouping;
 import org.openiam.idm.srvc.meta.domain.MetadataValidValueEntity;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.service.ResourceDAO;
@@ -59,9 +63,6 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
     @Autowired
     private MetadataValidValueDAO validValueDAO;
     
-    @Autowired
-    private LanguageMappingDAO languageMappingDAO;
-    
     @Value("${org.openiam.resource.type.ui.widget}")
     private String uiWidgetResourceType;
 
@@ -88,13 +89,14 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 	}
 	
 	@Override
-	public List<MetadataTypeEntity> findBeans(final MetadataTypeSearchBean searchBean, final int from, final int size) {
+	@LocalizedServiceGet
+	@Transactional
+	public List<MetadataTypeEntity> findBeans(final MetadataTypeSearchBean searchBean, final int from, final int size, final LanguageEntity language) {
 		List<MetadataTypeEntity> retVal = null;
 		if(searchBean != null && searchBean.hasMultipleKeys()) {
 			retVal = metadataTypeDao.findByIds(searchBean.getKeys());
 		} else {
-			final MetadataTypeEntity entity = metadataTypeSearchBeanConverter.convert(searchBean);
-			retVal = metadataTypeDao.getByExample(entity, from, size);
+			retVal = metadataTypeDao.getByExample(searchBean, from, size);
 		}
 		return retVal;
 	}
@@ -212,7 +214,7 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 	
 	@Override
 	@Transactional
-	public void save(MetadataTypeEntity entity) {
+	public void save(MetadataTypeEntity entity) throws BasicDataServiceException {
 		if(entity != null) {
 			if(StringUtils.isNotBlank(entity.getId())) {
 				final MetadataTypeEntity dbEntity = metadataTypeDao.findById(entity.getId());
@@ -224,6 +226,17 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 			if(StringUtils.isBlank(entity.getId())) {
 				metadataTypeDao.save(entity);
 			} else {
+				if(entity.isUsedForSMSOTP()) {
+					final List<MetadataTypeEntity> phoneTypesWithOTP = getPhonesWithSMSOTPEnabled();
+					if(CollectionUtils.isNotEmpty(phoneTypesWithOTP)) {
+						for(final MetadataTypeEntity phoneTypeWithOTP : phoneTypesWithOTP) {
+							if(!StringUtils.equals(phoneTypeWithOTP.getId(), entity.getId())) {
+								throw new BasicDataServiceException(ResponseCode.PHONE_MARKED_FOR_SMS_OTP, phoneTypeWithOTP.getName());
+							}
+						}
+					}
+				}
+				
 				metadataTypeDao.merge(entity);
 			}
 		}
@@ -273,8 +286,7 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 			final List<MetadataTypeEntity> entityList = metadataTypeDao.findByIds(searchBean.getKeys());
 			retVal = (entityList != null) ? entityList.size() : 0;
 		} else {
-			final MetadataTypeEntity entity = metadataTypeSearchBeanConverter.convert(searchBean);
-			retVal = metadataTypeDao.count(entity);
+			retVal = metadataTypeDao.count(searchBean);
 		}
 		return retVal;
 	}
@@ -293,5 +305,15 @@ public class MetadataServiceImpl extends AbstractLanguageService implements Meta
 		final MetadataElementSearchBean searchBean = new MetadataElementSearchBean();
 		searchBean.setAttributeName(name);
 		return findBeans(searchBean, 0, Integer.MAX_VALUE, null);
+	}
+
+	@Override
+	@Transactional(readOnly=true)
+	public List<MetadataTypeEntity> getPhonesWithSMSOTPEnabled() {
+		final MetadataTypeSearchBean searchBean = new MetadataTypeSearchBean();
+		searchBean.setUsedForSMSOTP(true);
+		searchBean.setGrouping(MetadataTypeGrouping.PHONE);
+		final List<MetadataTypeEntity> entitiesMarkedForSMSOTP = metadataTypeDao.getByExample(searchBean);
+		return entitiesMarkedForSMSOTP;
 	}
 }

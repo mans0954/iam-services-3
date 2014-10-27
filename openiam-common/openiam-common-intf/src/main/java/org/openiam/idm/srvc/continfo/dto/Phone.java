@@ -34,43 +34,31 @@ import javax.xml.bind.annotation.XmlType;
         "lastUpdate",
         "createDate",
         "metadataTypeId",
-        "typeDescription"
+        "typeDescription"/*,
+        "validated"*/
 })
 @DozerDTOCorrespondence(PhoneEntity.class)
 public class Phone extends KeyNameDTO {
 
     // Fields
 	private AttributeOperationEnum operation = AttributeOperationEnum.NO_CHANGE;
-
     private boolean isActive = true;
-
     private String areaCd;
-
     private String countryCd;
-
     private String description;
-
     private boolean isDefault = false;
-
     private String parentType;
-
     private String phoneExt;
-
     private String phoneNbr;
 
-    //private String phoneType;
-
     private String parentId;
-    
     private Date lastUpdate;
     
     @XmlSchemaType(name = "dateTime")
     private Date createDate;
-
     private String metadataTypeId;
-
     private String typeDescription;
-    // Constructors
+    //private boolean validated;
 
     /**
      * default constructor
@@ -89,6 +77,7 @@ public class Phone extends KeyNameDTO {
         this.phoneNbr = ph.getPhoneNbr();
         //this.phoneType = ph.getPhoneType();
         this.metadataTypeId=ph.getMetadataTypeId();
+        //this.validated = ph.isValidated();
     }
 
     public String getAreaCd() {
@@ -242,6 +231,16 @@ public class Phone extends KeyNameDTO {
     public void setTypeDescription(String typeDescription) {
         this.typeDescription = typeDescription;
     }
+    
+    /*
+    public boolean isValidated() {
+		return validated;
+	}
+
+	public void setValidated(boolean validated) {
+		this.validated = validated;
+	}
+	*/
 
 	@Override
 	public int hashCode() {
@@ -256,6 +255,7 @@ public class Phone extends KeyNameDTO {
 				+ ((description == null) ? 0 : description.hashCode());
 		result = prime * result + (isActive ? 1231 : 1237);
 		result = prime * result + (isDefault ? 1231 : 1237);
+		//result = prime * result + (validated ? 1231 : 1237);
 		result = prime * result
 				+ ((lastUpdate == null) ? 0 : lastUpdate.hashCode());
 		result = prime * result
@@ -306,6 +306,10 @@ public class Phone extends KeyNameDTO {
 			return false;
 		if (isActive != other.isActive)
 			return false;
+		/*
+		if (validated != other.validated)
+			return false;
+		*/
 		if (isDefault != other.isDefault)
 			return false;
 		if (lastUpdate == null) {

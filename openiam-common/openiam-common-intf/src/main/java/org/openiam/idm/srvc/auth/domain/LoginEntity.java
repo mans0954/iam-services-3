@@ -129,6 +129,12 @@ public class LoginEntity extends KeyEntity {
     @Column(name = "LAST_UPDATE", length = 19)
     @LuceneLastUpdate
     private Date lastUpdate;
+    
+    @Column(name="SMS_CODE", length=100)
+    private String smsCode;
+    
+    @Column(name="SMS_CODE_EXPIRATION")
+    private Date smsCodeExpiration;
 
     @OneToMany(orphanRemoval = true, mappedBy = "login", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @Fetch(FetchMode.SUBSELECT)
@@ -393,8 +399,24 @@ public class LoginEntity extends KeyEntity {
     public void setPasswordHistory(Set<PasswordHistoryEntity> passwordHistory) {
         this.passwordHistory = passwordHistory;
     }
+    
+    public String getSmsCode() {
+		return smsCode;
+	}
 
-    @Override
+	public void setSmsCode(String smsCode) {
+		this.smsCode = smsCode;
+	}
+
+	public Date getSmsCodeExpiration() {
+		return smsCodeExpiration;
+	}
+
+	public void setSmsCodeExpiration(Date smsCodeExpiration) {
+		this.smsCodeExpiration = smsCodeExpiration;
+	}
+
+	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
@@ -456,6 +478,8 @@ public class LoginEntity extends KeyEntity {
 		result = prime * result + resetPassword;
 		result = prime * result + ((status == null) ? 0 : status.hashCode());
 		result = prime * result + ((userId == null) ? 0 : userId.hashCode());
+		result = prime * result + ((smsCode == null) ? 0 : smsCode.hashCode());
+		result = prime * result + ((smsCodeExpiration == null) ? 0 : smsCodeExpiration.hashCode());
 		return result;
 	}
 
@@ -598,6 +622,16 @@ public class LoginEntity extends KeyEntity {
 				return false;
 		} else if (!userId.equals(other.userId))
 			return false;
+		if (smsCode == null) {
+			if (other.smsCode != null)
+				return false;
+		} else if (!smsCode.equals(other.smsCode))
+			return false;
+		if (smsCodeExpiration == null) {
+			if (other.smsCodeExpiration != null)
+				return false;
+		} else if (!smsCodeExpiration.equals(other.smsCodeExpiration))
+			return false;
 		return true;
 	}
 
@@ -620,7 +654,8 @@ public class LoginEntity extends KeyEntity {
 				+ ", lastLoginIP=" + lastLoginIP + ", prevLogin=" + prevLogin
 				+ ", prevLoginIP=" + prevLoginIP + ", pswdResetToken="
 				+ pswdResetToken + ", pswdResetTokenExp=" + pswdResetTokenExp
-				+ ", lastUpdate=" + lastUpdate + "]";
+				+ ", lastUpdate=" + lastUpdate + ", smsCode=" + smsCode
+				+ ", smsCodeExpiration=" + smsCodeExpiration + "]";
 	}
 
 	

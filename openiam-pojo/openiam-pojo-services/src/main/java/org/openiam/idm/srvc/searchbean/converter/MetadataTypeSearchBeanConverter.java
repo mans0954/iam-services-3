@@ -22,13 +22,6 @@ public class MetadataTypeSearchBeanConverter implements SearchBeanConverter<Meta
 			entity.setSyncManagedSys(searchBean.isSyncManagedSys()==null?false:searchBean.isSyncManagedSys());
 			entity.setGrouping(searchBean.getGrouping());
 			entity.setName(StringUtils.trimToNull(searchBean.getName()));
-			if(CollectionUtils.isNotEmpty(searchBean.getCategoryIds())) {
-				for(final String categoryId : searchBean.getCategoryIds()) {
-					final CategoryEntity category = new CategoryEntity();
-					category.setId(categoryId);
-					entity.addCategory(category);
-				}
-			}
 		}
 		return entity;
 	}

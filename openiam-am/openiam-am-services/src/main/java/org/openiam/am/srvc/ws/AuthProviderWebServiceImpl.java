@@ -6,6 +6,7 @@ import org.apache.log4j.Logger;
 import org.openiam.am.srvc.domain.AuthAttributeEntity;
 import org.openiam.am.srvc.domain.AuthProviderEntity;
 import org.openiam.am.srvc.domain.AuthProviderTypeEntity;
+import org.openiam.am.srvc.domain.ContentProviderEntity;
 import org.openiam.am.srvc.dozer.converter.AuthAttributeDozerConverter;
 import org.openiam.am.srvc.dozer.converter.AuthProviderAttributeDozerConverter;
 import org.openiam.am.srvc.dozer.converter.AuthProviderDozerConverter;
@@ -19,12 +20,21 @@ import org.openiam.am.srvc.searchbeans.AuthProviderSearchBean;
 import org.openiam.am.srvc.searchbeans.converter.AuthAttributeSearchBeanConverter;
 import org.openiam.am.srvc.searchbeans.converter.AuthProviderSearchBeanConverter;
 import org.openiam.am.srvc.service.AuthProviderService;
+import org.openiam.am.srvc.service.ContentProviderService;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.exception.EsbErrorToken;
+import org.openiam.idm.srvc.auth.domain.LoginEntity;
+import org.openiam.idm.srvc.auth.login.LoginDataService;
+import org.openiam.idm.srvc.auth.spi.AbstractSMSOTPModule;
 import org.openiam.idm.srvc.auth.spi.AbstractScriptableLoginModule;
+import org.openiam.idm.srvc.continfo.dto.Phone;
+import org.openiam.idm.srvc.meta.service.MetadataService;
+import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
+import org.openiam.idm.srvc.policy.domain.PolicyAttributeEntity;
+import org.openiam.idm.srvc.policy.domain.PolicyEntity;
 import org.openiam.script.ScriptIntegration;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,13 +63,20 @@ public class AuthProviderWebServiceImpl implements AuthProviderWebService, Appli
     @Autowired
     private AuthAttributeSearchBeanConverter authAttributeSearchBeanConverter;
     @Autowired
-    private AuthProviderSearchBeanConverter authProviderSearchBeanConverter;
-    @Autowired
     private AuthProviderTypeDozerConverter authProviderTypeDozerConverter;
     @Autowired
     private AuthAttributeDozerConverter authAttributeDozerConverter;
     @Autowired
     private AuthProviderDozerConverter authProviderDozerConverter;
+    
+    @Autowired
+    private MetadataService metadataService;
+    
+    @Autowired
+    private ContentProviderService contentProviderService;
+    
+    @Autowired
+    private LoginDataService loginDataService;
 
     @Autowired
     @Qualifier("configurableGroovyScriptEngine")
@@ -98,9 +115,8 @@ public class AuthProviderWebServiceImpl implements AuthProviderWebService, Appli
     */
     @Override
     @Transactional(readOnly = true)
-    public List<AuthProvider> findAuthProviderBeans(AuthProviderSearchBean searchBean,Integer size,Integer from) {
-        final AuthProviderEntity entity = authProviderSearchBeanConverter.convert(searchBean);
-        final List<AuthProviderEntity> providerList = authProviderService.findAuthProviderBeans(entity, size, from);
+    public List<AuthProvider> findAuthProviderBeans(final AuthProviderSearchBean searchBean, final int from, final int size) {
+        final List<AuthProviderEntity> providerList = authProviderService.findAuthProviderBeans(searchBean, from, size);
         final List<AuthProvider> results = authProviderDozerConverter.convertToDTOList(providerList, (searchBean != null) ? searchBean.isDeepCopy() : false);
         return results;
     }
@@ -108,8 +124,7 @@ public class AuthProviderWebServiceImpl implements AuthProviderWebService, Appli
 
 	@Override
 	public int countAuthProviderBeans(AuthProviderSearchBean searchBean) {
-		final AuthProviderEntity entity = authProviderSearchBeanConverter.convert(searchBean);
-		return authProviderService.countAuthProviderBeans(entity);
+		return authProviderService.countAuthProviderBeans(searchBean);
 	}
 
     
@@ -160,6 +175,31 @@ public class AuthProviderWebServiceImpl implements AuthProviderWebService, Appli
             if(type.isPasswordPolicyRequired()) {
             	if(StringUtils.isBlank(provider.getPolicyId())) {
                 	throw new BasicDataServiceException(ResponseCode.POLICY_NOT_SET);
+            	}
+            }
+            
+            if(type.isSupportsSMSOTP()) {
+            	if(provider.isSupportsSMSOTP()) {
+            		if(CollectionUtils.isEmpty(metadataService.getPhonesWithSMSOTPEnabled())) {
+            			throw new BasicDataServiceException(ResponseCode.NO_PHONE_TYPES_WITH_OTP_ENABLED);
+            		}
+            	} else {
+            		provider.setSupportsSMSOTP(false);
+            	}
+            	
+            	if(StringUtils.isBlank(provider.getSmsOTPGroovyScript())) {
+            		throw new BasicDataServiceException(ResponseCode.SMS_OTP_GROOVY_SCRIPT_REQUIRED);
+            	} else {
+            		if(!scriptRunner.scriptExists(provider.getSmsOTPGroovyScript())) {
+                		throw new BasicDataServiceException(ResponseCode.FILE_DOES_NOT_EXIST);
+                	}
+            		
+            		final Object groovyObj = scriptRunner.instantiateClass(null, provider.getSmsOTPGroovyScript());
+            		if(!(groovyObj instanceof AbstractSMSOTPModule)) {
+                		final EsbErrorToken errorToken = new EsbErrorToken();
+                		errorToken.setClassName(AbstractSMSOTPModule.class.getCanonicalName());
+                		throw new BasicDataServiceException(ResponseCode.GROOVY_CLASS_MUST_EXTEND_SMS_OTP_MODULE, errorToken);
+                	}
             	}
             }
             
@@ -236,9 +276,9 @@ public class AuthProviderWebServiceImpl implements AuthProviderWebService, Appli
             if(StringUtils.isBlank(providerId)) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
             }
-            final AuthProviderEntity searchBean = new AuthProviderEntity();
-            searchBean.setId(providerId);
-            final List<AuthProviderEntity> providers = authProviderService.findAuthProviderBeans(searchBean, 1, 0);
+            final AuthProviderSearchBean searchBean = new AuthProviderSearchBean();
+            searchBean.setKey(providerId);
+            final List<AuthProviderEntity> providers = authProviderService.findAuthProviderBeans(searchBean, 0, 1);
             if(CollectionUtils.isEmpty(providers)) {
             	throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
             }

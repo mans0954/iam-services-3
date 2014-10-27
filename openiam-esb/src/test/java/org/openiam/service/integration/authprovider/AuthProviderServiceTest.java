@@ -212,7 +212,7 @@ public class AuthProviderServiceTest extends AbstractKeyNameServiceTest<AuthProv
 	public List<AuthProvider> find(AuthProviderSearchBean searchBean, int from,
 			int size) {
 		searchBean.setDeepCopy(true);
-		final List<AuthProvider> results = authProviderServiceClient.findAuthProviderBeans(searchBean, size, from);
+		final List<AuthProvider> results = authProviderServiceClient.findAuthProviderBeans(searchBean, from, size);
 		return results;
 	}
 

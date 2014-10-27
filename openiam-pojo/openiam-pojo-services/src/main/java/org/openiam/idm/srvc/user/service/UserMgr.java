@@ -1005,6 +1005,38 @@ public class UserMgr implements UserDataService {
 
         return addressDao.getByExample(addressSearchBeanConverter.convert(searchBean), from, size);
     }
+    
+    @Override
+    @Transactional
+    public void updatePhone(PhoneEntity val) {
+        if (val == null)
+            throw new NullPointerException("val is null");
+        if (val.getId() == null)
+            throw new NullPointerException("PhoneId is null");
+        if (val.getParent() == null)
+            throw new NullPointerException("parentId for the address is not defined.");
+
+        final PhoneEntity entity = phoneDao.findById(val.getId());
+        final UserEntity parent = userDao.findById(val.getParent().getId());
+        final MetadataTypeEntity metadataType = (val.getMetadataType() != null && StringUtils.isNotBlank(val.getMetadataType().getId())) ? metadataTypeDAO
+                        .findById(val.getMetadataType().getId()) : null;
+
+        if (entity != null && metadataType != null) {
+            entity.setAreaCd(val.getAreaCd());
+            entity.setName(val.getName());
+            entity.setIsActive(val.getIsActive());
+            entity.setParent(parent);
+            entity.setPhoneExt(val.getPhoneExt());
+            entity.setPhoneNbr(val.getPhoneNbr());
+            entity.setMetadataType(metadataType);
+            //entity.setValidated(val.isValidated());
+
+            if (entity.getIsDefault() != val.getIsDefault()) {
+                updateDefaultFlagForPhone(entity, val.getIsDefault(), parent);
+            }
+            phoneDao.update(entity);
+        }
+    }
 
     @Override
     @Transactional
@@ -1063,37 +1095,6 @@ public class UserMgr implements UserDataService {
         while (it.hasNext()) {
             PhoneEntity ph = it.next();
             addPhone(ph);
-        }
-    }
-
-    @Override
-    @Transactional
-    public void updatePhone(PhoneEntity val) {
-        if (val == null)
-            throw new NullPointerException("val is null");
-        if (val.getId() == null)
-            throw new NullPointerException("PhoneId is null");
-        if (val.getParent() == null)
-            throw new NullPointerException("parentId for the address is not defined.");
-
-        final PhoneEntity entity = phoneDao.findById(val.getId());
-        final UserEntity parent = userDao.findById(val.getParent().getId());
-        final MetadataTypeEntity metadataType = (val.getMetadataType() != null && StringUtils.isNotBlank(val.getMetadataType().getId())) ? metadataTypeDAO
-                        .findById(val.getMetadataType().getId()) : null;
-
-        if (entity != null && metadataType != null) {
-            entity.setAreaCd(val.getAreaCd());
-            entity.setName(val.getName());
-            entity.setIsActive(val.getIsActive());
-            entity.setParent(parent);
-            entity.setPhoneExt(val.getPhoneExt());
-            entity.setPhoneNbr(val.getPhoneNbr());
-            entity.setMetadataType(metadataType);
-
-            if (entity.getIsDefault() != val.getIsDefault()) {
-                updateDefaultFlagForPhone(entity, val.getIsDefault(), parent);
-            }
-            phoneDao.update(entity);
         }
     }
 

@@ -7,6 +7,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.am.srvc.dao.*;
 import org.openiam.am.srvc.domain.*;
+import org.openiam.am.srvc.searchbeans.AuthProviderSearchBean;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.srvc.mngsys.service.ManagedSysDAO;
@@ -77,8 +78,7 @@ public class AuthProviderServiceImpl implements AuthProviderService {
     *===================================================
     */
     @Override
-    public List<AuthProviderEntity> findAuthProviderBeans(AuthProviderEntity searchBean, Integer size,
-                                                          Integer from) {
+    public List<AuthProviderEntity> findAuthProviderBeans(final AuthProviderSearchBean searchBean, int from, int size) {
         return authProviderDao.getByExample(searchBean,from,size);
     }
     
@@ -203,7 +203,12 @@ public class AuthProviderServiceImpl implements AuthProviderService {
     }
 
 	@Override
-	public int countAuthProviderBeans(AuthProviderEntity entity) {
-		return authProviderDao.count(entity);
+	public int countAuthProviderBeans(AuthProviderSearchBean searchBean) {
+		return authProviderDao.count(searchBean);
+	}
+
+	@Override
+	public AuthProviderEntity getAuthProvider(String id) {
+		return authProviderDao.findById(id);
 	}
 }

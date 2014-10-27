@@ -11,6 +11,7 @@ import org.openiam.idm.searchbeans.AuthStateSearchBean;
 import org.openiam.idm.srvc.auth.domain.AuthStateEntity;
 import org.openiam.idm.srvc.auth.dto.AuthenticationRequest;
 import org.openiam.idm.srvc.auth.dto.LogoutRequest;
+import org.openiam.idm.srvc.auth.dto.SMSOTPRequest;
 import org.openiam.idm.srvc.auth.dto.Subject;
 import org.openiam.idm.srvc.auth.ws.AuthenticationResponse;
 import org.openiam.idm.srvc.grp.dto.Group;
@@ -67,6 +68,13 @@ public interface AuthenticationService {
     AuthenticationResponse login(
             @WebParam(name = "request", targetNamespace = "")
             AuthenticationRequest request);
+    
+    
+    @WebMethod
+    public Response sendOTPSMSCode(@WebParam(name = "request", targetNamespace = "") SMSOTPRequest request);
+    
+    @WebMethod
+    public Response confirmSMSOTPToken(@WebParam(name = "request", targetNamespace = "") SMSOTPRequest request);
 
   
     /**

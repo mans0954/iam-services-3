@@ -11,11 +11,13 @@ import javax.xml.bind.annotation.XmlType;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "AuthProviderSearchBean", propOrder = {
         "managedSysId",
-        "providerType"
+        "providerType",
+        "defaultAuthProvider"
 })
 public class AuthProviderSearchBean extends AbstractKeyNameSearchBean<AuthProvider, String> {
     private String managedSysId;
     private String providerType;
+    private Boolean defaultAuthProvider;
 
     public String getManagedSysId() {
         return managedSysId;
@@ -32,4 +34,14 @@ public class AuthProviderSearchBean extends AbstractKeyNameSearchBean<AuthProvid
     public void setProviderType(String providerType) {
         this.providerType = providerType;
     }
+
+	public Boolean getDefaultAuthProvider() {
+		return defaultAuthProvider;
+	}
+
+	public void setDefaultAuthProvider(Boolean defaultAuthProvider) {
+		this.defaultAuthProvider = defaultAuthProvider;
+	}
+    
+    
 }

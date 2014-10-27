@@ -52,6 +52,13 @@ public class AuthProviderEntity extends AbstractKeyNameEntity {
     @Type(type = "yes_no")
     private boolean defaultProvider;
     
+    @Column(name="SUPPORTS_SMS_OTP")
+    @Type(type = "yes_no")
+    private boolean supportsSMSOTP;
+    
+    @Column(name="SMS_OTP_GROOVY_SCRIPT", length=150)
+    private String smsOTPGroovyScript;
+    
     @Column(name = "PUBLIC_KEY", nullable = true)
     @Lob
     private byte[] publicKey=null;
@@ -208,6 +215,22 @@ public class AuthProviderEntity extends AbstractKeyNameEntity {
 			boolean supportsJustInTimeAuthentication) {
 		this.supportsJustInTimeAuthentication = supportsJustInTimeAuthentication;
 	}
+	
+	public boolean isSupportsSMSOTP() {
+		return supportsSMSOTP;
+	}
+
+	public void setSupportsSMSOTP(boolean supportsSMSOTP) {
+		this.supportsSMSOTP = supportsSMSOTP;
+	}
+
+	public String getSmsOTPGroovyScript() {
+		return smsOTPGroovyScript;
+	}
+
+	public void setSmsOTPGroovyScript(String smsOTPGroovyScript) {
+		this.smsOTPGroovyScript = smsOTPGroovyScript;
+	}
 
 	@Override
 	public int hashCode() {
@@ -230,6 +253,8 @@ public class AuthProviderEntity extends AbstractKeyNameEntity {
 		result = prime * result
 				+ ((springBeanName == null) ? 0 : springBeanName.hashCode());
 		result = prime * result + ((type == null) ? 0 : type.hashCode());
+		result = prime * result + (supportsSMSOTP ? 1231 : 1237);
+		result = prime * result + ((smsOTPGroovyScript == null) ? 0 : smsOTPGroovyScript.hashCode());
 		return result;
 	}
 
@@ -286,6 +311,13 @@ public class AuthProviderEntity extends AbstractKeyNameEntity {
 		} else if (!type.equals(other.type))
 			return false;
 		if (supportsJustInTimeAuthentication != other.supportsJustInTimeAuthentication)
+			return false;
+		if (supportsSMSOTP != other.supportsSMSOTP)
+			return false;
+		if (smsOTPGroovyScript == null) {
+			if (other.smsOTPGroovyScript != null)
+				return false;
+		} else if (!smsOTPGroovyScript.equals(other.smsOTPGroovyScript))
 			return false;
 		return true;
 	}

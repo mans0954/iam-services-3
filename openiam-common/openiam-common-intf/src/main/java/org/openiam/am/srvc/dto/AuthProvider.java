@@ -32,7 +32,9 @@ import java.util.Set;
         "defaultProvider",
         "springBeanName",
         "groovyScriptURL",
-        "supportsJustInTimeAuthentication"
+        "supportsJustInTimeAuthentication",
+        "supportsSMSOTP",
+        "smsOTPGroovyScript"
 })
 @DozerDTOCorrespondence(AuthProviderEntity.class)
 public class AuthProvider extends KeyNameDTO {
@@ -48,6 +50,8 @@ public class AuthProvider extends KeyNameDTO {
     private String groovyScriptURL;
     private String springBeanName;
     private boolean supportsJustInTimeAuthentication;
+    private boolean supportsSMSOTP;
+    private String smsOTPGroovyScript;
 
     private Set<AuthProviderAttribute> attributes;
     private Map<String, AuthResourceAttributeMap> resourceAttributeMap=new HashMap<String, AuthResourceAttributeMap>(0);
@@ -200,6 +204,22 @@ public class AuthProvider extends KeyNameDTO {
 			boolean supportsJustInTimeAuthentication) {
 		this.supportsJustInTimeAuthentication = supportsJustInTimeAuthentication;
 	}
+	
+	public boolean isSupportsSMSOTP() {
+		return supportsSMSOTP;
+	}
+
+	public void setSupportsSMSOTP(boolean supportsSMSOTP) {
+		this.supportsSMSOTP = supportsSMSOTP;
+	}
+	
+	public String getSmsOTPGroovyScript() {
+		return smsOTPGroovyScript;
+	}
+
+	public void setSmsOTPGroovyScript(String smsOTPGroovyScript) {
+		this.smsOTPGroovyScript = smsOTPGroovyScript;
+	}
 
 	@Override
 	public int hashCode() {
@@ -224,8 +244,9 @@ public class AuthProvider extends KeyNameDTO {
 				+ ((resource == null) ? 0 : resource.hashCode());
 		result = prime * result
 				+ ((resourceId == null) ? 0 : resourceId.hashCode());
-		result = prime * result
-				+ ((springBeanName == null) ? 0 : springBeanName.hashCode());
+		result = prime * result + ((springBeanName == null) ? 0 : springBeanName.hashCode());
+		result = prime * result + (supportsSMSOTP ? 1231 : 1237);
+		result = prime * result + ((smsOTPGroovyScript == null) ? 0 : smsOTPGroovyScript.hashCode());
 		return result;
 	}
 
@@ -287,6 +308,13 @@ public class AuthProvider extends KeyNameDTO {
 		} else if (!springBeanName.equals(other.springBeanName))
 			return false;
 		if (supportsJustInTimeAuthentication != other.supportsJustInTimeAuthentication)
+			return false;
+		if (supportsSMSOTP != other.supportsSMSOTP)
+			return false;
+		if (smsOTPGroovyScript == null) {
+			if (other.smsOTPGroovyScript != null)
+				return false;
+		} else if (!smsOTPGroovyScript.equals(other.smsOTPGroovyScript))
 			return false;
 		return true;
 	}

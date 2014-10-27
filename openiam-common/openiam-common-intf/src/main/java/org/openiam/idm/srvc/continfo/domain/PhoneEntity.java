@@ -59,6 +59,12 @@ public class PhoneEntity extends KeyEntity {
     @Column(name="IS_DEFAULT")
     @Type(type = "yes_no")
     private boolean isDefault = false;
+    
+    /*
+    @Column(name="VALIDATED")
+    @Type(type = "yes_no")
+    private boolean validated;
+	*/
 
     @XmlTransient
     @ManyToOne
@@ -208,6 +214,16 @@ public class PhoneEntity extends KeyEntity {
         this.metadataType = metadataType;
     }
 
+    /*
+	public boolean isValidated() {
+		return validated;
+	}
+
+	public void setValidated(boolean validated) {
+		this.validated = validated;
+	}
+	*/
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -231,6 +247,7 @@ public class PhoneEntity extends KeyEntity {
 				+ ((phoneExt == null) ? 0 : phoneExt.hashCode());
 		result = prime * result
 				+ ((phoneNbr == null) ? 0 : phoneNbr.hashCode());
+		//result = prime * result + (validated ? 1231 : 1237);
 		return result;
 	}
 
@@ -265,6 +282,10 @@ public class PhoneEntity extends KeyEntity {
 			return false;
 		if (isActive != other.isActive)
 			return false;
+		/*
+		if (validated != other.validated)
+			return false;
+		*/
 		if (isDefault != other.isDefault)
 			return false;
 		if (lastUpdate == null) {
