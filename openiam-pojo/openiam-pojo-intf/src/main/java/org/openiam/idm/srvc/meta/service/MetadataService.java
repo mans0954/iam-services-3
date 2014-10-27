@@ -2,6 +2,7 @@ package org.openiam.idm.srvc.meta.service;
 
 import java.util.List;
 
+import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.MetadataElementSearchBean;
 import org.openiam.idm.searchbeans.MetadataTypeSearchBean;
 import org.openiam.idm.srvc.lang.domain.LanguageEntity;
@@ -26,7 +27,7 @@ public interface MetadataService {
 	
 	public List<MetadataElementEntity> findBeans(final MetadataElementSearchBean searchBean, final int from, final int size, final LanguageEntity entity);
 	
-	public List<MetadataTypeEntity> findBeans(final MetadataTypeSearchBean searchBean, final int from, final int size);
+	public List<MetadataTypeEntity> findBeans(final MetadataTypeSearchBean searchBean, final int from, final int size, final LanguageEntity entity);
 	
 	public int count(final MetadataElementSearchBean searchBean);
 	
@@ -36,10 +37,12 @@ public interface MetadataService {
 
 	public void deleteMetdataElement(final String id);
 	
-	public void save(final MetadataTypeEntity entity);
+	public void save(final MetadataTypeEntity entity) throws BasicDataServiceException;
 	
 	public void deleteMetdataType(final String id);
 	
 	//public void save(final MetadataValidValueEntity entity);
 	public void delteMetaValidValue(final String validValueId);
+	
+	public List<MetadataTypeEntity> getPhonesWithSMSOTPEnabled();
 }

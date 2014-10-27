@@ -347,6 +347,8 @@ public class MetadataElementTemplateServiceImpl extends AbstractLanguageService 
 								uiField.setEditable(xref.isEditable());
 								uiField.setDisplayOrder(xref.getDisplayOrder());
 								template.addUIField(uiField);
+							} else {
+								LOG.warn(String.format("UI Xref %s has a null display name for language %s.  This field will not be used in the UI", xref, targetLanguage));
 							}
 						}
 					}

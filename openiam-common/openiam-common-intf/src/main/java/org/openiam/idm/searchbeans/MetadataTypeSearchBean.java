@@ -18,7 +18,7 @@ import org.openiam.idm.srvc.meta.dto.MetadataType;
 	"syncManagedSys", 
 	"grouping", 
 	"keySet",
-	"categoryIds"
+	"usedForSMSOTP"
 })
 public class MetadataTypeSearchBean extends AbstractKeyNameSearchBean<MetadataType, String> implements SearchBean<MetadataType, String> {
 
@@ -26,7 +26,7 @@ public class MetadataTypeSearchBean extends AbstractKeyNameSearchBean<MetadataTy
     private Boolean active;
     private Boolean syncManagedSys;
     private MetadataTypeGrouping grouping;
-    private Set<String> categoryIds;
+    private Boolean usedForSMSOTP;
 
     public Boolean isActive() {
         return active;
@@ -78,22 +78,13 @@ public class MetadataTypeSearchBean extends AbstractKeyNameSearchBean<MetadataTy
     public void setKeys(final Set<String> keySet) {
         this.keySet = keySet;
     }
-	
-	public void addCategoryId(final String id) {
-		if(StringUtils.isNotBlank(id)) {
-			if(this.categoryIds == null) {
-				this.categoryIds = new HashSet<>();
-			}
-			this.categoryIds.add(id);
-		}
+    
+	public Boolean getUsedForSMSOTP() {
+		return usedForSMSOTP;
 	}
 
-	public Set<String> getCategoryIds() {
-		return categoryIds;
-	}
-
-	public void setCategoryIds(Set<String> categoryIds) {
-		this.categoryIds = categoryIds;
+	public void setUsedForSMSOTP(Boolean usedForSMSOTP) {
+		this.usedForSMSOTP = usedForSMSOTP;
 	}
 
 	@Override

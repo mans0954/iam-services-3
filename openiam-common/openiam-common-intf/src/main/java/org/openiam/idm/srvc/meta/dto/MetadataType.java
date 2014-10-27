@@ -35,19 +35,18 @@ import org.openiam.internationalization.InternationalizedCollection;
 	"binary",
 	"displayNameMap",
 	"displayName",
-	"sensitive"
+	"sensitive",
+	"usedForSMSOTP"
 })
 @DozerDTOCorrespondence(MetadataTypeEntity.class)
 @Internationalized
 public class MetadataType extends KeyNameDTO {
     private boolean active;
     private boolean syncManagedSys;
-
     private MetadataTypeGrouping grouping;
-    
     private boolean binary;
-    
     private boolean sensitive;
+    private boolean usedForSMSOTP;
 
     protected Map<String, MetadataElement> elementAttributes = new HashMap<String, MetadataElement>(0);
     protected Set<Category> categories = new HashSet<Category>(0);
@@ -134,6 +133,14 @@ public class MetadataType extends KeyNameDTO {
 	public void setSensitive(boolean sensitive) {
 		this.sensitive = sensitive;
 	}
+	
+	public boolean isUsedForSMSOTP() {
+		return usedForSMSOTP;
+	}
+
+	public void setUsedForSMSOTP(boolean usedForSMSOTP) {
+		this.usedForSMSOTP = usedForSMSOTP;
+	}
 
 	@Override
 	public int hashCode() {
@@ -145,6 +152,7 @@ public class MetadataType extends KeyNameDTO {
 				+ ((grouping == null) ? 0 : grouping.hashCode());
 		result = prime * result + (sensitive ? 1231 : 1237);
 		result = prime * result + (syncManagedSys ? 1231 : 1237);
+		result = prime * result + (usedForSMSOTP ? 1231 : 1237);
 		return result;
 	}
 
@@ -166,6 +174,8 @@ public class MetadataType extends KeyNameDTO {
 		if (sensitive != other.sensitive)
 			return false;
 		if (syncManagedSys != other.syncManagedSys)
+			return false;
+		if (usedForSMSOTP != other.usedForSMSOTP)
 			return false;
 		return true;
 	}

@@ -1,28 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
-<web-app xmlns="http://java.sun.com/xml/ns/javaee"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
-         version="3.0">
-
-    <!-- Listener that flushes the JavaBeans Introspector cache on web app shutdown. Register this listener in your web.xml to guarantee proper release of the web app class loader and the classes that it holds.-->
-    <listener>
-        <listener-class>org.springframework.web.util.IntrospectorCleanupListener</listener-class>
-    </listener>
-    
-    <filter>
-		<filter-name>OpenSessionInViewFilter</filter-name>
-		<filter-class>org.springframework.orm.hibernate4.support.OpenSessionInViewFilter</filter-class>
-	</filter>
-
-	<filter-mapping>
-		<filter-name>OpenSessionInViewFilter</filter-name>
-		<url-pattern>/*</url-pattern>
-	</filter-mapping>
-
-    <context-param>
-		<param-name>contextConfigLocation</param-name>
-		<param-value>classpath:applicationContext.xml,
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd" version="3.0">
+  <listener>
+    <listener-class>org.springframework.web.util.IntrospectorCleanupListener</listener-class>
+  </listener>
+  <filter>
+    <filter-name>OpenSessionInViewFilter</filter-name>
+    <filter-class>org.springframework.orm.hibernate4.support.OpenSessionInViewFilter</filter-class>
+  </filter>
+  <filter-mapping>
+    <filter-name>OpenSessionInViewFilter</filter-name>
+    <url-pattern>/*</url-pattern>
+  </filter-mapping>
+  <context-param>
+    <param-name>contextConfigLocation</param-name>
+    <param-value>classpath:applicationContext.xml,
 					 classpath:am-service-Context.xml,
                      classpath:bpm-context.xml,
 					 classpath:idmservice-Context.xml,
@@ -30,48 +21,30 @@
                      classpath:authorizationManagerContext.xml
 
 		</param-value>
-	</context-param>
-
-	<listener>
-		<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
-	</listener>
-
-    <!-- Servlet for SOAP -->
-    <servlet>
-        <servlet-name>CXFServlet</servlet-name>
-        <servlet-class>org.apache.cxf.transport.servlet.CXFServlet</servlet-class>
-        <init-param>
-            <param-name>config-location</param-name>
-            <param-value>classpath:ws-beans.xml</param-value>
-        </init-param>
-        <load-on-startup>1</load-on-startup>
-        <async-supported>true</async-supported>
-    </servlet>
-
-    <servlet-mapping>
-        <servlet-name>CXFServlet</servlet-name>
-        <url-pattern>/idmsrvc/*</url-pattern>
-    </servlet-mapping>
-
-    <servlet>
-   		<servlet-name>AuthorizationManagerHessianServlet</servlet-name>
-   		<servlet-class>org.openiam.authmanager.web.AuthorizationManagerHessianServlet</servlet-class>
-   		<!--
-    	<init-param>
-      		<param-name>home-class</param-name>
-      		<param-value>example.BasicService</param-value>
-    	</init-param>
-    	<init-param>
-      		<param-name>home-api</param-name>
-      		<param-value>example.Basic</param-value>
-    	</init-param>
-    	-->
-  	</servlet>
-
-  	<servlet-mapping>
-  		<servlet-name>AuthorizationManagerHessianServlet</servlet-name>
-    	<url-pattern>/iamauthmgr</url-pattern>
-  	</servlet-mapping>
-
-
+  </context-param>
+  <listener>
+    <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+  </listener>
+  <servlet>
+    <servlet-name>CXFServlet</servlet-name>
+    <servlet-class>org.apache.cxf.transport.servlet.CXFServlet</servlet-class>
+    <init-param>
+      <param-name>config-location</param-name>
+      <param-value>classpath:ws-beans.xml</param-value>
+    </init-param>
+    <load-on-startup>1</load-on-startup>
+    <async-supported>true</async-supported>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>CXFServlet</servlet-name>
+    <url-pattern>/idmsrvc/*</url-pattern>
+  </servlet-mapping>
+  <servlet>
+    <servlet-name>AuthorizationManagerHessianServlet</servlet-name>
+    <servlet-class>org.openiam.authmanager.web.AuthorizationManagerHessianServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>AuthorizationManagerHessianServlet</servlet-name>
+    <url-pattern>/iamauthmgr</url-pattern>
+  </servlet-mapping>
 </web-app>

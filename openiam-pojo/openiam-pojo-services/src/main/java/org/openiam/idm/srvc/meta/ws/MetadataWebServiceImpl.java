@@ -93,7 +93,7 @@ public class MetadataWebServiceImpl implements MetadataWebService {
     @LocalizedServiceGet
     @Transactional(readOnly = true)
     public List<MetadataType> findTypeBeans(final MetadataTypeSearchBean searchBean, final int from, final int size, final Language language) {
-        final List<MetadataTypeEntity> entityList = metadataService.findBeans(searchBean, from, size);
+        final List<MetadataTypeEntity> entityList = metadataService.findBeans(searchBean, from, size, languageConverter.convertToEntity(language, false));
         return (entityList != null) ? metaDataTypeDozerConverter.convertToDTOList(entityList, (searchBean != null) ? searchBean.isDeepCopy() : false) : null;
     }
 
@@ -115,13 +115,15 @@ public class MetadataWebServiceImpl implements MetadataWebService {
             final MetadataTypeEntity entity = metaDataTypeDozerConverter.convertToEntity(dto, true);
             metadataService.save(entity);
             response.setResponseValue(entity.getId());
-            response.setStatus(ResponseStatus.SUCCESS);
+            response.succeed();
         } catch (BasicDataServiceException e) {
+        	response.setResponseValue(e.getResponseValue());
+        	response.setErrorTokenList(e.getErrorTokenList());
             response.setErrorCode(e.getCode());
-            response.setResponseValue(ResponseStatus.FAILURE);
+            response.fail();
         } catch (Throwable e) {
             LOG.error("Unknown Error", e);
-            response.setResponseValue(ResponseStatus.FAILURE);
+            response.fail();
         }
         return response;
     }

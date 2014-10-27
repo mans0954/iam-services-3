@@ -13,9 +13,12 @@ import org.hibernate.Session;
 import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Restrictions;
 import org.openiam.core.dao.BaseDaoImpl;
+import org.openiam.idm.searchbeans.MetadataTypeSearchBean;
+import org.openiam.idm.searchbeans.SearchBean;
 import org.openiam.idm.srvc.cat.domain.CategoryEntity;
 import org.openiam.idm.srvc.cat.service.CategoryDAO;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
+import org.openiam.idm.srvc.searchbean.converter.MetadataTypeSearchBeanConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -24,7 +27,26 @@ import org.springframework.stereotype.Repository;
  */
 @Repository("metadataTypeDAO")
 public class MetadataTypeDAOImpl extends BaseDaoImpl<MetadataTypeEntity, String> implements MetadataTypeDAO {
+	
 
+    @Autowired
+    private MetadataTypeSearchBeanConverter metadataTypeSearchBeanConverter;
+
+	@Override
+    protected Criteria getExampleCriteria(final SearchBean searchBean) {
+		Criteria criteria = this.getCriteria();
+		if(searchBean != null) {
+			if(searchBean instanceof MetadataTypeSearchBean) {
+				final MetadataTypeSearchBean metadataTypSearchBean = (MetadataTypeSearchBean)searchBean;
+				criteria = getExampleCriteria(metadataTypeSearchBeanConverter.convert(metadataTypSearchBean));
+				if(metadataTypSearchBean.getUsedForSMSOTP() != null) {
+					criteria.add(Restrictions.eq("usedForSMSOTP", metadataTypSearchBean.getUsedForSMSOTP()));
+				}
+			}
+		}
+		return criteria;
+	}
+	
     @Override
     protected Criteria getExampleCriteria(final MetadataTypeEntity entity) {
 		final Criteria criteria = getCriteria();
@@ -70,14 +92,6 @@ public class MetadataTypeDAOImpl extends BaseDaoImpl<MetadataTypeEntity, String>
 		    }
 		}
 		return criteria;
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public List<MetadataTypeEntity> findTypesInCategory(String categoryId) {
-		final Criteria criteria = getCriteria().createAlias("categories", "category").add(
-			Restrictions.eq("category.id", categoryId));
-		return criteria.list();
     }
 
     @Override

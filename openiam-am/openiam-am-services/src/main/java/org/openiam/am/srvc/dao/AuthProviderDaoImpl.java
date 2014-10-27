@@ -9,9 +9,13 @@ import org.hibernate.criterion.Restrictions;
 import org.openiam.am.srvc.domain.AuthProviderEntity;
 import org.openiam.am.srvc.domain.ContentProviderEntity;
 import org.openiam.am.srvc.domain.URIPatternEntity;
+import org.openiam.am.srvc.searchbeans.AuthProviderSearchBean;
+import org.openiam.am.srvc.searchbeans.converter.AuthProviderSearchBeanConverter;
 import org.openiam.core.dao.BaseDaoImpl;
+import org.openiam.idm.searchbeans.SearchBean;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,9 +23,27 @@ import java.util.List;
 
 @Repository("authProviderDao")
 public class AuthProviderDaoImpl extends BaseDaoImpl<AuthProviderEntity, String> implements AuthProviderDao {
+	
+    @Autowired
+    private AuthProviderSearchBeanConverter authProviderSearchBeanConverter;
+	
     @Override
     protected String getPKfieldName() {
         return "id";
+    }
+    
+    @Override
+    protected Criteria getExampleCriteria(final SearchBean sb) {
+    	Criteria criteria = this.getCriteria();
+    	if(sb != null && (sb instanceof AuthProviderSearchBean)) {
+    		final AuthProviderSearchBean searchBean = (AuthProviderSearchBean)sb;
+    		final AuthProviderEntity example = authProviderSearchBeanConverter.convert(searchBean);
+    		criteria = getExampleCriteria(example);
+    		if(searchBean.getDefaultAuthProvider() != null) {
+    			criteria.add(Restrictions.eq("defaultProvider", searchBean.getDefaultAuthProvider()));
+    		}
+    	}
+    	return criteria;
     }
 
     @Override

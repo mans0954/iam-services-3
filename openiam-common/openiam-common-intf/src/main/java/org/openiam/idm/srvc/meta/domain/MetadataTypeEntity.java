@@ -35,6 +35,10 @@ import java.util.Set;
 public class MetadataTypeEntity extends AbstractKeyNameEntity {
 
     private static final long serialVersionUID = 1L;
+    
+    @Column(name = "USED_FOR_SMS_OTP")
+    @Type(type = "yes_no")
+    private boolean usedForSMSOTP;
 
     @Column(name = "ACTIVE")
     @Type(type = "yes_no")
@@ -104,13 +108,6 @@ public class MetadataTypeEntity extends AbstractKeyNameEntity {
     public void setCategories(Set<CategoryEntity> categories) {
     	this.categories = categories;
     }
-    
-    public void addCategory(final CategoryEntity entity) {
-    	if(this.categories == null) {
-    		this.categories = new HashSet<>();
-    	}
-    	this.categories.add(entity);
-    }
 
     public boolean isActive() {
     	return active;
@@ -175,6 +172,14 @@ public class MetadataTypeEntity extends AbstractKeyNameEntity {
     public void setUserEntitySet(Set<UserEntity> userEntitySet) {
         this.userEntitySet = userEntitySet;
     }
+    
+    public boolean isUsedForSMSOTP() {
+		return usedForSMSOTP;
+	}
+
+	public void setUsedForSMSOTP(boolean usedForSMSOTP) {
+		this.usedForSMSOTP = usedForSMSOTP;
+	}
 
 	@Override
 	public int hashCode() {
@@ -186,6 +191,7 @@ public class MetadataTypeEntity extends AbstractKeyNameEntity {
 				+ ((grouping == null) ? 0 : grouping.hashCode());
 		result = prime * result + (sensitive ? 1231 : 1237);
 		result = prime * result + (syncManagedSys ? 1231 : 1237);
+		result = prime * result + (usedForSMSOTP ? 1231 : 1237);
 		return result;
 	}
 
@@ -207,6 +213,8 @@ public class MetadataTypeEntity extends AbstractKeyNameEntity {
 		if (sensitive != other.sensitive)
 			return false;
 		if (syncManagedSys != other.syncManagedSys)
+			return false;
+		if (usedForSMSOTP != other.usedForSMSOTP)
 			return false;
 		return true;
 	}

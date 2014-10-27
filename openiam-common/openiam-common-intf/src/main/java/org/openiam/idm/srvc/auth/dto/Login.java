@@ -49,7 +49,9 @@ import java.util.*;
         "pswdResetToken",
         "pswdResetTokenExp",
         "lastUpdate",
-        "passwordHistory"
+        "passwordHistory",
+        "smsCode",
+        "smsCodeExpiration"
 })
 @XmlSeeAlso({
         Subject.class,
@@ -135,6 +137,9 @@ public class Login extends KeyDTO {
     protected String managedSysName;
     
     private Date lastUpdate;
+    
+    private String smsCode;
+    private Date smsCodeExpiration;
 
 
     public Login() {
@@ -438,6 +443,22 @@ public class Login extends KeyDTO {
     public void setInitialStatus(LoginStatusEnum initialStatus) {
         this.initialStatus = initialStatus;
     }
+    
+    public String getSmsCode() {
+		return smsCode;
+	}
+
+	public void setSmsCode(String smsCode) {
+		this.smsCode = smsCode;
+	}
+
+	public Date getSmsCodeExpiration() {
+		return smsCodeExpiration;
+	}
+
+	public void setSmsCodeExpiration(Date smsCodeExpiration) {
+		this.smsCodeExpiration = smsCodeExpiration;
+	}
 
 	@Override
 	public int hashCode() {
@@ -512,6 +533,8 @@ public class Login extends KeyDTO {
 		result = prime * result + (selected ? 1231 : 1237);
 		result = prime * result + ((status == null) ? 0 : status.hashCode());
 		result = prime * result + ((userId == null) ? 0 : userId.hashCode());
+		result = prime * result + ((smsCode == null) ? 0 : smsCode.hashCode());
+		result = prime * result + ((smsCodeExpiration == null) ? 0 : smsCodeExpiration.hashCode());
 		return result;
 	}
 
@@ -678,6 +701,16 @@ public class Login extends KeyDTO {
 				return false;
 		} else if (!userId.equals(other.userId))
 			return false;
+		if (smsCode == null) {
+			if (other.smsCode != null)
+				return false;
+		} else if (!smsCode.equals(other.smsCode))
+			return false;
+		if (smsCodeExpiration == null) {
+			if (other.smsCodeExpiration != null)
+				return false;
+		} else if (!smsCodeExpiration.equals(other.smsCodeExpiration))
+			return false;
 		return true;
 	}
 
@@ -703,9 +736,10 @@ public class Login extends KeyDTO {
 				+ pswdResetToken + ", pswdResetTokenExp=" + pswdResetTokenExp
 				+ ", selected=" + selected + ", origPrincipalName="
 				+ origPrincipalName + ", managedSysName=" + managedSysName
-				+ ", lastUpdate=" + lastUpdate + "]";
+				+ ", lastUpdate=" + lastUpdate + ", smsCode=" + smsCode
+				+ ", smsCodeExpiration=" + smsCodeExpiration + "]";
 	}
 
-    
+	
 }
 

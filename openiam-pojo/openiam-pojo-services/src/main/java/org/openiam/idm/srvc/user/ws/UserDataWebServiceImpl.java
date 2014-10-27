@@ -230,6 +230,41 @@ public class UserDataWebServiceImpl implements UserDataWebService {
      * response.setErrorText(e.getMessage());
      * response.setStatus(ResponseStatus.FAILURE); } return response; }
      */
+    
+    @Override
+    public Response updatePhone(Phone val) {
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+            if (val == null) {
+                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+            }
+            if (StringUtils.isBlank(val.getMetadataTypeId())) {
+                throw new BasicDataServiceException(ResponseCode.PHONE_TYPE_REQUIRED);
+            }
+
+            PhoneSearchBean searchBean = new PhoneSearchBean();
+            searchBean.setParentId(val.getParentId());
+            searchBean.setMetadataTypeId(val.getMetadataTypeId());
+            // searchBean.setParentType(ContactConstants.PARENT_TYPE_USER);
+            List<PhoneEntity> entityList = userManager.getPhoneList(searchBean, Integer.MAX_VALUE, 0);
+            if (CollectionUtils.isNotEmpty(entityList) && !entityList.get(0).getId().equals(val.getId()))
+                throw new BasicDataServiceException(ResponseCode.PHONE_TYPE_DUPLICATED);
+
+            final PhoneEntity entity = phoneDozerConverter.convertToEntity(val, true);
+            UserEntity user = new UserEntity();
+            user.setId(val.getParentId());
+            entity.setParent(user);
+            userManager.updatePhone(entity);
+        } catch (BasicDataServiceException e) {
+            response.setErrorCode(e.getCode());
+            response.setStatus(ResponseStatus.FAILURE);
+        } catch (Throwable e) {
+            log.error("Can't perform operation", e);
+            response.setErrorText(e.getMessage());
+            response.setStatus(ResponseStatus.FAILURE);
+        }
+        return response;
+    }
 
     @Override
     public Response addPhone(Phone val) {
@@ -811,41 +846,6 @@ public class UserDataWebServiceImpl implements UserDataWebService {
      * response.setErrorText(e.getMessage());
      * response.setStatus(ResponseStatus.FAILURE); } return response; }
      */
-
-    @Override
-    public Response updatePhone(Phone val) {
-        final Response response = new Response(ResponseStatus.SUCCESS);
-        try {
-            if (val == null) {
-                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
-            }
-            if (StringUtils.isBlank(val.getMetadataTypeId())) {
-                throw new BasicDataServiceException(ResponseCode.PHONE_TYPE_REQUIRED);
-            }
-
-            PhoneSearchBean searchBean = new PhoneSearchBean();
-            searchBean.setParentId(val.getParentId());
-            searchBean.setMetadataTypeId(val.getMetadataTypeId());
-            // searchBean.setParentType(ContactConstants.PARENT_TYPE_USER);
-            List<PhoneEntity> entityList = userManager.getPhoneList(searchBean, Integer.MAX_VALUE, 0);
-            if (CollectionUtils.isNotEmpty(entityList) && !entityList.get(0).getId().equals(val.getId()))
-                throw new BasicDataServiceException(ResponseCode.PHONE_TYPE_DUPLICATED);
-
-            final PhoneEntity entity = phoneDozerConverter.convertToEntity(val, true);
-            UserEntity user = new UserEntity();
-            user.setId(val.getParentId());
-            entity.setParent(user);
-            userManager.updatePhone(entity);
-        } catch (BasicDataServiceException e) {
-            response.setErrorCode(e.getCode());
-            response.setStatus(ResponseStatus.FAILURE);
-        } catch (Throwable e) {
-            log.error("Can't perform operation", e);
-            response.setErrorText(e.getMessage());
-            response.setStatus(ResponseStatus.FAILURE);
-        }
-        return response;
-    }
 
     // @Override
     // public Response updateSupervisor(Supervisor supervisor) {

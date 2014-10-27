@@ -7,6 +7,7 @@ import org.openiam.am.srvc.dto.AuthProviderType;
 import org.openiam.am.srvc.searchbeans.AuthAttributeSearchBean;
 import org.openiam.am.srvc.searchbeans.AuthProviderSearchBean;
 import org.openiam.base.ws.Response;
+import org.openiam.idm.srvc.continfo.dto.Phone;
 
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
@@ -40,8 +41,8 @@ public interface AuthProviderWebService {
     
     @WebMethod
     public List<AuthProvider> findAuthProviderBeans(@WebParam(name = "searchBean", targetNamespace = "") AuthProviderSearchBean searchBean,
-                                                    @WebParam(name = "size", targetNamespace = "")Integer size,
-                                                    @WebParam(name = "from", targetNamespace = "")Integer from);
+            										@WebParam(name = "from", targetNamespace = "")int from,
+                                                    @WebParam(name = "size", targetNamespace = "")int size);
 
     @WebMethod
     public Response saveAuthProvider(@WebParam(name = "provider", targetNamespace = "")AuthProvider provider,
