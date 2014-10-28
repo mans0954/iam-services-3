@@ -37,6 +37,7 @@ import org.openiam.elasticsearch.model.ElasticsearchMetadata;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.*;
@@ -49,10 +50,18 @@ import java.util.*;
 public class ElasticsearchProvider {
     protected static Logger logger = Logger.getLogger(ElasticsearchProvider.class);
 
+    private static Map<String, ElasticsearchMetadata> indexeMetadataMap = new HashMap<>();
+
     @Autowired
     private ESClientFactoryBean clientFactory;
 
-    private static Map<String, ElasticsearchMetadata> indexeMetadataMap = new HashMap<>();
+    private Properties hibernateProperties;
+
+    @Resource(name = "hibernateProperties")
+    public void setHibernateProperties(final Properties hibernateProperties) {
+        this.hibernateProperties = hibernateProperties;
+    }
+
 
     private Client getClient() throws Exception {
         return this.clientFactory.getObject();

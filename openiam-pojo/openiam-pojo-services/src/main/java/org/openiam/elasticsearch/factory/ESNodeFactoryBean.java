@@ -6,12 +6,26 @@ import org.elasticsearch.node.Node;
 import org.elasticsearch.node.NodeBuilder;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
+import java.util.Properties;
+
 /**
  * Created by: Alexander Duckardt
  * Date: 6/21/14.
  */
 @Component
 public class ESNodeFactoryBean extends ESAbstractFactoryBean<Node> {
+
+    private static final String DATA_DIR="data";
+    private static final String WORK_DIR="work";
+    private static final String LOG_DIR="logs";
+
+    private Properties hibernateProperties;
+
+    @Resource(name = "hibernateProperties")
+    public void setHibernateProperties(final Properties hibernateProperties) {
+        this.hibernateProperties = hibernateProperties;
+    }
 
     @Override
     public void destroy() throws Exception {
@@ -27,19 +41,7 @@ public class ESNodeFactoryBean extends ESAbstractFactoryBean<Node> {
     protected Node initialize() throws Exception{
         final NodeBuilder nodeBuilder = NodeBuilder.nodeBuilder();
 
-//        if (null != settingsFile && null == properties) {
-//            Settings settings = ImmutableSettings.settingsBuilder()
-//                                                 .loadFromClasspath(this.settingsFile)
-//                                                 .build();
-//            nodeBuilder.getSettings().put(settings);
-//        }
-//
-//        if (null != properties) {
-//            nodeBuilder.getSettings().put(properties);
-//        }
-
         logger.debug("Starting ElasticSearch node...");
-
         Node node = nodeBuilder.settings(buildNodeSettings()).node();
 
         logger.info("Node [" + node.settings().get("name") + "] for [" + node.settings().get("cluster.name") + "] cluster started...");
@@ -52,11 +54,11 @@ public class ESNodeFactoryBean extends ESAbstractFactoryBean<Node> {
     protected Settings buildNodeSettings() {
         // Build settings
         ImmutableSettings.Builder builder = ImmutableSettings.settingsBuilder()
-                                                             .put("node.name", "node-test-" + System.currentTimeMillis())
-                                                             .put("cluster.name", "ES_OpenIAM")
-                                                             .put("path.data", "/home/alexander/elasticsearch/data")
-                                                             .put("path.work", "/home/alexander/elasticsearch/work")
-                                                             .put("path.logs", "/home/alexander/elasticsearch/logs");
+                                                             .put("node.name", hibernateProperties.getProperty("hibernate.search.default.node.name.prefix") + System.currentTimeMillis())
+                                                             .put("cluster.name", hibernateProperties.getProperty("hibernate.search.default.cluster.name"))
+                                                             .put("path.data", hibernateProperties.getProperty("hibernate.search.default.indexBase") + "/" + DATA_DIR)
+                                                             .put("path.work", hibernateProperties.getProperty("hibernate.search.default.indexBase") + "/" + WORK_DIR)
+                                                             .put("path.logs", hibernateProperties.getProperty("hibernate.search.default.indexBase") + "/" + LOG_DIR);
 
         return builder.build();
     }
