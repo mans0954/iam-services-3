@@ -50,7 +50,6 @@ import java.util.*;
         "pswdResetTokenExp",
         "lastUpdate",
         "passwordHistory",
-        "smsCode",
         "smsCodeExpiration"
 })
 @XmlSeeAlso({
@@ -138,7 +137,6 @@ public class Login extends KeyDTO {
     
     private Date lastUpdate;
     
-    private String smsCode;
     private Date smsCodeExpiration;
 
 
@@ -443,14 +441,6 @@ public class Login extends KeyDTO {
     public void setInitialStatus(LoginStatusEnum initialStatus) {
         this.initialStatus = initialStatus;
     }
-    
-    public String getSmsCode() {
-		return smsCode;
-	}
-
-	public void setSmsCode(String smsCode) {
-		this.smsCode = smsCode;
-	}
 
 	public Date getSmsCodeExpiration() {
 		return smsCodeExpiration;
@@ -533,7 +523,6 @@ public class Login extends KeyDTO {
 		result = prime * result + (selected ? 1231 : 1237);
 		result = prime * result + ((status == null) ? 0 : status.hashCode());
 		result = prime * result + ((userId == null) ? 0 : userId.hashCode());
-		result = prime * result + ((smsCode == null) ? 0 : smsCode.hashCode());
 		result = prime * result + ((smsCodeExpiration == null) ? 0 : smsCodeExpiration.hashCode());
 		return result;
 	}
@@ -701,11 +690,6 @@ public class Login extends KeyDTO {
 				return false;
 		} else if (!userId.equals(other.userId))
 			return false;
-		if (smsCode == null) {
-			if (other.smsCode != null)
-				return false;
-		} else if (!smsCode.equals(other.smsCode))
-			return false;
 		if (smsCodeExpiration == null) {
 			if (other.smsCodeExpiration != null)
 				return false;
@@ -736,8 +720,7 @@ public class Login extends KeyDTO {
 				+ pswdResetToken + ", pswdResetTokenExp=" + pswdResetTokenExp
 				+ ", selected=" + selected + ", origPrincipalName="
 				+ origPrincipalName + ", managedSysName=" + managedSysName
-				+ ", lastUpdate=" + lastUpdate + ", smsCode=" + smsCode
-				+ ", smsCodeExpiration=" + smsCodeExpiration + "]";
+				+ ", lastUpdate=" + lastUpdate + ", smsCodeExpiration=" + smsCodeExpiration + "]";
 	}
 
 	

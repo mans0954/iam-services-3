@@ -21,6 +21,7 @@
 package org.openiam.idm.srvc.auth.service;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -584,7 +585,6 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
             }
             
             final AbstractSMSOTPModule module = (AbstractSMSOTPModule)scriptRunner.instantiateClass(null, authProvider.getSmsOTPGroovyScript());
-            final String smsCode = module.generateSMSToken(phone, userId);
             final List<LoginEntity> principals = loginManager.getLoginByUser(userId);
             LoginEntity login = null;
             if(CollectionUtils.isNotEmpty(principals)) {
@@ -595,18 +595,19 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
             		}
             	}
             }
-            
-            
             if(login == null) {
             	throw new BasicDataServiceException(ResponseCode.PRINCIPAL_NOT_FOUND);
             }
-            login.setSmsCode(smsCode);
             final Calendar calendar = Calendar.getInstance();
             calendar.setTime(new Date());
             calendar.add(Calendar.MINUTE, numOfMinutesOfSMSValidity);
-            login.setSmsCodeExpiration(calendar.getTime());
+            calendar.set(Calendar.MILLISECOND, 0);
+            //login.setSmsCodeExpiration(calendar.getTime());
+            login.setSmsCodeExpiration(new Timestamp(calendar.getTime().getTime()));
             loginManager.updateLogin(login);
-            response.setResponseValue(smsCode);
+            
+            module.generateSMSToken(phone, login);
+            
 			response.succeed();
 		} catch(BasicDataServiceException e) {
 	        log.warn(e.getMessage(), e);
@@ -644,6 +645,7 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
             if(authProvider == null) {
             	throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_FOUND_FOR_CONTENT_PROVIDER);
             }
+            final AbstractSMSOTPModule module = (AbstractSMSOTPModule)scriptRunner.instantiateClass(null, authProvider.getSmsOTPGroovyScript());
             final List<LoginEntity> principals = loginManager.getLoginByUser(userId);
             LoginEntity login = null;
             if(CollectionUtils.isNotEmpty(principals)) {
@@ -655,12 +657,13 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
             	}
             }
             
-            
             if(login == null) {
             	throw new BasicDataServiceException(ResponseCode.PRINCIPAL_NOT_FOUND);
             }
             
-            if(!StringUtils.equals(request.getSmsCode(), login.getSmsCode())) {
+            final String smsCode = module.generateRFC4226Token(login);
+            
+            if(!StringUtils.equals(request.getSmsCode(), smsCode)) {
             	throw new BasicDataServiceException(ResponseCode.SMS_CODES_NOT_EQUAL);
             }
             
@@ -670,9 +673,6 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
             	}
             }
             
-            
-            
-            login.setSmsCode(null);
             login.setSmsCodeExpiration(null);
             loginManager.updateLogin(login);
 			response.succeed();
