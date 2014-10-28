@@ -66,6 +66,7 @@ import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.service.OrganizationDataService;
 import org.openiam.idm.srvc.org.service.OrganizationService;
 import org.openiam.idm.srvc.policy.dto.Policy;
+import org.openiam.idm.srvc.pswd.domain.PasswordHistoryEntity;
 import org.openiam.idm.srvc.pswd.dto.Password;
 import org.openiam.idm.srvc.pswd.dto.PasswordValidationResponse;
 import org.openiam.idm.srvc.pswd.service.PasswordHistoryDAO;
@@ -1398,8 +1399,10 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                                 String logOld = en.toString();
                                 LoginEntity entity = loginDozerConverter.convertToEntity(e, false);
                                 try {
-                                    PropertyUtils.copyProperties(en, entity);
-                                } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException ex) {
+                                    final Set<PasswordHistoryEntity> history = en.getPasswordHistory();
+									PropertyUtils.copyProperties(en, entity);
+									en.setPasswordHistory(history);
+								} catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException ex) {
                                     log.error("Login copying failed", ex);
                                 }
                                 // Audit Log ---------------------------------------------------
