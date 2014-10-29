@@ -1204,6 +1204,11 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             //If identity for resource exists and it's status is 'INACTIVE' user should be deprovisioned from target system
             Set<Resource> inactiveResources = new HashSet<Resource>();
             for (Resource res : resourceSet) {
+                // Do provisioning only for ManagedSys resources
+                if(!ResourceSearchBean.TYPE_MANAGED_SYS.equalsIgnoreCase(res.getResourceType().getId())) {
+                   continue;
+                }
+
                 String managedSysId = managedSysDaoService.getManagedSysIdByResource(res.getId(),"ACTIVE");
 
                 if (AttributeOperationEnum.NO_CHANGE.equals(res.getOperation())) { // if not adding resource
@@ -1233,6 +1238,10 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 List<Resource> resources = orderResources("DELETE", finalProvUser, deleteResourceSet, bindingMap);
 
                 for (Resource res : resources) {
+                    // Do provisioning only for ManagedSys resources
+                    if(!ResourceSearchBean.TYPE_MANAGED_SYS.equalsIgnoreCase(res.getResourceType().getId())) {
+                        continue;
+                    }
                     // skip provisioning for resource if it in NotProvisioning
                     // set
                     if (pUser.getNotProvisioninResourcesIds().contains(res.getId())) {
@@ -1272,6 +1281,10 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 List<Resource> resources = orderResources("ADD", finalProvUser, resourceSet, bindingMap);
 
                 for (Resource res : resources) {
+                    // Do provisioning only for ManagedSys resources
+                    if(!ResourceSearchBean.TYPE_MANAGED_SYS.equalsIgnoreCase(res.getResourceType().getId())) {
+                        continue;
+                    }
                     // skip provisioning for resource if it in NotProvisioning
                     // set
                     if (pUser.getNotProvisioninResourcesIds().contains(res.getId())) {

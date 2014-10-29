@@ -82,10 +82,8 @@ import org.springframework.transaction.annotation.Transactional;
 @WebService(endpointInterface = "org.openiam.bpm.activiti.ActivitiService", 
             targetNamespace = "urn:idm.openiam.org/bpm/request/service",
             serviceName = "ActivitiService")
-public class ActivitiServiceImpl extends AbstractBaseService implements ActivitiService, ApplicationContextAware {
+public class ActivitiServiceImpl extends AbstractBaseService implements ActivitiService {
 
-	private ApplicationContext ctx;
-	
 	private static final Log log = LogFactory.getLog(ActivitiServiceImpl.class);
 	
 	@Autowired
@@ -974,10 +972,5 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
         }
 		return response;
 	}
-	
-	@Override
-	public void setApplicationContext(ApplicationContext ctx)
-			throws BeansException {
-		this.ctx = ctx;
-	}
+
 }

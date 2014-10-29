@@ -1,12 +1,9 @@
 package org.openiam.provision.service;
 
-import org.apache.commons.beanutils.BeanUtils;
-import org.apache.commons.beanutils.ConvertUtils;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.jackson.map.util.BeanUtil;
 import org.mule.api.MuleException;
 import org.mule.module.client.MuleClient;
 import org.mule.util.StringUtils;
@@ -100,7 +97,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
@@ -1279,18 +1275,24 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
     }
 
     public void updateResources(final UserEntity userEntity, final ProvisionUser pUser, final Set<Resource> resourceSet, final Set<Resource> deleteResourceSet, final IdmAuditLog parentLog) {
+
+        Set<Resource> ar = resourceDozerConverter.convertToDTOSet(userEntity.getResources(), false);
+        resourceSet.addAll(ar);
+
         if (CollectionUtils.isNotEmpty(pUser.getResources())) {
+            Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
             for (Resource r : pUser.getResources()) {
                 AttributeOperationEnum operation = r.getOperation();
                 if (operation == null) {
-                    return;
+                    continue;
                 } else if (operation == AttributeOperationEnum.ADD) {
                     ResourceEntity resEntity = resourceService.findResourceById(r.getId());
                     userEntity.getResources().add(resEntity);
+                    resourceSet.add(r);
                     // Audit Log ---------------------------------------------------
                     IdmAuditLog auditLog = new IdmAuditLog();
                     auditLog.setAction(AuditAction.ADD_USER_TO_RESOURCE.value());
-                    Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
+
                     String loginStr = login != null ? login.getLogin() : StringUtils.EMPTY;
                     auditLog.setTargetUser(pUser.getId(), loginStr);
                     auditLog.setTargetResource(resEntity.getId(), resEntity.getName());
@@ -1300,13 +1302,11 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                 } else if (operation == AttributeOperationEnum.DELETE) {
                     ResourceEntity re = resourceService.findResourceById(r.getId());
                     userEntity.getResources().remove(re);
-                    Resource dr = resourceDozerConverter.convertToDTO(re, true);
-                    dr.setOperation(operation);
-                    deleteResourceSet.add(dr);
+                    resourceSet.remove(r);
+                    deleteResourceSet.add(r);
                     // Audit Log ---------------------------------------------------
                     IdmAuditLog auditLog = new IdmAuditLog();
                     auditLog.setAction(AuditAction.REMOVE_USER_FROM_RESOURCE.value());
-                    Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
                     String loginStr = login != null ? login.getLogin() : StringUtils.EMPTY;
                     auditLog.setTargetUser(pUser.getId(), loginStr);
                     auditLog.setTargetResource(re.getId(), re.getName());
@@ -1318,16 +1318,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                 }
             }
         }
-        for (ResourceEntity rue : userEntity.getResources()) {
-            ResourceEntity e = resourceService.findResourceById(rue.getId());
-            Resource ar = resourceDozerConverter.convertToDTO(e, true);
-            for (Resource r : pUser.getResources()) {
-                if(r.getId().equals(ar.getId())) {
-                    ar.setOperation(r.getOperation());  // get operation value from pUser
-                }
-            }
-            resourceSet.add(ar);
-        }
+
+
     }
 
     private Login getPrincipal(String logingId, List<Login> loginList) {
