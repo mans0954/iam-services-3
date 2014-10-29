@@ -24,7 +24,6 @@ public abstract class AbstractSMSOTPModule {
 	public final void generateSMSToken(final Phone phone, final LoginEntity login) throws BasicDataServiceException, InvalidKeyException, NoSuchAlgorithmException {
 		validate(phone, login);
 		final String token = generateRFC4226Token(login);
-		log.info(String.format("Token=%s", token));
 		final String text = getText(phone, login, token);
 		sendSMS(phone, login, text);
 	}

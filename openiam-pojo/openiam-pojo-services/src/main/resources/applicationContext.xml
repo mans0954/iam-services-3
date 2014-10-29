@@ -34,7 +34,22 @@
 	<bean id="springContextProvider" class="org.openiam.util.SpringContextProvider" />
 	-->
 
+	<bean id="httpClientHelper" class="org.openiam.http.client.OpenIAMHttpClient" />
+
 	<bean id="customJacksonMapper" class="org.openiam.idm.util.CustomJacksonMapper" />
+	
+	<bean id="jsonHttpMessageConverter" class="org.springframework.http.converter.json.MappingJacksonHttpMessageConverter">
+		<property name="prefixJson" value="false"/>
+		<property name="supportedMediaTypes" value="application/json"/>
+		<property name="objectMapper" ref="customJacksonMapper" />
+	</bean>
+	<bean id="restTemplate" class="org.springframework.web.client.RestTemplate">
+		<property name="messageConverters">
+			<list>
+				<ref bean="jsonHttpMessageConverter"/>
+			</list>
+		</property>
+	</bean>
 
 	<bean id="deepDozerMapper" class="org.dozer.DozerBeanMapper">
 		<property name="mappingFiles">
@@ -302,15 +317,6 @@
 	
 	<bean id="transactionTemplate" class="org.springframework.transaction.support.TransactionTemplate">
 		<property name="transactionManager" ref="transactionManager" />
-	</bean>
-
-	<bean id="httpClient" class="org.openiam.http.client.OpenIAMHttpClient">
-		<constructor-arg index="0">
-			<bean class="org.apache.http.impl.conn.PoolingClientConnectionManager">
-				<property name="defaultMaxPerRoute" value="${org.openiam.http.client.max.per.route}" />
-				<property name="maxTotal" value="${org.openiam.http.client.max.total}" />
-			</bean>
-		</constructor-arg>
 	</bean>
 
 	<!-- enable the configuration of transactional behavior based on annotations -->
