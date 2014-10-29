@@ -16,6 +16,7 @@
 
     <import resource="jmsContext.xml" />
 
+
 	<context:annotation-config />
 	<context:component-scan
 		base-package="org.openiam.idm.srvc.org.service,
@@ -326,4 +327,5 @@
             <value>AuditLogBuilderCache</value>
         </property>
     </bean>
+
 </beans>

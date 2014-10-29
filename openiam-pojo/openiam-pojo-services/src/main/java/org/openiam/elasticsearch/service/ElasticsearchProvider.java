@@ -31,10 +31,16 @@ import org.openiam.elasticsearch.bridge.ElasticsearchBrigde;
 import org.openiam.elasticsearch.constants.ElasticsearchStore;
 import org.openiam.elasticsearch.constants.ElasticsearchType;
 import org.openiam.elasticsearch.constants.Index;
+import org.openiam.elasticsearch.factory.ESAbstractClientFactoryBean;
 import org.openiam.elasticsearch.factory.ESClientFactoryBean;
+import org.openiam.elasticsearch.factory.ESNodeFactoryBean;
+import org.openiam.elasticsearch.factory.ESTransportClientFactoryBean;
 import org.openiam.elasticsearch.model.ElasticsearchFieldMetadata;
 import org.openiam.elasticsearch.model.ElasticsearchMetadata;
+import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -47,13 +53,18 @@ import java.util.*;
  * Date: 7/1/14.
  */
 @Component
-public class ElasticsearchProvider {
+public class ElasticsearchProvider implements InitializingBean, DisposableBean {
     protected static Logger logger = Logger.getLogger(ElasticsearchProvider.class);
 
     private static Map<String, ElasticsearchMetadata> indexeMetadataMap = new HashMap<>();
 
-    @Autowired
-    private ESClientFactoryBean clientFactory;
+    @Value("${org.openiam.es.client}")
+    private String clientType;
+    @Value("${org.openiam.es.extermal.nodes}")
+    private String esNodes;
+
+//    @Autowired
+    private ESAbstractClientFactoryBean clientFactory;
 
     private Properties hibernateProperties;
 
@@ -469,5 +480,26 @@ public class ElasticsearchProvider {
 
     private <A extends Annotation> A getFieldAnnotation(Field field, Class<A> annotationClass){
         return field.getAnnotation(annotationClass);
+    }
+
+    @Override
+    public void destroy() throws Exception {
+        if(clientFactory!=null)
+            clientFactory.destroy();
+    }
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        if("external".equals(clientType)){
+            if(StringUtils.isBlank(this.esNodes))
+                throw new Exception("Elasticsearch nodes addresses not set");
+
+            String[] esNodeArray = esNodes.split(",");
+            this.clientFactory = new ESTransportClientFactoryBean(esNodeArray);
+        } else {
+            // embedded
+            this.clientFactory = new ESClientFactoryBean(new ESNodeFactoryBean(this.hibernateProperties));
+        }
+        this.clientFactory.afterPropertiesSet();
     }
 }

@@ -9,14 +9,16 @@ import org.springframework.stereotype.Component;
  * Created by: Alexander Duckardt
  * Date: 6/21/14.
  */
-@Component("clientFactoryBean")
-public class ESClientFactoryBean extends ESAbstractFactoryBean<Client> {
+//@Component("clientFactoryBean")
+public class ESClientFactoryBean extends ESAbstractClientFactoryBean {
 
     private Node node;
-
-    @Autowired
+    private ESNodeFactoryBean nodeFactory;
+//    @Autowired
     public ESClientFactoryBean(ESNodeFactoryBean nodeFactory) throws Exception {
-        this.node = nodeFactory.getObject();
+        this.nodeFactory = nodeFactory;
+        if(nodeFactory!=null)
+            this.node = this.nodeFactory.getObject();
     }
 
     @Override
@@ -28,18 +30,8 @@ public class ESClientFactoryBean extends ESAbstractFactoryBean<Client> {
 
     @Override
     public void destroy() throws Exception {
-        try {
-            logger.info("Closing ElasticSearch client");
-            if (object != null) {
-                object.close();
-            }
-        } catch (final Exception e) {
-            logger.error("Error closing ElasticSearch client: ", e);
-        }
-    }
-
-    @Override
-    public Class<Client> getObjectType() {
-        return Client.class;
+        super.destroy();
+        if(nodeFactory!=null)
+            nodeFactory.destroy();
     }
 }

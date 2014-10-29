@@ -13,7 +13,7 @@ import java.util.Properties;
  * Created by: Alexander Duckardt
  * Date: 6/21/14.
  */
-@Component
+//@Component
 public class ESNodeFactoryBean extends ESAbstractFactoryBean<Node> {
 
     private static final String DATA_DIR="data";
@@ -22,7 +22,12 @@ public class ESNodeFactoryBean extends ESAbstractFactoryBean<Node> {
 
     private Properties hibernateProperties;
 
-    @Resource(name = "hibernateProperties")
+    public ESNodeFactoryBean(final Properties hibernateProperties) throws Exception {
+        this.hibernateProperties = hibernateProperties;
+        this.afterPropertiesSet();
+    }
+
+//    @Resource(name = "hibernateProperties")
     public void setHibernateProperties(final Properties hibernateProperties) {
         this.hibernateProperties = hibernateProperties;
     }
