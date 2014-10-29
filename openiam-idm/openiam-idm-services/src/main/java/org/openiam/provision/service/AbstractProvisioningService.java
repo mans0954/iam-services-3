@@ -1,6 +1,5 @@
 package org.openiam.provision.service;
 
-import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -63,7 +62,6 @@ import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.service.OrganizationDataService;
 import org.openiam.idm.srvc.org.service.OrganizationService;
 import org.openiam.idm.srvc.policy.dto.Policy;
-import org.openiam.idm.srvc.pswd.domain.PasswordHistoryEntity;
 import org.openiam.idm.srvc.pswd.dto.Password;
 import org.openiam.idm.srvc.pswd.dto.PasswordValidationResponse;
 import org.openiam.idm.srvc.pswd.service.PasswordHistoryDAO;
@@ -97,7 +95,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 /**
@@ -1045,12 +1042,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     UserAttributeEntity entity = userEntity.getUserAttributes().get(entry.getKey());
                     if (entity != null) {
                         String oldValue = entity.getValue();
-                        UserAttributeEntity e = userAttributeDozerConverter.convertToEntity(entry.getValue(), true);
-                        try {
-                            PropertyUtils.copyProperties(entity, e);
-                        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException ex) {
-                            log.error("Attribute copying failed", ex);
-                        }
+                        entity.copyValues(entry.getValue());
                         // Audit Log -----------------------------------------------------------------------------------
                         IdmAuditLog auditLog = new IdmAuditLog();
                         Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
@@ -1275,24 +1267,18 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
     }
 
     public void updateResources(final UserEntity userEntity, final ProvisionUser pUser, final Set<Resource> resourceSet, final Set<Resource> deleteResourceSet, final IdmAuditLog parentLog) {
-
-        Set<Resource> ar = resourceDozerConverter.convertToDTOSet(userEntity.getResources(), false);
-        resourceSet.addAll(ar);
-
         if (CollectionUtils.isNotEmpty(pUser.getResources())) {
-            Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
             for (Resource r : pUser.getResources()) {
                 AttributeOperationEnum operation = r.getOperation();
                 if (operation == null) {
-                    continue;
+                    return;
                 } else if (operation == AttributeOperationEnum.ADD) {
                     ResourceEntity resEntity = resourceService.findResourceById(r.getId());
                     userEntity.getResources().add(resEntity);
-                    resourceSet.add(r);
                     // Audit Log ---------------------------------------------------
                     IdmAuditLog auditLog = new IdmAuditLog();
                     auditLog.setAction(AuditAction.ADD_USER_TO_RESOURCE.value());
-
+                    Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
                     String loginStr = login != null ? login.getLogin() : StringUtils.EMPTY;
                     auditLog.setTargetUser(pUser.getId(), loginStr);
                     auditLog.setTargetResource(resEntity.getId(), resEntity.getName());
@@ -1302,11 +1288,13 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                 } else if (operation == AttributeOperationEnum.DELETE) {
                     ResourceEntity re = resourceService.findResourceById(r.getId());
                     userEntity.getResources().remove(re);
-                    resourceSet.remove(r);
-                    deleteResourceSet.add(r);
+                    Resource dr = resourceDozerConverter.convertToDTO(re, true);
+                    dr.setOperation(operation);
+                    deleteResourceSet.add(dr);
                     // Audit Log ---------------------------------------------------
                     IdmAuditLog auditLog = new IdmAuditLog();
                     auditLog.setAction(AuditAction.REMOVE_USER_FROM_RESOURCE.value());
+                    Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
                     String loginStr = login != null ? login.getLogin() : StringUtils.EMPTY;
                     auditLog.setTargetUser(pUser.getId(), loginStr);
                     auditLog.setTargetResource(re.getId(), re.getName());
@@ -1318,8 +1306,16 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                 }
             }
         }
-
-
+        for (ResourceEntity rue : userEntity.getResources()) {
+            ResourceEntity e = resourceService.findResourceById(rue.getId());
+            Resource ar = resourceDozerConverter.convertToDTO(e, true);
+            for (Resource r : pUser.getResources()) {
+                if(r.getId().equals(ar.getId())) {
+                    ar.setOperation(r.getOperation());  // get operation value from pUser
+                }
+            }
+            resourceSet.add(ar);
+        }
     }
 
     private Login getPrincipal(String logingId, List<Login> loginList) {
@@ -1379,24 +1375,17 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     parentLog.addChild(auditLog);
                     // --------------------------------------------------------------
                 } else if (e.getOperation().equals(AttributeOperationEnum.REPLACE)) {
-                    List<LoginEntity> entities = new ArrayList<LoginEntity>(userEntity.getPrincipalList());
-                    if (CollectionUtils.isNotEmpty(entities)) {
-                        for (final Iterator<LoginEntity> it = entities.iterator(); it.hasNext(); ) {
-                            final LoginEntity en = it.next();
-                            if (en.getLoginId().equals(e.getLoginId())) {
+
+                    if (CollectionUtils.isNotEmpty(userEntity.getPrincipalList())) {
+						for (final LoginEntity en : userEntity.getPrincipalList()) {
+                        if (en.getLoginId().equals(e.getLoginId())) {
+
                                 if(!en.getLogin().equals(e.getLogin())) {
                                     e.setOrigPrincipalName(en.getLogin());
                                 }
-                                it.remove();
                                 String logOld = en.toString();
-                                LoginEntity entity = loginDozerConverter.convertToEntity(e, false);
-                                try {
-                                    final Set<PasswordHistoryEntity> history = en.getPasswordHistory();
-									PropertyUtils.copyProperties(en, entity);
-									en.setPasswordHistory(history);
-								} catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException ex) {
-                                    log.error("Login copying failed", ex);
-                                }
+                                en.copyProperties(e);
+
                                 // Audit Log ---------------------------------------------------
                                 IdmAuditLog auditLog = new IdmAuditLog();
                                 auditLog.setAction(AuditAction.REPLACE_PRINCIPAL.value());
