@@ -99,5 +99,12 @@ public class SMSOTPRequest {
 		return true;
 	}
 
+	@Override
+	public String toString() {
+		return "SMSOTPRequest [userId=" + userId + ", phone=" + phone
+				+ ", contentProviderId=" + contentProviderId + ", smsCode="
+				+ smsCode + "]";
+	}
+
 	
 }

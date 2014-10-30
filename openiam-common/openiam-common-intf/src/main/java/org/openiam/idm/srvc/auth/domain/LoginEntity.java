@@ -132,6 +132,10 @@ public class LoginEntity extends KeyEntity {
     
     @Column(name="SMS_CODE_EXPIRATION")
     private Date smsCodeExpiration;
+    
+    @Column(name = "SMS_ACTIVE")
+    @Type(type = "yes_no")
+    private boolean smsActive;
 
     @OneToMany(orphanRemoval = true, mappedBy = "login", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @Fetch(FetchMode.SUBSELECT)
@@ -404,6 +408,14 @@ public class LoginEntity extends KeyEntity {
 	public void setSmsCodeExpiration(Date smsCodeExpiration) {
 		this.smsCodeExpiration = smsCodeExpiration;
 	}
+	
+	public boolean isSmsActive() {
+		return smsActive;
+	}
+
+	public void setSmsActive(boolean smsActive) {
+		this.smsActive = smsActive;
+	}
 
 	@Override
 	public int hashCode() {
@@ -468,6 +480,7 @@ public class LoginEntity extends KeyEntity {
 		result = prime * result + ((status == null) ? 0 : status.hashCode());
 		result = prime * result + ((userId == null) ? 0 : userId.hashCode());
 		result = prime * result + ((smsCodeExpiration == null) ? 0 : smsCodeExpiration.hashCode());
+		result = prime * result + (smsActive ? 1231 : 1237);
 		return result;
 	}
 
@@ -604,6 +617,8 @@ public class LoginEntity extends KeyEntity {
 		if (resetPassword != other.resetPassword)
 			return false;
 		if (status != other.status)
+			return false;
+		if (smsActive != other.smsActive)
 			return false;
 		if (userId == null) {
 			if (other.userId != null)

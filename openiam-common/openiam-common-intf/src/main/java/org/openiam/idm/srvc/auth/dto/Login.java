@@ -50,7 +50,8 @@ import java.util.*;
         "pswdResetTokenExp",
         "lastUpdate",
         "passwordHistory",
-        "smsCodeExpiration"
+        "smsCodeExpiration",
+        "smsActive"
 })
 @XmlSeeAlso({
         Subject.class,
@@ -138,7 +139,7 @@ public class Login extends KeyDTO {
     private Date lastUpdate;
     
     private Date smsCodeExpiration;
-
+    private boolean smsActive;
 
     public Login() {
     }
@@ -450,6 +451,14 @@ public class Login extends KeyDTO {
 		this.smsCodeExpiration = smsCodeExpiration;
 	}
 
+	public boolean isSmsActive() {
+		return smsActive;
+	}
+
+	public void setSmsActive(boolean smsActive) {
+		this.smsActive = smsActive;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -521,6 +530,7 @@ public class Login extends KeyDTO {
 		result = prime * result + ((pwdExp == null) ? 0 : pwdExp.hashCode());
 		result = prime * result + resetPassword;
 		result = prime * result + (selected ? 1231 : 1237);
+		result = prime * result + (smsActive ? 1231 : 1237);
 		result = prime * result + ((status == null) ? 0 : status.hashCode());
 		result = prime * result + ((userId == null) ? 0 : userId.hashCode());
 		result = prime * result + ((smsCodeExpiration == null) ? 0 : smsCodeExpiration.hashCode());
@@ -684,6 +694,8 @@ public class Login extends KeyDTO {
 		if (selected != other.selected)
 			return false;
 		if (status != other.status)
+			return false;
+		if (smsActive != other.smsActive)
 			return false;
 		if (userId == null) {
 			if (other.userId != null)

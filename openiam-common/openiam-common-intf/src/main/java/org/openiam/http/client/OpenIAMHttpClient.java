@@ -79,9 +79,15 @@ public final class OpenIAMHttpClient {
 			httpPost.setEntity(new UrlEncodedFormEntity(postParameters));
 		}
 		final HttpResponse response = client.execute(httpPost);
+		if(response == null) {
+			return null;
+		}
 		final int status = response.getStatusLine().getStatusCode();
 		final HttpEntity entity = response.getEntity();
 		final String content = IOUtils.toString(entity.getContent());
+		if(LOG.isDebugEnabled()) {
+			LOG.debug(String.format("Status=%s, Content=%s", status, content));
+		}
 		IOUtils.closeQuietly(entity.getContent());
 		return content;
 	}

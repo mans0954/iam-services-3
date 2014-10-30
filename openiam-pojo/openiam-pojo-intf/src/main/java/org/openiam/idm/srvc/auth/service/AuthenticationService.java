@@ -69,6 +69,11 @@ public interface AuthenticationService {
             @WebParam(name = "request", targetNamespace = "")
             AuthenticationRequest request);
     
+    @WebMethod
+    public Response clearSMSActiveStatus(@WebParam(name = "request", targetNamespace = "") SMSOTPRequest request);
+    
+    @WebMethod
+    public boolean isSMSOTPActive(@WebParam(name = "request", targetNamespace = "") SMSOTPRequest request);
     
     @WebMethod
     public Response sendOTPSMSCode(@WebParam(name = "request", targetNamespace = "") SMSOTPRequest request);

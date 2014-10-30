@@ -556,6 +556,20 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
         }
         return response;
 	}
+	
+	private LoginEntity getLogin(final String userId, final String managedSysId) {
+		final List<LoginEntity> principals = loginManager.getLoginByUser(userId);
+        LoginEntity login = null;
+        if(CollectionUtils.isNotEmpty(principals)) {
+        	for(final LoginEntity principal : principals) {
+        		if(StringUtils.equals(principal.getManagedSysId(), managedSysId)) {
+        			login = principal;
+        			break;
+        		}
+        	}
+        }
+        return login;
+	}
 
 	@Override
 	@Transactional
@@ -565,6 +579,7 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
 		event.setAction(AuditAction.SEND_SMS_OTP_TOKEN.value());
 		event.addAttribute(AuditAttributeName.CONTENT_PROVIDER_ID, request.getContentProviderId());
 		event.addAttributeAsJson(AuditAttributeName.PHONE, request.getPhone(), jacksonMapper);
+		event.setUserId(request.getUserId());
 		
 		final Response response = new Response();
 		final Phone phone = request.getPhone();
@@ -585,16 +600,7 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
             }
             
             final AbstractSMSOTPModule module = (AbstractSMSOTPModule)scriptRunner.instantiateClass(null, authProvider.getSmsOTPGroovyScript());
-            final List<LoginEntity> principals = loginManager.getLoginByUser(userId);
-            LoginEntity login = null;
-            if(CollectionUtils.isNotEmpty(principals)) {
-            	for(final LoginEntity principal : principals) {
-            		if(StringUtils.equals(principal.getManagedSysId(), managedSystem.getId())) {
-            			login = principal;
-            			break;
-            		}
-            	}
-            }
+            final LoginEntity login = getLogin(userId, managedSystem.getId());
             if(login == null) {
             	throw new BasicDataServiceException(ResponseCode.PRINCIPAL_NOT_FOUND);
             }
@@ -609,6 +615,7 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
             module.generateSMSToken(phone, login);
             
 			response.succeed();
+			event.succeed();
 		} catch(BasicDataServiceException e) {
 	        log.warn(e.getMessage(), e);
 	        event.fail();
@@ -635,9 +642,9 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
 		event.setAction(AuditAction.CONFIRM_SMS_OTP_TOKEN.value());
 		event.addAttribute(AuditAttributeName.CONTENT_PROVIDER_ID, request.getContentProviderId());
 		event.addAttributeAsJson(AuditAttributeName.PHONE, request.getPhone(), jacksonMapper);
+		event.setUserId(request.getUserId());
 		
 		final Response response = new Response();
-		final Phone phone = request.getPhone();
 		final String userId = request.getUserId();
 		try {
             final AuthProviderEntity authProvider = getAuthProvider(request.getContentProviderId(), event);
@@ -646,16 +653,7 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
             	throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_FOUND_FOR_CONTENT_PROVIDER);
             }
             final AbstractSMSOTPModule module = (AbstractSMSOTPModule)scriptRunner.instantiateClass(null, authProvider.getSmsOTPGroovyScript());
-            final List<LoginEntity> principals = loginManager.getLoginByUser(userId);
-            LoginEntity login = null;
-            if(CollectionUtils.isNotEmpty(principals)) {
-            	for(final LoginEntity principal : principals) {
-            		if(StringUtils.equals(principal.getManagedSysId(), managedSystem.getId())) {
-            			login = principal;
-            			break;
-            		}
-            	}
-            }
+            final LoginEntity login = getLogin(userId, managedSystem.getId());
             
             if(login == null) {
             	throw new BasicDataServiceException(ResponseCode.PRINCIPAL_NOT_FOUND);
@@ -673,9 +671,11 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
             	}
             }
             
+            login.setSmsActive(true);
             login.setSmsCodeExpiration(null);
             loginManager.updateLogin(login);
 			response.succeed();
+			event.succeed();
 		} catch(BasicDataServiceException e) {
 	        log.warn(e.getMessage(), e);
 	        event.fail();
@@ -693,5 +693,91 @@ public class AuthenticationServiceImpl extends AbstractBaseService implements Au
 			auditLogService.enqueue(event);
 		}
 		return response;
+	}
+
+	@Override
+	@Transactional
+	public Response clearSMSActiveStatus(final SMSOTPRequest request) {
+		final IdmAuditLog event = new IdmAuditLog();
+		event.setUserId(null);
+		event.setAction(AuditAction.CLEAR_SMS_OTP_STATUS.value());
+		event.addAttribute(AuditAttributeName.CONTENT_PROVIDER_ID, request.getContentProviderId());
+		event.setUserId(request.getUserId());
+		
+		final Response response = new Response();
+		try {
+            final AuthProviderEntity authProvider = getAuthProvider(request.getContentProviderId(), event);
+            final ManagedSysEntity managedSystem = (authProvider != null) ? authProvider.getManagedSystem() : null;
+            if(authProvider == null) {
+            	throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_FOUND_FOR_CONTENT_PROVIDER);
+            }
+            
+            final LoginEntity login = getLogin(request.getUserId(), managedSystem.getId());
+            
+            if(login == null) {
+            	throw new BasicDataServiceException(ResponseCode.PRINCIPAL_NOT_FOUND);
+            }
+            
+            login.setSmsActive(false);
+            loginManager.updateLogin(login);
+            
+            response.succeed();
+            event.succeed();
+		} catch(BasicDataServiceException e) {
+	        log.warn(e.getMessage(), e);
+	        event.fail();
+	        event.setFailureReason(e.getCode());
+	        event.setFailureReason(e.getMessage());
+	        response.fail();
+	        response.setErrorCode(e.getCode());
+		} catch(Throwable e) {
+			 log.error(e.getMessage(), e);
+			 event.fail();
+			 event.setFailureReason(e.getMessage());
+			 response.fail();
+			 response.setErrorText(e.getMessage());
+		} finally {
+			//auditLogService.enqueue(event);
+		}
+		return response;
+	}
+
+	@Override
+	public boolean isSMSOTPActive(SMSOTPRequest request) {
+		final IdmAuditLog event = new IdmAuditLog();
+		event.setUserId(null);
+		event.setAction(AuditAction.GET_SMS_OTP_STATUS.value());
+		event.addAttribute(AuditAttributeName.CONTENT_PROVIDER_ID, request.getContentProviderId());
+		event.setUserId(request.getUserId());
+		
+		boolean retVal = false;
+		try {
+            final AuthProviderEntity authProvider = getAuthProvider(request.getContentProviderId(), event);
+            final ManagedSysEntity managedSystem = (authProvider != null) ? authProvider.getManagedSystem() : null;
+            if(authProvider == null) {
+            	throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_FOUND_FOR_CONTENT_PROVIDER);
+            }
+            
+            final LoginEntity login = getLogin(request.getUserId(), managedSystem.getId());
+            
+            if(login == null) {
+            	throw new BasicDataServiceException(ResponseCode.PRINCIPAL_NOT_FOUND);
+            }
+            
+            retVal = login.isSmsActive();
+            event.succeed();
+		} catch(BasicDataServiceException e) {
+	        log.warn(e.getMessage(), e);
+	        event.fail();
+	        event.setFailureReason(e.getCode());
+	        event.setFailureReason(e.getMessage());
+		} catch(Throwable e) {
+			 log.error(e.getMessage(), e);
+			 event.fail();
+			 event.setFailureReason(e.getMessage());
+		} finally {
+			//auditLogService.enqueue(event);
+		}
+		return retVal;
 	}
 }
