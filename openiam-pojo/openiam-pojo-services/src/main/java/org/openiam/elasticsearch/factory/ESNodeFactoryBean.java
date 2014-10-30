@@ -21,9 +21,11 @@ public class ESNodeFactoryBean extends ESAbstractFactoryBean<Node> {
     private static final String LOG_DIR="logs";
 
     private Properties hibernateProperties;
+    private String clusterName;
 
-    public ESNodeFactoryBean(final Properties hibernateProperties) throws Exception {
+    public ESNodeFactoryBean(String clusterName, final Properties hibernateProperties) throws Exception {
         this.hibernateProperties = hibernateProperties;
+        this.clusterName=clusterName;
         this.afterPropertiesSet();
     }
 
@@ -59,8 +61,8 @@ public class ESNodeFactoryBean extends ESAbstractFactoryBean<Node> {
     protected Settings buildNodeSettings() {
         // Build settings
         ImmutableSettings.Builder builder = ImmutableSettings.settingsBuilder()
-                                                             .put("node.name", hibernateProperties.getProperty("hibernate.search.default.node.name.prefix") + System.currentTimeMillis())
-                                                             .put("cluster.name", hibernateProperties.getProperty("hibernate.search.default.cluster.name"))
+//                                                             .put("node.name", hibernateProperties.getProperty("hibernate.search.default.node.name.prefix") + System.currentTimeMillis())
+                                                             .put("cluster.name", clusterName)
                                                              .put("path.data", hibernateProperties.getProperty("hibernate.search.default.indexBase") + "/" + DATA_DIR)
                                                              .put("path.work", hibernateProperties.getProperty("hibernate.search.default.indexBase") + "/" + WORK_DIR)
                                                              .put("path.logs", hibernateProperties.getProperty("hibernate.search.default.indexBase") + "/" + LOG_DIR);

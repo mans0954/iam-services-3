@@ -2,6 +2,8 @@ package org.openiam.elasticsearch.factory;
 
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
+import org.elasticsearch.common.settings.ImmutableSettings;
+import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 
 /**
@@ -9,15 +11,18 @@ import org.elasticsearch.common.transport.InetSocketTransportAddress;
  */
 public class ESTransportClientFactoryBean extends ESAbstractClientFactoryBean {
     private String[] esNodes;
+    private String clusterName;
 
-
-    public ESTransportClientFactoryBean(String[] esNodes){
+    public ESTransportClientFactoryBean(String clusterName, String[] esNodes){
         this.esNodes=esNodes;
+        this.clusterName=clusterName;
     }
 
     @Override
     protected TransportClient initialize() throws Exception {
-        TransportClient client = new TransportClient();
+        Settings settings = ImmutableSettings.settingsBuilder()
+                .put("cluster.name", clusterName).build();
+        TransportClient client = new TransportClient(settings);
 
         for (int i = 0; i < esNodes.length; i++) {
             client.addTransportAddress(toAddress(esNodes[i]));

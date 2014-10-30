@@ -62,6 +62,8 @@ public class ElasticsearchProvider implements InitializingBean, DisposableBean {
     private String clientType;
     @Value("${org.openiam.es.extermal.nodes}")
     private String esNodes;
+    @Value("${org.openiam.es.default.cluster.name}")
+    private String clusterName;
 
 //    @Autowired
     private ESAbstractClientFactoryBean clientFactory;
@@ -495,10 +497,10 @@ public class ElasticsearchProvider implements InitializingBean, DisposableBean {
                 throw new Exception("Elasticsearch nodes addresses not set");
 
             String[] esNodeArray = esNodes.split(",");
-            this.clientFactory = new ESTransportClientFactoryBean(esNodeArray);
+            this.clientFactory = new ESTransportClientFactoryBean(clusterName, esNodeArray);
         } else {
             // embedded
-            this.clientFactory = new ESClientFactoryBean(new ESNodeFactoryBean(this.hibernateProperties));
+            this.clientFactory = new ESClientFactoryBean(new ESNodeFactoryBean(clusterName, this.hibernateProperties));
         }
         this.clientFactory.afterPropertiesSet();
     }
