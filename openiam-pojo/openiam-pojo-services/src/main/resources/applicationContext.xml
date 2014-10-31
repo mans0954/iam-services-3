@@ -17,7 +17,7 @@
        http://cxf.apache.org/jaxws http://cxf.apache.org/schemas/jaxws.xsd">
 
     <import resource="jmsContext.xml" />
-
+    <context:annotation-config />
 	<context:component-scan
 		base-package="org.openiam.base, org.openiam.util,
     								      org.openiam.core,
@@ -252,8 +252,30 @@
 		<!-- <property name="jtaTransactionManager"> <bean factory-bean="transactionManager" 
 			factory-method="getTransactionManager" /> </property> -->
 		<property name="hibernateProperties" ref="hibernateProperties" />
-		<property name="packagesToScan" value="org.openiam.*" />
 
+		<property name="packagesToScan"
+			value="org.openiam.core.domain*,
+											   org.openiam.idm.srvc.grp.domain*,
+											   org.openiam.idm.srvc.role.domain*,
+                                               org.openiam.idm.srvc.user.domain*,
+                                               org.openiam.am.srvc.domain*,
+                                               org.openiam.idm.srvc.mngsys.domain*,
+                                               org.openiam.idm.srvc.synch.domain*,
+                                               org.openiam.idm.srvc.org.domain*,
+											   org.openiam.idm.srvc.auth.domain*,
+											   org.openiam.idm.srvc.cat.domain*,
+                                               org.openiam.idm.srvc.continfo.domain*,
+                                               org.openiam.idm.srvc.res.domain*,
+                                               org.openiam.idm.srvc.recon.domain*,
+                                               org.openiam.idm.srvc.meta.domain*,
+                                               org.openiam.idm.srvc.policy.domain*,
+                                               org.openiam.idm.srvc.audit.domain*,
+                                               org.openiam.idm.srvc.pswd.domain*,
+                                               org.openiam.idm.srvc.lang.domain*,
+                                               org.openiam.idm.srvc.report.domain*,
+                                               org.openiam.idm.srvc.prov*,
+                                               org.openiam.idm.srvc.batch.domain*,
+                                               org.openiam.idm.srvc.ui*" />
 	</bean>
 	<util:properties id="hibernateProperties"
 		location="classpath:openiam.hibernate.properties">
