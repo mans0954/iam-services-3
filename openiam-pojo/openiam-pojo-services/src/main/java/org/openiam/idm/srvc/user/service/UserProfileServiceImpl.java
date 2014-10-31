@@ -2,18 +2,18 @@ package org.openiam.idm.srvc.user.service;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.dozer.converter.*;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
-import org.openiam.idm.srvc.auth.login.LoginDAO;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.continfo.domain.AddressEntity;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
 import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
 import org.openiam.idm.srvc.meta.dto.PageTemplateAttributeToken;
 import org.openiam.idm.srvc.meta.service.MetadataElementTemplateService;
-import org.openiam.idm.srvc.msg.service.MailService;
+import org.openiam.idm.srvc.user.domain.ProfilePictureEntity;
 import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.NewUserProfileRequestModel;
@@ -36,17 +36,11 @@ public class UserProfileServiceImpl implements UserProfileService {
     @Qualifier("userManager")
 	private UserDataService userManager;
 	
-	@Autowired
-	private MailService mailService;
-	
     @Autowired
     private MetadataElementTemplateService pageTemplateService;
     
     @Autowired
     private LoginDozerConverter loginDozerConverter;
-    
-    @Autowired
-    private LoginDAO loginDAO;
     
     @Autowired
     private LoginDataService loginDataService;
@@ -62,6 +56,9 @@ public class UserProfileServiceImpl implements UserProfileService {
     
     @Autowired
     private UserDozerConverter userDozerConverter;
+
+    @Autowired
+    private ProfilePictureDAO profilePictureDAO;
     
     @Autowired
     @Qualifier("entityValidator")
@@ -256,4 +253,43 @@ public class UserProfileServiceImpl implements UserProfileService {
         	}
         }
 	}
+
+    @Override
+    public ProfilePictureEntity getProfilePictureById(String picId) {
+        return profilePictureDAO.findById(picId);
+    }
+
+    @Override
+    public ProfilePictureEntity getProfilePictureByUserId(String userId) {
+        return profilePictureDAO.getByUserId(userId);
+    }
+
+    @Override
+    public void saveProfilePicture(ProfilePictureEntity pic) throws Exception {
+        if(pic == null) {
+            throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+        } else if (pic.getUser() == null) {
+            throw new BasicDataServiceException(ResponseCode.USER_NOT_SET);
+        } else if (pic.getPicture() == null) {
+            throw new BasicDataServiceException(ResponseCode.VALUE_REQUIRED);
+        }
+        profilePictureDAO.save(pic);
+    }
+
+    @Override
+    public void deleteProfilePictureById(String picId) throws Exception {
+        if(picId == null) {
+            throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+        }
+        profilePictureDAO.deleteById(picId);
+    }
+
+    @Override
+    public void deleteProfilePictureByUserId(String userId) throws Exception {
+        if(userId == null) {
+            throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+        }
+        profilePictureDAO.deleteByUserId(userId);
+    }
+
 }

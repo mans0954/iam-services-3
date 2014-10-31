@@ -37,7 +37,7 @@ public class LoginEntity implements java.io.Serializable {
     @LuceneId
     @DocumentId
     private String loginId;
-        
+
     @Fields ({
         @Field(index = Index.TOKENIZED),
         @Field(name = "login", index = Index.TOKENIZED, store = Store.YES),
@@ -653,5 +653,36 @@ public class LoginEntity implements java.io.Serializable {
         sb.append('}');
         return sb.toString();
     }
+
+	public void copyProperties(Login login) {
+		setAuthFailCount(login.getAuthFailCount());
+		setCanonicalName(login.getCanonicalName());
+		setCreateDate(login.getCreateDate());
+		setCreatedBy(login.getCreatedBy());
+		setCurrentLoginHost(getCurrentLoginHost());
+		setFirstTimeLogin(getFirstTimeLogin());
+		setGracePeriod(getGracePeriod());
+		setIsDefault(getIsDefault());
+		setIsLocked(getIsLocked());
+		setLastAuthAttempt(login.getLastAuthAttempt());
+		setLastLogin(login.getLastLogin());
+		setLastLoginIP(login.getLastLoginIP());
+		setLastUpdate(getLastUpdate());
+		setLogin(login.getLogin());
+		setManagedSysId(login.getManagedSysId());
+		setPassword(login.getPassword());
+		setPasswordChangeCount(getPasswordChangeCount());
+		setPrevLogin(getPrevLogin());
+		setPrevLoginIP(getPrevLoginIP());
+		setProvStatus(getProvStatus());
+		setPswdResetToken(getPswdResetToken());
+		setPswdResetTokenExp(getPswdResetTokenExp());
+		setPwdChanged(login.getPwdChanged());
+		setPwdEquivalentToken(login.getPwdEquivalentToken());
+		setPwdExp(login.getPwdExp());
+		setResetPassword(getResetPassword());
+		setStatus(getStatus());
+		setUserId(login.getUserId());
+	}
 }
 

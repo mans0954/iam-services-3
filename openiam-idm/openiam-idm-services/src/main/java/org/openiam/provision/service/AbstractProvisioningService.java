@@ -1,12 +1,8 @@
 package org.openiam.provision.service;
 
-import org.apache.commons.beanutils.BeanUtils;
-import org.apache.commons.beanutils.ConvertUtils;
-import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.jackson.map.util.BeanUtil;
 import org.mule.api.MuleException;
 import org.mule.module.client.MuleClient;
 import org.mule.util.StringUtils;
@@ -99,8 +95,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 /**
@@ -1048,12 +1042,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     UserAttributeEntity entity = userEntity.getUserAttributes().get(entry.getKey());
                     if (entity != null) {
                         String oldValue = entity.getValue();
-                        UserAttributeEntity e = userAttributeDozerConverter.convertToEntity(entry.getValue(), true);
-                        try {
-                            PropertyUtils.copyProperties(entity, e);
-                        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException ex) {
-                            log.error("Attribute copying failed", ex);
-                        }
+                        entity.copyValues(entry.getValue());
                         // Audit Log -----------------------------------------------------------------------------------
                         IdmAuditLog auditLog = new IdmAuditLog();
                         Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
@@ -1386,22 +1375,17 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     parentLog.addChild(auditLog);
                     // --------------------------------------------------------------
                 } else if (e.getOperation().equals(AttributeOperationEnum.REPLACE)) {
-                    List<LoginEntity> entities = new ArrayList<LoginEntity>(userEntity.getPrincipalList());
-                    if (CollectionUtils.isNotEmpty(entities)) {
-                        for (final Iterator<LoginEntity> it = entities.iterator(); it.hasNext(); ) {
-                            final LoginEntity en = it.next();
-                            if (en.getLoginId().equals(e.getLoginId())) {
+
+                    if (CollectionUtils.isNotEmpty(userEntity.getPrincipalList())) {
+						for (final LoginEntity en : userEntity.getPrincipalList()) {
+                        if (en.getLoginId().equals(e.getLoginId())) {
+
                                 if(!en.getLogin().equals(e.getLogin())) {
                                     e.setOrigPrincipalName(en.getLogin());
                                 }
-                                it.remove();
                                 String logOld = en.toString();
-                                LoginEntity entity = loginDozerConverter.convertToEntity(e, false);
-                                try {
-                                    PropertyUtils.copyProperties(en, entity);
-                                } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException ex) {
-                                    log.error("Login copying failed", ex);
-                                }
+                                en.copyProperties(e);
+
                                 // Audit Log ---------------------------------------------------
                                 IdmAuditLog auditLog = new IdmAuditLog();
                                 auditLog.setAction(AuditAction.REPLACE_PRINCIPAL.value());

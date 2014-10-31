@@ -17,11 +17,7 @@ import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
 import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.meta.dto.SaveTemplateProfileResponse;
-import org.openiam.idm.srvc.user.dto.Supervisor;
-import org.openiam.idm.srvc.user.dto.User;
-import org.openiam.idm.srvc.user.dto.UserAttribute;
-import org.openiam.idm.srvc.user.dto.UserProfileRequestModel;
-import org.openiam.idm.srvc.user.dto.UserStatusEnum;
+import org.openiam.idm.srvc.user.dto.*;
 
 //import org.openiam.idm.srvc.continfo.service.AddressDAO;
 //import org.openiam.idm.srvc.continfo.service.EmailAddressDAO;
@@ -771,6 +767,60 @@ public interface UserDataWebService {
      */
     @WebMethod
     public SaveTemplateProfileResponse saveUserProfile(@WebParam(name = "request", targetNamespace = "") final UserProfileRequestModel request);
+
+    /**
+     * Returns Profile picture by it's ID
+     *
+     * @param picId
+     * @return
+     */
+    @WebMethod
+    ProfilePicture getProfilePictureById(
+            @WebParam(name = "picId", targetNamespace = "") String picId,
+            @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
+
+    /**
+     * Returns Profile picture for User by his ID
+     *
+     * @param userId
+     * @return
+     */
+    @WebMethod
+    ProfilePicture getProfilePictureByUserId(
+            @WebParam(name = "userId", targetNamespace = "") String userId,
+            @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
+
+    /**
+     * Saves Profile picture
+     *
+     * @param pic
+     * @return
+     */
+    @WebMethod
+    Response saveProfilePicture(
+            @WebParam(name = "pic", targetNamespace = "") ProfilePicture pic,
+            @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
+
+    /**
+     * Deletes Profile picture by it's ID
+     *
+     * @param picId
+     * @return
+     */
+    @WebMethod
+    Response deleteProfilePictureById(
+            @WebParam(name = "picId", targetNamespace = "") String picId,
+            @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
+
+    /**
+     * Deletes Profile picture for User by his ID
+     * @param userId
+     * @return
+     */
+    @WebMethod
+    Response deleteProfilePictureByUserId(
+            @WebParam(name = "userId", targetNamespace = "") String userId,
+            @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
     /**
      * Accept an IT policy
