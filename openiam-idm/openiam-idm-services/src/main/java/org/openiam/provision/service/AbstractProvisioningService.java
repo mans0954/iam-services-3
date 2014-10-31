@@ -1010,10 +1010,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     throw new IllegalArgumentException("Name can not be empty");
                 }
                 AttributeOperationEnum operation = entry.getValue().getOperation();
-                if (operation == null) {
-                    return;
-
-                } else if (operation == AttributeOperationEnum.DELETE) {
+                if (operation == AttributeOperationEnum.DELETE) {
                     userEntity.getUserAttributes().remove(entry.getKey());
                     // Audit Log -----------------------------------------------------------------------------------
                     IdmAuditLog auditLog = new IdmAuditLog();
@@ -1118,14 +1115,12 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         }
     }
 
-    public void updateGroups(final UserEntity userEntity, final ProvisionUser pUser, final IdmAuditLog parentLog) {
+    public void updateGroups(final UserEntity userEntity, final ProvisionUser pUser,
+                             final Set<Group> groupSet, final Set<Group> deleteGroupSet, final IdmAuditLog parentLog) {
         if (CollectionUtils.isNotEmpty(pUser.getGroups())) {
             for (Group g: pUser.getGroups()) {
                 AttributeOperationEnum operation = g.getOperation();
-                if (operation == null) {
-                    return;
-
-                } else if (operation == AttributeOperationEnum.ADD) {
+                if (operation == AttributeOperationEnum.ADD) {
                     GroupEntity groupEntity = groupManager.getGroup(g.getId());
                     userEntity.getGroups().add(groupEntity);
                     // Audit Log ---------------------------------------------------
@@ -1140,8 +1135,11 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                     //--------------------------------------------------------------
 
                 } else if (operation == AttributeOperationEnum.DELETE) {
-                    GroupEntity groupEntity = groupManager.getGroup(g.getId());
-                    userEntity.getGroups().remove(groupEntity);
+                    GroupEntity ge = groupManager.getGroup(g.getId());
+                    userEntity.getGroups().remove(ge);
+                    Group dg = groupDozerConverter.convertToDTO(ge, false);
+                    dg.setOperation(operation);
+                    deleteGroupSet.add(dg);
                     // Audit Log ---------------------------------------------------
                     IdmAuditLog auditLog = new IdmAuditLog();
                     auditLog.setAction(AuditAction.DELETE_GROUP.value());
@@ -1158,6 +1156,18 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                 }
             }
         }
+        if (CollectionUtils.isNotEmpty(userEntity.getGroups())) {
+            for (GroupEntity gre : userEntity.getGroups()) {
+                Group gr = groupDozerConverter.convertToDTO(gre, false);
+                for (Group g : pUser.getGroups()) {
+                    if(g.getId().equals(gr.getId())) {
+                        gr.setOperation(g.getOperation()); // get operation value from pUser
+                        break;
+                    }
+                }
+                groupSet.add(gr);
+            }
+        }
     }
 
     public void updateRoles(final UserEntity userEntity, final ProvisionUser pUser,
@@ -1165,10 +1175,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         if (CollectionUtils.isNotEmpty(pUser.getRoles())) {
             for (Role r: pUser.getRoles()) {
                 AttributeOperationEnum operation = r.getOperation();
-                if (operation == null) {
-                    return;
-
-                } else if (operation == AttributeOperationEnum.ADD) {
+                if (operation == AttributeOperationEnum.ADD) {
                     RoleEntity roleEntity = roleDataService.getRole(r.getId());
                     if (userEntity.getRoles().contains(roleEntity)) {
                         throw new IllegalArgumentException("Role with this name already exists");
@@ -1187,7 +1194,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                 } else if (operation == AttributeOperationEnum.DELETE) {
                     RoleEntity re = roleDataService.getRole(r.getId());
                     userEntity.getRoles().remove(re);
-                    Role dr = roleDozerConverter.convertToDTO(re, true);
+                    Role dr = roleDozerConverter.convertToDTO(re, false);
                     dr.setOperation(operation);
                     deleteRoleSet.add(dr);
                     // Audit Log ---------------------------------------------------
@@ -1207,10 +1214,11 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         }
         if (CollectionUtils.isNotEmpty(userEntity.getRoles())) {
             for (RoleEntity ure : userEntity.getRoles()) {
-                Role ar = roleDozerConverter.convertToDTO(ure, true);
+                Role ar = roleDozerConverter.convertToDTO(ure, false);
                 for (Role r : pUser.getRoles()) {
                     if(r.getId().equals(ar.getId())) {
                         ar.setOperation(r.getOperation()); // get operation value from pUser
+                        break;
                     }
                 }
                 roleSet.add(ar);
@@ -1224,10 +1232,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         if (CollectionUtils.isNotEmpty(pUser.getAffiliations())) {
             for (Organization o : pUser.getAffiliations()) {
                 AttributeOperationEnum operation = o.getOperation();
-                if (operation == null) {
-                    return;
-
-                } else if (operation == AttributeOperationEnum.ADD) {
+                if (operation == AttributeOperationEnum.ADD) {
                     OrganizationEntity org = organizationService.getOrganizationLocalized(o.getId(), null);
                     userEntity.getAffiliations().add(org);
                     // Audit Log ---------------------------------------------------
@@ -1270,9 +1275,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         if (CollectionUtils.isNotEmpty(pUser.getResources())) {
             for (Resource r : pUser.getResources()) {
                 AttributeOperationEnum operation = r.getOperation();
-                if (operation == null) {
-                    return;
-                } else if (operation == AttributeOperationEnum.ADD) {
+                if (operation == AttributeOperationEnum.ADD) {
                     ResourceEntity resEntity = resourceService.findResourceById(r.getId());
                     userEntity.getResources().add(resEntity);
                     // Audit Log ---------------------------------------------------
@@ -1308,10 +1311,11 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         }
         for (ResourceEntity rue : userEntity.getResources()) {
             ResourceEntity e = resourceService.findResourceById(rue.getId());
-            Resource ar = resourceDozerConverter.convertToDTO(e, true);
+            Resource ar = resourceDozerConverter.convertToDTO(e, false);
             for (Resource r : pUser.getResources()) {
                 if(r.getId().equals(ar.getId())) {
                     ar.setOperation(r.getOperation());  // get operation value from pUser
+                    break;
                 }
             }
             resourceSet.add(ar);
@@ -1331,11 +1335,8 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
         // Processing principals
         List<Login> principals = pUser.getPrincipalList();
         if (CollectionUtils.isNotEmpty(principals)) {
-              for (final Iterator<Login> iter = principals.iterator(); iter.hasNext(); ) {
+            for (final Iterator<Login> iter = principals.iterator(); iter.hasNext(); ) {
                 final Login e = iter.next();
-                if (e.getOperation() == null) {
-                    continue;
-                }
                 if (e.getOperation().equals(AttributeOperationEnum.DELETE)) {
                     List<LoginEntity> entities = userEntity.getPrincipalList();
                     if (CollectionUtils.isNotEmpty(entities)) {
@@ -1352,6 +1353,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                                 auditLog.addCustomRecord(PolicyMapObjectTypeOptions.PRINCIPAL.name(), e.getLogin());
                                 parentLog.addChild(auditLog);
                                 // --------------------------------------------------------------
+                                break;
                             }
                         }
                     }
@@ -1377,10 +1379,10 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                 } else if (e.getOperation().equals(AttributeOperationEnum.REPLACE)) {
 
                     if (CollectionUtils.isNotEmpty(userEntity.getPrincipalList())) {
-						for (final LoginEntity en : userEntity.getPrincipalList()) {
-                        if (en.getLoginId().equals(e.getLoginId())) {
+                        for (final LoginEntity en : userEntity.getPrincipalList()) {
+                            if (en.getLoginId().equals(e.getLoginId())) {
 
-                                if(!en.getLogin().equals(e.getLogin())) {
+                                if (!en.getLogin().equals(e.getLogin())) {
                                     e.setOrigPrincipalName(en.getLogin());
                                 }
                                 String logOld = en.toString();
@@ -1392,7 +1394,7 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
                                 Login login = pUser.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
                                 String loginStr = login != null ? login.getLogin() : StringUtils.EMPTY;
                                 auditLog.setTargetUser(pUser.getId(), loginStr);
-                                auditLog.addCustomRecord(PolicyMapObjectTypeOptions.PRINCIPAL.name(), "old= '"+logOld+"' new='"+e.toString()+"'");
+                                auditLog.addCustomRecord(PolicyMapObjectTypeOptions.PRINCIPAL.name(), "old= '" + logOld + "' new='" + e.toString() + "'");
                                 parentLog.addChild(auditLog);
                                 // --------------------------------------------------------------
                                 break;
