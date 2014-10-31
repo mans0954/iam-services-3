@@ -110,7 +110,7 @@ public class UserProfileServiceImpl implements UserProfileService {
         		boolean contains = false;
         		if(CollectionUtils.isNotEmpty(emailList)) {
         			for(final EmailAddressEntity email : emailList) {
-        				if(StringUtils.equals(email.getEmailId(), dbEmail.getEmailId())) {
+        				if(StringUtils.equals(email.getId(), dbEmail.getId())) {
         					contains = true;
         				}
         			}
@@ -129,7 +129,7 @@ public class UserProfileServiceImpl implements UserProfileService {
         		boolean contains = false;
         		if(CollectionUtils.isNotEmpty(addressList)) {
         			for(final AddressEntity address : addressList) {
-        				if(StringUtils.equals(address.getAddressId(), dbAddress.getAddressId())) {
+        				if(StringUtils.equals(address.getId(), dbAddress.getId())) {
         					contains = true;
         				}
         			}
@@ -235,7 +235,7 @@ public class UserProfileServiceImpl implements UserProfileService {
 		if(CollectionUtils.isNotEmpty(emailList)) {
         	for(final EmailAddressEntity email : emailList) {
         		email.setParent(userEntity);
-        		if(StringUtils.isBlank(email.getEmailId())) {
+        		if(StringUtils.isBlank(email.getId())) {
         			userManager.addEmailAddress(email);
         		} else {
         			userManager.updateEmailAddress(email);
@@ -248,7 +248,7 @@ public class UserProfileServiceImpl implements UserProfileService {
 		if(CollectionUtils.isNotEmpty(addressList)) {
         	for(final AddressEntity address : addressList) {
         		address.setParent(userEntity);
-        		if(StringUtils.isBlank(address.getAddressId())) {
+        		if(StringUtils.isBlank(address.getId())) {
         			userManager.addAddress(address);
         		} else {
         			userManager.updateAddress(address);

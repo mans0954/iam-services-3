@@ -3,7 +3,7 @@ package org.openiam.idm.srvc.auth.domain;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.search.annotations.*;
+//import org.hibernate.search.annotations.*;
 import org.openiam.core.dao.lucene.LuceneId;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.auth.dto.IdentityDto;
@@ -17,25 +17,25 @@ import java.util.Date;
 @Table(name="IDENTITY")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @DozerDTOCorrespondence(IdentityDto.class)
-@Indexed
+//@Indexed
 public class IdentityEntity implements java.io.Serializable  {
     @Id
     @GeneratedValue(generator = "system-uuid")
     @GenericGenerator(name = "system-uuid", strategy = "uuid")
     @Column(name = "IDENTITY_ID", length = 32, nullable = false)
     @LuceneId
-    @DocumentId
+//    @DocumentId
     private String id;
 
-    @Field(name = "identity", analyze = Analyze.YES, store = Store.YES)
+//    @Field(name = "identity", analyze = Analyze.YES, store = Store.YES)
     @Column(name="IDENTITY",length=320)
     private String identity;
 
-    @Field(name = "managedSysId", analyze = Analyze.NO, store = Store.YES)
+//    @Field(name = "managedSysId", analyze = Analyze.NO, store = Store.YES)
     @Column(name="MANAGED_SYS_ID",length=50)
     private String managedSysId;
 
-    @Field(name = "referredObjectId", analyze = Analyze.NO, store = Store.YES)
+//    @Field(name = "referredObjectId", analyze = Analyze.NO, store = Store.YES)
     @Column(name="REFERRED_OBJECT_ID",length=32)
     private String referredObjectId;
 

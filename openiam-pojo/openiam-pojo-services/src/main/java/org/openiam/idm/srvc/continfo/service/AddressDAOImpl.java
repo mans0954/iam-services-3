@@ -32,8 +32,8 @@ public class AddressDAOImpl extends BaseDaoImpl<AddressEntity, String> implement
     @Override
     protected Criteria getExampleCriteria(AddressEntity address){
         final Criteria criteria = getCriteria();
-        if (StringUtils.isNotBlank(address.getAddressId())) {
-            criteria.add(Restrictions.eq(getPKfieldName(), address.getAddressId()));
+        if (StringUtils.isNotBlank(address.getId())) {
+            criteria.add(Restrictions.eq(getPKfieldName(), address.getId()));
         } else {
 
             if (address.getParent() != null) {
@@ -42,9 +42,9 @@ public class AddressDAOImpl extends BaseDaoImpl<AddressEntity, String> implement
                 }
             }
 
-            if (address.getMetadataType() != null) {
-                if (StringUtils.isNotBlank(address.getMetadataType().getId())) {
-                    criteria.add(Restrictions.eq("metadataType.id", address.getMetadataType().getId()));
+            if (address.getType() != null) {
+                if (StringUtils.isNotBlank(address.getType().getId())) {
+                    criteria.add(Restrictions.eq("metadataType.id", address.getType().getId()));
                 }
             }
         }

@@ -1,45 +1,48 @@
 package org.openiam.core.dao.lucene;
 
-import org.apache.commons.io.FileUtils;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.StopWatch;
 import org.apache.log4j.Logger;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.search.*;
-import org.hibernate.CacheMode;
+import org.apache.lucene.search.BooleanClause;
+import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.search.TermQuery;
+import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.index.query.*;
+import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.search.SearchHit;
 import org.hibernate.Criteria;
-import org.hibernate.FlushMode;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.Transaction;
 import org.hibernate.criterion.DetachedCriteria;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
-import org.hibernate.search.FullTextQuery;
-import org.hibernate.search.FullTextSession;
-import org.hibernate.search.Search;
-import org.hibernate.search.SearchException;
-import org.hibernate.search.SearchFactory;
-import org.hibernate.search.engine.spi.SearchFactoryImplementor;
-import org.hibernate.search.store.impl.DirectoryProviderHelper;
-import org.openiam.core.dao.BaseDaoImpl;
+import org.openiam.base.ws.MatchType;
+import org.openiam.base.ws.SearchMode;
+import org.openiam.elasticsearch.service.ElasticsearchProvider;
 import org.springframework.beans.factory.DisposableBean;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
-
-import java.io.File;
-import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
+
+//import org.hibernate.search.FullTextQuery;
+//import org.hibernate.search.FullTextSession;
+//import org.hibernate.search.Search;
+//import org.hibernate.search.SearchException;
+//import org.hibernate.search.SearchFactory;
+//import org.hibernate.search.engine.spi.SearchFactoryImplementor;
+//import org.hibernate.search.store.impl.DirectoryProviderHelper;
 
 public abstract class AbstractHibernateSearchDao<T, Q, KeyType extends Serializable> implements HibernateSearchDao<T, Q, KeyType>, DisposableBean {
 
@@ -57,12 +60,15 @@ public abstract class AbstractHibernateSearchDao<T, Q, KeyType extends Serializa
 	private String lastModifiedFieldName;
 	private String idFieldName;
 	private SessionFactory sessionFactory;
+
+    @Autowired
+    protected ElasticsearchProvider esHelper;
 	
 	@Autowired
 	public void setTemplate(final @Qualifier("sessionFactory") SessionFactory sessionFactory) {
 		this.sessionFactory = sessionFactory;
 	}
-	
+
 	private Session getSession() {
 		return sessionFactory.getCurrentSession();
 	}
@@ -85,7 +91,7 @@ public abstract class AbstractHibernateSearchDao<T, Q, KeyType extends Serializa
     @Override public int count(final Q query) { 
         int count = 0;
     	if (query != null) {
-            final Query luceneQuery = parse(query);
+            final QueryBuilder luceneQuery = parse(query);
             if (luceneQuery == null) {
             	// count all objects
                 final Criteria criteria = getSession().createCriteria(getEntityClass()).setCacheable(true);
@@ -93,7 +99,7 @@ public abstract class AbstractHibernateSearchDao<T, Q, KeyType extends Serializa
         		criteria.setProjection(Projections.rowCount());
         		count = ((Number) criteria.uniqueResult()).intValue();
             } else {
-            	count = count(buildFullTextSessionQuery(getFullTextSession(null), luceneQuery, null));
+//            	count = count(buildFullTextSessionQuery(getFullTextSession(null), luceneQuery, null));
             }
     	}
         return count;
@@ -102,9 +108,9 @@ public abstract class AbstractHibernateSearchDao<T, Q, KeyType extends Serializa
     @Override public List<T> find(final int from, final int size, final SortType sort, final Q query) {        
         List<T> result = Collections.emptyList();
     	if ((from >=0) && (size > 0) && (query != null)) {
-            final Query luceneQuery = parse(query);
+            final QueryBuilder luceneQuery = parse(query);
             if (luceneQuery != null) {
-            	result = find(buildFullTextSessionQuery(getFullTextSession(null), luceneQuery, from, size, sort));
+//            	result = find(buildFullTextSessionQuery(getFullTextSession(null), luceneQuery, from, size, sort));
             }
     	}
         return result;
@@ -114,15 +120,7 @@ public abstract class AbstractHibernateSearchDao<T, Q, KeyType extends Serializa
     @Override public List<KeyType> findIds(final SortType sort, final Q query) {
     	final List<KeyType> result = new ArrayList<KeyType>();
     	if ((query != null)) {
-            final Query luceneQuery = parse(query);
-            if (luceneQuery != null) {
-				final List idList = findIds(buildFullTextSessionQuery(getFullTextSession(null), luceneQuery, sort).setProjection(idFieldName));
-				for (final Object row : idList) {
-					final Object[] columns = (Object[]) row;
-					final KeyType id = (KeyType) columns[0];
-					result.add(id);
-				}
-            }
+            return findIds(0, Integer.MAX_VALUE, sort, query);
     	}
         return result;
     }
@@ -131,146 +129,166 @@ public abstract class AbstractHibernateSearchDao<T, Q, KeyType extends Serializa
 	@Override public List<KeyType> findIds(final int from, final int size, final SortType sort, final Q query) {
     	final List<KeyType> result = new ArrayList<KeyType>();
     	if ((from >=0) && (size > 0) && (query != null)) {
-            final Query luceneQuery = parse(query);
+            final QueryBuilder luceneQuery = parse(query);
             if (luceneQuery != null) {
-				final List idList = findIds(buildFullTextSessionQuery(
-						getFullTextSession(null), luceneQuery, from, size, sort)
-						.setProjection(idFieldName));
-				for (final Object row : idList) {
-					final Object[] columns = (Object[]) row;
-					final KeyType id = (KeyType) columns[0];
-					result.add(id);
-				}
+                SearchResponse searchResponse = esHelper.searchData(luceneQuery, getEntityClass());
+
+                if(searchResponse!=null && searchResponse.getHits().getTotalHits()>0){
+                    for (final SearchHit hit : searchResponse.getHits()) {
+                        final KeyType id = (KeyType) hit.getId();
+                        result.add(id);
+                    }
+                }
             }
     	}
         return result;
     }
 
-    protected FullTextQuery buildFullTextSessionQuery(final FullTextSession fullTextSession, final Query luceneQuery,
-            final int from, final int size, final SortType sort) {
-        return buildFullTextSessionQuery(fullTextSession, luceneQuery, sort).setMaxResults(size).setFirstResult(from);
-    }
-
-    protected FullTextQuery buildFullTextSessionQuery(final FullTextSession fullTextSession, final Query luceneQuery, final SortType sort) {
-        final FullTextQuery hiberQuery = fullTextSession.createFullTextQuery(luceneQuery, getEntityClass());
-        hiberQuery.setReadOnly(true);
-        hiberQuery.setCacheable(true);
-        final Sort sortField = (sort == null) ? null : sort.getSort();
-        if (sortField != null) {
-        	hiberQuery.setSort(sortField);
-        }
-        return hiberQuery;
-    }
-
-    protected FullTextSession getFullTextSession(Session session) {
-    	session = (session != null) ? session : getSession();
-        return Search.getFullTextSession(session);
-    }
-
-    @SuppressWarnings({ "unchecked" })
-    protected List<T> find(final FullTextQuery fullTextQuery) {
-        return fullTextQuery.list();
-    }
-
-    @SuppressWarnings({ "unchecked" })
-    protected List<Object> findIds(final FullTextQuery fullTextQuery) {
-        return fullTextQuery.list();
-    }
-
-    protected int count(final FullTextQuery fullTextQuery) {
-        return fullTextQuery.getResultSize();
-    }
+//    protected FullTextQuery buildFullTextSessionQuery(final FullTextSession fullTextSession, final Query luceneQuery,
+//            final int from, final int size, final SortType sort) {
+//        return buildFullTextSessionQuery(fullTextSession, luceneQuery, sort).setMaxResults(size).setFirstResult(from);
+//    }
+//
+//    protected FullTextQuery buildFullTextSessionQuery(final FullTextSession fullTextSession, final Query luceneQuery, final SortType sort) {
+//        final FullTextQuery hiberQuery = fullTextSession.createFullTextQuery(luceneQuery, getEntityClass());
+//        hiberQuery.setReadOnly(true);
+//        hiberQuery.setCacheable(true);
+//        final Sort sortField = (sort == null) ? null : sort.getSort();
+//        if (sortField != null) {
+//        	hiberQuery.setSort(sortField);
+//        }
+//        return hiberQuery;
+//    }
+//
+//    protected FullTextSession getFullTextSession(Session session) {
+//    	session = (session != null) ? session : getSession();
+//        return Search.getFullTextSession(session);
+//    }
+//
+//    @SuppressWarnings({ "unchecked" })
+//    protected List<T> find(final FullTextQuery fullTextQuery) {
+//        return fullTextQuery.list();
+//    }
+//
+//    @SuppressWarnings({ "unchecked" })
+//    protected List<Object> findIds(final FullTextQuery fullTextQuery) {
+//        return fullTextQuery.list();
+//    }
+//
+//    protected int count(final FullTextQuery fullTextQuery) {
+//        return fullTextQuery.getResultSize();
+//    }
     
     protected int getMaxFetchSizeOnReinex() {
     	return 1000;
     }
 
-    protected abstract Query parse(Q query);
+    protected abstract QueryBuilder parse(Q query);
     protected abstract Class<T> getEntityClass();
-    
+
+
+    private DetachedCriteria getCriteria() throws Exception{
+        return DetachedCriteria.forClass(getEntityClass()).addOrder(Order.asc(esHelper.getIdFieldName(getEntityClass())));
+    }
+
     private void buidIndexes(Session session) throws Exception {
-    	final DetachedCriteria criteria = DetachedCriteria.forClass(getEntityClass()).addOrder(Order.asc(idFieldName));
+    	final DetachedCriteria criteria = getCriteria();
         try {
         	doIndex(criteria, true, session);
-    	} catch (SearchException e) {
+    	} catch (Exception e) {
 //    		if (logger.isErrorEnabled()) {
     			logger.error(String.format("can't build indexes : '%s'. Trying to recreate indexes dir", e));
 //    		}
     		//clean-up lucene indexes directory
-    		final SearchFactory searchFactory = getFullTextSession(session).getSearchFactory();
-    		if (searchFactory instanceof SearchFactoryImplementor) {
-    			reintializeCurrentIndex(session, (SearchFactoryImplementor)searchFactory);
-    			/*
-    			for (final DocumentBuilderContainedEntity<?> directoryProvider : searchFactory.getDirectoryProviders(entityClass)) {
-    				directoryProvider.initialize(arg0, arg1, arg2);
-    				directoryProvider.initialize(directoryProviderName, hibernateProperties, (SearchFactoryImplementor) searchFactory);
-    			}
-    			*/
-    			//trying to build indexes again
-    			//don't call buidIndexes(), cause if it's possible to get short circle recursion
-    			doIndex(criteria, true, session);
-    			if (logger.isDebugEnabled()) {
-    				logger.debug("indexes dir recreated, indexes rebuilt");
-    			}
-    		} else {
+//    		final SearchFactory searchFactory = getFullTextSession(session).getSearchFactory();
+//    		if (searchFactory instanceof SearchFactoryImplementor) {
+//    			reintializeCurrentIndex(session, (SearchFactoryImplementor)searchFactory);
+//    			/*
+//    			for (final DocumentBuilderContainedEntity<?> directoryProvider : searchFactory.getDirectoryProviders(entityClass)) {
+//    				directoryProvider.initialize(arg0, arg1, arg2);
+//    				directoryProvider.initialize(directoryProviderName, hibernateProperties, (SearchFactoryImplementor) searchFactory);
+//    			}
+//    			*/
+//    			//trying to build indexes again
+//    			//don't call buidIndexes(), cause if it's possible to get short circle recursion
+//    			doIndex(criteria, true, session);
+//    			if (logger.isDebugEnabled()) {
+//    				logger.debug("indexes dir recreated, indexes rebuilt");
+//    			}
+//    		} else {
     			//just rethrow exception
     			throw e;
-    		}
+//    		}
     	}
     }
     
-    private void reintializeCurrentIndex(Session session, final SearchFactoryImplementor searchFactory) throws IOException {
-    	session = (session != null) ? session : getSession();
-    	final Class<T> entityClass = getEntityClass();
-		final String directoryProviderName = hibernateProperties.getProperty("hibernate.search.default.indexBase") + "/" + entityClass.getName();
-		final File sourceDir = DirectoryProviderHelper.getSourceDirectory(directoryProviderName, hibernateProperties, true);
-		sourceDir.delete();
-		FileUtils.deleteDirectory(sourceDir);
-		DirectoryProviderHelper.createFSIndex(sourceDir, hibernateProperties);
-		
-		/*
-		for(final IndexManager indexManager : searchFactory.getIndexBindingForEntity(entityClass).getIndexManagers()) {
-			indexManager.initialize(directoryProviderName, hibernateProperties, searchFactory.getWorker());
-		}
-		*/
-    }
+//    private void reintializeCurrentIndex(Session session, final SearchFactoryImplementor searchFactory) throws IOException {
+//    	session = (session != null) ? session : getSession();
+//    	final Class<T> entityClass = getEntityClass();
+//		final String directoryProviderName = hibernateProperties.getProperty("hibernate.search.default.indexBase") + "/" + entityClass.getName();
+//		final File sourceDir = DirectoryProviderHelper.getSourceDirectory(directoryProviderName, hibernateProperties, true);
+//		sourceDir.delete();
+//		FileUtils.deleteDirectory(sourceDir);
+//		DirectoryProviderHelper.createFSIndex(sourceDir, hibernateProperties);
+//
+//		/*
+//		for(final IndexManager indexManager : searchFactory.getIndexBindingForEntity(entityClass).getIndexManagers()) {
+//			indexManager.initialize(directoryProviderName, hibernateProperties, searchFactory.getWorker());
+//		}
+//		*/
+//    }
     
     @SuppressWarnings("unchecked")
-	private void doIndex(final DetachedCriteria load, final boolean purgeAll, final Session session) {
-        final FullTextSession fullTextSession = getFullTextSession(session);
-        fullTextSession.setFlushMode(FlushMode.COMMIT);
-        //fullTextSession.setCacheMode(CacheMode.IGNORE);
-        fullTextSession.setCacheMode(CacheMode.REFRESH);
+	private void doIndex(final DetachedCriteria load, final boolean purgeAll, final Session session) throws Exception {
+//        final FullTextSession fullTextSession = getFullTextSession(session);
+//        fullTextSession.setFlushMode(FlushMode.COMMIT);
+//        //fullTextSession.setCacheMode(CacheMode.IGNORE);
+//        fullTextSession.setCacheMode(CacheMode.REFRESH);
         final Class<T> entityClass = getEntityClass();
         try {
-        	if (purgeAll) {
-        		fullTextSession.purgeAll(entityClass);
-        	}
+            esHelper.buildIndex(entityClass, purgeAll);
 
         	final int maxSize = getMaxFetchSizeOnReinex();
-        	final Criteria criteria = load.getExecutableCriteria(fullTextSession);
+        	final Criteria criteria = load.getExecutableCriteria(session);
+
         	for (int from = 0; ; from += maxSize) {
-        		final Transaction transaction = fullTextSession.beginTransaction();
+//        		final Transaction transaction = fullTextSession.beginTransaction();
         		try {
         			logger.info(String.format("Fetching from %s, size: %s", from, maxSize));
         			final List<T> list = criteria.setFirstResult(from).setMaxResults(maxSize).list();
         			logger.info(String.format("Fetched from %s, size: %s.  Indexing...", from, maxSize));
-                	for (final T entity : list) {
-                		fullTextSession.index(entity);
-                	}
+                    esHelper.doIndex(list, entityClass);
+
                 	logger.info(String.format("Fetched from %s, size: %s.  Done indexing... committing", from, maxSize));
-                	transaction.commit();
+//                	transaction.commit();
                 	logger.info(String.format("Fetched from %s, size: %s.  Done indexing... committed", from, maxSize));
                 	if (list.isEmpty() || list.size() < maxSize) {
                 		break;
                 	}
             	} catch (Exception e) {
             		logger.error("Can't index - rolling back", e);
-            		transaction.rollback();
+//            		transaction.rollback();
             	}
         	}
+        } catch (Exception e){
+            logger.error("Can't index ", e);
+          //  throw e;
         } finally {
         	//fullTextSession.close();
+        }
+    }
+
+    public void updateIndecies(List<String> idsList) throws Exception {
+        if(CollectionUtils.isNotEmpty(idsList)){
+            final DetachedCriteria criteria = getCriteria();
+            criteria.add(Restrictions.in(esHelper.getIdFieldName(getEntityClass()), idsList));
+            doIndex(criteria, false, sessionFactory.openSession());
+        }
+    }
+
+    public void deleteIndecies(List<String> idsList) throws Exception{
+        if(CollectionUtils.isNotEmpty(idsList)){
+            esHelper.deleteData(idsList, getEntityClass());
         }
     }
 
@@ -285,39 +303,57 @@ public abstract class AbstractHibernateSearchDao<T, Q, KeyType extends Serializa
 		return ((Class<T>)type);
     }
 
-    private Date getLastDbUpdateDateInternal(Session session) {
-    	session = (session != null) ? session : getSession();
-    	return (Date)session.createCriteria(getEntityClass())
-			.setProjection(Projections.max(lastModifiedFieldName)).uniqueResult();
-    }
+//    private Date getLastDbUpdateDateInternal(Session session) {
+//    	session = (session != null) ? session : getSession();
+//    	return (Date)session.createCriteria(getEntityClass())
+//			.setProjection(Projections.max(lastModifiedFieldName)).uniqueResult();
+//    }
     
-    protected Query buildTokenizedClause(final String paramName, final String paramValue) {
+    protected QueryBuilder buildTokenizedClause(final String paramName, final String paramValue, MatchType matchType) {
+
     	if (StringUtils.isNotBlank(paramValue) && StringUtils.isNotBlank(paramName)) {
-            final BooleanQuery paramsQuery = new BooleanQuery();
-            paramsQuery.add(QueryBuilder.buildQuery(paramName, BooleanClause.Occur.SHOULD, paramValue), BooleanClause.Occur.SHOULD);
-            return paramsQuery;
-        }
-    	return null;
-	}
-    
-    protected Query buildExactClause(final String paramName, final String paramValue) {
-    	if (StringUtils.isNotBlank(paramValue) && StringUtils.isNotBlank(paramName)) {
-    		final BooleanQuery query = new BooleanQuery();
-    		query.add(new TermQuery(new Term(paramName, paramValue)), BooleanClause.Occur.SHOULD);
-    		return query;
+            final BoolQueryBuilder query = QueryBuilders.boolQuery();
+            final String trimmedKeyword = StringUtils.trimToEmpty(paramValue.toLowerCase());
+            final Set<String> terms = esHelper.separateTerms(trimmedKeyword, getEntityClass());
+            if(CollectionUtils.isNotEmpty(terms)){
+                for (final Iterator<String> iterator = terms.iterator(); iterator.hasNext();) {
+                    String term = iterator.next();
+                    //allows search by non-empty words
+                    if (StringUtils.isNotEmpty(term)) {
+                        addClause(query, QueryBuilders.wildcardQuery(paramName, wrapTerm(term, matchType)), SearchMode.OR);
+                    }
+                    iterator.remove();
+                }
+                return query;
+            }
         }
     	return null;
 	}
 
-    protected Query buildInClause(final String paramName, final Collection<String> paramValues) {
+    protected QueryBuilder buildExactClause(final String paramName, final String paramValue) {
+    	if (StringUtils.isNotBlank(paramValue) && StringUtils.isNotBlank(paramName)) {
+    		return QueryBuilders.termQuery(paramName, paramValue);
+        }
+    	return null;
+	}
+
+    protected QueryBuilder buildInClause(final String paramName, final Collection<String> paramValues) {
         if (paramValues!=null && !paramValues.isEmpty() && StringUtils.isNotBlank(paramName)) {
-            final BooleanQuery query = new BooleanQuery();
+            final BoolQueryBuilder query = QueryBuilders.boolQuery();
             for( String value : paramValues ){
-                query.add(new TermQuery(new Term(paramName, value)), BooleanClause.Occur.SHOULD);
+                addClause(query, QueryBuilders.termQuery(paramName, value), SearchMode.OR);
             }
             return query;
         }
         return null;
+    }
+
+    protected void addClause(BoolQueryBuilder query, org.elasticsearch.index.query.QueryBuilder clause, SearchMode searchMode) {
+        if(SearchMode.AND.equals(searchMode)) {
+            query.must(clause);
+        }  else {
+            query.should(clause);
+        }
     }
 
     @Override public Date getReindexingCompletedOn() {
@@ -329,42 +365,42 @@ public abstract class AbstractHibernateSearchDao<T, Q, KeyType extends Serializa
     }
 
     @Override public void synchronizeIndexes(final boolean forcePurgeAll) {
-    	reentrantLock.lock();
-		final StopWatch stopWatch = new StopWatch();
-		stopWatch.start();
-		Session session = null;
-    	try {
-    		session = sessionFactory.openSession();
-    		boolean reindexed = false;
-    		final Date updateDate = getLastDbUpdateDateInternal(session);
-    		if (lastUpdateDBDate == null || forcePurgeAll) {
-    			final DetachedCriteria criteria = DetachedCriteria.forClass(getEntityClass()).addOrder(Order.asc(idFieldName));
-    			doIndex(criteria, forcePurgeAll, session);
-    			reindexed = true;
-    		} else if (((null != updateDate) && (updateDate.after(lastUpdateDBDate)))) {
-    			final DetachedCriteria criteria = DetachedCriteria.forClass(getEntityClass()).add(Restrictions.gt(lastModifiedFieldName, lastUpdateDBDate)).addOrder(Order.asc(idFieldName));
-    			doIndex(criteria, forcePurgeAll, session);
-    			reindexed = true;
-        	}
-
-    		if(reindexed) {
-    			lastUpdateDBDate = updateDate;
-    			reindexingCompletedOn = new Date(System.currentTimeMillis());
-    		}
-    	} finally {
-    		if (reentrantLock.isHeldByCurrentThread()) {
-    			stopWatch.stop();
-    			synchronized (this) {
-    				reindexDuration = stopWatch.getTime();
-				}
-    			reentrantLock.unlock();
-    		}
-    		if(session != null) {
-    			if(session.isOpen()) {
-    				session.close();
-    			}
-    		}
-    	}
+//    	reentrantLock.lock();
+//		final StopWatch stopWatch = new StopWatch();
+//		stopWatch.start();
+//		Session session = null;
+//    	try {
+//    		session = sessionFactory.openSession();
+//    		boolean reindexed = false;
+//    		final Date updateDate = getLastDbUpdateDateInternal(session);
+//    		if (lastUpdateDBDate == null || forcePurgeAll) {
+//    			final DetachedCriteria criteria = DetachedCriteria.forClass(getEntityClass()).addOrder(Order.asc(idFieldName));
+//    			doIndex(criteria, forcePurgeAll, session);
+//    			reindexed = true;
+//    		} else if (((null != updateDate) && (updateDate.after(lastUpdateDBDate)))) {
+//    			final DetachedCriteria criteria = DetachedCriteria.forClass(getEntityClass()).add(Restrictions.gt(lastModifiedFieldName, lastUpdateDBDate)).addOrder(Order.asc(idFieldName));
+//    			doIndex(criteria, forcePurgeAll, session);
+//    			reindexed = true;
+//        	}
+//
+//    		if(reindexed) {
+//    			lastUpdateDBDate = updateDate;
+//    			reindexingCompletedOn = new Date(System.currentTimeMillis());
+//    		}
+//    	} finally {
+//    		if (reentrantLock.isHeldByCurrentThread()) {
+//    			stopWatch.stop();
+//    			synchronized (this) {
+//    				reindexDuration = stopWatch.getTime();
+//				}
+//    			reentrantLock.unlock();
+//    		}
+//    		if(session != null) {
+//    			if(session.isOpen()) {
+//    				session.close();
+//    			}
+//    		}
+//    	}
     }
 
     public long getLastSynchronizationDuration() {
@@ -409,7 +445,7 @@ public abstract class AbstractHibernateSearchDao<T, Q, KeyType extends Serializa
 	@PostConstruct
 	public void initDao() throws Exception {
 		Session session = null;
-		initMetadata();
+		//initMetadata();
 		try {
 			session = sessionFactory.openSession();
 	    	if (rebuildIndexesAtInit) {
@@ -421,7 +457,7 @@ public abstract class AbstractHibernateSearchDao<T, Q, KeyType extends Serializa
 				synchronized (this) {
 					reindexDuration = stopWatch.getTime();
 				}
-				lastUpdateDBDate = getLastDbUpdateDateInternal(session);
+//				lastUpdateDBDate = getLastDbUpdateDateInternal(session);
 				if (lastUpdateDBDate == null) {
 					lastUpdateDBDate = new Date(System.currentTimeMillis());
 				}
@@ -441,6 +477,25 @@ public abstract class AbstractHibernateSearchDao<T, Q, KeyType extends Serializa
 			}
 		}
 	}
-    
-    
+
+    private String wrapTerm(String term, MatchType matchType) {
+        switch (matchType){
+            case END_WITH:
+                if (term.charAt(0) != '*') {
+                    return String.format("*%s", term);
+                }
+            case STARTS_WITH:
+                if (term.charAt(term.length() - 1) != '*') {
+                    return String.format("%s*", term);
+                }
+            case CONTAINS:
+                if (term.charAt(0) != '*') {
+                    term = "*" + term;
+                }
+                if (term.charAt(term.length() - 1) != '*') {
+                    term = term + "*";
+                }
+        }
+        return term;
+    }
 }

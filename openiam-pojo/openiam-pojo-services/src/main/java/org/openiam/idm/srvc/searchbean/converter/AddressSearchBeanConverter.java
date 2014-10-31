@@ -13,7 +13,7 @@ public class AddressSearchBeanConverter implements SearchBeanConverter<AddressEn
     @Override
     public AddressEntity convert(AddressSearchBean searchBean) {
         final AddressEntity address = new AddressEntity();
-        address.setAddressId(searchBean.getKey());
+        address.setId(searchBean.getKey());
 
         if(StringUtils.isNotBlank(searchBean.getParentId())) {
             final UserEntity parent = new UserEntity();
@@ -24,7 +24,7 @@ public class AddressSearchBeanConverter implements SearchBeanConverter<AddressEn
         if(StringUtils.isNotBlank(searchBean.getMetadataTypeId())) {
             final MetadataTypeEntity type = new MetadataTypeEntity();
             type.setId(searchBean.getMetadataTypeId());
-            address.setMetadataType(type);
+            address.setType(type);
         }
         return address;
     }

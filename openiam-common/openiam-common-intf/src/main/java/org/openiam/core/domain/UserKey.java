@@ -3,17 +3,15 @@ package org.openiam.core.domain;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.search.annotations.Field;
-import org.hibernate.search.annotations.FieldBridge;
-import org.hibernate.search.annotations.Store;
-import org.openiam.core.dao.lucene.bridge.UserBridge;
 import org.openiam.idm.srvc.user.domain.UserEntity;
-import org.openiam.idm.srvc.user.dto.User;
 
 import javax.persistence.*;
-import java.io.Serializable;
-import javax.persistence.Entity;
 import javax.xml.bind.annotation.XmlTransient;
+import java.io.Serializable;
+
+//import org.hibernate.search.annotations.Field;
+//import org.hibernate.search.annotations.FieldBridge;
+//import org.hibernate.search.annotations.Store;
 
 /**
  * Created by: Alexander Duckardt

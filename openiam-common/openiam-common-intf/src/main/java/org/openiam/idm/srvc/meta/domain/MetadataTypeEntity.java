@@ -2,8 +2,8 @@ package org.openiam.idm.srvc.meta.domain;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.*;
-import org.hibernate.search.annotations.*;
-import org.hibernate.search.annotations.Index;
+//import org.hibernate.search.annotations.*;
+//import org.hibernate.search.annotations.Index;
 import org.openiam.base.domain.KeyEntity;
 import org.openiam.base.domain.AbstractKeyNameEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
@@ -83,7 +83,7 @@ public class MetadataTypeEntity extends AbstractKeyNameEntity {
     private Map<String, LanguageMappingEntity> displayNameMap;
 
     @OneToMany(mappedBy = "employeeType")
-    @ContainedIn
+//    @ContainedIn
     private Set<UserEntity> userEntitySet;
     
     @Transient

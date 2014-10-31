@@ -1,20 +1,5 @@
 package org.openiam.connector.gapps;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.cxf.common.util.CollectionUtils;
-import org.egothor.stemmer.Gener;
-import org.springframework.util.StringUtils;
-
-import com.google.gdata.client.appsforyourdomain.AppsForYourDomainService;
 import com.google.gdata.client.appsforyourdomain.AppsPropertyService;
 import com.google.gdata.client.appsforyourdomain.adminsettings.SingleSignOnService;
 import com.google.gdata.data.appsforyourdomain.AppsForYourDomainErrorCode;
@@ -23,6 +8,18 @@ import com.google.gdata.data.appsforyourdomain.generic.GenericEntry;
 import com.google.gdata.data.appsforyourdomain.generic.GenericFeed;
 import com.google.gdata.util.AuthenticationException;
 import com.google.gdata.util.ServiceException;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.cxf.common.util.CollectionUtils;
+import org.springframework.util.StringUtils;
+
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author zaporozhec https://code.google.com/apis/console
