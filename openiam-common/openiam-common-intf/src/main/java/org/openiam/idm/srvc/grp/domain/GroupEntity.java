@@ -43,7 +43,7 @@ public class GroupEntity extends AbstractMetdataTypeEntity {
     @Column(name = "CREATE_DATE", length = 19)
     private Date createDate;
 
-    @Column(name = "CREATED_BY", length = 20)
+    @Column(name = "CREATED_BY", length = 32)
     private String createdBy;
     
     @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
@@ -64,7 +64,7 @@ public class GroupEntity extends AbstractMetdataTypeEntity {
     @Column(name = "LAST_UPDATE", length = 19)
     private Date lastUpdate;
 
-    @Column(name = "LAST_UPDATED_BY", length = 20)
+    @Column(name = "LAST_UPDATED_BY", length = 32)
     private String lastUpdatedBy;
 
     @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
