@@ -1105,7 +1105,9 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         updateSupervisors(userEntity, pUser, auditLog);
 
         // update groups
-        updateGroups(userEntity, pUser, auditLog);
+        Set<Group> groupSet = new HashSet<Group>();
+        Set<Group> deleteGroupSet = new HashSet<Group>();
+        updateGroups(userEntity, pUser, groupSet, deleteGroupSet, auditLog);
 
         // update roles
         Set<Role> roleSet = new HashSet<Role>();
@@ -1118,8 +1120,9 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
         // Set of resources that a person should have based on their active
         // roles
-        Set<Resource> resourceSet = getResourcesForRoles(roleSet);
-
+        Set<Resource> resourceSet = new HashSet<Resource>();
+        resourceSet.addAll(getResourcesForRoles(roleSet));
+        resourceSet.addAll(getResourcesForGroups(groupSet));
         List<Organization> orgs = orgManager.getOrganizationsForUserLocalized(pUser.getId(), null, 0, 100, null);
         for(Organization org : orgs) {
             Resource res = resourceDataService.getResource(org.getAdminResourceId(), null);
@@ -1131,7 +1134,9 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
         // Set of resources that are to be removed based on roles that are to be
         // deleted
-        Set<Resource> deleteResourceSet = getResourcesForRoles(deleteRoleSet);
+        Set<Resource> deleteResourceSet = new HashSet<Resource>();
+        deleteResourceSet.addAll(getResourcesForRoles(deleteRoleSet));
+        deleteResourceSet.addAll(getResourcesForGroups(deleteGroupSet));
 
         // update resources, update resources sets
         updateResources(userEntity, pUser, resourceSet, deleteResourceSet, auditLog);
@@ -1226,6 +1231,21 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 resourceSet.removeAll(inactiveResources);
                 deleteResourceSet.addAll(inactiveResources); // inactive resources should be marked for deletion
             }
+
+            for (LoginEntity l : userEntity.getPrincipalList()) {
+                boolean resFound = false;
+                String resId = managedSysDaoService.getManagedSysById(l.getManagedSysId()).getResourceId();
+                for (Resource r : resourceSet) {
+                    if (r.getId().equals(resId)) {
+                        resFound = true;
+                        break;
+                    }
+                }
+                if (!resFound) {
+                    deleteResourceSet.add(resourceService.getResourceDTO(resId));
+                }
+            }
+
         }
 
         log.debug("Resources to be added ->> " + resourceSet);
@@ -1908,6 +1928,35 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             }
         }
         return resourceList;
+    }
+
+    private Set<Resource> getResourcesForGroups(Set<Group> groupSet) {
+        log.debug("GetResourcesForGroups().....");
+        final Set<Resource> resourceSet = new HashSet<Resource>();
+        if (CollectionUtils.isNotEmpty(groupSet)) {
+            for (Group gr : groupSet) {
+                if (gr.getId() != null) {
+                    ResourceSearchBean resourceSearchBean = new ResourceSearchBean();
+                    resourceSearchBean.setDeepCopy(false);
+                    resourceSearchBean.setResourceTypeId(ResourceSearchBean.TYPE_MANAGED_SYS);
+                    List<ResourceEntity> resources = resourceService.getResourcesForGroup(gr.getId(), 0, Integer.MAX_VALUE, resourceSearchBean);
+                    if (CollectionUtils.isNotEmpty(resources)) {
+                        List<Resource> list = resourceDozerConverter.convertToDTOList(resources, true);
+                        resourceSet.addAll(list);
+                    }
+                    List<RoleEntity> roleEntities = roleDataService.getRolesInGroup(gr.getId(), null, 0, Integer.MAX_VALUE);
+                    if (CollectionUtils.isNotEmpty(roleEntities)) {
+                        List<Role> roles = roleDozerConverter.convertToDTOList(roleEntities, false);
+                        Set<Resource> roleResources = getResourcesForRoles(new HashSet<Role>(roles));
+                        resourceSet.addAll(roleResources);
+                    }
+                    for (Resource r : resourceSet) {
+                        r.setOperation(gr.getOperation()); // get operation value from group
+                    }
+                }
+            }
+        }
+        return resourceSet;
     }
 
     @Override
