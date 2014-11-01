@@ -348,9 +348,11 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 		} finally {
 			if(parentAuditLogId != null) {
 				IdmAuditLog parent = auditLogService.findById(parentAuditLogId);
-				parent.addChild(idmAuditLog);
-				idmAuditLog.addParent(parent);
-                parent = auditLogService.save(parent);
+				if(parent != null) {
+					parent.addChild(idmAuditLog);
+					idmAuditLog.addParent(parent);
+					parent = auditLogService.save(parent);
+				}
 			}
 		}
 
@@ -687,9 +689,11 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 		} finally {
 			if(parentAuditLogId != null) {
 				IdmAuditLog parent = auditLogService.findById(parentAuditLogId);
-				parent.addChild(idmAuditLog);
-				idmAuditLog.addParent(parent);
-                parent = auditLogService.save(parent);
+				if(parent != null) {
+					parent.addChild(idmAuditLog);
+					idmAuditLog.addParent(parent);
+					parent = auditLogService.save(parent);
+				}
 			}
         }
 		return response;
@@ -965,9 +969,11 @@ public class ActivitiServiceImpl extends AbstractBaseService implements Activiti
 		} finally {
 			if(parentAuditLogId != null) {
 				IdmAuditLog parent = auditLogService.findById(parentAuditLogId);
-				parent.addChild(idmAuditLog);
-				idmAuditLog.addParent(parent);
-                parent = auditLogService.save(parent);
+				if(parent != null) {
+					parent.addChild(idmAuditLog);
+					idmAuditLog.addParent(parent);
+					parent = auditLogService.save(parent);
+				}
 			}
         }
 		return response;
