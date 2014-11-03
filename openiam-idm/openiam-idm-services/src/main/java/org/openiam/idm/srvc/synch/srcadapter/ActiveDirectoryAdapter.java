@@ -21,22 +21,7 @@
  */
 package org.openiam.idm.srvc.synch.srcadapter;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.Reader;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.csv.CSVParser;
-import org.apache.commons.csv.CSVStrategy;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.openiam.base.ws.Response;
-import org.openiam.base.ws.ResponseStatus;
-import org.openiam.idm.srvc.synch.domain.SynchReviewEntity;
+import org.apache.commons.lang.StringUtils;
 import org.openiam.idm.srvc.synch.dto.*;
 import org.springframework.stereotype.Component;
 
@@ -46,25 +31,22 @@ import org.springframework.stereotype.Component;
  *
  */
 @Component
-public class ActiveDirectoryAdapter extends AbstractSrcAdapter{
-    private static final Log log = LogFactory.getLog(ActiveDirectoryAdapter.class);
+public class ActiveDirectoryAdapter extends GenericLdapAdapter {
 
-	protected Map<String,LineObject> lineMap = new HashMap<String,LineObject>();
-	protected LineObject lineHeader = new LineObject();
-
-    @Override
-    public Response testConnection(SynchConfig config) {
-        throw new UnsupportedOperationException("Not implemented yet..");
+    protected LastRecordTime getRowTime(LineObject rowObj) {
+        org.openiam.idm.srvc.synch.dto.Attribute atr = rowObj.get("modifyTimeStamp");
+        if (StringUtils.isNotBlank(atr.getValue())) {
+            return getTime(atr);
+        }
+        atr = rowObj.get("createTimeStamp");
+        if (StringUtils.isNotBlank(atr.getValue())) {
+            return getTime(atr);
+        }
+        return new LastRecordTime();
     }
 
-    @Override
-    public SyncResponse startSynch(final SynchConfig config) {
-        return startSynch(config, null, null);
+    protected String[] getDirAttrIds() {
+        return new String[] {"*", "modifyTimeStamp", "createTimeStamp"};
     }
-
-    @Override
-    public SyncResponse startSynch(SynchConfig config, SynchReviewEntity sourceReview, SynchReviewEntity resultReview) {
-        throw new UnsupportedOperationException("Not implemented yet..");
-	}
 
 }
