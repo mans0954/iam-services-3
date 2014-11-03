@@ -96,7 +96,7 @@ public abstract class GenericLdapAdapter extends AbstractSrcAdapter {
                     // update the search filter so that it has the new time
                     String ldapFilterQuery = config.getQuery();
                     // replace wildcards with the last exec time
-
+                    //looking for filter like (&(objectclass=user)(modifyTimeStamp>=?))
                     config.setQuery(ldapFilterQuery.replace("?", lastRecProcessed));
 
                     log.debug("Updated ldap filter = " + config.getQuery());
