@@ -77,6 +77,10 @@ public class URIPatternEntity extends KeyEntity {
 	@OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "pattern", fetch = FetchType.LAZY)
 	private Set<URIPatternServerEntity> servers;
 	
+    @ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+    @JoinColumn(name="PROVIDER_ID", referencedColumnName = "PROVIDER_ID", insertable = true, updatable = true, nullable=true)
+    private AuthProviderEntity authProvider;
+	
 	public ContentProviderEntity getContentProvider() {
 		return contentProvider;
 	}
@@ -191,11 +195,21 @@ public class URIPatternEntity extends KeyEntity {
 	public void setServers(Set<URIPatternServerEntity> servers) {
 		this.servers = servers;
 	}
+	
+	public AuthProviderEntity getAuthProvider() {
+		return authProvider;
+	}
+
+	public void setAuthProvider(AuthProviderEntity authProvider) {
+		this.authProvider = authProvider;
+	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
+		result = prime * result
+				+ ((authProvider == null) ? 0 : authProvider.hashCode());
 		result = prime * result
 				+ ((contentProvider == null) ? 0 : contentProvider.hashCode());
 		result = prime * result + (isPublic ? 1231 : 1237);
@@ -215,6 +229,11 @@ public class URIPatternEntity extends KeyEntity {
 		if (getClass() != obj.getClass())
 			return false;
 		URIPatternEntity other = (URIPatternEntity) obj;
+		if (authProvider == null) {
+			if (other.authProvider != null)
+				return false;
+		} else if (!authProvider.equals(other.authProvider))
+			return false;
 		if (contentProvider == null) {
 			if (other.contentProvider != null)
 				return false;

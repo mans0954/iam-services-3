@@ -12,7 +12,7 @@ import javax.xml.bind.annotation.XmlType;
         "providerName",
         "domainPattern",
         "authProviderId",
-        "managedSysId",
+        //"managedSysId",
         "isSSL"
 })
 public class ContentProviderSearchBean extends AbstractSearchBean<ContentProvider, String> {
@@ -21,7 +21,7 @@ public class ContentProviderSearchBean extends AbstractSearchBean<ContentProvide
     private String domainPattern;
     private String authProviderId;
     private Boolean isSSL;
-    private String managedSysId;
+    //private String managedSysId;
 
     public String getProviderName() {
         return providerName;
@@ -57,6 +57,7 @@ public class ContentProviderSearchBean extends AbstractSearchBean<ContentProvide
         isSSL = SSL;
     }
 
+    /*
 	public String getManagedSysId() {
 		return managedSysId;
 	}
@@ -64,6 +65,6 @@ public class ContentProviderSearchBean extends AbstractSearchBean<ContentProvide
 	public void setManagedSysId(String managedSysId) {
 		this.managedSysId = managedSysId;
 	}
-    
+    */
     
 }

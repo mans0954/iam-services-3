@@ -116,8 +116,10 @@ public class ManagedSysEntity extends AbstractKeyNameEntity {
     @OneToMany(orphanRemoval = false, cascade = { CascadeType.DETACH, CascadeType.REFRESH }, mappedBy = "managedSystem", fetch = FetchType.LAZY)
     private Set<AuthProviderEntity> authProviders;
 
+    /*
     @OneToMany(orphanRemoval = false, cascade = { CascadeType.DETACH, CascadeType.REFRESH }, mappedBy = "managedSystem", fetch = FetchType.LAZY)
     private Set<ContentProviderEntity> contentProviders;
+    */
     
     public List<ManagedSysRuleEntity> getRules() {
         return rules;
@@ -399,6 +401,7 @@ public class ManagedSysEntity extends AbstractKeyNameEntity {
 		this.authProviders = authProviders;
 	}
 
+	/*
 	public Set<ContentProviderEntity> getContentProviders() {
 		return contentProviders;
 	}
@@ -406,6 +409,7 @@ public class ManagedSysEntity extends AbstractKeyNameEntity {
 	public void setContentProviders(Set<ContentProviderEntity> contentProviders) {
 		this.contentProviders = contentProviders;
 	}
+	*/
 
 	@Override
 	public int hashCode() {
