@@ -995,6 +995,72 @@ public abstract class AbstractProvisioningService extends AbstractBaseService im
             parentLog.addChild(auditLog);
             // ---------------------------------------------------------------------------------------------
         }
+        if(pUser.getStartDate() != null && !pUser.getStartDate().equals(userEntity.getStartDate())) {
+            // Audit Log -----------------------------------------------------------------------------------
+            IdmAuditLog auditLog = new IdmAuditLog();
+            auditLog.setRequestorUserId(pUser.getRequestorUserId());
+            auditLog.setRequestorPrincipal(pUser.getRequestorLogin());
+            auditLog.setTargetUser(userEntity.getId(), login != null ? login.getLogin() : StringUtils.EMPTY);
+            auditLog.setAction(AuditAction.REPLACE_PROP.value());
+            auditLog.addCustomRecord("StartDate", "old='"+userEntity.getStartDate()+"' new='"+pUser.getStartDate()+"'");
+            parentLog.addChild(auditLog);
+            // ---------------------------------------------------------------------------------------------
+        }
+        if(pUser.getLastDate() != null && !pUser.getLastDate().equals(userEntity.getLastDate())) {
+            // Audit Log -----------------------------------------------------------------------------------
+            IdmAuditLog auditLog = new IdmAuditLog();
+            auditLog.setRequestorUserId(pUser.getRequestorUserId());
+            auditLog.setRequestorPrincipal(pUser.getRequestorLogin());
+            auditLog.setTargetUser(userEntity.getId(), login != null ? login.getLogin() : StringUtils.EMPTY);
+            auditLog.setAction(AuditAction.REPLACE_PROP.value());
+            auditLog.addCustomRecord("LastDate", "old='"+userEntity.getLastDate()+"' new='"+pUser.getLastDate()+"'");
+            parentLog.addChild(auditLog);
+            // ---------------------------------------------------------------------------------------------
+        }
+        if( pUser.getStatus() != null && !pUser.getStatus().equals(userEntity.getStatus())) {
+            // Audit Log -----------------------------------------------------------------------------------
+            IdmAuditLog auditLog = new IdmAuditLog();
+            auditLog.setRequestorUserId(pUser.getRequestorUserId());
+            auditLog.setRequestorPrincipal(pUser.getRequestorLogin());
+            auditLog.setTargetUser(userEntity.getId(), login != null ? login.getLogin() : StringUtils.EMPTY);
+            auditLog.setAction(AuditAction.REPLACE_PROP.value());
+            auditLog.addCustomRecord("Status", "old='"+userEntity.getStatus()+"' new='"+pUser.getStatus()+"'");
+            parentLog.addChild(auditLog);
+            // ---------------------------------------------------------------------------------------------
+        }
+        if(pUser.getSecondaryStatus() != null && !pUser.getSecondaryStatus().equals(userEntity.getSecondaryStatus())) {
+            // Audit Log -----------------------------------------------------------------------------------
+            IdmAuditLog auditLog = new IdmAuditLog();
+            auditLog.setRequestorUserId(pUser.getRequestorUserId());
+            auditLog.setRequestorPrincipal(pUser.getRequestorLogin());
+            auditLog.setTargetUser(userEntity.getId(), login != null ? login.getLogin() : StringUtils.EMPTY);
+            auditLog.setAction(AuditAction.REPLACE_PROP.value());
+            auditLog.addCustomRecord("SecondaryStatus", "old='"+userEntity.getSecondaryStatus()+"' new='"+pUser.getSecondaryStatus()+"'");
+            parentLog.addChild(auditLog);
+            // ---------------------------------------------------------------------------------------------
+        }
+        if(!StringUtils.equals(pUser.getSuffix(), userEntity.getSuffix())) {
+            // Audit Log -----------------------------------------------------------------------------------
+            IdmAuditLog auditLog = new IdmAuditLog();
+            auditLog.setRequestorUserId(pUser.getRequestorUserId());
+            auditLog.setRequestorPrincipal(pUser.getRequestorLogin());
+            auditLog.setTargetUser(userEntity.getId(), login != null ? login.getLogin() : StringUtils.EMPTY);
+            auditLog.setAction(AuditAction.REPLACE_PROP.value());
+            auditLog.addCustomRecord("Suffix", "old='"+userEntity.getSuffix()+"' new='"+pUser.getSuffix()+"'");
+            parentLog.addChild(auditLog);
+            // ---------------------------------------------------------------------------------------------
+        }
+        if(!StringUtils.equals(pUser.getTitle(), userEntity.getTitle())) {
+            // Audit Log -----------------------------------------------------------------------------------
+            IdmAuditLog auditLog = new IdmAuditLog();
+            auditLog.setRequestorUserId(pUser.getRequestorUserId());
+            auditLog.setRequestorPrincipal(pUser.getRequestorLogin());
+            auditLog.setTargetUser(userEntity.getId(), login != null ? login.getLogin() : StringUtils.EMPTY);
+            auditLog.setAction(AuditAction.REPLACE_PROP.value());
+            auditLog.addCustomRecord("Title", "old='"+userEntity.getTitle()+"' new='"+pUser.getTitle()+"'");
+            parentLog.addChild(auditLog);
+            // ---------------------------------------------------------------------------------------------
+        }
 
         userEntity.updateUser(userDozerConverter.convertToEntity(pUser.getUser(), false));
 
