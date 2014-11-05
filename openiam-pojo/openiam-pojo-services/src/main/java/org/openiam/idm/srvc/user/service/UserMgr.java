@@ -543,9 +543,9 @@ public class UserMgr implements UserDataService {
             idList = userSearchDAO.findIds(0, MAX_USER_SEARCH_RESULTS, null, searchBean);
         }
 
-        if (CollectionUtils.isNotEmpty(idList) || (CollectionUtils.isEmpty(idList) && (isOrgFilterSet))) {
-            nonEmptyListOfLists.add(idList);
-        }
+//        if (CollectionUtils.isNotEmpty(idList) || (CollectionUtils.isEmpty(idList) && (isOrgFilterSet))) {
+            nonEmptyListOfLists.add( (CollectionUtils.isNotEmpty(idList))? idList: Collections.EMPTY_LIST);
+//        }
 
         if (CollectionUtils.isNotEmpty(searchBean.getAttributeList())) {
             nonEmptyListOfLists.add(userDao.getUserIdsForAttributes(searchBean.getAttributeList(), 0,
@@ -613,7 +613,7 @@ public class UserMgr implements UserDataService {
 	            if (CollectionUtils.isEmpty(nextSubList))
 	                nextSubList = Collections.EMPTY_LIST;
 	
-	            if (CollectionUtils.isEmpty(finalizedIdList)) {
+	            if (finalizedIdList==null /*CollectionUtils.isEmpty(finalizedIdList)*/) {
 	                finalizedIdList = nextSubList;
 	            } else {
 	                finalizedIdList = ListUtils.intersection(finalizedIdList, nextSubList);
