@@ -36,8 +36,8 @@ import org.openiam.internationalization.Internationalized;
 @Internationalized
 public class GroupEntity extends AbstractMetdataTypeEntity {
 
-    @Column(name = "GRP_NAME", length = 80)
-    @Size(max = 80, message = "group.name.too.long")
+    @Column(name = "GRP_NAME", length = 255)
+    @Size(max = 255, message = "group.name.too.long")
     private String name;
 
     @Column(name = "CREATE_DATE", length = 19)
