@@ -60,12 +60,13 @@ public class ElasticsearchProvider implements InitializingBean, DisposableBean {
 
     @Value("${org.openiam.es.client}")
     private String clientType;
-    @Value("${org.openiam.es.extermal.nodes}")
+    @Value("${org.openiam.es.external.nodes}")
     private String esNodes;
     @Value("${org.openiam.es.default.cluster.name}")
     private String clusterName;
 
 //    @Autowired
+    // TODO: need to refactor to spring bean. it should depend on what kind of ES engine (embedded or external) we're going to use
     private ESAbstractClientFactoryBean clientFactory;
 
     private Properties hibernateProperties;
