@@ -26,9 +26,11 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.http.entity.ContentProducer;
 import org.openiam.am.srvc.dao.AuthProviderDao;
 import org.openiam.am.srvc.dao.ContentProviderDao;
+import org.openiam.am.srvc.dao.URIPatternDao;
 import org.openiam.am.srvc.domain.AuthProviderEntity;
 import org.openiam.am.srvc.domain.AuthProviderTypeEntity;
 import org.openiam.am.srvc.domain.ContentProviderEntity;
+import org.openiam.am.srvc.domain.URIPatternEntity;
 import org.openiam.am.srvc.dto.ContentProvider;
 import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.ResponseCode;
@@ -121,9 +123,8 @@ public abstract class AbstractLoginModule implements AuthenticationModule {
     @Autowired
     private AuthStateDAO authStateDAO;
 
-
     @Autowired
-    private ContentProviderDao contentProviderDAO;
+    private URIPatternDao uriPatternDAO;
 
     @Transactional
     public void logout(final LogoutRequest request, final IdmAuditLog auditLog) throws Exception {
@@ -196,17 +197,18 @@ public abstract class AbstractLoginModule implements AuthenticationModule {
     private static final Log log = LogFactory.getLog(AbstractLoginModule.class);
 
     protected ManagedSysEntity getManagedSystem(final LogoutRequest request, final IdmAuditLog event) {
-        final String contentProviderId = request.getContentProviderId();
+        final String patternId = request.getPatternId();
         ManagedSysEntity managedSystem = null;
-        if (contentProviderId == null) {
+        if (patternId == null) {
             managedSystem = managedSysDAO.findById(sysConfiguration.getDefaultManagedSysId());
         } else {
-            final ContentProviderEntity contentProvider = contentProviderDAO.findById(contentProviderId);
+        	final URIPatternEntity pattern = uriPatternDAO.findById(patternId);
+            final ContentProviderEntity contentProvider = (pattern != null) ? pattern.getContentProvider() : null;
             final AuthProviderEntity authProvider = (contentProvider != null) ? contentProvider.getAuthProvider() : null;
             managedSystem = (authProvider != null) ? authProvider.getManagedSystem() : null;
         }
         if (managedSystem == null) {
-            final String warning = String.format("Content Provider %s -> Auth Provider does not have a managed system corresopnding to it.  Using default: %s", contentProviderId, sysConfiguration.getDefaultManagedSysId());
+            final String warning = String.format("Content Provider %s -> Auth Provider does not have a managed system corresopnding to it.  Using default: %s", patternId, sysConfiguration.getDefaultManagedSysId());
             log.warn(warning);
             event.addWarning(warning);
             managedSystem = managedSysDAO.findById(sysConfiguration.getDefaultManagedSysId());

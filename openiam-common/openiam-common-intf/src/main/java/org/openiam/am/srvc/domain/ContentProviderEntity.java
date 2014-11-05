@@ -59,12 +59,14 @@ public class ContentProviderEntity extends AbstractKeyNameEntity {
     */
     
     @ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
-    @JoinColumn(name="PROVIDER_ID", referencedColumnName = "PROVIDER_ID", insertable = true, updatable = true, nullable=true)
+    @JoinColumn(name="PROVIDER_ID", referencedColumnName = "PROVIDER_ID", insertable = true, updatable = true, nullable=false)
     private AuthProviderEntity authProvider;
 	
+    /*
 	@ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name="MANAGED_SYS_ID", referencedColumnName = "MANAGED_SYS_ID", insertable = true, updatable = true, nullable=false)
 	private ManagedSysEntity managedSystem;
+	*/
 	
 	@ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name="RESOURCE_ID", referencedColumnName = "RESOURCE_ID", insertable = true, updatable = false, nullable=false)
@@ -161,6 +163,7 @@ public class ContentProviderEntity extends AbstractKeyNameEntity {
 		this.uiTheme = uiTheme;
 	}
 
+	/*
 	public ManagedSysEntity getManagedSystem() {
 		return managedSystem;
 	}
@@ -168,6 +171,7 @@ public class ContentProviderEntity extends AbstractKeyNameEntity {
 	public void setManagedSystem(ManagedSysEntity managedSystem) {
 		this.managedSystem = managedSystem;
 	}
+	*/
 
 	public Set<AuthLevelGroupingContentProviderXrefEntity> getGroupingXrefs() {
 		return groupingXrefs;
@@ -203,8 +207,7 @@ public class ContentProviderEntity extends AbstractKeyNameEntity {
 				+ ((domainPattern == null) ? 0 : domainPattern.hashCode());
 		result = prime * result + (isPublic ? 1231 : 1237);
 		result = prime * result + ((isSSL == null) ? 0 : isSSL.hashCode());
-		result = prime * result
-				+ ((managedSystem == null) ? 0 : managedSystem.hashCode());
+		//result = prime * result + ((managedSystem == null) ? 0 : managedSystem.hashCode());
 		result = prime * result
 				+ ((resource == null) ? 0 : resource.hashCode());
 		result = prime * result + (showOnApplicationPage ? 1231 : 1237);
@@ -238,11 +241,13 @@ public class ContentProviderEntity extends AbstractKeyNameEntity {
 				return false;
 		} else if (!isSSL.equals(other.isSSL))
 			return false;
+		/*
 		if (managedSystem == null) {
 			if (other.managedSystem != null)
 				return false;
 		} else if (!managedSystem.equals(other.managedSystem))
 			return false;
+		*/
 		if (resource == null) {
 			if (other.resource != null)
 				return false;

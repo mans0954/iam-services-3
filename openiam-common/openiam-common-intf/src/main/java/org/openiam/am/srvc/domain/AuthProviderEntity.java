@@ -72,7 +72,7 @@ public class AuthProviderEntity extends AbstractKeyNameEntity {
     private AuthProviderTypeEntity type;
 
     @ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
-    @JoinColumn(name="MANAGED_SYS_ID", referencedColumnName = "MANAGED_SYS_ID", insertable = true, updatable = true)
+    @JoinColumn(name="MANAGED_SYS_ID", referencedColumnName = "MANAGED_SYS_ID", insertable = true, updatable = true, nullable=false)
     private ManagedSysEntity managedSystem;
 
     @ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
@@ -86,6 +86,10 @@ public class AuthProviderEntity extends AbstractKeyNameEntity {
     @OneToMany(fetch = FetchType.LAZY,cascade = { CascadeType.DETACH, CascadeType.REFRESH }, mappedBy = "authProvider")
     @Fetch(FetchMode.SUBSELECT)
     private Set<ContentProviderEntity> contentProviders;
+    
+    @OneToMany(fetch = FetchType.LAZY,cascade = { CascadeType.DETACH, CascadeType.REFRESH }, mappedBy = "authProvider")
+    @Fetch(FetchMode.SUBSELECT)
+    private Set<URIPatternEntity> uriPatterns;
 
     @OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL, mappedBy = "provider")
     @MapKey(name = "name")
@@ -230,6 +234,14 @@ public class AuthProviderEntity extends AbstractKeyNameEntity {
 
 	public void setSmsOTPGroovyScript(String smsOTPGroovyScript) {
 		this.smsOTPGroovyScript = smsOTPGroovyScript;
+	}
+
+	public Set<URIPatternEntity> getUriPatterns() {
+		return uriPatterns;
+	}
+
+	public void setUriPatterns(Set<URIPatternEntity> uriPatterns) {
+		this.uriPatterns = uriPatterns;
 	}
 
 	@Override

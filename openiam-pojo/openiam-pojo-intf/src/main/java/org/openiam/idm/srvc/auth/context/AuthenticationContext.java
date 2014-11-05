@@ -49,13 +49,12 @@ public class AuthenticationContext extends AuthenticationRequest {
 
 	public AuthenticationContext(final AuthenticationRequest request) {
 		super.setClientIP(request.getClientIP());
-		super.setContentProviderId(request.getContentProviderId());
+		super.setPatternId(request.getPatternId());
 		super.setLanguageId(request.getLanguageId());
 		super.setNodeIP(request.getNodeIP());
 		super.setPassword(request.getPassword());
 		super.setPrincipal(request.getPrincipal());
 		super.setRequestSource(request.getRequestSource());
-		super.setUriPatternId(request.getUriPatternId());
 	}
 
 	public String getAuthProviderId() {

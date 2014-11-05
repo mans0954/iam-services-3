@@ -138,9 +138,11 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
         		throw new BasicDataServiceException(ResponseCode.LINKED_TO_AUTHENTICATION_PROVIDER, sysEntity.getAuthProviders().iterator().next().getName());
         	}
         	
+        	/*
         	if(CollectionUtils.isNotEmpty(sysEntity.getContentProviders())) {
         		throw new BasicDataServiceException(ResponseCode.LINKED_TO_ONE_OR_MORE_CONTENT_PROVIDERS);
         	}
+        	*/
         	
 	        for (final ManagedSystemObjectMatchEntity matchEntity : sysEntity.getMngSysObjectMatchs()) {
 	            matchDAO.delete(matchEntity);

@@ -31,6 +31,7 @@ import java.util.concurrent.atomic.AtomicInteger;
         "patternSet",
         "serverSet",
         "managedSysId",
+        "managedSysName",
         "url",
         "themeId",
         "groupingXrefs",
@@ -43,6 +44,7 @@ public class ContentProvider extends KeyNameDTO {
 	private String domainPattern;
 	private Boolean isSSL;
 	private String managedSysId;
+	private String managedSysName;
     //private String contextPath;
 	private String resourceId;
     private String resourceName;
@@ -193,6 +195,13 @@ public class ContentProvider extends KeyNameDTO {
 	public void setAuthProviderId(String authProviderId) {
 		this.authProviderId = authProviderId;
 	}
+	
+	public String getManagedSysName() {
+		return managedSysName;
+	}
+	public void setManagedSysName(String managedSysName) {
+		this.managedSysName = managedSysName;
+	}
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -203,8 +212,8 @@ public class ContentProvider extends KeyNameDTO {
 				+ ((domainPattern == null) ? 0 : domainPattern.hashCode());
 		result = prime * result + (isPublic ? 1231 : 1237);
 		result = prime * result + ((isSSL == null) ? 0 : isSSL.hashCode());
-		result = prime * result
-				+ ((managedSysId == null) ? 0 : managedSysId.hashCode());
+		result = prime * result + ((managedSysId == null) ? 0 : managedSysId.hashCode());
+		result = prime * result + ((managedSysName == null) ? 0 : managedSysName.hashCode());
 		result = prime
 				* result
 				+ ((resourceCoorelatedName == null) ? 0
@@ -248,6 +257,11 @@ public class ContentProvider extends KeyNameDTO {
 			if (other.managedSysId != null)
 				return false;
 		} else if (!managedSysId.equals(other.managedSysId))
+			return false;
+		if (managedSysName == null) {
+			if (other.managedSysName != null)
+				return false;
+		} else if (!managedSysName.equals(other.managedSysName))
 			return false;
 		if (resourceCoorelatedName == null) {
 			if (other.resourceCoorelatedName != null)

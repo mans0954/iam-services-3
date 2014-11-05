@@ -658,10 +658,6 @@
 			<a>groups</a>
 			<b>groups</b>
 		</field-exclude>
-		<field-exclude>
-			<a>contentProviders</a>
-			<b>contentProviders</b>
-		</field-exclude>
 	</mapping>
 
 
@@ -777,6 +773,10 @@
 			<a>servers</a>
 			<b>servers</b>
 		</field-exclude>
+		<field>
+			<a>authProvider.id</a>
+			<b>authProviderId</b>
+		</field>
 	</mapping>
 	<mapping>
 		<class-a>org.openiam.idm.srvc.recon.domain.ReconciliationConfigEntity
@@ -872,6 +872,10 @@
 			<a>contentProviders</a>
 			<b>contentProviders</b>
 		</field-exclude>
+		<field-exclude>
+			<a>uriPatterns</a>
+			<b>uriPatterns</b>
+		</field-exclude>
     </mapping>
 
     <mapping>
@@ -926,9 +930,13 @@
             <b>patternSet</b>
         </field-exclude>
         <field>
-        	<a>managedSystem.id</a>
-        	<b>managedSysId</b>
-        </field>
+			<a>authProvider.managedSystem.id</a>
+			<b>managedSysId</b>
+		</field>
+		<field>
+			<a>authProvider.managedSystem.name</a>
+			<b>managedSysName</b>
+		</field>
         <field>
 			<a>resource.url</a>
 			<b>url</b>

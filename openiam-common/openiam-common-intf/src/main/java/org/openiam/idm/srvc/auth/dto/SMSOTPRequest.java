@@ -10,13 +10,13 @@ import org.openiam.idm.srvc.continfo.dto.Phone;
 @XmlType(name = "SMSOTPRequest", propOrder = {
 		"userId",
         "phone",
-        "contentProviderId",
+        "patternId",
         "smsCode"
 })
 public class SMSOTPRequest {
 	private String userId;
 	private Phone phone;
-	private String contentProviderId;
+	private String patternId;
 	private String smsCode;
 	
 	public SMSOTPRequest() {}
@@ -27,14 +27,6 @@ public class SMSOTPRequest {
 
 	public void setPhone(Phone phone) {
 		this.phone = phone;
-	}
-
-	public String getContentProviderId() {
-		return contentProviderId;
-	}
-
-	public void setContentProviderId(String contentProviderId) {
-		this.contentProviderId = contentProviderId;
 	}
 
 	public String getUserId() {
@@ -53,14 +45,20 @@ public class SMSOTPRequest {
 		this.smsCode = smsCode;
 	}
 
+	public String getPatternId() {
+		return patternId;
+	}
+
+	public void setPatternId(String patternId) {
+		this.patternId = patternId;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime
-				* result
-				+ ((contentProviderId == null) ? 0 : contentProviderId
-						.hashCode());
+		result = prime * result
+				+ ((patternId == null) ? 0 : patternId.hashCode());
 		result = prime * result + ((phone == null) ? 0 : phone.hashCode());
 		result = prime * result + ((smsCode == null) ? 0 : smsCode.hashCode());
 		result = prime * result + ((userId == null) ? 0 : userId.hashCode());
@@ -76,10 +74,10 @@ public class SMSOTPRequest {
 		if (getClass() != obj.getClass())
 			return false;
 		SMSOTPRequest other = (SMSOTPRequest) obj;
-		if (contentProviderId == null) {
-			if (other.contentProviderId != null)
+		if (patternId == null) {
+			if (other.patternId != null)
 				return false;
-		} else if (!contentProviderId.equals(other.contentProviderId))
+		} else if (!patternId.equals(other.patternId))
 			return false;
 		if (phone == null) {
 			if (other.phone != null)
@@ -102,8 +100,7 @@ public class SMSOTPRequest {
 	@Override
 	public String toString() {
 		return "SMSOTPRequest [userId=" + userId + ", phone=" + phone
-				+ ", contentProviderId=" + contentProviderId + ", smsCode="
-				+ smsCode + "]";
+				+ ", patternId=" + patternId + ", smsCode=" + smsCode + "]";
 	}
 
 	

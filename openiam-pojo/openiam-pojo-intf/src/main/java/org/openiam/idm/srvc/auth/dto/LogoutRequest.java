@@ -10,11 +10,11 @@ import javax.xml.bind.annotation.XmlType;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "LogoutRequest", propOrder = {
         "userId",
-        "contentProviderId"
+        "patternId"
 })
 public class LogoutRequest {
     private String userId;
-    private String contentProviderId;
+    private String patternId;
 
     public LogoutRequest() {
     }
@@ -27,13 +27,12 @@ public class LogoutRequest {
 		this.userId = userId;
 	}
 
-	public String getContentProviderId() {
-		return contentProviderId;
+	public String getPatternId() {
+		return patternId;
 	}
 
-	public void setContentProviderId(String contentProviderId) {
-		this.contentProviderId = contentProviderId;
+	public void setPatternId(String patternId) {
+		this.patternId = patternId;
 	}
-    
     
 }
